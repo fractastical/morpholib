@@ -33,6 +33,63 @@ except ImportError:
     HAS_SCIPY = False
     print("Warning: scipy not available, will use bounding boxes instead of convex hulls")
 
+BRIGHTEST_FRAME_CACHE = {}
+
+
+def _convert_to_8bit_percentile(img, p_low=2, p_high=98):
+    """Percentile-based 16-bit → 8-bit conversion (matches MP4 export style)."""
+    if img.dtype == np.uint8:
+        return img
+    img_f = img.astype(np.float32)
+    low = np.percentile(img_f, p_low)
+    high = np.percentile(img_f, p_high)
+    if high <= low:
+        return np.zeros_like(img, dtype=np.uint8)
+    scaled = np.clip((img_f - low) / (high - low) * 255.0, 0, 255).astype(np.uint8)
+    return scaled
+
+
+def _get_brightest_frame(tiff_path, sample_stride=5, percentiles=(2, 98)):
+    """
+    Return the brightest frame (by 99th percentile intensity) from a TIFF stack.
+    Uses a small stride to reduce IO; cached per TIFF path.
+    """
+    cache_key = (str(tiff_path), sample_stride, percentiles)
+    if cache_key in BRIGHTEST_FRAME_CACHE:
+        return BRIGHTEST_FRAME_CACHE[cache_key]
+    
+    best_img = None
+    best_score = -np.inf
+    best_idx = None
+    num_frames = 0
+    p_low, p_high = percentiles
+    
+    try:
+        with tiff.TiffFile(tiff_path) as tif:
+            num_frames = len(tif.pages)
+            stride = max(1, int(sample_stride))
+            for idx in range(0, num_frames, stride):
+                frame = tif.pages[idx].asarray()
+                frame8 = _convert_to_8bit_percentile(frame, p_low, p_high)
+                score = float(np.percentile(frame8, 99))
+                if score > best_score:
+                    best_score = score
+                    best_idx = idx
+                    best_img = frame8
+    except Exception:
+        BRIGHTEST_FRAME_CACHE[cache_key] = (None, None)
+        return BRIGHTEST_FRAME_CACHE[cache_key]
+    
+    BRIGHTEST_FRAME_CACHE[cache_key] = (
+        best_img,
+        {
+            'frame_idx': best_idx,
+            'num_frames': num_frames,
+            'score': best_score,
+        } if best_img is not None else None
+    )
+    return BRIGHTEST_FRAME_CACHE[cache_key]
+
 
 def extract_folder_and_video(filename):
     """
@@ -2415,7 +2472,137 @@ def find_mask_file(tiff_path, mask_base_path=None):
     return None
 
 
-def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_bounds=None, tiff_base_path=None, mask_base_path=None):
+def load_excel_coordinates(excel_path):
+    """
+    Load head/tail and poke coordinates from Excel file.
+    Returns: {folder: {video: {embryo_id: {'head': (x,y), 'tail': (x,y)}, 'poke': (x,y)}}}
+    """
+    if not excel_path or not Path(excel_path).exists():
+        return {}
+    
+    try:
+        from collections import defaultdict
+        import openpyxl
+        
+        coordinates = defaultdict(lambda: defaultdict(dict))
+        excel_file = pd.ExcelFile(excel_path)
+        
+        for sheet_name in excel_file.sheet_names:
+            df = pd.read_excel(excel_path, sheet_name=sheet_name)
+            folder = str(sheet_name).strip()
+            
+            # Find ID, X, Y columns by checking first row (header row is row 0)
+            id_col = None
+            x_col = None
+            y_col = None
+            
+            if len(df) > 0:
+                # Check first row for header values
+                first_row = df.iloc[0]
+                for col_name in df.columns:
+                    val = str(first_row[col_name]).strip() if pd.notna(first_row[col_name]) else ""
+                    val_lower = val.lower()
+                    if val_lower == 'id':
+                        id_col = col_name
+                    elif val_lower == 'x':
+                        x_col = col_name
+                    elif val_lower == 'y':
+                        y_col = col_name
+                
+                # If not found in first row, check column names directly
+                if not id_col:
+                    for col in df.columns:
+                        if 'id' in str(col).lower():
+                            id_col = col
+                            break
+                if not x_col:
+                    for col in df.columns:
+                        if str(col).strip().upper() == 'X':
+                            x_col = col
+                            break
+                if not y_col:
+                    for col in df.columns:
+                        if str(col).strip().upper() == 'Y':
+                            y_col = col
+                            break
+                
+                # Get video name from first column
+                video = None
+                if len(df.columns) > 0:
+                    first_col = df.columns[0]
+                    for idx in range(1, min(5, len(df))):
+                        if pd.notna(df.iloc[idx][first_col]):
+                            video_val = str(df.iloc[idx][first_col]).strip()
+                            if not ('_head' in video_val.lower() or '_tail' in video_val.lower() or 
+                                   video_val.lower() in ['head', 'tail', 'poke location']):
+                                video = video_val
+                                break
+                
+                if not video and len(df.columns) > 0:
+                    video = str(df.columns[0]).strip()
+                
+                # Parse rows
+                if id_col and x_col and y_col:
+                    for idx, row in df.iterrows():
+                        try:
+                            if pd.isna(row[id_col]):
+                                continue
+                            
+                            id_val = str(row[id_col]).strip().lower()
+                            
+                            # Check for poke
+                            if 'poke' in id_val:
+                                if pd.notna(row[x_col]) and pd.notna(row[y_col]):
+                                    x = float(row[x_col])
+                                    y = float(row[y_col])
+                                    coordinates[folder][video]['poke'] = (x, y)
+                                continue
+                            
+                            # Parse embryo head/tail
+                            embryo_id = None
+                            is_head = None
+                            
+                            if '_' in id_val:
+                                parts = id_val.split('_')
+                                if len(parts) >= 2:
+                                    embryo_part = parts[0].upper()
+                                    head_tail_part = parts[1]
+                                    if embryo_part in ['A', 'B']:
+                                        embryo_id = embryo_part
+                                    if 'head' in head_tail_part:
+                                        is_head = True
+                                    elif 'tail' in head_tail_part:
+                                        is_head = False
+                            else:
+                                if 'head' in id_val:
+                                    is_head = True
+                                    embryo_id = 'A'
+                                elif 'tail' in id_val:
+                                    is_head = False
+                                    embryo_id = 'A'
+                            
+                            if embryo_id and is_head is not None:
+                                if pd.notna(row[x_col]) and pd.notna(row[y_col]):
+                                    x = float(row[x_col])
+                                    y = float(row[y_col])
+                                    if embryo_id not in coordinates[folder][video]:
+                                        coordinates[folder][video][embryo_id] = {}
+                                    if is_head:
+                                        coordinates[folder][video][embryo_id]['head'] = (x, y)
+                                    else:
+                                        coordinates[folder][video][embryo_id]['tail'] = (x, y)
+                        except:
+                            continue
+        
+        return dict(coordinates)
+    except Exception as e:
+        print(f"    ⚠ Could not load Excel coordinates: {e}")
+        import traceback
+        traceback.print_exc()
+        return {}
+
+
+def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_bounds=None, tiff_base_path=None, mask_base_path=None, excel_coords=None):
     """
     Create visualization for a specific folder/video combination.
     
@@ -2426,6 +2613,7 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
         global_bounds: Optional (x_min, x_max, y_min, y_max) to use consistent dimensions
         tiff_base_path: Optional base path to search for TIFF files
         mask_base_path: Optional base path to search for mask PNG files
+        excel_coords: Optional dict with Excel coordinates {folder: {video: {embryo_id: {...}, 'poke': ...}}}
     """
     folder, video = folder_video_key
     
@@ -2456,42 +2644,81 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
     fig_height = 12
     fig, ax = plt.subplots(figsize=(fig_width, fig_height))
     
+    # Get full TIFF image dimensions if available - use these for axis limits instead of just spark coordinates
+    # This ensures masks are shown at full scale, matching the MP4 files
+    tiff_width = None
+    tiff_height = None
+    if tiff_path and tiff_path.exists():
+        try:
+            with tiff.TiffFile(tiff_path) as tif:
+                tiff_img = tif.pages[0].asarray()
+                tiff_height, tiff_width = tiff_img.shape[:2]
+                print(f"    → TIFF dimensions: {tiff_width} x {tiff_height}")
+        except Exception as e:
+            print(f"    ⚠ Could not read TIFF dimensions: {e}")
+    
     # Use global bounds if provided, otherwise calculate from this file's data
     if global_bounds:
         x_min, x_max, y_min, y_max = global_bounds
     else:
-        # Get spatial bounds from this file
-        valid_xy = df_file[df_file['x'].notna() & df_file['y'].notna()]
-        if len(valid_xy) == 0:
-            return None
-        
-        x_min, x_max = valid_xy['x'].min(), valid_xy['x'].max()
-        y_min, y_max = valid_xy['y'].min(), valid_xy['y'].max()
-        
-        # Add padding
-        x_range = x_max - x_min
-        y_range = y_max - y_min
-        # Ensure minimum range to avoid singular transformation
-        if x_range < 10:
-            x_range = 10
-            x_min = x_min - 5
-            x_max = x_max + 5
+        # If we have TIFF dimensions, use those (full image scale)
+        # Otherwise fall back to spark detection coordinates with padding
+        if tiff_width and tiff_height:
+            # Use full TIFF dimensions - masks are created at this scale
+            x_min, x_max = 0, tiff_width
+            y_min, y_max = 0, tiff_height
+            print(f"    → Using full TIFF dimensions for axis limits: {x_min}-{x_max}, {y_min}-{y_max}")
         else:
-            x_min -= x_range * 0.1
-            x_max += x_range * 0.1
-        
-        if y_range < 10:
-            y_range = 10
-            y_min = y_min - 5
-            y_max = y_max + 5
-        else:
-            y_min -= y_range * 0.1
-            y_max += y_range * 0.1
+            # Fallback: Get spatial bounds from spark detections
+            valid_xy = df_file[df_file['x'].notna() & df_file['y'].notna()]
+            if len(valid_xy) == 0:
+                return None
+            
+            x_min, x_max = valid_xy['x'].min(), valid_xy['x'].max()
+            y_min, y_max = valid_xy['y'].min(), valid_xy['y'].max()
+            
+            # Add padding
+            x_range = x_max - x_min
+            y_range = y_max - y_min
+            # Ensure minimum range to avoid singular transformation
+            if x_range < 10:
+                x_range = 10
+                x_min = x_min - 5
+                x_max = x_max + 5
+            else:
+                x_min -= x_range * 0.1
+                x_max += x_range * 0.1
+            
+            if y_range < 10:
+                y_range = 10
+                y_min = y_min - 5
+                y_max = y_max + 5
+            else:
+                y_min -= y_range * 0.1
+                y_max += y_range * 0.1
+
+
     
     ax.set_xlim(x_min, x_max)
     ax.set_ylim(y_min, y_max)
     ax.set_aspect('equal')
     ax.set_facecolor('black')
+    
+    # Background: brightest frame from TIFF (matches MP4 contrast)
+    background_img = None
+    background_meta = None
+    if tiff_path and tiff_path.exists() and tiff_width and tiff_height:
+        background_img, background_meta = _get_brightest_frame(tiff_path)
+        if background_img is not None:
+            # Flip vertically to match the coordinate system used for masks (origin at bottom-left)
+            bg_disp = np.flipud(background_img)
+            extent = [0, tiff_width, 0, tiff_height]
+            if bg_disp.ndim == 2:
+                ax.imshow(bg_disp, cmap='gray', extent=extent, origin='lower', alpha=0.9, zorder=0)
+            else:
+                ax.imshow(bg_disp, extent=extent, origin='lower', alpha=0.9, zorder=0)
+            if background_meta:
+                print(f"    → Background: brightest frame {background_meta['frame_idx'] + 1}/{background_meta['num_frames']} (score {background_meta['score']:.1f})")
     
     # Mask overlay will be added after all other elements are drawn
     
@@ -3447,15 +3674,83 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                         ax.plot([line_start[0], line_end[0]], [line_start[1], line_end[1]], 
                                'w--', linewidth=2.5, alpha=0.9, label='Embryo Separation', zorder=10)
     
-    # Draw poke location
+    # Draw poke location (from detected data)
     poke_pos = infer_poke_location(df_file)
     if poke_pos:
         ax.plot(poke_pos[0], poke_pos[1], 'mX', markersize=15, markeredgewidth=2,
-               markeredgecolor='white', label='Poke Location')
+               markeredgecolor='white', label='Poke Location (Detected)', zorder=11)
         ax.annotate('POKE', poke_pos, xytext=(0, 20), 
                    textcoords='offset points', color='magenta', fontsize=12, 
                    fontweight='bold', ha='center',
-                   bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+                   bbox=dict(boxstyle='round', facecolor='white', alpha=0.8), zorder=11)
+    
+    # Draw Excel coordinates if available (poke, head/tail)
+    if excel_coords:
+        folder_str = str(folder)
+        # Try to find matching video in Excel coordinates
+        excel_folder_data = excel_coords.get(folder_str, {})
+        
+        # Normalize video name for matching
+        def normalize_vid_name(v):
+            if not v: return ""
+            v = str(v).lower()
+            v = re.sub(r'\.(tif|tiff|mp4)$', '', v)
+            v = re.sub(r'\s*\([^)]+\)', '', v)
+            v = re.sub(r'[_\-\s]+', ' ', v)
+            return v.strip()
+        
+        video_norm = normalize_vid_name(video)
+        matched_video = None
+        for excel_video in excel_folder_data:
+            if normalize_vid_name(excel_video) == video_norm:
+                matched_video = excel_video
+                break
+        
+        # If no exact match, try partial matching (e.g., "B-substack" matches "B - Substack (1-301).tif")
+        if not matched_video and excel_folder_data:
+            # Get the first video in the folder (most sheets have one video)
+            matched_video = list(excel_folder_data.keys())[0]
+            print(f"    → Using Excel video '{matched_video}' for folder {folder} (requested: '{video}')")
+        
+        if matched_video:
+            excel_data = excel_folder_data[matched_video]
+            
+            # Draw Excel poke location (cyan X)
+            if 'poke' in excel_data:
+                excel_poke = excel_data['poke']
+                ax.plot(excel_poke[0], excel_poke[1], 'cX', markersize=18, markeredgewidth=3,
+                       markeredgecolor='cyan', label='Poke Location (Excel)', zorder=12)
+                ax.annotate('POKE (Excel)', excel_poke, xytext=(0, -30), 
+                           textcoords='offset points', color='cyan', fontsize=11, 
+                           fontweight='bold', ha='center',
+                           bbox=dict(boxstyle='round', facecolor='black', alpha=0.7, edgecolor='cyan', linewidth=2), zorder=12)
+            
+            # Draw Excel head/tail labels (cyan for head, orange for tail)
+            for embryo_id in ['A', 'B']:
+                if embryo_id in excel_data:
+                    emb_data = excel_data[embryo_id]
+                    
+                    # Excel head (cyan)
+                    if 'head' in emb_data:
+                        excel_head = emb_data['head']
+                        ax.plot(excel_head[0], excel_head[1], 'o', markersize=12, 
+                               color='cyan', markeredgecolor='white', markeredgewidth=2,
+                               label=f'Excel Head {embryo_id}' if embryo_id == 'A' else '', zorder=13)
+                        ax.annotate(f'{embryo_id}H (Excel)', excel_head, xytext=(10, 10), 
+                                   textcoords='offset points', color='cyan', fontsize=10, 
+                                   fontweight='bold', ha='left',
+                                   bbox=dict(boxstyle='round', facecolor='black', alpha=0.7, edgecolor='cyan', linewidth=1.5), zorder=13)
+                    
+                    # Excel tail (orange)
+                    if 'tail' in emb_data:
+                        excel_tail = emb_data['tail']
+                        ax.plot(excel_tail[0], excel_tail[1], 'o', markersize=12, 
+                               color='orange', markeredgecolor='white', markeredgewidth=2,
+                               label=f'Excel Tail {embryo_id}' if embryo_id == 'A' else '', zorder=13)
+                        ax.annotate(f'{embryo_id}T (Excel)', excel_tail, xytext=(10, 10), 
+                                   textcoords='offset points', color='orange', fontsize=10, 
+                                   fontweight='bold', ha='left',
+                                   bbox=dict(boxstyle='round', facecolor='black', alpha=0.7, edgecolor='orange', linewidth=1.5), zorder=13)
     
     # Overlay mask if available - do this LAST so it appears behind all other elements
     if mask_path and mask_path.exists() and tiff_path and tiff_path.exists():
@@ -3475,35 +3770,27 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                         mask_img = cv2.resize(mask_img, (tiff_w, tiff_h), interpolation=cv2.INTER_NEAREST)
                         print(f"    → Resized mask from {mask_w}x{mask_h} to {tiff_w}x{tiff_h} to match TIFF")
                     
-                    # Get spark coordinate bounds
-                    spark_x_min = df_file['x'].min()
-                    spark_x_max = df_file['x'].max()
-                    spark_y_min = df_file['y'].min()
-                    spark_y_max = df_file['y'].max()
-                    
-                    # Create extent for imshow: [left, right, bottom, top] in spark coordinates
-                    # Mask now matches TIFF size, so use spark bounds directly
-                    extent = [
-                        spark_x_min,  # left
-                        spark_x_max,  # right
-                        spark_y_max,  # bottom (note: y-axis is flipped for images)
-                        spark_y_min   # top
-                    ]
+                    # Mask is in pixel coordinates (0 to tiff_w, 0 to tiff_h)
+                    # Since we're using full TIFF dimensions for axis limits, use pixel coordinates directly
+                    # No need to transform to spark coordinates
                     
                     # Create bright green overlay using filled contours (more reliable than imshow)
                     # Find contours in the mask
                     contours_mask, _ = cv2.findContours(mask_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                     
                     if len(contours_mask) > 0:
-                        # Transform contours from mask pixel coordinates to spark coordinates
-                        scale_x = (spark_x_max - spark_x_min) / tiff_w
-                        scale_y = (spark_y_max - spark_y_min) / tiff_h
+                        # Mask is in pixel coordinates (0 to tiff_w, 0 to tiff_h)
+                        # OpenCV uses (0,0) at top-left, matplotlib uses (0,0) at bottom-left
+                        # Need to flip y-coordinate: y_matplotlib = tiff_h - y_opencv
                         
                         for contour in contours_mask:
-                            # Transform contour points
-                            contour_transformed = contour.reshape(-1, 2).astype(np.float32)
-                            contour_transformed[:, 0] = contour_transformed[:, 0] * scale_x + spark_x_min
-                            contour_transformed[:, 1] = contour_transformed[:, 1] * scale_y + spark_y_min
+                            # Reshape and convert to float
+                            contour_points = contour.reshape(-1, 2).astype(np.float32)
+                            
+                            # Transform y-coordinate: flip from OpenCV (top-left origin) to matplotlib (bottom-left origin)
+                            contour_transformed = contour_points.copy()
+                            contour_transformed[:, 0] = contour_points[:, 0]  # x stays the same
+                            contour_transformed[:, 1] = tiff_h - contour_points[:, 1]  # flip y
                             
                             # Close the contour
                             if len(contour_transformed) > 0:
@@ -3514,7 +3801,8 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                                              linewidth=0, alpha=0.5, zorder=1)
                                 ax.add_patch(poly)
                         
-                        print(f"    ✓ Overlaid mask: {mask_path.name} ({len(contours_mask)} contours, extent: {spark_x_min:.1f}-{spark_x_max:.1f}, {spark_y_min:.1f}-{spark_y_max:.1f})")
+                        mask_coverage = (np.sum(mask_img > 0) / (tiff_w * tiff_h)) * 100
+                        print(f"    ✓ Overlaid mask: {mask_path.name} ({len(contours_mask)} contours, coverage: {mask_coverage:.1f}%, full image: {tiff_w}x{tiff_h})")
                     else:
                         print(f"    ⚠ No contours found in mask: {mask_path.name}")
         except Exception as e:
@@ -4015,6 +4303,8 @@ def main():
                        help='Base path to search for TIFF files (default: /Users/jdietz/Documents/Levin/Embryos)')
     parser.add_argument('--mask-base-path', default=None,
                        help='Base path to search for mask PNG files (default: wave-vector-analysis/embryo_masks_final)')
+    parser.add_argument('--excel-coords', default=None,
+                       help='Path to XY coordinates.xlsx file (optional, for displaying Excel coordinates)')
     
     args = parser.parse_args()
     
@@ -4032,6 +4322,38 @@ def main():
     print(f"Loading {args.tracks_csv}...")
     df_tracks = pd.read_csv(args.tracks_csv)
     print(f"  → Loaded {len(df_tracks):,} track states")
+    
+    # Load Excel coordinates if provided
+    excel_coords = {}
+    if args.excel_coords:
+        excel_path = Path(args.excel_coords)
+        if excel_path.exists():
+            print(f"\nLoading Excel coordinates from: {excel_path}")
+            excel_coords = load_excel_coordinates(str(excel_path))
+            if excel_coords:
+                total_videos = sum(len(videos) for videos in excel_coords.values())
+                total_pokes = sum(1 for folder_data in excel_coords.values() 
+                                 for video_data in folder_data.values() 
+                                 if 'poke' in video_data)
+                print(f"  → Loaded coordinates for {total_videos} folder/video combinations")
+                print(f"  → Found {total_pokes} poke locations")
+            else:
+                print(f"  ⚠ No coordinates found in Excel file")
+        else:
+            print(f"  ⚠ Excel file not found: {excel_path}")
+    else:
+        # Try default location
+        default_excel = Path(args.tiff_base_path) / "XY coordinates.xlsx" if args.tiff_base_path else None
+        if default_excel and default_excel.exists():
+            print(f"\nLoading Excel coordinates from default location: {default_excel}")
+            excel_coords = load_excel_coordinates(str(default_excel))
+            if excel_coords:
+                total_videos = sum(len(videos) for videos in excel_coords.values())
+                total_pokes = sum(1 for folder_data in excel_coords.values() 
+                                 for video_data in folder_data.values() 
+                                 if 'poke' in video_data)
+                print(f"  → Loaded coordinates for {total_videos} folder/video combinations")
+                print(f"  → Found {total_pokes} poke locations")
     
     # Create output directory
     output_dir = Path(args.output_dir)
@@ -4149,7 +4471,7 @@ def main():
             try:
                 # Determine mask base path (default to embryo_masks_final)
                 mask_base = args.mask_base_path if hasattr(args, 'mask_base_path') and args.mask_base_path else None
-                output_path = create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_bounds, args.tiff_base_path, mask_base)
+                output_path = create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_bounds, args.tiff_base_path, mask_base, excel_coords)
                 if output_path:
                     print(f"    ✓ Saved: {output_path.name}")
                     image_paths_dict[(folder, video)] = output_path
