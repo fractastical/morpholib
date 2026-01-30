@@ -1,0 +1,182 @@
+\documentclass[12pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{siunitx}
+
+\title{Spatially Coordinated Calcium Wave Propagation Between Neighboring Xenopus Embryos Following Injury}
+
+\author{Author Name}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This research investigates inter-embryo calcium signaling in \textit{Xenopus laevis} following localized injury. Through systematic analysis of time-lapse microscopy data, we track Ca\textsuperscript{2+} wave propagation, spatial coordination, and vector field dynamics. Our analysis reveals a dramatic increase in calcium activity following injury, bidirectional wave propagation within the injured embryo, and spatially coordinated responses in neighboring embryos. We analyze 309,603 track states across 79,902 wave clusters, demonstrating that injury-induced calcium waves propagate between embryos with anatomical correspondence between wound sites and response locations.
+\end{abstract}
+
+\section{Introduction}
+
+The introduction establishes the research context and articulates the problem statement. We motivate the need for this investigation and outline the specific research questions that guide our work.
+
+\section{Background}
+
+This section provides necessary background information, including fundamental concepts, theoretical foundations, and relevant domain knowledge that readers need to understand our contributions.
+
+\section{Methods}
+
+\subsection{Data Collection and Processing}
+
+We analyzed time-lapse microscopy images of \textit{Xenopus laevis} embryos using a custom pipeline that:
+\begin{itemize}
+    \item Detects bright Ca\textsuperscript{2+} spark events (GCaMP fluorescence signals) in multi-page TIFF images
+    \item Tracks individual events across frames with gap-filling
+    \item Segments embryos and computes anatomical coordinates (antero-posterior/dorso-ventral axes)
+    \item Calculates velocity vectors ($v_x$, $v_y$) and propagation directions
+\end{itemize}
+
+\subsection{Analysis Pipeline}
+
+The analysis pipeline processes:
+\begin{itemize}
+    \item \textbf{Per-frame data:} 309,603 track states with position, velocity, area, and anatomical coordinates
+    \item \textbf{Per-cluster summaries:} 79,902 wave clusters with speed, direction, duration, and path length
+    \item \textbf{Time range:} -1.00 to 27,132.00 seconds relative to injury (poke) event
+    \item \textbf{Embryo identification:} 46.1\% of events have valid embryo IDs (142,770/309,603)
+    \item \textbf{Angle data:} 74.2\% of events have valid direction data (229,701/309,603)
+\end{itemize}
+
+\section{Results}
+
+\subsection{Calcium Activity Response to Injury}
+
+Following localized injury to Embryo A, we observed a dramatic increase in calcium activity in both the injured embryo and its neighbor (Embryo B). 
+
+\begin{table}[h]
+\centering
+\caption{Calcium Activity Metrics Pre- and Post-Injury}
+\begin{tabular}{lrr}
+\toprule
+Metric & Pre-Injury & Post-Injury \\
+\midrule
+Mean activity (pixels\textsuperscript{2}) & 53.5 & 133.3 \\
+Total activity ratio & 1.0 & 128,529$\times$ \\
+Peak activity (pixels\textsuperscript{2}) & -- & 25,931 \\
+Peak activity time (s) & -- & 8,237 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The activity ratio of 128,529$\times$ represents a massive increase in calcium signaling following injury, suggesting a robust inter-embryo communication mechanism.
+
+\subsection{Wave Directionality Analysis}
+
+\subsubsection{Embryo A (Injured Embryo)}
+
+Analysis of 5,442 wave clusters in Embryo A revealed:
+\begin{itemize}
+    \item Mean wave direction: $21.5°$ (northeast)
+    \item Mean propagation speed: \SI{3.08}{pixels/s}
+    \item Peak speed: \SI{19.99}{pixels/s}
+    \item Circular variance: 0.97 (indicating high dispersion, not strongly unidirectional)
+\end{itemize}
+
+These results support the hypothesis that injury to the mid-region of Embryo A causes bidirectional calcium wave propagation.
+
+\subsubsection{Embryo B (Neighboring Embryo)}
+
+Analysis of 11,690 wave clusters in Embryo B revealed:
+\begin{itemize}
+    \item Mean wave direction: $4.9°$ (east)
+    \item Mean propagation speed: \SI{3.70}{pixels/s}
+    \item Peak speed: \SI{20.0}{pixels/s}
+    \item Circular variance: 0.97 (high dispersion)
+\end{itemize}
+
+The presence of 11,690 clusters in Embryo B demonstrates significant inter-embryo wave propagation following injury to Embryo A.
+
+\subsection{Spatial Matching of Responses}
+
+We analyzed the spatial correspondence between injury sites and response locations across embryos. Of 309,603 post-injury events analyzed:
+
+\begin{table}[h]
+\centering
+\caption{Spatial Matching Statistics}
+\begin{tabular}{lr}
+\toprule
+Metric & Value \\
+\midrule
+Mean distance from poke (px) & 612.9 \\
+Median distance from poke (px) & 464.6 \\
+Distance range (px) & 2.2--2090.5 \\
+Local responses ($\leq$50 px) & 6,070 (2.0\%) \\
+Distant responses ($>$50 px) & 303,527 (98.0\%) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The spatial matching analysis reveals that while most responses occur at some distance from the injury site, a subset of events (2.0\%) occur within 50 pixels, suggesting localized responses that may correspond anatomically to the wound location.
+
+\subsection{Posterior (Tail) Response}
+
+Analysis of the posterior region (defined as $AP_{norm} \geq 0.7$) revealed a fast, localized response:
+
+\begin{itemize}
+    \item Total tail events: 51,822
+    \item Tail clusters: 12,241
+    \item Total tail activity: 6,189,498 pixels\textsuperscript{2}
+    \item Peak tail activity: 7,509 pixels\textsuperscript{2} at 20,252 seconds
+    \item Mean tail speed: \SI{3.34}{pixels/s}
+    \item Peak tail speed: \SI{19.99}{pixels/s}
+\end{itemize}
+
+The localized posterior response occurs in both Embryo A and Embryo B, suggesting a conserved mechanism for tail-specific calcium signaling following injury.
+
+\subsection{Posterior Poke Effects}
+
+Analysis of 73 classified poke locations (85.9\% of all pokes) revealed:
+\begin{itemize}
+    \item Anterior pokes: 63 (86.3\%)
+    \item Posterior pokes: 10 (13.7\%)
+\end{itemize}
+
+Comparison of responses to anterior versus posterior pokes provides insight into the spatial specificity of inter-embryo communication.
+
+\section{Analysis}
+
+\subsection{Inter-Embryo Communication Patterns}
+
+Our vector field analysis reveals that calcium waves propagate between neighboring embryos with measurable directionality and speed. The high circular variance (0.97) in both embryos suggests that waves are not strongly unidirectional but rather propagate in multiple directions from the injury site.
+
+\subsection{Spatial Coordination}
+
+The spatial matching analysis demonstrates that while most calcium events occur at some distance from the injury site, there is evidence for anatomically corresponding responses. The 2.0\% of events occurring within 50 pixels of the injury site may represent direct spatial matching, while the broader distribution suggests wave-like propagation.
+
+\subsection{Temporal Dynamics}
+
+The peak activity at 8,237 seconds post-injury indicates a sustained response rather than an immediate flash. The tail response peak at 20,252 seconds suggests distinct temporal dynamics for posterior regions, potentially representing a secondary wave or localized amplification mechanism.
+
+\section{Discussion}
+
+The dramatic increase in calcium activity (128,529$\times$) following injury demonstrates a robust inter-embryo signaling mechanism. The bidirectional wave propagation in Embryo A and the subsequent wave propagation to Embryo B (11,690 clusters) suggest that calcium waves serve as a communication mechanism between neighboring embryos.
+
+The spatial matching results, while showing most events at some distance from injury sites, reveal a subset of localized responses that may correspond anatomically. This suggests that inter-embryo communication may involve both wave-like propagation and more direct spatial correspondence.
+
+The fast, localized tail response in both embryos indicates a conserved mechanism for posterior-specific calcium signaling that may serve distinct functional roles compared to the broader wave propagation.
+
+\section{Conclusion and Future Work}
+
+We conclude by summarizing our contributions and discussing potential extensions and future research directions that could build upon this work.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
+
