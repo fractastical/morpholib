@@ -84,6 +84,7 @@ class SparkTracker:
         self.files_with_embryos = 0    # Count of files that had embryos detected
         self.region_map = None         # List of region definitions
         self.embryo_transforms = {}    # Dict mapping embryo_id -> transform dict
+        self.reference_embryo_length_px = None  # Head-tail length (1 em) for embryo units (ecm, emm)
 
     # ---------- TIFF reading helper ----------
     
@@ -703,6 +704,8 @@ class SparkTracker:
             print(f"\n  → Using single embryo head-tail length: {standard_head_tail_length:.1f}px")
         else:
             standard_head_tail_length = None
+
+        self.reference_embryo_length_px = float(standard_head_tail_length) if standard_head_tail_length is not None else None
 
         # Step 3: Recalculate tails using consistent distance
         for emb_data in embryo_data:
@@ -1672,6 +1675,7 @@ class SparkTracker:
                 "ap_norm",
                 "dv_px",
                 "dist_from_poke_px",
+                "embryo_length_px",
                 "region",
                 "filename",
             ],
@@ -1738,11 +1742,13 @@ class SparkTracker:
                     print(f"  → Detected {num_detections_this_frame} spark detection(s), {num_states_this_frame} track state(s) in poke frame")
 
                 # write CSV rows
+                ref_len = self.reference_embryo_length_px
                 for s in frame_states:
                     row = dict(s)
                     for key in ["vx", "vy", "speed", "angle_deg", "ap_norm", "dv_px"]:
                         if row.get(key) is None or row.get(key) != row.get(key):  # NaN check
                             row[key] = ""
+                    row["embryo_length_px"] = ref_len if ref_len is not None else ""
                     # Store relative path with page info if multi-page (page_idx > 0 means multi-page)
                     if page_idx > 0:
                         row["filename"] = f"{rel_path} (page {page_idx+1})"
