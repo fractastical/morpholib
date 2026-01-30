@@ -10,9 +10,11 @@ Usage:
   python extract_tiff_metadata.py path/to/file.tif [file2.tif ...]
   python extract_tiff_metadata.py path/to/dir --batch
   python extract_tiff_metadata.py file.tif --verbose
+  python extract_tiff_metadata.py path/to/dir --batch --output metadata.json
 """
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -200,6 +202,28 @@ def extract_tiff_metadata(tiff_path, include_all_tags=False):
     return result
 
 
+def metadata_to_export_dict(meta):
+    """
+    Return a JSON-serializable dict with all metadata for export.
+    Uses 'tags' (all tag name -> string value) and standard parsed fields.
+    """
+    out = {
+        "path": meta.get("path"),
+        "filename": Path(meta["path"]).name if meta.get("path") else None,
+        "zoom": meta.get("zoom"),
+        "image_description": meta.get("image_description"),
+        "x_resolution": meta.get("x_resolution"),
+        "y_resolution": meta.get("y_resolution"),
+        "resolution_unit": meta.get("resolution_unit"),
+        "n_pages": meta.get("n_pages", 0),
+    }
+    if "error" in meta:
+        out["error"] = meta["error"]
+    if "all_tags" in meta:
+        out["tags"] = dict(meta["all_tags"])
+    return out
+
+
 def _print_result(meta, verbose=False, description_limit=IMAGE_DESCRIPTION_PRINT_LIMIT):
     """Print one extraction result to stdout."""
     path = meta.get("path", "")
@@ -265,6 +289,17 @@ def main():
         action="store_true",
         help="Print all TIFF tag names and values",
     )
+    parser.add_argument(
+        "--output",
+        "-o",
+        metavar="FILE",
+        help="Write all metadata to a single JSON file (array of records, one per TIFF)",
+    )
+    parser.add_argument(
+        "--output-dir",
+        metavar="DIR",
+        help="Write one JSON file per TIFF into DIR (filename: <stem>.json)",
+    )
     args = parser.parse_args()
 
     inputs = list(args.input)
@@ -303,11 +338,46 @@ def main():
         if not paths:
             sys.exit(1)
 
-    for tiff_path in paths:
-        meta = extract_tiff_metadata(tiff_path, include_all_tags=args.verbose)
-        _print_result(meta, verbose=args.verbose)
+    export_to_file = bool(args.output)
+    export_to_dir = bool(args.output_dir)
+    include_all_tags = args.verbose or export_to_file or export_to_dir
 
-    print()
+    all_export = []  # for --output single file
+    written_per_file = 0
+
+    for tiff_path in paths:
+        meta = extract_tiff_metadata(tiff_path, include_all_tags=include_all_tags)
+        if not export_to_file and not export_to_dir:
+            _print_result(meta, verbose=args.verbose)
+        else:
+            record = metadata_to_export_dict(meta)
+            all_export.append(record)
+            if export_to_dir:
+                out_dir = Path(args.output_dir)
+                out_dir.mkdir(parents=True, exist_ok=True)
+                out_path = out_dir / f"{tiff_path.stem}.json"
+                with open(out_path, "w", encoding="utf-8") as f:
+                    json.dump(record, f, indent=2, ensure_ascii=False)
+                print(f"  Wrote {out_path}")
+                written_per_file += 1
+
+    if export_to_dir and written_per_file:
+        print(f"Wrote {written_per_file} JSON file(s) to {args.output_dir}")
+
+    if export_to_file and all_export:
+        out_path = Path(args.output)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(
+                {"source": "extract_tiff_metadata.py", "files": all_export},
+                f,
+                indent=2,
+                ensure_ascii=False,
+            )
+        print(f"Wrote metadata for {len(all_export)} file(s) to {out_path}")
+
+    if not export_to_file and not export_to_dir:
+        print()
 
 
 if __name__ == "__main__":
