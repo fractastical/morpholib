@@ -80,6 +80,50 @@ def emm_to_px(emm, reference_length_px):
     return em * float(reference_length_px)
 
 
+# --- Speed conversions (px/s <-> embryo units/s and μm/s) ---
+
+
+def speed_px_s_to_em_s(speed_px_s, reference_length_px):
+    """
+    Convert speed from pixels per second to embryo meters per second (em/s).
+    1 em/s = one embryo length per second.
+    """
+    if reference_length_px is None or reference_length_px <= 0:
+        return None
+    if speed_px_s is None or (isinstance(speed_px_s, float) and (speed_px_s != speed_px_s)):
+        return None
+    return float(speed_px_s) / float(reference_length_px)
+
+
+def speed_px_s_to_ecm_s(speed_px_s, reference_length_px):
+    """Convert speed from px/s to embryo centimeters per second (ecm/s)."""
+    em_s = speed_px_s_to_em_s(speed_px_s, reference_length_px)
+    if em_s is None:
+        return None
+    return em_s * ECM_PER_EM
+
+
+def speed_px_s_to_emm_s(speed_px_s, reference_length_px):
+    """Convert speed from px/s to embryo millimeters per second (emm/s)."""
+    em_s = speed_px_s_to_em_s(speed_px_s, reference_length_px)
+    if em_s is None:
+        return None
+    return em_s * EMM_PER_EM
+
+
+def speed_px_s_to_um_s(speed_px_s, um_per_px):
+    """
+    Convert speed from pixels per second to micrometers per second (μm/s).
+    Use when you have a scale from TIFF metadata (e.g. Unit = µm + scale) or
+    a known embryo length in μm: um_per_px = embryo_length_um / embryo_length_px.
+    """
+    if um_per_px is None or um_per_px <= 0:
+        return None
+    if speed_px_s is None or (isinstance(speed_px_s, float) and (speed_px_s != speed_px_s)):
+        return None
+    return float(speed_px_s) * float(um_per_px)
+
+
 def add_embryo_unit_columns(df, reference_length_px=None, length_column="embryo_length_px"):
     """
     Add embryo-unit columns to a DataFrame that has pixel distances.
@@ -91,6 +135,7 @@ def add_embryo_unit_columns(df, reference_length_px=None, length_column="embryo_
     Adds (when source columns exist):
       - dist_from_poke_emm, dist_from_poke_ecm from dist_from_poke_px
       - dv_emm, dv_ecm from dv_px
+      - speed_em_s, speed_ecm_s, speed_emm_s from speed (px/s)
     """
     use_per_row = length_column in df.columns and reference_length_px is None
     out = df.copy()
@@ -100,6 +145,15 @@ def add_embryo_unit_columns(df, reference_length_px=None, length_column="embryo_
         ref = reference_length_px
     if ref is None:
         return out
+    if "speed" in df.columns:
+        if use_per_row:
+            out["speed_em_s"] = [speed_px_s_to_em_s(s, r) for s, r in zip(df["speed"], ref)]
+            out["speed_ecm_s"] = [speed_px_s_to_ecm_s(s, r) for s, r in zip(df["speed"], ref)]
+            out["speed_emm_s"] = [speed_px_s_to_emm_s(s, r) for s, r in zip(df["speed"], ref)]
+        else:
+            out["speed_em_s"] = df["speed"].apply(lambda s: speed_px_s_to_em_s(s, ref))
+            out["speed_ecm_s"] = df["speed"].apply(lambda s: speed_px_s_to_ecm_s(s, ref))
+            out["speed_emm_s"] = df["speed"].apply(lambda s: speed_px_s_to_emm_s(s, ref))
     if "dist_from_poke_px" in df.columns:
         if use_per_row:
             out["dist_from_poke_emm"] = [px_to_emm(px, r) for px, r in zip(df["dist_from_poke_px"], ref)]
