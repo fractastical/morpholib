@@ -1,12 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def transform_points(x, y):
     # Example nonlinear transformation inspired by Thompson: quadratic warp
     # p(x,y) = x^2 + xy + y^2 + x + y; q(x,y) similar (adjust as needed)
     p = x**2 + x*y + y**2 + x + y
     q = x**2 + x*y + y**2 + x + y
     return p, q
+
 
 # Generate a simple 'fish' shape as points (ellipse for body)
 theta = np.linspace(0, 2*np.pi, 100)
