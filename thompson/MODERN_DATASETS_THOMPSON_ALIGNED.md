@@ -77,3 +77,24 @@ If you want a Thompson-modern MVP now:
 2. Add **Dryad 10.5061/dryad.hb824gd4** (stickleback) for fish-based transformation panels.
 
 This gives one growth-centric and one fish-centric dataset, both modern and externally sourced.
+
+---
+
+## Ingestion Quick Start
+
+Use the ingestion script in this folder:
+
+```bash
+python thompson/ingest_dryad_morphometrics.py /path/to/dryad_dataset.zip --dataset-id dryad_14fn1
+```
+
+Or for an already-extracted directory:
+
+```bash
+python thompson/ingest_dryad_morphometrics.py /path/to/extracted_dataset --dataset-id dryad_hb824gd4
+```
+
+Outputs are written to:
+- `thompson/datasets/<dataset-id>/landmarks_long.csv`
+- `thompson/datasets/<dataset-id>/tabular_index.csv`
+- `thompson/datasets/<dataset-id>/ingestion_manifest.json`
