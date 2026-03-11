@@ -98,3 +98,26 @@ Outputs are written to:
 - `thompson/datasets/<dataset-id>/landmarks_long.csv`
 - `thompson/datasets/<dataset-id>/tabular_index.csv`
 - `thompson/datasets/<dataset-id>/ingestion_manifest.json`
+
+Then generate Thompson-style deformation panels:
+
+```bash
+python thompson/generate_tps_transformation_panels.py \
+  thompson/datasets/dryad_14fn1/landmarks_long.csv \
+  --specimen-a SPECIMEN_A --specimen-b SPECIMEN_B \
+  --output thompson/output/SPECIMEN_A_to_SPECIMEN_B_tps_panel.png
+```
+
+Batch mode with a pair table:
+
+```bash
+python thompson/generate_tps_transformation_panels.py \
+  thompson/datasets/dryad_14fn1/landmarks_long.csv \
+  --pair-table thompson/pairs.csv \
+  --output-dir thompson/output/tps_panels
+```
+
+Where `thompson/pairs.csv` has columns:
+- `specimen_a`
+- `specimen_b`
+- optional `label`
