@@ -31,6 +31,101 @@ TAG_RESOLUTION_UNIT = 296
 IMAGE_DESCRIPTION_PRINT_LIMIT = 500
 
 
+def _safe_float(text):
+    """Parse float from text token; return None on failure."""
+    if text is None:
+        return None
+    try:
+        return float(str(text).strip())
+    except ValueError:
+        return None
+
+
+def _parse_scale_from_description(description_str):
+    """
+    Parse ImageJ-style scale lines from ImageDescription / Show Info text.
+
+    Handles patterns such as:
+      - "Resolution: 6.25 pixels per micron"
+      - "Resolution = 6.25 pixels/µm"
+      - "Pixel width: 0.16 µm"
+      - "Voxel size: 0.16x0.16x1.00 µm^3"
+
+    Returns dict:
+      - pixels_per_micron (float|None)
+      - microns_per_pixel (float|None)
+      - voxel_size_um (dict with x,y,z floats|None)
+      - matched_lines (list[str])
+    """
+    out = {
+        "pixels_per_micron": None,
+        "microns_per_pixel": None,
+        "voxel_size_um": None,
+        "matched_lines": [],
+    }
+    if not description_str or not isinstance(description_str, str):
+        return out
+
+    # Normalize micro symbols and separators for regex convenience.
+    desc = description_str.replace("µ", "u").replace("μ", "u")
+    lines = [ln.strip() for ln in desc.splitlines() if ln.strip()]
+
+    # Resolution: <num> pixels per micron
+    re_px_per_um = re.compile(
+        r"(?:resolution|pixels?\s*(?:per|/)\s*(?:micron|um|u?m))[^0-9\-+]*([0-9]*\.?[0-9]+)",
+        re.IGNORECASE,
+    )
+    # Pixel size: <num> um per pixel
+    re_um_per_px = re.compile(
+        r"(?:pixel\s*(?:width|size)|um\s*(?:per|/)\s*pixel|microns?\s*(?:per|/)\s*pixel)[^0-9\-+]*([0-9]*\.?[0-9]+)",
+        re.IGNORECASE,
+    )
+    # Voxel size: axbxc um^3
+    re_voxel = re.compile(
+        r"voxel\s*size[^0-9\-+]*([0-9]*\.?[0-9]+)\s*[x,]\s*([0-9]*\.?[0-9]+)(?:\s*[x,]\s*([0-9]*\.?[0-9]+))?\s*(?:um|micron)",
+        re.IGNORECASE,
+    )
+
+    for line in lines:
+        low = line.lower()
+        if "resolution" in low or "pixel" in low or "voxel" in low or "micron" in low or "um" in low:
+            m1 = re_px_per_um.search(line)
+            if m1:
+                ppm = _safe_float(m1.group(1))
+                if ppm and ppm > 0:
+                    out["pixels_per_micron"] = ppm
+                    out["matched_lines"].append(line)
+
+            m2 = re_um_per_px.search(line)
+            if m2:
+                upp = _safe_float(m2.group(1))
+                if upp and upp > 0:
+                    out["microns_per_pixel"] = upp
+                    out["matched_lines"].append(line)
+
+            m3 = re_voxel.search(line)
+            if m3:
+                vx = _safe_float(m3.group(1))
+                vy = _safe_float(m3.group(2))
+                vz = _safe_float(m3.group(3)) if m3.group(3) else None
+                out["voxel_size_um"] = {"x": vx, "y": vy, "z": vz}
+                out["matched_lines"].append(line)
+
+    # Fill missing one from the other if possible.
+    if out["pixels_per_micron"] is None and out["microns_per_pixel"] is not None and out["microns_per_pixel"] > 0:
+        out["pixels_per_micron"] = 1.0 / out["microns_per_pixel"]
+    if out["microns_per_pixel"] is None and out["pixels_per_micron"] is not None and out["pixels_per_micron"] > 0:
+        out["microns_per_pixel"] = 1.0 / out["pixels_per_micron"]
+
+    # If still missing but voxel size x exists, use that as um/px.
+    if out["microns_per_pixel"] is None and out["voxel_size_um"] and out["voxel_size_um"]["x"]:
+        out["microns_per_pixel"] = out["voxel_size_um"]["x"]
+        if out["microns_per_pixel"] > 0:
+            out["pixels_per_micron"] = 1.0 / out["microns_per_pixel"]
+
+    return out
+
+
 def _tag_value_to_str(value):
     """Convert a tag value to string; decode bytes as UTF-8."""
     if value is None:
@@ -129,6 +224,10 @@ def extract_tiff_metadata(tiff_path, include_all_tags=False):
         "x_resolution": None,
         "y_resolution": None,
         "resolution_unit": None,
+        "pixels_per_micron": None,
+        "microns_per_pixel": None,
+        "voxel_size_um": None,
+        "scale_lines": [],
         "n_pages": 0,
     }
     if include_all_tags:
@@ -155,6 +254,11 @@ def extract_tiff_metadata(tiff_path, include_all_tags=False):
                     result["image_description"] = value_str or None
                     zoom_val, _ = _parse_zoom_from_description(value_str)
                     result["zoom"] = zoom_val
+                    scale_info = _parse_scale_from_description(value_str)
+                    result["pixels_per_micron"] = scale_info.get("pixels_per_micron")
+                    result["microns_per_pixel"] = scale_info.get("microns_per_pixel")
+                    result["voxel_size_um"] = scale_info.get("voxel_size_um")
+                    result["scale_lines"] = scale_info.get("matched_lines", [])
 
                 elif name == "XResolution" or tag.code == TAG_X_RESOLUTION:
                     if isinstance(raw, (list, tuple)) and len(raw) >= 1:
@@ -195,6 +299,12 @@ def extract_tiff_metadata(tiff_path, include_all_tags=False):
             if result["zoom"] is None and result["image_description"]:
                 zoom_val, _ = _parse_zoom_from_description(result["image_description"])
                 result["zoom"] = zoom_val
+            if result["pixels_per_micron"] is None and result["image_description"]:
+                scale_info = _parse_scale_from_description(result["image_description"])
+                result["pixels_per_micron"] = scale_info.get("pixels_per_micron")
+                result["microns_per_pixel"] = scale_info.get("microns_per_pixel")
+                result["voxel_size_um"] = scale_info.get("voxel_size_um")
+                result["scale_lines"] = scale_info.get("matched_lines", [])
 
     except Exception as e:
         result["error"] = str(e)
@@ -215,6 +325,10 @@ def metadata_to_export_dict(meta):
         "x_resolution": meta.get("x_resolution"),
         "y_resolution": meta.get("y_resolution"),
         "resolution_unit": meta.get("resolution_unit"),
+        "pixels_per_micron": meta.get("pixels_per_micron"),
+        "microns_per_pixel": meta.get("microns_per_pixel"),
+        "voxel_size_um": meta.get("voxel_size_um"),
+        "scale_lines": meta.get("scale_lines", []),
         "n_pages": meta.get("n_pages", 0),
     }
     if "error" in meta:
@@ -262,6 +376,19 @@ def _print_result(meta, verbose=False, description_limit=IMAGE_DESCRIPTION_PRINT
         print(f"  XResolution: {xr}")
         print(f"  YResolution: {yr}")
         print(f"  ResolutionUnit: {ru}")
+
+    ppm = meta.get("pixels_per_micron")
+    upp = meta.get("microns_per_pixel")
+    vox = meta.get("voxel_size_um")
+    if ppm is not None or upp is not None or vox is not None:
+        print(f"  Pixels per micron: {ppm}")
+        print(f"  Microns per pixel: {upp}")
+        print(f"  Voxel size (um): {vox}")
+        lines = meta.get("scale_lines") or []
+        if lines:
+            print("  Matched scale lines:")
+            for ln in lines:
+                print(f"    {ln}")
 
     if verbose and "all_tags" in meta:
         print("\n  All tags:")
