@@ -28,6 +28,11 @@ from scipy.ndimage import gaussian_filter
 import warnings
 warnings.filterwarnings('ignore')
 
+NEON_BLACK_COLORS = [
+    '#000000', '#040b2d', '#1e2f97', '#00b6ff',
+    '#00e676', '#c6ff00', '#ffd54f', '#ff7043'
+]
+
 
 def create_flow_field_painting(df_tracks, output_path, style='aurora'):
     """
@@ -220,6 +225,113 @@ def create_3d_time_sculpture(df_tracks, output_path, time_window=300):
     plt.close()
 
 
+def create_dual_embryo_neon(df_tracks, output_path, max_points=120000):
+    """
+    Create a side-by-side neon visualization with embryo A and B panels.
+    Uses weighted density maps (speed-weighted occupancy) on black background.
+    """
+    print("Creating dual embryo neon panel...")
+
+    required_cols = {'x', 'y', 'speed', 'embryo_id'}
+    if not required_cols.issubset(df_tracks.columns):
+        print(f"Missing required columns: {required_cols - set(df_tracks.columns)}")
+        return
+
+    valid = df_tracks[
+        df_tracks['x'].notna() &
+        df_tracks['y'].notna() &
+        df_tracks['speed'].notna() &
+        (df_tracks['speed'] > 0) &
+        df_tracks['embryo_id'].notna()
+    ].copy()
+
+    if len(valid) == 0:
+        print("No valid embryo speed data found")
+        return
+
+    # Keep performance stable on very large datasets.
+    if len(valid) > max_points:
+        valid = valid.sample(n=max_points, random_state=42)
+
+    embryos = ['A', 'B']
+    have = [e for e in embryos if (valid['embryo_id'] == e).any()]
+    if len(have) < 2:
+        print("Need both embryo_id A and B for side-by-side rendering")
+        return
+
+    cmap = LinearSegmentedColormap.from_list('neon_black_embryo', NEON_BLACK_COLORS, N=256)
+    fig, axes = plt.subplots(1, 2, figsize=(18, 8), facecolor='black')
+
+    for ax, emb in zip(axes, embryos):
+        ax.set_facecolor('black')
+        sub = valid[valid['embryo_id'] == emb].copy()
+
+        # Bounds with padding
+        x_min, x_max = sub['x'].min(), sub['x'].max()
+        y_min, y_max = sub['y'].min(), sub['y'].max()
+        x_pad = (x_max - x_min) * 0.08 + 1e-6
+        y_pad = (y_max - y_min) * 0.08 + 1e-6
+        x_min, x_max = x_min - x_pad, x_max + x_pad
+        y_min, y_max = y_min - y_pad, y_max + y_pad
+
+        # Speed-weighted occupancy field
+        bins = 320
+        h_sum, xedges, yedges = np.histogram2d(
+            sub['x'].values,
+            sub['y'].values,
+            bins=bins,
+            range=[[x_min, x_max], [y_min, y_max]],
+            weights=sub['speed'].values
+        )
+        h_cnt, _, _ = np.histogram2d(
+            sub['x'].values,
+            sub['y'].values,
+            bins=bins,
+            range=[[x_min, x_max], [y_min, y_max]]
+        )
+        speed_field = h_sum / (h_cnt + 1e-8)
+        speed_field = gaussian_filter(speed_field, sigma=2.0)
+
+        # Robust normalization to keep highlights without blowing out.
+        nonzero = speed_field[speed_field > 0]
+        if nonzero.size > 0:
+            lo = np.percentile(nonzero, 5)
+            hi = np.percentile(nonzero, 99)
+            norm = np.clip((speed_field - lo) / (hi - lo + 1e-10), 0, 1)
+        else:
+            norm = speed_field
+
+        ax.imshow(
+            norm.T,
+            extent=[x_min, x_max, y_min, y_max],
+            origin='lower',
+            cmap=cmap,
+            interpolation='bilinear',
+            alpha=0.95
+        )
+
+        # Add bright spark accents at high speeds.
+        high = sub[sub['speed'] >= sub['speed'].quantile(0.90)]
+        if len(high) > 0:
+            ax.scatter(
+                high['x'], high['y'],
+                s=6,
+                c='#fff59d',
+                alpha=0.30,
+                edgecolors='none'
+            )
+
+        ax.set_title(f'Embryo {emb}', color='white', fontsize=16, fontweight='bold')
+        ax.set_aspect('equal')
+        ax.axis('off')
+
+    fig.suptitle('Dual Embryo Wave Morphology (Neon Black)', color='white', fontsize=18, fontweight='bold')
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(output_path, dpi=320, bbox_inches='tight', facecolor='black', edgecolor='none')
+    print(f"✓ Saved to {output_path}")
+    plt.close()
+
+
 def create_speed_gradient_flow(df_tracks, output_path):
     """
     Create a flowing gradient visualization based on speed.
@@ -378,7 +490,7 @@ def main():
     parser.add_argument('--output-dir', default='analysis_results/artistic',
                        help='Output directory for visualizations')
     parser.add_argument('--visualizations', nargs='+',
-                       choices=['all', 'flow', '3d', 'gradient', 'particles'],
+                       choices=['all', 'flow', '3d', 'gradient', 'particles', 'dual'],
                        default=['all'],
                        help='Which visualizations to create')
     parser.add_argument('--style', choices=['aurora', 'fire', 'ocean', 'neon'],
@@ -401,7 +513,7 @@ def main():
     
     visualizations = args.visualizations
     if 'all' in visualizations:
-        visualizations = ['flow', '3d', 'gradient', 'particles']
+        visualizations = ['flow', '3d', 'gradient', 'particles', 'dual']
     
     print(f"\nCreating {len(visualizations)} visualization(s)...\n")
     
@@ -416,6 +528,9 @@ def main():
     
     if 'particles' in visualizations:
         create_particle_trail_animation(df_tracks, output_dir / 'particle_trails.gif')
+
+    if 'dual' in visualizations:
+        create_dual_embryo_neon(df_tracks, output_dir / 'dual_embryo_neon.png')
     
     print("\n✓ All visualizations complete!")
 
