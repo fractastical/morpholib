@@ -1,6 +1,7 @@
 import numpy as np  # Library for numerical operations and arrays
 import matplotlib.pyplot as plt  # Library for creating visualizations
 from matplotlib.animation import FuncAnimation  # Module for creating animations in Matplotlib
+from matplotlib.colors import LinearSegmentedColormap, PowerNorm
 
 # Grid size and parameters
 N = 200  # Grid dimensions (N x N); larger N gives finer resolution but is computationally intensive
@@ -41,12 +42,36 @@ def update(frame):
     return [im]  # Return the updated artist for blitting (efficient animation)
 
 # Set up the figure and axis for plotting
-fig, ax = plt.subplots()  # Create a figure and single subplot
-# Initial image display of V using viridis colormap for visual appeal
-im = ax.imshow(V, cmap='viridis', interpolation='nearest')  # 'nearest' for pixelated look, or 'bilinear' for smoother
+fig, ax = plt.subplots(facecolor='black')  # Create a figure with a black background
+ax.set_facecolor('black')
+
+# Custom black-first colormap tuned to a neon bioelectric palette
+# (deep blue base with cyan/green/yellow/orange highlights).
+black_variation = LinearSegmentedColormap.from_list(
+    "black_neon_bio",
+    [
+        (0.00, "#000000"),  # black background
+        (0.10, "#040b2d"),  # deep navy
+        (0.25, "#1e2f97"),  # electric blue
+        (0.42, "#00b6ff"),  # cyan
+        (0.58, "#00e676"),  # neon green
+        (0.74, "#c6ff00"),  # yellow-green
+        (0.88, "#ffd54f"),  # warm yellow
+        (1.00, "#ff7043"),  # orange-red highlights
+    ],
+)
+
+# PowerNorm brightens low-mid values to reveal more subtle structures.
+im = ax.imshow(
+    V,
+    cmap=black_variation,
+    norm=PowerNorm(gamma=0.75, vmin=0.0, vmax=0.65),
+    interpolation='nearest',
+)
+ax.set_axis_off()
 # Create animation: calls update for each frame, total frames = steps//10 to match sub-steps
 ani = FuncAnimation(fig, update, frames=steps//10, interval=50, blit=True)  # interval=50ms between frames; blit optimizes redraw
-plt.title('Turing Pattern Simulation (Gray-Scott Model)')  # Title for the plot
-ani.save('turing_patterns.gif', writer='pillow')  # Saves the animation as GIF
+plt.title('Turing Pattern Simulation (Gray-Scott Model)', color='white')  # Title for the plot
+ani.save('turing_patterns_black_neon.gif', writer='pillow')  # Saves the neon variant as GIF
 # plt.show()  # Optional: Still displays it
 
