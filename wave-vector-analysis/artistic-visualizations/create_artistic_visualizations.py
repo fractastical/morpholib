@@ -232,7 +232,7 @@ def create_dual_embryo_neon(df_tracks, output_path, max_points=120000):
     """
     print("Creating dual embryo neon panel...")
 
-    required_cols = {'x', 'y', 'speed', 'embryo_id'}
+    required_cols = {'x', 'y', 'speed', 'vx', 'vy', 'embryo_id'}
     if not required_cols.issubset(df_tracks.columns):
         print(f"Missing required columns: {required_cols - set(df_tracks.columns)}")
         return
@@ -319,6 +319,67 @@ def create_dual_embryo_neon(df_tracks, output_path, max_points=120000):
                 c='#fff59d',
                 alpha=0.30,
                 edgecolors='none'
+            )
+
+        # Overlay smoothed movement vectors so directionality is explicit.
+        # Keep only top-significance vectors; encode strength by length + color.
+        vec_res = 28
+        xv = np.linspace(x_min, x_max, vec_res)
+        yv = np.linspace(y_min, y_max, vec_res)
+        xgv, ygv = np.meshgrid(xv, yv)
+
+        vx_grid = griddata(
+            (sub['x'].values, sub['y'].values),
+            sub['vx'].values,
+            (xgv, ygv),
+            method='linear',
+            fill_value=0.0
+        )
+        vy_grid = griddata(
+            (sub['x'].values, sub['y'].values),
+            sub['vy'].values,
+            (xgv, ygv),
+            method='linear',
+            fill_value=0.0
+        )
+        vx_grid = gaussian_filter(vx_grid, sigma=1.0)
+        vy_grid = gaussian_filter(vy_grid, sigma=1.0)
+        mag = np.sqrt(vx_grid**2 + vy_grid**2)
+
+        # Keep only stronger flow to improve readability.
+        threshold = np.percentile(mag[mag > 0], 82) if np.any(mag > 0) else np.inf
+        mask = mag > threshold
+        if np.any(mask):
+            # Cap number of vectors so the field stays subtle.
+            flat_idx = np.flatnonzero(mask)
+            max_vectors = 130
+            if flat_idx.size > max_vectors:
+                top = np.argpartition(mag.ravel()[flat_idx], -max_vectors)[-max_vectors:]
+                keep = flat_idx[top]
+                limited_mask = np.zeros(mask.size, dtype=bool)
+                limited_mask[keep] = True
+                mask = limited_mask.reshape(mask.shape)
+
+            span = max((x_max - x_min), (y_max - y_min))
+            base_len = span * 0.010
+            vxn = np.zeros_like(vx_grid)
+            vyn = np.zeros_like(vy_grid)
+            mag_sel = mag[mask]
+            mag_norm = (mag_sel - mag_sel.min()) / (mag_sel.max() - mag_sel.min() + 1e-10)
+            # Variable arrow length: subtle for moderate flow, longer for strong flow.
+            len_scale = 0.35 + 0.95 * mag_norm
+            vxn[mask] = (vx_grid[mask] / (mag_sel + 1e-8)) * base_len * len_scale
+            vyn[mask] = (vy_grid[mask] / (mag_sel + 1e-8)) * base_len * len_scale
+
+            # Color-code by magnitude, with low alpha overall for subtle look.
+            arrow_colors = plt.cm.turbo(mag_norm)
+            arrow_colors[:, 3] = 0.10 + 0.34 * mag_norm
+
+            ax.quiver(
+                xgv[mask], ygv[mask], vxn[mask], vyn[mask],
+                angles='xy', scale_units='xy', scale=1,
+                color=arrow_colors, width=0.0018,
+                headwidth=2.8, headlength=3.6, headaxislength=3.0
             )
 
         ax.set_title(f'Embryo {emb}', color='white', fontsize=16, fontweight='bold')
