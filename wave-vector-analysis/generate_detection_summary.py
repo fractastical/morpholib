@@ -2383,6 +2383,44 @@ def find_tiff_file(folder, video, base_path=None):
     return None
 
 
+def _extract_folder_id_from_tiff_path(tiff_path_obj):
+    """Extract numeric folder id from TIFF path/name when possible."""
+    import re
+    parent_name = tiff_path_obj.parent.name
+    if parent_name.isdigit():
+        return parent_name
+    # fallback for names like folder_12_B_-_Substack...
+    m = re.search(r'folder_(\d+)_', tiff_path_obj.stem, re.IGNORECASE)
+    if m:
+        return m.group(1)
+    return None
+
+
+def _parse_zoom_from_dirname(dirname):
+    """Parse zoom from names like '12 - Zoom = 5.40x'."""
+    import re
+    m = re.search(r'zoom\s*=\s*([0-9]*\.?[0-9]+)\s*x', str(dirname), re.IGNORECASE)
+    if not m:
+        return None
+    try:
+        return float(m.group(1))
+    except ValueError:
+        return None
+
+
+def _normalize_video_name_for_mask(name):
+    """Normalize a TIFF stem/video name for fuzzy matching against mask filenames."""
+    import re
+    s = str(name)
+    s = re.sub(r'^folder_\d+_', '', s)  # remove parser prefix if present
+    s = s.replace('__', ' ')
+    s = s.replace('_', ' ')
+    s = re.sub(r'\s+', ' ', s).strip()
+    # Handle ranges like trailing '1-301'
+    s = re.sub(r'\s+(\d+-\d+)\s*$', r' (\1)', s)
+    return s.strip()
+
+
 def find_mask_file(tiff_path, mask_base_path=None):
     """
     Find the corresponding mask PNG file for a TIFF file.
@@ -2396,79 +2434,83 @@ def find_mask_file(tiff_path, mask_base_path=None):
     """
     if tiff_path is None:
         return None
-    
-    tiff_path_obj = Path(tiff_path)
-    tiff_stem = tiff_path_obj.stem  # e.g., "folder_1_C_-_Substack__1-301_" or "B - Substack (1-301)"
-    
-    # Try default location first
-    if mask_base_path is None:
-        mask_base_path = Path(__file__).parent / "embryo_masks_final"
-    else:
-        mask_base_path = Path(mask_base_path)
-    
-    # Look for mask file: {tiff_stem}_mask_frame0.png
-    mask_path = mask_base_path / f"{tiff_stem}_mask_frame0.png"
-    
-    if mask_path.exists():
-        return mask_path
-    
-    # Try to extract video name from TIFF path (handle "folder_X_" prefix)
-    # Pattern: "folder_X_VideoName.tif" -> "VideoName"
+
     import re
-    video_name_match = re.search(r'(?:folder_\d+_)?(.+)', tiff_stem)
-    if video_name_match:
-        video_name = video_name_match.group(1)
-        # Normalize: "C_-_Substack__1-301_" -> "C - Substack (1-301)"
-        # Step 1: Replace double underscores with single space
-        normalized = video_name.replace('__', ' ')
-        # Step 2: Replace single underscores with spaces
-        normalized = normalized.replace('_', ' ')
-        # Step 3: Clean up multiple spaces
-        normalized = re.sub(r'\s+', ' ', normalized)
-        # Step 4: Handle number ranges at end: "1-301" -> "(1-301)"
-        normalized = re.sub(r'\s+(\d+-\d+)\s*$', r' (\1)', normalized)
-        # Step 5: Remove trailing spaces/underscores
-        normalized = normalized.strip()
-        
-        # Try normalized video name
-        mask_path_normalized = mask_base_path / f"{normalized}_mask_frame0.png"
-        if mask_path_normalized.exists():
-            return mask_path_normalized
-        
-        # Also try with original video_name (in case it matches exactly)
-        mask_path_original = mask_base_path / f"{video_name}_mask_frame0.png"
-        if mask_path_original.exists():
-            return mask_path_original
-    
-    # Try alternative naming (without extension variations)
-    alternatives = [
-        mask_base_path / f"{tiff_stem}_mask_frame0.png",
-        mask_base_path / f"{tiff_path_obj.name.replace('.tif', '').replace('.tiff', '')}_mask_frame0.png",
-    ]
-    
-    for alt_path in alternatives:
-        if alt_path.exists():
-            return alt_path
-    
-    # Last resort: search all masks and try fuzzy matching
-    if mask_base_path.exists():
-        all_masks = list(mask_base_path.glob("*_mask_frame0.png"))
-        # Extract base name from TIFF (remove folder prefix)
-        tiff_base = re.sub(r'^folder_\d+_', '', tiff_stem)
-        # Normalize TIFF base name
-        tiff_normalized = tiff_base.replace('__', ' - ').replace('_', ' ')
-        tiff_normalized = re.sub(r'\s+(\d+-\d+)\s*$', r' (\1)', tiff_normalized).strip()
-        
-        # Try to find a mask whose base name matches
+    tiff_path_obj = Path(tiff_path)
+    tiff_stem = tiff_path_obj.stem
+    tiff_normalized = _normalize_video_name_for_mask(tiff_stem)
+    folder_id = _extract_folder_id_from_tiff_path(tiff_path_obj)
+
+    # Candidate base paths:
+    # - explicit mask_base_path if passed
+    # - default PNG masks folder
+    # - new frog processed NPZ dataset folder
+    if mask_base_path is not None:
+        base_paths = [Path(mask_base_path)]
+    else:
+        base_paths = [
+            Path(__file__).resolve().parents[1] / "datasets" / "frog_embryo_data_processed",
+            Path(__file__).parent / "embryo_masks_final",
+        ]
+
+    # Candidate basename variants (before suffixes)
+    candidate_bases = {
+        tiff_stem,
+        _normalize_video_name_for_mask(tiff_path_obj.name.replace('.tif', '').replace('.tiff', '')),
+        re.sub(r'^folder_\d+_', '', tiff_stem),
+        tiff_normalized,
+    }
+    candidate_bases = {b.strip() for b in candidate_bases if b and b.strip()}
+
+    for base in base_paths:
+        if not base.exists():
+            continue
+
+        # Gather search roots:
+        # - base itself
+        # - if base contains zoom-split dirs, narrow by folder id first
+        roots = [base]
+        if folder_id:
+            zoom_dirs = [d for d in base.iterdir() if d.is_dir() and d.name.strip().startswith(f"{folder_id} ")]
+            if zoom_dirs:
+                roots = zoom_dirs + roots
+
+        # 1) Prefer NPZ masks first (higher-quality external masks)
+        for root in roots:
+            for b in candidate_bases:
+                npz_candidates = [
+                    root / f"{b}_mask.npz",
+                    root / f"{b}.npz",
+                ]
+                for p in npz_candidates:
+                    if p.exists():
+                        return p
+
+        # 2) Fallback to PNG masks
+        for root in roots:
+            for b in candidate_bases:
+                png_candidates = [
+                    root / f"{b}_mask_frame0.png",
+                    root / f"{b}.png",
+                ]
+                for p in png_candidates:
+                    if p.exists():
+                        return p
+
+        # 3) Fuzzy fallback over available masks in this base
+        all_masks = list(base.rglob("*_mask_frame0.png")) + list(base.rglob("*_mask.npz"))
+        tiff_compact = tiff_normalized.lower().replace(" ", "")
         for mask_file in all_masks:
-            mask_base_name = mask_file.stem.replace('_mask_frame0', '')
-            # Compare normalized versions
-            if tiff_normalized.lower() == mask_base_name.lower():
+            if mask_file.suffix.lower() == ".npz":
+                mask_base_name = mask_file.stem.replace('_mask', '')
+            else:
+                mask_base_name = mask_file.stem.replace('_mask_frame0', '')
+            mask_norm = _normalize_video_name_for_mask(mask_base_name).lower()
+            if tiff_normalized.lower() == mask_norm:
                 return mask_file
-            # Also try partial matching (in case of minor differences)
-            if tiff_normalized.lower().replace(' ', '') == mask_base_name.lower().replace(' ', ''):
+            if tiff_compact == mask_norm.replace(" ", ""):
                 return mask_file
-    
+
     return None
 
 
@@ -3756,7 +3798,25 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
     if mask_path and mask_path.exists() and tiff_path and tiff_path.exists():
         try:
             import cv2
-            mask_img = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
+            # Support both legacy PNG masks and new NPZ masks.
+            if mask_path.suffix.lower() == ".npz":
+                with np.load(mask_path, allow_pickle=False) as npz_data:
+                    if "mask" in npz_data:
+                        mask_img = npz_data["mask"]
+                    else:
+                        # Fallback: first 2D array key in NPZ
+                        mask_img = None
+                        for key in npz_data.files:
+                            arr = npz_data[key]
+                            if isinstance(arr, np.ndarray) and arr.ndim == 2:
+                                mask_img = arr
+                                break
+                if mask_img is not None:
+                    if mask_img.dtype != np.uint8:
+                        # Convert boolean/float masks to 0-255 uint8.
+                        mask_img = (mask_img > 0).astype(np.uint8) * 255
+            else:
+                mask_img = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
             if mask_img is not None:
                 mask_h, mask_w = mask_img.shape
                 
@@ -3802,7 +3862,9 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                                 ax.add_patch(poly)
                         
                         mask_coverage = (np.sum(mask_img > 0) / (tiff_w * tiff_h)) * 100
-                        print(f"    ✓ Overlaid mask: {mask_path.name} ({len(contours_mask)} contours, coverage: {mask_coverage:.1f}%, full image: {tiff_w}x{tiff_h})")
+                        zoom_hint = _parse_zoom_from_dirname(mask_path.parent.name)
+                        zoom_text = f", zoom: {zoom_hint:.2f}x" if zoom_hint is not None else ""
+                        print(f"    ✓ Overlaid mask: {mask_path.name} ({len(contours_mask)} contours, coverage: {mask_coverage:.1f}%, full image: {tiff_w}x{tiff_h}{zoom_text})")
                     else:
                         print(f"    ⚠ No contours found in mask: {mask_path.name}")
         except Exception as e:
@@ -3815,6 +3877,9 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
     title_text = f'Folder {folder} - {video}\nEmbryo Detection & Poke Location'
     if mask_path and mask_path.exists():
         title_text += ' [Mask Overlay]'
+        zoom_hint = _parse_zoom_from_dirname(mask_path.parent.name)
+        if zoom_hint is not None:
+            title_text += f' [Zoom {zoom_hint:.2f}x]'
     ax.set_title(title_text, color='white', fontsize=14, fontweight='bold')
     ax.tick_params(colors='white')
     ax.grid(True, alpha=0.3, color='gray')
