@@ -2576,6 +2576,78 @@ def _overlay_mask_contours(ax, mask_img, tiff_h, tiff_w, facecolor, edgecolor, a
     return len(contours_mask), coverage, resized_from
 
 
+def _infer_um_per_px_from_tiff(tiff_path):
+    """
+    Infer microns-per-pixel from TIFF metadata/ImageDescription.
+    Returns (um_per_px, source_label).
+    """
+    if tiff_path is None or not Path(tiff_path).exists():
+        return None, None
+    try:
+        with tiff.TiffFile(tiff_path) as tif:
+            tags = tif.pages[0].tags
+            desc = None
+            if "ImageDescription" in tags:
+                desc = str(tags["ImageDescription"].value)
+    except Exception:
+        return None, None
+
+    if not desc:
+        return None, None
+
+    # Resolution: 6.25 pixels per micron
+    m = re.search(r"resolution\s*:\s*([0-9]*\.?[0-9]+)\s*pixels?\s*per\s*micron", desc, re.IGNORECASE)
+    if m:
+        ppm = float(m.group(1))
+        if ppm > 0:
+            return (1.0 / ppm), "image_description:resolution"
+
+    # Pixel width: 0.16 um
+    m = re.search(r"pixel\s*width\s*:\s*([0-9]*\.?[0-9]+)\s*(?:um|µm)", desc, re.IGNORECASE)
+    if m:
+        upp = float(m.group(1))
+        if upp > 0:
+            return upp, "image_description:pixel_width"
+
+    # Voxel size: 0.16x0.16x1.00 um^3  (use x component)
+    m = re.search(r"voxel\s*size\s*:\s*([0-9]*\.?[0-9]+)\s*x\s*([0-9]*\.?[0-9]+)\s*x\s*([0-9]*\.?[0-9]+)", desc, re.IGNORECASE)
+    if m:
+        upp = float(m.group(1))
+        if upp > 0:
+            return upp, "image_description:voxel_size"
+
+    return None, None
+
+
+def _transform_excel_point_to_plot(point_xy, tiff_w, tiff_h, source_w=None, source_h=None, reference_xy=None):
+    """
+    Transform Excel point into plot coordinates:
+    - scale from source dimensions (if provided) to TIFF dimensions
+    - choose y-flip or no-flip based on proximity to reference point when available
+    """
+    if point_xy is None:
+        return None
+
+    x, y = float(point_xy[0]), float(point_xy[1])
+    if source_w and source_h and source_w > 0 and source_h > 0:
+        x = x * (float(tiff_w) / float(source_w))
+        y = y * (float(tiff_h) / float(source_h))
+
+    y_no_flip = y
+    y_flip = float(tiff_h) - y
+
+    if reference_xy is not None:
+        rx, ry = float(reference_xy[0]), float(reference_xy[1])
+        d_no = (x - rx) ** 2 + (y_no_flip - ry) ** 2
+        d_fl = (x - rx) ** 2 + (y_flip - ry) ** 2
+        y_out = y_flip if d_fl < d_no else y_no_flip
+    else:
+        # Most annotation tools record y from top-left image origin.
+        y_out = y_flip
+
+    return (x, y_out)
+
+
 def load_excel_coordinates(excel_path):
     """
     Load head/tail and poke coordinates from Excel file.
@@ -3822,21 +3894,46 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                 matched_video = excel_video
                 break
         
-        # If no exact match, try partial matching (e.g., "B-substack" matches "B - Substack (1-301).tif")
+        # If no exact match, try fuzzy matching, but avoid arbitrary first-entry fallback.
         if not matched_video and excel_folder_data:
-            # Get the first video in the folder (most sheets have one video)
-            matched_video = list(excel_folder_data.keys())[0]
-            print(f"    → Using Excel video '{matched_video}' for folder {folder} (requested: '{video}')")
+            import difflib
+            best_key = None
+            best_score = 0.0
+            for excel_video in excel_folder_data.keys():
+                score = difflib.SequenceMatcher(None, video_norm, normalize_vid_name(excel_video)).ratio()
+                if score > best_score:
+                    best_score = score
+                    best_key = excel_video
+            if best_key is not None and best_score >= 0.60:
+                matched_video = best_key
+                print(f"    → Using Excel video '{matched_video}' for folder {folder} (fuzzy score: {best_score:.2f}, requested: '{video}')")
+            else:
+                print(f"    → No confident Excel video match for folder {folder} (requested: '{video}', best score: {best_score:.2f}); skipping Excel overlay")
         
         if matched_video:
             excel_data = excel_folder_data[matched_video]
             
+            # Excel coordinates may be in a different pixel frame (often old mask dimensions)
+            # and a top-left origin. Transform to current plot coordinates when possible.
+            source_w = source_h = None
+            if legacy_mask_path and legacy_mask_path.exists():
+                legacy_mask_img = _load_mask_image(legacy_mask_path)
+                if legacy_mask_img is not None:
+                    source_h, source_w = legacy_mask_img.shape[:2]
+
             # Draw Excel poke location (cyan X)
             if 'poke' in excel_data:
                 excel_poke = excel_data['poke']
-                ax.plot(excel_poke[0], excel_poke[1], 'cX', markersize=18, markeredgewidth=3,
+                excel_poke_plot = excel_poke
+                if tiff_width and tiff_height:
+                    excel_poke_plot = _transform_excel_point_to_plot(
+                        excel_poke, tiff_width, tiff_height,
+                        source_w=source_w, source_h=source_h,
+                        reference_xy=poke_pos
+                    )
+                ax.plot(excel_poke_plot[0], excel_poke_plot[1], 'cX', markersize=18, markeredgewidth=3,
                        markeredgecolor='cyan', label='Poke Location (Excel)', zorder=12)
-                ax.annotate('POKE (Excel)', excel_poke, xytext=(0, -30), 
+                ax.annotate('POKE (Excel)', excel_poke_plot, xytext=(0, -30), 
                            textcoords='offset points', color='cyan', fontsize=11, 
                            fontweight='bold', ha='center',
                            bbox=dict(boxstyle='round', facecolor='black', alpha=0.7, edgecolor='cyan', linewidth=2), zorder=12)
@@ -3849,10 +3946,15 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                     # Excel head (cyan)
                     if 'head' in emb_data:
                         excel_head = emb_data['head']
-                        ax.plot(excel_head[0], excel_head[1], 'o', markersize=12, 
+                        excel_head_plot = excel_head
+                        if tiff_width and tiff_height:
+                            excel_head_plot = _transform_excel_point_to_plot(
+                                excel_head, tiff_width, tiff_height, source_w=source_w, source_h=source_h
+                            )
+                        ax.plot(excel_head_plot[0], excel_head_plot[1], 'o', markersize=12, 
                                color='cyan', markeredgecolor='white', markeredgewidth=2,
                                label=f'Excel Head {embryo_id}' if embryo_id == 'A' else '', zorder=13)
-                        ax.annotate(f'{embryo_id}H (Excel)', excel_head, xytext=(10, 10), 
+                        ax.annotate(f'{embryo_id}H (Excel)', excel_head_plot, xytext=(10, 10), 
                                    textcoords='offset points', color='cyan', fontsize=10, 
                                    fontweight='bold', ha='left',
                                    bbox=dict(boxstyle='round', facecolor='black', alpha=0.7, edgecolor='cyan', linewidth=1.5), zorder=13)
@@ -3860,15 +3962,25 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                     # Excel tail (orange)
                     if 'tail' in emb_data:
                         excel_tail = emb_data['tail']
-                        ax.plot(excel_tail[0], excel_tail[1], 'o', markersize=12, 
+                        excel_tail_plot = excel_tail
+                        if tiff_width and tiff_height:
+                            excel_tail_plot = _transform_excel_point_to_plot(
+                                excel_tail, tiff_width, tiff_height, source_w=source_w, source_h=source_h
+                            )
+                        ax.plot(excel_tail_plot[0], excel_tail_plot[1], 'o', markersize=12, 
                                color='orange', markeredgecolor='white', markeredgewidth=2,
                                label=f'Excel Tail {embryo_id}' if embryo_id == 'A' else '', zorder=13)
-                        ax.annotate(f'{embryo_id}T (Excel)', excel_tail, xytext=(10, 10), 
+                        ax.annotate(f'{embryo_id}T (Excel)', excel_tail_plot, xytext=(10, 10), 
                                    textcoords='offset points', color='orange', fontsize=10, 
                                    fontweight='bold', ha='left',
                                    bbox=dict(boxstyle='round', facecolor='black', alpha=0.7, edgecolor='orange', linewidth=1.5), zorder=13)
 
-    # Add speed labels for PDF review (reported in px/s).
+    # Add speed labels for PDF review (prefer physical units, fallback to px/s).
+    um_per_px = None
+    um_per_px_source = None
+    if tiff_path and tiff_path.exists():
+        um_per_px, um_per_px_source = _infer_um_per_px_from_tiff(tiff_path)
+
     speed_lines = []
     if 'speed' in df_file.columns:
         for emb in ['A', 'B']:
@@ -3878,10 +3990,24 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                 (df_file['speed'] >= 0)
             ]['speed']
             if len(emb_speed) > 0:
-                speed_lines.append(f"{emb}: med {emb_speed.median():.2f} px/s, mean {emb_speed.mean():.2f}")
+                med_px_s = float(emb_speed.median())
+                mean_px_s = float(emb_speed.mean())
+                if um_per_px is not None and um_per_px > 0:
+                    med_um_s = med_px_s * um_per_px
+                    mean_um_s = mean_px_s * um_per_px
+                    speed_lines.append(
+                        f"{emb}: med {med_um_s:.2f} um/s ({med_px_s:.2f} px/s), "
+                        f"mean {mean_um_s:.2f} um/s ({mean_px_s:.2f} px/s)"
+                    )
+                else:
+                    speed_lines.append(f"{emb}: med {med_px_s:.2f} px/s, mean {mean_px_s:.2f} px/s")
             else:
                 speed_lines.append(f"{emb}: no speed data")
     if speed_lines:
+        if um_per_px is not None and um_per_px > 0:
+            speed_lines.append(f"scale: {um_per_px:.5f} um/px ({um_per_px_source})")
+        else:
+            speed_lines.append("scale: unavailable (showing px/s)")
         ax.text(
             0.012, 0.988,
             "Speeds\n" + "\n".join(speed_lines),
@@ -4159,7 +4285,143 @@ TOP 5 REGIONS BY PIXEL COUNT:
     plt.close()
 
 
-def create_pdf_from_images(image_paths, output_pdf_path, images_per_page=1, summary_data=None, warning_log_path=None, df_tracks=None):
+def build_data_sources_assumptions(summary_data, tiff_base_path=None, mask_base_path=None, excel_coords=None):
+    """Build a run-level summary of data sources and unit/zoom assumptions."""
+    old_mask_base = Path(mask_base_path) if mask_base_path else (Path(__file__).parent / "embryo_masks_final")
+    new_mask_base = Path(__file__).resolve().parents[1] / "datasets" / "frog_embryo_data_processed"
+
+    total_videos = len(summary_data) if summary_data else 0
+    tiff_found = 0
+    old_mask_found = 0
+    new_mask_found = 0
+    both_masks_found = 0
+    scale_from_tiff = 0
+    zoom_from_new_mask = 0
+
+    if summary_data:
+        for row in summary_data:
+            folder = str(row.get('folder', ''))
+            video = str(row.get('video', ''))
+            tiff_path = find_tiff_file(folder, video, tiff_base_path)
+            if tiff_path and tiff_path.exists():
+                tiff_found += 1
+                um_per_px, _ = _infer_um_per_px_from_tiff(tiff_path)
+                if um_per_px is not None and um_per_px > 0:
+                    scale_from_tiff += 1
+
+                old_mask = find_mask_file(tiff_path, old_mask_base)
+                new_mask = find_mask_file(tiff_path, new_mask_base)
+                has_old = bool(old_mask and old_mask.exists())
+                has_new = bool(new_mask and new_mask.exists())
+                if has_old:
+                    old_mask_found += 1
+                if has_new:
+                    new_mask_found += 1
+                    z = _parse_zoom_from_dirname(new_mask.parent.name)
+                    if z is not None:
+                        zoom_from_new_mask += 1
+                if has_old and has_new:
+                    both_masks_found += 1
+
+    assumptions = [
+        "Coordinates are rendered in TIFF pixel space with matplotlib origin at bottom-left.",
+        "Legacy PNG masks are treated as OLD masks; NPZ masks from frog dataset are treated as NEW masks.",
+        "If mask dimensions differ from TIFF dimensions, masks are resized with nearest-neighbor interpolation.",
+        "Speed labels prefer um/s when TIFF ImageDescription contains calibration (Resolution/Pixel width/Voxel size); otherwise px/s.",
+        "Zoom values are parsed from NEW mask folder names like '12 - Zoom = 5.40x' and used as metadata labels.",
+        "Excel coordinates are transformed into current TIFF plotting frame (scaling and y-orientation selection) before overlay.",
+    ]
+
+    return {
+        "total_videos": total_videos,
+        "tiff_found": tiff_found,
+        "old_mask_found": old_mask_found,
+        "new_mask_found": new_mask_found,
+        "both_masks_found": both_masks_found,
+        "scale_from_tiff": scale_from_tiff,
+        "zoom_from_new_mask": zoom_from_new_mask,
+        "tracks_source": "spark_tracks.csv-derived detections",
+        "tiff_source": str(tiff_base_path) if tiff_base_path else "not provided",
+        "old_mask_source": str(old_mask_base),
+        "new_mask_source": str(new_mask_base),
+        "excel_source": "loaded" if excel_coords else "not loaded",
+        "assumptions": assumptions,
+    }
+
+
+def write_data_sources_assumptions_markdown(output_path, context):
+    """Write standalone data sources + assumptions document."""
+    lines = [
+        "# Data Sources and Assumptions",
+        "",
+        "This document summarizes the sources used in the current detection run and the unit/zoom assumptions.",
+        "",
+        "## Data Sources",
+        "",
+        f"- Tracks source: `{context.get('tracks_source')}`",
+        f"- TIFF base path: `{context.get('tiff_source')}`",
+        f"- OLD mask source: `{context.get('old_mask_source')}`",
+        f"- NEW mask source: `{context.get('new_mask_source')}`",
+        f"- Excel coordinates: `{context.get('excel_source')}`",
+        "",
+        "## Coverage Summary",
+        "",
+        f"- Videos in PDF: **{context.get('total_videos', 0)}**",
+        f"- TIFF files found: **{context.get('tiff_found', 0)}**",
+        f"- OLD masks found: **{context.get('old_mask_found', 0)}**",
+        f"- NEW masks found: **{context.get('new_mask_found', 0)}**",
+        f"- Both old+new masks found: **{context.get('both_masks_found', 0)}**",
+        f"- TIFFs with usable um/px calibration: **{context.get('scale_from_tiff', 0)}**",
+        f"- NEW masks with parseable zoom metadata: **{context.get('zoom_from_new_mask', 0)}**",
+        "",
+        "## Assumptions",
+        "",
+    ]
+    for a in context.get("assumptions", []):
+        lines.append(f"- {a}")
+    lines.append("")
+    with open(output_path, "w") as f:
+        f.write("\n".join(lines))
+
+
+def add_data_sources_assumptions_page(pdf, context):
+    """Add first-page run summary to PDF."""
+    fig, ax = plt.subplots(figsize=(11, 8.5))
+    ax.axis('off')
+    ax.set_title("Data Sources and Assumptions", fontsize=18, fontweight='bold', pad=18)
+
+    summary_text = (
+        f"Videos in PDF: {context.get('total_videos', 0)}\n"
+        f"TIFF found: {context.get('tiff_found', 0)}\n"
+        f"OLD masks found: {context.get('old_mask_found', 0)}\n"
+        f"NEW masks found: {context.get('new_mask_found', 0)}\n"
+        f"Both old+new masks: {context.get('both_masks_found', 0)}\n"
+        f"TIFFs with um/px calibration: {context.get('scale_from_tiff', 0)}\n"
+        f"NEW masks with zoom metadata: {context.get('zoom_from_new_mask', 0)}"
+    )
+
+    sources_text = (
+        f"Tracks: {context.get('tracks_source')}\n"
+        f"TIFF base: {context.get('tiff_source')}\n"
+        f"OLD masks: {context.get('old_mask_source')}\n"
+        f"NEW masks: {context.get('new_mask_source')}\n"
+        f"Excel coords: {context.get('excel_source')}"
+    )
+
+    assumptions_text = "Assumptions:\n" + "\n".join([f"- {a}" for a in context.get("assumptions", [])])
+
+    ax.text(0.04, 0.90, "Data Sources", fontsize=13, fontweight='bold', va='top')
+    ax.text(0.04, 0.86, sources_text, fontsize=10, va='top', family='monospace')
+    ax.text(0.04, 0.60, "Run Coverage", fontsize=13, fontweight='bold', va='top')
+    ax.text(0.04, 0.56, summary_text, fontsize=10, va='top', family='monospace')
+    ax.text(0.04, 0.33, assumptions_text, fontsize=10, va='top')
+
+    plt.tight_layout()
+    pdf.savefig(fig, bbox_inches='tight')
+    plt.close()
+
+
+def create_pdf_from_images(image_paths, output_pdf_path, images_per_page=1, summary_data=None, warning_log_path=None, df_tracks=None, run_context=None):
     """
     Create a PDF from a list of image paths.
     
@@ -4172,6 +4434,10 @@ def create_pdf_from_images(image_paths, output_pdf_path, images_per_page=1, summ
         df_tracks: Optional DataFrame with spark track data for region summary
     """
     with PdfPages(output_pdf_path) as pdf:
+        # Add data sources + assumptions page first (if provided).
+        if run_context:
+            add_data_sources_assumptions_page(pdf, run_context)
+
         # Add summary table as first page if provided
         if summary_data:
             from matplotlib.table import Table
@@ -4510,6 +4776,7 @@ def main():
     # Create output directory
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+    mask_base_for_run = args.mask_base_path if hasattr(args, 'mask_base_path') and args.mask_base_path else None
     
     # Create log file for warnings - will capture all warning messages
     log_file_path = output_dir / "detection_warnings.log"
@@ -4622,8 +4889,10 @@ def main():
             
             try:
                 # Determine mask base path (default to embryo_masks_final)
-                mask_base = args.mask_base_path if hasattr(args, 'mask_base_path') and args.mask_base_path else None
-                output_path = create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_bounds, args.tiff_base_path, mask_base, excel_coords)
+                output_path = create_embryo_visualization(
+                    df_tracks, output_dir, folder_video_key, global_bounds,
+                    args.tiff_base_path, mask_base_for_run, excel_coords
+                )
                 if output_path:
                     print(f"    ✓ Saved: {output_path.name}")
                     image_paths_dict[(folder, video)] = output_path
@@ -4726,6 +4995,16 @@ def main():
     # Create PDF if we have images (regardless of warnings)
     pdf_path = output_dir / "detection_visualizations.pdf"
     if stored_image_paths and len(stored_image_paths) > 0:
+        run_context = build_data_sources_assumptions(
+            stored_summary_data,
+            tiff_base_path=args.tiff_base_path,
+            mask_base_path=mask_base_for_run,
+            excel_coords=excel_coords,
+        )
+        data_sources_md = output_dir / "DATA_SOURCES_AND_ASSUMPTIONS.md"
+        write_data_sources_assumptions_markdown(data_sources_md, run_context)
+        print(f"  → Wrote data sources/assumptions doc: {data_sources_md}")
+
         log_path_for_pdf = log_file_path if log_file_path.exists() else None
         print(f"\nCreating PDF with {len(stored_image_paths)} images...")
         if warnings_log:
@@ -4748,7 +5027,7 @@ def main():
         # Create PDF with everything included (including region summary)
         create_pdf_from_images(stored_image_paths, pdf_path, images_per_page=1, 
                              summary_data=stored_summary_data, warning_log_path=log_path_for_pdf,
-                             df_tracks=df_tracks)
+                             df_tracks=df_tracks, run_context=run_context)
     else:
         print(f"\n⚠ No images to include in PDF - skipping PDF creation")
     
