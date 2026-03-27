@@ -2514,6 +2514,68 @@ def find_mask_file(tiff_path, mask_base_path=None):
     return None
 
 
+def _load_mask_image(mask_path):
+    """Load PNG/NPZ mask and return binary uint8 mask (0 or 255)."""
+    if mask_path is None:
+        return None
+    mask_path = Path(mask_path)
+    if not mask_path.exists():
+        return None
+
+    if mask_path.suffix.lower() == ".npz":
+        with np.load(mask_path, allow_pickle=False) as npz_data:
+            if "mask" in npz_data:
+                mask_img = npz_data["mask"]
+            else:
+                mask_img = None
+                for key in npz_data.files:
+                    arr = npz_data[key]
+                    if isinstance(arr, np.ndarray) and arr.ndim == 2:
+                        mask_img = arr
+                        break
+    else:
+        mask_img = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
+
+    if mask_img is None:
+        return None
+    if mask_img.ndim > 2:
+        mask_img = mask_img[..., 0]
+    if mask_img.dtype != np.uint8:
+        mask_img = (mask_img > 0).astype(np.uint8) * 255
+    else:
+        mask_img = np.where(mask_img > 0, 255, 0).astype(np.uint8)
+    return mask_img
+
+
+def _overlay_mask_contours(ax, mask_img, tiff_h, tiff_w, facecolor, edgecolor, alpha=0.25, zorder=1):
+    """Overlay filled mask contours; returns (n_contours, coverage_pct, resized_from)."""
+    mask_h, mask_w = mask_img.shape[:2]
+    resized_from = None
+    if mask_w != tiff_w or mask_h != tiff_h:
+        resized_from = (mask_w, mask_h)
+        mask_img = cv2.resize(mask_img, (tiff_w, tiff_h), interpolation=cv2.INTER_NEAREST)
+
+    contours_mask, _ = cv2.findContours(mask_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    for contour in contours_mask:
+        contour_points = contour.reshape(-1, 2).astype(np.float32)
+        contour_transformed = contour_points.copy()
+        contour_transformed[:, 1] = tiff_h - contour_points[:, 1]
+        if len(contour_transformed) > 0:
+            contour_closed = np.vstack([contour_transformed, contour_transformed[0:1]])
+            poly = Polygon(
+                contour_closed,
+                facecolor=facecolor,
+                edgecolor=edgecolor,
+                linewidth=0.8,
+                alpha=alpha,
+                zorder=zorder,
+            )
+            ax.add_patch(poly)
+
+    coverage = (np.sum(mask_img > 0) / (tiff_w * tiff_h)) * 100.0
+    return len(contours_mask), coverage, resized_from
+
+
 def load_excel_coordinates(excel_path):
     """
     Load head/tail and poke coordinates from Excel file.
@@ -2673,11 +2735,23 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
     # Try to find the actual TIFF file for embryo detection
     tiff_path = find_tiff_file(folder, video, tiff_base_path)
     
-    # Try to find corresponding mask file
-    mask_path = None
+    # Try to find corresponding masks from both legacy and new frog dataset.
+    legacy_mask_path = None
+    new_mask_path = None
+    mask_path = None  # Primary mask for backward-compatible logic/title handling.
     if tiff_path:
-        mask_path = find_mask_file(tiff_path, mask_base_path)
-        if mask_path:
+        legacy_mask_base = Path(mask_base_path) if mask_base_path else (Path(__file__).parent / "embryo_masks_final")
+        new_mask_base = Path(__file__).resolve().parents[1] / "datasets" / "frog_embryo_data_processed"
+
+        legacy_mask_path = find_mask_file(tiff_path, legacy_mask_base)
+        new_mask_path = find_mask_file(tiff_path, new_mask_base)
+        mask_path = new_mask_path or legacy_mask_path
+
+        if legacy_mask_path:
+            print(f"    ✓ Found OLD mask file: {legacy_mask_path.name}")
+        if new_mask_path:
+            print(f"    ✓ Found NEW mask file: {new_mask_path.name}")
+        if mask_path and not (legacy_mask_path or new_mask_path):
             print(f"    ✓ Found mask file: {mask_path.name}")
     
     # Use consistent figure size (fixed dimensions for all images)
@@ -3793,93 +3867,106 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                                    textcoords='offset points', color='orange', fontsize=10, 
                                    fontweight='bold', ha='left',
                                    bbox=dict(boxstyle='round', facecolor='black', alpha=0.7, edgecolor='orange', linewidth=1.5), zorder=13)
-    
-    # Overlay mask if available - do this LAST so it appears behind all other elements
-    if mask_path and mask_path.exists() and tiff_path and tiff_path.exists():
-        try:
-            import cv2
-            # Support both legacy PNG masks and new NPZ masks.
-            if mask_path.suffix.lower() == ".npz":
-                with np.load(mask_path, allow_pickle=False) as npz_data:
-                    if "mask" in npz_data:
-                        mask_img = npz_data["mask"]
-                    else:
-                        # Fallback: first 2D array key in NPZ
-                        mask_img = None
-                        for key in npz_data.files:
-                            arr = npz_data[key]
-                            if isinstance(arr, np.ndarray) and arr.ndim == 2:
-                                mask_img = arr
-                                break
-                if mask_img is not None:
-                    if mask_img.dtype != np.uint8:
-                        # Convert boolean/float masks to 0-255 uint8.
-                        mask_img = (mask_img > 0).astype(np.uint8) * 255
+
+    # Add speed labels for PDF review (reported in px/s).
+    speed_lines = []
+    if 'speed' in df_file.columns:
+        for emb in ['A', 'B']:
+            emb_speed = df_file[
+                (df_file['embryo_id'] == emb) &
+                (df_file['speed'].notna()) &
+                (df_file['speed'] >= 0)
+            ]['speed']
+            if len(emb_speed) > 0:
+                speed_lines.append(f"{emb}: med {emb_speed.median():.2f} px/s, mean {emb_speed.mean():.2f}")
             else:
-                mask_img = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
-            if mask_img is not None:
-                mask_h, mask_w = mask_img.shape
-                
-                # Get TIFF dimensions for coordinate transformation
-                with tiff.TiffFile(tiff_path) as tif:
-                    tiff_img = tif.pages[0].asarray()
-                    tiff_h, tiff_w = tiff_img.shape[:2]
-                    
-                    # Resize mask to match TIFF dimensions if they differ
-                    if mask_w != tiff_w or mask_h != tiff_h:
-                        mask_img = cv2.resize(mask_img, (tiff_w, tiff_h), interpolation=cv2.INTER_NEAREST)
-                        print(f"    → Resized mask from {mask_w}x{mask_h} to {tiff_w}x{tiff_h} to match TIFF")
-                    
-                    # Mask is in pixel coordinates (0 to tiff_w, 0 to tiff_h)
-                    # Since we're using full TIFF dimensions for axis limits, use pixel coordinates directly
-                    # No need to transform to spark coordinates
-                    
-                    # Create bright green overlay using filled contours (more reliable than imshow)
-                    # Find contours in the mask
-                    contours_mask, _ = cv2.findContours(mask_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                    
-                    if len(contours_mask) > 0:
-                        # Mask is in pixel coordinates (0 to tiff_w, 0 to tiff_h)
-                        # OpenCV uses (0,0) at top-left, matplotlib uses (0,0) at bottom-left
-                        # Need to flip y-coordinate: y_matplotlib = tiff_h - y_opencv
-                        
-                        for contour in contours_mask:
-                            # Reshape and convert to float
-                            contour_points = contour.reshape(-1, 2).astype(np.float32)
-                            
-                            # Transform y-coordinate: flip from OpenCV (top-left origin) to matplotlib (bottom-left origin)
-                            contour_transformed = contour_points.copy()
-                            contour_transformed[:, 0] = contour_points[:, 0]  # x stays the same
-                            contour_transformed[:, 1] = tiff_h - contour_points[:, 1]  # flip y
-                            
-                            # Close the contour
-                            if len(contour_transformed) > 0:
-                                contour_closed = np.vstack([contour_transformed, contour_transformed[0:1]])
-                                
-                                # Draw filled polygon with bright green
-                                poly = Polygon(contour_closed, facecolor='lime', edgecolor='lime', 
-                                             linewidth=0, alpha=0.5, zorder=1)
-                                ax.add_patch(poly)
-                        
-                        mask_coverage = (np.sum(mask_img > 0) / (tiff_w * tiff_h)) * 100
-                        zoom_hint = _parse_zoom_from_dirname(mask_path.parent.name)
-                        zoom_text = f", zoom: {zoom_hint:.2f}x" if zoom_hint is not None else ""
-                        print(f"    ✓ Overlaid mask: {mask_path.name} ({len(contours_mask)} contours, coverage: {mask_coverage:.1f}%, full image: {tiff_w}x{tiff_h}{zoom_text})")
-                    else:
-                        print(f"    ⚠ No contours found in mask: {mask_path.name}")
+                speed_lines.append(f"{emb}: no speed data")
+    if speed_lines:
+        ax.text(
+            0.012, 0.988,
+            "Speeds\n" + "\n".join(speed_lines),
+            transform=ax.transAxes,
+            fontsize=10,
+            color='white',
+            ha='left',
+            va='top',
+            bbox=dict(boxstyle='round', facecolor='black', alpha=0.75, edgecolor='white', linewidth=1.0),
+            zorder=20,
+        )
+    
+    # Overlay masks if available - do this LAST so it appears behind all other elements.
+    # Old mask: cyan. New frog NPZ mask: lime.
+    if (legacy_mask_path and legacy_mask_path.exists() or new_mask_path and new_mask_path.exists()) and tiff_path and tiff_path.exists():
+        try:
+            with tiff.TiffFile(tiff_path) as tif:
+                tiff_img = tif.pages[0].asarray()
+                tiff_h, tiff_w = tiff_img.shape[:2]
+
+            if legacy_mask_path and legacy_mask_path.exists():
+                old_mask = _load_mask_image(legacy_mask_path)
+                if old_mask is not None:
+                    old_count, old_cov, old_resized = _overlay_mask_contours(
+                        ax, old_mask, tiff_h, tiff_w,
+                        facecolor='#00bfff', edgecolor='#7fdfff', alpha=0.20, zorder=1
+                    )
+                    if old_resized is not None:
+                        print(f"    → Resized OLD mask from {old_resized[0]}x{old_resized[1]} to {tiff_w}x{tiff_h} to match TIFF")
+                    print(f"    ✓ Overlaid OLD mask: {legacy_mask_path.name} ({old_count} contours, coverage: {old_cov:.1f}%, full image: {tiff_w}x{tiff_h})")
+                    ax.text(
+                        0.988, 0.988, "OLD mask",
+                        transform=ax.transAxes, ha='right', va='top',
+                        fontsize=9, color='#7fdfff',
+                        bbox=dict(boxstyle='round', facecolor='black', alpha=0.55, edgecolor='#00bfff'),
+                        zorder=21,
+                    )
+                else:
+                    print(f"    ⚠ Could not load OLD mask: {legacy_mask_path.name}")
+
+            if new_mask_path and new_mask_path.exists():
+                new_mask = _load_mask_image(new_mask_path)
+                if new_mask is not None:
+                    new_count, new_cov, new_resized = _overlay_mask_contours(
+                        ax, new_mask, tiff_h, tiff_w,
+                        facecolor='lime', edgecolor='#b6ffb6', alpha=0.28, zorder=2
+                    )
+                    if new_resized is not None:
+                        print(f"    → Resized NEW mask from {new_resized[0]}x{new_resized[1]} to {tiff_w}x{tiff_h} to match TIFF")
+                    zoom_hint = _parse_zoom_from_dirname(new_mask_path.parent.name)
+                    zoom_text = f", zoom: {zoom_hint:.2f}x" if zoom_hint is not None else ""
+                    print(f"    ✓ Overlaid NEW mask: {new_mask_path.name} ({new_count} contours, coverage: {new_cov:.1f}%, full image: {tiff_w}x{tiff_h}{zoom_text})")
+                    ax.text(
+                        0.988, 0.945, "NEW mask",
+                        transform=ax.transAxes, ha='right', va='top',
+                        fontsize=9, color='#b6ffb6',
+                        bbox=dict(boxstyle='round', facecolor='black', alpha=0.55, edgecolor='lime'),
+                        zorder=21,
+                    )
+                else:
+                    print(f"    ⚠ Could not load NEW mask: {new_mask_path.name}")
         except Exception as e:
-            print(f"    ⚠ Error overlaying mask: {e}")
+            print(f"    ⚠ Error overlaying masks: {e}")
             import traceback
             traceback.print_exc()
     
     ax.set_xlabel('X (pixels)', color='white', fontsize=12)
     ax.set_ylabel('Y (pixels)', color='white', fontsize=12)
     title_text = f'Folder {folder} - {video}\nEmbryo Detection & Poke Location'
-    if mask_path and mask_path.exists():
-        title_text += ' [Mask Overlay]'
-        zoom_hint = _parse_zoom_from_dirname(mask_path.parent.name)
-        if zoom_hint is not None:
-            title_text += f' [Zoom {zoom_hint:.2f}x]'
+    has_old_mask = bool(legacy_mask_path and legacy_mask_path.exists())
+    has_new_mask = bool(new_mask_path and new_mask_path.exists())
+    if has_old_mask and has_new_mask:
+        title_text += ' [Old+New Mask Overlay]'
+    elif has_new_mask:
+        title_text += ' [New Mask Overlay]'
+    elif has_old_mask:
+        title_text += ' [Old Mask Overlay]'
+
+    zoom_hint = None
+    if has_new_mask:
+        zoom_hint = _parse_zoom_from_dirname(new_mask_path.parent.name)
+    elif has_old_mask:
+        zoom_hint = _parse_zoom_from_dirname(legacy_mask_path.parent.name)
+    if zoom_hint is not None:
+        title_text += f' [Zoom {zoom_hint:.2f}x]'
     ax.set_title(title_text, color='white', fontsize=14, fontweight='bold')
     ax.tick_params(colors='white')
     ax.grid(True, alpha=0.3, color='gray')
