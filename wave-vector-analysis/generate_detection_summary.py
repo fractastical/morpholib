@@ -2587,13 +2587,41 @@ def _infer_um_per_px_from_tiff(tiff_path):
         with tiff.TiffFile(tiff_path) as tif:
             tags = tif.pages[0].tags
             desc = None
+            ij_info = None
             if "ImageDescription" in tags:
                 desc = str(tags["ImageDescription"].value)
+            if "IJMetadata" in tags:
+                ij_meta = tags["IJMetadata"].value
+                if isinstance(ij_meta, dict):
+                    ij_info = str(ij_meta.get("Info", ""))
     except Exception:
         return None, None
 
-    if not desc:
-        return None, None
+    desc = desc or ""
+    ij_info = ij_info or ""
+
+    # 0) IJMetadata Info often contains direct calibration from the acquisition software.
+    # Example: dCalibration = 1.60377358490566
+    m = re.search(r"dCalibration\s*=\s*([0-9]*\.?[0-9]+)", ij_info, re.IGNORECASE)
+    if m:
+        upp = float(m.group(1))
+        if upp > 0:
+            return upp, "ijmetadata:dCalibration"
+
+    # 0b) ImageJ XResolution/YResolution can encode pixels-per-micron when unit=micron.
+    # Example: unit=micron, XResolution=(623529,1000000) => 0.623529 px/um => 1.6038 um/px
+    try:
+        unit_is_micron = bool(re.search(r"unit\s*=\s*micron", desc, re.IGNORECASE))
+        if unit_is_micron and "XResolution" in tags:
+            xr = tags["XResolution"].value
+            if isinstance(xr, tuple) and len(xr) == 2 and xr[1]:
+                ppm = float(xr[0]) / float(xr[1])
+            else:
+                ppm = float(xr)
+            if ppm > 0:
+                return (1.0 / ppm), "tags:XResolution+unit=micron"
+    except Exception:
+        pass
 
     # Resolution: 6.25 pixels per micron
     m = re.search(r"resolution\s*:\s*([0-9]*\.?[0-9]+)\s*pixels?\s*per\s*micron", desc, re.IGNORECASE)
@@ -4325,6 +4353,8 @@ def build_data_sources_assumptions(summary_data, tiff_base_path=None, mask_base_
     both_masks_found = 0
     scale_from_tiff = 0
     zoom_from_new_mask = 0
+    calibration_sources = defaultdict(int)
+    metadata_signals = defaultdict(int)
 
     if summary_data:
         for row in summary_data:
@@ -4333,9 +4363,37 @@ def build_data_sources_assumptions(summary_data, tiff_base_path=None, mask_base_
             tiff_path = find_tiff_file(folder, video, tiff_base_path)
             if tiff_path and tiff_path.exists():
                 tiff_found += 1
-                um_per_px, _ = _infer_um_per_px_from_tiff(tiff_path)
+                um_per_px, calib_src = _infer_um_per_px_from_tiff(tiff_path)
                 if um_per_px is not None and um_per_px > 0:
                     scale_from_tiff += 1
+                    if calib_src:
+                        calibration_sources[calib_src] += 1
+
+                try:
+                    with tiff.TiffFile(tiff_path) as tif:
+                        tags = tif.pages[0].tags
+                        if "ImageDescription" in tags:
+                            metadata_signals["ImageDescription"] += 1
+                            desc = str(tags["ImageDescription"].value)
+                            if re.search(r"unit\s*=\s*micron", desc, re.IGNORECASE):
+                                metadata_signals["ImageDescription unit=micron"] += 1
+                        if "IJMetadata" in tags:
+                            metadata_signals["IJMetadata"] += 1
+                            ij_meta = tags["IJMetadata"].value
+                            if isinstance(ij_meta, dict):
+                                info = str(ij_meta.get("Info", ""))
+                                if re.search(r"dCalibration\s*=", info, re.IGNORECASE):
+                                    metadata_signals["IJMetadata dCalibration"] += 1
+                                if re.search(r"\bZoom\s*=", info, re.IGNORECASE):
+                                    metadata_signals["IJMetadata Zoom"] += 1
+                        if "XResolution" in tags:
+                            metadata_signals["XResolution"] += 1
+                        if "YResolution" in tags:
+                            metadata_signals["YResolution"] += 1
+                        if "ResolutionUnit" in tags:
+                            metadata_signals["ResolutionUnit"] += 1
+                except Exception:
+                    pass
 
                 old_mask = find_mask_file(tiff_path, old_mask_base)
                 new_mask = find_mask_file(tiff_path, new_mask_base)
@@ -4387,6 +4445,8 @@ def build_data_sources_assumptions(summary_data, tiff_base_path=None, mask_base_
         "excel_video_count": (sum(len(v) for v in excel_coords.values()) if excel_coords else 0),
         "assumptions": assumptions,
         "excel_parse_notes": excel_parse_notes,
+        "calibration_sources": dict(calibration_sources),
+        "metadata_signals": dict(metadata_signals),
     }
 
 
