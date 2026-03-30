@@ -2792,6 +2792,8 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
         excel_coords: Optional dict with Excel coordinates {folder: {video: {embryo_id: {...}, 'poke': ...}}}
     """
     folder, video = folder_video_key
+    excel_match_label = "Excel: not loaded"
+    excel_match_score = None
     
     # Filter data for this folder/video - match against base_filename
     # base_filename should be like "9/B1 - Substack (1-301).tif"
@@ -3874,6 +3876,7 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
     
     # Draw Excel coordinates if available (poke, head/tail)
     if excel_coords:
+        excel_match_label = "Excel: no match"
         folder_str = str(folder)
         # Try to find matching video in Excel coordinates
         excel_folder_data = excel_coords.get(folder_str, {})
@@ -3892,6 +3895,8 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
         for excel_video in excel_folder_data:
             if normalize_vid_name(excel_video) == video_norm:
                 matched_video = excel_video
+                excel_match_score = 1.0
+                excel_match_label = f"Excel: exact ({excel_video})"
                 break
         
         # If no exact match, try fuzzy matching, but avoid arbitrary first-entry fallback.
@@ -3906,8 +3911,11 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                     best_key = excel_video
             if best_key is not None and best_score >= 0.60:
                 matched_video = best_key
+                excel_match_score = float(best_score)
+                excel_match_label = f"Excel: fuzzy {best_score:.2f} ({best_key})"
                 print(f"    → Using Excel video '{matched_video}' for folder {folder} (fuzzy score: {best_score:.2f}, requested: '{video}')")
             else:
+                excel_match_label = f"Excel: no match (best {best_score:.2f})"
                 print(f"    → No confident Excel video match for folder {folder} (requested: '{video}', best score: {best_score:.2f}); skipping Excel overlay")
         
         if matched_video:
@@ -3974,6 +3982,11 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                                    textcoords='offset points', color='orange', fontsize=10, 
                                    fontweight='bold', ha='left',
                                    bbox=dict(boxstyle='round', facecolor='black', alpha=0.7, edgecolor='orange', linewidth=1.5), zorder=13)
+        elif folder_str in excel_coords:
+            # Folder exists in workbook but no confident video-level match.
+            excel_match_label = excel_match_label if excel_match_label else "Excel: no confident video match"
+    else:
+        excel_match_label = "Excel: not loaded"
 
     # Add speed labels for PDF review (prefer physical units, fallback to px/s).
     um_per_px = None
@@ -4093,9 +4106,24 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
         zoom_hint = _parse_zoom_from_dirname(legacy_mask_path.parent.name)
     if zoom_hint is not None:
         title_text += f' [Zoom {zoom_hint:.2f}x]'
+    if excel_match_score is not None:
+        title_text += f' [Excel match {excel_match_score:.2f}]'
+    elif excel_coords:
+        title_text += ' [Excel match n/a]'
     ax.set_title(title_text, color='white', fontsize=14, fontweight='bold')
     ax.tick_params(colors='white')
     ax.grid(True, alpha=0.3, color='gray')
+    ax.text(
+        0.012, 0.04,
+        excel_match_label,
+        transform=ax.transAxes,
+        fontsize=9,
+        color='white',
+        ha='left',
+        va='bottom',
+        bbox=dict(boxstyle='round', facecolor='black', alpha=0.65, edgecolor='white', linewidth=0.8),
+        zorder=22,
+    )
     
     # Save with fixed dimensions
     safe_video_name = re.sub(r'[^\w\-_\.]', '_', video)
@@ -4285,7 +4313,7 @@ TOP 5 REGIONS BY PIXEL COUNT:
     plt.close()
 
 
-def build_data_sources_assumptions(summary_data, tiff_base_path=None, mask_base_path=None, excel_coords=None):
+def build_data_sources_assumptions(summary_data, tiff_base_path=None, mask_base_path=None, excel_coords=None, excel_source_path=None):
     """Build a run-level summary of data sources and unit/zoom assumptions."""
     old_mask_base = Path(mask_base_path) if mask_base_path else (Path(__file__).parent / "embryo_masks_final")
     new_mask_base = Path(__file__).resolve().parents[1] / "datasets" / "frog_embryo_data_processed"
@@ -4332,6 +4360,15 @@ def build_data_sources_assumptions(summary_data, tiff_base_path=None, mask_base_
         "Excel coordinates are transformed into current TIFF plotting frame (scaling and y-orientation selection) before overlay.",
     ]
 
+    excel_parse_notes = [
+        "Workbook layout: each sheet is treated as one folder (sheet name -> folder id).",
+        "Header detection: parser first inspects row 1 values for 'ID', 'X', 'Y'; if not found, falls back to column names containing id/X/Y.",
+        "Video selection: parser uses first non-empty value in the first column (excluding head/tail/poke labels) as video key; fallback is first column header.",
+        "Row parsing: ID cells containing 'poke' are interpreted as poke coordinates; IDs like 'A_head', 'A_tail', 'B_head', 'B_tail' map embryo landmarks.",
+        "Missing/NaN X/Y values are skipped.",
+        "At visualization time, video matching prefers exact normalized name, then fuzzy match with threshold; low-confidence matches are skipped.",
+    ]
+
     return {
         "total_videos": total_videos,
         "tiff_found": tiff_found,
@@ -4344,8 +4381,12 @@ def build_data_sources_assumptions(summary_data, tiff_base_path=None, mask_base_
         "tiff_source": str(tiff_base_path) if tiff_base_path else "not provided",
         "old_mask_source": str(old_mask_base),
         "new_mask_source": str(new_mask_base),
-        "excel_source": "loaded" if excel_coords else "not loaded",
+        "excel_source": str(excel_source_path) if excel_source_path else "not loaded",
+        "excel_loaded": bool(excel_coords),
+        "excel_folder_count": len(excel_coords) if excel_coords else 0,
+        "excel_video_count": (sum(len(v) for v in excel_coords.values()) if excel_coords else 0),
         "assumptions": assumptions,
+        "excel_parse_notes": excel_parse_notes,
     }
 
 
@@ -4362,7 +4403,10 @@ def write_data_sources_assumptions_markdown(output_path, context):
         f"- TIFF base path: `{context.get('tiff_source')}`",
         f"- OLD mask source: `{context.get('old_mask_source')}`",
         f"- NEW mask source: `{context.get('new_mask_source')}`",
-        f"- Excel coordinates: `{context.get('excel_source')}`",
+        f"- Excel coordinates source: `{context.get('excel_source')}`",
+        f"- Excel loaded: **{context.get('excel_loaded', False)}**",
+        f"- Excel parsed folders: **{context.get('excel_folder_count', 0)}**",
+        f"- Excel parsed folder/video mappings: **{context.get('excel_video_count', 0)}**",
         "",
         "## Coverage Summary",
         "",
@@ -4379,6 +4423,13 @@ def write_data_sources_assumptions_markdown(output_path, context):
     ]
     for a in context.get("assumptions", []):
         lines.append(f"- {a}")
+    lines += [
+        "",
+        "## Excel Spreadsheet Mapping (How data is read)",
+        "",
+    ]
+    for n in context.get("excel_parse_notes", []):
+        lines.append(f"- {n}")
     lines.append("")
     with open(output_path, "w") as f:
         f.write("\n".join(lines))
@@ -4405,16 +4456,21 @@ def add_data_sources_assumptions_page(pdf, context):
         f"TIFF base: {context.get('tiff_source')}\n"
         f"OLD masks: {context.get('old_mask_source')}\n"
         f"NEW masks: {context.get('new_mask_source')}\n"
-        f"Excel coords: {context.get('excel_source')}"
+        f"Excel coords: {context.get('excel_source')}\n"
+        f"Excel loaded: {context.get('excel_loaded', False)} "
+        f"(folders={context.get('excel_folder_count', 0)}, mappings={context.get('excel_video_count', 0)})"
     )
 
     assumptions_text = "Assumptions:\n" + "\n".join([f"- {a}" for a in context.get("assumptions", [])])
+    excel_notes = context.get("excel_parse_notes", [])
+    excel_notes_text = "Excel mapping notes:\n" + "\n".join([f"- {n}" for n in excel_notes[:3]])
 
     ax.text(0.04, 0.90, "Data Sources", fontsize=13, fontweight='bold', va='top')
     ax.text(0.04, 0.86, sources_text, fontsize=10, va='top', family='monospace')
     ax.text(0.04, 0.60, "Run Coverage", fontsize=13, fontweight='bold', va='top')
     ax.text(0.04, 0.56, summary_text, fontsize=10, va='top', family='monospace')
     ax.text(0.04, 0.33, assumptions_text, fontsize=10, va='top')
+    ax.text(0.04, 0.11, excel_notes_text, fontsize=9, va='top')
 
     plt.tight_layout()
     pdf.savefig(fig, bbox_inches='tight')
@@ -4743,12 +4799,14 @@ def main():
     
     # Load Excel coordinates if provided
     excel_coords = {}
+    excel_source_path = None
     if args.excel_coords:
         excel_path = Path(args.excel_coords)
         if excel_path.exists():
             print(f"\nLoading Excel coordinates from: {excel_path}")
             excel_coords = load_excel_coordinates(str(excel_path))
             if excel_coords:
+                excel_source_path = str(excel_path)
                 total_videos = sum(len(videos) for videos in excel_coords.values())
                 total_pokes = sum(1 for folder_data in excel_coords.values() 
                                  for video_data in folder_data.values() 
@@ -4766,6 +4824,7 @@ def main():
             print(f"\nLoading Excel coordinates from default location: {default_excel}")
             excel_coords = load_excel_coordinates(str(default_excel))
             if excel_coords:
+                excel_source_path = str(default_excel)
                 total_videos = sum(len(videos) for videos in excel_coords.values())
                 total_pokes = sum(1 for folder_data in excel_coords.values() 
                                  for video_data in folder_data.values() 
@@ -5000,6 +5059,7 @@ def main():
             tiff_base_path=args.tiff_base_path,
             mask_base_path=mask_base_for_run,
             excel_coords=excel_coords,
+            excel_source_path=excel_source_path,
         )
         data_sources_md = output_dir / "DATA_SOURCES_AND_ASSUMPTIONS.md"
         write_data_sources_assumptions_markdown(data_sources_md, run_context)
