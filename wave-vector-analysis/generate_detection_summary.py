@@ -4478,6 +4478,24 @@ def write_data_sources_assumptions_markdown(output_path, context):
         f"- TIFFs with usable um/px calibration: **{context.get('scale_from_tiff', 0)}**",
         f"- NEW masks with parseable zoom metadata: **{context.get('zoom_from_new_mask', 0)}**",
         "",
+        "## Metadata Found in TIFFs",
+        "",
+    ]
+    for k, v in sorted(context.get("metadata_signals", {}).items()):
+        lines.append(f"- {k}: **{v}**")
+    if not context.get("metadata_signals"):
+        lines.append("- no metadata signals detected")
+    lines += [
+        "",
+        "## Calibration Source Breakdown",
+        "",
+    ]
+    for k, v in sorted(context.get("calibration_sources", {}).items()):
+        lines.append(f"- {k}: **{v}**")
+    if not context.get("calibration_sources"):
+        lines.append("- none detected")
+    lines += [
+        "",
         "## Assumptions",
         "",
     ]
@@ -4508,7 +4526,9 @@ def add_data_sources_assumptions_page(pdf, context):
         f"NEW masks found: {context.get('new_mask_found', 0)}\n"
         f"Both old+new masks: {context.get('both_masks_found', 0)}\n"
         f"TIFFs with um/px calibration: {context.get('scale_from_tiff', 0)}\n"
-        f"NEW masks with zoom metadata: {context.get('zoom_from_new_mask', 0)}"
+        f"NEW masks with zoom metadata: {context.get('zoom_from_new_mask', 0)}\n"
+        f"IJMetadata dCalibration present: {context.get('metadata_signals', {}).get('IJMetadata dCalibration', 0)}\n"
+        f"IJMetadata Zoom present: {context.get('metadata_signals', {}).get('IJMetadata Zoom', 0)}"
     )
 
     sources_text = (
@@ -4523,7 +4543,12 @@ def add_data_sources_assumptions_page(pdf, context):
 
     assumptions_text = "Assumptions:\n" + "\n".join([f"- {a}" for a in context.get("assumptions", [])])
     excel_notes = context.get("excel_parse_notes", [])
-    excel_notes_text = "Excel mapping notes:\n" + "\n".join([f"- {n}" for n in excel_notes[:3]])
+    calib_src = context.get("calibration_sources", {})
+    calib_lines = [f"- {k}: {v}" for k, v in sorted(calib_src.items())] if calib_src else ["- none"]
+    excel_notes_text = (
+        "Excel mapping notes:\n" + "\n".join([f"- {n}" for n in excel_notes[:2]]) +
+        "\n\nCalibration source(s):\n" + "\n".join(calib_lines[:3])
+    )
 
     ax.text(0.04, 0.90, "Data Sources", fontsize=13, fontweight='bold', va='top')
     ax.text(0.04, 0.86, sources_text, fontsize=10, va='top', family='monospace')
