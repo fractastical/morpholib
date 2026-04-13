@@ -2514,6 +2514,144 @@ def find_mask_file(tiff_path, mask_base_path=None):
     return None
 
 
+def find_new_mask_file_strict(tiff_path, new_mask_base_path, return_info=False):
+    """
+    Strict lookup for NEW NPZ masks:
+    - require same numeric folder id (e.g. 24 -> '24 - Zoom = ...')
+    - do exact/fuzzy match only inside that folder-id subtree
+    - do not cross-match to other folder ids
+    """
+    info = {
+        "status": "not_found",
+        "reason": "uninitialized",
+        "folder_id": None,
+        "roots": [],
+        "match_type": None,
+        "best_candidate": None,
+        "best_score": None,
+    }
+
+    if tiff_path is None:
+        info["reason"] = "tiff_path is None"
+        return (None, info) if return_info else None
+    tiff_path_obj = Path(tiff_path)
+    folder_id = _extract_folder_id_from_tiff_path(tiff_path_obj)
+    if not folder_id:
+        info["reason"] = f"could not extract folder id from TIFF path: {tiff_path_obj}"
+        return (None, info) if return_info else None
+    info["folder_id"] = folder_id
+
+    base = Path(new_mask_base_path)
+    if not base.exists():
+        info["reason"] = f"new mask base path does not exist: {base}"
+        return (None, info) if return_info else None
+
+    import re
+    import difflib
+    tiff_stem = tiff_path_obj.stem
+    tiff_normalized = _normalize_video_name_for_mask(tiff_stem)
+    candidate_bases = {
+        tiff_stem,
+        _normalize_video_name_for_mask(tiff_path_obj.name.replace('.tif', '').replace('.tiff', '')),
+        re.sub(r'^folder_\d+_', '', tiff_stem),
+        tiff_normalized,
+    }
+    candidate_bases = {b.strip() for b in candidate_bases if b and b.strip()}
+
+    roots = [d for d in base.iterdir() if d.is_dir() and d.name.strip().startswith(f"{folder_id} ")]
+    if not roots:
+        info["reason"] = f"no NEW mask directory matched folder id {folder_id} under {base}"
+        return (None, info) if return_info else None
+    info["roots"] = [str(r) for r in roots]
+
+    # Exact candidates first
+    for root in roots:
+        for b in candidate_bases:
+            for p in [root / f"{b}_mask.npz", root / f"{b}.npz"]:
+                if p.exists():
+                    info["status"] = "matched"
+                    info["match_type"] = "exact"
+                    info["reason"] = f"exact NEW mask match in folder-id subtree ({folder_id})"
+                    return (p, info) if return_info else p
+
+    # Fuzzy inside same folder-id only
+    all_npz = []
+    for root in roots:
+        all_npz.extend(list(root.rglob("*_mask.npz")))
+    if not all_npz:
+        info["reason"] = f"no *_mask.npz files found under NEW folder-id subtree {folder_id}"
+        return (None, info) if return_info else None
+
+    tiff_compact = tiff_normalized.lower().replace(" ", "")
+    for p in all_npz:
+        mask_base_name = p.stem.replace("_mask", "")
+        mask_norm = _normalize_video_name_for_mask(mask_base_name).lower()
+        if tiff_normalized.lower() == mask_norm or tiff_compact == mask_norm.replace(" ", ""):
+            info["status"] = "matched"
+            info["match_type"] = "normalized_exact"
+            info["reason"] = "normalized NEW mask name match within folder-id subtree"
+            return (p, info) if return_info else p
+
+    # Relaxed fuzzy matching within the same folder-id subtree only.
+    # This helps diagnostics/visualization when naming conventions are inconsistent.
+    def _tokenize(s):
+        return set(re.findall(r"[a-z0-9]+", s.lower()))
+
+    def _embryo_prefix(s):
+        tokens = re.findall(r"[a-z0-9]+", s.lower())
+        if not tokens:
+            return None
+        t0 = tokens[0]
+        if t0.startswith("b"):
+            return "b"
+        if t0.startswith("c"):
+            return "c"
+        if t0.startswith("a"):
+            return "a"
+        return None
+
+    tiff_tokens = _tokenize(tiff_normalized)
+    tiff_prefix = _embryo_prefix(tiff_normalized)
+    best_path = None
+    best_score = -1.0
+    best_name = None
+    for p in all_npz:
+        mask_base_name = p.stem.replace("_mask", "")
+        mask_norm = _normalize_video_name_for_mask(mask_base_name).lower()
+        seq_score = difflib.SequenceMatcher(None, tiff_normalized.lower(), mask_norm).ratio()
+        mask_tokens = _tokenize(mask_norm)
+        if tiff_tokens or mask_tokens:
+            token_score = len(tiff_tokens & mask_tokens) / max(len(tiff_tokens | mask_tokens), 1)
+        else:
+            token_score = 0.0
+        score = max(seq_score, token_score)
+        mask_prefix = _embryo_prefix(mask_norm)
+        if tiff_prefix and mask_prefix and tiff_prefix != mask_prefix:
+            score *= 0.7
+        if score > best_score:
+            best_score = score
+            best_path = p
+            best_name = mask_norm
+
+    info["best_candidate"] = str(best_path) if best_path else None
+    info["best_score"] = float(best_score) if best_score >= 0 else None
+    relaxed_threshold = 0.68
+    if best_path is not None and best_score >= relaxed_threshold:
+        info["status"] = "matched"
+        info["match_type"] = "relaxed_fuzzy"
+        info["reason"] = (
+            f"relaxed fuzzy NEW mask match in folder-id subtree (score={best_score:.2f}, "
+            f"target='{tiff_normalized}', candidate='{best_name}')"
+        )
+        return (best_path, info) if return_info else best_path
+
+    info["reason"] = (
+        f"no NEW mask match in folder-id subtree {folder_id}; "
+        f"best score={best_score:.2f} (threshold={relaxed_threshold:.2f})"
+    )
+    return (None, info) if return_info else None
+
+
 def _load_mask_image(mask_path):
     """Load PNG/NPZ mask and return binary uint8 mask (0 or 255)."""
     if mask_path is None:
@@ -2574,6 +2712,178 @@ def _overlay_mask_contours(ax, mask_img, tiff_h, tiff_w, facecolor, edgecolor, a
 
     coverage = (np.sum(mask_img > 0) / (tiff_w * tiff_h)) * 100.0
     return len(contours_mask), coverage, resized_from
+
+
+def _point_inside_mask_from_plot_coords(point_xy, mask_img, tiff_w, tiff_h):
+    """
+    Check whether a plot-space point lies inside a mask.
+    Plot space uses bottom-left origin; mask pixels use top-left origin.
+    Returns (inside_mask: bool, inside_tiff_bounds: bool).
+    """
+    if point_xy is None or mask_img is None or tiff_w is None or tiff_h is None:
+        return False, False
+
+    x_plot = float(point_xy[0])
+    y_plot = float(point_xy[1])
+    inside_tiff = (0.0 <= x_plot < float(tiff_w)) and (0.0 <= y_plot < float(tiff_h))
+    if not inside_tiff:
+        return False, False
+
+    if mask_img.shape[1] != tiff_w or mask_img.shape[0] != tiff_h:
+        mask_img = cv2.resize(mask_img, (tiff_w, tiff_h), interpolation=cv2.INTER_NEAREST)
+
+    x_idx = int(np.clip(round(x_plot), 0, tiff_w - 1))
+    y_idx = int(np.clip(round((tiff_h - 1) - y_plot), 0, tiff_h - 1))
+    inside_mask = bool(mask_img[y_idx, x_idx] > 0)
+    return inside_mask, True
+
+
+def _prepare_new_mask_for_tiff(mask_img, tiff_w, tiff_h, warn_threshold=0.12, reject_threshold=0.45):
+    """
+    Validate NEW mask geometry against TIFF geometry and resize if needed.
+    Returns (prepared_mask_or_none, info_dict).
+    """
+    info = {
+        "status": "invalid",
+        "reason": "",
+        "ar_rel_diff": None,
+        "resized_from": None,
+        "warn_threshold": warn_threshold,
+        "reject_threshold": reject_threshold,
+    }
+    if mask_img is None:
+        info["reason"] = "mask image is None"
+        return None, info
+    if tiff_w is None or tiff_h is None or tiff_w <= 0 or tiff_h <= 0:
+        info["reason"] = "invalid TIFF dimensions"
+        return None, info
+
+    nh, nw = mask_img.shape[:2]
+    tiff_ar = (tiff_w / tiff_h) if tiff_h else None
+    mask_ar = (nw / nh) if nh else None
+    if tiff_ar and mask_ar:
+        ar_rel_diff = abs(mask_ar - tiff_ar) / max(tiff_ar, 1e-9)
+    else:
+        ar_rel_diff = 0.0
+    info["ar_rel_diff"] = ar_rel_diff
+
+    if ar_rel_diff > reject_threshold:
+        info["status"] = "rejected"
+        info["reason"] = (
+            f"geometry mismatch too large (mask {nw}x{nh}, TIFF {tiff_w}x{tiff_h}, "
+            f"aspect diff {ar_rel_diff:.1%})"
+        )
+        return None, info
+
+    prepared = mask_img
+    if nw != tiff_w or nh != tiff_h:
+        info["resized_from"] = (nw, nh)
+        prepared = cv2.resize(mask_img, (tiff_w, tiff_h), interpolation=cv2.INTER_NEAREST)
+
+    if ar_rel_diff > warn_threshold:
+        info["status"] = "accepted_with_warning"
+        info["reason"] = (
+            f"geometry mismatch accepted for visualization/labeling (mask {nw}x{nh}, TIFF {tiff_w}x{tiff_h}, "
+            f"aspect diff {ar_rel_diff:.1%})"
+        )
+    else:
+        info["status"] = "accepted"
+        info["reason"] = "geometry compatible"
+    return prepared, info
+
+
+def detect_embryo_from_mask_image(mask_img, df_tracks=None):
+    """
+    Derive embryo contours + head/tail from a binary mask image.
+    Returns dict in the same format as detect_embryo_from_tiff().
+    """
+    if mask_img is None:
+        return {}
+
+    h, w = mask_img.shape[:2]
+    contours, _ = cv2.findContours(mask_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    min_area = 0.003 * h * w
+    emb_contours = [c for c in contours if cv2.contourArea(c) >= min_area]
+    if not emb_contours:
+        return {}
+
+    def contour_cx(c):
+        M = cv2.moments(c)
+        return (M["m10"] / M["m00"]) if M["m00"] else 0.0
+
+    emb_contours.sort(key=contour_cx)  # left -> right
+    emb_contours = emb_contours[:2]
+    labels = ["A", "B"]
+    results = {}
+
+    valid_vectors = None
+    if df_tracks is not None and len(df_tracks) > 0:
+        valid_vectors = df_tracks[
+            (df_tracks["x"].notna()) &
+            (df_tracks["y"].notna()) &
+            (df_tracks["vx"].notna()) &
+            (df_tracks["vy"].notna()) &
+            (df_tracks["speed"].notna()) &
+            (df_tracks["speed"] > 0)
+        ].copy()
+
+    for idx, contour in enumerate(emb_contours):
+        label = labels[idx] if idx < len(labels) else f"E{idx}"
+        contour_points = contour.reshape(-1, 2).astype(np.float32)
+        mean, eigenvectors, _ = cv2.PCACompute2(contour_points, mean=None)
+        v = eigenvectors[0]
+        v_norm = v / (np.linalg.norm(v) + 1e-9)
+        proj = np.dot(contour_points - mean.reshape(1, 2), v_norm.reshape(2, 1)).ravel()
+        end1 = contour_points[np.argmin(proj)]
+        end2 = contour_points[np.argmax(proj)]
+
+        # Define left/right endpoints.
+        if end1[0] <= end2[0]:
+            left_end, right_end = end1, end2
+        else:
+            left_end, right_end = end2, end1
+
+        # Default orientation from embryo side rule.
+        if label == "A":
+            head, tail = left_end, right_end
+        else:
+            head, tail = right_end, left_end
+
+        # Refine orientation using local vector direction if available.
+        if valid_vectors is not None and len(valid_vectors) > 20:
+            inside = valid_vectors.apply(
+                lambda r: cv2.pointPolygonTest(contour, (float(r["x"]), float(r["y"])), False) >= 0,
+                axis=1
+            )
+            vec_in = valid_vectors[inside]
+            if len(vec_in) >= 30:
+                avg_vx = float(vec_in["vx"].mean())
+                if label == "A":
+                    # A typically propagates rightward from left head.
+                    head, tail = (left_end, right_end) if avg_vx >= 0 else (right_end, left_end)
+                else:
+                    # B typically propagates leftward from right head.
+                    head, tail = (right_end, left_end) if avg_vx <= 0 else (left_end, right_end)
+
+        M = cv2.moments(contour)
+        if M["m00"]:
+            cx = float(M["m10"] / M["m00"])
+            cy = float(M["m01"] / M["m00"])
+        else:
+            cx, cy = float(mean[0, 0]), float(mean[0, 1])
+
+        results[label] = {
+            "contour": contour_points,
+            "contour_intermediate": contour_points.copy(),
+            "contour_old": contour_points.copy(),
+            "head": (float(head[0]), float(head[1])),
+            "tail": (float(tail[0]), float(tail[1])),
+            "centroid": (cx, cy),
+            "cement_gland": None,
+            "split_info": None,
+        }
+
+    return results
 
 
 def _infer_um_per_px_from_tiff(tiff_path):
@@ -2846,13 +3156,29 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
         new_mask_base = Path(__file__).resolve().parents[1] / "datasets" / "frog_embryo_data_processed"
 
         legacy_mask_path = find_mask_file(tiff_path, legacy_mask_base)
-        new_mask_path = find_mask_file(tiff_path, new_mask_base)
+        new_mask_path, new_mask_lookup_info = find_new_mask_file_strict(
+            tiff_path, new_mask_base, return_info=True
+        )
         mask_path = new_mask_path or legacy_mask_path
 
         if legacy_mask_path:
             print(f"    ✓ Found OLD mask file: {legacy_mask_path.name}")
         if new_mask_path:
             print(f"    ✓ Found NEW mask file: {new_mask_path.name}")
+            if new_mask_lookup_info and new_mask_lookup_info.get("match_type") == "relaxed_fuzzy":
+                print(
+                    f"    ⚠ NEW mask selected via relaxed fuzzy match: "
+                    f"{new_mask_lookup_info.get('reason')}"
+                )
+        elif new_mask_lookup_info:
+            print(
+                f"    ⚠ NEW mask not found: {new_mask_lookup_info.get('reason')}"
+            )
+            if new_mask_lookup_info.get("best_candidate"):
+                print(
+                    f"    ⚠ NEW mask best candidate: {Path(new_mask_lookup_info['best_candidate']).name} "
+                    f"(score={new_mask_lookup_info.get('best_score', 0.0):.2f})"
+                )
         if mask_path and not (legacy_mask_path or new_mask_path):
             print(f"    ✓ Found mask file: {mask_path.name}")
     
@@ -2875,6 +3201,98 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
         except Exception as e:
             print(f"    ⚠ Could not read TIFF dimensions: {e}")
     
+    coord_transform = None
+    if tiff_width and tiff_height:
+        valid_xy_for_transform = df_file[df_file['x'].notna() & df_file['y'].notna()]
+        if len(valid_xy_for_transform) > 0:
+            spark_x_min = float(valid_xy_for_transform['x'].min())
+            spark_x_max = float(valid_xy_for_transform['x'].max())
+            spark_y_min = float(valid_xy_for_transform['y'].min())
+            spark_y_max = float(valid_xy_for_transform['y'].max())
+
+            # If spark coordinates already live in TIFF pixel space, keep TIFF geometry unscaled.
+            in_tiff_space = (
+                spark_x_min >= -0.10 * tiff_width and spark_x_max <= 1.10 * tiff_width and
+                spark_y_min >= -0.10 * tiff_height and spark_y_max <= 1.10 * tiff_height
+            )
+            if in_tiff_space:
+                coord_transform = {
+                    "mode": "tiff_pixels",
+                    "scale_x": 1.0,
+                    "scale_y": 1.0,
+                    "offset_x": 0.0,
+                    "offset_y": 0.0,
+                }
+                print("    → Coordinate mode: TIFF pixel space (no TIFF->spark rescale)")
+            else:
+                x_span = max(spark_x_max - spark_x_min, 1.0)
+                y_span = max(spark_y_max - spark_y_min, 1.0)
+                coord_transform = {
+                    "mode": "scaled_to_spark",
+                    "scale_x": x_span / float(tiff_width),
+                    "scale_y": y_span / float(tiff_height),
+                    "offset_x": spark_x_min,
+                    "offset_y": spark_y_min,
+                }
+                print(
+                    "    → Coordinate mode: scaled TIFF->spark "
+                    f"(scale: {coord_transform['scale_x']:.3f}x, {coord_transform['scale_y']:.3f}y)"
+                )
+        else:
+            coord_transform = {
+                "mode": "tiff_pixels",
+                "scale_x": 1.0,
+                "scale_y": 1.0,
+                "offset_x": 0.0,
+                "offset_y": 0.0,
+            }
+    else:
+        coord_transform = {
+            "mode": "tiff_pixels",
+            "scale_x": 1.0,
+            "scale_y": 1.0,
+            "offset_x": 0.0,
+            "offset_y": 0.0,
+        }
+
+    def _transform_tiff_points_for_plot(points):
+        if points is None:
+            return None
+        arr = np.asarray(points, dtype=np.float32).copy()
+        arr[:, 0] = arr[:, 0] * coord_transform["scale_x"] + coord_transform["offset_x"]
+        arr[:, 1] = arr[:, 1] * coord_transform["scale_y"] + coord_transform["offset_y"]
+        return arr
+
+    def _transform_tiff_point_for_plot(point):
+        if point is None:
+            return None
+        return (
+            float(point[0]) * coord_transform["scale_x"] + coord_transform["offset_x"],
+            float(point[1]) * coord_transform["scale_y"] + coord_transform["offset_y"],
+        )
+
+    def _to_display_y(y_val):
+        """
+        Convert top-left image-space Y to the plot's bottom-left convention.
+        For TIFF-pixel mode, most detected points/contours are top-left indexed.
+        """
+        if tiff_height and coord_transform.get("mode") == "tiff_pixels":
+            return float(tiff_height) - float(y_val)
+        return float(y_val)
+
+    def _transform_tiff_points_for_display(points):
+        pts = _transform_tiff_points_for_plot(points)
+        if pts is None:
+            return None
+        pts[:, 1] = np.array([_to_display_y(y) for y in pts[:, 1]], dtype=np.float32)
+        return pts
+
+    def _transform_tiff_point_for_display(point):
+        pt = _transform_tiff_point_for_plot(point)
+        if pt is None:
+            return None
+        return (pt[0], _to_display_y(pt[1]))
+
     # Use global bounds if provided, otherwise calculate from this file's data
     if global_bounds:
         x_min, x_max, y_min, y_max = global_bounds
@@ -2940,9 +3358,9 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
     
     # Mask overlay will be added after all other elements are drawn
     
-    # Detect all embryos from TIFF once (if available)
-    # NEW APPROACH: Use vector-first detection
+    # Detect all embryos once (prefer NEW mask as primary source when available).
     tiff_detections = {}
+    used_new_mask_primary = False
     
     # Get image dimensions for vector-first detection
     if global_bounds:
@@ -2957,8 +3375,41 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
         else:
             img_width = img_height = None
     
-    # Use vector-first detection if we have data
-    if len(df_file) > 50 and img_width and img_height:
+    # Primary source: NEW mask-derived embryo boundaries + head/tail labels.
+    if new_mask_path and new_mask_path.exists() and tiff_width and tiff_height:
+        try:
+            new_mask_for_labels = _load_mask_image(new_mask_path)
+            prepared_new_mask, prep_info = _prepare_new_mask_for_tiff(
+                new_mask_for_labels, tiff_width, tiff_height
+            )
+            if prepared_new_mask is not None:
+                if prep_info.get("status") == "accepted_with_warning":
+                    print(
+                        f"    ⚠ Using NEW mask as primary label source with warning: "
+                        f"{prep_info.get('reason')} "
+                        f"(warn threshold {prep_info.get('warn_threshold', 0.12):.0%}, "
+                        f"reject threshold {prep_info.get('reject_threshold', 0.45):.0%})"
+                    )
+                elif prep_info.get("resized_from") is not None:
+                    rw, rh = prep_info["resized_from"]
+                    print(f"    → Resized NEW mask for labeling from {rw}x{rh} to {tiff_width}x{tiff_height}")
+                mask_results = detect_embryo_from_mask_image(prepared_new_mask, df_tracks=df_file)
+                if mask_results:
+                    tiff_detections = mask_results
+                    used_new_mask_primary = True
+                    print(f"    ✓ NEW mask primary labeling: Found {len(tiff_detections)} embryo region(s)")
+                else:
+                    print("    ⚠ NEW mask primary labeling produced no embryo detections; falling back")
+            else:
+                print(
+                    f"    ⚠ NEW mask rejected as primary label source: {prep_info.get('reason')} "
+                    f"(reject threshold {prep_info.get('reject_threshold', 0.45):.0%})"
+                )
+        except Exception as e:
+            print(f"    ⚠ Error using NEW mask as primary label source: {e}")
+
+    # Fallback source: vector/TIFF-based detection if NEW mask wasn't used.
+    if not used_new_mask_primary and len(df_file) > 50 and img_width and img_height:
         try:
             vector_first_results = detect_embryos_vector_first(
                 df_file, tiff_path=tiff_path, 
@@ -2990,7 +3441,7 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                         tiff_detections = all_detections
                 except Exception as e2:
                     print(f"    ⚠ Error detecting embryos from TIFF: {e2}")
-    else:
+    elif not used_new_mask_primary:
         # Fallback to TIFF-only if insufficient data
         if tiff_path and tiff_path.exists():
             try:
@@ -3019,21 +3470,10 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                 tiff_img = tif.pages[0].asarray()
                 tiff_h, tiff_w = tiff_img.shape[:2]
                 
-                spark_x_min = df_file['x'].min()
-                spark_x_max = df_file['x'].max()
-                spark_y_min = df_file['y'].min()
-                spark_y_max = df_file['y'].max()
-                
-                scale_x = (spark_x_max - spark_x_min) / tiff_w
-                scale_y = (spark_y_max - spark_y_min) / tiff_h
-                
                 for tiff_label, detection in tiff_detections.items():
                     tiff_centroid = detection.get('centroid')
                     if tiff_centroid:
-                        # Transform TIFF centroid from image pixels to spark coordinates
-                        transformed_x = tiff_centroid[0] * scale_x + spark_x_min
-                        transformed_y = tiff_centroid[1] * scale_y + spark_y_min
-                        tiff_centroids_transformed[tiff_label] = (transformed_x, transformed_y)
+                        tiff_centroids_transformed[tiff_label] = _transform_tiff_point_for_plot(tiff_centroid)
         except Exception as e:
             print(f"    ⚠ Error transforming TIFF centroids for matching: {e}")
             # Fallback: use original TIFF centroids (will use larger threshold)
@@ -3082,14 +3522,6 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                 tiff_img = tif.pages[0].asarray()
                 tiff_h, tiff_w = tiff_img.shape[:2]
                 
-                spark_x_min = df_file['x'].min()
-                spark_x_max = df_file['x'].max()
-                spark_y_min = df_file['y'].min()
-                spark_y_max = df_file['y'].max()
-                
-                scale_x = (spark_x_max - spark_x_min) / tiff_w
-                scale_y = (spark_y_max - spark_y_min) / tiff_h
-                
                 for tiff_label, detection in tiff_detections.items():
                     # Draw all TIFF contours as reference (matched or unmatched)
                     ref_contour = detection.get('contour')
@@ -3108,9 +3540,7 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                                         boundary_y_max <= tiff_h * 1.1 and boundary_y_min >= -tiff_h * 0.1)
                         
                         if needs_transform:
-                            ref_contour = ref_contour.copy()
-                            ref_contour[:, 0] = ref_contour[:, 0] * scale_x + spark_x_min
-                            ref_contour[:, 1] = ref_contour[:, 1] * scale_y + spark_y_min
+                            ref_contour = _transform_tiff_points_for_display(ref_contour)
                         
                         ref_contour = np.vstack([ref_contour, ref_contour[0:1]])
                         poly_ref = Polygon(ref_contour, fill=False, edgecolor='gray', 
@@ -3129,9 +3559,7 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                                         boundary_y_max <= tiff_h * 1.1 and boundary_y_min >= -tiff_h * 0.1)
                         
                         if needs_transform:
-                            ref_contour_intermediate = ref_contour_intermediate.copy()
-                            ref_contour_intermediate[:, 0] = ref_contour_intermediate[:, 0] * scale_x + spark_x_min
-                            ref_contour_intermediate[:, 1] = ref_contour_intermediate[:, 1] * scale_y + spark_y_min
+                            ref_contour_intermediate = _transform_tiff_points_for_display(ref_contour_intermediate)
                         
                         ref_contour_intermediate = np.vstack([ref_contour_intermediate, ref_contour_intermediate[0:1]])
                         poly_ref_int = Polygon(ref_contour_intermediate, fill=False, edgecolor='lightgray', 
@@ -3176,84 +3604,33 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                 
                 # Transform TIFF pixel coordinates to spark data coordinates if needed
                 # TIFF contours are in image pixel coordinates, but plot uses spark data coordinates
-                if boundary is not None and tiff_path and tiff_path.exists():
-                    try:
-                        with tiff.TiffFile(tiff_path) as tif:
-                            tiff_img = tif.pages[0].asarray()
-                            tiff_h, tiff_w = tiff_img.shape[:2]
-                            
-                            # Get spark data bounds
-                            spark_x_min = df_file['x'].min()
-                            spark_x_max = df_file['x'].max()
-                            spark_y_min = df_file['y'].min()
-                            spark_y_max = df_file['y'].max()
-                            
-                            # Always transform TIFF pixel coordinates to spark data coordinates
-                            # TIFF contours are in image pixel coordinates [0, tiff_w] x [0, tiff_h]
-                            # Spark data is in a different coordinate system [spark_x_min, spark_x_max] x [spark_y_min, spark_y_max]
-                            # Check if transformation is needed by comparing coordinate ranges
-                            boundary_x_min = boundary[:, 0].min()
-                            boundary_x_max = boundary[:, 0].max()
-                            boundary_y_min = boundary[:, 1].min()
-                            boundary_y_max = boundary[:, 1].max()
-                            
-                            # If TIFF coords are in [0, tiff_w] range, they need transformation
-                            # If they're already in spark coordinate range, they might already be transformed
-                            needs_transform = (boundary_x_max <= tiff_w * 1.1 and boundary_x_min >= -tiff_w * 0.1 and
-                                            boundary_y_max <= tiff_h * 1.1 and boundary_y_min >= -tiff_h * 0.1)
-                            
-                            if needs_transform:
-                                # Transform: map TIFF [0, tiff_w] -> spark [spark_x_min, spark_x_max]
-                                # and TIFF [0, tiff_h] -> spark [spark_y_min, spark_y_max]
-                                scale_x = (spark_x_max - spark_x_min) / tiff_w
-                                scale_y = (spark_y_max - spark_y_min) / tiff_h
-                                
-                                boundary = boundary.copy()
-                                boundary[:, 0] = boundary[:, 0] * scale_x + spark_x_min
-                                boundary[:, 1] = boundary[:, 1] * scale_y + spark_y_min
-                                
-                                if boundary_intermediate is not None:
-                                    boundary_intermediate = boundary_intermediate.copy()
-                                    boundary_intermediate[:, 0] = boundary_intermediate[:, 0] * scale_x + spark_x_min
-                                    boundary_intermediate[:, 1] = boundary_intermediate[:, 1] * scale_y + spark_y_min
-                                
-                                if boundary_old is not None:
-                                    boundary_old = boundary_old.copy()
-                                    boundary_old[:, 0] = boundary_old[:, 0] * scale_x + spark_x_min
-                                    boundary_old[:, 1] = boundary_old[:, 1] * scale_y + spark_y_min
-                                
-                                # Also transform head/tail and cement gland
-                                if detection.get('head'):
-                                    head = detection.get('head')
-                                    tiff_head = (head[0] * scale_x + spark_x_min, head[1] * scale_y + spark_y_min)
-                                else:
-                                    tiff_head = None
-                                
-                                if detection.get('tail'):
-                                    tail = detection.get('tail')
-                                    tiff_tail = (tail[0] * scale_x + spark_x_min, tail[1] * scale_y + spark_y_min)
-                                else:
-                                    tiff_tail = None
-                                
-                                # Transform cement gland location
-                                cement_gland_raw = detection.get('cement_gland')
-                                if cement_gland_raw:
-                                    tiff_cement_gland = (cement_gland_raw[0] * scale_x + spark_x_min, 
-                                                        cement_gland_raw[1] * scale_y + spark_y_min)
-                                else:
-                                    tiff_cement_gland = None
-                                
-                                print(f"    {folder_video_prefix} [Embryo {embryo_id}] → Transformed TIFF coordinates (scale: {scale_x:.3f}x, {scale_y:.3f}y)")
-                            else:
-                                # Coordinates already in spark coordinate system, use as-is
-                                tiff_head = detection.get('head')
-                                tiff_tail = detection.get('tail')
-                                cement_gland_raw = detection.get('cement_gland')
-                                if cement_gland_raw:
-                                    tiff_cement_gland = (cement_gland_raw[0] * scale_x + spark_x_min, 
-                                                        cement_gland_raw[1] * scale_y + spark_y_min)
-                    except Exception as e:
-                        print(f"    {folder_video_prefix} [Embryo {embryo_id}] ⚠ Error transforming TIFF coordinates: {e}")
+                if boundary is not None and tiff_width and tiff_height:
+                    # TIFF detections are in TIFF pixel coordinates; convert only when needed.
+                    boundary_x_min = boundary[:, 0].min()
+                    boundary_x_max = boundary[:, 0].max()
+                    boundary_y_min = boundary[:, 1].min()
+                    boundary_y_max = boundary[:, 1].max()
+
+                    needs_transform = (
+                        boundary_x_max <= tiff_width * 1.1 and boundary_x_min >= -tiff_width * 0.1 and
+                        boundary_y_max <= tiff_height * 1.1 and boundary_y_min >= -tiff_height * 0.1
+                    )
+
+                    if needs_transform:
+                        boundary = _transform_tiff_points_for_display(boundary)
+                        if boundary_intermediate is not None:
+                            boundary_intermediate = _transform_tiff_points_for_display(boundary_intermediate)
+                        if boundary_old is not None:
+                            boundary_old = _transform_tiff_points_for_display(boundary_old)
+
+                        tiff_head = _transform_tiff_point_for_display(detection.get('head'))
+                        tiff_tail = _transform_tiff_point_for_display(detection.get('tail'))
+                        tiff_cement_gland = _transform_tiff_point_for_display(detection.get('cement_gland'))
+                        print(
+                            f"    {folder_video_prefix} [Embryo {embryo_id}] → Applied TIFF coordinate transform "
+                            f"(mode={coord_transform['mode']}, scale: {coord_transform['scale_x']:.3f}x, {coord_transform['scale_y']:.3f}y)"
+                        )
+                    else:
                         tiff_head = detection.get('head')
                         tiff_tail = detection.get('tail')
                         tiff_cement_gland = detection.get('cement_gland')
@@ -3305,68 +3682,39 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                     
                     # Apply same coordinate transformation as above
                     if boundary is not None:
-                        if tiff_path and tiff_path.exists():
+                        if tiff_width and tiff_height:
                             print(f"    {folder_video_prefix} [Embryo {embryo_id}] → Found boundary and TIFF path, applying transformation...")
-                            try:
-                                with tiff.TiffFile(tiff_path) as tif:
-                                    tiff_img = tif.pages[0].asarray()
-                                    tiff_h, tiff_w = tiff_img.shape[:2]
-                                    
-                                    spark_x_min = df_file['x'].min()
-                                    spark_x_max = df_file['x'].max()
-                                    spark_y_min = df_file['y'].min()
-                                    spark_y_max = df_file['y'].max()
-                                    
-                                    boundary_x_min = boundary[:, 0].min()
-                                    boundary_x_max = boundary[:, 0].max()
-                                    boundary_y_min = boundary[:, 1].min()
-                                    boundary_y_max = boundary[:, 1].max()
-                                    
-                                    needs_transform = (boundary_x_max <= tiff_w * 1.1 and boundary_x_min >= -tiff_w * 0.1 and
-                                                    boundary_y_max <= tiff_h * 1.1 and boundary_y_min >= -tiff_h * 0.1)
-                                    
-                                    if needs_transform:
-                                        print(f"    {folder_video_prefix} [Embryo {embryo_id}] → Applying coordinate transformation (boundary: X=[{boundary_x_min:.1f}, {boundary_x_max:.1f}], Y=[{boundary_y_min:.1f}, {boundary_y_max:.1f}], TIFF: {tiff_w}x{tiff_h})")
-                                        scale_x = (spark_x_max - spark_x_min) / tiff_w
-                                        scale_y = (spark_y_max - spark_y_min) / tiff_h
-                                        
-                                        boundary = boundary.copy()
-                                        boundary[:, 0] = boundary[:, 0] * scale_x + spark_x_min
-                                        boundary[:, 1] = boundary[:, 1] * scale_y + spark_y_min
-                                        
-                                        if boundary_intermediate is not None:
-                                            boundary_intermediate = boundary_intermediate.copy()
-                                            boundary_intermediate[:, 0] = boundary_intermediate[:, 0] * scale_x + spark_x_min
-                                            boundary_intermediate[:, 1] = boundary_intermediate[:, 1] * scale_y + spark_y_min
-                                        
-                                        if boundary_old is not None:
-                                            boundary_old = boundary_old.copy()
-                                            boundary_old[:, 0] = boundary_old[:, 0] * scale_x + spark_x_min
-                                            boundary_old[:, 1] = boundary_old[:, 1] * scale_y + spark_y_min
-                                        
-                                        if detection.get('head'):
-                                            head = detection.get('head')
-                                            tiff_head = (head[0] * scale_x + spark_x_min, head[1] * scale_y + spark_y_min)
-                                        else:
-                                            tiff_head = None
-                                        
-                                        if detection.get('tail'):
-                                            tail = detection.get('tail')
-                                            tiff_tail = (tail[0] * scale_x + spark_x_min, tail[1] * scale_y + spark_y_min)
-                                        else:
-                                            tiff_tail = None
-                                        
-                                        print(f"    {folder_video_prefix} [Embryo {embryo_id}] → Transformed TIFF coordinates (scale: {scale_x:.3f}x, {scale_y:.3f}y)")
-                                    else:
-                                        print(f"    {folder_video_prefix} [Embryo {embryo_id}] → TIFF coordinates already in spark system (no transform needed)")
-                                        tiff_head = detection.get('head')
-                                        tiff_tail = detection.get('tail')
-                                        cement_gland_raw = detection.get('cement_gland')
-                                        if cement_gland_raw:
-                                            tiff_cement_gland = (cement_gland_raw[0] * scale_x + spark_x_min, 
-                                                                cement_gland_raw[1] * scale_y + spark_y_min)
-                            except Exception as e:
-                                print(f"    {folder_video_prefix} [Embryo {embryo_id}] ⚠ Error transforming TIFF coordinates: {e}")
+                            boundary_x_min = boundary[:, 0].min()
+                            boundary_x_max = boundary[:, 0].max()
+                            boundary_y_min = boundary[:, 1].min()
+                            boundary_y_max = boundary[:, 1].max()
+
+                            needs_transform = (
+                                boundary_x_max <= tiff_width * 1.1 and boundary_x_min >= -tiff_width * 0.1 and
+                                boundary_y_max <= tiff_height * 1.1 and boundary_y_min >= -tiff_height * 0.1
+                            )
+
+                            if needs_transform:
+                                print(
+                                    f"    {folder_video_prefix} [Embryo {embryo_id}] → Applying coordinate transformation "
+                                    f"(boundary: X=[{boundary_x_min:.1f}, {boundary_x_max:.1f}], "
+                                    f"Y=[{boundary_y_min:.1f}, {boundary_y_max:.1f}], TIFF: {tiff_width}x{tiff_height})"
+                                )
+                                boundary = _transform_tiff_points_for_display(boundary)
+                                if boundary_intermediate is not None:
+                                    boundary_intermediate = _transform_tiff_points_for_display(boundary_intermediate)
+                                if boundary_old is not None:
+                                    boundary_old = _transform_tiff_points_for_display(boundary_old)
+
+                                tiff_head = _transform_tiff_point_for_display(detection.get('head'))
+                                tiff_tail = _transform_tiff_point_for_display(detection.get('tail'))
+                                tiff_cement_gland = _transform_tiff_point_for_display(detection.get('cement_gland'))
+                                print(
+                                    f"    {folder_video_prefix} [Embryo {embryo_id}] → Applied TIFF coordinate transform "
+                                    f"(mode={coord_transform['mode']}, scale: {coord_transform['scale_x']:.3f}x, {coord_transform['scale_y']:.3f}y)"
+                                )
+                            else:
+                                print(f"    {folder_video_prefix} [Embryo {embryo_id}] → TIFF coordinates already in spark system (no transform needed)")
                                 tiff_head = detection.get('head')
                                 tiff_tail = detection.get('tail')
                                 tiff_cement_gland = detection.get('cement_gland')
@@ -3417,73 +3765,36 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                         
                         # Apply coordinate transformation (same as above)
                         if boundary is not None:
-                            if tiff_path and tiff_path.exists():
+                            if tiff_width and tiff_height:
                                 print(f"    {folder_video_prefix} [Embryo {embryo_id}] → Applying coordinate transformation...")
-                                try:
-                                    with tiff.TiffFile(tiff_path) as tif:
-                                        tiff_img = tif.pages[0].asarray()
-                                        tiff_h, tiff_w = tiff_img.shape[:2]
-                                        
-                                        spark_x_min = df_file['x'].min()
-                                        spark_x_max = df_file['x'].max()
-                                        spark_y_min = df_file['y'].min()
-                                        spark_y_max = df_file['y'].max()
-                                        
-                                        boundary_x_min = boundary[:, 0].min()
-                                        boundary_x_max = boundary[:, 0].max()
-                                        boundary_y_min = boundary[:, 1].min()
-                                        boundary_y_max = boundary[:, 1].max()
-                                        
-                                        needs_transform = (boundary_x_max <= tiff_w * 1.1 and boundary_x_min >= -tiff_w * 0.1 and
-                                                        boundary_y_max <= tiff_h * 1.1 and boundary_y_min >= -tiff_h * 0.1)
-                                        
-                                        if needs_transform:
-                                            scale_x = (spark_x_max - spark_x_min) / tiff_w
-                                            scale_y = (spark_y_max - spark_y_min) / tiff_h
-                                            
-                                            boundary = boundary.copy()
-                                            boundary[:, 0] = boundary[:, 0] * scale_x + spark_x_min
-                                            boundary[:, 1] = boundary[:, 1] * scale_y + spark_y_min
-                                            
-                                            if boundary_intermediate is not None:
-                                                boundary_intermediate = boundary_intermediate.copy()
-                                                boundary_intermediate[:, 0] = boundary_intermediate[:, 0] * scale_x + spark_x_min
-                                                boundary_intermediate[:, 1] = boundary_intermediate[:, 1] * scale_y + spark_y_min
-                                            
-                                            if boundary_old is not None:
-                                                boundary_old = boundary_old.copy()
-                                                boundary_old[:, 0] = boundary_old[:, 0] * scale_x + spark_x_min
-                                                boundary_old[:, 1] = boundary_old[:, 1] * scale_y + spark_y_min
-                                            
-                                            if detection.get('head'):
-                                                head = detection.get('head')
-                                                tiff_head = (head[0] * scale_x + spark_x_min, head[1] * scale_y + spark_y_min)
-                                            else:
-                                                tiff_head = None
-                                            
-                                            if detection.get('tail'):
-                                                tail = detection.get('tail')
-                                                tiff_tail = (tail[0] * scale_x + spark_x_min, tail[1] * scale_y + spark_y_min)
-                                            else:
-                                                tiff_tail = None
-                                            
-                                            # Transform cement gland location
-                                            cement_gland_raw = detection.get('cement_gland')
-                                            if cement_gland_raw:
-                                                tiff_cement_gland = (cement_gland_raw[0] * scale_x + spark_x_min, 
-                                                                    cement_gland_raw[1] * scale_y + spark_y_min)
-                                            else:
-                                                tiff_cement_gland = None
-                                            
-                                            print(f"    {folder_video_prefix} [Embryo {embryo_id}] → Transformed TIFF coordinates (scale: {scale_x:.3f}x, {scale_y:.3f}y)")
-                                        else:
-                                            # Coordinates already in spark coordinate system
-                                            print(f"    {folder_video_prefix} [Embryo {embryo_id}] → TIFF coordinates already in spark system (no transform needed)")
-                                            tiff_head = detection.get('head')
-                                            tiff_tail = detection.get('tail')
-                                            tiff_cement_gland = detection.get('cement_gland')
-                                except Exception as e:
-                                    print(f"    {folder_video_prefix} [Embryo {embryo_id}] ⚠ Error transforming TIFF coordinates: {e}")
+                                boundary_x_min = boundary[:, 0].min()
+                                boundary_x_max = boundary[:, 0].max()
+                                boundary_y_min = boundary[:, 1].min()
+                                boundary_y_max = boundary[:, 1].max()
+
+                                needs_transform = (
+                                    boundary_x_max <= tiff_width * 1.1 and boundary_x_min >= -tiff_width * 0.1 and
+                                    boundary_y_max <= tiff_height * 1.1 and boundary_y_min >= -tiff_height * 0.1
+                                )
+
+                                if needs_transform:
+                                    boundary = _transform_tiff_points_for_display(boundary)
+                                    if boundary_intermediate is not None:
+                                        boundary_intermediate = _transform_tiff_points_for_display(boundary_intermediate)
+                                    if boundary_old is not None:
+                                        boundary_old = _transform_tiff_points_for_display(boundary_old)
+
+                                    tiff_head = _transform_tiff_point_for_display(detection.get('head'))
+                                    tiff_tail = _transform_tiff_point_for_display(detection.get('tail'))
+                                    tiff_cement_gland = _transform_tiff_point_for_display(detection.get('cement_gland'))
+
+                                    print(
+                                        f"    {folder_video_prefix} [Embryo {embryo_id}] → Applied TIFF coordinate transform "
+                                        f"(mode={coord_transform['mode']}, scale: {coord_transform['scale_x']:.3f}x, {coord_transform['scale_y']:.3f}y)"
+                                    )
+                                else:
+                                    # Coordinates already in spark coordinate system
+                                    print(f"    {folder_video_prefix} [Embryo {embryo_id}] → TIFF coordinates already in spark system (no transform needed)")
                                     tiff_head = detection.get('head')
                                     tiff_tail = detection.get('tail')
                                     tiff_cement_gland = detection.get('cement_gland')
@@ -3574,7 +3885,11 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
             else:
                 # Reconstructed from sparks (approximate)
                 try:
-                    poly = Polygon(boundary, fill=False, edgecolor=colors['outline'], 
+                    boundary_display = boundary
+                    if boundary_display is not None and tiff_height and coord_transform.get("mode") == "tiff_pixels":
+                        boundary_display = boundary_display.copy()
+                        boundary_display[:, 1] = tiff_height - boundary_display[:, 1]
+                    poly = Polygon(boundary_display, fill=False, edgecolor=colors['outline'], 
                                   linewidth=2, alpha=0.6, linestyle='--')
                     ax.add_patch(poly)
                 except Exception as e:
@@ -3973,6 +4288,47 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
                            textcoords='offset points', color='cyan', fontsize=11, 
                            fontweight='bold', ha='center',
                            bbox=dict(boxstyle='round', facecolor='black', alpha=0.7, edgecolor='cyan', linewidth=2), zorder=12)
+
+                # Warn if Excel poke lies outside the active mask.
+                # Prefer NEW mask if geometry is compatible; otherwise fallback to OLD mask.
+                if tiff_width and tiff_height:
+                    mask_for_check = None
+                    mask_label = None
+
+                    if new_mask_path and new_mask_path.exists():
+                        new_mask_check = _load_mask_image(new_mask_path)
+                        if new_mask_check is not None:
+                            nh, nw = new_mask_check.shape[:2]
+                            tiff_ar = (tiff_width / tiff_height) if tiff_height else None
+                            mask_ar = (nw / nh) if nh else None
+                            if tiff_ar and mask_ar:
+                                ar_rel_diff = abs(mask_ar - tiff_ar) / max(tiff_ar, 1e-9)
+                            else:
+                                ar_rel_diff = 0.0
+                            if ar_rel_diff <= 0.12:
+                                mask_for_check = new_mask_check
+                                mask_label = f"NEW ({new_mask_path.name})"
+
+                    if mask_for_check is None and legacy_mask_path and legacy_mask_path.exists():
+                        old_mask_check = _load_mask_image(legacy_mask_path)
+                        if old_mask_check is not None:
+                            mask_for_check = old_mask_check
+                            mask_label = f"OLD ({legacy_mask_path.name})"
+
+                    if mask_for_check is not None:
+                        inside_mask, inside_tiff = _point_inside_mask_from_plot_coords(
+                            excel_poke_plot, mask_for_check, tiff_width, tiff_height
+                        )
+                        if not inside_tiff:
+                            print(
+                                f"    ⚠ {folder_video_prefix} Excel poke is outside TIFF bounds: "
+                                f"({excel_poke_plot[0]:.1f}, {excel_poke_plot[1]:.1f})"
+                            )
+                        elif not inside_mask:
+                            print(
+                                f"    ⚠ {folder_video_prefix} Excel poke is outside {mask_label} mask: "
+                                f"({excel_poke_plot[0]:.1f}, {excel_poke_plot[1]:.1f})"
+                            )
             
             # Draw Excel head/tail labels (cyan for head, orange for tail)
             for embryo_id in ['A', 'B']:
@@ -4063,6 +4419,7 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
     
     # Overlay masks if available - do this LAST so it appears behind all other elements.
     # Old mask: cyan. New frog NPZ mask: lime.
+    new_mask_overlayed = False
     if (legacy_mask_path and legacy_mask_path.exists() or new_mask_path and new_mask_path.exists()) and tiff_path and tiff_path.exists():
         try:
             with tiff.TiffFile(tiff_path) as tif:
@@ -4092,10 +4449,24 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
             if new_mask_path and new_mask_path.exists():
                 new_mask = _load_mask_image(new_mask_path)
                 if new_mask is not None:
+                    new_mask, prep_info = _prepare_new_mask_for_tiff(new_mask, tiff_w, tiff_h)
+                    if new_mask is None:
+                        print(
+                            f"    ⚠ Skipping NEW mask due to geometry mismatch: {new_mask_path.name} "
+                            f"({prep_info.get('reason')}, reject threshold {prep_info.get('reject_threshold', 0.45):.0%})"
+                        )
+                    elif prep_info.get("status") == "accepted_with_warning":
+                        print(
+                            f"    ⚠ NEW mask geometry mismatch accepted for visualization: {new_mask_path.name} "
+                            f"({prep_info.get('reason')}, warn threshold {prep_info.get('warn_threshold', 0.12):.0%}, "
+                            f"reject threshold {prep_info.get('reject_threshold', 0.45):.0%})"
+                        )
+                if new_mask is not None:
                     new_count, new_cov, new_resized = _overlay_mask_contours(
                         ax, new_mask, tiff_h, tiff_w,
                         facecolor='lime', edgecolor='#b6ffb6', alpha=0.28, zorder=2
                     )
+                    new_mask_overlayed = True
                     if new_resized is not None:
                         print(f"    → Resized NEW mask from {new_resized[0]}x{new_resized[1]} to {tiff_w}x{tiff_h} to match TIFF")
                     zoom_hint = _parse_zoom_from_dirname(new_mask_path.parent.name)
@@ -4120,12 +4491,16 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
     title_text = f'Folder {folder} - {video}\nEmbryo Detection & Poke Location'
     has_old_mask = bool(legacy_mask_path and legacy_mask_path.exists())
     has_new_mask = bool(new_mask_path and new_mask_path.exists())
-    if has_old_mask and has_new_mask:
+    if has_old_mask and new_mask_overlayed:
         title_text += ' [Old+New Mask Overlay]'
-    elif has_new_mask:
+    elif new_mask_overlayed:
         title_text += ' [New Mask Overlay]'
     elif has_old_mask:
         title_text += ' [Old Mask Overlay]'
+    elif has_new_mask:
+        title_text += ' [New Mask Found, Overlay Skipped]'
+    if used_new_mask_primary:
+        title_text += ' [NEW Mask Primary Labels]'
 
     zoom_hint = None
     if has_new_mask:
@@ -4413,7 +4788,7 @@ def build_data_sources_assumptions(summary_data, tiff_base_path=None, mask_base_
         "Coordinates are rendered in TIFF pixel space with matplotlib origin at bottom-left.",
         "Legacy PNG masks are treated as OLD masks; NPZ masks from frog dataset are treated as NEW masks.",
         "If mask dimensions differ from TIFF dimensions, masks are resized with nearest-neighbor interpolation.",
-        "Speed labels prefer um/s when TIFF ImageDescription contains calibration (Resolution/Pixel width/Voxel size); otherwise px/s.",
+        "Speed labels prefer um/s when TIFF metadata provides calibration (ImageDescription, IJMetadata dCalibration, XResolution+unit=micron, Pixel width, or Voxel size); otherwise px/s.",
         "Zoom values are parsed from NEW mask folder names like '12 - Zoom = 5.40x' and used as metadata labels.",
         "Excel coordinates are transformed into current TIFF plotting frame (scaling and y-orientation selection) before overlay.",
     ]
@@ -4425,6 +4800,26 @@ def build_data_sources_assumptions(summary_data, tiff_base_path=None, mask_base_
         "Row parsing: ID cells containing 'poke' are interpreted as poke coordinates; IDs like 'A_head', 'A_tail', 'B_head', 'B_tail' map embryo landmarks.",
         "Missing/NaN X/Y values are skipped.",
         "At visualization time, video matching prefers exact normalized name, then fuzzy match with threshold; low-confidence matches are skipped.",
+    ]
+
+    speed_wave_notes = [
+        "Motion vectors are computed from linked spark centroids frame-to-frame: vx=(x_t-x_{t-1})/dt, vy=(y_t-y_{t-1})/dt, speed=hypot(vx,vy).",
+        "Default speed units are pixels/second (px/s); when TIFF calibration is available, PDF labels also show microns/second (um/s).",
+        "Per-state organization in spark_tracks.csv: track_id, frame_idx, time_s, x/y, vx/vy/speed, embryo_id, ap_norm (0=head, 1=tail), dv_px, dist_from_poke_px, region.",
+        "Wave/vector summaries in PDF use the same per-state data and preserve embryo/context columns for downstream clustering and hypothesis testing.",
+    ]
+
+    region_notes = [
+        "Regions are assigned per spark state after embryo head/tail inference and coordinate transform into the reference embryo map.",
+        "The AP/DV geometry maps each point to embryo-specific coordinates, then get_region_for_point() labels it using predefined anatomical bounding boxes.",
+        "Region labels are stored in the `region` column in spark_tracks.csv; empty/unknown labels indicate unmatched geometry or out-of-map points.",
+    ]
+
+    spark_data_locations = [
+        "Primary per-state data file: `spark_tracks.csv` (generated by wave-vector-tiff-parser.py).",
+        "Per-cluster aggregation file: `vector_clusters.csv` (generated by spark_tracks_to_clusters.py).",
+        "Detection summary outputs: `wave-vector-analysis/analysis_results/detection_summary/` (markdown, PDF, warnings log, images).",
+        "Run-level source/assumption record: `DATA_SOURCES_AND_ASSUMPTIONS.md` in the selected output directory.",
     ]
 
     return {
@@ -4445,6 +4840,9 @@ def build_data_sources_assumptions(summary_data, tiff_base_path=None, mask_base_
         "excel_video_count": (sum(len(v) for v in excel_coords.values()) if excel_coords else 0),
         "assumptions": assumptions,
         "excel_parse_notes": excel_parse_notes,
+        "speed_wave_notes": speed_wave_notes,
+        "region_notes": region_notes,
+        "spark_data_locations": spark_data_locations,
         "calibration_sources": dict(calibration_sources),
         "metadata_signals": dict(metadata_signals),
     }
@@ -4508,6 +4906,27 @@ def write_data_sources_assumptions_markdown(output_path, context):
     ]
     for n in context.get("excel_parse_notes", []):
         lines.append(f"- {n}")
+    lines += [
+        "",
+        "## Speed and Wave/Vector Organization",
+        "",
+    ]
+    for n in context.get("speed_wave_notes", []):
+        lines.append(f"- {n}")
+    lines += [
+        "",
+        "## Region Computation",
+        "",
+    ]
+    for n in context.get("region_notes", []):
+        lines.append(f"- {n}")
+    lines += [
+        "",
+        "## Spark Data File Locations",
+        "",
+    ]
+    for n in context.get("spark_data_locations", []):
+        lines.append(f"- {n}")
     lines.append("")
     with open(output_path, "w") as f:
         f.write("\n".join(lines))
@@ -4554,8 +4973,31 @@ def add_data_sources_assumptions_page(pdf, context):
     ax.text(0.04, 0.86, sources_text, fontsize=10, va='top', family='monospace')
     ax.text(0.04, 0.60, "Run Coverage", fontsize=13, fontweight='bold', va='top')
     ax.text(0.04, 0.56, summary_text, fontsize=10, va='top', family='monospace')
-    ax.text(0.04, 0.33, assumptions_text, fontsize=10, va='top')
-    ax.text(0.04, 0.11, excel_notes_text, fontsize=9, va='top')
+    ax.text(0.04, 0.34, assumptions_text, fontsize=9, va='top')
+    ax.text(0.04, 0.12, excel_notes_text, fontsize=8, va='top')
+
+    plt.tight_layout()
+    pdf.savefig(fig, bbox_inches='tight')
+    plt.close()
+
+
+def add_pipeline_documentation_page(pdf, context):
+    """Add dedicated page for speed/wave and region documentation."""
+    fig, ax = plt.subplots(figsize=(11, 8.5))
+    ax.axis('off')
+    ax.set_title("Pipeline Data Organization", fontsize=18, fontweight='bold', pad=18)
+
+    speed_wave_notes = context.get("speed_wave_notes", [])
+    region_notes = context.get("region_notes", [])
+    spark_locations = context.get("spark_data_locations", [])
+
+    speed_text = "Speed + wave/vector organization:\n" + "\n".join([f"- {n}" for n in speed_wave_notes])
+    region_text = "Region computation:\n" + "\n".join([f"- {n}" for n in region_notes])
+    files_text = "Spark data files:\n" + "\n".join([f"- {n}" for n in spark_locations])
+
+    ax.text(0.04, 0.92, speed_text, fontsize=10, va='top')
+    ax.text(0.04, 0.52, region_text, fontsize=10, va='top')
+    ax.text(0.04, 0.29, files_text, fontsize=10, va='top')
 
     plt.tight_layout()
     pdf.savefig(fig, bbox_inches='tight')
@@ -4578,6 +5020,7 @@ def create_pdf_from_images(image_paths, output_pdf_path, images_per_page=1, summ
         # Add data sources + assumptions page first (if provided).
         if run_context:
             add_data_sources_assumptions_page(pdf, run_context)
+            add_pipeline_documentation_page(pdf, run_context)
 
         # Add summary table as first page if provided
         if summary_data:
@@ -4841,6 +5284,19 @@ def generate_summary_table(df_tracks, output_path, output_dir, image_paths_dict=
         f.write("- **Poke Location**: Coordinates in pixels (x, y)\n")
         f.write("- **Healed Wound**: Location of previously healed wounds (if detected)\n")
         f.write("- **Visualization**: Link to individual image (see also compiled PDF)\n\n")
+        f.write("## Speed and Wave/Vector Organization\n\n")
+        f.write("- **Speed mapping**: `vx`, `vy`, and `speed` are computed from frame-to-frame spark centroid motion (`speed = hypot(vx, vy)`).\n")
+        f.write("- **Primary units**: speeds are px/s by default; when TIFF calibration is detected, PDF labels also include um/s.\n")
+        f.write("- **Wave/vector data model**: each spark track state stores `track_id`, `frame_idx`, `time_s`, `x`, `y`, `vx`, `vy`, `speed`, `embryo_id`, `ap_norm`, `dv_px`, `dist_from_poke_px`, and `region`.\n")
+        f.write("- **Organization into waves/vectors**: downstream clustering and summaries are built from these per-state vectors while preserving embryo identity and anatomical context.\n\n")
+        f.write("## Region Computation\n\n")
+        f.write("- **Head/tail-aligned mapping**: embryo geometry is inferred first, then spark points are transformed into a normalized embryo-map frame.\n")
+        f.write("- **Region assignment**: `get_region_for_point()` maps transformed points into predefined anatomical region bounding boxes.\n")
+        f.write("- **Stored output**: region labels are written to the `region` column in `spark_tracks.csv` (`unknown` means no confident region match).\n\n")
+        f.write("## Spark Data File Locations\n\n")
+        f.write("- **Per-state tracks**: `spark_tracks.csv` (output of `wave-vector-tiff-parser.py`).\n")
+        f.write("- **Per-cluster vectors/waves**: `vector_clusters.csv` (output of `spark_tracks_to_clusters.py`).\n")
+        f.write("- **Detection summary bundle**: `wave-vector-analysis/analysis_results/detection_summary/` (includes markdown, PDF, warning log, and per-video images).\n\n")
         f.write("## Compiled PDF\n\n")
         f.write("All visualizations are compiled in: `detection_visualizations.pdf`\n\n")
         f.write("\n".join(table_rows))
