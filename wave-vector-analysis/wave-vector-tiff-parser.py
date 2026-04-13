@@ -4,6 +4,8 @@ import math
 import csv
 import os
 import re
+import difflib
+from pathlib import Path
 import tifffile as tiff
 from embryo_region_map import (
     load_region_map,
@@ -16,6 +18,231 @@ def natural_key(s):
     """Sort helper that handles numbers in filenames naturally."""
     return [int(text) if text.isdigit() else text.lower()
             for text in re.split(r'(\d+)', s)]
+
+
+def _extract_folder_id_from_tiff_path(tiff_path_obj):
+    """Extract numeric folder id from TIFF path/name when possible."""
+    parent_name = tiff_path_obj.parent.name
+    if parent_name.isdigit():
+        return parent_name
+    m = re.search(r'folder_(\d+)_', tiff_path_obj.stem, re.IGNORECASE)
+    if m:
+        return m.group(1)
+    return None
+
+
+def _normalize_video_name_for_mask(name):
+    """Normalize a TIFF stem/video name for fuzzy matching against mask filenames."""
+    s = str(name)
+    s = re.sub(r'^folder_\d+_', '', s)
+    s = s.replace('__', ' ')
+    s = s.replace('_', ' ')
+    s = re.sub(r'\s+', ' ', s).strip()
+    s = re.sub(r'\s+(\d+-\d+)\s*$', r' (\1)', s)
+    return s.strip()
+
+
+def _load_mask_image(mask_path):
+    """Load NPZ/PNG mask and return binary uint8 mask (0 or 255)."""
+    if mask_path is None:
+        return None
+    mask_path = Path(mask_path)
+    if not mask_path.exists():
+        return None
+
+    if mask_path.suffix.lower() == ".npz":
+        with np.load(mask_path, allow_pickle=False) as npz_data:
+            if "mask" in npz_data:
+                mask_img = npz_data["mask"]
+            else:
+                mask_img = None
+                for key in npz_data.files:
+                    arr = npz_data[key]
+                    if isinstance(arr, np.ndarray) and arr.ndim == 2:
+                        mask_img = arr
+                        break
+    else:
+        mask_img = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
+
+    if mask_img is None:
+        return None
+    if mask_img.ndim > 2:
+        mask_img = mask_img[..., 0]
+    if mask_img.dtype != np.uint8:
+        mask_img = (mask_img > 0).astype(np.uint8) * 255
+    else:
+        mask_img = np.where(mask_img > 0, 255, 0).astype(np.uint8)
+    return mask_img
+
+
+def _prepare_mask_for_tiff(mask_img, tiff_w, tiff_h, reject_threshold=0.45):
+    """
+    Validate mask geometry against TIFF geometry and resize if needed.
+    Returns (prepared_mask_or_none, info_dict).
+    """
+    info = {
+        "status": "invalid",
+        "reason": "",
+        "ar_rel_diff": None,
+        "resized_from": None,
+        "reject_threshold": reject_threshold,
+    }
+    if mask_img is None:
+        info["reason"] = "mask image is None"
+        return None, info
+    if tiff_w is None or tiff_h is None or tiff_w <= 0 or tiff_h <= 0:
+        info["reason"] = "invalid TIFF dimensions"
+        return None, info
+
+    nh, nw = mask_img.shape[:2]
+    tiff_ar = (tiff_w / tiff_h) if tiff_h else None
+    mask_ar = (nw / nh) if nh else None
+    if tiff_ar and mask_ar:
+        ar_rel_diff = abs(mask_ar - tiff_ar) / max(tiff_ar, 1e-9)
+    else:
+        ar_rel_diff = 0.0
+    info["ar_rel_diff"] = ar_rel_diff
+
+    if ar_rel_diff > reject_threshold:
+        info["status"] = "rejected"
+        info["reason"] = (
+            f"geometry mismatch too large (mask {nw}x{nh}, TIFF {tiff_w}x{tiff_h}, "
+            f"aspect diff {ar_rel_diff:.1%})"
+        )
+        return None, info
+
+    prepared = mask_img
+    if nw != tiff_w or nh != tiff_h:
+        info["resized_from"] = (nw, nh)
+        prepared = cv2.resize(mask_img, (tiff_w, tiff_h), interpolation=cv2.INTER_NEAREST)
+
+    info["status"] = "accepted"
+    info["reason"] = "geometry compatible"
+    return prepared, info
+
+
+def _find_new_mask_file_for_tiff(tiff_path, new_mask_base_path):
+    """
+    Find best NEW mask for a TIFF inside the same numeric folder-id subtree.
+    Returns (path_or_none, info_dict).
+    """
+    info = {
+        "status": "not_found",
+        "reason": "uninitialized",
+        "folder_id": None,
+        "match_type": None,
+        "best_candidate": None,
+        "best_score": None,
+    }
+    if tiff_path is None:
+        info["reason"] = "tiff path is None"
+        return None, info
+    tiff_path_obj = Path(tiff_path)
+    folder_id = _extract_folder_id_from_tiff_path(tiff_path_obj)
+    if not folder_id:
+        info["reason"] = f"could not extract folder id from TIFF path: {tiff_path_obj}"
+        return None, info
+    info["folder_id"] = folder_id
+
+    base = Path(new_mask_base_path)
+    if not base.exists():
+        info["reason"] = f"new mask base path does not exist: {base}"
+        return None, info
+
+    roots = [d for d in base.iterdir() if d.is_dir() and d.name.strip().startswith(f"{folder_id} ")]
+    if not roots:
+        info["reason"] = f"no NEW mask directory matched folder id {folder_id} under {base}"
+        return None, info
+
+    tiff_stem = tiff_path_obj.stem
+    tiff_normalized = _normalize_video_name_for_mask(tiff_stem)
+    candidate_bases = {
+        tiff_stem,
+        _normalize_video_name_for_mask(tiff_path_obj.name.replace('.tif', '').replace('.tiff', '')),
+        re.sub(r'^folder_\d+_', '', tiff_stem),
+        tiff_normalized,
+    }
+    candidate_bases = {b.strip() for b in candidate_bases if b and b.strip()}
+
+    for root in roots:
+        for b in candidate_bases:
+            for p in [root / f"{b}_mask.npz", root / f"{b}.npz"]:
+                if p.exists():
+                    info["status"] = "matched"
+                    info["match_type"] = "exact"
+                    info["reason"] = "exact NEW mask match in folder-id subtree"
+                    return p, info
+
+    all_npz = []
+    for root in roots:
+        all_npz.extend(list(root.rglob("*_mask.npz")))
+    if not all_npz:
+        info["reason"] = f"no *_mask.npz files found under NEW folder-id subtree {folder_id}"
+        return None, info
+
+    tiff_compact = tiff_normalized.lower().replace(" ", "")
+    for p in all_npz:
+        mask_base_name = p.stem.replace("_mask", "")
+        mask_norm = _normalize_video_name_for_mask(mask_base_name).lower()
+        if tiff_normalized.lower() == mask_norm or tiff_compact == mask_norm.replace(" ", ""):
+            info["status"] = "matched"
+            info["match_type"] = "normalized_exact"
+            info["reason"] = "normalized NEW mask name match in folder-id subtree"
+            return p, info
+
+    def _tokenize(s):
+        return set(re.findall(r"[a-z0-9]+", s.lower()))
+
+    def _embryo_prefix(s):
+        tokens = re.findall(r"[a-z0-9]+", s.lower())
+        if not tokens:
+            return None
+        t0 = tokens[0]
+        if t0.startswith("b"):
+            return "b"
+        if t0.startswith("c"):
+            return "c"
+        if t0.startswith("a"):
+            return "a"
+        return None
+
+    tiff_tokens = _tokenize(tiff_normalized)
+    tiff_prefix = _embryo_prefix(tiff_normalized)
+    best_path = None
+    best_score = -1.0
+    best_name = None
+    for p in all_npz:
+        mask_base_name = p.stem.replace("_mask", "")
+        mask_norm = _normalize_video_name_for_mask(mask_base_name).lower()
+        seq_score = difflib.SequenceMatcher(None, tiff_normalized.lower(), mask_norm).ratio()
+        mask_tokens = _tokenize(mask_norm)
+        token_score = len(tiff_tokens & mask_tokens) / max(len(tiff_tokens | mask_tokens), 1) if (tiff_tokens or mask_tokens) else 0.0
+        score = max(seq_score, token_score)
+        mask_prefix = _embryo_prefix(mask_norm)
+        if tiff_prefix and mask_prefix and tiff_prefix != mask_prefix:
+            score *= 0.7
+        if score > best_score:
+            best_score = score
+            best_path = p
+            best_name = mask_norm
+
+    info["best_candidate"] = str(best_path) if best_path else None
+    info["best_score"] = float(best_score) if best_score >= 0 else None
+    relaxed_threshold = 0.68
+    if best_path is not None and best_score >= relaxed_threshold:
+        info["status"] = "matched"
+        info["match_type"] = "relaxed_fuzzy"
+        info["reason"] = (
+            f"relaxed fuzzy NEW mask match in folder-id subtree "
+            f"(score={best_score:.2f}, target='{tiff_normalized}', candidate='{best_name}')"
+        )
+        return best_path, info
+
+    info["reason"] = (
+        f"no NEW mask match in folder-id subtree {folder_id}; "
+        f"best score={best_score:.2f} (threshold={relaxed_threshold:.2f})"
+    )
+    return None, info
 
 
 class SparkTracker:
@@ -85,6 +312,8 @@ class SparkTracker:
         self.region_map = None         # List of region definitions
         self.embryo_transforms = {}    # Dict mapping embryo_id -> transform dict
         self.reference_embryo_length_px = None  # Head-tail length (1 em) for embryo units (ecm, emm)
+        self.geometry_source = "unknown"        # provenance for embryo labeling geometry
+        self.geometry_qc_note = ""              # reason/details for geometry source
 
     # ---------- TIFF reading helper ----------
     
@@ -453,7 +682,15 @@ class SparkTracker:
         
         return len(emb_contours)
     
-    def _init_geometry_and_poke(self, frame_bgr, user_poke_xy=None, skip_poke_detection=False, raw_16bit=None):
+    def _init_geometry_and_poke(
+        self,
+        frame_bgr,
+        user_poke_xy=None,
+        skip_poke_detection=False,
+        raw_16bit=None,
+        reference_tiff_path=None,
+        new_mask_base_path=None,
+    ):
         """
         From a single BGR frame (and optionally raw 16-bit data):
 
@@ -471,6 +708,44 @@ class SparkTracker:
         h, w = frame_bgr.shape[:2]
         self.height = h
         self.width = w
+        self.geometry_source = "unknown"
+        self.geometry_qc_note = ""
+        emb_contours_from_new_mask = None
+
+        # Preferred source: NEW mask aligned to this reference TIFF.
+        if reference_tiff_path is not None:
+            if new_mask_base_path is None:
+                new_mask_base_path = Path(__file__).resolve().parents[1] / "datasets" / "frog_embryo_data_processed"
+            new_mask_path, new_mask_info = _find_new_mask_file_for_tiff(reference_tiff_path, new_mask_base_path)
+            if new_mask_path is not None:
+                print(f"  ✓ Found NEW mask for parser geometry: {Path(new_mask_path).name}")
+                if new_mask_info.get("match_type") == "relaxed_fuzzy":
+                    print(f"    ⚠ Using relaxed fuzzy NEW mask match: {new_mask_info.get('reason')}")
+                loaded_new_mask = _load_mask_image(new_mask_path)
+                prepared_new_mask, prep_info = _prepare_mask_for_tiff(loaded_new_mask, w, h, reject_threshold=0.45)
+                if prepared_new_mask is None:
+                    print(f"    ⚠ NEW mask rejected for parser geometry: {prep_info.get('reason')}")
+                else:
+                    contours_new_mask, _ = cv2.findContours(prepared_new_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    min_area_new = 0.005 * h * w
+                    emb_contours_from_new_mask = [c for c in contours_new_mask if cv2.contourArea(c) >= min_area_new]
+                    if emb_contours_from_new_mask:
+                        print(f"    ✓ NEW mask primary geometry enabled ({len(emb_contours_from_new_mask)} contour(s))")
+                        if prep_info.get("resized_from") is not None:
+                            rw, rh = prep_info["resized_from"]
+                            print(f"    → Resized NEW mask from {rw}x{rh} to {w}x{h} for parser geometry")
+                        self.geometry_source = "new_mask_primary"
+                        match_type = new_mask_info.get("match_type", "unknown")
+                        self.geometry_qc_note = f"new_mask:{Path(new_mask_path).name};match={match_type}"
+                    else:
+                        print("    ⚠ NEW mask primary geometry produced no embryo-sized contours; falling back to intensity segmentation")
+            else:
+                print(f"  ⚠ NEW mask not found for parser geometry: {new_mask_info.get('reason')}")
+                if new_mask_info.get("best_candidate"):
+                    print(
+                        f"    ⚠ NEW mask best candidate: {Path(new_mask_info['best_candidate']).name} "
+                        f"(score={new_mask_info.get('best_score', 0.0):.2f})"
+                    )
 
         # Use raw 16-bit if available, otherwise use grayscale from BGR frame
         if raw_16bit is not None and raw_16bit.ndim == 2:
@@ -530,10 +805,18 @@ class SparkTracker:
         # More lenient minimum area - 0.5% instead of 1%
         min_area = 0.005 * h * w
         emb_contours = [c for c in contours if cv2.contourArea(c) >= min_area]
+        if emb_contours_from_new_mask:
+            emb_contours = emb_contours_from_new_mask
+            print(f"  → Using NEW mask contours as primary embryo geometry ({len(emb_contours)} contour(s))")
+        else:
+            self.geometry_source = "fallback_intensity_segmentation"
+            self.geometry_qc_note = "no_usable_new_mask_for_reference"
         if not emb_contours:
             print("\n=== EMBRYO DETECTION SUMMARY ===")
             print("✗ WARNING: No embryo-sized contours found in reference frame")
             print("  → Geometry-based annotations (embryo_id, ap_norm, dv_px) will be empty")
+            self.geometry_source = "none"
+            self.geometry_qc_note = "no_embryo_contours_detected"
             print("=" * 35 + "\n")
             return
 
@@ -682,6 +965,7 @@ class SparkTracker:
             embryo_data.append({
                 "label": label,
                 "mask": (mask == 255),
+                "contour_pts": pts.copy(),
                 "head": head.copy(),
                 "initial_tail": initial_tail.copy(),
                 "centroid": (float(cx), float(cy)),
@@ -738,7 +1022,14 @@ class SparkTracker:
             tail_x = tail[0]
             
             # Get contour points for corrections
-            contour_pts = contour.reshape(-1, 2).astype(np.float32)
+            contour_pts = emb_data.get("contour_pts")
+            if contour_pts is None or len(contour_pts) == 0:
+                contour_pts = emb_data["mask"].astype(np.uint8)
+                ys, xs = np.where(contour_pts > 0)
+                contour_pts = np.stack([xs, ys], axis=1).astype(np.float32) if len(xs) > 0 else np.zeros((0, 2), dtype=np.float32)
+            if len(contour_pts) == 0:
+                print(f"  ⚠ CRITICAL: Embryo {label} has empty contour points - REJECTING this detection")
+                continue
             
             # Try corrections first, then validate
             corrections_made = False
@@ -928,6 +1219,7 @@ class SparkTracker:
         if self.embryo_labels:
             print("\n=== EMBRYO DETECTION SUMMARY ===")
             print(f"✓ Found {len(self.embryo_labels)} embryo(s) with directional axes")
+            print(f"  Geometry source: {self.geometry_source} ({self.geometry_qc_note})")
             print("\nEmbryo geometry:")
             for label in self.embryo_labels:
                 emb = self.embryos[label]
@@ -943,6 +1235,8 @@ class SparkTracker:
         else:
             print("\n=== EMBRYO DETECTION SUMMARY ===")
             print("✗ WARNING: No embryos detected - geometry-based annotations will be empty")
+            self.geometry_source = "none"
+            self.geometry_qc_note = "no_valid_embryo_labels"
 
         # Poke detection: use user coords if provided, else try to auto-detect (unless skipped)
         if not skip_poke_detection:
@@ -1117,6 +1411,8 @@ class SparkTracker:
         state["ap_norm"] = ap_norm if ap_norm != "" else ""
         state["dv_px"] = dv_px if dv_px != "" else ""
         state["region"] = region if region != "" else ""
+        state["geometry_source"] = self.geometry_source
+        state["geometry_qc_note"] = self.geometry_qc_note
 
         if self.poke_xy is not None:
             px, py = self.poke_xy
@@ -1373,6 +1669,7 @@ class SparkTracker:
         reference_frame_idx = None
         reference_frame = None
         reference_raw_16bit = None
+        reference_tiff_path = None
         best_embryo_count = 0
         height = None
         width = None
@@ -1459,6 +1756,7 @@ class SparkTracker:
                             break
                     reference_frame = best_frame
                     reference_raw_16bit = best_raw_16bit
+                    reference_tiff_path = file_path
                     print(f"    ✓ Using this file as reference (found 2 embryos)")
                     break
                 elif best_num_embryos > 0 and not reference_found and best_frame is not None:
@@ -1472,6 +1770,7 @@ class SparkTracker:
                                 break
                         reference_frame = best_frame
                         reference_raw_16bit = best_raw_16bit
+                        reference_tiff_path = file_path
                 
                 if best_frame is not None:
                     del best_frame
@@ -1496,7 +1795,13 @@ class SparkTracker:
         if reference_frame is not None:
             print(f"\nInitializing geometry from reference frame...")
             skip_poke = (poke_frame_idx != 0)
-            self._init_geometry_and_poke(reference_frame, user_poke_xy=poke_xy, skip_poke_detection=skip_poke, raw_16bit=reference_raw_16bit)
+            self._init_geometry_and_poke(
+                reference_frame,
+                user_poke_xy=poke_xy,
+                skip_poke_detection=skip_poke,
+                raw_16bit=reference_raw_16bit,
+                reference_tiff_path=reference_tiff_path,
+            )
             del reference_frame
             if reference_raw_16bit is not None:
                 del reference_raw_16bit
@@ -1677,6 +1982,8 @@ class SparkTracker:
                 "dist_from_poke_px",
                 "embryo_length_px",
                 "region",
+                "geometry_source",
+                "geometry_qc_note",
                 "filename",
             ],
         )
