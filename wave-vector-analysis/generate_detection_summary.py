@@ -17,7 +17,7 @@ from PIL import Image
 from pathlib import Path
 import argparse
 import re
-from collections import defaultdict
+from collections import defaultdict, Counter
 import cv2
 import tifffile as tiff
 import os
@@ -2529,6 +2529,11 @@ def find_new_mask_file_strict(tiff_path, new_mask_base_path, return_info=False):
         "match_type": None,
         "best_candidate": None,
         "best_score": None,
+        "priority_stack": [
+            "filename_exact",
+            "filename_normalized_exact",
+            "legacy_relaxed_fuzzy",
+        ],
     }
 
     if tiff_path is None:
@@ -2570,7 +2575,7 @@ def find_new_mask_file_strict(tiff_path, new_mask_base_path, return_info=False):
             for p in [root / f"{b}_mask.npz", root / f"{b}.npz"]:
                 if p.exists():
                     info["status"] = "matched"
-                    info["match_type"] = "exact"
+                    info["match_type"] = "filename_exact"
                     info["reason"] = f"exact NEW mask match in folder-id subtree ({folder_id})"
                     return (p, info) if return_info else p
 
@@ -2588,7 +2593,7 @@ def find_new_mask_file_strict(tiff_path, new_mask_base_path, return_info=False):
         mask_norm = _normalize_video_name_for_mask(mask_base_name).lower()
         if tiff_normalized.lower() == mask_norm or tiff_compact == mask_norm.replace(" ", ""):
             info["status"] = "matched"
-            info["match_type"] = "normalized_exact"
+            info["match_type"] = "filename_normalized_exact"
             info["reason"] = "normalized NEW mask name match within folder-id subtree"
             return (p, info) if return_info else p
 
@@ -2638,7 +2643,7 @@ def find_new_mask_file_strict(tiff_path, new_mask_base_path, return_info=False):
     relaxed_threshold = 0.68
     if best_path is not None and best_score >= relaxed_threshold:
         info["status"] = "matched"
-        info["match_type"] = "relaxed_fuzzy"
+        info["match_type"] = "legacy_relaxed_fuzzy"
         info["reason"] = (
             f"relaxed fuzzy NEW mask match in folder-id subtree (score={best_score:.2f}, "
             f"target='{tiff_normalized}', candidate='{best_name}')"
@@ -3116,7 +3121,16 @@ def load_excel_coordinates(excel_path):
         return {}
 
 
-def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_bounds=None, tiff_base_path=None, mask_base_path=None, excel_coords=None):
+def create_embryo_visualization(
+    df_tracks,
+    output_dir,
+    folder_video_key,
+    global_bounds=None,
+    tiff_base_path=None,
+    mask_base_path=None,
+    excel_coords=None,
+    mask_strategy_records=None,
+):
     """
     Create visualization for a specific folder/video combination.
     
@@ -3151,6 +3165,7 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
     legacy_mask_path = None
     new_mask_path = None
     mask_path = None  # Primary mask for backward-compatible logic/title handling.
+    new_mask_lookup_info = {}
     if tiff_path:
         legacy_mask_base = Path(mask_base_path) if mask_base_path else (Path(__file__).parent / "embryo_masks_final")
         new_mask_base = Path(__file__).resolve().parents[1] / "datasets" / "frog_embryo_data_processed"
@@ -3165,7 +3180,7 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
             print(f"    ✓ Found OLD mask file: {legacy_mask_path.name}")
         if new_mask_path:
             print(f"    ✓ Found NEW mask file: {new_mask_path.name}")
-            if new_mask_lookup_info and new_mask_lookup_info.get("match_type") == "relaxed_fuzzy":
+            if new_mask_lookup_info and new_mask_lookup_info.get("match_type") == "legacy_relaxed_fuzzy":
                 print(
                     f"    ⚠ NEW mask selected via relaxed fuzzy match: "
                     f"{new_mask_lookup_info.get('reason')}"
@@ -4537,6 +4552,25 @@ def create_embryo_visualization(df_tracks, output_dir, folder_video_key, global_
     bbox = Bbox([[0, 0], [fig_width, fig_height]])
     plt.savefig(output_path, dpi=150, bbox_inches=bbox, facecolor='black', edgecolor='none')
     plt.close()
+
+    if isinstance(mask_strategy_records, list):
+        if new_mask_path:
+            strategy_used = f"new_mask:{new_mask_lookup_info.get('match_type', 'unknown')}"
+        elif legacy_mask_path:
+            strategy_used = "legacy_old_mask_fallback"
+        else:
+            strategy_used = "no_mask_found"
+        mask_strategy_records.append({
+            "folder": str(folder),
+            "video": str(video),
+            "tiff_filename": str(video),
+            "new_mask_filename": new_mask_path.name if new_mask_path else "",
+            "old_mask_filename": legacy_mask_path.name if legacy_mask_path else "",
+            "new_mask_match_type": new_mask_lookup_info.get("match_type") if new_mask_lookup_info else None,
+            "new_mask_reason": new_mask_lookup_info.get("reason") if new_mask_lookup_info else None,
+            "strategy_used": strategy_used,
+            "used_new_mask_primary": bool(used_new_mask_primary),
+        })
     
     return output_path
 
@@ -4716,7 +4750,14 @@ TOP 5 REGIONS BY PIXEL COUNT:
     plt.close()
 
 
-def build_data_sources_assumptions(summary_data, tiff_base_path=None, mask_base_path=None, excel_coords=None, excel_source_path=None):
+def build_data_sources_assumptions(
+    summary_data,
+    tiff_base_path=None,
+    mask_base_path=None,
+    excel_coords=None,
+    excel_source_path=None,
+    mask_strategy_records=None,
+):
     """Build a run-level summary of data sources and unit/zoom assumptions."""
     old_mask_base = Path(mask_base_path) if mask_base_path else (Path(__file__).parent / "embryo_masks_final")
     new_mask_base = Path(__file__).resolve().parents[1] / "datasets" / "frog_embryo_data_processed"
@@ -4784,9 +4825,26 @@ def build_data_sources_assumptions(summary_data, tiff_base_path=None, mask_base_
                 if has_old and has_new:
                     both_masks_found += 1
 
+    strategy_counts = Counter()
+    match_type_counts = Counter()
+    if mask_strategy_records:
+        for rec in mask_strategy_records:
+            strategy_counts[str(rec.get("strategy_used", "unknown"))] += 1
+            mt = rec.get("new_mask_match_type")
+            if mt:
+                match_type_counts[str(mt)] += 1
+
+    mask_match_priority_stack = [
+        "1) NEW mask filename exact match in same folder-id subtree",
+        "2) NEW mask normalized filename exact match in same folder-id subtree",
+        "3) Legacy fallback: relaxed fuzzy match in same folder-id subtree",
+        "4) If NEW mask not available/usable: fall back to OLD mask or non-mask detection",
+    ]
+
     assumptions = [
         "Coordinates are rendered in TIFF pixel space with matplotlib origin at bottom-left.",
         "Legacy PNG masks are treated as OLD masks; NPZ masks from frog dataset are treated as NEW masks.",
+        "Mask selection uses a priority stack: filename exact -> normalized exact -> legacy relaxed fuzzy (same folder-id only) -> non-NEW fallback.",
         "If mask dimensions differ from TIFF dimensions, masks are resized with nearest-neighbor interpolation.",
         "Speed labels prefer um/s when TIFF metadata provides calibration (ImageDescription, IJMetadata dCalibration, XResolution+unit=micron, Pixel width, or Voxel size); otherwise px/s.",
         "Zoom values are parsed from NEW mask folder names like '12 - Zoom = 5.40x' and used as metadata labels.",
@@ -4843,6 +4901,9 @@ def build_data_sources_assumptions(summary_data, tiff_base_path=None, mask_base_
         "speed_wave_notes": speed_wave_notes,
         "region_notes": region_notes,
         "spark_data_locations": spark_data_locations,
+        "mask_match_priority_stack": mask_match_priority_stack,
+        "mask_strategy_counts": dict(strategy_counts),
+        "mask_match_type_counts": dict(match_type_counts),
         "calibration_sources": dict(calibration_sources),
         "metadata_signals": dict(metadata_signals),
     }
@@ -4892,6 +4953,35 @@ def write_data_sources_assumptions_markdown(output_path, context):
         lines.append(f"- {k}: **{v}**")
     if not context.get("calibration_sources"):
         lines.append("- none detected")
+    lines += [
+        "",
+        "## Mask Matching Priority Stack",
+        "",
+    ]
+    for p in context.get("mask_match_priority_stack", []):
+        lines.append(f"- {p}")
+    lines += [
+        "",
+        "## Mask Strategy Usage (This Run)",
+        "",
+    ]
+    strategy_counts = context.get("mask_strategy_counts", {})
+    if strategy_counts:
+        for k, v in sorted(strategy_counts.items(), key=lambda x: (-x[1], x[0])):
+            lines.append(f"- `{k}`: **{v}**")
+    else:
+        lines.append("- no strategy usage records available")
+    lines += [
+        "",
+        "## NEW Mask Match-Type Breakdown",
+        "",
+    ]
+    match_counts = context.get("mask_match_type_counts", {})
+    if match_counts:
+        for k, v in sorted(match_counts.items(), key=lambda x: (-x[1], x[0])):
+            lines.append(f"- `{k}`: **{v}**")
+    else:
+        lines.append("- no NEW mask matches recorded")
     lines += [
         "",
         "## Assumptions",
@@ -4964,9 +5054,23 @@ def add_data_sources_assumptions_page(pdf, context):
     excel_notes = context.get("excel_parse_notes", [])
     calib_src = context.get("calibration_sources", {})
     calib_lines = [f"- {k}: {v}" for k, v in sorted(calib_src.items())] if calib_src else ["- none"]
+    mask_stack = context.get("mask_match_priority_stack", [])
+    mask_counts = context.get("mask_strategy_counts", {})
+    mask_match_counts = context.get("mask_match_type_counts", {})
+    mask_stack_text = "Mask priority stack:\n" + "\n".join([f"- {m}" for m in mask_stack[:3]])
+    top_strategy_lines = [f"- {k}: {v}" for k, v in sorted(mask_counts.items(), key=lambda x: (-x[1], x[0]))[:3]]
+    top_match_lines = [f"- {k}: {v}" for k, v in sorted(mask_match_counts.items(), key=lambda x: (-x[1], x[0]))[:3]]
+    if not top_strategy_lines:
+        top_strategy_lines = ["- no records"]
+    if not top_match_lines:
+        top_match_lines = ["- no records"]
+
     excel_notes_text = (
         "Excel mapping notes:\n" + "\n".join([f"- {n}" for n in excel_notes[:2]]) +
-        "\n\nCalibration source(s):\n" + "\n".join(calib_lines[:3])
+        "\n\nCalibration source(s):\n" + "\n".join(calib_lines[:3]) +
+        "\n\n" + mask_stack_text +
+        "\n\nMask strategy used (top):\n" + "\n".join(top_strategy_lines) +
+        "\n\nNEW mask match type (top):\n" + "\n".join(top_match_lines)
     )
 
     ax.text(0.04, 0.90, "Data Sources", fontsize=13, fontweight='bold', va='top')
@@ -5413,6 +5517,7 @@ def main():
     # Generate visualizations
     image_paths_dict = {}
     image_paths_for_pdf = []
+    mask_strategy_records = []
     
     if not args.skip_visualizations:
         print("\nGenerating visualizations...")
@@ -5491,7 +5596,8 @@ def main():
                 # Determine mask base path (default to embryo_masks_final)
                 output_path = create_embryo_visualization(
                     df_tracks, output_dir, folder_video_key, global_bounds,
-                    args.tiff_base_path, mask_base_for_run, excel_coords
+                    args.tiff_base_path, mask_base_for_run, excel_coords,
+                    mask_strategy_records=mask_strategy_records,
                 )
                 if output_path:
                     print(f"    ✓ Saved: {output_path.name}")
@@ -5579,6 +5685,26 @@ def main():
             log_file.write("=" * 80 + "\n")
             log_file.write("Embryo Detection Warnings and Validation Log\n")
             log_file.write("=" * 80 + "\n\n")
+            if mask_strategy_records:
+                strategy_counts = Counter(rec.get("strategy_used", "unknown") for rec in mask_strategy_records)
+                match_type_counts = Counter(
+                    rec.get("new_mask_match_type") for rec in mask_strategy_records if rec.get("new_mask_match_type")
+                )
+                log_file.write("Mask matching priority stack used in this run:\n")
+                log_file.write("  1) NEW filename exact (same folder-id)\n")
+                log_file.write("  2) NEW filename normalized exact (same folder-id)\n")
+                log_file.write("  3) Legacy relaxed fuzzy (same folder-id)\n")
+                log_file.write("  4) OLD/no-mask fallback\n\n")
+                log_file.write("Mask strategy usage counts:\n")
+                for k, v in sorted(strategy_counts.items(), key=lambda x: (-x[1], x[0])):
+                    log_file.write(f"  - {k}: {v}\n")
+                log_file.write("\nNEW mask match-type counts:\n")
+                if match_type_counts:
+                    for k, v in sorted(match_type_counts.items(), key=lambda x: (-x[1], x[0])):
+                        log_file.write(f"  - {k}: {v}\n")
+                else:
+                    log_file.write("  - none\n")
+                log_file.write("\n")
             log_file.write("All warnings and validation messages from embryo detection:\n\n")
             for warning in warnings_log:
                 log_file.write(warning + "\n")
@@ -5589,6 +5715,26 @@ def main():
             log_file.write("=" * 80 + "\n")
             log_file.write("Embryo Detection Warnings and Validation Log\n")
             log_file.write("=" * 80 + "\n\n")
+            if mask_strategy_records:
+                strategy_counts = Counter(rec.get("strategy_used", "unknown") for rec in mask_strategy_records)
+                match_type_counts = Counter(
+                    rec.get("new_mask_match_type") for rec in mask_strategy_records if rec.get("new_mask_match_type")
+                )
+                log_file.write("Mask matching priority stack used in this run:\n")
+                log_file.write("  1) NEW filename exact (same folder-id)\n")
+                log_file.write("  2) NEW filename normalized exact (same folder-id)\n")
+                log_file.write("  3) Legacy relaxed fuzzy (same folder-id)\n")
+                log_file.write("  4) OLD/no-mask fallback\n\n")
+                log_file.write("Mask strategy usage counts:\n")
+                for k, v in sorted(strategy_counts.items(), key=lambda x: (-x[1], x[0])):
+                    log_file.write(f"  - {k}: {v}\n")
+                log_file.write("\nNEW mask match-type counts:\n")
+                if match_type_counts:
+                    for k, v in sorted(match_type_counts.items(), key=lambda x: (-x[1], x[0])):
+                        log_file.write(f"  - {k}: {v}\n")
+                else:
+                    log_file.write("  - none\n")
+                log_file.write("\n")
             log_file.write("No warnings detected.\n")
         print(f"\n✓ Warning log saved to: {log_file_path} (no warnings)")
     
@@ -5601,6 +5747,7 @@ def main():
             mask_base_path=mask_base_for_run,
             excel_coords=excel_coords,
             excel_source_path=excel_source_path,
+            mask_strategy_records=mask_strategy_records,
         )
         data_sources_md = output_dir / "DATA_SOURCES_AND_ASSUMPTIONS.md"
         write_data_sources_assumptions_markdown(data_sources_md, run_context)
