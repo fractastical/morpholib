@@ -1,69 +1,75 @@
 #!/usr/bin/env python3
 """
-Embryo region mapping module for stage 27 (and stage 22-23) embryos.
+Embryo region mapping module for stage-aware embryo atlases.
 
 This module provides functions to map spark coordinates to anatomical regions
-based on a reference embryo map with bounding boxes for different regions.
+based on named reference atlases defined in `embryo_region_atlases.json`.
 """
 
 import numpy as np
 import cv2
+import json
 from typing import Tuple, Optional, List, Dict
 from pathlib import Path
 
+ATLAS_CONFIG_PATH = Path(__file__).with_name("embryo_region_atlases.json")
 
-# Region definitions based on stage 27 embryo map
-# Regions are defined as bounding boxes in normalized coordinates (0-1 range)
-# Format: (x_min, y_min, x_max, y_max) where (0,0) is top-left
-# These are approximate coordinates based on the image description
-# User should provide actual coordinates or we can extract from image
 
-REGION_BOUNDING_BOXES = [
-    {
-        "name": "Tailbud",
-        "bbox": (0.0, 0.5, 0.15, 0.7),  # Left side, lower-middle
-    },
-    {
-        "name": "Tail",
-        "bbox": (0.0, 0.3, 0.25, 0.5),  # Left side, upper-middle
-    },
-    {
-        "name": "Gut primordia",
-        "bbox": (0.15, 0.5, 0.55, 0.75),  # Large middle region, lower
-    },
-    {
-        "name": "Trunk",
-        "bbox": (0.25, 0.3, 0.55, 0.5),  # Middle region, upper
-    },
-    {
-        "name": "Kidney",
-        "bbox": (0.55, 0.25, 0.65, 0.4),  # Right side, upper-middle
-    },
-    {
-        "name": "Otic Vesicle",
-        "bbox": (0.65, 0.2, 0.75, 0.35),  # Right side, upper (labeled as "Ear")
-    },
-    {
-        "name": "Neural Crest",
-        "bbox": (0.55, 0.4, 0.75, 0.6),  # Right side, middle-lower
-    },
-    {
-        "name": "Brain",
-        "bbox": (0.7, 0.0, 0.95, 0.25),  # Right side, top
-    },
-    {
-        "name": "Eye",
-        "bbox": (0.75, 0.25, 0.95, 0.45),  # Right side, upper-middle
-    },
-    {
-        "name": "Cement Gland",
-        "bbox": (0.85, 0.6, 0.95, 0.75),  # Right side, lower
-    },
-    {
-        "name": "Heart",
-        "bbox": (0.55, 0.6, 0.75, 0.75),  # Right side, lower-middle
-    },
-]
+def _load_atlas_config():
+    """Load atlas configuration from JSON, falling back to built-in defaults."""
+    if ATLAS_CONFIG_PATH.exists():
+        with open(ATLAS_CONFIG_PATH, "r") as f:
+            return json.load(f)
+    raise FileNotFoundError(f"Atlas config not found: {ATLAS_CONFIG_PATH}")
+
+
+def list_available_atlases() -> List[str]:
+    """Return available atlas names."""
+    config = _load_atlas_config()
+    return sorted(config.get("atlases", {}).keys())
+
+
+def _normalize_region_bboxes(regions: List[Dict]) -> List[Dict]:
+    """Convert region bbox sequences into tuples for downstream use."""
+    normalized = []
+    for region in regions:
+        bbox = tuple(float(v) for v in region["bbox"])
+        normalized.append({
+            "name": region["name"],
+            "bbox": bbox,
+        })
+    return normalized
+
+
+def load_region_atlas(atlas_name: Optional[str] = None) -> Dict:
+    """
+    Load a named atlas definition with metadata and normalized region boxes.
+
+    Args:
+        atlas_name: Name of atlas to load. If None, use config default.
+
+    Returns:
+        Dict with atlas metadata and normalized `regions` list.
+    """
+    config = _load_atlas_config()
+    atlases = config.get("atlases", {})
+    default_atlas = config.get("default_atlas")
+    selected_name = atlas_name or default_atlas
+    if selected_name not in atlases:
+        available = ", ".join(sorted(atlases.keys()))
+        raise KeyError(f"Unknown atlas '{selected_name}'. Available atlases: {available}")
+
+    atlas = atlases[selected_name]
+    return {
+        "name": selected_name,
+        "display_name": atlas.get("display_name", selected_name),
+        "description": atlas.get("description", ""),
+        "regions": _normalize_region_bboxes(atlas.get("regions", [])),
+    }
+
+
+DEFAULT_ATLAS = load_region_atlas()
+REGION_BOUNDING_BOXES = DEFAULT_ATLAS["regions"]
 
 
 def extract_bboxes_from_image(image_path: str) -> List[Dict]:
@@ -116,23 +122,25 @@ def extract_bboxes_from_image(image_path: str) -> List[Dict]:
     return bboxes if bboxes else None
 
 
-def load_region_map(map_path: Optional[str] = None) -> List[Dict]:
+def load_region_map(map_path: Optional[str] = None, atlas_name: Optional[str] = None) -> List[Dict]:
     """
-    Load region bounding boxes from image or use defaults.
+    Load region bounding boxes from image or atlas defaults.
     
     Args:
-        map_path: Optional path to map image. If None, uses default coordinates.
+        map_path: Optional path to map image. If provided and extraction succeeds,
+            the extracted boxes override atlas defaults.
+        atlas_name: Optional atlas name. If None, uses configured default atlas.
         
     Returns:
         List of region dicts with 'name' and 'bbox' keys
     """
+    atlas = load_region_atlas(atlas_name=atlas_name)
     if map_path and Path(map_path).exists():
         extracted = extract_bboxes_from_image(map_path)
         if extracted:
             return extracted
     
-    # Use default coordinates
-    return REGION_BOUNDING_BOXES.copy()
+    return [dict(region) for region in atlas["regions"]]
 
 
 def create_embryo_transform(

@@ -43,6 +43,39 @@ This follows the methodology described in:
   - Speed vs time analysis
   - All plots mapped to specific experimental hypotheses
 
+- **`generate_detection_summary.py`**: Manual-QA layer that renders per-video
+  visual summaries (outlines, head/tail labels, poke locations) for verifying
+  detection assumptions.
+
+### Dense pixel vectors → waves
+
+- **`generate_pixel_brightness_vectors.py`**: Frame-by-frame dense motion of
+  every bright pixel (each pixel in frame *t* matched to *t−1* via KD-tree),
+  on a linear brightness scale. Outputs `pixel_frame_deltas.csv`.
+- **`rollup_pixel_vectors_to_waves.py`**: Clusters the dense pixel deltas into
+  per-frame "fronts" and links them across frames into coherent WAVE events
+  (`wave_events.csv`: origin, duration, propagation speed, front speed).
+- **`batch_wave_catalog.py`**: Runs the two steps above on every calcium video
+  and aggregates into a single `wave_catalog.csv` (tagged with stimulus /
+  contact / orientation).
+- **`wave_laterality_analysis.py`**: Splits the two embryos along the principal
+  axis of their wave origins, labels the stimulated vs neighbor embryo, and
+  scores neighbor-wave presence, neighbor local (front) speed, onset lag, and
+  bidirectional spread per video → `wave_laterality.csv`.
+
+### Mask generation
+
+- **`create_embryo_masks.py`**, **`create_normalized_masks.py`**,
+  **`create_size_constrained_masks.py`**: Generate / audit embryo segmentation
+  masks for the parser.
+
+### Shared helpers
+
+- **`embryo_region_map.py`**: Maps detected coordinates into named anatomical
+  regions via a normalized reference map.
+- **`embryo_units.py`**: Converts distances/speeds from pixels into
+  embryo-relative units.
+
 ### Documentation
 
 - **`wave-vector.md`**: Detailed specification of output CSV formats
@@ -92,17 +125,19 @@ pip install opencv-python numpy tifffile pandas matplotlib
 ### 2. Process TIFF Images
 
 ```bash
-python wave-vector-tiff-parser.py /path/to/tiff/folder \
-    --poke-frame 100 \
+python wave-vector-tiff-parser.py /path/to/tiff/folder 100 \
     --fps 10 \
-    --output-video output.mp4
+    --csv spark_tracks.csv \
+    --out-video output.mp4
 ```
 
 **Arguments:**
-- `--poke-frame`: Frame index where injury/poke occurs (t=0 reference)
+- `folder` (positional): Folder of TIFF frames, or a single multi-page TIFF
+- `poke_frame` (positional): 0-based frame index where injury/poke occurs (t=0 reference)
 - `--fps`: Frame rate (frames per second)
+- `--csv`: Output CSV path (default `spark_tracks.csv`)
 - `--poke-x`, `--poke-y`: Optional poke coordinates (if auto-detection fails)
-- `--output-video`: Optional output video with overlays
+- `--out-video`: Optional output video with overlays
 
 ### 3. Generate Cluster Summaries
 
@@ -152,8 +187,8 @@ Per-cluster summaries with columns:
 ## Example Workflow
 
 ```bash
-# 1. Process images
-python wave-vector-tiff-parser.py ~/data/embryos --poke-frame 50 --fps 15
+# 1. Process images (folder, poke frame 50, 15 fps)
+python wave-vector-tiff-parser.py ~/data/embryos 50 --fps 15
 
 # 2. Generate summaries
 python spark_tracks_to_clusters.py spark_tracks.csv
@@ -166,6 +201,73 @@ python visualize_spark_tracks.py spark_tracks.csv \
 # 4. Analyze results
 # Use pandas, R, or your preferred analysis tool on the CSV files
 ```
+
+## Calcium Claims Validation
+
+A second pipeline scores the verbatim claims in `Calcium claims.docx` against the
+imaging data and assembles a single combined report,
+`analysis_results/claims_all_in_one.pdf`.
+
+### Scripts
+
+- **`claims_doc_parser.py`**: Parses the claims table out of `Calcium claims.docx`
+  (one record per claim with layer / pattern / orientation / poke location).
+- **`parse_xy_coordinates.py`**: Parses the manual `XY coordinates.xlsx`
+  ground-truth (all 39 sheets) into a tidy `analysis_results/xy_ground_truth.csv`
+  (`prefix, video_stem, side, landmark, landmark_class, frame, x, y`). This is the
+  authoritative poke / head-tail geometry and organ-response layer.
+- **`score_landmark_responses.py`**: For every manually-annotated organ landmark
+  (cement gland / eye / tail / local), measures the robust-peak ΔF/F₀ in a disk at
+  the annotated pixel straight from the C-channel TIFF — an automated corroboration
+  of the human annotation (`landmark_responses.csv` + `.png`). Also tags each
+  landmark stimulated/neighbor using the real poke side.
+- **`wave_laterality_analysis.py`**: Scores neighbor-side waves and bidirectional
+  spread per video. When `xy_ground_truth.csv` is present it splits the two embryos
+  with the **real poke + head/tail geometry** (assigns each wave origin to the
+  nearest annotated embryo segment; the poke side is the stimulated embryo) and
+  falls back to the PCA estimate only for single-embryo videos.
+- **`generate_claim_wave_overlays.py`**: Per claim, overlays the relevant-side
+  wave-front vectors on the brightest microscopy frame of the relevant videos
+  (montage PNG + animated GIF per claim group), embedded into the inventory PDF.
+- **`generate_tested_claims_summary.py`**: Builds the one-page **summary slide**
+  (`claims_tested_summary.pdf`) — every tested claim group with its live verdict
+  and a thumbnail graph.
+- **`generate_claims_inventory_pdf.py`**: Full inventory of all verbatim claims
+  grouped by Layer, each tagged TESTED / TESTABLE NOW / PARTIAL / NOT YET with a
+  live verdict (`claims_inventory.pdf`), plus laterality evidence pages.
+- **`generate_claims_nomask_report.py`**: All-pixel side-region ΔF/F₀ traces and
+  per-claim verdicts (`claims_nomask_report.pdf`).
+- **`generate_claim_video_mapping_pdf.py`**: Which Box videos map to each claim
+  (`claim_video_mapping.pdf`).
+- **`merge_claims_all_in_one.py`**: Merges the summary slide + component PDFs into
+  `claims_all_in_one.pdf`.
+
+### Run order
+
+```bash
+# 1. Build the wave catalog across all videos (dense vectors + roll-up)
+python batch_wave_catalog.py --root "/path/to/Calcium videos"
+
+# 1b. Parse the manual XY ground truth + score organ-response landmarks
+python parse_xy_coordinates.py --xlsx "/path/to/XY coordinates.xlsx"
+python score_landmark_responses.py
+
+# 2. Score laterality / bidirectionality (uses the real geometry if present)
+python wave_laterality_analysis.py
+
+# 2b. (optional) Render per-claim wave-vector overlays on the embryo frame
+python generate_claim_wave_overlays.py
+
+# 3. Build the summary slide, then the full claims inventory
+python generate_tested_claims_summary.py
+python generate_claims_inventory_pdf.py
+
+# 4. (Re)generate the other component reports as needed, then merge
+python merge_claims_all_in_one.py
+```
+
+The merge prefers `claims_tested_summary.pdf` as the first page and skips any
+component PDF that is missing.
 
 ## Notes
 

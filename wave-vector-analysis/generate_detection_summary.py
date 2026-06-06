@@ -96,6 +96,8 @@ def extract_folder_and_video(filename):
     Extract folder name and video identifier from filename.
     Example: "1/B1 - Substack (1-301).tif" -> ("1", "B1 - Substack (1-301).tif")
     Example: "2/Video1.tif" -> ("2", "Video1.tif")
+    Also handles prefixed paths like "Embryos/9/B1 - Substack (1-301).tif"
+    by normalizing to ("9", "B1 - Substack (1-301).tif").
     """
     if pd.isna(filename):
         return None, None
@@ -103,8 +105,16 @@ def extract_folder_and_video(filename):
     # Remove page numbers first
     filename_clean = re.sub(r' \(page \d+\)', '', str(filename))
     
-    # Split by path separator
-    parts = filename_clean.split('/')
+    # Normalize path separators and split into non-empty parts.
+    parts = [p for p in filename_clean.replace('\\', '/').split('/') if p]
+
+    # Backward/forward compatibility:
+    # - legacy parser filenames: "9/B1 - Substack ... .tif"
+    # - newer parser filenames:  "Embryos/9/B1 - Substack ... .tif"
+    # If a non-numeric root prefix is present before a numeric folder id, drop it.
+    if len(parts) >= 3 and not parts[0].isdigit() and parts[1].isdigit():
+        parts = parts[1:]
+
     if len(parts) > 1:
         folder = parts[0]
         video_name = '/'.join(parts[1:])  # Keep full path including extension
@@ -114,6 +124,19 @@ def extract_folder_and_video(filename):
         video_name = filename_clean
     
     return folder, video_name
+
+
+def normalize_base_filename(filename):
+    """
+    Normalize track filenames into a stable "folder/video.tif" key used across
+    summary generation and visualization matching.
+    """
+    if pd.isna(filename):
+        return None
+    folder, video = extract_folder_and_video(filename)
+    if folder and video:
+        return f"{folder}/{video}"
+    return re.sub(r' \(page \d+\)', '', str(filename))
 
 
 def _detect_cement_gland_for_visualization(end1, end2, axis_direction, mask, gray_enhanced):
@@ -2991,6 +3014,83 @@ def _transform_excel_point_to_plot(point_xy, tiff_w, tiff_h, source_w=None, sour
     return (x, y_out)
 
 
+def _normalize_excel_video_key(name):
+    """Normalize video/path names for Excel-to-video matching."""
+    if not name:
+        return ""
+    s = str(name).replace('\\', '/').strip()
+    s = Path(s).name.lower()
+    s = re.sub(r'\.(tif|tiff|mp4)$', '', s)
+    s = re.sub(r'\s+', ' ', s).strip()
+    return s
+
+
+def _find_box_excel_header_row(raw_df):
+    """Find the header row in Box-style annotation sheets."""
+    for idx, row in raw_df.iterrows():
+        vals = [str(v).strip().lower() if pd.notna(v) else "" for v in row.tolist()]
+        if ('frame' in vals and 'location' in vals and
+                any('x' in v for v in vals) and any('y' in v for v in vals)):
+            return idx
+    return None
+
+
+def _match_excel_video_data(excel_coords, folder, video):
+    """
+    Match a folder/video to loaded Excel coordinates.
+    Supports both legacy folder-keyed workbooks and the Box workbook keyed by sheet/video name.
+    Returns (excel_data, match_label, match_score).
+    """
+    if not excel_coords:
+        return None, "Excel: not loaded", None
+
+    requested_norm = _normalize_excel_video_key(video)
+    if not requested_norm:
+        return None, "Excel: no match", None
+
+    # 1) Direct folder lookup first (legacy behavior).
+    folder_str = str(folder)
+    folder_data = excel_coords.get(folder_str, {})
+    if isinstance(folder_data, dict) and video in folder_data:
+        return folder_data[video], f"Excel: exact ({video})", 1.0
+
+    # 2) Global exact basename match.
+    best_exact = None
+    for excel_folder, video_map in excel_coords.items():
+        if not isinstance(video_map, dict):
+            continue
+        for excel_video, excel_data in video_map.items():
+            if _normalize_excel_video_key(excel_video) == requested_norm:
+                best_exact = (excel_data, f"Excel: exact ({excel_video})", 1.0)
+                break
+        if best_exact:
+            break
+    if best_exact:
+        return best_exact
+
+    # 3) Global fuzzy basename match.
+    import difflib
+    best_score = 0.0
+    best_match = None
+    for excel_folder, video_map in excel_coords.items():
+        if not isinstance(video_map, dict):
+            continue
+        for excel_video, excel_data in video_map.items():
+            score = difflib.SequenceMatcher(
+                None,
+                requested_norm,
+                _normalize_excel_video_key(excel_video)
+            ).ratio()
+            if score > best_score:
+                best_score = score
+                best_match = (excel_video, excel_data)
+
+    if best_match and best_score >= 0.60:
+        excel_video, excel_data = best_match
+        return excel_data, f"Excel: fuzzy {best_score:.2f} ({excel_video})", float(best_score)
+
+    return None, f"Excel: no match (best {best_score:.2f})", float(best_score) if best_score > 0 else None
+
 def load_excel_coordinates(excel_path):
     """
     Load head/tail and poke coordinates from Excel file.
@@ -3007,16 +3107,80 @@ def load_excel_coordinates(excel_path):
         excel_file = pd.ExcelFile(excel_path)
         
         for sheet_name in excel_file.sheet_names:
-            df = pd.read_excel(excel_path, sheet_name=sheet_name)
+            raw_df = pd.read_excel(excel_path, sheet_name=sheet_name, header=None)
             folder = str(sheet_name).strip()
-            
+
+            # Box workbook format: A1 contains video name and a later row contains
+            # Frame / Location / X (pixel) / Y (pixel).
+            header_idx = _find_box_excel_header_row(raw_df)
+            if header_idx is not None:
+                video = None
+                if len(raw_df) > 0 and len(raw_df.columns) > 0 and pd.notna(raw_df.iat[0, 0]):
+                    video = str(raw_df.iat[0, 0]).strip()
+                if not video:
+                    video = folder
+
+                df = pd.read_excel(excel_path, sheet_name=sheet_name, header=header_idx)
+                cols_lower = {str(c).strip().lower(): c for c in df.columns}
+                frame_col = next((cols_lower[k] for k in cols_lower if k == 'frame' or 'frame' in k), None)
+                location_col = next((cols_lower[k] for k in cols_lower if k == 'location' or 'location' in k), None)
+                x_col = next((cols_lower[k] for k in cols_lower if k.startswith('x') or 'x (' in k), None)
+                y_col = next((cols_lower[k] for k in cols_lower if k.startswith('y') or 'y (' in k), None)
+
+                if location_col and x_col and y_col:
+                    head_points = []
+                    tail_points = []
+                    for _, row in df.iterrows():
+                        try:
+                            if pd.isna(row[location_col]) or pd.isna(row[x_col]) or pd.isna(row[y_col]):
+                                continue
+                            # Skip non-data rows.
+                            if frame_col is not None:
+                                try:
+                                    float(row[frame_col])
+                                except Exception:
+                                    continue
+
+                            loc_val = str(row[location_col]).strip().lower()
+                            x = float(row[x_col])
+                            y = float(row[y_col])
+
+                            if 'poke' in loc_val or 'pressure location' in loc_val:
+                                coordinates[folder][video]['poke'] = (x, y)
+                            elif loc_val == 'head':
+                                head_points.append((x, y))
+                            elif loc_val == 'tail':
+                                tail_points.append((x, y))
+                        except Exception:
+                            continue
+
+                    if len(head_points) == 1 and len(tail_points) == 1:
+                        coordinates[folder][video]['A'] = {
+                            'head': head_points[0],
+                            'tail': tail_points[0],
+                        }
+                    elif len(head_points) >= 2 and len(tail_points) >= 2:
+                        head_points = sorted(head_points, key=lambda p: p[0])
+                        tail_points = sorted(tail_points, key=lambda p: p[0])
+                        coordinates[folder][video]['A'] = {
+                            'head': head_points[0],
+                            'tail': tail_points[0],
+                        }
+                        coordinates[folder][video]['B'] = {
+                            'head': head_points[-1],
+                            'tail': tail_points[-1],
+                        }
+                continue
+
+            # Legacy workbook format.
+            df = pd.read_excel(excel_path, sheet_name=sheet_name)
+
             # Find ID, X, Y columns by checking first row (header row is row 0)
             id_col = None
             x_col = None
             y_col = None
-            
+
             if len(df) > 0:
-                # Check first row for header values
                 first_row = df.iloc[0]
                 for col_name in df.columns:
                     val = str(first_row[col_name]).strip() if pd.notna(first_row[col_name]) else ""
@@ -3027,8 +3191,7 @@ def load_excel_coordinates(excel_path):
                         x_col = col_name
                     elif val_lower == 'y':
                         y_col = col_name
-                
-                # If not found in first row, check column names directly
+
                 if not id_col:
                     for col in df.columns:
                         if 'id' in str(col).lower():
@@ -3044,43 +3207,39 @@ def load_excel_coordinates(excel_path):
                         if str(col).strip().upper() == 'Y':
                             y_col = col
                             break
-                
-                # Get video name from first column
+
                 video = None
                 if len(df.columns) > 0:
                     first_col = df.columns[0]
                     for idx in range(1, min(5, len(df))):
                         if pd.notna(df.iloc[idx][first_col]):
                             video_val = str(df.iloc[idx][first_col]).strip()
-                            if not ('_head' in video_val.lower() or '_tail' in video_val.lower() or 
+                            if not ('_head' in video_val.lower() or '_tail' in video_val.lower() or
                                    video_val.lower() in ['head', 'tail', 'poke location']):
                                 video = video_val
                                 break
-                
+
                 if not video and len(df.columns) > 0:
                     video = str(df.columns[0]).strip()
-                
-                # Parse rows
+
                 if id_col and x_col and y_col:
-                    for idx, row in df.iterrows():
+                    for _, row in df.iterrows():
                         try:
                             if pd.isna(row[id_col]):
                                 continue
-                            
+
                             id_val = str(row[id_col]).strip().lower()
-                            
-                            # Check for poke
+
                             if 'poke' in id_val:
                                 if pd.notna(row[x_col]) and pd.notna(row[y_col]):
                                     x = float(row[x_col])
                                     y = float(row[y_col])
                                     coordinates[folder][video]['poke'] = (x, y)
                                 continue
-                            
-                            # Parse embryo head/tail
+
                             embryo_id = None
                             is_head = None
-                            
+
                             if '_' in id_val:
                                 parts = id_val.split('_')
                                 if len(parts) >= 2:
@@ -3099,7 +3258,7 @@ def load_excel_coordinates(excel_path):
                                 elif 'tail' in id_val:
                                     is_head = False
                                     embryo_id = 'A'
-                            
+
                             if embryo_id and is_head is not None:
                                 if pd.notna(row[x_col]) and pd.notna(row[y_col]):
                                     x = float(row[x_col])
@@ -3110,7 +3269,7 @@ def load_excel_coordinates(excel_path):
                                         coordinates[folder][video][embryo_id]['head'] = (x, y)
                                     else:
                                         coordinates[folder][video][embryo_id]['tail'] = (x, y)
-                        except:
+                        except Exception:
                             continue
         
         return dict(coordinates)
@@ -4235,49 +4394,9 @@ def create_embryo_visualization(
     # Draw Excel coordinates if available (poke, head/tail)
     if excel_coords:
         excel_match_label = "Excel: no match"
-        folder_str = str(folder)
-        # Try to find matching video in Excel coordinates
-        excel_folder_data = excel_coords.get(folder_str, {})
+        excel_data, excel_match_label, excel_match_score = _match_excel_video_data(excel_coords, folder, video)
         
-        # Normalize video name for matching
-        def normalize_vid_name(v):
-            if not v: return ""
-            v = str(v).lower()
-            v = re.sub(r'\.(tif|tiff|mp4)$', '', v)
-            v = re.sub(r'\s*\([^)]+\)', '', v)
-            v = re.sub(r'[_\-\s]+', ' ', v)
-            return v.strip()
-        
-        video_norm = normalize_vid_name(video)
-        matched_video = None
-        for excel_video in excel_folder_data:
-            if normalize_vid_name(excel_video) == video_norm:
-                matched_video = excel_video
-                excel_match_score = 1.0
-                excel_match_label = f"Excel: exact ({excel_video})"
-                break
-        
-        # If no exact match, try fuzzy matching, but avoid arbitrary first-entry fallback.
-        if not matched_video and excel_folder_data:
-            import difflib
-            best_key = None
-            best_score = 0.0
-            for excel_video in excel_folder_data.keys():
-                score = difflib.SequenceMatcher(None, video_norm, normalize_vid_name(excel_video)).ratio()
-                if score > best_score:
-                    best_score = score
-                    best_key = excel_video
-            if best_key is not None and best_score >= 0.60:
-                matched_video = best_key
-                excel_match_score = float(best_score)
-                excel_match_label = f"Excel: fuzzy {best_score:.2f} ({best_key})"
-                print(f"    → Using Excel video '{matched_video}' for folder {folder} (fuzzy score: {best_score:.2f}, requested: '{video}')")
-            else:
-                excel_match_label = f"Excel: no match (best {best_score:.2f})"
-                print(f"    → No confident Excel video match for folder {folder} (requested: '{video}', best score: {best_score:.2f}); skipping Excel overlay")
-        
-        if matched_video:
-            excel_data = excel_folder_data[matched_video]
+        if excel_data:
             
             # Excel coordinates may be in a different pixel frame (often old mask dimensions)
             # and a top-left origin. Transform to current plot coordinates when possible.
@@ -4752,6 +4871,7 @@ TOP 5 REGIONS BY PIXEL COUNT:
 
 def build_data_sources_assumptions(
     summary_data,
+    df_tracks=None,
     tiff_base_path=None,
     mask_base_path=None,
     excel_coords=None,
@@ -4771,6 +4891,20 @@ def build_data_sources_assumptions(
     zoom_from_new_mask = 0
     calibration_sources = defaultdict(int)
     metadata_signals = defaultdict(int)
+    atlas_counts = Counter()
+    atlas_descriptions = {}
+
+    if df_tracks is not None and len(df_tracks) > 0:
+        if 'region_atlas_name' in df_tracks.columns:
+            atlas_series = df_tracks['region_atlas_name'].fillna('').astype(str).str.strip()
+            atlas_counts.update(a for a in atlas_series if a)
+        if 'region_atlas_name' in df_tracks.columns and 'region_atlas_description' in df_tracks.columns:
+            atlas_rows = df_tracks[['region_atlas_name', 'region_atlas_description']].dropna()
+            for _, row in atlas_rows.iterrows():
+                atlas_name = str(row.get('region_atlas_name', '')).strip()
+                atlas_desc = str(row.get('region_atlas_description', '')).strip()
+                if atlas_name and atlas_desc and atlas_name not in atlas_descriptions:
+                    atlas_descriptions[atlas_name] = atlas_desc
 
     if summary_data:
         for row in summary_data:
@@ -4863,14 +4997,15 @@ def build_data_sources_assumptions(
     speed_wave_notes = [
         "Motion vectors are computed from linked spark centroids frame-to-frame: vx=(x_t-x_{t-1})/dt, vy=(y_t-y_{t-1})/dt, speed=hypot(vx,vy).",
         "Default speed units are pixels/second (px/s); when TIFF calibration is available, PDF labels also show microns/second (um/s).",
-        "Per-state organization in spark_tracks.csv: track_id, frame_idx, time_s, x/y, vx/vy/speed, embryo_id, ap_norm (0=head, 1=tail), dv_px, dist_from_poke_px, region.",
+        "Per-state organization in spark_tracks.csv: track_id, frame_idx, time_s, x/y, vx/vy/speed, embryo_id, ap_norm (0=head, 1=tail), dv_px, dist_from_poke_px, region, and atlas provenance fields.",
         "Wave/vector summaries in PDF use the same per-state data and preserve embryo/context columns for downstream clustering and hypothesis testing.",
     ]
 
     region_notes = [
         "Regions are assigned per spark state after embryo head/tail inference and coordinate transform into the reference embryo map.",
-        "The AP/DV geometry maps each point to embryo-specific coordinates, then get_region_for_point() labels it using predefined anatomical bounding boxes.",
-        "Region labels are stored in the `region` column in spark_tracks.csv; empty/unknown labels indicate unmatched geometry or out-of-map points.",
+        "The AP/DV geometry maps each point to embryo-specific coordinates, then get_region_for_point() labels it using the selected named atlas.",
+        "Region labels are stored in the `region` column in spark_tracks.csv and the atlas provenance is stored in `region_atlas_name` / `region_atlas_description`.",
+        "Empty/unknown labels indicate unmatched geometry or out-of-map points.",
     ]
 
     spark_data_locations = [
@@ -4896,6 +5031,8 @@ def build_data_sources_assumptions(
         "excel_loaded": bool(excel_coords),
         "excel_folder_count": len(excel_coords) if excel_coords else 0,
         "excel_video_count": (sum(len(v) for v in excel_coords.values()) if excel_coords else 0),
+        "atlas_counts": dict(atlas_counts),
+        "atlas_descriptions": atlas_descriptions,
         "assumptions": assumptions,
         "excel_parse_notes": excel_parse_notes,
         "speed_wave_notes": speed_wave_notes,
@@ -4984,6 +5121,22 @@ def write_data_sources_assumptions_markdown(output_path, context):
         lines.append("- no NEW mask matches recorded")
     lines += [
         "",
+        "## Region Atlas Usage",
+        "",
+    ]
+    atlas_counts = context.get("atlas_counts", {})
+    atlas_descriptions = context.get("atlas_descriptions", {})
+    if atlas_counts:
+        for atlas_name, count in sorted(atlas_counts.items(), key=lambda x: (-x[1], x[0])):
+            atlas_desc = atlas_descriptions.get(atlas_name)
+            if atlas_desc:
+                lines.append(f"- `{atlas_name}`: **{count}** rows — {atlas_desc}")
+            else:
+                lines.append(f"- `{atlas_name}`: **{count}** rows")
+    else:
+        lines.append("- no atlas provenance columns were present in the loaded track data")
+    lines += [
+        "",
         "## Assumptions",
         "",
     ]
@@ -5054,6 +5207,17 @@ def add_data_sources_assumptions_page(pdf, context):
     excel_notes = context.get("excel_parse_notes", [])
     calib_src = context.get("calibration_sources", {})
     calib_lines = [f"- {k}: {v}" for k, v in sorted(calib_src.items())] if calib_src else ["- none"]
+    atlas_counts = context.get("atlas_counts", {})
+    atlas_descriptions = context.get("atlas_descriptions", {})
+    atlas_lines = []
+    for atlas_name, count in sorted(atlas_counts.items(), key=lambda x: (-x[1], x[0]))[:3]:
+        atlas_desc = atlas_descriptions.get(atlas_name)
+        if atlas_desc:
+            atlas_lines.append(f"- {atlas_name}: {count} rows ({atlas_desc})")
+        else:
+            atlas_lines.append(f"- {atlas_name}: {count} rows")
+    if not atlas_lines:
+        atlas_lines = ["- no atlas provenance detected"]
     mask_stack = context.get("mask_match_priority_stack", [])
     mask_counts = context.get("mask_strategy_counts", {})
     mask_match_counts = context.get("mask_match_type_counts", {})
@@ -5068,6 +5232,7 @@ def add_data_sources_assumptions_page(pdf, context):
     excel_notes_text = (
         "Excel mapping notes:\n" + "\n".join([f"- {n}" for n in excel_notes[:2]]) +
         "\n\nCalibration source(s):\n" + "\n".join(calib_lines[:3]) +
+        "\n\nRegion atlas usage:\n" + "\n".join(atlas_lines) +
         "\n\n" + mask_stack_text +
         "\n\nMask strategy used (top):\n" + "\n".join(top_strategy_lines) +
         "\n\nNEW mask match type (top):\n" + "\n".join(top_match_lines)
@@ -5278,7 +5443,7 @@ def generate_summary_table(df_tracks, output_path, output_dir, image_paths_dict=
     """
     # Group by folder and video
     df_tracks = df_tracks.copy()
-    df_tracks['base_filename'] = df_tracks['filename'].str.replace(r' \(page \d+\)', '', regex=True)
+    df_tracks['base_filename'] = df_tracks['filename'].apply(normalize_base_filename)
     
     # Extract folder and video, filtering out single-frame TIFFs
     folder_video_data = []
@@ -5391,12 +5556,12 @@ def generate_summary_table(df_tracks, output_path, output_dir, image_paths_dict=
         f.write("## Speed and Wave/Vector Organization\n\n")
         f.write("- **Speed mapping**: `vx`, `vy`, and `speed` are computed from frame-to-frame spark centroid motion (`speed = hypot(vx, vy)`).\n")
         f.write("- **Primary units**: speeds are px/s by default; when TIFF calibration is detected, PDF labels also include um/s.\n")
-        f.write("- **Wave/vector data model**: each spark track state stores `track_id`, `frame_idx`, `time_s`, `x`, `y`, `vx`, `vy`, `speed`, `embryo_id`, `ap_norm`, `dv_px`, `dist_from_poke_px`, and `region`.\n")
+        f.write("- **Wave/vector data model**: each spark track state stores `track_id`, `frame_idx`, `time_s`, `x`, `y`, `vx`, `vy`, `speed`, `embryo_id`, `ap_norm`, `dv_px`, `dist_from_poke_px`, `region`, and atlas provenance fields.\n")
         f.write("- **Organization into waves/vectors**: downstream clustering and summaries are built from these per-state vectors while preserving embryo identity and anatomical context.\n\n")
         f.write("## Region Computation\n\n")
         f.write("- **Head/tail-aligned mapping**: embryo geometry is inferred first, then spark points are transformed into a normalized embryo-map frame.\n")
-        f.write("- **Region assignment**: `get_region_for_point()` maps transformed points into predefined anatomical region bounding boxes.\n")
-        f.write("- **Stored output**: region labels are written to the `region` column in `spark_tracks.csv` (`unknown` means no confident region match).\n\n")
+        f.write("- **Region assignment**: `get_region_for_point()` maps transformed points using the selected named atlas.\n")
+        f.write("- **Stored output**: region labels are written to the `region` column in `spark_tracks.csv`; atlas provenance is recorded in `region_atlas_name`, `region_atlas_display_name`, and `region_atlas_description` (`unknown` means no confident region match).\n\n")
         f.write("## Spark Data File Locations\n\n")
         f.write("- **Per-state tracks**: `spark_tracks.csv` (output of `wave-vector-tiff-parser.py`).\n")
         f.write("- **Per-cluster vectors/waves**: `vector_clusters.csv` (output of `spark_tracks_to_clusters.py`).\n")
@@ -5521,7 +5686,7 @@ def main():
     
     if not args.skip_visualizations:
         print("\nGenerating visualizations...")
-        df_tracks['base_filename'] = df_tracks['filename'].str.replace(r' \(page \d+\)', '', regex=True)
+        df_tracks['base_filename'] = df_tracks['filename'].apply(normalize_base_filename)
         
         # Calculate global bounds for consistent dimensions
         print("  → Calculating global bounds for consistent image dimensions...")
@@ -5743,6 +5908,7 @@ def main():
     if stored_image_paths and len(stored_image_paths) > 0:
         run_context = build_data_sources_assumptions(
             stored_summary_data,
+            df_tracks=df_tracks,
             tiff_base_path=args.tiff_base_path,
             mask_base_path=mask_base_for_run,
             excel_coords=excel_coords,

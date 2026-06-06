@@ -8,6 +8,13 @@ set -e  # Exit on error
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Project root is two levels up from simulations/ folder
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PYTHON_BIN="python3"
+
+if [ -x "$PROJECT_ROOT/venv/bin/python" ]; then
+    PYTHON_BIN="$PROJECT_ROOT/venv/bin/python"
+elif [ -x "$PROJECT_ROOT/venv/bin/python3" ]; then
+    PYTHON_BIN="$PROJECT_ROOT/venv/bin/python3"
+fi
 
 OUTPUT_DIR="simulation_outputs"
 mkdir -p "$SCRIPT_DIR/$OUTPUT_DIR"
@@ -37,7 +44,7 @@ if [ -f "$REAL_TRACKS_CSV" ]; then
     if [ -n "$REAL_CLUSTERS_CSV" ] && [ -f "$REAL_CLUSTERS_CSV" ]; then
         echo "Step 1/3: Calibrating from real data..."
         echo "------------------------------------------------------------"
-        python3 "$SCRIPT_DIR/calibrate_from_real_data.py" \
+        "$PYTHON_BIN" "$SCRIPT_DIR/calibrate_from_real_data.py" \
             "$REAL_TRACKS_CSV" \
             --clusters-csv "$REAL_CLUSTERS_CSV" \
             --output "$SCRIPT_DIR/$CALIBRATED_CONFIG"
@@ -47,7 +54,7 @@ if [ -f "$REAL_TRACKS_CSV" ]; then
     else
         echo "Step 1/3: Calibrating from real data (clusters file not found, using tracks only)..."
         echo "------------------------------------------------------------"
-        python3 "$SCRIPT_DIR/calibrate_from_real_data.py" \
+        "$PYTHON_BIN" "$SCRIPT_DIR/calibrate_from_real_data.py" \
             "$REAL_TRACKS_CSV" \
             --output "$SCRIPT_DIR/$CALIBRATED_CONFIG"
         echo ""
@@ -79,7 +86,7 @@ scenarios=(
 
 for scenario in "${scenarios[@]}"; do
     echo "Generating: $scenario"
-    python3 "$SCRIPT_DIR/generate_simulated_data.py" \
+    "$PYTHON_BIN" "$SCRIPT_DIR/generate_simulated_data.py" \
         --scenario "$scenario" \
         --output "$SCRIPT_DIR/$OUTPUT_DIR/simulated_${scenario}.csv" \
         --duration 30.0
@@ -90,7 +97,7 @@ done
 if [ "$CALIBRATED" -eq 1 ] && [ -f "$SCRIPT_DIR/$CALIBRATED_CONFIG" ]; then
     echo "Step 3/3: Generating calibrated simulation from real data..."
     echo "------------------------------------------------------------"
-    python3 "$SCRIPT_DIR/generate_simulated_data.py" \
+    "$PYTHON_BIN" "$SCRIPT_DIR/generate_simulated_data.py" \
         --config "$SCRIPT_DIR/$CALIBRATED_CONFIG" \
         --output "$SCRIPT_DIR/$OUTPUT_DIR/simulated_calibrated_from_real_data.csv" \
         --duration 30.0
@@ -103,7 +110,7 @@ fi
 
 echo "Step 4/4: Generating comparison plots..."
 echo "------------------------------------------------------------"
-python3 "$SCRIPT_DIR/compare_all_scenarios.py" \
+"$PYTHON_BIN" "$SCRIPT_DIR/compare_all_scenarios.py" \
     --input-dir "$SCRIPT_DIR/$OUTPUT_DIR" \
     --output-dir "$SCRIPT_DIR/$OUTPUT_DIR/comparisons"
 echo ""
@@ -120,7 +127,7 @@ echo ""
 
 if [ "$CALIBRATED" -eq 1 ]; then
     echo "To compare calibrated simulation with real data:"
-    echo "  python3 $SCRIPT_DIR/visualize_simulation.py $SCRIPT_DIR/$OUTPUT_DIR/simulated_calibrated_from_real_data.csv \\"
+    echo "  $PYTHON_BIN $SCRIPT_DIR/visualize_simulation.py $SCRIPT_DIR/$OUTPUT_DIR/simulated_calibrated_from_real_data.csv \\"
     echo "      --real-csv $REAL_TRACKS_CSV \\"
     echo "      --compare \\"
     echo "      --output $SCRIPT_DIR/$OUTPUT_DIR/calibration_comparison.png"
@@ -128,10 +135,10 @@ if [ "$CALIBRATED" -eq 1 ]; then
 fi
 
 echo "To visualize any scenario:"
-echo "  python3 $SCRIPT_DIR/visualize_simulation.py $SCRIPT_DIR/$OUTPUT_DIR/simulated_two_embryos_head_head.csv"
+echo "  $PYTHON_BIN $SCRIPT_DIR/visualize_simulation.py $SCRIPT_DIR/$OUTPUT_DIR/simulated_two_embryos_head_head.csv"
 echo ""
 echo "To generate comparison plots for all scenarios:"
-echo "  python3 $SCRIPT_DIR/compare_all_scenarios.py \\"
+echo "  $PYTHON_BIN $SCRIPT_DIR/compare_all_scenarios.py \\"
 echo "      --input-dir $SCRIPT_DIR/$OUTPUT_DIR \\"
 echo "      --output-dir $SCRIPT_DIR/$OUTPUT_DIR/comparisons"
 

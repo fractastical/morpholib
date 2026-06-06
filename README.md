@@ -10,16 +10,29 @@ Utilities to read a local PlanformDB SQLite/EDB file and extract yearly time ser
 - Experiments per year (via `Experiment → Publication.Year`)
 - Publications per year
 - Distinct morphologies observed per year (frequency > 0)
+- Morphology shape extraction and visualization
 
-Produces a merged, gap-filled `pandas.DataFrame` and a quick `matplotlib` plot. Set `DB_PATH` at the top of the script to your `.edb` file path and run the script to print summary rows and show the timeline.
+Produces a merged, gap-filled `pandas.DataFrame` and a quick `matplotlib` plot. Set `PLANFORM_DB_PATH` environment variable to your `.edb` file path and run the script to print summary rows and show the timeline.
 
-The parser produces a timeline like this (experiments/year, publications/year, and cumulative morphologies):
+The parser produces:
+- Time series plot showing experiments, publications, and cumulative morphologies over time
+- Animated GIF showing new morphologies documented each year, highlighted and superimposed on the wild-type planarian base
 
 ![PlanformDB timeline: experiments, publications, and cumulative morphologies](parser_output.png)
 
-### [1917-thompson.py](./1917-thompson.py)
+**References:**
+- Lobo et al. (2011). Graph grammars with string-regulated rewriting. *Theoretical Computer Science* 412(45):6101-6111. [DOI](https://www.sciencedirect.com/science/article/pii/S0304397511005925)
+- Lobo et al. (2013). Planform: an application and database of graph-encoded planarian regenerative experiments. *Bioinformatics* 29(8):1098-1100. [DOI](https://doi.org/10.1093/bioinformatics/btt088)
+
+See [`datasets/planform/paper_citations.bib`](./datasets/planform/paper_citations.bib) for BibTeX citations.
+
+### [thompson/1917-thompson.py](./thompson/1917-thompson.py)
 
 A demonstration of D'Arcy Thompson's theory of transformations from *On Growth and Form* (1917), showing how one shape can be deformed into another through mathematical transformations. This classic work established the foundation for mathematical biology and the study of biological form.
+
+Thompson-focused notes and dataset curation are in:
+- [`thompson/DARCY_THOMPSON_FOCUSED_OPTIONS.md`](./thompson/DARCY_THOMPSON_FOCUSED_OPTIONS.md)
+- [`thompson/MODERN_DATASETS_THOMPSON_ALIGNED.md`](./thompson/MODERN_DATASETS_THOMPSON_ALIGNED.md)
 
 ### [1952-turing-morpho.py](./1952-turing-morpho.py)
 

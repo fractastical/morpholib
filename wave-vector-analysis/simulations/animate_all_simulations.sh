@@ -7,6 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 SIM_OUTPUT_DIR="$SCRIPT_DIR/simulation_outputs"
 ANIM_DIR="$SIM_OUTPUT_DIR/animations"
+PYTHON_BIN="python3"
 
 # Activate virtual environment
 if [[ -f "$PROJECT_ROOT/venv/bin/activate" ]]; then
@@ -17,6 +18,12 @@ elif [[ -f "../venv/bin/activate" ]]; then
     echo "✓ Activated virtual environment"
 else
     echo "Warning: Virtual environment not found. Make sure dependencies are installed."
+fi
+
+if [[ -x "$PROJECT_ROOT/venv/bin/python" ]]; then
+    PYTHON_BIN="$PROJECT_ROOT/venv/bin/python"
+elif [[ -x "$PROJECT_ROOT/venv/bin/python3" ]]; then
+    PYTHON_BIN="$PROJECT_ROOT/venv/bin/python3"
 fi
 
 # Create animations directory
@@ -35,7 +42,7 @@ for sim_csv in "$SIM_OUTPUT_DIR"/*.csv; do
         echo "Processing: $(basename "$sim_csv")"
         echo "  → Output: $(basename "$output_gif")"
         
-        python3 "$SCRIPT_DIR/animate_simulation.py" \
+        "$PYTHON_BIN" "$SCRIPT_DIR/animate_simulation.py" \
             "$sim_csv" \
             --output "$output_gif" \
             --time-window 30 \

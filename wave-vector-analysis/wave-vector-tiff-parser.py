@@ -8,9 +8,11 @@ import difflib
 from pathlib import Path
 import tifffile as tiff
 from embryo_region_map import (
+    load_region_atlas,
     load_region_map,
     create_embryo_transform,
     get_region_for_point,
+    list_available_atlases,
 )
 
 
@@ -314,6 +316,9 @@ class SparkTracker:
         self.reference_embryo_length_px = None  # Head-tail length (1 em) for embryo units (ecm, emm)
         self.geometry_source = "unknown"        # provenance for embryo labeling geometry
         self.geometry_qc_note = ""              # reason/details for geometry source
+        self.region_atlas_name = None           # atlas key used for region labeling
+        self.region_atlas_display_name = None   # human-readable atlas name
+        self.region_atlas_description = ""      # atlas description for downstream summaries
 
     # ---------- TIFF reading helper ----------
     
@@ -1189,7 +1194,11 @@ class SparkTracker:
             self.dv_map[ys, xs] = dv
 
         # Initialize region map and create transforms for each embryo
-        self.region_map = load_region_map()  # Load default region map
+        atlas = load_region_atlas(self.region_atlas_name)
+        self.region_atlas_name = atlas["name"]
+        self.region_atlas_display_name = atlas.get("display_name", atlas["name"])
+        self.region_atlas_description = atlas.get("description", "")
+        self.region_map = load_region_map(atlas_name=self.region_atlas_name)
         self.embryo_transforms = {}
         
         for label in self.embryo_labels:
@@ -1411,6 +1420,9 @@ class SparkTracker:
         state["ap_norm"] = ap_norm if ap_norm != "" else ""
         state["dv_px"] = dv_px if dv_px != "" else ""
         state["region"] = region if region != "" else ""
+        state["region_atlas_name"] = self.region_atlas_name or ""
+        state["region_atlas_display_name"] = self.region_atlas_display_name or ""
+        state["region_atlas_description"] = self.region_atlas_description or ""
         state["geometry_source"] = self.geometry_source
         state["geometry_qc_note"] = self.geometry_qc_note
 
@@ -1594,6 +1606,7 @@ class SparkTracker:
         out_video_path=None,
         csv_path="spark_tracks.csv",
         poke_xy=None,
+        region_atlas_name=None,
     ):
         """
         Process a folder of TIFF files as a time-lapse sequence.
@@ -1616,10 +1629,18 @@ class SparkTracker:
         self.fps = float(fps)
         self.poke_detection_frame = None  # Reset for each processing run
         self.files_with_embryos = 0  # Reset for each processing run
+        self.region_atlas_name = region_atlas_name or self.region_atlas_name or "coarse_morphology"
+        selected_atlas = load_region_atlas(self.region_atlas_name)
+        self.region_atlas_name = selected_atlas["name"]
+        self.region_atlas_display_name = selected_atlas.get("display_name", selected_atlas["name"])
+        self.region_atlas_description = selected_atlas.get("description", "")
 
         print(f"\n{'='*60}")
         print(f"Processing TIFF sequence from: {folder_path}")
         print(f"{'='*60}\n")
+        print(f"Region atlas: {self.region_atlas_name} ({self.region_atlas_display_name})")
+        if self.region_atlas_description:
+            print(f"  → {self.region_atlas_description}\n")
         
         # Extract folder name for filename prefix
         folder_name = os.path.basename(os.path.normpath(folder_path))
@@ -1982,6 +2003,9 @@ class SparkTracker:
                 "dist_from_poke_px",
                 "embryo_length_px",
                 "region",
+                "region_atlas_name",
+                "region_atlas_display_name",
+                "region_atlas_description",
                 "geometry_source",
                 "geometry_qc_note",
                 "filename",
@@ -2160,6 +2184,13 @@ if __name__ == "__main__":
         help="CSV output path.",
     )
     parser.add_argument(
+        "--atlas",
+        dest="region_atlas_name",
+        default="coarse_morphology",
+        choices=list_available_atlases(),
+        help="Named embryo region atlas to use for region labeling.",
+    )
+    parser.add_argument(
         "--poke-x",
         type=float,
         default=None,
@@ -2189,4 +2220,5 @@ if __name__ == "__main__":
         out_video_path=args.out_video,
         csv_path=args.csv_path,
         poke_xy=poke_xy,
+        region_atlas_name=args.region_atlas_name,
     )
