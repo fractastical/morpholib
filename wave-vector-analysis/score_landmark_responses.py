@@ -38,6 +38,8 @@ import pandas as pd
 import tifffile as tiff
 
 HERE = Path(__file__).resolve().parent
+from provenance import csv_comment_header, record_run  # noqa: E402
+
 DEFAULT_ROOT = "/Users/jdietz/Library/CloudStorage/Box-Box/Calcium videos"
 ORGAN_CLASSES = ("cement_gland", "eye", "tail_response", "local")
 
@@ -231,7 +233,20 @@ def main():
     df = pd.DataFrame(rows)
     out_csv = Path(args.out_csv)
     out_csv.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(out_csv, index=False)
+    rec = record_run(
+        "score_landmark_responses.py", out_csv,
+        outputs=[out_csv, args.out_png],
+        inputs={"ground_truth": args.ground_truth},
+        extra={
+            "n_landmarks": len(df),
+            "dff_threshold": args.dff_threshold,
+            "disk_pct": args.disk_pct,
+            "radius_px": args.radius,
+        },
+    )
+    with open(out_csv, "w", encoding="utf-8") as f:
+        f.write(csv_comment_header(rec))
+        df.to_csv(f, index=False)
     render_summary(df, Path(args.out_png), args.dff_threshold)
 
     print(f"\nWrote {out_csv} ({len(df)} landmarks)")

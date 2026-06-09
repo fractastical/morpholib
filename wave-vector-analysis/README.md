@@ -252,6 +252,9 @@ python batch_wave_catalog.py --root "/path/to/Calcium videos"
 python parse_xy_coordinates.py --xlsx "/path/to/XY coordinates.xlsx"
 python score_landmark_responses.py
 
+# 1c. Package a versioned Box deliverable (reports + tables + MANIFEST + sidecars)
+python package_science_deliverables.py --include-gifs --include-detection-qa
+
 # 2. Score laterality / bidirectionality (uses the real geometry if present)
 python wave_laterality_analysis.py
 
@@ -268,6 +271,15 @@ python merge_claims_all_in_one.py
 
 The merge prefers `claims_tested_summary.pdf` as the first page and skips any
 component PDF that is missing.
+
+### Provenance / versioning
+
+Major pipeline scripts write a sidecar ``<output>.provenance.json`` next to each
+primary artifact (git commit, Python + package versions, timestamps, inputs).
+CSV outputs also get a ``#`` comment header with the same summary. A rolling
+``analysis_results/RUN_INDEX.jsonl`` logs every run. The combined PDF cover and
+provenance page include the git commit; Box releases bundle all sidecars under
+``04_provenance/pipeline_sidecars/``.
 
 ## Notes
 

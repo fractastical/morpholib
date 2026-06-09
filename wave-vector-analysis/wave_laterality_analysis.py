@@ -51,6 +51,7 @@ import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
+from provenance import csv_comment_header, record_run  # noqa: E402
 
 # Minimum peak brightness (relative to the brightest wave in a video) for a
 # wave to count as a real event rather than detector noise.
@@ -500,7 +501,22 @@ def main():
 
     out_csv = Path(args.out_csv)
     out_csv.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(out_csv, index=False)
+    rec = record_run(
+        "wave_laterality_analysis.py", out_csv,
+        outputs=[out_csv, args.out_png, args.out_conditions_png],
+        inputs={
+            "catalog_csv": args.catalog_csv,
+            "ground_truth": args.ground_truth,
+        },
+        extra={
+            "n_videos": len(df),
+            "geom_ground_truth": int((df["geom_source"] == "ground_truth").sum())
+            if "geom_source" in df else 0,
+        },
+    )
+    with open(out_csv, "w", encoding="utf-8") as f:
+        f.write(csv_comment_header(rec))
+        df.to_csv(f, index=False)
     render_summary(df, Path(args.out_png))
     render_conditions(df, Path(args.out_conditions_png))
 

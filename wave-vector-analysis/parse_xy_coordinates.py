@@ -32,6 +32,7 @@ from pathlib import Path
 import openpyxl
 
 HERE = Path(__file__).resolve().parent
+from provenance import csv_comment_header, record_run  # noqa: E402
 DEFAULT_XLSX = Path(
     "/Users/jdietz/Library/CloudStorage/Box-Box/Calcium videos/XY coordinates.xlsx"
 )
@@ -152,7 +153,16 @@ def main():
     out.parent.mkdir(parents=True, exist_ok=True)
     fields = ["prefix", "video_stem", "side", "landmark_raw",
               "landmark_class", "frame", "x", "y"]
+    rec = record_run(
+        "parse_xy_coordinates.py", out,
+        inputs={"xlsx": args.xlsx},
+        extra={
+            "n_points": len(all_rows),
+            "n_videos": len(set(r["prefix"] for r in all_rows)),
+        },
+    )
     with open(out, "w", newline="") as f:
+        f.write(csv_comment_header(rec))
         w = csv.DictWriter(f, fieldnames=fields)
         w.writeheader()
         w.writerows(all_rows)
