@@ -71,6 +71,10 @@ DETECTION_QA = [
     "detection_summary/detection_visualizations.pdf",
     "detection_summary/detection_warnings.log",
 ]
+KG_FILES = [
+    "calcium_claims.pkg.trig",
+    "calcium_claims_graph.json",
+]
 
 PIPELINE_STEPS = [
     ("parse_xy_coordinates.py", "xy_ground_truth.csv"),
@@ -81,6 +85,7 @@ PIPELINE_STEPS = [
     ("generate_tested_claims_summary.py", "claims_tested_summary.pdf"),
     ("generate_claims_inventory_pdf.py", "claims_inventory.pdf"),
     ("merge_claims_all_in_one.py", "claims_all_in_one.pdf"),
+    ("export_calcium_claims_to_pkg.py", "calcium_claims.pkg.trig"),
 ]
 
 INPUT_PATHS = {
@@ -193,6 +198,11 @@ def build_release(
             src = RESULTS / rel
             if src.exists():
                 plan.append((src, release_dir / "05_detection_qa" / Path(rel).name))
+
+    for rel in KG_FILES:
+        src = RESULTS / rel
+        if src.exists():
+            plan.append((src, release_dir / "06_knowledge_graph" / Path(rel).name))
 
     missing = []
     for src, _ in plan:

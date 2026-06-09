@@ -265,6 +265,9 @@ python generate_claim_wave_overlays.py
 python generate_tested_claims_summary.py
 python generate_claims_inventory_pdf.py
 
+# 3b. Export probabilistic KG (morphopkg/spc/1.0 TriG + JSON for Probknow)
+python export_calcium_claims_to_pkg.py
+
 # 4. (Re)generate the other component reports as needed, then merge
 python merge_claims_all_in_one.py
 ```
