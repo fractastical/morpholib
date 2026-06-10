@@ -156,12 +156,20 @@ def find_bright_points(
     linear_threshold=0.5,
     min_separation_px=3,
     max_points=4000,
+    blur_ksize=3,
 ):
     """
     Local maxima whose LINEAR brightness exceeds linear_threshold (0..1 on the
     global scale). Returns (N, 4) array: x, y, intensity_raw, intensity_linear.
+
+    blur_ksize: odd kernel size for a pre-smoothing Gaussian (default 3). Set to
+    0 (or <3) to disable blurring entirely and detect on the raw frame.
     """
-    blurred = cv2.GaussianBlur(gray_f32, (3, 3), 0)
+    if blur_ksize and blur_ksize >= 3:
+        k = int(blur_ksize) | 1  # force odd
+        blurred = cv2.GaussianBlur(gray_f32, (k, k), 0)
+    else:
+        blurred = gray_f32
     lin = linearize(blurred, gmin, gmax)
 
     bright = lin >= linear_threshold
@@ -284,6 +292,7 @@ def process_folder(
     max_frames=None,
     include_unmatched=True,
     use_dtype_range=False,
+    blur_ksize=3,
 ):
     """
     Two passes:
@@ -321,6 +330,7 @@ def process_folder(
             linear_threshold=linear_threshold,
             min_separation_px=min_separation_px,
             max_points=max_points_per_frame,
+            blur_ksize=blur_ksize,
         )
 
         # Display: GLOBAL linear scale (consistent across all frames)
@@ -602,6 +612,14 @@ def main():
     parser.add_argument("--max-points", type=int, default=4000)
     parser.add_argument("--max-link-px", type=float, default=8.0)
     parser.add_argument("--min-separation", type=int, default=3)
+    parser.add_argument(
+        "--blur-ksize", type=int, default=3,
+        help="Gaussian pre-smoothing kernel (odd, default 3). Use 0 to disable.",
+    )
+    parser.add_argument(
+        "--no-blur", action="store_true",
+        help="Disable Gaussian pre-smoothing (equivalent to --blur-ksize 0)",
+    )
     parser.add_argument("--max-frames", type=int, default=None)
     parser.add_argument(
         "--omit-unmatched",
@@ -621,7 +639,13 @@ def main():
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    blur_ksize = 0 if args.no_blur else args.blur_ksize
+
     print(f"Processing {args.folder} (strict 1-frame deltas, linear scale) …")
+    if blur_ksize and blur_ksize >= 3:
+        print(f"  Gaussian pre-smoothing: ON (ksize={int(blur_ksize) | 1})")
+    else:
+        print("  Gaussian pre-smoothing: OFF (raw-frame detection)")
     rows, display_frames, (gmin, gmax) = process_folder(
         args.folder,
         fps=args.fps,
@@ -633,6 +657,7 @@ def main():
         max_frames=args.max_frames,
         include_unmatched=not args.omit_unmatched,
         use_dtype_range=args.dtype_range,
+        blur_ksize=blur_ksize,
     )
 
     csv_path = out_dir / "pixel_frame_deltas.csv"
@@ -643,6 +668,7 @@ def main():
         f.write(f"global_min={gmin}\nglobal_max={gmax}\n")
         f.write(f"scale={'dtype' if args.dtype_range else 'stack'}\n")
         f.write(f"linear_threshold={args.linear_threshold}\n")
+        f.write(f"blur_ksize={int(blur_ksize) | 1 if blur_ksize and blur_ksize >= 3 else 0}\n")
 
     by_frame = {}
     for r in rows:
