@@ -388,8 +388,10 @@ def serialize_trig(ds: Dataset) -> str:
 
 
 def build(rubric, audit, out_dir: Path, supersede: dict | None = None):
-    """supersede: {file name: previously published trusty URI}. A nanopub whose content
-    differs from the already-emitted file of the same name gets npx:supersedes <old>."""
+    """supersede: {file name: {"nanopub": published trusty URI, "text": its unsigned TriG}}.
+    A nanopub whose content differs from the published one of the same name gets
+    npx:supersedes <old>; one whose content is identical is not re-emitted (it is
+    already published) and is reported in ``unchanged``."""
     B = NanopubBuilder(audit, rubric)
     B.set_measurements(audit.get("_measurements"))
     A, refs = audit["audit"], audit.get("references", {})
@@ -405,20 +407,39 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None):
     written = []
 
     superseded = []
+    unchanged = []
+
+    def _content(text):
+        """Nanopub text minus the pubinfo lines that differ between otherwise identical builds
+        (creation date, supersedes link), so 'unchanged' means unchanged assertion + provenance."""
+        return "\n".join(l for l in text.splitlines()
+                         if not l.lstrip().startswith(("dct:created ", "npx:supersedes ")))
 
     def emit(name, ds):
         p = out_dir / name
         text = serialize_trig(ds)
-        old = supersede.get(name) if supersede else None
-        if old and p.exists():
-            existing = p.read_text()
-            if existing != text:
-                ds.graph(URIRef(TEMP + "pubinfo")).add((THIS, NPX.supersedes, URIRef(old)))
-                text = serialize_trig(ds)
-                if existing != text:            # genuinely new content (not just a re-run)
-                    superseded.append((name, old))
+        prev = supersede.get(name) if supersede else None
+        if prev and prev.get("text") is not None:
+            same_dir = Path(prev.get("path", "")).resolve() == p.resolve()
+            if _content(prev["text"]) == _content(text) and not same_dir:   # identical to a nanopub published from another audit
+                unchanged.append((name, prev["nanopub"]))
+                if p.exists():
+                    p.unlink()
+                return
+            if prev["text"] == text:            # same dir, nothing changed: just rewrite as-is
+                p.write_text(text)
+                written.append(p)
+                _merge(ds)
+                return
+            ds.graph(URIRef(TEMP + "pubinfo")).add((THIS, NPX.supersedes, URIRef(prev["nanopub"])))
+            text = serialize_trig(ds)
+            if prev["text"] != text:            # genuinely new content (not just a re-run)
+                superseded.append((name, prev["nanopub"]))
         p.write_text(text)
         written.append(p)
+        _merge(ds)
+
+    def _merge(ds):
         for ctx in ds.graphs():
             if str(ctx.identifier) == TEMP + "assertion":
                 for t in ctx:
@@ -567,6 +588,7 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None):
     merged_path.write_text(merged.serialize(format="turtle"))
     report_path = out_dir / "REPORT.md"
     report_path.write_text(report(rubric, audit, rows))
+    build.unchanged = unchanged
     return written, merged_path, report_path, merged, superseded
 
 
@@ -715,6 +737,9 @@ def main():
     ap.add_argument("--query", action="store_true", help="run a demo SPARQL on the merged graph")
     ap.add_argument("--supersede", action="store_true",
                     help="nanopubs whose content changed get npx:supersedes <URI recorded in kg/<audit>/published.json>")
+    ap.add_argument("--supersede-from", metavar="KG_DIR",
+                    help="previous audit's kg dir: same-named nanopubs supersede the URIs in its published.json; "
+                         "byte-identical ones are not re-emitted")
     args = ap.parse_args()
 
     rubric, audit = load(Path(args.audit))
@@ -725,13 +750,24 @@ def main():
         return
     out_dir = Path(args.out) if args.out else HERE / "kg" / audit["audit"]["id"]
     supersede = None
-    if args.supersede:
+    if args.supersede or args.supersede_from:
         import json
-        mp = out_dir / "published.json"
+        prev_dir = Path(args.supersede_from) if args.supersede_from else out_dir
+        mp = prev_dir / "published.json"
         if not mp.exists():
             sys.exit(f"--supersede: no {mp}")
-        supersede = {n: m["nanopub"] for n, m in json.loads(mp.read_text()).items() if m.get("published")}
+        supersede = {}
+        for n, m in json.loads(mp.read_text()).items():
+            if not m.get("published"):
+                continue
+            prev_file = prev_dir / n
+            supersede[n] = {"nanopub": m["nanopub"], "path": str(prev_file),
+                            "text": prev_file.read_text() if prev_file.exists() else None}
     written, merged_path, report_path, merged, superseded = build(rubric, audit, out_dir, supersede)
+    if getattr(build, "unchanged", None):
+        print(f"  {len(build.unchanged)} nanopub(s) identical to already-published ones, not re-emitted:")
+        for n, old in build.unchanged:
+            print(f"    {n}  = {old}")
     print(f"wrote {len(written)} nanopubs, {merged_path.name} ({len(merged)} triples), {report_path.name}")
     print(f"  -> {out_dir}")
     if audit.get("_measurements"):

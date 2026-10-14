@@ -113,6 +113,84 @@ def measure_planform(gif: Path) -> list:
     ]
 
 
+def measure_planform_v2(script: Path) -> list:
+    """Geometry decoded by 2013-lobo-planform-morphology.py from PlanformDB: the wild-type
+    silhouette against the radii encoded in the database, how many of the morphologies
+    render as distinct silhouettes, and how different the canonical phenotypes are."""
+    import importlib.util
+    import os
+    from matplotlib.path import Path as MplPath
+    db = os.environ.get("PLANFORM_DB_PATH")
+    if not db or not Path(db).is_file():
+        raise FileNotFoundError("PLANFORM_DB_PATH not set or not a file")
+    spec = importlib.util.spec_from_file_location("planform_v2", script)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod                      # dataclasses need the module registered
+    spec.loader.exec_module(mod)
+    morphs = mod.load_morphologies(db)
+    wt = morphs[1]
+    mm = mod.morphometrics(wt)
+    # encoded reference: head anterior radius 80 + head→trunk 200 + trunk→tail 200 + tail posterior radius 80
+    # = 560 along AP; trunk lateral radii 60 + 60 = 120 across ML (RegionParam / RegionsLink rows of morphology 1)
+    enc_len, enc_wid = 80 + 200 + 200 + 80, 60 + 60
+    rows = {k: mod.morphometrics(m) for k, m in morphs.items()}
+
+    def sil_key(r):
+        return (round(r["ap_length"]), round(r["ml_width"]), round(r["area"], -2), r["n_heads"], r["n_tails"])
+    keys = {sil_key(r) for r in rows.values()}
+    share_wt = sum(1 for r in rows.values() if sil_key(r) == sil_key(rows[1]))
+
+    def full_key(m):                                   # every encoded number: regions, links, organs
+        import dataclasses
+        return (tuple((reg.type, tuple(round(p, 3) for p in reg.params)) for _, reg in sorted(m.regions.items())),
+                tuple(dataclasses.astuple(l)[2:] for l in m.links),
+                tuple(dataclasses.astuple(o)[:3] for o in m.organs))
+    full = {full_key(m) for m in morphs.values()}
+
+    def iou(a, b):
+        pts = np.vstack(list(a.outlines.values()) + list(b.outlines.values()))
+        x0, y0 = pts.min(0) - 10; x1, y1 = pts.max(0) + 10
+        gx, gy = np.meshgrid(np.linspace(x0, x1, 256), np.linspace(y0, y1, 256))
+        grid = np.column_stack([gx.ravel(), gy.ravel()])
+        ma = np.zeros(len(grid), bool); mb = np.zeros(len(grid), bool)
+        for poly in a.outlines.values():
+            ma |= MplPath(poly).contains_points(grid)
+        for poly in b.outlines.values():
+            mb |= MplPath(poly).contains_points(grid)
+        return float((ma & mb).sum() / (ma | mb).sum())
+
+    out = [
+        M("wild-type silhouette AP length", mm["ap_length"], "Planform units",
+          "union of decoded region outlines of Morphology 1, rasterised; bbox extent along the AP axis",
+          reference=enc_len, source="PlanformDB 2.5.0 RegionParam/RegionsLink of morphology 1 (80+200+200+80)",
+          derived_from="script"),
+        M("wild-type silhouette ML width", mm["ml_width"], "Planform units", "as above, across the ML axis",
+          reference=enc_wid, source="trunk lateral radii 60+60", derived_from="script"),
+        M("wild-type AP/ML aspect", mm["aspect"], "ratio", "AP length / ML width of the decoded silhouette",
+          reference=round(enc_len / enc_wid, 3), source="encoded radii", derived_from="script",
+          note="S. mediterranea in Lobo et al. 2013 Fig. 1A is of this order; the formalism, not a specimen, is the reference"),
+        M("morphologies rendered", len(morphs), "count", "Morphology rows with at least one encoded region",
+          note="372 rows in the database; 3 have no regions (Lethal, Midbody Buldge, Double head, side tail)",
+          derived_from="script"),
+        M("distinct body silhouettes", len(keys), "count",
+          "unique (AP length, ML width, area to 100 units, #heads, #tails) tuples over all rendered morphologies",
+          reference=len(morphs), source="upper bound: one silhouette per morphology",
+          note=f"{share_wt} morphologies share the wild-type body and differ only in organs "
+               "(ectopic eyes, doubled CNS, pharynx position, ...), which is how the database encodes them",
+          derived_from="script"),
+        M("distinct encodings (regions + links + organs)", len(full), "count",
+          "unique tuples of every encoded number read from the database", reference=len(morphs),
+          source="every morphology row is a distinct phenotype", derived_from="script"),
+        M("IoU wild type vs double head (#24)", iou(wt, morphs[24]), "ratio",
+          "intersection-over-union of the two decoded silhouettes on a shared canvas (region centres aligned by layout)",
+          reference="< 1; the two bodies differ only at the posterior cap (tail -> second head), the rest of the difference is organs",
+          derived_from="script"),
+        M("IoU wild type vs headless (#20)", iou(wt, morphs[20]), "ratio", "as above",
+          reference="≈ (trunk+tail area)/(whole-body area) if the head is simply absent", derived_from="script"),
+    ]
+    return out
+
+
 def measure_raup(script: Path, variables: Path) -> list:
     """Effective translation rate from the script's own raup_shell(): Raup's T is the axial
     translation per revolution relative to the generating-curve centre's distance from the
@@ -219,7 +297,9 @@ def main():
         if sim.get("output"):
             files.add(sim["output"])
         try:   # measurements first: some re-render their output, which must then be fingerprinted
-            if sid == "planform-morphology-animation" and (ROOT / sim["output"]).exists():
+            if sid == "planform-morphology-animation" and sim["script"] == "2013-lobo-planform-morphology.py":
+                out["measurements"][sid] = measure_planform_v2(ROOT / sim["script"])
+            elif sid == "planform-morphology-animation" and (ROOT / sim["output"]).exists():
                 out["measurements"][sid] = measure_planform(ROOT / sim["output"])
             elif sid == "raup-shell-coiling":
                 out["measurements"][sid] = measure_raup(ROOT / sim["script"], ROOT / "datasets/raup/variables.json")

@@ -1,0 +1,83 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-planform-morphology-animation> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match> .
+    <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "PlanformDB planarian morphology animation — Morphological realism / specimen match: 60/100" ;
+        dct:date "2026-10-14"^^xsd:date ;
+        dct:description "Side by side with Planform's Fig. 1D (Biology Open) the wild type now has the same structure: a straight-sided body with flat head/trunk and trunk/tail borders, rounded caps, red head fading to pink, blue tail, oval eyes with pupils, green brain lobes and nerve cords, a tube pharynx. Double head (#24), headless (#20), cyclops, side heads and polarity-reversed morphologies are told apart at a glance; 167 distinct body silhouettes among 369 morphologies, the rest (115 of them wild-type bodied) differing only in organs, which is how the database encodes them. Against a photographed S. mediterranea the match is weaker: no auricles, no triangular head, no pigmentation; these are not encoded in the database." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match-0>,
+            <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match-1>,
+            <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match-2> ;
+        pk:hasVerdict "mostly faithful" ;
+        pk:weightOfEvidence 6e-01 .
+    <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-output-planform-morphology-gallery-png> a prov:Entity,
+            schema:ImageObject,
+            pk:EvidenceItem ;
+        rdfs:label "planform_morphology_gallery.png" ;
+        dct:description "rendered output of 2013-lobo-planform-morphology.py at 161f269; sha256 pins the exact file that was scored; 1920×2160 px" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py> ;
+        schema:contentSize "443915 B" ;
+        schema:encodingFormat "image/png" ;
+        schema:height 2160 ;
+        schema:sha256 "77a7dfa087bf89441dc35c64bc0c96bccfdc15d44a3d600df766fb723a87ace5" ;
+        schema:width 1920 .
+    <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match-0> a pk:EvidenceItem ;
+        rdfs:label "planform_morphology_gallery.png (generated output, not in repo)" ;
+        dct:description "16 canonical phenotypes compared with Planform Fig. 1D and the Planform screenshots in Lobo et al. 2013" ;
+        prov:wasDerivedFrom <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-output-planform-morphology-gallery-png> .
+    <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "2013-lobo-planform-morphology.py L78–L87" ;
+        dct:description "Planform colour convention" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L78-L87> .
+    <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "2013-lobo-planform-morphology.py L460–L510" ;
+        dct:description "draw_morphology(): outline, gradient fills, organs" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L460-L510> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.bpj.2017.04.011>,
+            <https://doi.org/10.1093/bioinformatics/btt088>,
+            <https://doi.org/10.1242/bio.20123400>,
+            <https://github.com/fractastical/morpholib/commit/161f269>,
+            <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "PlanformDB planarian morphology animation — Morphological realism / specimen match 60/100" ;
+        dct:created "2026-10-14T00:00:00+00:00"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match> ;
+        npx:supersedes <https://w3id.org/np/RAfEP0rV1SBRfmD5gId3jvV8QgBHpBQFAUVmtJh7P4y0Q> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/levin-lab> .
+    <https://w3id.org/probknow/resource/domain/levin-lab> rdfs:label "levin-lab" .
+}

@@ -1,0 +1,230 @@
+# MorphoEval audit — morphology simulations, 2026-10-14 (re-score).
+#
+# Re-scores ONE simulation, the PlanformDB planarian morphology animation,
+# after it was rewritten from scratch (1900-planformDB_parser.py ->
+# 2013-lobo-planform-morphology.py) in response to the 2026-10-13 audit.
+# The simulation keeps its id so that the nine nanopubs built from this file
+# supersede (npx:supersedes) the nine published on 2026-10-13.
+#
+# The other simulations are unchanged since commit f3fe478 and were not
+# re-inspected; they are listed with status: unevaluated and their
+# 2026-10-13 nanopubs stand.  The rubric nanopub is byte-identical to the
+# published one and is therefore not re-emitted.
+#
+# Scores are on the rubric's 0-100 scale.  Line numbers refer to the files at
+# the checkpoint commit recorded below.
+
+audit:
+  id: 2026-10-14-morphology-audit
+  rubric_version: 0.1.0
+  date: "2026-10-14"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Cursor agent)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null          # null -> read orcid_id from ~/.nanopub/profile.yml
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 161f269          # final renderer of 2013-lobo-planform-morphology.py
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Input database: planformDB_2.5.0.edb as distributed with Planform
+      (Lobo et al. 2013); the script reads it read-only through sqlite3.
+      Previous checkpoint for this simulation: f3fe478 (audit 2026-10-13).
+
+references:
+  lobo2013:
+    title: "Planform: an application and database of graph-encoded planarian regenerative experiments"
+    authors: "Lobo D, Malone TJ, Levin M"
+    venue: "Bioinformatics 29(8):1098-1100 (2013)"
+    doi: 10.1093/bioinformatics/btt088
+  lobo2013bo:
+    title: "Towards a bioinformatics of patterning: a computational approach to understanding regulative morphogenesis"
+    authors: "Lobo D, Malone TJ, Levin M"
+    venue: "Biology Open 2(2):156-169 (2013)"
+    doi: 10.1242/bio.20123400
+  durant2017:
+    title: "Long-Term, Stochastic Editing of Regenerative Anatomy via Targeting Endogenous Bioelectric Gradients"
+    authors: "Durant F, Morokuma J, Fields C, Williams K, Adams DS, Levin M"
+    venue: "Biophysical Journal 112(10):2231-2243 (2017)"
+    doi: 10.1016/j.bpj.2017.04.011
+
+simulations:
+  - id: planform-morphology-animation
+    name: PlanformDB planarian morphology animation
+    organism: "Planaria (Schmidtea mediterranea, Dugesia japonica)"
+    script: 2013-lobo-planform-morphology.py
+    output: planform_morphology_gallery.png
+    domain: levin-lab
+    status: evaluated
+    source_refs: [lobo2013, lobo2013bo, durant2017]
+    summary: >-
+      Rewritten.  The region graph of every PlanformDB morphology is now
+      decoded exactly (polar radii per region, centres and borders from the
+      RegionsLink labels, organs from the organ table) and drawn in Planform's
+      own cartoon convention; wild type, double head, headless, cyclops and
+      the other canonical phenotypes are visually distinct and recognisable
+      as Planform drawings.  Remaining gap: the formalism stores three radii
+      per head, so species features such as auricles or a triangular head are
+      not in the data and the renders still read as cartoons, not specimens.
+    scores:
+      model-fidelity:
+        value: 85
+        rationale: >-
+          Region shape parameters are interpreted with the formalism's own
+          rule (0 links -> 4 radii right/anterior/left/posterior; 1 link ->
+          +90/+180/+270 deg from the edge; k >= 2 links -> one radius per
+          bisector of consecutive edges), region centres are placed from the
+          RegionsLink Dist/Ang labels and borders at Ratio*Dist, and the rule
+          is checked at load time against all 1181 regions in the database.
+          The only element not taken from the source is how consecutive
+          control radii are joined: a superellipse arc (n = 2.2 free, n = 7 at
+          a border) chosen to reproduce Planform's Fig. 1D; the paper does not
+          publish Planform's interpolant.
+        evidence:
+          - {file: 2013-lobo-planform-morphology.py, lines: [20, 34], note: "formalism as implemented, with the radii-count rule"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [286, 314], note: "control_points(): radii -> directions per link count"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [248, 272], note: "layout(): centres from Dist/Ang, borders from Ratio"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [701, 715], note: "check_encoding(): 1181/1181 regions obey the rule"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [317, 355], note: "superellipse interpolant between radii (not from the source)"}
+      specimen-match:
+        value: 60
+        rationale: >-
+          Side by side with Planform's Fig. 1D (Biology Open) the wild type
+          now has the same structure: a straight-sided body with flat
+          head/trunk and trunk/tail borders, rounded caps, red head fading
+          to pink, blue tail, oval eyes with pupils, green brain lobes and
+          nerve cords, a tube pharynx.  Double head (#24), headless (#20),
+          cyclops, side heads and polarity-reversed morphologies are told
+          apart at a glance; 167 distinct body silhouettes among 369
+          morphologies, the rest (115 of them wild-type bodied) differing
+          only in organs, which is how the database encodes them.  Against
+          a photographed S.
+          mediterranea the match is weaker: no auricles, no triangular head,
+          no pigmentation; these are not encoded in the database.
+        evidence:
+          - {file: planform_morphology_gallery.png, lines: [0, 0], note: "16 canonical phenotypes compared with Planform Fig. 1D and the Planform screenshots in Lobo et al. 2013"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [78, 87], note: "Planform colour convention"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [460, 510], note: "draw_morphology(): outline, gradient fills, organs"}
+      parameter-expressivity:
+        value: 75
+        rationale: >-
+          Every encoded quantity now has a visible effect: each radius moves
+          one control point of its region, each link moves a region centre
+          and a border, each organ vector/rotation places one organ.  All
+          morphologies in a frame share one scale (frame_bounds), so the
+          size and proportion differences between phenotypes are preserved.
+          The final morphospace grid of the timeline fits each morphology
+          to its cell, which deliberately trades scale for legibility.
+        evidence:
+          - {file: 2013-lobo-planform-morphology.py, lines: [525, 531], note: "frame_bounds(): common scale within a frame"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [546, 565], note: "render_gallery(): small multiples at common scale"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [572, 681], note: "render_timeline(): per-year pages, final grid fitted per cell"}
+          - {file: planform_morphospace_timeline.gif, lines: [0, 0], note: "68 frames: intro, 30 year pages, final morphospace grid of 359 dated morphologies"}
+      morphometric-validation:
+        value: 45
+        rationale: >-
+          The script computes silhouette morphometrics (AP length, ML width,
+          aspect, area, region and organ counts, length relative to wild
+          type) for every morphology and can write them as CSV, and the
+          measurements sidecar checks the decoded wild type against the
+          radii encoded in the database (560 x 120 units).  Nothing is yet
+          compared with measurements of real animals or with values reported
+          in the literature; the reference is the formalism, not a specimen.
+        evidence:
+          - {file: 2013-lobo-planform-morphology.py, lines: [386, 412], note: "morphometrics()"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [684, 698], note: "write_csv()"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [713, 714], note: "wild-type AP/ML printed at load"}
+      source-traceability:
+        value: 70
+        rationale: >-
+          Both source papers are cited with DOIs in the module docstring, the
+          database version is named and the schema tables used are listed.
+          The database itself is still an external file located through
+          PLANFORM_DB_PATH; no hash or download URL is recorded, so the exact
+          input cannot be verified from the repository alone.
+        evidence:
+          - {file: 2013-lobo-planform-morphology.py, lines: [10, 16], note: "DOIs of both Lobo et al. 2013 papers"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [138, 146], note: "resolve_db_path(): env var or CLI, no provenance recorded"}
+      code-traceability:
+        value: 75
+        rationale: >-
+          The decoding rule, the coordinate convention (+y anterior,
+          wild-type head->trunk angle 3pi/2) and the cartoon convention are
+          documented where they are implemented, and region_outline() names
+          the figure it reproduces.  The radii-count rule was established by
+          checking the database rather than quoted from a numbered equation,
+          because the papers describe the formalism in prose.
+        evidence:
+          - {file: 2013-lobo-planform-morphology.py, lines: [35, 38], note: "coordinate convention"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [321, 331], note: "region_outline() docstring: arc construction and Fig. 1D"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [211, 244], note: "load_first_report_year(): experiment->publication join documented"}
+      repro-package:
+        value: 60
+        rationale: >-
+          Deterministic (no random state), invocation documented in the
+          docstring and README, outputs reproduced identically on re-run,
+          and morphologies with no encoded regions are skipped with a
+          message rather than failing.  Dependencies (numpy, scipy,
+          matplotlib, Pillow) are in requirements.txt with lower bounds
+          only, and the run depends on an unversioned external database.
+        evidence:
+          - {file: 2013-lobo-planform-morphology.py, lines: [40, 43], note: "documented invocation"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [196, 202], note: "region-less morphologies skipped explicitly"}
+          - {file: requirements.txt, lines: [1, 7], note: "lower-bound pins only"}
+    remediation:
+      - Record the sha256 and version of the PlanformDB file used, and its download location.
+      - Add per-species outline templates (auricles, head shape) layered on the decoded regions, clearly marked as not from the database.
+      - Compare the decoded aspect ratio and organ positions with measurements on photographed S. mediterranea / D. japonica.
+      - Pin dependency versions for the Python 3.14 environment used here.
+
+  # Unchanged since the 2026-10-13 audit (commit f3fe478); not re-inspected,
+  # so no scores here.  Their 2026-10-13 nanopubs remain current.
+  - id: raup-shell-coiling
+    name: Raup shell coiling morphospace
+    script: create_raup_animations.py
+    output: raup_shell_animation.gif
+    status: unevaluated
+  - id: hoffmann-wing-venation
+    name: Hoffmann-Donoughe insect wing venation
+    script: 2018-hoffmann-wing-venation.py
+    output: hoffmann_wing_recapitulation.png
+    status: unevaluated
+  - id: chindapol-coral-flow
+    name: Chindapol flow-driven coral growth
+    script: 2013-chindapol-coral-flow.py
+    output: chindapol_coral_flow_morphospace.png
+    status: unevaluated
+  - id: turing-gray-scott
+    name: Gray-Scott reaction-diffusion patterns
+    script: 1952-turing-morpho.py
+    output: turing_patterns.gif
+    status: unevaluated
+  - id: petroff-stromatolite
+    name: Petroff stromatolite morphospace
+    script: 2010-petroff-stromatolite.py
+    output: petroff_stromatolite_morphospace.png
+    status: unevaluated
+  - id: kahng-coral-geometry
+    name: Kahng coral geometry morphospace
+    script: 2024-kahng-coral-geometry.py
+    output: kahng_coral_geometry_morphospace.png
+    status: unevaluated
+  - id: cervera-levin-mafe
+    name: Cervera-Levin-Mafe bioelectric morphospace
+    script: "2021-Cervera–Levin–Mafe.py"
+    status: unevaluated

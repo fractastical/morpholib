@@ -54,8 +54,13 @@ python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-13-morphology-au
 python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-13-morphology-audit.yaml --conform --query --supersede
 
 # 4. after fixing a simulation: copy the audit file to a new date, re-score the
-#    affected dimensions with new line evidence, bump `checkpoint.commit`, rebuild.
+#    affected dimensions with new line evidence, bump `checkpoint.commit`, and
+#    build with --supersede-from <previous kg dir>: same-named nanopubs get
+#    npx:supersedes <the URI published from that dir>; nanopubs whose assertion
+#    and provenance are unchanged (e.g. the rubric) are not re-emitted.
 #    Diff kg/<old>/REPORT.md against kg/<new>/REPORT.md to see the delta.
+python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-14-morphology-audit.yaml \
+    --conform --query --supersede-from morphoeval/kg/2026-10-13-morphology-audit
 ```
 
 ## What is in the graph (ProbKnow ontology v1.1)
@@ -153,15 +158,25 @@ morphology snapshot, and their superseding second versions) are recorded in
 `kg/<audit>/published.test-scratch.json`; they exist only on the test registry.
 Rubric: https://w3id.org/np/RAjd9dIu9uNVgvT4npxJgWwL6cbp8GCsy3gK86Qkj-iH4
 
-## Current checkpoint (2026-10-13, commit f3fe478)
+**Re-score (2026-10-14):** the planarian simulation was rewritten
+(`2013-lobo-planform-morphology.py`, decoding the Planform region graph
+exactly) and re-audited as `2026-10-14-morphology-audit` at commit `161f269`.
+Its 9 new nanopubs (claim, 7 dimensions, overall) are on production and each
+carries `npx:supersedes` pointing at the 2026-10-13 nanopub it replaces; the
+rubric nanopub was unchanged and was not re-issued. The other simulations were
+not touched and their 2026-10-13 nanopubs stand. Both audits' measurements
+sidecars (`audits/*.measurements.yaml`) pin the rendered outputs by sha256.
+
+## Current checkpoint
 
 Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1).
 
-| simulation | faithfulness | reproducibility | overall |
-|---|---:|---:|---:|
-| PlanformDB planarian animation | 5.4 | 36.3 | **14.7** |
-| Raup shell coiling | 28.6 | 57.7 | **37.3** |
-| Gray–Scott (Turing) | 54.3 | 49.0 | **52.7** |
-| Chindapol coral flow | 49.3 | 70.0 | **55.5** |
-| Hoffmann–Donoughe wing venation | 81.1 | 70.0 | **77.8** |
-| Petroff stromatolite / Kahng coral / Cervera–Levin–Mafe | — | — | *unevaluated* |
+| simulation | checkpoint | faithfulness | reproducibility | overall |
+|---|---|---:|---:|---:|
+| PlanformDB planarian morphology (`2013-lobo-planform-morphology.py`) | 161f269, audit 2026-10-14 | 66.1 | 67.3 | **66.5** |
+| ~~PlanformDB planarian animation (`1900-planformDB_parser.py`)~~ superseded | f3fe478, audit 2026-10-13 | 5.4 | 36.3 | ~~14.7~~ |
+| Raup shell coiling | f3fe478, audit 2026-10-13 | 28.6 | 57.7 | **37.3** |
+| Gray–Scott (Turing) | f3fe478, audit 2026-10-13 | 54.3 | 49.0 | **52.7** |
+| Chindapol coral flow | f3fe478, audit 2026-10-13 | 49.3 | 70.0 | **55.5** |
+| Hoffmann–Donoughe wing venation | f3fe478, audit 2026-10-13 | 81.1 | 70.0 | **77.8** |
+| Petroff stromatolite / Kahng coral / Cervera–Levin–Mafe | — | — | — | *unevaluated* |

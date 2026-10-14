@@ -1,0 +1,435 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/probknow/resource/claim/morphoeval-planform-morphology-animation> a pk:Claim ;
+    rdfs:label "PlanformDB planarian morphology animation faithfully reproduces Planaria (Schmidtea mediterranea, Dugesia japonica) morphology" ;
+    dct:description "The simulation script(s) 2013-lobo-planform-morphology.py implement the cited source model as published and produce forms that match real Planaria (Schmidtea mediterranea, Dugesia japonica) specimens and the source authors' figures." ;
+    dct:subject <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py> ;
+    pk:context "script(s): 2013-lobo-planform-morphology.py; output: planform_morphology_gallery.png; organism: Planaria (Schmidtea mediterranea, Dugesia japonica); checkpoint commit: 161f269" ;
+    pk:derivedFromPaper <https://doi.org/10.1016/j.bpj.2017.04.011>,
+        <https://doi.org/10.1093/bioinformatics/btt088>,
+        <https://doi.org/10.1242/bio.20123400> ;
+    pk:hasAssessment <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability>,
+        <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-model-fidelity>,
+        <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-validation>,
+        <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-overall>,
+        <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-parameter-expressivity>,
+        <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-repro-package>,
+        <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-source-traceability>,
+        <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match> .
+
+<https://doi.org/10.1016/j.bpj.2017.04.011> a pk:Paper ;
+    dct:bibliographicCitation "Biophysical Journal 112(10):2231-2243 (2017)" ;
+    dct:creator "Durant F, Morokuma J, Fields C, Williams K, Adams DS, Levin M" ;
+    dct:identifier "doi:10.1016/j.bpj.2017.04.011" ;
+    dct:title "Long-Term, Stochastic Editing of Regenerative Anatomy via Targeting Endogenous Bioelectric Gradients" .
+
+<https://doi.org/10.1093/bioinformatics/btt088> a pk:Paper ;
+    dct:bibliographicCitation "Bioinformatics 29(8):1098-1100 (2013)" ;
+    dct:creator "Lobo D, Malone TJ, Levin M" ;
+    dct:identifier "doi:10.1093/bioinformatics/btt088" ;
+    dct:title "Planform: an application and database of graph-encoded planarian regenerative experiments" .
+
+<https://doi.org/10.1242/bio.20123400> a pk:Paper ;
+    dct:bibliographicCitation "Biology Open 2(2):156-169 (2013)" ;
+    dct:creator "Lobo D, Malone TJ, Levin M" ;
+    dct:identifier "doi:10.1242/bio.20123400" ;
+    dct:title "Towards a bioinformatics of patterning: a computational approach to understanding regulative morphogenesis" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability> a pk:LLMClaimAssessment ;
+    rdfs:label "PlanformDB planarian morphology animation — Code-to-model traceability: 75/100" ;
+    dct:date "2026-10-14"^^xsd:date ;
+    dct:description "The decoding rule, the coordinate convention (+y anterior, wild-type head->trunk angle 3pi/2) and the cartoon convention are documented where they are implemented, and region_outline() names the figure it reproduces. The radii-count rule was established by checking the database rather than quoted from a numbered equation, because the papers describe the formalism in prose." ;
+    dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability-0>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability-1>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability-2> ;
+    pk:hasVerdict "mostly faithful" ;
+    pk:weightOfEvidence 7.5e-01 .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-model-fidelity> a pk:LLMClaimAssessment ;
+    rdfs:label "PlanformDB planarian morphology animation — Model fidelity to source: 85/100" ;
+    dct:date "2026-10-14"^^xsd:date ;
+    dct:description "Region shape parameters are interpreted with the formalism's own rule (0 links -> 4 radii right/anterior/left/posterior; 1 link -> +90/+180/+270 deg from the edge; k >= 2 links -> one radius per bisector of consecutive edges), region centres are placed from the RegionsLink Dist/Ang labels and borders at Ratio*Dist, and the rule is checked at load time against all 1181 regions in the database. The only element not taken from the source is how consecutive control radii are joined: a superellipse arc (n = 2.2 free, n = 7 at a border) chosen to reproduce Planform's Fig. 1D; the paper does not publish Planform's interpolant." ;
+    dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-model-fidelity-0>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-model-fidelity-1>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-model-fidelity-2>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-model-fidelity-3>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-model-fidelity-4> ;
+    pk:hasVerdict "faithful" ;
+    pk:weightOfEvidence 8.5e-01 .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-validation> a pk:LLMClaimAssessment ;
+    rdfs:label "PlanformDB planarian morphology animation — Morphometric validation: 45/100" ;
+    dct:date "2026-10-14"^^xsd:date ;
+    dct:description "The script computes silhouette morphometrics (AP length, ML width, aspect, area, region and organ counts, length relative to wild type) for every morphology and can write them as CSV, and the measurements sidecar checks the decoded wild type against the radii encoded in the database (560 x 120 units). Nothing is yet compared with measurements of real animals or with values reported in the literature; the reference is the formalism, not a specimen." ;
+    dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m0>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m1>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m2>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m3>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m4>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m5>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m6>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m7>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-validation-0>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-validation-1>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-validation-2> ;
+    pk:hasVerdict "partially faithful" ;
+    pk:weightOfEvidence 4.5e-01 .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-overall> a pk:LLMClaimAssessment ;
+    rdfs:label "PlanformDB planarian morphology animation — MorphoEval overall 66.5/100" ;
+    dct:date "2026-10-14"^^xsd:date ;
+    dct:description "Rewritten. The region graph of every PlanformDB morphology is now decoded exactly (polar radii per region, centres and borders from the RegionsLink labels, organs from the organ table) and drawn in Planform's own cartoon convention; wild type, double head, headless, cyclops and the other canonical phenotypes are visually distinct and recognisable as Planform drawings. Remaining gap: the formalism stores three radii per head, so species features such as auricles or a triangular head are not in the data and the renders still read as cartoons, not specimens. Overall 66.5/100 (faithfulness 66.1, reproducibility 67.3); rubric morphoeval 0.1.0; checkpoint commit 161f269; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0." ;
+    dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:assessmentType "morphoeval/0.1.0/overall" ;
+    pk:evidenceAgainst "remediation needed: Add per-species outline templates (auricles, head shape) layered on the decoded regions, clearly marked as not from the database.",
+        "remediation needed: Compare the decoded aspect ratio and organ positions with measurements on photographed S. mediterranea / D. japonica.",
+        "remediation needed: Pin dependency versions for the Python 3.14 environment used here.",
+        "remediation needed: Record the sha256 and version of the PlanformDB file used, and its download location." ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-output-planform-morphology-gallery-png> ;
+    pk:hasVerdict "mostly faithful" ;
+    pk:weightOfEvidence 6.65e-01 .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-parameter-expressivity> a pk:LLMClaimAssessment ;
+    rdfs:label "PlanformDB planarian morphology animation — Parameter expressivity: 75/100" ;
+    dct:date "2026-10-14"^^xsd:date ;
+    dct:description "Every encoded quantity now has a visible effect: each radius moves one control point of its region, each link moves a region centre and a border, each organ vector/rotation places one organ. All morphologies in a frame share one scale (frame_bounds), so the size and proportion differences between phenotypes are preserved. The final morphospace grid of the timeline fits each morphology to its cell, which deliberately trades scale for legibility." ;
+    dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-parameter-expressivity-0>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-parameter-expressivity-1>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-parameter-expressivity-2>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-parameter-expressivity-3> ;
+    pk:hasVerdict "mostly faithful" ;
+    pk:weightOfEvidence 7.5e-01 .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-repro-package> a pk:LLMClaimAssessment ;
+    rdfs:label "PlanformDB planarian morphology animation — Reproducibility package: 60/100" ;
+    dct:date "2026-10-14"^^xsd:date ;
+    dct:description "Deterministic (no random state), invocation documented in the docstring and README, outputs reproduced identically on re-run, and morphologies with no encoded regions are skipped with a message rather than failing. Dependencies (numpy, scipy, matplotlib, Pillow) are in requirements.txt with lower bounds only, and the run depends on an unversioned external database." ;
+    dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-repro-package-0>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-repro-package-1>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-repro-package-2> ;
+    pk:hasVerdict "mostly faithful" ;
+    pk:weightOfEvidence 6e-01 .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-source-traceability> a pk:LLMClaimAssessment ;
+    rdfs:label "PlanformDB planarian morphology animation — Source and data traceability: 70/100" ;
+    dct:date "2026-10-14"^^xsd:date ;
+    dct:description "Both source papers are cited with DOIs in the module docstring, the database version is named and the schema tables used are listed. The database itself is still an external file located through PLANFORM_DB_PATH; no hash or download URL is recorded, so the exact input cannot be verified from the repository alone." ;
+    dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-source-traceability-0>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-source-traceability-1> ;
+    pk:hasVerdict "mostly faithful" ;
+    pk:weightOfEvidence 7e-01 .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match> a pk:LLMClaimAssessment ;
+    rdfs:label "PlanformDB planarian morphology animation — Morphological realism / specimen match: 60/100" ;
+    dct:date "2026-10-14"^^xsd:date ;
+    dct:description "Side by side with Planform's Fig. 1D (Biology Open) the wild type now has the same structure: a straight-sided body with flat head/trunk and trunk/tail borders, rounded caps, red head fading to pink, blue tail, oval eyes with pupils, green brain lobes and nerve cords, a tube pharynx. Double head (#24), headless (#20), cyclops, side heads and polarity-reversed morphologies are told apart at a glance; 167 distinct body silhouettes among 369 morphologies, the rest (115 of them wild-type bodied) differing only in organs, which is how the database encodes them. Against a photographed S. mediterranea the match is weaker: no auricles, no triangular head, no pigmentation; these are not encoded in the database." ;
+    dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match-0>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match-1>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match-2> ;
+    pk:hasVerdict "mostly faithful" ;
+    pk:weightOfEvidence 6e-01 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability-0> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L35–L38" ;
+    dct:description "coordinate convention" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L35-L38> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability-1> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L321–L331" ;
+    dct:description "region_outline() docstring: arc construction and Fig. 1D" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L321-L331> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability-2> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L211–L244" ;
+    dct:description "load_first_report_year(): experiment->publication join documented" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L211-L244> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-model-fidelity-0> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L20–L34" ;
+    dct:description "formalism as implemented, with the radii-count rule" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L20-L34> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-model-fidelity-1> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L286–L314" ;
+    dct:description "control_points(): radii -> directions per link count" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L286-L314> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-model-fidelity-2> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L248–L272" ;
+    dct:description "layout(): centres from Dist/Ang, borders from Ratio" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L248-L272> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-model-fidelity-3> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L701–L715" ;
+    dct:description "check_encoding(): 1181/1181 regions obey the rule" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L701-L715> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-model-fidelity-4> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L317–L355" ;
+    dct:description "superellipse interpolant between radii (not from the source)" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L317-L355> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m0> a schema:PropertyValue,
+        pk:EvidenceItem ;
+    rdfs:label "wild-type silhouette AP length: 557.6 Planform units" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py> ;
+    schema:measurementTechnique "union of decoded region outlines of Morphology 1, rasterised; bbox extent along the AP axis" ;
+    schema:name "wild-type silhouette AP length" ;
+    schema:unitText "Planform units" ;
+    schema:value 5.576e+02 ;
+    schema:valueReference <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m0-reference> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m0-reference> a schema:PropertyValue ;
+    dct:source "PlanformDB 2.5.0 RegionParam/RegionsLink of morphology 1 (80+200+200+80)" ;
+    schema:name "reference for: wild-type silhouette AP length" ;
+    schema:value 560 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m1> a schema:PropertyValue,
+        pk:EvidenceItem ;
+    rdfs:label "wild-type silhouette ML width: 119.8 Planform units" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py> ;
+    schema:measurementTechnique "as above, across the ML axis" ;
+    schema:name "wild-type silhouette ML width" ;
+    schema:unitText "Planform units" ;
+    schema:value 1.198e+02 ;
+    schema:valueReference <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m1-reference> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m1-reference> a schema:PropertyValue ;
+    dct:source "trunk lateral radii 60+60" ;
+    schema:name "reference for: wild-type silhouette ML width" ;
+    schema:value 120 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m2> a schema:PropertyValue,
+        pk:EvidenceItem ;
+    rdfs:label "wild-type AP/ML aspect: 4.653 ratio" ;
+    dct:description "S. mediterranea in Lobo et al. 2013 Fig. 1A is of this order; the formalism, not a specimen, is the reference" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py> ;
+    schema:measurementTechnique "AP length / ML width of the decoded silhouette" ;
+    schema:name "wild-type AP/ML aspect" ;
+    schema:unitText "ratio" ;
+    schema:value 4.653e+00 ;
+    schema:valueReference <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m2-reference> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m2-reference> a schema:PropertyValue ;
+    dct:source "encoded radii" ;
+    schema:name "reference for: wild-type AP/ML aspect" ;
+    schema:value 4.667e+00 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m3> a schema:PropertyValue,
+        pk:EvidenceItem ;
+    rdfs:label "morphologies rendered: 369 count" ;
+    dct:description "372 rows in the database; 3 have no regions (Lethal, Midbody Buldge, Double head, side tail)" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py> ;
+    schema:measurementTechnique "Morphology rows with at least one encoded region" ;
+    schema:name "morphologies rendered" ;
+    schema:unitText "count" ;
+    schema:value 369 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m4> a schema:PropertyValue,
+        pk:EvidenceItem ;
+    rdfs:label "distinct body silhouettes: 167 count" ;
+    dct:description "115 morphologies share the wild-type body and differ only in organs (ectopic eyes, doubled CNS, pharynx position, ...), which is how the database encodes them" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py> ;
+    schema:measurementTechnique "unique (AP length, ML width, area to 100 units, #heads, #tails) tuples over all rendered morphologies" ;
+    schema:name "distinct body silhouettes" ;
+    schema:unitText "count" ;
+    schema:value 167 ;
+    schema:valueReference <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m4-reference> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m4-reference> a schema:PropertyValue ;
+    dct:source "upper bound: one silhouette per morphology" ;
+    schema:name "reference for: distinct body silhouettes" ;
+    schema:value 369 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m5> a schema:PropertyValue,
+        pk:EvidenceItem ;
+    rdfs:label "distinct encodings (regions + links + organs): 369 count" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py> ;
+    schema:measurementTechnique "unique tuples of every encoded number read from the database" ;
+    schema:name "distinct encodings (regions + links + organs)" ;
+    schema:unitText "count" ;
+    schema:value 369 ;
+    schema:valueReference <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m5-reference> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m5-reference> a schema:PropertyValue ;
+    dct:source "every morphology row is a distinct phenotype" ;
+    schema:name "reference for: distinct encodings (regions + links + organs)" ;
+    schema:value 369 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m6> a schema:PropertyValue,
+        pk:EvidenceItem ;
+    rdfs:label "IoU wild type vs double head (#24): 0.8884 ratio" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py> ;
+    schema:measurementTechnique "intersection-over-union of the two decoded silhouettes on a shared canvas (region centres aligned by layout)" ;
+    schema:name "IoU wild type vs double head (#24)" ;
+    schema:unitText "ratio" ;
+    schema:value 8.884e-01 ;
+    schema:valueReference <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m6-reference> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m6-reference> a schema:PropertyValue ;
+    schema:name "reference for: IoU wild type vs double head (#24)" ;
+    schema:value "< 1; the two bodies differ only at the posterior cap (tail -> second head), the rest of the difference is organs" .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m7> a schema:PropertyValue,
+        pk:EvidenceItem ;
+    rdfs:label "IoU wild type vs headless (#20): 0.6116 ratio" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py> ;
+    schema:measurementTechnique "as above" ;
+    schema:name "IoU wild type vs headless (#20)" ;
+    schema:unitText "ratio" ;
+    schema:value 6.116e-01 ;
+    schema:valueReference <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m7-reference> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-m7-reference> a schema:PropertyValue ;
+    schema:name "reference for: IoU wild type vs headless (#20)" ;
+    schema:value "≈ (trunk+tail area)/(whole-body area) if the head is simply absent" .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-validation-0> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L386–L412" ;
+    dct:description "morphometrics()" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L386-L412> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-validation-1> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L684–L698" ;
+    dct:description "write_csv()" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L684-L698> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-validation-2> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L713–L714" ;
+    dct:description "wild-type AP/ML printed at load" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L713-L714> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-output-planform-morphospace-timeline-gif> a prov:Entity,
+        schema:ImageObject,
+        pk:EvidenceItem ;
+    rdfs:label "planform_morphospace_timeline.gif" ;
+    dct:description "rendered output of 2013-lobo-planform-morphology.py at 161f269; sha256 pins the exact file that was scored; 1500×780 px, 63 frames" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py> ;
+    schema:contentSize "3265519 B" ;
+    schema:encodingFormat "image/gif" ;
+    schema:height 780 ;
+    schema:sha256 "f7c8cadf3c06c8351a49b6a47e1fc73fafafa7b430841771c14806fe54ce92a4" ;
+    schema:width 1500 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-parameter-expressivity-0> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L525–L531" ;
+    dct:description "frame_bounds(): common scale within a frame" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L525-L531> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-parameter-expressivity-1> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L546–L565" ;
+    dct:description "render_gallery(): small multiples at common scale" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L546-L565> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-parameter-expressivity-2> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L572–L681" ;
+    dct:description "render_timeline(): per-year pages, final grid fitted per cell" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L572-L681> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-parameter-expressivity-3> a pk:EvidenceItem ;
+    rdfs:label "planform_morphospace_timeline.gif (generated output, not in repo)" ;
+    dct:description "68 frames: intro, 30 year pages, final morphospace grid of 359 dated morphologies" ;
+    prov:wasDerivedFrom <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-output-planform-morphospace-timeline-gif> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-repro-package-0> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L40–L43" ;
+    dct:description "documented invocation" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L40-L43> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-repro-package-1> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L196–L202" ;
+    dct:description "region-less morphologies skipped explicitly" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L196-L202> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-repro-package-2> a pk:EvidenceItem ;
+    rdfs:label "requirements.txt L1–L7" ;
+    dct:description "lower-bound pins only" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/requirements.txt#L1-L7> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-source-traceability-0> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L10–L16" ;
+    dct:description "DOIs of both Lobo et al. 2013 papers" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L10-L16> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-source-traceability-1> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L138–L146" ;
+    dct:description "resolve_db_path(): env var or CLI, no provenance recorded" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L138-L146> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match-0> a pk:EvidenceItem ;
+    rdfs:label "planform_morphology_gallery.png (generated output, not in repo)" ;
+    dct:description "16 canonical phenotypes compared with Planform Fig. 1D and the Planform screenshots in Lobo et al. 2013" ;
+    prov:wasDerivedFrom <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-output-planform-morphology-gallery-png> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match-1> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L78–L87" ;
+    dct:description "Planform colour convention" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L78-L87> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match-2> a pk:EvidenceItem ;
+    rdfs:label "2013-lobo-planform-morphology.py L460–L510" ;
+    dct:description "draw_morphology(): outline, gradient fills, organs" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L460-L510> .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-output-planform-morphology-gallery-png> a prov:Entity,
+        schema:ImageObject,
+        pk:EvidenceItem ;
+    rdfs:label "planform_morphology_gallery.png" ;
+    dct:description "rendered output of 2013-lobo-planform-morphology.py at 161f269; sha256 pins the exact file that was scored; 1920×2160 px" ;
+    prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py> ;
+    schema:contentSize "443915 B" ;
+    schema:encodingFormat "image/png" ;
+    schema:height 2160 ;
+    schema:sha256 "77a7dfa087bf89441dc35c64bc0c96bccfdc15d44a3d600df766fb723a87ace5" ;
+    schema:width 1920 .
+
+<https://orcid.org/0009-0007-4948-9192> a prov:Agent,
+        foaf:Person ;
+    foaf:account <https://github.com/fractastical> ;
+    foaf:name "Joel Dietz" .
+
+<https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+    rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
+    dct:identifier "claude-fable-5-1" ;
+    prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+    foaf:homepage <https://www.anthropic.com> .
+
+<https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py> a prov:Entity,
+        schema:SoftwareSourceCode ;
+    rdfs:label "2013-lobo-planform-morphology.py" ;
+    dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+    dct:isPartOf <https://github.com/fractastical/morpholib> ;
+    prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192> ;
+    schema:author <https://orcid.org/0009-0007-4948-9192> ;
+    schema:codeRepository <https://github.com/fractastical/morpholib> ;
+    schema:programmingLanguage "Python" ;
+    schema:version "161f269" .
+

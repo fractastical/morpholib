@@ -1,0 +1,76 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-planform-morphology-animation> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-overall> .
+    <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "PlanformDB planarian morphology animation — MorphoEval overall 66.5/100" ;
+        dct:date "2026-10-14"^^xsd:date ;
+        dct:description "Rewritten. The region graph of every PlanformDB morphology is now decoded exactly (polar radii per region, centres and borders from the RegionsLink labels, organs from the organ table) and drawn in Planform's own cartoon convention; wild type, double head, headless, cyclops and the other canonical phenotypes are visually distinct and recognisable as Planform drawings. Remaining gap: the formalism stores three radii per head, so species features such as auricles or a triangular head are not in the data and the renders still read as cartoons, not specimens. Overall 66.5/100 (faithfulness 66.1, reproducibility 67.3); rubric morphoeval 0.1.0; checkpoint commit 161f269; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Add per-species outline templates (auricles, head shape) layered on the decoded regions, clearly marked as not from the database.",
+            "remediation needed: Compare the decoded aspect ratio and organ positions with measurements on photographed S. mediterranea / D. japonica.",
+            "remediation needed: Pin dependency versions for the Python 3.14 environment used here.",
+            "remediation needed: Record the sha256 and version of the PlanformDB file used, and its download location." ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-output-planform-morphology-gallery-png> ;
+        pk:hasVerdict "mostly faithful" ;
+        pk:weightOfEvidence 6.65e-01 .
+    <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-output-planform-morphology-gallery-png> a prov:Entity,
+            schema:ImageObject,
+            pk:EvidenceItem ;
+        rdfs:label "planform_morphology_gallery.png" ;
+        dct:description "rendered output of 2013-lobo-planform-morphology.py at 161f269; sha256 pins the exact file that was scored; 1920×2160 px" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py> ;
+        schema:contentSize "443915 B" ;
+        schema:encodingFormat "image/png" ;
+        schema:height 2160 ;
+        schema:sha256 "77a7dfa087bf89441dc35c64bc0c96bccfdc15d44a3d600df766fb723a87ace5" ;
+        schema:width 1920 .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/commit/161f269>,
+            <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability>,
+            <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-model-fidelity>,
+            <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-validation>,
+            <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-parameter-expressivity>,
+            <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-repro-package>,
+            <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-source-traceability>,
+            <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match> .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "PlanformDB planarian morphology animation — MorphoEval overall 66.5/100" ;
+        dct:created "2026-10-14T00:00:00+00:00"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-overall> ;
+        npx:supersedes <https://w3id.org/np/RAAJq1nG2VFFCTJOt4HbxMrMYAD__UNT0CjcqybggrUBI> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/levin-lab> .
+    <https://w3id.org/probknow/resource/domain/levin-lab> rdfs:label "levin-lab" .
+}
