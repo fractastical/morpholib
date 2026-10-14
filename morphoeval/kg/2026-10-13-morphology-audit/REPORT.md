@@ -136,6 +136,53 @@ Remediation:
 - Seed the RNG and expose (f, k) and output path on the CLI.
 - Measure the pattern wavelength and place the run on Pearson's (f, k) phase diagram.
 
+## Morphology snapshot
+
+The binaries stay out of git; the sha256 pins the exact file that was scored, and the morphometrics record the form itself (`schema:PropertyValue` evidence on the morphometric-validation assessment).
+
+### PlanformDB planarian morphology animation
+- `planform_morphology_animation.gif` — sha256 `27256acdd26eee57…`, 802,794 B, 3200×2000 px, 34 frames
+
+| measurement | value | reference | method |
+|---|---:|---|---|
+| silhouette width/height (bbox, mean over frames) | 1.9923 ratio | ≈0.15–0.3 (adult S. mediterranea is ~3–7× longer than wide, long axis = AP) | largest non-white connected component in the central panel of each GIF frame; bbox W/H *(min 1.972, max 2.014; rendered body is wider than long)* |
+| silhouette IoU between frames (mean) | 0.9908 ratio | distinct morphologies should give low IoU; one body plan over time should be near 1 | pairwise intersection-over-union of the per-frame silhouettes on the fixed canvas *(min 0.979; frames differ mainly by added translucent flaps, not by body form)* |
+| frames with a silhouette | 34 count | — | frames where a component was found *(of 34)* |
+
+### Raup shell coiling morphospace
+- `raup_shell_animation.gif` — sha256 `aea20e93a9a79a94…`, 24,248,756 B, 3600×2400 px, 161 frames
+
+| measurement | value | reference | method |
+|---|---:|---|---|
+| effective translation rate T_eff, 'Planispiral' (nominal T=0.1) | 0.0093 ratio | 0.1 | Δz over the last whorl ÷ generating-curve centre radius, from raup_shell(W,D,T,turns=6) *(shell height/width = 0.028)* |
+| effective translation rate T_eff, 'Turreted' (nominal T=0.8) | 0.0175 ratio | 0.8 | Δz over the last whorl ÷ generating-curve centre radius, from raup_shell(W,D,T,turns=6) *(shell height/width = 0.052)* |
+| effective translation rate T_eff, 'Disc-like' (nominal T=0.2) | 0.0005 ratio | 0.2 | Δz over the last whorl ÷ generating-curve centre radius, from raup_shell(W,D,T,turns=6) *(shell height/width = 0.001)* |
+| effective translation rate T_eff, 'Conical' (nominal T=0.5) | 0.0249 ratio | 0.5 | Δz over the last whorl ÷ generating-curve centre radius, from raup_shell(W,D,T,turns=6) *(shell height/width = 0.074)* |
+| effective translation rate T_eff, 'High-spired' (nominal T=1.2) | 0.1945 ratio | 1.2 | Δz over the last whorl ÷ generating-curve centre radius, from raup_shell(W,D,T,turns=6) *(shell height/width = 0.583)* |
+| effective translation rate T_eff, 'Wide' (nominal T=0.3) | 0.0019 ratio | 0.3 | Δz over the last whorl ÷ generating-curve centre radius, from raup_shell(W,D,T,turns=6) *(shell height/width = 0.006)* |
+
+### Hoffmann-Donoughe insect wing venation
+- `hoffmann_wing_recapitulation.png` — sha256 `43b99ec8ae8205b3…`, 179,027 B, 1730×1206 px
+
+| measurement | value | reference | method |
+|---|---:|---|---|
+| mean domain circularity, model wing | 0.867 ratio (4πA/P²) | 0.712 | script's domain_stats() over Voronoi domains after Lloyd equilibration (seed 0) *(regular hexagon = 0.907; model n=923, real n=923)* |
+| vein-domain count, model wing | 923 count | 923 | domains large enough to measure, model *(equal by construction: the model is seeded with the real wing's domain count)* |
+| vein-domain count, real wing (all) | 923 count | — | peaks of the distance transform inside the segmented real wing *(wing area 1905316 px)* |
+
+### Chindapol flow-driven coral growth
+- `chindapol_coral_flow_morphospace.png` — **not on disk at snapshot time** (no hash, no measurements)
+
+### Gray-Scott reaction-diffusion patterns
+- `turing_patterns.gif` — sha256 `0ddf48cbca6cf3df…`, 14,075,347 B, 1280×960 px, 500 frames
+
+| measurement | value | reference | method |
+|---|---:|---|---|
+| dominant wavelength (last frame) | 14.2857 grid cells | — | peak of the radial power spectrum of the axes-box image, scaled to the N=200 grid *(Gray–Scott f=0.055,k=0.062 labyrinth; no specimen or literature wavelength recorded)* |
+| pattern coverage (last frame) | 0.2477 fraction | — | fraction of axes box in the high-V (yellow) band |
+| connected high-V components (last frame) | 1 count | — | scipy.ndimage.label on the yellow mask |
+| fraction of pattern pixels changed, first→last frame | 0.252 fraction | >0 for an evolving simulation | XOR of yellow masks of frame 0 and the last frame *(≈0 means the GIF shows a frozen pattern)* |
+
 ## Environment at checkpoint
 
 - python: 3.14.7

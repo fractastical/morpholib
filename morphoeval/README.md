@@ -10,6 +10,8 @@ every change.
 morphoeval/
   rubric.yaml                      versioned rubric (7 weighted dimensions, 0-100)
   audits/<date>-<name>.yaml        one audit = scores + evidence + references + checkpoint
+  measure_outputs.py               morphology snapshot: sha256 of rendered outputs + morphometrics
+                                   -> audits/<audit>.measurements.yaml (merged into the nanopubs)
   build_morphoeval_kg.py           audit -> ProbKnow nanopubs (.trig) + merged .ttl + REPORT.md
   sign_morphoeval.py               sign / publish (test -> prod) -> kg/<audit-id>/signed/ + published.json
   check_signed.mjs                 independent trusty+signature verification (@nanopub/sign, Rust/WASM)
@@ -40,10 +42,15 @@ scripts that were not inspected are listed `unevaluated` with no scores.
 # 1. validate an audit against the rubric (weights, ranges, evidence files, refs)
 python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-13-morphology-audit.yaml --check
 
-# 2. build the graph, check ProbKnow conformance, run a demo SPARQL ranking
-python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-13-morphology-audit.yaml --conform --query
+# 2. snapshot the morphology: fingerprint the rendered outputs and measure them
+#    (re-runs the wing script; ~2 min). Outputs not on disk are reported, never invented.
+python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-13-morphology-audit.yaml
 
-# 3. after fixing a simulation: copy the audit file to a new date, re-score the
+# 3. build the graph, check ProbKnow conformance, run a demo SPARQL ranking
+#    (--supersede: changed nanopubs get npx:supersedes <URI in kg/<audit>/published.json>)
+python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-13-morphology-audit.yaml --conform --query --supersede
+
+# 4. after fixing a simulation: copy the audit file to a new date, re-score the
 #    affected dimensions with new line evidence, bump `checkpoint.commit`, rebuild.
 #    Diff kg/<old>/REPORT.md against kg/<new>/REPORT.md to see the delta.
 ```
@@ -81,7 +88,9 @@ simply count them, so `morphogenesis` appears as a new bucket once published.
 | "script S faithfully reproduces organism O under source model P" | `pkr:claim/morphoeval-<sim>` a **`pk:Claim`** (a *belief*, not a fact) · `pk:derivedFromPaper <doi>` · `pk:context` |
 | one rubric score | `pkr:assessment/<audit>-<sim>-<dim>` a **`pk:LLMClaimAssessment`** · `pk:assessedBy pkr:model/<assessor>` · `pk:assessmentType "morphoeval/0.1.0/<dim>"` · `pk:weightOfEvidence` = score/100 · `pk:hasVerdict` band · `dct:description` rationale |
 | the code under assessment | `<repo>/blob/<commit>/<script>` a **`schema:SoftwareSourceCode`**, `prov:Entity` · `dct:creator` / `schema:author` / `prov:wasAttributedTo` the code's author(s) (`audit.code_creators`, per-sim `code_creators` / `code_contributors`) · `schema:version` = commit · linked from the claim by `dct:subject` |
-| code/artefact locus behind a score | `pkr:evidence/…` a **`pk:EvidenceItem`** · `prov:wasDerivedFrom` commit-pinned GitHub `#L<a>-L<b>` (or the script entity, for rendered outputs) |
+| code/artefact locus behind a score | `pkr:evidence/…` a **`pk:EvidenceItem`** · `prov:wasDerivedFrom` commit-pinned GitHub `#L<a>-L<b>` (or the fingerprinted output, for rendered artefacts) |
+| the rendered output that was judged | `pkr:evidence/<audit>-<sim>-output-<file>` a **`schema:ImageObject`**, `pk:EvidenceItem` · `schema:sha256` · `schema:contentSize` · `schema:encodingFormat` · width/height · `prov:wasDerivedFrom` the script. The binary stays out of git and out of the nanopub; the hash pins it |
+| the form itself (morphometrics) | `pkr:evidence/<audit>-<sim>-morphometric-m<i>` a **`schema:PropertyValue`**, `pk:EvidenceItem` on the `morphometric-validation` assessment · `schema:name` / `schema:value` / `schema:unitText` / `schema:measurementTechnique` · `schema:valueReference` → reference `PropertyValue` with `dct:source` (only where a reference is actually known) |
 | checkpoint | `…-overall` **`pk:LLMClaimAssessment`** · `prov:wasDerivedFrom` the 7 dimension assessments + the commit · environment in description · remediation as `pk:evidenceAgainst` literals |
 | the rubric | `pkr:concept/morphoeval-rubric-0.1.0` a `pk:Concept` (`skos:narrower` one `pk:Concept` per dimension) |
 | source papers | `https://doi.org/…` a `pk:Paper` (real DOI IRIs as subjects) |
@@ -136,7 +145,9 @@ broken against nanopub-py 2.1 for the same reason.
 **Status (2026-10-13):** all 46 nanopubs of audit `2026-10-13-morphology-audit`
 are published on the **test** registry
 (`https://test.registry.knowledgepixels.com/np/<RA…>`), fetched back and
-verified. Not yet on production.
+verified. 13 of them are second versions (`npx:supersedes` the first test
+publication) carrying the morphology snapshot; `published.json` keeps the
+superseded URIs under `history`. Not yet on production.
 
 ## Current checkpoint (2026-10-13, commit f3fe478)
 

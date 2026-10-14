@@ -46,6 +46,7 @@ Requires: pyyaml, rdflib.
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -87,6 +88,9 @@ def load(audit_path: Path):
         PK = Namespace(onto["base"])
     if onto.get("resource_base"):
         PKR = Namespace(onto["resource_base"])
+    # optional morphology snapshot (fingerprints + morphometrics) from measure_outputs.py
+    side = Path(audit_path).with_name(Path(audit_path).stem + ".measurements.yaml")
+    audit["_measurements"] = yaml.safe_load(side.read_text()) if side.exists() else None
     return rubric, audit
 
 
@@ -215,6 +219,75 @@ class NanopubBuilder:
     def script_uri(self, script: str) -> URIRef:
         return URIRef(f"{self.repo}/blob/{self.commit}/{script}")
 
+    # ---- morphology snapshot (from <audit>.measurements.yaml) ------------- #
+    def set_measurements(self, meas: dict | None):
+        self.outputs = {sid: {o["file"]: o for o in lst} for sid, lst in (meas or {}).get("outputs", {}).items()}
+        self.measurements = (meas or {}).get("measurements", {})
+
+    def output_uri(self, sim: dict, file: str) -> URIRef:
+        slug = re.sub(r"[^A-Za-z0-9]+", "-", file).strip("-").lower()
+        return PKR[f"evidence/{self.A['id']}-{sim['id']}-output-{slug}"]
+
+    def output_triples(self, sim: dict, file: str):
+        """The rendered output that was judged, as a fingerprinted schema:ImageObject (the
+        binary itself stays out of git and out of the nanopub; the hash pins it)."""
+        ou = self.output_uri(sim, file)
+        fp = self.outputs.get(sim["id"], {}).get(file)
+        t = [(ou, RDF.type, PK.EvidenceItem), (ou, RDF.type, SCHEMA.ImageObject), (ou, RDF.type, PROV.Entity),
+             (ou, RDFS.label, Literal(file)),
+             (ou, PROV.wasDerivedFrom, self.script_uri(sim["script"]))]
+        if fp:
+            t += [(ou, SCHEMA.sha256, Literal(fp["sha256"])),
+                  (ou, SCHEMA.contentSize, Literal(f"{fp['bytes']} B")),
+                  (ou, SCHEMA.encodingFormat, Literal(fp["media_type"])),
+                  (ou, DCTERMS.description, Literal(
+                      f"rendered output of {sim['script']} at {self.commit}; sha256 pins the exact file that was "
+                      f"scored" + (f"; {fp['width']}×{fp['height']} px" if fp.get("width") else "")
+                      + (f", {fp['frames']} frames" if fp.get("frames", 1) > 1 else "")))]
+            if fp.get("width"):
+                t += [(ou, SCHEMA.width, Literal(fp["width"], datatype=XSD.integer)),
+                      (ou, SCHEMA.height, Literal(fp["height"], datatype=XSD.integer))]
+        else:
+            t.append((ou, DCTERMS.description, Literal(
+                f"rendered output of {sim['script']}; not present when the audit was snapshotted, so unfingerprinted")))
+        return t
+
+    def measurement_triples(self, sim: dict, au: URIRef):
+        """Morphometrics as schema:PropertyValue evidence items on the given assessment."""
+        t = []
+        for i, m in enumerate(self.measurements.get(sim["id"], [])):
+            if m.get("value") is None:
+                continue
+            mu = PKR[f"evidence/{self.A['id']}-{sim['id']}-morphometric-m{i}"]
+            v = m["value"]
+            lit = Literal(v, datatype=XSD.integer) if isinstance(v, int) else Literal(float(v), datatype=XSD.double)
+            t += [(au, PK.hasEvidence, mu),
+                  (mu, RDF.type, PK.EvidenceItem), (mu, RDF.type, SCHEMA.PropertyValue),
+                  (mu, RDFS.label, Literal(f"{m['name']}: {v} {m.get('unit') or ''}".strip())),
+                  (mu, SCHEMA.name, Literal(m["name"])),
+                  (mu, SCHEMA.value, lit),
+                  (mu, SCHEMA.measurementTechnique, Literal(m["method"])),
+                  (mu, PROV.wasDerivedFrom, self.script_uri(sim["script"]))]
+            if m.get("unit"):
+                t.append((mu, SCHEMA.unitText, Literal(m["unit"])))
+            if m.get("note"):
+                t.append((mu, DCTERMS.description, Literal(m["note"])))
+            if (m.get("derived_from", "output") == "output" and sim.get("output")
+                    and sim["output"] in self.outputs.get(sim["id"], {})):
+                t.append((mu, PROV.wasDerivedFrom, self.output_uri(sim, sim["output"])))
+            if m.get("reference_value") is not None:
+                ru = PKR[f"evidence/{self.A['id']}-{sim['id']}-morphometric-m{i}-reference"]
+                rv = m["reference_value"]
+                rlit = (Literal(rv, datatype=XSD.integer) if isinstance(rv, int) else
+                        Literal(float(rv), datatype=XSD.double) if isinstance(rv, float) else Literal(str(rv)))
+                t += [(mu, SCHEMA.valueReference, ru),
+                      (ru, RDF.type, SCHEMA.PropertyValue),
+                      (ru, SCHEMA.name, Literal(f"reference for: {m['name']}")),
+                      (ru, SCHEMA.value, rlit)]
+                if m.get("reference_source"):
+                    t.append((ru, DCTERMS.source, Literal(m["reference_source"])))
+        return t
+
     def code_triples(self, sim: dict):
         """One schema:SoftwareSourceCode entity per audited script, stamped with its creator(s)."""
         t = []
@@ -314,8 +387,11 @@ def serialize_trig(ds: Dataset) -> str:
     return "\n".join(sorted(prefixes)) + "\n\n" + "\n".join(parts)
 
 
-def build(rubric, audit, out_dir: Path):
+def build(rubric, audit, out_dir: Path, supersede: dict | None = None):
+    """supersede: {file name: previously published trusty URI}. A nanopub whose content
+    differs from the already-emitted file of the same name gets npx:supersedes <old>."""
     B = NanopubBuilder(audit, rubric)
+    B.set_measurements(audit.get("_measurements"))
     A, refs = audit["audit"], audit.get("references", {})
     default_domain = A.get("domain", "morphogenesis")
     issue = URIRef(A["tracked_by"]) if A.get("tracked_by") else None
@@ -328,9 +404,20 @@ def build(rubric, audit, out_dir: Path):
     merged = Graph(); _bind(merged)
     written = []
 
+    superseded = []
+
     def emit(name, ds):
         p = out_dir / name
-        p.write_text(serialize_trig(ds))
+        text = serialize_trig(ds)
+        old = supersede.get(name) if supersede else None
+        if old and p.exists():
+            existing = p.read_text()
+            if existing != text:
+                ds.graph(URIRef(TEMP + "pubinfo")).add((THIS, NPX.supersedes, URIRef(old)))
+                text = serialize_trig(ds)
+                if existing != text:            # genuinely new content (not just a re-run)
+                    superseded.append((name, old))
+        p.write_text(text)
         written.append(p)
         for ctx in ds.graphs():
             if str(ctx.identifier) == TEMP + "assertion":
@@ -424,8 +511,11 @@ def build(rubric, audit, out_dir: Path):
                 if is_code and B.commit:        # source-code evidence: commit-pinned line range
                     tr.append((eu, PROV.wasDerivedFrom,
                                URIRef(f"{B.repo}/blob/{B.commit}/{e['file']}#L{a}-L{b}")))
-                elif B.commit:                  # rendered artefact: derived from the script at the commit
-                    tr.append((eu, PROV.wasDerivedFrom, B.script_uri(sim["script"])))
+                elif B.commit:                  # rendered artefact: the fingerprinted output it was read from
+                    tr.append((eu, PROV.wasDerivedFrom, B.output_uri(sim, e["file"])))
+                    tr += B.output_triples(sim, e["file"])
+            if did == "morphometric-validation":   # the morphology snapshot: measured form vs reference
+                tr += B.measurement_triples(sim, au)
             prov = [(None, PROV.wasAttributedTo, B.model),
                     (None, PROV.wasDerivedFrom, rubric_uri)]
             for r in papers:                       # what the assessment validates against
@@ -457,6 +547,9 @@ def build(rubric, audit, out_dir: Path):
               (au, DCTERMS.date, Literal(str(A["date"]), datatype=XSD.date)),
               (au, DCTERMS.subject, rubric_uri)]
         tr += B.model_triples()
+        if sim.get("output"):                       # the form at this checkpoint, by content hash
+            tr.append((au, PK.hasEvidence, B.output_uri(sim, sim["output"])))
+            tr += B.output_triples(sim, sim["output"])
         for i, fix in enumerate(sim.get("remediation", [])):
             tr.append((au, PK.evidenceAgainst, Literal(f"remediation needed: {fix}")))
         prov = [(None, PROV.wasAttributedTo, B.model)] + \
@@ -474,7 +567,7 @@ def build(rubric, audit, out_dir: Path):
     merged_path.write_text(merged.serialize(format="turtle"))
     report_path = out_dir / "REPORT.md"
     report_path.write_text(report(rubric, audit, rows))
-    return written, merged_path, report_path, merged
+    return written, merged_path, report_path, merged, superseded
 
 
 # --------------------------------------------------------------------------- #
@@ -565,6 +658,35 @@ def report(rubric, audit, rows) -> str:
         if sim.get("remediation"):
             L += ["", "Remediation:"] + [f"- {r}" for r in sim["remediation"]]
         L.append("")
+    ms = audit.get("_measurements")
+    if ms:
+        L += ["## Morphology snapshot", "",
+              "The binaries stay out of git; the sha256 pins the exact file that was scored, and the "
+              "morphometrics record the form itself (`schema:PropertyValue` evidence on the "
+              "morphometric-validation assessment).", ""]
+        for sim, gs in rows:
+            if gs is None:
+                continue
+            outs = ms.get("outputs", {}).get(sim["id"], [])
+            meas = ms.get("measurements", {}).get(sim["id"], [])
+            miss = [m["file"] for m in ms.get("missing", []) if m["simulation"] == sim["id"]]
+            if not (outs or meas or miss):
+                continue
+            L.append(f"### {sim['name']}")
+            for o in outs:
+                dims = f"{o['width']}×{o['height']} px" if o.get("width") else ""
+                fr = f", {o['frames']} frames" if o.get("frames", 1) > 1 else ""
+                L.append(f"- `{o['file']}` — sha256 `{o['sha256'][:16]}…`, {o['bytes']:,} B, {dims}{fr}")
+            for f in miss:
+                L.append(f"- `{f}` — **not on disk at snapshot time** (no hash, no measurements)")
+            if meas:
+                L += ["", "| measurement | value | reference | method |", "|---|---:|---|---|"]
+                for m in meas:
+                    ref = m.get("reference_value")
+                    ref = "—" if ref is None else str(ref)
+                    L.append(f"| {m['name']} | {m['value']} {m.get('unit') or ''} | {ref} | {m['method']}"
+                             + (f" *({m['note']})*" if m.get("note") else "") + " |")
+            L.append("")
     L += ["## Environment at checkpoint", ""]
     L += [f"- {k}: {v}" for k, v in A["checkpoint"].get("environment", {}).items()]
     if A["checkpoint"].get("note"):
@@ -591,6 +713,8 @@ def main():
     ap.add_argument("--check", action="store_true", help="validate the audit only")
     ap.add_argument("--conform", action="store_true", help="run the offline ProbKnow conformance check")
     ap.add_argument("--query", action="store_true", help="run a demo SPARQL on the merged graph")
+    ap.add_argument("--supersede", action="store_true",
+                    help="nanopubs whose content changed get npx:supersedes <URI recorded in kg/<audit>/published.json>")
     args = ap.parse_args()
 
     rubric, audit = load(Path(args.audit))
@@ -600,9 +724,25 @@ def main():
     if args.check:
         return
     out_dir = Path(args.out) if args.out else HERE / "kg" / audit["audit"]["id"]
-    written, merged_path, report_path, merged = build(rubric, audit, out_dir)
+    supersede = None
+    if args.supersede:
+        import json
+        mp = out_dir / "published.json"
+        if not mp.exists():
+            sys.exit(f"--supersede: no {mp}")
+        supersede = {n: m["nanopub"] for n, m in json.loads(mp.read_text()).items() if m.get("published")}
+    written, merged_path, report_path, merged, superseded = build(rubric, audit, out_dir, supersede)
     print(f"wrote {len(written)} nanopubs, {merged_path.name} ({len(merged)} triples), {report_path.name}")
     print(f"  -> {out_dir}")
+    if audit.get("_measurements"):
+        ms = audit["_measurements"]
+        print(f"  morphology snapshot: {sum(len(v) for v in ms.get('outputs', {}).values())} fingerprinted output(s), "
+              f"{sum(len(v) for v in ms.get('measurements', {}).values())} measurement(s)"
+              + (f", missing: {[m['file'] for m in ms.get('missing', [])]}" if ms.get("missing") else ""))
+    if superseded:
+        print(f"  {len(superseded)} nanopub(s) changed -> npx:supersedes added:")
+        for n, old in superseded:
+            print(f"    {n}  supersedes  {old}")
     if args.conform:
         probs = conformance(written)
         if probs:

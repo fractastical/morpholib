@@ -5,6 +5,7 @@
 @prefix pk: <https://w3id.org/probknow/ontology/> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
 @prefix sub: <http://purl.org/nanopub/temp/np001/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -24,9 +25,55 @@ sub:assertion {
         dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
         pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
-        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-morphometric-validation-0> ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-morphometric-m0>,
+            <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-morphometric-m1>,
+            <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-morphometric-m2>,
+            <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-morphometric-m3>,
+            <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-morphometric-validation-0> ;
         pk:hasVerdict "unfaithful" ;
         pk:weightOfEvidence 2e-01 .
+    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-morphometric-m0> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "dominant wavelength (last frame): 14.2857 grid cells" ;
+        dct:description "Gray–Scott f=0.055,k=0.062 labyrinth; no specimen or literature wavelength recorded" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f3fe478/1952-turing-morpho.py>,
+            <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-output-turing-patterns-gif> ;
+        schema:measurementTechnique "peak of the radial power spectrum of the axes-box image, scaled to the N=200 grid" ;
+        schema:name "dominant wavelength (last frame)" ;
+        schema:unitText "grid cells" ;
+        schema:value 1.42857e+01 .
+    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-morphometric-m1> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "pattern coverage (last frame): 0.2477 fraction" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f3fe478/1952-turing-morpho.py>,
+            <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-output-turing-patterns-gif> ;
+        schema:measurementTechnique "fraction of axes box in the high-V (yellow) band" ;
+        schema:name "pattern coverage (last frame)" ;
+        schema:unitText "fraction" ;
+        schema:value 2.477e-01 .
+    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-morphometric-m2> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "connected high-V components (last frame): 1 count" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f3fe478/1952-turing-morpho.py>,
+            <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-output-turing-patterns-gif> ;
+        schema:measurementTechnique "scipy.ndimage.label on the yellow mask" ;
+        schema:name "connected high-V components (last frame)" ;
+        schema:unitText "count" ;
+        schema:value 1 .
+    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-morphometric-m3> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "fraction of pattern pixels changed, first→last frame: 0.252 fraction" ;
+        dct:description "≈0 means the GIF shows a frozen pattern" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f3fe478/1952-turing-morpho.py>,
+            <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-output-turing-patterns-gif> ;
+        schema:measurementTechnique "XOR of yellow masks of frame 0 and the last frame" ;
+        schema:name "fraction of pattern pixels changed, first→last frame" ;
+        schema:unitText "fraction" ;
+        schema:value 2.52e-01 ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-morphometric-m3-reference> .
+    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-morphometric-m3-reference> a schema:PropertyValue ;
+        schema:name "reference for: fraction of pattern pixels changed, first→last frame" ;
+        schema:value ">0 for an evolving simulation" .
     <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-morphometric-validation-0> a pk:EvidenceItem ;
         rdfs:label "1952-turing-morpho.py L31–L75" ;
         dct:description "no measurements" ;
@@ -54,6 +101,7 @@ sub:pubinfo {
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
         npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-turing-gray-scott-morphometric-validation> ;
+        npx:supersedes <https://w3id.org/np/RAsao761qO3dy0QL1sBd9m09Y4mMsQRcTyyBx6BKQ3AQQ> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

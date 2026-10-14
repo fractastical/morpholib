@@ -33,8 +33,10 @@ from datetime import date
 from pathlib import Path
 
 warnings.filterwarnings("ignore")
-from rdflib import Dataset                        # noqa: E402
+from rdflib import Dataset, Namespace             # noqa: E402
 from nanopub import Nanopub, NanopubConf, Profile  # noqa: E402
+
+NPX = Namespace("http://purl.org/nanopub/x/")
 
 
 def load_profile() -> Profile:
@@ -75,18 +77,26 @@ def main():
         np_.sign()
         uri = np_.source_uri
         assert uri and uri.startswith("https://w3id.org/np/RA"), uri
-        prev = manifest.get(f.name, {}).get("nanopub")
+        entry = manifest.get(f.name, {})
+        prev = entry.get("nanopub")
         if prev and prev != uri:
-            sys.exit(f"{f.name}: content changed since it was recorded as {prev} (now {uri}); "
-                     "published nanopubs are immutable — give the new version npx:supersedes instead")
+            supersedes = {str(o) for o in np_.pubinfo.objects(None, NPX.supersedes)}
+            if prev not in supersedes:
+                sys.exit(f"{f.name}: content changed since it was recorded as {prev} (now {uri}) but does not "
+                         "npx:supersedes it; published nanopubs are immutable — rebuild with --supersede")
+            history = entry.get("history", []) + [{"nanopub": prev, "published": entry.get("published"), "date": entry.get("date")}]
+            entry = {"history": history}            # new version starts unpublished
         if a.publish:
             np_.publish()
         (out / f.name).write_text(np_.rdf.serialize(format="trig"))
-        status = manifest.get(f.name, {}).get("published")
+        status = entry.get("published") if entry.get("nanopub") == uri else None
         rank = {None: 0, "test": 1, "prod": 2}
         if rank.get(a.publish, 0) >= rank.get(status, 0):
             status = a.publish
-        manifest[f.name] = {"nanopub": uri, "published": status, "date": date.today().isoformat()}
+        new = {"nanopub": uri, "published": status, "date": date.today().isoformat()}
+        if entry.get("history"):
+            new["history"] = entry["history"]
+        manifest[f.name] = new
         print(f"{('published[' + a.publish + ']') if a.publish else 'signed'}  {f.name} -> {uri}")
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
     print(f"{len(files)} nanopubs -> {out}  (manifest: {manifest_path})")

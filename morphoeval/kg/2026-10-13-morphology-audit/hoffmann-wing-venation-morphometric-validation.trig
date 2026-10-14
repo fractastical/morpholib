@@ -5,6 +5,7 @@
 @prefix pk: <https://w3id.org/probknow/ontology/> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
 @prefix sub: <http://purl.org/nanopub/temp/np001/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -24,10 +25,50 @@ sub:assertion {
         dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
         pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
-        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-hoffmann-wing-venation-morphometric-validation-0>,
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-hoffmann-wing-venation-morphometric-m0>,
+            <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-hoffmann-wing-venation-morphometric-m1>,
+            <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-hoffmann-wing-venation-morphometric-m2>,
+            <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-hoffmann-wing-venation-morphometric-validation-0>,
             <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-hoffmann-wing-venation-morphometric-validation-1> ;
         pk:hasVerdict "faithful" ;
         pk:weightOfEvidence 8e-01 .
+    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-hoffmann-wing-venation-morphometric-m0> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "mean domain circularity, model wing: 0.867 ratio (4πA/P²)" ;
+        dct:description "regular hexagon = 0.907; model n=923, real n=923" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f3fe478/2018-hoffmann-wing-venation.py> ;
+        schema:measurementTechnique "script's domain_stats() over Voronoi domains after Lloyd equilibration (seed 0)" ;
+        schema:name "mean domain circularity, model wing" ;
+        schema:unitText "ratio (4πA/P²)" ;
+        schema:value 8.67e-01 ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-hoffmann-wing-venation-morphometric-m0-reference> .
+    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-hoffmann-wing-venation-morphometric-m0-reference> a schema:PropertyValue ;
+        dct:source "same statistic on the authors' segmented real wing (Hoffmann et al. 2018 example)" ;
+        schema:name "reference for: mean domain circularity, model wing" ;
+        schema:value 7.12e-01 .
+    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-hoffmann-wing-venation-morphometric-m1> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "vein-domain count, model wing: 923 count" ;
+        dct:description "equal by construction: the model is seeded with the real wing's domain count" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f3fe478/2018-hoffmann-wing-venation.py> ;
+        schema:measurementTechnique "domains large enough to measure, model" ;
+        schema:name "vein-domain count, model wing" ;
+        schema:unitText "count" ;
+        schema:value 923 ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-hoffmann-wing-venation-morphometric-m1-reference> .
+    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-hoffmann-wing-venation-morphometric-m1-reference> a schema:PropertyValue ;
+        dct:source "same count on the real wing" ;
+        schema:name "reference for: vein-domain count, model wing" ;
+        schema:value 923 .
+    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-hoffmann-wing-venation-morphometric-m2> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "vein-domain count, real wing (all): 923 count" ;
+        dct:description "wing area 1905316 px" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f3fe478/2018-hoffmann-wing-venation.py> ;
+        schema:measurementTechnique "peaks of the distance transform inside the segmented real wing" ;
+        schema:name "vein-domain count, real wing (all)" ;
+        schema:unitText "count" ;
+        schema:value 923 .
     <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-hoffmann-wing-venation-morphometric-validation-0> a pk:EvidenceItem ;
         rdfs:label "2018-hoffmann-wing-venation.py L188–L201" ;
         dct:description "domain_stats: 4*pi*A/P^2 with perimeter_crofton" ;
@@ -58,6 +99,7 @@ sub:pubinfo {
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
         npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-hoffmann-wing-venation-morphometric-validation> ;
+        npx:supersedes <https://w3id.org/np/RAg0f6g779dLZUTVKcClZiCxiX1lodN4UlaICauAyxI5c> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }
