@@ -245,11 +245,13 @@ def domain_boundaries(lab: np.ndarray) -> np.ndarray:
     return ndimage.binary_dilation(edge, iterations=1).astype(float)
 
 
-def show_wing_mm(ax, ink: np.ndarray, wing_length_mm: float) -> None:
+def show_wing_mm(ax, ink: np.ndarray, wing_length_mm: float, y0: float = 0.0) -> None:
     """Draw an ink mask so that its horizontal extent equals ``wing_length_mm`` (axes in mm)."""
     h, w = ink.shape[:2]
     mm_per_px = wing_length_mm / w
-    ax.imshow(ink, cmap="Greys", extent=(0, w * mm_per_px, 0, h * mm_per_px), interpolation="bilinear", vmin=0, vmax=1)
+    rgba = np.zeros(ink.shape + (4,))
+    rgba[..., 3] = ink  # transparent background so wings can be stacked
+    ax.imshow(rgba, extent=(0, w * mm_per_px, y0, y0 + h * mm_per_px), interpolation="bilinear")
     ax.set_xlabel("mm", fontsize=8)
     ax.set_yticks([])
     ax.tick_params(labelsize=8)
@@ -529,10 +531,24 @@ def deep_time_animation(df: pd.DataFrame, pbdb: pd.DataFrame, zip_path: Path, ta
                  f"{ext[ext.family == fam].cell_len_median_mm.median():.2f} mm")
             fig.suptitle(f"Today — {fam}: the same family 50 Myr after its Eocene fossils", fontsize=12)
             return
-        # final
+        # final: Eocene and living Aeshnidae at the same scale
         draw_time(None)
         draw_cells(None, extant=True)
-        ax_wing.axis("off")
+        yp = fo[fo.species == "Ypshna latipennata"].sort_values("cell_count", ascending=False).iloc[0]
+        if yp.image_name not in img_cache:
+            img_cache[yp.image_name] = fossil_drawing(zip_path, yp.image_name)
+        img = img_cache[yp.image_name]
+        lab = hoffmann_domains(tar_path, "Aeshna juncea") if tar_path.exists() else None
+        if img is not None:
+            show_wing_mm(ax_wing, img, yp.wing_length_mm, y0=0.0)
+            ax_wing.text(yp.wing_length_mm + 1, 4, f"{yp.species}, {yp.age_ma:.0f} Ma", fontsize=8, va="center")
+        if lab is not None:
+            L = float(ext[ext.species == "Aeshna juncea"].wing_length_mm.mean())
+            show_wing_mm(ax_wing, domain_boundaries(lab), L, y0=14.0)
+            ax_wing.text(L + 1, 19, "Aeshna juncea, living", fontsize=8, va="center")
+        ax_wing.set_xlim(0, wing_mm_max)
+        ax_wing.set_ylim(0, 28)
+        ax_wing.set_title("Aeshnidae, 52 Myr apart, at the same scale", fontsize=9, loc="left")
         s_f = ols_loglog(fo.wing_length_mm, fo.cell_count)[0]
         s_e = ols_loglog(ext.wing_length_mm, ext.cell_count)[0]
         info("What 150 Myr of wings say about the venation model\n\n"
