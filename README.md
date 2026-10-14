@@ -26,6 +26,23 @@ The parser produces:
 
 See [`datasets/planform/paper_citations.bib`](./datasets/planform/paper_citations.bib) for BibTeX citations.
 
+### [2013-lobo-planform-morphology.py](./2013-lobo-planform-morphology.py)
+
+A fresh take on the PlanformDB morphology animation that decodes the Lobo–Malone–Levin graph formalism exactly instead of approximating each phenotype as a convex hull of organ landmarks (which made every morphology look alike). Region shapes are reconstructed from their encoded polar radii (0 links → right/anterior/left/posterior; 1 link → +90/+180/+270° from the edge; k ≥ 2 links → one radius per bisector of consecutive edges), region centres from the `RegionsLink` distance/angle labels, borders from `Ratio·Dist`, and eyes, brain lobes, pharynges and ventral nerve cords from the organ table. The decoding rule is checked at load time against all 1181 regions in planformDB 2.5.0.
+
+```bash
+export PLANFORM_DB_PATH=/path/to/planformDB_2.5.0.edb
+python3 2013-lobo-planform-morphology.py                     # gallery PNG + morphospace timeline GIF
+python3 2013-lobo-planform-morphology.py --ids 1 2 3 24 20   # specific morphologies
+python3 2013-lobo-planform-morphology.py --csv morphospace.csv --no-anim
+```
+
+Outputs (git-ignored): `planform_morphology_gallery.png` (16 canonical phenotypes: wild type, double head, headless, cyclops, side heads, polarity reversed, …), `planform_morphospace_timeline.gif` (year-by-year first reports of each morphology against the cumulative catalogue, ending with all 359 dated morphologies as a morphospace grid), and an optional CSV of silhouette morphometrics (AP length, ML width, aspect, organ/region counts; WT = 558 × 122 units, aspect 4.58).
+
+**References:**
+- Lobo D, Malone TJ, Levin M (2013). Towards a bioinformatics of patterning: a computational approach to understanding regulative morphogenesis. *Biology Open* 2(2):156-169. [DOI](https://doi.org/10.1242/bio.20123400)
+- Lobo D, Malone TJ, Levin M (2013). Planform: an application and database of graph-encoded planarian regenerative experiments. *Bioinformatics* 29(8):1098-1100. [DOI](https://doi.org/10.1093/bioinformatics/btt088)
+
 ### [thompson/1917-thompson.py](./thompson/1917-thompson.py)
 
 A demonstration of D'Arcy Thompson's theory of transformations from *On Growth and Form* (1917), showing how one shape can be deformed into another through mathematical transformations. This classic work established the foundation for mathematical biology and the study of biological form.
