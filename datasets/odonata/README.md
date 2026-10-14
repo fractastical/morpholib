@@ -49,12 +49,47 @@ backdrop of the deep-time animation (Carboniferous griffinflies such as
 *Meganeuropsis permiana* to Holocene). PBDB data are CC BY 4.0; see
 https://paleobiodb.org/#/faq for citation guidance.
 
-## Also used at runtime (downloaded to the git-ignored `.wing_cache/`)
+## `fossil_wing_resegmentation.csv` (69 wings)
 
-- Fossil wing drawings from the Zenodo archive above (CC BY 4.0).
+Produced by the script itself (`resegment_fossils()`), not by the authors: every
+fossil venation drawing in the Zenodo archive re-segmented from the pixels. The
+vein ink is skeletonised, the regions it encloses are the cells (all drawn
+fragments are counted), and the scale is read from each drawing's own scale
+bar (bar found in 68/69 drawings, its label read in 65; `scale_source` says
+how each wing was calibrated — for #20 there is no bar and the tabulated wing
+length is used, for #5, #60 and #61 the label could not be read reliably and
+the bar is assigned the value consistent with the tabulated wing length).
+Per wing: `n_cells`, median / mean / max cell length (maximum Feret diameter,
+mm), median cell area (mm²), median circularity and the fraction of cells in
+the 0.5–1.5 mm band, each beside the corresponding `table_*` value from Table S1.
+
+Agreement with Table S1 (2026-10-14 run): median |ΔN|/N = 0.0 %, 90 % of wings
+within 2 % in cell count; median cell length within 3.4 % (ours systematically
+~3 % longer, as cells are bounded by vein mid-lines); largest cell within 0.9 %.
+Discrepancies worth knowing about:
+
+- **#7 *Euarchistigma peterknobli* (Right Wing)**: the drawing (10 mm bar) is a
+  61 mm wing with 829 cells, median 1.15 mm; Table S1 lists 24.7 mm, 282 cells,
+  median 0.76 mm. The drawing and the table row do not describe the same wing.
+- **#23 / #24 *Paracordulagomphus aberrans* 1**: our values for #23 match the
+  table's #24 and vice versa (530 vs 484 cells); the two rows appear swapped
+  relative to the image names.
+- *Cratostenophlebia schwickerti* (#8–#11, ~3000 cells each): we count 6–10 %
+  more cells than the table; the skeleton of very dense venation splits a few
+  cells the authors merged.
+- Six *Euarchistigma* drawings are fragments or several specimens share one
+  tabulated wing length (28.8 mm), so `drawing_feret_mm` differs from
+  `table_wing_length_mm` there; the cell measurements are unaffected because
+  the scale comes from the bar.
+
+## Also used at runtime (downloaded to the git-ignored `.wing_cache/`, SHA-256 verified)
+
+- Fossil wing drawings from the Zenodo archive above (CC BY 4.0);
+  `ac1288ba…034703`, 89,961,457 bytes.
 - Hoffmann J, Donoughe S, Li K, Salcedo MK, Rycroft CH (2018). A simple
   developmental model recapitulates complex insect wing venation patterns.
   *PNAS* 115(40):9905–9910. https://doi.org/10.1073/pnas.1721248115 — segmented
   North American dragonfly wings (`Dragonfly_NA_WingSegmentation.tar.gz` in
-  https://github.com/hoffmannjordan/insect-wing-venation-patterns), used as the
-  extant venation image next to the Eocene Aeshnidae / Gomphidae fossils.
+  https://github.com/hoffmannjordan/insect-wing-venation-patterns;
+  `50997be3…ccb232`, 10,246,854 bytes), used as the extant venation image next
+  to the Eocene Aeshnidae / Gomphidae fossils.

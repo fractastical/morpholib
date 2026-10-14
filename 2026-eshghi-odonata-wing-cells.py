@@ -24,6 +24,16 @@ Data (see ``datasets/odonata/README.md`` for provenance; nothing is hand-entered
   the Eocene Aeshnidae / Gomphidae fossils, and used to cross-check cell
   counts for the 42 species both datasets segmented independently.
 
+Independent re-segmentation of the fossil drawings
+--------------------------------------------------
+Every fossil venation drawing in the archive is re-segmented here from the
+pixels (vein ink skeletonised, enclosed regions labelled, scale bar read
+from the image) and the resulting cell count, median / maximum cell length
+(maximum Feret diameter) and cell area are compared wing by wing with the
+values Eshghi et al. tabulate. That makes the fossil half of the comparison
+reproducible from the published images rather than taken on trust; the
+per-wing table is written to datasets/odonata/fossil_wing_resegmentation.csv.
+
 What is tested
 --------------
 If the venation model's inhibition length were a conserved developmental
@@ -35,16 +45,19 @@ the figure and animation show what the data say rather than the hypothesis.
 Usage
 -----
     python3 2026-eshghi-odonata-wing-cells.py                 # figure + animation (downloads ~100 MB once)
-    python3 2026-eshghi-odonata-wing-cells.py --no-anim        # statistics + static figure only (no downloads)
+    python3 2026-eshghi-odonata-wing-cells.py --no-anim        # statistics, static figure, fossil re-segmentation
+    python3 2026-eshghi-odonata-wing-cells.py --no-anim --no-resegment --no-crosscheck   # tables only, no downloads
     python3 2026-eshghi-odonata-wing-cells.py --zenodo-zip /path/to/archive.zip --hoffmann-tar /path/to/Dragonfly_NA_WingSegmentation.tar.gz
 
-Outputs (git-ignored): odonata_wing_cells_scaling.png, odonata_wing_cells_deep_time.gif
-Downloads are cached in .wing_cache/odonata/ (git-ignored).
+Outputs (git-ignored): odonata_wing_cells_scaling.png, odonata_fossil_resegmentation.png,
+odonata_wing_cells_deep_time.gif. Downloads are cached in .wing_cache/odonata/
+(git-ignored) and verified against the SHA-256 recorded below.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import io
 import math
 import os
@@ -68,6 +81,12 @@ import pandas as pd  # noqa: E402
 from PIL import Image  # noqa: E402
 from scipy import ndimage  # noqa: E402
 
+try:
+    from skimage import measure as skmeasure  # noqa: E402
+    from skimage.morphology import skeletonize  # noqa: E402
+except ImportError:  # pragma: no cover
+    skmeasure = skeletonize = None
+
 HERE = Path(__file__).resolve().parent
 DATA_DIR = HERE / "datasets" / "odonata"
 CACHE_DIR = HERE / ".wing_cache" / "odonata"
@@ -75,8 +94,11 @@ CACHE_DIR = HERE / ".wing_cache" / "odonata"
 ZENODO_ZIP_URL = ("https://zenodo.org/api/records/19899648/files/"
                   "Eshghi%20et%20al.%2C%202026%2C%20Supplementary%20Material%2C%20FossilWing%20CellSize.zip/content")
 ZENODO_ZIP_BYTES = 89_961_457
+ZENODO_ZIP_SHA256 = "ac1288bae115f9c6a6f2bd227e35a5d6a60cd2c04d3000cc77067d17dc034703"   # retrieved 2026-10-14
 HOFFMANN_TAR_URL = ("https://github.com/hoffmannjordan/insect-wing-venation-patterns/raw/master/"
                     "Dragonfly_NA_WingSegmentation.tar.gz")
+HOFFMANN_TAR_SHA256 = "50997be322acb3bab1e27141c1322764a67286056c5ae7a79fa15dbf76ccb232"  # retrieved 2026-10-14
+SCALE_BAR_MM = (1, 2, 5, 10, 20)   # lengths a drawing's scale bar can plausibly denote
 
 GROUP_LABEL = {"fossil": "fossil (Jurassic–Eocene)", "extant_dragonfly": "extant dragonflies",
                "extant_damselfly": "extant damselflies"}
@@ -151,10 +173,28 @@ def report(df: pd.DataFrame) -> Dict[str, Dict[str, float]]:
 # --------------------------------------------------------------------------
 # Downloads (cached, resumable)
 # --------------------------------------------------------------------------
-def fetch(url: str, dest: Path, expected: Optional[int] = None, allow_download: bool = True) -> Path:
+def sha256_of(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def verify_sha256(path: Path, expected: Optional[str]) -> Path:
+    if expected:
+        got = sha256_of(path)
+        if got != expected:
+            sys.exit(f"{path.name}: SHA-256 {got} does not match the recorded {expected}; "
+                     "the upstream file changed or the download is corrupt. Delete it and re-run.")
+    return path
+
+
+def fetch(url: str, dest: Path, expected: Optional[int] = None, allow_download: bool = True,
+          sha256: Optional[str] = None) -> Path:
     dest.parent.mkdir(parents=True, exist_ok=True)
     if dest.exists() and (expected is None or dest.stat().st_size == expected):
-        return dest
+        return verify_sha256(dest, sha256)
     if not allow_download:
         sys.exit(f"{dest.name} not cached and downloads disabled (--no-download). Pass the file explicitly.")
     print(f"  downloading {url}\n    -> {dest}")
@@ -180,7 +220,7 @@ def fetch(url: str, dest: Path, expected: Optional[int] = None, allow_download: 
                 raise
         size = dest.stat().st_size
         if expected is None or size >= expected:
-            return dest
+            return verify_sha256(dest, sha256)
         print(f"    {size / 1e6:.1f} / {expected / 1e6:.1f} MB; resuming")
 
 
@@ -207,6 +247,300 @@ def fossil_drawing(zip_path: Path, image_name: str) -> Optional[np.ndarray]:
     rows = np.where(ink.any(axis=1))[0]
     cols = np.where(ink.any(axis=0))[0]
     return ink[rows.min():rows.max() + 1, cols.min():cols.max() + 1].astype(float)
+
+
+def _read_drawing(zip_path: Path, image_name: str) -> Optional[np.ndarray]:
+    """Boolean ink mask of a fossil venation drawing (dark and opaque pixels), uncropped.
+    One drawing is a JPEG with grey anti-aliased lines, hence the generous threshold."""
+    with zipfile.ZipFile(zip_path) as zf:
+        cands = [n for n in zf.namelist() if "Fossil Wing Images/" in n and Path(n).stem == image_name]
+        if not cands:
+            return None
+        with zf.open(cands[0]) as fh:
+            im = Image.open(io.BytesIO(fh.read())).convert("LA")
+    arr = np.asarray(im, dtype=float)
+    return (arr[..., 0] < 160) & (arr[..., 1] > 0)
+
+
+def read_scale_bar(ink: np.ndarray) -> Tuple[Optional[float], Optional[int], str]:
+    """Find the drawing's scale bar and read its label.
+
+    The bar is the long, thin, straight ink component (eccentric, solid, shorter than
+    the image); its length is the maximum Feret diameter so tilted bars are fine.  The
+    label is read from the glyphs beside the bar: the digits are the narrow glyphs
+    before the first wide one (the 'm' of 'mm'), '1' is the glyph narrower than half
+    its height, '0' has a hole, '2' and '5' are told apart by whether the ink of the
+    left half sits in the upper (5) or the lower (2) quadrant.  Mirrored drawings
+    (mirrored text) are handled by reading the glyph row from the other end.
+    Returns (bar_px, label_mm, note, annotation): annotation is a boolean mask of the
+    bar and label pixels, so they can be excluded from the wing; label_mm is None when
+    no label could be read.
+    """
+    annot = np.zeros_like(ink, dtype=bool)
+    lab, n = ndimage.label(ink)
+    if n < 2:
+        return None, None, "no bar", annot
+    props = sorted(skmeasure.regionprops(lab), key=lambda q: -q.area)
+    bar = None
+    for q in props[1:]:
+        if q.area < 150:
+            break
+        F = q.feret_diameter_max
+        if (F >= 60 and q.axis_minor_length / max(q.axis_major_length, 1) < 0.12 and q.solidity > 0.75
+                and F < 0.8 * ink.shape[1]):
+            bar = q
+            break
+    if bar is None:
+        return None, None, "no bar", annot
+    annot |= lab == bar.label
+    F = bar.feret_diameter_max
+    by = bar.centroid[0]
+    y0, x0, y1, x1 = bar.bbox
+    text = []
+    for q in props[1:]:
+        if q.label == bar.label or q.area < 15:
+            continue
+        cy, cx = q.centroid
+        h, w = q.bbox[2] - q.bbox[0], q.bbox[3] - q.bbox[1]
+        if x0 - 0.3 * F <= cx <= x1 + 0.3 * F and abs(cy - by) < 0.5 * F and 0.03 * F <= h <= 0.4 * F and w < 0.4 * F:
+            text.append(q)
+    if not text:
+        return F, None, "bar without readable label", annot
+    cys = np.array([q.centroid[0] for q in text])
+    ref = cys[np.argmin(np.abs(cys - by))]                       # the text row nearest the bar
+    row = sorted([q for q in text if abs(q.centroid[0] - ref) < 0.08 * F], key=lambda q: q.bbox[1])
+    for q in row:
+        annot |= lab == q.label
+    glyphs = [(q, (q.bbox[3] - q.bbox[1]) / (q.bbox[2] - q.bbox[0])) for q in row]
+
+    def leading_digits(seq):
+        out = []
+        for q, ar in seq:
+            if ar > 1.05:
+                break
+            out.append((q, ar))
+        return out
+
+    mirrored = False
+    digits = leading_digits(glyphs)
+    if not digits:
+        digits = leading_digits(glyphs[::-1])[::-1]
+        mirrored = bool(digits)
+    if not digits:
+        return F, None, "bar, label glyphs not understood", annot
+
+    def value_of(q, ar):
+        img = q.image
+        H, W = img.shape
+        if ar < 0.5:
+            return 1
+        if q.euler_number <= 0:                                   # has a hole
+            return 10 if ar > 0.85 else 0                         # a wide holed glyph is a joined '10'
+        half = img[:, W // 2:] if mirrored else img[:, : W // 2]
+        return 5 if half[: H // 2].mean() > half[H // 2:].mean() else 2
+
+    vals = [value_of(q, ar) for q, ar in digits]
+    if len(vals) == 1:
+        value = vals[0]
+    elif len(vals) == 2 and vals[1] in (0, 5):
+        value = vals[0] * 10 + vals[1]
+    else:
+        return F, None, f"bar, ambiguous label {vals}", annot
+    return F, value, ("mirrored " if mirrored else "") + f"label {value} mm", annot
+
+
+def segment_fossil_cells(ink: np.ndarray, annotation: Optional[np.ndarray] = None,
+                         min_fragment_px: int = 150) -> Tuple[np.ndarray, np.ndarray]:
+    """Re-segment a venation drawing into cells.
+
+    Returns (wing_ink, cells): the wing's ink (every ink component except the scale
+    bar / label and specks, cropped — fossil wings are often drawn as several
+    fragments and all of them are counted) and an integer label image of its cells
+    (0 = vein or outside).  Cells are the regions enclosed by the *skeleton* of the
+    vein ink, so a cell extends to the vein mid-lines; this matches how Eshghi et al.
+    measure (their cell lengths equal ours to a few percent; cells bounded by the full
+    ink width come out ~0.1 mm shorter).  Regions touching the image border are
+    outside the wing and dropped.
+    """
+    if skeletonize is None:
+        sys.exit("fossil re-segmentation needs scikit-image: pip install scikit-image")
+    keep = ink & ~annotation if annotation is not None else ink.copy()
+    lab, n = ndimage.label(keep)
+    if n == 0:
+        return ink, np.zeros_like(ink, dtype=int)
+    sizes = ndimage.sum(keep, lab, np.arange(1, n + 1))
+    small = np.flatnonzero(sizes < min_fragment_px) + 1
+    wing = keep & ~np.isin(lab, small)
+    sl = ndimage.find_objects(wing.astype(int))[0]
+    wing = wing[sl]
+    skel = skeletonize(wing)
+    blab, _ = ndimage.label(~skel)
+    border = set(np.unique(np.concatenate([blab[0], blab[-1], blab[:, 0], blab[:, -1]]))) - {0}
+    cells = np.where(np.isin(blab, list(border)), 0, blab)
+    return wing, cells
+
+
+def infer_scale(wing: np.ndarray, bar_px: Optional[float], label_mm: Optional[int],
+                wing_length_mm: float) -> Tuple[float, str]:
+    """Pixels per mm and how it was obtained.  The scale bar with its read label is used
+    when the implied drawing length is within a factor 3 of the tabulated wing length
+    (a misread handwritten label is off by 5x, a fragment is not); otherwise the
+    bar is given the member of SCALE_BAR_MM that best matches the tabulated length, and
+    with no bar at all the tabulated length itself calibrates the drawing."""
+    feret_px = skmeasure.regionprops(wing.astype(int))[0].feret_diameter_max
+    ppm_len = feret_px / wing_length_mm
+    if not bar_px:
+        return ppm_len, "tabulated wing length (no scale bar)"
+    if label_mm:
+        ppm = bar_px / label_mm
+        if 1 / 3 <= (feret_px / ppm) / wing_length_mm <= 3.0:
+            return ppm, f"scale bar, label read as {label_mm} mm"
+    cands = np.array(SCALE_BAR_MM, dtype=float)
+    bar_mm = int(cands[np.argmin(np.abs(np.log(cands / (bar_px / ppm_len))))])
+    why = f"label read as {label_mm} mm implausible" if label_mm else "label unreadable"
+    return bar_px / bar_mm, f"scale bar taken as {bar_mm} mm from tabulated wing length ({why})"
+
+
+def cell_table(cells: np.ndarray, px_per_mm: float, min_area_px: int = 9) -> pd.DataFrame:
+    """Per-cell area (mm²), length (maximum Feret diameter, mm) and circularity 4πA/P²."""
+    rows = []
+    for p in skmeasure.regionprops(cells):
+        if p.area < min_area_px:
+            continue
+        a = p.area / px_per_mm ** 2
+        per = p.perimeter / px_per_mm
+        rows.append((p.label, a, p.feret_diameter_max / px_per_mm, 4 * math.pi * a / per ** 2 if per > 0 else np.nan))
+    return pd.DataFrame(rows, columns=["label", "area_mm2", "length_mm", "circularity"])
+
+
+def resegment_fossils(zip_path: Path, fossils: pd.DataFrame) -> pd.DataFrame:
+    """Re-segment every fossil drawing and put our numbers beside Eshghi et al.'s."""
+    out = []
+    for r in fossils.itertuples():
+        ink = _read_drawing(zip_path, r.image_name)
+        if ink is None:
+            print(f"  no drawing for {r.image_name}")
+            continue
+        bar_px, label_mm, note, annot = read_scale_bar(ink)
+        wing, cells = segment_fossil_cells(ink, annot)
+        ppm, how = infer_scale(wing, bar_px, label_mm, r.wing_length_mm)
+        feret_px = skmeasure.regionprops(wing.astype(int))[0].feret_diameter_max
+        ct = cell_table(cells, ppm)
+        out.append({
+            "source_id": r.source_id, "image_name": r.image_name, "species": r.species, "age_ma": r.age_ma,
+            "scale_bar_px": round(bar_px, 1) if bar_px else 0, "scale_bar_label_mm": label_mm or 0,
+            "px_per_mm": round(ppm, 2), "scale_source": how,
+            "px_per_mm_from_wing_length": round(feret_px / r.wing_length_mm, 2),
+            "drawing_feret_mm": round(feret_px / ppm, 2),
+            "table_wing_length_mm": r.wing_length_mm,
+            "n_cells": len(ct), "table_cell_count": r.cell_count,
+            "cell_len_median_mm": round(ct.length_mm.median(), 4), "table_cell_len_median_mm": r.cell_len_median_mm,
+            "cell_len_max_mm": round(ct.length_mm.max(), 4), "table_cell_len_max_mm": r.cell_len_max_mm,
+            "cell_len_mean_mm": round(ct.length_mm.mean(), 4), "table_cell_len_mean_mm": r.cell_len_mean_mm,
+            "cell_area_median_mm2": round(ct.area_mm2.median(), 4),
+            "circularity_median": round(ct.circularity.median(), 4),
+            "pct_cells_0p5_1p5mm": round(100 * ct.length_mm.between(*CELL_BAND).mean(), 2),
+            "table_pct_cells_0p5_1p5mm": r.pct_cells_0p5_1p5mm,
+        })
+    return pd.DataFrame(out)
+
+
+def report_resegmentation(rs: pd.DataFrame) -> Dict[str, float]:
+    dn = (rs.n_cells - rs.table_cell_count).abs() / rs.table_cell_count
+    dl = (rs.cell_len_median_mm - rs.table_cell_len_median_mm).abs() / rs.table_cell_len_median_mm
+    dmax = (rs.cell_len_max_mm - rs.table_cell_len_max_mm).abs() / rs.table_cell_len_max_mm
+    stats = {
+        "n_wings": len(rs),
+        "count_median_rel_err": float(dn.median()), "count_max_rel_err": float(dn.max()),
+        "count_within_2pct": float((dn <= 0.02).mean()),
+        "median_len_median_rel_err": float(dl.median()), "median_len_max_rel_err": float(dl.max()),
+        "max_len_median_rel_err": float(dmax.median()),
+        "fossil_median_cell_len_ours": float(rs.cell_len_median_mm.median()),
+        "fossil_median_cell_len_table": float(rs.table_cell_len_median_mm.median()),
+        "bars_found": int((rs.scale_bar_px > 0).sum()),
+        "labels_read": int(rs.scale_source.str.startswith("scale bar, label read").sum()),
+        "scale_disagreement_gt_15pct": int(((rs.px_per_mm / rs.px_per_mm_from_wing_length - 1).abs() > 0.15).sum()),
+    }
+    print(f"\nFossil drawings re-segmented: {stats['n_wings']} wings; scale bar found in {stats['bars_found']}, "
+          f"its label read in {stats['labels_read']}")
+    for r in rs[~rs.scale_source.str.startswith("scale bar, label read")].itertuples():
+        print(f"    {r.image_name}: {r.scale_source}")
+    print(f"  cell count vs Eshghi et al.: median |ΔN|/N {stats['count_median_rel_err']:.1%}, "
+          f"max {stats['count_max_rel_err']:.1%}, {stats['count_within_2pct']:.0%} of wings within 2%")
+    print(f"  median cell length: median rel. error {stats['median_len_median_rel_err']:.1%} "
+          f"(max {stats['median_len_max_rel_err']:.1%}); largest cell: median rel. error {stats['max_len_median_rel_err']:.1%}")
+    print(f"  fossil median cell length over wings: ours {stats['fossil_median_cell_len_ours']:.3f} mm, "
+          f"table {stats['fossil_median_cell_len_table']:.3f} mm")
+    if stats["scale_disagreement_gt_15pct"]:
+        bad = rs[(rs.px_per_mm / rs.px_per_mm_from_wing_length - 1).abs() > 0.15]
+        print(f"  drawn extent differs from the tabulated wing length by >15% on {len(bad)} drawing(s) "
+              f"(fragments, or one species length used for several specimens): " + ", ".join(bad.image_name))
+    big = rs[((rs.n_cells - rs.table_cell_count).abs() / rs.table_cell_count > 0.2)
+             | ((rs.cell_len_median_mm - rs.table_cell_len_median_mm).abs() / rs.table_cell_len_median_mm > 0.25)]
+    for r in big.itertuples():
+        print(f"  DISAGREES with the table: {r.image_name}: {r.n_cells} cells (table {r.table_cell_count}), "
+              f"median {r.cell_len_median_mm:.2f} mm (table {r.table_cell_len_median_mm:.2f}); {r.scale_source}")
+    return stats
+
+
+def resegmentation_figure(rs: pd.DataFrame, zip_path: Path, out: Path) -> None:
+    """Our re-segmentation against Eshghi et al.'s table, plus four re-segmented wings."""
+    fig = plt.figure(figsize=(15, 11))
+    gs = fig.add_gridspec(2, 3, height_ratios=[1, 1.3], hspace=0.4, wspace=0.3)
+    ax_n, ax_med, ax_max = (fig.add_subplot(gs[0, i]) for i in range(3))
+    ages = rs.age_ma.values
+    sc_kw = dict(c=ages, cmap="viridis_r", s=36, edgecolor="k", linewidth=0.4)
+    for ax, x, y, lab in [
+        (ax_n, rs.table_cell_count, rs.n_cells, "cell count"),
+        (ax_med, rs.table_cell_len_median_mm, rs.cell_len_median_mm, "median cell length (mm)"),
+        (ax_max, rs.table_cell_len_max_mm, rs.cell_len_max_mm, "largest cell length (mm)"),
+    ]:
+        lo, hi = min(x.min(), y.min()) * 0.9, max(x.max(), y.max()) * 1.1
+        ax.plot([lo, hi], [lo, hi], color="0.6", lw=1, zorder=0)
+        im = ax.scatter(x, y, **sc_kw)
+        ax.set_xscale("log"); ax.set_yscale("log")
+        ax.set_xlim(lo, hi); ax.set_ylim(lo, hi); ax.set_aspect("equal")
+        ax.set_xlabel(f"Eshghi et al. 2026: {lab}"); ax.set_ylabel(f"this script: {lab}")
+        rel = ((y - x).abs() / x)
+        ax.set_title(f"median |Δ| = {rel.median():.1%}, max {rel.max():.0%}", fontsize=10)
+    cb = fig.colorbar(im, ax=[ax_n, ax_med, ax_max], pad=0.01, fraction=0.025)
+    cb.set_label("age (Ma)")
+
+    picks = ["66 Mesuropetala muensteri 1 (Right Forewing)", "69 Progobiaeshna liaoningensis 1 (Right Forewing)",
+             "47 Cratohagenius erichweberi 2 (Left Forewing)", "62 Ypshna latipennata 1 (Right Forewing)"]
+    picks = [p_ for p_ in picks if p_ in set(rs.image_name)]
+    gs_w = gs[1, :].subgridspec(2, 2, hspace=0.7, wspace=0.08)
+    vmin, vmax = 0.3, 2.0
+    panels = []
+    for name in picks:
+        row = rs[rs.image_name == name].iloc[0]
+        ink = _read_drawing(zip_path, name)
+        wing, cells = segment_fossil_cells(ink, read_scale_bar(ink)[3])
+        ct = cell_table(cells, row.px_per_mm)
+        length_map = np.full(cells.shape, np.nan)
+        for lab_, ln in zip(ct.label, ct.length_mm):
+            length_map[cells == lab_] = ln
+        panels.append((row, wing, length_map))
+    x_max = max(w.shape[1] / r.px_per_mm for r, w, _ in panels) + 1
+    for k, (row, wing, length_map) in enumerate(panels):
+        ax = fig.add_subplot(gs_w[k // 2, k % 2])
+        H, W = wing.shape
+        ext = (0, W / row.px_per_mm, H / row.px_per_mm, 0)          # image rows run downwards, as drawn
+        ax.imshow(length_map, cmap="turbo", vmin=vmin, vmax=vmax, extent=ext, interpolation="nearest")
+        ax.imshow(np.dstack([np.zeros(wing.shape + (3,)), wing.astype(float)]), extent=ext, interpolation="nearest")
+        ax.set_xlim(0, x_max); ax.set_aspect("equal")
+        ax.set_title(f"{row.species}, {row.age_ma:.0f} Ma\n{row.n_cells} cells (table {row.table_cell_count}); "
+                     f"median cell {row.cell_len_median_mm:.2f} mm (table {row.table_cell_len_median_mm:.2f})",
+                     fontsize=9)
+        ax.set_xlabel("mm (same scale in all four)"); ax.set_yticks([])
+    sm = plt.cm.ScalarMappable(cmap="turbo", norm=plt.Normalize(vmin, vmax))
+    cb2 = fig.colorbar(sm, ax=fig.axes[-len(picks):], pad=0.01, fraction=0.02)
+    cb2.set_label("cell length (mm)")
+    fig.suptitle("Fossil wing drawings re-segmented from the pixels vs the values tabulated by Eshghi et al. (2026)\n"
+                 "vein ink skeletonised → enclosed regions = cells; scale from each drawing's scale bar", fontsize=12)
+    fig.savefig(out, dpi=130, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  saved {out}")
 
 
 def hoffmann_domains(tar_path: Path, species: str) -> Optional[np.ndarray]:
@@ -582,6 +916,8 @@ def main(argv=None) -> None:
     p.add_argument("--no-download", action="store_true", help="never download; fail if a needed file is not cached")
     p.add_argument("--no-anim", action="store_true", help="skip the animation (no image downloads needed)")
     p.add_argument("--no-crosscheck", action="store_true", help="skip the Hoffmann cell-count cross-check inset")
+    p.add_argument("--no-resegment", action="store_true",
+                   help="skip re-segmenting the fossil drawings (needs the Zenodo archive)")
     p.add_argument("--fps", type=float, default=0.8)
     args = p.parse_args(argv)
 
@@ -595,7 +931,7 @@ def main(argv=None) -> None:
     tar_path = Path(args.hoffmann_tar) if args.hoffmann_tar else cache / "Dragonfly_NA_WingSegmentation.tar.gz"
     hoff_counts = None
     if not args.no_crosscheck or not args.no_anim:
-        tar_path = fetch(HOFFMANN_TAR_URL, tar_path, allow_download=not args.no_download)
+        tar_path = fetch(HOFFMANN_TAR_URL, tar_path, allow_download=not args.no_download, sha256=HOFFMANN_TAR_SHA256)
     if not args.no_crosscheck:
         shared = sorted(set(df[df.group != "fossil"].species))
         hoff_counts = {}
@@ -611,9 +947,23 @@ def main(argv=None) -> None:
 
     scaling_figure(df, out_dir / "odonata_wing_cells_scaling.png", hoff_counts)
 
+    zip_path = None
+    if not args.no_anim or not args.no_resegment:
+        if args.zenodo_zip:
+            zip_path = verify_sha256(Path(args.zenodo_zip), ZENODO_ZIP_SHA256)
+        else:
+            zip_path = fetch(ZENODO_ZIP_URL, cache / "eshghi2026_supplementary.zip", ZENODO_ZIP_BYTES,
+                             allow_download=not args.no_download, sha256=ZENODO_ZIP_SHA256)
+
+    if not args.no_resegment:
+        rs = resegment_fossils(zip_path, df[df.group == "fossil"])
+        report_resegmentation(rs)
+        rs_path = data_dir / "fossil_wing_resegmentation.csv"
+        rs.to_csv(rs_path, index=False)
+        print(f"  saved {rs_path}")
+        resegmentation_figure(rs, zip_path, out_dir / "odonata_fossil_resegmentation.png")
+
     if not args.no_anim:
-        zip_path = Path(args.zenodo_zip) if args.zenodo_zip else fetch(
-            ZENODO_ZIP_URL, cache / "eshghi2026_supplementary.zip", ZENODO_ZIP_BYTES, allow_download=not args.no_download)
         deep_time_animation(df, pbdb, zip_path, tar_path, out_dir / "odonata_wing_cells_deep_time.gif", fps=args.fps)
 
 
