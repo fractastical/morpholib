@@ -143,11 +143,12 @@ verification goes through `@nanopub/sign`. `nanopubs/np_utils.py check` is
 broken against nanopub-py 2.1 for the same reason.
 
 **Status (2026-10-13):** all 46 nanopubs of audit `2026-10-13-morphology-audit`
-are published on the **test** registry
-(`https://test.registry.knowledgepixels.com/np/<RA…>`), fetched back and
-verified. 13 of them are second versions (`npx:supersedes` the first test
-publication) carrying the morphology snapshot; `published.json` keeps the
-superseded URIs under `history`. Not yet on production.
+are **published on the production nanopub network** (`https://w3id.org/np/<RA…>`,
+URIs in `kg/<audit>/published.json`), after the same bytes were verified on the
+test registry. Earlier test-only iterations (first versions without the
+morphology snapshot, and their superseding second versions) are recorded in
+`kg/<audit>/published.test-scratch.json`; they exist only on the test registry.
+Rubric: https://w3id.org/np/RAjd9dIu9uNVgvT4npxJgWwL6cbp8GCsy3gK86Qkj-iH4
 
 ## Current checkpoint (2026-10-13, commit f3fe478)
 
