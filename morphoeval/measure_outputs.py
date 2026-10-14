@@ -191,6 +191,63 @@ def measure_planform_v2(script: Path) -> list:
     return out
 
 
+def measure_odonata(script: Path) -> list:
+    """Numbers behind 2026-eshghi-odonata-wing-cells.py, from the vendored tables and the
+    script's own re-segmentation CSV (datasets/odonata/fossil_wing_resegmentation.csv):
+    the scaling exponents it reports and how its independent fossil segmentation
+    compares with the published table, wing by wing."""
+    import importlib.util
+    import pandas as pd
+    spec = importlib.util.spec_from_file_location("odonata_v1", script)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    df = mod.load_wings(ROOT / "datasets" / "odonata")
+    rs = pd.read_csv(ROOT / "datasets" / "odonata" / "fossil_wing_resegmentation.csv")
+    out = []
+    for grp in ["fossil", "extant_dragonfly", "extant_damselfly"]:
+        d = df[df.group == grp]
+        s_n, _, r_n = mod.ols_loglog(d.wing_length_mm, d.cell_count)
+        s_c, _, _ = mod.ols_loglog(d.wing_length_mm, d.cell_len_median_mm)
+        out.append(M(f"cell count ∝ wing length^b, {grp}", s_n, "exponent",
+                     f"OLS slope of log10 cell count on log10 wing length, n={len(d)} wings (Eshghi et al. 2026 tables)",
+                     reference=2.0, source="isometric prediction for a constant cell size (Hoffmann et al. 2018 inhibition length)",
+                     note=f"r = {r_n:.3f}", derived_from="script"))
+        out.append(M(f"median cell length ∝ wing length^b, {grp}", s_c, "exponent",
+                     "OLS slope of log10 median cell length on log10 wing length", reference=0.0,
+                     source="constant cell size", derived_from="script"))
+        out.append(M(f"median cell length over wings, {grp}", float(d.cell_len_median_mm.median()), "mm",
+                     "median over wings of the per-wing median cell length (Eshghi et al. 2026 tables)",
+                     note=f"IQR {d.cell_len_median_mm.quantile(.25):.2f}–{d.cell_len_median_mm.quantile(.75):.2f} mm",
+                     derived_from="output"))
+    dn = (rs.n_cells - rs.table_cell_count).abs() / rs.table_cell_count
+    dl = (rs.cell_len_median_mm - rs.table_cell_len_median_mm).abs() / rs.table_cell_len_median_mm
+    dmax = (rs.cell_len_max_mm - rs.table_cell_len_max_mm).abs() / rs.table_cell_len_max_mm
+    out += [
+        M("fossil drawings re-segmented", len(rs), "count", "fossil venation drawings in the Zenodo archive segmented by the script",
+          reference=int((df.group == "fossil").sum()), source="fossil wings in Table S1", derived_from="script"),
+        M("scale bar label read from the drawing", int(rs.scale_source.str.startswith("scale bar, label read").sum()), "count",
+          "drawings whose scale-bar label was read from the glyphs and found consistent with the tabulated wing length",
+          reference=len(rs), note="the rest use the bar with a value inferred from the tabulated wing length, or that length alone",
+          derived_from="script"),
+        M("cell count, median |ΔN|/N vs Table S1", float(dn.median()), "ratio",
+          "per-wing relative difference between the script's cell count and the published count, median over 69 wings",
+          reference=0.0, source="Eshghi et al. 2026 Table S1", note=f"{(dn <= 0.02).mean():.0%} of wings within 2%; max {dn.max():.0%} (#7, drawing and table row disagree)",
+          derived_from="script"),
+        M("median cell length, median |Δ| vs Table S1", float(dl.median()), "ratio",
+          "per-wing relative difference of the median cell length (maximum Feret diameter), median over wings",
+          reference=0.0, source="Eshghi et al. 2026 Table S1",
+          note=f"signed mean {(100 * (rs.cell_len_median_mm - rs.table_cell_len_median_mm) / rs.table_cell_len_median_mm).mean():+.1f}% (cells bounded by vein mid-lines)",
+          derived_from="script"),
+        M("largest cell length, median |Δ| vs Table S1", float(dmax.median()), "ratio", "as above for the largest cell of each wing",
+          reference=0.0, source="Eshghi et al. 2026 Table S1", derived_from="script"),
+        M("fossil median cell length, re-segmented", float(rs.cell_len_median_mm.median()), "mm",
+          "median over wings of the script's own per-wing median cell length",
+          reference=float(rs.table_cell_len_median_mm.median()), source="same statistic from Table S1", derived_from="script"),
+    ]
+    return out
+
+
 def measure_raup(script: Path, variables: Path) -> list:
     """Effective translation rate from the script's own raup_shell(): Raup's T is the axial
     translation per revolution relative to the generating-curve centre's distance from the
@@ -307,6 +364,8 @@ def main():
                 out["measurements"][sid] = measure_turing(ROOT / sim["output"])
             elif sid == "hoffmann-wing-venation":
                 out["measurements"][sid] = measure_hoffmann(ROOT / sim["script"])
+            elif sid == "eshghi-odonata-wing-cells":
+                out["measurements"][sid] = measure_odonata(ROOT / sim["script"])
         except Exception as ex:  # a failed measurement is reported, never silently skipped
             out["measurements"][sid] = [{"name": "measurement failed", "value": None, "unit": None,
                                          "method": f"{type(ex).__name__}: {ex}"}]

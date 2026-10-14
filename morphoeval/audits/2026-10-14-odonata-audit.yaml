@@ -1,0 +1,188 @@
+# MorphoEval audit — Odonata fossil/extant wing-cell analysis, 2026-10-14.
+#
+# First audit of 2026-eshghi-odonata-wing-cells.py.  Unlike the other audited
+# scripts this one does not run a generative model: it tests the prediction of
+# one (Hoffmann et al. 2018, a conserved inhibition length -> constant cell
+# size) against measured fossil and living wings, and re-measures the fossil
+# wings itself.  The rubric is applied with that in mind; the dimension that
+# has no meaning for a data analysis (parameter expressivity) is marked not
+# applicable and scored at the neutral 50, as in the 2026-10-13 audit.
+#
+# Scores are on the rubric's 0-100 scale.  Line numbers refer to the files at
+# the checkpoint commit recorded below.
+
+audit:
+  id: 2026-10-14-odonata-audit
+  rubric_version: 0.1.0
+  date: "2026-10-14"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Cursor agent)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: fbbcaf6          # fossil re-segmentation + SHA-256 pinned inputs
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      pandas: "2.3.3"
+      scikit-image: "0.26.0"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Inputs: datasets/odonata/*.csv (vendored, provenance in its README) plus
+      two downloads verified by SHA-256 in the script: the Eshghi et al. 2026
+      Zenodo archive (ac1288ba…034703, 89,961,457 bytes) and Hoffmann et al.'s
+      Dragonfly_NA_WingSegmentation.tar.gz (50997be3…ccb232).
+
+references:
+  eshghi2026:
+    title: "Critical Crack Length as an Evolutionary Constant in Odonata Wing Venation: Lessons from Fossils — Supplementary Material"
+    authors: "Eshghi S, Buesch A, Gorb S"
+    venue: "Zenodo (2026), CC BY 4.0"
+    doi: 10.5281/zenodo.19899648
+  hoffmann2018:
+    title: "A simple developmental model recapitulates complex insect wing venation patterns"
+    authors: "Hoffmann J, Donoughe S, Li K, Salcedo MK, Rycroft CH"
+    venue: "PNAS 115(40):9905-9910 (2018)"
+    doi: 10.1073/pnas.1721248115
+  pbdb:
+    title: "The Paleobiology Database, Odonatoptera occurrences (data1.2 API, accessed 2026-10-14)"
+    authors: "Paleobiology Database contributors"
+    venue: "https://paleobiodb.org"
+    url: https://paleobiodb.org/data1.2/occs/list.csv?base_name=Odonatoptera&show=class,coords&idreso=genus
+
+simulations:
+  - id: eshghi-odonata-wing-cells
+    name: Odonata wing cells through deep time
+    organism: "Odonata (fossil Late Jurassic–Eocene; extant Anisoptera and Zygoptera)"
+    script: 2026-eshghi-odonata-wing-cells.py
+    output: odonata_fossil_resegmentation.png
+    domain: palaeobiology
+    status: evaluated
+    source_refs: [eshghi2026, hoffmann2018, pbdb]
+    summary: >-
+      A data comparison rather than a simulation: the one trait the Hoffmann
+      venation model predicts (cell size set by an inhibition length) is
+      compared on 69 fossil and 394 extant wings from Eshghi et al. 2026,
+      with PBDB ages and Hoffmann et al.'s own segmentations as the extant
+      counterpart.  The fossil measurements are reproduced independently
+      from the published drawings (cell counts to a median 0.0 %, median
+      cell length to 3.4 %), which also exposes one table row that does not
+      match its drawing and one swapped pair.  Finding: median cell length
+      stays at 0.78–0.99 mm across 150 Myr and a 6x range of wing length;
+      the inhibition length is approximately, not strictly, conserved.
+    scores:
+      model-fidelity:
+        value: 70
+        rationale: >-
+          The prediction under test is stated and operationalised exactly as
+          it follows from the source model (constant cell size -> N ∝ L²,
+          median cell ∝ L⁰) and the measured quantity is the one Hoffmann et
+          al. and Eshghi et al. both use (vein-bounded cell, length = maximum
+          Feret diameter, verified by per-wing agreement with Table S1).  The
+          model itself is not run here (that is 2018-hoffmann-wing-venation.py),
+          and log-log OLS is the script's own choice of test, not the source's.
+        evidence:
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [36, 43], note: "prediction derived from the source model"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [137, 142], note: "ols_loglog(): the test"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [404, 413], note: "cell_table(): cell length = max Feret diameter"}
+      specimen-match:
+        value: 85
+        rationale: >-
+          Every image shown is a real specimen: the fossil venation drawings
+          are rendered at true millimetre scale from their own scale bars and
+          colour-coded by the re-measured cell length, the extant counterpart
+          is Hoffmann et al.'s segmented Arigomphus / Aeshna wings, and the
+          final animation frame places an Eocene and a living aeshnid at the
+          same scale.  The script's segmentation of the fossil drawings
+          reproduces the authors' counts to a median 0.0 % (90 % of wings
+          within 2 %).  Not full marks because the extant wings are shown
+          only as Hoffmann's domain boundaries, not photographs.
+        evidence:
+          - {file: odonata_fossil_resegmentation.png, lines: [0, 0], note: "four re-segmented fossil wings at one scale; scatter vs Table S1"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [352, 380], note: "segment_fossil_cells(): skeletonised veins -> cells"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [582, 596], note: "show_wing_mm(): true-scale rendering"}
+      parameter-expressivity:
+        value: 50
+        not_applicable: true
+        rationale: >-
+          No generative parameters: the script analyses measured wings.  The
+          groups (fossil / dragonfly / damselfly) and the fitted exponents are
+          outputs, not controls.  Neutral score, not applicable.
+        evidence:
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [144, 173], note: "report(): fits per group, nothing is tuned"}
+      morphometric-validation:
+        value: 85
+        rationale: >-
+          This is the script's strength.  Cell count, median / mean / maximum
+          cell length, cell area and circularity are re-measured on all 69
+          fossil drawings and compared wing by wing with the published Table
+          S1 (median |ΔN|/N 0.0 %, median cell length 3.4 %, largest cell
+          0.9 %); extant counts are cross-checked against Hoffmann et al.'s
+          independent segmentation of 42 shared species (median 3.1 %,
+          r 0.992); disagreements are printed, not hidden (#7 drawing vs
+          table row; #23/#24 swapped).  The scale of each drawing is read
+          from its own bar.  Short of full marks because 4 of 69 drawings
+          fall back to the tabulated wing length for calibration and the
+          +3 % length bias is explained but not corrected.
+        evidence:
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [416, 446], note: "resegment_fossils(): per-wing comparison table"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [448, 483], note: "report_resegmentation(): agreement statistics and flagged disagreements"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [265, 349], note: "read_scale_bar(): bar length and label read from the drawing"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [935, 946], note: "Hoffmann vs Eshghi count cross-check"}
+          - {file: datasets/odonata/fossil_wing_resegmentation.csv, lines: [1, 70], note: "the 69 per-wing comparisons"}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Both papers carry DOIs, the data archive is a CC BY 4.0 Zenodo DOI,
+          PBDB and GBIF query URLs and the retrieval date are recorded, the
+          derived tables are vendored with a provenance README, and the two
+          downloaded inputs are pinned by SHA-256 and verified on every run.
+        evidence:
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [12, 25], note: "sources with DOIs"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [94, 101], note: "URLs, byte size and SHA-256 of both downloads"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [176, 191], note: "verify_sha256()"}
+          - {file: datasets/odonata/README.md, lines: [1, 20], note: "provenance of every vendored column"}
+      code-traceability:
+        value: 70
+        rationale: >-
+          Each analysis step names the source it follows and the decoding of
+          the drawings is documented where it happens; the cell-length
+          convention (maximum Feret diameter, cells bounded by vein
+          mid-lines) was established by matching the authors' table rather
+          than quoted from their methods text, which the script did not
+          have access to.
+        evidence:
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [27, 35], note: "what the re-segmentation does and why"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [353, 364], note: "docstring: mid-line convention and its effect"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [383, 392], note: "infer_scale(): calibration rules stated"}
+      repro-package:
+        value: 70
+        rationale: >-
+          Deterministic, invocation documented with a no-download mode, inputs
+          cached, resumed and hash-verified, every derived number written to
+          CSV.  Dependencies are lower-bound pins only and scikit-image, which
+          the re-segmentation needs, is not in requirements.txt; the full run
+          needs ~100 MB of downloads.
+        evidence:
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [45, 54], note: "documented invocation and outputs"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [193, 227], note: "fetch(): resumable, hash-checked"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [80, 85], note: "scikit-image optional import with explicit error"}
+          - {file: requirements.txt, lines: [1, 7], note: "no scikit-image; lower bounds only"}
+    remediation:
+      - Add scikit-image to requirements.txt and pin versions for the Python 3.14 environment.
+      - Read the "mm" label with a proper template match so #5, #60 and #61 need no fallback; add a drawing of #20 with a bar if one exists elsewhere in the supplement.
+      - Report the discrepancies (#7, #23/#24) to the authors via the Zenodo record.
+      - Correct the +3 % mid-line bias by eroding cells by half the measured vein width, or state the authors' convention once their methods text is available.

@@ -167,6 +167,12 @@ rubric nanopub was unchanged and was not re-issued. The other simulations were
 not touched and their 2026-10-13 nanopubs stand. Both audits' measurements
 sidecars (`audits/*.measurements.yaml`) pin the rendered outputs by sha256.
 
+**Odonata audit (2026-10-14):** `2026-eshghi-odonata-wing-cells.py` — a data
+comparison rather than a generative model, so `parameter-expressivity` is
+marked `not_applicable` (neutral 50) — audited as `2026-10-14-odonata-audit`
+at commit `fbbcaf6`: overall 76.0. Its 9 nanopubs are on production; the
+rubric nanopub was again reused, not re-issued.
+
 ## Current checkpoint
 
 Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1).
@@ -179,4 +185,5 @@ Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1).
 | Gray–Scott (Turing) | f3fe478, audit 2026-10-13 | 54.3 | 49.0 | **52.7** |
 | Chindapol coral flow | f3fe478, audit 2026-10-13 | 49.3 | 70.0 | **55.5** |
 | Hoffmann–Donoughe wing venation | f3fe478, audit 2026-10-13 | 81.1 | 70.0 | **77.8** |
+| Odonata wing cells, fossil vs extant (`2026-eshghi-odonata-wing-cells.py`) | fbbcaf6, audit 2026-10-14-odonata | 75.7 | 76.7 | **76.0** |
 | Petroff stromatolite / Kahng coral / Cervera–Levin–Mafe | — | — | — | *unevaluated* |

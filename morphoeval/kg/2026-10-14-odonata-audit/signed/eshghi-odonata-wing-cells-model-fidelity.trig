@@ -1,0 +1,85 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAdEwdgX61ISWYUXKujrd-FYKIQbPpDylML5THNkn5J_E/> .
+@prefix this: <https://w3id.org/np/RAdEwdgX61ISWYUXKujrd-FYKIQbPpDylML5THNkn5J_E> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-eshghi-odonata-wing-cells> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-model-fidelity> .
+
+    <https://w3id.org/probknow/resource/assessment/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Odonata wing cells through deep time — Model fidelity to source: 70/100" ;
+        dcterms:date "2026-10-14"^^xsd:date ;
+        dcterms:description "The prediction under test is stated and operationalised exactly as it follows from the source model (constant cell size -> N ∝ L², median cell ∝ L⁰) and the measured quantity is the one Hoffmann et al. and Eshghi et al. both use (vein-bounded cell, length = maximum Feret diameter, verified by per-wing agreement with Table S1). The model itself is not run here (that is 2018-hoffmann-wing-venation.py), and log-log OLS is the script's own choice of test, not the source's." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-model-fidelity-0>,
+            <https://w3id.org/probknow/resource/evidence/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-model-fidelity-2> ;
+        pk:hasVerdict "mostly faithful" ;
+        pk:weightOfEvidence 7e-01 .
+
+    <https://w3id.org/probknow/resource/evidence/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-model-fidelity-0> a pk:EvidenceItem ;
+        rdfs:label "2026-eshghi-odonata-wing-cells.py L36–L43" ;
+        dcterms:description "prediction derived from the source model" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/fbbcaf6/2026-eshghi-odonata-wing-cells.py#L36-L43> .
+
+    <https://w3id.org/probknow/resource/evidence/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2026-eshghi-odonata-wing-cells.py L137–L142" ;
+        dcterms:description "ols_loglog(): the test" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/fbbcaf6/2026-eshghi-odonata-wing-cells.py#L137-L142> .
+
+    <https://w3id.org/probknow/resource/evidence/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2026-eshghi-odonata-wing-cells.py L404–L413" ;
+        dcterms:description "cell_table(): cell length = max Feret diameter" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/fbbcaf6/2026-eshghi-odonata-wing-cells.py#L404-L413> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
+        dcterms:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1073/pnas.1721248115>,
+            <https://doi.org/10.5281/zenodo.19899648>,
+            <https://github.com/fractastical/morpholib/commit/fbbcaf6>,
+            <https://paleobiodb.org/data1.2/occs/list.csv?base_name=Odonatoptera&show=class,coords&idreso=genus>,
+            <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "uL9xgINzI3sWQHYpYoijLvq5cVnNAiRuxP83kPosuvS9HddT+0NF+nFda2aIKETvxpK0pOoYrcZA1UZICct7gKMnzZgpFb5fSd0aAWpjoTJHDzt0aM0FRv9/wD3/hulIlRSgoV7aoE66p4Jl+XYaFOex2XuOh/LVPUCBNQB7sw8c0mijHaUqswPDK1FulvnSkzAbaUgNdLC8YjuPPcPiJwrhg0yfzJgbXkKrnh7PJa/T6OnH5jfP4k7JpmCTh1nzWrsL91wMZ9+b02yJNYkmStmzdIdMuQAzkdRVOSBbh+IJ32tOsE21VN/HPulmNM3AxNnD5Fxls9LGx2X3C3irRg==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/palaeobiology> rdfs:label "palaeobiology" .
+
+    this: rdfs:label "Odonata wing cells through deep time — Model fidelity to source 70/100" ;
+        dcterms:created "2026-10-14T00:00:00+00:00"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-model-fidelity> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/palaeobiology> .
+}
+

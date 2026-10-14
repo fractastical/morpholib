@@ -1,0 +1,75 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-eshghi-odonata-wing-cells> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-overall> .
+    <https://w3id.org/probknow/resource/assessment/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Odonata wing cells through deep time — MorphoEval overall 76.0/100" ;
+        dct:date "2026-10-14"^^xsd:date ;
+        dct:description "A data comparison rather than a simulation: the one trait the Hoffmann venation model predicts (cell size set by an inhibition length) is compared on 69 fossil and 394 extant wings from Eshghi et al. 2026, with PBDB ages and Hoffmann et al.'s own segmentations as the extant counterpart. The fossil measurements are reproduced independently from the published drawings (cell counts to a median 0.0 %, median cell length to 3.4 %), which also exposes one table row that does not match its drawing and one swapped pair. Finding: median cell length stays at 0.78–0.99 mm across 150 Myr and a 6x range of wing length; the inhibition length is approximately, not strictly, conserved. Overall 76.0/100 (faithfulness 75.7, reproducibility 76.7); rubric morphoeval 0.1.0; checkpoint commit fbbcaf6; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, pandas 2.3.3, scikit-image 0.26.0, matplotlib 3.10.7, Pillow 12.0.0." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Add scikit-image to requirements.txt and pin versions for the Python 3.14 environment.",
+            "remediation needed: Correct the +3 % mid-line bias by eroding cells by half the measured vein width, or state the authors' convention once their methods text is available.",
+            "remediation needed: Read the \"mm\" label with a proper template match so",
+            "remediation needed: Report the discrepancies (#7," ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-output-odonata-fossil-resegmentation-png> ;
+        pk:hasVerdict "mostly faithful" ;
+        pk:weightOfEvidence 7.6e-01 .
+    <https://w3id.org/probknow/resource/evidence/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-output-odonata-fossil-resegmentation-png> a prov:Entity,
+            schema:ImageObject,
+            pk:EvidenceItem ;
+        rdfs:label "odonata_fossil_resegmentation.png" ;
+        dct:description "rendered output of 2026-eshghi-odonata-wing-cells.py at fbbcaf6; sha256 pins the exact file that was scored; 1663×1323 px" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/fbbcaf6/2026-eshghi-odonata-wing-cells.py> ;
+        schema:contentSize "286190 B" ;
+        schema:encodingFormat "image/png" ;
+        schema:height 1323 ;
+        schema:sha256 "ab6f3b9f89fbcff0ff1fa942915cfcb3736ebde60723489a9ee8d7a39c8a5b38" ;
+        schema:width 1663 .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/commit/fbbcaf6>,
+            <https://w3id.org/probknow/resource/assessment/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-code-traceability>,
+            <https://w3id.org/probknow/resource/assessment/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-model-fidelity>,
+            <https://w3id.org/probknow/resource/assessment/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-morphometric-validation>,
+            <https://w3id.org/probknow/resource/assessment/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-parameter-expressivity>,
+            <https://w3id.org/probknow/resource/assessment/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-repro-package>,
+            <https://w3id.org/probknow/resource/assessment/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-source-traceability>,
+            <https://w3id.org/probknow/resource/assessment/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-specimen-match> .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Odonata wing cells through deep time — MorphoEval overall 76.0/100" ;
+        dct:created "2026-10-14T00:00:00+00:00"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-14-odonata-audit-eshghi-odonata-wing-cells-overall> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/palaeobiology> .
+    <https://w3id.org/probknow/resource/domain/palaeobiology> rdfs:label "palaeobiology" .
+}

@@ -17,7 +17,7 @@ Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) 
 | 2018 | Hoffmann et al., insect wing venation | [`2018-hoffmann-wing-venation.py`](./2018-hoffmann-wing-venation.py) | 77.8 |
 | 2021 | Cervera, Levin & Mafe, bioelectric morphogen antagonism | [`2021-Cervera–Levin–Mafe.py`](./2021-Cervera–Levin–Mafe.py) | unevaluated |
 | 2024 | Kahng et al., coral colony geometry | [`2024-kahng-coral-geometry.py`](./2024-kahng-coral-geometry.py) | unevaluated |
-| 2026 | Eshghi et al., fossil vs living Odonata wing cells | [`2026-eshghi-odonata-wing-cells.py`](./2026-eshghi-odonata-wing-cells.py) | not yet audited |
+| 2026 | Eshghi et al., fossil vs living Odonata wing cells | [`2026-eshghi-odonata-wing-cells.py`](./2026-eshghi-odonata-wing-cells.py) | 76.0 |
 
 ### [thompson/1917-thompson.py](./thompson/1917-thompson.py)
 
@@ -125,6 +125,8 @@ python3 2026-eshghi-odonata-wing-cells.py --no-anim --no-resegment --no-crossche
 
 The fossil half is not taken on trust: every one of the 69 fossil venation drawings in the archive is re-segmented from the pixels (vein ink skeletonised, enclosed regions = cells, scale read from each drawing's own scale bar) and compared wing by wing with Table S1. Cell counts agree to a median 0.0 % (90 % of wings within 2 %), median cell length to 3.4 %, largest cell to 0.9 %; the comparison also turns up one table row that does not match its drawing (#7 *Euarchistigma peterknobli*) and one swapped pair (#23/#24). Per-wing results are in [`datasets/odonata/fossil_wing_resegmentation.csv`](./datasets/odonata/fossil_wing_resegmentation.csv) and `odonata_fossil_resegmentation.png`.
 
+Audit note (2026-10-14, 76.0): parameter expressivity is not applicable to a data analysis and is scored neutral; the strength is morphometric validation (85), the gaps are that the Hoffmann model is tested but not run here and scikit-image is not in `requirements.txt`.
+
 Findings as printed by the script: the median cell length per wing stays in a narrow band across 150 Myr and a 6× range of wing length (fossils 0.78 mm, IQR 0.67–0.94; extant 0.90–0.99 mm) and rises only as L^0.2–0.3, while the largest cells scale almost with the wing (L^0.8); cell counts scale as N ∝ L^1.8 in fossils but N ∝ L^1.0–1.1 in extant wings, versus L² for a strictly constant cell size. For the model this means the inhibition length is approximately, but not strictly, conserved. Outputs (git-ignored): `odonata_wing_cells_scaling.png`, `odonata_fossil_resegmentation.png` and `odonata_wing_cells_deep_time.gif` (each fossil species' venation drawing at true scale against the PBDB Odonatoptera record, ending with the extant Aeshnidae/Gomphidae). Data and provenance: [`datasets/odonata/`](./datasets/odonata/).
 
 **References:**
@@ -139,14 +141,15 @@ Findings as printed by the script: the median cell length per wing stays in a na
 | simulation | checkpoint | faithfulness | reproducibility | overall |
 |---|---|---:|---:|---:|
 | Hoffmann–Donoughe wing venation | f3fe478, audit 2026-10-13 | 81.1 | 70.0 | **77.8** |
+| Odonata wing cells, fossil vs extant (`2026-eshghi-odonata-wing-cells.py`) | fbbcaf6, audit 2026-10-14-odonata | 75.7 | 76.7 | **76.0** |
 | Planform planarian morphology (`2013-lobo-planform-morphology.py`) | 161f269, audit 2026-10-14 | 66.1 | 67.3 | **66.5** |
 | Chindapol coral flow | f3fe478, audit 2026-10-13 | 49.3 | 70.0 | **55.5** |
 | Gray–Scott (Turing) | f3fe478, audit 2026-10-13 | 54.3 | 49.0 | **52.7** |
 | Raup shell coiling | f3fe478, audit 2026-10-13 | 28.6 | 57.7 | **37.3** |
 | Planform animation (`1900-planformDB_parser.py`), superseded | f3fe478, audit 2026-10-13 | 5.4 | 36.3 | ~~14.7~~ |
-| Petroff stromatolite, Kahng coral geometry, Cervera–Levin–Mafe, Odonata wing cells | — | — | — | *unevaluated* |
+| Petroff stromatolite, Kahng coral geometry, Cervera–Levin–Mafe | — | — | — | *unevaluated* |
 
-55 nanopubs are on production (46 from 2026-10-13, 9 superseding ones from 2026-10-14); URIs are in `morphoeval/kg/<audit>/published.json`, the rubric nanopub is https://w3id.org/np/RAjd9dIu9uNVgvT4npxJgWwL6cbp8GCsy3gK86Qkj-iH4. Remediation is tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1); the data-format review for the ProbKnow template is [project-delphi-ontology#12](https://github.com/fractastical/project-delphi-ontology/issues/12). MorphoEval is the simulation-faithfulness sibling of BioEval ([10.5281/zenodo.20567719](https://doi.org/10.5281/zenodo.20567719)) and NeuroEval ([10.5281/zenodo.20622878](https://doi.org/10.5281/zenodo.20622878)). Full workflow, tooling notes and the rubric text: [`morphoeval/README.md`](./morphoeval/README.md).
+64 nanopubs are on production (46 from 2026-10-13, 9 superseding ones from the 2026-10-14 planarian re-score, 9 from the 2026-10-14 Odonata audit); URIs are in `morphoeval/kg/<audit>/published.json`, the rubric nanopub is https://w3id.org/np/RAjd9dIu9uNVgvT4npxJgWwL6cbp8GCsy3gK86Qkj-iH4. Remediation is tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1); the data-format review for the ProbKnow template is [project-delphi-ontology#12](https://github.com/fractastical/project-delphi-ontology/issues/12). MorphoEval is the simulation-faithfulness sibling of BioEval ([10.5281/zenodo.20567719](https://doi.org/10.5281/zenodo.20567719)) and NeuroEval ([10.5281/zenodo.20622878](https://doi.org/10.5281/zenodo.20622878)). Full workflow, tooling notes and the rubric text: [`morphoeval/README.md`](./morphoeval/README.md).
 
 ## Datasets
 
