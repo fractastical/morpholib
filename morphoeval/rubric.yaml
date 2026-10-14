@@ -1,0 +1,90 @@
+# MorphoEval — faithfulness rubric for the morphology simulations in this repo.
+#
+# Sibling of BioEval / NeuroEval (Zenodo): a versioned, weighted rubric whose
+# dimensions are scored 0-100 per evaluated item, with an Overall score that is
+# the weighted mean.  Where the siblings score *papers* for transparency and
+# information-theoretic rigor, MorphoEval scores *our own simulation scripts* for
+# faithfulness to the biology and to the source model, so each script can be
+# checkpointed and re-scored after changes.
+#
+# Two groups, mirroring the siblings' "Reproducibility" vs. orthogonal "Rigor":
+#   faithfulness   - does the code implement the published model, and does the
+#                    output look and measure like the real organism?
+#   reproducibility- can someone else re-run it and trace code to source?
+# Specimen Match carries the single largest weight on purpose: the audit that
+# motivated this rubric found outputs that no longer resembled the organism.
+#
+# Scoring rule (shared with the siblings): score what the evidence supports.
+# Do not credit unverifiable claims and do not invent gaps; a dimension that is
+# genuinely not applicable is scored at the neutral baseline (50) and flagged.
+
+id: morphoeval
+name: MorphoEval simulation-faithfulness rubric
+version: 0.1.0
+scale: {min: 0, max: 100, neutral_baseline: 50}
+# Expressed in the ProbKnow ontology (no rubric-specific namespace):
+#   rubric    -> pkr:concept/morphoeval-rubric-<version>  a pk:Concept
+#   dimension -> pkr:concept/morphoeval-<version>-<id>    a pk:Concept
+#   score     -> pk:LLMClaimAssessment, pk:assessmentType "morphoeval/<version>/<id>",
+#                pk:weightOfEvidence = value / scale.max
+ontology: https://w3id.org/probknow/ontology/
+
+dimensions:
+  - id: model-fidelity
+    group: faithfulness
+    weight: 20
+    name: Model fidelity to source
+    question: >-
+      Does the code implement the equations / algorithm of the cited source
+      model as published (not a loose analogue), with parameters defined the
+      way the source defines them?
+
+  - id: specimen-match
+    group: faithfulness
+    weight: 25
+    name: Morphological realism / specimen match
+    question: >-
+      Does the rendered output resemble real specimens of the organism and/or
+      the source authors' own figures, judged side by side?  Distinct
+      morphologies must be visually distinct.
+
+  - id: parameter-expressivity
+    group: faithfulness
+    weight: 10
+    name: Parameter expressivity
+    question: >-
+      Does each morphospace parameter visibly and monotonically control the
+      feature of form it is supposed to control across its stated range?
+
+  - id: morphometric-validation
+    group: faithfulness
+    weight: 15
+    name: Morphometric validation
+    question: >-
+      Are quantitative morphometrics computed on the output and compared
+      against values measured on real specimens or reported in the literature?
+
+  - id: source-traceability
+    group: reproducibility
+    weight: 10
+    name: Source and data traceability
+    question: >-
+      Are the source paper (DOI/PMID), code repository and any input data
+      resolvable identifiers, and is input provenance recorded?
+
+  - id: code-traceability
+    group: reproducibility
+    weight: 8
+    name: Code-to-model traceability
+    question: >-
+      Can each modelling step in the code be traced to a specific equation,
+      section or figure of the source?
+
+  - id: repro-package
+    group: reproducibility
+    weight: 12
+    name: Reproducibility package
+    question: >-
+      Pinned dependencies, deterministic seeds, documented invocation, and a
+      known-good environment; environment-induced result corruption counts
+      against this dimension.

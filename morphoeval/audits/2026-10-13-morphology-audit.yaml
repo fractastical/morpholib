@@ -1,0 +1,431 @@
+# MorphoEval audit — morphology simulations, 2026-10-13.
+#
+# Source data for morphoeval/build_morphoeval_kg.py.  Every score is backed by
+# at least one `evidence` locus (file + lines) that was inspected in this audit;
+# scripts that were NOT inspected are listed with status: unevaluated and carry
+# no scores (the rubric forbids invented gaps or invented credit).
+#
+# Scores are on the rubric's 0-100 scale.  Line numbers refer to the files at
+# the checkpoint commit recorded below.
+
+audit:
+  id: 2026-10-13-morphology-audit
+  rubric_version: 0.1.0
+  date: "2026-10-13"
+  # ProbKnow attribution.  The scores were produced by a language-model agent,
+  # so they are emitted as pk:LLMClaimAssessment assessed by this pk:Model; the
+  # human publisher (ORCID, read from ~/.nanopub/profile.yml unless given here)
+  # is dct:creator of the nanopubs and the agent prov:actedOnBehalfOf them.
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Cursor agent)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null          # null -> read orcid_id from ~/.nanopub/profile.yml
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  domain: morphogenesis          # default pkr:domain/<slug>; override per simulation
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: f3fe478          # first commit containing all audited scripts
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      scikit-image: "0.26.0"
+    note: >-
+      numpy was upgraded 2.2.6 -> 2.5.4 during this audit after 2.2.6 on
+      Python 3.14 was found to silently corrupt large boolean-array results
+      (wing mask collapsed from 1,905,316 px to 25,146 px, deterministically).
+
+references:
+  lobo2013:
+    title: "Planform: an application and database of graph-encoded planarian regenerative experiments"
+    authors: "Lobo D, Malone TJ, Levin M"
+    venue: "Bioinformatics 29(8):1098-1100 (2013)"
+    doi: 10.1093/bioinformatics/btt088
+  durant2017:
+    title: "Long-Term, Stochastic Editing of Regenerative Anatomy via Targeting Endogenous Bioelectric Gradients"
+    authors: "Durant F, Morokuma J, Fields C, Williams K, Adams DS, Levin M"
+    venue: "Biophysical Journal 112(10):2231-2243 (2017)"
+    doi: 10.1016/j.bpj.2017.04.011
+  raup1966:
+    title: "Geometric analysis of shell coiling: general problems"
+    authors: "Raup DM"
+    venue: "Journal of Paleontology 40(5):1178-1190 (1966)"
+    url: https://www.jstor.org/stable/1301992
+  raup1965:
+    title: "Theoretical morphology of the coiled shell"
+    authors: "Raup DM, Michelson A"
+    venue: "Science 147(3663):1294-1295 (1965)"
+    doi: 10.1126/science.147.3663.1294
+  hoffmann2018:
+    title: "A simple developmental model recapitulates complex insect wing venation patterns"
+    authors: "Hoffmann J, Donoughe S, Li K, Salcedo MK, Rycroft CH"
+    venue: "PNAS 115(40):9905-9910 (2018)"
+    doi: 10.1073/pnas.1721248115
+    pmid: "30224459"
+    code: https://github.com/hoffmannjordan/insect-wing-venation-patterns
+  chindapol2013:
+    title: "Modelling Growth and Form of the Scleractinian Coral Pocillopora verrucosa and the Influence of Hydrodynamics"
+    authors: "Chindapol N, Kaandorp JA, Cronemberger C, Mass T, Genin A"
+    venue: "PLoS Computational Biology 9(1):e1002849 (2013)"
+    doi: 10.1371/journal.pcbi.1002849
+  pearson1993:
+    title: "Complex patterns in a simple system"
+    authors: "Pearson JE"
+    venue: "Science 261(5118):189-192 (1993)"
+    doi: 10.1126/science.261.5118.189
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. Lond. B 237(641):37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+
+simulations:
+
+  - id: planform-morphology-animation
+    name: PlanformDB planarian morphology animation
+    organism: "Planaria (Schmidtea mediterranea, Dugesia japonica)"
+    script: 1900-planformDB_parser.py
+    output: planform_morphology_animation.gif
+    domain: levin-lab
+    status: evaluated
+    source_refs: [lobo2013, durant2017]
+    summary: >-
+      Never resembles a planarian.  Every frame is the same rounded blob with
+      two lateral flaps, changing only colour; double-head, headless and
+      wild-type morphologies are visually indistinguishable.
+    scores:
+      model-fidelity:
+        value: 10
+        rationale: >-
+          PlanformDB encodes a morphology as a region graph (Region +
+          RegionParam shape parameters, joined by RegionsLink Dist/Ratio/Ang).
+          The script queries all of it and never uses it to draw; the body is
+          instead a convex hull of organ landmark points.
+        evidence:
+          - {file: 1900-planformDB_parser.py, lines: [570, 586], note: "RegionParam and RegionsLink fetched"}
+          - {file: 1900-planformDB_parser.py, lines: [617, 617], note: "stored as 'params', never read by any renderer"}
+          - {file: 1900-planformDB_parser.py, lines: [304, 327], note: "body = scipy ConvexHull of organ positions"}
+      specimen-match:
+        value: 5
+        rationale: >-
+          No frame is recognisable as a planarian; the lateral 'flaps' are the
+          eye/brain vertices of the organ hull.  Reference: Planform's own
+          rendering of each Morphology.Id and wild-type S. mediterranea.
+        evidence:
+          - {file: planform_morphology_animation.gif, lines: [0, 0], note: "frames 0, 17, 33 inspected"}
+          - {file: 1900-planformDB_parser.py, lines: [670, 687], note: "wild-type base is also a convex hull"}
+      parameter-expressivity:
+        value: 5
+        rationale: >-
+          All ~360 morphologies are normalised into the same unit box and drawn
+          at the same centre and scale, erasing the size/proportion differences
+          that distinguish them.
+        evidence:
+          - {file: 1900-planformDB_parser.py, lines: [846, 859], note: "x_center=0, y_center=0, scale=3.0 for every shape"}
+          - {file: 1900-planformDB_parser.py, lines: [300, 314], note: "per-shape bounding-box normalisation; range divided twice (L300, L313-314)"}
+      morphometric-validation:
+        value: 0
+        rationale: No morphometrics are computed or compared.
+        evidence:
+          - {file: 1900-planformDB_parser.py, lines: [768, 887], note: "create_morphology_animation: no measurements"}
+      source-traceability:
+        value: 55
+        rationale: >-
+          Input database is a resolvable Planform artefact and the schema is
+          followed, but the script cites no DOI for Planform and requires an
+          external PLANFORM_DB_PATH with no recorded version/hash.
+        evidence:
+          - {file: 1900-planformDB_parser.py, lines: [15, 16], note: "DB path from env var; no provenance recorded"}
+      code-traceability:
+        value: 15
+        rationale: >-
+          No modelling step is tied to the Planform paper; name-based fallback
+          shapes are hard-coded polygons with no biological basis, and a dead
+          code path references an undefined variable.
+        evidence:
+          - {file: 1900-planformDB_parser.py, lines: [428, 494], note: "hard-coded rectangle-with-bumps fallbacks"}
+          - {file: 1900-planformDB_parser.py, lines: [498, 498], note: "undefined 'shape_data' swallowed by bare except"}
+      repro-package:
+        value: 35
+        rationale: >-
+          Runs deterministically from the DB but depends on an unversioned
+          external file, uses pandas/scipy without pins, and VNC rendering
+          sorts two bilateral cords by Y into one polyline.
+        evidence:
+          - {file: 1900-planformDB_parser.py, lines: [758, 765], note: "VNC points sorted by Y and drawn as one curve"}
+    remediation:
+      - Render from the region graph (Region + RegionParam + RegionsLink), not an organ hull.
+      - Use one shared scale (wild-type trunk = 1) and fix the double division.
+      - Lay morphologies out as small multiples instead of superimposing at the origin.
+      - Add a --compare mode rendering a Morphology.Id beside Planform's reference drawing.
+
+  - id: raup-shell-coiling
+    name: Raup shell coiling morphospace
+    organism: "Coiled molluscs (Nautilus, Turritella, Cerithium, Conus, Helix; ammonites)"
+    script: create_raup_animations.py
+    also: [1966-raup.py]
+    output: raup_shell_animation.gif
+    status: evaluated
+    source_refs: [raup1966, raup1965]
+    summary: >-
+      The translation parameter T has no visible effect: Turritella (T=0.80),
+      Cerithium (T=1.20) and Conus render as the same flat planispiral disc as
+      Nautilus (T=0.10).
+    scores:
+      model-fidelity:
+        value: 35
+        rationale: >-
+          W (whorl expansion) and D (distance from axis) are implemented, but
+          axial translation is zc = T*theta (linear in angle) while the radius
+          grows as exp(b*theta).  Over 6 turns at W=2.5 the radius reaches ~244
+          and Z only ~30, so T is swamped.  In Raup's model translation scales
+          with whorl size (z proportional to T*r).
+        evidence:
+          - {file: create_raup_animations.py, lines: [41, 41], note: "r = np.exp(b * theta)"}
+          - {file: create_raup_animations.py, lines: [46, 46], note: "zc = T * theta  (should scale with r)"}
+          - {file: 1966-raup.py, lines: [39, 39], note: "same formula"}
+      specimen-match:
+        value: 30
+        rationale: >-
+          Planispiral forms are plausible; all high-spired / conical reference
+          taxa are wrong because the spire never develops.
+        evidence:
+          - {file: raup_shell_animation.gif, lines: [0, 0], note: "mid-animation frame: six panels, all planispiral"}
+      parameter-expressivity:
+        value: 25
+        rationale: W and D act as expected; T does not act at all.
+        evidence:
+          - {file: create_raup_animations.py, lines: [46, 46], note: "T enters only via zc = T*theta"}
+      morphometric-validation:
+        value: 20
+        rationale: >-
+          Reference taxa are named per panel but no measured shape quantity
+          (e.g. spire height / aperture width, apical angle) is computed or
+          compared against specimens or Raup's figures.
+        evidence:
+          - {file: create_raup_animations.py, lines: [160, 164], note: "titles carry W, D, T only"}
+      source-traceability:
+        value: 65
+        rationale: >-
+          Raup 1966 is the acknowledged source and datasets/raup/variables.json
+          names the empirical targets, but the script carries no DOI/JSTOR
+          identifier.
+        evidence:
+          - {file: create_raup_animations.py, lines: [21, 35], note: "docstring names Raup parameters without a citation"}
+      code-traceability:
+        value: 45
+        rationale: Parameters are named after Raup's but the translation equation departs from the source without comment.
+        evidence:
+          - {file: create_raup_animations.py, lines: [21, 58], note: "raup_shell()"}
+      repro-package:
+        value: 60
+        rationale: Deterministic, no external data; extra 50% padding leaves shells at ~1/3 of panel.
+        evidence:
+          - {file: create_raup_animations.py, lines: [148, 148], note: "padding = max_range * 0.5"}
+    remediation:
+      - "Change zc = T*theta to zc = T*r (with the same (1+offset) scaling) in both scripts."
+      - Add a regression check that z-extent/xy-extent increases monotonically with T.
+      - Compare each named panel to a reference photograph of its taxon.
+
+  - id: hoffmann-wing-venation
+    name: Hoffmann-Donoughe insect wing venation
+    organism: "Dragonfly Arigomphus villosipes (hindwing)"
+    script: 2018-hoffmann-wing-venation.py
+    output: hoffmann_wing_recapitulation.png
+    status: evaluated
+    source_refs: [hoffmann2018]
+    summary: >-
+      Follows the authors' own procedure on their own example wing: real
+      silhouette and primary-vein scaffold, secondary veins regenerated by
+      Lloyd equilibration + Voronoi at the real local density.  923 real vein
+      domains reproduced; circularity real 0.712 vs model 0.867 (hexagon
+      ceiling 0.907).
+    scores:
+      model-fidelity:
+        value: 85
+        rationale: >-
+          Implements the paper's SI 3.3-3.4 model (inhibitory centres,
+          Lloyd/centroidal-Voronoi equilibration, Voronoi secondary veins) on
+          the real primary scaffold.  Density is taken from the real wing's
+          distance transform rather than from primary-vein thickness as in the
+          paper; the equilibration stop criterion is a fixed 18 iterations
+          rather than the paper's 0.1%-of-wing-length motion threshold.
+        evidence:
+          - {file: 2018-hoffmann-wing-venation.py, lines: [150, 185], note: "model_wing: density-weighted seeding, Lloyd loop, Voronoi boundaries"}
+          - {file: 2018-hoffmann-wing-venation.py, lines: [111, 133], note: "segment_wing: real mask, primary scaffold, local cell size"}
+      specimen-match:
+        value: 85
+        rationale: >-
+          Output is built on the real specimen outline and real primary veins;
+          panel (b) is recognisably the same wing as panel (a).
+        evidence:
+          - {file: hoffmann_wing_recapitulation.png, lines: [0, 0], note: "panels (a) real vs (b) model"}
+      parameter-expressivity:
+        value: 65
+        rationale: >-
+          n_iter and seed density are exposed, but no sweep figure shows the
+          paper's random-to-equilibrated transition in circularity.
+        evidence:
+          - {file: 2018-hoffmann-wing-venation.py, lines: [150, 150], note: "n_iter=18, seed=0 defaults; no sweep"}
+      morphometric-validation:
+        value: 80
+        rationale: >-
+          Circularity (Crofton perimeter), normalised area and proximal-distal
+          circularity are computed for real and model domains and compared
+          against the regular-hexagon ceiling, matching the paper's analysis.
+        evidence:
+          - {file: 2018-hoffmann-wing-venation.py, lines: [188, 201], note: "domain_stats: 4*pi*A/P^2 with perimeter_crofton"}
+          - {file: 2018-hoffmann-wing-venation.py, lines: [69, 69], note: "HEXAGON_CIRC = pi*sqrt(3)/6"}
+      source-traceability:
+        value: 90
+        rationale: DOI, PMID and code repository cited; input image fetched from the authors' PNAS_Paper_Code.zip by URL and cached.
+        evidence:
+          - {file: 2018-hoffmann-wing-venation.py, lines: [5, 10], note: "citation block"}
+          - {file: 2018-hoffmann-wing-venation.py, lines: [65, 67], note: "ZIP_URL to authors' archive"}
+      code-traceability:
+        value: 75
+        rationale: Docstring maps steps 1-5 to the paper's procedure; individual functions are not annotated with SI section numbers.
+        evidence:
+          - {file: 2018-hoffmann-wing-venation.py, lines: [12, 32], note: "procedure steps in module docstring"}
+      repro-package:
+        value: 50
+        rationale: >-
+          Deterministic (seed=0) and documented, but scikit-image/Pillow are
+          not in requirements.txt, dependencies are unpinned, and the result
+          was silently wrong under numpy 2.2.6 + Python 3.14 until numpy was
+          upgraded during this audit.
+        evidence:
+          - {file: 2018-hoffmann-wing-venation.py, lines: [39, 40], note: "extra deps noted in docstring only"}
+    remediation:
+      - Add scikit-image and Pillow to requirements.txt and pin numpy >= 2.5 for Python 3.14.
+      - Add a circularity-vs-iteration sweep panel to show the equilibration transition.
+      - Optionally switch the Lloyd stop rule to the paper's 0.1%-of-wing-length threshold.
+
+  - id: chindapol-coral-flow
+    name: Chindapol flow-driven coral growth
+    organism: "Scleractinian coral Pocillopora verrucosa"
+    script: 2013-chindapol-coral-flow.py
+    output: chindapol_coral_flow_morphospace.png
+    status: evaluated
+    source_refs: [chindapol2013]
+    summary: >-
+      Declared reduction: the paper's 3-D Navier-Stokes + advection-diffusion
+      accretive growth (solved in COMSOL) is replaced by 2-D DLA-with-drift,
+      with drift bias standing in for the Peclet number.  Qualitative
+      symmetric-to-upstream transition and compactification are recovered.
+    scores:
+      model-fidelity:
+        value: 40
+        rationale: >-
+          Honest, documented stand-in, but it does not solve the flow or the
+          nutrient field; the Peclet number is a drift bias, not u*L/D.  The
+          physics is reproducible with open-source solvers in 2-D.
+        evidence:
+          - {file: 2013-chindapol-coral-flow.py, lines: [27, 36], note: "docstring: NS/COMSOL 'out of scope', DLA-with-drift substitution"}
+          - {file: 2013-chindapol-coral-flow.py, lines: [65, 122], note: "simulate_coral: biased random walk, stick on contact"}
+      specimen-match:
+        value: 45
+        rationale: Top-down 2-D lattice aggregates; branching and upstream bias are plausible but not Pocillopora-like in 3-D form.
+        evidence:
+          - {file: 2013-chindapol-coral-flow.py, lines: [205, 231], note: "panels a-c"}
+      parameter-expressivity:
+        value: 70
+        rationale: Drift (Pe proxy) sweep produces the monotonic upstream-shift and compaction trends.
+        evidence:
+          - {file: 2013-chindapol-coral-flow.py, lines: [186, 196], note: "drift sweep and metrics"}
+      morphometric-validation:
+        value: 55
+        rationale: >-
+          Implements the paper's symmetry magnitude (smmag) and branch
+          alignment after its morphometric method, but no numeric comparison
+          with the paper's Figs 9-12 values is made.
+        evidence:
+          - {file: 2013-chindapol-coral-flow.py, lines: [164, 179], note: "morphometrics(): smmag, Rbar"}
+      source-traceability:
+        value: 80
+        rationale: DOI cited; no external data needed.
+        evidence:
+          - {file: 2013-chindapol-coral-flow.py, lines: [5, 9], note: "citation with DOI"}
+      code-traceability:
+        value: 65
+        rationale: Figure panel (f) maps paper concepts to demo components; equations are not cited by section.
+        evidence:
+          - {file: 2013-chindapol-coral-flow.py, lines: [252, 273], note: "'From the paper to this demo' panel"}
+      repro-package:
+        value: 65
+        rationale: Seeded (seed=100+i), self-contained, documented CLI; unpinned deps.
+        evidence:
+          - {file: 2013-chindapol-coral-flow.py, lines: [192, 193], note: "seed=100+i"}
+    remediation:
+      - Replace DLA-with-drift with a real 2-D flow + advection-diffusion + accretive-growth solver.
+      - Compare smmag / alignment curves numerically against the paper's reported values.
+
+  - id: turing-gray-scott
+    name: Gray-Scott reaction-diffusion patterns
+    organism: "Generic (Turing pattern formation)"
+    script: 1952-turing-morpho.py
+    output: turing_patterns.gif
+    status: evaluated
+    source_refs: [turing1952, pearson1993]
+    summary: Standard Gray-Scott output; forms and dynamics are as expected.
+    scores:
+      model-fidelity:
+        value: 85
+        rationale: Canonical Gray-Scott update with feed/kill parameters in Pearson's spotted regime.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [9, 9], note: "f, k = 0.055, 0.062"}
+          - {file: 1952-turing-morpho.py, lines: [31, 40], note: "update(): diffusion + feed - reaction"}
+      specimen-match:
+        value: 50
+        rationale: Not tied to a specific organism; neutral baseline (not applicable).
+        not_applicable: true
+        evidence:
+          - {file: turing_patterns.gif, lines: [0, 0], note: "mid frame inspected"}
+      parameter-expressivity:
+        value: 55
+        rationale: Single (f, k) point rendered; alternative regimes mentioned only in a comment.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [9, 9], note: "stripes regime suggested in comment, not rendered"}
+      morphometric-validation:
+        value: 20
+        rationale: No wavelength / spot-spacing measurement against Pearson's phase diagram.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [31, 75], note: "no measurements"}
+      source-traceability:
+        value: 55
+        rationale: Model named in the title; no DOI for Turing 1952 or Pearson 1993 in the script.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [74, 74], note: "title only"}
+      code-traceability:
+        value: 55
+        rationale: Update equations are commented inline; no reference to the source equations.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [37, 39], note: "inline comments"}
+      repro-package:
+        value: 40
+        rationale: RNG is not seeded, so each run produces a different pattern; output filename hard-coded.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [19, 20], note: "np.random.random without a seed"}
+          - {file: 1952-turing-morpho.py, lines: [75, 75], note: "hard-coded GIF path"}
+    remediation:
+      - Seed the RNG and expose (f, k) and output path on the CLI.
+      - Measure the pattern wavelength and place the run on Pearson's (f, k) phase diagram.
+
+  # Not inspected in this audit -> no scores (rubric rule: no invented gaps or credit).
+  - id: petroff-stromatolite
+    name: Petroff stromatolite morphospace
+    script: 2010-petroff-stromatolite.py
+    output: petroff_stromatolite_morphospace.png
+    status: unevaluated
+  - id: kahng-coral-geometry
+    name: Kahng coral geometry morphospace
+    script: 2024-kahng-coral-geometry.py
+    output: kahng_coral_geometry_morphospace.png
+    status: unevaluated
+  - id: cervera-levin-mafe
+    name: Cervera-Levin-Mafe bioelectric morphospace
+    script: "2021-Cervera–Levin–Mafe.py"
+    status: unevaluated
