@@ -56,6 +56,24 @@ No MorphoEval-specific namespace. Everything is expressed in the
 puts simulation checkpoints in the same probabilistic knowledge graph as the
 Levin-lab claims, so Science Oracle queries work unchanged.
 
+The IRI bases are not hard-wired: if the ontology project renames (e.g. to a
+ScienceOracle namespace), set in the audit YAML
+
+```yaml
+audit:
+  ontology:
+    base: https://w3id.org/scienceoracle/ontology/
+    resource_base: https://w3id.org/scienceoracle/resource/
+```
+
+re-vendor the renamed `.ttl`, and rebuild; `--conform` compares terms by local
+name so it works across the rename. Until the rename exists upstream the
+default (`probknow`) is the only spec the output can conform to.
+
+Domains: `pk:domain pkr:domain/<slug>` + `rdfs:label` in pubinfo is all a
+domain is (no registry); `claims-by-domain.rq` and the Oracle's domain list
+simply count them, so `morphogenesis` appears as a new bucket once published.
+
 | MorphoEval notion | ProbKnow term |
 |---|---|
 | "script S faithfully reproduces organism O under source model P" | `pkr:claim/morphoeval-<sim>` a **`pk:Claim`** (a *belief*, not a fact) · `pk:derivedFromPaper <doi>` · `pk:context` |

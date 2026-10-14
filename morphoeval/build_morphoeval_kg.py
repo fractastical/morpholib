@@ -60,6 +60,10 @@ ONTOLOGY_PATH = HERE / "vendor" / "probknow-1.1.ttl"
 
 NP = Namespace("http://www.nanopub.org/nschema#")
 NPX = Namespace("http://purl.org/nanopub/x/")
+# Ontology / resource bases. These follow probknow-ontology; when that project renames
+# (e.g. to a ScienceOracle namespace) override via `audit.ontology.{base,resource_base}`
+# in the audit YAML and re-vendor the ttl. The --conform check compares pk: terms by local
+# name so it keeps working across a base rename.
 PK = Namespace("https://w3id.org/probknow/ontology/")
 PKR = Namespace("https://w3id.org/probknow/resource/")
 TEMP = "http://purl.org/nanopub/temp/np001/"             # nanopub temp base (pre-signing)
@@ -74,7 +78,15 @@ FORBIDDEN_PREFIXES = ("https://w3id.org/morphopkg", "https://w3id.org/levin-kg",
 # Loading + validation of the audit against the rubric
 # --------------------------------------------------------------------------- #
 def load(audit_path: Path):
-    return yaml.safe_load(RUBRIC_PATH.read_text()), yaml.safe_load(Path(audit_path).read_text())
+    global PK, PKR
+    rubric = yaml.safe_load(RUBRIC_PATH.read_text())
+    audit = yaml.safe_load(Path(audit_path).read_text())
+    onto = audit["audit"].get("ontology") or {}
+    if onto.get("base"):
+        PK = Namespace(onto["base"])
+    if onto.get("resource_base"):
+        PKR = Namespace(onto["resource_base"])
+    return rubric, audit
 
 
 def validate(rubric, audit) -> list[str]:
@@ -240,6 +252,20 @@ def ref_uri(ref: dict) -> URIRef:
     return URIRef(f"https://doi.org/{ref['doi']}") if ref.get("doi") else URIRef(ref["url"])
 
 
+def serialize_trig(ds: Dataset) -> str:
+    """Deterministic TriG: shared prefix block, then Head/assertion/provenance/pubinfo in
+    fixed order (rdflib's Dataset serializer emits graphs in set order, which makes a
+    no-op rebuild show up as a diff in every checkpoint file)."""
+    parts, prefixes = [], set()
+    for part in ("Head", "assertion", "provenance", "pubinfo"):
+        g = ds.graph(URIRef(TEMP + part)); _bind(g)
+        body = g.serialize(format="turtle").splitlines()
+        prefixes.update(l for l in body if l.startswith("@prefix"))
+        triples = [l for l in body if l and not l.startswith("@prefix")]
+        parts.append(f"sub:{part} {{\n" + "\n".join("    " + l for l in triples) + "\n}\n")
+    return "\n".join(sorted(prefixes)) + "\n\n" + "\n".join(parts)
+
+
 def build(rubric, audit, out_dir: Path):
     B = NanopubBuilder(audit, rubric)
     A, refs = audit["audit"], audit.get("references", {})
@@ -256,7 +282,7 @@ def build(rubric, audit, out_dir: Path):
 
     def emit(name, ds):
         p = out_dir / name
-        p.write_text(ds.serialize(format="trig"))
+        p.write_text(serialize_trig(ds))
         written.append(p)
         for ctx in ds.graphs():
             if str(ctx.identifier) == TEMP + "assertion":
@@ -405,7 +431,11 @@ def build(rubric, audit, out_dir: Path):
 # --------------------------------------------------------------------------- #
 def conformance(files: list[Path]) -> list[str]:
     onto = Graph().parse(ONTOLOGY_PATH, format="turtle")
-    declared = {str(s) for s in onto.subjects() if str(s).startswith(str(PK))}
+    # Declared terms by local name, so the check survives an ontology base rename:
+    # the base is the owl:Ontology IRI + "/", as in the vendored ttl.
+    onto_iri = next(onto.subjects(RDF.type, URIRef("http://www.w3.org/2002/07/owl#Ontology")))
+    onto_base = str(onto_iri).rstrip("/") + "/"
+    declared = {str(PK) + str(s)[len(onto_base):] for s in onto.subjects() if str(s).startswith(onto_base)}
     probs: list[str] = []
     for f in files:
         ds = Dataset(); ds.parse(f, format="trig")
@@ -485,7 +515,7 @@ def report(rubric, audit, rows) -> str:
 
 
 DEMO_QUERY = """
-PREFIX pk:   <https://w3id.org/probknow/ontology/>
+PREFIX pk:   <%s>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT ?claim ?woe ?verdict ?model WHERE {
   ?c a pk:Claim ; rdfs:label ?claim ; pk:hasAssessment ?a .
@@ -524,7 +554,7 @@ def main():
               f"{ONTOLOGY_PATH.name}; no legacy IRIs; pubinfo complete; LLM assessments attributed)")
     if args.query:
         print("\nSPARQL: overall assessments")
-        for r in merged.query(DEMO_QUERY):
+        for r in merged.query(DEMO_QUERY % PK):
             print(f"  {float(r.woe):.3f}  {str(r.verdict):20s} {r.claim}   [assessed by {r.model}]")
 
 
