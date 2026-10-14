@@ -1,6 +1,9 @@
 # MorphoEval — faithfulness checkpoints for the morphology simulations
 
-Sibling of **BioEval** / **NeuroEval** (Zenodo). Those score *papers* on a
+Sibling of **BioEval** (Bioinformatics Paper Evaluator, Zenodo concept DOI
+[10.5281/zenodo.20567719](https://doi.org/10.5281/zenodo.20567719)) and
+**NeuroEval** (Zenodo concept DOI
+[10.5281/zenodo.20622878](https://doi.org/10.5281/zenodo.20622878)). Those score *papers* on a
 versioned, weighted rubric; MorphoEval scores *our own simulation scripts* for
 faithfulness to the organism and to the source model, and records each scoring
 as a knowledge graph so a simulation can be **checkpointed and re-scored** after
