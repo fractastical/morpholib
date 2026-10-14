@@ -1,0 +1,84 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RA4h9CwBt3Y9A9OYEQt-T8Zc9A5EYZOwx53rYxWVSpQr4/> .
+@prefix this: <https://w3id.org/np/RA4h9CwBt3Y9A9OYEQt-T8Zc9A5EYZOwx53rYxWVSpQr4> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-raup-shell-coiling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-raup-shell-coiling-model-fidelity> .
+
+    <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-raup-shell-coiling-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Raup shell coiling morphospace — Model fidelity to source: 35/100" ;
+        dcterms:date "2026-10-13"^^xsd:date ;
+        dcterms:description "W (whorl expansion) and D (distance from axis) are implemented, but axial translation is zc = T*theta (linear in angle) while the radius grows as exp(b*theta). Over 6 turns at W=2.5 the radius reaches ~244 and Z only ~30, so T is swamped. In Raup's model translation scales with whorl size (z proportional to T*r)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-raup-shell-coiling-model-fidelity-0>,
+            <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-raup-shell-coiling-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-raup-shell-coiling-model-fidelity-2> ;
+        pk:hasVerdict "unfaithful" ;
+        pk:weightOfEvidence 3.5e-01 .
+
+    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-raup-shell-coiling-model-fidelity-0> a pk:EvidenceItem ;
+        rdfs:label "create_raup_animations.py L41–L41" ;
+        dcterms:description "r = np.exp(b * theta)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f3fe478/create_raup_animations.py#L41-L41> .
+
+    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-raup-shell-coiling-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "create_raup_animations.py L46–L46" ;
+        dcterms:description "zc = T * theta  (should scale with r)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f3fe478/create_raup_animations.py#L46-L46> .
+
+    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-raup-shell-coiling-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "1966-raup.py L39–L39" ;
+        dcterms:description "same formula" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f3fe478/1966-raup.py#L39-L39> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
+        dcterms:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1126/science.147.3663.1294>,
+            <https://github.com/fractastical/morpholib/commit/f3fe478>,
+            <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0>,
+            <https://www.jstor.org/stable/1301992> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "ULvR8ZveQ5eYbbJ6JPBszt8lFkoQU48z+bL6uujjPKxyA+CgjSI9klJtX4BCXk13F+HqSmVVXiI6E2WgjYeePDyrCbqto2hO0TUNDIJq9LIdXjtAMAlaHWgDXoUQSYL0dC4dmiJEcp8IrsGDgNZja5aK0Yw0NouH2BZOZUSgoK+Gdih4Pomwz7pw/jpA9WvKthQEdOIS2JUnWwa9LCfpDw51+Ag9iDDoMlkIVVCIC8o7hGUR+5wcuD9qxpswZreJ2ARYYtCrYFqoJi+m5WaO4K6SPYciIaW81WqZ3YZu6Q923M+JtZWa9s5Q/XwXhMcLUL5oZecEvW7kFP5ixM8cEw==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    this: rdfs:label "Raup shell coiling morphospace — Model fidelity to source 35/100" ;
+        dcterms:created "2026-10-13T00:00:00+00:00"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-raup-shell-coiling-model-fidelity> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+

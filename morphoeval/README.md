@@ -11,6 +11,8 @@ morphoeval/
   rubric.yaml                      versioned rubric (7 weighted dimensions, 0-100)
   audits/<date>-<name>.yaml        one audit = scores + evidence + references + checkpoint
   build_morphoeval_kg.py           audit -> ProbKnow nanopubs (.trig) + merged .ttl + REPORT.md
+  sign_morphoeval.py               sign / publish (test -> prod) -> kg/<audit-id>/signed/ + published.json
+  check_signed.mjs                 independent trusty+signature verification (@nanopub/sign, Rust/WASM)
   vendor/probknow-1.1.ttl          vendored ontology for the offline --conform check
   kg/<audit-id>/                   generated graph for that audit (commit it: it IS the checkpoint)
 ```
@@ -104,9 +106,37 @@ trusty `https://w3id.org/np/RA…` URI. Scripts marked `unevaluated` produce no
 nanopubs (nothing has been assessed). `morphoeval_<audit-id>.ttl` is the flat
 merge of all assertion graphs for local SPARQL.
 
-Publishing: sign → **test registry first** → production only after review.
-Published nanopubs are immutable; a re-score is a new assessment nanopub, not an
-edit.
+## Signing and publishing
+
+```bash
+# sign with ~/.nanopub/profile.yml -> kg/<audit-id>/signed/*.trig + kg/<audit-id>/published.json
+python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-13-morphology-audit
+# verify independently (Rust/WASM nanopub toolkit; `npm install @nanopub/sign` once, outside the repo
+# or anywhere above it; or set NANOPUB_SIGN_DIR)
+node morphoeval/check_signed.mjs morphoeval/kg/2026-10-13-morphology-audit/signed/*.trig
+# publish: test registry first, production only after review (the tool refuses prod before test)
+python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-13-morphology-audit --publish test
+python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-13-morphology-audit --publish prod
+```
+
+Signing is deterministic (fixed `dct:created`), so sign-only, test and prod
+yield the same `https://w3id.org/np/RA…` URIs: what was verified on the test
+registry is byte-for-byte what goes to production. `published.json` records
+each nanopub's URI and furthest stage (`null` / `test` / `prod`); the signer
+refuses to re-sign a file whose content no longer matches its recorded URI.
+Published nanopubs are immutable; a re-score is a new assessment nanopub
+(`npx:supersedes` the old one), not an edit.
+
+Tooling notes: nanopub-py 2.1.0 on Python 3.14 cannot read `profile.yml`
+(the signer builds the `Profile` directly) and its `has_valid_trusty` verifier
+is broken (it rejects nanopub-java-signed published nanopubs too), which is why
+verification goes through `@nanopub/sign`. `nanopubs/np_utils.py check` is
+broken against nanopub-py 2.1 for the same reason.
+
+**Status (2026-10-13):** all 46 nanopubs of audit `2026-10-13-morphology-audit`
+are published on the **test** registry
+(`https://test.registry.knowledgepixels.com/np/<RA…>`), fetched back and
+verified. Not yet on production.
 
 ## Current checkpoint (2026-10-13, commit f3fe478)
 
