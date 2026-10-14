@@ -78,11 +78,18 @@ simply count them, so `morphogenesis` appears as a new bucket once published.
 |---|---|
 | "script S faithfully reproduces organism O under source model P" | `pkr:claim/morphoeval-<sim>` a **`pk:Claim`** (a *belief*, not a fact) · `pk:derivedFromPaper <doi>` · `pk:context` |
 | one rubric score | `pkr:assessment/<audit>-<sim>-<dim>` a **`pk:LLMClaimAssessment`** · `pk:assessedBy pkr:model/<assessor>` · `pk:assessmentType "morphoeval/0.1.0/<dim>"` · `pk:weightOfEvidence` = score/100 · `pk:hasVerdict` band · `dct:description` rationale |
-| code/artefact locus behind a score | `pkr:evidence/…` a **`pk:EvidenceItem`** · `prov:wasDerivedFrom` commit-pinned GitHub `#L<a>-L<b>` (or `prov:wasGeneratedBy` the script, for rendered outputs) |
+| the code under assessment | `<repo>/blob/<commit>/<script>` a **`schema:SoftwareSourceCode`**, `prov:Entity` · `dct:creator` / `schema:author` / `prov:wasAttributedTo` the code's author(s) (`audit.code_creators`, per-sim `code_creators` / `code_contributors`) · `schema:version` = commit · linked from the claim by `dct:subject` |
+| code/artefact locus behind a score | `pkr:evidence/…` a **`pk:EvidenceItem`** · `prov:wasDerivedFrom` commit-pinned GitHub `#L<a>-L<b>` (or the script entity, for rendered outputs) |
 | checkpoint | `…-overall` **`pk:LLMClaimAssessment`** · `prov:wasDerivedFrom` the 7 dimension assessments + the commit · environment in description · remediation as `pk:evidenceAgainst` literals |
 | the rubric | `pkr:concept/morphoeval-rubric-0.1.0` a `pk:Concept` (`skos:narrower` one `pk:Concept` per dimension) |
 | source papers | `https://doi.org/…` a `pk:Paper` (real DOI IRIs as subjects) |
 | the scorer | `pkr:model/claude-fable-5-1` a `pk:Model` (`prov:actedOnBehalfOf` the publisher's ORCID) |
+
+Three distinct roles are stamped and must not be conflated: the **code
+creator** (`dct:creator` on the script entity), the **assessor** (`pk:assessedBy`
+a `pk:Model`), and the **nanopub publisher** (`dct:creator` in pubinfo, the
+ORCID the model `prov:actedOnBehalfOf`). `--conform` rejects a claim whose
+script has no creator stamp.
 
 Verdict bands on the 0–100 scale: ≥80 *faithful* · 60–79 *mostly faithful* ·
 40–59 *partially faithful* · 20–39 *unfaithful* · <20 *not faithful*.

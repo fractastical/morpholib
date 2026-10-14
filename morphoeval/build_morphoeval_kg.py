@@ -66,6 +66,7 @@ NPX = Namespace("http://purl.org/nanopub/x/")
 # name so it keeps working across a base rename.
 PK = Namespace("https://w3id.org/probknow/ontology/")
 PKR = Namespace("https://w3id.org/probknow/resource/")
+SCHEMA = Namespace("https://schema.org/")          # for the code under assessment
 TEMP = "http://purl.org/nanopub/temp/np001/"             # nanopub temp base (pre-signing)
 THIS = URIRef(TEMP)
 
@@ -170,7 +171,7 @@ def publisher_orcid(audit) -> URIRef:
 def _bind(g):
     for p, n in (("this", Namespace(TEMP)), ("sub", Namespace(TEMP)), ("np", NP), ("npx", NPX),
                  ("pk", PK), ("pkr", PKR), ("prov", PROV), ("dct", DCTERMS), ("rdfs", RDFS),
-                 ("skos", SKOS), ("foaf", FOAF), ("xsd", XSD)):
+                 ("skos", SKOS), ("foaf", FOAF), ("schema", SCHEMA), ("xsd", XSD)):
         g.bind(p, n)
 
 
@@ -190,6 +191,53 @@ class NanopubBuilder:
         self.commit = cp.get("commit")
         self.commit_uri = URIRef(f"{self.repo}/commit/{self.commit}") if self.commit else None
         self.env = cp.get("environment", {})
+        # People/agents who can be credited as code creators or contributors.
+        self.people = {}
+        for p in self.A.get("code_creators", []):
+            uri = URIRef(p["orcid"]) if p.get("orcid") else self.orcid
+            self.people[p["id"]] = (uri, p)
+        self.default_code_creators = [p["id"] for p in self.A.get("code_creators", [])]
+        self.code_license = URIRef(self.A["code_license"]) if self.A.get("code_license") else None
+
+    def agent(self, ident: str):
+        """Resolve a creator/contributor id to (IRI, triples describing it)."""
+        if ident == self.A["assessor"]["id"]:
+            return self.model, self.model_triples()
+        if ident in self.people:
+            uri, p = self.people[ident]
+            t = [(uri, RDF.type, FOAF.Person), (uri, RDF.type, PROV.Agent),
+                 (uri, FOAF.name, Literal(p["name"]))]
+            if p.get("github"):
+                t.append((uri, FOAF.account, URIRef(p["github"])))
+            return uri, t
+        sys.exit(f"unknown code creator/contributor id '{ident}' (declare it under audit.code_creators)")
+
+    def script_uri(self, script: str) -> URIRef:
+        return URIRef(f"{self.repo}/blob/{self.commit}/{script}")
+
+    def code_triples(self, sim: dict):
+        """One schema:SoftwareSourceCode entity per audited script, stamped with its creator(s)."""
+        t = []
+        creators = sim.get("code_creators", self.default_code_creators)
+        contributors = sim.get("code_contributors", [])
+        for script in [sim["script"]] + list(sim.get("also", [])):
+            su = self.script_uri(script)
+            t += [(su, RDF.type, SCHEMA.SoftwareSourceCode), (su, RDF.type, PROV.Entity),
+                  (su, RDFS.label, Literal(script)),
+                  (su, SCHEMA.codeRepository, URIRef(self.repo)),
+                  (su, SCHEMA.version, Literal(self.commit)),
+                  (su, SCHEMA.programmingLanguage, Literal("Python")),
+                  (su, DCTERMS.isPartOf, URIRef(self.repo))]
+            if self.code_license:
+                t.append((su, DCTERMS.license, self.code_license))
+            for ident in creators:
+                uri, desc = self.agent(ident)
+                t += [(su, DCTERMS.creator, uri), (su, SCHEMA.author, uri),
+                      (su, PROV.wasAttributedTo, uri)] + desc
+            for ident in contributors:
+                uri, desc = self.agent(ident)
+                t += [(su, DCTERMS.contributor, uri), (su, SCHEMA.contributor, uri)] + desc
+        return t
 
     def nanopub(self, label: str, nptype: URIRef, introduces: URIRef, domain_slug: str,
                 assertion, provenance=(), pubinfo_extra=()):
@@ -330,6 +378,10 @@ def build(rubric, audit, out_dir: Path):
                   f"published and produce forms that match real {organism} specimens and the source "
                   f"authors' figures.")),
               (claim, PK.context, Literal(context))]
+        # the code under assessment, with its creator(s) stamped
+        for script in scripts:
+            tr.append((claim, DCTERMS.subject, B.script_uri(script)))
+        tr += B.code_triples(sim)
         prov = [(None, PROV.wasAttributedTo, B.orcid)]
         for r in papers:
             tr.append((claim, PK.derivedFromPaper, ref_uri(r)))
@@ -373,8 +425,7 @@ def build(rubric, audit, out_dir: Path):
                     tr.append((eu, PROV.wasDerivedFrom,
                                URIRef(f"{B.repo}/blob/{B.commit}/{e['file']}#L{a}-L{b}")))
                 elif B.commit:                  # rendered artefact: derived from the script at the commit
-                    tr.append((eu, PROV.wasGeneratedBy,
-                               URIRef(f"{B.repo}/blob/{B.commit}/{sim['script']}")))
+                    tr.append((eu, PROV.wasDerivedFrom, B.script_uri(sim["script"])))
             prov = [(None, PROV.wasAttributedTo, B.model),
                     (None, PROV.wasDerivedFrom, rubric_uri)]
             for r in papers:                       # what the assessment validates against
@@ -469,6 +520,13 @@ def conformance(files: list[Path]) -> list[str]:
         for c in asrt.subjects(RDF.type, PK.Claim):
             if (c, PK.derivedFromPaper, None) not in asrt and (c, PK.hasAssessment, None) not in asrt:
                 probs.append(f"{f.name}: claim {c} has neither derivedFromPaper nor hasAssessment")
+            codes = [s for s in asrt.objects(c, DCTERMS.subject)
+                     if (s, RDF.type, SCHEMA.SoftwareSourceCode) in asrt]
+            if not codes:
+                probs.append(f"{f.name}: claim {c} names no schema:SoftwareSourceCode under assessment")
+            for s in codes:
+                if (s, DCTERMS.creator, None) not in asrt:
+                    probs.append(f"{f.name}: code {s} has no dct:creator stamp")
     return probs
 
 
