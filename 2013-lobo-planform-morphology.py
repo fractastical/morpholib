@@ -70,16 +70,20 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 from matplotlib.patches import Circle, Ellipse, Polygon  # noqa: E402
 from matplotlib.path import Path as MplPath  # noqa: E402
-from scipy.interpolate import PchipInterpolator  # noqa: E402
+from matplotlib.colors import LinearSegmentedColormap, to_rgb  # noqa: E402
 from scipy.ndimage import gaussian_filter  # noqa: E402
 
 TWO_PI = 2.0 * math.pi
 
-REGION_COLORS = {  # Planform cartoon convention: head red, trunk grey, tail blue
-    "Head": "#d6453d",
-    "Trunk": "#a8a8a8",
-    "Tail": "#3f6fb5",
+REGION_COLORS = {  # Planform cartoon convention (Fig. 1D): head red, trunk grey, tail blue
+    "Head": "#e04a3f",
+    "Trunk": "#b9b9bd",
+    "Tail": "#3d5fc4",
 }
+# Planform fades head/tail colour towards the trunk border; these are the faded ends
+REGION_FADE = {"Head": "#f2b9b4", "Trunk": "#b9b9bd", "Tail": "#b6bfe6"}
+ORGAN_GREEN = "#6cbf4a"
+ORGAN_GREEN_EDGE = "#2f6a1f"
 WT_LENGTH_UNITS = 560.0  # anterior tip to posterior tip of morphology 1 (Wild type)
 
 
@@ -310,19 +314,42 @@ def control_points(m: Morphology, rid: int) -> List[Tuple[float, float]]:
     return pts
 
 
-def region_outline(m: Morphology, rid: int, n: int = 240) -> np.ndarray:
-    """Smooth closed outline through the polar control points (shape-preserving)."""
+N_FREE = 2.2    # superellipse exponent between two free (shape) radii: rounded cap
+N_BORDER = 7.0  # exponent next to a border radius: nearly square, i.e. a flat border and straight side
+
+
+def region_outline(m: Morphology, rid: int, per_arc: int = 60) -> np.ndarray:
+    """Closed outline through the polar control points, drawn the way Planform's cartoons do.
+
+    Consecutive control radii (θ1, r1), (θ2, r2) are joined by a superellipse arc
+    p(t) = r1·û1·cos(t)^(2/n) + r2·û2·sin(t)^(2/n), t ∈ [0, π/2]. With n = 2 this is
+    an ellipse quadrant; large n approaches the rectangle corner. Arcs that touch a
+    border direction (the flat adjacency with a neighbouring region) use a large n,
+    so the body gets straight sides and flat region borders; arcs between two
+    shape radii use n ≈ 2, so free ends (head tip, tail tip) are rounded caps.
+    Reproduces Fig. 1D of Lobo, Malone & Levin 2013 for the wild type.
+    """
     pts = control_points(m, rid)
-    angs = np.array([p[0] for p in pts])
-    rads = np.array([p[1] for p in pts])
-    # tile three periods so the periodic interpolant has no seam
-    a3 = np.concatenate([angs - TWO_PI, angs, angs + TWO_PI])
-    r3 = np.concatenate([rads, rads, rads])
-    interp = PchipInterpolator(a3, r3)
-    theta = np.linspace(0, TWO_PI, n, endpoint=False)
-    r = np.clip(interp(theta), 1.0, None)
+    border_angles = {round(e[0], 6) for e in _edges_of(m, rid)}
     cx, cy = m.positions[rid]
-    return np.column_stack([cx + r * np.cos(theta), cy + r * np.sin(theta)])
+    out = []
+    k = len(pts)
+    for i in range(k):
+        a1, r1 = pts[i]
+        a2, r2 = pts[(i + 1) % k]
+        if i == k - 1:
+            a2 += TWO_PI
+        is_border = round(a1 % TWO_PI, 6) in border_angles or round(a2 % TWO_PI, 6) in border_angles
+        n = N_BORDER if is_border else N_FREE
+        t = np.linspace(0, math.pi / 2, per_arc, endpoint=False)
+        u1 = np.array([math.cos(a1), math.sin(a1)])
+        u2 = np.array([math.cos(a2), math.sin(a2)])
+        c = np.cos(t) ** (2 / n)
+        s = np.sin(t) ** (2 / n)
+        arc = np.outer(c, r1 * u1) + np.outer(s, r2 * u2)
+        out.append(arc)
+    poly = np.vstack(out) + np.array([cx, cy])
+    return poly
 
 
 # --------------------------------------------------------------------------
@@ -400,51 +427,87 @@ def _stadium(cx: float, cy: float, length: float, width: float, ang: float, n: i
     return rot + np.array([cx, cy])
 
 
+def _free_direction(m: Morphology, rid: int) -> Optional[float]:
+    """Direction of a one-link region's free end (opposite its border), else None."""
+    edges = _edges_of(m, rid)
+    if len(edges) != 1:
+        return None
+    return (edges[0][0] + math.pi) % TWO_PI
+
+
+def _gradient_fill(ax, poly: np.ndarray, c_tip: str, c_base: str, direction: Optional[float], zorder: float) -> None:
+    """Fill ``poly`` with a linear gradient from c_tip (free end) to c_base (border side)."""
+    x0, y0 = poly.min(axis=0)
+    x1, y1 = poly.max(axis=0)
+    patch = Polygon(poly, closed=True, facecolor="none", edgecolor="none")
+    ax.add_patch(patch)
+    if direction is None:
+        ax.add_patch(Polygon(poly, closed=True, facecolor=c_base, edgecolor="none", zorder=zorder))
+        return
+    res = 64
+    xs = np.linspace(x0, x1, res)
+    ys = np.linspace(y0, y1, res)
+    gx, gy = np.meshgrid(xs, ys)
+    proj = (gx - (x0 + x1) / 2) * math.cos(direction) + (gy - (y0 + y1) / 2) * math.sin(direction)
+    span = max(proj.max() - proj.min(), 1e-6)
+    t = (proj - proj.min()) / span  # 0 at border side, 1 at free tip
+    cmap = LinearSegmentedColormap.from_list("fade", [to_rgb(c_base), to_rgb(c_tip)])
+    im = ax.imshow(cmap(t ** 0.7), extent=(x0, x1, y0, y1), origin="lower", interpolation="bilinear",
+                   zorder=zorder, aspect="auto")
+    im.set_clip_path(patch)
+
+
 def draw_morphology(ax, m: Morphology, show_organs: bool = True, outline_lw: float = 1.6,
-                    smooth: float = 8.0) -> None:
+                    smooth: float = 6.0) -> None:
+    """Planform-style cartoon: one smooth body outline, region fills with head/tail fades, organs."""
     mask, (x0, x1, y0, y1) = silhouette(m, smooth=smooth)
 
     # body outline = (smoothed) union boundary of all regions
     cs = ax.contour(
         np.linspace(x0, x1, mask.shape[1]), np.linspace(y0, y1, mask.shape[0]),
-        mask.astype(float), levels=[0.5], colors="#222222", linewidths=outline_lw, zorder=3,
+        mask.astype(float), levels=[0.5], colors="#333333", linewidths=outline_lw, zorder=3,
     )
     clip = cs.get_paths()[0] if cs.get_paths() else None
 
-    # region fills clipped to the body outline; heads/tails sit above the trunk
+    # region fills (trunk first, then tail, then head) clipped to the body outline
     order = {"Trunk": 0, "Tail": 1, "Head": 2}
     for rid, reg in sorted(m.regions.items(), key=lambda kv: order[kv[1].type]):
-        patch = Polygon(m.outlines[rid], closed=True, facecolor=REGION_COLORS[reg.type],
-                        edgecolor="none", alpha=0.85, zorder=1 + order[reg.type] * 0.1)
-        ax.add_patch(patch)
+        before = len(ax.images), len(ax.patches)
+        _gradient_fill(ax, m.outlines[rid], REGION_COLORS[reg.type], REGION_FADE[reg.type],
+                       _free_direction(m, rid), zorder=1 + order[reg.type] * 0.1)
         if clip is not None and len(clip.vertices):
-            patch.set_clip_path(clip, transform=ax.transData)
+            for art in list(ax.images[before[0]:]) + list(ax.patches[before[1]:]):
+                art.set_clip_path(clip, transform=ax.transData)
 
     if not show_organs:
         return
-    for o in m.organs:
+    # ventral nerve cords first (under the other organs), then pharynx, brain, eyes
+    for o in sorted(m.organs, key=lambda o: {"VNC": 0, "Phar.": 1, "Brain": 2, "Eye": 3}[o.kind]):
         cx, cy = m.positions[o.region]
         px, py = cx + o.vx, cy + o.vy
         if o.kind == "VNC" and o.ends is not None:
             e1x, e1y, e2x, e2y = o.ends
-            ax.plot([px + e1x, px + e2x], [py + e1y, py + e2y], color="#3a3a3a",
-                    lw=1.1, alpha=0.8, zorder=4, solid_capstyle="round")
+            ax.plot([px + e1x, px + e2x], [py + e1y, py + e2y], color=ORGAN_GREEN_EDGE, lw=4.2, alpha=0.9,
+                    zorder=4, solid_capstyle="round")
+            ax.plot([px + e1x, px + e2x], [py + e1y, py + e2y], color=ORGAN_GREEN, lw=2.6, zorder=4.1,
+                    solid_capstyle="round")
         elif o.kind == "Phar.":
             rot = o.rot or 0.0
-            ax.add_patch(Polygon(_stadium(px, py, 95, 24, rot), closed=True, facecolor="#f4e7c3",
-                                 edgecolor="#5a4a2a", lw=1.0, zorder=5))
-            # the mouth opens at the end opposite to Rot (posterior in WT, Rot = pi/2)
-            mx, my = px - 47 * math.cos(rot), py - 47 * math.sin(rot)
-            ax.add_patch(Circle((mx, my), 6, facecolor="#5a4a2a", edgecolor="none", zorder=6))
+            ax.add_patch(Polygon(_stadium(px, py, 100, 26, rot), closed=True, facecolor="#d7d7dc",
+                                 edgecolor="#55555c", lw=1.1, zorder=5))
+            ax.add_patch(Polygon(_stadium(px, py, 84, 12, rot), closed=True, facecolor="#f0f0f3",
+                                 edgecolor="#8a8a92", lw=0.7, zorder=5.1))
         elif o.kind == "Brain":
-            ax.add_patch(Ellipse((px, py), 34, 16, angle=math.degrees(o.rot or 0.0),
-                                 facecolor="#7b5aa6", edgecolor="#3d2a5a", lw=0.8, alpha=0.9, zorder=5))
+            ax.add_patch(Ellipse((px, py), 40, 22, angle=math.degrees(o.rot or 0.0),
+                                 facecolor=ORGAN_GREEN, edgecolor=ORGAN_GREEN_EDGE, lw=1.0, zorder=5.2))
         elif o.kind == "Eye":
             rot = o.rot or 0.0
-            ax.add_patch(Circle((px, py), 8, facecolor="#ffffff", edgecolor="#111111", lw=0.9, zorder=6))
-            # pigment cup drawn on the side given by the organ rotation
-            ax.add_patch(Circle((px + 3 * math.cos(rot), py + 3 * math.sin(rot)), 4.2,
+            # white oval with a black pupil displaced along the eye's rotation (Fig. 1D style)
+            ax.add_patch(Ellipse((px, py), 16, 22, angle=math.degrees(rot) + 90,
+                                 facecolor="#ffffff", edgecolor="#222222", lw=0.9, zorder=6))
+            ax.add_patch(Circle((px + 3.5 * math.cos(rot), py + 3.5 * math.sin(rot) + 2.5), 4.5,
                                 facecolor="#111111", edgecolor="none", zorder=7))
+
 
 
 def fit_axes(ax, bounds: Tuple[float, float, float, float], centre: Tuple[float, float] = None) -> None:
