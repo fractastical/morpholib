@@ -76,6 +76,22 @@ A reaction-diffusion demo inspired by Cervera–Levin–Mafe (2021), exploring m
 - Gap-junction blocking effects modeled through diffusion reduction
 - 3D morphospace visualization of mean expressions
 
+### [2026-eshghi-odonata-wing-cells.py](./2026-eshghi-odonata-wing-cells.py)
+
+Fossil and living dragonfly/damselfly wings compared on the one trait our venation model ([`2018-hoffmann-wing-venation.py`](./2018-hoffmann-wing-venation.py)) actually predicts: the size of the vein-bounded cells. Uses Eshghi, Buesch & Gorb's (2026) measurements of 69 fossil wings (22 extinct species, Solnhofen 147 Ma → Crato 116 Ma → Eocene 52 Ma) and 394 extant wings (204 species), with ages from the Paleobiology Database and Hoffmann et al.'s (2018) segmented North American wings as the extant counterpart (the two groups' independent segmentations agree to 3% on 42 shared species). Two families — Aeshnidae and Gomphidae — occur as Eocene fossils and as living species in the same tables.
+
+```bash
+python3 2026-eshghi-odonata-wing-cells.py --no-anim      # statistics + figure from datasets/odonata (no downloads)
+python3 2026-eshghi-odonata-wing-cells.py                # also the deep-time GIF (downloads ~100 MB once into .wing_cache/)
+```
+
+Findings as printed by the script: the median cell length per wing stays in a narrow band across 150 Myr and a 6× range of wing length (fossils 0.78 mm, IQR 0.67–0.94; extant 0.90–0.99 mm) and rises only as L^0.2–0.3, while the largest cells scale almost with the wing (L^0.8); cell counts scale as N ∝ L^1.8 in fossils but N ∝ L^1.0–1.1 in extant wings, versus L² for a strictly constant cell size. For the model this means the inhibition length is approximately, but not strictly, conserved. Outputs (git-ignored): `odonata_wing_cells_scaling.png` and `odonata_wing_cells_deep_time.gif` (each fossil species' venation drawing at true scale against the PBDB Odonatoptera record, ending with the extant Aeshnidae/Gomphidae). Data and provenance: [`datasets/odonata/`](./datasets/odonata/).
+
+**References:**
+- Eshghi S, Buesch A, Gorb S (2026). Critical Crack Length as an Evolutionary Constant in Odonata Wing Venation: Lessons from Fossils — Supplementary Material. Zenodo. [DOI](https://doi.org/10.5281/zenodo.19899648) (CC BY 4.0)
+- Hoffmann J, Donoughe S, Li K, Salcedo MK, Rycroft CH (2018). A simple developmental model recapitulates complex insect wing venation patterns. *PNAS* 115(40):9905–9910. [DOI](https://doi.org/10.1073/pnas.1721248115)
+- Paleobiology Database, Odonatoptera occurrences (accessed 2026-10-14). https://paleobiodb.org
+
 ## Analysis Tools
 
 ### [Ca²⁺ Wave Vector Analysis](./wave-vector-analysis/)
