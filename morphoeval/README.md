@@ -200,8 +200,13 @@ audit published this way is **Limbform** (`2014-lobo-limbform-morphology.py`,
 production, and its rubric nanopub
 (https://w3id.org/np/RAhBMChdpmgS_yBfy8cfYXpfKktqlUD72A9bxZzvWDkYM) supersedes
 the original rubric (whose text is unchanged; only the shape and timestamp
-differ). The re-issue of the earlier 64 as superseding, conformant nanopubs is
-the next wave.
+differ). The second is the **C. elegans** audit
+(`2015-santella-wormguides-celegans.py`, `2026-10-15-celegans-audit` at commit
+`2864784`): overall 67.7, 9 nanopubs (rubric reused), published to the test
+registry first with the fixed signer, verified with `check_signed.mjs` and
+fetched back from both registries before going to production; overall claim
+https://w3id.org/np/RASUT7taw502ymt3A17lN_bXMn4rC1HY3FNs1ai8YkZSQ. The re-issue
+of the earlier 64 as superseding, conformant nanopubs is the next wave.
 
 ## Current checkpoint
 
@@ -217,4 +222,5 @@ Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1).
 | Hoffmann–Donoughe wing venation | f3fe478, audit 2026-10-13 | 81.1 | 70.0 | **77.8** |
 | Odonata wing cells, fossil vs extant (`2026-eshghi-odonata-wing-cells.py`) | fbbcaf6, audit 2026-10-14-odonata | 75.7 | 76.7 | **76.0** |
 | LimbformDB limb morphologies (`2014-lobo-limbform-morphology.py`) | 747c57f, audit 2026-10-14-limbform | 70.0 | 74.3 | **71.3** |
+| WormGUIDES C. elegans embryo atlas + connectome (`2015-santella-wormguides-celegans.py`) | 2864784, audit 2026-10-15-celegans | 63.9 | 76.3 | **67.7** |
 | Petroff stromatolite / Kahng coral / Cervera–Levin–Mafe | — | — | — | *unevaluated* |
