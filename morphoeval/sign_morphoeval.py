@@ -19,6 +19,9 @@ on Python 3.14 (yatiml Union error), so the Profile is built here directly; and 
 `has_valid_trusty` verifier is broken on this stack (it rejects nanopub-java-signed,
 published nanopubs too), so verification is done independently with the Rust/WASM
 `@nanopub/sign` checker: `node morphoeval/check_signed.mjs <dir>/signed/*.trig`.
+Its publish() is not used either: it re-serialises through rdflib, which turns the
+plain-decimal xsd:double literals the hash was computed over into exponent form; the
+signed text is fixed up here and posted verbatim instead.
 Published nanopubs are immutable: a re-score is a new nanopub, not an edit.
 """
 
@@ -33,8 +36,13 @@ from datetime import date
 from pathlib import Path
 
 warnings.filterwarnings("ignore")
+import requests                                    # noqa: E402
 from rdflib import Dataset, Namespace             # noqa: E402
 from nanopub import Nanopub, NanopubConf, Profile  # noqa: E402
+from nanopub.definitions import NANOPUB_REGISTRY_URLS, TEST_NANOPUB_REGISTRY_URL  # noqa: E402
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from build_morphoeval_kg import plain_doubles      # noqa: E402
 
 NPX = Namespace("http://purl.org/nanopub/x/")
 
@@ -86,9 +94,24 @@ def main():
                          "npx:supersedes it; published nanopubs are immutable — rebuild with --supersede")
             history = entry.get("history", []) + [{"nanopub": prev, "published": entry.get("published"), "date": entry.get("date")}]
             entry = {"history": history}            # new version starts unpublished
+        # The lexical form of every literal is part of the trusty hash, and the hash was computed
+        # over the forms parsed from `f` ("0.76"^^xsd:double).  rdflib's TriG serializer rewrites
+        # doubles in exponent form (7.6e-01), which is a different lexical form: a file or POST
+        # body written that way fails independent verification.  So the signed text is fixed up
+        # and that exact text is both stored and posted (same endpoint/headers as nanopub-py).
+        text = plain_doubles(np_.rdf.serialize(format="trig"))
         if a.publish:
-            np_.publish()
-        (out / f.name).write_text(np_.rdf.serialize(format="trig"))
+            # The registry URL must be chosen here explicitly: nanopub-py switches to the test
+            # registry only on its own copy of the conf inside Nanopub.__init__, so reading
+            # `conf.use_server` from the outer object silently posts to production.
+            server = TEST_NANOPUB_REGISTRY_URL if a.publish == "test" else NANOPUB_REGISTRY_URLS[0]
+            r = requests.post(server, headers={"Content-Type": "application/trig"},
+                              data=text.encode("utf-8"), timeout=120)
+            r.raise_for_status()
+            check = requests.get(server + uri.rsplit("/", 1)[1], headers={"Accept": "application/trig"}, timeout=60)
+            if check.status_code != 200 or uri.rsplit("/", 1)[1] not in check.text:
+                sys.exit(f"{f.name}: posted to {server} but it does not serve {uri} back (HTTP {check.status_code})")
+        (out / f.name).write_text(text)
         status = entry.get("published") if entry.get("nanopub") == uri else None
         rank = {None: 0, "test": 1, "prod": 2}
         if rank.get(a.publish, 0) >= rank.get(status, 0):

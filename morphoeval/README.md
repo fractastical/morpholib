@@ -19,6 +19,7 @@ morphoeval/
   sign_morphoeval.py               sign / publish (test -> prod) -> kg/<audit-id>/signed/ + published.json
   check_signed.mjs                 independent trusty+signature verification (@nanopub/sign, Rust/WASM)
   vendor/probknow-1.1.ttl          vendored ontology for the offline --conform check
+  vendor/templates/*.trig          the ProbKnow Space's governed template nanopubs (shape check)
   kg/<audit-id>/                   generated graph for that audit (commit it: it IS the checkpoint)
 ```
 
@@ -91,34 +92,42 @@ Domains: `pk:domain pkr:domain/<slug>` + `rdfs:label` in pubinfo is all a
 domain is (no registry); `claims-by-domain.rq` and the Oracle's domain list
 simply count them, so `morphogenesis` appears as a new bucket once published.
 
-| MorphoEval notion | ProbKnow term |
-|---|---|
-| "script S faithfully reproduces organism O under source model P" | `pkr:claim/morphoeval-<sim>` a **`pk:Claim`** (a *belief*, not a fact) · `pk:derivedFromPaper <doi>` · `pk:context` |
-| one rubric score | `pkr:assessment/<audit>-<sim>-<dim>` a **`pk:LLMClaimAssessment`** · `pk:assessedBy pkr:model/<assessor>` · `pk:assessmentType "morphoeval/0.1.0/<dim>"` · `pk:weightOfEvidence` = score/100 · `pk:hasVerdict` band · `dct:description` rationale |
-| the code under assessment | `<repo>/blob/<commit>/<script>` a **`schema:SoftwareSourceCode`**, `prov:Entity` · `dct:creator` / `schema:author` / `prov:wasAttributedTo` the code's author(s) (`audit.code_creators`, per-sim `code_creators` / `code_contributors`) · `schema:version` = commit · linked from the claim by `dct:subject` |
-| code/artefact locus behind a score | `pkr:evidence/…` a **`pk:EvidenceItem`** · `prov:wasDerivedFrom` commit-pinned GitHub `#L<a>-L<b>` (or the fingerprinted output, for rendered artefacts) |
-| the rendered output that was judged | `pkr:evidence/<audit>-<sim>-output-<file>` a **`schema:ImageObject`**, `pk:EvidenceItem` · `schema:sha256` · `schema:contentSize` · `schema:encodingFormat` · width/height · `prov:wasDerivedFrom` the script. The binary stays out of git and out of the nanopub; the hash pins it |
-| the form itself (morphometrics) | `pkr:evidence/<audit>-<sim>-morphometric-m<i>` a **`schema:PropertyValue`**, `pk:EvidenceItem` on the `morphometric-validation` assessment · `schema:name` / `schema:value` / `schema:unitText` / `schema:measurementTechnique` · `schema:valueReference` → reference `PropertyValue` with `dct:source` (only where a reference is actually known) |
-| checkpoint | `…-overall` **`pk:LLMClaimAssessment`** · `prov:wasDerivedFrom` the 7 dimension assessments + the commit · environment in description · remediation as `pk:evidenceAgainst` literals |
-| the rubric | `pkr:concept/morphoeval-rubric-0.1.0` a `pk:Concept` (`skos:narrower` one `pk:Concept` per dimension) |
-| source papers | `https://doi.org/…` a `pk:Paper` (real DOI IRIs as subjects) |
-| the scorer | `pkr:model/claude-fable-5-1` a `pk:Model` (`prov:actedOnBehalfOf` the publisher's ORCID) |
+Since 2026-10-15 every nanopub is shaped by the **governed templates of the
+ProbKnow Space** (https://w3id.org/spaces/probknow) and links them from pubinfo
+(`nt:wasCreatedFromTemplate` / `…ProvenanceTemplate` / `…PubinfoTemplate`), so
+Nanodash renders each one with its form and the Space counts it as conformant.
+The template nanopubs are vendored in `vendor/templates/` and `--conform` checks
+every assertion, provenance and pubinfo graph against the statements of the
+template it links (placeholder prefixes, datatypes, the 0–1 regex on
+probabilities, required/repeatable statements). Earlier nanopubs (2026-10-13 /
+2026-10-14) used a freer shape and are being re-issued with `npx:supersedes`.
 
-Three distinct roles are stamped and must not be conflated: the **code
-creator** (`dct:creator` on the script entity), the **assessor** (`pk:assessedBy`
-a `pk:Model`), and the **nanopub publisher** (`dct:creator` in pubinfo, the
-ORCID the model `prov:actedOnBehalfOf`). `--conform` rejects a claim whose
-script has no creator stamp.
+| MorphoEval notion | ProbKnow term (template) |
+|---|---|
+| "script S faithfully reproduces organism O under source model P" | `pkr:claim/morphoeval-<sim>` a **`pk:Claim`** (claim template): `rdfs:label`, `dct:description`, `pk:context` (scripts, output, organism, commit, environment, non-DOI sources) · `pk:derivedFromPaper <doi>` · `pk:hasAssessment` → the 8 assessments · `pk:weightOfEvidence` = overall/100 |
+| one rubric score | `pkr:assessment/<audit>-<sim>-<dim>` a **`pk:LLMClaimAssessment`** (LLM-assessment template) · `pk:evaluatesHypothesis pkr:hypothesis/morphoeval-<sim>-<dim>` ("<sim> satisfies the criterion <dim>", `dct:identifier "morphoeval/0.1.0/<dim>"`) · `pk:assessedBy pkr:model/<assessor>` a `pk:Model` · `pk:hasProbability` = score/100 · `pk:hasVerdict` band · `rdfs:comment` = rationale + evidence loci (commit-pinned GitHub `#L<a>-L<b>`, sha256-fingerprinted outputs, morphometrics with their reference values) · `pk:evidenceFor` / `pk:evidenceAgainst` when an evidence entry is marked `supports: true|false` |
+| checkpoint | `…-overall`, the same template, evaluating `pkr:hypothesis/morphoeval-<sim>` (the claim proposition); remediation items as `pk:evidenceAgainst` |
+| the rubric | `pkr:concept/morphoeval-rubric-0.1.0` a `pk:Concept` (`skos:narrower` one `pk:Concept` per dimension); no governed template exists for a rubric, so it carries only the provenance and pubinfo templates |
+| provenance | "Extracted from a paper by ProbKnow" template: `prov:wasAttributedTo` the model and the publisher, `prov:wasDerivedFrom` each DOI with `dct:title` / `dct:date`; the rubric uses the generic "Attributed to" template |
+| the scorer | `pkr:model/claude-fable-5-1` a `pk:Model` (`prov:actedOnBehalfOf` the publisher's ORCID, in pubinfo) |
+
+The templates carry evidence as literals, so the code loci, output fingerprints
+and morphometrics that used to be separate `pk:EvidenceItem` / `schema:` nodes
+are now written into the assessment's `rdfs:comment` (and the REPORT.md); the
+audit YAML and measurements sidecars are unchanged.
 
 Verdict bands on the 0–100 scale: ≥80 *faithful* · 60–79 *mostly faithful* ·
 40–59 *partially faithful* · 20–39 *unfaithful* · <20 *not faithful*.
 
 Each nanopub is one `.trig` on the nanopub temp base
 `http://purl.org/nanopub/temp/np001/` (`sub:Head|assertion|provenance|pubinfo`),
-the same shape as `probknow-ontology/nanopubs/src/*.trig`, with pubinfo
-`dct:creator <ORCID>` · CC BY 4.0 · `npx:hasNanopubType` · `npx:introduces` ·
-`pk:domain pkr:domain/<slug>` (`morphogenesis`; `levin-lab` for the planarian
-script). Signing with `nanopub-*.jar sign` (or `@nanopub/nanopub-js`) mints the
+with pubinfo `rdfs:label` · `dct:created` (full UTC timestamp; set
+`MORPHOEVAL_CREATED` to pin it for a reproducible rebuild) · `dct:creator <ORCID>`
+· CC BY 4.0 · `npx:hasNanopubType` · `npx:introduces` · `pk:domain
+pkr:domain/<slug>` (`morphogenesis`; `levin-lab` for the planarian script) · the
+template links. Before a rebuilt nanopub supersedes a published URI the builder
+resolves that URI's current head with Nanopub Query's `get-latest-version-of-np`
+(`--no-resolve-heads` skips it), so version chains never fork. Signing mints the
 trusty `https://w3id.org/np/RA…` URI. Scripts marked `unevaluated` produce no
 nanopubs (nothing has been assessed). `morphoeval_<audit-id>.ttl` is the flat
 merge of all assertion graphs for local SPARQL.
@@ -136,19 +145,27 @@ python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-13-morphology-audit 
 python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-13-morphology-audit --publish prod
 ```
 
-Signing is deterministic (fixed `dct:created`), so sign-only, test and prod
-yield the same `https://w3id.org/np/RA…` URIs: what was verified on the test
-registry is byte-for-byte what goes to production. `published.json` records
-each nanopub's URI and furthest stage (`null` / `test` / `prod`); the signer
-refuses to re-sign a file whose content no longer matches its recorded URI.
-Published nanopubs are immutable; a re-score is a new assessment nanopub
-(`npx:supersedes` the old one), not an edit.
+Signing is deterministic for a given build (the `dct:created` stamp is in the
+file), so sign-only, test and prod yield the same `https://w3id.org/np/RA…`
+URIs: what was verified on the test registry is byte-for-byte what goes to
+production. `published.json` records each nanopub's URI and furthest stage
+(`null` / `test` / `prod`); the signer refuses to re-sign a file whose content
+no longer matches its recorded URI, and after each POST it fetches the nanopub
+back from the registry it posted to. Published nanopubs are immutable; a
+re-score is a new assessment nanopub (`npx:supersedes` the old one), not an edit.
 
 Tooling notes: nanopub-py 2.1.0 on Python 3.14 cannot read `profile.yml`
 (the signer builds the `Profile` directly) and its `has_valid_trusty` verifier
 is broken (it rejects nanopub-java-signed published nanopubs too), which is why
 verification goes through `@nanopub/sign`. `nanopubs/np_utils.py check` is
-broken against nanopub-py 2.1 for the same reason.
+broken against nanopub-py 2.1 for the same reason. nanopub-py's `publish()` is
+not used either: it re-serialises through rdflib, which turns the plain-decimal
+`xsd:double` literals the hash was computed over into exponent form, so the
+signer posts the signed text verbatim. The registry URL is chosen explicitly in
+the signer (nanopub-py only switches to the test registry on its own copy of
+the config; reading `conf.use_server` from the outside posts to production,
+which is how the 10 Limbform nanopubs of 2026-10-15 reached production
+directly — content already verified, but the test step was skipped).
 
 **Status (2026-10-13):** all 46 nanopubs of audit `2026-10-13-morphology-audit`
 are **published on the production nanopub network** (`https://w3id.org/np/<RA…>`,
@@ -173,6 +190,19 @@ marked `not_applicable` (neutral 50) — audited as `2026-10-14-odonata-audit`
 at commit `fbbcaf6`: overall 76.0. Its 9 nanopubs are on production; the
 rubric nanopub was again reused, not re-issued.
 
+**Template conformance (2026-10-15):** following Tobias Kuhn's review on
+[project-delphi-ontology#1](https://github.com/fractastical/project-delphi-ontology/issues/1)
+(the 64 nanopubs above used declared terms but linked no governed template and
+carried `00:00:00` timestamps), the builder now emits the ProbKnow Space's
+template shapes with template links and full timestamps (see above). The first
+audit published this way is **Limbform** (`2014-lobo-limbform-morphology.py`,
+`2026-10-14-limbform-audit` at commit `747c57f`): overall 71.3, 10 nanopubs on
+production, and its rubric nanopub
+(https://w3id.org/np/RAhBMChdpmgS_yBfy8cfYXpfKktqlUD72A9bxZzvWDkYM) supersedes
+the original rubric (whose text is unchanged; only the shape and timestamp
+differ). The re-issue of the earlier 64 as superseding, conformant nanopubs is
+the next wave.
+
 ## Current checkpoint
 
 Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1).
@@ -186,4 +216,5 @@ Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1).
 | Chindapol coral flow | f3fe478, audit 2026-10-13 | 49.3 | 70.0 | **55.5** |
 | Hoffmann–Donoughe wing venation | f3fe478, audit 2026-10-13 | 81.1 | 70.0 | **77.8** |
 | Odonata wing cells, fossil vs extant (`2026-eshghi-odonata-wing-cells.py`) | fbbcaf6, audit 2026-10-14-odonata | 75.7 | 76.7 | **76.0** |
+| LimbformDB limb morphologies (`2014-lobo-limbform-morphology.py`) | 747c57f, audit 2026-10-14-limbform | 70.0 | 74.3 | **71.3** |
 | Petroff stromatolite / Kahng coral / Cervera–Levin–Mafe | — | — | — | *unevaluated* |

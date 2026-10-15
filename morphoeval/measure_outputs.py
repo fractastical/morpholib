@@ -248,6 +248,138 @@ def measure_odonata(script: Path) -> list:
     return out
 
 
+FIG1_URL = "https://cdn.ncbi.nlm.nih.gov/pmc/blobs/b43e/4895304/02f6a408714c/REG2-1-37-g001.jpg"
+FIG1_SHA256 = "b26e25c17bd694a828460919f762b41719f1563006fc7fcbf34eedc1943f1ba2"   # 560x855, PMC4339036, CC BY
+FIG1_PANELS = {1: ("A''", 4, 181), 280: ("B''", 198, 383), 314: ("C''", 403, 548),
+               490: ("D''", 579, 710), 491: ("E''", 733, 843)}                     # morphology id -> (panel, y0, y1)
+FIG1_CARTOON_X0 = 400                                                             # cartoon column of the 560-px figure
+FIG1_SEGMENTS = {1: (3, 4, "A′: Upper arm, Fore arm, Hand; digits 1-4"),
+                 280: (3, 6, "B′: Thigh, Shank, Foot; digits 1-5 plus the prehallux node"),
+                 314: (7, 0, "C′: Coxa, Basis, Ischium, Merus, Carpus, Propus, Dactyl"),
+                 490: (8, 0, "D′: Coxa, Trochanter, Femur, Tibia, Tarsus 1-4 (as labelled)"),
+                 491: (7, 0, "E′: Coxa, Trochanter, Femur, Patella, Tibia, Metatarsus, Tarsus")}
+
+
+def _normalised_mask(mask: np.ndarray, size: int = 200) -> np.ndarray:
+    """Crop a boolean mask to its bounding box and scale it (aspect kept, longer side = size)
+    onto a size x size canvas, so silhouettes drawn at different scales can be overlaid."""
+    ys, xs = np.where(mask)
+    crop = mask[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+    h, w = crop.shape
+    s = (size - 2) / max(h, w)
+    im = Image.fromarray((crop * 255).astype(np.uint8)).resize((max(1, round(w * s)), max(1, round(h * s))), Image.BILINEAR)
+    out = np.zeros((size, size), bool)
+    a = np.asarray(im) >= 128
+    y0, x0 = (size - a.shape[0]) // 2, (size - a.shape[1]) // 2
+    out[y0:y0 + a.shape[0], x0:x0 + a.shape[1]] = a
+    return out
+
+
+def _best_dihedral_iou(a: np.ndarray, b: np.ndarray):
+    """IoU of two normalised masks, best over the 8 rotations/reflections of b (the paper's
+    cartoons and the decoded drawing need not share an orientation)."""
+    best = (0.0, "identity")
+    for k in range(4):
+        for flip in (False, True):
+            m = np.rot90(b, k)
+            if flip:
+                m = np.fliplr(m)
+            m = _normalised_mask(m, a.shape[0])
+            iou = float((a & m).sum() / (a | m).sum())
+            if iou > best[0]:
+                best = (iou, f"rot{90 * k}" + ("+mirror" if flip else ""))
+    return best
+
+
+def measure_limbform(script: Path) -> list:
+    """Geometry decoded by 2014-lobo-limbform-morphology.py from LimbformDB 2.1.0: how much of
+    the database decodes, whether the joint-radius rule of the formalism holds, the segment and
+    digit counts of the five Fig. 1 wild types against the labelled graphs of Fig. 1 A'-E', and
+    the decoded silhouettes against the paper's own cartoons (Fig. 1 A''-E'', Regeneration
+    1:37, CC BY), downloaded into the git-ignored .limbform_cache/ and SHA-256 pinned."""
+    import importlib.util
+    import os
+    import urllib.request
+    spec = importlib.util.spec_from_file_location("limbform_v1", script)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    db = mod.resolve_db_path(os.environ.get("LIMBFORM_DB_PATH"), download=False)
+    morphs = mod.load_morphologies(db)
+    import sqlite3
+    with sqlite3.connect(db) as conn:
+        n_rows = conn.execute("SELECT COUNT(*) FROM Morphology").fetchone()[0]
+    ok, n_joints = mod.check_encoding(morphs)
+    out = [
+        M("morphologies decoded", len(morphs), "count", "Morphology rows with at least one Link (segment) row",
+          reference=n_rows, source="rows in LimbformDB 2.1.0 Morphology table",
+          note="the rest are outcome labels without geometry (Lethal, No limb, ...)", derived_from="script"),
+        M("joints obeying the radius rule", ok, "count",
+          "joints whose JointParam count equals the number of incident segments (3 for a terminal joint; "
+          "a sub-joint counts its host segment twice)", reference=n_joints,
+          source="all joints; the rule is the formalism's (Regeneration 1:37, Fig. 2)", derived_from="script"),
+    ]
+    for mid, (n_seg, n_dig, label) in FIG1_SEGMENTS.items():
+        mm = mod.morphometrics(morphs[mid])
+        out.append(M(f"segments, #{mid} {mm['name']}", mm["n_segments"], "count", "Link rows of the morphology",
+                     reference=n_seg, source=f"Lobo et al. 2014 Regeneration Fig. 1 {label}", derived_from="script"))
+        if n_dig:
+            out.append(M(f"digits, #{mid} {mm['name']}", mm["n_digits"], "count", "Digit rows of the morphology",
+                         reference=n_dig, source=f"Lobo et al. 2014 Regeneration Fig. 1 {label}", derived_from="script"))
+    # --- silhouettes against the paper's cartoons --------------------------------------------
+    fig = ROOT / ".limbform_cache" / "REG2-1-37-g001.jpg"
+    try:
+        if not fig.exists():
+            fig.parent.mkdir(exist_ok=True)
+            req = urllib.request.Request(FIG1_URL, headers={"User-Agent": "morpholib/morphoeval"})
+            with urllib.request.urlopen(req, timeout=60) as r:
+                fig.write_bytes(r.read())
+        got = hashlib.sha256(fig.read_bytes()).hexdigest()
+        if got != FIG1_SHA256:
+            raise ValueError(f"Fig. 1 download sha256 {got[:12]}… != pinned {FIG1_SHA256[:12]}…")
+        rgb = np.asarray(Image.open(fig).convert("RGB")).astype(int)
+    except Exception as ex:
+        out.append(M("silhouette IoU vs Fig. 1 cartoons", None, None,
+                     f"not measured: {type(ex).__name__}: {ex}", derived_from="output"))
+        return out
+    for mid, (panel, y0, y1) in FIG1_PANELS.items():
+        crop = rgb[y0:y1, FIG1_CARTOON_X0:]
+        ink = crop.sum(axis=2) < 690                       # anything that is not paper-white
+        lab, n = ndi.label(ink)
+        if n == 0:
+            continue
+        sizes = ndi.sum(ink, lab, range(1, n + 1))
+        cartoon = ndi.binary_fill_holes(lab == (1 + int(np.argmax(sizes))))
+        # the script's silhouette() grid is 256x256 over a non-square extent; rasterise isotropically here
+        from matplotlib.path import Path as MplPath
+        x0, x1, y0, y1 = mod.extent(morphs[mid])
+        nx = 400; ny = max(2, round(nx * (y1 - y0) / (x1 - x0)))
+        gx, gy = np.meshgrid(np.linspace(x0, x1, nx), np.linspace(y0, y1, ny))
+        grid = np.column_stack([gx.ravel(), gy.ravel()])
+        ours = np.zeros(len(grid), bool)
+        for poly in mod.all_polys(morphs[mid]):
+            ours |= MplPath(poly).contains_points(grid)
+        ours = ours.reshape(ny, nx)
+        a = _normalised_mask(cartoon)
+        iou, orient = _best_dihedral_iou(a, ours)
+        cy, cx = np.where(cartoon); oy, ox = np.where(ours)
+        asp_c = (cx.max() - cx.min() + 1) / (cy.max() - cy.min() + 1)
+        asp_o = (ox.max() - ox.min() + 1) / (oy.max() - oy.min() + 1)
+        name = morphs[mid].name
+        out.append(M(f"silhouette IoU vs Fig. 1 {panel}, #{mid} {name}", iou, "ratio",
+                     "largest ink component of the cartoon panel (holes filled) and the decoded silhouette, each "
+                     "cropped to its bounding box and scaled to a 200-px canvas (aspect kept); intersection over "
+                     f"union, best of 8 rotations/reflections ({orient})",
+                     reference=1.0, source="the paper's own rendering of the same database entry",
+                     note="bones, digits and gradient are inside the outline, so this compares outer shape only; "
+                          "the cartoon is a 560-px JPEG, which bounds the achievable IoU below 1", derived_from="output"))
+        out.append(M(f"bounding-box aspect, #{mid} {name}", float(max(asp_o, 1 / asp_o)), "ratio",
+                     "longer / shorter side of the decoded silhouette's bounding box",
+                     reference=round(float(max(asp_c, 1 / asp_c)), 3), source=f"same statistic on the Fig. 1 {panel} cartoon",
+                     derived_from="script"))
+    return out
+
+
 def measure_raup(script: Path, variables: Path) -> list:
     """Effective translation rate from the script's own raup_shell(): Raup's T is the axial
     translation per revolution relative to the generating-curve centre's distance from the
@@ -366,6 +498,8 @@ def main():
                 out["measurements"][sid] = measure_hoffmann(ROOT / sim["script"])
             elif sid == "eshghi-odonata-wing-cells":
                 out["measurements"][sid] = measure_odonata(ROOT / sim["script"])
+            elif sid == "lobo-limbform-morphology":
+                out["measurements"][sid] = measure_limbform(ROOT / sim["script"])
         except Exception as ex:  # a failed measurement is reported, never silently skipped
             out["measurements"][sid] = [{"name": "measurement failed", "value": None, "unit": None,
                                          "method": f"{type(ex).__name__}: {ex}"}]

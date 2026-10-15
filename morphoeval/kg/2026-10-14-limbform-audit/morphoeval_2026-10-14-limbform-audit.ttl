@@ -1,0 +1,179 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/probknow/resource/claim/morphoeval-lobo-limbform-morphology> a pk:Claim ;
+    rdfs:label "LimbformDB limb morphologies faithfully reproduces Urodele and anuran amphibians, decapod crustaceans, orthopteroid insects and a spider (LimbformDB 2.1.0) morphology" ;
+    dct:description "The simulation script(s) 2014-lobo-limbform-morphology.py implement the cited source model as published and produce forms that match real Urodele and anuran amphibians, decapod crustaceans, orthopteroid insects and a spider (LimbformDB 2.1.0) specimens and the source authors' figures. A belief under audit, not a fact: its credibility is the weight of evidence (MorphoEval 0.1.0 overall 71.3/100, audit 2026-10-14-limbform-audit) and the assessments." ;
+    pk:context "script(s): https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py; output: limbform_wildtype_gallery.png; organism: Urodele and anuran amphibians, decapod crustaceans, orthopteroid insects and a spider (LimbformDB 2.1.0); checkpoint commit: https://github.com/fractastical/morpholib/commit/747c57f; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, pandas 2.3.3, scikit-image 0.26.0, matplotlib 3.10.7, Pillow 12.0.0; other sources: LimbformDB 2.1.0 (31 Jul 2014), the Limbform database file <https://lobolab.umbc.edu/limbform/downloads/limbformDB_2.1.0.ldb>" ;
+    pk:derivedFromPaper <https://doi.org/10.1002/reg2.13>,
+        <https://doi.org/10.1093/bioinformatics/btu582> ;
+    pk:hasAssessment <https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-code-traceability>,
+        <https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-model-fidelity>,
+        <https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-morphometric-validation>,
+        <https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-overall>,
+        <https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-parameter-expressivity>,
+        <https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-repro-package>,
+        <https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-source-traceability>,
+        <https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-specimen-match> ;
+    pk:weightOfEvidence 7.13e-01 .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-code-traceability> a pk:LLMClaimAssessment ;
+    rdfs:label "LimbformDB limb morphologies — Code-to-model traceability: 75/100" ;
+    rdfs:comment "The module docstring states the formalism table by table and names the paper section it follows; the radius rule, the sub-joint rule, the Fig. 1 colour conventions and the bones-for-tetrapods-only convention are documented where they are implemented. As with the Planform sibling, the papers give no numbered equations, so the rules were confirmed against the database rather than quoted. Evidence: 2014-lobo-limbform-morphology.py L1–L13: what is reproduced and from which figure <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L1-L13>; 2014-lobo-limbform-morphology.py L113–L125: colour and bone conventions named <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L113-L125>; 2014-lobo-limbform-morphology.py L330–L352: control_points(): rule and padding stated <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L330-L352>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-code-traceability> ;
+    pk:hasProbability 7.5e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-model-fidelity> a pk:LLMClaimAssessment ;
+    rdfs:label "LimbformDB limb morphologies — Model fidelity to source: 85/100" ;
+    rdfs:comment "The encoding is read as the formalism defines it: Link rows are segments with Type, Dist, Ang, Side/Reversed/Inverted and NumBones; JointParam radii are one per bisector of consecutive segments at the joint or +90/+180/+270 deg for a terminal joint; LinkSubJoint places grafts at (Dist, Ang) on their host segment; Digit rows hang off the hand/foot segment. The rule is checked against every joint at load time (3137/3146) and the 9 under-parameterised joints are padded with the joint's mean radius, which is stated in the code. Short of full marks because the papers describe the formalism in prose, so the bisector-order convention and the 'host segment counts twice' rule for sub-joints were established by checking the database, and because the residual silhouette differences against Fig. 1 (below) leave the Ang convention not fully confirmed. Evidence: 2014-lobo-limbform-morphology.py L26–L47: the formalism as implemented <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L26-L47>; 2014-lobo-limbform-morphology.py L222–L260: load_morphologies(): the five tables read <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L222-L260>; 2014-lobo-limbform-morphology.py L314–L352: _edges_of()/control_points(): the radius rule, edge order kept <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L314-L352>; 2014-lobo-limbform-morphology.py L606–L620: check_encoding(): the rule checked on every joint <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L606-L620>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-model-fidelity> ;
+    pk:hasProbability 8.5e-01 ;
+    pk:hasVerdict "faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-morphometric-validation> a pk:LLMClaimAssessment ;
+    rdfs:label "LimbformDB limb morphologies — Morphometric validation: 55/100" ;
+    rdfs:comment "The script computes per-morphology morphometrics (segment and digit counts, proximodistal path length, bounding box, silhouette area) and writes them as CSV, and the measurements sidecar compares the five Fig. 1 wild types quantitatively with the paper's own figure (segment and digit counts against the labelled graphs A'-E', all equal; silhouette IoU and bounding-box aspect against the cartoons A''-E''). Those are comparisons with the source authors' rendering of the same data, not with measurements of real limbs, and the IoU values themselves show the agreement is partial. Evidence: 2014-lobo-limbform-morphology.py L587–L604: morphometrics() <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L587-L604>; 2014-lobo-limbform-morphology.py L569–L585: longest_path_length(): proximodistal length <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L569-L585>; 2014-lobo-limbform-morphology.py L869–L883: write_csv() <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L869-L883>; limbform_wildtype_gallery.png (generated output, not in repo): the output measured against Fig. 1 (see the measurements sidecar) — limbform_wildtype_gallery.png: rendered output of 2014-lobo-limbform-morphology.py at 747c57f, image/png, 620043 B, 2400×1875 px, sha256 d561f4aab10756976c3fd5caf7a8c516da13c1cd9395d6cb5a54b8a2f5b10236. Measurements (measure_outputs.py): morphologies decoded = 555 count (reference 565, rows in LimbformDB 2.1.0 Morphology table) [Morphology rows with at least one Link (segment) row] — the rest are outcome labels without geometry (Lethal, No limb, ...); joints obeying the radius rule = 3137 count (reference 3146, all joints; the rule is the formalism's (Regeneration 1:37, Fig. 2)) [joints whose JointParam count equals the number of incident segments (3 for a terminal joint; a sub-joint counts its host segment twice)]; segments, #1 Wild type, right forelimb = 3 count (reference 3, Lobo et al. 2014 Regeneration Fig. 1 A′: Upper arm, Fore arm, Hand; digits 1-4) [Link rows of the morphology]; digits, #1 Wild type, right forelimb = 4 count (reference 4, Lobo et al. 2014 Regeneration Fig. 1 A′: Upper arm, Fore arm, Hand; digits 1-4) [Digit rows of the morphology]; segments, #280 Wild type, right hindlimb = 3 count (reference 3, Lobo et al. 2014 Regeneration Fig. 1 B′: Thigh, Shank, Foot; digits 1-5 plus the prehallux node) [Link rows of the morphology]; digits, #280 Wild type, right hindlimb = 6 count (reference 6, Lobo et al. 2014 Regeneration Fig. 1 B′: Thigh, Shank, Foot; digits 1-5 plus the prehallux node) [Digit rows of the morphology]; segments, #314 Wild type, right walking leg, fiddler crab = 7 count (reference 7, Lobo et al. 2014 Regeneration Fig. 1 C′: Coxa, Basis, Ischium, Merus, Carpus, Propus, Dactyl) [Link rows of the morphology]; segments, #490 Wild type, right metathoracic (T3) leg, cricket nymph = 8 count (reference 8, Lobo et al. 2014 Regeneration Fig. 1 D′: Coxa, Trochanter, Femur, Tibia, Tarsus 1-4 (as labelled)) [Link rows of the morphology]; segments, #491 Wild type, right leg I, huntsman spider = 7 count (reference 7, Lobo et al. 2014 Regeneration Fig. 1 E′: Coxa, Trochanter, Femur, Patella, Tibia, Metatarsus, Tarsus) [Link rows of the morphology]; silhouette IoU vs Fig. 1 A'', #1 Wild type, right forelimb = 0.6448 ratio (reference 1.0, the paper's own rendering of the same database entry) [largest ink component of the cartoon panel (holes filled) and the decoded silhouette, each cropped to its bounding box and scaled to a 200-px canvas (aspect kept); intersection over union, best of 8 rotations/reflections (rot180+mirror)] — bones, digits and gradient are inside the outline, so this compares outer shape only; the cartoon is a 560-px JPEG, which bounds the achievable IoU below 1; bounding-box aspect, #1 Wild type, right forelimb = 1.5738 ratio (reference 1.463, same statistic on the Fig. 1 A'' cartoon) [longer / shorter side of the decoded silhouette's bounding box]; silhouette IoU vs Fig. 1 B'', #280 Wild type, right hindlimb = 0.4105 ratio (reference 1.0, the paper's own rendering of the same database entry) [largest ink component of the cartoon panel (holes filled) and the decoded silhouette, each cropped to its bounding box and scaled to a 200-px canvas (aspect kept); intersection over union, best of 8 rotations/reflections (rot0+mirror)] — bones, digits and gradient are inside the outline, so this compares outer shape only; the cartoon is a 560-px JPEG, which bounds the achievable IoU below 1; bounding-box aspect, #280 Wild type, right hindlimb = 1.4696 ratio (reference 1.832, same statistic on the Fig. 1 B'' cartoon) [longer / shorter side of the decoded silhouette's bounding box]; silhouette IoU vs Fig. 1 C'', #314 Wild type, right walking leg, fiddler crab = 0.4313 ratio (reference 1.0, the paper's own rendering of the same database entry) [largest ink component of the cartoon panel (holes filled) and the decoded silhouette, each cropped to its bounding box and scaled to a 200-px canvas (aspect kept); intersection over union, best of 8 rotations/reflections (rot180+mirror)] — bones, digits and gradient are inside the outline, so this compares outer shape only; the cartoon is a 560-px JPEG, which bounds the achievable IoU below 1; bounding-box aspect, #314 Wild type, right walking leg, fiddler crab = 1.2414 ratio (reference 1.051, same statistic on the Fig. 1 C'' cartoon) [longer / shorter side of the decoded silhouette's bounding box]; silhouette IoU vs Fig. 1 D'', #490 Wild type, right metathoracic (T3) leg, cricket nymph = 0.7432 ratio (reference 1.0, the paper's own rendering of the same database entry) [largest ink component of the cartoon panel (holes filled) and the decoded silhouette, each cropped to its bounding box and scaled to a 200-px canvas (aspect kept); intersection over union, best of 8 rotations/reflections (rot180+mirror)] — bones, digits and gradient are inside the outline, so this compares outer shape only; the cartoon is a 560-px JPEG, which bounds the achievable IoU below 1; bounding-box aspect, #490 Wild type, right metathoracic (T3) leg, cricket nymph = 1.1346 ratio (reference 1.084, same statistic on the Fig. 1 D'' cartoon) [longer / shorter side of the decoded silhouette's bounding box]; silhouette IoU vs Fig. 1 E'', #491 Wild type, right leg I, huntsman spider = 0.4851 ratio (reference 1.0, the paper's own rendering of the same database entry) [largest ink component of the cartoon panel (holes filled) and the decoded silhouette, each cropped to its bounding box and scaled to a 200-px canvas (aspect kept); intersection over union, best of 8 rotations/reflections (rot180+mirror)] — bones, digits and gradient are inside the outline, so this compares outer shape only; the cartoon is a 560-px JPEG, which bounds the achievable IoU below 1; bounding-box aspect, #491 Wild type, right leg I, huntsman spider = 1.5391 ratio (reference 1.455, same statistic on the Fig. 1 E'' cartoon) [longer / shorter side of the decoded silhouette's bounding box]." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-morphometric-validation> ;
+    pk:hasProbability 5.5e-01 ;
+    pk:hasVerdict "partially faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-overall> a pk:LLMClaimAssessment ;
+    rdfs:label "LimbformDB limb morphologies — MorphoEval overall 71.3/100" ;
+    rdfs:comment "Decodes the Limbform formalism (segments as graph edges with length and direction, joints as vertices with border radii, sub-joints for grafts, digits with phalanx counts) for 555 of the 565 morphology rows of LimbformDB 2.1.0 — the other 10 are outcome labels without geometry — and draws each limb as a smooth outline through the joint control points with the paper's proximodistal red-to-blue gradient, green coxa, yellow basis/trochanter, black long bones and blue digits. Against the paper's own cartoons of the five Fig. 1 wild types the decoded silhouettes have the same topology, pose and segment/digit counts; bounding-box-aligned IoU is 0.41-0.74 (best for the cricket leg, worst for the frog hindlimb, where the thigh-shank angle differs). The joint-radius rule of the formalism holds for 3137 of 3146 joints when a sub-joint counts its host segment twice. Overall 71.3/100 (faithfulness 70.0, reproducibility 74.3); rubric morphoeval 0.1.0; checkpoint commit 747c57f; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, pandas 2.3.3, scikit-image 0.26.0, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 85, Morphological realism / specimen match 65, Parameter expressivity 75, Morphometric validation 55, Source and data traceability 85, Code-to-model traceability 75, Reproducibility package 65. Output judged: limbform_wildtype_gallery.png: rendered output of 2014-lobo-limbform-morphology.py at 747c57f, image/png, 620043 B, 2400×1875 px, sha256 d561f4aab10756976c3fd5caf7a8c516da13c1cd9395d6cb5a54b8a2f5b10236." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology> ;
+    pk:evidenceAgainst "remediation needed: Ask the Lobo lab for the LimbformDB licence so the file can be vendored with its hash.",
+        "remediation needed: Compare at least the five wild types with photographs of the real limbs (Fig. 1 A-E), e.g. segment-length ratios, not only with the paper's cartoons.",
+        "remediation needed: Confirm the Ang convention and the joint-radius order against the Limbform software source or the authors, and explain the Fig. 1 B''/C'' silhouette residuals.",
+        "remediation needed: Pin the Python 3.14 environment (exact versions) in requirements or a lock file." ;
+    pk:hasProbability 7.13e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-parameter-expressivity> a pk:LLMClaimAssessment ;
+    rdfs:label "LimbformDB limb morphologies — Parameter expressivity: 75/100" ;
+    rdfs:comment "Every encoded number has a visible effect: each radius moves one control point of the outline, each segment's Dist/Ang moves its distal joint and everything beyond it, each sub-joint places a graft, each digit's Dist/Ang/NumBones draws one digit. Morphologies in one frame share one scale, so size differences between phenotypes are preserved. There is no parameter sweep in the output and Side/Reversed/Inverted are only reported (no 2.1.0 entry uses them), so their effect is untested. Evidence: 2014-lobo-limbform-morphology.py L286–L312: layout(): joint positions from Dist/Ang <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L286-L312>; 2014-lobo-limbform-morphology.py L377–L400: build_geometry(): control points, pieces, digits <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L377-L400>; 2014-lobo-limbform-morphology.py L788–L862: render_timeline(): shared scale per frame; category grids <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L788-L862>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-parameter-expressivity> ;
+    pk:hasProbability 7.5e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-repro-package> a pk:LLMClaimAssessment ;
+    rdfs:label "LimbformDB limb morphologies — Reproducibility package: 65/100" ;
+    rdfs:comment "Deterministic (no random state), invocation documented in the docstring and README, the input is fetched and hash-verified by the script itself, rows without geometry are skipped with a message, outputs are identical on re-run. Dependencies are in requirements.txt with lower bounds only and the known-good environment (Python 3.14) is recorded only in this audit. Evidence: 2014-lobo-limbform-morphology.py L49–L60: documented invocation and outputs <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L49-L60>; 2014-lobo-limbform-morphology.py L885–L921: main(): download, checks, outputs <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L885-L921>; requirements.txt L1–L7: lower bounds only <https://github.com/fractastical/morpholib/blob/747c57f/requirements.txt#L1-L7>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-repro-package> ;
+    pk:hasProbability 6.5e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-source-traceability> a pk:LLMClaimAssessment ;
+    rdfs:label "LimbformDB limb morphologies — Source and data traceability: 85/100" ;
+    rdfs:comment "Both papers are cited with DOIs, the database version, download URL, byte size and SHA-256 are recorded and verified on every run, the schema tables used are listed, and the reference figure used by the measurements is pinned by hash. The database's licence is not stated on the Lobo-lab page or in the file, which is why it is cached rather than vendored; that gap is the source's, but it is recorded here. Evidence: 2014-lobo-limbform-morphology.py L14–L24: references with DOIs and database URL <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L14-L24>; 2014-lobo-limbform-morphology.py L89–L93: URL, SHA-256 and size of the database <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L89-L93>; 2014-lobo-limbform-morphology.py L200–L219: resolve_db_path(): download and hash check <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L200-L219>; 2014-lobo-limbform-morphology.py L263–L284: load_first_report_year(): the join to Publication.Year <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L263-L284>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-source-traceability> ;
+    pk:hasProbability 8.5e-01 ;
+    pk:hasVerdict "faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-specimen-match> a pk:LLMClaimAssessment ;
+    rdfs:label "LimbformDB limb morphologies — Morphological realism / specimen match: 65/100" ;
+    rdfs:comment "The only published renderings of these database entries are the cartoons in Fig. 1 of the Regeneration paper; side by side, the decoded axolotl forelimb, Xenopus hindlimb, fiddler-crab walking leg, cricket T3 leg and huntsman-spider leg have the same segments, digits, pose and colour scheme (gradient, coxa green, basis yellow, bones, digits). Measured on the figure, bounding-box-aligned silhouette IoU is 0.64, 0.41, 0.43, 0.74 and 0.49 for panels A''-E'': the cricket leg is essentially identical, the others differ in joint angles and segment width (the frog thigh-shank angle most of all), which may reflect a database revision after the figure was drawn or an angle convention not captured. Distinct morphologies (double limbs, grafts, branched chelipeds, missing segments) render distinctly. No photographs of real limbs are compared. Evidence: limbform_wildtype_gallery.png (generated output, not in repo): the five Fig. 1 wild types plus ten further wild-type limbs — limbform_wildtype_gallery.png: rendered output of 2014-lobo-limbform-morphology.py at 747c57f, image/png, 620043 B, 2400×1875 px, sha256 d561f4aab10756976c3fd5caf7a8c516da13c1cd9395d6cb5a54b8a2f5b10236; 2014-lobo-limbform-morphology.py L419–L453: boundary_tour(): Euler tour of the limb tree -> closed outline <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L419-L453>; 2014-lobo-limbform-morphology.py L632–L666: colour_field(): the paper's gradient and flat colours <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L632-L666>; 2014-lobo-limbform-morphology.py L678–L704: draw_bones(): long bones for salamanders and frogs only <https://github.com/fractastical/morpholib/blob/747c57f/2014-lobo-limbform-morphology.py#L678-L704>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-specimen-match> ;
+    pk:hasProbability 6.5e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Code-to-model traceability" ;
+    dct:description "[reproducibility, weight 8/100] Can each modelling step in the code be traced to a specific equation, section or figure of the source?" ;
+    dct:identifier "morphoeval/0.1.0/code-traceability" ;
+    skos:broader <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+
+<https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Model fidelity to source" ;
+    dct:description "[faithfulness, weight 20/100] Does the code implement the equations / algorithm of the cited source model as published (not a loose analogue), with parameters defined the way the source defines them?" ;
+    dct:identifier "morphoeval/0.1.0/model-fidelity" ;
+    skos:broader <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+
+<https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Morphometric validation" ;
+    dct:description "[faithfulness, weight 15/100] Are quantitative morphometrics computed on the output and compared against values measured on real specimens or reported in the literature?" ;
+    dct:identifier "morphoeval/0.1.0/morphometric-validation" ;
+    skos:broader <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+
+<https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Parameter expressivity" ;
+    dct:description "[faithfulness, weight 10/100] Does each morphospace parameter visibly and monotonically control the feature of form it is supposed to control across its stated range?" ;
+    dct:identifier "morphoeval/0.1.0/parameter-expressivity" ;
+    skos:broader <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+
+<https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Reproducibility package" ;
+    dct:description "[reproducibility, weight 12/100] Pinned dependencies, deterministic seeds, documented invocation, and a known-good environment; environment-induced result corruption counts against this dimension." ;
+    dct:identifier "morphoeval/0.1.0/repro-package" ;
+    skos:broader <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+
+<https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Source and data traceability" ;
+    dct:description "[reproducibility, weight 10/100] Are the source paper (DOI/PMID), code repository and any input data resolvable identifiers, and is input provenance recorded?" ;
+    dct:identifier "morphoeval/0.1.0/source-traceability" ;
+    skos:broader <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+
+<https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Morphological realism / specimen match" ;
+    dct:description "[faithfulness, weight 25/100] Does the rendered output resemble real specimens of the organism and/or the source authors' own figures, judged side by side? Distinct morphologies must be visually distinct." ;
+    dct:identifier "morphoeval/0.1.0/specimen-match" ;
+    skos:broader <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology> rdfs:label "LimbformDB limb morphologies faithfully reproduces Urodele and anuran amphibians, decapod crustaceans, orthopteroid insects and a spider (LimbformDB 2.1.0) morphology" ;
+    dct:identifier "morphoeval/0.1.0/overall" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-code-traceability> rdfs:label "LimbformDB limb morphologies (2014-lobo-limbform-morphology.py) satisfies the MorphoEval 0.1.0 criterion 'Code-to-model traceability' for Urodele and anuran amphibians, decapod crustaceans, orthopteroid insects and a spider (LimbformDB 2.1.0)" ;
+    dct:identifier "morphoeval/0.1.0/code-traceability" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-model-fidelity> rdfs:label "LimbformDB limb morphologies (2014-lobo-limbform-morphology.py) satisfies the MorphoEval 0.1.0 criterion 'Model fidelity to source' for Urodele and anuran amphibians, decapod crustaceans, orthopteroid insects and a spider (LimbformDB 2.1.0)" ;
+    dct:identifier "morphoeval/0.1.0/model-fidelity" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-morphometric-validation> rdfs:label "LimbformDB limb morphologies (2014-lobo-limbform-morphology.py) satisfies the MorphoEval 0.1.0 criterion 'Morphometric validation' for Urodele and anuran amphibians, decapod crustaceans, orthopteroid insects and a spider (LimbformDB 2.1.0)" ;
+    dct:identifier "morphoeval/0.1.0/morphometric-validation" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-parameter-expressivity> rdfs:label "LimbformDB limb morphologies (2014-lobo-limbform-morphology.py) satisfies the MorphoEval 0.1.0 criterion 'Parameter expressivity' for Urodele and anuran amphibians, decapod crustaceans, orthopteroid insects and a spider (LimbformDB 2.1.0)" ;
+    dct:identifier "morphoeval/0.1.0/parameter-expressivity" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-repro-package> rdfs:label "LimbformDB limb morphologies (2014-lobo-limbform-morphology.py) satisfies the MorphoEval 0.1.0 criterion 'Reproducibility package' for Urodele and anuran amphibians, decapod crustaceans, orthopteroid insects and a spider (LimbformDB 2.1.0)" ;
+    dct:identifier "morphoeval/0.1.0/repro-package" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-source-traceability> rdfs:label "LimbformDB limb morphologies (2014-lobo-limbform-morphology.py) satisfies the MorphoEval 0.1.0 criterion 'Source and data traceability' for Urodele and anuran amphibians, decapod crustaceans, orthopteroid insects and a spider (LimbformDB 2.1.0)" ;
+    dct:identifier "morphoeval/0.1.0/source-traceability" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-specimen-match> rdfs:label "LimbformDB limb morphologies (2014-lobo-limbform-morphology.py) satisfies the MorphoEval 0.1.0 criterion 'Morphological realism / specimen match' for Urodele and anuran amphibians, decapod crustaceans, orthopteroid insects and a spider (LimbformDB 2.1.0)" ;
+    dct:identifier "morphoeval/0.1.0/specimen-match" .
+
+<https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "MorphoEval simulation-faithfulness rubric v0.1.0" ;
+    dct:description "Weighted 0-100 rubric for the faithfulness of a morphology simulation to its organism and source model; Overall = weighted mean. Each score is a pk:LLMClaimAssessment (ProbKnow LLM-assessment template) that evaluates the hypothesis pkr:hypothesis/morphoeval-<sim>-<dimension> with pk:hasProbability = score/100 and a pk:hasVerdict band; the overall score evaluates pkr:hypothesis/morphoeval-<sim> and is also the pk:weightOfEvidence of the pk:Claim." ;
+    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/main/morphoeval/rubric.yaml> ;
+    skos:narrower <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability>,
+        <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity>,
+        <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation>,
+        <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity>,
+        <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package>,
+        <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability>,
+        <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> .
+
+<https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+    rdfs:label "Claude Fable 5.1 (Cursor agent)" .
+

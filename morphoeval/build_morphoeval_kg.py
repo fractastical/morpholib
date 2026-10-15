@@ -7,38 +7,58 @@ versioned, weighted rubric (morphoeval/rubric.yaml) scored 0-100 per dimension
 for each simulation script, so simulations can be checkpointed and re-scored.
 
 The graph is expressed in the ProbKnow / Project Delphi ontology (v1.1,
-https://w3id.org/probknow/ontology/, vendored in morphoeval/vendor/) so the
-checkpoints live in the same probabilistic knowledge graph as the Levin-lab
-claims and are queryable with the existing ProbKnow SPARQL.  Mapping:
+https://w3id.org/probknow/ontology/, vendored in morphoeval/vendor/) and shaped by
+the governed templates of the ProbKnow Space (https://w3id.org/spaces/probknow;
+template nanopubs vendored in morphoeval/vendor/templates/), so every nanopub
+links the template it was created from, Nanodash renders it with that form, and
+the checkpoints live in the same probabilistic knowledge graph as the Levin-lab
+claims.  Mapping:
 
-    per simulation      pk:Claim      "script S faithfully reproduces the morphology
-                                        of organism O under source model P"
-                                        (a belief, not a fact)  — pk:derivedFromPaper DOI
-    per dimension       pk:LLMClaimAssessment  pk:assessedBy pk:Model (the agent
-                                        that scored it), pk:assessmentType
-                                        "morphoeval/<rubric>/<dimension>",
-                                        pk:weightOfEvidence = score/100,
-                                        pk:hasVerdict band, dct:description rationale
-    per evidence locus  pk:EvidenceItem  prov:wasDerivedFrom commit-pinned GitHub
-                                        line range
-    overall/checkpoint  pk:LLMClaimAssessment  "morphoeval/<rubric>/overall",
-                                        prov:wasDerivedFrom the 7 dimension assessments
-                                        + the commit; environment in description
-    rubric              pk:Concept with skos:narrower pk:Concept per dimension
-    source papers       https://doi.org/... a pk:Paper (real DOI IRIs as subjects)
+    per simulation   pk:Claim (ProbKnow claim template)
+                       pkr:claim/morphoeval-<sim>: label, description, pk:context
+                       (scripts, output, organism, commit, non-DOI sources),
+                       pk:derivedFromPaper <doi>, pk:hasAssessment -> the 8
+                       assessments, pk:weightOfEvidence = overall / 100
+    per dimension    pk:LLMClaimAssessment (ProbKnow LLM-assessment template)
+                       pkr:assessment/<audit>-<sim>-<dim> pk:evaluatesHypothesis
+                       pkr:hypothesis/morphoeval-<sim>-<dim> ("<sim> satisfies the
+                       criterion <dim>", dct:identifier "morphoeval/<rubric>/<dim>"),
+                       pk:assessedBy pkr:model/<assessor> a pk:Model,
+                       pk:hasProbability = score/100, pk:hasVerdict band,
+                       rdfs:comment = rationale + evidence loci (commit-pinned
+                       GitHub line ranges, fingerprinted outputs, morphometrics),
+                       pk:evidenceFor / pk:evidenceAgainst when the audit marks
+                       an evidence entry `supports: true|false`
+    overall          the same, evaluating pkr:hypothesis/morphoeval-<sim> (the
+                       claim proposition); remediation items as pk:evidenceAgainst
+    rubric           pk:Concept with skos:narrower pk:Concept per dimension
+                       (no governed template exists for a rubric)
+
+Provenance follows the Space's "Extracted from a paper by ProbKnow" template
+(prov:wasAttributedTo the model and the publisher; prov:wasDerivedFrom each DOI,
+with its title and year), the rubric the generic "Attributed to" template.
+Pubinfo: rdfs:label, dct:created (full UTC timestamp), dct:creator <ORCID>,
+dct:license CC BY 4.0, npx:hasNanopubType, npx:introduces, pk:domain, and the
+nt:wasCreatedFrom{,Provenance,Pubinfo}Template links (Creator, License, ProbKnow
+domain, and Supersedes when superseding).
 
 Every nanopub is one file on the nanopub temp base (http://purl.org/nanopub/temp/np001/),
-exactly like project-delphi-ontology/nanopubs/src/*.trig, so it can be sealed with
-    java -jar nanopub-*.jar sign <file>        (or @nanopub/nanopub-js)
-which mints the trusty https://w3id.org/np/RA... URI.  Pubinfo carries
-dct:creator <ORCID>, CC BY 4.0, npx:hasNanopubType, npx:introduces, pk:domain.
+so it can be sealed with sign_morphoeval.py (or nanopub-java / @nanopub/sign),
+which mints the trusty https://w3id.org/np/RA... URI.
 
 Usage
 -----
-    python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-13-morphology-audit.yaml
-    ... --check     validate the audit against the rubric only
-    ... --conform   also run the offline ProbKnow conformance check on the output
-    ... --query     also run a demo SPARQL over the merged graph
+    python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/<audit>.yaml
+    ... --check             validate the audit against the rubric only
+    ... --conform           offline ProbKnow + template-shape conformance check on the output
+    ... --supersede         re-issue: same-named nanopubs supersede the URIs in this dir's published.json
+    ... --supersede-from D  reuse/supersede nanopubs published from another audit dir (repeatable)
+    ... --no-resolve-heads  skip the Nanopub Query head check before superseding (not recommended)
+
+Before a nanopub supersedes a published URI, the current head of that URI's
+version chain is resolved with Nanopub Query's `get-latest-version-of-np` (the
+query nanopub-java's `query` command runs); a URI that is no longer the head
+has already been superseded elsewhere and is skipped, so chains never fork.
 
 Requires: pyyaml, rdflib.
 """
@@ -46,8 +66,13 @@ Requires: pyyaml, rdflib.
 from __future__ import annotations
 
 import argparse
+import json
+import os
 import re
 import sys
+import urllib.parse
+import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
@@ -58,18 +83,31 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 RUBRIC_PATH = HERE / "rubric.yaml"
 ONTOLOGY_PATH = HERE / "vendor" / "probknow-1.1.ttl"
+TEMPLATE_DIR = HERE / "vendor" / "templates"
 
 NP = Namespace("http://www.nanopub.org/nschema#")
 NPX = Namespace("http://purl.org/nanopub/x/")
-# Ontology / resource bases. These follow probknow-ontology; when that project renames
-# (e.g. to a ScienceOracle namespace) override via `audit.ontology.{base,resource_base}`
-# in the audit YAML and re-vendor the ttl. The --conform check compares pk: terms by local
-# name so it keeps working across a base rename.
+NT = Namespace("https://w3id.org/np/o/ntemplate/")
 PK = Namespace("https://w3id.org/probknow/ontology/")
 PKR = Namespace("https://w3id.org/probknow/resource/")
-SCHEMA = Namespace("https://schema.org/")          # for the code under assessment
 TEMP = "http://purl.org/nanopub/temp/np001/"             # nanopub temp base (pre-signing)
 THIS = URIRef(TEMP)
+
+# Governed templates of the ProbKnow Space (https://w3id.org/spaces/probknow), as published
+# by tkuhn/probknow-ontology nanopubs/signed/template-iris.json, plus the ecosystem's Creator,
+# License and Supersedes pubinfo templates and the generic "Attributed to" provenance template.
+TEMPLATES = {
+    "claim": URIRef("https://w3id.org/np/RAIVOEuhWNK4BuCbL_XRChRVlV6LKpFicBzwHpmuRxHWI/template"),
+    "llm-assessment": URIRef("https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template"),
+    "provenance-extraction": URIRef("https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg"),
+    "provenance-attributed": URIRef("https://w3id.org/np/RA7lSq6MuK_TIC6JMSHvLtee3lpLoZDOqLJCLXevnrPoU"),
+    "pubinfo-creator": URIRef("https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI"),
+    "pubinfo-license": URIRef("https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8"),
+    "pubinfo-domain": URIRef("https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0"),
+    "pubinfo-supersedes": URIRef("https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw"),
+}
+LATEST_VERSION_API = ("https://query.knowledgepixels.com/api/"
+                      "RAiRsB2YywxjsBMkVRTREJBooXhf2ZOHoUs5lxciEl37I/get-latest-version-of-np")
 
 FORBIDDEN_PREFIXES = ("https://w3id.org/morphopkg", "https://w3id.org/levin-kg",
                       "https://w3id.org/aif", "https://example.org", "http://example.org",
@@ -137,6 +175,8 @@ def validate(rubric, audit) -> list[str]:
                 a, b = e["lines"]
                 if a > b or a < 0:
                     errs.append(f"{sid}/{did}: bad line range {e['lines']} for {e['file']}")
+                if "supports" in e and not isinstance(e["supports"], bool):
+                    errs.append(f"{sid}/{did}: evidence `supports` must be true or false")
     return errs
 
 
@@ -169,13 +209,37 @@ def publisher_orcid(audit) -> URIRef:
     return URIRef(o)
 
 
+def ref_uri(ref: dict) -> URIRef:
+    return URIRef(f"https://doi.org/{ref['doi']}") if ref.get("doi") else URIRef(ref["url"])
+
+
+def ref_year(ref: dict):
+    m = re.search(r"\b(1[89]\d\d|20\d\d)\b", str(ref.get("year") or ref.get("venue") or ""))
+    return m.group(1) if m else None
+
+
+def unit_interval(x: float) -> Literal:
+    """xsd:double in plain decimal form ("0.76"), as the templates' regex ^(0(\\.[0-9]+)?|1(\\.0+)?)$
+    requires; rdflib would otherwise serialise it as 7.6e-01."""
+    s = repr(round(float(x), 4))
+    if s in ("1", "1.0"):
+        s = "1.0"
+    elif s == "0" or s == "0.0":
+        s = "0.0"
+    return Literal(s, datatype=XSD.double, normalize=False)
+
+
+def squash(text) -> str:
+    return " ".join(str(text).split())
+
+
 # --------------------------------------------------------------------------- #
-# Nanopub construction (ProbKnow shape, temp base, one nanopub per file)
+# Nanopub construction (ProbKnow template shapes, temp base, one nanopub per file)
 # --------------------------------------------------------------------------- #
 def _bind(g):
-    for p, n in (("this", Namespace(TEMP)), ("sub", Namespace(TEMP)), ("np", NP), ("npx", NPX),
+    for p, n in (("this", Namespace(TEMP)), ("sub", Namespace(TEMP)), ("np", NP), ("npx", NPX), ("nt", NT),
                  ("pk", PK), ("pkr", PKR), ("prov", PROV), ("dct", DCTERMS), ("rdfs", RDFS),
-                 ("skos", SKOS), ("foaf", FOAF), ("schema", SCHEMA), ("xsd", XSD)):
+                 ("skos", SKOS), ("foaf", FOAF), ("xsd", XSD)):
         g.bind(p, n)
 
 
@@ -188,136 +252,76 @@ class NanopubBuilder:
         a = self.A["assessor"]
         self.model = PKR[f"model/{a['id']}"]
         self.model_label = a.get("label", a["id"])
-        self.model_home = URIRef(a["homepage"]) if a.get("homepage") else None
-        self.created = Literal(f"{self.A['date']}T00:00:00Z", datatype=XSD.dateTime)
+        # Real creation time (UTC, seconds); MORPHOEVAL_CREATED pins it for reproducible rebuilds.
+        stamp = os.environ.get("MORPHOEVAL_CREATED") or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        self.created = Literal(stamp, datatype=XSD.dateTime, normalize=False)
         cp = self.A.get("checkpoint", {})
         self.repo = cp.get("repository")
         self.commit = cp.get("commit")
         self.commit_uri = URIRef(f"{self.repo}/commit/{self.commit}") if self.commit else None
         self.env = cp.get("environment", {})
-        # People/agents who can be credited as code creators or contributors.
-        self.people = {}
-        for p in self.A.get("code_creators", []):
-            uri = URIRef(p["orcid"]) if p.get("orcid") else self.orcid
-            self.people[p["id"]] = (uri, p)
-        self.default_code_creators = [p["id"] for p in self.A.get("code_creators", [])]
-        self.code_license = URIRef(self.A["code_license"]) if self.A.get("code_license") else None
-
-    def agent(self, ident: str):
-        """Resolve a creator/contributor id to (IRI, triples describing it)."""
-        if ident == self.A["assessor"]["id"]:
-            return self.model, self.model_triples()
-        if ident in self.people:
-            uri, p = self.people[ident]
-            t = [(uri, RDF.type, FOAF.Person), (uri, RDF.type, PROV.Agent),
-                 (uri, FOAF.name, Literal(p["name"]))]
-            if p.get("github"):
-                t.append((uri, FOAF.account, URIRef(p["github"])))
-            return uri, t
-        sys.exit(f"unknown code creator/contributor id '{ident}' (declare it under audit.code_creators)")
+        self.outputs, self.measurements = {}, {}
 
     def script_uri(self, script: str) -> URIRef:
         return URIRef(f"{self.repo}/blob/{self.commit}/{script}")
 
-    # ---- morphology snapshot (from <audit>.measurements.yaml) ------------- #
     def set_measurements(self, meas: dict | None):
         self.outputs = {sid: {o["file"]: o for o in lst} for sid, lst in (meas or {}).get("outputs", {}).items()}
         self.measurements = (meas or {}).get("measurements", {})
 
-    def output_uri(self, sim: dict, file: str) -> URIRef:
-        slug = re.sub(r"[^A-Za-z0-9]+", "-", file).strip("-").lower()
-        return PKR[f"evidence/{self.A['id']}-{sim['id']}-output-{slug}"]
-
-    def output_triples(self, sim: dict, file: str):
-        """The rendered output that was judged, as a fingerprinted schema:ImageObject (the
-        binary itself stays out of git and out of the nanopub; the hash pins it)."""
-        ou = self.output_uri(sim, file)
+    # ---- text renderings of the evidence (the templates carry evidence as literals) -- #
+    def output_text(self, sim: dict, file: str) -> str:
         fp = self.outputs.get(sim["id"], {}).get(file)
-        t = [(ou, RDF.type, PK.EvidenceItem), (ou, RDF.type, SCHEMA.ImageObject), (ou, RDF.type, PROV.Entity),
-             (ou, RDFS.label, Literal(file)),
-             (ou, PROV.wasDerivedFrom, self.script_uri(sim["script"]))]
-        if fp:
-            t += [(ou, SCHEMA.sha256, Literal(fp["sha256"])),
-                  (ou, SCHEMA.contentSize, Literal(f"{fp['bytes']} B")),
-                  (ou, SCHEMA.encodingFormat, Literal(fp["media_type"])),
-                  (ou, DCTERMS.description, Literal(
-                      f"rendered output of {sim['script']} at {self.commit}; sha256 pins the exact file that was "
-                      f"scored" + (f"; {fp['width']}×{fp['height']} px" if fp.get("width") else "")
-                      + (f", {fp['frames']} frames" if fp.get("frames", 1) > 1 else "")))]
-            if fp.get("width"):
-                t += [(ou, SCHEMA.width, Literal(fp["width"], datatype=XSD.integer)),
-                      (ou, SCHEMA.height, Literal(fp["height"], datatype=XSD.integer))]
-        else:
-            t.append((ou, DCTERMS.description, Literal(
-                f"rendered output of {sim['script']}; not present when the audit was snapshotted, so unfingerprinted")))
-        return t
+        if not fp:
+            return f"{file}: rendered output of {sim['script']}, not present when the audit was snapshotted (unfingerprinted)"
+        size = f"{fp['width']}×{fp['height']} px" if fp.get("width") else ""
+        frames = f", {fp['frames']} frames" if fp.get("frames", 1) > 1 else ""
+        return (f"{file}: rendered output of {sim['script']} at {self.commit}, {fp['media_type']}, {fp['bytes']} B"
+                + (f", {size}{frames}" if size else frames) + f", sha256 {fp['sha256']}")
 
-    def measurement_triples(self, sim: dict, au: URIRef):
-        """Morphometrics as schema:PropertyValue evidence items on the given assessment."""
-        t = []
-        for i, m in enumerate(self.measurements.get(sim["id"], [])):
+    def evidence_text(self, sim: dict, e: dict) -> str:
+        a, b = e["lines"]
+        note = squash(e.get("note", ""))
+        if b > 0:
+            url = f"{self.repo}/blob/{self.commit}/{e['file']}#L{a}-L{b}"
+            return f"{e['file']} L{a}–L{b}" + (f": {note}" if note else "") + f" <{url}>"
+        return (f"{e['file']} (generated output, not in repo)" + (f": {note}" if note else "")
+                + " — " + self.output_text(sim, e["file"]))
+
+    def measurement_text(self, sim: dict) -> str:
+        parts = []
+        for m in self.measurements.get(sim["id"], []):
             if m.get("value") is None:
                 continue
-            mu = PKR[f"evidence/{self.A['id']}-{sim['id']}-morphometric-m{i}"]
-            v = m["value"]
-            lit = Literal(v, datatype=XSD.integer) if isinstance(v, int) else Literal(float(v), datatype=XSD.double)
-            t += [(au, PK.hasEvidence, mu),
-                  (mu, RDF.type, PK.EvidenceItem), (mu, RDF.type, SCHEMA.PropertyValue),
-                  (mu, RDFS.label, Literal(f"{m['name']}: {v} {m.get('unit') or ''}".strip())),
-                  (mu, SCHEMA.name, Literal(m["name"])),
-                  (mu, SCHEMA.value, lit),
-                  (mu, SCHEMA.measurementTechnique, Literal(m["method"])),
-                  (mu, PROV.wasDerivedFrom, self.script_uri(sim["script"]))]
-            if m.get("unit"):
-                t.append((mu, SCHEMA.unitText, Literal(m["unit"])))
-            if m.get("note"):
-                t.append((mu, DCTERMS.description, Literal(m["note"])))
-            if (m.get("derived_from", "output") == "output" and sim.get("output")
-                    and sim["output"] in self.outputs.get(sim["id"], {})):
-                t.append((mu, PROV.wasDerivedFrom, self.output_uri(sim, sim["output"])))
+            s = f"{m['name']} = {m['value']}" + (f" {m['unit']}" if m.get("unit") else "")
             if m.get("reference_value") is not None:
-                ru = PKR[f"evidence/{self.A['id']}-{sim['id']}-morphometric-m{i}-reference"]
-                rv = m["reference_value"]
-                rlit = (Literal(rv, datatype=XSD.integer) if isinstance(rv, int) else
-                        Literal(float(rv), datatype=XSD.double) if isinstance(rv, float) else Literal(str(rv)))
-                t += [(mu, SCHEMA.valueReference, ru),
-                      (ru, RDF.type, SCHEMA.PropertyValue),
-                      (ru, SCHEMA.name, Literal(f"reference for: {m['name']}")),
-                      (ru, SCHEMA.value, rlit)]
-                if m.get("reference_source"):
-                    t.append((ru, DCTERMS.source, Literal(m["reference_source"])))
-        return t
+                s += f" (reference {m['reference_value']}" + (f", {m['reference_source']}" if m.get("reference_source") else "") + ")"
+            s += f" [{squash(m['method'])}]"
+            if m.get("note"):
+                s += f" — {squash(m['note'])}"
+            parts.append(s)
+        return "; ".join(parts)
 
-    def code_triples(self, sim: dict):
-        """One schema:SoftwareSourceCode entity per audited script, stamped with its creator(s)."""
-        t = []
-        creators = sim.get("code_creators", self.default_code_creators)
-        contributors = sim.get("code_contributors", [])
-        for script in [sim["script"]] + list(sim.get("also", [])):
-            su = self.script_uri(script)
-            t += [(su, RDF.type, SCHEMA.SoftwareSourceCode), (su, RDF.type, PROV.Entity),
-                  (su, RDFS.label, Literal(script)),
-                  (su, SCHEMA.codeRepository, URIRef(self.repo)),
-                  (su, SCHEMA.version, Literal(self.commit)),
-                  (su, SCHEMA.programmingLanguage, Literal("Python")),
-                  (su, DCTERMS.isPartOf, URIRef(self.repo))]
-            if self.code_license:
-                t.append((su, DCTERMS.license, self.code_license))
-            for ident in creators:
-                uri, desc = self.agent(ident)
-                t += [(su, DCTERMS.creator, uri), (su, SCHEMA.author, uri),
-                      (su, PROV.wasAttributedTo, uri)] + desc
-            for ident in contributors:
-                uri, desc = self.agent(ident)
-                t += [(su, DCTERMS.contributor, uri), (su, SCHEMA.contributor, uri)] + desc
+    # ---- graphs ------------------------------------------------------------ #
+    def provenance_extraction(self, agents, papers):
+        """'Extracted from a paper by ProbKnow' provenance: attributed to the agents, derived from
+        each DOI with its title and year.  Only DOI IRIs fit the template's placeholder."""
+        asrt = URIRef(TEMP + "assertion")
+        t = [(asrt, PROV.wasAttributedTo, a) for a in agents]
+        for r in papers:
+            if not r.get("doi"):
+                continue
+            pu = ref_uri(r)
+            t += [(asrt, PROV.wasDerivedFrom, pu), (pu, DCTERMS.title, Literal(squash(r["title"])))]
+            if (y := ref_year(r)):
+                t.append((pu, DCTERMS.date, Literal(y, datatype=XSD.gYear)))
         return t
 
     def nanopub(self, label: str, nptype: URIRef, introduces: URIRef, domain_slug: str,
-                assertion, provenance=(), pubinfo_extra=()):
+                assertion, provenance, template_key: str | None, provenance_key: str, pubinfo_extra=()):
         ds = Dataset(); _bind(ds)
         head = ds.graph(URIRef(TEMP + "Head"))
-        asrt, prov = URIRef(TEMP + "assertion"), URIRef(TEMP + "provenance")
-        pubi = URIRef(TEMP + "pubinfo")
+        asrt, prov, pubi = URIRef(TEMP + "assertion"), URIRef(TEMP + "provenance"), URIRef(TEMP + "pubinfo")
         head.add((THIS, RDF.type, NP.Nanopublication))
         head.add((THIS, NP.hasAssertion, asrt))
         head.add((THIS, NP.hasProvenance, prov))
@@ -327,50 +331,35 @@ class NanopubBuilder:
             g.add(t)
         g = ds.graph(prov)
         for t in provenance:
-            g.add((asrt if t[0] is None else t[0], t[1], t[2]))
+            g.add(t)
         g = ds.graph(pubi)
         dom = PKR[f"domain/{domain_slug}"]
-        for t in [(THIS, RDFS.label, Literal(label)),
-                  (THIS, DCTERMS.created, self.created),
-                  (THIS, DCTERMS.creator, self.orcid),
-                  (THIS, DCTERMS.license, self.license),
-                  (THIS, NPX.hasNanopubType, nptype),
-                  (THIS, NPX.introduces, introduces),
-                  (THIS, PK.domain, dom),
-                  (dom, RDFS.label, Literal(domain_slug))] + list(pubinfo_extra):
+        triples = [(THIS, RDFS.label, Literal(label)),
+                   (THIS, DCTERMS.created, self.created),
+                   (THIS, DCTERMS.creator, self.orcid),
+                   (THIS, DCTERMS.license, self.license),
+                   (THIS, NPX.hasNanopubType, nptype),
+                   (THIS, NPX.introduces, introduces),
+                   (THIS, PK.domain, dom),
+                   (dom, RDFS.label, Literal(domain_slug)),
+                   (THIS, NT.wasCreatedFromProvenanceTemplate, TEMPLATES[provenance_key]),
+                   (THIS, NT.wasCreatedFromPubinfoTemplate, TEMPLATES["pubinfo-creator"]),
+                   (THIS, NT.wasCreatedFromPubinfoTemplate, TEMPLATES["pubinfo-license"]),
+                   (THIS, NT.wasCreatedFromPubinfoTemplate, TEMPLATES["pubinfo-domain"])]
+        if template_key:
+            triples.append((THIS, NT.wasCreatedFromTemplate, TEMPLATES[template_key]))
+        for t in triples + list(pubinfo_extra):
             g.add(t)
         return ds
-
-    # ---- shared bits ------------------------------------------------------ #
-    def model_triples(self):
-        t = [(self.model, RDF.type, PK.Model),
-             (self.model, RDFS.label, Literal(self.model_label)),
-             (self.model, DCTERMS.identifier, Literal(self.A["assessor"]["id"])),
-             (self.model, PROV.actedOnBehalfOf, self.orcid)]
-        if self.model_home:
-            t.append((self.model, FOAF.homepage, self.model_home))
-        return t
-
-    def paper_triples(self, ref: dict):
-        pu = ref_uri(ref)
-        t = [(pu, RDF.type, PK.Paper),
-             (pu, DCTERMS.title, Literal(ref["title"])),
-             (pu, DCTERMS.creator, Literal(ref["authors"])),
-             (pu, DCTERMS.bibliographicCitation, Literal(ref["venue"]))]
-        if ref.get("doi"):
-            t.append((pu, DCTERMS.identifier, Literal(f"doi:{ref['doi']}")))
-        if ref.get("pmid"):
-            t.append((pu, DCTERMS.identifier, Literal(f"pmid:{ref['pmid']}")))
-        if ref.get("code"):
-            t.append((pu, RDFS.seeAlso, URIRef(ref["code"])))
-        return t
 
     def claim_uri(self, sim):
         return PKR[f"claim/morphoeval-{sim['id']}"]
 
 
-def ref_uri(ref: dict) -> URIRef:
-    return URIRef(f"https://doi.org/{ref['doi']}") if ref.get("doi") else URIRef(ref["url"])
+def add_supersedes(ds: Dataset, old: str):
+    g = ds.graph(URIRef(TEMP + "pubinfo"))
+    g.add((THIS, NPX.supersedes, URIRef(old)))
+    g.add((THIS, NT.wasCreatedFromPubinfoTemplate, TEMPLATES["pubinfo-supersedes"]))
 
 
 def serialize_trig(ds: Dataset) -> str:
@@ -384,36 +373,72 @@ def serialize_trig(ds: Dataset) -> str:
         prefixes.update(l for l in body if l.startswith("@prefix"))
         triples = [l for l in body if l and not l.startswith("@prefix")]
         parts.append(f"sub:{part} {{\n" + "\n".join("    " + l for l in triples) + "\n}\n")
-    return "\n".join(sorted(prefixes)) + "\n\n" + "\n".join(parts)
+    return plain_doubles("\n".join(sorted(prefixes)) + "\n\n" + "\n".join(parts))
 
 
-def build(rubric, audit, out_dir: Path, supersede: dict | None = None):
-    """supersede: {file name: {"nanopub": published trusty URI, "text": its unsigned TriG}}.
-    A nanopub whose content differs from the published one of the same name gets
-    npx:supersedes <old>; one whose content is identical is not re-emitted (it is
-    already published) and is reported in ``unchanged``."""
+EXPONENT_DOUBLE = re.compile(r'(?<=[\s,(])(-?\d+(?:\.\d+)?e[+-]\d+)(?=\s*[;,.\]])')
+
+
+def plain_doubles(trig_text: str) -> str:
+    """rdflib writes xsd:double in exponent form (7.6e-01, 1e+00); the templates' 0-1 regex wants
+    "0.76", and the lexical form is part of the trusty hash, so it must be written the way it was
+    parsed.  Rewrites every bare exponent-form double as a plain-decimal typed literal."""
+    return EXPONENT_DOUBLE.sub(lambda m: f'"{repr(float(m.group(1)))}"^^xsd:double', trig_text)
+
+
+# --------------------------------------------------------------------------- #
+# Head resolution (Nanopub Query, the query nanopub-java's `query` command runs)
+# --------------------------------------------------------------------------- #
+def latest_version(np_uri: str, timeout: float = 30.0) -> str | None:
+    """Current head of the version chain of a published nanopub, or None if the query
+    returns nothing (the nanopub is not indexed, or the service is unreachable)."""
+    url = f"{LATEST_VERSION_API}?np={urllib.parse.quote(np_uri, safe='')}"
+    req = urllib.request.Request(url, headers={"Accept": "text/csv", "User-Agent": "morpholib/morphoeval"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            rows = resp.read().decode("utf-8").splitlines()
+    except Exception as ex:                                   # noqa: BLE001
+        print(f"  head resolution failed for {np_uri}: {ex}")
+        return None
+    for row in rows[1:]:
+        if row.strip():
+            return row.split(",")[0].strip()
+    return None
+
+
+# --------------------------------------------------------------------------- #
+# Build
+# --------------------------------------------------------------------------- #
+def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_heads: bool = True):
+    """supersede: {file name: {"nanopub": published trusty URI, "path": its file, "text": its unsigned TriG}}.
+    A nanopub whose content differs from the published one of the same name gets npx:supersedes <old>
+    (after confirming <old> is still the head of its chain); one whose content is identical to a nanopub
+    published from another audit dir is not re-emitted and is reported in ``build.unchanged``; one
+    whose published URI is no longer the head was superseded elsewhere and is reported in
+    ``build.skipped``."""
     B = NanopubBuilder(audit, rubric)
     B.set_measurements(audit.get("_measurements"))
     A, refs = audit["audit"], audit.get("references", {})
     default_domain = A.get("domain", "morphogenesis")
     issue = URIRef(A["tracked_by"]) if A.get("tracked_by") else None
     rubric_uri = PKR[f"concept/morphoeval-rubric-{rubric['version']}"]
-    # The rubric is versioned by its own `version` field and lands in the same commit as the
-    # KG it describes, so it cannot be pinned to the checkpoint commit; point at the branch.
     rubric_src = URIRef(f"{B.repo}/blob/main/morphoeval/rubric.yaml") if B.repo else None
 
     out_dir.mkdir(parents=True, exist_ok=True)
     merged = Graph(); _bind(merged)
-    written = []
-
-    superseded = []
-    unchanged = []
+    written, superseded, unchanged, skipped = [], [], [], []
+    heads: dict[str, str | None] = {}
 
     def _content(text):
         """Nanopub text minus the pubinfo lines that differ between otherwise identical builds
-        (creation date, supersedes link), so 'unchanged' means unchanged assertion + provenance."""
+        (creation date, supersedes link and its template link)."""
         return "\n".join(l for l in text.splitlines()
-                         if not l.lstrip().startswith(("dct:created ", "npx:supersedes ")))
+                         if not l.lstrip().startswith(("dct:created ", "npx:supersedes "))
+                         and str(TEMPLATES["pubinfo-supersedes"]) not in l)
+
+    def _merge(ds):
+        for t in ds.graph(URIRef(TEMP + "assertion")):
+            merged.add(t)
 
     def emit(name, ds):
         p = out_dir / name
@@ -421,38 +446,39 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None):
         prev = supersede.get(name) if supersede else None
         if prev and prev.get("text") is not None:
             same_dir = Path(prev.get("path", "")).resolve() == p.resolve()
-            if _content(prev["text"]) == _content(text) and not same_dir:   # identical to a nanopub published from another audit
+            if _content(prev["text"]) == _content(text) and not same_dir:   # identical to one published from another audit
                 unchanged.append((name, prev["nanopub"]))
                 if p.exists():
                     p.unlink()
                 return
             if prev["text"] == text:            # same dir, nothing changed: just rewrite as-is
-                p.write_text(text)
-                written.append(p)
-                _merge(ds)
+                p.write_text(text); written.append(p); _merge(ds)
                 return
-            ds.graph(URIRef(TEMP + "pubinfo")).add((THIS, NPX.supersedes, URIRef(prev["nanopub"])))
+            old = prev["nanopub"]
+            if resolve_heads:
+                head = heads.get(old) or latest_version(old)
+                heads[old] = head
+                if head is None:
+                    sys.exit(f"{name}: cannot resolve the head of {old} on Nanopub Query; refusing to supersede blindly "
+                             "(use --no-resolve-heads to override)")
+                if head != old:
+                    skipped.append((name, old, head))
+                    return                      # superseded elsewhere already; its head is re-issued from there
+            add_supersedes(ds, old)
             text = serialize_trig(ds)
-            if prev["text"] != text:            # genuinely new content (not just a re-run)
-                superseded.append((name, prev["nanopub"]))
-        p.write_text(text)
-        written.append(p)
-        _merge(ds)
+            superseded.append((name, old))
+        p.write_text(text); written.append(p); _merge(ds)
 
-    def _merge(ds):
-        for ctx in ds.graphs():
-            if str(ctx.identifier) == TEMP + "assertion":
-                for t in ctx:
-                    merged.add(t)
-
-    # ---- 1. rubric as a pk:Concept with one narrower concept per dimension -- #
+    # ---- 1. rubric as a pk:Concept with one narrower concept per dimension (no governed template) -- #
     tr = [(rubric_uri, RDF.type, PK.Concept),
           (rubric_uri, RDF.type, SKOS.Concept),
           (rubric_uri, RDFS.label, Literal(f"{rubric['name']} v{rubric['version']}")),
           (rubric_uri, DCTERMS.description, Literal(
-              "Weighted 0-100 rubric for the faithfulness of a morphology simulation to its "
-              "organism and source model; Overall = weighted mean. Scores are emitted as "
-              "pk:LLMClaimAssessment with pk:weightOfEvidence = score/100."))]
+              "Weighted 0-100 rubric for the faithfulness of a morphology simulation to its organism and "
+              "source model; Overall = weighted mean. Each score is a pk:LLMClaimAssessment (ProbKnow "
+              "LLM-assessment template) that evaluates the hypothesis pkr:hypothesis/morphoeval-<sim>-<dimension> "
+              "with pk:hasProbability = score/100 and a pk:hasVerdict band; the overall score evaluates "
+              "pkr:hypothesis/morphoeval-<sim> and is also the pk:weightOfEvidence of the pk:Claim."))]
     if rubric_src:
         tr.append((rubric_uri, RDFS.seeAlso, rubric_src))
     for d in rubric["dimensions"]:
@@ -460,10 +486,11 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None):
         tr += [(rubric_uri, SKOS.narrower, du), (du, SKOS.broader, rubric_uri),
                (du, RDF.type, PK.Concept), (du, RDF.type, SKOS.Concept),
                (du, RDFS.label, Literal(d["name"])),
-               (du, DCTERMS.description, Literal(
-                   f"[{d['group']}, weight {d['weight']}/100] " + " ".join(d["question"].split())))]
-    emit("00-rubric.trig", B.nanopub(f"MorphoEval rubric v{rubric['version']}", PK.Concept, rubric_uri,
-                                     default_domain, tr, [(None, PROV.wasAttributedTo, B.orcid)]))
+               (du, DCTERMS.identifier, Literal(f"morphoeval/{rubric['version']}/{d['id']}")),
+               (du, DCTERMS.description, Literal(f"[{d['group']}, weight {d['weight']}/100] " + squash(d["question"])))]
+    emit("00-rubric.trig", B.nanopub(f"MorphoEval rubric v{rubric['version']}", PK.Concept, rubric_uri, default_domain,
+                                     tr, [(URIRef(TEMP + "assertion"), PROV.wasAttributedTo, B.orcid)],
+                                     None, "provenance-attributed"))
 
     rows = []
     for sim in audit["simulations"]:
@@ -475,140 +502,244 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None):
         papers = [refs[r] for r in sim.get("source_refs", [])]
         organism = sim.get("organism", "unspecified organism")
         scripts = [sim["script"]] + list(sim.get("also", []))
-        context = (f"script(s): {', '.join(scripts)}; output: {sim.get('output', 'n/a')}; "
-                   f"organism: {organism}; checkpoint commit: {B.commit or 'n/a'}")
-
-        # ---- 2. the faithfulness CLAIM (a belief, not a fact) --------------- #
-        tr = [(claim, RDF.type, PK.Claim),
-              (claim, RDFS.label, Literal(f"{sim['name']} faithfully reproduces {organism} morphology")),
-              (claim, DCTERMS.description, Literal(
-                  f"The simulation script(s) {', '.join(scripts)} implement the cited source model as "
-                  f"published and produce forms that match real {organism} specimens and the source "
-                  f"authors' figures.")),
-              (claim, PK.context, Literal(context))]
-        # the code under assessment, with its creator(s) stamped
-        for script in scripts:
-            tr.append((claim, DCTERMS.subject, B.script_uri(script)))
-        tr += B.code_triples(sim)
-        prov = [(None, PROV.wasAttributedTo, B.orcid)]
-        for r in papers:
-            tr.append((claim, PK.derivedFromPaper, ref_uri(r)))
-            tr += B.paper_triples(r)
-            prov.append((None, PROV.wasDerivedFrom, ref_uri(r)))
-        if B.commit_uri:
-            prov.append((None, PROV.wasDerivedFrom, B.commit_uri))
-        emit(f"{sim['id']}-claim.trig",
-             B.nanopub(f"Claim: {sim['name']} is faithful", PK.Claim, claim, dom, tr, prov))
-
-        # ---- 3. one pk:LLMClaimAssessment per rubric dimension ------------- #
-        dim_assessments = []
-        for d in rubric["dimensions"]:
-            did, s = d["id"], sim["scores"][d["id"]]
-            au = PKR[f"assessment/{A['id']}-{sim['id']}-{did}"]
-            dim_assessments.append(au)
-            w = round(s["value"] / 100.0, 4)
-            tr = [(claim, PK.hasAssessment, au),
-                  (au, RDF.type, PK.LLMClaimAssessment),
-                  (au, RDFS.label, Literal(f"{sim['name']} — {d['name']}: {s['value']}/100")),
-                  (au, PK.assessmentType, Literal(f"morphoeval/{rubric['version']}/{did}")),
-                  (au, PK.assessedBy, B.model),
-                  (au, PK.weightOfEvidence, Literal(w, datatype=XSD.double)),
-                  (au, PK.hasVerdict, Literal(verdict(s["value"]))),
-                  (au, DCTERMS.description, Literal(" ".join(str(s["rationale"]).split()))),
-                  (au, DCTERMS.date, Literal(str(A["date"]), datatype=XSD.date)),
-                  (au, DCTERMS.subject, PKR[f"concept/morphoeval-{rubric['version']}-{did}"])]
-            if s.get("not_applicable"):
-                tr.append((au, PK.hasVerdict, Literal("not applicable (neutral baseline)")))
-            tr += B.model_triples()
-            for i, e in enumerate(s.get("evidence", [])):
-                eu = PKR[f"evidence/{A['id']}-{sim['id']}-{did}-{i}"]
-                a, b = e["lines"]
-                is_code = b > 0
-                loc = f"{e['file']} L{a}–L{b}" if is_code else f"{e['file']} (generated output, not in repo)"
-                tr += [(au, PK.hasEvidence, eu),
-                       (eu, RDF.type, PK.EvidenceItem),
-                       (eu, RDFS.label, Literal(loc)),
-                       (eu, DCTERMS.description, Literal(e.get("note", loc)))]
-                if is_code and B.commit:        # source-code evidence: commit-pinned line range
-                    tr.append((eu, PROV.wasDerivedFrom,
-                               URIRef(f"{B.repo}/blob/{B.commit}/{e['file']}#L{a}-L{b}")))
-                elif B.commit:                  # rendered artefact: the fingerprinted output it was read from
-                    tr.append((eu, PROV.wasDerivedFrom, B.output_uri(sim, e["file"])))
-                    tr += B.output_triples(sim, e["file"])
-            if did == "morphometric-validation":   # the morphology snapshot: measured form vs reference
-                tr += B.measurement_triples(sim, au)
-            prov = [(None, PROV.wasAttributedTo, B.model),
-                    (None, PROV.wasDerivedFrom, rubric_uri)]
-            for r in papers:                       # what the assessment validates against
-                prov.append((None, PROV.wasDerivedFrom, ref_uri(r)))
-            if B.commit_uri:
-                prov.append((None, PROV.wasDerivedFrom, B.commit_uri))
-            if issue:
-                prov.append((None, RDFS.seeAlso, issue))
-            emit(f"{sim['id']}-{did}.trig",
-                 B.nanopub(f"{sim['name']} — {d['name']} {s['value']}/100", PK.LLMClaimAssessment,
-                           au, dom, tr, prov))
-
-        # ---- 4. overall checkpoint assessment ----------------------------- #
         gs = group_scores(rubric, sim["scores"])
-        au = PKR[f"assessment/{A['id']}-{sim['id']}-overall"]
+        hyp_claim = PKR[f"hypothesis/morphoeval-{sim['id']}"]
+        claim_label = f"{sim['name']} faithfully reproduces {organism} morphology"
+        model_triples = [(B.model, RDF.type, PK.Model), (B.model, RDFS.label, Literal(B.model_label))]
+        agents = [B.model, B.orcid]
+        pub_common = [(THIS, RDFS.seeAlso, issue)] if issue else []
+        pub_common += [(THIS, DCTERMS.conformsTo, rubric_uri),
+                       (B.model, PROV.actedOnBehalfOf, B.orcid)]
+        assessments = [PKR[f"assessment/{A['id']}-{sim['id']}-{d['id']}"] for d in rubric["dimensions"]]
+        overall_au = PKR[f"assessment/{A['id']}-{sim['id']}-overall"]
+
+        # ---- 2. the faithfulness CLAIM (ProbKnow claim template) ------------------------ #
+        non_doi = [r for r in papers if not r.get("doi")]
+        context = (f"script(s): {', '.join(B.script_uri(s) for s in scripts)}; output: {sim.get('output', 'n/a')}; "
+                   f"organism: {organism}; checkpoint commit: {B.commit_uri or 'n/a'}; "
+                   f"environment: {', '.join(f'{k} {v}' for k, v in B.env.items()) or 'n/a'}")
+        if non_doi:
+            context += "; other sources: " + ", ".join(f"{squash(r['title'])} <{ref_uri(r)}>" for r in non_doi)
+        tr = [(claim, RDF.type, PK.Claim),
+              (claim, RDFS.label, Literal(claim_label)),
+              (claim, DCTERMS.description, Literal(
+                  f"The simulation script(s) {', '.join(scripts)} implement the cited source model as published "
+                  f"and produce forms that match real {organism} specimens and the source authors' figures. "
+                  f"A belief under audit, not a fact: its credibility is the weight of evidence (MorphoEval "
+                  f"{rubric['version']} overall {gs['overall']}/100, audit {A['id']}) and the assessments.")),
+              (claim, PK.context, Literal(context)),
+              (claim, PK.weightOfEvidence, unit_interval(gs["overall"] / 100.0))]
+        tr += [(claim, PK.derivedFromPaper, ref_uri(r)) for r in papers if r.get("doi")]
+        tr += [(claim, PK.hasAssessment, au) for au in assessments + [overall_au]]
+        pub = [(THIS, RDFS.seeAlso, B.script_uri(s)) for s in scripts] + ([(THIS, RDFS.seeAlso, issue)] if issue else [])
+        emit(f"{sim['id']}-claim.trig",
+             B.nanopub(f"Claim: {sim['name']} is faithful", PK.Claim, claim, dom, tr,
+                       B.provenance_extraction([B.orcid], papers), "claim", "provenance-extraction", pub))
+
+        # ---- 3. one pk:LLMClaimAssessment per rubric dimension (LLM-assessment template) -- #
+        for d, au in zip(rubric["dimensions"], assessments):
+            did, s = d["id"], sim["scores"][d["id"]]
+            hyp = PKR[f"hypothesis/morphoeval-{sim['id']}-{did}"]
+            reasoning = squash(s["rationale"])
+            loci = [B.evidence_text(sim, e) for e in s.get("evidence", []) if "supports" not in e]
+            if loci:
+                reasoning += " Evidence: " + "; ".join(loci) + "."
+            if did == "morphometric-validation" and (mt := B.measurement_text(sim)):
+                reasoning += " Measurements (measure_outputs.py): " + mt + "."
+            verdict_text = ("not applicable (neutral baseline)" if s.get("not_applicable") else verdict(s["value"]))
+            tr = [(au, RDF.type, PK.LLMClaimAssessment),
+                  (au, RDFS.label, Literal(f"{sim['name']} — {d['name']}: {s['value']}/100")),
+                  (au, PK.evaluatesHypothesis, hyp),
+                  (hyp, RDFS.label, Literal(f"{sim['name']} ({', '.join(scripts)}) satisfies the MorphoEval "
+                                            f"{rubric['version']} criterion '{d['name']}' for {organism}")),
+                  (hyp, DCTERMS.identifier, Literal(f"morphoeval/{rubric['version']}/{did}")),
+                  (au, PK.assessedBy, B.model),
+                  (au, PK.hasProbability, unit_interval(s["value"] / 100.0)),
+                  (au, PK.hasVerdict, Literal(verdict_text)),
+                  (au, RDFS.comment, Literal(reasoning))] + model_triples
+            for e in s.get("evidence", []):
+                if "supports" in e:
+                    tr.append((au, PK.evidenceFor if e["supports"] else PK.evidenceAgainst, Literal(B.evidence_text(sim, e))))
+            pub = pub_common + [(THIS, PK.assessmentType, Literal(f"morphoeval/{rubric['version']}/{did}")),
+                                (THIS, DCTERMS.subject, PKR[f"concept/morphoeval-{rubric['version']}-{did}"])]
+            emit(f"{sim['id']}-{did}.trig",
+                 B.nanopub(f"{sim['name']} — {d['name']} {s['value']}/100", PK.LLMClaimAssessment, au, dom, tr,
+                           B.provenance_extraction(agents, papers), "llm-assessment", "provenance-extraction", pub))
+
+        # ---- 4. overall checkpoint assessment (same template, evaluating the claim proposition) -- #
         env = ", ".join(f"{k} {v}" for k, v in B.env.items())
-        desc = (" ".join(sim["summary"].split()) +
-                f" Overall {gs['overall']}/100 (faithfulness {gs['faithfulness']}, "
-                f"reproducibility {gs['reproducibility']}); rubric morphoeval {rubric['version']}; "
-                f"checkpoint commit {B.commit}; environment: {env}.")
-        tr = [(claim, PK.hasAssessment, au),
-              (au, RDF.type, PK.LLMClaimAssessment),
-              (au, RDFS.label, Literal(f"{sim['name']} — MorphoEval overall {gs['overall']}/100")),
-              (au, PK.assessmentType, Literal(f"morphoeval/{rubric['version']}/overall")),
-              (au, PK.assessedBy, B.model),
-              (au, PK.weightOfEvidence, Literal(round(gs["overall"] / 100.0, 4), datatype=XSD.double)),
-              (au, PK.hasVerdict, Literal(verdict(gs["overall"]))),
-              (au, DCTERMS.description, Literal(desc)),
-              (au, DCTERMS.date, Literal(str(A["date"]), datatype=XSD.date)),
-              (au, DCTERMS.subject, rubric_uri)]
-        tr += B.model_triples()
-        if sim.get("output"):                       # the form at this checkpoint, by content hash
-            tr.append((au, PK.hasEvidence, B.output_uri(sim, sim["output"])))
-            tr += B.output_triples(sim, sim["output"])
-        for i, fix in enumerate(sim.get("remediation", [])):
-            tr.append((au, PK.evidenceAgainst, Literal(f"remediation needed: {fix}")))
-        prov = [(None, PROV.wasAttributedTo, B.model)] + \
-               [(None, PROV.wasDerivedFrom, x) for x in dim_assessments]
-        if B.commit_uri:
-            prov.append((None, PROV.wasDerivedFrom, B.commit_uri))
-        if issue:
-            prov.append((None, RDFS.seeAlso, issue))
+        reasoning = (squash(sim["summary"]) +
+                     f" Overall {gs['overall']}/100 (faithfulness {gs['faithfulness']}, reproducibility "
+                     f"{gs['reproducibility']}); rubric morphoeval {rubric['version']}; checkpoint commit {B.commit}; "
+                     f"environment: {env}. Dimension assessments: " + ", ".join(
+                         f"{d['name']} {sim['scores'][d['id']]['value']}" for d in rubric["dimensions"]) + ".")
+        if sim.get("output"):
+            reasoning += " Output judged: " + B.output_text(sim, sim["output"]) + "."
+        tr = [(overall_au, RDF.type, PK.LLMClaimAssessment),
+              (overall_au, RDFS.label, Literal(f"{sim['name']} — MorphoEval overall {gs['overall']}/100")),
+              (overall_au, PK.evaluatesHypothesis, hyp_claim),
+              (hyp_claim, RDFS.label, Literal(claim_label)),
+              (hyp_claim, DCTERMS.identifier, Literal(f"morphoeval/{rubric['version']}/overall")),
+              (overall_au, PK.assessedBy, B.model),
+              (overall_au, PK.hasProbability, unit_interval(gs["overall"] / 100.0)),
+              (overall_au, PK.hasVerdict, Literal(verdict(gs["overall"]))),
+              (overall_au, RDFS.comment, Literal(reasoning))] + model_triples
+        tr += [(overall_au, PK.evidenceAgainst, Literal(f"remediation needed: {squash(fix)}"))
+               for fix in sim.get("remediation", [])]
+        pub = pub_common + [(THIS, PK.assessmentType, Literal(f"morphoeval/{rubric['version']}/overall")),
+                            (THIS, RDFS.seeAlso, claim)]
         emit(f"{sim['id']}-overall.trig",
-             B.nanopub(f"{sim['name']} — MorphoEval overall {gs['overall']}/100",
-                       PK.LLMClaimAssessment, au, dom, tr, prov))
+             B.nanopub(f"{sim['name']} — MorphoEval overall {gs['overall']}/100", PK.LLMClaimAssessment, overall_au,
+                       dom, tr, B.provenance_extraction(agents, papers), "llm-assessment", "provenance-extraction", pub))
         rows.append((sim, gs))
 
     merged_path = out_dir / f"morphoeval_{A['id']}.ttl"
     merged_path.write_text(merged.serialize(format="turtle"))
     report_path = out_dir / "REPORT.md"
     report_path.write_text(report(rubric, audit, rows))
-    build.unchanged = unchanged
+    build.unchanged, build.skipped = unchanged, skipped
     return written, merged_path, report_path, merged, superseded
 
 
 # --------------------------------------------------------------------------- #
-# Offline ProbKnow conformance check (mirrors project-delphi-ontology/tests)
+# Offline conformance: ProbKnow terms + the shape of each graph against its template
 # --------------------------------------------------------------------------- #
+class Template:
+    """A nanopub template parsed from its (vendored) nanopub: statements with subject /
+    predicate / object patterns and the placeholders' constraints."""
+
+    def __init__(self, path: Path):
+        ds = Dataset(); ds.parse(path, format="trig")
+        g = Graph()
+        for ctx in ds.graphs():
+            if str(ctx.identifier).endswith("assertion"):
+                for t in ctx:
+                    g.add(t)
+        self.g = g
+        root = next(iter(list(g.subjects(RDF.type, NT.AssertionTemplate)) + list(g.subjects(RDF.type, NT.ProvenanceTemplate))
+                         + list(g.subjects(RDF.type, NT.PubinfoTemplate))))
+        self.kind = next(g.objects(root, RDF.type))
+        self.label = str(g.value(root, RDFS.label) or path.name)
+        sts = list(g.objects(root, NT.hasStatement))
+        if not sts and (root, RDF.predicate, None) in g:
+            sts = [root]                                  # single-statement template (Creator)
+        by_id = {}
+        for st in sts:
+            inner = list(g.objects(st, NT.hasStatement))  # grouped statement: its parts inherit its flags
+            for s in (inner or [st]):
+                if (s, RDF.predicate, None) not in g:
+                    continue
+                types = set(g.objects(s, RDF.type)) | (set(g.objects(st, RDF.type)) if inner else set())
+                sid = str(s).split("/")[-1].split("#")[-1]
+                cur = by_id.setdefault(sid, {"id": sid, "s": g.value(s, RDF.subject), "p": g.value(s, RDF.predicate),
+                                             "o": g.value(s, RDF.object), "optional": False, "repeatable": False})
+                cur["optional"] |= NT.OptionalStatement in types
+                cur["repeatable"] |= NT.RepeatableStatement in types
+        self.statements = list(by_id.values())
+        self.placeholders = {}
+        for s, _, kind in g.triples((None, RDF.type, None)):
+            if str(kind).startswith(str(NT)) and str(kind).endswith(("Placeholder", "IntroducedResource")):
+                self.placeholders.setdefault(s, {"kinds": set()})["kinds"].add(kind)
+                self.placeholders[s]["prefix"] = g.value(s, NT.hasPrefix)
+                self.placeholders[s]["datatype"] = g.value(s, NT.hasDatatype)
+                self.placeholders[s]["regex"] = g.value(s, NT.hasRegex)
+
+    def _is_var(self, node):
+        return node in self.placeholders or str(node) in (str(NT.ASSERTION), str(NT.NANOPUB), str(NT.CREATOR)) \
+            or "~~ARTIFACTCODE~~" in str(node)
+
+    def _match_node(self, pattern, value, bindings, special):
+        key = str(pattern)
+        if key in special:
+            return value == special[key]
+        if "~~ARTIFACTCODE~~" in key:                       # introduced resource: same namespace, own local id
+            return isinstance(value, URIRef) and str(value).startswith(key.split("~~")[0])
+        if pattern in self.placeholders:
+            ph = self.placeholders[pattern]
+            kinds = {str(k).split("/")[-1] for k in ph["kinds"]}
+            literal_kind = bool(kinds & {"LiteralPlaceholder", "LongLiteralPlaceholder", "RestrictedChoicePlaceholder"})
+            if literal_kind != isinstance(value, Literal) and "RestrictedChoicePlaceholder" not in kinds:
+                return False
+            if isinstance(value, Literal):
+                if ph["datatype"] is not None and value.datatype != ph["datatype"]:
+                    return False
+                if ph["regex"] is not None and not re.fullmatch(str(ph["regex"]), str(value)):
+                    return False
+            elif ph["prefix"] is not None and not str(value).startswith(str(ph["prefix"])):
+                return False
+            bound = bindings.get(pattern)
+            if bound is not None and bound != value and not ph.get("_multi"):
+                return False
+            return True
+        return pattern == value
+
+    def check(self, graph: Graph, special: dict) -> list[str]:
+        """Every triple of the graph must match a statement; required statements must be present;
+        non-repeatable statements at most once.  `special` binds nt:ASSERTION / nt:NANOPUB / nt:CREATOR."""
+        probs, counts, bindings = [], {}, {}
+        for st in self.statements:                      # object placeholders of repeatable statements may vary
+            if st["repeatable"] and st["o"] in self.placeholders:
+                self.placeholders[st["o"]]["_multi"] = True
+        for s, p, o in graph:
+            hit = None
+            for st in self.statements:
+                if st["p"] != p:
+                    continue
+                if self._match_node(st["s"], s, bindings, special) and self._match_node(st["o"], o, bindings, special):
+                    hit = st
+                    break
+            if hit is None:
+                probs.append(f"triple not in template '{self.label}': {s.n3()} {p.n3()} {o.n3()[:80]}")
+                continue
+            counts[hit["id"]] = counts.get(hit["id"], 0) + 1
+            for pat, val in ((hit["s"], s), (hit["o"], o)):
+                if pat in self.placeholders and not self.placeholders[pat].get("_multi"):
+                    bindings[pat] = val
+        for st in self.statements:
+            n = counts.get(st["id"], 0)
+            if n == 0 and not st["optional"]:
+                probs.append(f"required statement {st['id']} ({st['p'].n3()}) of '{self.label}' missing")
+            if n > 1 and not st["repeatable"]:
+                probs.append(f"statement {st['id']} ({st['p'].n3()}) of '{self.label}' used {n} times, not repeatable")
+        return probs
+
+
+def load_templates() -> dict[str, Template]:
+    out = {}
+    for key, uri in TEMPLATES.items():
+        code = str(uri).split("/np/")[1][:8]
+        matches = list(TEMPLATE_DIR.glob(f"*.{code}.trig"))
+        if matches:
+            out[str(uri)] = Template(matches[0])
+    return out
+
+
 def conformance(files: list[Path]) -> list[str]:
     onto = Graph().parse(ONTOLOGY_PATH, format="turtle")
-    # Declared terms by local name, so the check survives an ontology base rename:
-    # the base is the owl:Ontology IRI + "/", as in the vendored ttl.
     onto_iri = next(onto.subjects(RDF.type, URIRef("http://www.w3.org/2002/07/owl#Ontology")))
     onto_base = str(onto_iri).rstrip("/") + "/"
     declared = {str(PK) + str(s)[len(onto_base):] for s in onto.subjects() if str(s).startswith(onto_base)}
+    templates = load_templates()
     probs: list[str] = []
     for f in files:
+        raw = f.read_text()
+        if (m := EXPONENT_DOUBLE.search(raw)):
+            probs.append(f"{f.name}: exponent-form double {m.group(0)} (templates' 0-1 regex wants plain decimals)")
         ds = Dataset(); ds.parse(f, format="trig")
+        # works on unsigned (temp-namespace) and signed (trusty-URI) files alike
+        this = next(iter(set(s for g in ds.graphs() for s in g.subjects(RDF.type, NP.Nanopublication))), None)
+        if this is None:
+            probs.append(f"{f.name}: no np:Nanopublication in any graph"); continue
+        G = {"Head": next((g.identifier for g in ds.graphs() if (this, RDF.type, NP.Nanopublication) in g), None)}
+        head = ds.graph(G["Head"])
+        G["assertion"], G["provenance"], G["pubinfo"] = (head.value(this, NP.hasAssertion), head.value(this, NP.hasProvenance), head.value(this, NP.hasPublicationInfo))
         names = {str(g.identifier) for g in ds.graphs()}
-        for part in ("Head", "assertion", "provenance", "pubinfo"):
-            if TEMP + part not in names:
+        for part, gid in G.items():
+            if gid is None or str(gid) not in names:
                 probs.append(f"{f.name}: missing graph {part}")
+        if any(v is None for v in G.values()):
+            continue
+        THIS, pub, asrt, prov = this, ds.graph(G["pubinfo"]), ds.graph(G["assertion"]), ds.graph(G["provenance"])
         nodes = set()
         for g in ds.graphs():
             for s, p, o in g:
@@ -619,29 +750,49 @@ def conformance(files: list[Path]) -> list[str]:
                 probs.append(f"{f.name}: forbidden legacy IRI {ns}")
             if ns.startswith(str(PK)) and ns not in declared:
                 probs.append(f"{f.name}: undeclared pk: term {ns}")
-        pub = ds.graph(URIRef(TEMP + "pubinfo"))
-        for p in (DCTERMS.creator, DCTERMS.license, NPX.hasNanopubType, NPX.introduces, PK.domain):
+        for p in (DCTERMS.creator, DCTERMS.license, NPX.hasNanopubType, NPX.introduces, PK.domain, DCTERMS.created):
             if (THIS, p, None) not in pub:
                 probs.append(f"{f.name}: pubinfo lacks {p.n3(ds.namespace_manager)}")
-        asrt = ds.graph(URIRef(TEMP + "assertion"))
-        for a in asrt.subjects(RDF.type, PK.LLMClaimAssessment):
-            m = asrt.value(a, PK.assessedBy)
-            if m is None or (m, RDF.type, PK.Model) not in asrt:
-                probs.append(f"{f.name}: LLMClaimAssessment without pk:assessedBy a typed pk:Model")
+        created = pub.value(THIS, DCTERMS.created)
+        if created is not None and (created.datatype != XSD.dateTime or "T00:00:00" in str(created)):
+            probs.append(f"{f.name}: dct:created {created} is not a full xsd:dateTime with a real time")
+        special = {str(NT.ASSERTION): G["assertion"], str(NT.NANOPUB): THIS,
+                   str(NT.CREATOR): pub.value(THIS, DCTERMS.creator)}
+        # assertion against its template
+        tmpl = [str(o) for o in pub.objects(THIS, NT.wasCreatedFromTemplate)]
+        if tmpl:
+            t = templates.get(tmpl[0])
+            if t is None:
+                probs.append(f"{f.name}: template {tmpl[0]} not vendored in {TEMPLATE_DIR.name}/")
+            else:
+                probs += [f"{f.name}: {m}" for m in t.check(asrt, special)]
+                target = t.g.value(next(t.g.subjects(RDF.type, NT.AssertionTemplate)), NT.hasTargetNanopubType)
+                if target is not None and (THIS, NPX.hasNanopubType, target) not in pub:
+                    probs.append(f"{f.name}: npx:hasNanopubType is not the template's target type {target}")
+        elif any((None, RDF.type, c) in asrt for c in (PK.Claim, PK.LLMClaimAssessment)):
+            probs.append(f"{f.name}: a ProbKnow claim/assessment without nt:wasCreatedFromTemplate")
+        # provenance against its template
+        for pt in pub.objects(THIS, NT.wasCreatedFromProvenanceTemplate):
+            t = templates.get(str(pt))
+            if t is None:
+                probs.append(f"{f.name}: provenance template {pt} not vendored")
+            else:
+                probs += [f"{f.name}: {m}" for m in t.check(prov, special)]
+        # pubinfo templates: each linked one must be satisfied (extras in pubinfo are allowed)
+        for pt in pub.objects(THIS, NT.wasCreatedFromPubinfoTemplate):
+            t = templates.get(str(pt))
+            if t is None:
+                probs.append(f"{f.name}: pubinfo template {pt} not vendored")
+                continue
+            for st in t.statements:
+                if not st["optional"] and (THIS, st["p"], None) not in pub:
+                    probs.append(f"{f.name}: pubinfo lacks {st['p'].n3()} required by '{t.label}'")
+        if (THIS, NPX.supersedes, None) in pub and TEMPLATES["pubinfo-supersedes"] not in set(pub.objects(THIS, NT.wasCreatedFromPubinfoTemplate)):
+            probs.append(f"{f.name}: npx:supersedes without the Supersedes pubinfo template link")
         for s, p, o in asrt:
             if p in (PK.weightOfEvidence, PK.hasConfidence, PK.hasProbability):
                 if not (0.0 <= float(o) <= 1.0):
                     probs.append(f"{f.name}: {p.n3(ds.namespace_manager)} {o} outside [0,1]")
-        for c in asrt.subjects(RDF.type, PK.Claim):
-            if (c, PK.derivedFromPaper, None) not in asrt and (c, PK.hasAssessment, None) not in asrt:
-                probs.append(f"{f.name}: claim {c} has neither derivedFromPaper nor hasAssessment")
-            codes = [s for s in asrt.objects(c, DCTERMS.subject)
-                     if (s, RDF.type, SCHEMA.SoftwareSourceCode) in asrt]
-            if not codes:
-                probs.append(f"{f.name}: claim {c} names no schema:SoftwareSourceCode under assessment")
-            for s in codes:
-                if (s, DCTERMS.creator, None) not in asrt:
-                    probs.append(f"{f.name}: code {s} has no dct:creator stamp")
     return probs
 
 
@@ -654,8 +805,9 @@ def report(rubric, audit, rows) -> str:
          f"Rubric **{rubric['version']}** · checkpoint `{A['checkpoint']['commit']}` · "
          f"assessor `pkr:model/{A['assessor']['id']}` (pk:LLMClaimAssessment) · "
          f"tracked in {A.get('tracked_by', '—')}", "",
-         "Scores are 0–100 (emitted as `pk:weightOfEvidence` = score/100); Overall is the "
-         "rubric-weighted mean. Unevaluated scripts carry a claim but no assessments.", "",
+         "Scores are 0–100 (emitted as `pk:hasProbability` = score/100 on the LLM assessment of the "
+         "dimension hypothesis); Overall is the rubric-weighted mean and the claim's `pk:weightOfEvidence`. "
+         "Unevaluated scripts carry no nanopubs yet.", "",
          "| Simulation | " + " | ".join(f"{d['id']} ({d['weight']})" for d in dims)
          + " | Faithfulness | Reproducibility | **Overall** | verdict |",
          "|---|" + "---:|" * (len(dims) + 3) + "---|"]
@@ -672,11 +824,11 @@ def report(rubric, audit, rows) -> str:
         if gs is None:
             continue
         L += [f"### {sim['name']}  —  overall {gs['overall']} ({verdict(gs['overall'])})", "",
-              " ".join(sim["summary"].split()), ""]
+              squash(sim["summary"]), ""]
         for d in dims:
             s = sim["scores"][d["id"]]
             ev = "; ".join(f"`{e['file']}` L{e['lines'][0]}–{e['lines'][1]}" for e in s["evidence"])
-            L.append(f"- **{d['name']}: {s['value']}** — {' '.join(str(s['rationale']).split())}  \n  evidence: {ev}")
+            L.append(f"- **{d['name']}: {s['value']}** — {squash(s['rationale'])}  \n  evidence: {ev}")
         if sim.get("remediation"):
             L += ["", "Remediation:"] + [f"- {r}" for r in sim["remediation"]]
         L.append("")
@@ -684,7 +836,7 @@ def report(rubric, audit, rows) -> str:
     if ms:
         L += ["## Morphology snapshot", "",
               "The binaries stay out of git; the sha256 pins the exact file that was scored, and the "
-              "morphometrics record the form itself (`schema:PropertyValue` evidence on the "
+              "morphometrics record the form itself (written into the reasoning of the "
               "morphometric-validation assessment).", ""]
         for sim, gs in rows:
             if gs is None:
@@ -696,9 +848,9 @@ def report(rubric, audit, rows) -> str:
                 continue
             L.append(f"### {sim['name']}")
             for o in outs:
-                dims = f"{o['width']}×{o['height']} px" if o.get("width") else ""
+                size = f"{o['width']}×{o['height']} px" if o.get("width") else ""
                 fr = f", {o['frames']} frames" if o.get("frames", 1) > 1 else ""
-                L.append(f"- `{o['file']}` — sha256 `{o['sha256'][:16]}…`, {o['bytes']:,} B, {dims}{fr}")
+                L.append(f"- `{o['file']}` — sha256 `{o['sha256'][:16]}…`, {o['bytes']:,} B, {size}{fr}")
             for f in miss:
                 L.append(f"- `{f}` — **not on disk at snapshot time** (no hash, no measurements)")
             if meas:
@@ -712,19 +864,20 @@ def report(rubric, audit, rows) -> str:
     L += ["## Environment at checkpoint", ""]
     L += [f"- {k}: {v}" for k, v in A["checkpoint"].get("environment", {}).items()]
     if A["checkpoint"].get("note"):
-        L += ["", " ".join(A["checkpoint"]["note"].split())]
+        L += ["", squash(A["checkpoint"]["note"])]
     return "\n".join(L) + "\n"
 
 
 DEMO_QUERY = """
 PREFIX pk:   <%s>
+PREFIX dct:  <http://purl.org/dc/terms/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-SELECT ?claim ?woe ?verdict ?model WHERE {
-  ?c a pk:Claim ; rdfs:label ?claim ; pk:hasAssessment ?a .
-  ?a pk:assessmentType ?t ; pk:weightOfEvidence ?woe ; pk:hasVerdict ?verdict ; pk:assessedBy ?m .
+SELECT ?claim ?p ?verdict ?model WHERE {
+  ?a a pk:LLMClaimAssessment ; pk:evaluatesHypothesis ?h ; pk:hasProbability ?p ; pk:hasVerdict ?verdict ; pk:assessedBy ?m .
+  ?h rdfs:label ?claim ; dct:identifier ?code .
   ?m rdfs:label ?model .
-  FILTER(STRENDS(?t, "/overall"))
-} ORDER BY ?woe
+  FILTER(STRENDS(?code, "/overall"))
+} ORDER BY ?p
 """
 
 
@@ -733,13 +886,15 @@ def main():
     ap.add_argument("audit")
     ap.add_argument("--out", default=None, help="output dir (default morphoeval/kg/<audit-id>)")
     ap.add_argument("--check", action="store_true", help="validate the audit only")
-    ap.add_argument("--conform", action="store_true", help="run the offline ProbKnow conformance check")
+    ap.add_argument("--conform", action="store_true", help="run the offline ProbKnow + template-shape conformance check")
     ap.add_argument("--query", action="store_true", help="run a demo SPARQL on the merged graph")
     ap.add_argument("--supersede", action="store_true",
                     help="nanopubs whose content changed get npx:supersedes <URI recorded in kg/<audit>/published.json>")
-    ap.add_argument("--supersede-from", metavar="KG_DIR",
-                    help="previous audit's kg dir: same-named nanopubs supersede the URIs in its published.json; "
-                         "byte-identical ones are not re-emitted")
+    ap.add_argument("--supersede-from", metavar="KG_DIR", action="append", default=[],
+                    help="another audit's kg dir: same-named nanopubs supersede the URIs in its published.json; "
+                         "identical ones are not re-emitted (repeatable; this dir's own manifest wins)")
+    ap.add_argument("--no-resolve-heads", action="store_true",
+                    help="do not check on Nanopub Query that a superseded URI is still the head of its chain")
     args = ap.parse_args()
 
     rubric, audit = load(Path(args.audit))
@@ -751,23 +906,28 @@ def main():
     out_dir = Path(args.out) if args.out else HERE / "kg" / audit["audit"]["id"]
     supersede = None
     if args.supersede or args.supersede_from:
-        import json
-        prev_dir = Path(args.supersede_from) if args.supersede_from else out_dir
-        mp = prev_dir / "published.json"
-        if not mp.exists():
-            sys.exit(f"--supersede: no {mp}")
         supersede = {}
-        for n, m in json.loads(mp.read_text()).items():
-            if not m.get("published"):
-                continue
-            prev_file = prev_dir / n
-            supersede[n] = {"nanopub": m["nanopub"], "path": str(prev_file),
-                            "text": prev_file.read_text() if prev_file.exists() else None}
-    written, merged_path, report_path, merged, superseded = build(rubric, audit, out_dir, supersede)
+        dirs = [Path(d) for d in args.supersede_from] + ([out_dir] if args.supersede else [])
+        for prev_dir in dirs:                              # later dirs override earlier ones; own dir last
+            mp = prev_dir / "published.json"
+            if not mp.exists():
+                sys.exit(f"--supersede: no {mp}")
+            for n, m in json.loads(mp.read_text()).items():
+                if not m.get("published"):
+                    continue
+                prev_file = prev_dir / n
+                supersede[n] = {"nanopub": m["nanopub"], "path": str(prev_file),
+                                "text": prev_file.read_text() if prev_file.exists() else None}
+    written, merged_path, report_path, merged, superseded = build(rubric, audit, out_dir, supersede,
+                                                                  resolve_heads=not args.no_resolve_heads)
     if getattr(build, "unchanged", None):
         print(f"  {len(build.unchanged)} nanopub(s) identical to already-published ones, not re-emitted:")
         for n, old in build.unchanged:
             print(f"    {n}  = {old}")
+    if getattr(build, "skipped", None):
+        print(f"  {len(build.skipped)} nanopub(s) whose published URI is no longer the head of its chain, skipped:")
+        for n, old, head in build.skipped:
+            print(f"    {n}  {old}  -> head {head}")
     print(f"wrote {len(written)} nanopubs, {merged_path.name} ({len(merged)} triples), {report_path.name}")
     print(f"  -> {out_dir}")
     if audit.get("_measurements"):
@@ -776,7 +936,7 @@ def main():
               f"{sum(len(v) for v in ms.get('measurements', {}).values())} measurement(s)"
               + (f", missing: {[m['file'] for m in ms.get('missing', [])]}" if ms.get("missing") else ""))
     if superseded:
-        print(f"  {len(superseded)} nanopub(s) changed -> npx:supersedes added:")
+        print(f"  {len(superseded)} nanopub(s) changed -> npx:supersedes added (heads confirmed on Nanopub Query):")
         for n, old in superseded:
             print(f"    {n}  supersedes  {old}")
     if args.conform:
@@ -784,12 +944,12 @@ def main():
         if probs:
             print(f"\nProbKnow conformance: {len(probs)} problem(s)"); [print("  -", p) for p in probs]
             sys.exit(2)
-        print(f"ProbKnow conformance: OK ({len(written)} nanopubs; pk: terms all declared in "
-              f"{ONTOLOGY_PATH.name}; no legacy IRIs; pubinfo complete; LLM assessments attributed)")
+        print(f"ProbKnow conformance: OK ({len(written)} nanopubs; pk: terms all declared in {ONTOLOGY_PATH.name}; "
+              f"assertions, provenance and pubinfo match their linked templates; full timestamps; no legacy IRIs)")
     if args.query:
         print("\nSPARQL: overall assessments")
         for r in merged.query(DEMO_QUERY % PK):
-            print(f"  {float(r.woe):.3f}  {str(r.verdict):20s} {r.claim}   [assessed by {r.model}]")
+            print(f"  {float(r.p):.3f}  {str(r.verdict):20s} {r.claim}   [assessed by {r.model}]")
 
 
 if __name__ == "__main__":
