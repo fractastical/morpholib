@@ -14,6 +14,7 @@ Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) 
 | 2010 | Petroff et al., conical stromatolites | [`2010-petroff-stromatolite.py`](./2010-petroff-stromatolite.py) | unevaluated |
 | 2013 | Chindapol et al., flow-driven coral growth | [`2013-chindapol-coral-flow.py`](./2013-chindapol-coral-flow.py) | 55.5 |
 | 2013 | Lobo, Malone & Levin, Planform planarian morphologies | [`2013-lobo-planform-morphology.py`](./2013-lobo-planform-morphology.py), [`1900-planformDB_parser.py`](./1900-planformDB_parser.py) | 66.5 |
+| 2014 | Lobo et al., Limbform limb morphologies (salamander, frog, crustacean, insect, arachnid) | [`2014-lobo-limbform-morphology.py`](./2014-lobo-limbform-morphology.py) | unevaluated |
 | 2018 | Hoffmann et al., insect wing venation | [`2018-hoffmann-wing-venation.py`](./2018-hoffmann-wing-venation.py) | 77.8 |
 | 2021 | Cervera, Levin & Mafe, bioelectric morphogen antagonism | [`2021-Cervera–Levin–Mafe.py`](./2021-Cervera–Levin–Mafe.py) | unevaluated |
 | 2024 | Kahng et al., coral colony geometry | [`2024-kahng-coral-geometry.py`](./2024-kahng-coral-geometry.py) | unevaluated |
@@ -91,6 +92,24 @@ The original PlanformDB reader. Reads a local PlanformDB SQLite/EDB file (`PLANF
 
 ![PlanformDB timeline: experiments, publications, and cumulative morphologies](parser_output.png)
 
+### [2014-lobo-limbform-morphology.py](./2014-lobo-limbform-morphology.py)
+
+The limb sibling of the Planform decoder. Limbform (Lobo, Feldman, Shah, Malone & Levin 2014) is the same lab's formal database of limb-regeneration experiments: 565 limb morphologies of salamanders (axolotl, newts), frogs (*Xenopus*), crustaceans (fiddler crab, crayfish, *Cancer* crabs), insects (cockroaches, cricket) and a spider, each encoded as a labelled graph, and Figure 1 of the *Regeneration* paper shows photograph, graph and software-drawn cartoon side by side for one species per category. This script reproduces the cartoon column for every morphology from the database alone. In Limbform's formalism limb segments are the graph *edges* (`Link`: type, length `Dist`, direction `Ang`, number of long bones), joints are the *vertices* carrying border radii (one per bisector of consecutive segments, or three at +90/+180/+270° for a terminal joint — the same rule as Planform's regions, satisfied by 3137 of the 3146 joints in LimbformDB 2.1.0 and checked at load time), sub-joints sit on a segment for grafts and ectopic limbs, and digits hang off a hand or foot segment with their own length, direction and phalanx count. The decoder lays the graph out from the labels, walks once around the limb tree collecting the joint radii in order into one closed smoothed outline, and colours it as in the paper's cartoons (proximal red → distal blue; arthropod coxa green and basis/trochanter yellow), drawing bones and digits for the tetrapods. 555 of the 565 rows have geometry; the other ten are outcome labels ("Lethal", "No limb", "Molted"). Non-tree encodings fall back to flat per-segment polygons.
+
+The LimbformDB file (SQLite, 897 024 bytes, SHA-256 `9c26bf39…099f0`) is not vendored; `--download` fetches it from the Lobo lab into the git-ignored `.limbform_cache/` and checks the hash.
+
+```bash
+python3 2014-lobo-limbform-morphology.py --download               # gallery PNG + morphospace timeline GIF
+python3 2014-lobo-limbform-morphology.py --ids 1 280 314 490 491  # the five Fig. 1 wild types
+python3 2014-lobo-limbform-morphology.py --csv limb_morphospace.csv --no-anim
+```
+
+Outputs (git-ignored): `limbform_wildtype_gallery.png` (the Fig. 1 row — axolotl forelimb, *Xenopus* hindlimb, fiddler-crab walking leg, cricket T3 leg, huntsman-spider leg — plus ten further wild types: salamander hindlimb and stage-41 larva, frog forelimb and stage-51 hindlimb, *Cancer* claw, crayfish walking leg, fiddler-crab claw, cockroach legs, spider pedipalp), `limbform_morphospace_timeline.gif` (year-by-year first reports 1948–2013 of the 498 morphologies that appear as experimental results, ending with one morphospace grid per category), and an optional CSV of per-morphology measurements (segment and digit counts, proximodistal path length, bounding box, silhouette area, first-report year and species).
+
+**References:**
+- Lobo D, Feldman EB, Shah M, Malone TJ, Levin M (2014). Limbform: a functional ontology-based database of limb regeneration experiments. *Bioinformatics* 30(24):3598-3600. [DOI](https://doi.org/10.1093/bioinformatics/btu582)
+- Lobo D, Feldman EB, Shah M, Malone TJ, Levin M (2014). A bioinformatics expert system linking functional data to anatomical outcomes in limb regeneration. *Regeneration* 1(2):37-56. [DOI](https://doi.org/10.1002/reg2.13)
+
 ### [2018-hoffmann-wing-venation.py](./2018-hoffmann-wing-venation.py)
 
 Hoffmann, Donoughe, Li, Salcedo & Rycroft's (2018) developmental model of insect wing venation, run the way the authors ran it and on their own example wing (a hindwing of the dragonfly *Arigomphus villosipes*, downloaded from their repository and cached). The real wing is segmented into its silhouette and vein network; the primary vein scaffold is kept; the local cell size is read from the distance transform of the real veins; and the secondary veins are regenerated by the paper's mechanism — inhibitory centres scattered at the real local density, equilibrated by Lloyd's algorithm, then Voronoi-tessellated. Real and model wings are compared by domain circularity (c = 4πA/P²) and area distributions. Output: `hoffmann_wing_recapitulation.png`.
@@ -156,6 +175,7 @@ Findings as printed by the script: the median cell length per wing stays in a na
 - [`datasets/odonata/`](./datasets/odonata/): Eshghi et al. 2026 wing-cell measurements (463 wings, with GBIF families and PBDB ages), the 22 fossil taxa's PBDB age records, and 1762 PBDB Odonatoptera occurrences; README with query URLs, licences and retrieval date.
 - [`datasets/raup/`](./datasets/raup/): published Raup parameter values for empirical shells (`variables.json`), the extraction log, paper chronology and citations.
 - [`datasets/planform/`](./datasets/planform/): BibTeX for the Planform papers. The PlanformDB `.edb` itself is not vendored; it ships with Planform.
+- LimbformDB 2.1.0 (`.ldb`) is likewise not vendored; `2014-lobo-limbform-morphology.py --download` fetches it from the Lobo lab into the git-ignored `.limbform_cache/` and verifies its SHA-256.
 - [`datasets/frog_embryo_data_processed/`](./datasets/frog_embryo_data_processed/): per-embryo masks (`*_mask.npz`, one folder per imaging zoom) used by the wave-vector pipeline's detection summary below.
 
 ## Analysis tools
