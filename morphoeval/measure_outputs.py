@@ -380,6 +380,76 @@ def measure_limbform(script: Path) -> list:
     return out
 
 
+def measure_celegans(script: Path) -> list:
+    """Measurements taken by re-running the decoding functions of 2015-santella-wormguides-celegans.py
+    on the SHA-256-pinned WormGUIDES / c302 inputs (git-ignored .celegans_cache/, no download here):
+    name-grammar and parent-before-child checks, the calibrated embryo size, and the atlas against
+    the cell-count / death-count / timing anchors of Sulston et al. 1983 as quoted by WormAtlas."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("celegans_v1", script)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    local = mod.fetch_inputs(download=False, write_manifest=False)
+    frames_ = [mod.read_nuclei(local[f"wormguides/{mod.WG_NUCLEI.format(t=t)}"], t) for t in range(1, mod.N_FRAMES + 1)]
+    offset = mod.movie_offset(local[f"wormguides/{mod.WG_FILES['production']}"])
+    enc = mod.check_encoding(frames_)
+    um = mod.calibrate(frames_)
+    rows = mod.measure(frames_, offset, um)
+    deaths = [ln.strip() for ln in local[f"wormguides/{mod.WG_FILES['deaths']}"].read_text().splitlines() if ln.strip()]
+    seen = {n for f in frames_ for n in f.names}
+    WA = "WormAtlas, Embryo introduction (Sulston et al. 1983), accessed 2026-10-15"
+    out = [
+        M("lineage names parsing as Sulston names", enc["parse_ok"], "count",
+          "distinct names in the 360 nuclei files matching ^(AB|MS|E|C|D|EMS|P[0-4]|Z[23])[aplrdv]*$",
+          reference=enc["n_names"], source="all distinct names in the atlas", derived_from="script"),
+        M("cells first seen after their parent", enc["parent_ok"], "count",
+          "non-founder cells whose parent name appears in an earlier frame",
+          reference=enc["parent_total"], source="all cells whose parent is in the movie "
+          f"({enc['parent_predates_movie']} founders present at frame 1 have parents that predate it)", derived_from="script"),
+        M("calibration", um, "µm per atlas unit",
+          "longest nuclear cloud (centroid span + one mean diameter) set to the 50 µm egg length",
+          reference=None, source=None, note="assumption: Gönczy et al. 1999 JCB 144:927 ('50-µm-long cell'); the "
+          "atlas coordinates are unit-less (ProductionInfo X/Y/Z_SCALE = 1)", derived_from="script"),
+        M("nuclear cloud width at the last frame", rows[-1]["extent_y_um"], "µm",
+          "y span of nuclear centroids + one mean diameter under the calibration", derived_from="script",
+          note="no width reference recorded; nuclei do not reach the eggshell"),
+        M("nuclei at the last frame", rows[-1]["n_cells"], "count", f"valid rows of t{mod.N_FRAMES:03d}-nuclei "
+          f"(movie-minute {rows[-1]['movie_min']})", reference=558, source=f"{WA}: 558 cells at hatching (671 generated, 113 deaths)",
+          note="the movie ends before hatching; 553 of the 580 nuclei carry a parts-list identity", derived_from="script"),
+        M("maximum nucleus count", max(r["n_cells"] for r in rows), "count", "maximum over the 360 frames",
+          reference=550, source=f"{WA}: ~550 cells at the end of proliferation (330-350 min)", derived_from="script"),
+        M("deaths listed by the atlas", len(deaths), "count", "names in CellDeaths.csv", reference=113,
+          source=f"{WA}: 113 embryonic cell deaths", derived_from="script"),
+        M("listed dying cells that occur in the movie", sum(d in seen for d in deaths), "count",
+          "CellDeaths.csv names present in at least one nuclei file", reference=len(deaths), derived_from="script"),
+    ]
+    g = mod.gastrulation_onset(rows)
+    if g:
+        out.append(M("gastrulation onset, cell count", g["n_cells"], "count",
+                     "first frame from which the E cells sit at < 0.8 of the median normalised radius for 5 frames",
+                     reference=mod.LIT["gastrulation_cells"], source=f"{WA}: ~30-cell stage (26-28 cells when Ea/Ep ingress)",
+                     derived_from="script"))
+        out.append(M("gastrulation onset, movie-minute", g["movie_min"], "min", "same frame, frame index + movie start offset",
+                     reference=mod.LIT["gastrulation_min"], source=f"{WA}: Ea/Ep enter the embryo at 100 min after first cleavage",
+                     note="discrepancy: the atlas clock runs ~27 min ahead of the Sulston schedule at the same cell stage; "
+                          "not resolved by the script (temperature or time origin)", derived_from="script"))
+    at = [r for r in rows if 330 <= r["movie_min"] <= 350]
+    if at:
+        out.append(M("nuclei at movie-minute 330-350", f"{at[0]['n_cells']}-{at[-1]['n_cells']}", "count",
+                     "nucleus count over that window", reference=550, source=f"{WA}: ~550 cells at 330-350 min",
+                     derived_from="script"))
+    edges = mod.read_edges(local[f"c302/{mod.C302_EDGES}"])
+    nodes = {mod.canonical_cell(a) for a, b, _, _ in edges} | {mod.canonical_cell(b) for a, b, _, _ in edges}
+    neurons = sorted(n for n in nodes if mod.NEURON_RE.match(n))
+    out.append(M("neurons in the connectome edge list", len(neurons), "count",
+                 "upper-case node names of c302 herm_full_edgelist.csv after DA01->DA1 canonicalisation",
+                 reference=302, source="Cook et al. 2019 / White et al. 1986: 302 hermaphrodite neurons",
+                 note="CANL/CANR are 'no synapses' in the WormGUIDES parts list and so cannot appear in an edge list",
+                 derived_from="script"))
+    return out
+
+
 def measure_raup(script: Path, variables: Path) -> list:
     """Effective translation rate from the script's own raup_shell(): Raup's T is the axial
     translation per revolution relative to the generating-curve centre's distance from the
@@ -500,6 +570,8 @@ def main():
                 out["measurements"][sid] = measure_odonata(ROOT / sim["script"])
             elif sid == "lobo-limbform-morphology":
                 out["measurements"][sid] = measure_limbform(ROOT / sim["script"])
+            elif sid == "santella-wormguides-celegans":
+                out["measurements"][sid] = measure_celegans(ROOT / sim["script"])
         except Exception as ex:  # a failed measurement is reported, never silently skipped
             out["measurements"][sid] = [{"name": "measurement failed", "value": None, "unit": None,
                                          "method": f"{type(ex).__name__}: {ex}"}]

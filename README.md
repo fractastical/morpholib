@@ -15,6 +15,7 @@ Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) 
 | 2013 | Chindapol et al., flow-driven coral growth | [`2013-chindapol-coral-flow.py`](./2013-chindapol-coral-flow.py) | 55.5 |
 | 2013 | Lobo, Malone & Levin, Planform planarian morphologies | [`2013-lobo-planform-morphology.py`](./2013-lobo-planform-morphology.py), [`1900-planformDB_parser.py`](./1900-planformDB_parser.py) | 66.5 |
 | 2014 | Lobo et al., Limbform limb morphologies (salamander, frog, crustacean, insect, arachnid) | [`2014-lobo-limbform-morphology.py`](./2014-lobo-limbform-morphology.py) | 71.3 |
+| 2015 | Santella et al., WormGUIDES *C. elegans* embryo atlas + OpenWorm connectome | [`2015-santella-wormguides-celegans.py`](./2015-santella-wormguides-celegans.py) | pending |
 | 2018 | Hoffmann et al., insect wing venation | [`2018-hoffmann-wing-venation.py`](./2018-hoffmann-wing-venation.py) | 77.8 |
 | 2021 | Cervera, Levin & Mafe, bioelectric morphogen antagonism | [`2021-Cervera–Levin–Mafe.py`](./2021-Cervera–Levin–Mafe.py) | unevaluated |
 | 2024 | Kahng et al., coral colony geometry | [`2024-kahng-coral-geometry.py`](./2024-kahng-coral-geometry.py) | unevaluated |
@@ -112,6 +113,22 @@ MorphoEval audit `2026-10-14-limbform-audit` at commit `747c57f`: **71.3** (mode
 - Lobo D, Feldman EB, Shah M, Malone TJ, Levin M (2014). Limbform: a functional ontology-based database of limb regeneration experiments. *Bioinformatics* 30(24):3598-3600. [DOI](https://doi.org/10.1093/bioinformatics/btu582)
 - Lobo D, Feldman EB, Shah M, Malone TJ, Levin M (2014). A bioinformatics expert system linking functional data to anatomical outcomes in limb regeneration. *Regeneration* 1(2):37-56. [DOI](https://doi.org/10.1002/reg2.13)
 
+### [2015-santella-wormguides-celegans.py](./2015-santella-wormguides-celegans.py)
+
+The nematode member of the four-views family. For *C. elegans* the photograph/EM layer (WormAtlas), the schematic (Sulston's lineage chart), a formal layer and a running software model (OpenWorm/Sibernetic) all exist, but in separate projects, and the formal layer that is usually meant — the NeuroML connectome — is connectivity, not anatomy. The one formal description of embryonic *geometry* is the WormGUIDES atlas (Santella et al. 2015): the position, diameter and lineage name of every nucleus at every minute of a diSPIM recording (image series DISPIM_061416, strain JIM113, 360 frames), plus segmented single-cell meshes for a subset of cells. This script downloads those files from a pinned commit of the WormGUIDES repository (SHA-256 manifest in [`datasets/celegans/`](./datasets/celegans/)), decodes the StarryNite tables, checks that the 1330 names form the Sulston tree (all parse; every cell appears after its parent), re-derives the lineage chart from the names alone, draws the nuclei to scale at six stages and the cell meshes at one, and puts the OpenWorm c302 connectome (Cook et al. 2019 edge list, 300 neurons) beside them as the connectivity layer. The atlas coordinates carry no unit, so they are calibrated by setting the longest nuclear cloud to the 50 µm egg length (Gönczy et al. 1999) — an assumption stated on the figure.
+
+```bash
+python3 2015-santella-wormguides-celegans.py --download        # ~430 small files into the git-ignored .celegans_cache/
+python3 2015-santella-wormguides-celegans.py --csv celegans_embryo_timeseries.csv
+```
+
+Outputs (git-ignored): `celegans_four_views.png` (lineage chart; nuclei by founder lineage at 4, 13, 28, 87, 360 and 580 cells; 51 cell meshes at frame 330; connectome adjacency matrix), `celegans_lineage_chart.png`, `celegans_embryo_timeline.gif` (120 frames: nuclei plus the cell count stacked by founder), and an optional per-frame CSV. Against Sulston's schedule as quoted by WormAtlas the cell-stage anchors agree (113 listed deaths, all in the movie; 562–571 nuclei at 330–350 min against ~550; gastrulation when the E cells ingress at 26 cells against the ~30-cell stage) but the clock does not: the atlas reaches gastrulation at movie-minute 73 against 100 min after first cleavage, a discrepancy the script reports and does not resolve. Details and sources: [`datasets/celegans/README.md`](./datasets/celegans/README.md).
+
+**References:**
+- Santella A, Catena R, Kovacevic I, Shah P, Yu Z, Marquina-Solis J, Kumar A, Wu Y, Schaff J, Colón-Ramos D, Shroff H, Mohler WA, Bao Z (2015). WormGUIDES: an interactive single cell developmental atlas and tool for collaborative multidimensional data exploration. *BMC Bioinformatics* 16:189. [DOI](https://doi.org/10.1186/s12859-015-0627-8). Data: [zhirongbaolab/WormGUIDES](https://github.com/zhirongbaolab/WormGUIDES) (GPL-3.0).
+- Sarma GP, et al. (2018). OpenWorm: overview and recent advances in integrative biological simulation of *Caenorhabditis elegans*. *Phil Trans R Soc B* 373:20170382. [DOI](https://doi.org/10.1098/rstb.2017.0382). Connectome: [openworm/c302](https://github.com/openworm/c302) (MIT), from Cook SJ, et al. (2019) *Nature* 571:63–71.
+- Sulston JE, Schierenberg E, White JG, Thomson JN (1983). The embryonic cell lineage of the nematode *Caenorhabditis elegans*. *Dev Biol* 100:64–119. [DOI](https://doi.org/10.1016/0012-1606(83)90201-4)
+
 ### [2018-hoffmann-wing-venation.py](./2018-hoffmann-wing-venation.py)
 
 Hoffmann, Donoughe, Li, Salcedo & Rycroft's (2018) developmental model of insect wing venation, run the way the authors ran it and on their own example wing (a hindwing of the dragonfly *Arigomphus villosipes*, downloaded from their repository and cached). The real wing is segmented into its silhouette and vein network; the primary vein scaffold is kept; the local cell size is read from the distance transform of the real veins; and the secondary veins are regenerated by the paper's mechanism — inhibitory centres scattered at the real local density, equilibrated by Lloyd's algorithm, then Voronoi-tessellated. Real and model wings are compared by domain circularity (c = 4πA/P²) and area distributions. Output: `hoffmann_wing_recapitulation.png`.
@@ -178,6 +195,7 @@ Findings as printed by the script: the median cell length per wing stays in a na
 - [`datasets/raup/`](./datasets/raup/): published Raup parameter values for empirical shells (`variables.json`), the extraction log, paper chronology and citations.
 - [`datasets/planform/`](./datasets/planform/): BibTeX for the Planform papers. The PlanformDB `.edb` itself is not vendored; it ships with Planform.
 - LimbformDB 2.1.0 (`.ldb`) is likewise not vendored; `2014-lobo-limbform-morphology.py --download` fetches it from the Lobo lab into the git-ignored `.limbform_cache/` and verifies its SHA-256.
+- [`datasets/celegans/`](./datasets/celegans/): SHA-256 manifest of the 416 WormGUIDES / c302 files (pinned commits) that `2015-santella-wormguides-celegans.py --download` fetches into the git-ignored `.celegans_cache/`, with a README on sources, licences, the calibration assumption and the literature anchors.
 - [`datasets/frog_embryo_data_processed/`](./datasets/frog_embryo_data_processed/): per-embryo masks (`*_mask.npz`, one folder per imaging zoom) used by the wave-vector pipeline's detection summary below.
 
 ## Analysis tools
