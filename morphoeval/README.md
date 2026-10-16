@@ -205,8 +205,24 @@ differ). The second is the **C. elegans** audit
 `2864784`): overall 67.7, 9 nanopubs (rubric reused), published to the test
 registry first with the fixed signer, verified with `check_signed.mjs` and
 fetched back from both registries before going to production; overall claim
-https://w3id.org/np/RASUT7taw502ymt3A17lN_bXMn4rC1HY3FNs1ai8YkZSQ. The re-issue
-of the earlier 64 as superseding, conformant nanopubs is the next wave.
+https://w3id.org/np/RASUT7taw502ymt3A17lN_bXMn4rC1HY3FNs1ai8YkZSQ.
+
+**Re-issue wave (2026-10-16):** the three earlier audits were rebuilt with
+`--supersede` (`2026-10-14-morphology-audit` and `2026-10-14-odonata-audit`
+also with `--supersede-from morphoeval/kg/2026-10-14-limbform-audit`, so the
+rubric is recognised as already re-issued and not emitted again). Of the 64
+pre-template nanopubs, 10 were no longer the heads of their chains (the
+original rubric, superseded by RAhBMChd…, and the 9 planarian-animation
+nanopubs of 2026-10-13, superseded by the 2026-10-14 re-score); the builder
+skipped those and removed their stale unsigned files. The other 54 were
+re-emitted in template shape with scores, evidence and measurements unchanged,
+each `npx:supersedes` its predecessor (heads confirmed on Nanopub Query first),
+published to the test registry, verified (`check_signed.mjs` 64/64 incl. the
+retained files), fetched back, then published to production; Nanopub Query now
+resolves every old URI to its re-issue. `published.json` keeps the old URI
+under `history`. The signer's production gate now checks only the files it is
+about to post (manifest entries whose file was superseded elsewhere no longer
+block it).
 
 ## Current checkpoint
 

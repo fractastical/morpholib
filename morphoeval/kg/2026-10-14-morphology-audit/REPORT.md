@@ -2,7 +2,7 @@
 
 Rubric **0.1.0** · checkpoint `161f269` · assessor `pkr:model/claude-fable-5-1` (pk:LLMClaimAssessment) · tracked in https://github.com/fractastical/morpholib/issues/1
 
-Scores are 0–100 (emitted as `pk:weightOfEvidence` = score/100); Overall is the rubric-weighted mean. Unevaluated scripts carry a claim but no assessments.
+Scores are 0–100 (emitted as `pk:hasProbability` = score/100 on the LLM assessment of the dimension hypothesis); Overall is the rubric-weighted mean and the claim's `pk:weightOfEvidence`. Unevaluated scripts carry no nanopubs yet.
 
 | Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Faithfulness | Reproducibility | **Overall** | verdict |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
@@ -44,7 +44,7 @@ Remediation:
 
 ## Morphology snapshot
 
-The binaries stay out of git; the sha256 pins the exact file that was scored, and the morphometrics record the form itself (`schema:PropertyValue` evidence on the morphometric-validation assessment).
+The binaries stay out of git; the sha256 pins the exact file that was scored, and the morphometrics record the form itself (written into the reasoning of the morphometric-validation assessment).
 
 ### PlanformDB planarian morphology animation
 - `planform_morphology_gallery.png` — sha256 `77a7dfa087bf8944…`, 443,915 B, 1920×2160 px

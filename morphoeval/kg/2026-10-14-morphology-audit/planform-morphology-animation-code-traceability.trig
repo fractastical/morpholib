@@ -1,7 +1,7 @@
 @prefix dct: <http://purl.org/dc/terms/> .
-@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
 @prefix pk: <https://w3id.org/probknow/ontology/> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -16,56 +16,52 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/claim/morphoeval-planform-morphology-animation> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability> .
     <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability> a pk:LLMClaimAssessment ;
         rdfs:label "PlanformDB planarian morphology animation — Code-to-model traceability: 75/100" ;
-        dct:date "2026-10-14"^^xsd:date ;
-        dct:description "The decoding rule, the coordinate convention (+y anterior, wild-type head->trunk angle 3pi/2) and the cartoon convention are documented where they are implemented, and region_outline() names the figure it reproduces. The radii-count rule was established by checking the database rather than quoted from a numbered equation, because the papers describe the formalism in prose." ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
+        rdfs:comment "The decoding rule, the coordinate convention (+y anterior, wild-type head->trunk angle 3pi/2) and the cartoon convention are documented where they are implemented, and region_outline() names the figure it reproduces. The radii-count rule was established by checking the database rather than quoted from a numbered equation, because the papers describe the formalism in prose. Evidence: 2013-lobo-planform-morphology.py L35–L38: coordinate convention <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L35-L38>; 2013-lobo-planform-morphology.py L321–L331: region_outline() docstring: arc construction and Fig. 1D <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L321-L331>; 2013-lobo-planform-morphology.py L211–L244: load_first_report_year(): experiment->publication join documented <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L211-L244>." ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
-        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
-        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability-0>,
-            <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability-1>,
-            <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability-2> ;
-        pk:hasVerdict "mostly faithful" ;
-        pk:weightOfEvidence 7.5e-01 .
-    <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability-0> a pk:EvidenceItem ;
-        rdfs:label "2013-lobo-planform-morphology.py L35–L38" ;
-        dct:description "coordinate convention" ;
-        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L35-L38> .
-    <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability-1> a pk:EvidenceItem ;
-        rdfs:label "2013-lobo-planform-morphology.py L321–L331" ;
-        dct:description "region_outline() docstring: arc construction and Fig. 1D" ;
-        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L321-L331> .
-    <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability-2> a pk:EvidenceItem ;
-        rdfs:label "2013-lobo-planform-morphology.py L211–L244" ;
-        dct:description "load_first_report_year(): experiment->publication join documented" ;
-        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L211-L244> .
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-planform-morphology-animation-code-traceability> ;
+        pk:hasProbability "0.75"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-planform-morphology-animation-code-traceability> rdfs:label "PlanformDB planarian morphology animation (2013-lobo-planform-morphology.py) satisfies the MorphoEval 0.1.0 criterion 'Code-to-model traceability' for Planaria (Schmidtea mediterranea, Dugesia japonica)" ;
+        dct:identifier "morphoeval/0.1.0/code-traceability" .
     <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
-        rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
-        dct:identifier "claude-fable-5-1" ;
-        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
-        foaf:homepage <https://www.anthropic.com> .
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" .
 }
 
 sub:provenance {
-    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        prov:wasAttributedTo <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
         prov:wasDerivedFrom <https://doi.org/10.1016/j.bpj.2017.04.011>,
             <https://doi.org/10.1093/bioinformatics/btt088>,
-            <https://doi.org/10.1242/bio.20123400>,
-            <https://github.com/fractastical/morpholib/commit/161f269>,
-            <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+            <https://doi.org/10.1242/bio.20123400> .
+    <https://doi.org/10.1016/j.bpj.2017.04.011> dct:date "2017"^^xsd:gYear ;
+        dct:title "Long-Term, Stochastic Editing of Regenerative Anatomy via Targeting Endogenous Bioelectric Gradients" .
+    <https://doi.org/10.1093/bioinformatics/btt088> dct:date "2013"^^xsd:gYear ;
+        dct:title "Planform: an application and database of graph-encoded planarian regenerative experiments" .
+    <https://doi.org/10.1242/bio.20123400> dct:date "2013"^^xsd:gYear ;
+        dct:title "Towards a bioinformatics of patterning: a computational approach to understanding regulative morphogenesis" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "PlanformDB planarian morphology animation — Code-to-model traceability 75/100" ;
-        dct:created "2026-10-14T00:00:00+00:00"^^xsd:dateTime ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-16T18:52:23Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
         npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability> ;
-        npx:supersedes <https://w3id.org/np/RAyl1l8sRFjwWqqLtOaLgp67isuICoy445n-vSiE1qlFU> ;
+        npx:supersedes <https://w3id.org/np/RAgEhWXGZfpytsxtr3poI5-hGjiVQ5Bk7GjB_h-Yioz7A> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
         pk:domain <https://w3id.org/probknow/resource/domain/levin-lab> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/levin-lab> rdfs:label "levin-lab" .
 }

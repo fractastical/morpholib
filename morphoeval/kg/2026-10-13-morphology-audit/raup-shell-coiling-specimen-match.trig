@@ -1,11 +1,10 @@
 @prefix dct: <http://purl.org/dc/terms/> .
-@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
 @prefix pk: <https://w3id.org/probknow/ontology/> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix schema: <https://schema.org/> .
 @prefix sub: <http://purl.org/nanopub/temp/np001/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -17,55 +16,46 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/claim/morphoeval-raup-shell-coiling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-raup-shell-coiling-specimen-match> .
     <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-raup-shell-coiling-specimen-match> a pk:LLMClaimAssessment ;
         rdfs:label "Raup shell coiling morphospace — Morphological realism / specimen match: 30/100" ;
-        dct:date "2026-10-13"^^xsd:date ;
-        dct:description "Planispiral forms are plausible; all high-spired / conical reference taxa are wrong because the spire never develops." ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        rdfs:comment "Planispiral forms are plausible; all high-spired / conical reference taxa are wrong because the spire never develops. Evidence: raup_shell_animation.gif (generated output, not in repo): mid-animation frame: six panels, all planispiral — raup_shell_animation.gif: rendered output of create_raup_animations.py at f3fe478, image/gif, 24248756 B, 3600×2400 px, 161 frames, sha256 aea20e93a9a79a94a4685ba67c78684cf879030e2a3c5ff552cfad44cd43bc51." ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
-        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
-        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-raup-shell-coiling-specimen-match-0> ;
-        pk:hasVerdict "unfaithful" ;
-        pk:weightOfEvidence 3e-01 .
-    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-raup-shell-coiling-output-raup-shell-animation-gif> a prov:Entity,
-            schema:ImageObject,
-            pk:EvidenceItem ;
-        rdfs:label "raup_shell_animation.gif" ;
-        dct:description "rendered output of create_raup_animations.py at f3fe478; sha256 pins the exact file that was scored; 3600×2400 px, 161 frames" ;
-        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f3fe478/create_raup_animations.py> ;
-        schema:contentSize "24248756 B" ;
-        schema:encodingFormat "image/gif" ;
-        schema:height 2400 ;
-        schema:sha256 "aea20e93a9a79a94a4685ba67c78684cf879030e2a3c5ff552cfad44cd43bc51" ;
-        schema:width 3600 .
-    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-raup-shell-coiling-specimen-match-0> a pk:EvidenceItem ;
-        rdfs:label "raup_shell_animation.gif (generated output, not in repo)" ;
-        dct:description "mid-animation frame: six panels, all planispiral" ;
-        prov:wasDerivedFrom <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-raup-shell-coiling-output-raup-shell-animation-gif> .
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-raup-shell-coiling-specimen-match> ;
+        pk:hasProbability "0.3"^^xsd:double ;
+        pk:hasVerdict "unfaithful" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-raup-shell-coiling-specimen-match> rdfs:label "Raup shell coiling morphospace (create_raup_animations.py, 1966-raup.py) satisfies the MorphoEval 0.1.0 criterion 'Morphological realism / specimen match' for Coiled molluscs (Nautilus, Turritella, Cerithium, Conus, Helix; ammonites)" ;
+        dct:identifier "morphoeval/0.1.0/specimen-match" .
     <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
-        rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
-        dct:identifier "claude-fable-5-1" ;
-        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
-        foaf:homepage <https://www.anthropic.com> .
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" .
 }
 
 sub:provenance {
-    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        prov:wasAttributedTo <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
-        prov:wasDerivedFrom <https://doi.org/10.1126/science.147.3663.1294>,
-            <https://github.com/fractastical/morpholib/commit/f3fe478>,
-            <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0>,
-            <https://www.jstor.org/stable/1301992> .
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1126/science.147.3663.1294> .
+    <https://doi.org/10.1126/science.147.3663.1294> dct:date "1965"^^xsd:gYear ;
+        dct:title "Theoretical morphology of the coiled shell" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "Raup shell coiling morphospace — Morphological realism / specimen match 30/100" ;
-        dct:created "2026-10-13T00:00:00+00:00"^^xsd:dateTime ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-16T18:51:44Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
         npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-raup-shell-coiling-specimen-match> ;
+        npx:supersedes <https://w3id.org/np/RACYeB6T8cl6Eb0oZqs1cAGMPdfqUr9xYZv67C0R477o8> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

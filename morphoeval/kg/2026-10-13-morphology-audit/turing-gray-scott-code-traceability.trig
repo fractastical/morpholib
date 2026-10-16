@@ -1,7 +1,7 @@
 @prefix dct: <http://purl.org/dc/terms/> .
-@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
 @prefix pk: <https://w3id.org/probknow/ontology/> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -16,44 +16,49 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/claim/morphoeval-turing-gray-scott> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-turing-gray-scott-code-traceability> .
     <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-turing-gray-scott-code-traceability> a pk:LLMClaimAssessment ;
         rdfs:label "Gray-Scott reaction-diffusion patterns — Code-to-model traceability: 55/100" ;
-        dct:date "2026-10-13"^^xsd:date ;
-        dct:description "Update equations are commented inline; no reference to the source equations." ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
+        rdfs:comment "Update equations are commented inline; no reference to the source equations. Evidence: 1952-turing-morpho.py L37–L39: inline comments <https://github.com/fractastical/morpholib/blob/f3fe478/1952-turing-morpho.py#L37-L39>." ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
-        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
-        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-code-traceability-0> ;
-        pk:hasVerdict "partially faithful" ;
-        pk:weightOfEvidence 5.5e-01 .
-    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-code-traceability-0> a pk:EvidenceItem ;
-        rdfs:label "1952-turing-morpho.py L37–L39" ;
-        dct:description "inline comments" ;
-        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f3fe478/1952-turing-morpho.py#L37-L39> .
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-turing-gray-scott-code-traceability> ;
+        pk:hasProbability "0.55"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-turing-gray-scott-code-traceability> rdfs:label "Gray-Scott reaction-diffusion patterns (1952-turing-morpho.py) satisfies the MorphoEval 0.1.0 criterion 'Code-to-model traceability' for Generic (Turing pattern formation)" ;
+        dct:identifier "morphoeval/0.1.0/code-traceability" .
     <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
-        rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
-        dct:identifier "claude-fable-5-1" ;
-        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
-        foaf:homepage <https://www.anthropic.com> .
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" .
 }
 
 sub:provenance {
-    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        prov:wasAttributedTo <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
         prov:wasDerivedFrom <https://doi.org/10.1098/rstb.1952.0012>,
-            <https://doi.org/10.1126/science.261.5118.189>,
-            <https://github.com/fractastical/morpholib/commit/f3fe478>,
-            <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+            <https://doi.org/10.1126/science.261.5118.189> .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The chemical basis of morphogenesis" .
+    <https://doi.org/10.1126/science.261.5118.189> dct:date "1993"^^xsd:gYear ;
+        dct:title "Complex patterns in a simple system" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "Gray-Scott reaction-diffusion patterns — Code-to-model traceability 55/100" ;
-        dct:created "2026-10-13T00:00:00+00:00"^^xsd:dateTime ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-16T18:51:44Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
         npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-turing-gray-scott-code-traceability> ;
+        npx:supersedes <https://w3id.org/np/RAePZr1nO9CfMuGFTA-jbRKgxIX0NWRuLbG3Dxa7skKfc> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

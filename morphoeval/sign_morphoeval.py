@@ -69,8 +69,11 @@ def main():
     manifest_path = kg / "published.json"
     manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
 
+    files = sorted(f for f in kg.glob("*.trig") if not a.only or f.name in a.only)
     if a.publish == "prod":
-        not_tested = [n for n, m in manifest.items() if m.get("published") != "test"]
+        # every file about to be posted must already be on the test registry (or on production from
+        # an earlier run); manifest entries whose file is gone (superseded elsewhere) do not count
+        not_tested = [f.name for f in files if manifest.get(f.name, {}).get("published") not in ("test", "prod")]
         if not_tested or not manifest:
             sys.exit("refusing --publish prod: publish to the test registry first "
                      f"({len(not_tested) or 'all'} nanopubs not yet test-published)")
@@ -78,7 +81,6 @@ def main():
             sys.exit("aborted")
 
     conf = NanopubConf(profile=load_profile(), use_test_server=(a.publish == "test"))
-    files = sorted(f for f in kg.glob("*.trig") if not a.only or f.name in a.only)
     for f in files:
         ds = Dataset(); ds.parse(f, format="trig")
         np_ = Nanopub(rdf=ds, conf=conf)

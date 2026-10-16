@@ -440,6 +440,9 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
         for t in ds.graph(URIRef(TEMP + "assertion")):
             merged.add(t)
 
+    def same_dir_prev(prev, p):
+        return Path(prev.get("path", "")).resolve() == p.resolve()
+
     def emit(name, ds):
         p = out_dir / name
         text = serialize_trig(ds)
@@ -463,6 +466,8 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
                              "(use --no-resolve-heads to override)")
                 if head != old:
                     skipped.append((name, old, head))
+                    if same_dir_prev(prev, p) and p.exists():
+                        p.unlink()              # stale unsigned copy; the chain's head lives in another audit dir
                     return                      # superseded elsewhere already; its head is re-issued from there
             add_supersedes(ds, old)
             text = serialize_trig(ds)

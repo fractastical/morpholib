@@ -1,11 +1,10 @@
 @prefix dct: <http://purl.org/dc/terms/> .
-@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
 @prefix pk: <https://w3id.org/probknow/ontology/> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix schema: <https://schema.org/> .
 @prefix sub: <http://purl.org/nanopub/temp/np001/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -17,56 +16,49 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/claim/morphoeval-turing-gray-scott> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-turing-gray-scott-specimen-match> .
     <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-turing-gray-scott-specimen-match> a pk:LLMClaimAssessment ;
         rdfs:label "Gray-Scott reaction-diffusion patterns — Morphological realism / specimen match: 50/100" ;
-        dct:date "2026-10-13"^^xsd:date ;
-        dct:description "Not tied to a specific organism; neutral baseline (not applicable)." ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        rdfs:comment "Not tied to a specific organism; neutral baseline (not applicable). Evidence: turing_patterns.gif (generated output, not in repo): mid frame inspected — turing_patterns.gif: rendered output of 1952-turing-morpho.py at f3fe478, image/gif, 14075347 B, 1280×960 px, 500 frames, sha256 0ddf48cbca6cf3df80bf611fded797346cb34d93a3308897ed7d2f2005c20c84." ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
-        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
-        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-specimen-match-0> ;
-        pk:hasVerdict "not applicable (neutral baseline)",
-            "partially faithful" ;
-        pk:weightOfEvidence 5e-01 .
-    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-output-turing-patterns-gif> a prov:Entity,
-            schema:ImageObject,
-            pk:EvidenceItem ;
-        rdfs:label "turing_patterns.gif" ;
-        dct:description "rendered output of 1952-turing-morpho.py at f3fe478; sha256 pins the exact file that was scored; 1280×960 px, 500 frames" ;
-        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f3fe478/1952-turing-morpho.py> ;
-        schema:contentSize "14075347 B" ;
-        schema:encodingFormat "image/gif" ;
-        schema:height 960 ;
-        schema:sha256 "0ddf48cbca6cf3df80bf611fded797346cb34d93a3308897ed7d2f2005c20c84" ;
-        schema:width 1280 .
-    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-specimen-match-0> a pk:EvidenceItem ;
-        rdfs:label "turing_patterns.gif (generated output, not in repo)" ;
-        dct:description "mid frame inspected" ;
-        prov:wasDerivedFrom <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-turing-gray-scott-output-turing-patterns-gif> .
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-turing-gray-scott-specimen-match> ;
+        pk:hasProbability "0.5"^^xsd:double ;
+        pk:hasVerdict "not applicable (neutral baseline)" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-turing-gray-scott-specimen-match> rdfs:label "Gray-Scott reaction-diffusion patterns (1952-turing-morpho.py) satisfies the MorphoEval 0.1.0 criterion 'Morphological realism / specimen match' for Generic (Turing pattern formation)" ;
+        dct:identifier "morphoeval/0.1.0/specimen-match" .
     <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
-        rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
-        dct:identifier "claude-fable-5-1" ;
-        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
-        foaf:homepage <https://www.anthropic.com> .
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" .
 }
 
 sub:provenance {
-    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        prov:wasAttributedTo <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
         prov:wasDerivedFrom <https://doi.org/10.1098/rstb.1952.0012>,
-            <https://doi.org/10.1126/science.261.5118.189>,
-            <https://github.com/fractastical/morpholib/commit/f3fe478>,
-            <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> .
+            <https://doi.org/10.1126/science.261.5118.189> .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The chemical basis of morphogenesis" .
+    <https://doi.org/10.1126/science.261.5118.189> dct:date "1993"^^xsd:gYear ;
+        dct:title "Complex patterns in a simple system" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "Gray-Scott reaction-diffusion patterns — Morphological realism / specimen match 50/100" ;
-        dct:created "2026-10-13T00:00:00+00:00"^^xsd:dateTime ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-16T18:51:44Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
         npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-turing-gray-scott-specimen-match> ;
+        npx:supersedes <https://w3id.org/np/RARn-FHKoyyJiibP2jf7vOCXgyMRNNcKo2bLpUDkxgQHo> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

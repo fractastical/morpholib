@@ -1,11 +1,10 @@
 @prefix dct: <http://purl.org/dc/terms/> .
-@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
 @prefix pk: <https://w3id.org/probknow/ontology/> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix schema: <https://schema.org/> .
 @prefix sub: <http://purl.org/nanopub/temp/np001/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -17,52 +16,48 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/claim/morphoeval-chindapol-coral-flow> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-chindapol-coral-flow-overall> .
     <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-chindapol-coral-flow-overall> a pk:LLMClaimAssessment ;
         rdfs:label "Chindapol flow-driven coral growth — MorphoEval overall 55.5/100" ;
-        dct:date "2026-10-13"^^xsd:date ;
-        dct:description "Declared reduction: the paper's 3-D Navier-Stokes + advection-diffusion accretive growth (solved in COMSOL) is replaced by 2-D DLA-with-drift, with drift bias standing in for the Peclet number. Qualitative symmetric-to-upstream transition and compactification are recovered. Overall 55.5/100 (faithfulness 49.3, reproducibility 70.0); rubric morphoeval 0.1.0; checkpoint commit f3fe478; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, scikit-image 0.26.0." ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        rdfs:comment "Declared reduction: the paper's 3-D Navier-Stokes + advection-diffusion accretive growth (solved in COMSOL) is replaced by 2-D DLA-with-drift, with drift bias standing in for the Peclet number. Qualitative symmetric-to-upstream transition and compactification are recovered. Overall 55.5/100 (faithfulness 49.3, reproducibility 70.0); rubric morphoeval 0.1.0; checkpoint commit f3fe478; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, scikit-image 0.26.0. Dimension assessments: Model fidelity to source 40, Morphological realism / specimen match 45, Parameter expressivity 70, Morphometric validation 55, Source and data traceability 80, Code-to-model traceability 65, Reproducibility package 65. Output judged: chindapol_coral_flow_morphospace.png: rendered output of 2013-chindapol-coral-flow.py, not present when the audit was snapshotted (unfingerprinted)." ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
-        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-chindapol-coral-flow> ;
         pk:evidenceAgainst "remediation needed: Compare smmag / alignment curves numerically against the paper's reported values.",
             "remediation needed: Replace DLA-with-drift with a real 2-D flow + advection-diffusion + accretive-growth solver." ;
-        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-chindapol-coral-flow-output-chindapol-coral-flow-morphospace-png> ;
-        pk:hasVerdict "partially faithful" ;
-        pk:weightOfEvidence 5.55e-01 .
-    <https://w3id.org/probknow/resource/evidence/2026-10-13-morphology-audit-chindapol-coral-flow-output-chindapol-coral-flow-morphospace-png> a prov:Entity,
-            schema:ImageObject,
-            pk:EvidenceItem ;
-        rdfs:label "chindapol_coral_flow_morphospace.png" ;
-        dct:description "rendered output of 2013-chindapol-coral-flow.py; not present when the audit was snapshotted, so unfingerprinted" ;
-        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f3fe478/2013-chindapol-coral-flow.py> .
+        pk:hasProbability "0.555"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-chindapol-coral-flow> rdfs:label "Chindapol flow-driven coral growth faithfully reproduces Scleractinian coral Pocillopora verrucosa morphology" ;
+        dct:identifier "morphoeval/0.1.0/overall" .
     <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
-        rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
-        dct:identifier "claude-fable-5-1" ;
-        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
-        foaf:homepage <https://www.anthropic.com> .
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" .
 }
 
 sub:provenance {
-    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        prov:wasAttributedTo <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
-        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/commit/f3fe478>,
-            <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-chindapol-coral-flow-code-traceability>,
-            <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-chindapol-coral-flow-model-fidelity>,
-            <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-chindapol-coral-flow-morphometric-validation>,
-            <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-chindapol-coral-flow-parameter-expressivity>,
-            <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-chindapol-coral-flow-repro-package>,
-            <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-chindapol-coral-flow-source-traceability>,
-            <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-chindapol-coral-flow-specimen-match> .
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1371/journal.pcbi.1002849> .
+    <https://doi.org/10.1371/journal.pcbi.1002849> dct:date "2013"^^xsd:gYear ;
+        dct:title "Modelling Growth and Form of the Scleractinian Coral Pocillopora verrucosa and the Influence of Hydrodynamics" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "Chindapol flow-driven coral growth — MorphoEval overall 55.5/100" ;
-        dct:created "2026-10-13T00:00:00+00:00"^^xsd:dateTime ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-16T18:51:44Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
         npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-chindapol-coral-flow-overall> ;
+        npx:supersedes <https://w3id.org/np/RA968zro2GLCGAsAWe58kIFtaWUwuYu_6UuAXSEqHqnrc> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-chindapol-coral-flow> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }
