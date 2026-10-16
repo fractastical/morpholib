@@ -1,0 +1,272 @@
+# MorphoEval audit — C. elegans embryo from the WormGUIDES atlas, 2026-10-16
+# (re-score; supersedes 2026-10-15-celegans-audit).
+#
+# What changed since the first audit: the remediation item "verify the 50 um
+# calibration against something in the atlas instead of the nuclear cloud" was
+# done.  The script now fetches and pins the atlas's own eggshell outline
+# meshes (obj_files/embryo_t*.obj, 13 sampled frames) and sets the x extent of
+# the re-segmented shell at frame 330 (303.1 units) to the 50 um egg length,
+# giving 0.1649 um per unit; the shell's unfitted width (29.2 um against the
+# ~30 um egg) and the spread of the per-frame meshes (0.1649-0.1750) are
+# reported as checks and as the scale uncertainty.  A dataset observation came
+# out of it: the atlas reuses one static shell mesh (285.8 units) for frames
+# 1-~250 and the nuclei overrun it at the anterior pole by up to 19 units, so
+# it is not the shell of this egg; the early mesh is reported, not used.  The
+# previous nuclear-cloud estimate (0.1617) sits 2 % below the shell value.
+# Only the three dimensions touched by this change are re-scored; the other
+# four keep their 2026-10-15 values and rationales (updated line numbers).
+#
+# Second audit of 2015-santella-wormguides-celegans.py.  Unlike Planform and
+# Limbform there is no single published "formal morphology" for C. elegans:
+# the formal layer that exists is the connectome (connectivity), and the only
+# formal description of embryonic geometry is the WormGUIDES nuclear-position
+# atlas (Santella et al. 2015).  The script decodes that atlas (360 one-minute
+# frames of nuclear positions, diameters and Sulston lineage names), checks
+# the lineage encoding, re-derives the Sulston chart, calibrates the unit-less
+# coordinates to the 50 um egg and sets the OpenWorm c302 connectome beside
+# it.  There is no simulation here: the audit judges a data decoder, so
+# parameter expressivity is not applicable and is scored neutral, as for the
+# Odonata audit.
+#
+# Scores are on the rubric's 0-100 scale.  Line numbers refer to the files at
+# the checkpoint commit recorded below.
+
+audit:
+  id: 2026-10-16-celegans-audit
+  rubric_version: 0.1.0
+  date: "2026-10-16"
+  supersedes: 2026-10-15-celegans-audit
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Cursor agent)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 303a87e          # eggshell-mesh calibration
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Inputs: 429 files from zhirongbaolab/WormGUIDES at commit 17be611f
+      (GPL-3.0; 360 nuclei tables of image series DISPIM_061416 / strain
+      JIM113, 51 cell meshes at frame 330, 13 eggshell outline meshes
+      embryo_t{1,30,60,100,200,250,280,300,320,330,340,350,359}.obj, CellShapesConfig.csv,
+      ProductionInfo.csv, partslist.txt, CellDeaths.csv) and openworm/c302 at
+      commit f54d92d7 (MIT; c302/data/herm_full_edgelist.csv), downloaded by
+      the script into the git-ignored .celegans_cache/ and verified against
+      datasets/celegans/pinned_inputs.sha256 on every run.
+
+references:
+  santella2015:
+    title: "WormGUIDES: an interactive single cell developmental atlas and tool for collaborative multidimensional data exploration"
+    authors: "Santella A, Catena R, Kovacevic I, Shah P, Yu Z, Marquina-Solis J, Kumar A, Wu Y, Schaff J, Colón-Ramos D, Shroff H, Mohler WA, Bao Z"
+    venue: "BMC Bioinformatics 16:189 (2015), CC BY 4.0"
+    doi: 10.1186/s12859-015-0627-8
+  sarma2018:
+    title: "OpenWorm: overview and recent advances in integrative biological simulation of Caenorhabditis elegans"
+    authors: "Sarma GP, Lee CW, Portegys T, Ghayoomie V, Jacobs T, Alicea B, Cantarelli M, Currie M, Gerkin RC, Gingell S, Gleeson P, Gordon R, Hasani RM, Idili G, Khayrulin S, Lung D, Palyanov A, Watts M, Larson SD"
+    venue: "Phil Trans R Soc B 373:20170382 (2018)"
+    doi: 10.1098/rstb.2017.0382
+  cook2019:
+    title: "Whole-animal connectomes of both Caenorhabditis elegans sexes"
+    authors: "Cook SJ, Jarrell TA, Brittin CA, Wang Y, Bloniarz AE, Yakovlev MA, Nguyen KCQ, Tang LT-H, Bayer EA, Duerr JS, Bülow HE, Hobert O, Hall DH, Emmons SW"
+    venue: "Nature 571:63-71 (2019); edge list as redistributed by openworm/c302"
+    doi: 10.1038/s41586-019-1352-7
+  sulston1983:
+    title: "The embryonic cell lineage of the nematode Caenorhabditis elegans"
+    authors: "Sulston JE, Schierenberg E, White JG, Thomson JN"
+    venue: "Dev Biol 100:64-119 (1983); counts and timings quoted via WormAtlas, Embryo introduction, accessed 2026-10-15"
+    doi: 10.1016/0012-1606(83)90201-4
+  gonczy1999:
+    title: "Dissection of cell division processes in the one cell stage Caenorhabditis elegans embryo by mutational analysis"
+    authors: "Gönczy P, Schnabel H, Kaletta T, Amores AD, Hyman T, Schnabel R"
+    venue: "J Cell Biol 144:927-946 (1999); '50-um-long cell', applied to the atlas's eggshell mesh to calibrate the atlas units; the ~30 um width is used as an unfitted check"
+    doi: 10.1083/jcb.144.5.927
+  wormguides_repo:
+    title: "WormGUIDES atlas and application source, commit 17be611f10cdc8ea438e67dc9ca3de859487a05e"
+    authors: "Bao lab (zhirongbaolab)"
+    venue: "https://github.com/zhirongbaolab/WormGUIDES (GPL-3.0)"
+    url: https://github.com/zhirongbaolab/WormGUIDES/tree/17be611f10cdc8ea438e67dc9ca3de859487a05e
+  c302_repo:
+    title: "c302: NeuroML-based C. elegans nervous-system models, commit f54d92d7e9d2410ff6c47d9ae866649f1a419ee8"
+    authors: "OpenWorm"
+    venue: "https://github.com/openworm/c302 (MIT)"
+    url: https://github.com/openworm/c302/tree/f54d92d7e9d2410ff6c47d9ae866649f1a419ee8
+
+simulations:
+  - id: santella-wormguides-celegans
+    name: WormGUIDES C. elegans embryo atlas with the OpenWorm connectome
+    organism: "Caenorhabditis elegans embryo, 4-cell stage to ~580 nuclei (strain JIM113, diSPIM series DISPIM_061416)"
+    script: 2015-santella-wormguides-celegans.py
+    output: celegans_four_views.png
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [santella2015, sarma2018, cook2019, sulston1983, gonczy1999, wormguides_repo, c302_repo]
+    summary: >-
+      Downloads the WormGUIDES atlas at a pinned commit and verifies 429 files
+      against a SHA-256 manifest; decodes the 360 StarryNite nuclei tables
+      with the column semantics of the WormGUIDES loader (valid flag, x, y, z,
+      diameter, lineage name) and the movie-start offset of
+      ProductionInfo.csv; checks that all 1330 distinct names follow the
+      Sulston grammar and that every cell whose parent is in the movie appears
+      after it (1326/1326); re-derives the lineage chart from the names; sets
+      the atlas's own eggshell outline mesh at frame 330 to the 50 um egg
+      length (0.1649 um per unit; the shell's unfitted width comes out 29.2
+      um, the 13 sampled shell meshes bracket the scale at 0.1649-0.1750,
+      the earlier nuclear-cloud estimate was 0.1617); draws the nuclei to
+      scale inside the shell outline at six stages, 51 single-cell meshes at
+      frame 330 and the c302 connectome adjacency matrix (300 neurons after
+      name canonicalisation).  Reports that the atlas reuses a static shell
+      mesh for frames 1-~250 that the nuclei overrun by up to 19 units.  Against WormAtlas's quotation of
+      Sulston et al. the cell-stage anchors agree (113 listed deaths all
+      present, 562-571 nuclei at 330-350 min against ~550, E-cell ingression
+      at 26 cells against the ~30-cell stage) but the clock runs ~27 min
+      ahead (gastrulation at movie-minute 73 against 100), which the script
+      reports and does not resolve.
+    scores:
+      model-fidelity:
+        value: 80
+        rationale: >-
+          Re-scored from 75.  The atlas is decoded as the WormGUIDES
+          application decodes it: the column positions follow
+          AceTreeTableLineageDataLoader, the time offset and unit scale are
+          read from ProductionInfo.csv, mesh cells and the eggshell outline
+          are taken from CellShapesConfig.csv.  The Sulston naming grammar
+          and parent-of relation are implemented explicitly and tested on
+          every name.  The physical scale is now anchored to the atlas's own
+          segmentation of the eggshell rather than to the nuclear cloud, so
+          the one remaining assumption is that this egg has the typical 50
+          um length; the choice of the frame-330 shell over the static early
+          mesh is justified in the code by the measured nuclear overrun.
+          Not higher because that assumption remains, because the 3D atlas
+          is shown as a 2D projection (back-to-front by z) rather than the
+          application's 3D rendering, and because the connectome layer is a
+          summed adjacency matrix that drops the chemical/electrical
+          distinction and Cook et al.'s muscle and end-organ nodes.
+        evidence:
+          - {file: 2015-santella-wormguides-celegans.py, lines: [254, 275], note: "read_nuclei()/movie_offset(): loader columns, ProductionInfo offset"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [277, 319], note: "founder()/parent_of()/check_encoding(): Sulston grammar and tree"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [102, 113], note: "WG_SHELL, SHELL_FRAMES, CALIB_FRAME, EMBRYO_LENGTH_UM"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [335, 368], note: "calibrate()/shell_report()/nuclear_cloud_scale(): the shell-based scale, why frame 330, the cross-check"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [564, 595], note: "canonical_cell()/draw_connectome(): neuron set and matrix"}
+      specimen-match:
+        value: 62
+        rationale: >-
+          Re-scored from 60.  The re-derived lineage chart has the shape of
+          Sulston's diagram (founder sub-trees in order, AB dominating, P4
+          ending in two cells); the nuclei are now drawn inside the atlas's
+          eggshell outline, which fills the 50 x 29 um egg and shows the
+          cloud growing out to the shell, and gastrulation shows as the E
+          cells moving inward.  Distinct stages are visually distinct.  The
+          gain is small because the shell is the atlas's segmentation, not a
+          photograph: no DIC frame or WormGUIDES screenshot is placed beside
+          the output, the WormAtlas images are only cited, and the meshes at
+          frame 330 are drawn as flat projections, so resemblance to the real
+          embryo is still argued from counts and extents rather than shown
+          side by side.
+        evidence:
+          - {file: celegans_four_views.png, lines: [0, 0], note: "lineage chart, six stages inside the shell outline, meshes, connectome"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [433, 480], note: "lineage_layout()/draw_lineage(): the chart from the names"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [482, 508], note: "draw_shell()/draw_embryo(): shell hull, discs at recorded diameter, z-ordered"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [520, 541], note: "draw_meshes(): the atlas's OBJ shapes in the nuclei frame"}
+      parameter-expressivity:
+        value: 50
+        not_applicable: true
+        rationale: >-
+          Not applicable: the script decodes a recorded atlas, it has no
+          morphospace parameters.  The only knobs are the calibration length,
+          the frames shown and the gastrulation detector's threshold, all of
+          which are constants stated in the code.  Scored neutral so that it
+          neither rewards nor penalises the overall.
+        evidence:
+          - {file: 2015-santella-wormguides-celegans.py, lines: [113, 122], note: "EMBRYO_LENGTH_UM and the literature constants"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [390, 398], note: "gastrulation_onset(): threshold and hold"}
+      morphometric-validation:
+        value: 72
+        rationale: >-
+          Re-scored from 65.  Per-frame morphometrics are computed and
+          written to CSV (nucleus count by founder, extents, mean diameter,
+          normalised E-cell radius) and compared in the script's own output
+          against the literature: 113 deaths listed and all present, 562-571
+          nuclei at 330-350 min against ~550, 580 nuclei at the last frame
+          against 558 at hatching (671 generated), E-cell ingression at 26
+          cells against the ~30-cell stage, and the 300 connectome neurons
+          against 302.  The calibration now has checks of its own: the
+          fitted length leaves the shell width unfitted and it comes out
+          29.2 um against the ~30 um egg; the 13 sampled shell meshes bound
+          the scale to 0.1649-0.1750 um per unit; the nuclear overrun of
+          each shell mesh is measured (19.0 units for the static early mesh,
+          1.8 at frame 330); and the previous nuclear-cloud estimate is
+          recomputed as a cross-check (2 % lower).  The timing anchor still
+          disagrees (movie-minute 73 against 100 min) and is reported as a
+          discrepancy, not explained, and no nuclear-diameter reference is
+          compared.
+        evidence:
+          - {file: 2015-santella-wormguides-celegans.py, lines: [348, 368], note: "shell_report(): shell lengths, nuclear overrun, scale bracket"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [370, 388], note: "measure(): per-frame morphometrics"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [401, 423], note: "literature_checks(): the anchors printed"}
+          - {file: morphoeval/measure_outputs.py, lines: [383, 468], note: "measure_celegans(): the same values plus the four shell measurements in the sidecar"}
+          - {file: celegans_four_views.png, lines: [0, 0], note: "the output judged"}
+      source-traceability:
+        value: 85
+        rationale: >-
+          Both repositories are pinned to a commit and licence, every input
+          file has a SHA-256 in datasets/celegans/pinned_inputs.sha256 that is
+          checked on every run, the papers are cited with DOIs, the acquisition
+          metadata (image series, strain, frame interval, movie start) is read
+          from the atlas's own ProductionInfo.csv, and the WormAtlas pages are
+          cited with URL and access date.  The Sulston counts and timings are
+          quoted second-hand via WormAtlas rather than from the 1983 paper.
+        evidence:
+          - {file: 2015-santella-wormguides-celegans.py, lines: [24, 49], note: "references, commits, licences, what each is used for"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [92, 111], note: "pinned commits and paths, including the shell meshes"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [163, 199], note: "fetch_inputs(): manifest verification"}
+          - {file: datasets/celegans/pinned_inputs.sha256, lines: [1, 3], note: "manifest header: commits and retrieval date"}
+      code-traceability:
+        value: 75
+        rationale: >-
+          The docstring names the loader whose column semantics are followed,
+          the ProductionInfo fields used, the source of every literature
+          constant and the calibration reference; each check prints the value
+          and the literature anchor it is compared with.  The nuclei-file
+          format itself (StarryNite/AceTree) is documented only by the
+          WormGUIDES loader source, not by a paper section, so the trace stops
+          at code rather than at a publication.
+        evidence:
+          - {file: 2015-santella-wormguides-celegans.py, lines: [1, 22], note: "the four layers and what is decoded"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [113, 124], note: "LIT constants and the Sulston grammar"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [266, 275], note: "movie_offset(): the ProductionInfo field read"}
+      repro-package:
+        value: 70
+        rationale: >-
+          Deterministic, invocation documented in the docstring and README,
+          the inputs are fetched and hash-verified by the script itself and
+          missing mesh files are handled (the shape config's frame ranges are
+          sparse), outputs are identical on re-run.  First run needs network
+          access to raw.githubusercontent.com; dependencies are in
+          requirements.txt with lower bounds only, and the known-good
+          environment is recorded only in this audit.
+        evidence:
+          - {file: 2015-santella-wormguides-celegans.py, lines: [32, 40], note: "documented invocation and outputs"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [201, 227], note: "_fetch(): download, sparse mesh handling"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [674, 723], note: "main()"}
+          - {file: requirements.txt, lines: [1, 7], note: "lower bounds only"}
+    remediation:
+      - Place a WormGUIDES figure panel (Santella et al. 2015 is CC BY) or a DIC frame beside the decoded nuclei at the same stage and measure the agreement.
+      - Resolve the ~27 min clock offset against Sulston's schedule (recording temperature, or the meaning of "movie start time 20 min") with the Bao lab or the diSPIM metadata.
+      - Replace the 50 um assumption with the acquisition voxel size of DISPIM_061416 (not in the repository's ProductionInfo.csv; ask the Bao lab), and ask why the shell mesh is static for frames 1-~250 while the nuclei overrun it.
+      - Draw the connectome with chemical and electrical edges separated, and keep the muscle/end-organ nodes that Cook et al. include.
+      - Pin the Python 3.14 environment (exact versions) in requirements or a lock file.

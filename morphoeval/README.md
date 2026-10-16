@@ -205,7 +205,17 @@ differ). The second is the **C. elegans** audit
 `2864784`): overall 67.7, 9 nanopubs (rubric reused), published to the test
 registry first with the fixed signer, verified with `check_signed.mjs` and
 fetched back from both registries before going to production; overall claim
-https://w3id.org/np/RASUT7taw502ymt3A17lN_bXMn4rC1HY3FNs1ai8YkZSQ.
+https://w3id.org/np/RASUT7taw502ymt3A17lN_bXMn4rC1HY3FNs1ai8YkZSQ. It was
+re-scored the next day (`2026-10-16-celegans-audit` at commit `303a87e`,
+overall 70.2) after the script's calibration was moved from the nuclear cloud
+to the atlas's own eggshell mesh; only model-fidelity (75 → 80), specimen-match
+(60 → 62) and morphometric-validation (65 → 72) changed, the other four
+dimensions keep their rationales with updated line numbers. The 9 new nanopubs
+`npx:supersedes` the 2026-10-15 ones (built with `--supersede-from
+morphoeval/kg/2026-10-15-celegans-audit --supersede-from
+morphoeval/kg/2026-10-14-limbform-audit`, so the shared rubric is not
+re-emitted); overall claim
+https://w3id.org/np/RAqDf8b5w5WNe3Chr8OWp5uUyU8U1Bz5BrbGdamyd4BOU.
 
 **Re-issue wave (2026-10-16):** the three earlier audits were rebuilt with
 `--supersede` (`2026-10-14-morphology-audit` and `2026-10-14-odonata-audit`
@@ -238,5 +248,5 @@ Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1).
 | Hoffmann–Donoughe wing venation | f3fe478, audit 2026-10-13 | 81.1 | 70.0 | **77.8** |
 | Odonata wing cells, fossil vs extant (`2026-eshghi-odonata-wing-cells.py`) | fbbcaf6, audit 2026-10-14-odonata | 75.7 | 76.7 | **76.0** |
 | LimbformDB limb morphologies (`2014-lobo-limbform-morphology.py`) | 747c57f, audit 2026-10-14-limbform | 70.0 | 74.3 | **71.3** |
-| WormGUIDES C. elegans embryo atlas + connectome (`2015-santella-wormguides-celegans.py`) | 2864784, audit 2026-10-15-celegans | 63.9 | 76.3 | **67.7** |
+| WormGUIDES C. elegans embryo atlas + connectome (`2015-santella-wormguides-celegans.py`) | 303a87e, audit 2026-10-16-celegans (re-score of 2026-10-15: 67.7) | 67.6 | 76.3 | **70.2** |
 | Petroff stromatolite / Kahng coral / Cervera–Levin–Mafe | — | — | — | *unevaluated* |

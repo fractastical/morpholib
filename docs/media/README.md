@@ -15,7 +15,7 @@ options added in the same change; inputs as documented for each script.
 | `chindapol_coral_flow_growth.gif` | `python3 2013-chindapol-coral-flow.py --no-show --gif chindapol.gif` | 48 → 48 |
 | `planform_morphospace_timeline.gif` | `PLANFORM_DB_PATH=… python3 2013-lobo-planform-morphology.py` → `planform_morphospace_timeline.gif` | 63 → 63 |
 | `limbform_morphospace_timeline.gif` | `python3 2014-lobo-limbform-morphology.py` → `limbform_morphospace_timeline.gif` | 66 → 66 |
-| `celegans_embryo_timeline.gif` | `python3 2015-santella-wormguides-celegans.py` → `celegans_embryo_timeline.gif` | 120 → 60 |
+| `celegans_embryo_timeline.gif` | `python3 2015-santella-wormguides-celegans.py` → `celegans_embryo_timeline.gif` (remade 2026-10-16 at `303a87e`, eggshell outline added) | 120 → 60 |
 | `hoffmann_wing_lloyd.gif` | `python3 2018-hoffmann-wing-venation.py --no-show --gif hoffmann.gif` | 35 → 19 (identical hold frames merged) |
 | `cervera_levin_mafe_gj_block.gif` | `python3 "2021-Cervera–Levin–Mafe.py" --gif cervera.gif` | 46 → 46 |
 | `kahng_coral_geometry_growth.gif` | `python3 2024-kahng-coral-geometry.py --no-show --gif kahng.gif` | 24 → 16 (identical hold frames merged) |
