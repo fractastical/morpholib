@@ -147,9 +147,24 @@ def real_domains(seg):
 # --------------------------------------------------------------------------- #
 # Step 4: regenerate the secondary veins with the equilibration model.
 # --------------------------------------------------------------------------- #
-def model_wing(seg, n_cells, n_iter=18, seed=0):
+def _tessellate(seeds, pts, fr, fc, shape):
+    """Voronoi tessellation of the wing pixels around `seeds` -> (labels, secondary veins)."""
+    _, lab = cKDTree(seeds).query(pts)
+    glabel = np.full(shape, -1, dtype=np.int32)
+    glabel[fr, fc] = lab
+    secondary = np.zeros(shape, dtype=bool)
+    a = glabel
+    d = (a[:, :-1] != a[:, 1:]) & (a[:, :-1] >= 0) & (a[:, 1:] >= 0)
+    secondary[:, :-1] |= d; secondary[:, 1:] |= d
+    d = (a[:-1, :] != a[1:, :]) & (a[:-1, :] >= 0) & (a[1:, :] >= 0)
+    secondary[:-1, :] |= d; secondary[1:, :] |= d
+    return glabel, secondary
+
+
+def model_wing(seg, n_cells, n_iter=18, seed=0, snapshots=False):
     """Scatter `n_cells` inhibitory centers at the real local density, let them
-    equilibrate (Lloyd), then tessellate.  Returns dict(labels, secondary)."""
+    equilibrate (Lloyd), then tessellate.  Returns dict(labels, secondary); with
+    `snapshots=True` also dict(history=[(labels, secondary) after 0..n_iter steps])."""
     mask, cell = seg["mask"], seg["cell"]
     fr, fc = np.where(mask)
     w = 1.0 / (cell[fr, fc] ** 2)
@@ -158,6 +173,7 @@ def model_wing(seg, n_cells, n_iter=18, seed=0):
     idx = rng.choice(fr.size, size=n_cells, replace=False, p=w)
     seeds = np.column_stack([fc[idx], fr[idx]]).astype(float)   # (x, y)
     pts = np.column_stack([fc, fr]).astype(float)
+    history = [_tessellate(seeds, pts, fr, fc, mask.shape)] if snapshots else []
 
     for _ in range(n_iter):                          # Lloyd equilibration
         _, lab = cKDTree(seeds).query(pts)
@@ -168,18 +184,14 @@ def model_wing(seg, n_cells, n_iter=18, seed=0):
         nz = cnt > 0
         new[nz] = acc[nz] / cnt[nz, None]
         seeds = new
+        if snapshots:
+            history.append(_tessellate(seeds, pts, fr, fc, mask.shape))
 
-    _, lab = cKDTree(seeds).query(pts)
-    glabel = np.full(mask.shape, -1, dtype=np.int32)
-    glabel[fr, fc] = lab
-
-    secondary = np.zeros(mask.shape, dtype=bool)
-    a = glabel
-    d = (a[:, :-1] != a[:, 1:]) & (a[:, :-1] >= 0) & (a[:, 1:] >= 0)
-    secondary[:, :-1] |= d; secondary[:, 1:] |= d
-    d = (a[:-1, :] != a[1:, :]) & (a[:-1, :] >= 0) & (a[1:, :] >= 0)
-    secondary[:-1, :] |= d; secondary[1:, :] |= d
-    return dict(labels=glabel, secondary=secondary)
+    glabel, secondary = _tessellate(seeds, pts, fr, fc, mask.shape)
+    out = dict(labels=glabel, secondary=secondary)
+    if snapshots:
+        out["history"] = history
+    return out
 
 
 # --------------------------------------------------------------------------- #
@@ -331,6 +343,43 @@ def make_figure(output, show, downsample):
     plt.close(fig)
 
 
+def make_gif(output, downsample=2, n_iter=18, fps=4):
+    """Animate the model's mechanism on the real wing: the real venation stays on
+    top; below it the secondary veins are the Voronoi tessellation of inhibitory
+    centres that start scattered at the real local density (iteration 0) and
+    equilibrate by Lloyd's algorithm, domain colour = circularity."""
+    from PIL import Image
+    gray = np.asarray(plt.imread(fetch_wing_png()))
+    if gray.ndim == 3:
+        gray = 0.2126 * gray[..., 0] + 0.7152 * gray[..., 1] + 0.0722 * gray[..., 2]
+    if gray.max() <= 1.0:
+        gray = gray * 255.0
+    gray = gray[::downsample, ::downsample].astype(float)
+    seg = segment_wing(gray)
+    _, peaks = real_domains(seg)
+    n_cells = peaks.shape[0]
+    model = model_wing(seg, n_cells, n_iter=n_iter, seed=0, snapshots=True)
+    real_img = _trim(render_real(seg), seg["mask"])
+    frames = []
+    for k, (labels, secondary) in enumerate(model["history"]):
+        img = _trim(render_model(seg, dict(labels=labels, secondary=secondary)), seg["mask"])
+        c, _, _ = domain_stats(labels)
+        fig, (a0, a1) = plt.subplots(2, 1, figsize=(10, 5.6))
+        a0.imshow(real_img, interpolation="nearest"); a0.axis("off")
+        a0.set_title(f"real wing: Arigomphus villosipes hindwing, {n_cells} vein domains", fontsize=10)
+        a1.imshow(img, interpolation="nearest"); a1.axis("off")
+        a1.set_title(f"model: real primary veins + Voronoi of {n_cells} inhibitory centres, "
+                     f"Lloyd iteration {k}/{n_iter}   mean circularity {c.mean():.3f}", fontsize=10)
+        fig.suptitle("Hoffmann et al. 2018: secondary veins from equilibrating inhibitory centres", fontsize=11)
+        fig.tight_layout()
+        fig.canvas.draw()
+        frames.append(Image.fromarray(np.asarray(fig.canvas.buffer_rgba())[..., :3].copy()))
+        plt.close(fig)
+    frames = [frames[0]] * fps + frames + [frames[-1]] * (fps * 3)
+    frames[0].save(output, save_all=True, append_images=frames[1:], duration=int(1000 / fps), loop=0)
+    print(f"Saved animation to {Path(output).resolve()}  ({len(frames)} frames)")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -338,11 +387,14 @@ def main():
                     help="output PNG path (default: repo root)")
     ap.add_argument("--downsample", type=int, default=1,
                     help="integer image downsample factor (speed vs. detail)")
+    ap.add_argument("--gif", metavar="PATH", help="also write the Lloyd-equilibration animation to PATH")
     ap.add_argument("--no-show", dest="show", action="store_false",
                     help="save the figure without opening a window")
     ap.set_defaults(show=True)
     args = ap.parse_args()
     make_figure(args.output, args.show, max(1, args.downsample))
+    if args.gif:
+        make_gif(args.gif, downsample=max(2, args.downsample))
 
 
 if __name__ == "__main__":

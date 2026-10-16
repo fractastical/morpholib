@@ -263,6 +263,59 @@ def make_figure(output, show):
     print(f"  giving ~{hemisphere_sap(np.array([1.0]), MASSIVE['G'], MASSIVE['rho'])[0] / hemisphere_sap(np.array([25.0]), MASSIVE['G'], MASSIVE['rho'])[0]:.0f}x faster surface growth at r=1 cm than at r=25 cm.")
 
 
+def make_gif(output, years=15, fps=4):
+    """Iterate the master rule V(t+1) = V(t) + G S(t)/rho year by year for the four
+    shapes with equal G and rho (shape alone).  Left: the hemisphere and the cone,
+    whose S:V falls as they grow, drawn to scale year by year.  Right: surface area
+    against time for all four shapes on a log axis — the disc and the cylinder keep
+    a constant S:V, so their area grows exponentially (size-independent SAP), while
+    the hemisphere and cone slow down (their extension plateaus at ~G/rho)."""
+    from PIL import Image
+    G, rho = COMMON["G"], COMMON["rho"]
+    h_disc, r_cyl, alpha = 0.5, 0.5, 1.0
+    r_h, r_d, L_c, h_k = 1.0, 1.0, 1.0, 1.0
+    hist = []
+    for t in range(years + 1):
+        hist.append((r_h, r_d, L_c, h_k))
+        r_h += hemisphere_extension(r_h, G, rho)
+        r_d += disc_extension(r_d, G, rho, h_disc)
+        L_c *= 1.0 + cylinder_sap(G, rho, r_cyl)          # S ∝ L for a fixed-radius cylinder
+        h_k += cone_extension(h_k, G, rho, alpha)
+    S = np.array([[2 * np.pi * rh ** 2, np.pi * rd ** 2, 2 * np.pi * r_cyl * lc,
+                   np.pi * (hk / alpha) ** 2 * np.sqrt(1 + alpha ** 2)] for rh, rd, lc, hk in hist])
+    lim = max(hist[-1][0], hist[-1][3]) * 1.15
+    names = ["hemispheroid", "flat disc (h = 0.5 cm)", "cylinder (r = 0.5 cm)", "cone (α = 1)"]
+    cols = ["#1f77b4", "#d62728", "#2ca02c", "#9467bd"]
+    frames = []
+    for t, (r_h, r_d, L_c, h_k) in enumerate(hist):
+        fig = plt.figure(figsize=(11, 4.6))
+        gs = fig.add_gridspec(1, 3, width_ratios=[1, 1, 1.5], wspace=0.35, top=0.78, bottom=0.14, left=0.05, right=0.98)
+        a0 = fig.add_subplot(gs[0]); a1 = fig.add_subplot(gs[1]); a2 = fig.add_subplot(gs[2])
+        a0.add_patch(Wedge((0, 0), r_h, 0, 180, facecolor=cols[0], alpha=0.5, edgecolor=cols[0]))
+        a1.add_patch(Polygon([[-h_k / alpha, 0], [h_k / alpha, 0], [0, h_k]], closed=True,
+                             facecolor=cols[3], alpha=0.5, edgecolor=cols[3]))
+        a0.set_title(f"hemispheroid  r = {r_h:.1f} cm\nSAP {hemisphere_sap(r_h, G, rho):.2f}/yr", fontsize=9)
+        a1.set_title(f"cone (α = 1)  h = {h_k:.1f} cm\nSAP {cone_sap(h_k, G, rho, alpha):.2f}/yr", fontsize=9)
+        for ax in (a0, a1):
+            ax.set_xlim(-lim, lim); ax.set_ylim(-lim * 0.05, lim * 1.05); ax.set_aspect("equal", adjustable="box")
+            ax.axhline(0, color="k", lw=0.6); ax.tick_params(labelsize=7); ax.set_xlabel("cm", fontsize=8)
+        yrs = np.arange(years + 1)
+        for i, (n, c) in enumerate(zip(names, cols)):
+            a2.plot(yrs[:t + 1], S[:t + 1, i], color=c, lw=2, label=n)
+            a2.plot(yrs[t], S[t, i], "o", color=c)
+        a2.set_yscale("log"); a2.set_xlim(0, years); a2.set_ylim(S.min() * 0.8, S.max() * 1.5)
+        a2.set_xlabel("year"); a2.set_ylabel("surface area S (cm²), log scale")
+        a2.set_title("surface area: disc & cylinder keep S:V → exponential;\nhemisphere & cone lose S:V → slow down", fontsize=9)
+        a2.legend(fontsize=7.5, loc="upper left"); a2.grid(alpha=0.25)
+        fig.suptitle(f"Kahng et al. 2024: V(t+1) = V(t) + G·S/ρ with equal G, ρ (shape alone) — year {t}", fontsize=11, y=0.97)
+        fig.canvas.draw()
+        frames.append(Image.fromarray(np.asarray(fig.canvas.buffer_rgba())[..., :3].copy()))
+        plt.close(fig)
+    frames += [frames[-1]] * (fps * 2)
+    frames[0].save(output, save_all=True, append_images=frames[1:], duration=int(1000 / fps), loop=0)
+    print(f"Saved animation to {Path(output).resolve()}  ({len(frames)} frames)")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -270,9 +323,12 @@ def main():
                     help="output PNG path (default: repo root)")
     ap.add_argument("--no-show", dest="show", action="store_false",
                     help="save the figure without opening a window")
+    ap.add_argument("--gif", metavar="PATH", help="also write a year-by-year growth animation of the four shapes to PATH")
     ap.set_defaults(show=True)
     args = ap.parse_args()
     make_figure(args.output, args.show)
+    if args.gif:
+        make_gif(args.gif)
 
 
 if __name__ == "__main__":

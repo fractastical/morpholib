@@ -195,5 +195,53 @@ def demo():
     plt.show()
 
 
+def make_gif(output, n_frames=24, fps=8):
+    """Animate the gap-junction-block sweep: f2 (the diffusion factor of m2) goes
+    1.0 -> 0.4 with f3 = 1.  Top: the m1/m2 AP profiles and the wavefront x* where
+    they are equal.  Bottom: a 2-D 'body' map, AP along x and the lateral axis
+    along y, coloured red where m1 dominates and blue where m2 dominates, with the
+    lateral morphogen m3 as brightness — the territory boundary moves as the block
+    deepens."""
+    from PIL import Image
+    f2_values = np.linspace(1.0, 0.4, n_frames)
+    z, m3 = rd_linear_1d(D=0.02, k=0.08, J_left=0.6, J_right=0.6, T=3.5)
+    g = (m3 / m3.max())[:, None]
+    frames = []
+    for f2 in f2_values:
+        x, m1, m2 = rd_antagonistic_1d(D1=0.02, D2=0.02 * f2, k1=0.08, k2=0.08, k12=2.0, J1=1.0, J2=1.0, T=3.5)
+        xs = compute_wavefront_position(x, m1, m2)
+        fig, (a0, a1) = plt.subplots(2, 1, figsize=(7, 5.6), height_ratios=[1, 1.1])
+        a0.plot(x, m1, color="#c0392b", label="m1 (anterior source)")
+        a0.plot(x, m2, color="#2e6fba", label="m2 (posterior source)")
+        a0.axvline(xs, ls="--", color="k", lw=1, label=f"wavefront x* = {xs:.2f}")
+        a0.set_xlim(0, 1); a0.set_ylim(0, 1.05 * max(m1.max(), m2.max(), 1e-9))
+        a0.set_xlabel("position along the AP axis"); a0.set_ylabel("concentration")
+        a0.legend(fontsize=8, loc="upper center"); a0.grid(alpha=0.25)
+        a0.set_title(f"gap-junction block on m2:  D2 = {f2:.2f} × D2₀   (f3 = 1)", fontsize=10)
+        dom = (m1 - m2) / (m1 + m2 + 1e-9)                      # -1 (m2) .. +1 (m1)
+        rgb = np.ones((len(z), len(x), 3))
+        red = np.clip(dom, 0, 1)[None, :] * g; blue = np.clip(-dom, 0, 1)[None, :] * g
+        rgb[..., 1] -= 0.85 * (red + blue); rgb[..., 2] -= 0.85 * red; rgb[..., 0] -= 0.85 * blue
+        zz, xx = np.meshgrid(z, x, indexing="ij")
+        inside = ((xx - 0.5) / 0.5) ** 2 + ((zz - 0.5) / 0.5) ** 2 <= 1.0
+        rgb[~inside] = 1.0
+        a1.imshow(np.clip(rgb, 0, 1), extent=[0, 1, 0, 1], origin="lower", aspect=0.5, interpolation="bilinear")
+        a1.axvline(xs, ls="--", color="k", lw=1)
+        a1.set_xlabel("AP axis"); a1.set_ylabel("lateral axis"); a1.set_yticks([])
+        a1.set_title("territories: red = m1 dominates, blue = m2 dominates; brightness = m3", fontsize=10)
+        fig.suptitle("Cervera, Levin & Mafe 2021-inspired morphogen antagonism under gap-junction block", fontsize=10.5)
+        fig.tight_layout()
+        fig.canvas.draw()
+        frames.append(Image.fromarray(np.asarray(fig.canvas.buffer_rgba())[..., :3].copy()))
+        plt.close(fig)
+    frames += frames[::-1][1:-1]
+    frames[0].save(output, save_all=True, append_images=frames[1:], duration=int(1000 / fps), loop=0)
+    print(f"Saved animation to {output}  ({len(frames)} frames)")
+
+
 if __name__ == "__main__":
-    demo()
+    import sys
+    if len(sys.argv) >= 3 and sys.argv[1] == "--gif":
+        make_gif(sys.argv[2])
+    else:
+        demo()

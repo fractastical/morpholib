@@ -2,7 +2,7 @@
 
 A chronological collection of small, self-contained reproductions of published models of biological form — from D'Arcy Thompson's transformations to present-day developmental and palaeobiological datasets — plus an evaluation layer ([MorphoEval](#morphoeval-how-faithful-are-these-reproductions)) that scores how faithfully each reproduction follows its source and publishes the scores as nanopublications.
 
-Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) are written to the working directory and are git-ignored except for the three legacy figures embedded below. Setup: `python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt` (some scripts need `scikit-image`).
+Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) are written to the working directory and are git-ignored. Every entry below has a small animation of the morphology it produces (in [`docs/media/`](./docs/media/), downsized copies of the scripts' own GIF output; [`docs/media/README.md`](./docs/media/README.md) records how each was made). Setup: `python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt` (some scripts need `scikit-image`).
 
 ## Chronological examples
 
@@ -25,6 +25,10 @@ Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) 
 
 A demonstration of D'Arcy Thompson's theory of transformations from *On Growth and Form* (1917), showing how one shape can be deformed into another through mathematical transformations. This classic work established the foundation for mathematical biology and the study of biological form.
 
+![Thompson transformations: a fish outline on a Cartesian grid carried through a shear, a fan of coordinates and a radial expansion](docs/media/thompson_transformations.gif)
+
+*What you see:* a stylised fish drawn on a square grid; the grid is deformed by three of Thompson's transformation families (oblique shear as in his *Scarus* → *Pomacanthus*, a fan of coordinates as in *Polyprion* → *Pseudopriacanthus*, a radial expansion as in *Diodon* → the sunfish) and the fish follows the grid. Schematic, not fitted to specimens. `python3 thompson/1917-thompson.py --gif out.gif`; without `--gif` the original two-panel toy opens.
+
 Thompson-focused notes and dataset curation are in:
 - [`thompson/DARCY_THOMPSON_FOCUSED_OPTIONS.md`](./thompson/DARCY_THOMPSON_FOCUSED_OPTIONS.md)
 - [`thompson/MODERN_DATASETS_THOMPSON_ALIGNED.md`](./thompson/MODERN_DATASETS_THOMPSON_ALIGNED.md)
@@ -34,7 +38,9 @@ Thompson-focused notes and dataset curation are in:
 
 A simulation of the Gray-Scott reaction-diffusion model, implementing Alan Turing's theory from "The Chemical Basis of Morphogenesis" (1952). This model generates classic Turing patterns like spots and stripes, demonstrating how simple chemical reactions can produce complex biological patterns.
 
-![Turing patterns (Gray–Scott)](turing_patterns.gif)
+![Turing patterns (Gray–Scott)](docs/media/turing_gray_scott.gif)
+
+*What you see:* the concentration of one of the two Gray–Scott species on a periodic 2-D grid, from a seeded square to a self-organising spot/stripe pattern (the full-size animation is `turing_patterns.gif`).
 
 Audit note (2026-10-13, 52.7): the integrator follows Pearson (1993) correctly, but the run is not placed on Pearson's (f, k) phase diagram and no pattern wavelength is measured, so the output is not tied to a specific published pattern class.
 
@@ -42,7 +48,9 @@ Audit note (2026-10-13, 52.7): the integrator follows Pearson (1993) correctly, 
 
 Implements David Raup's classic model of shell coiling from "Geometric Analysis of Shell Coiling" (1966). This parametric model generates a variety of 3D shell forms by controlling whorl expansion rate (W), distance from coiling axis (D), translation rate (T), and generating curve shape (S). The model demonstrates how three core parameters can generate the vast diversity of mollusk shell morphologies observed in nature.
 
-![Raup shell coiling animation](raup_shell_animation.gif)
+![Raup shell coiling animation](docs/media/raup_shell_coiling.gif)
+
+*What you see:* six shells generated from published (W, D, T) values — Nautilus, Turritella, an ammonite, Conus, Cerithium, Helix — as the viewpoint rotates from side to overhead (the full-size animation is `raup_shell_animation.gif`). The T problem noted in the audit below is visible: Turritella and Cerithium, which should be tall spires, render as flat coils like Nautilus.
 
 Run `python create_raup_animations.py` to generate:
 - Animated GIF showing shells morphing through parameter space
@@ -53,13 +61,21 @@ Audit note (2026-10-13, 37.3): the translation parameter T currently has no visi
 
 ### [2010-petroff-stromatolite.py](./2010-petroff-stromatolite.py)
 
-Petroff et al.'s (2010) biophysics of conical stromatolites: (1) the spacing law ℓ = α√(Dτ), which makes a ~1 cm spacing between neighbouring cones a fingerprint of a ~daylength photosynthetic rhythm and packs cones onto a hexagonal lattice, and (2) a dome-vs-cone morphospace from the deterministic KPZ growth law ∂h/∂t = v + λ(1 + ½(∂h/∂r)²), where β = v/λ sets the aspect ratio. Output: `petroff_stromatolite_morphospace.png`.
+Petroff et al.'s (2010) biophysics of conical stromatolites: (1) the spacing law ℓ = α√(Dτ), which makes a ~1 cm spacing between neighbouring cones a fingerprint of a ~daylength photosynthetic rhythm and packs cones onto a hexagonal lattice, and (2) a dome-vs-cone morphospace from the deterministic KPZ growth law ∂h/∂t = v + λ(1 + ½(∂h/∂r)²), where β = v/λ sets the aspect ratio. Output: `petroff_stromatolite_morphospace.png`; `--gif PATH` adds the animation below.
+
+![Petroff stromatolite: dome-to-cone sweep of beta = v/lambda](docs/media/petroff_stromatolite_dome_to_cone.gif)
+
+*What you see:* a stromatolite cross-section grown lamina by lamina from a small seed under velocity = v·ẑ + λ·n̂ (vertical phototactic growth plus surface-normal mineral accretion), while the ratio β = v/λ sweeps 0.2 → 6 along the bar below: low β rounds the seed into a dome, high β extrudes a sharp cone. The curves are successive laminae, as in a vertical thin-section.
 
 **Reference:** Petroff AP, Sim MS, Maslov A, Krupenin M, Rothman DH, Bosak T (2010). Biophysical basis for the geometry of conical stromatolites. *PNAS* 107(22):9956–9961. [DOI](https://doi.org/10.1073/pnas.1001973107)
 
 ### [2013-chindapol-coral-flow.py](./2013-chindapol-coral-flow.py)
 
-Chindapol et al.'s (2013) flow-driven growth of *Pocillopora verrucosa*. The paper couples polyp-based accretive growth to Navier–Stokes + advection–diffusion in 3D (COMSOL); this script makes a declared reduction to 2D diffusion-limited aggregation with drift, where the drift/diffusion ratio plays the role of the Péclet number, and recovers the paper's transition from symmetric branching (low Pe) to upstream-biased, compact colonies (high Pe). Outputs: `chindapol_coral_flow_morphospace.png` and `chindapol_coral_flow_morphospace_morphometrics.png` (branch-direction rose plots and surface/volume vs Pe).
+Chindapol et al.'s (2013) flow-driven growth of *Pocillopora verrucosa*. The paper couples polyp-based accretive growth to Navier–Stokes + advection–diffusion in 3D (COMSOL); this script makes a declared reduction to 2D diffusion-limited aggregation with drift, where the drift/diffusion ratio plays the role of the Péclet number, and recovers the paper's transition from symmetric branching (low Pe) to upstream-biased, compact colonies (high Pe). Outputs: `chindapol_coral_flow_morphospace.png` and `chindapol_coral_flow_morphospace_morphometrics.png` (branch-direction rose plots and surface/volume vs Pe); `--gif PATH` adds the growth replay below.
+
+![Chindapol coral growth replayed polyp by polyp under no, moderate and strong flow](docs/media/chindapol_coral_flow_growth.gif)
+
+*What you see:* three colonies growing polyp by polyp from one seed, viewed from above, under no flow, moderate flow and strong flow (flow runs left to right; colour = age, dark old to pale new). Each new polyp is placed where a nutrient random-walker first touches the colony, so growth follows nutrient flux; with flow the walkers arrive from upstream and the colony leans into the current and compacts, which is the paper's result.
 
 Audit note (2026-10-13, 55.5): the reduction is explicit, and the paper's symmetry magnitude and branch alignment are computed, but they are not compared numerically with the paper's Figs 9–12.
 
@@ -77,6 +93,10 @@ python3 2013-lobo-planform-morphology.py --csv morphospace.csv --no-anim
 ```
 
 Outputs (git-ignored): `planform_morphology_gallery.png` (16 canonical phenotypes: wild type, double head, headless, cyclops, side heads, polarity reversed, …), `planform_morphospace_timeline.gif` (year-by-year first reports of each morphology against the cumulative catalogue, ending with all 359 dated morphologies as a morphospace grid), and an optional CSV of silhouette morphometrics (AP length, ML width, aspect, organ/region counts). The decoded wild type measures 557.6 × 119.8 Planform units (aspect 4.65) against 560 × 120 encoded in the database; 369 of the 372 morphology rows have geometry, all 369 are distinct encodings, and 167 have distinct body silhouettes (the rest differ only in organs).
+
+![Planform morphospace timeline: planarian morphologies decoded from PlanformDB by year of first report](docs/media/planform_morphospace_timeline.gif)
+
+*What you see:* the left panel counts the morphologies in PlanformDB by the year each was first reported (1898–2013); the right panels draw the morphologies first reported in that year, decoded from the database alone — body regions as smoothed outlines with head (red) and tail (blue) colours, eyes, brain lobes, nerve cords (green) and pharynges. The last frames lay out all 359 dated morphologies as one grid.
 
 Audit note (2026-10-14, 66.5, up from 14.7 for the earlier convex-hull animation): remaining gaps are the absence of a specimen-level comparison and of a recorded hash/version for the external database.
 
@@ -107,6 +127,10 @@ python3 2014-lobo-limbform-morphology.py --csv limb_morphospace.csv --no-anim
 
 Outputs (git-ignored): `limbform_wildtype_gallery.png` (the Fig. 1 row — axolotl forelimb, *Xenopus* hindlimb, fiddler-crab walking leg, cricket T3 leg, huntsman-spider leg — plus ten further wild types: salamander hindlimb and stage-41 larva, frog forelimb and stage-51 hindlimb, *Cancer* claw, crayfish walking leg, fiddler-crab claw, cockroach legs, spider pedipalp), `limbform_morphospace_timeline.gif` (year-by-year first reports 1948–2013 of the 498 morphologies that appear as experimental results, ending with one morphospace grid per category), and an optional CSV of per-morphology measurements (segment and digit counts, proximodistal path length, bounding box, silhouette area, first-report year and species).
 
+![Limbform morphospace timeline: limb morphologies decoded from LimbformDB by year of first report](docs/media/limbform_morphospace_timeline.gif)
+
+*What you see:* each frame shows the limb morphologies first reported in one year (1948–2013), drawn from the database's graph encoding: one smoothed outline per limb coloured proximal red → distal blue, with the arthropod coxa in green and basis/trochanter in yellow, long bones in black and digits in blue for the tetrapods. Normal limbs and experimental outcomes (double limbs, grafts, missing segments) appear as they were published; the closing frames arrange every category's morphologies as grids.
+
 MorphoEval audit `2026-10-14-limbform-audit` at commit `747c57f`: **71.3** (model-fidelity 85, specimen-match 65, parameter-expressivity 75, morphometric-validation 55, source-traceability 85, code-traceability 75, repro-package 65). Against the paper's own Fig. 1 cartoons the five wild types have identical segment and digit counts and pose, but bounding-box-aligned silhouette IoU is only 0.41–0.74 (the frog thigh–shank angle differs most), so either the database was revised after the figure or an angle convention is not captured; that and a comparison with the photographs rather than the cartoons are the open remediation items.
 
 **References:**
@@ -122,6 +146,10 @@ python3 2015-santella-wormguides-celegans.py --download        # ~430 small file
 python3 2015-santella-wormguides-celegans.py --csv celegans_embryo_timeseries.csv
 ```
 
+![C. elegans embryo: every nucleus of the WormGUIDES atlas, coloured by founder lineage, over 360 minutes](docs/media/celegans_embryo_timeline.gif)
+
+*What you see:* left, the embryo seen from above with every nucleus drawn at its recorded position and diameter (scale: a 50 µm egg) and coloured by the founder cell it descends from — AB blue, MS orange, E green (the future gut, which sinks inward at gastrulation), C purple, D yellow, P4 red (the germ line); right, the running cell count stacked by lineage, from 4 cells at minute 20 to ~580 at minute 379, with the red line marking the frame shown.
+
 Outputs (git-ignored): `celegans_four_views.png` (lineage chart; nuclei by founder lineage at 4, 13, 28, 87, 360 and 580 cells; 51 cell meshes at frame 330; connectome adjacency matrix), `celegans_lineage_chart.png`, `celegans_embryo_timeline.gif` (120 frames: nuclei plus the cell count stacked by founder), and an optional per-frame CSV. Against Sulston's schedule as quoted by WormAtlas the cell-stage anchors agree (113 listed deaths, all in the movie; 562–571 nuclei at 330–350 min against ~550; gastrulation when the E cells ingress at 26 cells against the ~30-cell stage) but the clock does not: the atlas reaches gastrulation at movie-minute 73 against 100 min after first cleavage, a discrepancy the script reports and does not resolve. Details and sources: [`datasets/celegans/README.md`](./datasets/celegans/README.md).
 
 MorphoEval audit `2026-10-15-celegans-audit` at commit `2864784`: **67.7** (model-fidelity 75, specimen-match 60, parameter-expressivity 50 — not applicable to a data decoder, scored neutral —, morphometric-validation 65, source-traceability 85, code-traceability 75, repro-package 70). Strengths are the pinned, hash-verified inputs and the encoding checks; the gaps are that no photograph or WormGUIDES panel is placed beside the output, the 50 µm calibration is assumed rather than read from the acquisition metadata, and the clock offset against Sulston's schedule is unexplained. Overall claim: https://w3id.org/np/RASUT7taw502ymt3A17lN_bXMn4rC1HY3FNs1ai8YkZSQ.
@@ -133,7 +161,11 @@ MorphoEval audit `2026-10-15-celegans-audit` at commit `2864784`: **67.7** (mode
 
 ### [2018-hoffmann-wing-venation.py](./2018-hoffmann-wing-venation.py)
 
-Hoffmann, Donoughe, Li, Salcedo & Rycroft's (2018) developmental model of insect wing venation, run the way the authors ran it and on their own example wing (a hindwing of the dragonfly *Arigomphus villosipes*, downloaded from their repository and cached). The real wing is segmented into its silhouette and vein network; the primary vein scaffold is kept; the local cell size is read from the distance transform of the real veins; and the secondary veins are regenerated by the paper's mechanism — inhibitory centres scattered at the real local density, equilibrated by Lloyd's algorithm, then Voronoi-tessellated. Real and model wings are compared by domain circularity (c = 4πA/P²) and area distributions. Output: `hoffmann_wing_recapitulation.png`.
+Hoffmann, Donoughe, Li, Salcedo & Rycroft's (2018) developmental model of insect wing venation, run the way the authors ran it and on their own example wing (a hindwing of the dragonfly *Arigomphus villosipes*, downloaded from their repository and cached). The real wing is segmented into its silhouette and vein network; the primary vein scaffold is kept; the local cell size is read from the distance transform of the real veins; and the secondary veins are regenerated by the paper's mechanism — inhibitory centres scattered at the real local density, equilibrated by Lloyd's algorithm, then Voronoi-tessellated. Real and model wings are compared by domain circularity (c = 4πA/P²) and area distributions. Output: `hoffmann_wing_recapitulation.png`; `--gif PATH` adds the animation below.
+
+![Hoffmann wing venation: inhibitory centres equilibrating by Lloyd's algorithm on the real wing](docs/media/hoffmann_wing_lloyd.gif)
+
+*What you see:* top, the real *Arigomphus villosipes* hindwing with its veins segmented; bottom, the model built on the same wing — the real primary veins are kept, and the secondary veins are the boundaries between inhibitory centres that start scattered at the real local density (iteration 0, ragged cells) and move to the centroid of their own cell at each Lloyd iteration until the pattern settles into the rounded, roughly hexagonal cells of a real wing (cell colour = circularity).
 
 Audit note (2026-10-13, 77.8, the highest in the repo): 923 real vein domains reproduced; circularity real 0.712 vs model 0.867 (hexagonal ceiling 0.907). Needs `scikit-image` and `Pillow`.
 
@@ -147,9 +179,17 @@ A reaction-diffusion demo inspired by Cervera–Levin–Mafe (2021), exploring m
 - Gap-junction blocking effects modeled through diffusion reduction
 - 3D morphospace visualization of mean expressions
 
+![Cervera–Levin–Mafe-inspired antagonism: the m1/m2 boundary moves as the gap-junction block on m2 deepens](docs/media/cervera_levin_mafe_gj_block.gif)
+
+*What you see:* top, the steady-state profiles of the two antagonistic morphogens along the anterior–posterior axis (m1 from an anterior source, m2 from a posterior one; they annihilate where they meet) and the wavefront x* where they are equal; bottom, the same as territories on a schematic body (red = m1 dominates, blue = m2, brightness = the lateral morphogen m3). As the gap-junction block cuts m2's diffusion from 1.0× to 0.4× of normal, the boundary shifts posteriorly, the model's reading of how bioelectric coupling moves positional-information boundaries. `python3 "2021-Cervera–Levin–Mafe.py" --gif out.gif`; without `--gif` the three interactive plots open.
+
 ### [2024-kahng-coral-geometry.py](./2024-kahng-coral-geometry.py)
 
-Kahng, Odle & Wakeman's (2024) geometry of reef-coral colonies. A colony lays down skeleton at a per-area calcification rate G, so volume grows as V(t+1) = V(t) + G·S(t)/ρ; whether linear extension and surface-area productivity are size-dependent is then decided entirely by how the surface-to-volume ratio changes with size. The script reconstructs these relationships for the paper's four canonical shapes (hemispheroid, fixed-aspect cone, flat disc of fixed thickness, cylinder of fixed branch diameter). Output: `kahng_coral_geometry_morphospace.png`.
+Kahng, Odle & Wakeman's (2024) geometry of reef-coral colonies. A colony lays down skeleton at a per-area calcification rate G, so volume grows as V(t+1) = V(t) + G·S(t)/ρ; whether linear extension and surface-area productivity are size-dependent is then decided entirely by how the surface-to-volume ratio changes with size. The script reconstructs these relationships for the paper's four canonical shapes (hemispheroid, fixed-aspect cone, flat disc of fixed thickness, cylinder of fixed branch diameter). Output: `kahng_coral_geometry_morphospace.png`; `--gif PATH` adds the animation below.
+
+![Kahng coral geometry: the master rule iterated year by year for four colony shapes](docs/media/kahng_coral_geometry_growth.gif)
+
+*What you see:* the growth rule V(t+1) = V(t) + G·S/ρ iterated year by year with the same G and ρ for every shape, so only geometry differs. Left, the hemispheroid and the cone drawn to scale: their surface-to-volume ratio falls as they grow, so their extension plateaus and their surface-area productivity (SAP) drops. Right, surface area against time on a log axis: the flat disc and the fixed-diameter cylinder keep S:V constant and grow exponentially — the paper's size-independent SAP — while the two massive shapes level off.
 
 **Reference:** Kahng SE, Odle E, Wakeman KC (2024). Coral geometry and why it matters. *PeerJ* 12:e17037. [DOI](https://doi.org/10.7717/peerj.17037). Code: [ericodle/coral_geometry_modeling](https://github.com/ericodle/coral_geometry_modeling).
 
@@ -166,6 +206,10 @@ python3 2026-eshghi-odonata-wing-cells.py --no-anim --no-resegment --no-crossche
 The fossil half is not taken on trust: every one of the 69 fossil venation drawings in the archive is re-segmented from the pixels (vein ink skeletonised, enclosed regions = cells, scale read from each drawing's own scale bar) and compared wing by wing with Table S1. Cell counts agree to a median 0.0 % (90 % of wings within 2 %), median cell length to 3.4 %, largest cell to 0.9 %; the comparison also turns up one table row that does not match its drawing (#7 *Euarchistigma peterknobli*) and one swapped pair (#23/#24). Per-wing results are in [`datasets/odonata/fossil_wing_resegmentation.csv`](./datasets/odonata/fossil_wing_resegmentation.csv) and `odonata_fossil_resegmentation.png`.
 
 Audit note (2026-10-14, 76.0): parameter expressivity is not applicable to a data analysis and is scored neutral; the strength is morphometric validation (85), the gaps are that the Hoffmann model is tested but not run here and scikit-image is not in `requirements.txt`.
+
+![Odonata wing cells through deep time: each fossil species' venation drawing at true scale against the PBDB record](docs/media/odonata_wing_cells_deep_time.gif)
+
+*What you see:* one fossil species per frame, oldest first (Solnhofen 147 Ma → Crato 116 Ma → Eocene 52 Ma): top, the Odonatoptera fossil record from the Paleobiology Database with the species' age marked; middle, its venation drawing from Eshghi et al.'s archive at true scale; bottom, the measured cell lengths of its wing against the 0.5–1.5 mm band that almost all cells, fossil or living, fall into. The closing frames show the living Aeshnidae and Gomphidae for comparison.
 
 Findings as printed by the script: the median cell length per wing stays in a narrow band across 150 Myr and a 6× range of wing length (fossils 0.78 mm, IQR 0.67–0.94; extant 0.90–0.99 mm) and rises only as L^0.2–0.3, while the largest cells scale almost with the wing (L^0.8); cell counts scale as N ∝ L^1.8 in fossils but N ∝ L^1.0–1.1 in extant wings, versus L² for a strictly constant cell size. For the model this means the inhibition length is approximately, but not strictly, conserved. Outputs (git-ignored): `odonata_wing_cells_scaling.png`, `odonata_fossil_resegmentation.png` and `odonata_wing_cells_deep_time.gif` (each fossil species' venation drawing at true scale against the PBDB Odonatoptera record, ending with the extant Aeshnidae/Gomphidae). Data and provenance: [`datasets/odonata/`](./datasets/odonata/).
 

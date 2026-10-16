@@ -361,6 +361,45 @@ def make_figure(output, show, n_particles):
     plt.close(fig2)
 
 
+def make_gif(output, n_particles, n_frames=48, fps=10):
+    """Replay the growth of three colonies (no flow, moderate, strong flow) polyp by
+    polyp: `order` records the step at which each cell was added, so frame k shows
+    every cell with order <= k * n_particles / n_frames."""
+    from PIL import Image
+    drifts = [(0.0, "no flow (Pe->0)"), (0.09, "moderate flow"), (0.22, "strong flow (high Pe)")]
+    sims = [simulate_coral(d, n_particles=n_particles, seed=100 + i * 2) for i, (d, _) in enumerate(drifts)]
+    coral_cmap = LinearSegmentedColormap.from_list("coral", ["#7a3b2e", "#c0603f", "#ef9b7f", "#ffd9c7"])
+    views = []
+    for order, _ in sims:
+        ys_i, xs_i = np.nonzero(order >= 0)
+        cxc = 0.5 * (xs_i.min() + xs_i.max()); cyc = 0.5 * (ys_i.min() + ys_i.max())
+        half = 0.5 * max(xs_i.max() - xs_i.min(), ys_i.max() - ys_i.min()) + 8
+        views.append((cxc, cyc, half))
+    frames = []
+    for k in range(1, n_frames + 1):
+        cut = k * n_particles / n_frames
+        fig, axes = plt.subplots(1, 3, figsize=(10.5, 4.2))
+        for ax, (order, _), (d, label), (cxc, cyc, half) in zip(axes, sims, drifts, views):
+            shown = np.ma.masked_where((order < 0) | (order > cut), order)
+            ax.imshow(shown, origin="lower", cmap=coral_cmap, vmin=0, vmax=n_particles, interpolation="nearest")
+            ax.set_xlim(cxc - half, cxc + half); ax.set_ylim(cyc - half, cyc + half)
+            ax.set_xticks([]); ax.set_yticks([])
+            ax.set_title(f"{label}\nPe_rel = {d / 0.25:.2f}", fontsize=10)
+            if d > 0:
+                ax.annotate("", xy=(0.93, 0.08), xytext=(0.60, 0.08), xycoords="axes fraction",
+                            arrowprops=dict(arrowstyle="-|>", color="#1f77b4", lw=2.2))
+                ax.text(0.76, 0.13, "flow", color="#1f77b4", ha="center", fontsize=9, transform=ax.transAxes)
+        fig.suptitle(f"Chindapol et al. 2013: nutrient-flux-driven coral growth under flow — "
+                     f"{int(min(cut, n_particles))} of {n_particles} polyps", fontsize=11)
+        fig.tight_layout()
+        fig.canvas.draw()
+        frames.append(Image.fromarray(np.asarray(fig.canvas.buffer_rgba())[..., :3].copy()))
+        plt.close(fig)
+    frames += [frames[-1]] * (fps * 2)                   # hold the finished colonies
+    frames[0].save(output, save_all=True, append_images=frames[1:], duration=int(1000 / fps), loop=0)
+    print(f"Saved animation to {Path(output).resolve()}  ({len(frames)} frames)")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -368,11 +407,14 @@ def main():
                     help="output PNG path (default: repo root)")
     ap.add_argument("--particles", type=int, default=700,
                     help="polyps (lattice sites) grown per colony (default 700)")
+    ap.add_argument("--gif", metavar="PATH", help="also write a growth animation (three flow regimes) to PATH")
     ap.add_argument("--no-show", dest="show", action="store_false",
                     help="save the figure without opening a window")
     ap.set_defaults(show=True)
     args = ap.parse_args()
     make_figure(args.output, args.show, args.particles)
+    if args.gif:
+        make_gif(args.gif, args.particles)
 
 
 if __name__ == "__main__":

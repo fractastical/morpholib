@@ -297,16 +297,55 @@ def make_figure(output, show):
     print("  beta = v/lambda small -> squat dome;  large -> tall apex-preserving cone.")
 
 
+def make_gif(output, n_beta=36, fps=8):
+    """Animate the dome-to-cone morphospace: beta = v/lambda sweeps 0.2 -> 6 and each
+    frame shows the stromatolite grown under that ratio, laminae stacked as in a
+    thin-section, with the frame's position on the beta axis marked below."""
+    from PIL import Image
+    lam = 1.0
+    betas = np.geomspace(0.2, 6.0, n_beta)
+    grown = [grow_stromatolite(v=b * lam, lam=lam) for b in betas]
+    max_h = max(g[-1][:, 1].max() for g in grown)
+    frames = []
+    for b, laminae in zip(betas, grown):
+        fig = plt.figure(figsize=(7, 5.2))
+        gs = fig.add_gridspec(2, 1, height_ratios=[5, 1], hspace=0.35)
+        ax = fig.add_subplot(gs[0])
+        color = plt.get_cmap("viridis")((np.log(b) - np.log(0.2)) / (np.log(6) - np.log(0.2)))
+        for k, L in enumerate(laminae):
+            ax.plot(L[:, 0], L[:, 1], color=color, lw=1.0, alpha=0.25 + 0.65 * k / (len(laminae) - 1))
+        ax.fill(laminae[-1][:, 0], laminae[-1][:, 1], color=color, alpha=0.12)
+        ax.set_xlim(-3.2, 3.2); ax.set_ylim(-0.1, max_h * 1.08); ax.set_aspect("equal"); ax.grid(alpha=0.2)
+        ax.set_title(f"Petroff et al. 2010: velocity = v z + lambda n,   beta = v/lambda = {b:.2f}\n"
+                     f"height/width = {aspect_ratio(laminae[-1]):.2f}   "
+                     f"({'dome' if b < 0.7 else 'cone' if b < 3 else 'sharp cone'})", fontsize=10)
+        ax.set_xlabel("radial distance (arb.)"); ax.set_ylabel("height (arb.)")
+        bx = fig.add_subplot(gs[1])
+        bx.set_xscale("log"); bx.set_xlim(0.2, 6); bx.set_yticks([]); bx.set_xlabel("beta = v / lambda  (dome -> cone)")
+        bx.axvline(b, color=color, lw=3)
+        for s in ("top", "right", "left"):
+            bx.spines[s].set_visible(False)
+        fig.canvas.draw()
+        frames.append(Image.fromarray(np.asarray(fig.canvas.buffer_rgba())[..., :3].copy()))
+        plt.close(fig)
+    frames += frames[::-1][1:-1]                       # ping-pong so the loop has no jump
+    frames[0].save(output, save_all=True, append_images=frames[1:], duration=int(1000 / fps), loop=0)
+    print(f"Saved animation to {Path(output).resolve()}  ({len(frames)} frames)")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("-o", "--output", default="petroff_stromatolite_morphospace.png",
                     help="output PNG path (default: repo root)")
+    ap.add_argument("--gif", metavar="PATH", help="also write a dome-to-cone sweep animation to PATH")
     ap.add_argument("--no-show", dest="show", action="store_false",
                     help="save the figure without opening a window")
     ap.set_defaults(show=True)
     args = ap.parse_args()
     make_figure(args.output, args.show)
+    if args.gif:
+        make_gif(args.gif)
 
 
 if __name__ == "__main__":
