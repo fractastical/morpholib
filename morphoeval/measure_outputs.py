@@ -394,7 +394,11 @@ def measure_celegans(script: Path) -> list:
     frames_ = [mod.read_nuclei(local[f"wormguides/{mod.WG_NUCLEI.format(t=t)}"], t) for t in range(1, mod.N_FRAMES + 1)]
     offset = mod.movie_offset(local[f"wormguides/{mod.WG_FILES['production']}"])
     enc = mod.check_encoding(frames_)
-    um = mod.calibrate(frames_)
+    shells = {t: mod.shell_outline(local[f"wormguides/{mod.WG_SHELL.format(t=t)}"]) for t in mod.SHELL_FRAMES}
+    um = mod.calibrate(shells[mod.CALIB_FRAME])
+    shell_um = np.ptp(shells[mod.CALIB_FRAME], axis=0) * um
+    nuc_um = mod.nuclear_cloud_scale(frames_)
+    sr = mod.shell_report(shells, frames_, um)
     rows = mod.measure(frames_, offset, um)
     deaths = [ln.strip() for ln in local[f"wormguides/{mod.WG_FILES['deaths']}"].read_text().splitlines() if ln.strip()]
     seen = {n for f in frames_ for n in f.names}
@@ -408,12 +412,26 @@ def measure_celegans(script: Path) -> list:
           reference=enc["parent_total"], source="all cells whose parent is in the movie "
           f"({enc['parent_predates_movie']} founders present at frame 1 have parents that predate it)", derived_from="script"),
         M("calibration", um, "µm per atlas unit",
-          "longest nuclear cloud (centroid span + one mean diameter) set to the 50 µm egg length",
+          f"x extent of the atlas's eggshell outline mesh at frame {mod.CALIB_FRAME} (obj_files/embryo_t{mod.CALIB_FRAME}.obj, "
+          f"'Embryo Outline' in CellShapesConfig.csv; {sr['length_calib']:.1f} units) set to the 50 µm egg length",
           reference=None, source=None, note="assumption: Gönczy et al. 1999 JCB 144:927 ('50-µm-long cell'); the "
-          "atlas coordinates are unit-less (ProductionInfo X/Y/Z_SCALE = 1)", derived_from="script"),
+          "atlas coordinates are unit-less (ProductionInfo X/Y/Z_SCALE = 1); the earlier nuclear-cloud estimate "
+          f"gives {nuc_um:.4f}; the sampled shell meshes give {sr['um_min']:.4f}-{sr['um_max']:.4f}", derived_from="script"),
+        M("eggshell width under the calibration", float(shell_um[1]), "µm",
+          f"y extent of the eggshell outline mesh at frame {mod.CALIB_FRAME} (z extent {shell_um[2]:.1f} µm)", reference=30.0,
+          source="Gönczy et al. 1999 JCB 144:927 / WormAtlas: the egg is ~50 x 30 µm", derived_from="script",
+          note="a consistency check of the calibration: the width is not fitted"),
+        M("eggshell length spread across sampled shell meshes", float(sr["length_max"] - sr["length_min"]), "atlas units",
+          f"max - min x extent of the eggshell meshes at frames {list(shells)} ({sr['length_min']:.1f}-{sr['length_max']:.1f})",
+          derived_from="script", note="one static mesh is reused for frames 1-~250, re-segmented per frame from ~280; "
+          "the spread bounds the scale uncertainty (~6 %)"),
+        M("nuclear overrun of the shell in x", sr["overrun_max"], "atlas units",
+          "largest distance by which a nucleus (centroid ± radius) lies outside the shell mesh's x range at the sampled frames",
+          derived_from="script", note=f"{sr['overrun_calib']:.1f} units at frame {mod.CALIB_FRAME}; the overrun is against the "
+          "static early mesh, which is why the calibration uses the re-segmented shell"),
         M("nuclear cloud width at the last frame", rows[-1]["extent_y_um"], "µm",
           "y span of nuclear centroids + one mean diameter under the calibration", derived_from="script",
-          note="no width reference recorded; nuclei do not reach the eggshell"),
+          note="nuclei do not reach the eggshell; compare the eggshell width above"),
         M("nuclei at the last frame", rows[-1]["n_cells"], "count", f"valid rows of t{mod.N_FRAMES:03d}-nuclei "
           f"(movie-minute {rows[-1]['movie_min']})", reference=558, source=f"{WA}: 558 cells at hatching (671 generated, 113 deaths)",
           note="the movie ends before hatching; 553 of the 580 nuclei carry a parts-list identity", derived_from="script"),

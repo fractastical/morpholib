@@ -41,7 +41,9 @@ References
   hatching; quoted via WormAtlas, Embryo introduction / Introduction §3.1)
   Gönczy P et al. (1999). J Cell Biol 144:927 (https://doi.org/10.1083/jcb.144.5.927):
   the one-cell embryo is a "50-µm-long cell" (citing Nigon 1960; Sulston 1983) - used to
-  CALIBRATE the atlas's unit-less coordinates (ProductionInfo X/Y/Z_SCALE = 1).
+  CALIBRATE the atlas's unit-less coordinates (ProductionInfo X/Y/Z_SCALE = 1) by setting the
+  atlas's own eggshell outline mesh (obj_files/embryo_t330.obj, "Embryo Outline" in
+  CellShapesConfig.csv) to that length; see calibrate() for why frame 330.
   WormAtlas, Embryo introduction (https://www.wormatlas.org/embryo/introduction/EIntroframeset.html):
   gastrulation starts at the ~30-cell stage; Ea and Ep enter the embryo at 100 min after
   first cleavage; ~550 cells by the end of proliferation (330-350 min); 671 / 113 / 558.
@@ -97,13 +99,18 @@ WG_FILES = {
     "shapes": "src/atlas_model/configurations/shapes_config/CellShapesConfig.csv",
 }
 WG_OBJ = "src/atlas_model/data/obj_files/{cell}_t{t}.obj"
+WG_SHELL = "src/atlas_model/data/obj_files/embryo_t{t}.obj"     # the atlas's eggshell outline ("Embryo Outline" in CellShapesConfig)
 N_FRAMES = 360
 MESH_FRAME = 330
+PICK_FRAMES = (1, 30, 60, 100, 200, 360)
+SHELL_FRAMES = (1, 30, 60, 100, 200, 250, 280, 300, 320, 330, 340, 350, 359)   # shell files run embryo_t0 .. embryo_t359
+CALIB_FRAME = MESH_FRAME     # calibrate on the re-segmented shell of the frame that also carries the cell meshes
+
 C302_REPO = "openworm/c302"
 C302_COMMIT = "f54d92d7e9d2410ff6c47d9ae866649f1a419ee8"        # retrieved 2026-10-15
 C302_EDGES = "c302/data/herm_full_edgelist.csv"
 
-EMBRYO_LENGTH_UM = 50.0      # Gönczy et al. 1999 ("50-µm-long cell"); calibration only
+EMBRYO_LENGTH_UM = 50.0      # Gönczy et al. 1999 ("50-µm-long cell"); applied to the eggshell outline mesh at CALIB_FRAME
 LIT = {                      # literature values used for the checks (see module docstring)
     "deaths": 113, "generated": 671, "hatching": 558,
     "gastrulation_min": 100, "gastrulation_cells": 30, "proliferation_end_min": (330, 350), "proliferation_end_cells": 550,
@@ -137,6 +144,7 @@ def input_list(mesh_cells: Sequence[str] = ()) -> List[Tuple[str, str, str]]:
     items = [(f"wormguides/{p}", WG_REPO, p) for p in WG_FILES.values()]
     items += [(f"wormguides/{WG_NUCLEI.format(t=t)}", WG_REPO, WG_NUCLEI.format(t=t)) for t in range(1, N_FRAMES + 1)]
     items += [(f"wormguides/{WG_OBJ.format(cell=c, t=MESH_FRAME)}", WG_REPO, WG_OBJ.format(cell=c, t=MESH_FRAME)) for c in mesh_cells]
+    items += [(f"wormguides/{WG_SHELL.format(t=t)}", WG_REPO, WG_SHELL.format(t=t)) for t in SHELL_FRAMES]
     items.append((f"c302/{C302_EDGES}", C302_REPO, C302_EDGES))
     return items
 
@@ -162,9 +170,9 @@ def fetch_inputs(download: bool, write_manifest: bool) -> Dict[str, Path]:
     mesh_cells = mesh_cells_at(CACHE / first[0][0], MESH_FRAME)
     items = input_list(mesh_cells)
     if manifest:        # the manifest records which mesh files exist upstream at MESH_FRAME (the config ranges are sparse)
-        items = [it for it in items if not it[0].endswith(".obj") or it[0] in manifest]
+        items = [it for it in items if not it[0].endswith(".obj") or it[0] in manifest or "/embryo_t" in it[0]]
     _fetch(items, download)
-    local = {rel: CACHE / rel for rel, _, _ in items if (CACHE / rel).exists() or not rel.endswith(".obj")}
+    local = {rel: CACHE / rel for rel, _, _ in items if (CACHE / rel).exists() or not rel.endswith(".obj") or "/embryo_t" in rel}
     missing = [rel for rel, p in local.items() if not p.exists()]
     if missing:
         sys.exit(f"{len(missing)} input files missing (e.g. {missing[0]}); run with --download")
@@ -208,7 +216,7 @@ def _fetch(items, download: bool) -> None:
             with urllib.request.urlopen(req, timeout=120) as resp:
                 data = resp.read()
         except urllib.error.HTTPError as e:
-            if e.code == 404 and path.endswith(".obj"):      # CellShapesConfig ranges are sparse: not every frame has a mesh
+            if e.code == 404 and path.endswith(".obj") and "/embryo_t" not in path:   # cell-mesh ranges are sparse
                 return 0
             raise
         dst.write_bytes(data)
@@ -310,12 +318,53 @@ def check_encoding(frames: List[Frame]) -> Dict[str, float]:
 # --------------------------------------------------------------------------
 # Measurements
 # --------------------------------------------------------------------------
-def calibrate(frames: List[Frame]) -> float:
-    """µm per atlas unit so that the longest nuclear cloud (centroid span + one mean diameter)
-    equals the 50 µm egg length.  A stated assumption, not a measured scale."""
+def shell_outline(path: Path) -> np.ndarray:
+    """Eggshell mesh -> (vertices, xyz extent)."""
+    v, _ = read_obj(path)
+    return v
+
+
+def shell_xy_hull(v: np.ndarray) -> np.ndarray:
+    """2-D outline of the eggshell: convex hull of the mesh vertices projected on x, y."""
+    from scipy.spatial import ConvexHull
+    pts = v[:, :2]
+    h = ConvexHull(pts)
+    return pts[h.vertices]
+
+
+def calibrate(shell: np.ndarray) -> float:
+    """µm per atlas unit so that the eggshell outline mesh at CALIB_FRAME is EMBRYO_LENGTH_UM long
+    along x (the anterior-posterior axis of the image).  The 50 µm is a literature value
+    (Gönczy et al. 1999); the length it is applied to is the atlas's own segmentation of the
+    shell, so the only assumption left is that this egg has the typical length.
+    Why frame 330 and not frame 1: the atlas reuses one static shell mesh (285.8 units long) for
+    frames 1-~250, and the nuclei overrun it at the anterior pole by up to 19 units from frame 30
+    on, so it is not the shell of this egg; from ~frame 280 the shell is re-segmented per frame
+    (286.8-303.1 units) and encloses the nuclei.  The spread of the per-frame meshes is reported
+    as the scale uncertainty."""
+    return EMBRYO_LENGTH_UM / float(np.ptp(shell[:, 0]))
+
+
+def shell_report(shells: Dict[int, np.ndarray], frames: List[Frame], um: float) -> Dict[str, float]:
+    """Extents of the sampled shell meshes and of the nuclei relative to them (atlas units)."""
+    lengths = {t: float(np.ptp(v[:, 0])) for t, v in shells.items()}
+    by_t = {f.t: f for f in frames}
+    overrun = {}
+    for t, v in shells.items():
+        f = by_t[t]
+        lo, hi = (f.xyz[:, 0] - f.diam / 2).min(), (f.xyz[:, 0] + f.diam / 2).max()
+        overrun[t] = float(max(v[:, 0].min() - lo, hi - v[:, 0].max(), 0.0))
+    return {"length_min": min(lengths.values()), "length_max": max(lengths.values()),
+            "length_calib": lengths[CALIB_FRAME], "overrun_max": max(overrun.values()),
+            "overrun_calib": overrun[CALIB_FRAME], "um_min": EMBRYO_LENGTH_UM / max(lengths.values()),
+            "um_max": EMBRYO_LENGTH_UM / min(lengths.values())}
+
+
+def nuclear_cloud_scale(frames: List[Frame]) -> float:
+    """The earlier estimate (longest nuclear cloud + one mean diameter = 50 µm), kept as a
+    cross-check: nuclei do not reach the shell, so it overestimates µm per unit."""
     best = max(frames, key=lambda f: np.ptp(f.xyz[:, 0]) if len(f.xyz) else 0)
-    span = np.ptp(best.xyz[:, 0]) + best.diam.mean()
-    return EMBRYO_LENGTH_UM / span
+    return EMBRYO_LENGTH_UM / (np.ptp(best.xyz[:, 0]) + best.diam.mean())
 
 
 def measure(frames: List[Frame], offset: int, um: float) -> List[Dict]:
@@ -430,11 +479,21 @@ def draw_lineage(ax, frames: List[Frame], offset: int, lw: float = 0.5) -> None:
 # --------------------------------------------------------------------------
 # Drawing
 # --------------------------------------------------------------------------
-def draw_embryo(ax, f: Frame, um: float, offset: int, title: bool = True, s_scale: float = 1.0) -> None:
+def draw_shell(ax, shell: Optional[np.ndarray], um: float) -> None:
+    if shell is None:
+        return
+    hull = shell_xy_hull(shell) * um
+    ax.add_patch(plt.Polygon(hull, closed=True, fill=False, edgecolor="#555", lw=0.8, ls="-", zorder=0))
+
+
+def draw_embryo(ax, f: Frame, um: float, offset: int, title: bool = True, s_scale: float = 1.0,
+                shell: Optional[np.ndarray] = None) -> None:
     """Dorsal-ish projection (x = anterior-posterior axis of the image, y = image y); nuclei as discs
-    with their recorded diameter, coloured by founder lineage, back-to-front by z."""
+    with their recorded diameter, coloured by founder lineage, back-to-front by z; the atlas's
+    eggshell outline (convex hull of its mesh in x, y) when given."""
     if not len(f.xyz):
         ax.axis("off"); return
+    draw_shell(ax, shell, um)
     order = np.argsort(f.xyz[:, 2])
     cols = [FOUNDER_COLOR.get(founder(f.names[i]), FOUNDER_COLOR["other"]) for i in order]
     xy = f.xyz[order][:, :2] * um
@@ -442,8 +501,8 @@ def draw_embryo(ax, f: Frame, um: float, offset: int, title: bool = True, s_scal
     # discs in data units (µm), so the recorded nuclear diameters are drawn to scale
     ax.add_collection(EllipseCollection(d, d, np.zeros_like(d), units="xy", offsets=xy, offset_transform=ax.transData,
                                         facecolors=cols, edgecolors="black", linewidths=0.3, alpha=0.9))
-    ax.set_aspect("equal"); ax.set_xlim(-3, 56); ax.set_ylim(36, -2)
-    ax.set_xticks([0, 25, 50]); ax.set_yticks([0, 30]); ax.tick_params(labelsize=7)
+    ax.set_aspect("equal"); ax.set_xlim(5, 65); ax.set_ylim(40, 0)
+    ax.set_xticks([10, 35, 60]); ax.set_yticks([0, 30]); ax.tick_params(labelsize=7)
     if title:
         ax.set_title(f"frame {f.t} · {f.t + offset} min · {len(f.names)} cells", fontsize=9)
 
@@ -458,11 +517,12 @@ def read_obj(path: Path) -> Tuple[np.ndarray, np.ndarray]:
     return np.array(v), np.array([f[:3] for f in faces if len(f) >= 3])
 
 
-def draw_meshes(ax, frame: Frame, local: Dict[str, Path], cells: Sequence[str], um: float) -> int:
+def draw_meshes(ax, frame: Frame, local: Dict[str, Path], cells: Sequence[str], um: float, shells: Dict[int, np.ndarray]) -> int:
     """The atlas's segmented cell shapes (OBJ, same coordinate frame as the nuclei) over the nuclei."""
+    draw_shell(ax, shells.get(MESH_FRAME), um)
     ax.scatter(frame.xyz[:, 0] * um, frame.xyz[:, 1] * um, s=4, c="#9a9a9a", linewidths=0, zorder=1)
-    ax.set_aspect("equal"); ax.set_xlim(-3, 56); ax.set_ylim(36, -2)
-    ax.set_xticks([0, 25, 50]); ax.set_yticks([0, 30]); ax.tick_params(labelsize=7)
+    ax.set_aspect("equal"); ax.set_xlim(5, 65); ax.set_ylim(40, 0)
+    ax.set_xticks([10, 35, 60]); ax.set_yticks([0, 30]); ax.tick_params(labelsize=7)
     n = 0
     for c in cells:
         p = local.get(f"wormguides/{WG_OBJ.format(cell=c, t=MESH_FRAME)}")
@@ -534,7 +594,14 @@ def draw_connectome(ax, edges, parts: Dict[str, str]) -> Dict[str, int]:
             "chemical_edges": nchem, "electrical_edges": nelec, "nonzero": int((M > 0).sum())}
 
 
-def four_views(frames, local, um, offset, parts, mesh_cells, out: Path, pick=(1, 30, 60, 100, 200, 360)) -> Dict:
+def shell_for(shells: Dict[int, np.ndarray], t: int) -> Optional[np.ndarray]:
+    """Shell at the nearest available frame (shell files end at embryo_t359)."""
+    if not shells:
+        return None
+    return shells[min(shells, key=lambda k: abs(k - t))]
+
+
+def four_views(frames, local, um, offset, parts, mesh_cells, shells, out: Path, pick=PICK_FRAMES) -> Dict:
     fig = plt.figure(figsize=(16, 12))
     gs = fig.add_gridspec(3, 6, height_ratios=[1.0, 0.5, 1.25], hspace=0.55, wspace=0.3, top=0.92, bottom=0.05, left=0.05, right=0.98)
     ax = fig.add_subplot(gs[0, :])
@@ -543,17 +610,17 @@ def four_views(frames, local, um, offset, parts, mesh_cells, out: Path, pick=(1,
                  "x = depth-first order of the Sulston tree (the schematic layer)", fontsize=10, loc="left", pad=14)
     by_t = {f.t: f for f in frames}
     for i, t in enumerate(pick):
-        a = fig.add_subplot(gs[1, i]); draw_embryo(a, by_t[t], um, offset)
+        a = fig.add_subplot(gs[1, i]); draw_embryo(a, by_t[t], um, offset, shell=shell_for(shells, t))
         if i == 0:
-            a.set_ylabel("µm (50 µm egg)", fontsize=7)
+            a.set_ylabel("µm (eggshell = 50 µm)", fontsize=7)
     row_b = fig.add_subplot(gs[1, :], frameon=False); row_b.set_xticks([]); row_b.set_yticks([])
-    row_b.set_title("B  Formal geometry: nuclear positions and recorded diameters (to scale), coloured by founder lineage "
-                    + "  ".join(f"■{k}" for k in FOUNDERS) + "  ■other (EMS, P1–P3)  — WormGUIDES DISPIM_061416 / JIM113",
+    row_b.set_title("B  Formal geometry: nuclear positions and recorded diameters (to scale) inside the atlas's eggshell outline, "
+                    "coloured by founder lineage " + "  ".join(f"■{k}" for k in FOUNDERS) + "  ■other  — WormGUIDES DISPIM_061416 / JIM113",
                     fontsize=10, loc="left", pad=28)
     legend_handles = [plt.Line2D([], [], marker="o", ls="", color=FOUNDER_COLOR[k], label=k) for k in FOUNDERS]
     legend_handles.append(plt.Line2D([], [], marker="o", ls="", color=FOUNDER_COLOR["other"], label="other"))
     a = fig.add_subplot(gs[2, :3])
-    n_mesh = draw_meshes(a, by_t[MESH_FRAME], local, mesh_cells, um)
+    n_mesh = draw_meshes(a, by_t[MESH_FRAME], local, mesh_cells, um, shells)
     a.set_title(f"C  Cell shapes: {n_mesh} segmented single-cell meshes of the atlas at frame {MESH_FRAME} "
                 f"({MESH_FRAME + offset} min),\nsame coordinate frame; grey dots = all {len(by_t[MESH_FRAME].names)} nuclei of that frame",
                 fontsize=10, loc="left")
@@ -580,14 +647,14 @@ def lineage_figure(frames, offset, out: Path) -> None:
     print(f"  saved {out}")
 
 
-def timeline_gif(frames, rows, um, offset, out: Path, step: int = 3, fps: int = 10) -> None:
+def timeline_gif(frames, rows, um, offset, shells, out: Path, step: int = 3, fps: int = 10) -> None:
     imgs = []
     counts = np.array([r["n_cells"] for r in rows]); tmin = np.array([r["movie_min"] for r in rows])
     for f in frames[::step]:
         fig = plt.figure(figsize=(10, 5.2))
         gs = fig.add_gridspec(1, 2, width_ratios=[1.35, 1])
-        a = fig.add_subplot(gs[0]); draw_embryo(a, f, um, offset)
-        a.set_xlabel("µm"); a.set_ylabel("µm")
+        a = fig.add_subplot(gs[0]); draw_embryo(a, f, um, offset, shell=shell_for(shells, f.t))
+        a.set_xlabel("µm (eggshell outline = 50 µm long)"); a.set_ylabel("µm")
         b = fig.add_subplot(gs[1])
         b.plot(tmin, counts, color="#444"); b.axvline(f.t + offset, color="#c0392b", lw=1)
         stack = np.array([[r[f"n_{k}"] for k in FOUNDERS] for r in rows]).T
@@ -629,20 +696,26 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     print(f"WormGUIDES atlas @ {WG_COMMIT[:8]}: {len(frames)} frames, movie offset +{offset} min, "
           f"{len(frames[0].names)} -> {len(frames[-1].names)} nuclei, {len(mesh_cells)} cell meshes at frame {MESH_FRAME}")
     enc = check_encoding(frames)
-    um = calibrate(frames)
-    print(f"  calibration: {um:.4f} µm per atlas unit (longest nuclear cloud = {EMBRYO_LENGTH_UM:.0f} µm egg length)")
+    shells = {t: shell_outline(local[f"wormguides/{WG_SHELL.format(t=t)}"]) for t in SHELL_FRAMES}
+    um = calibrate(shells[CALIB_FRAME])
+    ext = np.ptp(shells[CALIB_FRAME], axis=0) * um
+    sr = shell_report(shells, frames, um)
+    print(f"  calibration: {um:.4f} µm per atlas unit (eggshell outline mesh at frame {CALIB_FRAME} = {EMBRYO_LENGTH_UM:.0f} µm long); "
+          f"shell {ext[0]:.1f} x {ext[1]:.1f} x {ext[2]:.1f} µm; sampled shell meshes span {sr['length_min']:.1f}-{sr['length_max']:.1f} units "
+          f"({sr['um_min']:.4f}-{sr['um_max']:.4f} µm/unit); nuclei overrun the shell in x by up to {sr['overrun_max']:.1f} units "
+          f"(static early mesh), {sr['overrun_calib']:.1f} at frame {CALIB_FRAME}; nuclear-cloud estimate: {nuclear_cloud_scale(frames):.4f}")
     rows = measure(frames, offset, um)
     for line in literature_checks(rows, deaths, parts, frames):
         print("  check:", line)
 
-    stats = four_views(frames, local, um, offset, parts, mesh_cells, out_dir / "celegans_four_views.png")
+    stats = four_views(frames, local, um, offset, parts, mesh_cells, shells, out_dir / "celegans_four_views.png")
     lineage_figure(frames, offset, out_dir / "celegans_lineage_chart.png")
     if args.csv:
         with open(args.csv, "w", newline="") as fh:
             w = csv.DictWriter(fh, fieldnames=list(rows[-1].keys())); w.writeheader(); w.writerows(rows)
         print(f"  saved {args.csv}  ({len(rows)} rows)")
     if not args.no_anim:
-        timeline_gif(frames, rows, um, offset, out_dir / "celegans_embryo_timeline.gif", step=args.step)
+        timeline_gif(frames, rows, um, offset, shells, out_dir / "celegans_embryo_timeline.gif", step=args.step)
     print(f"  connectome: {stats}")
 
 

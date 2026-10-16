@@ -3,7 +3,7 @@
 Inputs for [`2015-santella-wormguides-celegans.py`](../../2015-santella-wormguides-celegans.py).
 Nothing is vendored here: the script downloads every file from a pinned git
 commit into the git-ignored `.celegans_cache/` and verifies it against
-`pinned_inputs.sha256` (416 files, written 2026-10-15). A hash mismatch stops
+`pinned_inputs.sha256` (429 files, written 2026-10-16). A hash mismatch stops
 the script.
 
 ## Sources
@@ -12,6 +12,7 @@ the script.
 |---|---|---|---|
 | formal geometry (nuclei) | `src/atlas_model/data/nuclei_files/t001-nuclei` … `t360-nuclei` (360 files) | [zhirongbaolab/WormGUIDES](https://github.com/zhirongbaolab/WormGUIDES) @ `17be611f10cdc8ea438e67dc9ca3de859487a05e` | GPL-3.0 |
 | cell shapes | `src/atlas_model/configurations/shapes_config/CellShapesConfig.csv` + 51 `src/atlas_model/data/obj_files/<cell>_t330.obj` | same | GPL-3.0 |
+| eggshell outline | `src/atlas_model/data/obj_files/embryo_t{1,30,60,100,200,250,280,300,320,330,340,350,359}.obj` (the "Embryo Outline" entry of `CellShapesConfig.csv`; one mesh per frame, 0–359; 13 sampled) | same | GPL-3.0 |
 | acquisition metadata | `src/atlas_model/parameters/production_info/ProductionInfo.csv` | same | GPL-3.0 |
 | cell identities | `…/CElegansData/PartsList/partslist.txt` (787 rows), `…/CElegansData/CellDeaths/CellDeaths.csv` (113 names) | same | GPL-3.0 |
 | formal connectivity | `c302/data/herm_full_edgelist.csv` (7379 rows; Cook et al. 2019) | [openworm/c302](https://github.com/openworm/c302) @ `f54d92d7e9d2410ff6c47d9ae866649f1a419ee8` | MIT |
@@ -32,12 +33,26 @@ as movie-minute *t* + 19, and the coordinates are unit-less.
   the movie first appear after that parent; the remaining four (ABa, ABp, EMS,
   P2) are the four cells present at frame 1, whose parents divided before the
   movie starts.
-- **Calibration (an assumption, stated on the figure).** The atlas coordinates
-  carry no unit, so the longest nuclear cloud (centroid span plus one mean
-  diameter, frame 360) is set to the 50 µm egg length of Gönczy et al. 1999,
-  giving 0.1617 µm per atlas unit. Under this scale the cloud is 26.8 × 25.5 µm
-  across at the end and the mean nuclear diameter falls from 4.7 µm (4 cells)
-  to 2.2 µm (580 cells).
+- **Calibration (one assumption, stated on the figure).** The atlas coordinates
+  carry no unit, so the atlas's own eggshell outline mesh at frame 330
+  (`embryo_t330.obj`, 303.1 × 177.3 × 175.5 units) is set to the 50 µm egg
+  length of Gönczy et al. 1999, giving **0.1649 µm per atlas unit**. The only
+  thing assumed is that this egg has the typical length; the length it is
+  applied to is the atlas's segmentation of the shell, not the nuclei. Why
+  frame 330: the atlas reuses one static shell mesh (285.8 units) for frames
+  1–~250, and from frame 30 on the nuclei overrun it at the anterior pole by up
+  to 19 units, so it is not the shell of this egg; from ~frame 280 the shell is
+  re-segmented per frame (286.8–303.1 units) and encloses the nuclei (overrun
+  1.8 units at frame 330). Checks that are not fitted: the frame-330 shell comes
+  out 29.2 µm wide and 28.9 µm deep (the egg is ~50 × 30 µm), and the 13 sampled
+  shell meshes bracket the scale at 0.1649–0.1750 µm per unit (~6 %). The
+  earlier estimate from the longest nuclear cloud (0.1617 µm per unit,
+  2026-10-15 checkpoint `2864784`) sits 2 % below the shell value. Under the
+  new scale the nuclear cloud is 50.4 × 27.3 µm across at the end (it slightly
+  overruns the shell length, within the segmentation slop) and the mean nuclear
+  diameter falls from 4.8 µm (4 cells) to 2.2 µm (580 cells). The shell outline
+  (convex hull of the nearest sampled mesh in x, y) is drawn on every embryo
+  panel.
 - **Lineage chart** re-derived from the names alone (depth-first order of the
   tree, parents centred on children, colour by founder).
 - **Literature anchors** (printed as `check:` lines):
@@ -84,4 +99,5 @@ as movie-minute *t* + 19, and the coordinates are unit-less.
   Dissection of cell division processes in the one cell stage *Caenorhabditis
   elegans* embryo by mutational analysis. *J Cell Biol* 144:927–946.
   https://doi.org/10.1083/jcb.144.5.927 — "50-µm-long cell", used for the
-  calibration.
+  calibration (the ~30 µm width used as a consistency check is also the
+  standard figure quoted there and on WormAtlas).
