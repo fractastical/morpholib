@@ -69,7 +69,7 @@ AGENTS = {"script": (BUILDER, "the builder agent\nwrites it"), "audit": (ASSESSO
 # the papers, in year order, with a frame of each reproduction's own animation (docs/media/*.gif)
 MEDIA = ROOT / "docs" / "media"
 PAPERS = [  # (gif, caption lines, kind)
-    ("thompson_transformations.gif",      "Thompson 1917\nOn Growth and Form, ch. XVII\nmethod of transformations", "reproduce"),
+    ("thompson_transformations.gif",      "Thompson 1917\nOn Growth and Form, ch. XVII\ntransformations of a real Scarus", "reproduce"),
     ("thompson_scarus_pomacanthus.gif",   "Thompson 1917, Figs. 375–376\ntested on Claverie & Wainwright\n2014 landmarks (Dryad)", "test"),
     ("turing_gray_scott.gif",             "Turing 1952\nPhil Trans R Soc B\nvia Gray & Scott 1984, Pearson 1993", "reproduce"),
     ("raup_shell_coiling.gif",            "Raup 1966\nJ Paleontol\nshell-coiling morphospace", "reproduce"),

@@ -17,7 +17,7 @@ Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) 
 | year | model | script | MorphoEval |
 |---|---|---|---|
 | 1917 | Thompson, transformations: *Scarus* → *Pomacanthus* on real landmarks and outlines | [`thompson/1917-thompson-scarus-pomacanthus.py`](./thompson/1917-thompson-scarus-pomacanthus.py) | 76.6 |
-| 1917 | Thompson, transformations (schematic) | [`thompson/1917-thompson.py`](./thompson/1917-thompson.py) | — |
+| 1917 | Thompson, transformations on a real fish | [`thompson/1917-thompson.py`](./thompson/1917-thompson.py) | — |
 | 1952 | Turing / Gray–Scott reaction–diffusion | [`1952-turing-morpho.py`](./1952-turing-morpho.py) | 52.7 |
 | 1966 | Raup, shell coiling | [`1966-raup.py`](./1966-raup.py), [`create_raup_animations.py`](./create_raup_animations.py) | 64.1 |
 | 2010 | Petroff et al., conical stromatolites | [`2010-petroff-stromatolite.py`](./2010-petroff-stromatolite.py) | unevaluated |
@@ -247,9 +247,9 @@ Kahng, Odle & Wakeman's (2024) geometry of reef-coral colonies. A colony lays do
 
 A demonstration of D'Arcy Thompson's theory of transformations from *On Growth and Form* (1917), showing how one shape can be deformed into another through mathematical transformations. This classic work established the foundation for mathematical biology and the study of biological form.
 
-![Thompson transformations: a fish outline on a Cartesian grid carried through a shear, a fan of coordinates and a radial expansion](docs/media/thompson_transformations.gif)
+![Thompson transformations: the silhouette of a real Scarus ghobban on a Cartesian grid carried through a shear, coaxial circles (with a real Pomacanthus as the dashed target), a fan of coordinates and a radial expansion](docs/media/thompson_transformations.gif)
 
-*What you see:* a stylised fish drawn on a square grid; the grid is deformed by four of Thompson's transformation families (the oblique shear of *Argyropelecus* → *Sternoptyx*, the coaxial circles of *Scarus* → *Pomacanthus*, a fan of coordinates as in *Polyprion* → *Pseudopriacanthus*, a radial expansion as in *Diodon* → the sunfish) and the fish follows the grid. Schematic, not fitted to specimens — the fit to real species is the script above. `python3 thompson/1917-thompson.py --gif out.gif`; without `--gif` a two-panel toy applies the coaxial-circle map to an ellipse (until 2026-10-16 that toy applied the same polynomial to both coordinates, which collapses every shape onto a line; fixed).
+*What you see:* a real fish — the silhouette of a *Scarus ghobban* photograph (Wikimedia Commons, Huet/IFREMER, CC BY 4.0; segmented by the script above, which pins the file's SHA-256) — drawn on a square grid; the grid is deformed by four of Thompson's transformation families (the oblique shear of *Argyropelecus* → *Sternoptyx*, the coaxial circles of *Scarus* → *Pomacanthus*, a fan of coordinates as in *Polyprion* → *Pseudopriacanthus*, a radial expansion as in *Diodon* → the sunfish) and the fish follows the grid. In the coaxial panel the silhouette of a real *Pomacanthus semicirculatus* (Levy, CC BY 2.0) is drawn dashed as the target, placed where the deformed parrotfish lands. The deformation strengths are Thompson's illustrative ones, not fitted; the fitted maps, scored on landmarks and outlines, are the script above. Until 2026-10-17 the fish here was a hand-drawn ellipse with a tail and fin. `python3 thompson/1917-thompson.py --gif out.gif`; without `--gif` a two-panel toy applies the coaxial-circle map to the same silhouette (until 2026-10-16 that toy applied the same polynomial to both coordinates, which collapses every shape onto a line; fixed). If the photographs cannot be fetched the script falls back to the stylised fish and says so in the title.
 
 Thompson-focused notes and dataset curation are in:
 - [`thompson/DARCY_THOMPSON_FOCUSED_OPTIONS.md`](./thompson/DARCY_THOMPSON_FOCUSED_OPTIONS.md)

@@ -24,7 +24,7 @@ ROOT = HERE.parents[1]
 
 # (gif, year, label, script) in year order; the label is what fits under a ~200-px tile
 CLIPS = [
-    ("thompson_transformations.gif",       "1917", "Thompson, transformations (schematic)",  "thompson/1917-thompson.py"),
+    ("thompson_transformations.gif",       "1917", "Thompson, transformations (real fish)",  "thompson/1917-thompson.py"),
     ("thompson_scarus_pomacanthus.gif",    "1917", "Thompson, Scarus → Pomacanthus", "thompson/1917-thompson-scarus-pomacanthus.py"),
     ("turing_gray_scott.gif",              "1952", "Turing / Gray–Scott patterns",            "1952-turing-morpho.py"),
     ("raup_shell_coiling.gif",             "1966", "Raup, shell coiling",                     "create_raup_animations.py"),
