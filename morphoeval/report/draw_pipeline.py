@@ -85,7 +85,7 @@ PAPERS = [  # (gif, caption lines, kind)
 ]
 KIND_COL = {"reproduce": "#2563eb", "decode": "#059669", "test": "#d97706"}
 YS = 40.5                                                    # bottom of the outputs band (box 6)
-FIG_W, FIG_H, YLIM = 13.0, 11.1, 111.0
+FIG_W, FIG_H, YLIM = 13.0, 11.9, 119.0
 
 
 THUMBS = []                                                  # (gif name, data-coordinate extent) filled by strip()
@@ -289,8 +289,18 @@ def main(argv=None):
     agent(ax, x_gap - 46.0, YS - 4.6, 1.0)                               # the builder, at the start of the loop's label
     note(ax)
 
-    ax.text(50, YLIM - 2.6, "How a form gets into this repository, and how it is scored", ha="center", va="center", fontsize=12.5, fontweight="bold", color=EDGE)
-    ax.text(50, YLIM - 5.3, "every pass is tied to one version of the code; scores are 0–100 on each of seven questions, weighted into one overall; the audit scores the reproduction, not the biology; "
+    ax.text(50, YLIM - 2.6, "How a body gets its form — and how a form gets into this repository, and is scored", ha="center", va="center", fontsize=12.5, fontweight="bold", color=EDGE)
+    import textwrap
+    synopsis = ("Morphogenesis is how a living thing gets its shape, and regeneration is how it gets it back: cells divide, move and signal until a body plan "
+                "appears, or reappears after a cut.  The classic models of form are geometric (Thompson's transformations, Raup's coiling shells), chemical "
+                "(Turing's reacting and diffusing morphogens), or physical (coral and stromatolite growth shaped by flow and light).  The newer idea most of "
+                "these reproductions turn on is that the pattern is also stored and read out bioelectrically: each cell holds a resting voltage across its "
+                "membrane, neighbouring cells share it through gap junctions, and the resulting voltage map across a tissue tells it where a head, a tail or "
+                "a limb belongs.  Change the voltage and the form changes — block the junctions and a planarian regrows two heads, which is the experiment the "
+                "Planform database records in hundreds of variants and the Cervera–Levin–Mafe model puts into equations.  This repository turns such papers into "
+                "running programs; MorphoEval scores how faithfully.")
+    ax.text(50, YLIM - 4.6, textwrap.fill(synopsis, 236), ha="center", va="top", fontsize=7.0, color="#1e293b", linespacing=1.3)
+    ax.text(50, YLIM - 11.4, "every pass is tied to one version of the code; scores are 0–100 on each of seven questions, weighted into one overall; the audit scores the reproduction, not the biology; "
             "every score is published as a nanopublication (what that is: bottom left)",
             ha="center", va="center", fontsize=7.6, color="#475569")
     for i, (c, l) in enumerate([(BUILD, "reproduce"), (EVAL, "evaluate"), (PUB, "publish"), (LOOP, "remediate")]):
