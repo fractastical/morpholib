@@ -25,3 +25,5 @@ options added in the same change; inputs as documented for each script.
 Downsizing: frames sampled evenly, resized with Lanczos, quantised with median
 cut and Floyd–Steinberg dithering, frame duration scaled to keep the original
 running time (Pillow 12.0.0). Total ≈ 15 MB.
+
+`morphoeval_pipeline.png` is not a script output but documentation: the MorphoEval cycle, drawn by `morphoeval/report/draw_pipeline.py` (deterministic; re-run it after editing the stages).

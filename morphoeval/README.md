@@ -40,6 +40,37 @@ the evidence supports** — every score needs at least one code locus, a
 not-applicable dimension sits at the neutral baseline (50) and is flagged, and
 scripts that were not inspected are listed `unevaluated` with no scores.
 
+## The cycle
+
+Each pass pins a commit; scores are 0–100 per dimension with a weighted mean overall; published
+nanopubs are immutable and re-scores supersede them. The same figure as a PNG (for the PDF report
+and anything that cannot render Mermaid) is `docs/media/morphoeval_pipeline.png`, drawn by
+`morphoeval/report/draw_pipeline.py`.
+
+```mermaid
+flowchart LR
+    classDef build fill:#dbeafe,stroke:#334155,color:#1e293b
+    classDef eval fill:#fde68a,stroke:#334155,color:#1e293b
+    classDef pub fill:#bbf7d0,stroke:#334155,color:#1e293b
+    classDef loop fill:#fecaca,stroke:#334155,color:#1e293b
+
+    S["1 Source<br/>paper (DOI), authors' figures,<br/>data with SHA-256 + licence"]:::build
+    R["2 Reproduce<br/>&lt;year&gt;-&lt;author&gt;-&lt;model&gt;.py<br/>→ figure + GIF, morphometrics, self-checks"]:::build
+    A["3 Audit<br/>audits/&lt;date&gt;-&lt;name&gt;.yaml<br/>7 dims × 0–100, rationale,<br/>line-pinned evidence @ commit"]:::eval
+    M["4 Measure<br/>measure_outputs.py<br/>fingerprint outputs, morphometrics<br/>vs specimens → .measurements.yaml"]:::eval
+    B["5 Build graph<br/>build_morphoeval_kg.py<br/>pk:Claim + 8 pk:LLMClaimAssessment,<br/>ProbKnow templates, conformance check"]:::pub
+    P["6 Sign &amp; publish<br/>test registry → check_signed.mjs →<br/>fetch back → production<br/>(npx:supersedes on re-score)"]:::pub
+    G[("Knowledge graph<br/>nanopub network · Nanopub Query<br/>kg/&lt;audit&gt;/REPORT.md + published.json")]:::pub
+    T["7 Remediate<br/>items → GitHub issue #1<br/>fix script → new commit"]:::loop
+
+    S --> R --> A --> M --> B --> P --> G
+    S -. DOIs, hashes → source-traceability .-> A
+    P -- remediation items = pk:evidenceAgainst --> T
+    T -- "fix → new commit" --> R
+    T -- "re-score touched dimensions" --> A
+    G -. other assessors may add their own<br/>assessments of the same hypotheses .-> B
+```
+
 ## Workflow
 
 ```bash
@@ -269,6 +300,27 @@ size of the `planformDB_2.5.0.edb` it was verified on
 `--strict-db` to refuse any other; and the Odonata audit's "report #7 and
 #23/#24 to the authors" item has a draft message in
 `datasets/odonata/NOTE_TO_AUTHORS.md`, to be sent by the repository owner.
+
+## Report and Zenodo deposit
+
+BioEval and NeuroEval each have a Zenodo record bundling an arXiv-style report
+PDF with a source archive; MorphoEval follows the same pattern.
+
+- `report/report.md` is the prose; `report/build_report.py` fills its tables
+  from the audit YAMLs and `rubric.yaml` (so they cannot drift from the
+  published scores), draws the cycle figure (`report/draw_pipeline.py`),
+  resolves the head count on Nanopub Query, and renders the PDF with pandoc +
+  xelatex into the git-ignored `report/build/`.
+- `report/zenodo_deposit.py --build-only` builds the PDF, a `git archive` of
+  HEAD (tracked files only: no caches, outputs or local databases) and the
+  metadata from `.zenodo.json`; without `--build-only` it creates a *draft*
+  deposition (sandbox with `--sandbox`/`ZENODO_SANDBOX_TOKEN`, production with
+  `ZENODO_TOKEN`), uploads both files and sets the metadata. Publishing — which
+  mints the DOI and cannot be undone — is a separate `--publish --deposition
+  <id>` run that asks for a typed `yes`. `--new-version-of <record>` makes a
+  new version under the same concept DOI for later checkpoints.
+- `CITATION.cff` and `.zenodo.json` at the root also feed GitHub's citation
+  box and the GitHub–Zenodo release integration, if that is enabled instead.
 
 ## Current checkpoint
 
