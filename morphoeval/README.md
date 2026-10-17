@@ -47,7 +47,9 @@ paper's mathematics, decode the authors' formal encoding into form, or test a pu
 claim against measurements); tier B is how it is scored. Each pass pins a commit; scores are 0–100 per dimension with a weighted mean overall; published
 nanopubs are immutable and re-scores supersede them. The same figure as a PNG (for the PDF report
 and anything that cannot render Mermaid) is `docs/media/morphoeval_pipeline.png`, drawn by
-`morphoeval/report/draw_pipeline.py`.
+`morphoeval/report/draw_pipeline.py`; the PNG also heads the two tiers with the thirteen source
+papers (author, year, venue, data source) each illustrated by a frame of its reproduction's
+animation from `docs/media/`.
 
 ```mermaid
 flowchart TB

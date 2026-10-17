@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 BUILD = "#dbeafe"; EVAL = "#fde68a"; PUB = "#bbf7d0"; LOOP = "#fecaca"; EDGE = "#334155"; RED = "#b91c1c"
 # (x, y, w, h, colour, title, body) on a 100 x 100 canvas
-YA, YB, H = 60, 12, 17
+YA, YB, H = 56, 12, 17
 WA, XA = 18.0, [1.5, 21.25, 41.0, 60.75, 80.5]              # five boxes, upper tier (left -> right)
 WB, XB = 15.0, [84.0, 67.4, 50.8, 34.2, 17.6, 1.0]          # six boxes, lower tier (right -> left)
 BOXES = {
@@ -52,6 +52,55 @@ BOXES = {
     "remed":   (XB[5], YB, WB, H, LOOP,  "11  Remediate",
                 "overall's pk:evidenceAgainst\n→ GitHub issue #1;\nfix → new commit →\nre-audit touched dims"),
 }
+
+# the papers, in year order, with a frame of each reproduction's own animation (docs/media/*.gif)
+MEDIA = ROOT / "docs" / "media"
+PAPERS = [  # (gif, caption lines, kind)
+    ("thompson_transformations.gif",      "Thompson 1917\nOn Growth and Form, ch. XVII\nmethod of transformations", "simulate"),
+    ("thompson_scarus_pomacanthus.gif",   "Thompson 1917, Figs. 375–376\ntested on Claverie & Wainwright\n2014 landmarks (Dryad)", "test"),
+    ("turing_gray_scott.gif",             "Turing 1952\nPhil Trans R Soc B\nvia Gray & Scott 1984, Pearson 1993", "simulate"),
+    ("raup_shell_coiling.gif",            "Raup 1966\nJ Paleontol\nshell-coiling morphospace", "simulate"),
+    ("petroff_stromatolite_dome_to_cone.gif", "Petroff et al. 2010\nPNAS\nconical stromatolites", "simulate"),
+    ("chindapol_coral_flow_growth.gif",   "Chindapol et al. 2013\nPLoS Comput Biol\ncoral growth in flow", "simulate"),
+    ("planform_morphospace_timeline.gif", "Lobo, Malone & Levin 2013\nBioinformatics\nPlanform, PlanformDB 2.5.0", "decode"),
+    ("limbform_morphospace_timeline.gif", "Lobo et al. 2014\nBioinformatics\nLimbform, LimbformDB", "decode"),
+    ("celegans_embryo_timeline.gif",      "Santella et al. 2015\nBMC Bioinformatics\nWormGUIDES atlas, OpenWorm c302", "decode"),
+    ("hoffmann_wing_lloyd.gif",           "Hoffmann et al. 2018\nPNAS\ninsect wing venation", "simulate"),
+    ("cervera_levin_mafe_gj_block.gif",   "Cervera, Levin & Mafe 2021\nbioelectric morphogens\n(demo, no DOI pinned)", "simulate"),
+    ("kahng_coral_geometry_growth.gif",   "Kahng, Odle & Wakeman 2024\nPeerJ\ncoral geometry", "simulate"),
+    ("odonata_wing_cells_deep_time.gif",  "Eshghi, Buesch & Gorb 2026\nZenodo, Tables S1–S3\nOdonata wing cells, fossil vs extant", "test"),
+]
+KIND_COL = {"simulate": "#2563eb", "decode": "#059669", "test": "#d97706"}
+YS = 83                                                      # bottom of the thumbnail strip
+FIG_W, FIG_H, YLIM = 13.0, 12.3, 123.0
+
+
+def gif_frame(name: str, frac: float = 0.55):
+    from PIL import Image, ImageSequence
+    im = Image.open(MEDIA / name)
+    frames = list(ImageSequence.Iterator(im))
+    return frames[int(frac * (len(frames) - 1))].convert("RGB")
+
+
+def strip(ax):
+    """Two rows of thumbnails (7 + 6): each paper with a frame of its reproduction's animation."""
+    cols, gap = 7, 1.0; tw = (97.0 - (cols - 1) * gap) / cols; row_h = 14.2
+    ax.text(1.5, YS + 2 * row_h + 2.0, "The papers, and the forms their reproductions produce", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
+    for i, (gif, cap, kind) in enumerate(PAPERS):
+        r, c = divmod(i, cols)
+        x = 1.5 + c * (tw + gap); y = YS + (1 - r) * row_h
+        img = gif_frame(gif)
+        th = tw * (img.height / img.width) * (FIG_W / 100.0) / (FIG_H / YLIM)
+        th = min(th, row_h - 6.2)
+        ax.imshow(img, extent=(x, x + tw, y + 5.6, y + 5.6 + th), zorder=3, interpolation="lanczos")
+        ax.add_patch(FancyBboxPatch((x, y + 5.6), tw, th, boxstyle="square,pad=0", fc="none", ec="#94a3b8", lw=0.5, zorder=4))
+        ax.add_patch(FancyBboxPatch((x, y + 4.9), tw, 0.5, boxstyle="square,pad=0", fc=KIND_COL[kind], ec="none", zorder=3))
+        ax.text(x + tw / 2, y + 2.3, cap, ha="center", va="center", fontsize=5.7, color="#1e293b", linespacing=1.15)
+    x = 1.5 + 6 * (tw + gap); y = YS                                  # legend in the free slot of row 2
+    for j, (k, c) in enumerate(KIND_COL.items()):
+        ax.add_patch(FancyBboxPatch((x, y + 10.4 - j * 2.8), 1.6, 0.5, boxstyle="square,pad=0", fc=c, ec="none"))
+        ax.text(x + 2.2, y + 10.65 - j * 2.8, {"simulate": "simulate the\npaper's maths", "decode": "decode the\nauthors' encoding",
+                                              "test": "test a\npublished claim"}[k], fontsize=6.0, va="center", color=EDGE, linespacing=1.1)
 
 
 def box(ax, key):
@@ -81,15 +130,14 @@ def main(argv=None):
     ap.add_argument("--svg", action="store_true")
     args = ap.parse_args(argv)
 
-    fig, ax = plt.subplots(figsize=(13, 8.6))
-    ax.set_xlim(0, 100); ax.set_ylim(0, 92); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(FIG_W, FIG_H)); fig.subplots_adjust(0, 0, 1, 1)
+    ax.set_xlim(0, 100); ax.set_ylim(0, YLIM); ax.set_aspect("auto"); ax.axis("off")
 
     # tier labels
-    ax.text(1.5, YA + H + 3.2, "A  Making a reproduction", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
-    ax.text(12, YA - 6.2, "three kinds of script:   simulate the paper's maths (Turing, Raup, Hoffmann, Chindapol)\n"
-            "decode the authors' formal encoding into form (Planform, Limbform, WormGUIDES)\n"
-            "test a published claim against measurements (Odonata, Thompson)",
-            fontsize=6.9, color="#475569", va="center", ha="left", linespacing=1.3)
+    strip(ax)
+    ax.add_patch(FancyArrowPatch((10.5, YS + 0.2), (10.5, YA + H + 0.4), arrowstyle="-|>", mutation_scale=12, color=EDGE, lw=1.1, zorder=5))
+    ax.text(12.0, YA + H + 4.6, "A  Making a reproduction", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
+    ax.text(12.0, YA + H + 2.0, "each paper goes through A once, then round B until it holds", fontsize=7.5, style="italic", color="#475569", va="center")
     ax.text(1.5, YB + H + 3.0, "B  Auditing it — the MorphoEval cycle", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
 
     for k in BOXES:
@@ -100,7 +148,7 @@ def main(argv=None):
     arrow(ax, "source", "r", "rules", "l")
     arrow(ax, "rules", "r", "script", "l")
     arrow(ax, "script", "r", "compare", "l")
-    ax.text(12, YA - 11.5, "authors' code, where it exists (WormGUIDES loader, OpenWorm c302, Hoffmann's segmentation), is read to settle semantics, not copied",
+    ax.text(12, YA - 5.0, "authors' code, where it exists (WormGUIDES loader, OpenWorm c302, Hoffmann's segmentation), is read to settle semantics, not copied",
             ha="left", va="center", fontsize=6.6, color="#64748b", style="italic")
 
     # A -> B
@@ -123,8 +171,8 @@ def main(argv=None):
     ax.text(XB[4] + WB / 2, YB - 4.0, "other assessors (models, humans) may publish\ntheir own assessments of the same hypotheses",
             ha="center", va="center", fontsize=6.4, color="#475569", style="italic")
 
-    ax.text(50, 89.5, "How a form gets into this repository, and how it is scored", ha="center", va="center", fontsize=12.5, fontweight="bold", color=EDGE)
-    ax.text(50, 86.8, "each pass pins a commit; scores are 0–100 per dimension, weighted mean overall; the audit scores the reproduction, not the biology",
+    ax.text(50, YLIM - 2.6, "How a form gets into this repository, and how it is scored", ha="center", va="center", fontsize=12.5, fontweight="bold", color=EDGE)
+    ax.text(50, YLIM - 5.3, "each pass pins a commit; scores are 0–100 per dimension, weighted mean overall; the audit scores the reproduction, not the biology",
             ha="center", va="center", fontsize=7.6, color="#475569")
     for i, (c, l) in enumerate([(BUILD, "reproduce"), (EVAL, "evaluate"), (PUB, "publish"), (LOOP, "remediate")]):
         ax.add_patch(FancyBboxPatch((66 + i * 8.5, 2.0), 2.2, 2.2, boxstyle="round,pad=0.1", fc=c, ec=EDGE, lw=0.6))
