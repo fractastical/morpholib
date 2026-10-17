@@ -25,7 +25,7 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 ROOT = Path(__file__).resolve().parents[2]
 
-BUILD = "#dbeafe"; EVAL = "#fde68a"; PUB = "#bbf7d0"; LOOP = "#fecaca"; EDGE = "#334155"; RED = "#b91c1c"; HUMAN = "#7c3aed"
+BUILD = "#dbeafe"; EVAL = "#fde68a"; PUB = "#bbf7d0"; LOOP = "#fecaca"; EDGE = "#334155"; RED = "#b91c1c"; HUMAN = "#7c3aed"; BUILDER = "#0369a1"; ASSESSOR = "#be185d"
 # (x, y, w, h, colour, title, body) on a 100 x 100 canvas.  Top to bottom: tier A (five boxes, left -> right),
 # the outputs band (box 6), tier B (six boxes, left -> right), the note.
 YA, YB, H = 78, 13, 20
@@ -43,7 +43,7 @@ BOXES = {
     "script":  (XA[4], YA, WA, H, BUILD, "5  Script",
                 "one program per paper, which\nreproduces the model, decodes the\nauthors' data or tests the claim —\nthen draws the result, measures it\nand checks itself"),
     "audit":   (XB[0], YB, W, H, EVAL,  "7  Audit",
-                "a reviewer scores the script\non 7 questions, 0–100 each,\nwith a written reason and\nthe lines of code it rests on,\nat one named commit"),
+                "an assessor agent — not the one\nthat wrote the code — scores it\non 7 questions, 0–100 each, with\na written reason and the lines\nit rests on, at one version"),
     "measure": (XB[1], YB, W, H, EVAL,  "8  Measure",
                 "the outputs are fingerprinted\nand measured independently —\nsizes, counts, shapes — against\nthe specimens or the paper:\nnumbers, not opinions"),
     "build":   (XB[2], YB, W, H, PUB,   "9  Write as claims",
@@ -53,7 +53,7 @@ BOXES = {
     "graph":   (XB[4], YB, W, H, PUB,   "11  Public record",
                 "anyone can look a score up,\ncite it, check its signature\nor query across all audits;\nthe repository keeps the\naddresses and a report"),
     "remed":   (XB[5], YB, W, H, LOOP,  "12  Remediate",
-                "what the audit found wrong\nbecomes a public to-do list;\na fix is a new version of the\nscript, and then the touched\nscores are judged again"),
+                "what the audit found wrong\nbecomes a public to-do list;\na person picks, the builder agent\nre-works the script, and the\ntouched scores are judged again"),
 }
 # the file or term behind each tier-B box, in small type under the plain-language body
 TERMS = {
@@ -63,7 +63,8 @@ TERMS = {
     "build": "build_morphoeval_kg.py (RDF)", "publish": "sign_morphoeval.py",
     "graph": "kg/<audit>/REPORT.md", "remed": "GitHub issue #1",
 }
-HUMANS = {"scout": "a person\nchooses", "remed": "a person reads\nthe scores, picks\nwhat to fix next"}
+HUMANS = {"scout": "a person\nchooses", "remed": "a person picks\nwhat to fix"}
+AGENTS = {"script": (BUILDER, "the builder agent\nwrites it"), "audit": (ASSESSOR, "a different agent\nscores it")}
 
 # the papers, in year order, with a frame of each reproduction's own animation (docs/media/*.gif)
 MEDIA = ROOT / "docs" / "media"
@@ -160,6 +161,16 @@ def person(ax, x, y, s=1.0, color=HUMAN):
     ax.add_patch(FancyBboxPatch((x - 1.4 * s, y), 2.8 * s, 1.6 * s, boxstyle="round,pad=0,rounding_size=0.9", fc=color, ec="none", zorder=6))
 
 
+def agent(ax, x, y, s=1.0, color=BUILDER):
+    """A small robot: square head with two eyes and an antenna, and shoulders."""
+    from matplotlib.patches import Ellipse
+    ax.add_patch(FancyBboxPatch((x - 0.8 * s, y + 1.5 * s), 1.6 * s, 1.5 * s, boxstyle="round,pad=0,rounding_size=0.3", fc=color, ec="none", zorder=6))
+    ax.plot([x, x], [y + 3.0 * s, y + 3.6 * s], color=color, lw=1.0, zorder=6); ax.add_patch(Ellipse((x, y + 3.7 * s), 0.5 * s, 0.4 * s, fc=color, ec="none", zorder=6))
+    for dx in (-0.35, 0.35):
+        ax.add_patch(Ellipse((x + dx * s, y + 2.3 * s), 0.4 * s, 0.4 * s, fc="white", ec="none", zorder=7))
+    ax.add_patch(FancyBboxPatch((x - 1.4 * s, y), 2.8 * s, 1.3 * s, boxstyle="round,pad=0,rounding_size=0.5", fc=color, ec="none", zorder=6))
+
+
 def pt(key, side):
     x, y, w, h = BOXES[key][:4]
     return {"l": (x, y + h / 2), "r": (x + w, y + h / 2), "t": (x + w / 2, y + h), "b": (x + w / 2, y)}[side]
@@ -231,7 +242,7 @@ def main(argv=None):
     # tier labels
     ax.text(XA[1], YA + H + 4.6, "A  Making a reproduction", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
     ax.text(XA[1], YA + H + 2.0, "each paper goes through A once; then round B, and back into A, until it holds", fontsize=7.5, style="italic", color="#475569", va="center")
-    ax.text(XB[1] + 1.0, YB + H + 2.0, "B  Auditing it — the MorphoEval cycle", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
+    ax.text(XB[1] + 2.0, YB + H + 2.0, "B  Auditing it — the MorphoEval cycle", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
 
     for k in BOXES:
         box(ax, k)
@@ -239,7 +250,11 @@ def main(argv=None):
     x, y, w, h = BOXES["scout"][:4]
     person(ax, x + 1.0, y + h + 1.2, 1.1); ax.text(x + 3.0, y + h + 2.9, HUMANS["scout"], fontsize=6.4, color=HUMAN, va="center", fontweight="bold", linespacing=1.1)
     x, y, w, h = BOXES["remed"][:4]
-    person(ax, x + 4.0, y + h + 1.2, 1.1); ax.text(x + 6.0, y + h + 3.3, HUMANS["remed"], fontsize=6.4, color=HUMAN, va="center", fontweight="bold", linespacing=1.1)
+    person(ax, x + 3.6, y + h + 1.2, 1.1); ax.text(x + 5.6, y + h + 2.9, HUMANS["remed"], fontsize=6.2, color=HUMAN, va="center", fontweight="bold", linespacing=1.1)
+    # the agents: who writes the code, who scores it (they should not be the same model)
+    for key, (col, label) in AGENTS.items():
+        x, y, w, h = BOXES[key][:4]
+        agent(ax, x + 1.0, y + h + 1.0, 1.0); ax.text(x + 3.0, y + h + 2.9, label, fontsize=6.2, color=col, va="center", fontweight="bold", linespacing=1.1)
 
     # tier A
     arrow(ax, "scout", "r", "paper", "l")
@@ -253,7 +268,7 @@ def main(argv=None):
     xs = XA[4] + WA / 2 + 4.0
     ax.add_patch(FancyArrowPatch((xs, YA), (xs, band_top), arrowstyle="-|>", mutation_scale=11, lw=1.1, color=EDGE, shrinkA=2, shrinkB=1))
     ax.text(xs + 1.2, (YA + band_top) / 2, "writes", fontsize=6.6, color=EDGE, va="center", ha="left")
-    xa = XB[0] + W / 2
+    xa = XB[0] + W - 2.0
     ax.add_patch(FancyArrowPatch((xa, YS + 0.4), (xa, YB + H), arrowstyle="-|>", mutation_scale=11, lw=1.1, color=EDGE, shrinkA=1, shrinkB=2))
     ax.text(xa + 1.2, YS - 2.2, "scored, with evidence", fontsize=6.6, color=EDGE, va="center", ha="left")
 
@@ -267,9 +282,11 @@ def main(argv=None):
     # the loop: straight up from Remediate, between two columns of outputs, into Script
     y0 = YB + H; y1 = YA
     ax.add_patch(FancyArrowPatch((x_gap, y0 + 0.5), (x_gap, y1), arrowstyle="-|>", mutation_scale=11, lw=1.2, color=RED, shrinkA=0, shrinkB=2, zorder=5))
-    ax.text(x_gap - 1.5, YS - 2.3, "fix → a new version of the script → the outputs are re-made and the touched scores judged again and published anew;\n"
-            "the old statements stay on record, marked as replaced (nothing published is ever edited)",
-            ha="right", va="center", fontsize=6.6, color=RED, linespacing=1.25)
+    ax.text(x_gap - 1.5, YS - 2.6, "the builder agent re-works the script — its fidelity to the paper, its sources, its checks —\n"
+            "the outputs are re-made and the assessor judges the touched scores again; the old statements\n"
+            "stay on record, marked as replaced (nothing published is ever edited)",
+            ha="right", va="center", fontsize=6.4, color=RED, linespacing=1.2)
+    agent(ax, x_gap - 46.0, YS - 4.6, 1.0)                               # the builder, at the start of the loop's label
     note(ax)
 
     ax.text(50, YLIM - 2.6, "How a form gets into this repository, and how it is scored", ha="center", va="center", fontsize=12.5, fontweight="bold", color=EDGE)
@@ -279,7 +296,10 @@ def main(argv=None):
     for i, (c, l) in enumerate([(BUILD, "reproduce"), (EVAL, "evaluate"), (PUB, "publish"), (LOOP, "remediate")]):
         ax.add_patch(FancyBboxPatch((65 + i * 8.0, 2.0), 2.2, 2.2, boxstyle="round,pad=0.1", fc=c, ec=EDGE, lw=0.6))
         ax.text(68 + i * 8.0, 3.1, l, fontsize=7, va="center", color=EDGE)
-    person(ax, 66.1, 5.6, 0.7); ax.text(68, 7.1, "a person decides", fontsize=7, va="center", color=HUMAN)
+    person(ax, 66.1, 5.3, 0.7); ax.text(68, 6.6, "a person decides what to go after and what to fix", fontsize=6.5, va="center", color=HUMAN)
+    agent(ax, 66.1, 7.6, 0.65); ax.text(68, 9.0, "the builder agent writes and re-works the code", fontsize=6.5, va="center", color=BUILDER)
+    agent(ax, 66.1, 10.0, 0.65, ASSESSOR); ax.text(68, 11.6, "the assessor agent scores it — should be a different model from the builder\n"
+            "(so far it has not been; each audit names its assessor)", fontsize=6.0, va="center", color=ASSESSOR, linespacing=1.15)
 
     out = Path(args.out); out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=160, bbox_inches="tight", facecolor="white")

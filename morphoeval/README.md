@@ -47,8 +47,13 @@ paper, dataset or claim worth the work and pointing the agent at it — and ends
 (reproduce the paper's model from its equations, decode the authors' formal encoding into form, or test a
 published claim against measurements). Between the tiers sits what the scripts produce — box 6, the
 thirteen animations, each labelled with its paper — which is what tier B scores; a person reads the scores
-and decides what to fix or where to go next, and the fix runs back through box 6 into the script (👤 marks
-the two places people decide). Each pass pins a commit; scores are 0–100 per dimension with a weighted mean overall; published
+and decides what to fix or where to go next; the builder agent then re-works the script — its fidelity to
+the paper, its sources, its checks — and the fix runs back through box 6 into the script (👤 marks the two
+places people decide). Two agent roles are meant to be distinct: the **builder** that writes and re-works the
+code and the **assessor** that scores it; so far the same model has filled both (each audit names its
+assessor, and the report's limitations say so); the graph is built to take a second assessor's
+nanopubs on the same hypotheses, and running one is the most important open item in
+[morpholib#1](https://github.com/fractastical/morpholib/issues/1). Each pass pins a commit; scores are 0–100 per dimension with a weighted mean overall; published
 nanopubs are immutable and re-scores supersede them. The same figure as an image (for the PDF report
 and anything that cannot render Mermaid) is `docs/media/morphoeval_pipeline.png`, drawn by
 `morphoeval/report/draw_pipeline.py`; in it box 6 is the thirteen reproductions' own animations in
@@ -68,7 +73,7 @@ flowchart TB
         P["2 Paper<br/>the model as the authors published it: a set of<br/>equations, a database of drawings, or a claim"]:::build
         S["3 Formal source<br/>the paper's own numbers and records, fetched or<br/>copied in and locked to a fingerprint (SHA-256),<br/>so a changed file is refused"]:::build
         R["4 Pin the rules<br/>prose → exact rule, tested on every record;<br/>the authors' code, where it exists, is read to<br/>settle what they meant, never copied"]:::build
-        X["5 Script<br/>one program per paper: reproduces, decodes or tests,<br/>then draws, measures and checks itself<br/><small>&lt;year&gt;-&lt;author&gt;-&lt;model&gt;.py</small>"]:::build
+        X["🤖 builder · 5 Script<br/>one program per paper: reproduces, decodes or tests,<br/>then draws, measures and checks itself<br/><small>&lt;year&gt;-&lt;author&gt;-&lt;model&gt;.py</small>"]:::build
         SC --> P --> S --> R --> X
     end
 
@@ -77,17 +82,17 @@ flowchart TB
 
     subgraph B["B &nbsp;Auditing it — the MorphoEval cycle"]
         direction LR
-        AU["7 Audit<br/>a reviewer scores the script on 7 questions,<br/>0–100 each, with a written reason and the lines<br/>of code it rests on, at one commit<br/><small>audits/&lt;date&gt;-&lt;name&gt;.yaml</small>"]:::eval
+        AU["🤖 assessor · 7 Audit<br/>a different agent from the builder scores the script<br/>on 7 questions, 0–100 each, with a written reason<br/>and the lines of code it rests on, at one version<br/><small>audits/&lt;date&gt;-&lt;name&gt;.yaml</small>"]:::eval
         M["8 Measure<br/>outputs hashed and measured independently<br/>against specimens or the paper:<br/>numbers, not opinions<br/><small>measure_outputs.py</small>"]:::eval
         BG["9 Write as claims<br/>each score becomes one small machine-readable<br/>statement: 'this script reproduces X' — how likely,<br/>says who, on what evidence, under what licence<br/><small>build_morphoeval_kg.py (RDF, ProbKnow templates)</small>"]:::pub
         PU["10 Sign &amp; publish<br/>each statement is signed and put on a public<br/>network of servers under a permanent address;<br/>test network first, then for real<br/><small>sign_morphoeval.py</small>"]:::pub
         G[("11 Public record<br/>anyone can look a score up, cite it, check its<br/>signature or query across all audits<br/><small>Nanopub Query · kg/&lt;audit&gt;/REPORT.md</small>")]:::pub
-        T["👤 12 Remediate<br/>what the audit found wrong becomes a to-do list;<br/>a fix is a new commit, then the touched scores<br/>are judged again<br/><small>GitHub issue #1</small>"]:::loop
+        T["👤 12 Remediate<br/>what the audit found wrong becomes a to-do list;<br/>a person picks, the builder agent re-works the<br/>script, and the touched scores are judged again<br/><small>GitHub issue #1</small>"]:::loop
         AU --> M --> BG --> PU --> G --> T
     end
 
     O -- scored, with evidence --> AU
-    T -- "👤 a person reads the scores and picks what to fix next;<br/>fix → new commit → touched scores judged again and published anew;<br/>the old statements stay on record, marked as replaced (nothing published is edited)" --> X
+    T -- "👤 a person picks what to fix; 🤖 the builder re-works the script<br/>(fidelity, sources, checks) → outputs re-made → 🤖 the assessor judges the touched scores again and published anew;<br/>the old statements stay on record, marked as replaced (nothing published is edited)" --> X
     G -. other assessors (models, people) may publish their own<br/>assessment of the same hypotheses .-> BG
 ```
 
