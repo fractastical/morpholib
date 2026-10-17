@@ -1,0 +1,89 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAmQj3-V0KGOFka4Ih1Zf6s_Lru4OfHiPpt9o4dEdj8z4/> .
+@prefix this: <https://w3id.org/np/RAmQj3-V0KGOFka4Ih1Zf6s_Lru4OfHiPpt9o4dEdj8z4> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:provenance {
+    sub1:assertion prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/978-3-642-93093-5>,
+            <https://doi.org/10.1109/34.24792>,
+            <https://doi.org/10.1111/evo.13755>,
+            <https://doi.org/10.1371/journal.pone.0112732>,
+            <https://doi.org/10.5061/dryad.fn457gr> .
+
+    <https://doi.org/10.1007/978-3-642-93093-5> dcterms:date "1978"^^xsd:gYear ;
+        dcterms:title "The measurement of biological shape and shape change" .
+
+    <https://doi.org/10.1109/34.24792> dcterms:date "1989"^^xsd:gYear ;
+        dcterms:title "Principal warps: thin-plate splines and the decomposition of deformations" .
+
+    <https://doi.org/10.1111/evo.13755> dcterms:date "1873"^^xsd:gYear ;
+        dcterms:title "The influence of size on body shape diversification across Indo-Pacific shore fishes" .
+
+    <https://doi.org/10.1371/journal.pone.0112732> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "A morphospace for reef fishes: elongation is the dominant axis of body shape evolution" .
+
+    <https://doi.org/10.5061/dryad.fn457gr> dcterms:date "2019"^^xsd:gYear ;
+        dcterms:title "Data from: The influence of size on body shape diversification across Indo-Pacific shore fishes" .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-16-thompson-audit-thompson-scarus-pomacanthus-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Thompson's Scarus -> Pomacanthus coordinate transformation fitted to real species — Morphometric validation: 82/100" ;
+        rdfs:comment "The whole script is morphometric validation on real specimens: Procrustes distance, residual of each family, explained share, the within-genus RMS as a noise floor with its species range, a leave-one-landmark-out prediction that shows the family has no predictive value for held-out landmarks, the depth/length change and the affine singular-value ratio that explain why a conformal map cannot work, the per-landmark residual ranking, the position of the pair among all 3782 genus pairs and the Scarus -> Chaetodon distribution. The measurements are reproduced independently in the audit sidecar. Not higher because there is no published value to compare against beyond the species count (791 against \"nearly 800\"; Thompson's claim has no numbers and nobody has fitted this pair before, so the only external anchor is the data set itself); digitising error is not estimated (one specimen per species, no replicate), so the noise floor mixes species and measurement variance; and the genus means rest on 9 Pomacanthus species. Evidence: thompson/1917-thompson-scarus-pomacanthus.py L293–L302: all_fits(): residuals and explained shares <https://github.com/fractastical/morpholib/blob/3cf7f8c/thompson/1917-thompson-scarus-pomacanthus.py#L293-L302>; thompson/1917-thompson-scarus-pomacanthus.py L316–L320: within_group_rms(): the noise floor <https://github.com/fractastical/morpholib/blob/3cf7f8c/thompson/1917-thompson-scarus-pomacanthus.py#L316-L320>; thompson/1917-thompson-scarus-pomacanthus.py L534–L560: main(): per-landmark residuals, depth/length, LOO, context percentile, Chaetodon, verdict <https://github.com/fractastical/morpholib/blob/3cf7f8c/thompson/1917-thompson-scarus-pomacanthus.py#L534-L560>; morphoeval/measure_outputs.py L471–L526: measure_thompson_fish(): the same quantities in the sidecar <https://github.com/fractastical/morpholib/blob/3cf7f8c/morphoeval/measure_outputs.py#L471-L526>; thompson_scarus_pomacanthus.png (generated output, not in repo): panels C and D — thompson_scarus_pomacanthus.png: rendered output of thompson/1917-thompson-scarus-pomacanthus.py at 3cf7f8c, image/png, 739620 B, 2520×1540 px, sha256 d243f51e2b90b1a2201ec81265392b1cf95ea0f0e6e68074818cc5754b324e08. Measurements (measure_outputs.py): species in the landmark table = 791 count (reference 791, Friedman et al. 2019, Dryad 10.5061/dryad.fn457gr (Claverie & Wainwright 2014 landmarks), CC0: 'nearly 800 species') [rows of trimmed_tps_Claverie2014.csv (sha256 checked)]; Scarus species = 22 count [rows whose genus is Scarus]; Pomacanthus species = 9 count [rows whose genus is Pomacanthus]; Procrustes distance, Scarus mean to Pomacanthus mean = 0.0312 Procrustes units (RMS per landmark) [RMS landmark distance after optimal similarity superimposition of the genus means (unit centroid size)]; affine residual = 0.0259 Procrustes units [RMS after a least-squares affine map (6 parameters)] — explains 30.9 % of the Procrustes distance; Moebius residual (isogonal coaxial circles) = 0.0311 Procrustes units [RMS after a least-squares Moebius map z -> (az+b)/(cz+1), the conformal map that turns the Cartesian grid into two orthogonal pencils of coaxial circles] — explains 0.8 %: a conformal map cannot change the depth/length ratio; oblique coaxial-circle residual = 0.0256 Procrustes units [RMS after an affine map followed by z -> z/(cz+1) (8 parameters): coaxial circles whose two pencils need not be orthogonal, the family Thompson's Fig. 376 belongs to as drawn] — explains 32.4 %; thin-plate spline bending energy = 0.6778 dimensionless [bending energy of the exact TPS from the Scarus mean to the Pomacanthus mean (Bookstein 1989)]; within-Pomacanthus RMS (noise floor) = 0.0132 Procrustes units [RMS of the Pomacanthus species about their own Procrustes mean] — species range 0.0090-0.0180; within-Scarus 0.0099; leave-one-landmark-out RMS of the oblique coaxial family = 0.0371 Procrustes units [each landmark predicted by the 8-parameter map fitted to the other 16] — compare with the Procrustes distance: the family has no predictive value for held-out landmarks if it is not smaller; depth/length, Scarus mean = 0.3772 ratio [landmark extent in y over extent in x]; depth/length, Pomacanthus mean = 0.5873 ratio [landmark extent in y over extent in x]; percentile of Scarus -> Pomacanthus among all genus pairs (oblique coaxial, explained share) = 31.1475 percent [share of the 3782 ordered pairs of genus means (genera with >= 3 spp.) explained less well] — median pair 43 %; Scarus -> Chaetodon spp., median explained by oblique coaxial circles = 35.12 percent [median over the 54 Chaetodon species] — range 12-61 %." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-thompson-scarus-pomacanthus-morphometric-validation> ;
+        pk:hasProbability "0.82"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-thompson-scarus-pomacanthus-morphometric-validation> rdfs:label "Thompson's Scarus -> Pomacanthus coordinate transformation fitted to real species (thompson/1917-thompson-scarus-pomacanthus.py) satisfies the MorphoEval 0.1.0 criterion 'Morphometric validation' for Scarus (22 spp.) and Pomacanthus (9 spp.), with Chaetodon (54 spp.) and 59 other genera for context; Indo-Pacific shore fishes, lateral view" ;
+        dcterms:identifier "morphoeval/0.1.0/morphometric-validation" .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "M63mgctaTbx7/E6OSSfM+uHuvBX8YctinQPncHkAl17wBb4H6pYOUMeWLOCLEAqF6EUq+csmXTS89XablZFfPonsWkjUpQZ+62HQnJIAoIk6ZBPMXpltOTPbz01oQHSGPJOFg8gJPtBqOfUrIWkebLTMM62V6hN688cE0pvRmYwky1YCOWaACPDYDQwnh/mYY2ivR41ukMCj0h6zkKi2IpyW02ocFAkCgsJcycWzA/GVo+pn2zd7nMYh+44XAJZiXMb+RhKxcYJgH/DOKOxDEwGLEkBbLb5NnDwpYNN3VZ22WPkNyuWCldhBAbWglicEkg3j7XHtcxySb8MdQGHZbg==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Thompson's Scarus -> Pomacanthus coordinate transformation fitted to real species — Morphometric validation 82/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-17T00:33:45Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-16-thompson-audit-thompson-scarus-pomacanthus-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf orcid:0009-0007-4948-9192 .
+}
+

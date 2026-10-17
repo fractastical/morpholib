@@ -217,6 +217,28 @@ morphoeval/kg/2026-10-14-limbform-audit`, so the shared rubric is not
 re-emitted); overall claim
 https://w3id.org/np/RAqDf8b5w5WNe3Chr8OWp5uUyU8U1Bz5BrbGdamyd4BOU.
 
+The third is the **Thompson** audit
+(`thompson/1917-thompson-scarus-pomacanthus.py`, `2026-10-16-thompson-audit`
+at commit `3cf7f8c`): overall 70.2, 9 nanopubs (rubric reused via
+`--supersede-from morphoeval/kg/2026-10-14-limbform-audit`), test registry →
+`check_signed.mjs` 9/9 → fetched back 9/9 → production; overall claim
+https://w3id.org/np/RAjJx_KHiAAaPSxjsoYOJaFSU1JYmDUswVaRLmka2NIM0. It is the
+first audit of a data analysis that tests a historical claim rather than of a
+model that generates form: Thompson's *Scarus* → *Pomacanthus* "system of
+coaxial circles" (1917, p. 749) is read as a Möbius map, fitted by least
+squares to 17 homologous landmarks on 22 *Scarus* and 9 *Pomacanthus* species
+(Claverie & Wainwright 2014 via Friedman et al. 2019, CC0, vendored with a
+SHA-256 pin), and found to explain 1 % (isogonal) to 32 % (oblique) of the
+Procrustes distance, against 31 % for a plain affine map, with a residual twice
+the within-genus spread. The rubric is read as for the other data-analysis
+audits (the "model" is Thompson's family of grids, the "output" the fish it
+carries); parameter expressivity is scored as applicable (55) because the family
+has constants whose effect is shown, unlike the decoders where it is neutral.
+Building this audit exposed a builder bug: `plain_doubles()`, which rewrites
+rdflib's exponent-form doubles to plain decimals, also rewrote `1e-17` inside
+a description string; it and the matching conformance check now skip string
+literals (no previously built checkpoint changes).
+
 **Re-issue wave (2026-10-16):** the three earlier audits were rebuilt with
 `--supersede` (`2026-10-14-morphology-audit` and `2026-10-14-odonata-audit`
 also with `--supersede-from morphoeval/kg/2026-10-14-limbform-audit`, so the
@@ -249,4 +271,5 @@ Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1).
 | Odonata wing cells, fossil vs extant (`2026-eshghi-odonata-wing-cells.py`) | fbbcaf6, audit 2026-10-14-odonata | 75.7 | 76.7 | **76.0** |
 | LimbformDB limb morphologies (`2014-lobo-limbform-morphology.py`) | 747c57f, audit 2026-10-14-limbform | 70.0 | 74.3 | **71.3** |
 | WormGUIDES C. elegans embryo atlas + connectome (`2015-santella-wormguides-celegans.py`) | 303a87e, audit 2026-10-16-celegans (re-score of 2026-10-15: 67.7) | 67.6 | 76.3 | **70.2** |
+| Thompson Scarus -> Pomacanthus on real landmarks (`thompson/1917-thompson-scarus-pomacanthus.py`) | 3cf7f8c, audit 2026-10-16-thompson | 65.6 | 80.8 | **70.2** |
 | Petroff stromatolite / Kahng coral / Cervera–Levin–Mafe | — | — | — | *unevaluated* |

@@ -1,0 +1,307 @@
+# MorphoEval audit — D'Arcy Thompson's Scarus -> Pomacanthus transformation
+# fitted to real species, 2026-10-16.
+#
+# First audit of thompson/1917-thompson-scarus-pomacanthus.py.  Thompson's
+# method of transformations (On Growth and Form 1917, ch. XVII) was published
+# as hand-drawn grids with no equations and no fitting procedure (Bookstein
+# 1978); the toy thompson/1917-thompson.py animates the families of grids and
+# is not audited because it has no specimen.  This script turns the one claim
+# that can be tested with open data - "Fig. 375 is an outline diagram of a
+# typical Scaroid fish. Let us deform its rectilinear co-ordinates into a
+# system of (approximately) coaxial circles, as in Fig. 376, and then filling
+# into the new system ... our former diagram of Scarus, we obtain a very good
+# outline of ... Pomacanthus" (p. 749) - into a parametric statement: a
+# Cartesian grid whose lines become coaxial circles is the image of the plane
+# under a Moebius map (6 real constants, conformal, the two pencils of circles
+# orthogonal) or, if the two pencils may meet obliquely as they do in Thompson's
+# Fig. 376, an affine map followed by a Moebius map (8 constants).  Both are
+# fitted by least squares from the Procrustes mean of the 22 Scarus species to
+# the mean of the 9 Pomacanthus species in Claverie & Wainwright's 17-landmark
+# table (791 species; CC0 via Friedman et al. 2019), and compared with the
+# similarity, affine and thin-plate-spline fits, with the spread of the
+# Pomacanthus species about their own mean as the noise floor, with a
+# leave-one-landmark-out prediction, and with the same fits for all 3782
+# ordered pairs of genus means.
+#
+# The finding is negative and is the output being judged: the conformal family
+# explains 0.8 % of the Procrustes distance (it cannot change depth/length,
+# which goes 0.38 -> 0.59), the oblique family 32 % against 31 % for a plain
+# affine map; the residual (0.0256) is twice the within-Pomacanthus spread
+# (0.0132); held-out landmarks are predicted worse than by no deformation at
+# all; and the pair is at the 31st percentile of genus pairs, so coaxial
+# circles do not describe this pair unusually well.  What is left after the
+# affine part is local: the anal-fin end and origin, the upper-jaw tip and the
+# dorsal-fin end.  So "a very good outline" holds at the resolution of
+# Thompson's drawing, not of the species.
+#
+# This is a data analysis, not a simulation, so the rubric is read as for the
+# Odonata and C. elegans audits: "model" is Thompson's family of grids,
+# "rendered output" is the fish that family carries, "specimens" are the 791
+# digitised species.  Parameter expressivity is applicable in a limited sense
+# (the family has constants whose effect on the grid is shown) and is scored
+# on that basis rather than neutral.
+#
+# Scores are on the rubric's 0-100 scale.  Line numbers refer to the files at
+# the checkpoint commit recorded below.
+
+audit:
+  id: 2026-10-16-thompson-audit
+  rubric_version: 0.1.0
+  date: "2026-10-16"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Cursor agent)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 3cf7f8c          # first version of the script, self-test included
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Inputs: datasets/thompson/trimmed_tps_Claverie2014.csv (266,054 bytes,
+      SHA-256 ab5315f3be273285c101299457093199e98ff0b1d0fcf08331cc303b2f07e6bd, CC0, vendored from Dryad
+      10.5061/dryad.fn457gr and checked on every run; 791 species x 17
+      landmarks) and, for panel A only, leaf 0769 (printed p. 749) of the
+      Internet Archive scan ongrowthform1917thom as the original JPEG-2000 page
+      (SHA-256 69cdc9e24bd757b476c763516fb9fcd45db7dc8c7e28f83a4c142417b762c6fa, public domain), fetched into the
+      git-ignored .thompson_cache/ and hash-checked; --no-scan runs offline.
+
+references:
+  thompson1917:
+    title: "On Growth and Form, chapter XVII, On the theory of transformations, or the comparison of related forms"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917), pp. 719-777; the Scarus -> Pomacanthus pair is p. 749, Figs. 375-376; the other fish pairs are Figs. 373-374 (Argyropelecus -> Sternoptyx), 377-380 (Polyprion and allies), 381-382 (Diodon -> Orthagoriscus)"
+    url: https://archive.org/details/ongrowthform1917thom
+  bookstein1978:
+    title: "The measurement of biological shape and shape change"
+    authors: "Bookstein FL"
+    venue: "Lecture Notes in Biomathematics 24, Springer (1978); the observation that Thompson's grids were drawn freehand and that his method, as published, has no fitting procedure"
+    doi: 10.1007/978-3-642-93093-5
+  bookstein1989:
+    title: "Principal warps: thin-plate splines and the decomposition of deformations"
+    authors: "Bookstein FL"
+    venue: "IEEE Trans Pattern Anal Mach Intell 11:567-585 (1989); the exact interpolating deformation and its bending energy used as the reference the parametric families are measured against"
+    doi: 10.1109/34.24792
+  friedman2019:
+    title: "The influence of size on body shape diversification across Indo-Pacific shore fishes"
+    authors: "Friedman ST, Martinez CM, Price SA, Wainwright PC"
+    venue: "Evolution 73:1873-1884 (2019); the landmark table trimmed_tps_Claverie2014.csv is in the paper's Dryad package"
+    doi: 10.1111/evo.13755
+  friedman2019data:
+    title: "Data from: The influence of size on body shape diversification across Indo-Pacific shore fishes"
+    authors: "Friedman ST, Martinez CM, Price SA, Wainwright PC"
+    venue: "Dryad (2019), CC0 1.0"
+    doi: 10.5061/dryad.fn457gr
+  claverie2014:
+    title: "A morphospace for reef fishes: elongation is the dominant axis of body shape evolution"
+    authors: "Claverie T, Wainwright PC"
+    venue: "PLoS ONE 9:e112732 (2014); Fig. 1 defines the 17 landmarks, digitised on J. E. Randall's Bishop Museum photographs"
+    doi: 10.1371/journal.pone.0112732
+  ia_scan:
+    title: "On growth and form, 1917 Cambridge edition, Internet Archive item ongrowthform1917thom (Biodiversity Heritage Library contribution)"
+    authors: "Thompson DW; scan: Internet Archive / BHL"
+    venue: "https://archive.org/details/ongrowthform1917thom (public domain)"
+    url: https://archive.org/download/ongrowthform1917thom/ongrowthform1917thom_jp2.zip/ongrowthform1917thom_jp2%2Fongrowthform1917thom_0769.jp2
+
+simulations:
+  - id: thompson-scarus-pomacanthus
+    name: Thompson's Scarus -> Pomacanthus coordinate transformation fitted to real species
+    organism: "Scarus (22 spp.) and Pomacanthus (9 spp.), with Chaetodon (54 spp.) and 59 other genera for context; Indo-Pacific shore fishes, lateral view"
+    script: thompson/1917-thompson-scarus-pomacanthus.py
+    output: thompson_scarus_pomacanthus.png
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [thompson1917, bookstein1978, bookstein1989, friedman2019, friedman2019data, claverie2014, ia_scan]
+    summary: >-
+      Loads and hash-checks the 791-species x 17-landmark table; generalised
+      Procrustes superimposition (unit centroid size, no reflection), rotated
+      so the snout-to-peduncle axis is horizontal; genus means.  From the
+      Scarus mean to the Pomacanthus mean fits five maps - similarity
+      (Procrustes distance 0.0312), affine (residual 0.0259, 31 % of the
+      squared distance explained), Moebius z -> (az+b)/(cz+1) (0.0311, 0.8 %;
+      Thompson's "system of coaxial circles" read as isogonal), affine then
+      Moebius (0.0256, 32 %; oblique coaxial circles as Fig. 376 is drawn)
+      and the thin-plate spline (exact, bending energy 0.678) - after checking
+      that the two non-linear fitters recover known maps to 1e-17.  Reports
+      the within-Pomacanthus RMS (0.0132, species 0.0090-0.0180) and
+      within-Scarus RMS (0.0099) as the noise floor, a leave-one-landmark-out
+      RMS for the oblique family (0.0371, above the 0.0312 of no deformation),
+      the depth/length change (0.377 -> 0.587; affine singular-value ratio
+      1.27), the per-landmark residuals after the affine fit (largest LM7,
+      LM2, LM4, LM8), the same fits for all 3782 ordered pairs of 62 genus
+      means (median explained by oblique coaxial circles 43 %; this pair at
+      the 31st percentile) and Scarus -> each Chaetodon species (12-61 %,
+      median 35 %).  Figure: Thompson's Figs. 375-376 cropped from the
+      hash-pinned scan beside the superimposed real species with numbered
+      landmarks; five grid panels carrying the Scarus mean and its grid under
+      each map with residual vectors to the real Pomacanthus mean; the
+      residual ladder against the noise floors; the context scatter.  GIF: the
+      best grid of Thompson's family and the thin-plate spline grid morphing
+      side by side.
+    scores:
+      model-fidelity:
+        value: 72
+        rationale: >-
+          Thompson published no equations, so fidelity is to his words and
+          figure.  "Coaxial circles" is formalised as the Moebius group, the
+          only maps that carry straight lines to circles, and the script states
+          that reading in the docstring; because Fig. 376's two pencils meet
+          obliquely, a second family (affine then Moebius) is fitted so that
+          the figure as drawn is covered and not only its stated idealisation.
+          The alternative Thompson compares against ("rectilinear
+          co-ordinates", i.e. the identity/similarity) and the one he does not
+          (affine) are fitted the same way, and the exact deformation is the
+          thin-plate spline of Bookstein 1989, the standard successor to the
+          method.  The fitters are checked on synthetic maps before the real
+          fit.  Not higher because Thompson's own drawn grid is not digitised
+          and compared with the fitted one (the comparison is grid-family to
+          data, not his constants to the fitted constants); because his
+          "typical Scaroid fish" and unnamed Pomacanthus are replaced by genus
+          Procrustes means, which is the right test of the general claim but
+          not of his drawing; and because the fish are 17 landmarks, not the
+          outline Thompson deformed, so curvature between landmarks is
+          untested.
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [5, 23], note: "the claim quoted; the reading of coaxial circles as a Moebius map"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [47, 66], note: "what is computed: the five families, noise floor, context, LOO"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [210, 269], note: "moebius()/fit_moebius()/coaxial()/fit_coaxial(): the two coaxial families, started from the affine fit, several c starts"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [272, 290], note: "tps_fit()/tps_apply(): Bookstein 1989 with bending energy"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [305, 313], note: "self_test(): known maps recovered"}
+      specimen-match:
+        value: 55
+        rationale: >-
+          The specimens are the 791 real species, and Thompson's own figure is
+          placed beside them from the hash-pinned scan, so the side-by-side the
+          dimension asks for is there.  Judged on it, the fish Thompson's
+          family carries does not match the real Pomacanthus at species
+          resolution: the best coaxial grid leaves a residual twice the spread
+          of the nine Pomacanthus species about their mean, the residual
+          vectors in panel B'' show where (anal fin, upper jaw, dorsal-fin
+          end), and the thin-plate grid in panel B'''' shows the deformation
+          the data demand is not a system of circles.  Distinct morphologies
+          are distinct (Scarus and Pomacanthus means differ by 0.031, three
+          times the within-genus spread).  Scored in the middle because the
+          comparison is honest and legible but the rendering is a
+          17-landmark polygon with four bars, not an outline or a photograph:
+          the body profile, the fin shapes and the head that make a
+          Pomacanthus recognisable are not shown, and Thompson's drawn grid is
+          displayed, not overlaid on the fitted one.
+        evidence:
+          - {file: thompson_scarus_pomacanthus.png, lines: [0, 0], note: "panels A (Thompson), A'/A'' (real species), B-B'''' (grids with residuals), C, D"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [356, 362], note: "scan_crop(): Figs. 375-376 from the pinned page"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [392, 420], note: "row B: each family's grid and fish with residual vectors to the real mean"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [102, 104], note: "OUTLINE/WIRES: what of the fish is drawn"}
+      parameter-expressivity:
+        value: 55
+        rationale: >-
+          Thompson's claim has constants ("small variations in the values of
+          the constants of the coaxial curves" for the other Chaetodonts) and
+          the script treats them as such: the GIF moves the eight constants of
+          the oblique family along a straight path from the identity to the
+          fitted values and shows the grid bending into coaxial circles while
+          the fish deepens, which is the monotone visible effect the dimension
+          asks for.  The Chaetodont claim is tested by fitting the family to
+          each of the 54 Chaetodon species.  Not higher because the constants
+          are not swept one at a time (no panel shows what the complex c alone
+          does to the grid at fixed affine part), the fitted constants for the
+          Chaetodon species are not reported or plotted, so "small variations"
+          is tested only through the explained share, and the family's two
+          free-form parameters (the affine part) are not Thompson's.
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [465, 499], note: "animate(): straight path in parameter space from identity to the fitted map"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [243, 253], note: "coaxial(): the eight constants and their roles"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [517, 520], note: "Scarus -> each Chaetodon species"}
+      morphometric-validation:
+        value: 82
+        rationale: >-
+          The whole script is morphometric validation on real specimens:
+          Procrustes distance, residual of each family, explained share, the
+          within-genus RMS as a noise floor with its species range, a
+          leave-one-landmark-out prediction that shows the family has no
+          predictive value for held-out landmarks, the depth/length change
+          and the affine singular-value ratio that explain why a conformal map
+          cannot work, the per-landmark residual ranking, the position of the
+          pair among all 3782 genus pairs and the Scarus -> Chaetodon
+          distribution.  The measurements are reproduced independently in the
+          audit sidecar.  Not higher because there is no published value to
+          compare against beyond the species count (791 against "nearly 800";
+          Thompson's claim has no numbers and nobody has fitted this pair
+          before, so the only external anchor is the data set itself);
+          digitising error is not estimated (one specimen per species, no
+          replicate), so the noise floor mixes species and measurement
+          variance; and the genus means rest on 9 Pomacanthus species.
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [293, 302], note: "all_fits(): residuals and explained shares"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [316, 320], note: "within_group_rms(): the noise floor"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [534, 560], note: "main(): per-landmark residuals, depth/length, LOO, context percentile, Chaetodon, verdict"}
+          - {file: morphoeval/measure_outputs.py, lines: [471, 526], note: "measure_thompson_fish(): the same quantities in the sidecar"}
+          - {file: thompson_scarus_pomacanthus.png, lines: [0, 0], note: "panels C and D"}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Thompson is cited to page and figure with the public-domain scan
+          pinned to one JPEG-2000 leaf by SHA-256; the landmark table is cited
+          to its Dryad DOI, licence and byte size and vendored with its SHA-256
+          checked on every run (and kept byte-identical through git by a
+          -text attribute); the landmark definitions are cited to Claverie &
+          Wainwright 2014 Fig. 1 and the paper that released the file to its
+          DOI; Bookstein 1978 and 1989 are cited for the method's history and
+          the TPS.  Short of full marks because the landmark semantics were
+          read off a figure (the paper has no landmark table) and because the
+          Dryad download could not be scripted (browser challenge), so the
+          vendored file's provenance rests on the recorded hash rather than on
+          a reproducible fetch.
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [25, 45], note: "data and scan provenance in the docstring"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [87, 97], note: "DATA_SHA256, DATA_DRYAD, SCAN_URL, SCAN_SHA256"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [116, 141], note: "load_landmarks()/fetch_scan(): both hashes enforced"}
+          - {file: datasets/thompson/README.md, lines: [1, 30], note: "sources table, licences, why vendored, landmark definitions"}
+      code-traceability:
+        value: 78
+        rationale: >-
+          Each step is tied to its source: the quoted passage to the Moebius
+          reading, Fig. 376's oblique pencils to the second family, Fig. 374
+          to the affine part, Bookstein 1989 to the TPS, Claverie Fig. 1 to
+          the drawn polygon and bars; every printed number names what it is
+          compared with.  Because Thompson gave no equations the trace ends at
+          prose and a drawing, and the judgement that Fig. 376 is oblique
+          rather than isogonal is made by eye, not measured on the scan.
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [15, 23], note: "why coaxial circles = Moebius"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [243, 247], note: "coaxial(): Fig. 374 / Fig. 376 reading"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [163, 166], note: "gpa(): orientation convention tied to Thompson's figures"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [398, 408], note: "panel titles name the figure each grid corresponds to"}
+      repro-package:
+        value: 75
+        rationale: >-
+          Deterministic (Levenberg-Marquardt from fixed starts, seeded
+          self-test), invocation and outputs documented, the data file is in
+          the repository and hash-checked, the only network fetch is optional
+          (--no-scan) and hash-checked, re-runs give identical numbers.
+          Dependencies are in requirements.txt with lower bounds only and the
+          known-good environment is recorded only in this audit; the GIF takes
+          ~2 min because each frame refits a thin-plate spline and re-renders.
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [67, 73], note: "documented invocation and outputs"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [523, 580], note: "main(): flags, offline fallback for the scan"}
+          - {file: requirements.txt, lines: [1, 7], note: "lower bounds only"}
+    remediation:
+      - Digitise Thompson's drawn grid of Fig. 376 from the pinned scan, fit the Moebius constants to it, and compare them with the constants fitted to the species, so his drawing is tested and not only his family.
+      - Add outlines (semilandmarks along the body profile, or the Bishop Museum photographs of one Scarus and one Pomacanthus) so the comparison is of the form Thompson deformed, not 17 points.
+      - Sweep the complex constant c at fixed affine part in a panel, and report the fitted constants for the 54 Chaetodon species to test "small variations in the values of the constants" directly.
+      - Estimate digitising error (replicate landmarking of a few photographs) so the noise floor can be separated into species and measurement variance.
+      - Pin the Python 3.14 environment (exact versions) in requirements or a lock file.

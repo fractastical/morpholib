@@ -377,13 +377,22 @@ def serialize_trig(ds: Dataset) -> str:
 
 
 EXPONENT_DOUBLE = re.compile(r'(?<=[\s,(])(-?\d+(?:\.\d+)?e[+-]\d+)(?=\s*[;,.\]])')
+# Turtle string literals (long and short forms), so that text such as "... to 1e-17." is left alone
+STRING_LITERAL = re.compile(r'"""(?:[^"\\]|\\.|"(?!""))*"""|"(?:[^"\\\n]|\\.)*"', re.S)
 
 
 def plain_doubles(trig_text: str) -> str:
     """rdflib writes xsd:double in exponent form (7.6e-01, 1e+00); the templates' 0-1 regex wants
     "0.76", and the lexical form is part of the trusty hash, so it must be written the way it was
-    parsed.  Rewrites every bare exponent-form double as a plain-decimal typed literal."""
-    return EXPONENT_DOUBLE.sub(lambda m: f'"{repr(float(m.group(1)))}"^^xsd:double', trig_text)
+    parsed.  Rewrites every bare exponent-form double (outside string literals) as a plain-decimal
+    typed literal."""
+    out, pos = [], 0
+    for m in STRING_LITERAL.finditer(trig_text):
+        out.append(EXPONENT_DOUBLE.sub(lambda d: f'"{repr(float(d.group(1)))}"^^xsd:double', trig_text[pos:m.start()]))
+        out.append(m.group(0))
+        pos = m.end()
+    out.append(EXPONENT_DOUBLE.sub(lambda d: f'"{repr(float(d.group(1)))}"^^xsd:double', trig_text[pos:]))
+    return "".join(out)
 
 
 # --------------------------------------------------------------------------- #
@@ -728,7 +737,7 @@ def conformance(files: list[Path]) -> list[str]:
     probs: list[str] = []
     for f in files:
         raw = f.read_text()
-        if (m := EXPONENT_DOUBLE.search(raw)):
+        if (m := EXPONENT_DOUBLE.search(STRING_LITERAL.sub('""', raw))):
             probs.append(f"{f.name}: exponent-form double {m.group(0)} (templates' 0-1 regex wants plain decimals)")
         ds = Dataset(); ds.parse(f, format="trig")
         # works on unsigned (temp-namespace) and signed (trusty-URI) files alike

@@ -63,8 +63,9 @@ distance in Procrustes units (centroid size 1):
 Noise floor: the *Pomacanthus* species lie at RMS 0.0132 from their own mean
 (range 0.0090–0.0180), the *Scarus* species at 0.0099. A leave-one-landmark-out
 fit of the 8-parameter family predicts held-out landmarks with RMS 0.0371,
-worse than the Procrustes distance itself. The body is 27 % deeper relative to
-length in *Pomacanthus* (depth/length 0.36 → 0.57), which no conformal map can
+worse than the Procrustes distance itself. The body is 56 % deeper relative to
+length in *Pomacanthus* (depth/length by landmark extents 0.38 → 0.59; the affine
+fit's singular-value ratio is 1.27), which no conformal map can
 produce; the landmarks left worst by the affine fit are 7, 2, 4, 8 (anal-fin
 end, snout, dorsal-fin end, anal-fin origin). Over all 3782 ordered pairs of
 genus means (62 genera with ≥ 3 species) oblique coaxial circles explain a
