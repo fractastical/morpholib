@@ -37,6 +37,10 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 BUILD = HERE / "build"
 PDF = BUILD / "MorphoEval-Reproducibility-Report.pdf"
+ARCHIVE_EXCLUDE = ["wave-vector-analysis", "presentation-assets", "archive", ".mplconfig", ".DS_Store",
+                   "parser_output.png", "batch_parse.log", "COORDINATE_SYSTEM_WARNING.md",
+                   "XY_COORDINATES_DOCUMENTATION.md"]   # plus every root-level *.gif (full-size historical outputs);
+                                                        # the README's downsized animations in docs/media/ stay in
 
 
 def sh(*cmd) -> str:
@@ -56,8 +60,11 @@ def build_artefacts(counts: str | None) -> tuple[Path, Path, dict]:
     cmd = [sys.executable, str(HERE / "build_report.py")] + (["--counts", counts] if counts else [])
     subprocess.run(cmd, check=True, cwd=ROOT, env={**os.environ, "MPLBACKEND": "Agg"})
     zip_path = BUILD / f"morpholib-source-{commit}.zip"
-    subprocess.run(["git", "archive", "--format=zip", f"--prefix=morpholib-{commit}/", "-o", str(zip_path), "HEAD"],
-                   check=True, cwd=ROOT)
+    # the reproductions, MorphoEval and the datasets; not the Ca2+ wave-imaging pipeline and its results,
+    # presentation assets, historical full-size GIFs or stray logs that happen to be tracked
+    root_gifs = [f for f in sh("git", "ls-tree", "--name-only", "HEAD").splitlines() if f.endswith(".gif")]
+    subprocess.run(["git", "archive", "--format=zip", f"--prefix=morpholib-{commit}/", "-o", str(zip_path), "HEAD", "--", "."]
+                   + [f":(exclude){p}" for p in ARCHIVE_EXCLUDE + root_gifs], check=True, cwd=ROOT)
     meta = json.load(open(ROOT / ".zenodo.json"))
     meta["description"] += (f"<p>Source archive: <code>{zip_path.name}</code>, repository revision <code>{commit}</code> "
                             f"of https://github.com/fractastical/morpholib. Rendered outputs are not included; every script "
