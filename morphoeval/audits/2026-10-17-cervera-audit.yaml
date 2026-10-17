@@ -1,0 +1,287 @@
+# MorphoEval audit — Cervera–Levin–Mafe gap-junction synthesis, 2026-10-17
+# (first audit; independent assessment at checkpoint e71ca55).
+#
+# The high-level reaction–diffusion premise is supported by the 2021 abstract
+# and an accessible author presentation: two antagonistic axial morphogens, an
+# independent orthogonal morphogen, and altered patterns after partial
+# gap-junction blockade.  The full 2021 and 2020 papers were not accessible,
+# however, so the script's mutual-annihilation equations, flux implementation,
+# constants and thresholds could not be verified as the published equations.
+# The added rusty-matter circuit is a separate, explicitly educational model,
+# not a demonstrated port of the cited 2020 ion-channel model; its pinned Rust
+# source was fetched and the Python constants and update structure were checked.
+#
+# Two output claims are materially unsupported.  The advertised (f2,f3)
+# morphospace is constant along f3 because _f3_val is never used, and its
+# f2=0.58 phenotype boundary is imposed rather than derived (the implemented
+# solver gives x*=0.552 there, not approximately 0.58).  The crop-specific f2
+# values, wound gains, timing rescaling and head thresholds are hand-set without
+# cited calibration.  Moreover, the CSV reconstructs each crop wavefront as
+# 0.50 + 0.26*shift although shift was defined using a 0.13 denominator, so its
+# reported displacement is exactly twice the simulated displacement.
+#
+# The real Schmidtea photograph contributes only a silhouette mask on which
+# colours are painted; it is not measured.  The distinct wild-type and
+# double-head outcomes are Planform cartoons selected by a 0.55 readout
+# threshold, not generated anatomy.  PlanformDB frequencies are plotted beside
+# model indices, but no error, fit, held-out test or specimen morphometric is
+# computed.  The self-test establishes file integrity and approximate parity
+# with synthetic rusty-matter traces (tolerance 0.035); it does not validate the
+# biology, reaction–diffusion solver, thresholds, CSV transformations or plots.
+# Repeated runs were nevertheless byte-identical for PNG, CSV and GIF.
+#
+# Scores are on the rubric's 0-100 scale.  Line numbers refer to files at the
+# checkpoint commit recorded below; [0, 0] denotes generated image/CSV evidence.
+
+audit:
+  id: 2026-10-17-cervera-audit
+  rubric_version: 0.1.0
+  date: "2026-10-17"
+  assessor:
+    id: gpt-5.6-sol
+    label: "GPT-5.6 Sol (Cursor agent)"
+    homepage: https://openai.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: e71ca55
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+      scipy: "1.16.3"
+      scikit-image: "0.26.0"
+    note: >-
+      External inputs are three vendored, SHA-256-pinned JSON fixtures derived
+      from MesmerPrism/rusty-matter at commit
+      ad111fa7ecfd8f43d292ff3b1d27d3af2741d828 and PlanformDB 2.5.0, plus the
+      cached Wikimedia Commons Smediterranea.jpg photograph (SHA-256 pinned in
+      the script; CC BY 2.5).  The pinned rusty-matter repository was fetched
+      and inspected at that commit.  The 2021 abstract and an author
+      presentation were accessible, but the full 2021 and 2020 publisher
+      articles were not; equation-level fidelity is therefore not asserted.
+      Outputs were regenerated from the repository root with MPLBACKEND=Agg
+      MPLCONFIGDIR=/tmp/mplcfg ./venv/bin/python
+      "2021-Cervera–Levin–Mafe.py" --self-test, then --no-show, then --gif
+      /tmp/cervera_assess.gif.  The PNG, CSV and 46-frame GIF were regenerated
+      a second time and were byte-identical.
+
+references:
+  cervera2021:
+    title: "Morphology changes induced by intercellular gap junction blocking: A reaction-diffusion mechanism"
+    authors: "Cervera J, Levin MG, Mafe S"
+    venue: "BioSystems 209:104511 (2021); abstract and author presentation consulted, full article not accessible"
+    doi: 10.1016/j.biosystems.2021.104511
+  cervera2020:
+    title: "Bioelectrical model of head-tail patterning based on cell ion channels and intercellular gap junctions"
+    authors: "Cervera J, Meseguer S, Levin MG, Mafe S"
+    venue: "Bioelectrochemistry 132:107410 (2020); abstract consulted, full article not accessible"
+    doi: 10.1016/j.bioelechem.2019.107410
+  oviedo2010:
+    title: "Long-range neural and gap junction protein-mediated cues control polarity during planarian regeneration"
+    authors: "Oviedo NJ, Morokuma J, Walentek P, Kema IP, Gu MB, Ahn JM, Hwang JS, Gojobori T, Levin M"
+    venue: "Developmental Biology 339(1):188-199 (2010); source of the curated PlanformDB records"
+    doi: 10.1016/j.ydbio.2009.12.012
+  durant2019:
+    title: "The Role of Early Bioelectric Signals in the Regeneration of Planarian Anterior/Posterior Polarity"
+    authors: "Durant F, Bischof J, Fields C, Morokuma J, LaPalme J, Hoi A, Levin M"
+    venue: "Biophysical Journal 116(5):948-961 (2019); qualitative timing anchor"
+    doi: 10.1016/j.bpj.2019.01.029
+  lobo2013:
+    title: "Planform: an application and database of graph-encoded planarian regenerative experiments"
+    authors: "Lobo D, Malone TJ, Levin M"
+    venue: "Bioinformatics 29(8):1098-1100 (2013); PlanformDB formalism and data source"
+    doi: 10.1093/bioinformatics/btt088
+  stevenson2010_photo:
+    title: "Smediterranea.jpg, from A Low Percent Ethanol Method for Immobilizing Planarians"
+    authors: "Stevenson CG, Beane WS"
+    venue: "Wikimedia Commons photograph, CC BY 2.5; source publication PLoS ONE 5(12):e15310 (2010)"
+    url: https://commons.wikimedia.org/wiki/File:Smediterranea.jpg
+  rusty_matter:
+    title: "MesmerPrism/rusty-matter planarian bioelectric circuit and fixtures"
+    authors: "MesmerPrism/rusty-matter contributors"
+    venue: "GitHub repository, MIT OR Apache-2.0, pinned commit ad111fa7ecfd8f43d292ff3b1d27d3af2741d828"
+    url: https://github.com/MesmerPrism/rusty-matter/tree/ad111fa7ecfd8f43d292ff3b1d27d3af2741d828
+
+simulations:
+  - id: cervera-levin-mafe
+    name: Cervera–Levin–Mafe gap-junction reaction–diffusion and bioelectric synthesis
+    organism: "Planarians; photograph is Schmidtea mediterranea, empirical PlanformDB subset is Dugesia japonica"
+    script: 2021-Cervera–Levin–Mafe.py
+    also: [2013-lobo-planform-morphology.py]
+    output: cervera_levin_mafe_gj_block.gif
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [cervera2021, cervera2020, oviedo2010, durant2019, lobo2013, stevenson2010_photo, rusty_matter]
+    summary: >-
+      A deterministic synthesis combines a one-dimensional antagonistic
+      reaction–diffusion solver, an orthogonal one-species profile, a Python
+      port of rusty-matter's educational five-band circuit, 14 curated
+      PlanformDB outcome records, and two decoded Planform cartoons.  The GIF
+      paints red/blue territories on a photographic silhouette and switches
+      between wild-type and double-head cartoons; the additional outputs are
+      cervera_levin_mafe_bioelectric_morphospace.png and
+      cervera_levin_mafe_metrics.csv.  The high-level 2021 premise is
+      recognizable, but equation-level fidelity could not be checked from the
+      inaccessible full paper, the f3 axis has no computational effect, several
+      biological mappings are uncited choices, and the CSV doubles the actual
+      crop wavefront displacement.
+    scores:
+      model-fidelity:
+        value: 38
+        rationale: >-
+          The accessible 2021 abstract supports two antagonistic morphogens
+          along one axis, an independent morphogen along an orthogonal axis,
+          and pattern changes under partial GJ blockade, which the two solver
+          functions qualitatively represent.  The full paper was not
+          accessible, so mutual annihilation, end-source discretization,
+          boundary treatment, numerical constants and the choice to reduce
+          only D2 cannot be credited as the published equations.  More
+          seriously, the claimed (f2,f3) morphospace never uses f3, and its
+          phase boundary is manually drawn.  The rusty-matter circuit matches
+          its own pinned educational Rust source, but that source explicitly
+          uses normalized teaching states and is not evidence that this is the
+          2020 paper's ion-channel model; agreement with its synthetic traces
+          validates a port, not planarian biology.
+        evidence:
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [186, 238], note: "implemented axial two-species diffusion, decay, mutual annihilation and endpoint sources"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [241, 273], note: "independent orthogonal one-species solver"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [360, 599], note: "separate five-band normalized circuit added to the reaction-diffusion model"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [936, 943], note: "f3 grid coordinate is ignored, making every row constant along f3"}
+          - {file: datasets/planform/README.md, lines: [21, 27], note: "repository itself describes both mechanisms as qualitative or semi-quantitative abstractions without calibrated physiology"}
+      specimen-match:
+        value: 38
+        rationale: >-
+          The territory panel has the recognizable outline of a real
+          Schmidtea mediterranea and the wild-type versus double-head cartoons
+          are visibly distinct in posterior colour and organs.  Neither is a
+          generated specimen: the photograph supplies only a binary mask, the
+          morphogens are painted onto it, and a hard readout threshold chooses
+          one of two pre-existing Planform cartoons.  No treated or double-head
+          specimen, nor a source-paper morphology panel, is shown side by side.
+          The synthesis PNG also has overlapping panel titles and legends,
+          reducing interpretability, while the GIF's only anatomical change is
+          the categorical cartoon switch.
+        evidence:
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [124, 180], note: "photograph is segmented to a mask and used only as the canvas for territory colours"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [699, 771], note: "wild-type and double-head forms are fixed Planform graph cartoons"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [1336, 1346], note: "uncited 0.55 threshold selects one of the two cartoons"}
+          - {file: docs/media/cervera_levin_mafe_gj_block.gif, lines: [0, 0], note: "distinct categorical cartoons and coloured silhouette, but no simulated anatomical deformation"}
+          - {file: cervera_levin_mafe_bioelectric_morphospace.png, lines: [0, 0], note: "six-panel output; top-row titles overlap and no specimen comparison is present"}
+      parameter-expressivity:
+        value: 35
+        rationale: >-
+          Lowering f2 produces a visible, monotonic wavefront displacement in
+          the plotted range, and the GIF's circuit readout rises enough to
+          trigger a distinct cartoon.  The second advertised morphospace
+          parameter f3 has exactly no effect because its loop variable is
+          unused.  Crop-specific f2 values and wound gains are fixed lookup
+          tables rather than exposed, independently swept parameters, and the
+          anatomical output is binary at an unsupported 0.55 threshold.
+          Therefore only one of the nominal two reaction–diffusion dimensions
+          demonstrates the criterion.
+        evidence:
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [862, 870], note: "f2 sweep drives the axial wavefront"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [894, 934], note: "crop f2 values and normalization scale are hand-set mappings"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [936, 943], note: "f3 values are generated but never passed to any solver"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [1288, 1297], note: "GIF jointly maps f2 onto D2 and custom circuit gap scale"}
+          - {file: docs/media/cervera_levin_mafe_gj_block.gif, lines: [0, 0], note: "f2 visibly shifts the boundary, but form changes only by a thresholded cartoon swap"}
+      morphometric-validation:
+        value: 25
+        rationale: >-
+          The figure includes real PlanformDB outcome frequencies and the CSV
+          reports circuit states and wavefronts, which is more than an
+          unmeasured illustration.  However, the model curves are merely
+          overlaid on the empirical bars: no loss, uncertainty, correlation,
+          held-out prediction or parameter fit is computed, and hand-selected
+          crop mappings closely echo the observed gradient.  The silhouette
+          IoU compares two decoded cartoons with each other, not either cartoon
+          with a specimen.  Finally, each crop CSV wavefront is reconstructed
+          with a 0.26 multiplier after the shift was normalized by 0.13, so,
+          for example, f2=0.92 is reported as 0.5153 although the solver gives
+          0.5076; the quantitative output therefore does not faithfully report
+          its own simulation.
+        evidence:
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [842, 859], note: "empirical double-head frequencies are loaded from curated records"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [894, 934], note: "model-to-crop mappings and percentage normalization are chosen in code, without a fit"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [970, 993], note: "CSV doubles simulated displacement through 0.50 + 0.26*shift after shift used a 0.13 denominator"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [1070, 1119], note: "empirical bars and model indices are plotted together without a validation statistic"}
+          - {file: cervera_levin_mafe_metrics.csv, lines: [0, 0], note: "reproducible table, but crop rd_wavefront_x_star values do not equal direct solver wavefronts"}
+      source-traceability:
+        value: 78
+        rationale: >-
+          The primary and companion papers, Planform, Oviedo and Durant sources
+          have resolvable DOIs; the external code is pinned to a full commit;
+          all three fixtures and the photograph have SHA-256 pins; and the
+          Planform-derived records retain experiment IDs, sample sizes and
+          database provenance.  The rusty-matter commit and fixture paths were
+          independently fetched and checked.  The score is limited because the
+          cited 2021 PMID is wrong (the script says 34418508; PubMed resolves
+          the article as 34411690), the full model papers were inaccessible,
+          and the curated fixture is not the raw PlanformDB database, so its
+          transcription was not independently re-derived here.
+        evidence:
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [6, 44], note: "paper DOIs, external repository commit and photograph provenance; 2021 PMID is incorrect"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [71, 103], note: "fixture and photograph SHA-256 values plus source URL and credit"}
+          - {file: datasets/planform/README.md, lines: [1, 19], note: "PlanformDB pin, notice, upstream commit, fixture hashes and experiment groups"}
+          - {file: datasets/planform/rusty_matter_planformdb_derived_v0.json, lines: [1, 39], note: "database identity, raw checksum, citations and explicit selection policy"}
+          - {file: datasets/planform/paper_citations.bib, lines: [29, 80], note: "bibliographic entries for the principal model and empirical papers"}
+      code-traceability:
+        value: 42
+        rationale: >-
+          Major sections are clearly separated and the rusty-matter port names
+          upstream files and line ranges, while the dataset documents that its
+          empirical records are annotation rather than calibrated physiology.
+          But the reaction–diffusion equations are not mapped to numbered
+          equations, figures or parameter tables in Cervera 2021, and the full
+          text was unavailable to verify the docstring's claim of
+          implementation.  Critical synthesis choices — crop f2 values, wound
+          gains, 0.13 scaling, f2=0.58 boundary, 0.50/0.55 head thresholds and
+          model-time-to-hours conversion — have no source anchor.  Comments
+          sometimes overstate what is tested: trace parity checks only initial
+          and final selected values, despite saying it compares all sampled
+          frames.
+        evidence:
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [201, 207], note: "model attribution is generic, with no equation or parameter-table pointer"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [368, 382], note: "rusty-matter constants are explicitly mapped to upstream files"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [625, 671], note: "parity implementation reads all samples but compares only step zero and final selected values"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [883, 934], note: "crop pairs, effective f2 values, wound-derived index and normalization are uncited synthesis choices"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [1122, 1167], note: "simulation time is linearly relabelled as 24 h and plotted against empirical timing"}
+      repro-package:
+        value: 78
+        rationale: >-
+          The requested environment exactly matched Python 3.14.7, numpy
+          2.5.4, matplotlib 3.10.7, Pillow 12.0.0, scipy 1.16.3 and
+          scikit-image 0.26.0; the scientific dependencies are pinned in the
+          lock file.  The prescribed self-test, PNG/CSV run and GIF run all
+          completed headlessly.  A second run produced byte-identical PNG, CSV
+          and GIF, and the cached photograph and fixtures are hash checked.
+          The score is not higher because the self-test's advertised "exact"
+          parity actually allows 0.035 absolute error (observed maximum
+          0.02625), checks only selected endpoints rather than every sampled
+          trace value, and does not test RD invariants, f3 sensitivity,
+          phenotype thresholds, CSV correctness or plot labels.
+        evidence:
+          - {file: requirements.lock.txt, lines: [18, 41], note: "tested numpy, matplotlib, Pillow, scipy and scikit-image versions are pinned"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [607, 622], note: "fixture digest verification"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [625, 671], note: "trace test uses tolerance 0.035 and selected initial/final comparisons"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [1362, 1409], note: "headless-capable CLI for self-test, PNG/CSV and GIF"}
+          - {file: cervera_levin_mafe_bioelectric_morphospace.png, lines: [0, 0], note: "regenerated byte-identically on two runs"}
+          - {file: cervera_levin_mafe_metrics.csv, lines: [0, 0], note: "regenerated byte-identically on two runs"}
+    remediation:
+      - Obtain the full 2021 paper and map every reaction term, boundary condition, parameter and blocker factor to its equation, table or figure; label the implementation a qualitative analogue if those cannot be matched.
+      - Implement f3 in the orthogonal model and derive the two-dimensional phenotype rule from the published morphogen-to-shape mapping; otherwise remove the f3 axis and phase-boundary claim.
+      - Replace the hand-set crop f2 values, wound gains, time conversion and 0.50/0.55/0.58 thresholds with source-derived or fitted values, documenting training versus held-out records.
+      - Correct the CSV to write the direct x_star returned by the solver, and add tests that independently recompute every CSV field and fail when either morphospace axis is inert.
+      - Compare generated head/auricle morphometrics with treated specimens or source-paper figures; use the photograph as measurable geometry rather than only a backdrop.
+      - Expand trace parity to every sampled value and distinguish numerical port parity from biological validation; test the reaction–diffusion solver and all figure annotations separately.

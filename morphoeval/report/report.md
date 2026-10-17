@@ -27,9 +27,10 @@ abstract: |
   *Pomacanthus* "coaxial circles" on 791 real species shows the transformation
   explains at most a third of the shape difference. MorphoEval is the
   simulation-faithfulness sibling of BioEval and NeuroEval. Its chief
-  limitation is that all scores so far come from a single LLM assessor that
-  also wrote most of the audited code; the graph is designed so that further
-  assessors can add their own assessments of the same hypotheses.
+  limitation is that nine of the ten audits come from a single LLM assessor that
+  also wrote most of the audited code; the tenth, of the Cervera–Levin–Mafe
+  script, was scored independently by a model from another company and found
+  defects the builder had not.
 ---
 
 # Introduction
@@ -141,12 +142,16 @@ nanopublications as `schema:PropertyValue` evidence.
 
 ## The assessor
 
-All audits to date carry `assessor: claude-fable-5-1` — Claude Fable 5.1
+Nine audits carry `assessor: claude-fable-5-1` — Claude Fable 5.1
 operating as a Cursor agent, reading the code, running the scripts, inspecting
 the outputs and writing the scores and rationales. The same agent wrote most
 of the code it audited (everything from the planarian rewrite onward). Both
 facts are recorded in the graph (`pk:assessedBy pkr:model/claude-fable-5-1`
-on every assessment) and both are limitations, discussed below.
+on those assessments) and both are limitations, discussed below. The tenth
+audit (`2026-10-17-cervera-audit`) carries `assessor: gpt-5.6-sol` — GPT‑5.6
+Sol (OpenAI) as a Cursor agent, launched by the builder with the rubric, the
+script, the fixtures and instructions to form its own view; it is the first
+assessment in the graph not made by the model that wrote the code.
 
 # The knowledge graph
 
@@ -194,10 +199,9 @@ the model right?".
 
 {{SCORE_TABLE}}
 
-Scores are the current head of each script's version chain. Three scripts in
-the repository (Petroff's stromatolite morphospace, Kahng's coral geometry,
-the Cervera–Levin–Mafe bioelectric morphospace) and the schematic Thompson toy
-have not been audited and carry no scores.
+Scores are the current head of each script's version chain. Two scripts in
+the repository (Petroff's stromatolite morphospace, Kahng's coral geometry)
+and the Thompson transformations demo have not been audited and carry no scores.
 
 ## Score history
 
@@ -268,6 +272,27 @@ measured (no wavelength, no placement on the phase diagram), the RNG is
 unseeded so every run differs, and there is no organism, so specimen match sits
 at the neutral 50. A low score for a correct demo — by design, since an
 unchecked pattern generator is unverified.
+
+**Cervera–Levin–Mafe bioelectric synthesis (44.9, independent assessor).** The
+first audit scored by a model from a different company than the builder's
+(GPT‑5.6 Sol, OpenAI). It confirmed the 2021 premise from the abstract (two
+antagonistic axial morphogens, an orthogonal one, pattern change under partial
+gap-junction block) but could not read the full papers, so equation-level
+fidelity is not asserted (model fidelity 38). It then found what the builder's
+own runs had not: the advertised (f2, f3) morphospace never uses f3, so every
+row is constant along that axis and the f2 = 0.58 phase boundary is drawn, not
+derived; the CSV reconstructs each crop's wavefront with a 0.26 multiplier after
+the shift was normalised by 0.13, so the reported displacement is exactly twice
+the simulated one; the crop f2 values, wound gains, time rescaling and the 0.55
+head-readout threshold that selects the double-head cartoon have no cited
+calibration; the PlanformDB frequencies are overlaid on model indices with no
+fit or error (morphometric validation 25); the real *Schmidtea* photograph is
+a backdrop, not measured; the self-test's "trace parity" is agreement with
+another program's synthetic traces at tolerance 0.035, endpoints only, not a
+test of biology; and the cited PMID belongs to a different paper. Provenance
+and reproducibility were strong (78, 78: DOIs resolve, fixtures and photograph
+hash-pinned, the external code pinned to a commit and fetched, byte-identical
+re-runs). Six remediation items; nothing fixed yet.
 
 **Raup shell coiling (37.3 → 64.1).** The first audit found that the
 translation parameter was applied to the angle instead of the radius, so every
@@ -357,9 +382,12 @@ README:
 
 # Limitations
 
-**One assessor, and a conflicted one.** Every score comes from a single LLM
-assessor, so there is no inter-rater agreement to report, and that assessor
-wrote most of the code it scored. The rationales and the line-pinned evidence
+**Mostly one assessor, and a conflicted one.** Nine of ten scores come from a
+single LLM assessor that wrote most of the code it scored, so there is no
+inter-rater agreement to report for those. The tenth (Cervera–Levin–Mafe) was
+scored by another company's model and is the only score here that is not
+self-assessment; it found three defects the builder's own passes had missed,
+which is some evidence that the first nine are generous. The rationales and the line-pinned evidence
 are there so that a reader can check each judgement; the measurement sidecars
 are computed, not judged. The graph is built to receive assessments of the same
 hypotheses from other models and from human reviewers, and doing so is the
@@ -369,7 +397,7 @@ most important next step.
 what matters for morphology reproductions. A different weighting would reorder
 the middle of the table (Chindapol, Turing) but not its ends.
 
-**Not all scripts are audited, and not all audits are current.** Three
+**Not all scripts are audited, and not all audits are current.** Two
 scripts are unevaluated. The Raup script's geometry has been fixed and
 re-scored, but its definitions still rest on secondary sources; the
 cross-cutting remediation (pinned environment, declared

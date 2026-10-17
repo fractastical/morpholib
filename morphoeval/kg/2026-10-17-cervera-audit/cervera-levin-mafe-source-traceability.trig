@@ -1,0 +1,71 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-17-cervera-audit-cervera-levin-mafe-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Cervera–Levin–Mafe gap-junction reaction–diffusion and bioelectric synthesis — Source and data traceability: 78/100" ;
+        rdfs:comment "The primary and companion papers, Planform, Oviedo and Durant sources have resolvable DOIs; the external code is pinned to a full commit; all three fixtures and the photograph have SHA-256 pins; and the Planform-derived records retain experiment IDs, sample sizes and database provenance. The rusty-matter commit and fixture paths were independently fetched and checked. The score is limited because the cited 2021 PMID is wrong (the script says 34418508; PubMed resolves the article as 34411690), the full model papers were inaccessible, and the curated fixture is not the raw PlanformDB database, so its transcription was not independently re-derived here. Evidence: 2021-Cervera–Levin–Mafe.py L6–L44: paper DOIs, external repository commit and photograph provenance; 2021 PMID is incorrect <https://github.com/fractastical/morpholib/blob/e71ca55/2021-Cervera–Levin–Mafe.py#L6-L44>; 2021-Cervera–Levin–Mafe.py L71–L103: fixture and photograph SHA-256 values plus source URL and credit <https://github.com/fractastical/morpholib/blob/e71ca55/2021-Cervera–Levin–Mafe.py#L71-L103>; datasets/planform/README.md L1–L19: PlanformDB pin, notice, upstream commit, fixture hashes and experiment groups <https://github.com/fractastical/morpholib/blob/e71ca55/datasets/planform/README.md#L1-L19>; datasets/planform/rusty_matter_planformdb_derived_v0.json L1–L39: database identity, raw checksum, citations and explicit selection policy <https://github.com/fractastical/morpholib/blob/e71ca55/datasets/planform/rusty_matter_planformdb_derived_v0.json#L1-L39>; datasets/planform/paper_citations.bib L29–L80: bibliographic entries for the principal model and empirical papers <https://github.com/fractastical/morpholib/blob/e71ca55/datasets/planform/paper_citations.bib#L29-L80>." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gpt-5.6-sol> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-cervera-levin-mafe-source-traceability> ;
+        pk:hasProbability "0.78"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-cervera-levin-mafe-source-traceability> rdfs:label "Cervera–Levin–Mafe gap-junction reaction–diffusion and bioelectric synthesis (2021-Cervera–Levin–Mafe.py, 2013-lobo-planform-morphology.py) satisfies the MorphoEval 0.1.0 criterion 'Source and data traceability' for Planarians; photograph is Schmidtea mediterranea, empirical PlanformDB subset is Dugesia japonica" ;
+        dct:identifier "morphoeval/0.1.0/source-traceability" .
+    <https://w3id.org/probknow/resource/model/gpt-5.6-sol> a pk:Model ;
+        rdfs:label "GPT-5.6 Sol (Cursor agent)" .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gpt-5.6-sol> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.bioelechem.2019.107410>,
+            <https://doi.org/10.1016/j.biosystems.2021.104511>,
+            <https://doi.org/10.1016/j.bpj.2019.01.029>,
+            <https://doi.org/10.1016/j.ydbio.2009.12.012>,
+            <https://doi.org/10.1093/bioinformatics/btt088> .
+    <https://doi.org/10.1016/j.bioelechem.2019.107410> dct:date "2020"^^xsd:gYear ;
+        dct:title "Bioelectrical model of head-tail patterning based on cell ion channels and intercellular gap junctions" .
+    <https://doi.org/10.1016/j.biosystems.2021.104511> dct:date "2021"^^xsd:gYear ;
+        dct:title "Morphology changes induced by intercellular gap junction blocking: A reaction-diffusion mechanism" .
+    <https://doi.org/10.1016/j.bpj.2019.01.029> dct:date "2019"^^xsd:gYear ;
+        dct:title "The Role of Early Bioelectric Signals in the Regeneration of Planarian Anterior/Posterior Polarity" .
+    <https://doi.org/10.1016/j.ydbio.2009.12.012> dct:date "2010"^^xsd:gYear ;
+        dct:title "Long-range neural and gap junction protein-mediated cues control polarity during planarian regeneration" .
+    <https://doi.org/10.1093/bioinformatics/btt088> dct:date "2013"^^xsd:gYear ;
+        dct:title "Planform: an application and database of graph-encoded planarian regenerative experiments" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Cervera–Levin–Mafe gap-junction reaction–diffusion and bioelectric synthesis — Source and data traceability 78/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-17T20:32:02Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-cervera-audit-cervera-levin-mafe-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/model/gpt-5.6-sol> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

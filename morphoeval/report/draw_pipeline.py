@@ -48,12 +48,18 @@ def provider(homepage):
 def assessors_from_audits():
     """Distinct (company, colour, model label) of the assessors named in the audits, in order of first use."""
     import yaml
-    seen = {}
+    seen, counts = {}, {}
     for f in sorted((ROOT / "morphoeval" / "audits").glob("*-audit.yaml")):
         a = (yaml.safe_load(open(f)).get("audit") or {}).get("assessor") or {}
         name, col = provider(a.get("homepage"))
         seen.setdefault(name, (name, col, a.get("label") or a.get("id") or "?"))
+        counts[name] = counts.get(name, 0) + 1
+    global AUDIT_COUNTS
+    AUDIT_COUNTS = counts
     return list(seen.values())
+
+
+AUDIT_COUNTS = {}
 
 
 BUILDER = provider(BUILDER_HOMEPAGE)[1]
@@ -340,10 +346,13 @@ def main(argv=None):
     for n, c in used + [(OTHER_PROVIDER[0] + ", once its model takes part", OTHER_PROVIDER[1])]:
         agent(ax, xx, 8.1, 0.55, c); ax.text(xx + 1.9, 9.1, n, fontsize=6.3, va="center", color=c, fontweight="bold" if c != OTHER_PROVIDER[1] else "normal")
         xx += 3.6 + 0.5 * len(n)
-    same = len(used) == 1
+    builder_co = provider(BUILDER_HOMEPAGE)[0]
+    n_all = sum(AUDIT_COUNTS.values()); n_own = AUDIT_COUNTS.get(builder_co, 0)
+    others = ", ".join(f"{n} by {co}'s" for co, n in AUDIT_COUNTS.items() if co != builder_co)
     ax.text(68, 11.8, "a robot's colour is the company whose model it is.  The assessor should be a different company's model", fontsize=6.0, va="center", color=EDGE)
-    ax.text(68, 10.7, (f"from the builder; so far it has not been — {used[0][0]}'s has done both.  Each audit names its assessor.") if same else
-            "from the builder, and is; each audit names its assessor.", fontsize=6.0, va="center", color=EDGE)
+    ax.text(68, 10.7, (f"from the builder; so far it has not been — {builder_co}'s has done both.  Each audit names its assessor.") if n_own == n_all else
+            (f"from the builder: {n_own} of {n_all} audits were scored by the builder's own ({builder_co}), {others}.  Each audit names its assessor."),
+            fontsize=6.0, va="center", color=EDGE)
 
     out = Path(args.out); out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=160, bbox_inches="tight", facecolor="white")

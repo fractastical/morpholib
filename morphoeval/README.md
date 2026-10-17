@@ -50,9 +50,12 @@ twelve animations, each labelled with its paper — which is what tier B scores;
 and decides what to fix or where to go next; the builder agent then re-works the script — its fidelity to
 the paper, its sources, its checks — and the fix runs back through box 6 into the script (👤 marks the two
 places people decide). Two agent roles are meant to be distinct: the **builder** that writes and re-works the
-code and the **assessor** that scores it; so far the same model has filled both (each audit names its
-assessor, and the report's limitations say so); the graph is built to take a second assessor's
-nanopubs on the same hypotheses, and running one is the most important open item in
+code and the **assessor** that scores it. For the first nine audits the same model filled both (each audit
+names its assessor, and the report's limitations say so); on 2026-10-17 the Cervera–Levin–Mafe script was
+scored by a model from another company (`gpt-5.6-sol`, OpenAI), given the rubric, the script and the
+fixtures and no opinions, and it found defects the builder had not — an unused morphospace axis, a CSV
+that doubles the simulated displacement, a wrong PMID. The graph takes any assessor's nanopubs on the same
+hypotheses; scoring the other nine scripts the same way is the open item in
 [morpholib#1](https://github.com/fractastical/morpholib/issues/1). Each pass pins a commit; scores are 0–100 per dimension with a weighted mean overall; published
 nanopubs are immutable and re-scores supersede them. The same figure as an image (for the PDF report
 and anything that cannot render Mermaid) is `docs/media/morphoeval_pipeline.png`, drawn by
@@ -402,4 +405,5 @@ Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1).
 | LimbformDB limb morphologies (`2014-lobo-limbform-morphology.py`) | 747c57f, audit 2026-10-14-limbform | 70.0 | 74.3 | **71.3** |
 | WormGUIDES C. elegans embryo atlas + connectome (`2015-santella-wormguides-celegans.py`) | 303a87e, audit 2026-10-16-celegans (re-score of 2026-10-15: 67.7) | 67.6 | 76.3 | **70.2** |
 | Thompson Scarus -> Pomacanthus on real landmarks and outlines (`thompson/1917-thompson-scarus-pomacanthus.py`) | 232e8f8, audit 2026-10-17-thompson (re-score of 2026-10-16: 70.2) | 74.3 | 82.0 | **76.6** |
-| Petroff stromatolite / Kahng coral / Cervera–Levin–Mafe | — | — | — | *unevaluated* |
+| Cervera–Levin–Mafe bioelectric synthesis (`2021-Cervera–Levin–Mafe.py`) | e71ca55, audit 2026-10-17-cervera — assessor GPT‑5.6 Sol (OpenAI) | 34.8 | 68.4 | **44.9** |
+| Petroff stromatolite / Kahng coral | — | — | — | *unevaluated* |
