@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 BUILD = "#dbeafe"; EVAL = "#fde68a"; PUB = "#bbf7d0"; LOOP = "#fecaca"; EDGE = "#334155"; RED = "#b91c1c"
 # (x, y, w, h, colour, title, body) on a 100 x 100 canvas
-YA, YB, H = 56, 12, 17
+YA, YB, H, HB = 56, 13, 17, 20                             # tier B boxes are taller: plain words take more room
 WA, XA = 18.0, [1.5, 21.25, 41.0, 60.75, 80.5]              # five boxes, upper tier (left -> right)
 WB, XB = 15.0, [84.0, 67.4, 50.8, 34.2, 17.6, 1.0]          # six boxes, lower tier (right -> left)
 BOXES = {
@@ -39,18 +39,24 @@ BOXES = {
                 "<year>-<author>-<model>.py\nreproduce · decode · test\n→ figure + GIF (git-ignored),\nmorphometrics CSV, self-checks"),
     "compare": (XA[4], YA, WA, H, BUILD, "5  Compare",
                 "output beside the authors' figures\nor real specimens; distinct forms\nmust come out distinct"),
-    "audit":   (XB[0], YB, WB, H, EVAL,  "6  Audit",
-                "audits/<date>-<name>.yaml\n7 dimensions × 0–100,\nrationale, line-pinned\nevidence @ commit"),
-    "measure": (XB[1], YB, WB, H, EVAL,  "7  Measure",
-                "measure_outputs.py\nfingerprint outputs,\nmorphometrics vs\nspecimens / literature"),
-    "build":   (XB[2], YB, WB, H, PUB,   "8  Build graph",
-                "build_morphoeval_kg.py\npk:Claim + 8 assessments\nper script; ProbKnow\ntemplates; conformance"),
-    "publish": (XB[3], YB, WB, H, PUB,   "9  Sign & publish",
-                "test registry →\ncheck_signed.mjs →\nfetch back → production;\nnpx:supersedes on re-score"),
-    "graph":   (XB[4], YB, WB, H, PUB,   "10  Graph",
-                "nanopub network,\nNanopub Query;\nkg/<audit>/REPORT.md,\npublished.json"),
-    "remed":   (XB[5], YB, WB, H, LOOP,  "11  Remediate",
-                "overall's pk:evidenceAgainst\n→ GitHub issue #1;\nfix → new commit →\nre-audit touched dims"),
+    "audit":   (XB[0], YB, WB, HB, EVAL,  "6  Audit",
+                "a reviewer scores the script\non 7 questions, 0–100 each,\nwith a written reason and\nthe lines of code it rests on,\nat one named commit"),
+    "measure": (XB[1], YB, WB, HB, EVAL,  "7  Measure",
+                "the outputs are hashed and\nmeasured independently —\nsizes, counts, shapes — against\nthe specimens or the paper:\nnumbers, not opinions"),
+    "build":   (XB[2], YB, WB, HB, PUB,   "8  Write as claims",
+                "each score becomes one small\nmachine-readable statement:\n\"this script reproduces X\" —\nhow likely, says who, on what\nevidence, under what licence"),
+    "publish": (XB[3], YB, WB, HB, PUB,   "9  Sign & publish",
+                "each statement is signed and\nput on a public network of\nservers under a permanent\naddress; checked on a test\nnetwork first, then for real"),
+    "graph":   (XB[4], YB, WB, HB, PUB,   "10  Public record",
+                "anyone can look a score up,\ncite it, check its signature\nor query across all audits;\nthe repository keeps the\naddresses and a report"),
+    "remed":   (XB[5], YB, WB, HB, LOOP,  "11  Remediate",
+                "what the audit found wrong\nbecomes a to-do list\n(GitHub issue #1); a fix is\na new commit, then the touched\nscores are judged again"),
+}
+# the file or term behind each tier-B box, in small type under the plain-language body
+TERMS = {
+    "audit": "audits/<date>-<name>.yaml", "measure": "measure_outputs.py",
+    "build": "build_morphoeval_kg.py (RDF)", "publish": "sign_morphoeval.py",
+    "graph": "kg/<audit>/REPORT.md", "remed": "GitHub issue #1",
 }
 
 # the papers, in year order, with a frame of each reproduction's own animation (docs/media/*.gif)
@@ -114,7 +120,23 @@ def box(ax, key):
     x, y, w, h, col, title, body = BOXES[key]
     ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.4,rounding_size=1.2", fc=col, ec=EDGE, lw=1.0))
     ax.text(x + w / 2, y + h - 2.3, title, ha="center", va="center", fontsize=9.2, fontweight="bold", color=EDGE)
-    ax.text(x + w / 2, y + h / 2 - 2.0, body, ha="center", va="center", fontsize=6.6, color="#1e293b", linespacing=1.25)
+    ax.text(x + w / 2, y + h / 2 - 1.2 + (0.6 if key in TERMS else -0.8), body, ha="center", va="center", fontsize=6.6, color="#1e293b", linespacing=1.25)
+    if key in TERMS:
+        ax.text(x + w / 2, y + 1.8, TERMS[key], ha="center", va="center", fontsize=5.2, color="#64748b", family="monospace")
+
+
+def note(ax):
+    """What a nanopublication is, for a reader who has never met one."""
+    x, y, w, h = 1.0, 1.0, 62.0, 10.6
+    ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.3,rounding_size=0.8", fc="#f8fafc", ec="#94a3b8", lw=0.7))
+    ax.text(x + 1.2, y + h - 1.6, "What a nanopublication is, and why the scores are published as them", fontsize=7.4, fontweight="bold", color=EDGE, va="center")
+    import textwrap
+    body = ("A nanopublication is the smallest publishable unit of science: one statement — here \"this script's reproduction of Raup 1966 is faithful, "
+            "probability 0.64\" — packaged with who asserted it, when, on what evidence and under what licence, cryptographically signed, and stored on a "
+            "public network of servers under a permanent address that anyone can cite or fetch. Once published it cannot be edited; a re-score publishes a "
+            "new statement that points at the one it replaces, so the history stays visible. Because each statement is addressed and open, other assessors — "
+            "other models, or people — can publish their own assessment of the same hypothesis next to ours, and a reader can query all of them together.")
+    ax.text(x + 1.2, y + h - 3.1, textwrap.fill(body, 134), fontsize=6.0, color="#1e293b", va="top", linespacing=1.3)
 
 
 def pt(key, side):
@@ -187,7 +209,7 @@ def main(argv=None):
     ax.add_patch(FancyArrowPatch((10.5, YS + 0.2), (10.5, YA + H + 0.4), arrowstyle="-|>", mutation_scale=12, color=EDGE, lw=1.1, zorder=5))
     ax.text(12.0, YA + H + 4.6, "A  Making a reproduction", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
     ax.text(12.0, YA + H + 2.0, "each paper goes through A once, then round B until it holds", fontsize=7.5, style="italic", color="#475569", va="center")
-    ax.text(1.5, YB + H + 3.0, "B  Auditing it — the MorphoEval cycle", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
+    ax.text(1.5, YB + HB + 3.0, "B  Auditing it — the MorphoEval cycle", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
 
     for k in BOXES:
         box(ax, k)
@@ -205,23 +227,23 @@ def main(argv=None):
 
     # tier B, right -> left
     arrow(ax, "audit", "l", "measure", "r")
-    arrow(ax, "measure", "l", "build", "r", "measurements.yaml", ly=2.6, fs=6.2)
+    arrow(ax, "measure", "l", "build", "r", "measurements.yaml", ly=4.6, fs=6.0)
     arrow(ax, "build", "l", "publish", "r")
-    arrow(ax, "publish", "l", "graph", "r", "signed nanopubs", ly=2.6, fs=6.2)
-    arrow(ax, "graph", "l", "remed", "r", "remediation\nitems", ly=3.4, fs=6.2)
+    arrow(ax, "publish", "l", "graph", "r", "signed, published\nstatements", ly=4.6, fs=6.0)
+    arrow(ax, "graph", "l", "remed", "r", "remediation\nitems", ly=4.6, fs=6.0)
 
     # the loop back into tier A: up from Remediate, across the gap, up into Script (an elbow, so it crosses no text)
-    x0, y0 = pt("remed", "t"); x1, y1 = pt("script", "b"); ym = YB + H + 8
+    x0, y0 = pt("remed", "t"); x1, y1 = pt("script", "b"); ym = YB + HB + 8
     ax.plot([x0, x0, x1], [y0 + 0.5, ym, ym], color=RED, lw=1.2, solid_capstyle="round")
     ax.add_patch(FancyArrowPatch((x1, ym), (x1, y1), arrowstyle="-|>", mutation_scale=11, lw=1.2, color=RED, shrinkA=0, shrinkB=2))
-    ax.text((x0 + x1) / 2, ym + 2.6, "fix → new commit → re-score the touched dimensions; new nanopubs npx:supersedes the old (published ones are immutable)",
+    ax.text((x0 + x1) / 2, ym + 2.6, "fix → new commit → the touched scores are judged again and published anew; the old statements stay on record, "
+            "marked as replaced (nothing published is ever edited)",
             ha="center", va="center", fontsize=6.6, color=RED, bbox=dict(fc="white", ec="none", pad=1.0))
-    # a second checkpoint also re-measures
-    ax.text(XB[4] + WB / 2, YB - 4.0, "other assessors (models, humans) may publish\ntheir own assessments of the same hypotheses",
-            ha="center", va="center", fontsize=6.4, color="#475569", style="italic")
+    note(ax)
 
     ax.text(50, YLIM - 2.6, "How a form gets into this repository, and how it is scored", ha="center", va="center", fontsize=12.5, fontweight="bold", color=EDGE)
-    ax.text(50, YLIM - 5.3, "each pass pins a commit; scores are 0–100 per dimension, weighted mean overall; the audit scores the reproduction, not the biology",
+    ax.text(50, YLIM - 5.3, "each pass pins a commit; scores are 0–100 per dimension, weighted mean overall; the audit scores the reproduction, not the biology; "
+            "every score is published as a nanopublication (what that is: bottom left)",
             ha="center", va="center", fontsize=7.6, color="#475569")
     for i, (c, l) in enumerate([(BUILD, "reproduce"), (EVAL, "evaluate"), (PUB, "publish"), (LOOP, "remediate")]):
         ax.add_patch(FancyBboxPatch((66 + i * 8.5, 2.0), 2.2, 2.2, boxstyle="round,pad=0.1", fc=c, ec=EDGE, lw=0.6))

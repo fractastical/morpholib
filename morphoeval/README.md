@@ -71,19 +71,21 @@ flowchart TB
 
     subgraph B["B &nbsp;Auditing it — the MorphoEval cycle"]
         direction LR
-        AU["6 Audit<br/>audits/&lt;date&gt;-&lt;name&gt;.yaml<br/>7 dims × 0–100, rationale,<br/>line-pinned evidence @ commit"]:::eval
-        M["7 Measure<br/>measure_outputs.py<br/>fingerprints + morphometrics<br/>vs specimens"]:::eval
-        BG["8 Build graph<br/>build_morphoeval_kg.py<br/>pk:Claim + 8 assessments,<br/>ProbKnow templates"]:::pub
-        PU["9 Sign &amp; publish<br/>test → check_signed.mjs →<br/>fetch back → production"]:::pub
-        G[("10 Knowledge graph<br/>nanopub network · Nanopub Query<br/>kg/&lt;audit&gt;/published.json")]:::pub
-        T["11 Remediate<br/>pk:evidenceAgainst → issue #1<br/>fix → new commit"]:::loop
+        AU["6 Audit<br/>a reviewer scores the script on 7 questions,<br/>0–100 each, with a written reason and the lines<br/>of code it rests on, at one commit<br/><small>audits/&lt;date&gt;-&lt;name&gt;.yaml</small>"]:::eval
+        M["7 Measure<br/>outputs hashed and measured independently<br/>against specimens or the paper:<br/>numbers, not opinions<br/><small>measure_outputs.py</small>"]:::eval
+        BG["8 Write as claims<br/>each score becomes one small machine-readable<br/>statement: 'this script reproduces X' — how likely,<br/>says who, on what evidence, under what licence<br/><small>build_morphoeval_kg.py (RDF, ProbKnow templates)</small>"]:::pub
+        PU["9 Sign &amp; publish<br/>each statement is signed and put on a public<br/>network of servers under a permanent address;<br/>test network first, then for real<br/><small>sign_morphoeval.py</small>"]:::pub
+        G[("10 Public record<br/>anyone can look a score up, cite it, check its<br/>signature or query across all audits<br/><small>Nanopub Query · kg/&lt;audit&gt;/REPORT.md</small>")]:::pub
+        T["11 Remediate<br/>what the audit found wrong becomes a to-do list;<br/>a fix is a new commit, then the touched scores<br/>are judged again<br/><small>GitHub issue #1</small>"]:::loop
         AU --> M --> BG --> PU --> G --> T
     end
 
     C -- scored, with evidence --> AU
-    T -- "fix → new commit; re-score touched dimensions;<br/>new nanopubs npx:supersedes the old" --> X
-    G -. other assessors may add their own<br/>assessments of the same hypotheses .-> BG
+    T -- "fix → new commit → touched scores judged again and published anew;<br/>the old statements stay on record, marked as replaced (nothing published is edited)" --> X
+    G -. other assessors (models, people) may publish their own<br/>assessment of the same hypotheses .-> BG
 ```
+
+*What a nanopublication is:* the smallest publishable unit of science — one statement (here "this script's reproduction of Raup 1966 is faithful, probability 0.64") packaged with who asserted it, when, on what evidence and under what licence, cryptographically signed, and stored on a public network of servers under a permanent address anyone can cite or fetch. Once published it cannot be edited; a re-score publishes a new statement that points at the one it replaces, so the history stays visible, and other assessors can publish their own assessment of the same hypothesis next to ours.
 
 ## Workflow
 
