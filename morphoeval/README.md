@@ -42,8 +42,8 @@ scripts that were not inspected are listed `unevaluated` with no scores.
 
 ## The cycle
 
-Tier A is how a form gets into the repository (three kinds of script: simulate the
-paper's mathematics, decode the authors' formal encoding into form, or test a published
+Tier A is how a form gets into the repository (three kinds of script: reproduce the
+paper's model from its equations, decode the authors' formal encoding into form, or test a published
 claim against measurements); tier B is how it is scored. Each pass pins a commit; scores are 0–100 per dimension with a weighted mean overall; published
 nanopubs are immutable and re-scores supersede them. The same figure as a PNG (for the PDF report
 and anything that cannot render Mermaid) is `docs/media/morphoeval_pipeline.png`, drawn by
@@ -58,7 +58,7 @@ flowchart TB
     classDef pub fill:#bbf7d0,stroke:#334155,color:#1e293b
     classDef loop fill:#fecaca,stroke:#334155,color:#1e293b
 
-    subgraph A["A &nbsp;Making a reproduction — simulate the paper's maths · decode the authors' encoding · test a published claim"]
+    subgraph A["A &nbsp;Making a reproduction — reproduce the paper's model · decode the authors' encoding · test a published claim"]
         direction LR
         P["1 Paper<br/>the model as published: equations,<br/>an encoding, or a claim"]:::build
         S["2 Formal source<br/>the paper's own data: parameters,<br/>database/atlas records, tables<br/>(SHA-256 pinned)"]:::build

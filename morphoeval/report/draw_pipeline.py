@@ -36,7 +36,7 @@ BOXES = {
     "rules":   (XA[2], YA, WA, H, BUILD, "3  Pin the rules",
                 "prose → precise rule, checked on\nevery record (1181/1181 regions,\n3137/3146 joints); authors' code read\nto settle semantics, not copied"),
     "script":  (XA[3], YA, WA, H, BUILD, "4  Script",
-                "<year>-<author>-<model>.py\nsimulate · decode · test\n→ figure + GIF (git-ignored),\nmorphometrics CSV, self-checks"),
+                "<year>-<author>-<model>.py\nreproduce · decode · test\n→ figure + GIF (git-ignored),\nmorphometrics CSV, self-checks"),
     "compare": (XA[4], YA, WA, H, BUILD, "5  Compare",
                 "output beside the authors' figures\nor real specimens; distinct forms\nmust come out distinct"),
     "audit":   (XB[0], YB, WB, H, EVAL,  "6  Audit",
@@ -56,21 +56,21 @@ BOXES = {
 # the papers, in year order, with a frame of each reproduction's own animation (docs/media/*.gif)
 MEDIA = ROOT / "docs" / "media"
 PAPERS = [  # (gif, caption lines, kind)
-    ("thompson_transformations.gif",      "Thompson 1917\nOn Growth and Form, ch. XVII\nmethod of transformations", "simulate"),
+    ("thompson_transformations.gif",      "Thompson 1917\nOn Growth and Form, ch. XVII\nmethod of transformations", "reproduce"),
     ("thompson_scarus_pomacanthus.gif",   "Thompson 1917, Figs. 375–376\ntested on Claverie & Wainwright\n2014 landmarks (Dryad)", "test"),
-    ("turing_gray_scott.gif",             "Turing 1952\nPhil Trans R Soc B\nvia Gray & Scott 1984, Pearson 1993", "simulate"),
-    ("raup_shell_coiling.gif",            "Raup 1966\nJ Paleontol\nshell-coiling morphospace", "simulate"),
-    ("petroff_stromatolite_dome_to_cone.gif", "Petroff et al. 2010\nPNAS\nconical stromatolites", "simulate"),
-    ("chindapol_coral_flow_growth.gif",   "Chindapol et al. 2013\nPLoS Comput Biol\ncoral growth in flow", "simulate"),
+    ("turing_gray_scott.gif",             "Turing 1952\nPhil Trans R Soc B\nvia Gray & Scott 1984, Pearson 1993", "reproduce"),
+    ("raup_shell_coiling.gif",            "Raup 1966\nJ Paleontol\nshell-coiling morphospace", "reproduce"),
+    ("petroff_stromatolite_dome_to_cone.gif", "Petroff et al. 2010\nPNAS\nconical stromatolites", "reproduce"),
+    ("chindapol_coral_flow_growth.gif",   "Chindapol et al. 2013\nPLoS Comput Biol\ncoral growth in flow", "reproduce"),
     ("planform_morphospace_timeline.gif", "Lobo, Malone & Levin 2013\nBioinformatics\nPlanform, PlanformDB 2.5.0", "decode"),
     ("limbform_morphospace_timeline.gif", "Lobo et al. 2014\nBioinformatics\nLimbform, LimbformDB", "decode"),
     ("celegans_embryo_timeline.gif",      "Santella et al. 2015\nBMC Bioinformatics\nWormGUIDES atlas, OpenWorm c302", "decode"),
-    ("hoffmann_wing_lloyd.gif",           "Hoffmann et al. 2018\nPNAS\ninsect wing venation", "simulate"),
-    ("cervera_levin_mafe_gj_block.gif",   "Cervera, Levin & Mafe 2021\nbioelectric morphogens\n(demo, no DOI pinned)", "simulate"),
-    ("kahng_coral_geometry_growth.gif",   "Kahng, Odle & Wakeman 2024\nPeerJ\ncoral geometry", "simulate"),
+    ("hoffmann_wing_lloyd.gif",           "Hoffmann et al. 2018\nPNAS\ninsect wing venation", "reproduce"),
+    ("cervera_levin_mafe_gj_block.gif",   "Cervera, Levin & Mafe 2021\nbioelectric morphogens\n(demo, no DOI pinned)", "reproduce"),
+    ("kahng_coral_geometry_growth.gif",   "Kahng, Odle & Wakeman 2024\nPeerJ\ncoral geometry", "reproduce"),
     ("odonata_wing_cells_deep_time.gif",  "Eshghi, Buesch & Gorb 2026\nZenodo, Tables S1–S3\nOdonata wing cells, fossil vs extant", "test"),
 ]
-KIND_COL = {"simulate": "#2563eb", "decode": "#059669", "test": "#d97706"}
+KIND_COL = {"reproduce": "#2563eb", "decode": "#059669", "test": "#d97706"}
 YS = 83                                                      # bottom of the thumbnail strip
 FIG_W, FIG_H, YLIM = 13.0, 12.3, 123.0
 
@@ -99,7 +99,7 @@ def strip(ax):
     x = 1.5 + 6 * (tw + gap); y = YS                                  # legend in the free slot of row 2
     for j, (k, c) in enumerate(KIND_COL.items()):
         ax.add_patch(FancyBboxPatch((x, y + 10.4 - j * 2.8), 1.6, 0.5, boxstyle="square,pad=0", fc=c, ec="none"))
-        ax.text(x + 2.2, y + 10.65 - j * 2.8, {"simulate": "simulate the\npaper's maths", "decode": "decode the\nauthors' encoding",
+        ax.text(x + 2.2, y + 10.65 - j * 2.8, {"reproduce": "reproduce the\npaper's model", "decode": "decode the\nauthors' encoding",
                                               "test": "test a\npublished claim"}[k], fontsize=6.0, va="center", color=EDGE, linespacing=1.1)
 
 
