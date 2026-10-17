@@ -27,10 +27,11 @@ abstract: |
   *Pomacanthus* "coaxial circles" on 791 real species shows the transformation
   explains at most a third of the shape difference. MorphoEval is the
   simulation-faithfulness sibling of BioEval and NeuroEval. Its chief
-  limitation is that nine of the ten audits come from a single LLM assessor that
-  also wrote most of the audited code; the tenth, of the Cervera–Levin–Mafe
-  script, was scored independently by a model from another company and found
-  defects the builder had not.
+  limitation is that nine of the eleven audits come from a single LLM assessor
+  that also wrote most of the audited code; the other two, of the
+  Cervera–Levin–Mafe script before and after a fix pass (44.9 → 55.6), were
+  scored independently by a model from another company and found defects the
+  builder had not, in both rounds.
 ---
 
 # Introduction
@@ -148,10 +149,11 @@ the outputs and writing the scores and rationales. The same agent wrote most
 of the code it audited (everything from the planarian rewrite onward). Both
 facts are recorded in the graph (`pk:assessedBy pkr:model/claude-fable-5-1`
 on those assessments) and both are limitations, discussed below. The tenth
-audit (`2026-10-17-cervera-audit`) carries `assessor: gpt-5.6-sol` — GPT‑5.6
-Sol (OpenAI) as a Cursor agent, launched by the builder with the rubric, the
-script, the fixtures and instructions to form its own view; it is the first
-assessment in the graph not made by the model that wrote the code.
+and eleventh audits (`2026-10-17-cervera-audit` and its re-score
+`2026-10-17-cervera-audit-v2`) carry `assessor: gpt-5.6-sol` — GPT‑5.6 Sol
+(OpenAI) as a Cursor agent, launched by the builder with the rubric, the
+script, the fixtures and instructions to form its own view; they are the only
+assessments in the graph not made by the model that wrote the code.
 
 # The knowledge graph
 
@@ -273,9 +275,9 @@ unseeded so every run differs, and there is no organism, so specimen match sits
 at the neutral 50. A low score for a correct demo — by design, since an
 unchecked pattern generator is unverified.
 
-**Cervera–Levin–Mafe bioelectric synthesis (44.9, independent assessor).** The
-first audit scored by a model from a different company than the builder's
-(GPT‑5.6 Sol, OpenAI). It confirmed the 2021 premise from the abstract (two
+**Cervera–Levin–Mafe bioelectric synthesis (44.9 → 55.6, independent
+assessor).** The first audit scored by a model from a different company than
+the builder's (GPT‑5.6 Sol, OpenAI). It confirmed the 2021 premise from the abstract (two
 antagonistic axial morphogens, an orthogonal one, pattern change under partial
 gap-junction block) but could not read the full papers, so equation-level
 fidelity is not asserted (model fidelity 38). It then found what the builder's
@@ -292,7 +294,22 @@ another program's synthetic traces at tolerance 0.035, endpoints only, not a
 test of biology; and the cited PMID belongs to a different paper. Provenance
 and reproducibility were strong (78, 78: DOIs resolve, fixtures and photograph
 hash-pinned, the external code pinned to a commit and fetched, byte-identical
-re-runs). Six remediation items; nothing fixed yet.
+re-runs). Six remediation items. The builder addressed them — analogue
+labelling, a working f3 axis, a bipolar criterion read from the PlanformDB
+pharynx rather than typed in, a one-parameter crop → f2 fit trained on the
+octanol series and tested on the held-out RNAi series, direct CSV wavefronts
+under test, a measured silhouette, full-frame parity labelled as such, the
+PMID — and the same assessor re-scored the result at 55.6 (45/42/58/48/82/60/84).
+It credited those as genuine fixes and held the line on what they do not
+change: the phenotype rule has no cited source, the fit is one parameter on
+four points with a 23.5-point held-out error, m3 is a signal axis not an
+anatomy, the outcomes are still cartoons, the time axis is a rescaling. It also
+found two defects the builder had introduced in the fix and passed on
+inspection — a threshold inversion that bisected on a clipped index and so
+printed f2 = 0.20 where the crossing is 0.42, and legend readouts left
+hard-coded from an earlier run. Both are fixed in the following commit, which
+has not been re-scored. One full turn of the loop in the figure: build, assess,
+fix, re-assess, with the assessor catching the builder twice.
 
 **Raup shell coiling (37.3 → 64.1).** The first audit found that the
 translation parameter was applied to the angle instead of the radius, so every
@@ -382,12 +399,13 @@ README:
 
 # Limitations
 
-**Mostly one assessor, and a conflicted one.** Nine of ten scores come from a
-single LLM assessor that wrote most of the code it scored, so there is no
-inter-rater agreement to report for those. The tenth (Cervera–Levin–Mafe) was
-scored by another company's model and is the only score here that is not
-self-assessment; it found three defects the builder's own passes had missed,
-which is some evidence that the first nine are generous. The rationales and the line-pinned evidence
+**Mostly one assessor, and a conflicted one.** Nine of eleven scores come
+from a single LLM assessor that wrote most of the code it scored, so there is
+no inter-rater agreement to report for those. The other two (Cervera–Levin–Mafe
+before and after a fix) were scored by another company's model and are the
+only scores here that are not self-assessment; across the two rounds it found
+five defects the builder's own passes had missed, which is some evidence that
+the first nine are generous. The rationales and the line-pinned evidence
 are there so that a reader can check each judgement; the measurement sidecars
 are computed, not judged. The graph is built to receive assessments of the same
 hypotheses from other models and from human reviewers, and doing so is the

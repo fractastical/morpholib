@@ -54,7 +54,10 @@ code and the **assessor** that scores it. For the first nine audits the same mod
 names its assessor, and the report's limitations say so); on 2026-10-17 the Cervera–Levin–Mafe script was
 scored by a model from another company (`gpt-5.6-sol`, OpenAI), given the rubric, the script and the
 fixtures and no opinions, and it found defects the builder had not — an unused morphospace axis, a CSV
-that doubles the simulated displacement, a wrong PMID. The graph takes any assessor's nanopubs on the same
+that doubles the simulated displacement, a wrong PMID (44.9). The builder fixed its six remediation items,
+the same assessor re-scored the fix at 55.6 and, in the re-score, caught two further bugs the builder had
+introduced and overlooked — one full turn of the loop, with the independent assessor doing what the
+self-assessment had not. The graph takes any assessor's nanopubs on the same
 hypotheses; scoring the other nine scripts the same way is the open item in
 [morpholib#1](https://github.com/fractastical/morpholib/issues/1). Each pass pins a commit; scores are 0–100 per dimension with a weighted mean overall; published
 nanopubs are immutable and re-scores supersede them. The same figure as an image (for the PDF report
@@ -399,11 +402,11 @@ Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1).
 | ~~PlanformDB planarian animation (`1900-planformDB_parser.py`)~~ superseded | f3fe478, audit 2026-10-13 | 5.4 | 36.3 | ~~14.7~~ |
 | Raup shell coiling (`create_raup_animations.py`) | ba6fd20, audit 2026-10-17-raup (re-score of 2026-10-13: 37.3) | 58.6 | 77.0 | **64.1** |
 | Gray–Scott (Turing) | f3fe478, audit 2026-10-13 | 54.3 | 49.0 | **52.7** |
+| Cervera–Levin–Mafe bioelectric synthesis (`2021-Cervera–Levin–Mafe.py`) | a0d6848, audit 2026-10-17-cervera-v2 (re-score; 44.9 at e71ca55) — assessor GPT‑5.6 Sol (OpenAI) | 46.4 | 76.9 | **55.6** |
 | Chindapol coral flow | f3fe478, audit 2026-10-13 | 49.3 | 70.0 | **55.5** |
 | Hoffmann–Donoughe wing venation | f3fe478, audit 2026-10-13 | 81.1 | 70.0 | **77.8** |
 | Odonata wing cells, fossil vs extant (`2026-eshghi-odonata-wing-cells.py`) | fbbcaf6, audit 2026-10-14-odonata | 75.7 | 76.7 | **76.0** |
 | LimbformDB limb morphologies (`2014-lobo-limbform-morphology.py`) | 747c57f, audit 2026-10-14-limbform | 70.0 | 74.3 | **71.3** |
 | WormGUIDES C. elegans embryo atlas + connectome (`2015-santella-wormguides-celegans.py`) | 303a87e, audit 2026-10-16-celegans (re-score of 2026-10-15: 67.7) | 67.6 | 76.3 | **70.2** |
 | Thompson Scarus -> Pomacanthus on real landmarks and outlines (`thompson/1917-thompson-scarus-pomacanthus.py`) | 232e8f8, audit 2026-10-17-thompson (re-score of 2026-10-16: 70.2) | 74.3 | 82.0 | **76.6** |
-| Cervera–Levin–Mafe bioelectric synthesis (`2021-Cervera–Levin–Mafe.py`) | e71ca55, audit 2026-10-17-cervera — assessor GPT‑5.6 Sol (OpenAI) | 34.8 | 68.4 | **44.9** |
 | Petroff stromatolite / Kahng coral | — | — | — | *unevaluated* |

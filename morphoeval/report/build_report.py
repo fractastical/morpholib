@@ -41,7 +41,7 @@ def sh(*cmd, **kw) -> str:
 
 def load_audits() -> list[dict]:
     out = []
-    for f in sorted(glob.glob(str(ROOT / "morphoeval" / "audits" / "*-audit.yaml"))):
+    for f in sorted((p for p in glob.glob(str(ROOT / "morphoeval" / "audits" / "*.yaml")) if ".measurements." not in p)):
         a = yaml.safe_load(open(f))
         a["_file"] = Path(f).name
         out.append(a)

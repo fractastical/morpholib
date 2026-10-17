@@ -84,7 +84,7 @@ def score_tile(w: int, h: int, sc: dict[str, float]) -> Image.Image:
     im = Image.new("RGB", (w, h), BG); d = ImageDraw.Draw(im)
     d.text((8, 6), "MorphoEval overall (0–100)", font=font(10, True), fill=FG)
     short = {"1952-turing-morpho.py": "Turing", "create_raup_animations.py": "Raup", "2015-santella-wormguides-celegans.py": "C. elegans",
-             "2026-eshghi-odonata-wing-cells.py": "Odonata", "thompson/1917-thompson-scarus-pomacanthus.py": "Thompson fish"}
+             "2026-eshghi-odonata-wing-cells.py": "Odonata", "thompson/1917-thompson-scarus-pomacanthus.py": "Thompson fish", "2021-Cervera–Levin–Mafe.py": "Cervera"}
     rows = [(c[1], short.get(c[3], c[2].split(",")[0]), sc[c[3]]) for c in CLIPS if c[3] in sc]
     rows += [(y, n, sc[s]) for s, (y, n) in SCORED_ONLY.items() if s in sc]            # scored scripts without a tile
     rows.sort(key=lambda r: -r[2])

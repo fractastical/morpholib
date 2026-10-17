@@ -49,7 +49,7 @@ def assessors_from_audits():
     """Distinct (company, colour, model label) of the assessors named in the audits, in order of first use."""
     import yaml
     seen, counts = {}, {}
-    for f in sorted((ROOT / "morphoeval" / "audits").glob("*-audit.yaml")):
+    for f in sorted(p for p in (ROOT / "morphoeval" / "audits").glob("*.yaml") if ".measurements." not in p.name):
         a = (yaml.safe_load(open(f)).get("audit") or {}).get("assessor") or {}
         name, col = provider(a.get("homepage"))
         seen.setdefault(name, (name, col, a.get("label") or a.get("id") or "?"))
