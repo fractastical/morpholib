@@ -1,5 +1,15 @@
 # Variable Extraction Log
 
+> **Superseded, 2026-10-17.** This log was produced on 2025-01-05 by an AI assistant that did
+> not have access to the papers. The passages below presented as quotations ("Original
+> Definition") and the equation/page/figure/table attributions could not be verified and
+> should be read as unverified paraphrases. The T definition ("vertical rise per radian") is
+> wrong — Raup's T is the axial movement of the generating curve's centre per unit of its
+> radial movement, dz_c/dr_c — and the error produced a script in which T had no visible
+> effect (MorphoEval audit 2026-10-13). The corrected definitions, their actual sources
+> (Noshita 2014; Okabe & Yoshimura 2017) and the replacement parameter sets are in
+> `README.md` and `variables.json`. The text below is kept unchanged as a record.
+
 ## Extraction Metadata
 
 **Extraction Date:** 2025-01-05  

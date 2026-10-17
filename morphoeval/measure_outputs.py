@@ -527,9 +527,13 @@ def measure_thompson_fish(script: Path) -> list:
 
 
 def measure_raup(script: Path, variables: Path) -> list:
-    """Effective translation rate from the script's own raup_shell(): Raup's T is the axial
-    translation per revolution relative to the generating-curve centre's distance from the
-    axis; the script grows r exponentially but translates linearly, so T_eff -> 0."""
+    """Read W, D and T back off meshes made by the script's own raup_shell(), independently of
+    any check the script carries.  Raup's definitions: W = ratio of the generating-curve
+    centre's distance from the axis over one revolution; D = inner margin / outer margin of
+    the generating curve; T = axial movement of the centre per unit of its radial movement
+    (dz_c/dr_c), as restated by Noshita 2014 and Okabe & Yoshimura 2017.  Each generating
+    curve is a column of the mesh (rows = position on the curve); its centre is the mean over
+    the curve, its outer/inner margins the max/min radial distance."""
     src = script.read_text()
     s = src.index("def raup_shell"); e = src.index("\ndef ", s + 10)
     ns = {"np": np}; exec(src[s:e], ns)                       # only the generating function
@@ -537,16 +541,37 @@ def measure_raup(script: Path, variables: Path) -> list:
     out = []
     for sh in json.loads(variables.read_text())["empirical_shells"]:
         W, D, T = sh["W"], sh["D"], sh["T"]
-        X, Y, Z = raup_shell(W=W, D=D, T=T, turns=6, res=100)
-        ax = 1 if X.shape[0] > X.shape[1] else 0
-        cx, cy, cz = X.mean(axis=ax), Y.mean(axis=ax), Z.mean(axis=ax)
-        rc = np.hypot(cx, cy); n = len(rc); pw = n // 6
-        T_eff = abs(cz[-1] - cz[-1 - pw]) / rc[-1]
-        hw = abs(cz[-1] - cz[0]) / (2 * rc.max())
-        out.append(M(f"effective translation rate T_eff, '{sh['name']}' (nominal T={T})", float(T_eff), "ratio",
-                     "Δz over the last whorl ÷ generating-curve centre radius, from raup_shell(W,D,T,turns=6)",
-                     reference=T, source="Raup 1966: T is defined relative to the whorl radius, so T_eff should equal T",
-                     note=f"shell height/width = {hw:.3f}", derived_from="script"))
+        res = 100
+        X, Y, Z = raup_shell(W=W, D=D, T=T, turns=sh.get("turns", 6), res=res)
+        if X.shape[0] != res:                                  # rows must be the generating curve
+            X, Y, Z = X.T, Y.T, Z.T
+        R = np.hypot(X, Y)
+        closed = np.allclose([X[0], Y[0], Z[0]], [X[-1], Y[-1], Z[-1]])   # seam point duplicated?
+        rows = slice(0, -1) if closed else slice(None)
+        rc, zc = R[rows].mean(axis=0), Z[rows].mean(axis=0)
+        xc, yc = X[rows].mean(axis=0), Y[rows].mean(axis=0)
+        Ro, Ri = R.max(axis=0), R.min(axis=0)
+        n = rc.size
+        ang = np.unwrap(np.arctan2(yc, xc))                     # coiling angle of each generating curve
+        pw = int(round(2 * np.pi / np.mean(np.diff(ang))))      # columns per revolution
+        i1, i0 = n - 1, n - 1 - pw
+        W_rec = rc[i1] / rc[i0]
+        D_rec = Ri[i1] / Ro[i1]
+        T_rec = abs(zc[i1] - zc[i0]) / (rc[i1] - rc[i0]) if rc[i1] > rc[i0] else float("nan")
+        width = max(X.max() - X.min(), Y.max() - Y.min())
+        hw = (Z.max() - Z.min()) / width
+        spire = abs(zc[-1] - zc[0]) / width
+        tag = f"'{sh['name']}' (W={W}, D={D}, T={T})"
+        out.append(M(f"recovered translation rate T, {tag}", round(float(T_rec), 6), "ratio",
+                     "Δz_c / Δr_c of the generating-curve centre over the last revolution of raup_shell()",
+                     reference=T, source="Raup's definition of T (dz_c/dr_c), Noshita 2014 / Okabe & Yoshimura 2017; should equal the input",
+                     note=f"height/width = {hw:.3f}, spire/width = {spire:.3f}", derived_from="script"))
+        out.append(M(f"recovered distance from axis D, {tag}", round(float(D_rec), 6), "ratio",
+                     "inner margin / outer margin of the aperture (min/max radial distance of the last generating curve)",
+                     reference=D, source="Raup's definition of D; should equal the input", derived_from="script"))
+        out.append(M(f"recovered whorl expansion W, {tag}", round(float(W_rec), 6), "ratio",
+                     "centre distance from the axis at the aperture / one revolution earlier",
+                     reference=W, source="Raup's definition of W; should equal the input", derived_from="script"))
     return out
 
 

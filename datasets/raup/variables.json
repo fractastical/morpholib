@@ -6,68 +6,59 @@
     "extraction_date": "2025-01-05",
     "extraction_timestamp": "2025-01-05T13:40:00Z",
     "extractor": "AI Assistant (Claude)",
-    "note": "The three-parameter model (W, D, T) was first introduced in Raup (1962). The 1966 paper provides the detailed mathematical formulation. The 1967 paper applies the model to ammonoids."
+    "note": "The three-parameter model (W, D, T) was first introduced in Raup (1962). The 1966 paper provides the detailed mathematical formulation. The 1967 paper applies the model to ammonoids.",
+    "revision_2026_10_17": "Model definitions corrected and parameter sets replaced after the MorphoEval audit of 2026-10-13. The earlier 'definition' strings and the per-shell 'source' page/figure attributions were produced by an AI assistant without access to the paper and could not be verified; the T definition ('vertical rise per radian') was wrong and led to a script in which T had no effect. Definitions below follow Raup & Michelson 1965 / Raup 1966 as restated by Noshita 2014 (J Theor Biol 363:93-104) and Okabe & Yoshimura 2017 (Sci Rep 7:42445): D is the inner/outer margin ratio of the generating curve and T the axial translation of its centre per unit of radial movement. The six parameter sets are illustrative points in the morphospace chosen so that each descriptive name is geometrically true; they are NOT values Raup measured for the taxa named with 'cf.'. The 'typical_range' values are likewise indicative, not quoted from the paper."
   },
   "core_variables": {
     "W": {
       "name": "Whorl Expansion Rate",
-      "definition": "The rate at which the shell radius increases per full revolution (2π radians)",
+      "definition": "Whorl expansion rate: every linear dimension of the generating curve, and its distance from the axis, is multiplied by W per revolution (a(theta) = a0 * W^(theta/2pi)).",
       "symbol": "W",
       "typical_range": {
-        "min": 1.5,
+        "min": 1.2,
         "max": 4.0
       },
       "source": {
-        "page": 1179,
-        "equation": 1,
-        "figure": 1,
-        "table": 1
+        "note": "Raup 1966; definition restated from Noshita 2014 / Okabe & Yoshimura 2017 (paper not consulted directly)"
       },
       "effect": "Higher W = wider, more rapidly expanding shells"
     },
     "D": {
       "name": "Distance from Coiling Axis",
-      "definition": "The distance of the inner edge of the shell from the coiling axis, normalized (0 to 1)",
+      "definition": "Relative distance of the generating curve from the coiling axis: the distance of its inner margin from the axis divided by that of its outer margin, D = (r_c - a)/(r_c + a). D = 0: the inner margin touches the axis (involute, no umbilicus); larger D: open umbilicus.",
       "symbol": "D",
       "typical_range": {
-        "min": 0.05,
-        "max": 0.4
+        "min": 0.0,
+        "max": 0.5
       },
       "source": {
-        "page": 1180,
-        "equation": 2,
-        "figure": 2
+        "note": "Raup 1966; definition restated from Noshita 2014 / Okabe & Yoshimura 2017 (paper not consulted directly)"
       },
-      "effect": "D=0 = tight coiling (no umbilicus), higher D = more open/disc-like forms"
+      "effect": "D=0 = inner margin on the axis (no umbilicus); higher D = more open, evolute forms"
     },
     "T": {
       "name": "Translation Rate",
-      "definition": "The vertical rise per radian along the coiling axis",
+      "definition": "Translation rate: the movement of the generating curve's centre along the coiling axis per unit of its movement away from the axis, T = dz_c/dr_c (so z_c = T * r_c and the spire scales with the whorls). T = 0 is planispiral.",
       "symbol": "T",
       "typical_range": {
-        "min": 0.1,
-        "max": 1.5
+        "min": 0.0,
+        "max": 4.0
       },
       "source": {
-        "page": 1181,
-        "equation": 3,
-        "figure": 3,
-        "table": 2
+        "note": "Raup 1966; definition restated from Noshita 2014 / Okabe & Yoshimura 2017 (paper not consulted directly)"
       },
       "effect": "T=0 = planispiral (flat), higher T = elongated, turreted forms"
     },
     "S": {
       "name": "Shape of Generating Curve",
-      "definition": "Aspect ratio of the generating curve (aperture cross-section)",
+      "definition": "Shape of the generating curve, here the ratio of its radial to its axial semi-axis (repository convention; S = 1 circular).",
       "symbol": "S",
       "typical_range": {
         "min": 0.5,
         "max": 2.0
       },
       "source": {
-        "page": 1182,
-        "equation": 4,
-        "figure": 4
+        "note": "Raup 1966 defines S as the generating curve's shape; the direction of the ratio used here is the repository's convention"
       },
       "effect": "S=1 = circular, S>1 = wider than tall, S<1 = taller than wide"
     }
@@ -76,92 +67,76 @@
     {
       "name": "Planispiral",
       "common_name": "Nautilus",
-      "W": 2.0,
-      "D": 0.05,
-      "T": 0.1,
+      "W": 3.0,
+      "D": 0.0,
+      "T": 0.0,
       "S": 1.0,
       "turns": 4,
       "color": "#2E86AB",
-      "source": {
-        "figure": 5,
-        "page": 1183
-      }
+      "note": "involute planispiral: T = 0, inner margin on the axis"
     },
     {
       "name": "Turreted",
       "common_name": "Turritella",
-      "W": 2.5,
-      "D": 0.15,
-      "T": 0.8,
+      "W": 1.3,
+      "D": 0.05,
+      "T": 3.5,
       "S": 1.0,
-      "turns": 5,
+      "turns": 8,
       "color": "#A23B72",
-      "source": {
-        "figure": 6,
-        "page": 1184
-      }
+      "note": "slow expansion, high translation: a tall narrow spire of many whorls"
     },
     {
-      "name": "Disc-like",
-      "common_name": "Ammonite",
-      "W": 3.5,
-      "D": 0.3,
-      "T": 0.2,
+      "name": "Evolute disc",
+      "common_name": "ammonite",
+      "W": 2.0,
+      "D": 0.45,
+      "T": 0.0,
       "S": 1.0,
-      "turns": 4,
+      "turns": 5,
       "color": "#F18F01",
-      "source": {
-        "figure": 7,
-        "page": 1185
-      }
+      "note": "planispiral with a wide umbilicus (evolute)"
     },
     {
       "name": "Conical",
       "common_name": "Conus",
-      "W": 2.2,
-      "D": 0.1,
-      "T": 0.5,
+      "W": 3.5,
+      "D": 0.0,
+      "T": 1.5,
       "S": 1.0,
-      "turns": 5,
+      "turns": 4,
       "color": "#C73E1D",
-      "source": {
-        "figure": 8,
-        "page": 1186
-      }
+      "note": "fast expansion with moderate translation: a cone with a short spire and a large last whorl"
     },
     {
       "name": "High-spired",
       "common_name": "Cerithium",
-      "W": 1.8,
-      "D": 0.12,
-      "T": 1.2,
+      "W": 1.6,
+      "D": 0.1,
+      "T": 2.5,
       "S": 1.0,
-      "turns": 6,
+      "turns": 7,
       "color": "#6A994E",
-      "source": {
-        "figure": 9,
-        "page": 1187
-      }
+      "note": "between turreted and conical"
     },
     {
-      "name": "Wide",
+      "name": "Globose",
       "common_name": "Helix",
       "W": 3.0,
-      "D": 0.25,
-      "T": 0.3,
+      "D": 0.1,
+      "T": 1.0,
       "S": 1.0,
       "turns": 4,
       "color": "#BC4749",
-      "source": {
-        "figure": 10,
-        "page": 1188
-      }
+      "note": "fast expansion, low translation: a rounded shell with a low spire"
     }
   ],
   "mathematical_formulation": {
-    "expansion_coefficient": "b = ln(W) / (2π)",
-    "radius_function": "r(θ) = exp(b·θ)",
-    "offset_calculation": "offset = D / (1 - D) for D < 1",
-    "source_pages": [1179, 1180, 1181, 1182, 1183]
-  }
+    "generating_curve_semi_axis": "a(theta) = a0 * W^(theta / 2pi)   (radial); b = a / S (axial)",
+    "centre_distance_from_axis": "r_c(theta) = a(theta) * (1 + D) / (1 - D)   so that (r_c - a)/(r_c + a) = D",
+    "centre_position_along_axis": "z_c(theta) = T * r_c(theta)   so that dz_c/dr_c = T",
+    "surface": "X = (r_c + a cos phi) cos theta;  Y = (r_c + a cos phi) sin theta;  Z = z_c + b sin phi   (generating curve in the radial-axial plane)",
+    "source": "Raup & Michelson 1965, Raup 1966, as restated by Noshita 2014 and Okabe & Yoshimura 2017 (T = x0/y0, D = (y0-1)/(y0+1) in their unit-circle coordinates)"
+  },
+  "empirical_shells_provenance": "Illustrative points in Raup's morphospace chosen 2026-10-17 so that each descriptive name is geometrically true (see note per entry); 'common_name' is the kind of shell the form resembles ('cf.'), not a measured specimen. The 2025-01-05 values (Planispiral 2.0/0.05/0.1, Turreted 2.5/0.15/0.8, Disc-like 3.5/0.3/0.2, Conical 2.2/0.1/0.5, High-spired 1.8/0.12/1.2, Wide 3.0/0.25/0.3) carried page/figure attributions to Raup 1966 that could not be verified and rendered, even with the corrected model, as low-spired forms that did not match their names."
 }

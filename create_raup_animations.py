@@ -1,354 +1,304 @@
 #!/usr/bin/env python3
 """
-Create animated visualizations of Raup's shell coiling model.
+Raup's shell-coiling model (1962, 1965, 1966): six illustrative forms, a parameter-space sheet,
+and the morphometrics that check the model does what the paper says.
 
-Generates:
-1. Animated GIF showing shell morphogenesis through parameter space
-2. Parameter space visualization (W, D, T)
-3. Comparison with empirical shell forms (if data available)
+References:
+    D. M. Raup, "Computer as aid in describing form in gastropod shells,"
+    Science 138(3537):150-152 (1962).  doi:10.1126/science.138.3537.150
+    D. M. Raup, A. Michelson, "Theoretical morphology of the coiled shell,"
+    Science 147(3663):1294-1295 (1965).  doi:10.1126/science.147.3663.1294
+    D. M. Raup, "Geometric analysis of shell coiling: general problems,"
+    J. Paleontol. 40(5):1178-1190 (1966).  JSTOR 1301992, doi:10.2307/1301992
+  The paper itself was not available to this author; the parameter definitions below are
+  Raup's as restated, with equations, by
+    K. Noshita, J. Theor. Biol. 363:93-104 (2014), doi:10.1016/j.jtbi.2014.08.010 (ktch's raup())
+    T. Okabe, J. Yoshimura, Sci. Rep. 7:42445 (2017), doi:10.1038/srep42445:
+      a unit circle centred at (radial y0, axial x0) has Raup's T = x0/y0 and D = (y0-1)/(y0+1).
+
+The model.  A generating curve (the aperture, here an ellipse) is swept around a fixed axis
+while it expands as a logarithmic spiral.  Four parameters:
+
+    W  whorl expansion rate      every radius is multiplied by W per revolution:
+                                  a(theta) = a0 * W**(theta / 2 pi)
+    D  distance from the axis    the generating curve's inner margin over its outer margin,
+                                  D = (r_c - a) / (r_c + a), so the centre sits at
+                                  r_c = a * (1 + D) / (1 - D)
+    T  translation rate          axial movement of the generating-curve centre per unit of
+                                  its radial movement, T = dz_c / dr_c, so z_c = T * r_c
+                                  (T = 0 is planispiral; the spire grows *with the whorls*)
+    S  shape of the curve        radial / axial semi-axis ratio of the ellipse (S = 1 circular;
+                                  this is the repository's convention, all panels use S = 1)
+
+The generating curve lies in the plane through the axis (radial-axial plane), so the tube has
+thickness along the axis.  Because r_c, z_c and a all scale with W**(theta/2 pi), the shell is
+self-similar: every whorl is the previous one magnified by W, which is the property Raup built
+the model around.
+
+What changed in this version (audit 2026-10-13 -> remediation 2026-10-17).  The earlier
+code translated linearly in angle (z_c = T * theta) while the radius grew exponentially, so T
+had no visible effect and every panel was a flat disc; it also placed the generating ellipse
+in the horizontal plane (zero axial thickness) and used offset = D/(1-D) in a way that made the
+rendered inner/outer ratio (1+D)/(3-D) rather than D.  All three are corrected above, and
+self_test() now recovers W, D and T from the rendered mesh to 1e-9 and checks that shell
+height / width rises monotonically with T before anything is drawn.
+
+Parameter sets.  The six (W, D, T) panels and the parameter ranges are read from
+datasets/raup/variables.json.  They are *illustrative* points in the morphospace chosen so
+that each descriptive name (planispiral, turreted, evolute disc, conical, high-spired,
+globose) is geometrically true, and labelled with the kind of shell they resemble (cf.
+Nautilus, Turritella, ...); they are not measurements Raup published for those taxa, and the
+panels are not compared with specimens here.  The 2025 values they replace, and why, are
+recorded in variables.json under empirical_shells_provenance.
+
+Outputs (git-ignored; docs/media/raup_shell_coiling.gif is the downsized copy):
+    raup_shell_animation.gif         six forms, side view then overhead, rotating
+    raup_parameter_space.png         W x D and W x T sheets at fixed third parameter
+    raup_empirical_comparison.png    the six panels as stills
+    raup_shell_metrics.csv           per panel: nominal and recovered W, D, T; height/width; spire/width
+
+    python3 create_raup_animations.py [--frames 120] [--fps 15] [--no-gif] [--self-test-only]
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.animation import FuncAnimation, PillowWriter
-import matplotlib.patches as mpatches
-from matplotlib.colors import LinearSegmentedColormap
+import argparse
+import csv
 import json
+import sys
 from pathlib import Path
 
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation, PillowWriter
 
-def raup_shell(W=3, D=0.2, T=0.5, S=1, turns=6, res=100):
+HERE = Path(__file__).resolve().parent
+DATA = HERE / "datasets" / "raup" / "variables.json"
+
+
+# --------------------------------------------------------------------------- #
+# the model
+# --------------------------------------------------------------------------- #
+def raup_shell(W=3.0, D=0.2, T=0.5, S=1.0, turns=6, res=100, a0=1.0, apex_up=True):
+    """Surface (X, Y, Z) of a Raup shell; rows run around the generating curve, columns along the coil.
+
+    a(theta) = a0 W^(theta/2pi) is the radial semi-axis of the generating ellipse; its centre is at
+    r_c = a (1+D)/(1-D) from the axis and z_c = T r_c along it, so inner/outer margin = D and
+    dz_c/dr_c = T exactly (Raup 1966, Fig. 1 and text).  Axial semi-axis b = a / S.
     """
-    Generate a 3D shell using Raup's parametric model.
-    
-    Parameters:
-        W: Whorl expansion rate (how much radius grows per revolution)
-        D: Distance from coiling axis (0=tight, 1=open)
-        T: Translation rate (vertical rise per radian)
-        S: Shape of generating curve (1=circular, >1=wider, <1=taller)
-        turns: Number of full rotations
-        res: Resolution (points per turn)
-    
-    Returns:
-        X, Y, Z: 3D coordinates of shell surface
-    """
-    theta = np.linspace(0, 2 * np.pi * turns, res * turns)
-    phi = np.linspace(0, 2 * np.pi, res)
+    if not W > 1:
+        raise ValueError("W must exceed 1 (the shell must expand)")
+    if not -1 < D < 1:
+        raise ValueError("D must lie in (-1, 1)")
+    theta = np.linspace(0.0, 2 * np.pi * turns, res * turns, endpoint=False)   # exactly res columns per whorl
+    phi = np.linspace(0.0, 2 * np.pi, res)                                       # closed seam; phi=0 is on the grid
     theta, phi = np.meshgrid(theta, phi)
-    
-    b = np.log(W) / (2 * np.pi)
-    r = np.exp(b * theta)
-    offset = D / (1 - D) if D < 1 else 0
-    
-    xc = (1 + offset) * r * np.cos(theta)
-    yc = (1 + offset) * r * np.sin(theta)
-    zc = T * theta
-    
-    a = 0.5 * r
-    b_val = a / S
-    
-    dx = a * np.cos(phi)
-    dy = b_val * np.sin(phi)
-    
-    X = xc + dx * np.cos(theta) - dy * np.sin(theta)
-    Y = yc + dx * np.sin(theta) + dy * np.cos(theta)
-    Z = zc
-    
+
+    a = a0 * W ** (theta / (2 * np.pi))          # generating-curve radial semi-axis
+    rc = a * (1 + D) / (1 - D)                   # centre's distance from the axis
+    zc = T * rc                                  # centre's position along the axis
+    b = a / S                                    # axial semi-axis
+
+    R = rc + a * np.cos(phi)                     # the ellipse lies in the radial-axial plane
+    X = R * np.cos(theta)
+    Y = R * np.sin(theta)
+    Z = zc + b * np.sin(phi)
+    if apex_up:
+        Z = -Z
     return X, Y, Z
 
 
+def recover_parameters(X, Y, Z):
+    """Read W, D, T and height/width back off a rendered mesh (rows = phi, columns = theta).
+
+    For each column the generating ellipse's radial extent gives the centre r_c = (Rmax+Rmin)/2 and
+    semi-axis a = (Rmax-Rmin)/2; its axial extent gives z_c.  Then over the final whorl
+    W = r_c(end)/r_c(end - 2pi), D = Rmin/Rmax at the aperture and T = |dz_c| / dr_c.
+    """
+    R = np.hypot(X, Y)
+    rc = R[:-1].mean(axis=0)                     # mean of cos over a uniform grid on [0, 2pi) is exactly 0
+    zc = Z[:-1].mean(axis=0)
+    a = R.max(axis=0) - rc                       # phi = 0 is a grid point, so R.max = r_c + a exactly
+    n = X.shape[1]
+    pw = X.shape[0]                              # raup_shell(): res columns per revolution, res rows
+    i1, i0 = n - 1, n - 1 - pw
+    W_rec = rc[i1] / rc[i0]
+    D_rec = (rc[i1] - a[i1]) / (rc[i1] + a[i1])
+    T_rec = abs(zc[i1] - zc[i0]) / (rc[i1] - rc[i0])
+    height = Z.max() - Z.min()
+    width = max(X.max() - X.min(), Y.max() - Y.min())
+    spire = abs(zc[-1] - zc[0]) / width          # axial travel of the centreline, apex to aperture
+    return dict(W=float(W_rec), D=float(D_rec), T=float(T_rec), height_over_width=float(height / width),
+                spire_over_width=float(spire))
+
+
+def self_test(tol=1e-9):
+    """Recover the inputs from the mesh on a grid of (W, D, T) and check height/width is monotone in T."""
+    worst = 0.0
+    for W in (1.5, 2.5, 4.0):
+        for D in (0.0, 0.1, 0.3):
+            hw_prev, sp_prev = -1.0, -1.0
+            for T in (0.0, 0.5, 1.5, 3.0):
+                X, Y, Z = raup_shell(W=W, D=D, T=T, turns=4, res=60)
+                r = recover_parameters(X, Y, Z)
+                err = max(abs(r["W"] - W), abs(r["D"] - D), abs(r["T"] - T))
+                worst = max(worst, err)
+                if err > tol:
+                    sys.exit(f"self-test FAILED: W={W} D={D} T={T} recovered {r} (err {err:.2e})")
+                # the centreline's axial travel must grow strictly with T; the outer height/width may
+                # stay flat while the last whorl still envelops the spire (T < 1 at small D), but never fall
+                if r["spire_over_width"] <= sp_prev or r["height_over_width"] < hw_prev - tol:
+                    sys.exit(f"self-test FAILED: spire not increasing in T at W={W} D={D} (T={T}: {r})")
+                hw_prev, sp_prev = r["height_over_width"], r["spire_over_width"]
+    # a flat disc must be flat: the axial extent of a T=0 shell is one aperture height
+    X, Y, Z = raup_shell(W=2.0, D=0.1, T=0.0, turns=4, res=61)   # res = 61 puts phi = pi/2 on the grid
+    R = np.hypot(X, Y); a_end = (R.max(axis=0) - R[:-1].mean(axis=0))[-1]
+    if abs((Z.max() - Z.min()) - 2 * a_end) > 1e-9:
+        sys.exit("self-test FAILED: planispiral shell is not one aperture thick")
+    print(f"self-test passed: W, D, T recovered from the mesh to {worst:.1e}; spire height monotone in T")
+
+
+# --------------------------------------------------------------------------- #
+# data
+# --------------------------------------------------------------------------- #
 def load_raup_data():
-    """Load Raup model variables and empirical shell data from JSON file."""
-    script_dir = Path(__file__).parent
-    data_file = script_dir / 'datasets' / 'raup' / 'variables.json'
-    
-    if not data_file.exists():
-        raise FileNotFoundError(f"Raup data file not found: {data_file}")
-    
-    with open(data_file, 'r') as f:
-        data = json.load(f)
-    
-    return data
+    if not DATA.exists():
+        raise FileNotFoundError(f"Raup data file not found: {DATA}")
+    return json.loads(DATA.read_text())
 
 
-def create_animated_gif(output_path='raup_shell_animation.gif', 
-                        num_frames=240, fps=15, turns=5, res=60):
-    """
-    Create an animated GIF showing six realistic shell forms side by side.
-    Each shell is shown from two angles: side view and overhead view.
-    Based on Raup's original paper, showing how parameter variation produces
-    different shell morphologies observed in nature.
-    """
+def panels(data):
+    return [dict(name=s["name"], cf=s["common_name"], W=s["W"], D=s["D"], T=s["T"], S=s.get("S", 1.0),
+                 turns=s["turns"], color=s["color"]) for s in data["empirical_shells"]]
+
+
+ILLUSTRATIVE = ("Parameter sets are illustrative values from datasets/raup/variables.json, labelled with the "
+                "kind of shell they resemble; they are not Raup's measurements of these taxa.")
+
+
+def fit_axes(ax, X, Y, Z, zoom=1.3):
+    rng = max(X.max() - X.min(), Y.max() - Y.min(), Z.max() - Z.min())
+    for lim, A in ((ax.set_xlim, X), (ax.set_ylim, Y), (ax.set_zlim, Z)):
+        c = (A.max() + A.min()) / 2
+        lim(c - rng / 2, c + rng / 2)
+    ax.set_box_aspect((1, 1, 1), zoom=zoom)
+
+
+# --------------------------------------------------------------------------- #
+# outputs
+# --------------------------------------------------------------------------- #
+def write_metrics(shells, path):
+    rows = []
+    for s in shells:
+        X, Y, Z = raup_shell(W=s["W"], D=s["D"], T=s["T"], S=s["S"], turns=s["turns"], res=100)
+        r = recover_parameters(X, Y, Z)
+        rows.append(dict(panel=s["name"], resembles=s["cf"], W=s["W"], D=s["D"], T=s["T"], S=s["S"], turns=s["turns"],
+                         W_recovered=round(r["W"], 6), D_recovered=round(r["D"], 6), T_recovered=round(r["T"], 6),
+                         height_over_width=round(r["height_over_width"], 4), spire_over_width=round(r["spire_over_width"], 4)))
+    with open(path, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0]))
+        w.writeheader(); w.writerows(rows)
+    print(f"  wrote {path}")
+    for r in rows:
+        print(f"    {r['panel']:<12} W={r['W']:<4} D={r['D']:<5} T={r['T']:<4} -> recovered "
+              f"W={r['W_recovered']:.4f} D={r['D_recovered']:.4f} T={r['T_recovered']:.4f}  height/width={r['height_over_width']:.3f}  spire/width={r['spire_over_width']:.3f}")
+    return rows
+
+
+def create_animated_gif(shells, output_path, num_frames=120, fps=15, res=60):
     print(f"Creating animated GIF: {output_path}")
-    
-    # Load shell forms from data file
-    raup_data = load_raup_data()
-    empirical_shells = raup_data['empirical_shells']
-    
-    # Convert to format expected by animation function
-    shell_forms = []
-    for shell in empirical_shells:
-        shell_forms.append({
-            'name': f"{shell['name']}\n({shell['common_name']})",
-            'W': shell['W'],
-            'D': shell['D'],
-            'T': shell['T'],
-            'S': shell.get('S', 1.0),
-            'turns': shell['turns'],
-            'color': shell['color']
-        })
-    
-    print(f"  Loaded {len(shell_forms)} shell forms from datasets/raup/variables.json")
-    
-    # Create figure with 2x3 grid of 3D subplots (6 shells)
-    fig = plt.figure(figsize=(18, 12))
-    axes = []
-    for i in range(6):
-        ax = fig.add_subplot(2, 3, i + 1, projection='3d')
-        axes.append(ax)
-    
-    # Two view modes: side angle and overhead
-    # Alternate between them: first half of frames = side view, second half = overhead
-    frames_per_view = num_frames // 2
-    
+    fig = plt.figure(figsize=(15, 10), dpi=80); fig.subplots_adjust(0, 0.03, 1, 0.89, wspace=0, hspace=0.1)
+    axes = [fig.add_subplot(2, 3, i + 1, projection="3d") for i in range(6)]
+    meshes = [raup_shell(W=s["W"], D=s["D"], T=s["T"], S=s["S"], turns=s["turns"], res=res) for s in shells]
+    half = num_frames // 2
+
     def animate(frame):
-        """Update function for each frame."""
-        # Determine which view mode (side or overhead)
-        view_mode = 'side' if frame < frames_per_view else 'overhead'
-        
-        # Rotate view smoothly within each view mode
-        frame_in_view = frame % frames_per_view
-        azim = (frame_in_view / frames_per_view) * 360
-        
-        # Set elevation based on view mode
-        if view_mode == 'side':
-            elev = 32  # Side angle view
-        else:
-            elev = 90  # Overhead view (looking straight down)
-        
-        for idx, (ax, shell) in enumerate(zip(axes, shell_forms)):
+        side = frame < half
+        azim = (frame % half) / half * 360
+        elev = 28 if side else 90
+        for ax, s, (X, Y, Z) in zip(axes, shells, meshes):
             ax.clear()
-            
-            # Generate shell
-            X, Y, Z = raup_shell(W=shell['W'], D=shell['D'], T=shell['T'], 
-                                S=shell.get('S', 1.0), turns=shell['turns'], res=res)
-            
-            # Plot wireframe with shell-specific color (finer mesh)
-            ax.plot_wireframe(X, Y, Z, rstride=3, cstride=3, 
-                             color=shell['color'], linewidth=0.6, alpha=0.8)
-            
-            # Calculate dynamic limits based on actual shell size (same as comparison script)
-            x_range = X.max() - X.min()
-            y_range = Y.max() - Y.min()
-            z_range = Z.max() - Z.min()
-            max_range = max(x_range, y_range, z_range)
-            
-            # Set limits with generous padding (zoom out 50% more)
-            padding = max_range * 0.5
-            center_x = (X.max() + X.min()) / 2
-            center_y = (Y.max() + Y.min()) / 2
-            center_z = (Z.max() + Z.min()) / 2
-            
-            ax.set_xlim([center_x - max_range/2 - padding, center_x + max_range/2 + padding])
-            ax.set_ylim([center_y - max_range/2 - padding, center_y + max_range/2 + padding])
-            ax.set_zlim([center_z - max_range/2 - padding, center_z + max_range/2 + padding])
-            
-            # Apply view based on mode
+            ax.plot_wireframe(X, Y, Z, rstride=3, cstride=3, color=s["color"], linewidth=0.5, alpha=0.85)
+            fit_axes(ax, X, Y, Z)
             ax.view_init(elev=elev, azim=azim)
-            
-            # Set title with parameters and view mode
-            view_label = "Side View" if view_mode == 'side' else "Overhead View"
-            ax.set_title('{} [{}]\nW={:.2f}, D={:.2f}, T={:.2f}'.format(
-                shell['name'], view_label, shell['W'], shell['D'], shell['T']),
-                fontsize=10, fontweight='bold', pad=10)
-            
-            # Remove axis labels for cleaner look
+            ax.set_title(f"{s['name']} · cf. {s['cf']}\nW={s['W']:.2f}  D={s['D']:.2f}  T={s['T']:.2f}",
+                         fontsize=11, fontweight="bold", pad=6)
             ax.set_axis_off()
-        
-        # Overall title with view mode indicator
-        view_title = "Side Angle View" if view_mode == 'side' else "Overhead View"
-        fig.suptitle(f'Raup Shell Coiling Model: Parameter Variation Produces Diverse Forms - {view_title}',
-                    fontsize=14, fontweight='bold', y=0.98)
-    
-    # Create animation
-    anim = FuncAnimation(fig, animate, frames=num_frames, interval=1000/fps, blit=False)
-    
-    # Save as GIF
-    print(f"  Saving {num_frames} frames (6 shells × 2 views: side + overhead) at {fps} fps...")
+        fig.suptitle("Raup's coiling model (1966): six forms, " + ("side view" if side else "overhead view"),
+                     fontsize=15, fontweight="bold", y=0.975)
+
+    fig.text(0.5, 0.012, ILLUSTRATIVE, ha="center", va="bottom", fontsize=8.5, color="#475569", style="italic")
+    anim = FuncAnimation(fig, animate, frames=num_frames, interval=1000 / fps, blit=False)
     anim.save(output_path, writer=PillowWriter(fps=fps))
-    print(f"  ✓ Saved: {output_path}")
-    plt.close()
+    plt.close(fig)
+    print(f"  saved {output_path} ({num_frames} frames)")
 
 
-def create_parameter_space_visualization(output_path='raup_parameter_space.png'):
-    """
-    Create a visualization showing the three-dimensional parameter space.
-    Shows how W, D, and T affect shell morphology.
-    """
-    print(f"Creating parameter space visualization: {output_path}")
-    
-    # Load variable ranges from data file
-    raup_data = load_raup_data()
-    W_range = raup_data['core_variables']['W']['typical_range']
-    D_range = raup_data['core_variables']['D']['typical_range']
-    T_range = raup_data['core_variables']['T']['typical_range']
-    
-    # Define parameter grid based on loaded ranges
-    W_values = np.linspace(W_range['min'], W_range['max'], 6).tolist()
-    D_values = np.linspace(D_range['min'], D_range['max'], 5).tolist()
-    T_values = np.linspace(T_range['min'], T_range['max'], 6).tolist()
-    
-    print(f"  Using parameter ranges from datasets/raup/variables.json:")
-    print(f"    W: {W_range['min']:.2f} - {W_range['max']:.2f}")
-    print(f"    D: {D_range['min']:.2f} - {D_range['max']:.2f}")
-    print(f"    T: {T_range['min']:.2f} - {T_range['max']:.2f}")
-    
-    # Create figure with subplots showing different slices
-    fig = plt.figure(figsize=(16, 12))
-    
-    # Top row: Vary W and D (T fixed)
-    T_fixed = 0.5
-    ax1 = fig.add_subplot(2, 3, 1, projection='3d')
-    ax2 = fig.add_subplot(2, 3, 2, projection='3d')
-    ax3 = fig.add_subplot(2, 3, 3, projection='3d')
-    
-    # Bottom row: Vary W and T (D fixed)
-    D_fixed = 0.2
-    ax4 = fig.add_subplot(2, 3, 4, projection='3d')
-    ax5 = fig.add_subplot(2, 3, 5, projection='3d')
-    ax6 = fig.add_subplot(2, 3, 6, projection='3d')
-    
-    axes_top = [ax1, ax2, ax3]
-    axes_bottom = [ax4, ax5, ax6]
-    
-    # Top row: Show effect of W and D
-    for idx, (W, D) in enumerate([(1.5, 0.1), (2.5, 0.2), (3.5, 0.3)]):
-        ax = axes_top[idx]
-        X, Y, Z = raup_shell(W=W, D=D, T=T_fixed, turns=4, res=40)
-        ax.plot_wireframe(X, Y, Z, rstride=6, cstride=6, 
-                         color='steelblue', linewidth=0.5, alpha=0.8)
-        ax.set_title(f'W={W}, D={D}, T={T_fixed}\n(Whorl expansion vs Distance)', 
-                    fontsize=10)
-        ax.set_xlabel('X', fontsize=8)
-        ax.set_ylabel('Y', fontsize=8)
-        ax.set_zlabel('Z', fontsize=8)
-        ax.set_xlim([-4, 4])
-        ax.set_ylim([-4, 4])
-        ax.set_zlim([0, 8])
-    
-    # Bottom row: Show effect of W and T
-    for idx, (W, T) in enumerate([(1.5, 0.2), (2.5, 0.5), (3.5, 1.0)]):
-        ax = axes_bottom[idx]
-        X, Y, Z = raup_shell(W=W, D=D_fixed, T=T, turns=4, res=40)
-        ax.plot_wireframe(X, Y, Z, rstride=6, cstride=6, 
-                         color='coral', linewidth=0.5, alpha=0.8)
-        ax.set_title(f'W={W}, D={D_fixed}, T={T}\n(Whorl expansion vs Translation)', 
-                    fontsize=10)
-        ax.set_xlabel('X', fontsize=8)
-        ax.set_ylabel('Y', fontsize=8)
-        ax.set_zlabel('Z', fontsize=8)
-        ax.set_xlim([-4, 4])
-        ax.set_ylim([-4, 4])
-        ax.set_zlim([0, 8])
-    
-    plt.suptitle("Raup Shell Coiling: Parameter Space Exploration\n"
-                 "Three Core Variables: W (Whorl Expansion), D (Distance from Axis), T (Translation Rate)",
-                 fontsize=14, fontweight='bold')
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=150, bbox_inches='tight')
-    print(f"  ✓ Saved: {output_path}")
-    plt.close()
+def create_parameter_space_visualization(data, output_path):
+    print(f"Creating parameter space sheet: {output_path}")
+    Wr, Dr, Tr = (data["core_variables"][k]["typical_range"] for k in "WDT")
+    Ws = np.linspace(Wr["min"], Wr["max"], 3)
+    Ds = np.linspace(Dr["min"], Dr["max"], 3)
+    Ts = np.linspace(Tr["min"], Tr["max"], 3)
+    fig = plt.figure(figsize=(16, 11)); fig.subplots_adjust(0, 0.02, 1, 0.9, wspace=0, hspace=0.1)
+    for i, (W, D) in enumerate(zip(Ws, Ds)):
+        ax = fig.add_subplot(2, 3, i + 1, projection="3d")
+        X, Y, Z = raup_shell(W=W, D=D, T=1.0, turns=5, res=40)
+        ax.plot_wireframe(X, Y, Z, rstride=4, cstride=4, color="steelblue", linewidth=0.5, alpha=0.85)
+        fit_axes(ax, X, Y, Z); ax.set_axis_off()
+        ax.set_title(f"W={W:.2f}, D={D:.2f}, T=1.00", fontsize=11)
+    for i, (W, T) in enumerate(zip(Ws, Ts)):
+        ax = fig.add_subplot(2, 3, i + 4, projection="3d")
+        X, Y, Z = raup_shell(W=W, D=0.1, T=T, turns=5, res=40)
+        ax.plot_wireframe(X, Y, Z, rstride=4, cstride=4, color="coral", linewidth=0.5, alpha=0.85)
+        fit_axes(ax, X, Y, Z); ax.set_axis_off()
+        ax.set_title(f"W={W:.2f}, D=0.10, T={T:.2f}", fontsize=11)
+    fig.suptitle("Raup's coiling model: W and D (top, T fixed) · W and T (bottom, D fixed)\n"
+                 "ranges from datasets/raup/variables.json", fontsize=14, fontweight="bold")
+    fig.savefig(output_path, dpi=110, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  saved {output_path}")
 
 
-def create_empirical_comparison(output_path='raup_empirical_comparison.png'):
-    """
-    Create a comparison showing theoretical Raup shells vs. empirical shell forms.
-    Uses typical parameter values observed in nature.
-    """
-    print(f"Creating empirical comparison: {output_path}")
-    
-    # Load empirical shell data from JSON file
-    raup_data = load_raup_data()
-    empirical_shells_raw = raup_data['empirical_shells']
-    
-    # Convert to format expected by visualization function
-    empirical_shells = []
-    for shell in empirical_shells_raw:
-        empirical_shells.append({
-            'name': f"{shell['name']}\n({shell['common_name']}-like)",
-            'W': shell['W'],
-            'D': shell['D'],
-            'T': shell['T'],
-            'S': shell.get('S', 1.0),
-            'turns': shell['turns'],
-            'color': shell['color']
-        })
-    
-    print(f"  Loaded {len(empirical_shells)} empirical shell forms from datasets/raup/variables.json")
-    
-    fig = plt.figure(figsize=(18, 10))
-    
-    for idx, shell in enumerate(empirical_shells):
-        ax = fig.add_subplot(2, 3, idx + 1, projection='3d')
-        
-        X, Y, Z = raup_shell(W=shell['W'], D=shell['D'], T=shell['T'], 
-                            S=shell.get('S', 1.0), turns=shell.get('turns', 4), res=50)
-        
-        ax.plot_wireframe(X, Y, Z, rstride=6, cstride=6, 
-                         color=shell['color'], linewidth=0.8, alpha=0.9)
-        
-        ax.set_title(shell['name'] + f'\nW={shell["W"]}, D={shell["D"]:.2f}, T={shell["T"]}', 
-                    fontsize=11, fontweight='bold')
-        ax.set_xlabel('X', fontsize=8)
-        ax.set_ylabel('Y', fontsize=8)
-        ax.set_zlabel('Z', fontsize=8)
-        
-        # Adjust limits based on shell type
-        if shell['T'] > 0.7:  # High-spired
-            ax.set_zlim([0, 12])
-        else:
-            ax.set_zlim([0, 6])
-        
-        ax.set_xlim([-4, 4])
-        ax.set_ylim([-4, 4])
-    
-    plt.suptitle("Raup Model: Theoretical Shells vs. Empirical Forms\n"
-                 "Parameter combinations matching observed mollusk shell morphologies",
-                 fontsize=14, fontweight='bold')
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=150, bbox_inches='tight')
-    print(f"  ✓ Saved: {output_path}")
-    plt.close()
+def create_empirical_comparison(shells, metrics, output_path):
+    print(f"Creating six-panel still: {output_path}")
+    fig = plt.figure(figsize=(16, 10)); fig.subplots_adjust(0, 0.05, 1, 0.88, wspace=0, hspace=0.1)
+    for i, (s, m) in enumerate(zip(shells, metrics)):
+        ax = fig.add_subplot(2, 3, i + 1, projection="3d")
+        X, Y, Z = raup_shell(W=s["W"], D=s["D"], T=s["T"], S=s["S"], turns=s["turns"], res=50)
+        ax.plot_wireframe(X, Y, Z, rstride=3, cstride=3, color=s["color"], linewidth=0.6, alpha=0.9)
+        fit_axes(ax, X, Y, Z); ax.view_init(elev=15, azim=-60); ax.set_axis_off()
+        ax.set_title(f"{s['name']} · cf. {s['cf']}\nW={s['W']:.2f}  D={s['D']:.2f}  T={s['T']:.2f}   "
+                     f"height/width {m['height_over_width']:.2f}", fontsize=11, fontweight="bold")
+    fig.suptitle("Raup's coiling model: six illustrative forms", fontsize=15, fontweight="bold", y=0.97)
+    fig.text(0.5, 0.02, ILLUSTRATIVE + "  Recovered W, D, T per panel are in raup_shell_metrics.csv.",
+             ha="center", fontsize=9, color="#475569", style="italic")
+    fig.savefig(output_path, dpi=110, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  saved {output_path}")
 
 
-def main():
-    """Generate all visualizations."""
-    print("="*60)
-    print("Raup Shell Coiling Model Visualizations")
-    print("="*60)
-    print()
-    
-    # Create animated GIF (all 6 shells side by side, showing side view then overhead view)
-    create_animated_gif('raup_shell_animation.gif', num_frames=240, fps=15)
-    print()
-    
-    # Create parameter space visualization
-    create_parameter_space_visualization('raup_parameter_space.png')
-    print()
-    
-    # Create empirical comparison
-    create_empirical_comparison('raup_empirical_comparison.png')
-    print()
-    
-    print("="*60)
-    print("✓ All visualizations complete!")
-    print("="*60)
-    print("\nGenerated files:")
-    print("  - raup_shell_animation.gif (animated morphing through parameter space)")
-    print("  - raup_parameter_space.png (3D parameter space exploration)")
-    print("  - raup_empirical_comparison.png (theoretical vs. empirical forms)")
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("--frames", type=int, default=120)
+    ap.add_argument("--fps", type=int, default=15)
+    ap.add_argument("--no-gif", action="store_true")
+    ap.add_argument("--self-test-only", action="store_true")
+    ap.add_argument("--out-dir", default=".", help="where to write the outputs")
+    args = ap.parse_args(argv)
+
+    self_test()
+    if args.self_test_only:
+        return
+    out = Path(args.out_dir); out.mkdir(parents=True, exist_ok=True)
+    data = load_raup_data()
+    shells = panels(data)
+    print(f"Loaded {len(shells)} parameter sets from {DATA.relative_to(HERE)}")
+    metrics = write_metrics(shells, out / "raup_shell_metrics.csv")
+    if not args.no_gif:
+        create_animated_gif(shells, out / "raup_shell_animation.gif", num_frames=args.frames, fps=args.fps)
+    create_parameter_space_visualization(data, out / "raup_parameter_space.png")
+    create_empirical_comparison(shells, metrics, out / "raup_empirical_comparison.png")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

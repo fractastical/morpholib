@@ -1,120 +1,79 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+#!/usr/bin/env python3
+"""
+Raup's shell-coiling model (Raup & Michelson 1965, Science 147:1294, doi:10.1126/science.147.3663.1294;
+Raup 1966, J. Paleontol. 40:1178-1190, doi:10.2307/1301992): a 3 x 3 slice of the morphospace,
+W (whorl expansion) against T (translation), at fixed D.
+
+    a(theta) = a0 W^(theta/2pi)          generating-curve radial semi-axis (log spiral)
+    r_c      = a (1+D)/(1-D)             centre's distance from the axis, so inner/outer margin = D
+    z_c      = T r_c                     centre's position along the axis, so dz_c/dr_c = T
+    surface  = (r_c + a cos phi) (cos theta, sin theta),  z_c + (a/S) sin phi
+
+The generating ellipse lies in the plane through the axis.  The definitions follow Raup as
+restated by Noshita 2014 (J Theor Biol 363:93) and Okabe & Yoshimura 2017 (Sci Rep 7:42445).
+create_raup_animations.py carries the same function with a self-test that recovers W, D, T
+from the mesh; this file is the minimal version.
+
+    python3 1966-raup.py [--no-show] [--out raup_morphospace_slice.png]
+"""
+
+import argparse
 import json
 from pathlib import Path
 
-def raup_shell(W=3, D=0.2, T=0.5, S=1, turns=6, res=100):
-    # theta: Array of angles for coiling along the spiral path (from 0 to full turns)
-    # This defines the parametric position along the helicospiral.
-    theta = np.linspace(0, 2 * np.pi * turns, res * turns)
-    
-    # phi: Angles around the generating curve (aperture), creating the cross-section at each point.
-    # This meshes with theta to form a 2D grid for the full surface.
-    phi = np.linspace(0, 2 * np.pi, res)
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def raup_shell(W=3.0, D=0.2, T=0.5, S=1.0, turns=6, res=100, a0=1.0, apex_up=True):
+    theta = np.linspace(0.0, 2 * np.pi * turns, res * turns, endpoint=False)
+    phi = np.linspace(0.0, 2 * np.pi, res)
     theta, phi = np.meshgrid(theta, phi)
-    
-    # b: Expansion coefficient derived from W (whorl expansion rate).
-    # W controls how much the radius grows per full revolution (2π radians).
-    # Higher W means faster expansion, leading to wider shells.
-    b = np.log(W) / (2 * np.pi)
-    
-    # r: Radius at each theta, following logarithmic spiral growth.
-    # This ensures isometric (self-similar) expansion, central to Raup's model.
-    r = np.exp(b * theta)
-    
-    # offset: Adjusts the position relative to the coiling axis based on D.
-    # D (distance from coiling axis) determines how far the inner edge is from the axis.
-    # D=0: Tight coiling with no umbilicus; higher D: More open or disc-like forms.
-    offset = D / (1 - D) if D < 1 else 0
-    
-    # xc, yc: X and Y coordinates of the spiral path center.
-    # Scaled by (1 + offset) to incorporate D, creating the offset from the axis.
-    xc = (1 + offset) * r * np.cos(theta)
-    yc = (1 + offset) * r * np.sin(theta)
-    
-    # zc: Z coordinate for translation along the axis.
-    # T (translation rate) controls vertical rise per radian; relates to turret height.
-    # T=0: Planispiral (flat); higher T: Elongated, helical forms.
-    zc = T * theta
-    
-    # a: Semi-major axis of the generating curve (ellipse), scaled by r for growth.
-    # This makes the aperture expand proportionally with the spiral.
-    a = 0.5 * r
-    
-    # b_val: Semi-minor axis, adjusted by S (shape of generating curve).
-    # S=1: Circular aperture; S>1: Wider than tall; S<1: Taller than wide.
-    b_val = a / S
-    
-    # dx, dy: Offsets for the generating curve in local coordinates.
-    # These define the elliptical cross-section around the path center.
-    dx = a * np.cos(phi)
-    dy = b_val * np.sin(phi)
-    
-    # X, Y: Final coordinates by rotating and adding the generating curve to the path.
-    # Rotation aligns the curve perpendicular to the tangent (approximation here).
-    # This sweeps the aperture along the helicospiral to form the shell surface.
-    X = xc + dx * np.cos(theta) - dy * np.sin(theta)
-    Y = yc + dx * np.sin(theta) + dy * np.cos(theta)
-    
-    # Z: Simply the translated zc, as the generating curve is in the XY plane.
-    Z = zc
-    
-    return X, Y, Z
+    a = a0 * W ** (theta / (2 * np.pi))      # every whorl is the previous one magnified by W
+    rc = a * (1 + D) / (1 - D)               # (rc - a) / (rc + a) = D
+    zc = T * rc                              # translation scales with the whorls: T = dz_c / dr_c
+    R = rc + a * np.cos(phi)
+    X, Y, Z = R * np.cos(theta), R * np.sin(theta), zc + (a / S) * np.sin(phi)
+    return X, Y, -Z if apex_up else Z
 
-# Load parameter ranges from raup_dataset/variables.json
-def load_raup_parameters():
-    """Load Raup model parameters from data file."""
-    script_dir = Path(__file__).parent
-    data_file = script_dir / 'datasets' / 'raup' / 'variables.json'
-    
+
+def main(argv=None):
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--no-show", action="store_true")
+    ap.add_argument("--out", default=None, help="save the figure here instead of / as well as showing it")
+    args = ap.parse_args(argv)
+
+    data_file = Path(__file__).resolve().parent / "datasets" / "raup" / "variables.json"
     if data_file.exists():
-        with open(data_file, 'r') as f:
-            data = json.load(f)
-        return data
+        cv = json.loads(data_file.read_text())["core_variables"]
+        Wr, Tr, Dr = cv["W"]["typical_range"], cv["T"]["typical_range"], cv["D"]["typical_range"]
+        Ws = [Wr["min"], (Wr["min"] + Wr["max"]) / 2, Wr["max"]]
+        Ts = [Tr["min"], (Tr["min"] + Tr["max"]) / 2, Tr["max"]]
+        D_fixed = 0.1 if Dr["min"] <= 0.1 <= Dr["max"] else (Dr["min"] + Dr["max"]) / 2
+        print(f"ranges from {data_file.relative_to(Path.cwd()) if data_file.is_relative_to(Path.cwd()) else data_file}: "
+              f"W {Ws}, T {Ts}, D fixed at {D_fixed}")
     else:
-        # Fallback to default values if file not found
-        print(f"Warning: {data_file} not found, using default parameters")
-        return None
+        Ws, Ts, D_fixed = [1.2, 2.6, 4.0], [0.0, 2.0, 4.0], 0.1
+        print(f"{data_file} not found; using built-in ranges")
 
-# Load parameters from data file
-raup_data = load_raup_parameters()
+    fig, axs = plt.subplots(3, 3, subplot_kw={"projection": "3d"}, figsize=(12, 12))
+    fig.subplots_adjust(0, 0, 1, 0.93, wspace=0, hspace=0.05)
+    for i, W in enumerate(Ws):
+        for j, T in enumerate(Ts):
+            ax = axs[i, j]
+            X, Y, Z = raup_shell(W=W, D=D_fixed, T=T, turns=5, res=50)
+            ax.plot_wireframe(X, Y, Z, rstride=3, cstride=3, linewidth=0.5)
+            rng = max(X.max() - X.min(), Y.max() - Y.min(), Z.max() - Z.min())
+            for lim, A in ((ax.set_xlim, X), (ax.set_ylim, Y), (ax.set_zlim, Z)):
+                c = (A.max() + A.min()) / 2; lim(c - rng / 2, c + rng / 2)
+            ax.set_box_aspect((1, 1, 1), zoom=1.3); ax.view_init(elev=15, azim=-60)
+            ax.set_title(f"W={W:.2f}, T={T:.2f}", fontsize=11); ax.set_axis_off()
+    fig.suptitle(f"Raup's coiling model: W down the rows, T across the columns, D = {D_fixed:.2f}", fontsize=14, fontweight="bold")
+    if args.out:
+        fig.savefig(args.out, dpi=110, bbox_inches="tight"); print(f"saved {args.out}")
+    if not args.no_show:
+        plt.show()
 
-if raup_data:
-    # Use parameter ranges from data file
-    W_range = raup_data['core_variables']['W']['typical_range']
-    D_range = raup_data['core_variables']['D']['typical_range']
-    T_range = raup_data['core_variables']['T']['typical_range']
-    
-    # Grid parameters: Vary W and T to sample a slice of the morphospace.
-    # Ws: Range of whorl expansion rates (rows in the plot grid).
-    # Ts: Range of translation rates (columns in the plot grid).
-    # D_fixed and S_fixed: Held constant for this 2D slice; vary them for fuller exploration.
-    Ws = [W_range['min'], (W_range['min'] + W_range['max']) / 2, W_range['max']]
-    Ts = [T_range['min'], (T_range['min'] + T_range['max']) / 2, T_range['max']]
-    D_fixed = (D_range['min'] + D_range['max']) / 2
-    S_fixed = 1.0
-    
-    print(f"Loaded parameters from datasets/raup/variables.json")
-    print(f"  W range: {W_range['min']:.2f} - {W_range['max']:.2f}")
-    print(f"  D range: {D_range['min']:.2f} - {D_range['max']:.2f}")
-    print(f"  T range: {T_range['min']:.2f} - {T_range['max']:.2f}")
-else:
-    # Fallback defaults
-    Ws = [1.5, 2.5, 4.0]
-    Ts = [0.1, 0.5, 1.0]
-    D_fixed = 0.1
-    S_fixed = 1
 
-# Plot grid: Create subplots to visualize multiple parameter combinations.
-# This illustrates how changing W and T affects shell morphology,
-# mimicking Raup's approach to mapping theoretical vs. observed forms.
-fig, axs = plt.subplots(3, 3, subplot_kw={'projection': '3d'}, figsize=(12, 12))
-for i, W in enumerate(Ws):
-    for j, T in enumerate(Ts):
-        X, Y, Z = raup_shell(W=W, D=D_fixed, T=T, S=S_fixed)
-        axs[i, j].plot_wireframe(X, Y, Z, rstride=5, cstride=5)
-        axs[i, j].set_title(f'W={W}, T={T}')
-        axs[i, j].set_axis_off()  # Cleaner view
-plt.tight_layout()
-plt.show()
+if __name__ == "__main__":
+    main()
