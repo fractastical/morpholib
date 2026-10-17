@@ -8,7 +8,8 @@ Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) 
 
 | year | model | script | MorphoEval |
 |---|---|---|---|
-| 1917 | Thompson, transformations | [`thompson/1917-thompson.py`](./thompson/1917-thompson.py) | — |
+| 1917 | Thompson, transformations: *Scarus* → *Pomacanthus* on real landmarks | [`thompson/1917-thompson-scarus-pomacanthus.py`](./thompson/1917-thompson-scarus-pomacanthus.py) | pending |
+| 1917 | Thompson, transformations (schematic) | [`thompson/1917-thompson.py`](./thompson/1917-thompson.py) | — |
 | 1952 | Turing / Gray–Scott reaction–diffusion | [`1952-turing-morpho.py`](./1952-turing-morpho.py) | 52.7 |
 | 1966 | Raup, shell coiling | [`1966-raup.py`](./1966-raup.py), [`create_raup_animations.py`](./create_raup_animations.py) | 37.3 |
 | 2010 | Petroff et al., conical stromatolites | [`2010-petroff-stromatolite.py`](./2010-petroff-stromatolite.py) | unevaluated |
@@ -209,13 +210,34 @@ Kahng, Odle & Wakeman's (2024) geometry of reef-coral colonies. A colony lays do
 
 **Reference:** Kahng SE, Odle E, Wakeman KC (2024). Coral geometry and why it matters. *PeerJ* 12:e17037. [DOI](https://doi.org/10.7717/peerj.17037). Code: [ericodle/coral_geometry_modeling](https://github.com/ericodle/coral_geometry_modeling).
 
+### [thompson/1917-thompson-scarus-pomacanthus.py](./thompson/1917-thompson-scarus-pomacanthus.py)
+
+Thompson's *Scarus* → *Pomacanthus* transformation (*On Growth and Form* 1917, p. 749, Figs. 375–376: "deform its rectilinear co-ordinates into a system of (approximately) coaxial circles … we obtain a very good outline of an allied fish") tested on real species rather than on his drawings. Thompson drew the grids by hand and left no way to fit them; a Cartesian grid whose lines become two pencils of coaxial circles is the image of the plane under a Möbius map, so his claim for this pair is a six-constant hypothesis that can be fitted by least squares to homologous landmarks. The script uses the 17 lateral-view landmarks of Claverie & Wainwright (2014) for 791 Indo-Pacific shore fishes (Friedman et al. 2019, Dryad, CC0, vendored and hash-checked in [`datasets/thompson/`](./datasets/thompson/)) — 22 *Scarus*, 9 *Pomacanthus* and 54 *Chaetodon* species — Procrustes-superimposes them, and fits the *Scarus* genus mean to the *Pomacanthus* genus mean with a similarity, an affine map, the Möbius map (isogonal coaxial circles), a Möbius∘affine map (oblique coaxial circles, which is what Fig. 376 is as drawn) and the exact thin-plate spline, with the spread of the species about their own genus means as the noise floor and all 3782 ordered pairs of genus means as context. Thompson's own figure is cropped from the public-domain Internet Archive scan (page 749 as the original JPEG-2000 leaf, hash-pinned) and placed beside the data.
+
+```bash
+python3 thompson/1917-thompson-scarus-pomacanthus.py                 # figure + GIF (fetches the 1917 page on first run)
+python3 thompson/1917-thompson-scarus-pomacanthus.py --no-scan --csv fits.csv
+```
+
+![Scarus to Pomacanthus on real landmarks: Thompson's coaxial-circle grid fitted to the genus means beside the thin-plate-spline grid the data demand](docs/media/thompson_scarus_pomacanthus.gif)
+
+*What you see:* the *Scarus* genus mean (17 landmarks joined into a body polygon, snout at the left) carried towards the *Pomacanthus* mean. Left, the best grid of Thompson's family — Cartesian lines bending into coaxial circles — and the fish it carries; at t = 1 the real *Pomacanthus* mean is drawn in dark red over it and the gap between them is what his transformation leaves unexplained. Right, the thin-plate spline, which fits the landmarks exactly: the grid the data actually demand, with the posterior body stretched dorso-ventrally and the fins displaced locally.
+
+The result goes against the quotation. The genus means are 0.0312 Procrustes units apart; an affine map explains 31 % of that distance, the Möbius map 1 % (a conformal map cannot deepen the body, and *Pomacanthus* is 27 % deeper relative to its length, 0.36 → 0.57), oblique coaxial circles 32 % — hardly more than the affine part — and the residual of 0.0256 is twice the spread of the *Pomacanthus* species about their own mean (0.0132). Fitted to 16 landmarks, the 8-parameter family predicts the 17th worse than a plain similarity does (0.0371 vs 0.0312). Among all genus pairs in the dataset, *Scarus* → *Pomacanthus* is at the 31st percentile for how much coaxial circles explain, so it is not even a favourable case; for *Scarus* → the 54 *Chaetodon* species the family explains a median 35 %. What remains is local — the anal-fin end, snout, dorsal-fin end and anal-fin origin carry the largest residuals — which is the kind of change Thompson's method was built to exclude. Caveats in [`datasets/thompson/README.md`](./datasets/thompson/README.md): fin-insertion landmarks rather than his body outline, genus means for his unnamed species, and two readings of "approximately coaxial circles". Of his four fish pairs this is the only one the dataset covers; *Diodon* is there but *Mola* is not.
+
+**References:**
+- Thompson DW (1917). *On Growth and Form*. Cambridge University Press, ch. XVII, pp. 748–751. Scan: [archive.org/details/ongrowthform1917thom](https://archive.org/details/ongrowthform1917thom) (public domain).
+- Friedman ST, Martinez CM, Price SA, Wainwright PC (2019). The influence of size on body shape diversification across Indo-Pacific shore fishes. *Evolution* 73:1873–1884. [DOI](https://doi.org/10.1111/evo.13755). Data: Dryad [10.5061/dryad.fn457gr](https://doi.org/10.5061/dryad.fn457gr) (CC0).
+- Claverie T, Wainwright PC (2014). A morphospace for reef fishes: elongation is the dominant axis of body shape evolution. *PLoS ONE* 9(11):e112732. [DOI](https://doi.org/10.1371/journal.pone.0112732) (landmark definitions, Fig. 1).
+- Bookstein FL (1989). Principal warps: thin-plate splines and the decomposition of deformations. *IEEE Trans. Pattern Anal. Mach. Intell.* 11:567–585. [DOI](https://doi.org/10.1109/34.24792)
+
 ### [thompson/1917-thompson.py](./thompson/1917-thompson.py)
 
 A demonstration of D'Arcy Thompson's theory of transformations from *On Growth and Form* (1917), showing how one shape can be deformed into another through mathematical transformations. This classic work established the foundation for mathematical biology and the study of biological form.
 
 ![Thompson transformations: a fish outline on a Cartesian grid carried through a shear, a fan of coordinates and a radial expansion](docs/media/thompson_transformations.gif)
 
-*What you see:* a stylised fish drawn on a square grid; the grid is deformed by three of Thompson's transformation families (oblique shear as in his *Scarus* → *Pomacanthus*, a fan of coordinates as in *Polyprion* → *Pseudopriacanthus*, a radial expansion as in *Diodon* → the sunfish) and the fish follows the grid. Schematic, not fitted to specimens. `python3 thompson/1917-thompson.py --gif out.gif`; without `--gif` the original two-panel toy opens.
+*What you see:* a stylised fish drawn on a square grid; the grid is deformed by four of Thompson's transformation families (the oblique shear of *Argyropelecus* → *Sternoptyx*, the coaxial circles of *Scarus* → *Pomacanthus*, a fan of coordinates as in *Polyprion* → *Pseudopriacanthus*, a radial expansion as in *Diodon* → the sunfish) and the fish follows the grid. Schematic, not fitted to specimens — the fit to real species is the script above. `python3 thompson/1917-thompson.py --gif out.gif`; without `--gif` a two-panel toy applies the coaxial-circle map to an ellipse (until 2026-10-16 that toy applied the same polynomial to both coordinates, which collapses every shape onto a line; fixed).
 
 Thompson-focused notes and dataset curation are in:
 - [`thompson/DARCY_THOMPSON_FOCUSED_OPTIONS.md`](./thompson/DARCY_THOMPSON_FOCUSED_OPTIONS.md)

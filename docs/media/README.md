@@ -8,7 +8,8 @@ options added in the same change; inputs as documented for each script.
 
 | file | script and command | source frames → kept |
 |---|---|---|
-| `thompson_transformations.gif` | `python3 thompson/1917-thompson.py --gif thompson.gif` | 117 → 80 |
+| `thompson_scarus_pomacanthus.gif` | `python3 thompson/1917-thompson-scarus-pomacanthus.py` → `thompson_scarus_pomacanthus.gif` (2026-10-16) | 70 → 70 |
+| `thompson_transformations.gif` | `python3 thompson/1917-thompson.py --gif thompson.gif` (remade 2026-10-16: four families, coaxial circles added) | 196 → 80 (identical hold frames merged) |
 | `turing_gray_scott.gif` | `python3 1952-turing-morpho.py` → `turing_patterns.gif` (legacy, tracked at the repo root) | 500 → 60 |
 | `raup_shell_coiling.gif` | `python3 create_raup_animations.py` → `raup_shell_animation.gif` (legacy, tracked at the repo root) | 161 → 60 |
 | `petroff_stromatolite_dome_to_cone.gif` | `python3 2010-petroff-stromatolite.py --no-show --gif petroff.gif` | 70 → 70 |

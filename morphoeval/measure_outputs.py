@@ -468,6 +468,64 @@ def measure_celegans(script: Path) -> list:
     return out
 
 
+def measure_thompson_fish(script: Path) -> list:
+    """Measurements taken by re-running the fitting functions of thompson/1917-thompson-scarus-pomacanthus.py
+    on the vendored, SHA-256-checked Claverie & Wainwright landmark table: the Scarus -> Pomacanthus fits
+    (similarity, affine, Moebius, oblique coaxial circles, thin-plate spline), the within-genus noise floor,
+    a leave-one-landmark-out check, and the position of the pair among all genus pairs."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("thompson_fish_v1", script)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    names, X = mod.load_landmarks()
+    Y, groups, S, T, fits, floor_T, per_T, floor_S, per_S, ctx, chaet = mod.analyse(names, X)
+    em = np.array([c["explained_coaxial"] for c in ctx]); cm = np.array([c["explained_coaxial"] for c in chaet])
+    loo = []
+    for k in range(mod.N_LM):
+        idx = [i for i in range(mod.N_LM) if i != k]
+        pk, _ = mod.fit_coaxial(S[idx], T[idx]); loo.append(np.linalg.norm(mod.coaxial(pk, S[[k]])[0] - T[k]))
+    loo_rms = float(np.sqrt(np.mean(np.square(loo))))
+    TH = "Thompson 1917, On Growth and Form, p. 749, Figs. 375-376"
+    DATA = "Friedman et al. 2019, Dryad 10.5061/dryad.fn457gr (Claverie & Wainwright 2014 landmarks), CC0"
+    return [
+        M("species in the landmark table", len(names), "count", f"rows of {mod.DATA.name} (sha256 checked)", reference=791,
+          source=f"{DATA}: 'nearly 800 species'", derived_from="script"),
+        M("Scarus species", len(groups[mod.SOURCE_GENUS]), "count", "rows whose genus is Scarus", derived_from="script"),
+        M("Pomacanthus species", len(groups[mod.TARGET_GENUS]), "count", "rows whose genus is Pomacanthus", derived_from="script"),
+        M("Procrustes distance, Scarus mean to Pomacanthus mean", fits["rms_similarity"], "Procrustes units (RMS per landmark)",
+          "RMS landmark distance after optimal similarity superimposition of the genus means (unit centroid size)", derived_from="script"),
+        M("affine residual", fits["rms_affine"], "Procrustes units", "RMS after a least-squares affine map (6 parameters)",
+          note=f"explains {100*fits['explained_affine']:.1f} % of the Procrustes distance", derived_from="script"),
+        M("Moebius residual (isogonal coaxial circles)", fits["rms_moebius"], "Procrustes units",
+          "RMS after a least-squares Moebius map z -> (az+b)/(cz+1), the conformal map that turns the Cartesian grid into "
+          "two orthogonal pencils of coaxial circles", reference=None,
+          source=f"{TH}: 'a system of (approximately) coaxial circles'",
+          note=f"explains {100*fits['explained_moebius']:.1f} %: a conformal map cannot change the depth/length ratio", derived_from="script"),
+        M("oblique coaxial-circle residual", fits["rms_coaxial"], "Procrustes units",
+          "RMS after an affine map followed by z -> z/(cz+1) (8 parameters): coaxial circles whose two pencils need not be orthogonal, "
+          "the family Thompson's Fig. 376 belongs to as drawn", source=TH,
+          note=f"explains {100*fits['explained_coaxial']:.1f} %", derived_from="script"),
+        M("thin-plate spline bending energy", fits["bending_energy"], "dimensionless",
+          "bending energy of the exact TPS from the Scarus mean to the Pomacanthus mean (Bookstein 1989)", derived_from="script"),
+        M("within-Pomacanthus RMS (noise floor)", floor_T, "Procrustes units",
+          "RMS of the Pomacanthus species about their own Procrustes mean", derived_from="script",
+          note=f"species range {per_T.min():.4f}-{per_T.max():.4f}; within-Scarus {floor_S:.4f}"),
+        M("leave-one-landmark-out RMS of the oblique coaxial family", loo_rms, "Procrustes units",
+          "each landmark predicted by the 8-parameter map fitted to the other 16", derived_from="script",
+          note="compare with the Procrustes distance: the family has no predictive value for held-out landmarks if it is not smaller"),
+        M("depth/length, Scarus mean", float(np.ptp(S[:, 1]) / np.ptp(S[:, 0])), "ratio", "landmark extent in y over extent in x", derived_from="script"),
+        M("depth/length, Pomacanthus mean", float(np.ptp(T[:, 1]) / np.ptp(T[:, 0])), "ratio", "landmark extent in y over extent in x", derived_from="script"),
+        M("percentile of Scarus -> Pomacanthus among all genus pairs (oblique coaxial, explained share)",
+          float(100 * (em < fits["explained_coaxial"]).mean()), "percent",
+          f"share of the {len(ctx)} ordered pairs of genus means (genera with >= {mod.MIN_SPECIES} spp.) explained less well",
+          note=f"median pair {100*np.median(em):.0f} %", derived_from="script"),
+        M("Scarus -> Chaetodon spp., median explained by oblique coaxial circles", float(100 * np.median(cm)), "percent",
+          f"median over the {len(chaet)} Chaetodon species", source=f"{TH}: 'other fishes of the same family of Chaetodonts ... small variations in the values of the constants'",
+          note=f"range {100*cm.min():.0f}-{100*cm.max():.0f} %", derived_from="script"),
+    ]
+
+
 def measure_raup(script: Path, variables: Path) -> list:
     """Effective translation rate from the script's own raup_shell(): Raup's T is the axial
     translation per revolution relative to the generating-curve centre's distance from the
@@ -590,6 +648,8 @@ def main():
                 out["measurements"][sid] = measure_limbform(ROOT / sim["script"])
             elif sid == "santella-wormguides-celegans":
                 out["measurements"][sid] = measure_celegans(ROOT / sim["script"])
+            elif sid == "thompson-scarus-pomacanthus":
+                out["measurements"][sid] = measure_thompson_fish(ROOT / sim["script"])
         except Exception as ex:  # a failed measurement is reported, never silently skipped
             out["measurements"][sid] = [{"name": "measurement failed", "value": None, "unit": None,
                                          "method": f"{type(ex).__name__}: {ex}"}]

@@ -9,11 +9,19 @@ two modes:
     python3 thompson/1917-thompson.py --gif out.gif   # animated grid deformations in Thompson's style
 
 The animation is schematic: a stylised fish outline on a square grid is carried
-through three of Thompson's transformation families, each blended from the
-identity (t = 0) to its full deformation (t = 1): an oblique shear (his
-Scarus -> Pomacanthus figure), a fan of coordinates (Polyprion -> Pseudopriacanthus),
-and a radial/polar expansion (Diodon -> Orthagoriscus, the sunfish).  It is a
-demonstration of the method, not a fit to measured specimens.
+through four of Thompson's transformation families, each blended from the
+identity (t = 0) to its full deformation (t = 1): the oblique shear of his
+Argyropelecus -> Sternoptyx figure (Figs. 373-374, "axes inclined at an angle of
+70 degrees"), the coaxial circles of Scarus -> Pomacanthus (Figs. 375-376), a fan
+of coordinates (Polyprion -> Pseudopriacanthus, Figs. 377-378) and a radial/polar
+expansion (Diodon -> Orthagoriscus, the sunfish, Figs. 381-382).  It is a
+demonstration of the method, not a fit to measured specimens; the fit to real
+species is thompson/1917-thompson-scarus-pomacanthus.py.
+
+The two-panel toy applies the Scarus -> Pomacanthus coaxial-circle map to an
+ellipse.  (Until 2026-10-16 it applied the same polynomial to both coordinates,
+p = q, which collapses every shape onto the line y = x; that was a bug, not a
+transformation.)
 """
 
 import sys
@@ -22,12 +30,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def transform_points(x, y):
-    # Example nonlinear transformation inspired by Thompson: quadratic warp
-    # p(x,y) = x^2 + xy + y^2 + x + y; q(x,y) similar (adjust as needed)
-    p = x**2 + x*y + y**2 + x + y
-    q = x**2 + x*y + y**2 + x + y
-    return p, q
+def transform_points(x, y, c=0.25):
+    """Thompson's Scarus -> Pomacanthus grid: the Cartesian lines become two pencils of coaxial
+    circles, which is what the complex map z -> z / (1 - c z) does to them (a Moebius
+    transformation: lines go to circles through the image of infinity, 1/c on the axis)."""
+    z = x + 1j * y
+    w = z / (1 - c * z)
+    return w.real, w.imag
 
 
 def demo():
@@ -42,10 +51,10 @@ def demo():
     # Plot original and transformed
     fig, axs = plt.subplots(1, 2, figsize=(10, 5))
     axs[0].plot(original_x, original_y, 'b-')
-    axs[0].set_title('Original Shape (e.g., Scarus)')
+    axs[0].set_title('Original shape (an ellipse standing in for Scarus)')
     axs[0].axis('equal')
     axs[1].plot(transformed_x, transformed_y, 'r-')
-    axs[1].set_title('Transformed Shape (e.g., Pomacanthus)')
+    axs[1].set_title('Under the coaxial-circle map z -> z/(1 - cz), c = 0.25 (Pomacanthus-wise)')
     axs[1].axis('equal')
     plt.show()
 
@@ -64,8 +73,14 @@ def fish_outline(n=400):
     return body, tail, fin
 
 
-def shear(x, y, t):            # Scarus -> Pomacanthus: oblique coordinates
-    return x + 0.8 * t * y, y
+def shear(x, y, t):            # Argyropelecus -> Sternoptyx: oblique coordinates (Thompson: axes at 70 deg)
+    return x + np.tan(np.radians(20)) * t * y * 2.2, y
+
+
+def coaxial(x, y, t):          # Scarus -> Pomacanthus: Cartesian lines -> coaxial circles (Moebius map)
+    z = x + 1j * y
+    w = z / (1 - 0.18 * t * z)
+    return w.real, w.imag
 
 
 def fan(x, y, t):              # Polyprion -> Pseudopriacanthus: ordinates fan out posteriorly
@@ -78,9 +93,10 @@ def radial(x, y, t):           # Diodon -> Orthagoriscus: polar, radii expanding
     return r2 * np.cos(th), r2 * np.sin(th) * (1 + 0.4 * t)
 
 
-FAMILIES = [("oblique shear  (Scarus → Pomacanthus)", shear),
-            ("fan of coordinates  (Polyprion → Pseudopriacanthus)", fan),
-            ("radial expansion  (Diodon → Orthagoriscus)", radial)]
+FAMILIES = [("oblique shear  (Argyropelecus → Sternoptyx, Figs. 373–374)", shear),
+            ("coaxial circles  (Scarus → Pomacanthus, Figs. 375–376)", coaxial),
+            ("fan of coordinates  (Polyprion → Pseudopriacanthus, Figs. 377–378)", fan),
+            ("radial expansion  (Diodon → Orthagoriscus, Figs. 381–382)", radial)]
 
 
 def draw_frame(ax, f, t, label):
