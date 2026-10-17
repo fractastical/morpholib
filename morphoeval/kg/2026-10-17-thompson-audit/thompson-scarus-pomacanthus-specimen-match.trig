@@ -1,0 +1,73 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-17-thompson-audit-thompson-scarus-pomacanthus-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Thompson's Scarus -> Pomacanthus coordinate transformation fitted to real species — Morphological realism / specimen match: 72/100" ;
+        rdfs:comment "The side-by-side the dimension asks for is now made with real animals: a photographed Scarus ghobban and a photographed Pomacanthus semicirculatus, their silhouettes drawn on the photographs with the dataset's landmarks placed on them so the registration can be checked by eye, and in row F the parrotfish outline carried by each family laid over the angelfish outline, with the gap visible - the angelfish's trailing dorsal and anal lobes and deeper belly are left by every map. Thompson's own figure is still placed beside the data from the pinned scan, and the 791 species remain the specimens of the landmark test. Judged on the match, the carried fish does not become a Pomacanthus: IoU 0.618 for his family against 0.662 with no deformation. Not higher because there is one individual per species, a dead specimen on white against a living fish on a reef (fin posture is declared as a confound, not controlled), the field silhouette depends on a declared box and shadow cut, and the landmarks are placed on the photographs by two anchors rather than digitised on them - so the picture is honest but the specimen pair is not yet a measured one. Evidence: thompson_scarus_pomacanthus_outlines.png (generated output, not in repo): panels E/E' (photographs, silhouettes, placed landmarks, anchors), E'' (both silhouettes), F-F'''' (carried outline over the real one), G (bars) — thompson_scarus_pomacanthus_outlines.png: rendered output of thompson/1917-thompson-scarus-pomacanthus.py at 232e8f8, image/png, 903004 B, 2520×1470 px, sha256 df6479f9f47f28fc341f29ff25d2dbf5a612e34215492d2c23cae956105a16f8; thompson_scarus_pomacanthus.png (generated output, not in repo): panels A (Thompson), A'/A'' (real species), B-B'''' (grids with residuals), C, D - unchanged — thompson_scarus_pomacanthus.png: rendered output of thompson/1917-thompson-scarus-pomacanthus.py at 232e8f8, image/png, 739620 B, 2520×1540 px, sha256 d243f51e2b90b1a2201ec81265392b1cf95ea0f0e6e68074818cc5754b324e08; thompson/1917-thompson-scarus-pomacanthus.py L528–L544: PHOTOS: the two photographs, URLs, SHA-256, credits, declared box and shadow cut <https://github.com/fractastical/morpholib/blob/232e8f8/thompson/1917-thompson-scarus-pomacanthus.py#L528-L544>; thompson/1917-thompson-scarus-pomacanthus.py L580–L625: segment_white()/segment_field(): the two segmentations with their declared parameters <https://github.com/fractastical/morpholib/blob/232e8f8/thompson/1917-thompson-scarus-pomacanthus.py#L580-L625>; thompson/1917-thompson-scarus-pomacanthus.py L637–L671: anchors(): snout and caudal peduncle read off the silhouette <https://github.com/fractastical/morpholib/blob/232e8f8/thompson/1917-thompson-scarus-pomacanthus.py#L637-L671>; thompson/1917-thompson-scarus-pomacanthus.py L740–L823: outline_figure(): the photographs, the carried outlines, the caveats <https://github.com/fractastical/morpholib/blob/232e8f8/thompson/1917-thompson-scarus-pomacanthus.py#L740-L823>." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-thompson-scarus-pomacanthus-specimen-match> ;
+        pk:hasProbability "0.72"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-thompson-scarus-pomacanthus-specimen-match> rdfs:label "Thompson's Scarus -> Pomacanthus coordinate transformation fitted to real species (thompson/1917-thompson-scarus-pomacanthus.py) satisfies the MorphoEval 0.1.0 criterion 'Morphological realism / specimen match' for Scarus (22 spp.) and Pomacanthus (9 spp.), with Chaetodon (54 spp.) and 59 other genera for context; one photographed S. ghobban and one P. semicirculatus; Indo-Pacific shore fishes, lateral view" ;
+        dct:identifier "morphoeval/0.1.0/specimen-match" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/978-3-642-93093-5>,
+            <https://doi.org/10.1109/34.24792>,
+            <https://doi.org/10.1111/evo.13755>,
+            <https://doi.org/10.1371/journal.pone.0112732>,
+            <https://doi.org/10.5061/dryad.fn457gr> .
+    <https://doi.org/10.1007/978-3-642-93093-5> dct:date "1978"^^xsd:gYear ;
+        dct:title "The measurement of biological shape and shape change" .
+    <https://doi.org/10.1109/34.24792> dct:date "1989"^^xsd:gYear ;
+        dct:title "Principal warps: thin-plate splines and the decomposition of deformations" .
+    <https://doi.org/10.1111/evo.13755> dct:date "1873"^^xsd:gYear ;
+        dct:title "The influence of size on body shape diversification across Indo-Pacific shore fishes" .
+    <https://doi.org/10.1371/journal.pone.0112732> dct:date "2014"^^xsd:gYear ;
+        dct:title "A morphospace for reef fishes: elongation is the dominant axis of body shape evolution" .
+    <https://doi.org/10.5061/dryad.fn457gr> dct:date "2019"^^xsd:gYear ;
+        dct:title "Data from: The influence of size on body shape diversification across Indo-Pacific shore fishes" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Thompson's Scarus -> Pomacanthus coordinate transformation fitted to real species — Morphological realism / specimen match 72/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-17T18:20:55Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-thompson-audit-thompson-scarus-pomacanthus-specimen-match> ;
+        npx:supersedes <https://w3id.org/np/RAqAdQLOqg6UBTYlsi4hwb8ETlir-BNyKqXN1xzfYjbRs> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,336 @@
+# MorphoEval audit — D'Arcy Thompson's Scarus -> Pomacanthus transformation
+# fitted to real species, 2026-10-17
+# (re-score; supersedes the thompson-scarus-pomacanthus nanopubs of 2026-10-16-thompson-audit).
+#
+# What changed since the first audit (overall 70.2): the second remediation item -
+# "add outlines ... so the comparison is of the form Thompson deformed, not 17
+# points" - was done.  The script now fetches two openly licensed photographs
+# from Wikimedia Commons (a collected Scarus ghobban on a white background, J.
+# Huet / IFREMER, CC BY 4.0; a living Pomacanthus semicirculatus over sand, E.
+# Levy, CC BY 2.0; SHA-256-pinned, cached, not vendored), segments their
+# silhouettes (Lab distance from white; a marker watershed on Mahalanobis colour
+# distance from the frame-sampled background plus colour gradient, with texture
+# seeds for the dark caudal peduncle, inside a declared box with a declared shadow
+# cut), registers each silhouette to its own species' 17 landmarks by a similarity
+# fixed by two anchors the silhouette gives (snout -> LM2; the caudal peduncle,
+# tracked from the tail tip as the narrowest column between caudal fin and body,
+# -> the LM5-LM6 midpoint), fits the five families to the landmarks of S. ghobban
+# -> P. semicirculatus (species, not genus, means) and carries the parrotfish
+# silhouette with each; agreement with the angelfish silhouette is the IoU of the
+# filled outlines and the mean symmetric boundary distance.
+#
+# The new finding strengthens the negative one.  With no deformation at all the
+# two silhouettes overlap with IoU 0.662; every map read off the landmarks leaves
+# the outline no better - affine 0.652, Moebius 0.645, Thompson's oblique coaxial
+# circles 0.618, and the thin-plate spline that matches the 17 landmarks exactly
+# 0.629 (boundary distance 5.6 % of body length for the similarity, 7.0 % for the
+# coaxial circles).  What the landmarks ask of the body the fins do not follow:
+# the angelfish's soft dorsal and anal lobes trail behind the peduncle, which no
+# smooth map of the parrotfish produces.  The IoU values are re-derived in the
+# measurements sidecar with a different rasteriser (point-in-polygon on a 900-px
+# grid against the script's skimage.draw on 1000 px) and agree to 0.0001.
+#
+# What this does not settle, and what keeps specimen match out of the 80s: one
+# individual per species, a dead specimen against a living fish (fin posture is a
+# confound the script declares rather than removes), a segmentation that depends
+# on a declared box and shadow cut for the field photograph, and landmarks that
+# are placed on the photographs by two anchors rather than digitised on them.
+# Thompson's own drawn grid is still shown beside the fitted one, not digitised.
+#
+# This is a data analysis, not a simulation, so the rubric is read as before:
+# "model" is Thompson's family of grids, "rendered output" is the fish that
+# family carries, "specimens" are the 791 digitised species and now the two
+# photographed individuals.
+#
+# Scores are on the rubric's 0-100 scale.  Line numbers refer to the files at
+# the checkpoint commit recorded below.
+
+audit:
+  id: 2026-10-17-thompson-audit
+  rubric_version: 0.1.0
+  date: "2026-10-17"
+  supersedes: 2026-10-16-thompson-audit
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Cursor agent)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 232e8f8          # real-outline test (9852075) plus the sidecar's independent IoU (232e8f8)
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+      scikit-image: "0.26.0"
+    note: >-
+      Inputs: datasets/thompson/trimmed_tps_Claverie2014.csv (266,054 bytes,
+      SHA-256 ab5315f3be273285c101299457093199e98ff0b1d0fcf08331cc303b2f07e6bd, CC0, vendored from Dryad
+      10.5061/dryad.fn457gr and checked on every run; 791 species x 17
+      landmarks); for panel A, leaf 0769 (printed p. 749) of the Internet
+      Archive scan ongrowthform1917thom as the original JPEG-2000 page
+      (SHA-256 69cdc9e24bd757b476c763516fb9fcd45db7dc8c7e28f83a4c142417b762c6fa, public domain); for the outline
+      figure, two Wikimedia Commons photographs - Scarus ghobban (Huet / IFREMER
+      00762-87435, CC BY 4.0, SHA-256 732f1e68da7e3611696613f69215115b1b9056a4db310892d30de487a76a2a90) and
+      Pomacanthus semicirculatus (Levy, Flickr 6851425758, CC BY 2.0, SHA-256
+      5622e415149a8cea8512e7fd1f416a600ca24cb528f054826667fd74b20b687e) - fetched into the git-ignored
+      .thompson_cache/ and hash-checked; --no-scan and --no-photos run offline.
+      Outputs regenerated at this commit: thompson_scarus_pomacanthus.png,
+      thompson_scarus_pomacanthus_outlines.png, thompson_outline_metrics.csv.
+
+references:
+  thompson1917:
+    title: "On Growth and Form, chapter XVII, On the theory of transformations, or the comparison of related forms"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917), pp. 719-777; the Scarus -> Pomacanthus pair is p. 749, Figs. 375-376; the other fish pairs are Figs. 373-374 (Argyropelecus -> Sternoptyx), 377-380 (Polyprion and allies), 381-382 (Diodon -> Orthagoriscus)"
+    url: https://archive.org/details/ongrowthform1917thom
+  bookstein1978:
+    title: "The measurement of biological shape and shape change"
+    authors: "Bookstein FL"
+    venue: "Lecture Notes in Biomathematics 24, Springer (1978); the observation that Thompson's grids were drawn freehand and that his method, as published, has no fitting procedure"
+    doi: 10.1007/978-3-642-93093-5
+  bookstein1989:
+    title: "Principal warps: thin-plate splines and the decomposition of deformations"
+    authors: "Bookstein FL"
+    venue: "IEEE Trans Pattern Anal Mach Intell 11:567-585 (1989); the exact interpolating deformation and its bending energy used as the reference the parametric families are measured against"
+    doi: 10.1109/34.24792
+  friedman2019:
+    title: "The influence of size on body shape diversification across Indo-Pacific shore fishes"
+    authors: "Friedman ST, Martinez CM, Price SA, Wainwright PC"
+    venue: "Evolution 73:1873-1884 (2019); the landmark table trimmed_tps_Claverie2014.csv is in the paper's Dryad package"
+    doi: 10.1111/evo.13755
+  friedman2019data:
+    title: "Data from: The influence of size on body shape diversification across Indo-Pacific shore fishes"
+    authors: "Friedman ST, Martinez CM, Price SA, Wainwright PC"
+    venue: "Dryad (2019), CC0 1.0"
+    doi: 10.5061/dryad.fn457gr
+  claverie2014:
+    title: "A morphospace for reef fishes: elongation is the dominant axis of body shape evolution"
+    authors: "Claverie T, Wainwright PC"
+    venue: "PLoS ONE 9:e112732 (2014); Fig. 1 defines the 17 landmarks, digitised on J. E. Randall's Bishop Museum photographs"
+    doi: 10.1371/journal.pone.0112732
+  ia_scan:
+    title: "On growth and form, 1917 Cambridge edition, Internet Archive item ongrowthform1917thom (Biodiversity Heritage Library contribution)"
+    authors: "Thompson DW; scan: Internet Archive / BHL"
+    venue: "https://archive.org/details/ongrowthform1917thom (public domain)"
+    url: https://archive.org/download/ongrowthform1917thom/ongrowthform1917thom_jp2.zip/ongrowthform1917thom_jp2%2Fongrowthform1917thom_0769.jp2
+  commons_scarus:
+    title: "Perroquet barbe bleue (Scarus ghobban), IFREMER image 00762-87435"
+    authors: "Huet J (IFREMER)"
+    venue: "Wikimedia Commons (CC BY 4.0); a collected specimen in lateral view on a white background"
+    url: https://commons.wikimedia.org/wiki/File:Perroquet_barbe_bleue_(Scarus_ghobban)_(Ifremer_00762-87435).jpg
+  commons_pomacanthus:
+    title: "Semicircle angelfish (Pomacanthus semicirculatus)"
+    authors: "Levy E"
+    venue: "Wikimedia Commons, from Flickr 6851425758 (CC BY 2.0); a living fish in lateral view over sand"
+    url: https://commons.wikimedia.org/wiki/File:Semicircle_angelfish_(Pomacanthus_semicirculatus).jpg
+
+simulations:
+  - id: thompson-scarus-pomacanthus
+    name: Thompson's Scarus -> Pomacanthus coordinate transformation fitted to real species
+    organism: "Scarus (22 spp.) and Pomacanthus (9 spp.), with Chaetodon (54 spp.) and 59 other genera for context; one photographed S. ghobban and one P. semicirculatus; Indo-Pacific shore fishes, lateral view"
+    script: thompson/1917-thompson-scarus-pomacanthus.py
+    output: thompson_scarus_pomacanthus.png
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [thompson1917, bookstein1978, bookstein1989, friedman2019, friedman2019data, claverie2014, ia_scan, commons_scarus, commons_pomacanthus]
+    summary: >-
+      Landmark test as in the 2026-10-16 audit, unchanged in code and numbers:
+      791 species x 17 landmarks, hash-checked; generalised Procrustes
+      superimposition; from the Scarus genus mean to the Pomacanthus genus mean
+      the similarity (0.0312), affine (0.0259, 31 % explained), Moebius
+      (0.0311, 0.8 %), oblique coaxial (0.0256, 32 %) and thin-plate spline
+      (exact, bending energy 0.678) fits, with the within-genus noise floor
+      (Pomacanthus 0.0132), leave-one-landmark-out (0.0371), depth/length
+      (0.377 -> 0.587), all 3782 genus pairs (this pair at the 31st percentile)
+      and Scarus -> 54 Chaetodon species (median 35 %).  New: the real-outline
+      test.  Two Commons photographs are fetched and hash-checked; the Scarus
+      ghobban specimen is segmented by its Lab distance from white, the living
+      Pomacanthus semicirculatus by a marker watershed (Mahalanobis colour
+      distance from the frame-sampled sand plus colour gradient; markers are
+      the declared box's outside and the 1.5 % least sand-like pixels plus the
+      most textured pixels in their convex hull; shadow cleared below 0.745 of
+      the height).  Each silhouette is registered to its species' 17 landmarks
+      by a similarity through two anchors the silhouette gives (snout -> LM2,
+      caudal peduncle -> LM5-LM6 midpoint; the peduncle is tracked from the tail
+      tip as the first local minimum of thickness between caudal fin and body).
+      The five maps are fitted to the S. ghobban -> P. semicirculatus landmarks
+      and applied to the Scarus silhouette; against the Pomacanthus silhouette
+      the IoU is similarity 0.662, affine 0.652, Moebius 0.645, oblique coaxial
+      0.618, thin-plate spline 0.629, and the mean symmetric boundary distance
+      5.6, 6.5, 5.9, 7.0 and 6.6 % of body length.  Second figure: the two
+      photographs with silhouette, placed landmarks and anchors; both
+      silhouettes in the Procrustes frame; five panels of the carried Scarus
+      outline over the real Pomacanthus outline (with the coaxial and TPS
+      grids); a bar chart of IoU and boundary distance with the similarity
+      baseline marked; the caveats in the figure.  --no-photos skips it.
+    scores:
+      model-fidelity:
+        value: 78
+        rationale: >-
+          As before: "coaxial circles" formalised as the Moebius group with the
+          reading stated, the oblique family added for Fig. 376 as drawn, the
+          alternatives Thompson compares against (rectilinear coordinates) and
+          does not (affine) fitted the same way, the thin-plate spline of
+          Bookstein 1989 as the exact deformation, fitters checked on synthetic
+          maps.  Raised because the thing Thompson actually deformed - an
+          outline - is now carried by each family and compared with a real
+          outline, so curvature between the landmarks is no longer untested,
+          and because the test is set up so that his family can only win by
+          beating the no-deformation baseline, which is the comparison his
+          sentence makes ("rectilinear co-ordinates" -> "coaxial circles" ->
+          "a very good outline").  Not higher because his drawn grid is still
+          displayed, not digitised and compared constant by constant; because
+          the landmark test rests on genus means and the outline test on one
+          individual per species, so neither is his "typical Scaroid fish"; and
+          because the maps are fitted to the landmarks and only applied to the
+          outline, so a map fitted to the outline itself (semilandmarks) is not
+          tried.
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [5, 23], note: "the claim quoted; the reading of coaxial circles as a Moebius map"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [47, 83], note: "what is computed: the five families, noise floor, context, LOO, and item 7, the real outlines"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [228, 289], note: "moebius()/fit_moebius()/coaxial()/fit_coaxial(): the two coaxial families"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [290, 310], note: "tps_fit()/tps_apply(): Bookstein 1989 with bending energy"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [323, 333], note: "self_test(): known maps recovered"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [701, 738], note: "outline_analysis(): maps fitted to the species' landmarks, applied to the Scarus silhouette, scored against the Pomacanthus silhouette"}
+      specimen-match:
+        value: 72
+        rationale: >-
+          The side-by-side the dimension asks for is now made with real
+          animals: a photographed Scarus ghobban and a photographed
+          Pomacanthus semicirculatus, their silhouettes drawn on the
+          photographs with the dataset's landmarks placed on them so the
+          registration can be checked by eye, and in row F the parrotfish
+          outline carried by each family laid over the angelfish outline, with
+          the gap visible - the angelfish's trailing dorsal and anal lobes and
+          deeper belly are left by every map.  Thompson's own figure is still
+          placed beside the data from the pinned scan, and the 791 species
+          remain the specimens of the landmark test.  Judged on the match, the
+          carried fish does not become a Pomacanthus: IoU 0.618 for his family
+          against 0.662 with no deformation.  Not higher because there is one
+          individual per species, a dead specimen on white against a living
+          fish on a reef (fin posture is declared as a confound, not
+          controlled), the field silhouette depends on a declared box and
+          shadow cut, and the landmarks are placed on the photographs by two
+          anchors rather than digitised on them - so the picture is honest but
+          the specimen pair is not yet a measured one.
+        evidence:
+          - {file: thompson_scarus_pomacanthus_outlines.png, lines: [0, 0], note: "panels E/E' (photographs, silhouettes, placed landmarks, anchors), E'' (both silhouettes), F-F'''' (carried outline over the real one), G (bars)"}
+          - {file: thompson_scarus_pomacanthus.png, lines: [0, 0], note: "panels A (Thompson), A'/A'' (real species), B-B'''' (grids with residuals), C, D - unchanged"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [528, 544], note: "PHOTOS: the two photographs, URLs, SHA-256, credits, declared box and shadow cut"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [580, 625], note: "segment_white()/segment_field(): the two segmentations with their declared parameters"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [637, 671], note: "anchors(): snout and caudal peduncle read off the silhouette"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [740, 823], note: "outline_figure(): the photographs, the carried outlines, the caveats"}
+      parameter-expressivity:
+        value: 55
+        rationale: >-
+          Unchanged.  The GIF moves the eight constants of the oblique family
+          from the identity to the fitted values and shows the grid bending
+          into coaxial circles while the fish deepens; the Chaetodont claim is
+          tested by fitting the family to each of the 54 Chaetodon species.
+          The constants are still not swept one at a time, the fitted
+          constants for the Chaetodon species are not reported, and the
+          outline test adds nothing here (it applies fitted maps, it does not
+          vary constants).
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [483, 518], note: "animate(): straight path in parameter space from identity to the fitted map"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [261, 272], note: "coaxial(): the eight constants and their roles"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [840, 845], note: "Scarus -> each Chaetodon species"}
+      morphometric-validation:
+        value: 86
+        rationale: >-
+          To the landmark validation of the first audit (Procrustes distance,
+          residual and explained share per family, within-genus noise floor,
+          leave-one-landmark-out, depth/length and singular-value ratio,
+          per-landmark residuals, all 3782 genus pairs, Scarus -> Chaetodon)
+          the outline test adds two measurements on real silhouettes - IoU of
+          the filled outlines and mean symmetric boundary distance - for every
+          family against an explicit no-deformation baseline, so the question
+          "does the map help on the outline" has a number and the answer is no
+          for all five.  The sidecar re-derives the IoU with a different
+          rasteriser (agreement to 0.0001) and records the silhouette areas and
+          the peduncle-anchor positions (0.79 and 0.84 of length).  Not higher
+          because there is still no published value to compare against (nobody
+          has fitted this pair), one individual per species gives the outline
+          numbers no spread, and digitising error on the landmarks is still
+          not estimated.
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [685, 700], note: "silhouette_metrics(): IoU on a 1000-px raster and symmetric nearest-point boundary distance"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [311, 322], note: "all_fits(): residuals and explained shares (landmark test)"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [898, 921], note: "main(): per-family IoU, boundary distance, landmark RMS and the verdict against the baseline; thompson_outline_metrics.csv"}
+          - {file: morphoeval/measure_outputs.py, lines: [471, 567], note: "measure_thompson_fish()/measure_thompson_outlines(): the landmark quantities and the independent IoU in the sidecar"}
+          - {file: thompson_outline_metrics.csv, lines: [0, 0], note: "the five rows the figure and README quote"}
+          - {file: thompson_scarus_pomacanthus_outlines.png, lines: [0, 0], note: "panel G"}
+      source-traceability:
+        value: 92
+        rationale: >-
+          As before - Thompson to page and figure with the scan pinned to one
+          leaf; the landmark table to its Dryad DOI, licence and byte size,
+          vendored and hash-checked; landmark definitions to Claverie &
+          Wainwright Fig. 1; Bookstein 1978 and 1989 - and now the two
+          photographs are cited to their Commons pages, photographers,
+          institutional or Flickr source ids and licences (CC BY 4.0, CC BY
+          2.0), pinned by SHA-256 in the script and the dataset README, with
+          the credits printed in the figure.  Short of full marks for the same
+          two reasons: the landmark semantics were read off a figure, and the
+          Dryad download could not be scripted.
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [25, 45], note: "data and scan provenance in the docstring"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [528, 544], note: "PHOTOS: URL, SHA-256, credit and licence for each photograph"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [547, 563], note: "fetch_photo(): User-Agent, cache, hash enforced"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [134, 161], note: "load_landmarks()/fetch_scan(): both hashes enforced"}
+          - {file: datasets/thompson/README.md, lines: [8, 24], note: "sources table with the photographs, licences, hashes"}
+      code-traceability:
+        value: 80
+        rationale: >-
+          Each step is tied to its source as before, and the new section
+          carries the same discipline: the docstring's item 7 says what is
+          segmented, how, and what the anchors are; every segmentation constant
+          (white threshold, background frame, core quantile, texture quantile,
+          box, shadow cut) is a named parameter with a comment saying what it
+          is for; the registration anchors are stated in terms of the
+          dataset's landmark numbers; the figure's row F title names the figure
+          each grid corresponds to.  The trace still ends at Thompson's prose
+          and drawing, the oblique/isogonal reading of Fig. 376 is still made
+          by eye, and the declared box for the field photograph is a judgement
+          recorded rather than derived.
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [66, 83], note: "item 7: what the outline test does and why"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [590, 625], note: "segment_field(): each parameter named and explained"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [637, 643], note: "anchors(): the rule for the peduncle in words"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [181, 198], note: "gpa(): orientation convention tied to Thompson's figures"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [772, 775], note: "row F titles name the figure each grid corresponds to"}
+      repro-package:
+        value: 75
+        rationale: >-
+          Deterministic, invocation and outputs documented, data file in the
+          repository and hash-checked; the two new network fetches are
+          optional (--no-photos), hash-checked, cached and need only Pillow
+          and scikit-image, both in requirements.txt; re-runs give identical
+          numbers.  Unchanged score: the environment is still recorded only in
+          this audit (lower bounds in requirements.txt), the GIF still takes
+          ~2 min, and the outline test adds ~30 s and a dependency on two
+          third-party URLs remaining byte-stable (Commons originals have been;
+          the hashes will refuse a changed file rather than silently use it).
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [84, 91], note: "documented invocation, offline flags and outputs"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [846, 921], note: "main(): flags, offline fallbacks for the scan and the photographs"}
+          - {file: requirements.txt, lines: [1, 7], note: "lower bounds only"}
+    remediation:
+      - Digitise Thompson's drawn grid of Fig. 376 from the pinned scan, fit the Moebius constants to it, and compare them with the constants fitted to the species, so his drawing is tested and not only his family.
+      - Fit the maps to the outlines themselves (sliding semilandmarks on the two silhouettes) as well as to the landmarks, so Thompson's family gets its best chance on the form he deformed.
+      - Add more individuals per species (several Commons photographs each, or the Bishop Museum photographs the landmarks were digitised on) so the outline IoU has a spread, and prefer specimens in the same posture (both collected, or both living).
+      - Sweep the complex constant c at fixed affine part in a panel, and report the fitted constants for the 54 Chaetodon species to test "small variations in the values of the constants" directly.
+      - Estimate digitising error (replicate landmarking of a few photographs) so the noise floor can be separated into species and measurement variance.
+      - Pin the Python 3.14 environment (exact versions) in requirements or a lock file.

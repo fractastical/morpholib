@@ -240,7 +240,7 @@ width (29.2 µm against the ~30 µm egg) as a check. Open: no photograph or
 WormGUIDES panel beside the output; a ~27-minute clock offset against
 Sulston's schedule that is reported but not explained.
 
-**Thompson's *Scarus* → *Pomacanthus* on real species (70.2).** Discussed as
+**Thompson's *Scarus* → *Pomacanthus* on real species (70.2 → 76.6).** Discussed as
 a case study below.
 
 **Planform planarian morphologies (14.7 → 66.5).** The original animation
@@ -317,10 +317,25 @@ genus means in the dataset the pair sits at the 31st percentile for how well
 coaxial circles describe it. What remains after the affine part is local — the
 anal-fin end and origin, the upper-jaw tip, the dorsal-fin end — which is the
 kind of change the method was built to exclude. Thompson's "very good outline"
-holds at the resolution of his drawing, not of the species. The audit scores
-the *test* (70.2: strong on morphometric validation and traceability, weaker
-on specimen match because the fish are 17 landmarks rather than the outline
-Thompson deformed), not Thompson.
+holds at the resolution of his drawing, not of the species.
+
+The first audit (70.2) held the test down because the fish were 17 landmarks
+rather than the outline Thompson deformed. The re-score (76.6) follows a second
+test on real silhouettes: two openly licensed Wikimedia Commons photographs — a
+collected *Scarus ghobban* on white (CC BY 4.0) and a living *Pomacanthus
+semicirculatus* over sand (CC BY 2.0), hash-pinned — are segmented, each
+silhouette is registered to its own species' landmarks by two anchors the
+silhouette gives (snout, caudal peduncle), and the parrotfish silhouette is
+carried by each map fitted to the species' landmarks and compared with the
+angelfish silhouette. With no deformation at all the two overlap with IoU
+0.662; every map read off the landmarks leaves the outline no better — affine
+0.652, Möbius 0.645, Thompson's oblique coaxial circles 0.618, and even the
+thin-plate spline that matches the landmarks exactly 0.629. What the landmarks
+ask of the body, the fins do not follow. The audit scores the *test*, not
+Thompson: specimen match rose from 55 to 72 because real animals are now
+compared, and stays there because there is one individual per species in
+different postures, the field silhouette depends on a declared box, and the
+landmarks are placed on the photographs by anchors rather than digitised on them.
 
 ## Dataset observations surfaced by auditing
 
@@ -363,8 +378,9 @@ script is re-audited.
 
 **Specimen comparisons are mostly to authors' figures.** Limbform and
 Planform are compared with the source papers' drawings, *C. elegans* with the
-atlas's own segmentation, Thompson with landmarks. Only the two wing scripts
-are compared with photographs or drawings of real specimens.
+atlas's own segmentation. Only the two wing scripts and, since the re-score,
+Thompson (two photographed individuals, one per species) are compared with
+photographs or drawings of real specimens.
 
 # Reproducibility and availability
 

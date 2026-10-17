@@ -284,6 +284,24 @@ rdflib's exponent-form doubles to plain decimals, also rewrote `1e-17` inside
 a description string; it and the matching conformance check now skip string
 literals (no previously built checkpoint changes).
 
+**Thompson re-score (2026-10-17-thompson, 70.2 → 76.6):** the audit's second
+remediation item — test the outline Thompson deformed, not 17 points — was
+done at commits `9852075`/`232e8f8`. The script fetches two CC-licensed
+Wikimedia Commons photographs (a collected *Scarus ghobban*, CC BY 4.0; a
+living *Pomacanthus semicirculatus*, CC BY 2.0; SHA-256-pinned, cached, not
+vendored), segments their silhouettes, registers each to its species' landmarks
+by two anchors the silhouette gives, fits the five families to the species'
+landmarks and carries the parrotfish silhouette with each. No landmark-fitted
+deformation beats the no-deformation baseline on the outline (IoU 0.662 vs
+affine 0.652, Möbius 0.645, oblique coaxial 0.618, thin-plate spline 0.629);
+the sidecar re-derives the IoU with a different rasteriser (agreement 0.0001).
+Model fidelity 72 → 78, specimen match 55 → 72, morphometric validation
+82 → 86, source traceability 90 → 92, code traceability 78 → 80; parameter
+expressivity and repro package unchanged. Built with `--supersede-from` the
+2026-10-16 Thompson, Limbform and Raup dirs (rubric reused), test registry →
+`check_signed.mjs` 9/9 → fetched back → production; overall claim
+https://w3id.org/np/RAYFKAfyOnqIKXWzdEzCN_3zyX2KX_ijCXNX-ZVtBPeP8.
+
 **Re-issue wave (2026-10-16):** the three earlier audits were rebuilt with
 `--supersede` (`2026-10-14-morphology-audit` and `2026-10-14-odonata-audit`
 also with `--supersede-from morphoeval/kg/2026-10-14-limbform-audit`, so the
@@ -370,5 +388,5 @@ Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1).
 | Odonata wing cells, fossil vs extant (`2026-eshghi-odonata-wing-cells.py`) | fbbcaf6, audit 2026-10-14-odonata | 75.7 | 76.7 | **76.0** |
 | LimbformDB limb morphologies (`2014-lobo-limbform-morphology.py`) | 747c57f, audit 2026-10-14-limbform | 70.0 | 74.3 | **71.3** |
 | WormGUIDES C. elegans embryo atlas + connectome (`2015-santella-wormguides-celegans.py`) | 303a87e, audit 2026-10-16-celegans (re-score of 2026-10-15: 67.7) | 67.6 | 76.3 | **70.2** |
-| Thompson Scarus -> Pomacanthus on real landmarks (`thompson/1917-thompson-scarus-pomacanthus.py`) | 3cf7f8c, audit 2026-10-16-thompson | 65.6 | 80.8 | **70.2** |
+| Thompson Scarus -> Pomacanthus on real landmarks and outlines (`thompson/1917-thompson-scarus-pomacanthus.py`) | 232e8f8, audit 2026-10-17-thompson (re-score of 2026-10-16: 70.2) | 74.3 | 82.0 | **76.6** |
 | Petroff stromatolite / Kahng coral / Cervera–Levin–Mafe | — | — | — | *unevaluated* |
