@@ -6,7 +6,7 @@ Enhanced with MesmerPrism/rusty-matter Bioelectric Circuit & PlanformDB 2.5.0 An
 Primary sources:
   1. Cervera J, Levin M, Mafe S (2021). Morphology changes induced by intercellular
      gap junction blocking: A reaction-diffusion mechanism. BioSystems 209:104511.
-     doi:10.1016/j.biosystems.2021.104511 (PMID: 34418508)
+     doi:10.1016/j.biosystems.2021.104511 (PMID: 34411690)
   2. Cervera J, Meseguer S, Levin M, Mafe S (2020). Bioelectrical model of head-tail
      patterning based on cell ion channels and intercellular gap junctions.
      Bioelectrochemistry 132:107410. doi:10.1016/j.bioelechem.2019.107410
@@ -24,6 +24,28 @@ Primary sources:
      graph-encoded planarian regenerative experiments. Bioinformatics 29(8):1098-1100.
      doi:10.1093/bioinformatics/btt088
 
+What this script is, and is not (added after the 2026-10-17 independent audit):
+  - The reaction-diffusion part is a QUALITATIVE ANALOGUE of Cervera, Levin & Mafe
+    (2021), built from the abstract and the authors' presentation of it: two
+    antagonistic morphogens along the AP axis with mutual annihilation and end
+    sources, one independent morphogen along the ML axis, and gap-junction block
+    as a reduced diffusion coefficient (f2 for the AP species m2, f3 for the ML
+    species m3).  The full text was not consulted, so no equation, boundary
+    condition or constant below is claimed to be the paper's; the constants are
+    this script's.  In this model m3 does not interact with m1/m2, so the (f2, f3)
+    morphospace is a product of two one-parameter curves, and is drawn as such.
+  - The rusty-matter circuit is a port of an unpublished, educational Rust model;
+    --self-test checks that the port agrees with that model's own traces at every
+    sampled frame.  That is a check of the port, not a biological validation.
+  - The phenotype criterion is derived, not hand-set: the anterior (m1) territory
+    is 'bipolar' once its boundary x* has passed the posterior end of the pharynx
+    in the wild-type Planform morphology (x*_b, read from the morphology's organ
+    table); the shift index is (x* - 0.5) / (x*_b - 0.5).  Panel C fits ONE
+    parameter (how fast f2 falls with crop position) to the octanol series and
+    tests it on the held-out innexin-RNAi series.
+  - The real planarian silhouette is measured, not only painted: the anterior
+    territory's share of body area is computed on it for every f2.
+
 Upstream cross-repository integration:
   - MesmerPrism/rusty-matter (https://github.com/MesmerPrism/rusty-matter, commit
     ad111fa7ecfd8f43d292ff3b1d27d3af2741d828, MIT OR Apache-2.0):
@@ -33,10 +55,15 @@ Upstream cross-repository integration:
     * Curated PlanformDB 2.5.0 derived dataset (datasets/planform/rusty_matter_planformdb_derived_v0.json,
       14 Oviedo 2010 result sets with SHA-256 verification).
 
+Independent audit: morphoeval/audits/2026-10-17-cervera-audit.yaml (assessor GPT-5.6 Sol,
+OpenAI; 44.9) found the f3 axis inert, the CSV wavefront doubled, the thresholds
+uncited and the PMID wrong; this revision addresses each item.
+
 Usage:
   python3 "2021-Cervera–Levin–Mafe.py"                   # run full synthesis + save figure & CSV
   python3 "2021-Cervera–Levin–Mafe.py" --no-show         # headless run (save PNG + CSV without GUI)
-  python3 "2021-Cervera–Levin–Mafe.py" --self-test       # verify SHA-256 & rusty-matter trace parity
+  python3 "2021-Cervera–Levin–Mafe.py" --self-test       # fixtures' SHA-256, port parity at every sampled frame,
+                                                         # RD solver checks, f3 not inert, CSV fields recomputed
   python3 "2021-Cervera–Levin–Mafe.py" --gif out.gif     # render animated GJ-block + bioelectric GIF
 
 The GIF draws the two morphogen territories on a real planarian: the silhouette of a
@@ -271,6 +298,68 @@ def rd_linear_1d(
         m = np.clip(m, 0.0, None)
 
     return z, m
+
+
+RD_KW = dict(D1=0.02, k1=0.08, k2=0.08, k12=2.0, J1=1.0, J2=1.0, T=3.5)   # this script's constants, not the paper's
+D2_0 = 0.02
+D3_0, RD3_KW = 0.02, dict(k=0.08, J_left=0.6, J_right=0.6, T=3.5)
+
+
+def wavefront_for_f2(f2: float) -> float:
+    """x* of the AP system with D2 = f2 * D2_0 (the one place this mapping is defined)."""
+    x, m1, m2 = rd_antagonistic_1d(D2=D2_0 * float(f2), **RD_KW)
+    return compute_wavefront_position(x, m1, m2)
+
+
+def lateral_index_for_f3(f3: float) -> Tuple[np.ndarray, np.ndarray, float]:
+    """The ML profile with D3 = f3 * D3_0 and its centre/edge ratio (1 = flat, 0 = all at the margins).
+    This is the quantity the f3 axis moves; m3 does not enter the AP system."""
+    z, m3 = rd_linear_1d(D=D3_0 * float(f3), **RD3_KW)
+    return z, m3, float(m3[len(m3) // 2] / max(m3.max(), 1e-12))
+
+
+def pharynx_boundary_fraction(lobo_mod: Any, wild_type: Any) -> float:
+    """x*_b: the AP fraction (0 = anterior) of the posterior end of the pharynx in the wild-type Planform
+    morphology, read from its organ table (pharynx centre and the 100-unit stadium drawn for it) and the
+    silhouette's AP extent.  The phenotype criterion: the anterior territory is bipolar once x* >= x*_b."""
+    mask, (x0, x1, y0, y1) = lobo_mod.silhouette(wild_type)
+    head_y = wild_type.positions[[rid for rid, r in wild_type.regions.items() if r.type == "Head"][0]][1]
+    anterior_up = head_y > 0
+    phar = [o for o in wild_type.organs if o.kind == "Phar."][0]
+    cx, cy = wild_type.positions[phar.region]
+    py = cy + phar.vy
+    half_len = 50.0                                             # draw_morphology: _stadium(px, py, 100, 26, rot)
+    post_end = py - half_len if anterior_up else py + half_len
+    return float((y1 - post_end) / (y1 - y0)) if anterior_up else float((post_end - y0) / (y1 - y0))
+
+
+def shift_index(x_star: float, x_star_b: float) -> float:
+    """Anterior-territory shift as a fraction of the way from the midline to the bipolar criterion, 0..1."""
+    return float(np.clip((x_star - 0.5) / max(x_star_b - 0.5, 1e-9), 0.0, 1.0))
+
+
+def f2_for_shift(target: float, x_star_b: float, lo: float = 0.2, hi: float = 1.0, iters: int = 40) -> float:
+    """Invert shift_index(wavefront_for_f2(f2)) = target by bisection (the index falls with f2)."""
+    if target <= 0.0:
+        return hi
+    for _ in range(iters):
+        mid = 0.5 * (lo + hi)
+        if shift_index(wavefront_for_f2(mid), x_star_b) > target:
+            lo = mid
+        else:
+            hi = mid
+    return 0.5 * (lo + hi)
+
+
+def anterior_area_fraction(mask: Optional[np.ndarray], x: np.ndarray, m1: np.ndarray, m2: np.ndarray) -> float:
+    """Share of the real silhouette's area where m1 > m2, i.e. the anterior territory measured on the body
+    rather than on the line (the silhouette is wider anteriorly, so this is not simply x*).  nan without a mask."""
+    if mask is None:
+        return float("nan")
+    cols = np.linspace(0.0, 1.0, mask.shape[1])
+    dom = np.interp(cols, x / x.max(), m1 - m2) > 0
+    widths = mask.sum(0).astype(float)
+    return float((widths * dom).sum() / max(widths.sum(), 1.0))
 
 
 def compute_wavefront_position(x: np.ndarray, m1: np.ndarray, m2: np.ndarray) -> float:
@@ -642,22 +731,31 @@ def verify_rusty_matter_trace_parity(tol: float = 0.035) -> Tuple[bool, float, L
             dt=dt,
         )
 
-        # Compare at step 0 and across all sampled frames (0, 15, ..., 150)
-        s0 = samples[0]
+        # Compare EVERY sampled frame (0, 15, ..., 150) on all four sampled state averages, plus the
+        # scenario's cross-cut base conductance.  This is numerical agreement of the port with the Rust
+        # model's own traces - a check of the port, not of planarian biology.
         s_end = samples[-1]
-        err_g = abs(sim.cross_cut_base_conductance - float(item["cross_cut_base_conductance_average"]))
-        err_mem_end = abs(sim.posterior_memory - float(s_end["posterior_memory_average"]))
-        err_head_end = abs(sim.posterior_head_readout - float(s_end["posterior_head_identity_average"]))
-        err_ant_head_end = abs(sim.anterior_head_readout - float(s_end["head_identity_at_head_average"]))
-        err_tail_end = abs(sim.posterior_tail_readout - float(s_end["tail_identity_at_tail_average"]))
-        err_s0 = abs(sim.trajectory_posterior_head_readout[0] - float(s0["posterior_head_identity_average"]))
-
-        scen_max_err = max(err_g, err_mem_end, err_head_end, err_ant_head_end, err_tail_end, err_s0)
+        step_to_i = {int(s): i for i, s in enumerate(sim.trajectory_steps)}
+        errs = [abs(sim.cross_cut_base_conductance - float(item["cross_cut_base_conductance_average"]))]
+        n_frames = 0
+        for s in samples:
+            i = step_to_i.get(int(s["step_index"]))
+            if i is None:
+                continue
+            n_frames += 1
+            errs += [abs(sim.trajectory_posterior_memory[i] - float(s["posterior_memory_average"])),
+                     abs(sim.trajectory_posterior_head_readout[i] - float(s["posterior_head_identity_average"])),
+                     abs(sim.trajectory_head_at_head_readout[i] - float(s["head_identity_at_head_average"])),
+                     abs(sim.trajectory_tail_at_tail_readout[i] - float(s["tail_identity_at_tail_average"]))]
+        if n_frames < len(samples):
+            raise RuntimeError(f"{scen}: only {n_frames} of {len(samples)} sampled steps present in the trajectory")
+        scen_max_err = max(errs)
         max_err = max(max_err, scen_max_err)
         comparisons.append(
             {
                 "scenario": scen,
                 "max_abs_err": scen_max_err,
+                "frames_compared": n_frames,
                 "posterior_mean_v": sim.posterior_mean_v,
                 "cut_band_mean_v": sim.cut_band_mean_v,
                 "posterior_memory": sim.posterior_memory,
@@ -859,15 +957,20 @@ def run_integrated_analysis(
             timing_records.append((t_hr, rec))
     timing_records.sort(key=lambda pair: pair[0])
 
-    # 1) Cervera-Levin-Mafe RD sweep across f2 in [1.0 -> 0.25]
+    # 0) The phenotype criterion, derived from the wild-type Planform morphology, and the real silhouette
+    lobo_mod, morphs = build_canonical_planform_morphologies()
+    x_star_b = pharynx_boundary_fraction(lobo_mod, morphs[1])
+    mask = planarian_silhouette()
+
+    # 1) RD sweep across f2 in [1.0 -> 0.25]: x*, the shift index and the anterior share of the real body
     f2_sweep = np.linspace(1.0, 0.25, 16)
     rd_wavefronts: List[float] = []
-    rd_profiles: Dict[float, Tuple[np.ndarray, np.ndarray, np.ndarray]] = {}
+    rd_area_fracs: List[float] = []
     for f2 in f2_sweep:
-        x, m1, m2 = rd_antagonistic_1d(D1=0.02, D2=0.02 * float(f2), k1=0.08, k2=0.08, k12=2.0, T=3.5)
-        xs = compute_wavefront_position(x, m1, m2)
-        rd_wavefronts.append(xs)
-        rd_profiles[round(float(f2), 2)] = (x, m1, m2)
+        x, m1, m2 = rd_antagonistic_1d(D2=D2_0 * float(f2), **RD_KW)
+        rd_wavefronts.append(compute_wavefront_position(x, m1, m2))
+        rd_area_fracs.append(anterior_area_fraction(mask, x, m1, m2))
+    f2_b = f2_for_shift(1.0, x_star_b)                              # the f2 at which x* reaches x*_b
 
     # 2) Run the 5 canonical rusty-matter scenarios
     canonical_scenarios = [
@@ -891,15 +994,32 @@ def run_integrated_analysis(
         "post_pharyngeal_crop": (1, 2),
         "tail_crop": (0, 0),
     }
-    crop_to_f2_effective = {
-        "head_crop": 0.92,
-        "pre_pharyngeal_crop": 0.68,
-        "pharyngeal_crop": 0.50,
-        "post_pharyngeal_crop": 0.28,
-        "tail_crop": 0.98,  # isolated tail blastema without trunk injury signal (Oviedo 2010 Exp 419)
-    }
+    # One-parameter model of how the effective gap-junction block deepens with the crop's posteriority:
+    # f2(p) = 1 - a * p, p = 0, 1/3, 2/3, 1 for head, pre-pharyngeal, pharyngeal, post-pharyngeal crops
+    # (the tail-tip crop has no trunk cut and is 0 % double-head in both series; it is held at f2 = 1 and
+    # excluded from the fit).  'a' is FIT to the octanol series (training) by least squares on the shift
+    # index, and the fitted curve is then TESTED on the innexin-RNAi series (held out).  With one parameter
+    # for four points this is a weak test; it is reported as such.
+    crop_pos = {"head_crop": 0.0, "pre_pharyngeal_crop": 1 / 3, "pharyngeal_crop": 2 / 3, "post_pharyngeal_crop": 1.0}
+    fit_keys = [k for k in crop_order if k in crop_pos]
+    oct_train = np.array([_double_head_pct(octanol_by_crop[k]) for k in fit_keys])
+    rnai_test = np.array([_double_head_pct(rnai_by_crop[k]) for k in fit_keys])
+
+    def _index_curve(a: float) -> np.ndarray:
+        return np.array([100.0 * shift_index(wavefront_for_f2(max(1.0 - a * crop_pos[k], 0.2)), x_star_b) for k in fit_keys])
+
+    a_grid = np.linspace(0.0, 0.8, 81)
+    sse = [float(((_index_curve(a) - oct_train) ** 2).sum()) for a in a_grid]
+    a_fit = float(a_grid[int(np.argmin(sse))])
+    fitted_index = _index_curve(a_fit)
+    fit_rmse_train = float(np.sqrt(((fitted_index - oct_train) ** 2).mean()))
+    fit_rmse_test = float(np.sqrt(((fitted_index - rnai_test) ** 2).mean()))
+    fit_r_test = float(np.corrcoef(fitted_index, rnai_test)[0, 1]) if np.std(fitted_index) > 0 and np.std(rnai_test) > 0 else float("nan")
+    crop_to_f2_effective = {k: (max(1.0 - a_fit * crop_pos[k], 0.2) if k in crop_pos else 1.0) for k in crop_order}
     crop_model_head_prob: List[float] = []
     crop_rd_shift_pct: List[float] = []
+    crop_x_star: List[float] = []
+    crop_area_frac: List[float] = []
     base_post_head = sim_by_scenario["Baseline"].posterior_head_readout
     max_post_head = sim_by_scenario["TransientDepolarizationMemory"].posterior_head_readout
     for crop_key in crop_order:
@@ -926,24 +1046,24 @@ def run_integrated_analysis(
         crop_model_head_prob.append(float(prob_dh))
 
         f2_eff = crop_to_f2_effective[crop_key]
-        x_c, m1_c, m2_c = rd_antagonistic_1d(D1=0.02, D2=0.02 * f2_eff, T=3.5)
+        x_c, m1_c, m2_c = rd_antagonistic_1d(D2=D2_0 * f2_eff, **RD_KW)
         x_star = compute_wavefront_position(x_c, m1_c, m2_c)
-        # Relative expansion of anterior (m1) territory past midline x = 0.50
-        shift_pct = max(0.0, (x_star - 0.50) / 0.13) * 100.0
-        crop_rd_shift_pct.append(float(min(shift_pct, 100.0)))
+        crop_x_star.append(float(x_star))
+        crop_rd_shift_pct.append(100.0 * shift_index(x_star, x_star_b))
+        crop_area_frac.append(anterior_area_fraction(mask, x_c, m1_c, m2_c))
 
-    # 4) 2D (f2, f3) morphospace grid from Cervera, Levin & Mafe (2021)
-    f2_grid = np.linspace(1.0, 0.35, 10)
-    f3_grid = np.linspace(1.0, 0.35, 10)
-    xstar_grid = np.zeros((len(f2_grid), len(f3_grid)), dtype=float)
-    for i, f2_val in enumerate(f2_grid):
-        x_g, m1_g, m2_g = rd_antagonistic_1d(D1=0.02, D2=0.02 * float(f2_val), T=3.5)
-        xs_val = compute_wavefront_position(x_g, m1_g, m2_g)
-        for j, _f3_val in enumerate(f3_grid):
-            xstar_grid[i, j] = xs_val
+    # 4) The (f2, f3) morphospace.  m3 does not enter the AP system, so the space is the product of two
+    #    one-parameter curves: x*(f2) (and the anterior share of the real body) and the ML centre/edge
+    #    ratio lambda(f3).  Both are computed; neither is constant.
+    f3_sweep = np.linspace(1.0, 0.25, 16)
+    lateral_profiles: List[Tuple[float, np.ndarray, np.ndarray]] = []
+    lateral_index: List[float] = []
+    for f3 in f3_sweep:
+        z3, m3_prof, lam = lateral_index_for_f3(f3)
+        lateral_profiles.append((float(f3), z3, m3_prof))
+        lateral_index.append(lam)
 
     # 5) Canonical Planform silhouettes (#1 Wild Type vs #2 Double head, two pharynges)
-    lobo_mod, morphs = build_canonical_planform_morphologies()
     wt_metrics = lobo_mod.morphometrics(morphs[1])
     dh_metrics = lobo_mod.morphometrics(morphs[2])
     wt_dh_iou = compute_silhouette_iou(lobo_mod, morphs[1], morphs[2])
@@ -964,7 +1084,7 @@ def run_integrated_analysis(
                 "posterior_head_readout": round(s.posterior_head_readout, 6),
                 "empirical_double_head_pct": "",
                 "rd_wavefront_x_star": "",
-                "notes": f"Verified against rusty_matter_planarian_traces.json (max_err={max_trace_err:.3f})",
+                "notes": f"port parity with rusty_matter_planarian_traces.json at every sampled frame (max_err={max_trace_err:.3f}); not a biological validation",
             }
         )
     for idx, crop_key in enumerate(crop_order):
@@ -987,10 +1107,27 @@ def run_integrated_analysis(
                 "posterior_memory": "",
                 "posterior_head_readout": round(crop_model_head_prob[idx] / 100.0, 4),
                 "empirical_double_head_pct": f"octanol={oct_dh:.0f}%; rnai={rnai_dh:.0f}%",
-                "rd_wavefront_x_star": round(0.50 + 0.26 * (crop_rd_shift_pct[idx] / 100.0), 4),
-                "notes": f"PlanformDB Exps {oct_exp}/{rnai_exp} (n={oct_n},{rnai_n})",
+                "rd_wavefront_x_star": round(crop_x_star[idx], 4),            # the solver's x*, directly
+                "notes": (f"PlanformDB Exps {oct_exp}/{rnai_exp} (n={oct_n},{rnai_n}); f2={crop_to_f2_effective[crop_key]:.3f} "
+                          f"(fitted, a={a_fit:.2f}); shift_index={crop_rd_shift_pct[idx] / 100.0:.3f}; "
+                          f"anterior_area_fraction={crop_area_frac[idx]:.3f}"),
             }
         )
+    csv_rows.append({"section": "fit", "id": "f2_vs_crop_position", "anterior_mean_v": "", "posterior_mean_v": "", "ap_delta_v": "",
+                     "mean_conductance": "", "posterior_memory": "", "posterior_head_readout": "", "empirical_double_head_pct": "",
+                     "rd_wavefront_x_star": "",
+                     "notes": (f"f2 = 1 - {a_fit:.2f} p; trained on octanol (RMSE {fit_rmse_train:.1f} pts), "
+                               f"held-out innexin RNAi: RMSE {fit_rmse_test:.1f} pts, r = {fit_r_test:.2f}; "
+                               f"criterion x*_b = {x_star_b:.3f} (posterior end of the wild-type pharynx), reached at f2 = {f2_b:.3f}")})
+    for f2, xs_, af in zip(f2_sweep, rd_wavefronts, rd_area_fracs):
+        csv_rows.append({"section": "morphospace_f2", "id": f"f2={f2:.3f}", "anterior_mean_v": "", "posterior_mean_v": "", "ap_delta_v": "",
+                         "mean_conductance": "", "posterior_memory": "", "posterior_head_readout": "", "empirical_double_head_pct": "",
+                         "rd_wavefront_x_star": round(float(xs_), 4),
+                         "notes": f"shift_index={shift_index(xs_, x_star_b):.3f}; anterior_area_fraction_on_silhouette={af:.3f}"})
+    for f3, lam in zip(f3_sweep, lateral_index):
+        csv_rows.append({"section": "morphospace_f3", "id": f"f3={f3:.3f}", "anterior_mean_v": "", "posterior_mean_v": "", "ap_delta_v": "",
+                         "mean_conductance": "", "posterior_memory": "", "posterior_head_readout": "", "empirical_double_head_pct": "",
+                         "rd_wavefront_x_star": "", "notes": f"lateral_centre_edge_ratio={lam:.4f}"})
 
     with open(output_csv, "w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=list(csv_rows[0].keys()))
@@ -1000,14 +1137,14 @@ def run_integrated_analysis(
     # =========================================================================
     # Render 6-Panel Publication Synthesis Figure
     # =========================================================================
-    fig = plt.figure(figsize=(16.5, 10.5), dpi=160)
-    gs = fig.add_gridspec(2, 3, hspace=0.34, wspace=0.28)
+    fig = plt.figure(figsize=(16.5, 11.5), dpi=160)
+    gs = fig.add_gridspec(2, 3, hspace=0.40, wspace=0.28)
 
     # --- Panel A: Cervera, Levin & Mafe (2021) 1D RD Antagonism & Wavefront Shift ---
     ax_a = fig.add_subplot(gs[0, 0])
     sample_f2s = [(1.0, "#1f77b4", "-"), (0.60, "#e67e22", "--"), (0.30, "#c0392b", "-.")]
     for f2_val, col, ls in sample_f2s:
-        x_p, m1_p, m2_p = rd_antagonistic_1d(D1=0.02, D2=0.02 * f2_val, T=3.5)
+        x_p, m1_p, m2_p = rd_antagonistic_1d(D2=D2_0 * f2_val, **RD_KW)
         xs_p = compute_wavefront_position(x_p, m1_p, m2_p)
         if f2_val == 1.0:
             ax_a.plot(x_p, m1_p, color="#b03a2e", lw=2.2, label="$m_1$ (anterior head signal, $D_1 = D_{1,0}$)")
@@ -1020,15 +1157,16 @@ def run_integrated_analysis(
             label=f"$m_2$ ($f_2 = D_2/D_{{2,0}} = {f2_val:.2f}$, $x^* = {xs_p:.2f}$)",
         )
         ax_a.axvline(xs_p, color=col, ls=":", lw=1.3, alpha=0.85)
-    ax_a.axvspan(0.50, float(compute_wavefront_position(*rd_antagonistic_1d(D1=0.02, D2=0.02 * 0.30, T=3.5))),
+    ax_a.axvline(x_star_b, color="#111111", ls="--", lw=1.2, label=f"bipolar criterion $x^*_b = {x_star_b:.3f}$ (posterior end of the pharynx)")
+    ax_a.axvspan(0.50, wavefront_for_f2(0.30),
                  color="#f5b7b1", alpha=0.28, label="Anterior territory expansion $\\Delta x^*$")
     ax_a.set_xlim(0.0, 1.0)
     ax_a.set_xlabel("Normalized AP Coordinate $x/L$ ($0=$ Anterior, $1=$ Posterior)", fontsize=9)
     ax_a.set_ylabel("Morphogen Concentration", fontsize=9)
     ax_a.set_title(
-        "A. Cervera–Levin–Mafe (2021) RD Wavefront Shift\n"
-        "Gap-Junction Blockade ($D_2 = f_2 D_{2,0}$) Expands Head Territory",
-        fontsize=10,
+        "A. RD wavefront shift (analogue of Cervera–Levin–Mafe 2021)\n"
+        "$D_2 = f_2 D_{2,0}$: gap-junction block expands the anterior territory",
+        fontsize=8.8,
         fontweight="bold",
     )
     ax_a.legend(fontsize=7.5, loc="upper right", framealpha=0.92)
@@ -1058,9 +1196,9 @@ def run_integrated_analysis(
     ax_b.set_ylim(-0.32, 1.05)
     ax_b.set_ylabel("Normalized Circuit State / Readout", fontsize=9)
     ax_b.set_title(
-        "B. MesmerPrism/rusty-matter 5-Band Bioelectric Circuit\n"
-        "Voltage-Gated GJ + Hysteresis Memory vs. Memoryless Control",
-        fontsize=10,
+        "B. rusty-matter 5-band bioelectric circuit (a port)\n"
+        "voltage-gated GJ + hysteresis memory vs memoryless control",
+        fontsize=8.8,
         fontweight="bold",
     )
     ax_b.legend(fontsize=7.3, loc="upper left", framealpha=0.92)
@@ -1103,19 +1241,22 @@ def run_integrated_analysis(
         marker="s",
         ls="--",
         lw=1.8,
-        label="Cervera 2021 RD Wavefront Shift $\\Delta x^*$ (%)",
+        label=f"RD shift index, $f_2 = 1 - {a_fit:.2f}\\,p$ fitted on octanol (%)",
     )
+    ax_c.text(0.02, 0.97, f"one parameter fitted on octanol: RMSE {fit_rmse_train:.0f} pts\nheld-out innexin RNAi: RMSE {fit_rmse_test:.0f} pts, r = {fit_r_test:.2f}\n(tail crop: no trunk cut, held at $f_2 = 1$)",
+              transform=ax_c.transAxes, fontsize=7.0, va="top", ha="left", color="#1e293b",
+              bbox=dict(boxstyle="round,pad=0.25", facecolor="white", alpha=0.85, edgecolor="#cbd5e1"))
     ax_c.set_xticks(cx)
     ax_c.set_xticklabels(crop_labels, fontsize=8)
     ax_c.set_ylim(0, 112)
     ax_c.set_ylabel("Double-Head (#2) Frequency / Index (%)", fontsize=9)
     ax_c.set_title(
-        "C. PlanformDB 2.5.0 Empirical AP Crop Gradient (Oviedo 2010)\n"
-        "Trunk Posteriority Amplifies Gap-Junction Double-Head Penetrance",
-        fontsize=10,
+        "C. PlanformDB crop gradient (Oviedo 2010) vs the model\n"
+        "double-head frequency by crop; fitted on octanol, tested on RNAi",
+        fontsize=8.8,
         fontweight="bold",
     )
-    ax_c.legend(fontsize=7.1, loc="upper left", framealpha=0.92)
+    ax_c.legend(fontsize=6.8, loc="center left", framealpha=0.92)
     ax_c.grid(axis="y", alpha=0.25)
 
     # --- Panel D: Early Bioelectric Timing Window (Durant 2019 & Oviedo 2010 Exps 441-444) ---
@@ -1158,55 +1299,42 @@ def run_integrated_analysis(
     ax_d.set_xlabel("Time Post-Amputation / Perturbation Onset (hours, hpa)", fontsize=9)
     ax_d.set_ylabel("Posterior Head Readout / Double-Head (%)", fontsize=9)
     ax_d.set_title(
-        "D. Early Bioelectric Window (Durant 2019 & Oviedo 2010)\n"
-        "3–6 hpa Depolarization Locks Bipolar Fate Only With Pattern Memory",
-        fontsize=10,
+        "D. Early bioelectric window (Durant 2019; Oviedo 2010)\n"
+        "circuit time mapped onto 0–24 h for illustration only",
+        fontsize=8.8,
         fontweight="bold",
     )
     ax_d.legend(fontsize=7.1, loc="upper right", framealpha=0.92)
     ax_d.grid(alpha=0.25)
 
-    # --- Panel E: 2D (f2, f3) Morphospace Heatmap & Phenotype Phase Boundary ---
-    ax_e = fig.add_subplot(gs[1, 1])
-    im = ax_e.imshow(
-        xstar_grid,
-        origin="lower",
-        aspect="auto",
-        extent=[float(f3_grid.min()), float(f3_grid.max()), float(f2_grid.min()), float(f2_grid.max())],
-        cmap="RdYlBu_r",
-    )
-    cbar = fig.colorbar(im, ax=ax_e, fraction=0.046, pad=0.04)
-    cbar.set_label("Normalized Wavefront Position $x^*/L$", fontsize=8.5)
-    # Draw phenotype transition line at f2 = 0.58 (x* ≈ 0.58)
-    ax_e.axhline(0.58, color="#111111", ls="--", lw=1.6)
-    ax_e.text(
-        0.67,
-        0.82,
-        "Wild-Type Regime (#1)\n1 Head + 1 Tail ($x^* \\approx 0.50$)",
-        ha="center",
-        va="center",
-        fontsize=8.3,
-        fontweight="bold",
-        bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.82, edgecolor="#2980b9"),
-    )
-    ax_e.text(
-        0.67,
-        0.44,
-        "Double-Head Regime (#2)\n2 Heads + 2 Pharynges ($x^* > 0.58$)",
-        ha="center",
-        va="center",
-        fontsize=8.3,
-        fontweight="bold",
-        bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.86, edgecolor="#c0392b"),
-    )
-    ax_e.set_xlabel("Lateral GJ Diffusion Factor $f_3 = D_3/D_{3,0}$", fontsize=9)
-    ax_e.set_ylabel("AP GJ Diffusion Factor $f_2 = D_2/D_{2,0}$", fontsize=9)
-    ax_e.set_title(
-        "E. Cervera–Levin–Mafe (2021) $(f_2, f_3)$ GJ Morphospace\n"
-        "Bifurcation From Normal Polarity (#1) to Bipolar Double-Head (#2)",
-        fontsize=10,
-        fontweight="bold",
-    )
+    # --- Panel E: the (f2, f3) morphospace as what it is in this model: two independent one-parameter curves ---
+    gs_e = gs[1, 1].subgridspec(2, 1, hspace=0.42)
+    ax_e1 = fig.add_subplot(gs_e[0, 0])
+    ax_e2 = fig.add_subplot(gs_e[1, 0])
+    ax_e1.plot(f2_sweep, rd_wavefronts, color="#c0392b", marker="o", ms=3.5, lw=1.8, label="wavefront $x^*$ (line)")
+    if mask is not None:
+        ax_e1.plot(f2_sweep, rd_area_fracs, color="#7c3aed", marker="s", ms=3.2, lw=1.4, ls="--",
+                   label="anterior share of the real body's area")
+    ax_e1.axhline(x_star_b, color="#111111", ls="--", lw=1.1)
+    ax_e1.axvline(f2_b, color="#111111", ls=":", lw=1.0)
+    ax_e1.text(0.98, 0.05, f"$f_2 = {f2_b:.2f}$: $x^*$ reaches $x^*_b = {x_star_b:.3f}$\n(posterior end of the wild-type pharynx)",
+               transform=ax_e1.transAxes, fontsize=7.0, va="bottom", ha="right", color="#111111")
+    ax_e1.set_xlim(1.02, 0.23); ax_e1.set_ylim(0.48, max(0.72, max(rd_wavefronts) + 0.02))
+    ax_e1.set_xlabel("AP gap-junction factor $f_2 = D_2/D_{2,0}$", fontsize=8.5)
+    ax_e1.set_ylabel("AP fraction (0 = anterior)", fontsize=8.5)
+    ax_e1.legend(fontsize=6.9, loc="upper left", framealpha=0.9)
+    ax_e1.grid(alpha=0.25)
+    ax_e1.set_title("E. $(f_2, f_3)$ morphospace = two independent curves\n"
+                    "$x^*(f_2)$ with the derived criterion;  $m_3(z)$ and $\\lambda(f_3)$",
+                    fontsize=8.8, fontweight="bold")
+    cmap = plt.get_cmap("viridis")
+    for k, (f3, z3, m3_prof) in enumerate(lateral_profiles[::3]):
+        ax_e2.plot(z3, m3_prof / m3_prof.max(), color=cmap(k / max(1, len(lateral_profiles[::3]) - 1)), lw=1.4,
+                   label=f"$f_3 = {f3:.2f}$, $\\lambda = {lateral_index[::3][k]:.2f}$")
+    ax_e2.set_xlabel("ML axis $z/L$", fontsize=8.5); ax_e2.set_ylabel("$m_3$ / max", fontsize=8.5)
+    ax_e2.set_ylim(0, 1.05)
+    ax_e2.legend(fontsize=6.6, loc="lower center", ncol=2, framealpha=0.9)
+    ax_e2.grid(alpha=0.25)
 
     # --- Panel F: Decoded Planform Silhouettes (#1 Wild Type vs. #2 Double Head) ---
     gs_f = gs[1, 2].subgridspec(1, 2, wspace=0.08)
@@ -1244,9 +1372,9 @@ def run_integrated_analysis(
     )
 
     fig.suptitle(
-        "Planarian Gap-Junction Bioelectric & Reaction–Diffusion Morphospace\n"
-        "Bridging Cervera–Levin–Mafe (2021), MesmerPrism/rusty-matter Circuit Traces, and PlanformDB 2.5.0 (Oviedo 2010; Durant 2019)",
-        fontsize=12,
+        "Planarian gap-junction bioelectric and reaction–diffusion morphospace\n"
+        "a qualitative analogue of Cervera–Levin–Mafe (2021), the rusty-matter circuit port, and PlanformDB 2.5.0 (Oviedo 2010; Durant 2019)",
+        fontsize=11,
         fontweight="bold",
         y=0.98,
     )
@@ -1261,12 +1389,57 @@ def run_integrated_analysis(
         "checksums": checksums,
         "trace_parity_ok": parity_ok,
         "max_trace_err": max_trace_err,
+        "x_star_b": x_star_b,
+        "f2_b": f2_b,
+        "a_fit": a_fit,
+        "fit_rmse_train": fit_rmse_train,
+        "fit_rmse_test": fit_rmse_test,
+        "fit_r_test": fit_r_test,
+        "f2_sweep": [float(v) for v in f2_sweep],
+        "rd_wavefronts": rd_wavefronts,
+        "rd_area_fracs": rd_area_fracs,
+        "f3_sweep": [float(v) for v in f3_sweep],
+        "lateral_index": lateral_index,
+        "crop_rows": {k: {"f2": crop_to_f2_effective[k], "x_star": crop_x_star[i]} for i, k in enumerate(crop_order)},
         "wt_metrics": wt_metrics,
         "dh_metrics": dh_metrics,
         "wt_dh_iou": wt_dh_iou,
         "output_png": str(output_png),
         "output_csv": str(output_csv),
     }
+
+
+def self_test_model() -> bool:
+    """Checks of the RD model and of the outputs' own bookkeeping (added after the 2026-10-17 audit):
+    symmetric case puts x* at the midline; x* rises monotonically as f2 falls; the f3 axis is not inert
+    (lambda spans a range); the derived criterion x*_b lies in (0.5, 1); and every crop row's
+    rd_wavefront_x_star in the CSV equals the solver's x* for that row's f2 (recomputed here)."""
+    ok = True
+    def check(cond: bool, msg: str) -> None:
+        nonlocal ok
+        print(f"[{'PASS' if cond else 'FAIL'}] {msg}")
+        ok = ok and bool(cond)
+    xs1 = wavefront_for_f2(1.0)
+    check(abs(xs1 - 0.5) < 0.01, f"symmetric system (f2 = 1): x* = {xs1:.4f}, expected 0.5 (grid 1/120)")
+    f2s = np.linspace(1.0, 0.3, 8); xs = [wavefront_for_f2(f) for f in f2s]
+    check(all(b >= a - 1e-12 for a, b in zip(xs, xs[1:])), f"x* non-decreasing as f2 falls: {np.round(xs, 3).tolist()}")
+    lams = [lateral_index_for_f3(f)[2] for f in (1.0, 0.6, 0.3)]
+    check(max(lams) - min(lams) > 0.05 and lams[0] > lams[-1], f"f3 axis not inert: centre/edge ratio {np.round(lams, 3).tolist()} for f3 = 1.0, 0.6, 0.3")
+    lobo_mod, morphs = build_canonical_planform_morphologies()
+    xb = pharynx_boundary_fraction(lobo_mod, morphs[1])
+    check(0.5 < xb < 1.0, f"derived criterion x*_b = {xb:.4f} (posterior end of the wild-type pharynx)")
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        res = run_integrated_analysis(output_png=Path(td) / "fig.png", output_csv=Path(td) / "m.csv", show=False)
+        with open(Path(td) / "m.csv", newline="", encoding="utf-8") as fh:
+            rows = [r for r in csv.DictReader(fh) if r["section"] == "oviedo_2010_crop_gradient"]
+        worst = 0.0
+        for r in rows:
+            f2 = res["crop_rows"][r["id"]]["f2"]
+            worst = max(worst, abs(float(r["rd_wavefront_x_star"]) - round(wavefront_for_f2(f2), 4)))
+        check(worst < 1e-9, f"CSV rd_wavefront_x_star equals the solver's x* for each crop's fitted f2 (max |diff| = {worst:.1e})")
+        check(res["fit_rmse_test"] == res["fit_rmse_test"], f"held-out RNAi RMSE = {res['fit_rmse_test']:.1f} pts (r = {res['fit_r_test']:.2f}); train RMSE = {res['fit_rmse_train']:.1f}")
+    return ok
 
 
 def demo() -> None:
@@ -1279,18 +1452,18 @@ def make_gif(output: str, n_frames: int = 24, fps: int = 8) -> None:
     from PIL import Image
 
     f2_values = np.linspace(1.0, 0.35, n_frames)
-    z, m3 = rd_linear_1d(D=0.02, k=0.08, J_left=0.6, J_right=0.6, T=3.5)
+    z, m3 = rd_linear_1d(D=D3_0, **RD3_KW)
     g_profile = m3 / m3.max()
     mask = planarian_silhouette()
     lobo_mod, morphs = build_canonical_planform_morphologies()
     half = lobo_mod.frame_bounds([morphs[1], morphs[2]])
+    x_star_b = pharynx_boundary_fraction(lobo_mod, morphs[1])     # the cartoon switches when x* passes it
 
     frames = []
     for f2 in f2_values:
-        x, m1, m2 = rd_antagonistic_1d(
-            D1=0.02, D2=0.02 * float(f2), k1=0.08, k2=0.08, k12=2.0, J1=1.0, J2=1.0, T=3.5
-        )
+        x, m1, m2 = rd_antagonistic_1d(D2=D2_0 * float(f2), **RD_KW)
         xs = compute_wavefront_position(x, m1, m2)
+        area_frac = anterior_area_fraction(mask, x, m1, m2)
         gj_scale = max(0.08, float(f2))
         circuit_res = run_rusty_matter_planarian_scenario(
             "CustomCropGapBlock", custom_gap_scale=gj_scale, custom_cut_band_pair=(1, 2)
@@ -1305,6 +1478,7 @@ def make_gif(output: str, n_frames: int = 24, fps: int = 8) -> None:
         a0.plot(x, m1, color="#c0392b", lw=2.0, label="$m_1$ (anterior head signal)")
         a0.plot(x, m2, color="#2e6fba", lw=2.0, label="$m_2$ (posterior signal)")
         a0.axvline(xs, ls="--", color="k", lw=1.2, label=f"wavefront $x^* = {xs:.2f}$")
+        a0.axvline(x_star_b, ls=":", color="#555", lw=1.0, label=f"bipolar criterion $x^*_b = {x_star_b:.2f}$")
         a0.set_xlim(0, 1)
         a0.set_ylim(0, 1.05 * max(float(m1.max()), float(m2.max()), 1e-9))
         a0.set_xlabel("AP axis ($0=$ Anterior, $1=$ Posterior)", fontsize=8.5)
@@ -1323,6 +1497,7 @@ def make_gif(output: str, n_frames: int = 24, fps: int = 8) -> None:
         a1.contour(np.linspace(0, 1, inside.shape[1]), np.linspace(0, 1, inside.shape[0]), inside.astype(float),
                    levels=[0.5], colors="#333333", linewidths=0.9)
         a1.axvline(xs, ls="--", color="k", lw=1.2)
+        a1.axvline(x_star_b, ls=":", color="#555", lw=1.0)
         a1.set_xlabel("AP axis", fontsize=8.5)
         a1.set_ylabel("ML axis", fontsize=8.5)
         a1.set_yticks([])
@@ -1330,17 +1505,17 @@ def make_gif(output: str, n_frames: int = 24, fps: int = 8) -> None:
             a1.set_title("RD territories: red = anterior ($m_1$), blue = posterior ($m_2$)", fontsize=8.8)
         else:
             a1.set_title(f"RD territories on a real $\\it{{{PLANARIAN_PHOTO['species'].replace(' ', '\\ ')}}}$ "
-                         "(silhouette of a photograph)\nred = anterior ($m_1$), blue = posterior ($m_2$)", fontsize=8.4)
+                         f"(silhouette of a photograph)\nred = anterior ($m_1$), blue = posterior ($m_2$); anterior share of body area {area_frac:.2f}", fontsize=8.4)
             fig.text(0.01, 0.01, f"photograph: {PLANARIAN_PHOTO['credit']}", fontsize=6.5, color="#64748b", ha="left", va="bottom")
 
-        active_mid = 2 if circuit_res.posterior_head_readout >= 0.55 else 1
+        active_mid = 2 if xs >= x_star_b else 1                      # derived criterion, not a hand-set readout threshold
         m_obj = morphs[active_mid]
         lobo_mod.draw_morphology(a_morph, m_obj, show_organs=True, outline_lw=1.4)
         cx_m, cy_m = lobo_mod.centre_of(m_obj)
         lobo_mod.fit_axes(a_morph, (cx_m - half, cx_m + half, cy_m - half, cy_m + half))
         pheno_label = "#2 Double Head\n(Bipolar)" if active_mid == 2 else "#1 Wild Type\n(Normal Polarity)"
         a_morph.set_title(
-            f"Planform Outcome\n{pheno_label}\n$V_{{\\mathrm{{post}}}}={circuit_res.posterior_mean_v:+.2f}$",
+            f"Planform morphology\n{pheno_label}\n$x^* {'\\geq' if active_mid == 2 else '<'} x^*_b$;  $R_{{\\mathrm{{head,post}}}}={circuit_res.posterior_head_readout:.2f}$",
             fontsize=9.0,
             fontweight="bold",
         )
@@ -1380,7 +1555,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument(
         "--self-test",
         action="store_true",
-        help="Verify SHA-256 fixture hashes and exact rusty-matter trace parity",
+        help="Fixture SHA-256; port parity at every sampled frame; RD solver checks; f3 not inert; CSV fields recomputed",
     )
     args = parser.parse_args(argv)
 
@@ -1392,14 +1567,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             if not ok:
                 return 1
         parity_ok, max_err, rows = verify_rusty_matter_trace_parity()
-        print(f"[TRACE PARITY {'PASS' if parity_ok else 'FAIL'}] max_abs_err = {max_err:.3e}")
+        print(f"[PORT PARITY {'PASS' if parity_ok else 'FAIL'}] max_abs_err = {max_err:.3e} over every sampled frame "
+              f"(tolerance 0.035; agreement with rusty-matter's traces, not a biological validation)")
         for r in rows:
             print(
-                f"  - {r['scenario']:40s} | V_post={r['posterior_mean_v']:+.6f} "
+                f"  - {r['scenario']:40s} | frames={r['frames_compared']:2d} | V_post={r['posterior_mean_v']:+.6f} "
                 f"| M_post={r['posterior_memory']:.6f} | R_head,post={r['posterior_head_readout']:.6f} "
                 f"| err={r['max_abs_err']:.2e}"
             )
-        return 0 if parity_ok else 1
+        if not parity_ok:
+            return 1
+        return 0 if self_test_model() else 1
 
     if args.gif:
         make_gif(args.gif)
