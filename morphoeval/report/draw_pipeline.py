@@ -25,7 +25,40 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 ROOT = Path(__file__).resolve().parents[2]
 
-BUILD = "#dbeafe"; EVAL = "#fde68a"; PUB = "#bbf7d0"; LOOP = "#fecaca"; EDGE = "#334155"; RED = "#b91c1c"; HUMAN = "#7c3aed"; BUILDER = "#0369a1"; ASSESSOR = "#be185d"
+BUILD = "#dbeafe"; EVAL = "#fde68a"; PUB = "#bbf7d0"; LOOP = "#fecaca"; EDGE = "#334155"; RED = "#b91c1c"; HUMAN = "#7c3aed"
+
+# A robot's colour is the company whose model it is; its role (builder or assessor) is said in words beside it.
+# Which models have assessed is read from the audits (audit.assessor.homepage); the builder is not recorded in
+# the audits - it is the coding agent of the session that wrote the scripts - and is set here.
+PROVIDERS = {"anthropic.com": ("Anthropic", "#d97757"), "openai.com": ("OpenAI", "#10a37f"),
+             "google.com": ("Google", "#4285f4"), "deepmind.google": ("Google", "#4285f4"),
+             "x.ai": ("xAI", "#111827"), "mistral.ai": ("Mistral", "#ff7000"), "meta.com": ("Meta", "#0866ff")}
+OTHER_PROVIDER = ("another company", "#6b7280")
+BUILDER_HOMEPAGE = "https://www.anthropic.com"               # the Cursor agent (Claude) that wrote the scripts so far
+
+
+def provider(homepage):
+    host = (homepage or "").split("//")[-1].split("/")[0].lower()
+    for dom, v in PROVIDERS.items():
+        if host == dom or host.endswith("." + dom):
+            return v
+    return OTHER_PROVIDER
+
+
+def assessors_from_audits():
+    """Distinct (company, colour, model label) of the assessors named in the audits, in order of first use."""
+    import yaml
+    seen = {}
+    for f in sorted((ROOT / "morphoeval" / "audits").glob("*-audit.yaml")):
+        a = (yaml.safe_load(open(f)).get("audit") or {}).get("assessor") or {}
+        name, col = provider(a.get("homepage"))
+        seen.setdefault(name, (name, col, a.get("label") or a.get("id") or "?"))
+    return list(seen.values())
+
+
+BUILDER = provider(BUILDER_HOMEPAGE)[1]
+ASSESSORS = assessors_from_audits() or [OTHER_PROVIDER + ("?",)]
+ASSESSOR = ASSESSORS[0][1]
 # (x, y, w, h, colour, title, body) on a 100 x 100 canvas.  Top to bottom: tier A (five boxes, left -> right),
 # the outputs band (box 6), tier B (six boxes, left -> right), the note.
 YA, YB, H = 78, 13, 20
@@ -64,7 +97,7 @@ TERMS = {
     "graph": "kg/<audit>/REPORT.md", "remed": "GitHub issue #1",
 }
 HUMANS = {"scout": "a person\nchooses", "remed": "a person picks\nwhat to fix"}
-AGENTS = {"script": (BUILDER, "the builder agent\nwrites it"), "audit": (ASSESSOR, "a different agent\nscores it")}
+AGENTS = {"script": (BUILDER, "the builder agent\nwrites it"), "audit": (ASSESSOR, "an assessor agent\nscores it")}
 
 # the papers, in year order, with a frame of each reproduction's own animation (docs/media/*.gif)
 MEDIA = ROOT / "docs" / "media"
@@ -253,7 +286,10 @@ def main(argv=None):
     # the agents: who writes the code, who scores it (they should not be the same model)
     for key, (col, label) in AGENTS.items():
         x, y, w, h = BOXES[key][:4]
-        agent(ax, x + 1.0, y + h + 1.0, 1.0); ax.text(x + 3.0, y + h + 2.9, label, fontsize=6.2, color=col, va="center", fontweight="bold", linespacing=1.1)
+        cols = [a[1] for a in ASSESSORS] if key == "audit" else [col]       # one robot per company that has assessed
+        for j, c in enumerate(cols):
+            agent(ax, x + 1.0 + 3.0 * j, y + h + 1.0, 1.0, c)
+        ax.text(x + 3.0 * len(cols), y + h + 2.9, label, fontsize=6.2, color=cols[-1], va="center", fontweight="bold", linespacing=1.1)
 
     # tier A
     arrow(ax, "scout", "r", "paper", "l")
@@ -293,12 +329,21 @@ def main(argv=None):
             "as a map of cell voltages — change the voltage and a planarian regrows two heads.  Each paper becomes a running program; MorphoEval scores how faithfully, 0–100 on seven questions.",
             ha="center", va="top", fontsize=7.4, color="#1e293b", linespacing=1.35)
     for i, (c, l) in enumerate([(BUILD, "reproduce"), (EVAL, "evaluate"), (PUB, "publish"), (LOOP, "remediate")]):
-        ax.add_patch(FancyBboxPatch((65 + i * 8.0, 2.0), 2.2, 2.2, boxstyle="round,pad=0.1", fc=c, ec=EDGE, lw=0.6))
-        ax.text(68 + i * 8.0, 3.1, l, fontsize=7, va="center", color=EDGE)
-    person(ax, 66.1, 5.3, 0.7); ax.text(68, 6.6, "a person decides what to go after and what to fix", fontsize=6.5, va="center", color=HUMAN)
-    agent(ax, 66.1, 7.6, 0.65); ax.text(68, 9.0, "the builder agent writes and re-works the code", fontsize=6.5, va="center", color=BUILDER)
-    agent(ax, 66.1, 10.0, 0.65, ASSESSOR); ax.text(68, 11.6, "the assessor agent scores it — should be a different model from the builder\n"
-            "(so far it has not been; each audit names its assessor)", fontsize=6.0, va="center", color=ASSESSOR, linespacing=1.15)
+        ax.add_patch(FancyBboxPatch((65 + i * 8.0, 1.4), 2.2, 2.2, boxstyle="round,pad=0.1", fc=c, ec=EDGE, lw=0.6))
+        ax.text(68 + i * 8.0, 2.5, l, fontsize=7, va="center", color=EDGE)
+    person(ax, 66.1, 4.0, 0.6); ax.text(68, 5.0, "a person decides what to go after and what to fix", fontsize=6.3, va="center", color=HUMAN)
+    agent(ax, 66.1, 6.0, 0.55); ax.text(68, 7.0, "a builder agent writes and re-works the code; an assessor agent scores it", fontsize=6.3, va="center", color=EDGE)
+    used = [(n, c) for n, c, _ in ASSESSORS]
+    if provider(BUILDER_HOMEPAGE)[0] not in [n for n, _ in used]:
+        used.insert(0, provider(BUILDER_HOMEPAGE)[:2])
+    xx = 66.1                                                             # the companies whose models have taken part, one robot each
+    for n, c in used + [(OTHER_PROVIDER[0] + ", once its model takes part", OTHER_PROVIDER[1])]:
+        agent(ax, xx, 8.1, 0.55, c); ax.text(xx + 1.9, 9.1, n, fontsize=6.3, va="center", color=c, fontweight="bold" if c != OTHER_PROVIDER[1] else "normal")
+        xx += 3.6 + 0.5 * len(n)
+    same = len(used) == 1
+    ax.text(68, 11.8, "a robot's colour is the company whose model it is.  The assessor should be a different company's model", fontsize=6.0, va="center", color=EDGE)
+    ax.text(68, 10.7, (f"from the builder; so far it has not been — {used[0][0]}'s has done both.  Each audit names its assessor.") if same else
+            "from the builder, and is; each audit names its assessor.", fontsize=6.0, va="center", color=EDGE)
 
     out = Path(args.out); out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=160, bbox_inches="tight", facecolor="white")
