@@ -96,7 +96,7 @@ purpose, unverified.
 
 # Method
 
-![The MorphoEval cycle. Build (blue): a source with resolvable identifiers and hashed data, and a script that reproduces it. Evaluate (yellow): an audit file with line-pinned evidence at a commit, and a measurement pass over the rendered outputs. Publish (green): the graph is built against the ProbKnow templates, signed, verified by a second implementation, fetched back from the test registry and then published to production. Remediate (red): the overall assessment's `pk:evidenceAgainst` items go to the issue tracker; a fix produces a new commit and a re-audit of the touched dimensions whose nanopublications supersede the earlier ones.](pipeline.png){width=100%}
+![How a form gets into the repository and how it is scored. Tier A, making a reproduction: the model as published (equations, an encoding, or a claim); the paper's own formal source (parameter values, database or atlas records, measurement tables), fetched or vendored with a pinned hash; the rules pinned down — inferred from prose, verified on every record, with the authors' code read to settle semantics where it exists; the script, which simulates, decodes or tests; and the comparison with the authors' figures or specimens. Tier B, the MorphoEval cycle: audit with line-pinned evidence at a commit, measurement of the rendered outputs, graph built against the ProbKnow templates, signing and publication through the test registry to production, the knowledge graph, and remediation, whose fixes produce a new commit and a re-audit of the touched dimensions that supersedes the earlier nanopublications.](pipeline.png){width=100%}
 
 ## Audits
 

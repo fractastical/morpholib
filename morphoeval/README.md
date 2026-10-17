@@ -42,33 +42,44 @@ scripts that were not inspected are listed `unevaluated` with no scores.
 
 ## The cycle
 
-Each pass pins a commit; scores are 0–100 per dimension with a weighted mean overall; published
+Tier A is how a form gets into the repository (three kinds of script: simulate the
+paper's mathematics, decode the authors' formal encoding into form, or test a published
+claim against measurements); tier B is how it is scored. Each pass pins a commit; scores are 0–100 per dimension with a weighted mean overall; published
 nanopubs are immutable and re-scores supersede them. The same figure as a PNG (for the PDF report
 and anything that cannot render Mermaid) is `docs/media/morphoeval_pipeline.png`, drawn by
 `morphoeval/report/draw_pipeline.py`.
 
 ```mermaid
-flowchart LR
+flowchart TB
     classDef build fill:#dbeafe,stroke:#334155,color:#1e293b
     classDef eval fill:#fde68a,stroke:#334155,color:#1e293b
     classDef pub fill:#bbf7d0,stroke:#334155,color:#1e293b
     classDef loop fill:#fecaca,stroke:#334155,color:#1e293b
 
-    S["1 Source<br/>paper (DOI), authors' figures,<br/>data with SHA-256 + licence"]:::build
-    R["2 Reproduce<br/>&lt;year&gt;-&lt;author&gt;-&lt;model&gt;.py<br/>→ figure + GIF, morphometrics, self-checks"]:::build
-    A["3 Audit<br/>audits/&lt;date&gt;-&lt;name&gt;.yaml<br/>7 dims × 0–100, rationale,<br/>line-pinned evidence @ commit"]:::eval
-    M["4 Measure<br/>measure_outputs.py<br/>fingerprint outputs, morphometrics<br/>vs specimens → .measurements.yaml"]:::eval
-    B["5 Build graph<br/>build_morphoeval_kg.py<br/>pk:Claim + 8 pk:LLMClaimAssessment,<br/>ProbKnow templates, conformance check"]:::pub
-    P["6 Sign &amp; publish<br/>test registry → check_signed.mjs →<br/>fetch back → production<br/>(npx:supersedes on re-score)"]:::pub
-    G[("Knowledge graph<br/>nanopub network · Nanopub Query<br/>kg/&lt;audit&gt;/REPORT.md + published.json")]:::pub
-    T["7 Remediate<br/>items → GitHub issue #1<br/>fix script → new commit"]:::loop
+    subgraph A["A &nbsp;Making a reproduction — simulate the paper's maths · decode the authors' encoding · test a published claim"]
+        direction LR
+        P["1 Paper<br/>the model as published: equations,<br/>an encoding, or a claim"]:::build
+        S["2 Formal source<br/>the paper's own data: parameters,<br/>database/atlas records, tables<br/>(SHA-256 pinned)"]:::build
+        R["3 Pin the rules<br/>prose → precise rule, checked on<br/>every record; authors' code read<br/>for semantics, not copied"]:::build
+        X["4 Script<br/>&lt;year&gt;-&lt;author&gt;-&lt;model&gt;.py<br/>→ figure + GIF, morphometrics,<br/>self-checks"]:::build
+        C["5 Compare<br/>output beside the authors' figures<br/>or real specimens"]:::build
+        P --> S --> R --> X --> C
+    end
 
-    S --> R --> A --> M --> B --> P --> G
-    S -. DOIs, hashes → source-traceability .-> A
-    P -- remediation items = pk:evidenceAgainst --> T
-    T -- "fix → new commit" --> R
-    T -- "re-score touched dimensions" --> A
-    G -. other assessors may add their own<br/>assessments of the same hypotheses .-> B
+    subgraph B["B &nbsp;Auditing it — the MorphoEval cycle"]
+        direction LR
+        AU["6 Audit<br/>audits/&lt;date&gt;-&lt;name&gt;.yaml<br/>7 dims × 0–100, rationale,<br/>line-pinned evidence @ commit"]:::eval
+        M["7 Measure<br/>measure_outputs.py<br/>fingerprints + morphometrics<br/>vs specimens"]:::eval
+        BG["8 Build graph<br/>build_morphoeval_kg.py<br/>pk:Claim + 8 assessments,<br/>ProbKnow templates"]:::pub
+        PU["9 Sign &amp; publish<br/>test → check_signed.mjs →<br/>fetch back → production"]:::pub
+        G[("10 Knowledge graph<br/>nanopub network · Nanopub Query<br/>kg/&lt;audit&gt;/published.json")]:::pub
+        T["11 Remediate<br/>pk:evidenceAgainst → issue #1<br/>fix → new commit"]:::loop
+        AU --> M --> BG --> PU --> G --> T
+    end
+
+    C -- scored, with evidence --> AU
+    T -- "fix → new commit; re-score touched dimensions;<br/>new nanopubs npx:supersedes the old" --> X
+    G -. other assessors may add their own<br/>assessments of the same hypotheses .-> BG
 ```
 
 ## Workflow

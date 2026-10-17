@@ -2,6 +2,10 @@
 
 A collection of small, self-contained reproductions of published models of biological form — from D'Arcy Thompson's transformations to present-day developmental and palaeobiological datasets — plus an evaluation layer ([MorphoEval](#morphoeval-how-faithful-are-these-reproductions)) that scores how faithfully each reproduction follows its source and publishes the scores as nanopublications.
 
+![All thirteen reproductions, with their MorphoEval scores](./docs/media/all_forms_montage.gif)
+
+*Every form in the repository, 1917–2026, each animation playing once per loop; the last tile is the MorphoEval overall score. Made by [`docs/media/make_montage.py`](./docs/media/make_montage.py) from the per-script animations below.*
+
 Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) are written to the working directory and are git-ignored. Every entry below has a small animation of the morphology it produces (in [`docs/media/`](./docs/media/), downsized copies of the scripts' own GIF output; [`docs/media/README.md`](./docs/media/README.md) records how each was made). Setup: `python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt` (lower bounds; `requirements.lock.txt` has the exact versions the MorphoEval audits were run with — Python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, scikit-image 0.26.0 — and installs cleanly into a fresh venv).
 
 ## Index, by year
@@ -250,9 +254,9 @@ Thompson-focused notes and dataset curation are in:
 
 [`morphoeval/`](./morphoeval/) is a seven-dimension rubric (model fidelity, specimen match, parameter expressivity, morphometric validation, source traceability, code traceability, reproducibility package; weights sum to 100) applied to the scripts above, with every score backed by line-pinned evidence at a recorded commit and by measurements taken on the rendered outputs. Audits are YAML files under `morphoeval/audits/`, built into ProbKnow-conformant nanopublications (`pk:LLMClaimAssessment` per dimension, `schema:PropertyValue` measurement evidence), signed, verified independently, and published to the production nanopub network; re-scores are new nanopubs that `npx:supersedes` the old ones.
 
-How an audit is made (build → evaluate → publish → remediate; the Mermaid source is in [`morphoeval/README.md`](./morphoeval/README.md#the-cycle)):
+How a form gets into the repository (tier A: paper → its formal source → rules pinned and verified on the data → script → comparison with the authors' figures or specimens) and how it is scored (tier B; the Mermaid source is in [`morphoeval/README.md`](./morphoeval/README.md#the-cycle)):
 
-![MorphoEval build / evaluate / publish / remediate cycle](./docs/media/morphoeval_pipeline.png)
+![How a reproduction is made and how MorphoEval scores it](./docs/media/morphoeval_pipeline.png)
 
 | simulation | checkpoint | faithfulness | reproducibility | overall |
 |---|---|---:|---:|---:|
