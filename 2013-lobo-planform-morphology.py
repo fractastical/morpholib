@@ -41,6 +41,11 @@ Usage
     python3 2013-lobo-planform-morphology.py                 # gallery + timeline GIF
     python3 2013-lobo-planform-morphology.py --ids 1 2 3     # render specific morphologies
     python3 2013-lobo-planform-morphology.py --csv morphospace.csv --no-anim
+    python3 2013-lobo-planform-morphology.py --strict-db                # refuse any other .edb
+
+The database is identified by SHA-256 (PLANFORM_DB_SHA256 below, also in
+datasets/planform/planformDB.sha256); a different file is reported as a warning,
+or refused with --strict-db.
 
 Outputs (git-ignored): planform_morphology_gallery.png,
 planform_morphospace_timeline.gif, and optionally a CSV of per-morphology
@@ -135,13 +140,40 @@ class Morphology:
 # --------------------------------------------------------------------------
 # Loading
 # --------------------------------------------------------------------------
-def resolve_db_path(cli_path: Optional[str]) -> str:
+# The database the decoding rule was verified on and the audits were run against
+# (planformDB_2.5.0.edb as distributed with Planform; 372 morphologies, 1181 regions).
+# It is not vendored (no redistribution licence); its identity is pinned here and in
+# datasets/planform/planformDB.sha256 so a run on another copy is flagged.
+PLANFORM_DB_SHA256 = "9effd13ddb87664b9ef7a9b6c9c1959b502fcdd6c1b06ee016501b2d0be83b89"
+PLANFORM_DB_BYTES = 744448
+
+
+def db_fingerprint(path: str) -> tuple[str, int]:
+    import hashlib
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest(), Path(path).stat().st_size
+
+
+def resolve_db_path(cli_path: Optional[str], strict: bool = False) -> str:
     path = cli_path or os.getenv("PLANFORM_DB_PATH")
     if not path or not Path(path).is_file():
         sys.exit(
             "PlanformDB not found. Pass the .edb path as the first argument or set "
             "PLANFORM_DB_PATH (planformDB_2.5.0.edb is distributed with Planform)."
         )
+    digest, size = db_fingerprint(path)
+    if digest == PLANFORM_DB_SHA256:
+        print(f"PlanformDB sha256 ok ({size} bytes; planformDB_2.5.0.edb as audited)")
+    else:
+        msg = (f"PlanformDB {path}: sha256 {digest} ({size} bytes) is not the audited "
+               f"planformDB_2.5.0.edb ({PLANFORM_DB_SHA256}, {PLANFORM_DB_BYTES} bytes); "
+               "the decoding rule and the morphometrics were verified on that file only")
+        if strict:
+            sys.exit(msg)
+        print("WARNING: " + msg)
     return path
 
 
@@ -718,6 +750,8 @@ def check_encoding(morphs: Dict[int, Morphology]) -> None:
 def main(argv: Optional[Sequence[str]] = None) -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("db", nargs="?", help="path to planformDB_*.edb (or set PLANFORM_DB_PATH)")
+    p.add_argument("--strict-db", action="store_true",
+                   help="exit instead of warning if the database is not the audited planformDB_2.5.0.edb")
     p.add_argument("--out-dir", default=".", help="where to write outputs (default: cwd)")
     p.add_argument("--ids", type=int, nargs="*", help="morphology ids for the gallery (default: a curated set)")
     p.add_argument("--csv", help="write per-morphology morphometrics CSV to this path")
@@ -727,7 +761,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     p.add_argument("--per-page", type=int, default=8, help="morphologies per timeline frame")
     args = p.parse_args(argv)
 
-    db = resolve_db_path(args.db)
+    db = resolve_db_path(args.db, strict=args.strict_db)
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 

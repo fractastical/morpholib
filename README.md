@@ -2,7 +2,7 @@
 
 A collection of small, self-contained reproductions of published models of biological form — from D'Arcy Thompson's transformations to present-day developmental and palaeobiological datasets — plus an evaluation layer ([MorphoEval](#morphoeval-how-faithful-are-these-reproductions)) that scores how faithfully each reproduction follows its source and publishes the scores as nanopublications.
 
-Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) are written to the working directory and are git-ignored. Every entry below has a small animation of the morphology it produces (in [`docs/media/`](./docs/media/), downsized copies of the scripts' own GIF output; [`docs/media/README.md`](./docs/media/README.md) records how each was made). Setup: `python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt` (some scripts need `scikit-image`).
+Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) are written to the working directory and are git-ignored. Every entry below has a small animation of the morphology it produces (in [`docs/media/`](./docs/media/), downsized copies of the scripts' own GIF output; [`docs/media/README.md`](./docs/media/README.md) records how each was made). Setup: `python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt` (lower bounds; `requirements.lock.txt` has the exact versions the MorphoEval audits were run with — Python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, scikit-image 0.26.0 — and installs cleanly into a fresh venv).
 
 ## Index, by year
 
@@ -270,7 +270,7 @@ Thompson-focused notes and dataset curation are in:
 
 - [`datasets/odonata/`](./datasets/odonata/): Eshghi et al. 2026 wing-cell measurements (463 wings, with GBIF families and PBDB ages), the 22 fossil taxa's PBDB age records, and 1762 PBDB Odonatoptera occurrences; README with query URLs, licences and retrieval date.
 - [`datasets/raup/`](./datasets/raup/): published Raup parameter values for empirical shells (`variables.json`), the extraction log, paper chronology and citations.
-- [`datasets/planform/`](./datasets/planform/): BibTeX for the Planform papers. The PlanformDB `.edb` itself is not vendored; it ships with Planform.
+- [`datasets/planform/`](./datasets/planform/): BibTeX for the Planform papers and `planformDB.sha256`, the SHA-256 of the `planformDB_2.5.0.edb` the decoder was verified on (744,448 bytes); the `.edb` itself is not vendored (it ships with Planform), and `2013-lobo-planform-morphology.py` checks the hash of whatever file it is given, warning on a mismatch or refusing it with `--strict-db`.
 - LimbformDB 2.1.0 (`.ldb`) is likewise not vendored; `2014-lobo-limbform-morphology.py --download` fetches it from the Lobo lab into the git-ignored `.limbform_cache/` and verifies its SHA-256.
 - [`datasets/celegans/`](./datasets/celegans/): SHA-256 manifest of the 416 WormGUIDES / c302 files (pinned commits) that `2015-santella-wormguides-celegans.py --download` fetches into the git-ignored `.celegans_cache/`, with a README on sources, licences, the calibration assumption and the literature anchors.
 - [`datasets/frog_embryo_data_processed/`](./datasets/frog_embryo_data_processed/): per-embryo masks (`*_mask.npz`, one folder per imaging zoom) used by the wave-vector pipeline's detection summary below.

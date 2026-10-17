@@ -256,6 +256,20 @@ under `history`. The signer's production gate now checks only the files it is
 about to post (manifest entries whose file was superseded elsewhere no longer
 block it).
 
+**Cross-cutting remediation (2026-10-17):** three items that every audit's
+repro-package or source-traceability rationale had carried were closed in the
+working tree (they will show up in the scores only when the scripts are next
+re-audited; published nanopubs are not edited): `requirements.txt` now lists
+`scikit-image`, `requests` and the morphoeval/nanopub dependencies, and
+`requirements.lock.txt` pins the exact versions of the audit environment
+(Python 3.14.7; verified to install into a fresh venv and to reproduce the
+Thompson numbers); `2013-lobo-planform-morphology.py` records the SHA-256 and
+size of the `planformDB_2.5.0.edb` it was verified on
+(`datasets/planform/planformDB.sha256`) and checks the file it is given, with
+`--strict-db` to refuse any other; and the Odonata audit's "report #7 and
+#23/#24 to the authors" item has a draft message in
+`datasets/odonata/NOTE_TO_AUTHORS.md`, to be sent by the repository owner.
+
 ## Current checkpoint
 
 Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1).

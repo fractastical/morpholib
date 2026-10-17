@@ -82,6 +82,9 @@ Discrepancies worth knowing about:
   `table_wing_length_mm` there; the cell measurements are unaffected because
   the scale comes from the bar.
 
+A draft message to the authors about #7 and #23/#24 is in
+[`NOTE_TO_AUTHORS.md`](./NOTE_TO_AUTHORS.md) (not yet sent).
+
 ## Also used at runtime (downloaded to the git-ignored `.wing_cache/`, SHA-256 verified)
 
 - Fossil wing drawings from the Zenodo archive above (CC BY 4.0);
