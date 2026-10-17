@@ -26,6 +26,6 @@ Downsizing: frames sampled evenly, resized with Lanczos, quantised with median
 cut and Floyd–Steinberg dithering, frame duration scaled to keep the original
 running time (Pillow 12.0.0). Total ≈ 15 MB.
 
-`morphoeval_pipeline.png` is not a script output but documentation: the source papers (illustrated with frames taken from the GIFs in this folder), how a reproduction is made, and the MorphoEval cycle, drawn by `morphoeval/report/draw_pipeline.py` (deterministic; re-run it after editing the stages or regenerating a GIF).
+`morphoeval_pipeline.png` and `morphoeval_pipeline.gif` are not script outputs but documentation: the source papers (illustrated from the GIFs in this folder; in the GIF version each thumbnail plays its animation once per loop), how a reproduction is made, and the MorphoEval cycle, drawn by `morphoeval/report/draw_pipeline.py --gif` (deterministic; re-run it after editing the stages or regenerating a GIF).
 
 `all_forms_montage.gif` tiles the thirteen animations above (each resampled to 40 frames across its own loop, fitted whole into a 216-px tile, shared 128-colour palette) with a title tile and the MorphoEval overall scores read from the audit YAMLs; `python3 docs/media/make_montage.py` remakes it after any animation or score changes.

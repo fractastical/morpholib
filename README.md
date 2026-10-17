@@ -254,9 +254,9 @@ Thompson-focused notes and dataset curation are in:
 
 [`morphoeval/`](./morphoeval/) is a seven-dimension rubric (model fidelity, specimen match, parameter expressivity, morphometric validation, source traceability, code traceability, reproducibility package; weights sum to 100) applied to the scripts above, with every score backed by line-pinned evidence at a recorded commit and by measurements taken on the rendered outputs. Audits are YAML files under `morphoeval/audits/`, built into ProbKnow-conformant nanopublications (`pk:LLMClaimAssessment` per dimension, `schema:PropertyValue` measurement evidence), signed, verified independently, and published to the production nanopub network; re-scores are new nanopubs that `npx:supersedes` the old ones.
 
-How a form gets into the repository and how it is scored. Top: the thirteen source papers, each shown with a frame of its reproduction's animation and colour-coded by what the script does with it (reproduce the paper's model from its equations, decode the authors' formal encoding, or test a published claim). Tier A: paper → its formal source → rules pinned and verified on the data → script → comparison with the authors' figures or specimens. Tier B: the audit cycle (the Mermaid source is in [`morphoeval/README.md`](./morphoeval/README.md#the-cycle)):
+How a form gets into the repository and how it is scored. Top: the thirteen source papers, each playing its reproduction's own animation and colour-coded by what the script does with it (reproduce the paper's model from its equations, decode the authors' formal encoding, or test a published claim). Tier A: paper → its formal source → rules pinned and verified on the data → script → comparison with the authors' figures or specimens. Tier B: the audit cycle (the Mermaid source is in [`morphoeval/README.md`](./morphoeval/README.md#the-cycle)):
 
-![How a reproduction is made and how MorphoEval scores it](./docs/media/morphoeval_pipeline.png)
+![How a reproduction is made and how MorphoEval scores it](./docs/media/morphoeval_pipeline.gif)
 
 | simulation | checkpoint | faithfulness | reproducibility | overall |
 |---|---|---:|---:|---:|

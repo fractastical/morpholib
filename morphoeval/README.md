@@ -45,11 +45,12 @@ scripts that were not inspected are listed `unevaluated` with no scores.
 Tier A is how a form gets into the repository (three kinds of script: reproduce the
 paper's model from its equations, decode the authors' formal encoding into form, or test a published
 claim against measurements); tier B is how it is scored. Each pass pins a commit; scores are 0–100 per dimension with a weighted mean overall; published
-nanopubs are immutable and re-scores supersede them. The same figure as a PNG (for the PDF report
+nanopubs are immutable and re-scores supersede them. The same figure as an image (for the PDF report
 and anything that cannot render Mermaid) is `docs/media/morphoeval_pipeline.png`, drawn by
-`morphoeval/report/draw_pipeline.py`; the PNG also heads the two tiers with the thirteen source
-papers (author, year, venue, data source) each illustrated by a frame of its reproduction's
-animation from `docs/media/`.
+`morphoeval/report/draw_pipeline.py`; it also heads the two tiers with the thirteen source
+papers (author, year, venue, data source), each illustrated from its reproduction's animation in
+`docs/media/`. `draw_pipeline.py --gif` writes `morphoeval_pipeline.gif`, the same figure with
+the thumbnails playing (used at the top of the root README); the PDF report uses the still.
 
 ```mermaid
 flowchart TB
