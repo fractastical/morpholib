@@ -4,11 +4,13 @@
     python3 morphoeval/report/draw_pipeline.py            # -> docs/media/morphoeval_pipeline.png
     python3 morphoeval/report/draw_pipeline.py --out /tmp/p.png --svg
 
-Two tiers.  The upper tier is the reproduction itself: paper -> the paper's formal source -> the rules
-pinned down (inferred from prose, verified on every record, disambiguated with the authors' code where
-it exists) -> the script -> comparison with the authors' figures or specimens.  The lower tier is the
-MorphoEval cycle: audit -> measure -> build graph -> sign & publish -> knowledge graph -> remediate,
-whose fixes feed back into the script.  The same diagram is kept as Mermaid in morphoeval/README.md;
+Two tiers with the outputs between them.  Tier A is the reproduction: a person scouts -> paper -> the
+paper's formal source -> the rules pinned down (inferred from prose, verified on every record,
+disambiguated with the authors' code where it exists) -> the script.  Box 6, spanning the width, is
+what the scripts produce: a frame of each reproduction's own animation, labelled with its paper -
+the thing that is compared and scored.  Tier B is the MorphoEval cycle: audit -> measure -> write as
+claims -> sign & publish -> public record -> remediate, and the fix loop runs straight back up from
+Remediate, between two columns of outputs, into Script.  The same diagram is kept as Mermaid in morphoeval/README.md;
 this one is for the PDF report and anything that cannot render Mermaid.  No external drawing library.
 """
 from __future__ import annotations
@@ -24,23 +26,22 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 ROOT = Path(__file__).resolve().parents[2]
 
 BUILD = "#dbeafe"; EVAL = "#fde68a"; PUB = "#bbf7d0"; LOOP = "#fecaca"; EDGE = "#334155"; RED = "#b91c1c"; HUMAN = "#7c3aed"
-# (x, y, w, h, colour, title, body) on a 100 x 100 canvas
-YA, YB, H = 54, 13, 20
-W, XS = 15.0, [1.0, 17.6, 34.2, 50.8, 67.4, 84.0]           # six boxes per tier; tier A left -> right, tier B right -> left
-XA, XB = XS, XS[::-1]
+# (x, y, w, h, colour, title, body) on a 100 x 100 canvas.  Top to bottom: tier A (five boxes, left -> right),
+# the outputs band (box 6), tier B (six boxes, left -> right), the note.
+YA, YB, H = 78, 13, 20
+WA, XA = 18.0, [1.5, 21.25, 41.0, 60.75, 80.5]
+W, XB = 15.0, [1.0, 17.6, 34.2, 50.8, 67.4, 84.0]
 BOXES = {
-    "scout":   (XA[0], YA, W, H, BUILD, "1  Scout",
-                "a person finds a model of form\nworth the work: a classic paper,\nan open dataset, a claim nobody\nhas tested, a score that is too\nlow — and points the agent at it"),
-    "paper":   (XA[1], YA, W, H, BUILD, "2  Paper",
-                "the model as published:\nequations (Turing, Raup,\nHoffmann), an encoding\n(Planform, Limbform, WormGUIDES)\nor a claim (Thompson)"),
-    "source":  (XA[2], YA, W, H, BUILD, "3  Formal source",
-                "the paper's own data:\nparameter values, database or\natlas records, measurement\ntables — fetched or vendored,\nSHA-256 pinned"),
-    "rules":   (XA[3], YA, W, H, BUILD, "4  Pin the rules",
-                "prose → precise rule, checked\non every record (1181/1181\nregions, 3137/3146 joints);\nauthors' code read to settle\nsemantics, not copied"),
-    "script":  (XA[4], YA, W, H, BUILD, "5  Script",
+    "scout":   (XA[0], YA, WA, H, BUILD, "1  Scout",
+                "a person finds a model of form worth\nthe work: a classic paper, an open\ndataset, a claim nobody has tested,\na score that is too low — and\npoints the agent at it"),
+    "paper":   (XA[1], YA, WA, H, BUILD, "2  Paper",
+                "the model as published:\nequations (Turing, Raup, Hoffmann),\nan encoding (Planform, Limbform,\nWormGUIDES) or a claim (Thompson)"),
+    "source":  (XA[2], YA, WA, H, BUILD, "3  Formal source",
+                "the paper's own data:\nparameter values; database / atlas\nrecords; measurement tables —\nfetched or vendored, SHA-256 pinned"),
+    "rules":   (XA[3], YA, WA, H, BUILD, "4  Pin the rules",
+                "prose → precise rule, checked on\nevery record (1181/1181 regions,\n3137/3146 joints); authors' code read\nto settle semantics, not copied"),
+    "script":  (XA[4], YA, WA, H, BUILD, "5  Script",
                 "<year>-<author>-<model>.py\nreproduce · decode · test\n→ figure + GIF (git-ignored),\nmorphometrics CSV, self-checks"),
-    "compare": (XA[5], YA, W, H, BUILD, "6  Compare",
-                "output beside the authors'\nfigures or real specimens;\ndistinct forms must come\nout distinct"),
     "audit":   (XB[0], YB, W, H, EVAL,  "7  Audit",
                 "a reviewer scores the script\non 7 questions, 0–100 each,\nwith a written reason and\nthe lines of code it rests on,\nat one named commit"),
     "measure": (XB[1], YB, W, H, EVAL,  "8  Measure",
@@ -81,8 +82,8 @@ PAPERS = [  # (gif, caption lines, kind)
     ("odonata_wing_cells_deep_time.gif",  "Eshghi, Buesch & Gorb 2026\nZenodo, Tables S1–S3\nOdonata wing cells, fossil vs extant", "test"),
 ]
 KIND_COL = {"reproduce": "#2563eb", "decode": "#059669", "test": "#d97706"}
-YS = 83                                                      # bottom of the thumbnail strip
-FIG_W, FIG_H, YLIM = 13.0, 12.3, 123.0
+YS = 40.5                                                    # bottom of the outputs band (box 6)
+FIG_W, FIG_H, YLIM = 13.0, 11.1, 111.0
 
 
 THUMBS = []                                                  # (gif name, data-coordinate extent) filled by strip()
@@ -99,12 +100,19 @@ def gif_frame(name: str, frac: float = 0.55):
 
 
 def strip(ax):
-    """Two rows of thumbnails (7 + 6): each paper with a frame of its reproduction's animation."""
-    cols, gap = 7, 1.0; tw = (97.0 - (cols - 1) * gap) / cols; row_h = 14.2
-    ax.text(1.5, YS + 2 * row_h + 2.0, "The papers, and the forms their reproductions produce", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
+    """Box 6: the outputs.  Two rows of thumbnails (7 + 6), each a frame of a script's own animation, labelled
+    with the paper it comes from.  Framed like a tier-A box because it is one: the thing Compare and Audit look at."""
+    cols, gap, wide = 7, 1.0, 2.6; tw = (97.0 - (cols - 2) * gap - wide) / cols; row_h = 14.2   # the last gap is wider: the fix loop runs through it
+    top = YS + 2 * row_h + 5.8
+    col_x = [1.5 + c * (tw + gap) + (wide - gap if c == cols - 1 else 0) for c in range(cols)]
+    ax.add_patch(FancyBboxPatch((1.0, YS + 0.4), 98.0, top - YS - 0.4, boxstyle="round,pad=0.4,rounding_size=1.2", fc="#eff6ff", ec=EDGE, lw=1.0, zorder=1))
+    ax.text(50, top - 2.0, "6  Output & compare", ha="center", va="center", fontsize=9.2, fontweight="bold", color=EDGE)
+    ax.text(50, top - 4.3, "what each script produces — its own animation, here a frame of it, labelled with the paper it reproduces — "
+            "set beside the authors' figures or real specimens; distinct forms must come out distinct.  This is what gets scored.",
+            ha="center", va="center", fontsize=6.6, color="#1e293b")
     for i, (gif, cap, kind) in enumerate(PAPERS):
         r, c = divmod(i, cols)
-        x = 1.5 + c * (tw + gap); y = YS + (1 - r) * row_h
+        x = col_x[c]; y = YS + (1 - r) * row_h
         img = gif_frame(gif)
         th = tw * (img.height / img.width) * (FIG_W / 100.0) / (FIG_H / YLIM)
         th = min(th, row_h - 6.2)
@@ -112,12 +120,13 @@ def strip(ax):
         THUMBS.append((gif, (x, x + tw, y + 5.6, y + 5.6 + th)))
         ax.add_patch(FancyBboxPatch((x, y + 5.6), tw, th, boxstyle="square,pad=0", fc="none", ec="#94a3b8", lw=0.5, zorder=4))
         ax.add_patch(FancyBboxPatch((x, y + 4.9), tw, 0.5, boxstyle="square,pad=0", fc=KIND_COL[kind], ec="none", zorder=3))
-        ax.text(x + tw / 2, y + 2.3, cap, ha="center", va="center", fontsize=5.7, color="#1e293b", linespacing=1.15)
-    x = 1.5 + 6 * (tw + gap); y = YS                                  # legend in the free slot of row 2
+        ax.text(x + tw / 2, y + 2.3, cap, ha="center", va="center", fontsize=5.7, color="#1e293b", linespacing=1.15, zorder=3)
+    x = col_x[6]; y = YS                                              # legend in the free slot of row 2
     for j, (k, c) in enumerate(KIND_COL.items()):
-        ax.add_patch(FancyBboxPatch((x, y + 10.4 - j * 2.8), 1.6, 0.5, boxstyle="square,pad=0", fc=c, ec="none"))
-        ax.text(x + 2.2, y + 10.65 - j * 2.8, {"reproduce": "reproduce the\npaper's model", "decode": "decode the\nauthors' encoding",
-                                              "test": "test a\npublished claim"}[k], fontsize=6.0, va="center", color=EDGE, linespacing=1.1)
+        ax.add_patch(FancyBboxPatch((x + 1.0, y + 10.4 - j * 2.8), 1.6, 0.5, boxstyle="square,pad=0", fc=c, ec="none", zorder=3))
+        ax.text(x + 3.2, y + 10.65 - j * 2.8, {"reproduce": "reproduce the\npaper's model", "decode": "decode the\nauthors' encoding",
+                                              "test": "test a\npublished claim"}[k], fontsize=6.0, va="center", color=EDGE, linespacing=1.1, zorder=3)
+    return top, col_x[6] - wide / 2                                    # band top; x of the (wide) gap between columns 6 and 7
 
 
 def box(ax, key):
@@ -215,12 +224,13 @@ def main(argv=None):
     fig, ax = plt.subplots(figsize=(FIG_W, FIG_H)); fig.subplots_adjust(0, 0, 1, 1)
     ax.set_xlim(0, 100); ax.set_ylim(0, YLIM); ax.set_aspect("auto"); ax.axis("off")
 
+    # box 6, the outputs, between the tiers
+    band_top, x_gap = strip(ax)
+
     # tier labels
-    strip(ax)
-    ax.add_patch(FancyArrowPatch((XS[1] + W / 2, YS + 0.2), (XS[1] + W / 2, YA + H + 0.4), arrowstyle="-|>", mutation_scale=12, color=EDGE, lw=1.1, zorder=5))
-    ax.text(XS[2], YA + H + 4.6, "A  Making a reproduction", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
-    ax.text(XS[2], YA + H + 2.0, "each paper goes through A once, then round B until it holds", fontsize=7.5, style="italic", color="#475569", va="center")
-    ax.text(XS[1], YB + H + 3.0, "B  Auditing it — the MorphoEval cycle", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
+    ax.text(XA[1], YA + H + 4.6, "A  Making a reproduction", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
+    ax.text(XA[1], YA + H + 2.0, "each paper goes through A once; then round B, and back into A, until it holds", fontsize=7.5, style="italic", color="#475569", va="center")
+    ax.text(XB[1] + 1.0, YB + H + 2.0, "B  Auditing it — the MorphoEval cycle", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
 
     for k in BOXES:
         box(ax, k)
@@ -228,34 +238,37 @@ def main(argv=None):
     x, y, w, h = BOXES["scout"][:4]
     person(ax, x + 1.0, y + h + 1.2, 1.1); ax.text(x + 3.0, y + h + 2.9, HUMANS["scout"], fontsize=6.4, color=HUMAN, va="center", fontweight="bold", linespacing=1.1)
     x, y, w, h = BOXES["remed"][:4]
-    person(ax, x + 1.0, y + h + 1.2, 1.1); ax.text(x + 3.0, y + h + 3.3, HUMANS["remed"], fontsize=6.4, color=HUMAN, va="center", fontweight="bold", linespacing=1.1)
+    person(ax, x + 4.0, y + h + 1.2, 1.1); ax.text(x + 6.0, y + h + 3.3, HUMANS["remed"], fontsize=6.4, color=HUMAN, va="center", fontweight="bold", linespacing=1.1)
 
     # tier A
     arrow(ax, "scout", "r", "paper", "l")
     arrow(ax, "paper", "r", "source", "l")
     arrow(ax, "source", "r", "rules", "l")
     arrow(ax, "rules", "r", "script", "l")
-    arrow(ax, "script", "r", "compare", "l")
-    ax.text(XS[1], YA - 4.6, "authors' code, where it exists (WormGUIDES loader, OpenWorm c302, Hoffmann's segmentation), is read to settle semantics, not copied",
+    ax.text(XA[0], YA - 2.4, "authors' code, where it exists (WormGUIDES loader, OpenWorm c302, Hoffmann's segmentation), is read to settle semantics, not copied",
             ha="left", va="center", fontsize=6.6, color="#64748b", style="italic")
 
-    # A -> B
-    arrow(ax, "compare", "b", "audit", "t", "scored, with evidence", lx=4.5, ly=0.0)
+    # Script -> outputs (down into box 6), outputs -> Audit (down out of box 6)
+    xs = XA[4] + WA / 2 + 4.0
+    ax.add_patch(FancyArrowPatch((xs, YA), (xs, band_top), arrowstyle="-|>", mutation_scale=11, lw=1.1, color=EDGE, shrinkA=2, shrinkB=1))
+    ax.text(xs + 1.2, (YA + band_top) / 2, "writes", fontsize=6.6, color=EDGE, va="center", ha="left")
+    xa = XB[0] + W / 2
+    ax.add_patch(FancyArrowPatch((xa, YS + 0.4), (xa, YB + H), arrowstyle="-|>", mutation_scale=11, lw=1.1, color=EDGE, shrinkA=1, shrinkB=2))
+    ax.text(xa + 1.2, YS - 2.2, "scored, with evidence", fontsize=6.6, color=EDGE, va="center", ha="left")
 
-    # tier B, right -> left
-    arrow(ax, "audit", "l", "measure", "r")
-    arrow(ax, "measure", "l", "build", "r", "measurements.yaml", ly=4.6, fs=6.0)
-    arrow(ax, "build", "l", "publish", "r")
-    arrow(ax, "publish", "l", "graph", "r", "signed, published\nstatements", ly=4.6, fs=6.0)
-    arrow(ax, "graph", "l", "remed", "r", "remediation\nitems", ly=4.6, fs=6.0)
+    # tier B, left -> right
+    arrow(ax, "audit", "r", "measure", "l")
+    arrow(ax, "measure", "r", "build", "l", "measurements.yaml", ly=4.6, fs=6.0)
+    arrow(ax, "build", "r", "publish", "l")
+    arrow(ax, "publish", "r", "graph", "l", "signed, published\nstatements", ly=4.6, fs=6.0)
+    arrow(ax, "graph", "r", "remed", "l", "remediation\nitems", ly=4.6, fs=6.0)
 
-    # the loop back into tier A: up from Remediate, across the gap, up into Script (an elbow, so it crosses no text)
-    x0, y0 = pt("remed", "t"); x0 = BOXES["remed"][0] + W - 1.0; x1, y1 = pt("script", "b"); ym = YB + H + 9
-    ax.plot([x0, x0, x1], [y0 + 0.5, ym, ym], color=RED, lw=1.2, solid_capstyle="round")
-    ax.add_patch(FancyArrowPatch((x1, ym), (x1, y1), arrowstyle="-|>", mutation_scale=11, lw=1.2, color=RED, shrinkA=0, shrinkB=2))
-    ax.text((x0 + x1) / 2, ym + 2.6, "fix → new commit → the touched scores are judged again and published anew; the old statements stay on record, "
-            "marked as replaced (nothing published is ever edited)",
-            ha="center", va="center", fontsize=6.6, color=RED, bbox=dict(fc="white", ec="none", pad=1.0))
+    # the loop: straight up from Remediate, between two columns of outputs, into Script
+    y0 = YB + H; y1 = YA
+    ax.add_patch(FancyArrowPatch((x_gap, y0 + 0.5), (x_gap, y1), arrowstyle="-|>", mutation_scale=11, lw=1.2, color=RED, shrinkA=0, shrinkB=2, zorder=5))
+    ax.text(x_gap - 1.5, YS - 2.3, "fix → new commit → the outputs are re-made and the touched scores judged again and published anew;\n"
+            "the old statements stay on record, marked as replaced (nothing published is ever edited)",
+            ha="right", va="center", fontsize=6.6, color=RED, linespacing=1.25)
     note(ax)
 
     ax.text(50, YLIM - 2.6, "How a form gets into this repository, and how it is scored", ha="center", va="center", fontsize=12.5, fontweight="bold", color=EDGE)

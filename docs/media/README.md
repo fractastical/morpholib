@@ -26,7 +26,7 @@ Downsizing: frames sampled evenly, resized with Lanczos, quantised with median
 cut and Floyd–Steinberg dithering, frame duration scaled to keep the original
 running time (Pillow 12.0.0). Total ≈ 15 MB.
 
-`morphoeval_pipeline.png` and `morphoeval_pipeline.gif` are not script outputs but documentation: the source papers (illustrated from the GIFs in this folder; in the GIF version each thumbnail plays its animation once per loop), how a reproduction is made, and the MorphoEval cycle, drawn by `morphoeval/report/draw_pipeline.py --gif` (deterministic; re-run it after editing the stages or regenerating a GIF).
+`morphoeval_pipeline.png` and `morphoeval_pipeline.gif` are not script outputs but documentation: how a reproduction is made, the reproductions' outputs (box 6, illustrated from the GIFs in this folder and labelled with their papers; in the GIF version each thumbnail plays its animation once per loop), and the MorphoEval cycle, drawn by `morphoeval/report/draw_pipeline.py --gif` (deterministic; re-run it after editing the stages or regenerating a GIF).
 
 `thompson_scarus_pomacanthus_outlines.png` is a 1400-px, 256-colour copy of the still figure `thompson/1917-thompson-scarus-pomacanthus.py` writes as `thompson_scarus_pomacanthus_outlines.png` (2026-10-17): the real-outline test on two Wikimedia Commons photographs, whose credits (CC BY 4.0 and CC BY 2.0) are printed in the figure and listed in `datasets/thompson/README.md`.
 

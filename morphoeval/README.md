@@ -43,15 +43,16 @@ scripts that were not inspected are listed `unevaluated` with no scores.
 ## The cycle
 
 Tier A is how a form gets into the repository: it starts with a person scouting — choosing a
-paper, dataset or claim worth the work and pointing the agent at it — and then one of three kinds of script
+paper, dataset or claim worth the work and pointing the agent at it — and ends in one of three kinds of script
 (reproduce the paper's model from its equations, decode the authors' formal encoding into form, or test a
-published claim against measurements); tier B is how it is scored, and a person reads the scores and
-decides what to fix or where to go next (👤 marks the two places people decide). Each pass pins a commit; scores are 0–100 per dimension with a weighted mean overall; published
+published claim against measurements). Between the tiers sits what the scripts produce — box 6, the
+thirteen animations, each labelled with its paper — which is what tier B scores; a person reads the scores
+and decides what to fix or where to go next, and the fix runs back through box 6 into the script (👤 marks
+the two places people decide). Each pass pins a commit; scores are 0–100 per dimension with a weighted mean overall; published
 nanopubs are immutable and re-scores supersede them. The same figure as an image (for the PDF report
 and anything that cannot render Mermaid) is `docs/media/morphoeval_pipeline.png`, drawn by
-`morphoeval/report/draw_pipeline.py`; it also heads the two tiers with the thirteen source
-papers (author, year, venue, data source), each illustrated from its reproduction's animation in
-`docs/media/`. `draw_pipeline.py --gif` writes `morphoeval_pipeline.gif`, the same figure with
+`morphoeval/report/draw_pipeline.py`; in it box 6 is the thirteen reproductions' own animations in
+`docs/media/`, each labelled with its paper (author, year, venue, data source). `draw_pipeline.py --gif` writes `morphoeval_pipeline.gif`, the same figure with
 the thumbnails playing (used at the top of the root README); the PDF report uses the still.
 
 ```mermaid
@@ -68,9 +69,11 @@ flowchart TB
         S["3 Formal source<br/>the paper's own data: parameters,<br/>database/atlas records, tables<br/>(SHA-256 pinned)"]:::build
         R["4 Pin the rules<br/>prose → precise rule, checked on<br/>every record; authors' code read<br/>for semantics, not copied"]:::build
         X["5 Script<br/>&lt;year&gt;-&lt;author&gt;-&lt;model&gt;.py<br/>→ figure + GIF, morphometrics,<br/>self-checks"]:::build
-        C["6 Compare<br/>output beside the authors' figures<br/>or real specimens"]:::build
-        SC --> P --> S --> R --> X --> C
+        SC --> P --> S --> R --> X
     end
+
+    O["6 Output &amp; compare<br/>what each script produces — its own figure and animation<br/>(the thirteen in docs/media/) — set beside the authors' figures<br/>or real specimens; distinct forms must come out distinct.<br/>This is what gets scored."]:::build
+    X -- writes --> O
 
     subgraph B["B &nbsp;Auditing it — the MorphoEval cycle"]
         direction LR
@@ -83,7 +86,7 @@ flowchart TB
         AU --> M --> BG --> PU --> G --> T
     end
 
-    C -- scored, with evidence --> AU
+    O -- scored, with evidence --> AU
     T -- "👤 a person reads the scores and picks what to fix next;<br/>fix → new commit → touched scores judged again and published anew;<br/>the old statements stay on record, marked as replaced (nothing published is edited)" --> X
     G -. other assessors (models, people) may publish their own<br/>assessment of the same hypotheses .-> BG
 ```
