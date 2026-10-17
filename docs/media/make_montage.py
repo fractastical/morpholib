@@ -25,7 +25,6 @@ ROOT = HERE.parents[1]
 # (gif, year, label, script) in year order; the label is what fits under a ~200-px tile
 CLIPS = [
     ("thompson_transformations.gif",       "1917", "Thompson, transformations (real fish)",  "thompson/1917-thompson.py"),
-    ("thompson_scarus_pomacanthus.gif",    "1917", "Thompson, Scarus → Pomacanthus", "thompson/1917-thompson-scarus-pomacanthus.py"),
     ("turing_gray_scott.gif",              "1952", "Turing / Gray–Scott patterns",            "1952-turing-morpho.py"),
     ("raup_shell_coiling.gif",             "1966", "Raup, shell coiling",                     "create_raup_animations.py"),
     ("petroff_stromatolite_dome_to_cone.gif", "2010", "Petroff, stromatolites",               "2010-petroff-stromatolite.py"),
@@ -38,6 +37,8 @@ CLIPS = [
     ("kahng_coral_geometry_growth.gif",    "2024", "Kahng, coral geometry",                   "2024-kahng-coral-geometry.py"),
     ("odonata_wing_cells_deep_time.gif",   "2026", "Eshghi, Odonata wing cells",              "2026-eshghi-odonata-wing-cells.py"),
 ]
+# scored scripts that have no tile of their own (their output is a still, or another tile of the same paper stands for them)
+SCORED_ONLY = {"thompson/1917-thompson-scarus-pomacanthus.py": ("1917", "Thompson fish")}
 BG, FG, DIM, ACCENT = (250, 250, 248), (30, 41, 59), (100, 116, 139), (23, 190, 207)
 
 
@@ -85,6 +86,7 @@ def score_tile(w: int, h: int, sc: dict[str, float]) -> Image.Image:
     short = {"1952-turing-morpho.py": "Turing", "create_raup_animations.py": "Raup", "2015-santella-wormguides-celegans.py": "C. elegans",
              "2026-eshghi-odonata-wing-cells.py": "Odonata", "thompson/1917-thompson-scarus-pomacanthus.py": "Thompson fish"}
     rows = [(c[1], short.get(c[3], c[2].split(",")[0]), sc[c[3]]) for c in CLIPS if c[3] in sc]
+    rows += [(y, n, sc[s]) for s, (y, n) in SCORED_ONLY.items() if s in sc]            # scored scripts without a tile
     rows.sort(key=lambda r: -r[2])
     y0, bar_h = 24, max(8, (h - 30) // max(1, len(rows)))
     fnt = font(8)

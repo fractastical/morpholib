@@ -57,7 +57,7 @@ BOXES = {
 }
 # the file or term behind each tier-B box, in small type under the plain-language body
 TERMS = {
-    "scout": "so far: 13 papers, chosen by hand", "paper": "Raup 1966 · PlanformDB · Thompson 1917",
+    "scout": "so far: 12 papers, chosen by hand", "paper": "Raup 1966 · PlanformDB · Thompson 1917",
     "source": "SHA-256 pinned · datasets/<paper>/", "rules": "e.g. 1181/1181 regions, 3137/3146 joints",
     "script": "<year>-<author>-<model>.py", "audit": "audits/<date>-<name>.yaml", "measure": "measure_outputs.py",
     "build": "build_morphoeval_kg.py (RDF)", "publish": "sign_morphoeval.py",
@@ -69,8 +69,7 @@ AGENTS = {"script": (BUILDER, "the builder agent\nwrites it"), "audit": (ASSESSO
 # the papers, in year order, with a frame of each reproduction's own animation (docs/media/*.gif)
 MEDIA = ROOT / "docs" / "media"
 PAPERS = [  # (gif, caption lines, kind)
-    ("thompson_transformations.gif",      "Thompson 1917\nOn Growth and Form, ch. XVII\ntransformations of a real Scarus", "reproduce"),
-    ("thompson_scarus_pomacanthus.gif",   "Thompson 1917, Figs. 375–376\ntested on Claverie & Wainwright\n2014 landmarks (Dryad)", "test"),
+    ("thompson_transformations.gif",      "Thompson 1917\nOn Growth and Form, ch. XVII\na real Scarus on the deformed grid", "reproduce"),
     ("turing_gray_scott.gif",             "Turing 1952\nPhil Trans R Soc B\nvia Gray & Scott 1984, Pearson 1993", "reproduce"),
     ("raup_shell_coiling.gif",            "Raup 1966\nJ Paleontol\nshell-coiling morphospace", "reproduce"),
     ("petroff_stromatolite_dome_to_cone.gif", "Petroff et al. 2010\nPNAS\nconical stromatolites", "reproduce"),
@@ -102,7 +101,7 @@ def gif_frame(name: str, frac: float = 0.55):
 
 
 def strip(ax):
-    """Box 6: the outputs.  Two rows of thumbnails (7 + 6), each a frame of a script's own animation, labelled
+    """Box 6: the outputs.  Two rows of thumbnails (7 + 5), each a frame of a script's own animation, labelled
     with the paper it comes from.  Framed like a tier-A box because it is one: the thing Compare and Audit look at."""
     cols, gap, wide = 7, 1.0, 2.6; tw = (97.0 - (cols - 2) * gap - wide) / cols; row_h = 14.2   # the last gap is wider: the fix loop runs through it
     top = YS + 2 * row_h + 5.8
@@ -123,7 +122,7 @@ def strip(ax):
         ax.add_patch(FancyBboxPatch((x, y + 5.6), tw, th, boxstyle="square,pad=0", fc="none", ec="#94a3b8", lw=0.5, zorder=4))
         ax.add_patch(FancyBboxPatch((x, y + 4.9), tw, 0.5, boxstyle="square,pad=0", fc=KIND_COL[kind], ec="none", zorder=3))
         ax.text(x + tw / 2, y + 2.3, cap, ha="center", va="center", fontsize=5.7, color="#1e293b", linespacing=1.15, zorder=3)
-    x = col_x[6]; y = YS                                              # legend in the free slot of row 2
+    x = col_x[5]; y = YS                                              # legend in the free slot of row 2 (the last slot stays empty: the fix loop runs past it)
     for j, (k, c) in enumerate(KIND_COL.items()):
         ax.add_patch(FancyBboxPatch((x + 1.0, y + 10.4 - j * 2.8), 1.6, 0.5, boxstyle="square,pad=0", fc=c, ec="none", zorder=3))
         ax.text(x + 3.2, y + 10.65 - j * 2.8, {"reproduce": "reproduce the\npaper's model", "decode": "decode the\nauthors' encoding",
@@ -261,7 +260,7 @@ def main(argv=None):
     arrow(ax, "paper", "r", "source", "l")
     arrow(ax, "source", "r", "rules", "l")
     arrow(ax, "rules", "r", "script", "l")
-    ax.text(XA[0], YA - 2.4, "three of the thirteen papers come with the authors' own code; it is read to settle what they meant, never copied",
+    ax.text(XA[0], YA - 2.4, "three of the twelve papers come with the authors' own code; it is read to settle what they meant, never copied",
             ha="left", va="center", fontsize=6.6, color="#64748b", style="italic")
 
     # Script -> outputs (down into box 6), outputs -> Audit (down out of box 6)

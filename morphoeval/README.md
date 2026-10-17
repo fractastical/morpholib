@@ -46,7 +46,7 @@ The forms in question are the shapes of bodies — how they arise in development
 paper, dataset or claim worth the work and pointing the agent at it — and ends in one of three kinds of script
 (reproduce the paper's model from its equations, decode the authors' formal encoding into form, or test a
 published claim against measurements). Between the tiers sits what the scripts produce — box 6, the
-thirteen animations, each labelled with its paper — which is what tier B scores; a person reads the scores
+twelve animations, each labelled with its paper — which is what tier B scores; a person reads the scores
 and decides what to fix or where to go next; the builder agent then re-works the script — its fidelity to
 the paper, its sources, its checks — and the fix runs back through box 6 into the script (👤 marks the two
 places people decide). Two agent roles are meant to be distinct: the **builder** that writes and re-works the
@@ -56,7 +56,7 @@ nanopubs on the same hypotheses, and running one is the most important open item
 [morpholib#1](https://github.com/fractastical/morpholib/issues/1). Each pass pins a commit; scores are 0–100 per dimension with a weighted mean overall; published
 nanopubs are immutable and re-scores supersede them. The same figure as an image (for the PDF report
 and anything that cannot render Mermaid) is `docs/media/morphoeval_pipeline.png`, drawn by
-`morphoeval/report/draw_pipeline.py`; in it box 6 is the thirteen reproductions' own animations in
+`morphoeval/report/draw_pipeline.py`; in it box 6 is the reproductions' own animations in
 `docs/media/`, each labelled with its paper (author, year, venue, data source). `draw_pipeline.py --gif` writes `morphoeval_pipeline.gif`, the same figure with
 the thumbnails playing (used at the top of the root README); the PDF report uses the still.
 
@@ -77,7 +77,7 @@ flowchart TB
         SC --> P --> S --> R --> X
     end
 
-    O["6 Output &amp; compare<br/>what each script produces — its own figure and animation<br/>(the thirteen in docs/media/) — set beside the authors' figures<br/>or real specimens; distinct forms must come out distinct.<br/>This is what gets scored."]:::build
+    O["6 Output &amp; compare<br/>what each script produces — its own figure and animation<br/>(the twelve in docs/media/) — set beside the authors' figures<br/>or real specimens; distinct forms must come out distinct.<br/>This is what gets scored."]:::build
     X -- writes --> O
 
     subgraph B["B &nbsp;Auditing it — the MorphoEval cycle"]
