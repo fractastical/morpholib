@@ -42,9 +42,11 @@ scripts that were not inspected are listed `unevaluated` with no scores.
 
 ## The cycle
 
-Tier A is how a form gets into the repository (three kinds of script: reproduce the
-paper's model from its equations, decode the authors' formal encoding into form, or test a published
-claim against measurements); tier B is how it is scored. Each pass pins a commit; scores are 0–100 per dimension with a weighted mean overall; published
+Tier A is how a form gets into the repository: it starts with a person scouting — choosing a
+paper, dataset or claim worth the work and pointing the agent at it — and then one of three kinds of script
+(reproduce the paper's model from its equations, decode the authors' formal encoding into form, or test a
+published claim against measurements); tier B is how it is scored, and a person reads the scores and
+decides what to fix or where to go next (👤 marks the two places people decide). Each pass pins a commit; scores are 0–100 per dimension with a weighted mean overall; published
 nanopubs are immutable and re-scores supersede them. The same figure as an image (for the PDF report
 and anything that cannot render Mermaid) is `docs/media/morphoeval_pipeline.png`, drawn by
 `morphoeval/report/draw_pipeline.py`; it also heads the two tiers with the thirteen source
@@ -61,27 +63,28 @@ flowchart TB
 
     subgraph A["A &nbsp;Making a reproduction — reproduce the paper's model · decode the authors' encoding · test a published claim"]
         direction LR
-        P["1 Paper<br/>the model as published: equations,<br/>an encoding, or a claim"]:::build
-        S["2 Formal source<br/>the paper's own data: parameters,<br/>database/atlas records, tables<br/>(SHA-256 pinned)"]:::build
-        R["3 Pin the rules<br/>prose → precise rule, checked on<br/>every record; authors' code read<br/>for semantics, not copied"]:::build
-        X["4 Script<br/>&lt;year&gt;-&lt;author&gt;-&lt;model&gt;.py<br/>→ figure + GIF, morphometrics,<br/>self-checks"]:::build
-        C["5 Compare<br/>output beside the authors' figures<br/>or real specimens"]:::build
-        P --> S --> R --> X --> C
+        SC["👤 1 Scout<br/>a person finds a model of form worth the work —<br/>a classic paper, an open dataset, an untested claim,<br/>a score that is too low — and points the agent at it"]:::build
+        P["2 Paper<br/>the model as published: equations,<br/>an encoding, or a claim"]:::build
+        S["3 Formal source<br/>the paper's own data: parameters,<br/>database/atlas records, tables<br/>(SHA-256 pinned)"]:::build
+        R["4 Pin the rules<br/>prose → precise rule, checked on<br/>every record; authors' code read<br/>for semantics, not copied"]:::build
+        X["5 Script<br/>&lt;year&gt;-&lt;author&gt;-&lt;model&gt;.py<br/>→ figure + GIF, morphometrics,<br/>self-checks"]:::build
+        C["6 Compare<br/>output beside the authors' figures<br/>or real specimens"]:::build
+        SC --> P --> S --> R --> X --> C
     end
 
     subgraph B["B &nbsp;Auditing it — the MorphoEval cycle"]
         direction LR
-        AU["6 Audit<br/>a reviewer scores the script on 7 questions,<br/>0–100 each, with a written reason and the lines<br/>of code it rests on, at one commit<br/><small>audits/&lt;date&gt;-&lt;name&gt;.yaml</small>"]:::eval
-        M["7 Measure<br/>outputs hashed and measured independently<br/>against specimens or the paper:<br/>numbers, not opinions<br/><small>measure_outputs.py</small>"]:::eval
-        BG["8 Write as claims<br/>each score becomes one small machine-readable<br/>statement: 'this script reproduces X' — how likely,<br/>says who, on what evidence, under what licence<br/><small>build_morphoeval_kg.py (RDF, ProbKnow templates)</small>"]:::pub
-        PU["9 Sign &amp; publish<br/>each statement is signed and put on a public<br/>network of servers under a permanent address;<br/>test network first, then for real<br/><small>sign_morphoeval.py</small>"]:::pub
-        G[("10 Public record<br/>anyone can look a score up, cite it, check its<br/>signature or query across all audits<br/><small>Nanopub Query · kg/&lt;audit&gt;/REPORT.md</small>")]:::pub
-        T["11 Remediate<br/>what the audit found wrong becomes a to-do list;<br/>a fix is a new commit, then the touched scores<br/>are judged again<br/><small>GitHub issue #1</small>"]:::loop
+        AU["7 Audit<br/>a reviewer scores the script on 7 questions,<br/>0–100 each, with a written reason and the lines<br/>of code it rests on, at one commit<br/><small>audits/&lt;date&gt;-&lt;name&gt;.yaml</small>"]:::eval
+        M["8 Measure<br/>outputs hashed and measured independently<br/>against specimens or the paper:<br/>numbers, not opinions<br/><small>measure_outputs.py</small>"]:::eval
+        BG["9 Write as claims<br/>each score becomes one small machine-readable<br/>statement: 'this script reproduces X' — how likely,<br/>says who, on what evidence, under what licence<br/><small>build_morphoeval_kg.py (RDF, ProbKnow templates)</small>"]:::pub
+        PU["10 Sign &amp; publish<br/>each statement is signed and put on a public<br/>network of servers under a permanent address;<br/>test network first, then for real<br/><small>sign_morphoeval.py</small>"]:::pub
+        G[("11 Public record<br/>anyone can look a score up, cite it, check its<br/>signature or query across all audits<br/><small>Nanopub Query · kg/&lt;audit&gt;/REPORT.md</small>")]:::pub
+        T["👤 12 Remediate<br/>what the audit found wrong becomes a to-do list;<br/>a fix is a new commit, then the touched scores<br/>are judged again<br/><small>GitHub issue #1</small>"]:::loop
         AU --> M --> BG --> PU --> G --> T
     end
 
     C -- scored, with evidence --> AU
-    T -- "fix → new commit → touched scores judged again and published anew;<br/>the old statements stay on record, marked as replaced (nothing published is edited)" --> X
+    T -- "👤 a person reads the scores and picks what to fix next;<br/>fix → new commit → touched scores judged again and published anew;<br/>the old statements stay on record, marked as replaced (nothing published is edited)" --> X
     G -. other assessors (models, people) may publish their own<br/>assessment of the same hypotheses .-> BG
 ```
 
