@@ -523,7 +523,47 @@ def measure_thompson_fish(script: Path) -> list:
         M("Scarus -> Chaetodon spp., median explained by oblique coaxial circles", float(100 * np.median(cm)), "percent",
           f"median over the {len(chaet)} Chaetodon species", source=f"{TH}: 'other fishes of the same family of Chaetodonts ... small variations in the values of the constants'",
           note=f"range {100*cm.min():.0f}-{100*cm.max():.0f} %", derived_from="script"),
-    ]
+    ] + (measure_thompson_outlines(mod, Y, names) if hasattr(mod, "outline_analysis") else [])
+
+
+def measure_thompson_outlines(mod, Y, names) -> list:
+    """The real-outline test (script versions from 2026-10-17): the two Commons photographs are fetched or read
+    from the cache and SHA-256-checked by the script; the silhouettes, anchors and carried outlines are the
+    script's.  The IoU of each carried Scarus silhouette against the Pomacanthus silhouette is re-derived here
+    with a different rasteriser (matplotlib.path point-in-polygon on a 900 x 900 grid, not skimage.draw) and
+    reported beside the script's value; the areas and the anchor positions are read off the masks directly."""
+    from matplotlib.path import Path as MplPath
+    O = mod.outline_analysis(Y, names, allow_download=True)
+    if O is None:
+        return [M("real-outline test", None, None, "photographs not available (offline and not cached)")]
+    BT = O["photos"]["Pomacanthus_semicirculatus"]["boundary"]
+    lo = np.min([np.min(c, 0) for c in list(O["carried"].values()) + [BT]], 0) - 0.02
+    hi = np.max([np.max(c, 0) for c in list(O["carried"].values()) + [BT]], 0) + 0.02
+    g = 900
+    gx, gy = np.meshgrid(np.linspace(lo[0], hi[0], g), np.linspace(lo[1], hi[1], g))
+    pts = np.column_stack([gx.ravel(), gy.ravel()])
+    inT = MplPath(BT).contains_points(pts)
+    out = []
+    for key, ph in O["photos"].items():
+        cols = np.where(ph["mask"].any(0))[0]
+        out.append(M(f"silhouette area, {key.replace('_', ' ')}", ph["area_px"], "pixels",
+                     f"segmented mask at {mod.PHOTO_SCALE:g} scale; photograph SHA-256 {mod.PHOTOS[key]['sha256'][:12]}... checked by the script",
+                     source=mod.PHOTOS[key]["credit"], derived_from="script"))
+        out.append(M(f"caudal-peduncle anchor, {key.replace('_', ' ')}", float((ph["peduncle"][0] - cols[0]) / (cols[-1] - cols[0])), "fraction of silhouette length",
+                     "x of the peduncle anchor between the anterior-most and posterior-most mask columns (fish facing left)",
+                     note="plausible range for a perciform fish ~0.75-0.90; the anchor fixes the registration of the landmarks to the photograph",
+                     derived_from="script"))
+    for k in ["similarity", "affine", "moebius", "coaxial", "tps"]:
+        inC = MplPath(O["carried"][k]).contains_points(pts)
+        iou = float((inC & inT).sum() / (inC | inT).sum())
+        out.append(M(f"silhouette IoU, {k}", iou, "ratio",
+                     "Scarus ghobban silhouette carried by the map fitted to the 17 landmarks of S. ghobban -> P. semicirculatus, "
+                     "against the P. semicirculatus silhouette; point-in-polygon on a 900 x 900 grid (independent of the script's rasteriser)",
+                     reference=round(O["metrics"][k]["iou"], 4), source="the script's own IoU (skimage.draw.polygon, 1000-px grid)",
+                     note=f"boundary distance {O['metrics'][k]['boundary_distance']:.4f} = {100*O['metrics'][k]['boundary_distance']/O['body_length']:.1f} % of body length; "
+                          f"landmark RMS {O['landmark_rms'][k]:.4f}" + ("; the no-deformation baseline" if k == "similarity" else ""),
+                     derived_from="script"))
+    return out
 
 
 def measure_raup(script: Path, variables: Path) -> list:

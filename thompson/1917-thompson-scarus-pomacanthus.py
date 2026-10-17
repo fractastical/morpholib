@@ -782,7 +782,7 @@ def outline_figure(O: dict, out: Path) -> None:
                    f"= {100 * m['boundary_distance'] / O['body_length']:.1f} % of body length", lim=0.5)
     fig.text(0.03, 0.345, "Row F: dark red = the real Pomacanthus semicirculatus silhouette; coloured = the Scarus ghobban silhouette carried by the map fitted to the "
              "17 landmarks of the two species (not to the silhouettes).\nIoU = intersection over union of the filled outlines; boundary distance = mean "
-             "nearest-point distance between the two outlines, both ways, in Procrustes units (body length = LM2 to the LM5–LM6 midpoint).", fontsize=7.5, va="top")
+             "nearest-point distance between the two outlines, both ways, in Procrustes units (body length = the Pomacanthus silhouette's extent along the axis).", fontsize=7.5, va="top")
 
     # G  the ladder, silhouettes beside landmarks
     ax = fig.add_subplot(gs[2, 0:3])
