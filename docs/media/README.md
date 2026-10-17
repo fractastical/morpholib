@@ -28,4 +28,6 @@ running time (Pillow 12.0.0). Total ≈ 15 MB.
 
 `morphoeval_pipeline.png` and `morphoeval_pipeline.gif` are not script outputs but documentation: the source papers (illustrated from the GIFs in this folder; in the GIF version each thumbnail plays its animation once per loop), how a reproduction is made, and the MorphoEval cycle, drawn by `morphoeval/report/draw_pipeline.py --gif` (deterministic; re-run it after editing the stages or regenerating a GIF).
 
+`thompson_scarus_pomacanthus_outlines.png` is a 1400-px, 256-colour copy of the still figure `thompson/1917-thompson-scarus-pomacanthus.py` writes as `thompson_scarus_pomacanthus_outlines.png` (2026-10-17): the real-outline test on two Wikimedia Commons photographs, whose credits (CC BY 4.0 and CC BY 2.0) are printed in the figure and listed in `datasets/thompson/README.md`.
+
 `all_forms_montage.gif` tiles the thirteen animations above (each resampled to 40 frames across its own loop, fitted whole into a 216-px tile, shared 128-colour palette) with a title tile and the MorphoEval overall scores read from the audit YAMLs; `python3 docs/media/make_montage.py` remakes it after any animation or score changes.

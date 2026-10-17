@@ -63,14 +63,32 @@ What is computed
      to the other 16, to ask whether the family has any predictive value.
   6. Thompson's grid versus the fitted one: the fitted coaxial grids are drawn on the
      real Pomacanthus and the TPS grid beside them.
+  7. Real outlines.  Thompson's claim is about an outline, and the test above is on 17
+     points.  Two lateral photographs of species in the landmark table - a Scarus ghobban
+     specimen (J. Huet / IFREMER, CC BY 4.0) and a living Pomacanthus semicirculatus
+     (E. Levy, CC BY 2.0), both via Wikimedia Commons - are fetched into .thompson_cache/
+     (not vendored), SHA-256-checked and segmented into silhouettes (the specimen by its
+     Lab distance from the white background; the field photograph by a marker watershed
+     on colour distance from the frame-sampled background plus colour gradient, inside a
+     declared bounding box).  Each silhouette is registered to its species' landmark
+     configuration by a similarity fixed by two anchors the silhouette itself gives:
+     anterior-most point -> LM2 and the caudal peduncle (the narrowest column between the
+     caudal fin and the body, tracked from the tail tip) -> midpoint of LM5-LM6 (the axis
+     gpa() orients by).  The five families are fitted to the 17 landmarks of S. ghobban ->
+     P. semicirculatus and applied to the Scarus silhouette; agreement with the Pomacanthus
+     silhouette is the IoU of the filled outlines and the mean symmetric nearest-point
+     distance between the boundaries.  The similarity (no deformation) is the baseline; a
+     deformation that is read off the landmarks helps on the outline only if its IoU rises
+     above that baseline.  Fin posture is a declared confound (specimen vs living fish).
 
 Usage
-    python3 thompson/1917-thompson-scarus-pomacanthus.py                 # figure + GIF
+    python3 thompson/1917-thompson-scarus-pomacanthus.py                 # figures + GIF
     python3 thompson/1917-thompson-scarus-pomacanthus.py --no-anim --csv fits.csv
-    python3 thompson/1917-thompson-scarus-pomacanthus.py --no-scan       # offline: skip Thompson's page
+    python3 thompson/1917-thompson-scarus-pomacanthus.py --no-scan --no-photos   # offline: landmarks only
 
-Outputs (git-ignored): thompson_scarus_pomacanthus.png, thompson_scarus_pomacanthus.gif,
-optional CSV of all genus-pair fits.
+Outputs (git-ignored): thompson_scarus_pomacanthus.png, thompson_scarus_pomacanthus_outlines.png,
+thompson_outline_metrics.csv, thompson_scarus_pomacanthus.gif, optional CSV of all genus-pair fits.
+Extra dependencies for item 7: Pillow, scikit-image (both in requirements.txt).
 """
 from __future__ import annotations
 
@@ -498,6 +516,311 @@ def animate(S, T, out: Path, n_frames: int = 36, fps: int = 12) -> None:
     print(f"  saved {out}  ({len(frames)} frames)")
 
 
+# ----------------------------------------------------------------------------- real outlines
+# Thompson's claim is about outlines, and the landmarks above are 17 points.  Two lateral photographs of
+# species that are in the landmark table, with licences that allow their use, are fetched (not vendored),
+# SHA-256-checked, segmented into silhouettes, registered to their species' landmark configuration by two
+# anchors the silhouette itself provides (snout tip -> LM2, caudal-peduncle midpoint -> (LM5+LM6)/2, the
+# axis gpa() already uses), and the Scarus silhouette is carried by the landmark-fitted maps onto the
+# Pomacanthus one.  The only hand-set inputs per photograph are which way the fish faces and, for the field
+# photograph, a box outside which everything is background and the fraction of the height below which the
+# fish's shadow on the sand (which the colour model does not separate from the belly) is cut off.
+UA = "morpholib-thompson/1.0 (+https://github.com/fractastical/morpholib)"   # Wikimedia asks for an identifying User-Agent
+PHOTOS = {
+    "Scarus_ghobban": dict(
+        file="Perroquet_barbe_bleue_(Scarus_ghobban)_(Ifremer_00762-87435).jpg",
+        url="https://upload.wikimedia.org/wikipedia/commons/6/62/Perroquet_barbe_bleue_%28Scarus_ghobban%29_%28Ifremer_00762-87435%29.jpg",
+        sha256="732f1e68da7e3611696613f69215115b1b9056a4db310892d30de487a76a2a90",
+        credit="Jérôme Huet, IFREMER (image.ifremer.fr 00762-87435), via Wikimedia Commons, CC BY 4.0",
+        kind="white", faces="left", box=None),
+    "Pomacanthus_semicirculatus": dict(
+        file="Semicircle_angelfish_(Pomacanthus_semicirculatus).jpg",
+        url="https://upload.wikimedia.org/wikipedia/commons/8/84/Semicircle_angelfish_%28Pomacanthus_semicirculatus%29.jpg",
+        sha256="5622e415149a8cea8512e7fd1f416a600ca24cb528f054826667fd74b20b687e",
+        credit="Elias Levy (Flickr 6851425758), via Wikimedia Commons, CC BY 2.0",
+        kind="field", faces="right", box=(0.02, 0.20, 0.93, 0.80), clip_below=0.745),
+}
+PHOTO_SCALE = 0.25                               # photographs are analysed at a quarter of their pixel size
+N_BOUNDARY = 600                                 # boundary points per silhouette, equally spaced by arc length
+
+
+def fetch_photo(key: str, allow_download: bool) -> Optional[Path]:
+    ph = PHOTOS[key]
+    CACHE.mkdir(exist_ok=True)
+    p = CACHE / ph["file"]
+    if not p.exists():
+        if not allow_download:
+            return None
+        print(f"  fetching {ph['url']}")
+        req = urllib.request.Request(ph["url"], headers={"User-Agent": UA})
+        with urllib.request.urlopen(req, timeout=120) as r, open(p, "wb") as fh:
+            fh.write(r.read())
+    got = sha256_of(p)
+    if got != ph["sha256"]:
+        sys.exit(f"{p}: sha256 {got} != pinned {ph['sha256']}")
+    return p
+
+
+def load_photo(path: Path, scale: float = PHOTO_SCALE) -> np.ndarray:
+    from PIL import Image
+    im = Image.open(path).convert("RGB")
+    im = im.resize((int(im.width * scale), int(im.height * scale)), Image.LANCZOS)
+    return np.asarray(im).astype(float) / 255.0
+
+
+def _largest(mask: np.ndarray) -> np.ndarray:
+    from skimage import measure
+    lab = measure.label(mask)
+    if lab.max() == 0:
+        return mask
+    sizes = np.bincount(lab.ravel()); sizes[0] = 0
+    return lab == sizes.argmax()
+
+
+def segment_white(a: np.ndarray, thr: float = 10.0) -> np.ndarray:
+    """Specimen on a white background: Lab distance from white, smoothed, thresholded, largest component, holes filled."""
+    from skimage import color, filters, morphology
+    lab = color.rgb2lab(a)
+    d = np.sqrt((100 - lab[..., 0]) ** 2 + lab[..., 1] ** 2 + lab[..., 2] ** 2)
+    m = filters.gaussian(d, 1.5) > thr
+    m = morphology.binary_closing(m, morphology.disk(3))
+    return morphology.remove_small_holes(_largest(m), max_size=5000)
+
+
+def segment_field(a: np.ndarray, box: Tuple[float, float, float, float], clip_below: Optional[float] = None,
+                  core_q: float = 0.985, tex_q: float = 0.78) -> np.ndarray:
+    """Fish in the field: the background colour is modelled from the image frame (Lab mean and covariance of the
+    outer 8 %); the Mahalanobis distance from it plus the colour gradient is the watershed elevation; markers are
+    'background' outside the declared box and 'fish' on the 1.5 % of pixels least like the background (one blob,
+    closed, filled, eroded) plus the most textured pixels inside that blob's convex hull.  The result is clipped
+    to the box and above clip_below, hole-filled and lightly opened."""
+    from scipy import ndimage as ndi
+    from skimage import color, filters, morphology, segmentation
+    lab = color.rgb2lab(a); H, W, _ = lab.shape
+    x0, y0, x1, y1 = box
+    outside = np.ones((H, W), bool); outside[int(y0 * H):int(y1 * H), int(x0 * W):int(x1 * W)] = False
+    frame = np.zeros((H, W), bool); bh, bw = int(0.08 * H), int(0.08 * W)
+    frame[:bh], frame[-bh:], frame[:, :bw], frame[:, -bw:] = True, True, True, True
+    X = lab[frame]; mu = X.mean(0); P = np.linalg.inv(np.cov(X.T) + np.eye(3) * 1e-3)
+    D = lab - mu; md = np.sqrt(np.einsum("...i,ij,...j->...", D, P, D))
+    grad = np.sqrt(sum(filters.sobel(lab[..., k]) ** 2 for k in range(3)))
+    elev = filters.gaussian(md, 1.5) + 3 * filters.gaussian(grad, 1.0)
+    core = (md > np.percentile(md, 100 * core_q)) & ~outside
+    core = _largest(ndi.binary_fill_holes(morphology.binary_closing(core, morphology.disk(15))))
+    hull = morphology.binary_erosion(morphology.convex_hull_image(core), morphology.disk(6))
+    core = morphology.binary_erosion(core, morphology.disk(6))
+    # the spotted skin is textured where the sand is not: the most textured pixels inside the hull of the
+    # core also seed the fish (this is what reaches the dark caudal peduncle, which the colour model does not)
+    Lc = lab[..., 0]; tex = np.sqrt(np.maximum(filters.gaussian(Lc ** 2, 3) - filters.gaussian(Lc, 3) ** 2, 0))
+    tex = filters.gaussian(tex, 2)
+    core |= (tex > np.percentile(tex, 100 * tex_q)) & hull
+    markers = np.zeros((H, W), int); markers[outside] = 1; markers[core] = 2
+    m = segmentation.watershed(elev, markers) == 2
+    m &= ~outside
+    if clip_below is not None:
+        m[int(clip_below * H):] = False
+    m = _largest(ndi.binary_fill_holes(m))
+    return morphology.binary_opening(m, morphology.disk(3))
+
+
+def boundary_points(mask: np.ndarray, n: int = N_BOUNDARY) -> np.ndarray:
+    """Longest 0.5-contour of the mask as n points equally spaced by arc length, x right, y up (pixels)."""
+    from skimage import measure
+    cs = measure.find_contours(mask.astype(float), 0.5)
+    c = max(cs, key=len)
+    pts = np.column_stack([c[:, 1], mask.shape[0] - c[:, 0]])
+    seg = np.sqrt(((np.roll(pts, -1, 0) - pts) ** 2).sum(1)); s = np.concatenate([[0], np.cumsum(seg)[:-1]])
+    t = np.linspace(0, s[-1] + seg[-1], n, endpoint=False)
+    return np.column_stack([np.interp(t, s, pts[:, 0], period=s[-1] + seg[-1]), np.interp(t, s, pts[:, 1], period=s[-1] + seg[-1])])
+
+
+def anchors(mask: np.ndarray) -> Tuple[np.ndarray, np.ndarray, int]:
+    """Snout = anterior-most mask pixel (fish faces left).  Caudal peduncle: walking from the tail tip towards the
+    head and following, column by column, the vertical run of mask pixels that overlaps the previous one most
+    (so the run is the caudal fin, then the peduncle, then the body; dorsal and anal fin lobes that trail beside
+    the peduncle are other runs and do not count), the peduncle is the first column at which the run's thickness
+    is a local minimum - thinner by >= 10 % than the fin behind it and the body ahead of it, within 6 % of the
+    length either way.  Returns the two anchors (x right, y up) and the peduncle column."""
+    H, W = mask.shape
+    cols = np.where(mask.any(0))[0]; x_min, x_max = cols[0], cols[-1]; L = x_max - x_min
+    snout = np.array([x_min, H - np.where(mask[:, x_min])[0].mean()])
+
+    def runs_at(x):
+        idx = np.where(mask[:, x])[0]
+        return np.split(idx, np.where(np.diff(idx) > 1)[0] + 1) if len(idx) else []
+
+    prev = max(runs_at(x_max), key=len)
+    xs, thick, centres = [], [], []
+    for x in range(x_max, int(x_min + 0.5 * L), -1):
+        rs = runs_at(x)
+        if not rs:
+            break
+        run = max(rs, key=lambda r: min(r[-1], prev[-1]) - max(r[0], prev[0]))     # largest row overlap with the previous run
+        prev = run
+        xs.append(x); thick.append(len(run)); centres.append(run.mean())
+    thick = np.array(thick, float)
+    k = max(3, int(0.02 * L) | 1)
+    sm = np.convolve(np.pad(thick, k // 2, mode="edge"), np.ones(k) / k, mode="valid")
+    look = max(2, int(0.06 * L))
+    for i in range(look, len(xs) - look):
+        if sm[i] <= sm[i - look:i + look + 1].min() and sm[i - look:i].max() >= 1.10 * sm[i] and sm[i + 1:i + look + 1].max() >= 1.10 * sm[i]:
+            return snout, np.array([xs[i], H - centres[i]]), int(xs[i])
+    i = look + int(np.argmin(sm[look:]))                             # no caudal fin found: the thinnest column
+    return snout, np.array([xs[i], H - centres[i]]), int(xs[i])
+
+
+def similarity_from_pairs(p: np.ndarray, q: np.ndarray) -> Tuple[complex, complex]:
+    """The similarity z -> a z + b (complex) carrying p[0], p[1] onto q[0], q[1]."""
+    zp = p[:, 0] + 1j * p[:, 1]; zq = q[:, 0] + 1j * q[:, 1]
+    a = (zq[1] - zq[0]) / (zp[1] - zp[0]); b = zq[0] - a * zp[0]
+    return a, b
+
+
+def apply_similarity(ab: Tuple[complex, complex], P: np.ndarray) -> np.ndarray:
+    a, b = ab
+    w = a * (P[:, 0] + 1j * P[:, 1]) + b
+    return np.column_stack([w.real, w.imag])
+
+
+def silhouette_metrics(A: np.ndarray, B: np.ndarray, grid: int = 1000) -> Dict[str, float]:
+    """IoU of the filled polygons (rasterised on a common grid) and the mean symmetric nearest-point distance
+    between the two boundaries, in the coordinate units of A and B."""
+    from scipy.spatial import cKDTree
+    from skimage.draw import polygon
+    lo = np.minimum(A.min(0), B.min(0)) - 0.02; hi = np.maximum(A.max(0), B.max(0)) + 0.02
+    sc = grid / (hi - lo).max(); shape = (int((hi[1] - lo[1]) * sc) + 2, int((hi[0] - lo[0]) * sc) + 2)
+    def raster(P):
+        rr, cc = polygon((P[:, 1] - lo[1]) * sc, (P[:, 0] - lo[0]) * sc, shape)
+        m = np.zeros(shape, bool); m[rr, cc] = True; return m
+    ra, rb = raster(A), raster(B)
+    iou = float((ra & rb).sum() / (ra | rb).sum())
+    dab = cKDTree(B).query(A)[0]; dba = cKDTree(A).query(B)[0]
+    return {"iou": iou, "boundary_distance": float((dab.mean() + dba.mean()) / 2)}
+
+
+def outline_analysis(Y: np.ndarray, names: Sequence[str], allow_download: bool) -> Optional[dict]:
+    """Segment the two photographs, register each silhouette to its species' landmarks, fit the five families on the
+    species' landmarks and carry the Scarus silhouette onto the Pomacanthus one.  Returns everything the figure and
+    the printout need, or None if a photograph is not available offline."""
+    res = {}
+    for key, ph in PHOTOS.items():
+        p = fetch_photo(key, allow_download)
+        if p is None:
+            return None
+        img = load_photo(p)
+        mask = segment_white(img) if ph["kind"] == "white" else segment_field(img, ph["box"], ph.get("clip_below"))
+        if ph["faces"] == "right":                                   # the landmark table has every fish facing left
+            img, mask = img[:, ::-1], mask[:, ::-1]
+        snout, ped, ped_x = anchors(mask)
+        B = boundary_points(mask)
+        L = Y[names.index(key)]
+        ab = similarity_from_pairs(np.array([snout, ped]), np.array([L[1], (L[4] + L[5]) / 2]))
+        res[key] = dict(img=img, mask=mask, snout=snout, peduncle=ped, boundary_px=B, boundary=apply_similarity(ab, B),
+                        landmarks=L, landmarks_px=apply_similarity((1 / ab[0], -ab[1] / ab[0]), L), ab=ab,
+                        area_px=int(mask.sum()), length_px=float(np.ptp(np.where(mask.any(0))[0])))
+    s, t = res["Scarus_ghobban"], res["Pomacanthus_semicirculatus"]
+    S, T, BS, BT = s["landmarks"], t["landmarks"], s["boundary"], t["boundary"]
+    M, _ = fit_affine(S, T); pm, _ = fit_moebius(S, T); pc, _ = fit_coaxial(S, T); W, _ = tps_fit(S, T)
+    sim_ab = similarity_from_pairs(S[[1, 4]], fit_similarity(S, T)[[1, 4]])   # the Procrustes fit as a complex similarity
+    carried = {
+        "similarity": apply_similarity(sim_ab, BS),
+        "affine": apply_affine(M, BS),
+        "moebius": apply_moebius(pm, BS),
+        "coaxial": coaxial(pc, BS),
+        "tps": tps_apply(W, S, BS),
+    }
+    metrics = {k: silhouette_metrics(v, BT) for k, v in carried.items()}
+    lm = {"similarity": rms(fit_similarity(S, T), T), "affine": rms(apply_affine(M, S), T), "moebius": rms(apply_moebius(pm, S), T),
+          "coaxial": rms(coaxial(pc, S), T), "tps": 0.0}
+    body_len = float(np.ptp(BT[:, 0]))
+    return dict(photos=res, carried=carried, metrics=metrics, landmark_rms=lm, body_length=body_len,
+                grids={"coaxial": [coaxial(pc, ln) for ln in grid_lines(S)], "tps": [tps_apply(W, S, ln) for ln in grid_lines(S)]})
+
+
+def outline_figure(O: dict, out: Path) -> None:
+    import textwrap
+    import matplotlib
+    import matplotlib.pyplot as plt
+    fig = plt.figure(figsize=(18, 10.5))
+    gs = fig.add_gridspec(3, 5, height_ratios=[0.95, 1.0, 0.8], hspace=0.5, wspace=0.15, left=0.03, right=0.97, top=0.9, bottom=0.05)
+    fig.suptitle("Thompson's Scarus → Pomacanthus on real outlines: the silhouette of a Scarus ghobban carried by the maps fitted to the "
+                 "17 landmarks of S. ghobban → P. semicirculatus, against the silhouette of a P. semicirculatus", fontsize=10)
+    cols = {"similarity": "#08306b", "affine": "#ff7f0e", "moebius": "#2ca02c", "coaxial": "#17becf", "tps": "#7f0000"}
+    ks = ["similarity", "affine", "moebius", "coaxial", "tps"]
+    # E  the photographs, their silhouettes and the dataset's landmarks placed by the two anchors
+    for j, (key, lab) in enumerate([("Scarus_ghobban", "E  Scarus ghobban"), ("Pomacanthus_semicirculatus", "E′  Pomacanthus semicirculatus")]):
+        ph = O["photos"][key]; ax = fig.add_subplot(gs[0, 2 * j:2 * j + 2])
+        H = ph["mask"].shape[0]
+        ax.imshow(ph["img"], extent=(0, ph["img"].shape[1], 0, H))
+        ax.plot(ph["boundary_px"][:, 0], ph["boundary_px"][:, 1], color="w", lw=1.4); ax.plot(ph["boundary_px"][:, 0], ph["boundary_px"][:, 1], color="r", lw=0.7)
+        draw_fish(ax, ph["landmarks_px"], "#ffff33", lw=1.0, dots=True, numbers=False)
+        for a in (ph["snout"], ph["peduncle"]):
+            ax.plot(a[0], a[1], marker="+", ms=14, mew=1.8, color="#00e5ff")
+        ax.set_xticks([]); ax.set_yticks([])
+        ax.set_title(f"{lab}: silhouette (red) from the photograph; the species' 17 landmarks from the table (yellow)\n"
+                     "placed on it by two anchors the silhouette gives (cyan +): snout → LM2, caudal peduncle → midpoint of LM5–LM6", fontsize=7)
+        ax.text(0, -0.03, PHOTOS[key]["credit"] + ("; mirrored to face left" if PHOTOS[key]["faces"] == "right" else ""),
+                transform=ax.transAxes, fontsize=6, va="top", ha="left", color="0.3")
+    ax = fig.add_subplot(gs[0, 4])
+    for key, c in (("Scarus_ghobban", "#08306b"), ("Pomacanthus_semicirculatus", "#7f0000")):
+        B = O["photos"][key]["boundary"]; ax.fill(B[:, 0], B[:, 1], color=c, alpha=0.25, lw=0); ax.plot(B[:, 0], B[:, 1], color=c, lw=1)
+        draw_fish(ax, O["photos"][key]["landmarks"], c, lw=0.8, dots=True)
+    finish(ax, "E″  both silhouettes in the landmark (Procrustes) frame,\neach registered to its own species' landmarks", lim=0.5)
+
+    # F  the Scarus silhouette carried by each family onto the Pomacanthus silhouette
+    BT = O["photos"]["Pomacanthus_semicirculatus"]["boundary"]
+    titles = {"similarity": "F  similarity (Procrustes fit of the landmarks):\nthe no-deformation baseline", "affine": "F′  affine (6 par.)",
+              "moebius": "F″  Moebius, isogonal coaxial circles (6)", "coaxial": "F‴  oblique coaxial circles (8) — Thompson's Fig. 376",
+              "tps": "F⁗  thin-plate spline (exact on the 17 landmarks)"}
+    for j, k in enumerate(ks):
+        ax = fig.add_subplot(gs[1, j]); m = O["metrics"][k]
+        if k in O["grids"]:
+            draw_grid(ax, O["grids"][k])
+        ax.fill(BT[:, 0], BT[:, 1], color="#7f0000", alpha=0.18, lw=0); ax.plot(BT[:, 0], BT[:, 1], color="#7f0000", lw=1.0)
+        C = O["carried"][k]; ax.plot(C[:, 0], C[:, 1], color=cols[k], lw=1.6)
+        finish(ax, f"{titles[k]}\nIoU {m['iou']:.3f}; boundary distance {m['boundary_distance']:.4f} "
+                   f"= {100 * m['boundary_distance'] / O['body_length']:.1f} % of body length", lim=0.5)
+    fig.text(0.03, 0.345, "Row F: dark red = the real Pomacanthus semicirculatus silhouette; coloured = the Scarus ghobban silhouette carried by the map fitted to the "
+             "17 landmarks of the two species (not to the silhouettes).\nIoU = intersection over union of the filled outlines; boundary distance = mean "
+             "nearest-point distance between the two outlines, both ways, in Procrustes units (body length = LM2 to the LM5–LM6 midpoint).", fontsize=7.5, va="top")
+
+    # G  the ladder, silhouettes beside landmarks
+    ax = fig.add_subplot(gs[2, 0:3])
+    x = np.arange(5); iou = [O["metrics"][k]["iou"] for k in ks]; bd = [O["metrics"][k]["boundary_distance"] for k in ks]
+    ax.bar(x - 0.2, iou, 0.38, color=[cols[k] for k in ks])
+    for i, v in enumerate(iou):
+        ax.text(i - 0.2, v, f"{v:.3f}", ha="center", va="bottom", fontsize=7)
+    ax.axhline(iou[0], color=cols["similarity"], lw=0.8, ls=":")
+    ax.set_ylim(0, 1); ax.set_ylabel("silhouette IoU", fontsize=7); ax.tick_params(labelsize=7)
+    ax2 = ax.twinx(); ax2.bar(x + 0.2, bd, 0.38, color=[cols[k] for k in ks], alpha=0.45, hatch="//")
+    for i, v in enumerate(bd):
+        ax2.text(i + 0.2, v, f"{v:.4f}", ha="center", va="bottom", fontsize=7)
+    ax2.set_ylabel("mean boundary distance\n(Procrustes units)", fontsize=7); ax2.tick_params(labelsize=7); ax2.set_ylim(0, max(bd) * 1.3)
+    ax.set_xticks(x); ax.set_xticklabels(["similarity", "affine", "Moebius", "oblique coaxial", "thin-plate spline"], fontsize=7)
+    ax.set_title("G  What each family leaves of the silhouette difference (solid: IoU, higher is better; hatched: boundary distance, lower is better; "
+                 "dotted: the similarity baseline)", fontsize=8)
+    ax = fig.add_subplot(gs[2, 3:]); ax.axis("off")
+    s, t = O["photos"]["Scarus_ghobban"], O["photos"]["Pomacanthus_semicirculatus"]
+    m = O["metrics"]; best = max(ks, key=lambda k: m[k]["iou"])
+    txt = ("What this adds to the landmark test.  The landmarks fix 17 points; the silhouette has the fins, the head profile and the belly "
+           f"between them.  With no deformation at all (similarity) the two silhouettes overlap with IoU {m['similarity']['iou']:.3f}; every "
+           f"deformation fitted to the landmarks - affine {m['affine']['iou']:.3f}, Moebius {m['moebius']['iou']:.3f}, Thompson's oblique coaxial "
+           f"circles {m['coaxial']['iou']:.3f}, and even the thin-plate spline that matches the 17 landmarks exactly, {m['tps']['iou']:.3f} - "
+           f"{'leaves the outline no better' if best == 'similarity' else 'changes the outline little'}.  "
+           f"On the landmarks the same maps leave RMS {O['landmark_rms']['affine']:.4f}, {O['landmark_rms']['moebius']:.4f}, "
+           f"{O['landmark_rms']['coaxial']:.4f} and 0 against {O['landmark_rms']['similarity']:.4f}: what the landmarks ask of the body the fins "
+           "do not follow, so a map that is read off the anatomy does not carry the outline of one fish onto the other.\n\n"
+           "Caveats.  One individual per species; the Scarus is a collected specimen on white and the Pomacanthus is alive on a reef, so fin "
+           "posture differs (the Pomacanthus's soft dorsal and anal lobes trail behind the peduncle); the field photograph is segmented by a "
+           f"watershed inside a declared box, the specimen by its distance from white (quarter-size images, {s['area_px']} and {t['area_px']} "
+           "pixels); registration uses two anchors read off the silhouette, so the dataset's landmarks are placed on the photographs, not "
+           "digitised on them (check the yellow points in E, E′).")
+    ax.text(0.06, 1, "\n\n".join(textwrap.fill(par, 118) for par in txt.split("\n\n")), va="top", ha="left", fontsize=7.3, transform=ax.transAxes)
+    fig.savefig(out, dpi=140)
+    plt.close(fig)
+    print(f"  saved {out}")
+
+
 # ----------------------------------------------------------------------------- main
 def analyse(names, X):
     Y = gpa(X)
@@ -526,6 +849,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     ap.add_argument("--csv", help="write the fits for every genus pair (and Scarus -> Chaetodon spp.) to this CSV")
     ap.add_argument("--no-anim", action="store_true")
     ap.add_argument("--no-scan", action="store_true", help="do not fetch Thompson's page from the Internet Archive")
+    ap.add_argument("--no-photos", action="store_true", help="skip the real-outline test (no photographs fetched from Wikimedia Commons)")
     args = ap.parse_args(argv)
     out_dir = Path(args.out_dir); out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -571,6 +895,29 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         except Exception as e:                                   # offline: the figure is drawn without the page
             print(f"  (Thompson's page not fetched: {e})")
     figure(Y, names, groups, S, T, fits, floor_T, floor_S, ctx, chaet, scan, out_dir / "thompson_scarus_pomacanthus.png")
+    if not args.no_photos:
+        try:
+            O = outline_analysis(Y, names, allow_download=True)
+        except Exception as e:                                   # offline: the outline figure is skipped
+            O = None; print(f"  (photographs not fetched: {e})")
+        if O is not None:
+            s, t = O["photos"]["Scarus_ghobban"], O["photos"]["Pomacanthus_semicirculatus"]
+            print(f"  real outlines: {len(PHOTOS)} photographs, sha256 ok; silhouettes {s['area_px']} and {t['area_px']} px at {PHOTO_SCALE:g} scale; "
+                  f"depth/length of the silhouettes Scarus {np.ptp(s['boundary'][:,1])/np.ptp(s['boundary'][:,0]):.3f}, Pomacanthus {np.ptp(t['boundary'][:,1])/np.ptp(t['boundary'][:,0]):.3f}")
+            for k in ["similarity", "affine", "moebius", "coaxial", "tps"]:
+                m = O["metrics"][k]
+                print(f"    {k:11s} silhouette IoU {m['iou']:.3f}, boundary distance {m['boundary_distance']:.4f} "
+                      f"({100*m['boundary_distance']/O['body_length']:.1f} % of body length); landmark RMS {O['landmark_rms'][k]:.4f}")
+            base = O["metrics"]["similarity"]["iou"]; best = max(O["metrics"], key=lambda k: O["metrics"][k]["iou"])
+            print(f"    verdict: relative to the similarity baseline (IoU {base:.3f}) the landmark-fitted deformations change the silhouette IoU by "
+                  + ", ".join(f"{k} {O['metrics'][k]['iou']-base:+.3f}" for k in ["affine", "moebius", "coaxial", "tps"])
+                  + f"; best on the outline: {best}")
+            outline_figure(O, out_dir / "thompson_scarus_pomacanthus_outlines.png")
+            with open(out_dir / "thompson_outline_metrics.csv", "w", newline="") as fh:
+                w = csv.writer(fh); w.writerow(["map", "silhouette_iou", "boundary_distance", "boundary_distance_pct_body_length", "landmark_rms"])
+                for k in ["similarity", "affine", "moebius", "coaxial", "tps"]:
+                    m = O["metrics"][k]; w.writerow([k, f"{m['iou']:.4f}", f"{m['boundary_distance']:.5f}", f"{100*m['boundary_distance']/O['body_length']:.2f}", f"{O['landmark_rms'][k]:.5f}"])
+            print(f"  saved {out_dir / 'thompson_outline_metrics.csv'}")
     if args.csv:
         rows = ctx + chaet
         with open(args.csv, "w", newline="") as fh:
