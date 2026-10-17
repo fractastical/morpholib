@@ -42,7 +42,7 @@ scripts that were not inspected are listed `unevaluated` with no scores.
 
 ## The cycle
 
-Tier A is how a form gets into the repository: it starts with a person scouting — choosing a
+The forms in question are the shapes of bodies — how they arise in development and come back in regeneration — and most of the recent papers here share one idea about it: that beside genes and chemical morphogens, a tissue stores its pattern bioelectrically, as a map of membrane voltages shared through gap junctions, so that changing the voltage changes what regrows (the two-headed planarian of the Planform database and the Cervera–Levin–Mafe model). The top-level README opens with a short synopsis. Tier A is how such a form gets into the repository: it starts with a person scouting — choosing a
 paper, dataset or claim worth the work and pointing the agent at it — and ends in one of three kinds of script
 (reproduce the paper's model from its equations, decode the authors' formal encoding into form, or test a
 published claim against measurements). Between the tiers sits what the scripts produce — box 6, the
