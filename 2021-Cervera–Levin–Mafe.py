@@ -227,10 +227,12 @@ def rd_antagonistic_1d(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Two-species RD with mutual annihilation on [0, L] and flux at opposite ends.
 
-    Implements the antagonistic anterior (m1) vs. posterior (m2) morphogen
-    reaction-diffusion system of Cervera, Levin & Mafe (2021, BioSystems 209:104511),
-    where intercellular gap-junction blockade reduces the effective diffusivity
-    D2 = f2 * D2_0 of the posterior-to-anterior morphogen signal.
+    A minimal analogue of the antagonistic anterior (m1) vs. posterior (m2) morphogen
+    picture in Cervera, Levin & Mafe (2021, BioSystems 209:104511): sources at opposite
+    ends, linear decay, bimolecular annihilation where the two meet, and gap-junction
+    blockade represented as a reduced effective diffusivity D2 = f2 * D2_0.  The
+    equations, constants and boundary conditions here are this script's own and have
+    not been checked against the published system (see the module docstring).
     """
     if seed is not None:
         np.random.seed(seed)
@@ -338,16 +340,22 @@ def shift_index(x_star: float, x_star_b: float) -> float:
     return float(np.clip((x_star - 0.5) / max(x_star_b - 0.5, 1e-9), 0.0, 1.0))
 
 
-def f2_for_shift(target: float, x_star_b: float, lo: float = 0.2, hi: float = 1.0, iters: int = 40) -> float:
-    """Invert shift_index(wavefront_for_f2(f2)) = target by bisection (the index falls with f2)."""
-    if target <= 0.0:
+def f2_for_shift(target: float, x_star_b: float, lo: float = 0.1, hi: float = 1.0, iters: int = 40) -> float:
+    """Return the f2 at which the wavefront x*(f2) reaches 0.5 + target * (x*_b - 0.5), by bisection on the
+    unclipped wavefront (x* rises as f2 falls).  The first version of this function bisected on the clipped
+    shift_index, which can never exceed 1, so target = 1 returned the lower search bound (0.20) rather than
+    the true crossing (~0.42); found by the 2026-10-17-cervera-audit-v2 re-score."""
+    x_target = 0.5 + target * (x_star_b - 0.5)
+    if wavefront_for_f2(hi) >= x_target:
         return hi
+    if wavefront_for_f2(lo) < x_target:
+        raise ValueError(f"x* never reaches {x_target:.4f} for f2 >= {lo}")
     for _ in range(iters):
         mid = 0.5 * (lo + hi)
-        if shift_index(wavefront_for_f2(mid), x_star_b) > target:
-            lo = mid
+        if wavefront_for_f2(mid) < x_target:
+            hi = mid          # not far enough: need a smaller f2
         else:
-            hi = mid
+            lo = mid
     return 0.5 * (lo + hi)
 
 
@@ -1265,13 +1273,15 @@ def run_integrated_analysis(
     nomem_scen = sim_by_scenario["TransientDepolarizationNoMemoryControl"]
     # Map simulation steps (1..120, dt=0.05 -> 6.0 model time units) onto 0..24 hpa window
     t_hours = np.array(mem_scen.trajectory_steps, dtype=float) * (24.0 / mem_scen.total_steps)
-    ax_d.axvspan(0.4, 6.4, color="#fdebd0", alpha=0.65, label="Transient Depol. Pulse Window (3–6 hpa)")
+    pulse_lo, pulse_hi = 2 * (24.0 / mem_scen.total_steps), 32 * (24.0 / mem_scen.total_steps)   # circuit steps 2..32
+    ax_d.axvspan(pulse_lo, pulse_hi, color="#fdebd0", alpha=0.65,
+                 label=f"circuit depolarisation pulse, steps 2–32 (mapped {pulse_lo:.1f}–{pulse_hi:.1f} h)")
     ax_d.plot(
         t_hours,
         np.array(mem_scen.trajectory_posterior_head_readout) * 100.0,
         color="#c0392b",
         lw=2.3,
-        label="Circuit $R_{\\mathrm{head,post}}$ (Hysteresis Memory ON: 85.8%)",
+        label=f"Circuit $R_{{\\mathrm{{head,post}}}}$ (hysteresis memory ON: {100 * mem_scen.posterior_head_readout:.1f}%)",
     )
     ax_d.plot(
         t_hours,
@@ -1279,7 +1289,7 @@ def run_integrated_analysis(
         color="#7f8c8d",
         ls="--",
         lw=2.0,
-        label="Circuit $R_{\\mathrm{head,post}}$ (Memoryless Control OFF: 20.6%)",
+        label=f"Circuit $R_{{\\mathrm{{head,post}}}}$ (memoryless control OFF: {100 * nomem_scen.posterior_head_readout:.1f}%)",
     )
     # Overlay Oviedo 2010 Exps 441-444 VNC + Octanol timing series (0, 3, 12, 24 hpa)
     emp_hours = [t_hr for t_hr, _r in timing_records]
@@ -1438,6 +1448,9 @@ def self_test_model() -> bool:
             f2 = res["crop_rows"][r["id"]]["f2"]
             worst = max(worst, abs(float(r["rd_wavefront_x_star"]) - round(wavefront_for_f2(f2), 4)))
         check(worst < 1e-9, f"CSV rd_wavefront_x_star equals the solver's x* for each crop's fitted f2 (max |diff| = {worst:.1e})")
+        x_at_f2b = wavefront_for_f2(res["f2_b"])
+        check(abs(x_at_f2b - res["x_star_b"]) < 1.0 / 120 and 0.3 < res["f2_b"] < 0.6,
+              f"inverse recovered: x*(f2_b = {res['f2_b']:.3f}) = {x_at_f2b:.4f} vs x*_b = {res['x_star_b']:.4f} (within one grid cell)")
         check(res["fit_rmse_test"] == res["fit_rmse_test"], f"held-out RNAi RMSE = {res['fit_rmse_test']:.1f} pts (r = {res['fit_r_test']:.2f}); train RMSE = {res['fit_rmse_train']:.1f}")
     return ok
 
