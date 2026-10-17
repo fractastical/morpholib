@@ -65,10 +65,10 @@ flowchart TB
     subgraph A["A &nbsp;Making a reproduction — reproduce the paper's model · decode the authors' encoding · test a published claim"]
         direction LR
         SC["👤 1 Scout<br/>a person finds a model of form worth the work —<br/>a classic paper, an open dataset, an untested claim,<br/>a score that is too low — and points the agent at it"]:::build
-        P["2 Paper<br/>the model as published: equations,<br/>an encoding, or a claim"]:::build
-        S["3 Formal source<br/>the paper's own data: parameters,<br/>database/atlas records, tables<br/>(SHA-256 pinned)"]:::build
-        R["4 Pin the rules<br/>prose → precise rule, checked on<br/>every record; authors' code read<br/>for semantics, not copied"]:::build
-        X["5 Script<br/>&lt;year&gt;-&lt;author&gt;-&lt;model&gt;.py<br/>→ figure + GIF, morphometrics,<br/>self-checks"]:::build
+        P["2 Paper<br/>the model as the authors published it: a set of<br/>equations, a database of drawings, or a claim"]:::build
+        S["3 Formal source<br/>the paper's own numbers and records, fetched or<br/>copied in and locked to a fingerprint (SHA-256),<br/>so a changed file is refused"]:::build
+        R["4 Pin the rules<br/>prose → exact rule, tested on every record;<br/>the authors' code, where it exists, is read to<br/>settle what they meant, never copied"]:::build
+        X["5 Script<br/>one program per paper: reproduces, decodes or tests,<br/>then draws, measures and checks itself<br/><small>&lt;year&gt;-&lt;author&gt;-&lt;model&gt;.py</small>"]:::build
         SC --> P --> S --> R --> X
     end
 

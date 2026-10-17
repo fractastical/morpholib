@@ -35,17 +35,17 @@ BOXES = {
     "scout":   (XA[0], YA, WA, H, BUILD, "1  Scout",
                 "a person finds a model of form worth\nthe work: a classic paper, an open\ndataset, a claim nobody has tested,\na score that is too low — and\npoints the agent at it"),
     "paper":   (XA[1], YA, WA, H, BUILD, "2  Paper",
-                "the model as published:\nequations (Turing, Raup, Hoffmann),\nan encoding (Planform, Limbform,\nWormGUIDES) or a claim (Thompson)"),
+                "the model as the authors published it:\na set of equations, a database of\ndrawings, or a sentence that\nmakes a claim"),
     "source":  (XA[2], YA, WA, H, BUILD, "3  Formal source",
-                "the paper's own data:\nparameter values; database / atlas\nrecords; measurement tables —\nfetched or vendored, SHA-256 pinned"),
+                "the paper's own numbers and records —\nparameter values, database entries,\nmeasurement tables — fetched or copied\nin and locked to a fingerprint, so a\nchanged file is refused, not used"),
     "rules":   (XA[3], YA, WA, H, BUILD, "4  Pin the rules",
-                "prose → precise rule, checked on\nevery record (1181/1181 regions,\n3137/3146 joints); authors' code read\nto settle semantics, not copied"),
+                "what the paper says in prose is turned\ninto an exact rule and tested on every\nrecord in the data; where the authors\npublished code, it is read to settle\nwhat they meant, never copied"),
     "script":  (XA[4], YA, WA, H, BUILD, "5  Script",
-                "<year>-<author>-<model>.py\nreproduce · decode · test\n→ figure + GIF (git-ignored),\nmorphometrics CSV, self-checks"),
+                "one program per paper, which\nreproduces the model, decodes the\nauthors' data or tests the claim —\nthen draws the result, measures it\nand checks itself"),
     "audit":   (XB[0], YB, W, H, EVAL,  "7  Audit",
                 "a reviewer scores the script\non 7 questions, 0–100 each,\nwith a written reason and\nthe lines of code it rests on,\nat one named commit"),
     "measure": (XB[1], YB, W, H, EVAL,  "8  Measure",
-                "the outputs are hashed and\nmeasured independently —\nsizes, counts, shapes — against\nthe specimens or the paper:\nnumbers, not opinions"),
+                "the outputs are fingerprinted\nand measured independently —\nsizes, counts, shapes — against\nthe specimens or the paper:\nnumbers, not opinions"),
     "build":   (XB[2], YB, W, H, PUB,   "9  Write as claims",
                 "each score becomes one small\nmachine-readable statement:\n\"this script reproduces X\" —\nhow likely, says who, on what\nevidence, under what licence"),
     "publish": (XB[3], YB, W, H, PUB,   "10  Sign & publish",
@@ -53,12 +53,13 @@ BOXES = {
     "graph":   (XB[4], YB, W, H, PUB,   "11  Public record",
                 "anyone can look a score up,\ncite it, check its signature\nor query across all audits;\nthe repository keeps the\naddresses and a report"),
     "remed":   (XB[5], YB, W, H, LOOP,  "12  Remediate",
-                "what the audit found wrong\nbecomes a to-do list\n(GitHub issue #1); a fix is\na new commit, then the touched\nscores are judged again"),
+                "what the audit found wrong\nbecomes a public to-do list;\na fix is a new version of the\nscript, and then the touched\nscores are judged again"),
 }
 # the file or term behind each tier-B box, in small type under the plain-language body
 TERMS = {
-    "scout": "so far: 13 papers, chosen by hand",
-    "audit": "audits/<date>-<name>.yaml", "measure": "measure_outputs.py",
+    "scout": "so far: 13 papers, chosen by hand", "paper": "Raup 1966 · PlanformDB · Thompson 1917",
+    "source": "SHA-256 pinned · datasets/<paper>/", "rules": "e.g. 1181/1181 regions, 3137/3146 joints",
+    "script": "<year>-<author>-<model>.py", "audit": "audits/<date>-<name>.yaml", "measure": "measure_outputs.py",
     "build": "build_morphoeval_kg.py (RDF)", "publish": "sign_morphoeval.py",
     "graph": "kg/<audit>/REPORT.md", "remed": "GitHub issue #1",
 }
@@ -75,7 +76,7 @@ PAPERS = [  # (gif, caption lines, kind)
     ("chindapol_coral_flow_growth.gif",   "Chindapol et al. 2013\nPLoS Comput Biol\ncoral growth in flow", "reproduce"),
     ("planform_morphospace_timeline.gif", "Lobo, Malone & Levin 2013\nBioinformatics\nPlanform, PlanformDB 2.5.0", "decode"),
     ("limbform_morphospace_timeline.gif", "Lobo et al. 2014\nBioinformatics\nLimbform, LimbformDB", "decode"),
-    ("celegans_embryo_timeline.gif",      "Santella et al. 2015\nBMC Bioinformatics\nWormGUIDES atlas, OpenWorm c302", "decode"),
+    ("celegans_embryo_timeline.gif",      "Santella et al. 2015\nBMC Bioinformatics\nWormGUIDES atlas + OpenWorm", "decode"),
     ("hoffmann_wing_lloyd.gif",           "Hoffmann et al. 2018\nPNAS\ninsect wing venation", "reproduce"),
     ("cervera_levin_mafe_gj_block.gif",   "Cervera, Levin & Mafe 2021\nbioelectric morphogens\n(demo, no DOI pinned)", "reproduce"),
     ("kahng_coral_geometry_growth.gif",   "Kahng, Odle & Wakeman 2024\nPeerJ\ncoral geometry", "reproduce"),
@@ -245,7 +246,7 @@ def main(argv=None):
     arrow(ax, "paper", "r", "source", "l")
     arrow(ax, "source", "r", "rules", "l")
     arrow(ax, "rules", "r", "script", "l")
-    ax.text(XA[0], YA - 2.4, "authors' code, where it exists (WormGUIDES loader, OpenWorm c302, Hoffmann's segmentation), is read to settle semantics, not copied",
+    ax.text(XA[0], YA - 2.4, "three of the thirteen papers come with the authors' own code; it is read to settle what they meant, never copied",
             ha="left", va="center", fontsize=6.6, color="#64748b", style="italic")
 
     # Script -> outputs (down into box 6), outputs -> Audit (down out of box 6)
@@ -258,7 +259,7 @@ def main(argv=None):
 
     # tier B, left -> right
     arrow(ax, "audit", "r", "measure", "l")
-    arrow(ax, "measure", "r", "build", "l", "measurements.yaml", ly=4.6, fs=6.0)
+    arrow(ax, "measure", "r", "build", "l", "the measurements", ly=4.6, fs=6.0)
     arrow(ax, "build", "r", "publish", "l")
     arrow(ax, "publish", "r", "graph", "l", "signed, published\nstatements", ly=4.6, fs=6.0)
     arrow(ax, "graph", "r", "remed", "l", "remediation\nitems", ly=4.6, fs=6.0)
@@ -266,13 +267,13 @@ def main(argv=None):
     # the loop: straight up from Remediate, between two columns of outputs, into Script
     y0 = YB + H; y1 = YA
     ax.add_patch(FancyArrowPatch((x_gap, y0 + 0.5), (x_gap, y1), arrowstyle="-|>", mutation_scale=11, lw=1.2, color=RED, shrinkA=0, shrinkB=2, zorder=5))
-    ax.text(x_gap - 1.5, YS - 2.3, "fix → new commit → the outputs are re-made and the touched scores judged again and published anew;\n"
+    ax.text(x_gap - 1.5, YS - 2.3, "fix → a new version of the script → the outputs are re-made and the touched scores judged again and published anew;\n"
             "the old statements stay on record, marked as replaced (nothing published is ever edited)",
             ha="right", va="center", fontsize=6.6, color=RED, linespacing=1.25)
     note(ax)
 
     ax.text(50, YLIM - 2.6, "How a form gets into this repository, and how it is scored", ha="center", va="center", fontsize=12.5, fontweight="bold", color=EDGE)
-    ax.text(50, YLIM - 5.3, "each pass pins a commit; scores are 0–100 per dimension, weighted mean overall; the audit scores the reproduction, not the biology; "
+    ax.text(50, YLIM - 5.3, "every pass is tied to one version of the code; scores are 0–100 on each of seven questions, weighted into one overall; the audit scores the reproduction, not the biology; "
             "every score is published as a nanopublication (what that is: bottom left)",
             ha="center", va="center", fontsize=7.6, color="#475569")
     for i, (c, l) in enumerate([(BUILD, "reproduce"), (EVAL, "evaluate"), (PUB, "publish"), (LOOP, "remediate")]):
