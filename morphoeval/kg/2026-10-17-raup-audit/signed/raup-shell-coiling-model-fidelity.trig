@@ -1,0 +1,91 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAffT-3-FW5XD-i3gZCdLiUAOe1uzHNovP6GRw9dkTIfI/> .
+@prefix this: <https://w3id.org/np/RAffT-3-FW5XD-i3gZCdLiUAOe1uzHNovP6GRw9dkTIfI> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-17-raup-audit-raup-shell-coiling-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Raup shell coiling morphospace — Model fidelity to source: 80/100" ;
+        rdfs:comment "The three parameters now mean what Raup's model says they mean, and the script proves it on its own output: W is the per-revolution magnification of every dimension, D the inner/outer-margin ratio of the generating curve, T the axial over radial movement of its centre, and the generating curve lies in the plane through the axis, so the shells are self-similar tubes rather than flat ribbons. The three defects of the first version are each named in the docstring and each is excluded by the self-test. Not higher because the primary paper was not consulted: the definitions are taken from two secondary restatements (which agree with each other on W, D and T up to Noshita's 2/(1+D) scaling of T, which is noted), the direction of the S ratio is the repository's convention rather than Raup's, and Raup's generating curve is an arbitrary aperture outline, here always an ellipse. Evidence: create_raup_animations.py L20–L36: the four parameters defined, with the equations <https://github.com/fractastical/morpholib/blob/ba6fd20/create_raup_animations.py#L20-L36>; create_raup_animations.py L96–L104: raup_shell(): a, r_c, z_c, generating curve in the radial-axial plane <https://github.com/fractastical/morpholib/blob/ba6fd20/create_raup_animations.py#L96-L104>; create_raup_animations.py L38–L45: the three defects of the first version and how each is now excluded <https://github.com/fractastical/morpholib/blob/ba6fd20/create_raup_animations.py#L38-L45>; create_raup_animations.py L134–L157: self_test(): recovery to 1e-9, spire monotone in T, planispiral one aperture thick <https://github.com/fractastical/morpholib/blob/ba6fd20/create_raup_animations.py#L134-L157>; 1966-raup.py L28–L37: the same generating function in the minimal script <https://github.com/fractastical/morpholib/blob/ba6fd20/1966-raup.py#L28-L37>; datasets/raup/variables.json L134–L140: mathematical_formulation: the equations as implemented, with their source <https://github.com/fractastical/morpholib/blob/ba6fd20/datasets/raup/variables.json#L134-L140>." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-raup-shell-coiling-model-fidelity> ;
+        pk:hasProbability "0.8"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-raup-shell-coiling-model-fidelity> rdfs:label "Raup shell coiling morphospace (create_raup_animations.py, 1966-raup.py) satisfies the MorphoEval 0.1.0 criterion 'Model fidelity to source' for Coiled molluscs in general; the six panels are labelled cf. Nautilus, Turritella, an ammonite, Conus, Cerithium, Helix (resemblance, not specimens)" ;
+        dcterms:identifier "morphoeval/0.1.0/model-fidelity" .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1016/j.jtbi.2014.08.010> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "Quantification and geometric analysis of coiling patterns in gastropod shells based on 3D and 2D image data" .
+
+    <https://doi.org/10.1038/srep42445> dcterms:date "2017"^^xsd:gYear ;
+        dcterms:title "Optimal designs of mollusk shells from bivalves to snails" .
+
+    <https://doi.org/10.1126/science.138.3537.150> dcterms:date "1962"^^xsd:gYear ;
+        dcterms:title "Computer as aid in describing form in gastropod shells" .
+
+    <https://doi.org/10.1126/science.147.3663.1294> dcterms:date "1965"^^xsd:gYear ;
+        dcterms:title "Theoretical morphology of the coiled shell" .
+
+    <https://doi.org/10.2307/1301992> dcterms:date "1966"^^xsd:gYear ;
+        dcterms:title "Geometric analysis of shell coiling: general problems" .
+
+    sub1:assertion prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.jtbi.2014.08.010>,
+            <https://doi.org/10.1038/srep42445>,
+            <https://doi.org/10.1126/science.138.3537.150>,
+            <https://doi.org/10.1126/science.147.3663.1294>,
+            <https://doi.org/10.2307/1301992> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "UtZ5AXEocmUn0gqvIprns6ckHisu04ySjV4fzAgrjdUtn0CPz4ojzkE6bGkxrB+Wao7iRDvBNZigElmpl7ZZ+Gj+hMNrU4koqXntAhBKtTB8Z/50I1zrRgAhFtA6luq60sBzOAJhuc2F2h6UsBuijDrA3UQ4VT6a+zhP6UsIAYgekKWpbZW7b2nkrshtzagRU9mL7jz418U1GGkU1vp+caA4zheSd1LKnJsBU8dnF7kbwy2LYLH4eatKfEmIfOJh3ofxETnqwnAexwuXBMrvCLYuGveh4CbseMZTZ32Bx4g0HrK9E/O4lUaYGC3qPkno9Me5KOP4HTtCuTE/l7U+Jg==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Raup shell coiling morphospace — Model fidelity to source 80/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-17T14:50:54Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-raup-audit-raup-shell-coiling-model-fidelity> ;
+        npx:supersedes <https://w3id.org/np/RANQG7XvN4KDchY4PxlfvjmR-MBiRP5alzXQbaa26LJDE> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf orcid:0009-0007-4948-9192 .
+}
+

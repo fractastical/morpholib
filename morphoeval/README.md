@@ -315,6 +315,25 @@ size of the `planformDB_2.5.0.edb` it was verified on
 #23/#24 to the authors" item has a draft message in
 `datasets/odonata/NOTE_TO_AUTHORS.md`, to be sent by the repository owner.
 
+**Raup re-score (2026-10-17-raup, 37.3 → 64.1):** the first audit's
+remediation item ("make the translation scale with the whorls") was done at
+commit `ba6fd20`, and doing it exposed two further departures from Raup's
+model: the generating curve was drawn in the horizontal plane (every shell a
+zero-thickness ribbon) and the axis offset made the rendered inner/outer
+margin ratio (1+D)/(3−D) rather than D. The cause sat in the formal source:
+`datasets/raup/variables.json` had been written in 2025 without the paper,
+and its definition of T was not Raup's. The script now implements the
+definitions as restated with equations by Noshita (2014) and Okabe &
+Yoshimura (2017), says so, recovers W, D and T from its own rendered mesh
+(`recover_parameters`, to 5e-15) and refuses to draw unless they match and
+the spire grows monotonically with T; the six per-taxon parameter sets were
+replaced by illustrative points labelled "cf." the shells they resemble, with
+the old values kept under `empirical_shells_provenance`. Nine nanopubs
+supersede the 2026-10-13 ones (rubric reused: the builder was given both
+`--supersede-from` dirs so the unchanged rubric was not re-emitted). Still
+open: read Raup 1966 and pin the definitions to it; put a measured specimen
+beside at least one panel.
+
 ## Report and Zenodo deposit
 
 BioEval and NeuroEval each have a Zenodo record bundling an arXiv-style report
@@ -344,7 +363,7 @@ Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1).
 |---|---|---:|---:|---:|
 | PlanformDB planarian morphology (`2013-lobo-planform-morphology.py`) | 161f269, audit 2026-10-14 | 66.1 | 67.3 | **66.5** |
 | ~~PlanformDB planarian animation (`1900-planformDB_parser.py`)~~ superseded | f3fe478, audit 2026-10-13 | 5.4 | 36.3 | ~~14.7~~ |
-| Raup shell coiling | f3fe478, audit 2026-10-13 | 28.6 | 57.7 | **37.3** |
+| Raup shell coiling (`create_raup_animations.py`) | ba6fd20, audit 2026-10-17-raup (re-score of 2026-10-13: 37.3) | 58.6 | 77.0 | **64.1** |
 | Gray–Scott (Turing) | f3fe478, audit 2026-10-13 | 54.3 | 49.0 | **52.7** |
 | Chindapol coral flow | f3fe478, audit 2026-10-13 | 49.3 | 70.0 | **55.5** |
 | Hoffmann–Donoughe wing venation | f3fe478, audit 2026-10-13 | 81.1 | 70.0 | **77.8** |

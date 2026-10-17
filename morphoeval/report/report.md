@@ -269,13 +269,27 @@ unseeded so every run differs, and there is no organism, so specimen match sits
 at the neutral 50. A low score for a correct demo — by design, since an
 unchecked pattern generator is unverified.
 
-**Raup shell coiling (37.3).** The translation parameter was applied to the
-angle instead of the radius, so every shell was planispiral regardless of T;
-the measured effective translation rate was an order of magnitude below
-nominal for every named panel (0.0005–0.19 against nominal 0.1–1.2) because
-translation was linear in the angle while the radius grew exponentially. Fixing
-the geometry and comparing each panel to a photograph of its taxon are open
-remediation items; the audit has not been re-scored.
+**Raup shell coiling (37.3 → 64.1).** The first audit found that the
+translation parameter was applied to the angle instead of the radius, so every
+shell was planispiral regardless of T; the measured effective translation rate
+was an order of magnitude below nominal for every named panel (0.0005–0.19
+against nominal 0.1–1.2). The remediation (commit ba6fd20, re-scored in audit
+2026-10-17-raup) found two further departures while fixing that one: the
+generating curve was drawn in the horizontal plane, so every shell was a
+zero-thickness ribbon, and the axis offset made the rendered inner/outer-margin
+ratio (1+D)/(3−D) rather than D. The root cause was in the formal source: the
+dataset's parameter definitions had been written in 2025 by an AI assistant
+without the paper, and its definition of T ("vertical rise per radian") is not
+Raup's. The script now implements the definitions as restated by Noshita (2014)
+and Okabe & Yoshimura (2017), recovers W, D and T from its own rendered mesh
+(to 5 × 10⁻¹⁵) and refuses to draw unless they match and the spire grows
+monotonically with T; the six per-taxon parameter sets, which could not be
+verified against Raup 1966, were replaced by illustrative points labelled
+"cf." the shells they resemble. Model fidelity rose from 35 to 80 and
+parameter expressivity from 25 to 70; specimen match (45) and morphometric
+validation (45) remain in the 40s because no real shell is yet measured
+against any panel, and source traceability (75) is capped while the primary
+paper remains unread.
 
 ## Case study: Thompson's coaxial circles against 791 species
 
@@ -341,8 +355,9 @@ what matters for morphology reproductions. A different weighting would reorder
 the middle of the table (Chindapol, Turing) but not its ends.
 
 **Not all scripts are audited, and not all audits are current.** Three
-scripts are unevaluated. The Raup script's geometry bug is diagnosed but not
-fixed; the cross-cutting remediation (pinned environment, declared
+scripts are unevaluated. The Raup script's geometry has been fixed and
+re-scored, but its definitions still rest on secondary sources; the
+cross-cutting remediation (pinned environment, declared
 dependencies) is in the repository but will reach the scores only when each
 script is re-audited.
 

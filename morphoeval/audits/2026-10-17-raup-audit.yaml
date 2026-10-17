@@ -1,0 +1,258 @@
+# MorphoEval audit — Raup's shell-coiling model, 2026-10-17
+# (re-score; supersedes the raup-shell-coiling nanopubs of 2026-10-13-morphology-audit).
+#
+# What changed since the first audit (overall 37.3): the remediation item "change
+# zc = T*theta to zc scaling with r" was done, and in doing it two further departures
+# from Raup's model were found and fixed.  (1) Translation now scales with the whorls:
+# the generating curve's centre is at r_c = a (1+D)/(1-D) from the axis and z_c = T r_c
+# along it, so T is dz_c/dr_c as Raup defines it; the old code had z_c = T*theta against
+# a = W^(theta/2pi), which made T invisible.  (2) The generating ellipse now lies in the
+# plane through the axis; the old code drew it in the horizontal plane, so every shell
+# was a zero-thickness ribbon.  (3) D is now the inner/outer-margin ratio of the
+# generating curve; the old offset D/(1-D) applied to a curve of semi-axis 0.5 r made
+# the rendered ratio (1+D)/(3-D).  The script recovers W, D and T from the rendered mesh
+# (recover_parameters) and refuses to draw unless they match the inputs to 1e-9 and the
+# spire grows monotonically with T (self_test); the per-panel recovered values are written
+# to raup_shell_metrics.csv and re-derived independently in the measurements sidecar.
+#
+# The cause of the bug was in the "formal source".  datasets/raup/variables.json and its
+# extraction log (2025-01-05) were written by an AI assistant without the paper; they
+# quoted a definition of T ("vertical rise per radian") that is not Raup's, attributed
+# equations and six per-taxon parameter sets to specific pages and figures of Raup 1966
+# that could not be verified, and gave Raup 1966 the wrong JSTOR id.  This revision
+# restates the definitions from two secondary sources that give the model as equations
+# (Noshita 2014; Okabe & Yoshimura 2017: T = x0/y0, D = (y0-1)/(y0+1) for a unit
+# generating circle centred at (y0, x0)), says in the script and the dataset that the
+# primary paper was not consulted, and replaces the six parameter sets with illustrative
+# points chosen so that each descriptive name (planispiral, turreted, evolute disc,
+# conical, high-spired, globose) is geometrically true, labelled "cf." the kind of shell
+# they resemble.  Even with the corrected model, the 2025 values rendered as low-spired
+# forms that did not match their names (Turritella at W=2.5, T=0.8 had spire/width 0.28).
+# The old values are recorded in variables.json under empirical_shells_provenance.
+#
+# What is still missing, and keeps specimen match and morphometric validation in the
+# 40s: no real shell is placed beside any panel, and no measured W, D, T of a specimen
+# (Raup's own block-diagram placements, or the ammonoid measurements of Raup 1967) is
+# compared with the rendered forms.  The measurements here verify that the code does
+# what the definitions say; they do not test the model against a mollusc.
+#
+# Scores are on the rubric's 0-100 scale.  Line numbers refer to the files at the
+# checkpoint commit recorded below.
+
+audit:
+  id: 2026-10-17-raup-audit
+  rubric_version: 0.1.0
+  date: "2026-10-17"
+  supersedes: 2026-10-13-morphology-audit
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Cursor agent)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: ba6fd20          # model fix, parameter recovery self-test, dataset revision
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      No external inputs: the six parameter sets and the parameter ranges are
+      read from datasets/raup/variables.json in the repository.  Outputs
+      regenerated at this commit with python3 create_raup_animations.py
+      (raup_shell_animation.gif 1200x800, 120 frames rendered / 100 stored;
+      raup_parameter_space.png; raup_empirical_comparison.png;
+      raup_shell_metrics.csv).
+
+references:
+  raup1962:
+    title: "Computer as aid in describing form in gastropod shells"
+    authors: "Raup DM"
+    venue: "Science 138(3537):150-152 (1962); first statement of the W, D, T parameterisation"
+    doi: 10.1126/science.138.3537.150
+  raup1965:
+    title: "Theoretical morphology of the coiled shell"
+    authors: "Raup DM, Michelson A"
+    venue: "Science 147(3663):1294-1295 (1965); the analogue/digital computer constructions and the block diagram"
+    doi: 10.1126/science.147.3663.1294
+  raup1966:
+    title: "Geometric analysis of shell coiling: general problems"
+    authors: "Raup DM"
+    venue: "Journal of Paleontology 40(5):1178-1190 (1966); the full formulation and the morphospace block diagrams.  Not consulted directly for this reproduction (JSTOR); definitions taken from noshita2014 and okabe2017"
+    doi: 10.2307/1301992
+  raup1967:
+    title: "Geometric analysis of shell coiling: coiling in ammonoids"
+    authors: "Raup DM"
+    venue: "Journal of Paleontology 41(1):43-65 (1967); W, D, S measured on 405 ammonoid genera - the obvious specimen set for a future specimen-match test, not used here"
+    url: https://pubs.geoscienceworld.org/jpaleontol/article-abstract/41/1/43/80199/geometric-analysis-of-shell-coiling-coiling-in
+  noshita2014:
+    title: "Quantification and geometric analysis of coiling patterns in gastropod shells based on 3D and 2D image data"
+    authors: "Noshita K"
+    venue: "Journal of Theoretical Biology 363:93-104 (2014); Raup's model restated as a parametric surface (the ktch package's raup()); the source of the generating-curve geometry used here"
+    doi: 10.1016/j.jtbi.2014.08.010
+  okabe2017:
+    title: "Optimal designs of mollusk shells from bivalves to snails"
+    authors: "Okabe T, Yoshimura J"
+    venue: "Scientific Reports 7:42445 (2017); states Raup's T = x0/y0 and D = (y0-1)/(y0+1) for a unit generating circle centred at radial y0, axial x0 - the mapping the script's r_c and z_c implement"
+    doi: 10.1038/srep42445
+
+simulations:
+  - id: raup-shell-coiling
+    name: Raup shell coiling morphospace
+    organism: "Coiled molluscs in general; the six panels are labelled cf. Nautilus, Turritella, an ammonite, Conus, Cerithium, Helix (resemblance, not specimens)"
+    script: create_raup_animations.py
+    also: [1966-raup.py]
+    output: raup_shell_animation.gif
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [raup1962, raup1965, raup1966, raup1967, noshita2014, okabe2017]
+    summary: >-
+      raup_shell(W, D, T, S) sweeps an ellipse of radial semi-axis
+      a = a0 W^(theta/2pi) and axial semi-axis a/S, centred at r_c = a(1+D)/(1-D)
+      from the axis and z_c = T r_c along it, in the plane through the axis.
+      self_test() recovers W, D, T from meshes on a 3x3x4 grid to 4.9e-15 and
+      checks the spire's axial travel rises strictly with T (the outer
+      height/width may stay flat while the last whorl still envelops the spire,
+      which is correct behaviour for involute forms); a T=0 shell is checked to
+      be exactly one aperture thick.  Six illustrative panels (W, D, T from
+      variables.json) rendered rotating in side and overhead view; W x D and
+      W x T sheets; a six-panel still with height/width; a CSV of nominal and
+      recovered W, D, T per panel with height/width and spire/width.  The
+      measurements sidecar recovers W, D, T again, independently, from the
+      script's generating function.
+    scores:
+      model-fidelity:
+        value: 80
+        rationale: >-
+          The three parameters now mean what Raup's model says they mean, and
+          the script proves it on its own output: W is the per-revolution
+          magnification of every dimension, D the inner/outer-margin ratio of
+          the generating curve, T the axial over radial movement of its centre,
+          and the generating curve lies in the plane through the axis, so the
+          shells are self-similar tubes rather than flat ribbons.  The three
+          defects of the first version are each named in the docstring and
+          each is excluded by the self-test.  Not higher because the primary
+          paper was not consulted: the definitions are taken from two
+          secondary restatements (which agree with each other on W, D and T up
+          to Noshita's 2/(1+D) scaling of T, which is noted), the direction of
+          the S ratio is the repository's convention rather than Raup's, and
+          Raup's generating curve is an arbitrary aperture outline, here always
+          an ellipse.
+        evidence:
+          - {file: create_raup_animations.py, lines: [20, 36], note: "the four parameters defined, with the equations"}
+          - {file: create_raup_animations.py, lines: [96, 104], note: "raup_shell(): a, r_c, z_c, generating curve in the radial-axial plane"}
+          - {file: create_raup_animations.py, lines: [38, 45], note: "the three defects of the first version and how each is now excluded"}
+          - {file: create_raup_animations.py, lines: [134, 157], note: "self_test(): recovery to 1e-9, spire monotone in T, planispiral one aperture thick"}
+          - {file: 1966-raup.py, lines: [28, 37], note: "the same generating function in the minimal script"}
+          - {file: datasets/raup/variables.json, lines: [134, 140], note: "mathematical_formulation: the equations as implemented, with their source"}
+      specimen-match:
+        value: 45
+        rationale: >-
+          The six forms are now distinct and each is what its name says
+          (spire/width 0.00 for the two planispirals, 0.86 for the turreted
+          form, 0.74 high-spired, 0.48 conical, 0.34 globose), and the panel
+          titles and a figure footnote say that the taxon names are
+          resemblances, not specimens.  But there is still no real shell in
+          the figure and no measured specimen the panels are tested against,
+          which is what the dimension asks for; the labels are honest, not
+          validated.  Scored above the 30 of the first audit because the forms
+          are no longer wrong, below the midpoint because nothing checks that
+          a Turritella looks like the turreted panel.
+        evidence:
+          - {file: raup_empirical_comparison.png, lines: [0, 0], note: "six panels, each a different form; footnote on provenance"}
+          - {file: raup_shell_animation.gif, lines: [0, 0], note: "side view: a tower, a cone, a disc, an involute coil; overhead: the log spirals"}
+          - {file: create_raup_animations.py, lines: [174, 176], note: "ILLUSTRATIVE: the footnote text"}
+          - {file: datasets/raup/variables.json, lines: [66, 133], note: "the six parameter sets with a note on why each value"}
+      parameter-expressivity:
+        value: 70
+        rationale: >-
+          Each of W, D, T now has its own visible monotone effect, shown on two
+          sheets (W x D at fixed T, W x T at fixed D) and on the 3 x 3 W x T
+          slice of 1966-raup.py, and the self-test asserts the T effect.  S is
+          exposed in the function but not swept in any figure, and D is swept
+          only together with W rather than on its own; the ranges on the
+          sheets are the dataset's indicative bounds, not Raup's.
+        evidence:
+          - {file: create_raup_animations.py, lines: [236, 259], note: "create_parameter_space_visualization(): the two sheets"}
+          - {file: 1966-raup.py, lines: [40, 71], note: "W x T slice at fixed D"}
+          - {file: create_raup_animations.py, lines: [147, 151], note: "spire_over_width strictly increasing in T asserted"}
+      morphometric-validation:
+        value: 45
+        rationale: >-
+          Shape quantities are now measured on the rendered geometry - W, D
+          and T recovered from each mesh, height/width and spire/width per
+          panel - written to a CSV, printed, shown on the still, and
+          re-derived independently in the measurements sidecar; recovered
+          values equal the inputs to 5e-15 in the script's own check and, in
+          the sidecar's independent derivation, exactly for W and T and to
+          3e-4 for D (the aperture's inner margin is read off a 100-point
+          grid).  That is validation of
+          the implementation against the definitions, and it is complete.
+          What the dimension also asks for - a comparison with specimens or
+          with the paper's own figures - is absent: no published W, D, T of a
+          real shell, and none of Raup's block-diagram placements, is compared
+          with anything here.
+        evidence:
+          - {file: create_raup_animations.py, lines: [110, 131], note: "recover_parameters(): W, D, T, height/width, spire/width from the mesh"}
+          - {file: create_raup_animations.py, lines: [189, 204], note: "write_metrics(): the CSV"}
+          - {file: raup_shell_metrics.csv, lines: [0, 0], note: "six rows, nominal and recovered values"}
+      source-traceability:
+        value: 75
+        rationale: >-
+          Raup 1962, 1965 and 1966 are cited with DOIs (the 1966 JSTOR id,
+          wrong in the dataset since 2025, is corrected), the two secondary
+          sources the definitions actually come from are cited with DOIs and
+          the specific statement used from each is given, and the dataset
+          says plainly which of its earlier contents could not be verified and
+          why they were replaced.  Not higher because the primary paper was
+          not read, so nothing here is pinned to a page or equation of Raup
+          1966, and because the parameter sets and ranges are the author's
+          illustrative choices with no external source.
+        evidence:
+          - {file: create_raup_animations.py, lines: [6, 18], note: "citation block with DOIs; which definitions come from which secondary source"}
+          - {file: datasets/raup/README.md, lines: [1, 30], note: "revision notice: what was unverifiable and what replaced it"}
+          - {file: datasets/raup/variables.json, lines: [10, 10], note: "revision_2026_10_17 provenance note"}
+          - {file: datasets/raup/paper_citations.bib, lines: [1, 70], note: "DOIs added; JSTOR 1301992"}
+      code-traceability:
+        value: 75
+        rationale: >-
+          The docstring maps each parameter to its definition and its line of
+          code, the generating function is commented line by line with the
+          identity each line enforces, the self-test names what it excludes,
+          and the parameter sets carry a note on why each value.  Not higher
+          because the equations are tied to the secondary sources' notation
+          rather than to numbered equations of Raup 1966.
+        evidence:
+          - {file: create_raup_animations.py, lines: [81, 107], note: "raup_shell() docstring and comments"}
+          - {file: 1966-raup.py, lines: [1, 18], note: "equations in the module docstring"}
+          - {file: datasets/raup/README.md, lines: [32, 52], note: "the model as a table: symbol, equation, meaning"}
+      repro-package:
+        value: 80
+        rationale: >-
+          Deterministic (no RNG), no external data, a CLI with --frames, --fps,
+          --no-gif, --self-test-only and --out-dir, a self-test that runs
+          before any drawing and fails loudly, outputs that fill their panels,
+          and the minimal script runs headless with --no-show/--out.  numpy,
+          matplotlib and Pillow are in requirements.txt and pinned in
+          requirements.lock.txt.  Not higher because the GIF is 16 MB and 100
+          frames for a 7 s loop, and because Pillow silently merges 20 of the
+          120 rendered frames, which the script does not report.
+        evidence:
+          - {file: create_raup_animations.py, lines: [280, 300], note: "main(): CLI, self-test first"}
+          - {file: create_raup_animations.py, lines: [178, 183], note: "fit_axes(): panels filled"}
+          - {file: 1966-raup.py, lines: [40, 44], note: "--no-show / --out"}
+    remediation:
+      - Obtain Raup 1966 and pin the definitions of W, D, T, S to its equations and figures; confirm the direction of the S ratio.
+      - Put a real shell beside at least one panel - a photograph, or a specimen's measured (W, D, T) from Raup 1967's ammonoid table or a later gastropod dataset - and measure the agreement.
+      - Sweep S and D on their own in the parameter sheet; mark Raup's block-diagram regions (gastropods, ammonoids, bivalves, brachiopods) on the W x T and W x D sheets once the paper is in hand.
+      - Report the stored frame count after saving the GIF, or write it with a writer that does not merge frames.
