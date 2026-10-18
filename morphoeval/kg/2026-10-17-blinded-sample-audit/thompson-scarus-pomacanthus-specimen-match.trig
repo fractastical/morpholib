@@ -1,0 +1,71 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-thompson-scarus-pomacanthus-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Thompson's Scarus -> Pomacanthus transformation fitted to real species — Morphological realism / specimen match: 86/100" ;
+        rdfs:comment "Evaluates transformations directly against both Procrustes-aligned landmark means of 48 Scarus and 6 Pomacanthus species (plus 791 species across four Thompson fish pairs) and real biological specimen photographs (Scarus ghobban and Pomacanthus semicirculatus), overlayed alongside Thompson's 1917 original scan (Figs. 375-376) in Panel A. Deducts 14 points because silhouette registration uses a 2-anchor similarity transform (snout tip to LM2 and caudal peduncle minimum width to midpoint(LM5, LM6)) rather than 17 landmarks digitised directly on those two photographed individuals, and compares a preserved specimen with collapsed fins against a live swimming fish with extended dorsal/anal filaments. Evidence: thompson/1917-thompson-scarus-pomacanthus.py L524–L650: segment_scarus_photo(), segment_pomacanthus_photo(), and register_outline_to_landmarks() <https://github.com/fractastical/morpholib/blob/5659d5e/thompson/1917-thompson-scarus-pomacanthus.py#L524-L650>; thompson_scarus_pomacanthus.png (generated output, not in repo): Panel A reproduces Thompson 1917 p. 749 scan; Panels B-F compare fitted families on consensus shapes — thompson_scarus_pomacanthus.png: rendered output of thompson/1917-thompson-scarus-pomacanthus.py at 5659d5e, image/png, 739620 B, 2520×1540 px, sha256 d243f51e2b90b1a2201ec81265392b1cf95ea0f0e6e68074818cc5754b324e08; thompson_scarus_pomacanthus_outlines.png (generated output, not in repo): segmented photos of S. ghobban and P. semicirculatus warped across all five transformation families — thompson_scarus_pomacanthus_outlines.png: rendered output of thompson/1917-thompson-scarus-pomacanthus.py at 5659d5e, image/png, 903004 B, 2520×1470 px, sha256 df6479f9f47f28fc341f29ff25d2dbf5a612e34215492d2c23cae956105a16f8." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-thompson-scarus-pomacanthus-specimen-match> ;
+        pk:hasProbability "0.86"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-thompson-scarus-pomacanthus-specimen-match> rdfs:label "Thompson's Scarus -> Pomacanthus transformation fitted to real species (thompson/1917-thompson-scarus-pomacanthus.py) satisfies the MorphoEval 0.1.0 criterion 'Morphological realism / specimen match' for Scarus spp. -> Pomacanthus spp., plus three other teleost pairs across 791 species" ;
+        dct:identifier "morphoeval/0.1.0/specimen-match" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/978-3-642-93093-5>,
+            <https://doi.org/10.1109/34.24792>,
+            <https://doi.org/10.1111/evo.13755>,
+            <https://doi.org/10.1371/journal.pone.0112732>,
+            <https://doi.org/10.5061/dryad.fn457gr> .
+    <https://doi.org/10.1007/978-3-642-93093-5> dct:date "1978"^^xsd:gYear ;
+        dct:title "The measurement of biological shape and shape change" .
+    <https://doi.org/10.1109/34.24792> dct:date "1989"^^xsd:gYear ;
+        dct:title "Principal warps: thin-plate splines and the decomposition of deformations" .
+    <https://doi.org/10.1111/evo.13755> dct:date "1873"^^xsd:gYear ;
+        dct:title "The influence of size on body shape diversification across Indo-Pacific shore fishes" .
+    <https://doi.org/10.1371/journal.pone.0112732> dct:date "2014"^^xsd:gYear ;
+        dct:title "A morphospace for reef fishes: elongation is the dominant axis of body shape evolution" .
+    <https://doi.org/10.5061/dryad.fn457gr> dct:date "2019"^^xsd:gYear ;
+        dct:title "Data from: The influence of size on body shape diversification across Indo-Pacific shore fishes" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Thompson's Scarus -> Pomacanthus transformation fitted to real species — Morphological realism / specimen match 86/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-18T01:49:13Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-thompson-scarus-pomacanthus-specimen-match> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,77 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAvnOhGlLcrFnKJxvoFzBerek7q4FTMG3Az_lEhpU6u58/> .
+@prefix this: <https://w3id.org/np/RAvnOhGlLcrFnKJxvoFzBerek7q4FTMG3Az_lEhpU6u58> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:provenance {
+    sub1:assertion prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/reg2.13>,
+            <https://doi.org/10.1093/bioinformatics/btu582> .
+
+    <https://doi.org/10.1002/reg2.13> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "A bioinformatics expert system linking functional data to anatomical outcomes in limb regeneration" .
+
+    <https://doi.org/10.1093/bioinformatics/btu582> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "Limbform: a functional ontology-based database of limb regeneration experiments" .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-lobo-limbform-morphology-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "LimbformDB limb morphologies — Morphometric validation: 62/100" ;
+        rdfs:comment "Performs an exhaustive structural audit of the database encoding in check_encoding() (verifying 555/565 geometric morphologies and 3,137/3,146 joints against the degree-radius rule), but the script itself does not compute silhouette IoU, segment-angle residuals, or landmark errors against Lobo et al. (2014b) Fig. 1 or real limb morphometrics. Evidence: 2014-lobo-limbform-morphology.py L606–L620: check_encoding() structural verification of joint-parameter counts <https://github.com/fractastical/morpholib/blob/5659d5e/2014-lobo-limbform-morphology.py#L606-L620>; 2014-lobo-limbform-morphology.py L745–L761: main() runs check_encoding() and renders galleries without quantitative image-level comparison <https://github.com/fractastical/morpholib/blob/5659d5e/2014-lobo-limbform-morphology.py#L745-L761>. Measurements (measure_outputs.py): morphologies decoded = 555 count (reference 565, rows in LimbformDB 2.1.0 Morphology table) [Morphology rows with at least one Link (segment) row] — the rest are outcome labels without geometry (Lethal, No limb, ...); joints obeying the radius rule = 3137 count (reference 3146, all joints; the rule is the formalism's (Regeneration 1:37, Fig. 2)) [joints whose JointParam count equals the number of incident segments (3 for a terminal joint; a sub-joint counts its host segment twice)]; segments, #1 Wild type, right forelimb = 3 count (reference 3, Lobo et al. 2014 Regeneration Fig. 1 A′: Upper arm, Fore arm, Hand; digits 1-4) [Link rows of the morphology]; digits, #1 Wild type, right forelimb = 4 count (reference 4, Lobo et al. 2014 Regeneration Fig. 1 A′: Upper arm, Fore arm, Hand; digits 1-4) [Digit rows of the morphology]; segments, #280 Wild type, right hindlimb = 3 count (reference 3, Lobo et al. 2014 Regeneration Fig. 1 B′: Thigh, Shank, Foot; digits 1-5 plus the prehallux node) [Link rows of the morphology]; digits, #280 Wild type, right hindlimb = 6 count (reference 6, Lobo et al. 2014 Regeneration Fig. 1 B′: Thigh, Shank, Foot; digits 1-5 plus the prehallux node) [Digit rows of the morphology]; segments, #314 Wild type, right walking leg, fiddler crab = 7 count (reference 7, Lobo et al. 2014 Regeneration Fig. 1 C′: Coxa, Basis, Ischium, Merus, Carpus, Propus, Dactyl) [Link rows of the morphology]; segments, #490 Wild type, right metathoracic (T3) leg, cricket nymph = 8 count (reference 8, Lobo et al. 2014 Regeneration Fig. 1 D′: Coxa, Trochanter, Femur, Tibia, Tarsus 1-4 (as labelled)) [Link rows of the morphology]; segments, #491 Wild type, right leg I, huntsman spider = 7 count (reference 7, Lobo et al. 2014 Regeneration Fig. 1 E′: Coxa, Trochanter, Femur, Patella, Tibia, Metatarsus, Tarsus) [Link rows of the morphology]; silhouette IoU vs Fig. 1 A'', #1 Wild type, right forelimb = 0.6448 ratio (reference 1.0, the paper's own rendering of the same database entry) [largest ink component of the cartoon panel (holes filled) and the decoded silhouette, each cropped to its bounding box and scaled to a 200-px canvas (aspect kept); intersection over union, best of 8 rotations/reflections (rot180+mirror)] — bones, digits and gradient are inside the outline, so this compares outer shape only; the cartoon is a 560-px JPEG, which bounds the achievable IoU below 1; bounding-box aspect, #1 Wild type, right forelimb = 1.5738 ratio (reference 1.463, same statistic on the Fig. 1 A'' cartoon) [longer / shorter side of the decoded silhouette's bounding box]; silhouette IoU vs Fig. 1 B'', #280 Wild type, right hindlimb = 0.4105 ratio (reference 1.0, the paper's own rendering of the same database entry) [largest ink component of the cartoon panel (holes filled) and the decoded silhouette, each cropped to its bounding box and scaled to a 200-px canvas (aspect kept); intersection over union, best of 8 rotations/reflections (rot0+mirror)] — bones, digits and gradient are inside the outline, so this compares outer shape only; the cartoon is a 560-px JPEG, which bounds the achievable IoU below 1; bounding-box aspect, #280 Wild type, right hindlimb = 1.4696 ratio (reference 1.832, same statistic on the Fig. 1 B'' cartoon) [longer / shorter side of the decoded silhouette's bounding box]; silhouette IoU vs Fig. 1 C'', #314 Wild type, right walking leg, fiddler crab = 0.4313 ratio (reference 1.0, the paper's own rendering of the same database entry) [largest ink component of the cartoon panel (holes filled) and the decoded silhouette, each cropped to its bounding box and scaled to a 200-px canvas (aspect kept); intersection over union, best of 8 rotations/reflections (rot180+mirror)] — bones, digits and gradient are inside the outline, so this compares outer shape only; the cartoon is a 560-px JPEG, which bounds the achievable IoU below 1; bounding-box aspect, #314 Wild type, right walking leg, fiddler crab = 1.2414 ratio (reference 1.051, same statistic on the Fig. 1 C'' cartoon) [longer / shorter side of the decoded silhouette's bounding box]; silhouette IoU vs Fig. 1 D'', #490 Wild type, right metathoracic (T3) leg, cricket nymph = 0.7432 ratio (reference 1.0, the paper's own rendering of the same database entry) [largest ink component of the cartoon panel (holes filled) and the decoded silhouette, each cropped to its bounding box and scaled to a 200-px canvas (aspect kept); intersection over union, best of 8 rotations/reflections (rot180+mirror)] — bones, digits and gradient are inside the outline, so this compares outer shape only; the cartoon is a 560-px JPEG, which bounds the achievable IoU below 1; bounding-box aspect, #490 Wild type, right metathoracic (T3) leg, cricket nymph = 1.1346 ratio (reference 1.084, same statistic on the Fig. 1 D'' cartoon) [longer / shorter side of the decoded silhouette's bounding box]; silhouette IoU vs Fig. 1 E'', #491 Wild type, right leg I, huntsman spider = 0.4851 ratio (reference 1.0, the paper's own rendering of the same database entry) [largest ink component of the cartoon panel (holes filled) and the decoded silhouette, each cropped to its bounding box and scaled to a 200-px canvas (aspect kept); intersection over union, best of 8 rotations/reflections (rot180+mirror)] — bones, digits and gradient are inside the outline, so this compares outer shape only; the cartoon is a 560-px JPEG, which bounds the achievable IoU below 1; bounding-box aspect, #491 Wild type, right leg I, huntsman spider = 1.5391 ratio (reference 1.455, same statistic on the Fig. 1 E'' cartoon) [longer / shorter side of the decoded silhouette's bounding box]." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-morphometric-validation> ;
+        pk:hasProbability "0.62"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-morphometric-validation> rdfs:label "LimbformDB limb morphologies (2014-lobo-limbform-morphology.py) satisfies the MorphoEval 0.1.0 criterion 'Morphometric validation' for Urodele and anuran amphibians, decapod crustaceans, orthopteroid insects and a spider (LimbformDB 2.1.0)" ;
+        dcterms:identifier "morphoeval/0.1.0/morphometric-validation" .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "ejJ16MNFVTxLlFYHKd3ZQti+GBJYraKc5ZfaFqGJ3mkLBnP4+edeqkfLflBp2VKLDoomNs+MLUiJEc6qta47CyXG1dLWA/pwvIaTyb6tOzsm/93nQWNfuS+Vn4Wzhf9oxggVAl97E2zZ1jnzoHufh4etlbGr8QGsLvSvQ1mq18svo/Xar44Yu99BfnKsGTAfzVXSaK33Thewx0MuVf9++owcUnn+58BfFBXpqg5Ln3XaXTD9Jt7tRlPLi9kjG8/FVsGJa97TKnWH0XLwlGcXnq/fC/bYvUgSDEf7XF476lNCBgWhxurF63Pr+Bw54LvLP3Nw7B3pVsHu9sqcK8IoFg==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "LimbformDB limb morphologies — Morphometric validation 62/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-18T01:49:13Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-lobo-limbform-morphology-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf orcid:0009-0007-4948-9192 .
+}
+

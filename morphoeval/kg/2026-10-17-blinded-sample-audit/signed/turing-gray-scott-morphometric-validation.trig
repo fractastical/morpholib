@@ -1,0 +1,77 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAJlpR6hGymLUZ8doq6f_LjJkJVZgeutOJyWWelNG-viE/> .
+@prefix this: <https://w3id.org/np/RAJlpR6hGymLUZ8doq6f_LjJkJVZgeutOJyWWelNG-viE> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:provenance {
+    sub1:assertion prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1126/science.261.5118.189> .
+
+    <https://doi.org/10.1098/rstb.1952.0012> dcterms:date "1952"^^xsd:gYear ;
+        dcterms:title "The chemical basis of morphogenesis" .
+
+    <https://doi.org/10.1126/science.261.5118.189> dcterms:date "1993"^^xsd:gYear ;
+        dcterms:title "Complex patterns in a simple system" .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-turing-gray-scott-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Gray-Scott reaction-diffusion patterns — Morphometric validation: 5/100" ;
+        rdfs:comment "Zero quantitative analysis: no spatial wavelength, structure factor / FFT power spectrum, spot-count, or phase-diagram comparison is computed. Evidence: 1952-turing-morpho.py L1–L76: entire script contains only array updates and Matplotlib animation rendering <https://github.com/fractastical/morpholib/blob/5659d5e/1952-turing-morpho.py#L1-L76>. Measurements (measure_outputs.py): dominant wavelength (last frame) = 14.2857 grid cells [peak of the radial power spectrum of the axes-box image, scaled to the N=200 grid] — Gray–Scott f=0.055,k=0.062 labyrinth; no specimen or literature wavelength recorded; pattern coverage (last frame) = 0.2477 fraction [fraction of axes box in the high-V (yellow) band]; connected high-V components (last frame) = 1 count [scipy.ndimage.label on the yellow mask]; fraction of pattern pixels changed, first→last frame = 0.252 fraction (reference >0 for an evolving simulation) [XOR of yellow masks of frame 0 and the last frame] — ≈0 means the GIF shows a frozen pattern; Pearson coral labyrinth (F=0.055, k=0.062) spectral ring wavenumber k* = 11.0 cycles / domain (reference >0 (Turing band-pass ring), Pearson 1993 Science 261:189 Pattern η/γ) [peak of 2D radial PSD P(k) on N=160x160 grid after 4000 steps] — λ* = 14.55 grid cells, ring sharpness = 718.1; Pearson mitosis spots (F=0.028, k=0.062) connected components vs coral labyrinth = 129 count (reference 14, Pearson 1993 Science 261:189 Pattern λ/θ vs Pattern η/γ) [connected high-activator components in self-replicating spot regime] — spots remain disconnected (>100 components) whereas coral labyrinth percolates; equal-diffusion negative control (Du=Dv=0.10) spectral wavenumber k* = 0.0 cycles / domain (reference 0.0, Turing 1952 Phil. Trans. R. Soc. B 237:37 (diffusion-driven instability requires Du != Dv)) [dominant wavenumber when differential diffusivity is removed (Du = Dv = 0.10 at F=0.055, k=0.062)] — spatial σ_V = 0.00e+00, ring sharpness = 0.0." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-turing-gray-scott-morphometric-validation> ;
+        pk:hasProbability "0.05"^^xsd:double ;
+        pk:hasVerdict "not faithful" .
+
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-turing-gray-scott-morphometric-validation> rdfs:label "Gray-Scott reaction-diffusion patterns (1952-turing-morpho.py) satisfies the MorphoEval 0.1.0 criterion 'Morphometric validation' for Generic (Turing pattern formation)" ;
+        dcterms:identifier "morphoeval/0.1.0/morphometric-validation" .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "rKK6atbsqQyEiV/iuOVa+erZ5kMPXTPE8aQ1Ap9O4r5NCboWr7oOI1frnP6yTrrtUt3qCPs84s32/alvn2Laf5QgdwlcGkW7wEGCUziTkYlSG2vXuAHtaZYWJ8vuPHlC/IiN+Sq/Xq1mWcMJQfLV5Uz0G67Vx379imiPTKPNpuMlQcv6pOquG+Quf5NrTpwlpH34iECtnD7jrZF/zgGq1zPRy4xihSzeApO1b3bvlFRiVQvy3YoBBECkZ9HfhVGyBqWVWa7YMQv7II0HuIz79V3r6ZGHZBtglihE0Mcr8YSSxtbLqZRXLRYToQpiZ0s/onaKaRKilFoGTRP8fTW6Dw==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    this: rdfs:label "Gray-Scott reaction-diffusion patterns — Morphometric validation 5/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-18T01:49:13Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-turing-gray-scott-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf orcid:0009-0007-4948-9192 .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+

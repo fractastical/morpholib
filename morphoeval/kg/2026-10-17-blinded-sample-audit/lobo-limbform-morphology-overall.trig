@@ -1,0 +1,62 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-lobo-limbform-morphology-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "LimbformDB limb morphologies — MorphoEval overall 83.6/100" ;
+        rdfs:comment "Blinded second-assessor pass (gemini-4-argon). Decodes the LimbformDB 2.1.0 tree-graph schema (Morphology, Link, JointParam, LinkSubJoint, Digit) across all 565 database rows (555 with non-empty geometry) and renders smooth closed limb outlines, internal skeletal elements, and digit phalanges across 14 taxa. Independently caught a 65-hex-character typo in DB_SHA256 (line 92) that causes resolve_db_path() to emit a false-positive SHA-256 mismatch warning. Overall 83.6/100 (faithfulness 81.1, reproducibility 89.5; model-implementation 86.7/100, biological-validation 77.0/100, applicable-only overall 83.6/100; uncalibrated rubric score, not a calibrated probability); rubric morphoeval 0.1.0; checkpoint commit 5659d5e; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, pandas 2.3.3, scikit-image 0.26.0, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 88, Morphological realism / specimen match 86, Parameter expressivity 84, Morphometric validation 62, Source and data traceability 94, Code-to-model traceability 86, Reproducibility package 88. Output judged: limbform_wildtype_gallery.png: rendered output of 2014-lobo-limbform-morphology.py at 5659d5e, image/png, 620043 B, 2400×1875 px, sha256 d561f4aab10756976c3fd5caf7a8c516da13c1cd9395d6cb5a54b8a2f5b10236." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology> ;
+        pk:hasProbability "0.836"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology> rdfs:label "LimbformDB limb morphologies faithfully reproduces Urodele and anuran amphibians, decapod crustaceans, orthopteroid insects and a spider (LimbformDB 2.1.0) morphology" ;
+        dct:identifier "morphoeval/0.1.0/overall" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/reg2.13>,
+            <https://doi.org/10.1093/bioinformatics/btu582> .
+    <https://doi.org/10.1002/reg2.13> dct:date "2014"^^xsd:gYear ;
+        dct:title "A bioinformatics expert system linking functional data to anatomical outcomes in limb regeneration" .
+    <https://doi.org/10.1093/bioinformatics/btu582> dct:date "2014"^^xsd:gYear ;
+        dct:title "Limbform: a functional ontology-based database of limb regeneration experiments" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "LimbformDB limb morphologies — MorphoEval overall 83.6/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-18T01:49:13Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-lobo-limbform-morphology-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-lobo-limbform-morphology> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

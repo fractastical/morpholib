@@ -1,0 +1,77 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAapibW8IcGILuHteWUVZBRsftj6F0RTML0oeCoaYZY6U/> .
+@prefix this: <https://w3id.org/np/RAapibW8IcGILuHteWUVZBRsftj6F0RTML0oeCoaYZY6U> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-lobo-limbform-morphology-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "LimbformDB limb morphologies — Source and data traceability: 94/100" ;
+        rdfs:comment "Cites both primary papers (Lobo et al. 2014a, DOI 10.1093/bioinformatics/btu582; Lobo et al. 2014b, DOI 10.1002/reg2.13) and the upstream LimbformDB 2.1.0 URL, and links every rendered panel to its database Morphology.Id and Experiment record. Deducts 6 points because DB_SHA256 on line 92 contains a 65-character hex string (an extra trailing '0' appended to the true 64-character SHA-256 digest), so resolve_db_path() always prints a false-positive hash mismatch warning. Evidence: 2014-lobo-limbform-morphology.py L1–L56: docstring citing Lobo et al. (2014a, 2014b) DOIs and LimbformDB 2.1.0 URL <https://github.com/fractastical/morpholib/blob/5659d5e/2014-lobo-limbform-morphology.py#L1-L56>; 2014-lobo-limbform-morphology.py L91–L134: DB_SHA256 has 65 hex chars (trailing '0' typo at L92), triggering mismatch warning in resolve_db_path() <https://github.com/fractastical/morpholib/blob/5659d5e/2014-lobo-limbform-morphology.py#L91-L134>." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-source-traceability> ;
+        pk:hasProbability "0.94"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-source-traceability> rdfs:label "LimbformDB limb morphologies (2014-lobo-limbform-morphology.py) satisfies the MorphoEval 0.1.0 criterion 'Source and data traceability' for Urodele and anuran amphibians, decapod crustaceans, orthopteroid insects and a spider (LimbformDB 2.1.0)" ;
+        dcterms:identifier "morphoeval/0.1.0/source-traceability" .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1002/reg2.13> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "A bioinformatics expert system linking functional data to anatomical outcomes in limb regeneration" .
+
+    <https://doi.org/10.1093/bioinformatics/btu582> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "Limbform: a functional ontology-based database of limb regeneration experiments" .
+
+    sub1:assertion prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/reg2.13>,
+            <https://doi.org/10.1093/bioinformatics/btu582> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "gJCT2Zm+wmurozwQ+Irv8nTHXa/kCyvvCvQEEY4YJtaMLErzdw4T5okUkIlAvKwF9ugTU1CSmEbNIitGXx3Jy9PMeVctDz/61auuTm+vl4IgLwVZVJHIIRzJEgZ+8WHTFDUMUP70esUnoEFYTUvwH4bXInAcend1epU3zk9pXy7DNwePtAcYVB8ZgSkgI/TA23QnPUgdCjDOpNLADnxI86ODztqm4rhtXG3diXJOKQqh1BcImV5u8+fP0DprZr5/UU4x7whQjXHeGuhazxnX6qx5j4VrhRwJh8FKEsTYa+TeJlHes3E8CZjfOl8RFtVART80XMklgYy15u1zCac5LQ==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "LimbformDB limb morphologies — Source and data traceability 94/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-18T01:49:13Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-lobo-limbform-morphology-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf orcid:0009-0007-4948-9192 .
+}
+

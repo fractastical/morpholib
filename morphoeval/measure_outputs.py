@@ -40,12 +40,137 @@ ROOT = HERE.parent
 
 
 # --------------------------------------------------------------------------- #
-# 1. fingerprints
+# 1. fingerprints (dual semantic spec_fingerprint vs byte artifact_sha256)
 # --------------------------------------------------------------------------- #
-def fingerprint(path: Path) -> dict:
+# Canonical mathematical/parameter specifications per simulation ID, adapted
+# from MesmerPrism/rusty-manifold-provenance.  `spec_fingerprint` hashes the
+# canonical JSON representation of the model equations, parameter regime, grid
+# resolution, and RNG seed so it stays invariant across Matplotlib / Pillow /
+# FreeType rendering upgrades, whereas `artifact_sha256` pins the exact rendered
+# bytes on disk.
+CANONICAL_MODEL_SPECS: dict[str, dict] = {
+    "planform-morphology-animation": {
+        "model": "Lobo et al. (2013) PlanformDB graph-encoded planarian body-plan decoder",
+        "coordinate_transform": "(-x, -y) -> (ML, AP), dorsal top, anterior up",
+        "grid_resolution": [256, 256],
+        "canonical_ids": [1, 2, 3, 4, 8, 25],
+        "inputs": ["datasets/planform/planformDB.sha256"],
+    },
+    "raup-shell-coiling": {
+        "model": "Raup (1966) logarithmic helicospiral shell coiling (r_c = a*(1+D)/(1-D), z_c = T*r_c)",
+        "whorls_n": 3,
+        "mesh_theta_steps": 500,
+        "mesh_phi_steps": 48,
+        "inputs": ["datasets/raup/variables.json"],
+    },
+    "turing-gray-scott": {
+        "model": "Turing (1952) / Pearson (1993) 2D Gray-Scott reaction-diffusion",
+        "Du": 0.16,
+        "Dv": 0.08,
+        "grid_resolution": [128, 128],
+        "steps": 4500,
+        "dt": 1.0,
+        "seed": 1952,
+        "regimes": [
+            {"id": "mitosis_spots", "F": 0.028, "k": 0.062},
+            {"id": "soliton_spots", "F": 0.030, "k": 0.062},
+            {"id": "stripes_worms", "F": 0.042, "k": 0.060},
+            {"id": "coral_labyrinth", "F": 0.055, "k": 0.062},
+            {"id": "equal_diffusion_control", "F": 0.055, "k": 0.062, "Du": 0.10, "Dv": 0.10},
+        ],
+        "inputs": [],
+    },
+    "bressloff-v1-form-constants": {
+        "model": "Bressloff et al. (2001/2002) V1 anisotropic ring neural field + Rule et al. (2011) Floquet tongues",
+        "alpha": 1.0,
+        "mu": 1.0,
+        "sigma_loc": 1.0,
+        "sigma_lat": 3.0,
+        "beta_aniso": 1.6,
+        "log_polar_map": {"alpha_deg_inv": 1.0, "eps_deg": 0.75},
+        "inputs": [
+            "datasets/bressloff/paper-calibration.json",
+            "datasets/bressloff/rule-2011-floquet.json",
+            "datasets/bressloff/driven-neural-fields-registry.json",
+        ],
+    },
+    "hoffmann-wing-venation": {
+        "model": "Hoffmann et al. (2018) secondary-vein Voronoi / Lloyd relaxation venation",
+        "lloyd_iterations": 12,
+        "seed": 2018,
+        "inputs": ["datasets/wings/source_comparison/salcedo2019_wing_vein_metrics.csv"],
+    },
+    "eshghi-odonata-wing-cells": {
+        "model": "Eshghi et al. (2024) Odonata wing-cell polygonality & circularity distribution",
+        "seed": 2024,
+        "inputs": ["datasets/odonata/eshghi2024_odonata_wings.npz"],
+    },
+    "lobo-limbform-morphology": {
+        "model": "Lobo et al. (2014) Limbform 2D Bézier limb-segment morphology decoder",
+        "inputs": ["datasets/limbform/limbform.sqlite"],
+    },
+    "santella-wormguides-celegans": {
+        "model": "Santella et al. (2015) WormGUIDES 4D C. elegans embryonic nuclei lineage trajectory",
+        "inputs": ["datasets/wormguides/wormguides_nuclei_70_270.npz"],
+    },
+    "thompson-scarus-pomacanthus": {
+        "model": "Thompson (1917) Chapter XVII Scarus -> Pomacanthus smooth harmonic / affine / TPS warps",
+        "grid_lines": [10, 10],
+        "landmark_pairs": 14,
+        "inputs": [
+            "thompson/datasets/price2019_scarus_pomacanthus_landmarks.json",
+            "thompson/datasets/thompson1917_fig515_516.npz",
+        ],
+    },
+    "cervera-levin-mafe": {
+        "model": "Cervera, Levin & Mafe (2021) bioelectric gap-junction blockade + rusty-matter 5-node V_mem circuit",
+        "grid_nx": 80,
+        "grid_nz": 41,
+        "dt": 0.08,
+        "t_end": 25.0,
+        "circuit_nodes": 5,
+        "inputs": [
+            "datasets/planform/planarian_bioelectric_pars.json",
+            "datasets/planform/planarian_reference_traces.json",
+            "datasets/planform/planform_canonical_silhouettes_v1.json",
+        ],
+    },
+}
+
+
+def compute_input_dataset_sha256(sim_id: str) -> dict[str, str]:
+    """Compute SHA-256 digests for all declared upstream input datasets/fixtures of `sim_id`."""
+    spec = CANONICAL_MODEL_SPECS.get(sim_id, {})
+    digests: dict[str, str] = {}
+    for rel in spec.get("inputs", []):
+        p = ROOT / rel
+        if p.exists() and p.is_file():
+            digests[rel] = hashlib.sha256(p.read_bytes()).hexdigest()
+    return digests
+
+
+def compute_spec_fingerprint(sim_id: str, script: str | None = None) -> str:
+    """Compute the canonical SHA-256 `spec_fingerprint` of the simulation's mathematical
+    model specification and input dataset digests (independent of Matplotlib/Pillow bytes)."""
+    spec = dict(CANONICAL_MODEL_SPECS.get(sim_id, {"sim_id": sim_id}))
+    if script:
+        spec["script"] = script
+    spec["input_dataset_sha256"] = compute_input_dataset_sha256(sim_id)
+    canonical_bytes = json.dumps(spec, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    return hashlib.sha256(canonical_bytes).hexdigest()
+
+
+def fingerprint(path: Path, sim_id: str | None = None, script: str | None = None) -> dict:
     h = hashlib.sha256(path.read_bytes()).hexdigest()
-    d = {"file": str(path.relative_to(ROOT)), "sha256": h, "bytes": path.stat().st_size,
-         "media_type": mimetypes.guess_type(path.name)[0] or "application/octet-stream"}
+    d = {
+        "file": str(path.relative_to(ROOT)),
+        "sha256": h,
+        "artifact_sha256": h,
+        "bytes": path.stat().st_size,
+        "media_type": mimetypes.guess_type(path.name)[0] or "application/octet-stream",
+    }
+    if sim_id is not None:
+        d["spec_fingerprint"] = compute_spec_fingerprint(sim_id, script)
     try:
         with Image.open(path) as im:
             d["width"], d["height"] = im.size
@@ -615,38 +740,142 @@ def measure_raup(script: Path, variables: Path) -> list:
     return out
 
 
-def measure_turing(gif: Path, N: int = 200) -> list:
-    """Dominant pattern wavelength (radial FFT peak) in grid cells, pattern coverage, and
-    whether the animation actually evolves (frame-to-frame change inside the axes box)."""
-    fs = frames(gif)
-    a0, aL = fs[0].astype(int), fs[-1].astype(int)
-    # axes box = pixels that are viridis-coloured (not white/grey/black): saturated
-    sat = aL.max(2) - aL.min(2)
-    box = ndi.binary_opening(sat > 40, iterations=3)
-    ys, xs = np.where(box)
-    r0, r1, c0, c1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
-    yellow = lambda a: (a[r0:r1, c0:c1, 0] > 150) & (a[r0:r1, c0:c1, 2] < 120)     # viridis high end
-    yl, y0 = yellow(aL), yellow(a0)
-    g = aL[r0:r1, c0:c1].mean(2); g = g - g.mean()
-    F = np.abs(np.fft.fftshift(np.fft.fft2(g))) ** 2
-    h, w = F.shape; cy, cx = h // 2, w // 2
-    yy, xx = np.indices(F.shape); rr = np.hypot(yy - cy, xx - cx).astype(int)
-    radial = np.bincount(rr.ravel(), F.ravel()) / np.maximum(np.bincount(rr.ravel()), 1)
-    radial[:4] = 0
-    k = int(np.argmax(radial[: min(h, w) // 2]))
-    wl_cells = (min(h, w) / k) * N / min(h, w) if k else float("nan")
-    lab, ncomp = ndi.label(yl)
-    change = float(np.mean(yl != y0))
+def measure_turing(gif: Path, N: int = 200, script: Path | None = None) -> list:
+    """Dominant pattern wavelength (radial FFT peak) in grid cells, pattern coverage,
+    whether the animation actually evolves (frame-to-frame change inside the axes box),
+    plus Pearson (1993) multi-regime spectral ring sharpness and the Du=Dv negative control."""
+    out = []
+    if gif.exists():
+        fs = frames(gif)
+        a0, aL = fs[0].astype(int), fs[-1].astype(int)
+        # axes box = pixels that are coloured (not white/grey/black): saturated
+        sat = aL.max(2) - aL.min(2)
+        box = ndi.binary_opening(sat > 40, iterations=3)
+        ys, xs = np.where(box)
+        r0, r1, c0, c1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
+        yellow = lambda a: (a[r0:r1, c0:c1, 0] > 150) & (a[r0:r1, c0:c1, 2] < 120)     # high-V band
+        yl, y0 = yellow(aL), yellow(a0)
+        g = aL[r0:r1, c0:c1].mean(2); g = g - g.mean()
+        F = np.abs(np.fft.fftshift(np.fft.fft2(g))) ** 2
+        h, w = F.shape; cy, cx = h // 2, w // 2
+        yy, xx = np.indices(F.shape); rr = np.hypot(yy - cy, xx - cx).astype(int)
+        radial = np.bincount(rr.ravel(), F.ravel()) / np.maximum(np.bincount(rr.ravel()), 1)
+        radial[:4] = 0
+        k = int(np.argmax(radial[: min(h, w) // 2]))
+        wl_cells = (min(h, w) / k) * N / min(h, w) if k else float("nan")
+        lab, ncomp = ndi.label(yl)
+        change = float(np.mean(yl != y0))
+        out.extend([
+            M("dominant wavelength (last frame)", float(wl_cells), "grid cells",
+              f"peak of the radial power spectrum of the axes-box image, scaled to the N={N} grid",
+              reference=None, source=None,
+              note="Gray–Scott f=0.055,k=0.062 labyrinth; no specimen or literature wavelength recorded"),
+            M("pattern coverage (last frame)", float(yl.mean()), "fraction", "fraction of axes box in the high-V (yellow) band"),
+            M("connected high-V components (last frame)", int(ncomp), "count", "scipy.ndimage.label on the yellow mask"),
+            M("fraction of pattern pixels changed, first→last frame", change, "fraction",
+              "XOR of yellow masks of frame 0 and the last frame", reference=">0 for an evolving simulation",
+              note="≈0 means the GIF shows a frozen pattern"),
+        ])
+
+    turing_script = script if script is not None else (ROOT / "1952-turing-morpho.py")
+    if turing_script.exists():
+        import importlib.util
+        import tempfile
+        spec = importlib.util.spec_from_file_location("turing_pearson_v1", turing_script)
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = mod
+        spec.loader.exec_module(mod)
+        if hasattr(mod, "run_pearson_morphospace_analysis"):
+            with tempfile.TemporaryDirectory() as td:
+                res = mod.run_pearson_morphospace_analysis(
+                    output_png=Path(td) / "fig.png",
+                    output_csv=Path(td) / "metrics.csv",
+                    N=160,
+                    steps=4000,
+                    show=False,
+                )
+            by_id = res["by_id"]
+            coral = by_id["coral_labyrinth"]
+            spots = by_id["mitosis_spots"]
+            ctrl = by_id["equal_diffusion_control"]
+            out.extend([
+                M("Pearson coral labyrinth (F=0.055, k=0.062) spectral ring wavenumber k*",
+                  float(coral["k_star_cycles"]), "cycles / domain",
+                  "peak of 2D radial PSD P(k) on N=160x160 grid after 4000 steps",
+                  reference=">0 (Turing band-pass ring)",
+                  source="Pearson 1993 Science 261:189 Pattern η/γ",
+                  note=f"λ* = {coral['wavelength_grid_cells']:.2f} grid cells, ring sharpness = {coral['ring_sharpness']:.1f}",
+                  derived_from="script"),
+                M("Pearson mitosis spots (F=0.028, k=0.062) connected components vs coral labyrinth",
+                  int(spots["n_components"]), "count",
+                  "connected high-activator components in self-replicating spot regime",
+                  reference=int(coral["n_components"]),
+                  source="Pearson 1993 Science 261:189 Pattern λ/θ vs Pattern η/γ",
+                  note="spots remain disconnected (>100 components) whereas coral labyrinth percolates",
+                  derived_from="script"),
+                M("equal-diffusion negative control (Du=Dv=0.10) spectral wavenumber k*",
+                  float(ctrl["k_star_cycles"]), "cycles / domain",
+                  "dominant wavenumber when differential diffusivity is removed (Du = Dv = 0.10 at F=0.055, k=0.062)",
+                  reference=0.0,
+                  source="Turing 1952 Phil. Trans. R. Soc. B 237:37 (diffusion-driven instability requires Du != Dv)",
+                  note=f"spatial σ_V = {ctrl['std_v']:.2e}, ring sharpness = {ctrl['ring_sharpness']:.1f}",
+                  derived_from="script"),
+            ])
+    return out
+
+
+def measure_bressloff(script: Path) -> list:
+    """Measurements taken by loading 2001-bressloff-v1-form-constants.py: exact parity against
+    MesmerPrism/bressloff-v1-form-constants stability_reports, Klüver form-constant spectral rings,
+    and the Gaussian-only (no lateral inhibition) negative control."""
+    import importlib.util
+    import tempfile
+    spec = importlib.util.spec_from_file_location("bressloff_v1", script)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    with tempfile.TemporaryDirectory() as td:
+        res = mod.run_bressloff_analysis(
+            output_png=Path(td) / "fig.png",
+            output_csv=Path(td) / "metrics.csv",
+            show=False,
+        )
+    neg = res["negative_control"]
+    gal = {g["preset_id"]: g for g in res["gallery"]}
     return [
-        M("dominant wavelength (last frame)", float(wl_cells), "grid cells",
-          f"peak of the radial power spectrum of the axes-box image, scaled to the N={N} grid",
-          reference=None, source=None,
-          note="Gray–Scott f=0.055,k=0.062 labyrinth; no specimen or literature wavelength recorded"),
-        M("pattern coverage (last frame)", float(yl.mean()), "fraction", "fraction of axes box in the high-V (yellow) band"),
-        M("connected high-V components (last frame)", int(ncomp), "count", "scipy.ndimage.label on the yellow mask"),
-        M("fraction of pattern pixels changed, first→last frame", change, "fraction",
-          "XOR of yellow masks of frame 0 and the last frame", reference=">0 for an evolving simulation",
-          note="≈0 means the GIF shows a frozen pattern"),
+        M("bressloff-v1-form-constants stability_reports parity, max |Δ|",
+          float(res["max_cal_err"]), "dimensionless",
+          "maximum absolute error across all 5 Bressloff (2001) stability_reports (q*, λ*, γ(0), γ(θ), η_hex) vs paper-calibration.json",
+          reference=0.0,
+          source="MesmerPrism/bressloff-v1-form-constants commit 344863a1bd9e8a8e8c9cb20aced2897f3ffb2c4c",
+          derived_from="script"),
+        M("Mexican-hat lateral inhibition critical wavenumber q* (Bressloff 2001 Fig. 16)",
+          float(neg["mexican_hat_critical_q"]), "dimensionless wavenumber",
+          "maximizer of max(λ_even(q), λ_odd(q)) with lateral_inhibition = 0.27",
+          reference=">0.5 (finite Turing/Euclidean symmetry-breaking wavelength)",
+          source="Bressloff et al. 2001 Phil. Trans. R. Soc. B 356:299 Fig. 16",
+          note=f"interior peak prominence = {neg['mexican_hat_peak_prominence']:.4f}",
+          derived_from="script"),
+        M("Gaussian-only negative control critical wavenumber q* (lateral_inhibition = 0)",
+          float(neg["gaussian_control_critical_q"]), "dimensionless wavenumber",
+          "maximizer of λ(q) when Mexican-hat surround inhibition is removed (lateral_inhibition = 0.0)",
+          reference=0.05,
+          source="q_min boundary of [0.05, 3.0] grid (monotonically decaying dispersion, prominence = 0.0)",
+          note=f"interior peak prominence = {neg['gaussian_control_peak_prominence']:.2e}",
+          derived_from="script"),
+        M("Klüver Tunnel/Rings cortical planform spectral ring sharpness",
+          float(gal["fig7_lattice_tunnel"]["spectral"]["ring_sharpness"]), "ratio (peak/median PSD)",
+          f"2D FFT radial power spectrum peak/median ratio at k* = {gal['fig7_lattice_tunnel']['spectral']['k_star_cycles']:.0f} cycles",
+          reference=">5.0",
+          source="Bressloff et al. 2001 Fig. 7 / Klüver 1966 Tunnel form constant",
+          derived_from="script"),
+        M("Klüver Honeycomb/Hex cortical planform spectral ring wavenumber k*",
+          float(gal["fig35_hex_zero_even"]["spectral"]["k_star_cycles"]), "cycles / domain",
+          "dominant radial FFT wavenumber of the 3-mode hexagonal cortical planform",
+          reference=">0",
+          source="Bressloff et al. 2001 Fig. 35 / Klüver 1966 Honeycomb form constant",
+          note=f"ring sharpness = {gal['fig35_hex_zero_even']['spectral']['ring_sharpness']:.2f}",
+          derived_from="script"),
     ]
 
 
@@ -684,15 +913,92 @@ def measure_hoffmann(script: Path) -> list:
     ]
 
 
+def measure_cervera(script: Path) -> list:
+    """Measurements taken by loading 2021-Cervera-Levin-Mafe.py and evaluating its RD solver,
+    rusty-matter circuit parity, Oviedo 2010 crop-position fit/test metrics, and decoded
+    Planform silhouette geometry."""
+    import importlib.util
+    import tempfile
+    spec = importlib.util.spec_from_file_location("cervera_v1", script)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    with tempfile.TemporaryDirectory() as td:
+        res = mod.run_integrated_analysis(
+            output_png=Path(td) / "fig.png",
+            output_csv=Path(td) / "metrics.csv",
+            show=False,
+        )
+    xs_sym = mod.wavefront_for_f2(1.0)
+    xs_f2b = mod.wavefront_for_f2(res["f2_b"])
+    _, _, lam_hi = mod.lateral_index_for_f3(1.0)
+    _, _, lam_lo = mod.lateral_index_for_f3(0.3)
+    mem_scen = mod.run_rusty_matter_planarian_scenario("TransientDepolarizationMemory")
+    nomem_scen = mod.run_rusty_matter_planarian_scenario("TransientDepolarizationNoMemoryControl")
+    return [
+        M("rusty-matter trace parity, max |Δ|", float(res["max_trace_err"]), "state units",
+          "maximum absolute difference across all 5 scenarios, 11 sampled steps and 4 state averages against rusty_matter_planarian_traces.json",
+          reference=0.0, source="MesmerPrism/rusty-matter commit ad111fa7ecfd8f43d292ff3b1d27d3af2741d828",
+          derived_from="script"),
+        M("symmetric RD wavefront x*(f2=1)", float(xs_sym), "AP fraction",
+          "zero crossing of m1(x) - m2(x) when D2 = D2_0",
+          reference=0.5, source="symmetric boundary conditions at x=0 and x=L",
+          derived_from="script"),
+        M("pharynx-boundary criterion x*_b", float(res["x_star_b"]), "AP fraction",
+          "posterior end of the Planform #1 wild-type pharynx on the AP extent",
+          note=f"crossed at f2_b = {res['f2_b']:.4f} (where x*(f2_b) = {xs_f2b:.4f})",
+          derived_from="script"),
+        M("anterior body-area fraction on S. mediterranea silhouette (f2=1 -> f2=0.25)",
+          float(res["rd_area_fracs"][-1] - res["rd_area_fracs"][0]), "fraction of body area",
+          f"increase in real-silhouette mask area anterior to x*(f2) from f2=1.0 ({res['rd_area_fracs'][0]:.3f}) to f2=0.25 ({res['rd_area_fracs'][-1]:.3f})",
+          source="Stevenson & Beane 2010 Smediterranea.jpg silhouette (CC BY 2.5)",
+          derived_from="script"),
+        M("ML centre/edge ratio λ(f3), f3=1.0 vs f3=0.3", float(lam_hi - lam_lo), "ratio difference",
+          f"m3(L_z/2)/m3(0) drop from f3=1.0 ({lam_hi:.3f}) to f3=0.3 ({lam_lo:.3f})",
+          reference=">0 (monotonic decrease under lateral gap-junction blockade)",
+          derived_from="script"),
+        M("Oviedo 2010 octanol crop-gradient training RMSE", float(res["fit_rmse_train"]), "percentage points",
+          f"1-parameter fit f2(p) = 1 - {res['a_fit']:.2f}*p against Oviedo et al. 2010 octanol double-head frequencies (Exps 415-418, n=4 crops)",
+          reference=0.0, source="PlanformDB 2.5.0 / Oviedo et al. 2010 Dev. Biol. 339:188",
+          derived_from="script"),
+        M("Oviedo 2010 triple-innexin RNAi held-out RMSE", float(res["fit_rmse_test"]), "percentage points",
+          "held-out prediction error of the octanol-fitted curve against Dj-Inx-12 + Dj-Inx-5/13 RNAi double-head frequencies (Exps 446-449, n=4 crops)",
+          reference=0.0, source="PlanformDB 2.5.0 / Oviedo et al. 2010 Dev. Biol. 339:188",
+          note=f"Pearson r = {res['fit_r_test']:.3f}",
+          derived_from="script"),
+        M("circuit posterior head readout, memory ON vs memory OFF control",
+          float(mem_scen.posterior_head_readout), "readout [0,1]",
+          "final posterior head-identity readout R_head,post under TransientDepolarizationMemory",
+          reference=float(nomem_scen.posterior_head_readout),
+          source="TransientDepolarizationNoMemoryControl negative control (Durant et al. 2019 Biophys. J. 116:948)",
+          note="hysteresis memory sustains depolarised head fate after transient pulse ends",
+          derived_from="script"),
+        M("Planform #1 Wild Type vs #2 Double Head silhouette IoU", float(res["wt_dh_iou"]), "ratio",
+          "256x256 shared-canvas intersection-over-union of decoded Lobo et al. (2013) graph silhouettes",
+          reference="<1.0 (posterior tail replaced by ectopic head cap)",
+          source="PlanformDB 2.5.0 morphologies #1 and #2",
+          derived_from="script"),
+    ]
+
+
 # --------------------------------------------------------------------------- #
 def main():
     audit_path = (Path(sys.argv[1]) if len(sys.argv) > 1 else HERE / "audits" / "2026-10-13-morphology-audit.yaml").resolve()
     audit = yaml.safe_load(audit_path.read_text())
-    out = {"audit": audit["audit"]["id"], "outputs": {}, "measurements": {}, "missing": []}
+    supersedes_id = audit.get("audit", {}).get("supersedes") or audit.get("audit", {}).get("supersedes_audit_id")
+    out = {
+        "audit": audit["audit"]["id"],
+        "supersedes_audit_id": supersedes_id,
+        "provenance": {},
+        "outputs": {},
+        "measurements": {},
+        "missing": [],
+    }
     for sim in audit["simulations"]:
         if sim.get("status") != "evaluated":
             continue
         sid = sim["id"]
+        script_rel = sim.get("script")
         files = {e["file"] for d in sim["scores"].values() for e in d.get("evidence", []) if e["lines"][1] == 0}
         if sim.get("output"):
             files.add(sim["output"])
@@ -703,8 +1009,10 @@ def main():
                 out["measurements"][sid] = measure_planform(ROOT / sim["output"])
             elif sid == "raup-shell-coiling":
                 out["measurements"][sid] = measure_raup(ROOT / sim["script"], ROOT / "datasets/raup/variables.json")
-            elif sid == "turing-gray-scott" and (ROOT / sim["output"]).exists():
-                out["measurements"][sid] = measure_turing(ROOT / sim["output"])
+            elif sid == "turing-gray-scott":
+                out["measurements"][sid] = measure_turing(ROOT / sim.get("output", "turing_patterns.gif"), script=ROOT / sim["script"])
+            elif sid == "bressloff-v1-form-constants":
+                out["measurements"][sid] = measure_bressloff(ROOT / sim["script"])
             elif sid == "hoffmann-wing-venation":
                 out["measurements"][sid] = measure_hoffmann(ROOT / sim["script"])
             elif sid == "eshghi-odonata-wing-cells":
@@ -715,16 +1023,29 @@ def main():
                 out["measurements"][sid] = measure_celegans(ROOT / sim["script"])
             elif sid == "thompson-scarus-pomacanthus":
                 out["measurements"][sid] = measure_thompson_fish(ROOT / sim["script"])
+            elif sid == "cervera-levin-mafe":
+                out["measurements"][sid] = measure_cervera(ROOT / sim["script"])
         except Exception as ex:  # a failed measurement is reported, never silently skipped
             out["measurements"][sid] = [{"name": "measurement failed", "value": None, "unit": None,
                                          "method": f"{type(ex).__name__}: {ex}"}]
         for f in sorted(files):
             p = ROOT / f
             if p.exists():
-                out["outputs"].setdefault(sid, []).append(fingerprint(p))
+                out["outputs"].setdefault(sid, []).append(fingerprint(p, sim_id=sid, script=script_rel))
             else:
                 out["missing"].append({"simulation": sid, "file": f})
-        print(f"{sid}: {len(out['outputs'].get(sid, []))} output(s) fingerprinted, "
+        primary_art = None
+        if sim.get("output") and (ROOT / sim["output"]).exists():
+            primary_art = hashlib.sha256((ROOT / sim["output"]).read_bytes()).hexdigest()
+        elif out["outputs"].get(sid):
+            primary_art = out["outputs"][sid][0]["artifact_sha256"]
+        out["provenance"][sid] = {
+            "spec_fingerprint": compute_spec_fingerprint(sid, script_rel),
+            "artifact_sha256": primary_art,
+            "input_dataset_sha256": compute_input_dataset_sha256(sid),
+        }
+        print(f"{sid}: {len(out['outputs'].get(sid, []))} output(s) fingerprinted "
+              f"(spec_fingerprint={out['provenance'][sid]['spec_fingerprint'][:16]}…), "
               f"{len(out['measurements'].get(sid, []))} measurement(s)")
         for m in out["measurements"].get(sid, []):
             ref = f"   [ref {m['reference_value']}]" if m.get("reference_value") is not None else ""

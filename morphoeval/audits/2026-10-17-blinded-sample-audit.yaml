@@ -1,0 +1,1331 @@
+# MorphoEval audit — Blinded second-assessor replication across all ten active evaluated implementations, 2026-10-17.
+#
+# Purpose: eliminate single-agent self-scoring across the MorphoEval corpus and
+# test inter-assessor agreement, calibration offset, and independent defect
+# discovery by running a blinded second-assessor pass (gemini-4-argon, Google)
+# across all 10 active evaluated scripts previously scored by claude-fable-5-1
+# (Anthropic, 9 scripts) or gpt-5.6-sol (OpenAI, 1 script):
+#
+#   1. thompson/1917-thompson-scarus-pomacanthus.py  (thompson-scarus-pomacanthus, test)
+#   2. 2026-eshghi-odonata-wing-cells.py             (eshghi-odonata-wing-cells, test)
+#   3. 2014-lobo-limbform-morphology.py              (lobo-limbform-morphology, decode)
+#   4. create_raup_animations.py + 1966-raup.py      (raup-shell-coiling, reproduce)
+#   5. 1952-turing-morpho.py                         (turing-gray-scott, reproduce)
+#   6. 2018-hoffmann-wing-venation.py                (hoffmann-wing-venation, reproduce)
+#   7. 2015-santella-wormguides-celegans.py          (santella-wormguides-celegans, decode)
+#   8. 2013-lobo-planform-morphology.py              (planform-morphology-animation, decode)
+#   9. 2021-Cervera–Levin–Mafe.py                    (cervera-levin-mafe, reproduce)
+#  10. 2013-chindapol-coral-flow.py                  (chindapol-coral-flow, reproduce)
+#
+# Protocol: each implementation was audited against morphoeval/rubric.yaml using
+# only the target script(s) at commit 5659d5e, its local dataset/output files,
+# and requirements.txt / requirements.lock.txt, without consulting prior audit
+# scores.  These assessments do NOT supersede the primary checkpoint chain; they
+# are parallel pk:LLMClaimAssessments of the same
+# pkr:hypothesis/morphoeval-<sim>-<dim> nodes by a second pk:Model, so every
+# active evaluated script in the repository has independent dual-agent scoring
+# from two distinct model providers (Anthropic + Google for 9 scripts; OpenAI +
+# Google for Cervera–Levin–Mafe).
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100
+# scale (not calibrated probabilities).  Line numbers refer to the files at
+# the checkpoint commit recorded below.
+
+audit:
+  id: 2026-10-17-blinded-sample-audit
+  rubric_version: 0.1.0
+  date: "2026-10-17"
+  role: second_assessor
+  blinded: true
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Cursor agent, blinded second assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 5659d5e
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      pandas: "2.3.3"
+      scikit-image: "0.26.0"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      All ten active evaluated scripts are inspected at commit 5659d5e (HEAD).
+      Eight of the ten target scripts at 5659d5e are byte-for-byte identical to
+      their primary-audit commits (232e8f8 for thompson-scarus-pomacanthus,
+      fbbcaf6 for eshghi-odonata-wing-cells, 747c57f for lobo-limbform-morphology,
+      ba6fd20 for raup-shell-coiling, f3fe478 for turing-gray-scott,
+      hoffmann-wing-venation, and chindapol-coral-flow, and 303a87e for
+      santella-wormguides-celegans); 2013-lobo-planform-morphology.py includes
+      the SHA-256 database pin added after 161f269, and 2021-Cervera–Levin–Mafe.py
+      includes the commit 0154143 fix for the f2_for_shift() threshold inversion
+      and dynamic Panel D legend after a0d6848.  Repository-wide dependency
+      lockfiles (requirements.txt, requirements.lock.txt) added in commit
+      9ca5457 are present.
+
+references:
+  thompson1917:
+    title: "On Growth and Form, chapter XVII, On the theory of transformations, or the comparison of related forms"
+    authors: "Thompson DW"
+    venue: "Cambridge University Press (1917), pp. 719-777"
+    url: https://archive.org/details/ongrowthform1917thom
+  bookstein1978:
+    title: "The measurement of biological shape and shape change"
+    authors: "Bookstein FL"
+    venue: "Lecture Notes in Biomathematics 24, Springer (1978)"
+    doi: 10.1007/978-3-642-93093-5
+  bookstein1989:
+    title: "Principal warps: thin-plate splines and the decomposition of deformations"
+    authors: "Bookstein FL"
+    venue: "IEEE Trans Pattern Anal Mach Intell 11:567-585 (1989)"
+    doi: 10.1109/34.24792
+  friedman2019:
+    title: "The influence of size on body shape diversification across Indo-Pacific shore fishes"
+    authors: "Friedman ST, Martinez CM, Price SA, Wainwright PC"
+    venue: "Evolution 73:1873-1884 (1919/2019)"
+    doi: 10.1111/evo.13755
+  friedman2019data:
+    title: "Data from: The influence of size on body shape diversification across Indo-Pacific shore fishes"
+    authors: "Friedman ST, Martinez CM, Price SA, Wainwright PC"
+    venue: "Dryad (2019), CC0 1.0"
+    doi: 10.5061/dryad.fn457gr
+  claverie2014:
+    title: "A morphospace for reef fishes: elongation is the dominant axis of body shape evolution"
+    authors: "Claverie T, Wainwright PC"
+    venue: "PLoS ONE 9(11):e112732 (2014)"
+    doi: 10.1371/journal.pone.0112732
+  eshghi2026:
+    title: "Critical Crack Length as an Evolutionary Constant in Odonata Wing Venation: Lessons from Fossils — Supplementary Material"
+    authors: "Eshghi S, Buesch A, Gorb S"
+    venue: "Zenodo (2026), CC BY 4.0"
+    doi: 10.5281/zenodo.19899648
+  hoffmann2018:
+    title: "A simple developmental model recapitulates complex insect wing venation patterns"
+    authors: "Hoffmann J, Donoughe S, Li K, Salcedo MK, Rycroft CH"
+    venue: "PNAS 115(40):9905-9910 (2018)"
+    doi: 10.1073/pnas.1721248115
+  pbdb:
+    title: "The Paleobiology Database, Odonatoptera occurrences"
+    authors: "Paleobiology Database contributors"
+    venue: "https://paleobiodb.org"
+    url: https://paleobiodb.org/data1.2/occs/list.csv?base_name=Odonatoptera&show=class,coords&idreso=genus
+  lobo2014a:
+    title: "Limbform: a functional ontology-based database of limb regeneration experiments"
+    authors: "Lobo D, Feldman EB, Shah M, Malone TJ, Levin M"
+    venue: "Bioinformatics 30(24):3598-3600 (2014)"
+    doi: 10.1093/bioinformatics/btu582
+  lobo2014b:
+    title: "A bioinformatics expert system linking functional data to anatomical outcomes in limb regeneration"
+    authors: "Lobo D, Feldman EB, Shah M, Malone TJ, Levin M"
+    venue: "Regeneration 1(2):37-56 (2014), CC BY"
+    doi: 10.1002/reg2.13
+  limbformdb:
+    title: "LimbformDB 2.1.0 (31 Jul 2014), the Limbform database file"
+    authors: "Lobo Lab, UMBC"
+    venue: "https://lobolab.umbc.edu/limbform/download/"
+    url: https://lobolab.umbc.edu/limbform/downloads/limbformDB_2.1.0.ldb
+  raup1962:
+    title: "Computer as aid in describing form in gastropod shells"
+    authors: "Raup DM"
+    venue: "Science 138(3537):150-152 (1962)"
+    doi: 10.1126/science.138.3537.150
+  raup1965:
+    title: "Theoretical morphology of the coiled shell"
+    authors: "Raup DM, Michelson A"
+    venue: "Science 147(3663):1294-1295 (1965)"
+    doi: 10.1126/science.147.3663.1294
+  raup1966:
+    title: "Geometric analysis of shell coiling: general problems"
+    authors: "Raup DM"
+    venue: "Journal of Paleontology 40(5):1178-1190 (1966)"
+    doi: 10.2307/1301992
+  raup1967:
+    title: "Geometric analysis of shell coiling: coiling in ammonoids"
+    authors: "Raup DM"
+    venue: "Journal of Paleontology 41(1):43-65 (1967)"
+    url: https://pubs.geoscienceworld.org/jpaleontol/article-abstract/41/1/43/80199/geometric-analysis-of-shell-coiling-coiling-in
+  noshita2014:
+    title: "Quantification and geometric analysis of coiling patterns in gastropod shells based on 3D and 2D image data"
+    authors: "Noshita K"
+    venue: "Journal of Theoretical Biology 363:93-104 (2014)"
+    doi: 10.1016/j.jtbi.2014.08.010
+  okabe2017:
+    title: "Optimal designs of mollusk shells from bivalves to snails"
+    authors: "Okabe T, Yoshimura J"
+    venue: "Scientific Reports 7:42445 (2017)"
+    doi: 10.1038/srep42445
+  pearson1993:
+    title: "Complex patterns in a simple system"
+    authors: "Pearson JE"
+    venue: "Science 261(5118):189-192 (1993)"
+    doi: 10.1126/science.261.5118.189
+  turing1952:
+    title: "The chemical basis of morphogenesis"
+    authors: "Turing AM"
+    venue: "Phil. Trans. R. Soc. Lond. B 237(641):37-72 (1952)"
+    doi: 10.1098/rstb.1952.0012
+  lobo2013:
+    title: "Planform: an application and database of graph-encoded planarian regenerative experiments"
+    authors: "Lobo D, Malone TJ, Levin M"
+    venue: "Bioinformatics 29(8):1098-1100 (2013)"
+    doi: 10.1093/bioinformatics/btt088
+  lobo2013bo:
+    title: "Towards a bioinformatics of patterning: a computational approach to understanding regulative morphogenesis"
+    authors: "Lobo D, Malone TJ, Levin M"
+    venue: "Biology Open 2(2):156-169 (2013)"
+    doi: 10.1242/bio.20123400
+  durant2017:
+    title: "Long-Term, Stochastic Editing of Regenerative Anatomy via Targeting Endogenous Bioelectric Gradients"
+    authors: "Durant F, Morokuma J, Fields C, Williams K, Adams DS, Levin M"
+    venue: "Biophysical Journal 112(10):2231-2243 (2017)"
+    doi: 10.1016/j.bpj.2017.04.011
+  santella2015:
+    title: "WormGUIDES: an interactive single cell developmental atlas and tool for collaborative multidimensional data exploration"
+    authors: "Santella A, Catena R, Kovacevic I, Shah P, Yu Z, Marquina-Solis J, Kumar A, Wu Y, Schaff J, Colón-Ramos D, Shroff H, Mohler WA, Bao Z"
+    venue: "BMC Bioinformatics 16:189 (2015), CC BY 4.0"
+    doi: 10.1186/s12859-015-0627-8
+  sarma2018:
+    title: "OpenWorm: overview and recent advances in integrative biological simulation of Caenorhabditis elegans"
+    authors: "Sarma GP, Lee CW, Portegys T, Ghayoomie V, Jacobs T, Alicea B, Cantarelli M, Currie M, Gerkin RC, Gingell S, Gleeson P, Gordon R, Hasani RM, Idili G, Khayrulin S, Lung D, Palyanov A, Watts M, Larson SD"
+    venue: "Phil Trans R Soc B 373:20170382 (2018)"
+    doi: 10.1098/rstb.2017.0382
+  cook2019:
+    title: "Whole-animal connectomes of both Caenorhabditis elegans sexes"
+    authors: "Cook SJ, Jarrell TA, Brittin CA, Wang Y, Bloniarz AE, Yakovlev MA, Nguyen KCQ, Tang LT-H, Bayer EA, Duerr JS, Bülow HE, Hobert O, Hall DH, Emmons SW"
+    venue: "Nature 571:63-71 (2019); edge list as redistributed by openworm/c302"
+    doi: 10.1038/s41586-019-1352-7
+  sulston1983:
+    title: "The embryonic cell lineage of the nematode Caenorhabditis elegans"
+    authors: "Sulston JE, Schierenberg E, White JG, Thomson JN"
+    venue: "Dev Biol 100:64-119 (1983); counts and timings quoted via WormAtlas, Embryo introduction, accessed 2026-10-15"
+    doi: 10.1016/0012-1606(83)90201-4
+  gonczy1999:
+    title: "Dissection of cell division processes in the one cell stage Caenorhabditis elegans embryo by mutational analysis"
+    authors: "Gönczy P, Schnabel H, Kaletta T, Amores AD, Hyman T, Schnabel R"
+    venue: "J Cell Biol 144:927-946 (1999); '50-um-long cell', applied to the atlas's eggshell mesh to calibrate the atlas units; the ~30 um width is used as an unfitted check"
+    doi: 10.1083/jcb.144.5.927
+  wormguides_repo:
+    title: "WormGUIDES atlas and application source, commit 17be611f10cdc8ea438e67dc9ca3de859487a05e"
+    authors: "Bao lab (zhirongbaolab)"
+    venue: "https://github.com/zhirongbaolab/WormGUIDES (GPL-3.0)"
+    url: https://github.com/zhirongbaolab/WormGUIDES/tree/17be611f10cdc8ea438e67dc9ca3de859487a05e
+  c302_repo:
+    title: "c302: NeuroML-based C. elegans nervous-system models, commit f54d92d7e9d2410ff6c47d9ae866649f1a419ee8"
+    authors: "OpenWorm"
+    venue: "https://github.com/openworm/c302 (MIT)"
+    url: https://github.com/openworm/c302/tree/f54d92d7e9d2410ff6c47d9ae866649f1a419ee8
+  chindapol2013:
+    title: "Modelling Growth and Form of the Scleractinian Coral Pocillopora verrucosa and the Influence of Hydrodynamics"
+    authors: "Chindapol N, Kaandorp JA, Cronemberger C, Mass T, Genin A"
+    venue: "PLoS Computational Biology 9(1):e1002849 (2013)"
+    doi: 10.1371/journal.pcbi.1002849
+  cervera2021:
+    title: "Morphology changes induced by intercellular gap junction blocking: A reaction-diffusion mechanism"
+    authors: "Cervera J, Levin MG, Mafe S"
+    venue: "BioSystems 209:104511 (2021); abstract and author presentation consulted, full article not accessible"
+    doi: 10.1016/j.biosystems.2021.104511
+  cervera2020:
+    title: "Bioelectrical model of head-tail patterning based on cell ion channels and intercellular gap junctions"
+    authors: "Cervera J, Meseguer S, Levin MG, Mafe S"
+    venue: "Bioelectrochemistry 132:107410 (2020); abstract consulted, full article not accessible"
+    doi: 10.1016/j.bioelechem.2019.107410
+  oviedo2010:
+    title: "Long-range neural and gap junction protein-mediated cues control polarity during planarian regeneration"
+    authors: "Oviedo NJ, Morokuma J, Walentek P, Kema IP, Gu MB, Ahn JM, Hwang JS, Gojobori T, Levin M"
+    venue: "Developmental Biology 339(1):188-199 (2010); source of the curated PlanformDB records"
+    doi: 10.1016/j.ydbio.2009.12.012
+  durant2019:
+    title: "The Role of Early Bioelectric Signals in the Regeneration of Planarian Anterior/Posterior Polarity"
+    authors: "Durant F, Bischof J, Fields C, Morokuma J, LaPalme J, Hoi A, Levin M"
+    venue: "Biophysical Journal 116(5):948-961 (2019); qualitative timing anchor"
+    doi: 10.1016/j.bpj.2019.01.029
+  stevenson2010_photo:
+    title: "Smediterranea.jpg, from A Low Percent Ethanol Method for Immobilizing Planarians"
+    authors: "Stevenson CG, Beane WS"
+    venue: "Wikimedia Commons photograph, CC BY 2.5; source publication PLoS ONE 5(12):e15310 (2010)"
+    url: https://commons.wikimedia.org/wiki/File:Smediterranea.jpg
+  rusty_matter:
+    title: "MesmerPrism/rusty-matter planarian bioelectric circuit and fixtures"
+    authors: "MesmerPrism/rusty-matter contributors"
+    venue: "GitHub repository, MIT OR Apache-2.0, pinned commit ad111fa7ecfd8f43d292ff3b1d27d3af2741d828"
+    url: https://github.com/MesmerPrism/rusty-matter/tree/ad111fa7ecfd8f43d292ff3b1d27d3af2741d828
+
+simulations:
+
+  - id: thompson-scarus-pomacanthus
+    name: "Thompson's Scarus -> Pomacanthus transformation fitted to real species"
+    organism: "Scarus spp. -> Pomacanthus spp., plus three other teleost pairs across 791 species"
+    script: thompson/1917-thompson-scarus-pomacanthus.py
+    output: thompson_scarus_pomacanthus.png
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [thompson1917, bookstein1978, bookstein1989, friedman2019, friedman2019data, claverie2014]
+    summary: >-
+      Blinded second-assessor pass (gemini-4-argon).  Operationalises D'Arcy
+      Thompson's freehand transformation grids (1917, Figs. 373-382) as a nested
+      hierarchy of conformal and curvilinear coordinate families (similarity,
+      affine, Moebius, coaxial circles via exact complex log-ratio and power-shear,
+      and exact Bookstein 1989 thin-plate spline) fitted to 17 homologous landmarks
+      across 791 Indo-Pacific fish species and tested on segmented museum/field
+      specimen silhouettes.
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Operationalises Thompson's freehand coordinate transformations (1917,
+          pp. 749-751, Figs. 375-376) into an explicit nested hierarchy of five
+          analytical families (similarity, affine, projective/Moebius, oblique
+          coaxial circles via complex log-ratio and power-shear, and Bookstein 1989
+          exact thin-plate spline).  Fits all parametric models via multi-start
+          non-linear least squares (fit_family) and verifies exact round-trip
+          invertibility of the bipolar map (inv_coaxial) to machine precision in
+          self_test().  Deducts 6 points only because Thompson's original grids
+          were drawn freehand without algebraic formulas, so the 9-parameter
+          bipolar power-shear equation is a modern formalisation rather than an
+          equation printed in 1917, and Thompson's printed grid lines are not
+          digitised as numerical coordinates.
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [256, 360], note: "procrustes_align(), fit_affine(), fit_moebius(), fit_coaxial(), inv_coaxial(), and fit_tps()"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [443, 463], note: "self_test() verifies TPS interpolation (< 1e-9), nested hierarchy bounds, and coaxial inversion (< 1e-9)"}
+      specimen-match:
+        value: 86
+        rationale: >-
+          Evaluates transformations directly against both Procrustes-aligned landmark
+          means of 48 Scarus and 6 Pomacanthus species (plus 791 species across four
+          Thompson fish pairs) and real biological specimen photographs (Scarus ghobban
+          and Pomacanthus semicirculatus), overlayed alongside Thompson's 1917 original
+          scan (Figs. 375-376) in Panel A.  Deducts 14 points because silhouette
+          registration uses a 2-anchor similarity transform (snout tip to LM2 and
+          caudal peduncle minimum width to midpoint(LM5, LM6)) rather than 17
+          landmarks digitised directly on those two photographed individuals, and
+          compares a preserved specimen with collapsed fins against a live swimming
+          fish with extended dorsal/anal filaments.
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [524, 650], note: "segment_scarus_photo(), segment_pomacanthus_photo(), and register_outline_to_landmarks()"}
+          - {file: thompson_scarus_pomacanthus.png, lines: [0, 0], note: "Panel A reproduces Thompson 1917 p. 749 scan; Panels B-F compare fitted families on consensus shapes"}
+          - {file: thompson_scarus_pomacanthus_outlines.png, lines: [0, 0], note: "segmented photos of S. ghobban and P. semicirculatus warped across all five transformation families"}
+      parameter-expressivity:
+        value: 82
+        rationale: >-
+          Systematically explores the parameter/complexity hierarchy (k = 4, 6, 8,
+          9, 34 degrees of freedom), fits every one of the 48 x 6 = 288 Scarus x
+          Pomacanthus species pairs to generate an empirical distribution of residual
+          errors, and tests generalisability across all four of Thompson's teleost
+          pairs (Scarus -> Pomacanthus, Argyropelecus -> Sternoptyx, Pseudopriacanthus
+          -> Scorpaena, Diodon -> Mola).  Deducts 18 points because the script fits
+          discrete transformation families to empirical targets rather than exposing
+          interactive CLI parameters to sweep continuous grid parameters (pole spacing
+          a, power alpha, shear beta).
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [186, 200], note: "THOMPSON_PAIRS defines all four teleost transformations from Thompson (1917) Figs. 373-382"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [414, 439], note: "pairwise_residuals() evaluates affine and coaxial fits across all 288 Scarus x Pomacanthus species pairs"}
+          - {file: thompson_scarus_pomacanthus.png, lines: [0, 0], note: "Panel H visualises all four fish transformations and Panel G shows the 288-pair histogram"}
+      morphometric-validation:
+        value: 96
+        rationale: >-
+          Computes per-landmark and RMS Procrustes residuals, leave-one-landmark-out
+          cross-validation (LOO-CV), AIC-like parameter penalty, Bookstein's thin-plate
+          spline bending energy (J = 0.258) and partial-warp spectrum (14 non-affine
+          principal warps), plus rasterised silhouette Intersection-over-Union (IoU)
+          and mean/95th-percentile symmetric boundary distances exported to
+          thompson_outline_metrics.csv.  Demonstrates quantitatively that Thompson's
+          coaxial-circle family fails LOO-CV (0.0970 vs 0.0568 for similarity) and
+          leaves silhouette IoU (0.6182) below baseline similarity (0.6615).
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [389, 412], note: "leave_one_out_rms() implements 17-fold leave-one-landmark-out cross-validation"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [663, 718], note: "outline_metrics() and compute_outline_comparison() compute rasterised IoU and boundary distances"}
+          - {file: thompson_outline_metrics.csv, lines: [1, 7], note: "exported quantitative table of landmark RMS, LOO-CV RMS, silhouette IoU, and boundary distances"}
+      source-traceability:
+        value: 97
+        rationale: >-
+          Module docstring and dataset README cite Thompson (1917) with Internet
+          Archive leaf/page identifiers, Bookstein (1978, 1989) with DOIs, and
+          Friedman et al. (2019) / Claverie & Wainwright (2014) with Dryad DOI
+          (10.5061/dryad.fn457gr).  Every local and remote asset (landmark CSV,
+          1917 page scan, and both Wikimedia Commons photographs) is pinned by exact
+          byte size and SHA-256 digest and verified on every run.
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [1, 75], note: "header docstring citing Thompson (1917), Bookstein (1978, 1989), Friedman et al. (2019), and Claverie & Wainwright (2014) with DOIs"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [92, 134], note: "DATA_SHA256, SCAN_SHA256, and PHOTO_SPECS pin exact byte lengths and SHA-256 digests"}
+          - {file: datasets/thompson/README.md, lines: [1, 61], note: "complete dataset provenance, CC0 license documentation, and anatomical landmark table"}
+      code-traceability:
+        value: 93
+        rationale: >-
+          Functions map cleanly to the mathematical formulations in Bookstein (1989)
+          and Thompson (1917), with explicit docstrings specifying complex-plane equations,
+          TPS kernel U(r) = r^2 log(r^2), partitioned system matrix L, and bending-energy
+          eigen-decomposition, plus a 17-entry ANATOMICAL_LABELS dictionary mapping TPS
+          indices to anatomical structures.
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [152, 184], note: "ANATOMICAL_LABELS and BODY_ORDER/DORSAL_FIN/ANAL_FIN/CAUDAL_FIN/PECTORAL_GIRDLE"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [288, 359], note: "fit_coaxial() and fit_tps() docstrings with explicit algebraic equations and variable definitions"}
+      repro-package:
+        value: 90
+        rationale: >-
+          Deterministic optimization seeds (np.random.default_rng(1917)), CLI flags
+          (--no-scan, --no-photos, --out, --outline-out, --metrics-out), self_test()
+          assertion gate, and pinned dependencies in requirements.txt /
+          requirements.lock.txt.  Deducts 10 points because the outline comparison
+          depends on runtime HTTP fetches to Wikimedia Commons when .thompson_cache/
+          is cold.
+        evidence:
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [305, 319], note: "deterministic RNG seeding np.random.default_rng(1917) in multi-start optimizer"}
+          - {file: thompson/1917-thompson-scarus-pomacanthus.py, lines: [983, 1025], note: "CLI argument parser supporting --out, --outline-out, --metrics-out, --no-scan, and --no-photos"}
+          - {file: requirements.lock.txt, lines: [1, 35], note: "exact environment lockfile pinning Python 3.14.7 and package versions"}
+
+  - id: eshghi-odonata-wing-cells
+    name: Odonata wing cells through deep time
+    organism: "Odonata (fossil Late Jurassic-Eocene; extant Anisoptera and Zygoptera)"
+    script: 2026-eshghi-odonata-wing-cells.py
+    output: odonata_fossil_resegmentation.png
+    domain: palaeobiology
+    status: evaluated
+    source_refs: [eshghi2026, hoffmann2018, pbdb]
+    summary: >-
+      Blinded second-assessor pass (gemini-4-argon).  Tests the macroevolutionary
+      prediction of Hoffmann et al.'s (2018) inhibition-zone venation model
+      (conserved inhibition length -> cell count N ~ L^2 and cell length ~ L^0)
+      across 69 Mesozoic-Cenozoic fossil wings and 394 extant Odonata wings from
+      Eshghi et al. (2026), and independently re-segments the 69 fossil wing line
+      drawings from pixel scale bars to verify Table S1.
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          Operationalises the scaling prediction of Hoffmann et al. (2018) (a fixed
+          developmental inhibition radius r_in yields N ~ L^2 and median cell length
+          ~ L^0) via log-log OLS regressions (ols_loglog) and replicates Eshghi et
+          al.'s (2026) morphometric pipeline from raw fossil TIFFs by reading embedded
+          scale bars, skeletonising veins, labelling connected interior regions, and
+          measuring cell area, perimeter, circularity, and exact convex-hull maximum
+          Feret diameter (_max_feret).  Deducts 12 points because fossil_drawing()
+          (used for rendering outlines, threshold < 128, largest connected component)
+          and _read_drawing() (used for cell segmentation, threshold < 160, all wing
+          components >= 150 px) use slightly different binarisation/component rules,
+          and the statistical test is an observational scaling analysis rather than a
+          mechanistic simulation.
+        evidence:
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [137, 143], note: "ols_loglog() fits log10(y) = a + b*log10(x) against theoretical slopes b=2 and b=0"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [352, 419], note: "segment_fossil_cells(), _max_feret(), and cell_table() re-derive cell counts and Feret diameters"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [255, 349], note: "threshold and component-filtering difference between fossil_drawing() (<128) and _read_drawing() (<160)"}
+      specimen-match:
+        value: 92
+        rationale: >-
+          Renders real fossil wing line drawings from Eshghi et al. (2026) at true
+          millimetre scale colour-coded by per-cell Feret diameter alongside extant
+          segmented wings from Hoffmann et al. (2018) (Arigomphus villosipes and
+          Aeshna cyanea).  Across the 67 non-swapped fossil wings, the independent
+          re-segmentation matches Table S1 cell counts to a median signed difference
+          of 0.0% (IQR -0.6% to +0.2%; 60/67 within 2%) and median cell length to
+          +3.4%, while identifying two concrete curatorial errors in the published
+          table (15_Cymatophlebia_longialata and the swapped 58/59 pair).
+        evidence:
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [422, 464], note: "resegment_all_fossils() and KNOWN_SOURCE_DISCREPANCIES"}
+          - {file: datasets/odonata/fossil_wing_resegmentation.csv, lines: [1, 70], note: "69-wing comparison of Table S1 vs independent re-segmentation"}
+          - {file: odonata_fossil_resegmentation.png, lines: [0, 0], note: "four fossil wings rendered at common mm scale alongside parity scatters against Table S1"}
+      parameter-expressivity:
+        value: 50
+        not_applicable: true
+        rationale: >-
+          Empirical macroevolutionary scaling and image-resegmentation pipeline
+          operating on fixed museum and extant specimen archives rather than a
+          parameterised generative model; marked not_applicable per the rubric.
+        evidence:
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [1, 45], note: "docstring defines script as an empirical test of scaling predictions across 69 fossil and 394 extant wings"}
+      morphometric-validation:
+        value: 96
+        rationale: >-
+          Quantifies scaling slopes, R^2, p-values, and median/IQR cell lengths across
+          fossil and extant suborders (N ~ L^1.78, R^2 = 0.87 for fossils; N ~ L^1.45,
+          R^2 = 0.65 for extant; median cell length 0.78-0.99 mm across 150 Myr and a
+          6x wing-length range) and validates per-cell morphometrics (count, median,
+          mean, IQR, 95th percentile Feret diameter, area, circularity) across all 69
+          fossil wings in datasets/odonata/fossil_wing_resegmentation.csv.
+        evidence:
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [613, 667], note: "build_static_figure() computes and annotates log-log OLS slopes, R^2, and suborder medians/IQRs"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [689, 732], note: "build_resegmentation_figure() plots cell-count and median-length parity scatters"}
+          - {file: datasets/odonata/fossil_wing_resegmentation.csv, lines: [1, 70], note: "exported per-wing validation metrics"}
+      source-traceability:
+        value: 95
+        rationale: >-
+          Cites Eshghi et al. (2026) Zenodo archive (DOI 10.5281/zenodo.19899648),
+          Hoffmann et al. (2018) PNAS (DOI 10.1073/pnas.1721248115), and the
+          Paleobiology Database Odonatoptera query URL; verifies SHA-256 digests of
+          both remote archives (ESH_ZIP_SHA256 and HOFF_TAR_SHA256) in _fetch() and
+          documents every vendored CSV in datasets/odonata/README.md.
+        evidence:
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [66, 86], note: "ESH_ZIP_URL, ESH_ZIP_SHA256, HOFF_TAR_URL, and HOFF_TAR_SHA256 with _fetch() verification"}
+          - {file: datasets/odonata/README.md, lines: [1, 108], note: "dataset provenance, PBDB age resolution rules, and source anomaly documentation"}
+      code-traceability:
+        value: 88
+        rationale: >-
+          Clear modular pipeline separating archive verification (_fetch), PBDB age
+          lookup (pbdb_ages, AGE_OVERRIDES), raster scale-bar parsing (_read_drawing),
+          morphological segmentation (segment_fossil_cells), convex-hull Feret caliper
+          measurement (_max_feret), and figure generation.
+        evidence:
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [149, 224], note: "AGE_OVERRIDES and pbdb_ages() with documented stratigraphic stage midpoints"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [305, 419], note: "documented 4-step segmentation and Feret diameter pipeline"}
+      repro-package:
+        value: 90
+        rationale: >-
+          Fully deterministic pipeline (no stochastic steps), SHA-256-verified auto-download
+          and local caching (.odonata_cache/), vendored summary tables in datasets/odonata/,
+          and pinned environment in requirements.txt / requirements.lock.txt.  Deducts
+          10 points because running the script requires downloading ~95 MB of external
+          archives on a cold cache and overwrites the tracked file
+          datasets/odonata/fossil_wing_resegmentation.csv in place without CLI flags.
+        evidence:
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [75, 86], note: "_fetch() automatic download and SHA-256 digest check"}
+          - {file: 2026-eshghi-odonata-wing-cells.py, lines: [447, 452], note: "resegment_all_fossils() writes directly to tracked CSV path"}
+          - {file: requirements.lock.txt, lines: [1, 35], note: "pinned dependency lockfile"}
+
+  - id: lobo-limbform-morphology
+    name: LimbformDB limb morphologies
+    organism: "Urodele and anuran amphibians, decapod crustaceans, orthopteroid insects and a spider (LimbformDB 2.1.0)"
+    script: 2014-lobo-limbform-morphology.py
+    output: limbform_wildtype_gallery.png
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [lobo2014a, lobo2014b, limbformdb]
+    summary: >-
+      Blinded second-assessor pass (gemini-4-argon).  Decodes the LimbformDB 2.1.0
+      tree-graph schema (Morphology, Link, JointParam, LinkSubJoint, Digit) across
+      all 565 database rows (555 with non-empty geometry) and renders smooth closed
+      limb outlines, internal skeletal elements, and digit phalanges across 14 taxa.
+      Independently caught a 65-hex-character typo in DB_SHA256 (line 92) that
+      causes resolve_db_path() to emit a false-positive SHA-256 mismatch warning.
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          Faithfully decodes LimbformDB 2.1.0's five-table relational graph
+          (Morphology, Link, JointParam, LinkSubJoint, Digit) using recursive
+          vector accumulation, cyclic half-angle bisectors at branching joints,
+          +90/+180/+270 deg terminal caps, double-counted host segments at
+          ectopic sub-joints, and periodic Catmull-Rom splines, satisfying the
+          joint-radius count rule on 3,137 of 3,146 joints (99.71%).  Deducts
+          12 points because Link.side, Link.reversed, Link.inverted, and
+          Digit.reversed are parsed into dataclasses (lines 146-148, 165) but
+          never used in layout() or draw_morphology(), and because 9 mutant
+          joints require mean-radius padding.
+        evidence:
+          - {file: 2014-lobo-limbform-morphology.py, lines: [140, 178], note: "Link, SubJoint, Digit, and Morphology dataclasses (including unused side/reversed/inverted fields)"}
+          - {file: 2014-lobo-limbform-morphology.py, lines: [275, 421], note: "layout(), _edges_of(), and control_points() implementing recursive tree layout and bisector radii"}
+          - {file: 2014-lobo-limbform-morphology.py, lines: [606, 620], note: "check_encoding() verifies 3,137/3,146 joints match the radius rule"}
+      specimen-match:
+        value: 86
+        rationale: >-
+          Reconstructs the five wild-type benchmark limbs from Lobo et al. (2014b)
+          Fig. 1 A''-E'' (Ambystoma mexicanum, Xenopus laevis, Uca pugilator,
+          Gryllus bimaculatus, Heteropoda venatoria), all 14 wild-type species in
+          LimbformDB 2.1.0, and 15 experimental surgical/transgenic phenotypes
+          (ectopic grafts, supernumerary hands, hip-rotation duplications, and
+          retinoic-acid proximalisation) with matching segment topology, digit
+          counts, and colour coding.  Note: comparison is to the source paper's
+          formalism cartoons rather than photographs of biological limbs.
+        evidence:
+          - {file: 2014-lobo-limbform-morphology.py, lines: [627, 738], note: "make_wildtype_gallery(), make_experimental_gallery(), and make_animation()"}
+          - {file: limbform_wildtype_gallery.png, lines: [0, 0], note: "14 wild-type limb morphologies rendered with Fig. 1 A''-E'' highlighted"}
+          - {file: docs/media/limbform_morphospace_timeline.gif, lines: [0, 0], note: "animated timeline and experimental regeneration outcomes from LimbformDB"}
+      parameter-expressivity:
+        value: 84
+        rationale: >-
+          Exercises the full discrete and continuous variation stored in LimbformDB
+          2.1.0 across 555 geometric morphologies spanning 6 taxonomic classes, 14
+          species, 12 anatomical segment types, multi-joint branching, ectopic
+          LinkSubJoint grafts, and 0-12 digits.  Deducts 16 points because the
+          unused Link.reversed / Link.inverted / Digit.reversed flags leave surgical
+          handedness inversions unexpressed in the rendered geometry.
+        evidence:
+          - {file: 2014-lobo-limbform-morphology.py, lines: [222, 268], note: "load_morphologies() loads all 565 morphologies (555 with geometry) across 14 taxa"}
+          - {file: 2014-lobo-limbform-morphology.py, lines: [656, 676], note: "15 curated experimental phenotypes spanning amputations, grafts, and duplications"}
+      morphometric-validation:
+        value: 62
+        rationale: >-
+          Performs an exhaustive structural audit of the database encoding in
+          check_encoding() (verifying 555/565 geometric morphologies and 3,137/3,146
+          joints against the degree-radius rule), but the script itself does not
+          compute silhouette IoU, segment-angle residuals, or landmark errors against
+          Lobo et al. (2014b) Fig. 1 or real limb morphometrics.
+        evidence:
+          - {file: 2014-lobo-limbform-morphology.py, lines: [606, 620], note: "check_encoding() structural verification of joint-parameter counts"}
+          - {file: 2014-lobo-limbform-morphology.py, lines: [745, 761], note: "main() runs check_encoding() and renders galleries without quantitative image-level comparison"}
+      source-traceability:
+        value: 94
+        rationale: >-
+          Cites both primary papers (Lobo et al. 2014a, DOI 10.1093/bioinformatics/btu582;
+          Lobo et al. 2014b, DOI 10.1002/reg2.13) and the upstream LimbformDB 2.1.0 URL,
+          and links every rendered panel to its database Morphology.Id and Experiment
+          record.  Deducts 6 points because DB_SHA256 on line 92 contains a 65-character
+          hex string (an extra trailing '0' appended to the true 64-character SHA-256
+          digest), so resolve_db_path() always prints a false-positive hash mismatch
+          warning.
+        evidence:
+          - {file: 2014-lobo-limbform-morphology.py, lines: [1, 56], note: "docstring citing Lobo et al. (2014a, 2014b) DOIs and LimbformDB 2.1.0 URL"}
+          - {file: 2014-lobo-limbform-morphology.py, lines: [91, 134], note: "DB_SHA256 has 65 hex chars (trailing '0' typo at L92), triggering mismatch warning in resolve_db_path()"}
+      code-traceability:
+        value: 86
+        rationale: >-
+          Cleanly maps SQLite tables (Morphology, Link, JointParam, LinkSubJoint,
+          Digit) to Python dataclasses and geometric primitives, with detailed ASCII
+          diagrams and docstrings explaining the cyclic bisector rule and sub-joint
+          double-counting convention.
+        evidence:
+          - {file: 2014-lobo-limbform-morphology.py, lines: [26, 49], note: "header documentation mapping SQLite tables to geometric decoding rules"}
+          - {file: 2014-lobo-limbform-morphology.py, lines: [305, 355], note: "_edges_of() and control_points() with inline geometric comments"}
+      repro-package:
+        value: 88
+        rationale: >-
+          Fully deterministic geometry decoding and rendering, automatic fallback
+          download of LimbformDB 2.1.0 into .limbform_cache/, and pinned dependencies
+          in requirements.txt / requirements.lock.txt.  Deducts 12 points for the
+          65-character DB_SHA256 typo in resolve_db_path() and lack of CLI flags for
+          output paths.
+        evidence:
+          - {file: 2014-lobo-limbform-morphology.py, lines: [91, 134], note: "resolve_db_path() auto-download and cache logic"}
+          - {file: requirements.lock.txt, lines: [1, 35], note: "pinned environment lockfile"}
+
+  - id: raup-shell-coiling
+    name: Raup shell coiling morphospace
+    organism: "Coiled molluscs in general; the six panels are labelled cf. Nautilus, Turritella, an ammonite, Conus, Cerithium, Helix (resemblance, not specimens)"
+    script: create_raup_animations.py
+    also: [1966-raup.py]
+    output: raup_shell_animation.gif
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [raup1962, raup1965, raup1966, raup1967, noshita2014, okabe2017]
+    summary: >-
+      Blinded second-assessor pass (gemini-4-argon).  Implements Raup's (1962,
+      1966) four-parameter logarithmic-spiral shell model (W, D, T, S) using the
+      parametric surface formulation of Noshita (2014) and Okabe & Yoshimura
+      (2017), with an automated self_test() that recovers (W, D, T, S) from the
+      3D mesh to machine precision (~5e-15).
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          Implements the logarithmic spiral growth law a(theta) = r0 * W^(theta / 2pi),
+          generating-curve centre distance rc(theta) = a(theta)*(1+D)/(1-D) (yielding
+          inner/outer margin ratio (rc - a)/(rc + a) = D), axial translation
+          zc(theta) = T * rc(theta) (so dzc/drc = T Scales with whorl radius), and
+          aperture shape S in the meridional plane through the coiling axis, verified
+          to ~5e-15 by recover_parameters() in self_test().  Deducts 10 points because
+          the standalone companion script 1966-raup.py hardcodes S = 1.0 and uses an
+          unnormalised offset rc = r*(1+D) without (1-D) scaling.
+        evidence:
+          - {file: create_raup_animations.py, lines: [85, 131], note: "raup_shell() parametric surface implementation"}
+          - {file: create_raup_animations.py, lines: [134, 211], note: "recover_parameters() and self_test() verifying parameter recovery to < 1e-9"}
+          - {file: 1966-raup.py, lines: [10, 29], note: "simplified companion script with r_c = r*(1+D) and fixed circular cross-section"}
+      specimen-match:
+        value: 76
+        rationale: >-
+          Renders six distinct shell archetypes (planispiral involute cf. Nautilus,
+          high-spired turreted cf. Turritella, evolute planispiral cf. Dactylioceras,
+          low-spired obconical cf. Conus, medium-spired cf. Cerithium, helicoid
+          globose cf. Helix) whose 3D geometries and spire-height/width ratios
+          (0.00 to 2.26) match their morphological descriptions.  Deducts 24 points
+          because no real mollusc shell photograph, CT scan, or empirical specimen
+          dataset (such as Raup 1967) is overlaid or compared, and the six parameter
+          sets are explicitly declared as illustrative "cf." points rather than
+          measurements of real specimens.
+        evidence:
+          - {file: datasets/raup/variables.json, lines: [18, 86], note: "six illustrative shell parameter sets with honest provenance note"}
+          - {file: raup_empirical_comparison.png, lines: [0, 0], note: "6-panel 3D comparison of coiled shell archetypes"}
+          - {file: raup_shell_metrics.csv, lines: [1, 8], note: "spire_over_width and outer_radius_ratio across the six archetypes"}
+      parameter-expressivity:
+        value: 78
+        rationale: >-
+          Covers wide ranges of W (1.6 to 10.0), D (0.02 to 0.55), and T (0.0 to 4.2)
+          across the 6-panel comparison and 120-frame morphing animation.  Deducts 22
+          points because S is held constant at 1.0 in every rendered figure and JSON
+          preset, and create_parameter_space_visualization() zips three values of W
+          with three values of D (and W with T) along a 1D diagonal (3 panels per row)
+          rather than sampling a 2D (W, D) or (W, T) morphospace grid.
+        evidence:
+          - {file: create_raup_animations.py, lines: [289, 344], note: "create_parameter_space_visualization() zips 3 (W, D) and 3 (W, T) pairs with S=1.0"}
+          - {file: datasets/raup/variables.json, lines: [30, 85], note: "all six parameter sets set S = 1.0"}
+      morphometric-validation:
+        value: 58
+        rationale: >-
+          Recovers (W, D, T, S) and aspect ratios (spire_over_width, outer_radius_ratio)
+          directly from the generated 3D vertices in recover_parameters() and exports
+          them to raup_shell_metrics.csv (max parameter recovery error 5.33e-15).
+          However, this validates internal mathematical self-consistency rather than
+          comparing model outputs against empirical shell measurements from biological
+          specimens.
+        evidence:
+          - {file: create_raup_animations.py, lines: [134, 211], note: "recover_parameters() and self_test() geometric verification"}
+          - {file: raup_shell_metrics.csv, lines: [1, 8], note: "exported input vs mesh-recovered parameter table"}
+      source-traceability:
+        value: 82
+        rationale: >-
+          Cites Raup (1962, 1965, 1966, 1967) and the two secondary papers from which
+          the exact parametric equations were taken (Noshita 2014, DOI
+          10.1016/j.jtbi.2014.08.010; Okabe & Yoshimura 2017, DOI 10.1038/srep42445),
+          and transparently documents in both the script and datasets/raup/variables.json
+          that Raup (1966) was not consulted directly and that earlier AI-fabricated
+          page citations were retracted.
+        evidence:
+          - {file: create_raup_animations.py, lines: [1, 35], note: "module docstring citing Raup (1962, 1965, 1966) and Noshita (2014) / Okabe & Yoshimura (2017)"}
+          - {file: datasets/raup/variables.json, lines: [1, 29], note: "provenance note retracting earlier unverified page numbers"}
+      code-traceability:
+        value: 78
+        rationale: >-
+          create_raup_animations.py clearly maps variables (theta, phi, a, rc, zc, r, z)
+          to Noshita (2014) and Okabe & Yoshimura (2017).  Deducts 22 points because
+          the companion script 1966-raup.py lacks citations, docstrings, and uses a
+          divergent formula for rc without explanation.
+        evidence:
+          - {file: create_raup_animations.py, lines: [85, 131], note: "documented raup_shell() implementation"}
+          - {file: 1966-raup.py, lines: [1, 56], note: "undocumented companion script with divergent rc formula"}
+      repro-package:
+        value: 95
+        rationale: >-
+          Completely deterministic mathematical surface generation, zero external
+          network dependencies, automated self_test() gate executed before rendering,
+          and pinned dependencies in requirements.txt / requirements.lock.txt.
+        evidence:
+          - {file: create_raup_animations.py, lines: [443, 459], note: "main() runs self_test() and generates all four outputs deterministically"}
+          - {file: requirements.lock.txt, lines: [1, 35], note: "pinned environment lockfile"}
+
+  - id: turing-gray-scott
+    name: Gray-Scott reaction-diffusion patterns
+    organism: "Generic (Turing pattern formation)"
+    script: 1952-turing-morpho.py
+    output: turing_patterns.gif
+    status: evaluated
+    source_refs: [turing1952, pearson1993]
+    summary: >-
+      Blinded second-assessor pass (gemini-4-argon).  Minimal 76-line forward-Euler
+      Gray-Scott reaction-diffusion demo on a 200x200 periodic grid at (f=0.055,
+      k=0.062).  Independently identified that inline comments mislabel the
+      depleted substrate U as an inhibitor, that RNG seeding and literature
+      citations are absent, and that the script's output file
+      (turing_patterns_black_neon.gif, custom black-neon palette without axes)
+      does not match docs/media/turing_gray_scott.gif.
+    scores:
+      model-fidelity:
+        value: 68
+        rationale: >-
+          Implements the discrete 2D Gray-Scott reaction-diffusion system
+          dU/dt = Du*Laplacian(U) - U*V^2 + f*(1-U), dV/dt = Dv*Laplacian(V) + U*V^2 - (f+k)*V
+          with periodic boundary conditions via np.roll and parameters Du=0.16,
+          Dv=0.08, f=0.055, k=0.062, dt=1.0.  Deducts 32 points because (1) the
+          5-point finite-difference Laplacian omits the -4*Z centre weight inside
+          laplacian() and absorbs it into Du*(Lu - 4*U), which is algebraically
+          equivalent only for unit grid spacing dx=1, (2) inline comments misstate
+          the reaction mechanism by claiming '# U inhibits V's growth quadratically'
+          when U is the consumed substrate in autocatalytic production +U*V^2, and
+          (3) the script conflates Turing's (1952) linear morphogen model with the
+          cubic Gray-Scott (1984) / Pearson (1993) system.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [6, 13], note: "Du=0.16, Dv=0.08, f=0.055, k=0.062, dt=1.0, steps=10000"}
+          - {file: 1952-turing-morpho.py, lines: [25, 40], note: "laplacian() and update() with inaccurate comment '# U inhibits V's growth quadratically'"}
+      specimen-match:
+        value: 50
+        not_applicable: true
+        rationale: >-
+          Generic mathematical pattern generator not tied to a specific biological
+          organism; marked not_applicable per the rubric.  Note: the script writes
+          turing_patterns_black_neon.gif (custom black-to-neon-blue colormap, axes
+          off), which does not match the committed docs/media/turing_gray_scott.gif
+          (Viridis-like colormap with visible 0-200 axis ticks).
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [42, 75], note: "custom black_neon colormap and save('turing_patterns_black_neon.gif')"}
+          - {file: turing_patterns.gif, lines: [0, 0], note: "inspected output animation"}
+      parameter-expressivity:
+        value: 35
+        rationale: >-
+          Runs only a single hardcoded parameter point (f=0.055, k=0.062) without
+          CLI arguments or a multi-regime panel across Pearson's (1993) (f, k) phase
+          space; only a brief inline comment mentions f=0.035, k=0.065.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [8, 9], note: "single hardcoded (f, k) = (0.055, 0.062)"}
+      morphometric-validation:
+        value: 5
+        rationale: >-
+          Zero quantitative analysis: no spatial wavelength, structure factor / FFT
+          power spectrum, spot-count, or phase-diagram comparison is computed.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [1, 76], note: "entire script contains only array updates and Matplotlib animation rendering"}
+      source-traceability:
+        value: 15
+        rationale: >-
+          No module docstring, no bibliographic references, no DOIs for Turing (1952),
+          Gray & Scott (1984), or Pearson (1993), and no provenance for the chosen
+          parameter values; only the filename and plot title ('Turing Patterns (Gray-Scott Model)')
+          name the model.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [1, 13], note: "no docstring or literature citations"}
+          - {file: 1952-turing-morpho.py, lines: [74, 75], note: "plot title is the sole textual reference"}
+      code-traceability:
+        value: 30
+        rationale: >-
+          Variable names (Du, Dv, f, k, U, V) are recognisable, but there are no
+          docstrings or equation numbers and the inline comments on lines 36-39
+          misdescribe the Gray-Scott reaction kinetics.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [31, 40], note: "update() with misleading inline comments on U and V reaction terms"}
+      repro-package:
+        value: 55
+        rationale: >-
+          Self-contained numpy + matplotlib script with pinned repository lockfile
+          (requirements.lock.txt), but np.random.random((size, size)) on lines 19-20
+          is unseeded so every execution yields a different pattern trajectory, no
+          CLI arguments are supported, and the output filename (turing_patterns_black_neon.gif)
+          differs from docs/media/turing_gray_scott.gif.
+        evidence:
+          - {file: 1952-turing-morpho.py, lines: [19, 20], note: "unseeded np.random.random((size, size))"}
+          - {file: 1952-turing-morpho.py, lines: [75, 75], note: "hardcoded ani.save('turing_patterns_black_neon.gif')"}
+
+  - id: hoffmann-wing-venation
+    name: Hoffmann-Donoughe insect wing venation
+    organism: "Dragonfly Arigomphus villosipes (hindwing)"
+    script: 2018-hoffmann-wing-venation.py
+    output: hoffmann_wing_recapitulation.png
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [hoffmann2018]
+    summary: >-
+      Blinded second-assessor pass (gemini-4-argon).  Implements Hoffmann et
+      al.'s (2018) SI 3.3-3.4 secondary-vein model (density-weighted seeding,
+      damped centroidal-Voronoi / Lloyd equilibration, and Voronoi bisectors) on
+      the segmented primary-vein scaffold of Arigomphus villosipes (923 vein
+      domains), comparing circularity, area, and proximal-distal trends against
+      the real wing and the regular-hexagon ceiling.
+    scores:
+      model-fidelity:
+        value: 82
+        rationale: >-
+          Implements the core SI 3.3-3.4 pipeline on the real wing boundary and
+          primary-vein scaffold: local density weighting proportional to 1/cell^2,
+          damped Lloyd equilibration (step 0.55) inside the primary-vein
+          compartments, and secondary veins drawn as Voronoi bisectors between
+          sites sharing the same primary compartment.  Deducts 18 points because
+          local cell size is derived from the Euclidean distance transform of
+          the real wing's all-vein mask (dt) rather than from primary-vein
+          thickness as in the paper, and Lloyd relaxation terminates after a
+          fixed n_iter=18 iterations rather than the paper's 0.1%-of-wing-length
+          displacement threshold.
+        evidence:
+          - {file: 2018-hoffmann-wing-venation.py, lines: [111, 133], note: "segment_wing() derives local cell size from distance_transform_edt(~vein)"}
+          - {file: 2018-hoffmann-wing-venation.py, lines: [164, 195], note: "model_wing() seeds n_cells weighted by 1/cell^2 and runs n_iter=18 fixed Lloyd iterations"}
+      specimen-match:
+        value: 85
+        rationale: >-
+          Places the segmented real Arigomphus villosipes hindwing (panel a)
+          directly beside the model-regenerated secondary venation on the same
+          outline and primary scaffold (panel b), reproducing domain count
+          (923) and proximal-to-distal cell-size gradients.  Deducts 15 points
+          because model domains are noticeably more isotropic/hexagonal than
+          the elongated rectangular cell rows between parallel longitudinal
+          veins in the real wing (mean circularity 0.867 vs 0.712).
+        evidence:
+          - {file: 2018-hoffmann-wing-venation.py, lines: [255, 297], note: "make_figure() renders side-by-side real vs model wings colored by domain circularity"}
+          - {file: hoffmann_wing_recapitulation.png, lines: [0, 0], note: "panels (a) and (b) side-by-side specimen vs model comparison"}
+      parameter-expressivity:
+        value: 68
+        rationale: >-
+          Exposes n_iter, seed, and downsample parameters and animates the
+          full iteration-by-iteration equilibration trajectory (iterations 0..18)
+          along with a live circularity trajectory in make_gif()
+          (docs/media/hoffmann_wing_lloyd.gif), though the static figure
+          make_figure() plots only the final n_iter=18 state and does not vary
+          inhibition-density scaling parameters.
+        evidence:
+          - {file: 2018-hoffmann-wing-venation.py, lines: [271, 271], note: "make_figure() evaluates only n_iter=18"}
+          - {file: 2018-hoffmann-wing-venation.py, lines: [346, 380], note: "make_gif() animates iterations 0..18 and plots mean circularity vs iteration"}
+          - {file: docs/media/hoffmann_wing_lloyd.gif, lines: [0, 0], note: "animated Lloyd equilibration trajectory"}
+      morphometric-validation:
+        value: 84
+        rationale: >-
+          Computes domain circularity c = 4*pi*A/P^2 (using Crofton perimeter),
+          normalised cell area, and proximal-distal circularity profiles across
+          all 923 real and model vein domains and benchmarks both against the
+          regular-hexagon theoretical ceiling pi*sqrt(3)/6 = 0.9069.  Deducts
+          16 points because internal polygon vertex angles and edge-count
+          distributions (pentagons/hexagons/heptagons) analyzed in Hoffmann et
+          al. (2018) are not computed.
+        evidence:
+          - {file: 2018-hoffmann-wing-venation.py, lines: [69, 69], note: "HEXAGON_CIRC = pi*sqrt(3)/6"}
+          - {file: 2018-hoffmann-wing-venation.py, lines: [200, 214], note: "domain_stats() computes Crofton circularity, area, and x-centroid"}
+          - {file: 2018-hoffmann-wing-venation.py, lines: [298, 334], note: "panels (c)-(e) compare circularity distributions, area vs circularity, and proximal-distal trends"}
+      source-traceability:
+        value: 84
+        rationale: >-
+          Cites Hoffmann et al. (2018) with DOI (10.1073/pnas.1721248115), PMID
+          (30224459), and GitHub repository URL, and fetches the official
+          example wing Arigomphus_villosipes_LHW.png from PNAS_Paper_Code.zip.
+          Deducts 16 points because fetch_wing_png() does not verify a pinned
+          SHA-256 digest on the downloaded ZIP archive or extracted PNG.
+        evidence:
+          - {file: 2018-hoffmann-wing-venation.py, lines: [5, 10], note: "citation block with DOI, PMID, and GitHub URL"}
+          - {file: 2018-hoffmann-wing-venation.py, lines: [65, 88], note: "ZIP_URL and fetch_wing_png() without SHA-256 verification"}
+      code-traceability:
+        value: 78
+        rationale: >-
+          Module docstring clearly maps the 5-step pipeline to SI sections
+          3.3-3.4 and explains where the implementation simplifies the paper's
+          thickness-based density estimate, though individual helper functions
+          do not cite equation or figure numbers.
+        evidence:
+          - {file: 2018-hoffmann-wing-venation.py, lines: [12, 34], note: "5-step correspondence to SI 3.3-3.4"}
+          - {file: 2018-hoffmann-wing-venation.py, lines: [164, 195], note: "model_wing() inline comments"}
+      repro-package:
+        value: 80
+        rationale: >-
+          Deterministic RNG seeding (np.random.default_rng(seed) with seed=0),
+          CLI flags (--output, --downsample, --gif, --no-show), automatic
+          caching in .wing_cache/, and pinned dependencies (including
+          scikit-image and Pillow) in requirements.txt and requirements.lock.txt.
+          Deducts 20 points because fetch_wing_png() lacks a SHA-256 check on
+          the remote archive and the module docstring on lines 39-40 still
+          states that scikit-image and Pillow are not in requirements.txt.
+        evidence:
+          - {file: 2018-hoffmann-wing-venation.py, lines: [39, 40], note: "stale docstring note on scikit-image/Pillow"}
+          - {file: 2018-hoffmann-wing-venation.py, lines: [383, 399], note: "CLI argument parser"}
+          - {file: requirements.lock.txt, lines: [1, 35], note: "pinned dependency lockfile"}
+
+  - id: santella-wormguides-celegans
+    name: WormGUIDES C. elegans embryo atlas with the OpenWorm connectome
+    organism: "Caenorhabditis elegans embryo, 4-cell stage to ~580 nuclei (strain JIM113, diSPIM series DISPIM_061416)"
+    script: 2015-santella-wormguides-celegans.py
+    output: celegans_four_views.png
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [santella2015, sarma2018, cook2019, sulston1983, gonczy1999, wormguides_repo, c302_repo]
+    summary: >-
+      Blinded second-assessor pass (gemini-4-argon).  Decodes 360 frames of 3D
+      nuclear coordinates and diameters from the WormGUIDES C. elegans
+      embryogenesis atlas (Santella et al. 2015), verifies Sulston lineage
+      naming and parent-before-child ordering across all 1,330 cells, calibrates
+      spatial units against the frame-330 eggshell OBJ mesh (0.1649 um/unit),
+      documents the static early shell mesh overrun, and pairs the developmental
+      atlas with the OpenWorm c302 hermaphrodite connectome (300 neurons).
+    scores:
+      model-fidelity:
+        value: 84
+        rationale: >-
+          Accurately decodes StarryNite/AceTree nuclei tables following
+          AceTreeTableLineageDataLoader column conventions, parses time offsets
+          from ProductionInfo.csv, verifies the Sulston naming grammar on all
+          1,330 cell names and parent-before-child ordering on 1,326/1,326
+          cells, reconstructs the lineage bifurcation tree directly from cell
+          names, and calibrates spatial coordinates using the re-segmented
+          frame-330 eggshell mesh (50 um / 303.1 units = 0.1649 um/unit).
+          Deducts 16 points because the 3D embryo and 51 single-cell OBJ meshes
+          are rendered as 2D orthographic projections rather than full 3D
+          surfaces, and the c302 connectome is collapsed into a single summed
+          adjacency matrix without separating chemical synapses from gap
+          junctions.
+        evidence:
+          - {file: 2015-santella-wormguides-celegans.py, lines: [254, 319], note: "read_nuclei(), movie_offset(), founder(), parent_of(), and check_encoding()"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [335, 368], note: "calibrate(), shell_report(), and nuclear_cloud_scale()"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [564, 595], note: "canonical_cell() and draw_connectome()"}
+      specimen-match:
+        value: 74
+        rationale: >-
+          Renders empirical 4D nuclear positions scaled to true micrometre
+          dimensions inside the segmented eggshell outline across six canonical
+          embryonic stages, 51 3D cell-surface meshes at frame 330, and the
+          complete Sulston lineage tree.  Deducts 26 points because no raw
+          diSPIM fluorescence volume or DIC microscopy image is shown alongside
+          the reconstructed nuclei, and the early frames (1-~250) in the source
+          atlas share a static eggshell mesh that the anterior nuclei overrun
+          by up to 19.0 atlas units.
+        evidence:
+          - {file: 2015-santella-wormguides-celegans.py, lines: [433, 541], note: "draw_lineage(), draw_shell(), draw_embryo(), and draw_meshes()"}
+          - {file: celegans_four_views.png, lines: [0, 0], note: "four-panel view: Sulston lineage tree, six developmental stages inside eggshell, frame-330 meshes, and connectome"}
+          - {file: docs/media/celegans_embryo_timeline.gif, lines: [0, 0], note: "animated 4D nuclear trajectory and lineage progression"}
+      parameter-expressivity:
+        value: 50
+        not_applicable: true
+        rationale: >-
+          Data decoder and developmental atlas replay with no generative
+          morphospace parameters to sweep; marked not_applicable per the rubric.
+        evidence:
+          - {file: 2015-santella-wormguides-celegans.py, lines: [1, 23], note: "module docstring defines script as an empirical atlas and connectome decoder"}
+      morphometric-validation:
+        value: 82
+        rationale: >-
+          Validates decoded atlas metrics against Sulston et al. (1983) /
+          WormAtlas and Cook et al. (2019) benchmarks: 1,330/1,330 valid Sulston
+          names, 1,326/1,326 parent-before-child appearances, 113/113 programmed
+          cell deaths present, unfitted eggshell width of 29.24 um against the
+          30 um reference (and 13-mesh scale bracket 0.1649-0.1750 um/unit),
+          562-571 nuclei at 330-350 min (vs ~550), E-cell gastrulation
+          ingression at 26 cells (vs ~30-cell stage), and 300/302 hermaphrodite
+          neurons (with CANL/CANR explained by lack of synapses).  Also
+          quantifies and reports the 19.0-unit static-shell overrun and the
+          ~27-minute clock offset at gastrulation (73 min vs 100 min).
+        evidence:
+          - {file: 2015-santella-wormguides-celegans.py, lines: [348, 423], note: "shell_report(), measure(), gastrulation_onset(), and literature_checks()"}
+          - {file: celegans_four_views.png, lines: [0, 0], note: "annotated morphometric and lineage benchmarks"}
+      source-traceability:
+        value: 92
+        rationale: >-
+          Pins both upstream repositories (zhirongbaolab/WormGUIDES at commit
+          17be611f and openworm/c302 at commit f54d92d7), verifies all 429
+          fetched files against SHA-256 digests in
+          datasets/celegans/pinned_inputs.sha256 on every run, and cites DOIs
+          for Santella et al. (2015), Sarma et al. (2018), Cook et al. (2019),
+          Sulston et al. (1983), and Gönczy et al. (1999).
+        evidence:
+          - {file: 2015-santella-wormguides-celegans.py, lines: [24, 49], note: "source citations, commits, and licenses"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [90, 199], note: "pinned commit constants and fetch_inputs() SHA-256 manifest verification"}
+          - {file: datasets/celegans/pinned_inputs.sha256, lines: [1, 30], note: "429-file SHA-256 manifest"}
+      code-traceability:
+        value: 82
+        rationale: >-
+          Explicitly documents the WormGUIDES Java loader class
+          (AceTreeTableLineageDataLoader), ProductionInfo.csv and
+          CellShapesConfig.csv fields, Sulston regex grammar, and literature
+          check constants inline where they are used.
+        evidence:
+          - {file: 2015-santella-wormguides-celegans.py, lines: [113, 124], note: "LIT benchmark dictionary and SULSTON_RE"}
+          - {file: 2015-santella-wormguides-celegans.py, lines: [254, 275], note: "read_nuclei() and movie_offset() mapped to WormGUIDES loader"}
+      repro-package:
+        value: 86
+        rationale: >-
+          Fully deterministic execution, SHA-256-verified input caching in
+          .celegans_cache/, CLI options (--out-dir, --csv, --no-anim, --step,
+          --offline), and exact dependency lockfile in requirements.lock.txt;
+          requires network access only on first run when .celegans_cache/ is
+          unpopulated.
+        evidence:
+          - {file: 2015-santella-wormguides-celegans.py, lines: [674, 723], note: "main() CLI parser and deterministic execution flow"}
+          - {file: requirements.lock.txt, lines: [1, 35], note: "pinned environment lockfile"}
+
+  - id: planform-morphology-animation
+    name: PlanformDB planarian morphology animation
+    organism: "Planaria (Schmidtea mediterranea, Dugesia japonica)"
+    script: 2013-lobo-planform-morphology.py
+    output: planform_morphology_gallery.png
+    domain: levin-lab
+    status: evaluated
+    source_refs: [lobo2013, lobo2013bo, durant2017]
+    summary: >-
+      Blinded second-assessor pass (gemini-4-argon).  Decodes the Lobo, Malone
+      & Levin (2013) region-graph formalism across all 369 geometric planarian
+      morphologies in PlanformDB 2.5.0 (verifying the 0->4 / 1->3 / k->k radii
+      rule on all 1,181 regions), renders 16 canonical phenotypes and a
+      63-frame historical morphospace timeline, and pins the database by
+      SHA-256.
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >-
+          Decodes PlanformDB 2.5.0's relational tables (Morphology, Region,
+          RegionParam, RegionsLink, Organ, OrganPoint) using the formalism's
+          exact link-degree radius rule (0 links -> 4 cardinal radii; 1 link ->
+          +90/+180/+270 deg; k >= 2 links -> k bisector radii), places region
+          centres from Dist/Ang and shared borders at Ratio*Dist, and verifies
+          in check_encoding() that 1,181/1,181 regions obey the rule.  Deducts
+          14 points because consecutive control radii are connected by a
+          heuristic superellipse arc (N_FREE=2.2, N_BORDER=7.0) tuned to
+          resemble Fig. 1D rather than a closed-form curve equation published
+          in the paper.
+        evidence:
+          - {file: 2013-lobo-planform-morphology.py, lines: [279, 391], note: "layout(), control_points(), and region_outline() implementing the graph-to-outline decoder"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [733, 747], note: "check_encoding() verifies 1,181/1,181 regions obey the 0->4 / 1->3 / k->k rule"}
+      specimen-match:
+        value: 74
+        rationale: >-
+          Produces clean, immediately distinguishable Planform cartoon
+          renderings across wild type (#1), double-head (#2, #24), headless
+          (#20), cyclops (#14), lateral/ectopic heads (#71, #133), and multi-head
+          phenotypes, matching the colour gradients and internal organ symbols
+          (eyes, brain lobes, ventral nerve cords, pharynx) of Lobo et al.
+          (2013) Fig. 1D.  Deducts 26 points because the database encodes only
+          coarse polar radii (3 per head), so species-specific triangular
+          cephalic lobes, auricles, and pigmentation of real S. mediterranea or
+          D. japonica specimens are absent and no worm photographs are compared
+          in this script.
+        evidence:
+          - {file: 2013-lobo-planform-morphology.py, lines: [492, 542], note: "draw_morphology() renders region gradients, borders, eyes, brain, VNC, and pharynx"}
+          - {file: planform_morphology_gallery.png, lines: [0, 0], note: "16 canonical PlanformDB phenotypes rendered at shared scale"}
+          - {file: planform_morphospace_timeline.gif, lines: [0, 0], note: "animated historical timeline and 359-morphology overview grid"}
+      parameter-expressivity:
+        value: 80
+        rationale: >-
+          Exercises all 369 geometric morphologies in PlanformDB 2.5.0 (369
+          unique region+link+organ encodings and 167 distinct body silhouettes)
+          at a shared spatial scale within each gallery/timeline page so body
+          size, aspect ratio, and topological branching vary visibly with the
+          encoded parameters.
+        evidence:
+          - {file: 2013-lobo-planform-morphology.py, lines: [557, 713], note: "frame_bounds(), render_gallery(), and render_timeline()"}
+      morphometric-validation:
+        value: 56
+        rationale: >-
+          Computes rasterised silhouette morphometrics (ap_length, ml_width,
+          aspect, area, head/tail/eye/pharynx counts, and rel_wt_length) in
+          morphometrics(), verifies wild-type dimensions against the database
+          radii (557.6 x 119.8 vs 560 x 120 Planform units), and exports a full
+          table via write_csv().  Held below 60 because no quantitative IoU or
+          landmark comparison against real planarian photographs or published
+          software screenshots is performed inside the script at commit 5659d5e.
+        evidence:
+          - {file: 2013-lobo-planform-morphology.py, lines: [418, 444], note: "morphometrics() computes AP length, ML width, aspect ratio, area, and organ counts"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [716, 731], note: "write_csv() exports per-morphology morphometrics"}
+      source-traceability:
+        value: 85
+        rationale: >-
+          Cites both primary papers (Lobo, Malone & Levin 2013 Biology Open,
+          DOI 10.1242/bio.20123400; Bioinformatics, DOI
+          10.1093/bioinformatics/btt088) and pins planformDB_2.5.0.edb by exact
+          SHA-256 digest (PLANFORM_DB_SHA256) in both the script and
+          datasets/planform/planformDB.sha256.  Deducts 15 points because the
+          proprietary .edb file cannot be redistributed in the repository or
+          auto-downloaded without user setup.
+        evidence:
+          - {file: 2013-lobo-planform-morphology.py, lines: [10, 17], note: "DOIs for both 2013 Planform papers"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [147, 177], note: "PLANFORM_DB_SHA256 and resolve_db_path() hash verification"}
+      code-traceability:
+        value: 82
+        rationale: >-
+          Module docstring and function comments clearly document the database
+          schema, the +y anterior coordinate convention, the link-degree radius
+          rule, and the superellipse boundary construction.
+        evidence:
+          - {file: 2013-lobo-planform-morphology.py, lines: [18, 37], note: "documented graph formalism and coordinate convention"}
+          - {file: 2013-lobo-planform-morphology.py, lines: [353, 385], note: "region_outline() superellipse arc documentation"}
+      repro-package:
+        value: 78
+        rationale: >-
+          Deterministic execution, SHA-256 verification with --strict-db flag,
+          comprehensive CLI options (--out-dir, --ids, --csv, --no-anim,
+          --no-gallery), and pinned dependencies in requirements.lock.txt;
+          limited only by the requirement to supply an external
+          PLANFORM_DB_PATH file.
+        evidence:
+          - {file: 2013-lobo-planform-morphology.py, lines: [750, 787], note: "main() CLI flags including --strict-db"}
+          - {file: requirements.lock.txt, lines: [1, 35], note: "pinned environment lockfile"}
+
+  - id: cervera-levin-mafe
+    name: Cervera–Levin–Mafe gap-junction reaction–diffusion and bioelectric synthesis
+    organism: "Planarians; photograph is Schmidtea mediterranea, empirical PlanformDB subset is Dugesia japonica"
+    script: 2021-Cervera–Levin–Mafe.py
+    also: [2013-lobo-planform-morphology.py]
+    output: cervera_levin_mafe_gj_block.gif
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [cervera2021, cervera2020, oviedo2010, durant2019, lobo2013, stevenson2010_photo, rusty_matter]
+    summary: >-
+      Blinded second-assessor pass (gemini-4-argon) at commit 5659d5e (including
+      the commit 0154143 fixes for f2_for_shift() and Panel D legend strings).
+      Combines a local 1D reaction-diffusion analogue (AP m1/m2 + orthogonal ML
+      m3), a deterministic Python port of the rusty-matter 2-node bioelectric
+      circuit, a 1-parameter crop-position fit to Oviedo et al. (2010) octanol
+      data tested on held-out innexin-RNAi data, and morphogen territory
+      projection onto a segmented S. mediterranea photograph alongside two
+      decoded Planform cartoons.
+    scores:
+      model-fidelity:
+        value: 50
+        rationale: >-
+          Explicitly documents in its header scope statement that the full texts
+          of Cervera, Levin & Mafe (2021) and Cervera et al. (2020) were not
+          accessible and that the 1D reaction-diffusion solver (rd_antagonistic_1d
+          and rd_linear_1d) and rusty-matter 2-node ODE port are qualitative
+          analogues.  At commit 5659d5e, f2 and f3 both drive distinct 1D
+          boundary-value solvers, and the inverse threshold finder f2_for_shift()
+          bisects on the unclipped wavefront x*(f2) = x*_b (recovering f2_b =
+          0.422 where x*(f2_b) = 0.5833).  Held at 50 because the equations and
+          constants are local constructions rather than verified transcriptions
+          of the 2021/2020 papers, rd_antagonistic_1d's docstring (line 231)
+          still claims to implement the paper's equations, and m3 (f3) is not
+          coupled to any morphological boundary.
+        evidence:
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [27, 47], note: "explicit scope statement disclaiming equation-level fidelity to the inaccessible 2021/2020 full papers"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [213, 359], note: "rd_antagonistic_1d(), rd_linear_1d(), wavefront_for_f2(), and unclipped f2_for_shift()"}
+      specimen-match:
+        value: 48
+        rationale: >-
+          Segments a real Wikimedia Commons photograph of Schmidtea mediterranea
+          (Stevenson & Beane 2010, SHA-256 verified) to measure the body-area
+          fraction anterior to x*(f2) and renders decoded Planform #1 Wild Type
+          and #2 Double Head cartoons.  Held below 50 because the 1D signals
+          are merely painted onto a static wild-type photograph whose outline
+          never deforms into a double-headed worm, and the morphology readout
+          switches categorically between two pre-drawn Planform cartoons at an
+          assumed pharynx-posterior threshold x*_b = 0.5833.
+        evidence:
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [150, 207], note: "load_real_planarian_silhouette() segments a static wild-type S. mediterranea mask"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [795, 869], note: "static Planform #1 and #2 cartoon templates"}
+          - {file: cervera_levin_mafe_bioelectric_morphospace.png, lines: [0, 0], note: "6-panel summary figure"}
+      parameter-expressivity:
+        value: 62
+        rationale: >-
+          Sweeps f2 across [0.25, 1.0] (monotonically shifting the AP wavefront
+          x*(f2) from 0.500 to 0.648 and anterior silhouette area from 0.483 to
+          0.639) and sweeps f3 across [0.30, 1.0] (reducing the ML centre/edge
+          ratio lambda(f3) from 0.197 to 0.011), and compares 5 rusty-matter
+          bioelectric scenarios across 3 crop positions.  Deducts 38 points
+          because f3 has no effect on the rendered 2D worm morphology and the
+          phenotype output is a binary switch rather than a continuous
+          morphogenetic deformation.
+        evidence:
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [302, 359], note: "wavefront_for_f2(), lateral_index_for_f3(), and f2_for_shift()"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [965, 978], note: "f2 and f3 parameter sweeps"}
+      morphometric-validation:
+        value: 54
+        rationale: >-
+          Fits a 1-parameter linear mapping f2(p) = 1 - a*p to Oviedo et al.
+          (2010) octanol double-head frequencies across 4 axial crop positions
+          (training RMSE = 4.19 percentage points) and evaluates it without
+          refitting on held-out triple-innexin RNAi crops (test RMSE = 23.52
+          percentage points, r = 0.943), while verifying rusty-matter trace
+          parity across all 5 scenarios (max |delta| = 0.0332) and computing
+          Planform #1 vs #2 silhouette IoU (0.9478).  Held at 54 because the
+          4-point empirical sample is tiny, the 23.5-point held-out error is
+          large, and no morphometric dimensions of real regenerated double-head
+          specimens are measured.
+        evidence:
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [997, 1026], note: "1-parameter octanol training fit and held-out RNAi evaluation"}
+          - {file: cervera_levin_mafe_metrics.csv, lines: [1, 55], note: "exported wavefront, silhouette-area, and empirical fit metrics"}
+      source-traceability:
+        value: 84
+        rationale: >-
+          Cites DOIs and corrected PMIDs for Cervera et al. (2020, 2021),
+          Oviedo et al. (2010), Durant et al. (2019), and Lobo et al. (2013),
+          pins all three vendored JSON fixtures and the Wikimedia Commons
+          photograph by SHA-256, and transparently documents which papers were
+          consulted only via abstract/presentation.
+        evidence:
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [6, 47], note: "bibliographic citations and source-access disclosure"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [98, 130], note: "SHA-256 pins for fixtures and Smediterranea.jpg"}
+      code-traceability:
+        value: 68
+        rationale: >-
+          At commit 5659d5e (following commit 0154143), model constants are
+          centralized, f2_for_shift() properly inverts wavefront_for_f2()
+          without clipping, and Panel D dynamically formats pulse bounds
+          (1.0-16.0 h) and posterior head-readout percentages (91.8% vs 23.5%)
+          from simulation state.  Deducts 32 points because the 1D RD equations
+          and the pharynx-posterior phenotype threshold (x*_b = 0.5833, which
+          includes 20-unit plotting padding and a 100-unit cartoon pharynx
+          convention) do not map to published equations in Cervera et al. (2021).
+        evidence:
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [320, 359], note: "pharynx-boundary criterion and unclipped f2_for_shift()"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [1271, 1318], note: "Panel D dynamic pulse span and readout percentage labels"}
+      repro-package:
+        value: 88
+        rationale: >-
+          Fully deterministic solver and rendering pipeline, SHA-256 input
+          verification, comprehensive --self-test gate (which now asserts
+          exact inverse recovery of f2_b as well as symmetry, monotonicity, f3
+          sensitivity, and trace parity), headless CLI flags, and pinned
+          dependencies in requirements.lock.txt.
+        evidence:
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [1412, 1456], note: "self_test_model() including f2_b inverse-recovery assertion"}
+          - {file: 2021-Cervera–Levin–Mafe.py, lines: [1545, 1605], note: "CLI argument parser and exit-code handling"}
+
+  - id: chindapol-coral-flow
+    name: Chindapol flow-driven coral growth
+    organism: "Scleractinian coral Pocillopora verrucosa"
+    script: 2013-chindapol-coral-flow.py
+    output: chindapol_coral_flow_morphospace.png
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [chindapol2013]
+    summary: >-
+      Blinded second-assessor pass (gemini-4-argon).  Replaces Chindapol et
+      al.'s (2013) 3D COMSOL Navier-Stokes + advection-diffusion accretive
+      growth model of Pocillopora verrucosa with a declared 2D lattice
+      diffusion-limited aggregation (DLA) random walk with horizontal drift,
+      reproducing qualitative upstream-bending and compactification trends
+      across five drift values.
+    scores:
+      model-fidelity:
+        value: 38
+        rationale: >-
+          Honestly declares in the module docstring and in Panel (f) that the
+          paper's coupled 3D laminar Navier-Stokes flow solver, nutrient
+          advection-diffusion boundary layer, and normal-flux surface extension
+          law are replaced by a 2D square-lattice biased random walk (DLA with
+          drift + basal nutrient-shadowing survival probability).  While the
+          substitution is transparent, a stochastic particle-sticking walk on a
+          2D grid is a fundamentally different physical mechanism from
+          continuum hydrodynamic advection-diffusion around a 3D branching
+          colony, and the Peclet number Pe = u_0*L/D is not computed.
+        evidence:
+          - {file: 2013-chindapol-coral-flow.py, lines: [11, 36], note: "docstring explicitly states 3D Navier-Stokes/COMSOL is replaced by 2D DLA-with-drift"}
+          - {file: 2013-chindapol-coral-flow.py, lines: [65, 137], note: "simulate_coral() 2D lattice random walk with drift bias"}
+      specimen-match:
+        value: 42
+        rationale: >-
+          Renders five 2D dendritic lattice clusters (700 particles each) that
+          transition from radially symmetric branching at drift=0.00 to
+          upstream-skewed, compactified forms at drift=0.22.  However, the
+          1-pixel-wide jagged 2D DLA trees lack the smooth, thick, club-shaped
+          3D branches of Pocillopora verrucosa and no CT scans or figures from
+          Chindapol et al. (2013) are overlaid.
+        evidence:
+          - {file: 2013-chindapol-coral-flow.py, lines: [186, 231], note: "five drift regimes rendered in panels (a)-(c)"}
+          - {file: docs/media/chindapol_coral_flow_growth.gif, lines: [0, 0], note: "animated 2D DLA growth across three flow regimes"}
+      parameter-expressivity:
+        value: 72
+        rationale: >-
+          Sweeps five drift values (0.00, 0.04, 0.09, 0.15, 0.22) in the static
+          morphospace figure and three regimes in the growth GIF, producing
+          clear, monotonic shifts in upstream centre-of-mass displacement
+          (cx - mean_x), radius of gyration (r_gyr), symmetry magnitude
+          (smmag), and mean resultant branch vector length (Rbar).
+        evidence:
+          - {file: 2013-chindapol-coral-flow.py, lines: [186, 203], note: "5-point drift sweep and morphometric summary table"}
+      morphometric-validation:
+        value: 48
+        rationale: >-
+          Computes 2D analogues of the paper's angular branch-tip orientation
+          metrics (hangle = atan2(dx, dy), smmag = |mean(sign(hangle))|, and
+          circular resultant length Rbar) on local distance-transform maxima
+          in morphometrics().  Held below 50 because tip detection operates on
+          noisy 2D lattice pixels rather than 3D skeletal medial axes, and no
+          numerical values from Chindapol et al. (2013) Figs. 9-12 or CT-scanned
+          coral colonies are compared.
+        evidence:
+          - {file: 2013-chindapol-coral-flow.py, lines: [150, 179], note: "branch_tips() and morphometrics() computing hangle, smmag, and Rbar"}
+      source-traceability:
+        value: 82
+        rationale: >-
+          Cites Chindapol et al. (2013) PLoS Comput. Biol. with full authors,
+          title, venue, and DOI (10.1371/journal.pcbi.1002849) and requires no
+          external dataset files.
+        evidence:
+          - {file: 2013-chindapol-coral-flow.py, lines: [5, 10], note: "primary citation and DOI"}
+      code-traceability:
+        value: 68
+        rationale: >-
+          Both the header docstring and Figure panel (f) ('From the paper to
+          this demo') explicitly map each concept in Chindapol et al. (2013)
+          to its 2D DLA counterpart, though individual functions do not cite
+          specific equation numbers from the paper's Methods.
+        evidence:
+          - {file: 2013-chindapol-coral-flow.py, lines: [11, 36], note: "docstring mapping paper concepts to demo approximations"}
+          - {file: 2013-chindapol-coral-flow.py, lines: [252, 273], note: "Panel (f) correspondence table"}
+      repro-package:
+        value: 82
+        rationale: >-
+          Deterministic per-regime RNG seeds (seed = 100 + i), self-contained
+          numpy/scipy/matplotlib implementation with zero network dependencies,
+          CLI arguments (--output, --particles, --gif, --no-show), and pinned
+          dependencies in requirements.lock.txt.
+        evidence:
+          - {file: 2013-chindapol-coral-flow.py, lines: [192, 193], note: "deterministic seed=100+i per drift regime"}
+          - {file: 2013-chindapol-coral-flow.py, lines: [403, 419], note: "CLI argument parser"}
+          - {file: requirements.lock.txt, lines: [1, 35], note: "pinned environment lockfile"}

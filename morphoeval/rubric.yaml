@@ -7,16 +7,38 @@
 # faithfulness to the biology and to the source model, so each script can be
 # checkpointed and re-scored after changes.
 #
-# Two groups, mirroring the siblings' "Reproducibility" vs. orthogonal "Rigor":
-#   faithfulness   - does the code implement the published model, and does the
-#                    output look and measure like the real organism?
-#   reproducibility- can someone else re-run it and trace code to source?
-# Specimen Match carries the single largest weight on purpose: the audit that
-# motivated this rubric found outputs that no longer resembled the organism.
+# Two top-level groups, decomposed into three orthogonal sub-axes:
+#   faithfulness (weight 70), split into:
+#     * model-implementation (weight 30: model-fidelity 20 + parameter-expressivity 10)
+#       — does the code implement and exercise the published mathematical/formal model?
+#     * biological-validation (weight 40: specimen-match 25 + morphometric-validation 15)
+#       — does the output visually and quantitatively match biological specimens?
+#   reproducibility (weight 30: source-traceability 10 + code-traceability 8 + repro-package 12)
+#     — can someone else re-run it and trace code and data to their sources?
+# Separating model-implementation from biological-validation is essential: a
+# script can faithfully implement a scientifically inadequate model, and
+# matching a static silhouette or cartoon does not validate a generative
+# developmental mechanism.
 #
-# Scoring rule (shared with the siblings): score what the evidence supports.
-# Do not credit unverifiable claims and do not invent gaps; a dimension that is
-# genuinely not applicable is scored at the neutral baseline (50) and flagged.
+# Score semantics (uncalibrated rubric scores, NOT probabilities):
+#   Scores on [0, 100] are criterion-referenced ordinal/interval ratings, not
+#   calibrated frequentist or Bayesian probabilities.  A score of 76 does not
+#   mean a 76% probability that the reproduction is faithful.  When serialized
+#   into the governed ProbKnow templates (RAku3DIN / RAIVOEuh), which provide
+#   only pk:hasProbability and pk:weightOfEvidence as [0, 1] numeric slots,
+#   value / 100 is a unit-interval rescaling of the uncalibrated rubric score
+#   for template conformance and sorting only (or may be omitted via
+#   `build_morphoeval_kg.py --omit-probability`).
+#
+# Scoring rule and N/A handling:
+#   Score what the evidence supports; do not credit unverifiable claims and do
+#   not invent gaps.  When a dimension is genuinely not applicable (flagged
+#   `not_applicable: true`), substituting `neutral_baseline: 50` shrinks the
+#   weighted mean toward 50: s_padded = (1 - alpha) * s_app + 50 * alpha, which
+#   penalises scripts with s_app > 50 and rewards scripts with s_app < 50.
+#   Only weight renormalisation over applicable dimensions (s_app) is
+#   mathematically neutral; downstream reports therefore report both the
+#   renormalised applicable-only mean (s_app) and the baseline-50 padded score.
 
 id: morphoeval
 name: MorphoEval simulation-faithfulness rubric
@@ -29,14 +51,36 @@ scale: {min: 0, max: 100, neutral_baseline: 50}
 #   score     -> pk:LLMClaimAssessment (LLM-assessment template) evaluating the
 #                hypothesis pkr:hypothesis/morphoeval-<sim>-<id> ("<sim> satisfies
 #                this criterion"), dct:identifier "morphoeval/<version>/<id>",
-#                pk:hasProbability = value / scale.max, pk:hasVerdict band
+#                pk:hasProbability = value / scale.max (unit-interval rescaled
+#                uncalibrated rubric score, optional under RAku3DIN), pk:hasVerdict band
 #   overall   -> the same, evaluating pkr:hypothesis/morphoeval-<sim> (the claim
 #                proposition); the pk:Claim carries pk:weightOfEvidence = overall / max
 ontology: https://w3id.org/probknow/ontology/
 
+# Provenance & Claim-Boundary extensions (schema in morphoeval/schema.yaml;
+# adapted from MesmerPrism/rusty-manifold-provenance & rusty-manifold-audit):
+#   - spec_fingerprint: SHA-256 of canonical JSON model parameters, grid/mesh
+#     resolution, and RNG seed (invariant to Matplotlib/Pillow rendering changes)
+#   - artifact_sha256: byte-level SHA-256 of rendered PNG/GIF/CSV artifacts
+#   - input_dataset_sha256: verified SHA-256 digests of upstream dataset fixtures
+#   - supersedes / supersedes_audit_id: fail-closed acyclic audit version chain
+#   - claim_boundary: structured 4-tier boundary (reported_in_source,
+#     reconstructed_in_script, transfer_boundary, does_not_claim)
+provenance_schema:
+  spec_fingerprint_format: "sha256_hex_64"
+  artifact_sha256_format: "sha256_hex_64"
+  input_dataset_sha256_format: "map<filename, sha256_hex_64>"
+  supersession_chain_policy: "fail_closed_acyclic"
+  claim_boundary_tiers:
+    - reported_in_source
+    - reconstructed_in_script
+    - transfer_boundary
+    - does_not_claim
+
 dimensions:
   - id: model-fidelity
     group: faithfulness
+    sub_group: model-implementation
     weight: 20
     name: Model fidelity to source
     question: >-
@@ -46,6 +90,7 @@ dimensions:
 
   - id: specimen-match
     group: faithfulness
+    sub_group: biological-validation
     weight: 25
     name: Morphological realism / specimen match
     question: >-
@@ -55,6 +100,7 @@ dimensions:
 
   - id: parameter-expressivity
     group: faithfulness
+    sub_group: model-implementation
     weight: 10
     name: Parameter expressivity
     question: >-
@@ -63,6 +109,7 @@ dimensions:
 
   - id: morphometric-validation
     group: faithfulness
+    sub_group: biological-validation
     weight: 15
     name: Morphometric validation
     question: >-
@@ -71,6 +118,7 @@ dimensions:
 
   - id: source-traceability
     group: reproducibility
+    sub_group: reproducibility
     weight: 10
     name: Source and data traceability
     question: >-
@@ -79,6 +127,7 @@ dimensions:
 
   - id: code-traceability
     group: reproducibility
+    sub_group: reproducibility
     weight: 8
     name: Code-to-model traceability
     question: >-
@@ -87,6 +136,7 @@ dimensions:
 
   - id: repro-package
     group: reproducibility
+    sub_group: reproducibility
     weight: 12
     name: Reproducibility package
     question: >-

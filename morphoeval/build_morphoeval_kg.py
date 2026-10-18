@@ -19,12 +19,16 @@ claims.  Mapping:
                        (scripts, output, organism, commit, non-DOI sources),
                        pk:derivedFromPaper <doi>, pk:hasAssessment -> the 8
                        assessments, pk:weightOfEvidence = overall / 100
+                       (optional unit-interval rescaling of the uncalibrated
+                       0-100 rubric score; omit with --omit-probability)
     per dimension    pk:LLMClaimAssessment (ProbKnow LLM-assessment template)
                        pkr:assessment/<audit>-<sim>-<dim> pk:evaluatesHypothesis
                        pkr:hypothesis/morphoeval-<sim>-<dim> ("<sim> satisfies the
                        criterion <dim>", dct:identifier "morphoeval/<rubric>/<dim>"),
                        pk:assessedBy pkr:model/<assessor> a pk:Model,
-                       pk:hasProbability = score/100, pk:hasVerdict band,
+                       pk:hasProbability = score/100 (unit-interval rescaled
+                       uncalibrated rubric score, optional under RAku3DIN;
+                       omit with --omit-probability), pk:hasVerdict band,
                        rdfs:comment = rationale + evidence loci (commit-pinned
                        GitHub line ranges, fingerprinted outputs, morphometrics),
                        pk:evidenceFor / pk:evidenceAgainst when the audit marks
@@ -132,6 +136,36 @@ def load(audit_path: Path):
     return rubric, audit
 
 
+HEX64_RE = re.compile(r"^[0-9a-f]{64}$")
+
+
+def resolve_supersession_chain(audit: dict) -> tuple[list[str], list[str]]:
+    """Resolve and validate the fail-closed audit supersession chain in morphoeval/audits/.
+    Returns (chain_of_audit_ids_oldest_to_newest, errors)."""
+    errs: list[str] = []
+    A = audit.get("audit", {})
+    cur_id = A.get("id")
+    sup = A.get("supersedes") or A.get("supersedes_audit_id")
+    if A.get("supersedes") and A.get("supersedes_audit_id") and A["supersedes"] != A["supersedes_audit_id"]:
+        errs.append(f"audit.supersedes ({A['supersedes']}) != audit.supersedes_audit_id ({A['supersedes_audit_id']})")
+    chain = [cur_id] if cur_id else []
+    visited = {cur_id}
+    while sup:
+        if sup in visited:
+            errs.append(f"supersession cycle detected involving audit '{sup}': {' -> '.join(chain + [sup])}")
+            break
+        sup_path = HERE / "audits" / f"{sup}.yaml"
+        if not sup_path.exists():
+            errs.append(f"supersedes audit '{sup}' not found at {sup_path.relative_to(ROOT)} (fail-closed chain policy)")
+            break
+        visited.add(sup)
+        chain.append(sup)
+        sup_doc = yaml.safe_load(sup_path.read_text()) or {}
+        sup_a = sup_doc.get("audit", {})
+        sup = sup_a.get("supersedes") or sup_a.get("supersedes_audit_id")
+    return list(reversed(chain)), errs
+
+
 def validate(rubric, audit) -> list[str]:
     errs: list[str] = []
     dims = {d["id"]: d for d in rubric["dimensions"]}
@@ -142,6 +176,8 @@ def validate(rubric, audit) -> list[str]:
         errs.append(f"audit targets rubric {A['rubric_version']} but rubric.yaml is {rubric['version']}")
     if not A.get("assessor", {}).get("id"):
         errs.append("audit.assessor.id is required (the pk:Model that produced the scores)")
+    _, chain_errs = resolve_supersession_chain(audit)
+    errs.extend(chain_errs)
     refs = audit.get("references", {})
     for rid, r in refs.items():
         if not (r.get("doi") or r.get("url")):
@@ -153,6 +189,21 @@ def validate(rubric, audit) -> list[str]:
             if "scores" in sim:
                 errs.append(f"{sid}: unevaluated simulations must not carry scores")
             continue
+        if (sim_sup := sim.get("supersedes_audit_id")):
+            sup_path = HERE / "audits" / f"{sim_sup}.yaml"
+            if not sup_path.exists():
+                errs.append(f"{sid}: supersedes_audit_id '{sim_sup}' not found at {sup_path.relative_to(ROOT)}")
+        if (prov := sim.get("provenance")):
+            for hkey in ("spec_fingerprint", "artifact_sha256"):
+                if prov.get(hkey) and not HEX64_RE.match(str(prov[hkey])):
+                    errs.append(f"{sid}: provenance.{hkey} is not a 64-hex SHA-256 digest")
+            for dfile, dhash in (prov.get("input_dataset_sha256") or {}).items():
+                if not HEX64_RE.match(str(dhash)):
+                    errs.append(f"{sid}: provenance.input_dataset_sha256[{dfile!r}] is not a 64-hex SHA-256 digest")
+        if (cb := sim.get("claim_boundary")):
+            for req_tier in ("reported_in_source", "reconstructed_in_script", "does_not_claim"):
+                if not cb.get(req_tier) or not isinstance(cb.get(req_tier), list):
+                    errs.append(f"{sid}: claim_boundary.{req_tier} must be a non-empty list")
         for rid in sim.get("source_refs", []):
             if rid not in refs:
                 errs.append(f"{sid}: unknown reference '{rid}'")
@@ -186,6 +237,27 @@ def group_scores(rubric, scores: dict) -> dict:
         sel = [d for d in rubric["dimensions"] if grp is None or d["group"] == grp]
         w = sum(d["weight"] for d in sel)
         out[grp or "overall"] = round(sum(d["weight"] * scores[d["id"]]["value"] for d in sel) / w, 1)
+    for sub_grp, key in (("model-implementation", "model_implementation"),
+                         ("biological-validation", "biological_validation")):
+        sel = [d for d in rubric["dimensions"] if d.get("sub_group") == sub_grp]
+        if not sel:
+            sel = [d for d in rubric["dimensions"]
+                   if d["id"] in (("model-fidelity", "parameter-expressivity") if sub_grp == "model-implementation"
+                                  else ("specimen-match", "morphometric-validation"))]
+        w = sum(d["weight"] for d in sel)
+        out[key] = round(sum(d["weight"] * scores[d["id"]]["value"] for d in sel) / w, 1)
+        app_sel = [d for d in sel if not scores[d["id"]].get("not_applicable")]
+        w_app = sum(d["weight"] for d in app_sel)
+        out[f"{key}_applicable"] = round(sum(d["weight"] * scores[d["id"]]["value"] for d in app_sel) / w_app, 1) if w_app else out[key]
+    app_dims = [d for d in rubric["dimensions"] if not scores[d["id"]].get("not_applicable")]
+    w_app_all = sum(d["weight"] for d in app_dims)
+    out["overall_applicable"] = (round(sum(d["weight"] * scores[d["id"]]["value"] for d in app_dims) / w_app_all, 1)
+                                 if w_app_all else out["overall"])
+    app_faith = [d for d in rubric["dimensions"] if d["group"] == "faithfulness" and not scores[d["id"]].get("not_applicable")]
+    w_app_faith = sum(d["weight"] for d in app_faith)
+    out["faithfulness_applicable"] = (round(sum(d["weight"] * scores[d["id"]]["value"] for d in app_faith) / w_app_faith, 1)
+                                      if w_app_faith else out["faithfulness"])
+    out["n_not_applicable"] = sum(1 for d in rubric["dimensions"] if scores[d["id"]].get("not_applicable"))
     return out
 
 
@@ -268,6 +340,34 @@ class NanopubBuilder:
     def set_measurements(self, meas: dict | None):
         self.outputs = {sid: {o["file"]: o for o in lst} for sid, lst in (meas or {}).get("outputs", {}).items()}
         self.measurements = (meas or {}).get("measurements", {})
+        self.provenance = (meas or {}).get("provenance", {})
+
+    def sim_provenance_text(self, sim: dict) -> str:
+        """Dual semantic (`spec_fingerprint`) + byte (`artifact_sha256`) + input dataset
+        provenance summary (adapted from MesmerPrism/rusty-manifold-provenance)."""
+        sid = sim["id"]
+        prov = dict(self.provenance.get(sid) or {})
+        if sim.get("provenance"):
+            prov.update({k: v for k, v in sim["provenance"].items() if v is not None})
+        parts = []
+        if prov.get("spec_fingerprint"):
+            parts.append(f"spec_fingerprint: {prov['spec_fingerprint']}")
+        if prov.get("artifact_sha256"):
+            parts.append(f"artifact_sha256: {prov['artifact_sha256']}")
+        if prov.get("input_dataset_sha256"):
+            ds_items = ", ".join(f"{k}={v[:16]}..." for k, v in sorted(prov["input_dataset_sha256"].items()))
+            parts.append(f"input_dataset_sha256: {{{ds_items}}}")
+        return "; ".join(parts)
+
+    def claim_boundary_text(self, sim: dict) -> str:
+        cb = sim.get("claim_boundary")
+        if not cb:
+            return ""
+        parts = []
+        for k in ("reported_in_source", "reconstructed_in_script", "transfer_boundary", "does_not_claim"):
+            if cb.get(k):
+                parts.append(f"{k}: " + " | ".join(squash(x) for x in cb[k]))
+        return "; ".join(parts)
 
     # ---- text renderings of the evidence (the templates carry evidence as literals) -- #
     def output_text(self, sim: dict, file: str) -> str:
@@ -276,8 +376,12 @@ class NanopubBuilder:
             return f"{file}: rendered output of {sim['script']}, not present when the audit was snapshotted (unfingerprinted)"
         size = f"{fp['width']}×{fp['height']} px" if fp.get("width") else ""
         frames = f", {fp['frames']} frames" if fp.get("frames", 1) > 1 else ""
+        art_sha = fp.get("artifact_sha256") or fp["sha256"]
+        spec_fp = fp.get("spec_fingerprint") or (self.provenance.get(sim["id"]) or {}).get("spec_fingerprint")
+        spec_clause = f", spec_fingerprint {spec_fp}" if spec_fp else ""
         return (f"{file}: rendered output of {sim['script']} at {self.commit}, {fp['media_type']}, {fp['bytes']} B"
-                + (f", {size}{frames}" if size else frames) + f", sha256 {fp['sha256']}")
+                + (f", {size}{frames}" if size else frames)
+                + f", artifact_sha256 {art_sha} (sha256 {fp['sha256']}){spec_clause}")
 
     def evidence_text(self, sim: dict, e: dict) -> str:
         a, b = e["lines"]
@@ -418,7 +522,8 @@ def latest_version(np_uri: str, timeout: float = 30.0) -> str | None:
 # --------------------------------------------------------------------------- #
 # Build
 # --------------------------------------------------------------------------- #
-def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_heads: bool = True):
+def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_heads: bool = True,
+          omit_probability: bool = False):
     """supersede: {file name: {"nanopub": published trusty URI, "path": its file, "text": its unsigned TriG}}.
     A nanopub whose content differs from the published one of the same name gets npx:supersedes <old>
     (after confirming <old> is still the head of its chain); one whose content is identical to a nanopub
@@ -428,6 +533,8 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
     B = NanopubBuilder(audit, rubric)
     B.set_measurements(audit.get("_measurements"))
     A, refs = audit["audit"], audit.get("references", {})
+    is_second_assessor = (A.get("role") == "second_assessor")
+    omit_prob = bool(omit_probability or A.get("omit_probability"))
     default_domain = A.get("domain", "morphogenesis")
     issue = URIRef(A["tracked_by"]) if A.get("tracked_by") else None
     rubric_uri = PKR[f"concept/morphoeval-rubric-{rubric['version']}"]
@@ -484,27 +591,28 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
         p.write_text(text); written.append(p); _merge(ds)
 
     # ---- 1. rubric as a pk:Concept with one narrower concept per dimension (no governed template) -- #
-    tr = [(rubric_uri, RDF.type, PK.Concept),
-          (rubric_uri, RDF.type, SKOS.Concept),
-          (rubric_uri, RDFS.label, Literal(f"{rubric['name']} v{rubric['version']}")),
-          (rubric_uri, DCTERMS.description, Literal(
-              "Weighted 0-100 rubric for the faithfulness of a morphology simulation to its organism and "
-              "source model; Overall = weighted mean. Each score is a pk:LLMClaimAssessment (ProbKnow "
-              "LLM-assessment template) that evaluates the hypothesis pkr:hypothesis/morphoeval-<sim>-<dimension> "
-              "with pk:hasProbability = score/100 and a pk:hasVerdict band; the overall score evaluates "
-              "pkr:hypothesis/morphoeval-<sim> and is also the pk:weightOfEvidence of the pk:Claim."))]
-    if rubric_src:
-        tr.append((rubric_uri, RDFS.seeAlso, rubric_src))
-    for d in rubric["dimensions"]:
-        du = PKR[f"concept/morphoeval-{rubric['version']}-{d['id']}"]
-        tr += [(rubric_uri, SKOS.narrower, du), (du, SKOS.broader, rubric_uri),
-               (du, RDF.type, PK.Concept), (du, RDF.type, SKOS.Concept),
-               (du, RDFS.label, Literal(d["name"])),
-               (du, DCTERMS.identifier, Literal(f"morphoeval/{rubric['version']}/{d['id']}")),
-               (du, DCTERMS.description, Literal(f"[{d['group']}, weight {d['weight']}/100] " + squash(d["question"])))]
-    emit("00-rubric.trig", B.nanopub(f"MorphoEval rubric v{rubric['version']}", PK.Concept, rubric_uri, default_domain,
-                                     tr, [(URIRef(TEMP + "assertion"), PROV.wasAttributedTo, B.orcid)],
-                                     None, "provenance-attributed"))
+    if not is_second_assessor:
+        tr = [(rubric_uri, RDF.type, PK.Concept),
+              (rubric_uri, RDF.type, SKOS.Concept),
+              (rubric_uri, RDFS.label, Literal(f"{rubric['name']} v{rubric['version']}")),
+              (rubric_uri, DCTERMS.description, Literal(
+                  "Weighted 0-100 rubric for the faithfulness of a morphology simulation to its organism and "
+                  "source model; Overall = weighted mean. Each score is a pk:LLMClaimAssessment (ProbKnow "
+                  "LLM-assessment template) that evaluates the hypothesis pkr:hypothesis/morphoeval-<sim>-<dimension> "
+                  "with pk:hasProbability = score/100 and a pk:hasVerdict band; the overall score evaluates "
+                  "pkr:hypothesis/morphoeval-<sim> and is also the pk:weightOfEvidence of the pk:Claim."))]
+        if rubric_src:
+            tr.append((rubric_uri, RDFS.seeAlso, rubric_src))
+        for d in rubric["dimensions"]:
+            du = PKR[f"concept/morphoeval-{rubric['version']}-{d['id']}"]
+            tr += [(rubric_uri, SKOS.narrower, du), (du, SKOS.broader, rubric_uri),
+                   (du, RDF.type, PK.Concept), (du, RDF.type, SKOS.Concept),
+                   (du, RDFS.label, Literal(d["name"])),
+                   (du, DCTERMS.identifier, Literal(f"morphoeval/{rubric['version']}/{d['id']}")),
+                   (du, DCTERMS.description, Literal(f"[{d['group']}, weight {d['weight']}/100] " + squash(d["question"])))]
+        emit("00-rubric.trig", B.nanopub(f"MorphoEval rubric v{rubric['version']}", PK.Concept, rubric_uri, default_domain,
+                                         tr, [(URIRef(TEMP + "assertion"), PROV.wasAttributedTo, B.orcid)],
+                                         None, "provenance-attributed"))
 
     rows = []
     for sim in audit["simulations"]:
@@ -528,27 +636,35 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
         overall_au = PKR[f"assessment/{A['id']}-{sim['id']}-overall"]
 
         # ---- 2. the faithfulness CLAIM (ProbKnow claim template) ------------------------ #
-        non_doi = [r for r in papers if not r.get("doi")]
-        context = (f"script(s): {', '.join(B.script_uri(s) for s in scripts)}; output: {sim.get('output', 'n/a')}; "
-                   f"organism: {organism}; checkpoint commit: {B.commit_uri or 'n/a'}; "
-                   f"environment: {', '.join(f'{k} {v}' for k, v in B.env.items()) or 'n/a'}")
-        if non_doi:
-            context += "; other sources: " + ", ".join(f"{squash(r['title'])} <{ref_uri(r)}>" for r in non_doi)
-        tr = [(claim, RDF.type, PK.Claim),
-              (claim, RDFS.label, Literal(claim_label)),
-              (claim, DCTERMS.description, Literal(
-                  f"The simulation script(s) {', '.join(scripts)} implement the cited source model as published "
-                  f"and produce forms that match real {organism} specimens and the source authors' figures. "
-                  f"A belief under audit, not a fact: its credibility is the weight of evidence (MorphoEval "
-                  f"{rubric['version']} overall {gs['overall']}/100, audit {A['id']}) and the assessments.")),
-              (claim, PK.context, Literal(context)),
-              (claim, PK.weightOfEvidence, unit_interval(gs["overall"] / 100.0))]
-        tr += [(claim, PK.derivedFromPaper, ref_uri(r)) for r in papers if r.get("doi")]
-        tr += [(claim, PK.hasAssessment, au) for au in assessments + [overall_au]]
-        pub = [(THIS, RDFS.seeAlso, B.script_uri(s)) for s in scripts] + ([(THIS, RDFS.seeAlso, issue)] if issue else [])
-        emit(f"{sim['id']}-claim.trig",
-             B.nanopub(f"Claim: {sim['name']} is faithful", PK.Claim, claim, dom, tr,
-                       B.provenance_extraction([B.orcid], papers), "claim", "provenance-extraction", pub))
+        if not is_second_assessor:
+            non_doi = [r for r in papers if not r.get("doi")]
+            context = (f"script(s): {', '.join(B.script_uri(s) for s in scripts)}; output: {sim.get('output', 'n/a')}; "
+                       f"organism: {organism}; checkpoint commit: {B.commit_uri or 'n/a'}; "
+                       f"environment: {', '.join(f'{k} {v}' for k, v in B.env.items()) or 'n/a'}")
+            if (prov_txt := B.sim_provenance_text(sim)):
+                context += f"; {prov_txt}"
+            if (sup_id := sim.get("supersedes_audit_id") or A.get("supersedes") or A.get("supersedes_audit_id")):
+                context += f"; supersedes_audit_id: {sup_id}"
+            if (cb_txt := B.claim_boundary_text(sim)):
+                context += f"; claim_boundary: [{cb_txt}]"
+            if non_doi:
+                context += "; other sources: " + ", ".join(f"{squash(r['title'])} <{ref_uri(r)}>" for r in non_doi)
+            tr = [(claim, RDF.type, PK.Claim),
+                  (claim, RDFS.label, Literal(claim_label)),
+                  (claim, DCTERMS.description, Literal(
+                      f"The simulation script(s) {', '.join(scripts)} implement the cited source model as published "
+                      f"and produce forms that match real {organism} specimens and the source authors' figures. "
+                      f"A belief under audit, not a fact: its credibility is the weight of evidence (MorphoEval "
+                      f"{rubric['version']} overall {gs['overall']}/100, audit {A['id']}) and the assessments.")),
+                  (claim, PK.context, Literal(context))]
+            if not omit_prob:
+                tr.append((claim, PK.weightOfEvidence, unit_interval(gs["overall"] / 100.0)))
+            tr += [(claim, PK.derivedFromPaper, ref_uri(r)) for r in papers if r.get("doi")]
+            tr += [(claim, PK.hasAssessment, au) for au in assessments + [overall_au]]
+            pub = [(THIS, RDFS.seeAlso, B.script_uri(s)) for s in scripts] + ([(THIS, RDFS.seeAlso, issue)] if issue else [])
+            emit(f"{sim['id']}-claim.trig",
+                 B.nanopub(f"Claim: {sim['name']} is faithful", PK.Claim, claim, dom, tr,
+                           B.provenance_extraction([B.orcid], papers), "claim", "provenance-extraction", pub))
 
         # ---- 3. one pk:LLMClaimAssessment per rubric dimension (LLM-assessment template) -- #
         for d, au in zip(rubric["dimensions"], assessments):
@@ -567,10 +683,11 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
                   (hyp, RDFS.label, Literal(f"{sim['name']} ({', '.join(scripts)}) satisfies the MorphoEval "
                                             f"{rubric['version']} criterion '{d['name']}' for {organism}")),
                   (hyp, DCTERMS.identifier, Literal(f"morphoeval/{rubric['version']}/{did}")),
-                  (au, PK.assessedBy, B.model),
-                  (au, PK.hasProbability, unit_interval(s["value"] / 100.0)),
-                  (au, PK.hasVerdict, Literal(verdict_text)),
-                  (au, RDFS.comment, Literal(reasoning))] + model_triples
+                  (au, PK.assessedBy, B.model)]
+            if not omit_prob:
+                tr.append((au, PK.hasProbability, unit_interval(s["value"] / 100.0)))
+            tr += [(au, PK.hasVerdict, Literal(verdict_text)),
+                   (au, RDFS.comment, Literal(reasoning))] + model_triples
             for e in s.get("evidence", []):
                 if "supports" in e:
                     tr.append((au, PK.evidenceFor if e["supports"] else PK.evidenceAgainst, Literal(B.evidence_text(sim, e))))
@@ -582,22 +699,33 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
 
         # ---- 4. overall checkpoint assessment (same template, evaluating the claim proposition) -- #
         env = ", ".join(f"{k} {v}" for k, v in B.env.items())
+        sub_note = (f"; model-implementation {gs['model_implementation']}/100, biological-validation "
+                    f"{gs['biological_validation']}/100, applicable-only overall {gs['overall_applicable']}/100; "
+                    f"uncalibrated rubric score, not a calibrated probability"
+                    if is_second_assessor else "")
         reasoning = (squash(sim["summary"]) +
                      f" Overall {gs['overall']}/100 (faithfulness {gs['faithfulness']}, reproducibility "
-                     f"{gs['reproducibility']}); rubric morphoeval {rubric['version']}; checkpoint commit {B.commit}; "
+                     f"{gs['reproducibility']}{sub_note}); rubric morphoeval {rubric['version']}; checkpoint commit {B.commit}; "
                      f"environment: {env}. Dimension assessments: " + ", ".join(
                          f"{d['name']} {sim['scores'][d['id']]['value']}" for d in rubric["dimensions"]) + ".")
         if sim.get("output"):
             reasoning += " Output judged: " + B.output_text(sim, sim["output"]) + "."
+        if (prov_txt := B.sim_provenance_text(sim)):
+            reasoning += f" Dual provenance: {prov_txt}."
+        if (sup_id := sim.get("supersedes_audit_id") or A.get("supersedes") or A.get("supersedes_audit_id")):
+            reasoning += f" Supersedes audit: {sup_id}."
+        if (cb_txt := B.claim_boundary_text(sim)):
+            reasoning += f" Claim boundary: {cb_txt}."
         tr = [(overall_au, RDF.type, PK.LLMClaimAssessment),
               (overall_au, RDFS.label, Literal(f"{sim['name']} — MorphoEval overall {gs['overall']}/100")),
               (overall_au, PK.evaluatesHypothesis, hyp_claim),
               (hyp_claim, RDFS.label, Literal(claim_label)),
               (hyp_claim, DCTERMS.identifier, Literal(f"morphoeval/{rubric['version']}/overall")),
-              (overall_au, PK.assessedBy, B.model),
-              (overall_au, PK.hasProbability, unit_interval(gs["overall"] / 100.0)),
-              (overall_au, PK.hasVerdict, Literal(verdict(gs["overall"]))),
-              (overall_au, RDFS.comment, Literal(reasoning))] + model_triples
+              (overall_au, PK.assessedBy, B.model)]
+        if not omit_prob:
+            tr.append((overall_au, PK.hasProbability, unit_interval(gs["overall"] / 100.0)))
+        tr += [(overall_au, PK.hasVerdict, Literal(verdict(gs["overall"]))),
+               (overall_au, RDFS.comment, Literal(reasoning))] + model_triples
         tr += [(overall_au, PK.evidenceAgainst, Literal(f"remediation needed: {squash(fix)}"))
                for fix in sim.get("remediation", [])]
         pub = pub_common + [(THIS, PK.assessmentType, Literal(f"morphoeval/{rubric['version']}/overall")),
@@ -815,24 +943,35 @@ def conformance(files: list[Path]) -> list[str]:
 # --------------------------------------------------------------------------- #
 def report(rubric, audit, rows) -> str:
     A = audit["audit"]; dims = rubric["dimensions"]
+    chain, _ = resolve_supersession_chain(audit)
+    chain_note = f" · supersession chain `{' -> '.join(chain)}`" if len(chain) > 1 else ""
     L = [f"# MorphoEval report — audit `{A['id']}`", "",
          f"Rubric **{rubric['version']}** · checkpoint `{A['checkpoint']['commit']}` · "
          f"assessor `pkr:model/{A['assessor']['id']}` (pk:LLMClaimAssessment) · "
-         f"tracked in {A.get('tracked_by', '—')}", "",
-         "Scores are 0–100 (emitted as `pk:hasProbability` = score/100 on the LLM assessment of the "
-         "dimension hypothesis); Overall is the rubric-weighted mean and the claim's `pk:weightOfEvidence`. "
-         "Unevaluated scripts carry no nanopubs yet.", "",
+         f"tracked in {A.get('tracked_by', '—')}{chain_note}", "",
+         "Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not calibrated probabilities; "
+         "`pk:hasProbability` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings "
+         "for ProbKnow template conformance). Faithfulness (weight 70) is decomposed into **Model Impl.** "
+         "(weight 30: `model-fidelity` + `parameter-expressivity`) and **Bio. Val.** (weight 40: `specimen-match` "
+         "+ `morphometric-validation`). When a dimension is flagged `not_applicable`, **Overall (app.)** "
+         "renormalises weights over applicable dimensions (mathematically neutral), whereas **Overall (pad.)** "
+         "substitutes 50 (shrinking the weighted average toward 50). Unevaluated scripts carry no nanopubs yet.", "",
          "| Simulation | " + " | ".join(f"{d['id']} ({d['weight']})" for d in dims)
-         + " | Faithfulness | Reproducibility | **Overall** | verdict |",
-         "|---|" + "---:|" * (len(dims) + 3) + "---|"]
+         + " | Model Impl. (30) | Bio. Val. (40) | Repro. (30) | Overall (app.) | **Overall (pad.)** | verdict |",
+         "|---|" + "---:|" * (len(dims) + 5) + "---|"]
     for sim, gs in rows:
         if gs is None:
             L.append(f"| {sim['name']} (`{sim['script']}`) | " + " | ".join("—" for _ in dims)
-                     + " | — | — | *unevaluated* | — |")
+                     + " | — | — | — | — | *unevaluated* | — |")
             continue
-        cells = " | ".join(str(sim["scores"][d["id"]]["value"]) for d in dims)
-        L.append(f"| {sim['name']} (`{sim['script']}`) | {cells} | {gs['faithfulness']} | "
-                 f"{gs['reproducibility']} | **{gs['overall']}** | {verdict(gs['overall'])} |")
+        cells = " | ".join(
+            f"{sim['scores'][d['id']]['value']}*" if sim["scores"][d["id"]].get("not_applicable")
+            else str(sim["scores"][d["id"]]["value"])
+            for d in dims
+        )
+        L.append(f"| {sim['name']} (`{sim['script']}`) | {cells} | {gs['model_implementation']} | "
+                 f"{gs['biological_validation']} | {gs['reproducibility']} | {gs['overall_applicable']} | "
+                 f"**{gs['overall']}** | {verdict(gs['overall'])} |")
     L += ["", "## Findings and remediation", ""]
     for sim, gs in rows:
         if gs is None:
@@ -861,10 +1000,17 @@ def report(rubric, audit, rows) -> str:
             if not (outs or meas or miss):
                 continue
             L.append(f"### {sim['name']}")
+            prov = ms.get("provenance", {}).get(sim["id"], {})
+            if prov.get("spec_fingerprint"):
+                L.append(f"- **spec_fingerprint** (semantic model + inputs): `{prov['spec_fingerprint']}`")
+            if prov.get("input_dataset_sha256"):
+                ds_str = ", ".join(f"`{k}` (`{v[:16]}…`)" for k, v in sorted(prov["input_dataset_sha256"].items()))
+                L.append(f"- **input_dataset_sha256**: {ds_str}")
             for o in outs:
                 size = f"{o['width']}×{o['height']} px" if o.get("width") else ""
                 fr = f", {o['frames']} frames" if o.get("frames", 1) > 1 else ""
-                L.append(f"- `{o['file']}` — sha256 `{o['sha256'][:16]}…`, {o['bytes']:,} B, {size}{fr}")
+                art_sha = o.get("artifact_sha256") or o["sha256"]
+                L.append(f"- `{o['file']}` — artifact_sha256 `{art_sha[:16]}…`, {o['bytes']:,} B, {size}{fr}")
             for f in miss:
                 L.append(f"- `{f}` — **not on disk at snapshot time** (no hash, no measurements)")
             if meas:
@@ -909,6 +1055,8 @@ def main():
                          "identical ones are not re-emitted (repeatable; this dir's own manifest wins)")
     ap.add_argument("--no-resolve-heads", action="store_true",
                     help="do not check on Nanopub Query that a superseded URI is still the head of its chain")
+    ap.add_argument("--omit-probability", action="store_true",
+                    help="omit pk:hasProbability and pk:weightOfEvidence (optional in RAku3DIN / RAIVOEuh)")
     args = ap.parse_args()
 
     rubric, audit = load(Path(args.audit))
@@ -933,7 +1081,8 @@ def main():
                 supersede[n] = {"nanopub": m["nanopub"], "path": str(prev_file),
                                 "text": prev_file.read_text() if prev_file.exists() else None}
     written, merged_path, report_path, merged, superseded = build(rubric, audit, out_dir, supersede,
-                                                                  resolve_heads=not args.no_resolve_heads)
+                                                                  resolve_heads=not args.no_resolve_heads,
+                                                                  omit_probability=args.omit_probability)
     if getattr(build, "unchanged", None):
         print(f"  {len(build.unchanged)} nanopub(s) identical to already-published ones, not re-emitted:")
         for n, old in build.unchanged:

@@ -1,0 +1,59 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-hoffmann-wing-venation-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Hoffmann-Donoughe insect wing venation — Source and data traceability: 84/100" ;
+        rdfs:comment "Cites Hoffmann et al. (2018) with DOI (10.1073/pnas.1721248115), PMID (30224459), and GitHub repository URL, and fetches the official example wing Arigomphus_villosipes_LHW.png from PNAS_Paper_Code.zip. Deducts 16 points because fetch_wing_png() does not verify a pinned SHA-256 digest on the downloaded ZIP archive or extracted PNG. Evidence: 2018-hoffmann-wing-venation.py L5–L10: citation block with DOI, PMID, and GitHub URL <https://github.com/fractastical/morpholib/blob/5659d5e/2018-hoffmann-wing-venation.py#L5-L10>; 2018-hoffmann-wing-venation.py L65–L88: ZIP_URL and fetch_wing_png() without SHA-256 verification <https://github.com/fractastical/morpholib/blob/5659d5e/2018-hoffmann-wing-venation.py#L65-L88>." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-hoffmann-wing-venation-source-traceability> ;
+        pk:hasProbability "0.84"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-hoffmann-wing-venation-source-traceability> rdfs:label "Hoffmann-Donoughe insect wing venation (2018-hoffmann-wing-venation.py) satisfies the MorphoEval 0.1.0 criterion 'Source and data traceability' for Dragonfly Arigomphus villosipes (hindwing)" ;
+        dct:identifier "morphoeval/0.1.0/source-traceability" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1073/pnas.1721248115> .
+    <https://doi.org/10.1073/pnas.1721248115> dct:date "2018"^^xsd:gYear ;
+        dct:title "A simple developmental model recapitulates complex insect wing venation patterns" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Hoffmann-Donoughe insect wing venation — Source and data traceability 84/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-18T01:49:13Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-hoffmann-wing-venation-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
