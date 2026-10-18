@@ -47,7 +47,7 @@ The forms in question are the shapes of bodies — how they arise in development
 paper, dataset or claim worth the work and pointing the agent at it — and ends in one of three kinds of script
 (reproduce the paper's model from its equations, decode the authors' formal encoding into form, or test a
 published claim against measurements). Between the tiers sits what the scripts produce — box 6, the
-fourteen animations, each labelled with its paper — which is what tier B scores; a person reads the scores
+fifteen animations, each labelled with its paper — which is what tier B scores; a person reads the scores
 and decides what to fix or where to go next; the builder agent then re-works the script — its fidelity to
 the paper, its sources, its checks — and the fix runs back through box 6 into the script (👤 marks the two
 places people decide). Two agent roles are meant to be distinct: the **builder** that writes and re-works the
@@ -83,7 +83,7 @@ flowchart TB
         SC --> P --> S --> R --> X
     end
 
-    O["6 Output &amp; compare<br/>what each script produces — its own figure and animation<br/>(the fourteen in docs/media/) — set beside the authors' figures<br/>or real specimens; distinct forms must come out distinct.<br/>This is what gets scored."]:::build
+    O["6 Output &amp; compare<br/>what each script produces — its own figure and animation<br/>(the fifteen in docs/media/) — set beside the authors' figures<br/>or real specimens; distinct forms must come out distinct.<br/>This is what gets scored."]:::build
     X -- writes --> O
 
     subgraph B["B &nbsp;Auditing it — the MorphoEval cycle"]
@@ -411,7 +411,7 @@ Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1). Fa
 | Chindapol coral flow (`2013-chindapol-coral-flow.py`) | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 53.3 | 43.8 | 70.0 | 55.5 | **55.5** |
 | Gray–Scott (Turing) (`1952-turing-morpho.py`) | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 75.0 | 38.8 (`20.0` app.) | 49.0 | 53.6 | **52.7** |
 | ~~PlanformDB planarian animation (`1900-planformDB_parser.py`)~~ superseded | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 9.3 | 2.5 | 36.3 | 14.7 | ~~14.7~~ |
-| Petroff stromatolite (`2010-petroff-stromatolite.py`), Kahng coral (`2024-kahng-coral-geometry.py`), Thompson demo (`thompson/1917-thompson.py`) | — | — | — | — | — | — | *unevaluated* |
+| Wolfram / Meinhardt *Conus textile* Rule 30 (`1984-wolfram-conus-textile-rule30.py`), Bressloff V1 form constants (`2001-bressloff-v1-form-constants.py`), Petroff stromatolite (`2010-petroff-stromatolite.py`), Kahng coral (`2024-kahng-coral-geometry.py`), Zhang sorting morphogenesis (`sorting-morphogenesis/`), Thompson demo (`thompson/1917-thompson.py`) | — | — | — | — | — | — | *unevaluated* |
 
 ### Complete 10-script dual-agent second-assessor pass (`2026-10-17-blinded-sample-audit.yaml`, `role: second_assessor`, `gemini-4-argon`, Google)
 

@@ -27,6 +27,7 @@ CLIPS = [
     ("thompson_transformations.gif",       "1917", "Thompson, transformations (real fish)",  "thompson/1917-thompson.py"),
     ("turing_gray_scott.gif",              "1952", "Turing / Gray–Scott patterns",            "1952-turing-morpho.py"),
     ("raup_shell_coiling.gif",             "1966", "Raup, shell coiling",                     "create_raup_animations.py"),
+    ("conus_textile_rule30.gif",           "1984", "Wolfram / Meinhardt, Conus Rule 30",      "1984-wolfram-conus-textile-rule30.py"),
     ("bressloff_v1_form_constants.gif",    "2001", "Bressloff, V1 form constants",            "2001-bressloff-v1-form-constants.py"),
     ("petroff_stromatolite_dome_to_cone.gif", "2010", "Petroff, stromatolites",               "2010-petroff-stromatolite.py"),
     ("chindapol_coral_flow_growth.gif",    "2013", "Chindapol, coral in flow",                "2013-chindapol-coral-flow.py"),
@@ -125,25 +126,30 @@ def main(argv=None):
     ap.add_argument("--duration", type=int, default=130, help="ms per frame")
     args = ap.parse_args(argv)
 
-    tw = args.tile_width; th = int(tw * 0.68); gap = 4
+    tw = args.tile_width; th = int(tw * 0.68); gap = 4; header_h = 26
     sc = scores()
     clips = [resample(HERE / c[0], args.frames) for c in CLIPS]
-    tiles_static = {0: title_tile(tw, th), len(CLIPS) + 1: score_tile(tw, th, sc)}
-    n_tiles = len(CLIPS) + 2
+    score_im = score_tile(tw, th, sc)
+    n_tiles = len(CLIPS) + 1
     rows = -(-n_tiles // args.cols)
-    W, H = args.cols * tw + (args.cols + 1) * gap, rows * th + (rows + 1) * gap
+    W = args.cols * tw + (args.cols + 1) * gap
+    H = header_h + rows * th + (rows + 1) * gap
 
     frames = []
     for k in range(args.frames):
         canvas = Image.new("RGB", (W, H), (226, 232, 240))
+        dh = ImageDraw.Draw(canvas)
+        dh.rectangle([0, 0, W, header_h], fill=FG)
+        dh.text((10, 6), f"Infinite Morphospace — {len(CLIPS)} reproductions of published models of biological form (1917–2026), scored by MorphoEval",
+                font=font(11, True), fill=(255, 255, 255))
         for t in range(n_tiles):
             r, c = divmod(t, args.cols)
-            x, y = gap + c * (tw + gap), gap + r * (th + gap)
-            if t in tiles_static:
-                tile = tiles_static[t]
+            x, y = gap + c * (tw + gap), header_h + gap + r * (th + gap)
+            if t == len(CLIPS):
+                tile = score_im
             else:
-                gif, year, name, script = CLIPS[t - 1]
-                tile = label(fit(clips[t - 1][k], tw, th), year, name, sc.get(script))
+                gif, year, name, script = CLIPS[t]
+                tile = label(fit(clips[t][k], tw, th), year, name, sc.get(script))
             canvas.paste(tile, (x, y))
         frames.append(canvas)
 

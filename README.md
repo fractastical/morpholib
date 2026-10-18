@@ -12,7 +12,7 @@ Morphogenesis is how a living thing gets its shape, and regeneration is how it g
 
 ![How a reproduction is made and how MorphoEval scores it](./docs/media/morphoeval_pipeline.gif)
 
-*From paper to reproduction to signed evaluation — the MorphoEval pipeline ([animated GIF](./docs/media/morphoeval_pipeline.gif) · [high-res PNG](./docs/media/morphoeval_pipeline.png) · [section below](#morphoeval-how-faithful-are-these-reproductions)). Tier A shows how each of the 14 reproductions is built from its primary paper and formal data; Box 6 plays the 14 reproductions' own animations side by side; Tier B shows the dual-agent MorphoEval audit cycle across Anthropic (`claude-fable-5-1`), Google (`gemini-4-argon`), and OpenAI (`gpt-5.6-sol`).*
+*From paper to reproduction to signed evaluation — the MorphoEval pipeline ([animated GIF](./docs/media/morphoeval_pipeline.gif) · [high-res PNG](./docs/media/morphoeval_pipeline.png) · [section below](#morphoeval-how-faithful-are-these-reproductions)). Tier A shows how each of the 15 reproductions is built from its primary paper and formal data; Box 6 plays the 15 reproductions' own animations side by side; Tier B shows the dual-agent MorphoEval audit cycle across Anthropic (`claude-fable-5-1`), Google (`gemini-4-argon`), and OpenAI (`gpt-5.6-sol`).*
 
 Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) are written to the working directory and are git-ignored. Every entry below has a small animation of the morphology it produces (in [`docs/media/`](./docs/media/), downsized copies of the scripts' own GIF output; [`docs/media/README.md`](./docs/media/README.md) records how each was made). Setup: `python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt` (lower bounds; `requirements.lock.txt` has the exact versions the MorphoEval audits were run with — Python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, scikit-image 0.26.0 — and installs cleanly into a fresh venv).
 
@@ -24,6 +24,7 @@ Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) 
 | 1917 | Thompson, transformations on a real fish | [`thompson/1917-thompson.py`](./thompson/1917-thompson.py) | — |
 | 1952 | Turing / Gray–Scott reaction–diffusion | [`1952-turing-morpho.py`](./1952-turing-morpho.py) | 52.7 / 40.9 |
 | 1966 | Raup, shell coiling | [`1966-raup.py`](./1966-raup.py), [`create_raup_animations.py`](./create_raup_animations.py) | 64.1 / 79.3 |
+| 1984 / 1987 | Wolfram / Meinhardt & Klingler, *Conus textile* shell pigmentation & Rule 30 | [`1984-wolfram-conus-textile-rule30.py`](./1984-wolfram-conus-textile-rule30.py) | unevaluated |
 | 2001 | Bressloff et al., V1 Euclidean symmetry-breaking & retino-cortical form constants | [`2001-bressloff-v1-form-constants.py`](./2001-bressloff-v1-form-constants.py) | unevaluated |
 | 2010 | Petroff et al., conical stromatolites | [`2010-petroff-stromatolite.py`](./2010-petroff-stromatolite.py) | unevaluated |
 | 2013 | Chindapol et al., flow-driven coral growth | [`2013-chindapol-coral-flow.py`](./2013-chindapol-coral-flow.py) | 55.5 / 56.0 |
@@ -38,7 +39,7 @@ Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) 
 
 ## The reproductions, best-scoring first
 
-Sections are ordered by MorphoEval overall score (the table under [MorphoEval](#morphoeval-how-faithful-are-these-reproductions) gives the breakdown), with the six unevaluated scripts after them in year order. A high score means the reproduction is close to its source and checked against it, not that the underlying model is better biology.
+Sections are ordered by MorphoEval overall score (the table under [MorphoEval](#morphoeval-how-faithful-are-these-reproductions) gives the breakdown), with the seven unevaluated scripts after them in year order. A high score means the reproduction is close to its source and checked against it, not that the underlying model is better biology.
 
 ### [2018-hoffmann-wing-venation.py](./2018-hoffmann-wing-venation.py)
 
@@ -255,6 +256,32 @@ Kahng, Odle & Wakeman's (2024) geometry of reef-coral colonies. A colony lays do
 
 **Reference:** Kahng SE, Odle E, Wakeman KC (2024). Coral geometry and why it matters. *PeerJ* 12:e17037. [DOI](https://doi.org/10.7717/peerj.17037). Code: [ericodle/coral_geometry_modeling](https://github.com/ericodle/coral_geometry_modeling).
 
+### [1984-wolfram-conus-textile-rule30.py](./1984-wolfram-conus-textile-rule30.py)
+
+*Conus textile* (the textile cone snail) lays down its shell pigment along a 1D growing mantle edge ($i$) as the aperture advances in time ($t$), so the 2D outer surface of the coiled shell is a physical space–time diagram of a 1D excitable / reaction–diffusion medium. This script bridges three classic models of that process onto the repo's 3D Raup (1966) shell generator and directly supports the [Wolfram Rule 30 Prizes](https://rule30prize.org/):
+1. **Wolfram's (1984, 1986) Elementary Cellular Automaton Rule 30** ($a_{t+1,i} = a_{t,i-1} \oplus (a_{t,i} \lor a_{t,i+1}) \equiv a_{t,i-1} + a_{t,i} + a_{t,i+1} + a_{t,i}a_{t,i+1} \pmod 2$), beside the additive **Rule 90** Sierpiński control ($a_{t,i-1} \oplus a_{t,i+1}$).
+2. **Rule 30 Prize & Erica Jen (1990) diagnostics**: exact verification of the center column $c_t = a_{t,0}$ against [`OEIS A051023`](https://oeis.org/A051023) (`128/128` bits), Jen's (1990) **exact left-bijective spatial inverse** $a_{t,i-1} = a_{t+1,i} \oplus (a_{t,i} \lor a_{t,i+1})$ (`0` bit errors across the light-cone), tracking of the left-diagonal period-$2^k$ vs right-chaotic phase boundary ($v_{\text{front}} \approx -0.208$ cells/step), Problem 1–3 diagnostics (aperiodicity scan, center-column density $\bar{c}_{1024} = 0.4785$, 4-block Shannon entropy $H_4/4 = 0.9964$ bits/bit, and Boolean damage-spreading speed), and verification of the geometric white-triangle base-width law $P(W = w) = 2^{-w}$ ($\mu = 1.98 \approx 2.0$, $CV = 0.7075 \approx 1/\sqrt{2}$).
+3. **Meinhardt & Klingler's (1987, Eq. 5; 1995, Ch. 5–6) 1D Activator–Substrate–Inhibitor PDE** ($\partial_t a = \rho s(a^2/(1+\kappa a^2) + \rho_0) - \mu_a a + D_a\partial_{xx}a$, $\partial_t s = \sigma - \rho s(a^2/(1+\kappa a^2) + \rho_0) - \mu_s s + D_s\partial_{xx}s$), where substrate depletion inside expanding pigmented zones extinguishes activation in the interior and splits waves into V-shaped white "tents" ($CV = 0.6929$).
+4. **3D Raup (1966) biconical *Conus textile* shell mesh** ($W = 1.28, D = 0.42, T = 0.36, S = 5.99$) with both 1D space–time diagrams texture-mapped onto the accreting outer whorl, benchmarked against two SHA-256-pinned Wikimedia Commons *Conus textile* specimen photographs (James St. John / Ohio State University, CC BY 2.0; Richard Ling, public domain; cached in `.conus_cache/` via `--download`, with extracted silhouettes and dorsal white-tent chord statistics vendored in [`datasets/conus/conus_textile_reference.json`](./datasets/conus/conus_textile_reference.json)): shell height/width $1.8342$ vs specimen $1.8330$ ($0.07\%$ error), **3D silhouette IoU = `0.8353`**, and dorsal white-tent run-length $CV = 0.6403$ vs Rule 30 $0.7075$ and Meinhardt PDE $0.6929$.
+
+```bash
+python3 1984-wolfram-conus-textile-rule30.py --self-test           # 7 deterministic mathematical & morphometric invariants
+python3 1984-wolfram-conus-textile-rule30.py --download            # 6-panel figure + metrics CSV + animation (fetches 2 specimen photos once)
+python3 1984-wolfram-conus-textile-rule30.py --no-photos --no-anim # offline run using vendored reference fixture
+```
+
+![Conus textile shell pigmentation: 1D Wolfram Rule 30 and Meinhardt activator-substrate space-time patterns wrapped onto a 3D Raup biconical shell](docs/media/conus_textile_rule30.gif)
+
+*What you see:* left, the 1D Wolfram Rule 30 cellular automaton space–time diagram grows row by row as the mantle edge advances (blue line = current growth front $t$, red dashed line = center column $i = 0$ targeted by the [Rule 30 Prizes](https://rule30prize.org/)); right, the same space–time sheet wrapped onto a rotating 3D Raup biconical *Conus textile* shell mesh ($W = 1.28, D = 0.42, T = 0.36, S = 5.99$, silhouette IoU = `0.835` against the Ohio State University specimen).
+
+**References:**
+- Wolfram S (1984). Cellular automata as models of complexity. *Nature* 311(5985):419–424. [DOI](https://doi.org/10.1038/311419a0)
+- Wolfram S (1986). Random sequence generation by cellular automata. *Adv. Appl. Math.* 7(2):123–169. [DOI](https://doi.org/10.1016/0196-8858(86)90028-X)
+- Jen E (1990). Aperiodicity in one-dimensional cellular automata. *Physica D* 45(1–3):3–18. [DOI](https://doi.org/10.1016/0167-2789(90)90169-P)
+- Ermentrout B, Campbell J, Oster G (1986). A model for shell patterns based on neural activity. *The Veliger* 28(4):369–388.
+- Meinhardt H, Klingler M (1987). A model for pattern formation on the shells of molluscs. *J. Theor. Biol.* 126(1):63–89. [DOI](https://doi.org/10.1016/S0022-5193(87)80101-7)
+- Meinhardt H (1995). *The Algorithmic Beauty of Sea Shells*. Springer-Verlag, Berlin. [DOI](https://doi.org/10.1007/978-3-662-03107-0)
+
 ### [2001-bressloff-v1-form-constants.py](./2001-bressloff-v1-form-constants.py)
 
 Bressloff, Cowan, Golubitsky, Thomas & Wiener's (2001/2002) Euclidean symmetry-breaking model of primary visual cortex (V1) and Klüver's four geometric hallucination form constants (tunnels/funnels, spirals, cobwebs, honeycombs), paired with Rule, Stoffregen & Ermentrout's (2011) flicker-phosphene Floquet resonance tongues (`1:1` vs `2:1` stripes vs hex/spots). Reproduces all five `stability_reports` in [`datasets/bressloff/paper-calibration.json`](./datasets/bressloff/paper-calibration.json) to machine precision ($\le 6.7 \times 10^{-16}$). Output: `bressloff_v1_form_constants_morphospace.png` and `bressloff_v1_metrics.csv`; `--gif PATH` adds the animation below.
@@ -322,7 +349,7 @@ Where a dimension is structurally non-applicable (`not_applicable`), substitutin
 | Chindapol coral flow (`2013-chindapol-coral-flow.py`) | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 53.3 | 43.8 | 70.0 | 55.5 / **55.5** | 56.0 / **56.0** | **55.7** |
 | Gray–Scott (Turing) (`1952-turing-morpho.py`) | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 75.0 | 38.8 (`20.0` app.) | 49.0 | 53.6 / **52.7** | 37.8 / **40.9** | **46.8** |
 | Planform animation (`1900-planformDB_parser.py`), superseded | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 9.3 | 2.5 | 36.3 | 14.7 / ~~14.7~~ | — | — |
-| Bressloff V1 form constants (`2001-bressloff-v1-form-constants.py`), Petroff stromatolite (`2010-petroff-stromatolite.py`), Kahng coral (`2024-kahng-coral-geometry.py`), Zhang sorting morphogenesis (`sorting-morphogenesis/`), Thompson demo (`thompson/1917-thompson.py`) | — | — | — | — | — | — | — | *unevaluated* |
+| Bressloff V1 form constants (`2001-bressloff-v1-form-constants.py`), Wolfram / Meinhardt *Conus textile* Rule 30 (`1984-wolfram-conus-textile-rule30.py`), Petroff stromatolite (`2010-petroff-stromatolite.py`), Kahng coral (`2024-kahng-coral-geometry.py`), Zhang sorting morphogenesis (`sorting-morphogenesis/`), Thompson demo (`thompson/1917-thompson.py`) | — | — | — | — | — | — | — | *unevaluated* |
 
 Across all 10 active evaluated scripts in the dual-agent pass (`2026-10-17-blinded-sample-audit.yaml`, `gemini-4-argon`, Google), rank-order agreement with the primary assessors (`claude-fable-5-1`, Anthropic on 9 scripts; `gpt-5.6-sol`, OpenAI on `2021-Cervera–Levin–Mafe.py`) is strong (Spearman $\rho = 0.891$, Kendall $\tau = 0.778$, Pearson $r = 0.920$ on padded scores; $\rho = 0.903$ on applicable-only scores; and exact $\rho = 1.00$, $\tau = 1.00$ on the initial 5-script strictly blinded subset; dimension-level $\rho = 0.796$, $r = 0.813$ across all 70 dimension pairs, mean absolute difference $10.4$ points), while the independent passes surfaced concrete defects the builder had missed (including a 65-character SHA-256 typo in `2014-lobo-limbform-morphology.py`).
 
@@ -335,6 +362,7 @@ Across all 10 active evaluated scripts in the dual-agent pass (`2026-10-17-blind
 - [`datasets/planform/`](./datasets/planform/): BibTeX for the Planform papers and `planformDB.sha256`, the SHA-256 of the `planformDB_2.5.0.edb` the decoder was verified on (744,448 bytes); the `.edb` itself is not vendored (it ships with Planform), and `2013-lobo-planform-morphology.py` checks the hash of whatever file it is given, warning on a mismatch or refusing it with `--strict-db`.
 - LimbformDB 2.1.0 (`.ldb`) is likewise not vendored; `2014-lobo-limbform-morphology.py --download` fetches it from the Lobo lab into the git-ignored `.limbform_cache/` and verifies its SHA-256.
 - [`datasets/celegans/`](./datasets/celegans/): SHA-256 manifest of the 416 WormGUIDES / c302 files (pinned commits) that `2015-santella-wormguides-celegans.py --download` fetches into the git-ignored `.celegans_cache/`, with a README on sources, licences, the calibration assumption and the literature anchors.
+- [`datasets/conus/`](./datasets/conus/): SHA-256-pinned specimen reference fixture (`conus_textile_reference.json`) and BibTeX citations (`paper_citations.bib`) for *Conus textile* shell pigmentation (Wolfram 1984, 1986; Jen 1990; Meinhardt & Klingler 1987; Meinhardt 1995), including `OEIS A051023` center-column bits and segmented silhouette/dorsal-tent statistics from two Wikimedia Commons *Conus textile* photographs cached into `.conus_cache/` by `1984-wolfram-conus-textile-rule30.py --download`.
 - [`datasets/bressloff/`](./datasets/bressloff/): SHA-256-pinned reference calibration fixtures (`paper-calibration.json`, `rule-2011-floquet.json`, `driven-neural-fields-registry.json`) and BibTeX citations for Bressloff et al. (2001/2002) and Rule, Stoffregen & Ermentrout (2011).
 - [`sorting-morphogenesis/catalog.json`](./sorting-morphogenesis/catalog.json): 4-tier claim-boundary catalog (`reported`, `reconstruction`, `transfer_boundary`, `does_not_claim`) and paired A/B lane definitions for Zhang, Goldstein & Levin (2025).
 - [`datasets/frog_embryo_data_processed/`](./datasets/frog_embryo_data_processed/): per-embryo masks (`*_mask.npz`, one folder per imaging zoom) used by the wave-vector pipeline's detection summary below.

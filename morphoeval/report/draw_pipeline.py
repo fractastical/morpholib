@@ -101,7 +101,7 @@ BOXES = {
 }
 # the file or term behind each tier-B box, in small type under the plain-language body
 TERMS = {
-    "scout": "so far: 14 papers, chosen by hand", "paper": "Raup 1966 · PlanformDB · Thompson 1917",
+    "scout": "so far: 15 papers, chosen by hand", "paper": "Raup 1966 · PlanformDB · Thompson 1917",
     "source": "SHA-256 pinned · datasets/<paper>/", "rules": "e.g. 1181/1181 regions, 3137/3146 joints",
     "script": "<year>-<author>-<model>.py", "audit": "audits/<date>-<name>.yaml", "measure": "measure_outputs.py",
     "build": "build_morphoeval_kg.py (RDF)", "publish": "sign_morphoeval.py",
@@ -116,6 +116,7 @@ PAPERS = [  # (gif, caption lines, kind)
     ("thompson_transformations.gif",      "Thompson 1917\nOn Growth and Form, ch. XVII\na real Scarus on the deformed grid", "reproduce"),
     ("turing_gray_scott.gif",             "Turing 1952\nPhil Trans R Soc B\nvia Gray & Scott 1984, Pearson 1993", "reproduce"),
     ("raup_shell_coiling.gif",            "Raup 1966\nJ Paleontol\nshell-coiling morphospace", "reproduce"),
+    ("conus_textile_rule30.gif",          "Wolfram 1984 · Meinhardt 1987\nNature · J Theor Biol\nConus textile & Rule 30", "reproduce"),
     ("bressloff_v1_form_constants.gif",   "Bressloff et al. 2001\nPhil Trans R Soc B\nV1 form constants & retinal map", "reproduce"),
     ("petroff_stromatolite_dome_to_cone.gif", "Petroff et al. 2010\nPNAS\nconical stromatolites", "reproduce"),
     ("chindapol_coral_flow_growth.gif",   "Chindapol et al. 2013\nPLoS Comput Biol\ncoral growth in flow", "reproduce"),
@@ -168,11 +169,13 @@ def strip(ax):
         ax.add_patch(FancyBboxPatch((x, y + 5.6), tw, th, boxstyle="square,pad=0", fc="none", ec="#94a3b8", lw=0.5, zorder=4))
         ax.add_patch(FancyBboxPatch((x, y + 4.9), tw, 0.5, boxstyle="square,pad=0", fc=KIND_COL[kind], ec="none", zorder=3))
         ax.text(x + tw / 2, y + 2.3, cap, ha="center", va="center", fontsize=5.3, color="#1e293b", linespacing=1.15, zorder=3)
-    x = col_x[6]; y = YS                                              # legend in the free slot of row 2 (the last slot stays empty: the fix loop runs past it)
+    # Inline legend in top-right of Box 6 header (leaving col_x[7] of row 2 open for the remediation loop)
+    lx0 = 66.5; ly0 = top - 2.1
     for j, (k, c) in enumerate(KIND_COL.items()):
-        ax.add_patch(FancyBboxPatch((x + 0.6, y + 10.4 - j * 2.8), 1.5, 0.5, boxstyle="square,pad=0", fc=c, ec="none", zorder=3))
-        ax.text(x + 2.5, y + 10.65 - j * 2.8, {"reproduce": "reproduce the\npaper's model", "decode": "decode the\nauthors' encoding",
-                                              "test": "test a\npublished claim"}[k], fontsize=5.7, va="center", color=EDGE, linespacing=1.1, zorder=3)
+        xj = lx0 + j * 10.6
+        ax.add_patch(FancyBboxPatch((xj, ly0 - 0.25), 1.3, 0.5, boxstyle="square,pad=0", fc=c, ec="none", zorder=3))
+        ax.text(xj + 1.6, ly0, {"reproduce": "reproduce model", "decode": "decode encoding",
+                                "test": "test claim"}[k], fontsize=5.3, va="center", color=EDGE, zorder=3)
     return top, col_x[7] - wide / 2                                    # band top; x of the (wide) gap between columns 7 and 8
 
 
