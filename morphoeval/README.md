@@ -55,8 +55,8 @@ code and the **assessor** that scores it. For the first nine audits the same mod
 scored across two rounds by a model from another company (`gpt-5.6-sol`, OpenAI), given the rubric, the script and the
 fixtures and no opinions, and it found defects the builder had not — an unused morphospace axis, a CSV
 that doubles the simulated displacement, a wrong PMID (44.9), and after remediation (55.6) two further threshold/legend bugs the builder had
-introduced and overlooked. In addition, a five-script blinded second-assessor sample (`2026-10-17-blinded-sample-audit.yaml`) was scored by `gemini-4-argon` (Google) on identical script versions (`thompson`, `odonata`, `limbform`, `raup`, `turing`), showing exact rank-order concordance on overall scores (Spearman $\rho = 1.00$, Kendall $\tau = 1.00$; dimension-level $\rho = 0.823$ across 35 pairs, $\text{MAD} = 13.7$ points) while surfacing concrete defects the builder had missed (e.g. a 65-character SHA-256 typo in `2014-lobo-limbform-morphology.py`). The graph takes any assessor's nanopubs on the same
-hypotheses; scoring the remaining scripts the same way is tracked in
+introduced and overlooked. In addition, a complete 10-script second-assessor pass (`2026-10-17-blinded-sample-audit.yaml`, 80 signed nanopubs) was scored by `gemini-4-argon` (Google) across all 10 active evaluated scripts so that **no script relies solely on its builder grading itself**, showing strong rank-order concordance on overall scores across all 10 scripts (Spearman $\rho = 0.891$, Kendall $\tau = 0.778$, Pearson $r = 0.920$ on padded scores; $\rho = 0.903$ on applicable-only scores; and exact $\rho = 1.00$, $\tau = 1.00$ on the initial 5-script strictly blinded subset; dimension-level $\rho = 0.796$, $r = 0.813$ across all 70 pairs, $\text{MAD} = 10.4$ points) while surfacing concrete defects the builder had missed (e.g. a 65-character SHA-256 typo in `2014-lobo-limbform-morphology.py`). The graph takes any assessor's nanopubs on the same
+hypotheses; further remediation is tracked in
 [morpholib#1](https://github.com/fractastical/morpholib/issues/1). Each pass pins a commit; scores are 0–100 uncalibrated ratings per dimension with a weighted mean overall; published
 nanopubs are immutable and re-scores supersede them. The same figure as an image (for the PDF report
 and anything that cannot render Mermaid) is `docs/media/morphoeval_pipeline.png`, drawn by
@@ -86,7 +86,7 @@ flowchart TB
 
     subgraph B["B &nbsp;Auditing it — the MorphoEval cycle"]
         direction LR
-        AU["🤖 assessor · 7 Audit<br/>a different agent from the builder scores the script<br/>on 7 questions, 0–100 each, with a written reason<br/>and the lines of code it rests on, at one version<br/><small>audits/&lt;date&gt;-&lt;name&gt;.yaml</small>"]:::eval
+        AU["🤖🤖 assessors · 7 Dual-agent audit<br/>two assessor agents from different companies —<br/>not just the builder scoring itself — independently score<br/>7 questions (0–100) with line-pinned evidence at one commit<br/><small>audits/&lt;date&gt;-&lt;name&gt;.yaml</small>"]:::eval
         M["8 Measure<br/>outputs hashed and measured independently<br/>against specimens or the paper:<br/>numbers, not opinions<br/><small>measure_outputs.py</small>"]:::eval
         BG["9 Write as claims<br/>each score becomes one small machine-readable<br/>statement: 'this script reproduces X' — what rubric score,<br/>says who, on what evidence, under what licence<br/><small>build_morphoeval_kg.py (RDF, ProbKnow templates)</small>"]:::pub
         PU["10 Sign &amp; publish<br/>each statement is signed and put on a public<br/>network of servers under a permanent address;<br/>test network first, then for real<br/><small>sign_morphoeval.py</small>"]:::pub
@@ -402,7 +402,7 @@ Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1). Fa
 | Thompson *Scarus* → *Pomacanthus* (`thompson/1917-thompson-scarus-pomacanthus.py`) | 232e8f8, audit 2026-10-17-thompson (was 70.2) | Claude Fable 5.1 | 70.3 | 77.3 | 82.0 | 76.6 | **76.6** |
 | Odonata wing cells, fossil vs extant (`2026-eshghi-odonata-wing-cells.py`) | fbbcaf6, audit 2026-10-14-odonata | Claude Fable 5.1 | 63.3 (`70.0` app.) | 85.0 | 78.0 | 78.9 | **76.0** |
 | LimbformDB limb morphologies (`2014-lobo-limbform-morphology.py`) | 747c57f, audit 2026-10-14-limbform | Claude Fable 5.1 | 81.7 | 61.3 | 74.3 | 71.3 | **71.3** |
-| WormGUIDES *C. elegans* embryo atlas (`2015-celegans-embryogenesis.py`) | f39a409, audit 2026-10-16-celegans (was 67.7) | Claude Fable 5.1 | 70.0 (`80.0` app.) | 64.4 | 78.0 | 72.4 | **70.2** |
+| WormGUIDES *C. elegans* embryo atlas (`2015-santella-wormguides-celegans.py`) | f39a409, audit 2026-10-16-celegans (was 67.7) | Claude Fable 5.1 | 70.0 (`80.0` app.) | 64.4 | 78.0 | 72.4 | **70.2** |
 | PlanformDB planarian morphology (`2013-lobo-planform-morphology.py`) | 161f269, audit 2026-10-14 | Claude Fable 5.1 | 81.7 | 55.0 | 66.7 | 66.5 | **66.5** |
 | Raup shell coiling (`create_raup_animations.py`) | ba6fd20, audit 2026-10-17-raup (was 37.3) | Claude Fable 5.1 | 76.7 | 45.0 | 77.0 | 64.1 | **64.1** |
 | Cervera–Levin–Mafe bioelectric synthesis (`2021-Cervera–Levin–Mafe.py`) | a0d6848, audit 2026-10-17-cervera-v2 (was 44.9 at e71ca55) | **GPT‑5.6 Sol (OpenAI)** | 49.3 | 44.3 | 76.9 | 55.6 | **55.6** |
@@ -411,14 +411,19 @@ Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1). Fa
 | ~~PlanformDB planarian animation (`1900-planformDB_parser.py`)~~ superseded | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 9.3 | 2.5 | 36.3 | 14.7 | ~~14.7~~ |
 | Petroff stromatolite (`2010-petroff-stromatolite.py`), Kahng coral (`2024-kahng-coral-geometry.py`), Thompson demo (`thompson/1917-thompson.py`) | — | — | — | — | — | — | *unevaluated* |
 
-### Blinded second-assessor sample (`2026-10-17-blinded-sample-audit.yaml`, `role: second_assessor`, `gemini-4-argon`, Google)
+### Complete 10-script dual-agent second-assessor pass (`2026-10-17-blinded-sample-audit.yaml`, `role: second_assessor`, `gemini-4-argon`, Google)
 
-Five scripts previously scored by `claude-fable-5-1` were re-scored under a strictly blinded protocol at commit `5659d5e` (identical script files to the primary checkpoints). Rank-order agreement on overall scores is exact (Spearman $\rho = 1.00$, Kendall $\tau = 1.00$, $p = 0.0167$; Pearson $r = 0.947$; dimension-level Spearman $\rho = 0.823$ across all 35 dimension pairs, mean signed offset $+7.1$ pts, $\text{MAD} = 13.7$ pts). The 40 signed `pk:LLMClaimAssessment` nanopublications are stored in `morphoeval/kg/2026-10-17-blinded-sample-audit/signed/`.
+All 10 active evaluated scripts were independently scored by `gemini-4-argon` (Google) at commit `5659d5e` so that every evaluated script is dual-scored across two model providers (9 paired with `claude-fable-5-1`, Anthropic; 1 paired with `gpt-5.6-sol`, OpenAI). Across all 10 scripts, rank-order agreement on overall scores is strong (Spearman $\rho = 0.891$, Kendall $\tau = 0.778$, Pearson $r = 0.920$ on padded scores; $\rho = 0.903$ on applicable-only scores; and exact $\rho = 1.00$, $\tau = 1.00$ on the initial 5-script strictly blinded subset; dimension-level Spearman $\rho = 0.796$, Pearson $r = 0.813$ across all 70 dimension pairs, mean signed offset $+6.5$ pts, $\text{MAD} = 10.4$ pts). The 80 signed `pk:LLMClaimAssessment` nanopublications are stored in `morphoeval/kg/2026-10-17-blinded-sample-audit/signed/`.
 
-| simulation | primary (`claude-fable-5-1`) app. / **pad.** | blinded (`gemini-4-argon`) impl. (30) | blinded bio. (40) | blinded repro. (30) | blinded app. / **pad.** | $\Delta$ (pad.) |
-|---|---:|---:|---:|---:|---:|---:|
-| `thompson/1917-thompson-scarus-pomacanthus.py` | 76.6 / **76.6** | 90.0 | 89.8 | 93.0 | 90.8 / **90.8** | +14.2 |
-| `2026-eshghi-odonata-wing-cells.py` | 78.9 / **76.0** | 75.3 (`88.0` app.) | 93.5 | 91.0 | 91.4 / **87.3** | +11.3 |
-| `2014-lobo-limbform-morphology.py` | 71.3 / **71.3** | 86.7 | 77.0 | 89.3 | 83.6 / **83.6** | +12.3 |
-| `create_raup_animations.py` | 64.1 / **64.1** | 86.0 | 68.5 | 86.4 | 79.3 / **79.3** | +15.2 |
-| `1952-turing-morpho.py` | 53.6 / **52.7** | 57.0 | 33.1 (`5.0` app.) | 35.0 | 37.8 / **40.9** | −11.9 |
+| simulation | primary (`claude-fable-5-1` / `gpt-5.6-sol`†) app. / **pad.** | 2nd assessor (`gemini-4-argon`) impl. (30) | 2nd bio. (40) | 2nd repro. (30) | 2nd assessor app. / **pad.** | $\Delta$ (pad.) | panel mean **pad.** |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `2018-hoffmann-wing-venation.py` | 77.8 / **77.8** | 77.3 | 84.6 | 80.7 | 81.3 / **81.3** | +3.5 | **79.5** |
+| `thompson/1917-thompson-scarus-pomacanthus.py` | 76.6 / **76.6** | 90.0 | 89.8 | 93.0 | 90.8 / **90.8** | +14.2 | **83.7** |
+| `2026-eshghi-odonata-wing-cells.py` | 78.9 / **76.0** | 75.3 (`88.0` app.) | 93.5 | 91.0 | 91.4 / **87.3** | +11.3 | **81.7** |
+| `2014-lobo-limbform-morphology.py` | 71.3 / **71.3** | 86.7 | 77.0 | 89.3 | 83.6 / **83.6** | +12.3 | **77.5** |
+| `2015-santella-wormguides-celegans.py` | 72.4 / **70.2** | 72.7 (`84.0` app.) | 77.0 | 86.9 | 81.9 / **78.7** | +8.5 | **74.4** |
+| `2013-lobo-planform-morphology.py` | 66.5 / **66.5** | 84.0 | 67.3 | 81.4 | 76.5 / **76.5** | +10.1 | **71.5** |
+| `create_raup_animations.py` | 64.1 / **64.1** | 86.0 | 68.5 | 86.4 | 79.3 / **79.3** | +15.2 | **71.7** |
+| `2021-Cervera–Levin–Mafe.py`† | 55.6 / **55.6** | 54.0 | 50.2 | 81.6 | 60.7 / **60.7** | +5.1 | **58.1** |
+| `2013-chindapol-coral-flow.py` | 55.5 / **55.5** | 49.3 | 44.3 | 78.3 | 56.0 / **56.0** | +0.5 | **55.7** |
+| `1952-turing-morpho.py` | 53.6 / **52.7** | 57.0 | 33.1 (`5.0` app.) | 35.0 | 37.8 / **40.9** | −11.9 | **46.8** |
