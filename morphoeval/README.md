@@ -18,7 +18,7 @@ morphoeval/
   build_morphoeval_kg.py           audit -> ProbKnow nanopubs (.trig) + merged .ttl + REPORT.md
   sign_morphoeval.py               sign / publish (test -> prod) -> kg/<audit-id>/signed/ + published.json
   check_signed.mjs                 independent trusty+signature verification (@nanopub/sign, Rust/WASM)
-  vendor/probknow-1.1.ttl          vendored ontology for the offline --conform check
+  vendor/probknow-1.2.ttl          vendored ontology for the offline --conform check
   vendor/templates/*.trig          the ProbKnow Space's governed template nanopubs (shape check)
   kg/<audit-id>/                   generated graph for that audit (commit it: it IS the checkpoint)
 ```
@@ -37,7 +37,7 @@ morphoeval/
 
 To avoid conflating faithful code with valid biology, `faithfulness` (weight 70) is decomposed and reported along two separate sub-axes: **model-implementation fidelity** (`impl.`, weight 30 = `model-fidelity` 20 + `parameter-expressivity` 10) and **biological/empirical validation** (`bio.`, weight 40 = `specimen-match` 25 + `morphometric-validation` 15), alongside **reproducibility** (`repro.`, weight 30).
 
-**Score semantics (`[0, 100]` uncalibrated ratings vs probabilities):** MorphoEval scores are uncalibrated, criterion-referenced ratings on `0–100`, not probabilities ($s = 76$ does not mean $P(\text{faithful}) = 0.76$). When serialized into the governed ProbKnow Space templates (`RAku3DIN` and `RAIVOEuh`), `score / 100` is written to `pk:hasProbability` and `overall / 100` to `pk:weightOfEvidence` strictly as a unit-interval rescaling for template conformance (or omitted via `--omit-probability`).
+**Score semantics (`[0, 100]` uncalibrated ratings vs probabilities):** MorphoEval scores are uncalibrated, criterion-referenced ratings on `0–100`, not probabilities ($s = 76$ does not mean $P(\text{faithful}) = 0.76$). They are therefore published as **`pk:hasScore`** (= `score / 100`, ProbKnow ontology 1.2: "a graded judgement, not a probability that the claim is true") on a rubric assessment (template `RAOAK6Fe`), never as `pk:hasProbability`. The claim's `pk:weightOfEvidence` = `overall / 100` is a unit-interval rescaling of the overall rating (omit it with `--omit-probability`).
 
 **Non-applicable (`not_applicable`) dimensions and baseline-50 shrinkage:** Rule carried over from the siblings: **score only what the evidence supports** — every score needs at least one code locus, and scripts that were not inspected are listed `unevaluated` with no scores. When a dimension is structurally inapplicable (`not_applicable: true`), substituting `50` into the 100-weight sum produces $\bar{s}_{\text{pad}} = (1 - \alpha)\bar{s}_{\text{app}} + 50\alpha$, where $\alpha = w_{\text{NA}} / 100$. Mathematically, substituting `50` is **not** neutral: it shrinks scores toward `50` (penalising scripts with $\bar{s}_{\text{app}} > 50$ and rewarding scripts with $\bar{s}_{\text{app}} < 50$). Only weight renormalisation over applicable dimensions ($\bar{s}_{\text{app}}$) is mathematically neutral; MorphoEval therefore reports **both** the applicable-only renormalised score (`app.`) and the baseline-50 padded score (`pad.`).
 
@@ -134,7 +134,7 @@ No MorphoEval-specific namespace. Everything is expressed in the
 [ProbKnow / Project Delphi ontology](https://github.com/fractastical/probknow-ontology)
 (`pk:` = `https://w3id.org/probknow/ontology/`, individuals under
 `pkr:` = `https://w3id.org/probknow/resource/`), vendored in
-`vendor/probknow-1.1.ttl` for an offline conformance check (`--conform`). This
+`vendor/probknow-1.2.ttl` for an offline conformance check (`--conform`). This
 puts simulation checkpoints in the same probabilistic knowledge graph as the
 Levin-lab claims, so Science Oracle queries work unchanged.
 
@@ -163,22 +163,29 @@ Nanodash renders each one with its form and the Space counts it as conformant.
 The template nanopubs are vendored in `vendor/templates/` and `--conform` checks
 every assertion, provenance and pubinfo graph against the statements of the
 template it links (placeholder prefixes, datatypes, the 0–1 regex on
-probabilities, required/repeatable statements). Earlier nanopubs (2026-10-13 /
+scores, required/repeatable statements). Earlier nanopubs (2026-10-13 /
 2026-10-14) used a freer shape and are being re-issued with `npx:supersedes`.
+Since 2026-10-18 the assessments use the Space's **rubric-assessment template**
+(`pk:hasScore` instead of `pk:hasProbability`, structured evidence items) and the
+rubric its **rubric template**; the claim and provenance templates are at their
+current versions (v3 / v2).
 
 | MorphoEval notion | ProbKnow term (template) |
 |---|---|
-| "script S faithfully reproduces organism O under source model P" | `pkr:claim/morphoeval-<sim>` a **`pk:Claim`** (claim template): `rdfs:label`, `dct:description`, `pk:context` (scripts, output, organism, commit, environment, non-DOI sources) · `pk:derivedFromPaper <doi>` · `pk:hasAssessment` → the 8 assessments · `pk:weightOfEvidence` = overall/100 (unit-interval rescaled uncalibrated rubric score, optional via `--omit-probability`) |
-| one rubric score | `pkr:assessment/<audit>-<sim>-<dim>` a **`pk:LLMClaimAssessment`** (LLM-assessment template) · `pk:evaluatesHypothesis pkr:hypothesis/morphoeval-<sim>-<dim>` ("<sim> satisfies the criterion <dim>", `dct:identifier "morphoeval/0.1.0/<dim>"`) · `pk:assessedBy pkr:model/<assessor>` a `pk:Model` · `pk:hasProbability` = score/100 (unit-interval rescaled uncalibrated rubric score, not $P(\text{faithful})$; optional via `--omit-probability`) · `pk:hasVerdict` band · `rdfs:comment` = rationale + evidence loci (commit-pinned GitHub `#L<a>-L<b>`, sha256-fingerprinted outputs, morphometrics with their reference values) · `pk:evidenceFor` / `pk:evidenceAgainst` when an evidence entry is marked `supports: true|false` |
-| checkpoint | `…-overall`, the same template, evaluating `pkr:hypothesis/morphoeval-<sim>` (the claim proposition); remediation items as `pk:evidenceAgainst` |
-| the rubric | `pkr:concept/morphoeval-rubric-0.1.0` a `pk:Concept` (`skos:narrower` one `pk:Concept` per dimension); no governed template exists for a rubric, so it carries only the provenance and pubinfo templates |
-| provenance | "Extracted from a paper by ProbKnow" template: `prov:wasAttributedTo` the model and the publisher, `prov:wasDerivedFrom` each DOI with `dct:title` / `dct:date`; the rubric uses the generic "Attributed to" template |
-| the scorer | `pkr:model/<assessor-id>` (`claude-fable-5-1`, `gpt-5.6-sol`, or `gemini-4-argon`) a `pk:Model` (`prov:actedOnBehalfOf` the publisher's ORCID, in pubinfo) |
+| "script S faithfully reproduces organism O under source model P" | `pkr:claim/morphoeval-<sim>` a **`pk:Claim`** (claim template v3 `RApE-nGp`): `rdfs:label`, `dct:description`, `pk:context` (scripts, output, organism, commit, environment, non-DOI sources) · `dct:subject` → each script as a `schema:SoftwareSourceCode` (`schema:codeRepository`, `schema:version` = checkpoint commit, `schema:programmingLanguage`) · `pk:derivedFromPaper <doi>` · `pk:hasAssessment` → the 8 assessments · `pk:weightOfEvidence` = overall/100 (unit-interval rescaled uncalibrated rubric score, optional via `--omit-probability`) |
+| one rubric score | `pkr:assessment/morphoeval-<assessor>-<sim>-<dim>` a **`pk:LLMClaimAssessment`** (rubric-assessment template `RAOAK6Fe`) · `<claim> pk:hasAssessment` it · `dct:subject pkr:concept/morphoeval-<rubric>-<dim>` (the rubric dimension) · `pk:assessedBy pkr:model/<assessor>` a `pk:Model` (`dct:identifier`, `foaf:homepage`, `prov:actedOnBehalfOf` the publisher) · `pk:assessmentType "morphoeval/0.1.0/<dim>"` · **`pk:hasScore`** = score/100 (a graded rating, not $P(\text{faithful})$) · `pk:hasVerdict` band · `dct:description` = rationale · `pk:hasEvidence` → one `pk:EvidenceItem` per evidence locus (`rdfs:label` file + lines, `dct:description` note, `prov:wasDerivedFrom` the commit-pinned GitHub `#L<a>-L<b>`; generated outputs carry their sha256 fingerprint in the description) and, for morphometric-validation, one `schema:PropertyValue` per measurement (`schema:value`, `schema:unitText`, `schema:measurementTechnique`, `schema:valueReference` → reference value + `dct:source`) · `pk:evidenceAgainst` when an evidence entry is marked `supports: false` |
+| checkpoint | `…-overall`, the same template, with `dct:subject` the rubric concept itself; remediation items as `pk:evidenceAgainst` |
+| the rubric | `pkr:concept/morphoeval-rubric-0.1.0` a `pk:Concept` (rubric template `RAbjeus1`: `skos:narrower` one `pk:Concept` per dimension with label and description) |
+| provenance | "Extracted from a paper by ProbKnow" template v2 (`RAaYeFYF`): `prov:wasAttributedTo` the model and the publisher, `prov:wasDerivedFrom` each DOI with `dct:title` / `dct:date`; the rubric uses the generic "Attributed to" template |
+| the scorer | `pkr:model/<assessor-id>` (`claude-fable-5-1`, `gpt-5.6-sol`, or `gemini-4-argon`) a `pk:Model` (`prov:actedOnBehalfOf` the publisher's ORCID, in the assertion) |
 
-The templates carry evidence as literals, so the code loci, output fingerprints
-and morphometrics that used to be separate `pk:EvidenceItem` / `schema:` nodes
-are now written into the assessment's `rdfs:comment` (and the REPORT.md); the
-audit YAML and measurements sidecars are unchanged.
+The assessment IRIs carry the assessor but no audit id, so a re-score by the
+same assessor supersedes the earlier nanopub and keeps introducing the same
+resource; the pass is identified by `dct:created`, the checkpoint commit in the
+description and the `npx:supersedes` chain. Evidence loci, output fingerprints
+and morphometrics are `pk:EvidenceItem`s under `pkr:evidence/…` (the
+rubric-assessment template's evidence group); the audit YAML and measurements
+sidecars are unchanged.
 
 Verdict bands on the 0–100 scale: ≥80 *faithful* · 60–79 *mostly faithful* ·
 40–59 *partially faithful* · 20–39 *unfaithful* · <20 *not faithful*.
