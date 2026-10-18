@@ -62,7 +62,9 @@ nanopubs are immutable and re-scores supersede them. The same figure as an image
 and anything that cannot render Mermaid) is `docs/media/morphoeval_pipeline.png`, drawn by
 `morphoeval/report/draw_pipeline.py`; in it box 6 is the reproductions' own animations in
 `docs/media/`, each labelled with its paper (author, year, venue, data source). `draw_pipeline.py --gif` writes `morphoeval_pipeline.gif`, the same figure with
-the thumbnails playing (used at the top of the root README); the PDF report uses the still.
+the thumbnails playing (used at the top of the root README); the PDF report uses the still ([`morphoeval_pipeline.png`](../docs/media/morphoeval_pipeline.png)).
+
+![From paper to reproduction to signed evaluation — the MorphoEval pipeline](../docs/media/morphoeval_pipeline.gif)
 
 ```mermaid
 flowchart TB

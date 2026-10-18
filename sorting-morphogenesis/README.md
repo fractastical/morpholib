@@ -7,7 +7,9 @@ Replication of:
 > **Adaptive Behavior**, 33(1), 25–54.
 > [doi:10.1177/10597123241269740](https://doi.org/10.1177/10597123241269740) · Preprint: [arXiv:2401.05375](https://arxiv.org/abs/2401.05375)
 
-Reference implementation audited against the authors' repository [`Zhangtaining/cell_research`](https://github.com/Zhangtaining/cell_research) at pinned commit [`1fd2bd5921c1f6b423a71f691d5189106a8a1020`](https://github.com/Zhangtaining/cell_research/tree/1fd2bd5921c1f6b423a71f691d5189106a8a1020) (2024-10-30).
+Reference implementation audited against the authors' repository [`Zhangtaining/cell_research`](https://github.com/Zhangtaining/cell_research) at pinned commit [`1fd2bd5921c1f6b423a71f691d5189106a8a1020`](https://github.com/Zhangtaining/cell_research/tree/1fd2bd5921c1f6b423a71f691d5189106a8a1020) (2024-10-30), with upstream replication notes filed at [Zhangtaining/cell_research#2](https://github.com/Zhangtaining/cell_research/issues/2).
+
+![Zhang, Goldstein & Levin (2025): autonomous cell-view sorting around frozen defects and chimeric aggregation](../docs/media/zhang_sorting_morphogenesis.gif)
 
 ---
 
@@ -69,3 +71,32 @@ Generates 7 multi-panel figures in `sorting-morphogenesis/figures/`:
 | **§4.4 Fig. 8A** (Unique-value aggregation) | `B+S`, `I+S`, `B+I`, `B+S+I` | Peaks at `0.64–0.65` (`0.58–0.62` for 3-type), relaxes to `0.50` (`0.33`) | Curve peaks `0.635, 0.640, 0.623` (run max `0.68–0.70`), relaxes to `0.506` (`0.321`) | Replicated |
 | **§4.4 Fig. 8D–E** (Duplicate-value `1..10`) | `B+S` and `I+S` final aggregation | Stays elevated at **`0.65–0.71`** at 100% progress | `B+S` final = **`0.698`**, `I+S` final = **`0.661`** (`B+I` = `0.479`) | Replicated |
 | **§4.4 Figs. 9–10** (Opposite directions) | `B(dec)+S(inc)`, `B(inc)+I(dec)`, `I(inc)+S(dec)` | `42.5%`, `73.73%`, `38.31%` (**B > S > I**) | `47.3%`, `75.6%`, `40.6%` (**B > S > I**; final agg `0.947, 0.663, 0.683`) | Replicated |
+
+---
+
+## Replication Figures
+
+### 1. Sorting Efficiency (`Fig. 4A, 4B & Fig. 8B`)
+![Sorting Efficiency: Swaps Only (Fig. 4A), Comparisons + Swaps (Fig. 4B), and Chimeric Swaps (Fig. 8B)](./figures/efficiency.png)
+
+### 2. Error Tolerance (`Fig. 5B & Fig. 5C`)
+![Error Tolerance: Movable/Passive vs. Immovable/Stuck Frozen Cells](./figures/error_tolerance.png)
+
+### 3. Delayed Gratification (`Fig. 7A–C`)
+![Delayed Gratification vs. Immovable Frozen Cells](./figures/delayed_gratification.png)
+
+### 4. Chimeric Aggregation (`Fig. 8A & Fig. 8D–E`)
+![Chimeric Aggregation: Unique Values vs. Duplicate Values](./figures/chimeric_aggregation.png)
+
+### 5. Cross-Purpose Chimeras (`Fig. 9 & Fig. 10`)
+![Cross-Purpose Chimeras: Opposite Sorting Directions](./figures/cross_purpose_chimeras.png)
+
+### 6. Space-Time Kymographs
+![Space-Time Kymographs: Intact, Frozen-Defect, and Chimeric Trajectories](./figures/kymographs.png)
+
+### 7. Scheduler Invariance
+![Scheduler Comparison: Random-Async, Parallel-Round, and OS-Threaded](./figures/scheduler_comparison.png)
+
+### 8. Seed-Locked Paired A/B Lane Comparison
+![Deterministic Paired A/B Lane Comparison](./figures/paired_ab_comparison.png)
+

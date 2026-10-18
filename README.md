@@ -10,6 +10,10 @@ Morphogenesis is how a living thing gets its shape, and regeneration is how it g
 
 *Every animated form in the repository, 1917–2026 (the Thompson Scarus → Pomacanthus fit is a still and is represented by its score), each animation playing once per loop; the last tile is the MorphoEval overall score. Made by [`docs/media/make_montage.py`](./docs/media/make_montage.py) from the per-script animations below.*
 
+![How a reproduction is made and how MorphoEval scores it](./docs/media/morphoeval_pipeline.gif)
+
+*From paper to reproduction to signed evaluation — the MorphoEval pipeline ([animated GIF](./docs/media/morphoeval_pipeline.gif) · [high-res PNG](./docs/media/morphoeval_pipeline.png) · [section below](#morphoeval-how-faithful-are-these-reproductions)). Tier A shows how each of the 14 reproductions is built from its primary paper and formal data; Box 6 plays the 14 reproductions' own animations side by side; Tier B shows the dual-agent MorphoEval audit cycle across Anthropic (`claude-fable-5-1`), Google (`gemini-4-argon`), and OpenAI (`gpt-5.6-sol`).*
+
 Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) are written to the working directory and are git-ignored. Every entry below has a small animation of the morphology it produces (in [`docs/media/`](./docs/media/), downsized copies of the scripts' own GIF output; [`docs/media/README.md`](./docs/media/README.md) records how each was made). Setup: `python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt` (lower bounds; `requirements.lock.txt` has the exact versions the MorphoEval audits were run with — Python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, scikit-image 0.26.0 — and installs cleanly into a fresh venv).
 
 ## Index, by year

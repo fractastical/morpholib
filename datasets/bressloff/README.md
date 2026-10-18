@@ -2,6 +2,8 @@
 
 This directory holds reference reports and SHA-256-pinned fixtures vendored from [`MesmerPrism/bressloff-v1-form-constants`](https://github.com/MesmerPrism/bressloff-v1-form-constants) at commit `344863a1bd9e8a8e8c9cb20aced2897f3ffb2c4c` (MIT License; derived from [`karacsm/V1-sim`](https://github.com/karacsm/V1-sim) by Márton Karácsony, extended by Till Holzapfel).
 
+![Bressloff V1 form constants: cortical planforms and retinal log-polar pullbacks across Klüver's four families](../../docs/media/bressloff_v1_form_constants.gif)
+
 ## Vendored Fixtures
 
 | File | SHA-256 | Upstream Path | Description |
