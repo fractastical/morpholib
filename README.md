@@ -257,7 +257,7 @@ Bressloff, Cowan, Golubitsky, Thomas & Wiener's (2001/2002) Euclidean symmetry-b
 
 ![Bressloff V1 form constants: cortical planforms and retinal log-polar pullbacks across Klüver's four families](docs/media/bressloff_v1_form_constants.gif)
 
-*What you see:* top row, the orientation-weighted V1 cortical activity across the four canonical dihedral lattice planforms (rolls/stripes, rhombic rolls, square lattice, hexagonal lattice); bottom row, their inverse retino-cortical log-polar pullbacks into visual-field coordinates (tunnel/rings, spiral/funnel, cobweb, honeycomb) as the spatial phase drifts over one cycle.
+*What you see:* Klüver's four form-constant families stepped through one at a time (1/4 Tunnel/Rings, 2/4 Spiral/Funnel, 3/4 Cobweb/Square, 4/4 Honeycomb/Hex): left, the V1 cortical wave lattice as its spatial phase drifts over one cycle; right, its inverse retino-cortical log-polar pullback into visual-field coordinates.
 
 **References:**
 - Bressloff PC, Cowan JD, Golubitsky M, Thomas PJ, Wiener MC (2001). Geometric visual hallucinations, Euclidean symmetry and the functional architecture of striate cortex. *Phil. Trans. R. Soc. Lond. B* 356(1407):299–330. [DOI](https://doi.org/10.1098/rstb.2000.0769)

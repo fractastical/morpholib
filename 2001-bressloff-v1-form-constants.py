@@ -1201,52 +1201,77 @@ def run_bressloff_analysis(
 
 def make_gif(
     output_gif: Path = REPO_ROOT / "bressloff_v1_form_constants.gif",
-    n_frames: int = 24,
+    n_frames: int = 36,
     fps: int = 8,
 ) -> None:
-    """Animate phase drift across Klüver's 4 form-constant families (cortical + retinal pullback)."""
+    """Animate Klüver's 4 form-constant families one at a time (1x2: V1 cortical lattice -> retinal log-polar pullback)."""
     from PIL import Image
 
     presets = [
-        ("fig7_lattice_tunnel", "Tunnel / Rings"),
-        ("fig33_rhombic_even_roll", "Spiral / Funnel"),
-        ("fig31_square_even", "Cobweb / Square"),
-        ("fig35_hex_zero_even", "Honeycomb / Hex"),
+        ("fig7_lattice_tunnel", "1/4  Tunnel / Rings", "vertical V1 stripes"),
+        ("fig33_rhombic_even_roll", "2/4  Spiral / Funnel", "oblique V1 stripes (60°)"),
+        ("fig31_square_even", "3/4  Cobweb / Square", "orthogonal V1 square lattice"),
+        ("fig35_hex_zero_even", "4/4  Honeycomb / Hex", "three-wave V1 hex lattice"),
     ]
-    params_list = [(pid, lbl, make_preset_params(pid, n=72, m=12)) for pid, lbl in presets]
-    frames: List[Image.Image] = []
+    params_list = [(pid, lbl, sub, make_preset_params(pid, n=72, m=8)) for pid, lbl, sub in presets]
+    frames_rgb: List[Image.Image] = []
+    frames_per_preset = max(1, n_frames // len(params_list))
 
     for fi in range(n_frames):
-        phase = 2.0 * math.pi * float(fi) / float(n_frames)
-        fig, axes = plt.subplots(2, 4, figsize=(11.5, 5.8), dpi=100)
-        for col, (_pid, lbl, p) in enumerate(params_list):
-            cort, ret, _stab = render_cortical_and_retinal_planform(p, phase=phase, retinal_res=120)
-            axes[0, col].imshow(cort, cmap="twilight_shifted", vmin=-1.0, vmax=1.0, origin="lower")
-            axes[0, col].set_title(f"V1 Cortex: {lbl}", fontsize=9.0, fontweight="bold")
-            axes[0, col].axis("off")
-            axes[1, col].imshow(ret, cmap="twilight_shifted", vmin=-1.0, vmax=1.0, origin="lower")
-            axes[1, col].set_title(f"Retinal Pullback: {lbl}", fontsize=8.8)
-            axes[1, col].axis("off")
+        idx = min(fi // frames_per_preset, len(params_list) - 1)
+        local_fi = fi - idx * frames_per_preset
+        phase = 2.0 * math.pi * float(local_fi) / float(frames_per_preset)
+        _pid, lbl, sub, p = params_list[idx]
+
+        # Non-contoured spatial envelope + continuous angle sweep for smooth, clean visual motion
+        p_anim = BressloffParams(**{**p.__dict__})
+        p_anim.contour_mode = "noncontoured"
+        p_anim.wave_count = 3.5
+        p_anim.sharpness = 1.6
+
+        cort, ret, _stab = render_cortical_and_retinal_planform(p_anim, phase=phase, retinal_res=140)
+
+        fig, axes = plt.subplots(1, 2, figsize=(6.4, 3.4), dpi=100, facecolor="#fafaf8")
+        fig.subplots_adjust(left=0.04, right=0.96, bottom=0.06, top=0.80, wspace=0.10)
+
+        axes[0].imshow(cort, cmap="twilight_shifted", vmin=-1.0, vmax=1.0, origin="lower", interpolation="bilinear")
+        axes[0].set_title(f"V1 Cortex ({sub})", fontsize=10.0, fontweight="bold", color="#1e293b", pad=6)
+        axes[0].axis("off")
+
+        axes[1].set_facecolor("#fafaf8")
+        axes[1].imshow(ret, cmap="twilight_shifted", vmin=-1.0, vmax=1.0, origin="lower", interpolation="bilinear")
+        axes[1].set_title("Retina (log-polar visual field)", fontsize=10.0, fontweight="bold", color="#1e293b", pad=6)
+        axes[1].axis("off")
+
         fig.suptitle(
-            f"Bressloff et al. (2001/2002) V1 Form Constants — Phase $\\phi = {phase:.2f}$ rad",
-            fontsize=11.0,
+            f"Bressloff et al. (2001) — {lbl}",
+            fontsize=11.5,
             fontweight="bold",
+            color="#0f172a",
+            y=0.95,
         )
-        fig.tight_layout()
         fig.canvas.draw()
         w, h = fig.canvas.get_width_height()
         buf = np.frombuffer(fig.canvas.buffer_rgba(), dtype=np.uint8).reshape(h, w, 4)
-        frames.append(Image.fromarray(buf[:, :, :3]).convert("P", palette=Image.ADAPTIVE))
+        frames_rgb.append(Image.fromarray(buf[:, :, :3]).convert("RGB"))
         plt.close(fig)
 
-    frames[0].save(
+    w, h = frames_rgb[0].size
+    strip = Image.new("RGB", (w, h * 4))
+    for i, fr in enumerate(frames_rgb[:: max(1, len(frames_rgb) // 4)][:4]):
+        strip.paste(fr, (0, i * h))
+    pal = strip.quantize(colors=96, method=Image.MEDIANCUT)
+    q_frames = [fr.quantize(palette=pal, dither=Image.NONE) for fr in frames_rgb]
+
+    q_frames[0].save(
         output_gif,
         save_all=True,
-        append_images=frames[1:],
+        append_images=q_frames[1:],
         duration=int(1000 / fps),
         loop=0,
+        optimize=True,
     )
-    print(f"Saved Bressloff form-constants animation to {output_gif} ({n_frames} frames)")
+    print(f"Saved Bressloff form-constants animation to {output_gif} ({w}x{h}, {len(q_frames)} frames, {output_gif.stat().st_size // 1024} KB)")
 
 
 def self_test() -> bool:

@@ -12,7 +12,7 @@ options added in the same change; inputs as documented for each script.
 | `thompson_transformations.gif` | `python3 thompson/1917-thompson.py --gif thompson.gif` (remade 2026-10-17: the fish is now the real *Scarus ghobban* silhouette, with the real *Pomacanthus* as the dashed target of the coaxial family) | 196 → 80 (identical hold frames merged) |
 | `turing_gray_scott.gif` | `python3 1952-turing-morpho.py` → `turing_patterns.gif` (legacy, tracked at the repo root) | 500 → 60 |
 | `raup_shell_coiling.gif` | `python3 create_raup_animations.py` → `raup_shell_animation.gif` (remade 2026-10-17 after the model fix; 660 px, the full-size file is no longer tracked) | 100 → 48 |
-| `bressloff_v1_form_constants.gif` | `python3 2001-bressloff-v1-form-constants.py --no-show --gif bressloff.gif` (2026-10-17: phase drift across Klüver's 4 form-constant families on V1 cortex and retinal log-polar pullback) | 24 → 24 |
+| `bressloff_v1_form_constants.gif` | `python3 2001-bressloff-v1-form-constants.py --no-show --gif bressloff.gif` (2026-10-17: steps through Klüver's 4 form-constant families one at a time, 1×2 panel of V1 cortical lattice → retinal log-polar pullback) | 36 → 36 |
 | `petroff_stromatolite_dome_to_cone.gif` | `python3 2010-petroff-stromatolite.py --no-show --gif petroff.gif` | 70 → 70 |
 | `chindapol_coral_flow_growth.gif` | `python3 2013-chindapol-coral-flow.py --no-show --gif chindapol.gif` | 48 → 48 |
 | `planform_morphospace_timeline.gif` | `PLANFORM_DB_PATH=… python3 2013-lobo-planform-morphology.py` → `planform_morphospace_timeline.gif` | 63 → 63 |
