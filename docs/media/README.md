@@ -12,6 +12,7 @@ options added in the same change; inputs as documented for each script.
 | `thompson_transformations.gif` | `python3 thompson/1917-thompson.py --gif thompson.gif` (remade 2026-10-17: the fish is now the real *Scarus ghobban* silhouette, with the real *Pomacanthus* as the dashed target of the coaxial family) | 196 → 80 (identical hold frames merged) |
 | `turing_gray_scott.gif` | `python3 1952-turing-morpho.py` → `turing_patterns.gif` (legacy, tracked at the repo root) | 500 → 60 |
 | `raup_shell_coiling.gif` | `python3 create_raup_animations.py` → `raup_shell_animation.gif` (remade 2026-10-17 after the model fix; 660 px, the full-size file is no longer tracked) | 100 → 48 |
+| `bressloff_v1_form_constants.gif` | `python3 2001-bressloff-v1-form-constants.py --no-show --gif bressloff.gif` (2026-10-17: phase drift across Klüver's 4 form-constant families on V1 cortex and retinal log-polar pullback) | 24 → 24 |
 | `petroff_stromatolite_dome_to_cone.gif` | `python3 2010-petroff-stromatolite.py --no-show --gif petroff.gif` | 70 → 70 |
 | `chindapol_coral_flow_growth.gif` | `python3 2013-chindapol-coral-flow.py --no-show --gif chindapol.gif` | 48 → 48 |
 | `planform_morphospace_timeline.gif` | `PLANFORM_DB_PATH=… python3 2013-lobo-planform-morphology.py` → `planform_morphospace_timeline.gif` | 63 → 63 |
@@ -20,6 +21,7 @@ options added in the same change; inputs as documented for each script.
 | `hoffmann_wing_lloyd.gif` | `python3 2018-hoffmann-wing-venation.py --no-show --gif hoffmann.gif` | 35 → 19 (identical hold frames merged) |
 | `cervera_levin_mafe_gj_block.gif` | `python3 "2021-Cervera–Levin–Mafe.py" --gif cervera.gif` (remade 2026-10-17 twice: the territories are drawn on the silhouette of a real *Schmidtea mediterranea* photograph; after the independent audit the cartoon switches at the derived bipolar criterion x*_b = 0.583 and the anterior share of the real body's area is measured) | 46 → 46 |
 | `kahng_coral_geometry_growth.gif` | `python3 2024-kahng-coral-geometry.py --no-show --gif kahng.gif` | 24 → 16 (identical hold frames merged) |
+| `zhang_sorting_morphogenesis.gif` | `python3 sorting-morphogenesis/run_experiments.py --gif zhang.gif --gif-only` (2026-10-17: autonomous cell-view sorting with immovable frozen defects, Delayed Gratification, and chimeric algotype segregation) | 48 → 48 |
 | `odonata_wing_cells_deep_time.gif` | `python3 2026-eshghi-odonata-wing-cells.py --no-resegment --no-crosscheck` → `odonata_wing_cells_deep_time.gif` | 28 → 26 |
 
 Downsizing: frames sampled evenly, resized with Lanczos, quantised with median
@@ -30,4 +32,4 @@ running time (Pillow 12.0.0). Total ≈ 15 MB.
 
 `thompson_scarus_pomacanthus_outlines.png` is a 1400-px, 256-colour copy of the still figure `thompson/1917-thompson-scarus-pomacanthus.py` writes as `thompson_scarus_pomacanthus_outlines.png` (2026-10-17): the real-outline test on two Wikimedia Commons photographs, whose credits (CC BY 4.0 and CC BY 2.0) are printed in the figure and listed in `datasets/thompson/README.md`.
 
-`all_forms_montage.gif` tiles twelve of the animations above (the Scarus → Pomacanthus landmark animation is left out since 2026-10-17: the transformations tile now shows the real fish, and the fit's score still appears in the score tile) (each resampled to 40 frames across its own loop, fitted whole into a 216-px tile, shared 128-colour palette) with a title tile and the MorphoEval overall scores read from the audit YAMLs; `python3 docs/media/make_montage.py` remakes it after any animation or score changes.
+`all_forms_montage.gif` tiles fourteen of the animations above (the Scarus → Pomacanthus landmark animation is left out since 2026-10-17: the transformations tile now shows the real fish, and the fit's score still appears in the score tile) (each resampled to 40 frames across its own loop, fitted whole into a 216-px tile, shared 128-colour palette) with a title tile and the MorphoEval overall scores read from the audit YAMLs; `python3 docs/media/make_montage.py` remakes it after any animation or score changes.

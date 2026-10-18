@@ -25,20 +25,21 @@ morphoeval/
 
 ## Rubric 0.1.0
 
-| group | dimension | weight |
-|---|---|---:|
-| faithfulness | model-fidelity — code implements the published model as stated | 20 |
-| faithfulness | **specimen-match** — output resembles real specimens / authors' figures | **25** |
-| faithfulness | parameter-expressivity — each morphospace parameter visibly controls its feature | 10 |
-| faithfulness | morphometric-validation — measured quantities compared to specimens/literature | 15 |
-| reproducibility | source-traceability — DOI/PMID/repo/data resolvable | 10 |
-| reproducibility | code-traceability — code steps map to source equations/sections | 8 |
-| reproducibility | repro-package — pins, seeds, documented run, sane environment | 12 |
+| group | sub-axis | dimension | weight |
+|---|---|---|---:|
+| faithfulness | model-implementation (30) | model-fidelity — code implements the published model as stated | 20 |
+| faithfulness | biological-validation (40) | **specimen-match** — output resembles real specimens / authors' figures | **25** |
+| faithfulness | model-implementation (30) | parameter-expressivity — each morphospace parameter visibly controls its feature | 10 |
+| faithfulness | biological-validation (40) | morphometric-validation — measured quantities compared to specimens/literature | 15 |
+| reproducibility | reproducibility (30) | source-traceability — DOI/PMID/repo/data resolvable | 10 |
+| reproducibility | reproducibility (30) | code-traceability — code steps map to source equations/sections | 8 |
+| reproducibility | reproducibility (30) | repro-package — pins, seeds, documented run, sane environment | 12 |
 
-Overall = weighted mean. Rule carried over from the siblings: **score only what
-the evidence supports** — every score needs at least one code locus, a
-not-applicable dimension sits at the neutral baseline (50) and is flagged, and
-scripts that were not inspected are listed `unevaluated` with no scores.
+To avoid conflating faithful code with valid biology, `faithfulness` (weight 70) is decomposed and reported along two separate sub-axes: **model-implementation fidelity** (`impl.`, weight 30 = `model-fidelity` 20 + `parameter-expressivity` 10) and **biological/empirical validation** (`bio.`, weight 40 = `specimen-match` 25 + `morphometric-validation` 15), alongside **reproducibility** (`repro.`, weight 30).
+
+**Score semantics (`[0, 100]` uncalibrated ratings vs probabilities):** MorphoEval scores are uncalibrated, criterion-referenced ratings on `0–100`, not probabilities ($s = 76$ does not mean $P(\text{faithful}) = 0.76$). When serialized into the governed ProbKnow Space templates (`RAku3DIN` and `RAIVOEuh`), `score / 100` is written to `pk:hasProbability` and `overall / 100` to `pk:weightOfEvidence` strictly as a unit-interval rescaling for template conformance (or omitted via `--omit-probability`).
+
+**Non-applicable (`not_applicable`) dimensions and baseline-50 shrinkage:** Rule carried over from the siblings: **score only what the evidence supports** — every score needs at least one code locus, and scripts that were not inspected are listed `unevaluated` with no scores. When a dimension is structurally inapplicable (`not_applicable: true`), substituting `50` into the 100-weight sum produces $\bar{s}_{\text{pad}} = (1 - \alpha)\bar{s}_{\text{app}} + 50\alpha$, where $\alpha = w_{\text{NA}} / 100$. Mathematically, substituting `50` is **not** neutral: it shrinks scores toward `50` (penalising scripts with $\bar{s}_{\text{app}} > 50$ and rewarding scripts with $\bar{s}_{\text{app}} < 50$). Only weight renormalisation over applicable dimensions ($\bar{s}_{\text{app}}$) is mathematically neutral; MorphoEval therefore reports **both** the applicable-only renormalised score (`app.`) and the baseline-50 padded score (`pad.`).
 
 ## The cycle
 
@@ -46,20 +47,17 @@ The forms in question are the shapes of bodies — how they arise in development
 paper, dataset or claim worth the work and pointing the agent at it — and ends in one of three kinds of script
 (reproduce the paper's model from its equations, decode the authors' formal encoding into form, or test a
 published claim against measurements). Between the tiers sits what the scripts produce — box 6, the
-twelve animations, each labelled with its paper — which is what tier B scores; a person reads the scores
+fourteen animations, each labelled with its paper — which is what tier B scores; a person reads the scores
 and decides what to fix or where to go next; the builder agent then re-works the script — its fidelity to
 the paper, its sources, its checks — and the fix runs back through box 6 into the script (👤 marks the two
 places people decide). Two agent roles are meant to be distinct: the **builder** that writes and re-works the
-code and the **assessor** that scores it. For the first nine audits the same model filled both (each audit
-names its assessor, and the report's limitations say so); on 2026-10-17 the Cervera–Levin–Mafe script was
-scored by a model from another company (`gpt-5.6-sol`, OpenAI), given the rubric, the script and the
+code and the **assessor** that scores it. For the first nine audits the same model filled both (`claude-fable-5-1`, Anthropic); on 2026-10-17 the Cervera–Levin–Mafe script was
+scored across two rounds by a model from another company (`gpt-5.6-sol`, OpenAI), given the rubric, the script and the
 fixtures and no opinions, and it found defects the builder had not — an unused morphospace axis, a CSV
-that doubles the simulated displacement, a wrong PMID (44.9). The builder fixed its six remediation items,
-the same assessor re-scored the fix at 55.6 and, in the re-score, caught two further bugs the builder had
-introduced and overlooked — one full turn of the loop, with the independent assessor doing what the
-self-assessment had not. The graph takes any assessor's nanopubs on the same
-hypotheses; scoring the other nine scripts the same way is the open item in
-[morpholib#1](https://github.com/fractastical/morpholib/issues/1). Each pass pins a commit; scores are 0–100 per dimension with a weighted mean overall; published
+that doubles the simulated displacement, a wrong PMID (44.9), and after remediation (55.6) two further threshold/legend bugs the builder had
+introduced and overlooked. In addition, a five-script blinded second-assessor sample (`2026-10-17-blinded-sample-audit.yaml`) was scored by `gemini-4-argon` (Google) on identical script versions (`thompson`, `odonata`, `limbform`, `raup`, `turing`), showing exact rank-order concordance on overall scores (Spearman $\rho = 1.00$, Kendall $\tau = 1.00$; dimension-level $\rho = 0.823$ across 35 pairs, $\text{MAD} = 13.7$ points) while surfacing concrete defects the builder had missed (e.g. a 65-character SHA-256 typo in `2014-lobo-limbform-morphology.py`). The graph takes any assessor's nanopubs on the same
+hypotheses; scoring the remaining scripts the same way is tracked in
+[morpholib#1](https://github.com/fractastical/morpholib/issues/1). Each pass pins a commit; scores are 0–100 uncalibrated ratings per dimension with a weighted mean overall; published
 nanopubs are immutable and re-scores supersede them. The same figure as an image (for the PDF report
 and anything that cannot render Mermaid) is `docs/media/morphoeval_pipeline.png`, drawn by
 `morphoeval/report/draw_pipeline.py`; in it box 6 is the reproductions' own animations in
@@ -83,14 +81,14 @@ flowchart TB
         SC --> P --> S --> R --> X
     end
 
-    O["6 Output &amp; compare<br/>what each script produces — its own figure and animation<br/>(the twelve in docs/media/) — set beside the authors' figures<br/>or real specimens; distinct forms must come out distinct.<br/>This is what gets scored."]:::build
+    O["6 Output &amp; compare<br/>what each script produces — its own figure and animation<br/>(the fourteen in docs/media/) — set beside the authors' figures<br/>or real specimens; distinct forms must come out distinct.<br/>This is what gets scored."]:::build
     X -- writes --> O
 
     subgraph B["B &nbsp;Auditing it — the MorphoEval cycle"]
         direction LR
         AU["🤖 assessor · 7 Audit<br/>a different agent from the builder scores the script<br/>on 7 questions, 0–100 each, with a written reason<br/>and the lines of code it rests on, at one version<br/><small>audits/&lt;date&gt;-&lt;name&gt;.yaml</small>"]:::eval
         M["8 Measure<br/>outputs hashed and measured independently<br/>against specimens or the paper:<br/>numbers, not opinions<br/><small>measure_outputs.py</small>"]:::eval
-        BG["9 Write as claims<br/>each score becomes one small machine-readable<br/>statement: 'this script reproduces X' — how likely,<br/>says who, on what evidence, under what licence<br/><small>build_morphoeval_kg.py (RDF, ProbKnow templates)</small>"]:::pub
+        BG["9 Write as claims<br/>each score becomes one small machine-readable<br/>statement: 'this script reproduces X' — what rubric score,<br/>says who, on what evidence, under what licence<br/><small>build_morphoeval_kg.py (RDF, ProbKnow templates)</small>"]:::pub
         PU["10 Sign &amp; publish<br/>each statement is signed and put on a public<br/>network of servers under a permanent address;<br/>test network first, then for real<br/><small>sign_morphoeval.py</small>"]:::pub
         G[("11 Public record<br/>anyone can look a score up, cite it, check its<br/>signature or query across all audits<br/><small>Nanopub Query · kg/&lt;audit&gt;/REPORT.md</small>")]:::pub
         T["👤 12 Remediate<br/>what the audit found wrong becomes a to-do list;<br/>a person picks, the builder agent re-works the<br/>script, and the touched scores are judged again<br/><small>GitHub issue #1</small>"]:::loop
@@ -102,7 +100,7 @@ flowchart TB
     G -. other assessors (models, people) may publish their own<br/>assessment of the same hypotheses .-> BG
 ```
 
-*What a nanopublication is:* the smallest publishable unit of science — one statement (here "this script's reproduction of Raup 1966 is faithful, probability 0.64") packaged with who asserted it, when, on what evidence and under what licence, cryptographically signed, and stored on a public network of servers under a permanent address anyone can cite or fetch. Once published it cannot be edited; a re-score publishes a new statement that points at the one it replaces, so the history stays visible, and other assessors can publish their own assessment of the same hypothesis next to ours.
+*What a nanopublication is:* the smallest publishable unit of science — one statement (here "this script's reproduction of Raup 1966 scores 64.1/100 on the MorphoEval rubric (mostly faithful)") packaged with who asserted it, when, on what evidence and under what licence, cryptographically signed, and stored on a public network of servers under a permanent address anyone can cite or fetch. Once published it cannot be edited; a re-score publishes a new statement that points at the one it replaces, so the history stays visible, and other assessors can publish their own assessment of the same hypothesis next to ours.
 
 ## Workflow
 
@@ -168,12 +166,12 @@ probabilities, required/repeatable statements). Earlier nanopubs (2026-10-13 /
 
 | MorphoEval notion | ProbKnow term (template) |
 |---|---|
-| "script S faithfully reproduces organism O under source model P" | `pkr:claim/morphoeval-<sim>` a **`pk:Claim`** (claim template): `rdfs:label`, `dct:description`, `pk:context` (scripts, output, organism, commit, environment, non-DOI sources) · `pk:derivedFromPaper <doi>` · `pk:hasAssessment` → the 8 assessments · `pk:weightOfEvidence` = overall/100 |
-| one rubric score | `pkr:assessment/<audit>-<sim>-<dim>` a **`pk:LLMClaimAssessment`** (LLM-assessment template) · `pk:evaluatesHypothesis pkr:hypothesis/morphoeval-<sim>-<dim>` ("<sim> satisfies the criterion <dim>", `dct:identifier "morphoeval/0.1.0/<dim>"`) · `pk:assessedBy pkr:model/<assessor>` a `pk:Model` · `pk:hasProbability` = score/100 · `pk:hasVerdict` band · `rdfs:comment` = rationale + evidence loci (commit-pinned GitHub `#L<a>-L<b>`, sha256-fingerprinted outputs, morphometrics with their reference values) · `pk:evidenceFor` / `pk:evidenceAgainst` when an evidence entry is marked `supports: true|false` |
+| "script S faithfully reproduces organism O under source model P" | `pkr:claim/morphoeval-<sim>` a **`pk:Claim`** (claim template): `rdfs:label`, `dct:description`, `pk:context` (scripts, output, organism, commit, environment, non-DOI sources) · `pk:derivedFromPaper <doi>` · `pk:hasAssessment` → the 8 assessments · `pk:weightOfEvidence` = overall/100 (unit-interval rescaled uncalibrated rubric score, optional via `--omit-probability`) |
+| one rubric score | `pkr:assessment/<audit>-<sim>-<dim>` a **`pk:LLMClaimAssessment`** (LLM-assessment template) · `pk:evaluatesHypothesis pkr:hypothesis/morphoeval-<sim>-<dim>` ("<sim> satisfies the criterion <dim>", `dct:identifier "morphoeval/0.1.0/<dim>"`) · `pk:assessedBy pkr:model/<assessor>` a `pk:Model` · `pk:hasProbability` = score/100 (unit-interval rescaled uncalibrated rubric score, not $P(\text{faithful})$; optional via `--omit-probability`) · `pk:hasVerdict` band · `rdfs:comment` = rationale + evidence loci (commit-pinned GitHub `#L<a>-L<b>`, sha256-fingerprinted outputs, morphometrics with their reference values) · `pk:evidenceFor` / `pk:evidenceAgainst` when an evidence entry is marked `supports: true|false` |
 | checkpoint | `…-overall`, the same template, evaluating `pkr:hypothesis/morphoeval-<sim>` (the claim proposition); remediation items as `pk:evidenceAgainst` |
 | the rubric | `pkr:concept/morphoeval-rubric-0.1.0` a `pk:Concept` (`skos:narrower` one `pk:Concept` per dimension); no governed template exists for a rubric, so it carries only the provenance and pubinfo templates |
 | provenance | "Extracted from a paper by ProbKnow" template: `prov:wasAttributedTo` the model and the publisher, `prov:wasDerivedFrom` each DOI with `dct:title` / `dct:date`; the rubric uses the generic "Attributed to" template |
-| the scorer | `pkr:model/claude-fable-5-1` a `pk:Model` (`prov:actedOnBehalfOf` the publisher's ORCID, in pubinfo) |
+| the scorer | `pkr:model/<assessor-id>` (`claude-fable-5-1`, `gpt-5.6-sol`, or `gemini-4-argon`) a `pk:Model` (`prov:actedOnBehalfOf` the publisher's ORCID, in pubinfo) |
 
 The templates carry evidence as literals, so the code loci, output fingerprints
 and morphometrics that used to be separate `pk:EvidenceItem` / `schema:` nodes
@@ -394,19 +392,33 @@ PDF with a source archive; MorphoEval follows the same pattern.
 
 ## Current checkpoint
 
-Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1).
+Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1). Faithfulness (weight 70) is reported along its two sub-axes — **model-implementation fidelity** (`impl.`, weight 30) and **biological/empirical validation** (`bio.`, weight 40) — alongside **reproducibility** (`repro.`, weight 30). Where a dimension is `not_applicable` (`*`), both the weight-renormalised applicable-only mean (`app.`) and the baseline-50 padded score (`pad.`) are reported.
 
-| simulation | checkpoint | faithfulness | reproducibility | overall |
-|---|---|---:|---:|---:|
-| PlanformDB planarian morphology (`2013-lobo-planform-morphology.py`) | 161f269, audit 2026-10-14 | 66.1 | 67.3 | **66.5** |
-| ~~PlanformDB planarian animation (`1900-planformDB_parser.py`)~~ superseded | f3fe478, audit 2026-10-13 | 5.4 | 36.3 | ~~14.7~~ |
-| Raup shell coiling (`create_raup_animations.py`) | ba6fd20, audit 2026-10-17-raup (re-score of 2026-10-13: 37.3) | 58.6 | 77.0 | **64.1** |
-| Gray–Scott (Turing) | f3fe478, audit 2026-10-13 | 54.3 | 49.0 | **52.7** |
-| Cervera–Levin–Mafe bioelectric synthesis (`2021-Cervera–Levin–Mafe.py`) | a0d6848, audit 2026-10-17-cervera-v2 (re-score; 44.9 at e71ca55) — assessor GPT‑5.6 Sol (OpenAI) | 46.4 | 76.9 | **55.6** |
-| Chindapol coral flow | f3fe478, audit 2026-10-13 | 49.3 | 70.0 | **55.5** |
-| Hoffmann–Donoughe wing venation | f3fe478, audit 2026-10-13 | 81.1 | 70.0 | **77.8** |
-| Odonata wing cells, fossil vs extant (`2026-eshghi-odonata-wing-cells.py`) | fbbcaf6, audit 2026-10-14-odonata | 75.7 | 76.7 | **76.0** |
-| LimbformDB limb morphologies (`2014-lobo-limbform-morphology.py`) | 747c57f, audit 2026-10-14-limbform | 70.0 | 74.3 | **71.3** |
-| WormGUIDES C. elegans embryo atlas + connectome (`2015-santella-wormguides-celegans.py`) | 303a87e, audit 2026-10-16-celegans (re-score of 2026-10-15: 67.7) | 67.6 | 76.3 | **70.2** |
-| Thompson Scarus -> Pomacanthus on real landmarks and outlines (`thompson/1917-thompson-scarus-pomacanthus.py`) | 232e8f8, audit 2026-10-17-thompson (re-score of 2026-10-16: 70.2) | 74.3 | 82.0 | **76.6** |
-| Petroff stromatolite / Kahng coral | — | — | — | *unevaluated* |
+### Primary checkpoint chain (`role: primary`)
+
+| simulation | checkpoint | assessor | impl. (30) | bio. (40) | repro. (30) | overall (app.) | overall (pad.) |
+|---|---|---|---:|---:|---:|---:|---:|
+| Hoffmann–Donoughe wing venation (`2018-hoffmann-wing-venation.py`) | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 81.7 | 80.0 | 71.3 | 77.8 | **77.8** |
+| Thompson *Scarus* → *Pomacanthus* (`thompson/1917-thompson-scarus-pomacanthus.py`) | 232e8f8, audit 2026-10-17-thompson (was 70.2) | Claude Fable 5.1 | 70.3 | 77.3 | 82.0 | 76.6 | **76.6** |
+| Odonata wing cells, fossil vs extant (`2026-eshghi-odonata-wing-cells.py`) | fbbcaf6, audit 2026-10-14-odonata | Claude Fable 5.1 | 63.3 (`70.0` app.) | 85.0 | 78.0 | 78.9 | **76.0** |
+| LimbformDB limb morphologies (`2014-lobo-limbform-morphology.py`) | 747c57f, audit 2026-10-14-limbform | Claude Fable 5.1 | 81.7 | 61.3 | 74.3 | 71.3 | **71.3** |
+| WormGUIDES *C. elegans* embryo atlas (`2015-celegans-embryogenesis.py`) | f39a409, audit 2026-10-16-celegans (was 67.7) | Claude Fable 5.1 | 70.0 (`80.0` app.) | 64.4 | 78.0 | 72.4 | **70.2** |
+| PlanformDB planarian morphology (`2013-lobo-planform-morphology.py`) | 161f269, audit 2026-10-14 | Claude Fable 5.1 | 81.7 | 55.0 | 66.7 | 66.5 | **66.5** |
+| Raup shell coiling (`create_raup_animations.py`) | ba6fd20, audit 2026-10-17-raup (was 37.3) | Claude Fable 5.1 | 76.7 | 45.0 | 77.0 | 64.1 | **64.1** |
+| Cervera–Levin–Mafe bioelectric synthesis (`2021-Cervera–Levin–Mafe.py`) | a0d6848, audit 2026-10-17-cervera-v2 (was 44.9 at e71ca55) | **GPT‑5.6 Sol (OpenAI)** | 49.3 | 44.3 | 76.9 | 55.6 | **55.6** |
+| Chindapol coral flow (`2013-chindapol-coral-flow.py`) | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 53.3 | 43.8 | 70.0 | 55.5 | **55.5** |
+| Gray–Scott (Turing) (`1952-turing-morpho.py`) | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 75.0 | 38.8 (`20.0` app.) | 49.0 | 53.6 | **52.7** |
+| ~~PlanformDB planarian animation (`1900-planformDB_parser.py`)~~ superseded | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 9.3 | 2.5 | 36.3 | 14.7 | ~~14.7~~ |
+| Petroff stromatolite (`2010-petroff-stromatolite.py`), Kahng coral (`2024-kahng-coral-geometry.py`), Thompson demo (`thompson/1917-thompson.py`) | — | — | — | — | — | — | *unevaluated* |
+
+### Blinded second-assessor sample (`2026-10-17-blinded-sample-audit.yaml`, `role: second_assessor`, `gemini-4-argon`, Google)
+
+Five scripts previously scored by `claude-fable-5-1` were re-scored under a strictly blinded protocol at commit `5659d5e` (identical script files to the primary checkpoints). Rank-order agreement on overall scores is exact (Spearman $\rho = 1.00$, Kendall $\tau = 1.00$, $p = 0.0167$; Pearson $r = 0.947$; dimension-level Spearman $\rho = 0.823$ across all 35 dimension pairs, mean signed offset $+7.1$ pts, $\text{MAD} = 13.7$ pts). The 40 signed `pk:LLMClaimAssessment` nanopublications are stored in `morphoeval/kg/2026-10-17-blinded-sample-audit/signed/`.
+
+| simulation | primary (`claude-fable-5-1`) app. / **pad.** | blinded (`gemini-4-argon`) impl. (30) | blinded bio. (40) | blinded repro. (30) | blinded app. / **pad.** | $\Delta$ (pad.) |
+|---|---:|---:|---:|---:|---:|---:|
+| `thompson/1917-thompson-scarus-pomacanthus.py` | 76.6 / **76.6** | 90.0 | 89.8 | 93.0 | 90.8 / **90.8** | +14.2 |
+| `2026-eshghi-odonata-wing-cells.py` | 78.9 / **76.0** | 75.3 (`88.0` app.) | 93.5 | 91.0 | 91.4 / **87.3** | +11.3 |
+| `2014-lobo-limbform-morphology.py` | 71.3 / **71.3** | 86.7 | 77.0 | 89.3 | 83.6 / **83.6** | +12.3 |
+| `create_raup_animations.py` | 64.1 / **64.1** | 86.0 | 68.5 | 86.4 | 79.3 / **79.3** | +15.2 |
+| `1952-turing-morpho.py` | 53.6 / **52.7** | 57.0 | 33.1 (`5.0` app.) | 35.0 | 37.8 / **40.9** | −11.9 |

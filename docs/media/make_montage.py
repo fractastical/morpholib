@@ -27,6 +27,7 @@ CLIPS = [
     ("thompson_transformations.gif",       "1917", "Thompson, transformations (real fish)",  "thompson/1917-thompson.py"),
     ("turing_gray_scott.gif",              "1952", "Turing / Gray–Scott patterns",            "1952-turing-morpho.py"),
     ("raup_shell_coiling.gif",             "1966", "Raup, shell coiling",                     "create_raup_animations.py"),
+    ("bressloff_v1_form_constants.gif",    "2001", "Bressloff, V1 form constants",            "2001-bressloff-v1-form-constants.py"),
     ("petroff_stromatolite_dome_to_cone.gif", "2010", "Petroff, stromatolites",               "2010-petroff-stromatolite.py"),
     ("chindapol_coral_flow_growth.gif",    "2013", "Chindapol, coral in flow",                "2013-chindapol-coral-flow.py"),
     ("planform_morphospace_timeline.gif",  "2013", "Planform, planarian morphologies",        "2013-lobo-planform-morphology.py"),
@@ -35,6 +36,7 @@ CLIPS = [
     ("hoffmann_wing_lloyd.gif",            "2018", "Hoffmann, wing venation",                 "2018-hoffmann-wing-venation.py"),
     ("cervera_levin_mafe_gj_block.gif",    "2021", "Cervera–Levin–Mafe, bioelectric",         "2021-Cervera–Levin–Mafe.py"),
     ("kahng_coral_geometry_growth.gif",    "2024", "Kahng, coral geometry",                   "2024-kahng-coral-geometry.py"),
+    ("zhang_sorting_morphogenesis.gif",    "2025", "Zhang, sorting morphogenesis",            "sorting-morphogenesis/sorting_morphogenesis.py"),
     ("odonata_wing_cells_deep_time.gif",   "2026", "Eshghi, Odonata wing cells",              "2026-eshghi-odonata-wing-cells.py"),
 ]
 # scored scripts that have no tile of their own (their output is a still, or another tile of the same paper stands for them)
@@ -53,7 +55,7 @@ def scores() -> dict[str, float]:
     br = importlib.util.module_from_spec(spec); spec.loader.exec_module(br)
     import yaml
     rubric = yaml.safe_load(open(br.RUBRIC))
-    latest, _ = br.collect(br.load_audits(), rubric)
+    latest = br.collect(br.load_audits(), rubric)[0]
     return {r["script"]: r["overall"] for r in latest}
 
 
@@ -119,7 +121,7 @@ def main(argv=None):
     ap.add_argument("--out", default=str(HERE / "all_forms_montage.gif"))
     ap.add_argument("--frames", type=int, default=40)
     ap.add_argument("--tile-width", type=int, default=216)
-    ap.add_argument("--cols", type=int, default=5)
+    ap.add_argument("--cols", type=int, default=4)
     ap.add_argument("--duration", type=int, default=130, help="ms per frame")
     args = ap.parse_args(argv)
 

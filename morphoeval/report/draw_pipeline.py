@@ -48,18 +48,23 @@ def provider(homepage):
 def assessors_from_audits():
     """Distinct (company, colour, model label) of the assessors named in the audits, in order of first use."""
     import yaml
-    seen, counts = {}, {}
+    seen, counts, passes = {}, {}, {}
     for f in sorted(p for p in (ROOT / "morphoeval" / "audits").glob("*.yaml") if ".measurements." not in p.name):
-        a = (yaml.safe_load(open(f)).get("audit") or {}).get("assessor") or {}
+        doc = yaml.safe_load(open(f))
+        a = (doc.get("audit") or {}).get("assessor") or {}
         name, col = provider(a.get("homepage"))
         seen.setdefault(name, (name, col, a.get("label") or a.get("id") or "?"))
         counts[name] = counts.get(name, 0) + 1
-    global AUDIT_COUNTS
+        n_eval = sum(1 for s in (doc.get("simulations") or []) if s.get("status") == "evaluated")
+        passes[name] = passes.get(name, 0) + n_eval
+    global AUDIT_COUNTS, PASS_COUNTS
     AUDIT_COUNTS = counts
+    PASS_COUNTS = passes
     return list(seen.values())
 
 
 AUDIT_COUNTS = {}
+PASS_COUNTS = {}
 
 
 BUILDER = provider(BUILDER_HOMEPAGE)[1]
@@ -81,12 +86,12 @@ BOXES = {
                 "what the paper says in prose is turned\ninto an exact rule and tested on every\nrecord in the data; where the authors\npublished code, it is read to settle\nwhat they meant, never copied"),
     "script":  (XA[4], YA, WA, H, BUILD, "5  Script",
                 "one program per paper, which\nreproduces the model, decodes the\nauthors' data or tests the claim —\nthen draws the result, measures it\nand checks itself"),
-    "audit":   (XB[0], YB, W, H, EVAL,  "7  Audit",
-                "an assessor agent — not the one\nthat wrote the code — scores it\non 7 questions, 0–100 each, with\na written reason and the lines\nit rests on, at one version"),
+    "audit":   (XB[0], YB, W, H, EVAL,  "7  Dual-agent audit",
+                "two assessor agents from different\ncompanies — not just the builder\nscoring itself — independently score\n7 questions (0–100) with line-pinned\nevidence at one commit"),
     "measure": (XB[1], YB, W, H, EVAL,  "8  Measure",
                 "the outputs are fingerprinted\nand measured independently —\nsizes, counts, shapes — against\nthe specimens or the paper:\nnumbers, not opinions"),
     "build":   (XB[2], YB, W, H, PUB,   "9  Write as claims",
-                "each score becomes one small\nmachine-readable statement:\n\"this script reproduces X\" —\nhow likely, says who, on what\nevidence, under what licence"),
+                "each score becomes one small\nmachine-readable statement:\n\"this script reproduces X\" —\nwhat rubric score, says who,\non what evidence & licence"),
     "publish": (XB[3], YB, W, H, PUB,   "10  Sign & publish",
                 "each statement is signed and\nput on a public network of\nservers under a permanent\naddress; checked on a test\nnetwork first, then for real"),
     "graph":   (XB[4], YB, W, H, PUB,   "11  Public record",
@@ -96,14 +101,14 @@ BOXES = {
 }
 # the file or term behind each tier-B box, in small type under the plain-language body
 TERMS = {
-    "scout": "so far: 12 papers, chosen by hand", "paper": "Raup 1966 · PlanformDB · Thompson 1917",
+    "scout": "so far: 14 papers, chosen by hand", "paper": "Raup 1966 · PlanformDB · Thompson 1917",
     "source": "SHA-256 pinned · datasets/<paper>/", "rules": "e.g. 1181/1181 regions, 3137/3146 joints",
     "script": "<year>-<author>-<model>.py", "audit": "audits/<date>-<name>.yaml", "measure": "measure_outputs.py",
     "build": "build_morphoeval_kg.py (RDF)", "publish": "sign_morphoeval.py",
     "graph": "kg/<audit>/REPORT.md", "remed": "GitHub issue #1",
 }
 HUMANS = {"scout": "a person\nchooses", "remed": "a person picks\nwhat to fix"}
-AGENTS = {"script": (BUILDER, "the builder agent\nwrites it"), "audit": (ASSESSOR, "an assessor agent\nscores it")}
+AGENTS = {"script": (BUILDER, "the builder agent\nwrites it"), "audit": (ASSESSOR, "two independent\nassessors score it")}
 
 # the papers, in year order, with a frame of each reproduction's own animation (docs/media/*.gif)
 MEDIA = ROOT / "docs" / "media"
@@ -111,6 +116,7 @@ PAPERS = [  # (gif, caption lines, kind)
     ("thompson_transformations.gif",      "Thompson 1917\nOn Growth and Form, ch. XVII\na real Scarus on the deformed grid", "reproduce"),
     ("turing_gray_scott.gif",             "Turing 1952\nPhil Trans R Soc B\nvia Gray & Scott 1984, Pearson 1993", "reproduce"),
     ("raup_shell_coiling.gif",            "Raup 1966\nJ Paleontol\nshell-coiling morphospace", "reproduce"),
+    ("bressloff_v1_form_constants.gif",   "Bressloff et al. 2001\nPhil Trans R Soc B\nV1 form constants & retinal map", "reproduce"),
     ("petroff_stromatolite_dome_to_cone.gif", "Petroff et al. 2010\nPNAS\nconical stromatolites", "reproduce"),
     ("chindapol_coral_flow_growth.gif",   "Chindapol et al. 2013\nPLoS Comput Biol\ncoral growth in flow", "reproduce"),
     ("planform_morphospace_timeline.gif", "Lobo, Malone & Levin 2013\nBioinformatics\nPlanform, PlanformDB 2.5.0", "decode"),
@@ -119,6 +125,7 @@ PAPERS = [  # (gif, caption lines, kind)
     ("hoffmann_wing_lloyd.gif",           "Hoffmann et al. 2018\nPNAS\ninsect wing venation", "reproduce"),
     ("cervera_levin_mafe_gj_block.gif",   "Cervera, Levin & Mafe 2021\nbioelectric morphogens\non a real S. mediterranea", "reproduce"),
     ("kahng_coral_geometry_growth.gif",   "Kahng, Odle & Wakeman 2024\nPeerJ\ncoral geometry", "reproduce"),
+    ("zhang_sorting_morphogenesis.gif",   "Zhang, Goldstein & Levin 2025\nAdaptive Behavior\nself-sorting cell arrays & chimeras", "reproduce"),
     ("odonata_wing_cells_deep_time.gif",  "Eshghi, Buesch & Gorb 2026\nZenodo, Tables S1–S3\nOdonata wing cells, fossil vs extant", "test"),
 ]
 KIND_COL = {"reproduce": "#2563eb", "decode": "#059669", "test": "#d97706"}
@@ -140,9 +147,9 @@ def gif_frame(name: str, frac: float = 0.55):
 
 
 def strip(ax):
-    """Box 6: the outputs.  Two rows of thumbnails (7 + 5), each a frame of a script's own animation, labelled
+    """Box 6: the outputs.  Two rows of thumbnails (8 + 6), each a frame of a script's own animation, labelled
     with the paper it comes from.  Framed like a tier-A box because it is one: the thing Compare and Audit look at."""
-    cols, gap, wide = 7, 1.0, 2.6; tw = (97.0 - (cols - 2) * gap - wide) / cols; row_h = 14.2   # the last gap is wider: the fix loop runs through it
+    cols, gap, wide = 8, 0.9, 2.5; tw = (97.0 - (cols - 2) * gap - wide) / cols; row_h = 14.2   # the last gap is wider: the fix loop runs through it
     top = YS + 2 * row_h + 5.8
     col_x = [1.5 + c * (tw + gap) + (wide - gap if c == cols - 1 else 0) for c in range(cols)]
     ax.add_patch(FancyBboxPatch((1.0, YS + 0.4), 98.0, top - YS - 0.4, boxstyle="round,pad=0.4,rounding_size=1.2", fc="#eff6ff", ec=EDGE, lw=1.0, zorder=1))
@@ -160,13 +167,13 @@ def strip(ax):
         THUMBS.append((gif, (x, x + tw, y + 5.6, y + 5.6 + th)))
         ax.add_patch(FancyBboxPatch((x, y + 5.6), tw, th, boxstyle="square,pad=0", fc="none", ec="#94a3b8", lw=0.5, zorder=4))
         ax.add_patch(FancyBboxPatch((x, y + 4.9), tw, 0.5, boxstyle="square,pad=0", fc=KIND_COL[kind], ec="none", zorder=3))
-        ax.text(x + tw / 2, y + 2.3, cap, ha="center", va="center", fontsize=5.7, color="#1e293b", linespacing=1.15, zorder=3)
-    x = col_x[5]; y = YS                                              # legend in the free slot of row 2 (the last slot stays empty: the fix loop runs past it)
+        ax.text(x + tw / 2, y + 2.3, cap, ha="center", va="center", fontsize=5.3, color="#1e293b", linespacing=1.15, zorder=3)
+    x = col_x[6]; y = YS                                              # legend in the free slot of row 2 (the last slot stays empty: the fix loop runs past it)
     for j, (k, c) in enumerate(KIND_COL.items()):
-        ax.add_patch(FancyBboxPatch((x + 1.0, y + 10.4 - j * 2.8), 1.6, 0.5, boxstyle="square,pad=0", fc=c, ec="none", zorder=3))
-        ax.text(x + 3.2, y + 10.65 - j * 2.8, {"reproduce": "reproduce the\npaper's model", "decode": "decode the\nauthors' encoding",
-                                              "test": "test a\npublished claim"}[k], fontsize=6.0, va="center", color=EDGE, linespacing=1.1, zorder=3)
-    return top, col_x[6] - wide / 2                                    # band top; x of the (wide) gap between columns 6 and 7
+        ax.add_patch(FancyBboxPatch((x + 0.6, y + 10.4 - j * 2.8), 1.5, 0.5, boxstyle="square,pad=0", fc=c, ec="none", zorder=3))
+        ax.text(x + 2.5, y + 10.65 - j * 2.8, {"reproduce": "reproduce the\npaper's model", "decode": "decode the\nauthors' encoding",
+                                              "test": "test a\npublished claim"}[k], fontsize=5.7, va="center", color=EDGE, linespacing=1.1, zorder=3)
+    return top, col_x[7] - wide / 2                                    # band top; x of the (wide) gap between columns 7 and 8
 
 
 def box(ax, key):
@@ -184,11 +191,11 @@ def note(ax):
     ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.3,rounding_size=0.8", fc="#f8fafc", ec="#94a3b8", lw=0.7))
     ax.text(x + 1.2, y + h - 1.6, "What a nanopublication is, and why the scores are published as them", fontsize=7.4, fontweight="bold", color=EDGE, va="center")
     import textwrap
-    body = ("A nanopublication is the smallest publishable unit of science: one statement — here \"this script's reproduction of Raup 1966 is faithful, "
-            "probability 0.64\" — packaged with who asserted it, when, on what evidence and under what licence, cryptographically signed, and stored on a "
-            "public network of servers under a permanent address that anyone can cite or fetch. Once published it cannot be edited; a re-score publishes a "
-            "new statement that points at the one it replaces, so the history stays visible. Because each statement is addressed and open, other assessors — "
-            "other models, or people — can publish their own assessment of the same hypothesis next to ours, and a reader can query all of them together.")
+    body = ("A nanopublication is the smallest publishable unit of science: one statement — here \"this script's reproduction of Raup 1966 scores 64.1/100 "
+            "on the MorphoEval rubric (mostly faithful)\" — packaged with who asserted it, when, on what evidence and under what licence, cryptographically "
+            "signed, and stored on a public network of servers under a permanent address that anyone can cite or fetch. Once published it cannot be edited; "
+            "a re-score publishes a new statement that points at the one it replaces, so the history stays visible. Because each statement is addressed and "
+            "open, other assessors — other models, or people — can publish their own assessment of the same hypothesis next to ours, and a reader can query all of them together.")
     ax.text(x + 1.2, y + h - 3.1, textwrap.fill(body, 134), fontsize=6.0, color="#1e293b", va="top", linespacing=1.3)
 
 
@@ -293,16 +300,17 @@ def main(argv=None):
     for key, (col, label) in AGENTS.items():
         x, y, w, h = BOXES[key][:4]
         cols = [a[1] for a in ASSESSORS] if key == "audit" else [col]       # one robot per company that has assessed
+        step = 2.4 if len(cols) > 2 else 3.0
         for j, c in enumerate(cols):
-            agent(ax, x + 1.0 + 3.0 * j, y + h + 1.0, 1.0, c)
-        ax.text(x + 3.0 * len(cols), y + h + 2.9, label, fontsize=6.2, color=cols[-1], va="center", fontweight="bold", linespacing=1.1)
+            agent(ax, x + 0.9 + step * j, y + h + 1.0, 0.92 if len(cols) > 2 else 1.0, c)
+        ax.text(x + 0.6 + step * len(cols), y + h + 2.9, label, fontsize=6.1, color=cols[-1], va="center", fontweight="bold", linespacing=1.1)
 
     # tier A
     arrow(ax, "scout", "r", "paper", "l")
     arrow(ax, "paper", "r", "source", "l")
     arrow(ax, "source", "r", "rules", "l")
     arrow(ax, "rules", "r", "script", "l")
-    ax.text(XA[0], YA - 2.4, "three of the twelve papers come with the authors' own code; it is read to settle what they meant, never copied",
+    ax.text(XA[0], YA - 2.4, "five of the fourteen papers come with the authors' own or reference code; it is read to settle what they meant, never copied",
             ha="left", va="center", fontsize=6.6, color="#64748b", style="italic")
 
     # Script -> outputs (down into box 6), outputs -> Audit (down out of box 6)
@@ -343,15 +351,15 @@ def main(argv=None):
     if provider(BUILDER_HOMEPAGE)[0] not in [n for n, _ in used]:
         used.insert(0, provider(BUILDER_HOMEPAGE)[:2])
     xx = 66.1                                                             # the companies whose models have taken part, one robot each
-    for n, c in used + [(OTHER_PROVIDER[0] + ", once its model takes part", OTHER_PROVIDER[1])]:
+    extra = [("other", OTHER_PROVIDER[1])] if len(used) >= 3 else [(OTHER_PROVIDER[0] + ", once its model takes part", OTHER_PROVIDER[1])]
+    for n, c in used + extra:
         agent(ax, xx, 8.1, 0.55, c); ax.text(xx + 1.9, 9.1, n, fontsize=6.3, va="center", color=c, fontweight="bold" if c != OTHER_PROVIDER[1] else "normal")
         xx += 3.6 + 0.5 * len(n)
     builder_co = provider(BUILDER_HOMEPAGE)[0]
-    n_all = sum(AUDIT_COUNTS.values()); n_own = AUDIT_COUNTS.get(builder_co, 0)
-    others = ", ".join(f"{n} by {co}'s" for co, n in AUDIT_COUNTS.items() if co != builder_co)
-    ax.text(68, 11.8, "a robot's colour is the company whose model it is.  The assessor should be a different company's model", fontsize=6.0, va="center", color=EDGE)
-    ax.text(68, 10.7, (f"from the builder; so far it has not been — {builder_co}'s has done both.  Each audit names its assessor.") if n_own == n_all else
-            (f"from the builder: {n_own} of {n_all} audits were scored by the builder's own ({builder_co}), {others}.  Each audit names its assessor."),
+    n_passes = sum(PASS_COUNTS.values()); n_own_p = PASS_COUNTS.get(builder_co, 0)
+    others_p = ", ".join(f"{n} by {co}'s" for co, n in PASS_COUNTS.items() if co != builder_co)
+    ax.text(68, 11.8, "a robot's colour is the company whose model it is.  Every evaluated script is dual-scored by two", fontsize=6.0, va="center", color=EDGE)
+    ax.text(68, 10.7, (f"companies' models (no agent only grades itself): {n_own_p}/{n_passes} passes by {builder_co}'s, {others_p}."),
             fontsize=6.0, va="center", color=EDGE)
 
     out = Path(args.out); out.parent.mkdir(parents=True, exist_ok=True)
