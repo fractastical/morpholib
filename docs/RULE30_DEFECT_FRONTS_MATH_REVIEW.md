@@ -174,14 +174,16 @@ Why doesn't the periodic left crystal eventually invade the center column $i = 0
 
 ## 5. Open Mathematical Problems Suggested by This Formulation
 
-We highlight three concrete open problems suitable for mathematical collaboration:
+We highlight four concrete open problems suitable for mathematical collaboration, each tracked in a dedicated GitHub issue:
 
-1. **Problem A (General Acyclicity of the Kogge–Stone Graph $\mathcal{G}_{2^m}$):**  
-   On the state space $\mathcal{S}_P = \mathbb{F}_2^P \times \mathbb{F}_2^P$ ($P = 2^m$), does the deterministic Kogge–Stone map $(u, v) \mapsto (v, \mathcal{T}_P(u, v))$ (for $v \ne \mathbf{0}_P$) contain **any** directed cycles that avoid the absorbing barrier $v = \mathbf{0}_P$ and are reachable from the period-doubled entry states $(0, c_{k_m})$? Theorem 3 proves that for $m = 0, 1, 2, 3, 4$ ($P \le 16$), every reachable trajectory hits $v = \mathbf{0}_P$ and exits to $2P = 32$ in at most $11$ even-parity splits. Extending this non-cycling proof to general $m$ would provide a purely finite-algebraic proof of unbounded period doubling on the left cone without requiring infinite-lattice ergodic assumptions.
-2. **Problem B (Lower Bound on Mean Synchronization Delay $\langle \Delta T_{\text{lock}} \rangle > 1$):**  
+1. **Problem A — General Acyclicity of the Kogge–Stone Graph $\mathcal{G}_{2^m}$ ([Issue #14](https://github.com/fractastical/morpholib/issues/14)):**  
+   On the state space $\mathcal{S}_P = \mathbb{F}_2^P \times \mathbb{F}_2^P$ ($P = 2^m$), does the deterministic Kogge–Stone map $(u, v) \mapsto (v, \mathcal{T}_P(u, v))$ (for $v \ne \mathbf{0}_P$) contain **any** directed cycles that avoid the absorbing barrier $v = \mathbf{0}_P$ and are reachable from the period-doubled entry states $(0, c_{k_m})$? Theorem 3 proves that for $m = 0, 1, 2, 3, 4$ ($P \le 16$), every reachable trajectory hits $v = \mathbf{0}_P$ and exits to $2P = 32$ in at most $11$ even-parity splits. Extending this non-cycling proof to $P = 32$ and general $m$ would provide a purely finite-algebraic proof of unbounded period doubling on the left cone without requiring infinite-lattice ergodic assumptions.
+2. **Problem B — Lower Bound on Mean Synchronization Delay $\langle \Delta T_{\text{lock}} \rangle > 1$ ([Issue #15](https://github.com/fractastical/morpholib/issues/15)):**  
    By Theorem 1, the extra lock-in delay $\Delta T_{\text{lock}}(k) = T_{\text{lock}}(k) - T_{\text{lock}}(k-1)$ at diagonal $k$ is governed by the waiting time to the next `1` in $c_{k-1}(t)$ (i.e., the run-length distribution of `1`s in the propagate mask $p_0 = \overline{c_{k-1}}$). Proving rigorously that $\liminf_{K\to\infty} \frac{1}{K}\sum_{k=1}^K \Delta T_{\text{lock}}(k) > 1$ would prove unconditionally that the periodic left phase boundary recedes leftward ($v_{\text{lock}} < 0$) and can never capture the center column $i = 0$.
-3. **Problem C (Exact Sélection of the True Unit-Seed Path in the $P=16$ Binary Tree):**  
+3. **Problem C — Exact Selection of the True Unit-Seed Path in the $P=16$ Binary Tree ([Issue #16](https://github.com/fractastical/morpholib/issues/16)):**  
    By Theorem 3, the unit-seed Rule 30 light-cone must follow one of the 16 root-to-leaf paths in Table 3.2 (entering $P = 32$ at one of the 16 values $k_5 \in [87\,867,\, 894\,235]$). Determining which branch bit $\sigma_1 \in \{0, 1\}$ the single-cell seed selects at the first even-parity split $k = 53\,208$ requires evaluating $d_{53208}(t)$ just past $t = T_{\text{lock}}(53208) \approx 1.244 \times 53\,208 \approx 66\,200$ steps — a concrete finite bit-sliced computation ($\approx 2.2 \times 10^9$ cell updates) that pins down the exact path in our 16-leaf tree.
+4. **Problem D — Exact 2D Tent Slope Asymmetry & Cross-Model 1D Defect-Front Universality ([Issue #17](https://github.com/fractastical/morpholib/issues/17)):**  
+   Quantify the left-slope vs. right-slope erosion asymmetry of white triangles in Rule 30 (`100 -> 1` deterministic left slope vs. `001 -> 1` exterior-state-modulated right slope) against the symmetric excitable wave-branching slopes of the Meinhardt–Klingler (1987) PDE and cylindrical UV unwrappings of *Conus textile* shells.
 
 ---
 
