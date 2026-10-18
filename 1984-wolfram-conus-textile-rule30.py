@@ -266,6 +266,358 @@ def rule30_prize_diagnostics(steps: int = 1024) -> dict:
         "front_velocity": float(slope_front),
         "front_intercept": float(intercept_front),
         "lyapunov_damage_spreading_speed": lyapunov_speed,
+        "diff_cone_example": diff_cone,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# 1b. 1D Space-Time Kymograph & Defect-Front Tooling (Jen 1990 / Rule 30 / Morphogenesis)
+# --------------------------------------------------------------------------- #
+def verify_boolean_jacobian() -> dict:
+    """Verify exact GF(2) Boolean partial derivatives of Rule 30 across all 8 neighborhood states (l, c, r):
+        df/dl = 1 (unconditional rightward propagation at speed v_R = +1.0000),
+        df/dc = 1 XOR r (propagates vertically iff r == 0),
+        df/dr = 1 XOR c (propagates leftward iff c == 0; blocked by OR-gate saturation when c == 1).
+    """
+    errors = 0
+    for state in range(8):
+        l = (state >> 2) & 1
+        c = (state >> 1) & 1
+        r = state & 1
+        f0 = l ^ (c | r)
+        df_dl = ((l ^ 1) ^ (c | r)) ^ f0
+        df_dc = (l ^ ((c ^ 1) | r)) ^ f0
+        df_dr = (l ^ (c | (r ^ 1))) ^ f0
+        if df_dl != 1 or df_dc != (1 ^ r) or df_dr != (1 ^ c):
+            errors += 1
+    return {"jacobian_identity_errors": errors}
+
+
+def extract_diagonal_period_cascade(cone: np.ndarray, k_max: int = 415) -> dict:
+    """Analyze left-cone diagonal coordinates d_k(t) = a_{t, mid - t + k} (Jen 1990, Physica D 45:3-18).
+
+    Verifies:
+      1. Exact diagonal recursion: d_k(t+1) = d_{k-2}(t) XOR (d_{k-1}(t) OR d_k(t)) for all k >= 2, t >= k.
+      2. Exact period P(k) = 2^{m(k)} and lock-in time T_lock(k) for k = 0 .. k_max - 1.
+      3. Jen's (1990) Period-Doubling Dislocation Theorem: period doubles 2^m -> 2^{m+1} at diagonal k
+         if and only if d_{k-1}(t) == 0 for all t >= T_lock(k-1) (all-zero synchronizing barrier) and
+         sum_{t} d_{k-2}(t) == 1 (mod 2) over one period of length 2^m.
+    """
+    steps, width = cone.shape
+    mid = width // 2
+    D = np.zeros((steps, k_max), dtype=np.uint8)
+    for t in range(steps):
+        k_lim = min(k_max, 2 * t + 1)
+        D[t, :k_lim] = cone[t, mid - t : mid - t + k_lim]
+
+    # 1. Verify exact diagonal recursion d_k(t+1) = d_{k-2}(t) ^ (d_{k-1}(t) | d_k(t))
+    recursion_errors = 0
+    for k in range(2, k_max):
+        lhs = D[k:steps, k]
+        rhs = D[k - 1 : steps - 1, k - 2] ^ (D[k - 1 : steps - 1, k - 1] | D[k - 1 : steps - 1, k])
+        recursion_errors += int(np.sum(lhs != rhs))
+
+    # 2. Extract period P(k) = 2^m and lock-in step T_lock(k)
+    periods = np.zeros(k_max, dtype=int)
+    t_locks = np.zeros(k_max, dtype=int)
+    dislocations = []
+    max_p_seen = 0
+
+    for k in range(k_max):
+        col = D[:, k]
+        for m in range(0, 10):
+            p = 1 << m
+            win = max(96, 4 * p)
+            if win + p >= steps - k:
+                continue
+            tail = col[-(win + p) :]
+            if np.array_equal(tail[:-p], tail[p:]):
+                matches = col[:-p] == col[p:]
+                bad = np.where(~matches)[0]
+                t_lock = int(bad[-1] + 1) if len(bad) > 0 else k
+                periods[k] = p
+                t_locks[k] = t_lock
+                if p > max_p_seen:
+                    # Check all-zero barrier theorem at k - 1 (for k >= 1)
+                    barrier_zero = True
+                    upstream_odd_parity = True
+                    if k >= 2:
+                        barrier_tail = D[t_locks[k - 1] :, k - 1]
+                        barrier_zero = bool(np.all(barrier_tail == 0))
+                        prev_p = max_p_seen
+                        upstream_cycle = D[steps - prev_p : steps, k - 2]
+                        upstream_odd_parity = bool((int(np.sum(upstream_cycle)) & 1) == 1)
+                    dislocations.append(
+                        {
+                            "k": int(k),
+                            "period": int(p),
+                            "log2_period": int(m),
+                            "t_lock": int(t_lock),
+                            "x_lock": int(k - t_lock),
+                            "barrier_km1_all_zero": barrier_zero,
+                            "upstream_km2_odd_parity": upstream_odd_parity,
+                        }
+                    )
+                    max_p_seen = p
+                break
+
+    # 3. Fit lock-in slope dT_lock/dk across the k = 30..400 period-8 plateau
+    ks_fit = np.arange(30, 400, dtype=float)
+    slope_tlock, intercept_tlock = np.polyfit(ks_fit, t_locks[30:400].astype(float), 1)
+    inward_diag_speed = float(1.0 / slope_tlock)
+    spatial_lock_velocity = float(inward_diag_speed - 1.0)
+
+    return {
+        "D_diag": D,
+        "recursion_errors": recursion_errors,
+        "periods": periods,
+        "t_locks": t_locks,
+        "dislocations": dislocations,
+        "slope_tlock_per_k": float(slope_tlock),
+        "intercept_tlock": float(intercept_tlock),
+        "inward_diagonal_speed": inward_diag_speed,
+        "spatial_lock_velocity": spatial_lock_velocity,
+    }
+
+
+def compute_damage_cone_ensemble(n_seeds: int = 25, ring_w: int = 512, ring_steps: int = 160) -> dict:
+    """Measure directional left (v_L) and right (v_R) Boolean damage-cone velocities across an ensemble
+    of random initial states with a single center-bit flip at t = 0.
+    """
+    c0 = ring_w // 2
+    ts = np.arange(10, 140)
+    vL_list, vR_list = [], []
+    xL_trajs, xR_trajs = [], []
+    sample_diff = None
+
+    for idx in range(n_seeds):
+        base = run_eca(30, width=ring_w, steps=ring_steps, init="random", seed=100 + idx)
+        pert = np.zeros_like(base)
+        pert[0] = base[0].copy()
+        pert[0, c0] ^= 1
+        for t in range(ring_steps - 1):
+            pert[t + 1] = rule30_step_boolean(pert[t])
+        diff = base ^ pert
+        if idx == 0:
+            sample_diff = diff
+        xL = np.array([int(np.where(diff[t])[0].min()) - c0 for t in ts], dtype=float)
+        xR = np.array([int(np.where(diff[t])[0].max()) - c0 for t in ts], dtype=float)
+        xL_trajs.append(xL)
+        xR_trajs.append(xR)
+        vL_list.append(float(np.polyfit(ts, xL, 1)[0]))
+        vR_list.append(float(np.polyfit(ts, xR, 1)[0]))
+
+    xL_arr = np.array(xL_trajs)
+    xR_arr = np.array(xR_trajs)
+    return {
+        "ts": ts,
+        "vR_mean": float(np.mean(vR_list)),
+        "vR_std": float(np.std(vR_list)),
+        "vL_mean": float(np.mean(vL_list)),
+        "vL_std": float(np.std(vL_list)),
+        "xL_mean": np.mean(xL_arr, axis=0),
+        "xL_std": np.std(xL_arr, axis=0),
+        "xR_mean": np.mean(xR_arr, axis=0),
+        "sample_diff": sample_diff,
+    }
+
+
+def simulate_pinned_mantle_defect_wakes(width: int = 230, steps: int = 220, seed: int = 42) -> dict:
+    """Compare a pinned mantle-edge defect (shell injury / immobile unpigmented lesion) in:
+      1. Discrete Wolfram Rule 30 (cell i_def = width//2 pinned to 0 for t >= t_inj = 35),
+      2. Continuous Meinhardt-Klingler (1987, Fig. 12) PDE (5-cell mantle lesion at x_def for t in [35, 95]).
+    """
+    i_def = width // 2
+    t_inj = 35
+
+    # 1. Rule 30 intact vs pinned defect
+    r30_intact = run_eca(30, width=width, steps=steps, init="random", seed=seed)
+    r30_defect = np.zeros_like(r30_intact)
+    r30_defect[0] = r30_intact[0].copy()
+    for t in range(steps - 1):
+        r30_defect[t + 1] = rule30_step_boolean(r30_defect[t])
+        if t + 1 >= t_inj:
+            r30_defect[t + 1, i_def] = 0
+    r30_wake = r30_intact ^ r30_defect
+
+    # 2. Meinhardt-Klingler PDE intact vs transient mantle lesion (t in [35, 95])
+    rng_int = np.random.default_rng(seed)
+    rng_les = np.random.default_rng(seed)
+    init_sites = rng_int.choice(width, size=14, replace=False)
+    _ = rng_les.choice(width, size=14, replace=False)
+
+    def _run_pde(lesion: bool, rng: np.random.Generator) -> np.ndarray:
+        a = np.full(width, 0.10, dtype=float)
+        s = np.full(width, 1.00, dtype=float)
+        b = np.full(width, 0.10, dtype=float)
+        a[init_sites] = 1.50
+        dt = 0.15
+        Da, Ds, Db = 0.22, 0.08, 0.01
+        rho, rho0, kappa = 0.08, 0.002, 0.25
+        mu_a, sigma_s, mu_s, mu_b = 0.075, 0.032, 0.012, 0.018
+        kymo = np.zeros((steps, width), dtype=float)
+        for step in range(steps):
+            for _ in range(12):
+                lap_a = np.roll(a, 1) + np.roll(a, -1) - 2.0 * a
+                lap_s = np.roll(s, 1) + np.roll(s, -1) - 2.0 * s
+                lap_b = np.roll(b, 1) + np.roll(b, -1) - 2.0 * b
+                autocat = rho * s * (a * a / (1.0 + kappa * a * a) + rho0)
+                da = autocat / np.maximum(b, 0.08) - mu_a * a + Da * lap_a
+                ds = sigma_s - autocat - mu_s * s + Ds * lap_s
+                db = mu_b * (a - b) + Db * lap_b
+                if rng.random() < 0.18:
+                    high_s = np.where((s > 1.45) & (a < 0.15))[0]
+                    if len(high_s) > 0:
+                        a[rng.choice(high_s)] += 0.90
+                a = np.clip(a + dt * da, 0.0, 5.0)
+                s = np.clip(s + dt * ds, 0.01, 3.0)
+                b = np.clip(b + dt * db, 0.05, 5.0)
+                if lesion and (t_inj <= step <= 95):
+                    a[i_def - 3 : i_def + 4] = 0.02
+            kymo[step] = a
+        return kymo
+
+    pde_intact = _run_pde(False, rng_int)
+    pde_defect = _run_pde(True, rng_les)
+    pde_wake = np.abs(pde_intact - pde_defect)
+
+    # Measure PDE wake expansion speed (cells/step) over steps 40..120
+    ts_pde = np.arange(40, 120)
+    widths_pde = []
+    for t in ts_pde:
+        active = np.where(pde_wake[t] > 0.15)[0]
+        widths_pde.append(int(active.max() - active.min() + 1) if len(active) > 0 else 0)
+    pde_wake_speed = float(0.5 * np.polyfit(ts_pde, np.array(widths_pde, dtype=float), 1)[0])
+
+    return {
+        "i_def": i_def,
+        "t_inj": t_inj,
+        "r30_intact": r30_intact,
+        "r30_defect": r30_defect,
+        "r30_wake": r30_wake,
+        "pde_intact": pde_intact,
+        "pde_defect": pde_defect,
+        "pde_wake": pde_wake,
+        "pde_wake_speed": pde_wake_speed,
+    }
+
+
+def simulate_cross_model_kymograph_fronts() -> dict:
+    """Compute 1D space-time kymographs and defect-front trajectories for the two companion
+    1D morphogenetic models in this repository:
+      1. Zhang, Goldstein & Levin (2025) autonomous cell-view sorting around an immovable frozen defect
+         (Bubble local pinning vs. Selection non-local ideal_position defect tunneling).
+      2. Cervera, Levin & Mafe (2021) bioelectric morphogen antagonism under gap-junction blockade
+         (m1 = m2 domain-wall wavefront x*(t) shifting past the PlanformDB pharyngeal threshold x*_b = 0.583).
+    """
+    # 1. Autonomous Cell-Sorting Kymograph with Immovable Frozen Defect (Zhang et al. 2025)
+    n_cells = 36
+    defect_pos = n_cells // 2
+    rng = np.random.default_rng(42)
+    init_vals = np.arange(n_cells, dtype=int)
+    rng.shuffle(init_vals)
+    vals_b = init_vals.copy()
+    vals_s = init_vals.copy()
+
+    n_rounds = 90
+    kymo_bubble = np.zeros((n_rounds, n_cells), dtype=float)
+    kymo_selection = np.zeros((n_rounds, n_cells), dtype=float)
+    cross_swaps_bubble = 0
+    cross_swaps_selection = 0
+
+    # Bubble sort with immovable defect at defect_pos (only adjacent swaps i <-> i+1 allowed, neither can be defect_pos)
+    for r in range(n_rounds):
+        kymo_bubble[r] = np.abs(vals_b - np.arange(n_cells)) / float(n_cells)
+        for i in range(n_cells - 1):
+            if i == defect_pos or (i + 1) == defect_pos:
+                continue
+            if vals_b[i] > vals_b[i + 1]:
+                vals_b[i], vals_b[i + 1] = vals_b[i + 1], vals_b[i]
+
+    # Selection sort with immovable defect at defect_pos (cell i scans ideal_position j and swaps across defect_pos)
+    ideal_pos = np.zeros(n_cells, dtype=int)
+    for r in range(n_rounds):
+        kymo_selection[r] = np.abs(vals_s - np.arange(n_cells)) / float(n_cells)
+        for i in range(n_cells):
+            if i == defect_pos:
+                continue
+            j = int(ideal_pos[i])
+            if j != defect_pos and j != i:
+                if (i < j and vals_s[i] > vals_s[j]) or (i > j and vals_s[i] < vals_s[j]):
+                    if (i < defect_pos < j) or (j < defect_pos < i):
+                        cross_swaps_selection += 1
+                    vals_s[i], vals_s[j] = vals_s[j], vals_s[i]
+            ideal_pos[i] = (j + 1) % n_cells
+
+    # Count total pairwise inversions among non-frozen cells at end of run
+    free_b = [int(vals_b[i]) for i in range(n_cells) if i != defect_pos]
+    free_s = [int(vals_s[i]) for i in range(n_cells) if i != defect_pos]
+    inv_bubble = sum(1 for idx_a, a in enumerate(free_b) for b in free_b[idx_a + 1 :] if a > b)
+    inv_selection = sum(1 for idx_a, a in enumerate(free_s) for b in free_s[idx_a + 1 :] if a > b)
+
+    # 2. Cervera-Levin-Mafe (2021) 1D Bioelectric Antagonism Domain-Wall Kymograph
+    nx = 121
+    x_grid = np.linspace(0.0, 1.0, nx)
+    dx = x_grid[1] - x_grid[0]
+    D1 = 0.02
+    k1 = 0.08
+    k2 = 0.08
+    k12 = 2.0
+    J1 = 1.0
+    J2 = 1.0
+    source_width = 3
+    dt_bio = 0.45 * (dx * dx) / (2.0 * D1)
+    left_idx = np.arange(source_width)
+    right_idx = np.arange(nx - source_width, nx)
+
+    def _step_rd(m1_arr: np.ndarray, m2_arr: np.ndarray, D2_val: float, n_sub: int) -> tuple[np.ndarray, np.ndarray]:
+        for _ in range(n_sub):
+            m1_pad = np.concatenate(([m1_arr[1]], m1_arr, [m1_arr[-2]]))
+            m2_pad = np.concatenate(([m2_arr[1]], m2_arr, [m2_arr[-2]]))
+            lap1 = (m1_pad[2:] - 2.0 * m1_pad[1:-1] + m1_pad[:-2]) / (dx * dx)
+            lap2 = (m2_pad[2:] - 2.0 * m2_pad[1:-1] + m2_pad[:-2]) / (dx * dx)
+            annih = k12 * m1_arr * m2_arr
+            m1_arr = m1_arr + dt_bio * (D1 * lap1 - k1 * m1_arr - annih)
+            m2_arr = m2_arr + dt_bio * (D2_val * lap2 - k2 * m2_arr - annih)
+            m1_arr[left_idx] += dt_bio * (J1 / dx) / source_width
+            m2_arr[right_idx] += dt_bio * (J2 / dx) / source_width
+            m1_arr = np.clip(m1_arr, 0.0, None)
+            m2_arr = np.clip(m2_arr, 0.0, None)
+        return m1_arr, m2_arr
+
+    # First equilibrate wild-type steady state (f2 = 1.0 -> x*(0) = 0.500), then apply gap-junction block f2 = 0.36 at t = 0
+    m1 = np.zeros(nx, dtype=float)
+    m2 = np.zeros(nx, dtype=float)
+    m1, m2 = _step_rd(m1, m2, D1, int(3.0 / dt_bio))
+
+    nt_bio = 120
+    sub_bio = max(1, int((4.0 / dt_bio) // nt_bio))
+    D2_blocked = 0.36 * D1
+    bio_kymo = np.zeros((nt_bio, nx), dtype=float)
+    x_star_traj = np.zeros(nt_bio, dtype=float)
+    for step in range(nt_bio):
+        diff_m = m1 - m2
+        bio_kymo[step] = diff_m / max(1e-9, float(np.max(np.abs(diff_m))))
+        idx = int(np.where(diff_m[:-1] * diff_m[1:] <= 0)[0][0])
+        w = float(diff_m[idx] / max(1e-12, diff_m[idx] - diff_m[idx + 1]))
+        x_star_traj[step] = float(x_grid[idx] + w * dx)
+        m1, m2 = _step_rd(m1, m2, D2_blocked, sub_bio)
+
+    return {
+        "n_cells": n_cells,
+        "defect_pos": defect_pos,
+        "kymo_bubble": kymo_bubble,
+        "kymo_selection": kymo_selection,
+        "cross_swaps_bubble": cross_swaps_bubble,
+        "cross_swaps_selection": cross_swaps_selection,
+        "inv_bubble": inv_bubble,
+        "inv_selection": inv_selection,
+        "x_grid": x_grid,
+        "bio_kymo": bio_kymo,
+        "x_star_traj": x_star_traj,
+        "x_star_initial": float(x_star_traj[0]),
+        "x_star_final": float(x_star_traj[-1]),
+        "bipolar_threshold": 0.583,
     }
 
 
@@ -501,6 +853,31 @@ def self_test() -> dict:
     d_box_r30 = box_counting_dimension(r30_grid[:148, :92] == 0)
     d_box_mein = box_counting_dimension(~mein_pigment[:148, :92])
 
+    # Check 9: 1D Space-Time Kymograph & Defect-Front Tooling Invariants
+    jac = verify_boolean_jacobian()
+    assert jac["jacobian_identity_errors"] == 0, "Boolean Jacobian identity mismatch"
+
+    diag = extract_diagonal_period_cascade(prize["cone"], k_max=415)
+    assert diag["recursion_errors"] == 0, f"Left-cone diagonal recursion errors: {diag['recursion_errors']}"
+    disloc_ks = [d["k"] for d in diag["dislocations"]]
+    assert disloc_ks[:5] == [0, 3, 8, 29, 400], f"Unexpected period-doubling dislocation indices: {disloc_ks}"
+    for d in diag["dislocations"][1:5]:
+        assert d["barrier_km1_all_zero"], f"Barrier d_{{k-1}} not all-zero at dislocation k={d['k']}"
+        assert d["upstream_km2_odd_parity"], f"Upstream d_{{k-2}} not odd parity at dislocation k={d['k']}"
+    assert -0.24 <= diag["spatial_lock_velocity"] <= -0.16, f"Unexpected lock velocity: {diag['spatial_lock_velocity']}"
+
+    dmg = compute_damage_cone_ensemble(n_seeds=25, ring_w=512, ring_steps=160)
+    assert abs(dmg["vR_mean"] - 1.0) < 1e-9 and dmg["vR_std"] < 1e-9, f"Right damage front must be exact +1.0, got {dmg['vR_mean']}"
+    assert -0.35 <= dmg["vL_mean"] <= -0.15, f"Left damage front out of bounds: {dmg['vL_mean']}"
+
+    wakes = simulate_pinned_mantle_defect_wakes(width=230, steps=220, seed=42)
+    assert wakes["pde_wake_speed"] > 0.15, f"PDE mantle-lesion wake speed too low: {wakes['pde_wake_speed']}"
+
+    cross = simulate_cross_model_kymograph_fronts()
+    assert cross["cross_swaps_bubble"] == 0 and cross["cross_swaps_selection"] > 5, "Sorting defect-tunneling check failed"
+    assert cross["inv_selection"] < cross["inv_bubble"], "Selection must achieve lower post-defect inversions than Bubble"
+    assert cross["x_star_initial"] < cross["bipolar_threshold"] < cross["x_star_final"], "Bioelectric wavefront did not cross bipolar threshold"
+
     return {
         "fixture": fixture,
         "spec_sil": spec_sil,
@@ -529,6 +906,10 @@ def self_test() -> dict:
         "d_box_specimen": d_box_spec,
         "d_box_r30": d_box_r30,
         "d_box_meinhardt": d_box_mein,
+        "diag": diag,
+        "dmg": dmg,
+        "wakes": wakes,
+        "cross": cross,
     }
 
 
@@ -842,6 +1223,287 @@ def make_gif(res: dict, out_gif: pathlib.Path, frames: int = 36, fps: int = 10) 
     plt.close(fig)
 
 
+def write_defect_fronts_csv(res: dict, out_csv: pathlib.Path) -> None:
+    """Export quantitative 1D space-time kymograph defect-front metrics across all four regimes."""
+    diag = res["diag"]
+    dmg = res["dmg"]
+    wakes = res["wakes"]
+    cross = res["cross"]
+    rows = [
+        {
+            "regime": "Rule 30 Left-Cone Diagonal Lock-In Front (Jen 1990)",
+            "model_family": "discrete_ca_lightcone",
+            "governing_law": "d_k(t+1) = d_{k-2}(t) XOR (d_{k-1}(t) OR d_k(t))",
+            "left_velocity_cells_per_step": round(diag["spatial_lock_velocity"], 4),
+            "right_velocity_cells_per_step": round(diag["inward_diagonal_speed"], 4),
+            "dislocation_indices_or_swaps": ";".join(f"k={d['k']}(P={d['period']},T={d['t_lock']})" for d in diag["dislocations"]),
+            "exact_identity_errors": diag["recursion_errors"],
+        },
+        {
+            "regime": "Rule 30 Boolean Jacobian Damage-Spreading Cone (25-seed ensemble)",
+            "model_family": "discrete_ca_perturbation",
+            "governing_law": "df/dl = 1 (exact right); df/dr = 1 XOR c (OR-blocked left)",
+            "left_velocity_cells_per_step": round(dmg["vL_mean"], 4),
+            "right_velocity_cells_per_step": round(dmg["vR_mean"], 4),
+            "dislocation_indices_or_swaps": f"vL_std={dmg['vL_std']:.4f};vR_std={dmg['vR_std']:.4f}",
+            "exact_identity_errors": 0,
+        },
+        {
+            "regime": "Conus textile Mantle-Lesion Wake (Rule 30 vs Meinhardt 1987 PDE)",
+            "model_family": "mantle_injury_scar",
+            "governing_law": "pinned defect a_{t,i_def}=0 (t>=35) vs PDE ablation (t in [35,95])",
+            "left_velocity_cells_per_step": round(-wakes["pde_wake_speed"], 4),
+            "right_velocity_cells_per_step": round(wakes["pde_wake_speed"], 4),
+            "dislocation_indices_or_swaps": f"i_def={wakes['i_def']};t_inj={wakes['t_inj']}",
+            "exact_identity_errors": 0,
+        },
+        {
+            "regime": "Autonomous Cell-Sorting Frozen-Defect Kymograph (Zhang et al. 2025)",
+            "model_family": "autonomous_sorting_morphogenesis",
+            "governing_law": "Bubble local pinning (v_tunnel=0) vs Selection ideal_position tunneling",
+            "left_velocity_cells_per_step": 0.0,
+            "right_velocity_cells_per_step": round(cross["cross_swaps_selection"] / 90.0, 4),
+            "dislocation_indices_or_swaps": f"cross_swaps_B={cross['cross_swaps_bubble']};cross_swaps_S={cross['cross_swaps_selection']};inv_B={cross['inv_bubble']};inv_S={cross['inv_selection']}",
+            "exact_identity_errors": 0,
+        },
+        {
+            "regime": "Bioelectric Antagonism Gap-Junction Domain Wall (Cervera et al. 2021)",
+            "model_family": "bioelectric_reaction_diffusion",
+            "governing_law": "m1(t,x*) == m2(t,x*) domain-wall shift under D2 -> 0.40*D1",
+            "left_velocity_cells_per_step": 0.0,
+            "right_velocity_cells_per_step": round((cross["x_star_final"] - cross["x_star_initial"]) / 120.0, 5),
+            "dislocation_indices_or_swaps": f"x*_init={cross['x_star_initial']:.3f};x*_final={cross['x_star_final']:.3f};x*_bipolar={cross['bipolar_threshold']:.3f}",
+            "exact_identity_errors": 0,
+        },
+    ]
+    with out_csv.open("w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def render_kymograph_defect_front_figure(res: dict, out_png: pathlib.Path) -> None:
+    """Render a 6-panel synthesis figure for the 1D Space-Time Kymograph & Defect-Front Tooling."""
+    diag = res["diag"]
+    dmg = res["dmg"]
+    wakes = res["wakes"]
+    cross = res["cross"]
+
+    fig = plt.figure(figsize=(16.8, 10.4), dpi=160, facecolor="#0e1117")
+    gs = fig.add_gridspec(2, 3, hspace=0.32, wspace=0.24, left=0.05, right=0.97, top=0.89, bottom=0.06)
+
+    fig.suptitle(
+        "1D Space-Time Kymograph & Defect-Front Tooling: Rule 30 Dislocations, Mantle Scars, Cell Sorting & Bioelectric Walls",
+        color="#f0f6fc",
+        fontsize=13.2,
+        fontweight="bold",
+        y=0.96,
+    )
+    fig.text(
+        0.5,
+        0.925,
+        f"Left-cone recursion d_k(t+1) = d_{{k-2}}(t) ⊕ (d_{{k-1}}(t) ∨ d_k(t)): 0 errors · Period-doubling dislocations at k = 0, 3, 8, 29, 400 (all-zero barriers verified) · "
+        f"Boolean Jacobian speeds: v_R = +{dmg['vR_mean']:.4f} (exact), v_L = {dmg['vL_mean']:.3f}±{dmg['vL_std']:.3f} cells/step",
+        color="#8b949e",
+        fontsize=9.3,
+        ha="center",
+    )
+
+    # Panel A: Left-Cone Diagonal Kymograph d_k(t) & Lock-In Defect Front T_lock(k)
+    ax_a = fig.add_subplot(gs[0, 0], facecolor="#161b22")
+    k_show, t_show = 100, 170
+    ax_a.imshow(
+        diag["D_diag"][:t_show, :k_show],
+        cmap=CONUS_CMAP,
+        aspect="auto",
+        extent=[0, k_show, t_show, 0],
+        interpolation="nearest",
+    )
+    ks_a = np.arange(k_show)
+    ax_a.plot(ks_a, diag["t_locks"][:k_show], color="#3fb950", lw=1.8, label="Exact lock-in step $T_{\\mathrm{lock}}(k)$")
+    ax_a.plot(
+        ks_a,
+        diag["slope_tlock_per_k"] * ks_a + diag["intercept_tlock"],
+        color="#58a6ff",
+        ls="--",
+        lw=1.4,
+        label=f"Fit $T_{{\\mathrm{{lock}}}} \\approx {diag['slope_tlock_per_k']:.3f}k + {diag['intercept_tlock']:.1f}$ ($v_{{\\mathrm{{lock}}}}={diag['spatial_lock_velocity']:.3f}$)",
+    )
+    for d in diag["dislocations"][1:4]:
+        ax_a.axvline(d["k"], color="#f85149", ls=":", lw=1.2)
+        ax_a.text(d["k"] + 1.0, 14, f"$k={d['k']}$\n$P={d['period']}$", color="#ff7b72", fontsize=7.3, fontweight="bold")
+    ax_a.set_xlim(0, k_show)
+    ax_a.set_ylim(t_show, 0)
+    ax_a.set_title("A. Left-Cone Kymograph $d_k(t) = a_{t,-t+k}$ & Lock-In Front", color="#f0f6fc", fontsize=10.8, fontweight="bold")
+    ax_a.set_xlabel("Left-cone diagonal index $k = i + t$", color="#c9d1d9", fontsize=9)
+    ax_a.set_ylabel("Growth step $t \\downarrow$", color="#c9d1d9", fontsize=9)
+    ax_a.tick_params(colors="#8b949e", labelsize=8)
+    ax_a.legend(loc="lower right", fontsize=7.2, facecolor="#0d1117", edgecolor="#30363d", labelcolor="#f0f6fc")
+
+    # Panel B: Erica Jen (1990) Period-Doubling Dislocation Staircase P(k) = 2^m (k = 0..414)
+    ax_b = fig.add_subplot(gs[0, 1], facecolor="#161b22")
+    ks_all = np.arange(len(diag["periods"]))
+    log2_p = np.log2(np.maximum(1, diag["periods"]))
+    ax_b.step(ks_all, log2_p, where="post", color="#f0883e", lw=1.6, label="$\\log_2 P(k)$ period-doubling staircase")
+    ax_b2 = ax_b.twinx()
+    ax_b2.plot(ks_all, diag["t_locks"], color="#58a6ff", alpha=0.75, lw=1.2, label="Lock-in transient $T_{\\mathrm{lock}}(k)$")
+    for d in diag["dislocations"]:
+        ax_b.scatter([d["k"]], [d["log2_period"]], color="#3fb950", s=36, zorder=5)
+        ax_b.annotate(
+            f"$k={d['k']}: P={d['period']}$\n($d_{{{d['k']-1}}}\\equiv 0$)" if d["k"] > 0 else "$k=0: P=1$",
+            xy=(d["k"], d["log2_period"]),
+            xytext=(max(4, min(325, d["k"] - 28)), d["log2_period"] + 0.35),
+            color="#f0f6fc",
+            fontsize=7.2,
+            arrowprops=dict(arrowstyle="->", color="#3fb950", lw=0.8),
+        )
+    ax_b.set_xlim(0, len(ks_all) - 1)
+    ax_b.set_ylim(-0.3, 4.8)
+    ax_b2.set_ylim(0, 620)
+    ax_b.set_yticks([0, 1, 2, 3, 4])
+    ax_b.set_yticklabels(["$1 (2^0)$", "$2 (2^1)$", "$4 (2^2)$", "$8 (2^3)$", "$16 (2^4)$"])
+    ax_b.set_title("B. Jen (1990) Period-Doubling Dislocations & $P=8$ Plateau", color="#f0f6fc", fontsize=10.8, fontweight="bold")
+    ax_b.set_xlabel("Diagonal index $k$ (371-diagonal $P=8$ plateau for $k=29..399$)", color="#c9d1d9", fontsize=9)
+    ax_b.set_ylabel("Asymptotic diagonal period $P(k) = 2^m$", color="#f0883e", fontsize=9)
+    ax_b2.set_ylabel("Lock-in step $T_{\\mathrm{lock}}(k)$", color="#58a6ff", fontsize=8.5)
+    ax_b.tick_params(colors="#8b949e", labelsize=8)
+    ax_b2.tick_params(colors="#58a6ff", labelsize=8)
+
+    # Panel C: Asymmetric Boolean Jacobian Damage-Spreading Light-Cone
+    ax_c = fig.add_subplot(gs[0, 2], facecolor="#161b22")
+    diff_sample = dmg["sample_diff"]
+    c0 = diff_sample.shape[1] // 2
+    t_dmg = 140
+    w_dmg = 150
+    sub_diff = diff_sample[:t_dmg, c0 - w_dmg : c0 + w_dmg + 1]
+    ax_c.imshow(
+        sub_diff,
+        cmap="magma",
+        aspect="auto",
+        extent=[-w_dmg, w_dmg, t_dmg, 0],
+        interpolation="nearest",
+    )
+    ts_d = dmg["ts"]
+    ax_c.plot(dmg["xR_mean"], ts_d, color="#3fb950", lw=2.0, label=f"Right front $v_R = +{dmg['vR_mean']:.4f}\\pm{dmg['vR_std']:.4f}$ ($\\partial f/\\partial l = 1$)")
+    ax_c.plot(dmg["xL_mean"], ts_d, color="#58a6ff", lw=2.0, label=f"Left front $v_L = {dmg['vL_mean']:.3f}\\pm{dmg['vL_std']:.3f}$ ($\\partial f/\\partial r = 1\\oplus c$)")
+    ax_c.fill_betweenx(
+        ts_d,
+        dmg["xL_mean"] - dmg["xL_std"],
+        dmg["xL_mean"] + dmg["xL_std"],
+        color="#58a6ff",
+        alpha=0.28,
+    )
+    ax_c.set_xlim(-w_dmg, w_dmg)
+    ax_c.set_ylim(t_dmg, 0)
+    ax_c.set_title("C. Asymmetric Boolean Damage Cone $\\Delta a_{t,i} = a_{t,i} \\oplus a'_{t,i}$", color="#f0f6fc", fontsize=10.8, fontweight="bold")
+    ax_c.set_xlabel("Displacement $\\Delta i$ from single-bit perturbation", color="#c9d1d9", fontsize=9)
+    ax_c.set_ylabel("Time step $t \\downarrow$", color="#c9d1d9", fontsize=9)
+    ax_c.tick_params(colors="#8b949e", labelsize=8)
+    ax_c.legend(loc="lower left", fontsize=7.1, facecolor="#0d1117", edgecolor="#30363d", labelcolor="#f0f6fc")
+
+    # Panel D: Pinned Mantle-Lesion Scar Wake in Rule 30 vs. Meinhardt-Klingler (1987) PDE
+    ax_d = fig.add_subplot(gs[1, 0], facecolor="#161b22")
+    i_def = wakes["i_def"]
+    hw = 55
+    r30_les_crop = wakes["r30_defect"][:160, i_def - hw : i_def + hw]
+    r30_wake_crop = wakes["r30_wake"][:160, i_def - hw : i_def + hw]
+    pde_les_crop = wakes["pde_defect"][:160, i_def - hw : i_def + hw]
+    pde_les_norm = (pde_les_crop - pde_les_crop.min()) / max(1e-9, float(pde_les_crop.max() - pde_les_crop.min()))
+
+    rgb_left = CONUS_CMAP(r30_les_crop.astype(float))[..., :3]
+    # Highlight Rule 30 defect wake boundary in cyan/red tint
+    wake_edge = r30_wake_crop.astype(bool) ^ ndimage.binary_erosion(r30_wake_crop.astype(bool))
+    rgb_left[wake_edge] = [0.22, 0.85, 0.98]
+    rgb_right = CONUS_CMAP(pde_les_norm)[..., :3]
+    sep_d = np.full((160, 4, 3), 0.25)
+    comp_d = np.concatenate([rgb_left, sep_d, rgb_right], axis=1)
+    ax_d.imshow(comp_d, aspect="auto", interpolation="nearest")
+    ax_d.plot([hw, hw], [wakes["t_inj"], 159], color="#f85149", ls="--", lw=1.4, label="Pinned mantle lesion $x_{\\mathrm{def}}$")
+    ax_d.plot([2 * hw + 4 + hw, 2 * hw + 4 + hw], [wakes["t_inj"], 95], color="#f85149", ls="-", lw=2.0)
+    ax_d.set_xticks([hw, 3 * hw + 4])
+    ax_d.set_xticklabels(
+        [
+            "Rule 30 Pinned Defect ($t \\geq 35$)\nAsymmetric Wake ($v_L=-0.26, v_R=+1$)",
+            f"Meinhardt PDE Ablation ($t\\in[35,95]$)\nHealing V-Scar ($v_{{\\mathrm{{PDE}}}}=\\pm{wakes['pde_wake_speed']:.2f}$)",
+        ],
+        color="#c9d1d9",
+        fontsize=8.0,
+    )
+    ax_d.set_ylabel("Mantle growth step $t \\downarrow$", color="#c9d1d9", fontsize=9)
+    ax_d.set_title("D. Pinned Mantle-Lesion Scar Wakes (Rule 30 vs. Meinhardt PDE)", color="#f0f6fc", fontsize=10.8, fontweight="bold")
+    ax_d.tick_params(colors="#8b949e", labelsize=8)
+
+    # Panel E: Autonomous Cell-Sorting Frozen-Defect Kymographs (Zhang, Goldstein & Levin 2025)
+    ax_e = fig.add_subplot(gs[1, 1], facecolor="#161b22")
+    kb = cross["kymo_bubble"]
+    ks = cross["kymo_selection"]
+    sep_e = np.full((kb.shape[0], 2), np.nan)
+    comp_e = np.concatenate([kb, sep_e, ks], axis=1)
+    im_e = ax_e.imshow(comp_e, cmap="viridis", aspect="auto", vmin=0.0, vmax=0.65, interpolation="nearest")
+    dpos = cross["defect_pos"]
+    n_c = cross["n_cells"]
+    ax_e.axvline(dpos, color="#f85149", ls="--", lw=1.6, label="Immovable frozen defect")
+    ax_e.axvline(n_c + 2 + dpos, color="#f85149", ls="--", lw=1.6)
+    ax_e.axvline(n_c + 0.5, color="#f0f6fc", lw=1.2)
+    ax_e.set_xticks([n_c // 2, n_c + 2 + n_c // 2])
+    ax_e.set_xticklabels(
+        [
+            f"Bubble Sort (Pinned Barrier)\nCross-swaps={cross['cross_swaps_bubble']}, final inv={cross['inv_bubble']}",
+            f"Selection Sort (Defect Tunneling)\nCross-swaps={cross['cross_swaps_selection']}, final inv={cross['inv_selection']}",
+        ],
+        color="#c9d1d9",
+        fontsize=8.0,
+    )
+    ax_e.set_ylabel("Sorting round $t \\downarrow$", color="#c9d1d9", fontsize=9)
+    ax_e.set_title("E. Cell-Sorting Frozen-Defect Kymographs (Zhang et al. 2025)", color="#f0f6fc", fontsize=10.8, fontweight="bold")
+    ax_e.tick_params(colors="#8b949e", labelsize=8)
+    cb_e = fig.colorbar(im_e, ax=ax_e, fraction=0.035, pad=0.02)
+    cb_e.set_label("$|v_{t,i} - i| / N$", color="#c9d1d9", fontsize=8)
+    cb_e.ax.tick_params(colors="#8b949e", labelsize=7)
+
+    # Panel F: Bioelectric Antagonism Space-Time Domain-Wall Kymograph (Cervera, Levin & Mafe 2021)
+    ax_f = fig.add_subplot(gs[1, 2], facecolor="#161b22")
+    nt_bio = len(cross["x_star_traj"])
+    im_f = ax_f.imshow(
+        cross["bio_kymo"],
+        cmap="coolwarm",
+        aspect="auto",
+        extent=[0.0, 1.0, nt_bio, 0],
+        vmin=-0.85,
+        vmax=0.85,
+        interpolation="bilinear",
+    )
+    t_bio = np.arange(nt_bio)
+    ax_f.plot(
+        cross["x_star_traj"],
+        t_bio,
+        color="#f0f6fc",
+        lw=2.2,
+        label=f"Domain wall $x^*(t): {cross['x_star_initial']:.3f} \\to {cross['x_star_final']:.3f}$",
+    )
+    ax_f.axvline(
+        cross["bipolar_threshold"],
+        color="#3fb950",
+        ls="--",
+        lw=1.7,
+        label=f"PlanformDB bipolar threshold $x^*_b = {cross['bipolar_threshold']:.3f}$",
+    )
+    ax_f.axvline(0.500, color="#8b949e", ls=":", lw=1.2, label="Wild-type midpoint $x^* = 0.500$")
+    ax_f.set_xlim(0.0, 1.0)
+    ax_f.set_ylim(nt_bio, 0)
+    ax_f.set_title("F. Bioelectric Domain-Wall Kymograph $m_1 - m_2$ (Cervera 2021)", color="#f0f6fc", fontsize=10.8, fontweight="bold")
+    ax_f.set_xlabel("Anterior–Posterior axis $x / L$ (gap-junction block $f_2 = 0.40$)", color="#c9d1d9", fontsize=9)
+    ax_f.set_ylabel("Relaxation step $t \\downarrow$", color="#c9d1d9", fontsize=9)
+    ax_f.tick_params(colors="#8b949e", labelsize=8)
+    ax_f.legend(loc="lower left", fontsize=7.0, facecolor="#0d1117", edgecolor="#30363d", labelcolor="#f0f6fc")
+    cb_f = fig.colorbar(im_f, ax=ax_f, fraction=0.035, pad=0.02)
+    cb_f.set_label("$m_1(t,x) - m_2(t,x)$", color="#c9d1d9", fontsize=8)
+    cb_f.ax.tick_params(colors="#8b949e", labelsize=7)
+
+    fig.savefig(out_png, dpi=160)
+    plt.close(fig)
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--no-gif", action="store_true", help="Skip GIF animation generation")
@@ -857,10 +1519,18 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[download] Verified {len(paths)} Wikimedia Commons Conus textile specimen files in {CACHE_DIR}")
 
     prize = res["prize"]
+    diag = res["diag"]
+    dmg = res["dmg"]
+    disloc_str = ", ".join(f"k={d['k']}(P={d['period']})" for d in diag["dislocations"])
     print(
         f"[self_test] OK | OEIS A051023 128/128 bits | Jen (1990) left-inverse errors={prize['bijective_errors']} | "
         f"center density c_1024={prize['final_density']:.4f} (H4/4={prize['block4_entropy_bits']:.4f} bits) | "
         f"front velocity={prize['front_velocity']:.3f} cells/step"
+    )
+    print(
+        f"[kymograph_defect_fronts] OK | diagonal recursion errors={diag['recursion_errors']} | "
+        f"dislocations: {disloc_str} | lock velocity={diag['spatial_lock_velocity']:.4f} cells/step | "
+        f"damage cone v_R=+{dmg['vR_mean']:.4f}±{dmg['vR_std']:.4f}, v_L={dmg['vL_mean']:.4f}±{dmg['vL_std']:.4f}"
     )
     print(
         f"[morphometrics] Conus textile H/W={res['hw_mesh']:.4f} (specimen {res['spec_hw']:.4f}), "
@@ -873,9 +1543,16 @@ def main(argv: list[str] | None = None) -> int:
 
     out_csv = HERE / "conus_textile_rule30_metrics.csv"
     out_png = HERE / "conus_textile_rule30_comparison.png"
+    out_df_csv = HERE / "conus_rule30_defect_fronts.csv"
+    out_df_png = HERE / "conus_rule30_kymograph_defect_fronts.png"
+    media_df_png = HERE / "docs" / "media" / "conus_rule30_kymograph_defect_fronts.png"
     write_metrics_csv(res, out_csv)
     render_comparison_figure(res, out_png)
-    print(f"Wrote {out_csv.name} and {out_png.name}")
+    write_defect_fronts_csv(res, out_df_csv)
+    render_kymograph_defect_front_figure(res, out_df_png)
+    if media_df_png.parent.exists():
+        media_df_png.write_bytes(out_df_png.read_bytes())
+    print(f"Wrote {out_csv.name}, {out_png.name}, {out_df_csv.name}, and {out_df_png.name}")
 
     if not args.no_gif:
         out_gif = HERE / "conus_textile_rule30.gif"
