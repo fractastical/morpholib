@@ -44,3 +44,20 @@ $$a_{t+1,\,i} \;=\; a_{t,\,i-1} \,\oplus\, \bigl(a_{t,\,i} \lor a_{t,\,i+1}\bigr
 
 ![1D Space-Time Kymograph & Defect-Front Tooling](../../docs/media/conus_rule30_kymograph_defect_fronts.png)
 
+## MorphoEval 7-Axis Audit & Published Nanopublications (`2026-10-18-conus-audit`)
+
+Evaluated at commit `fb234bc` under MorphoEval Rubric `0.1.0` ([`morphoeval/audits/2026-10-18-conus-audit.yaml`](../../morphoeval/audits/2026-10-18-conus-audit.yaml) · [`morphoeval/kg/2026-10-18-conus-audit/REPORT.md`](../../morphoeval/kg/2026-10-18-conus-audit/REPORT.md)):
+
+- **Overall Score:** **`87.3 / 100`** (`faithful`) — **Model Implementation (`30`):** `87.7` · **Biological Validation (`40`):** `85.5` · **Reproducibility (`30`):** `89.3`
+- **Dimension Breakdown:**
+  - `model-fidelity` (weight 20): **`89`** — [`https://w3id.org/np/RABpB9zkRHfFYrnvVIkm8CnbxALvhzWqXFV5_Z_g7r0Pg`](https://w3id.org/np/RABpB9zkRHfFYrnvVIkm8CnbxALvhzWqXFV5_Z_g7r0Pg)
+  - `specimen-match` (weight 25): **`84`** — [`https://w3id.org/np/RA8NsAfvATeT-dimbe8UF-eyoz5rhuAxKiumbicZgdERE`](https://w3id.org/np/RA8NsAfvATeT-dimbe8UF-eyoz5rhuAxKiumbicZgdERE)
+  - `parameter-expressivity` (weight 10): **`85`** — [`https://w3id.org/np/RAw40YodQ38R_Y955Wld9YF6ppkRjD9a8_IMQgUmxUi1c`](https://w3id.org/np/RAw40YodQ38R_Y955Wld9YF6ppkRjD9a8_IMQgUmxUi1c)
+  - `morphometric-validation` (weight 15): **`88`** — [`https://w3id.org/np/RAZdTwwTpNyKpK-XRw2s8T-4nAJVRA_8_Y9a0Z3ZL8nr4`](https://w3id.org/np/RAZdTwwTpNyKpK-XRw2s8T-4nAJVRA_8_Y9a0Z3ZL8nr4)
+  - `source-traceability` (weight 10): **`90`** — [`https://w3id.org/np/RAE83Ep2iotK34zGkDFZTgGwcHREUSFuB4Ylv2d_M9i4w`](https://w3id.org/np/RAE83Ep2iotK34zGkDFZTgGwcHREUSFuB4Ylv2d_M9i4w)
+  - `code-traceability` (weight 8): **`89`** — [`https://w3id.org/np/RADDG5GaxvPz-TaTWZbmRfJUaZdgrqdW1qhKxTyg_Jg1Q`](https://w3id.org/np/RADDG5GaxvPz-TaTWZbmRfJUaZdgrqdW1qhKxTyg_Jg1Q)
+  - `repro-package` (weight 12): **`89`** — [`https://w3id.org/np/RAS5O9oGRxbWIoFGJLcUH_43zARSJu3TrtYKCkOk8aVyc`](https://w3id.org/np/RAS5O9oGRxbWIoFGJLcUH_43zARSJu3TrtYKCkOk8aVyc)
+  - `overall` composite: **`87.3`** — [`https://w3id.org/np/RACS7k6nr8UJVeKgaT0a2-7NLPISBz3SRaH6qPEcVSVGg`](https://w3id.org/np/RACS7k6nr8UJVeKgaT0a2-7NLPISBz3SRaH6qPEcVSVGg)
+  - `claim` target: [`https://w3id.org/np/RA2G31b0Bg50syNWFhJ5Aj8U2-KZQ5QizNhMjRl1uSb_g`](https://w3id.org/np/RA2G31b0Bg50syNWFhJ5Aj8U2-KZQ5QizNhMjRl1uSb_g)
+
+

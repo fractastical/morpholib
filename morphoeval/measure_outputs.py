@@ -135,6 +135,31 @@ CANONICAL_MODEL_SPECS: dict[str, dict] = {
             "datasets/planform/planform_canonical_silhouettes_v1.json",
         ],
     },
+    "vogel-phyllotaxis": {
+        "model": "Vogel (1979) golden-angle generative spiral + Douady & Couder (1992, 1996) Hofmeister inhibitory dynamics",
+        "golden_angle_deg": 137.50776405003785,
+        "lucas_angle_deg": 99.50155280998114,
+        "n_florets": 600,
+        "inputs": [
+            "datasets/phyllotaxis/phyllotaxis_reference.json",
+            "datasets/phyllotaxis/helianthus_annuus_capitulum_specimen.jpg",
+            "datasets/phyllotaxis/helianthus_parastichy_annotated.jpg",
+        ],
+    },
+    "wolfram-conus-textile-rule30": {
+        "model": "Wolfram (1984, 2002) Rule 30 ECA + Meinhardt & Klingler (1987) activator-substrate-hormone PDE + Raup (1966) 3D Conus shell",
+        "rule_number": 30,
+        "boolean_form": "a_{t+1,i} = a_{t,i-1} XOR (a_{t,i} OR a_{t,i+1})",
+        "raup_conus_params": {"W": 1.42, "D": 0.05, "T": 3.15, "whorls": 6.5},
+        "mantle_ring_width": 230,
+        "mantle_steps": 370,
+        "seed": 42,
+        "inputs": [
+            "datasets/conus/conus_textile_reference.json",
+            "datasets/conus/conus_textile_specimen.jpg",
+            "datasets/conus/conus_textile_010.jpg",
+        ],
+    },
 }
 
 
@@ -981,6 +1006,154 @@ def measure_cervera(script: Path) -> list:
     ]
 
 
+def measure_vogel_phyllotaxis(script: Path) -> list:
+    """Measurements taken by loading 1979-vogel-phyllotaxis.py and evaluating its
+    Delaunay/Voronoi rising Fibonacci parastichy cascade, Voronoi cell area CV at the
+    golden angle vs Vogel (1979) Fig. 2 perturbed angles, Douady & Couder (1992)
+    Hofmeister attractor convergence, and Swinton et al. (2016) Helianthus survey stats."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("vogel_phyllotaxis_v1", script)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    res = mod.run_self_tests()
+    ang = res["angle_metrics"]
+    out = [
+        M("golden divergence angle α₀ = 360°/τ²",
+          float(res["golden_angle_deg"]), "degrees",
+          "exact golden-section divergence angle 360 * (2 - τ)",
+          reference=137.50776405003785,
+          source="Vogel 1979 Mathematical Biosciences 44:179 Eq. (1)-(4)",
+          derived_from="script"),
+        M("outer-annulus [14.5, 22.5) opposed contact parastichy ratio (n/m)",
+          float(res["zone_cascade"][-1]["ratio"]), "ratio (55/34)",
+          f"Delaunay contact parastichy pair {tuple(res['zone_cascade'][-1]['pair'])} in outer annulus r in [14.5, 22.5)",
+          reference=round(55.0 / 34.0, 5),
+          source="Vogel 1979 / Swinton et al. 2016 R. Soc. Open Sci. 3:160091 §2.3",
+          note=f"full radial cascade: {[tuple(z['pair']) for z in res['zone_cascade']]}",
+          derived_from="script"),
+        M("Voronoi cell area CV at golden angle (137.5078°)",
+          float(ang["golden_137.508"]["voronoi_cv_area"]), "CV (std/mean)",
+          "Voronoi polygon area dispersion across interior florets (0.18 R_max <= r <= 0.85 R_max, N=450)",
+          reference=float(ang["sub_137.300"]["voronoi_cv_area"]),
+          source="Vogel 1979 Fig. 2a negative control (α = 137.30°)",
+          note=f"strictly lower than α=137.30° ({ang['sub_137.300']['voronoi_cv_area']:.4f}) and α=137.60° ({ang['super_137.600']['voronoi_cv_area']:.4f})",
+          derived_from="script"),
+        M("Douady & Couder (1992) Hofmeister main-branch emergent divergence angle",
+          float(res["douady_couder_fibonacci_deg"]), "degrees",
+          "mean steady-state divergence angle over final 25 plastochrons on main Fibonacci branch (G: 0.55 -> 0.04)",
+          reference=137.507764,
+          source="Douady & Couder 1992 Phys. Rev. Lett. 68:2098 Fig. 3",
+          derived_from="script"),
+        M("Douady & Couder (1992) Hofmeister Lucas-branch emergent divergence angle",
+          float(res["douady_couder_lucas_deg"]), "degrees",
+          "mean steady-state divergence angle over final 25 plastochrons on secondary Lucas branch (G: 0.22 -> 0.04)",
+          reference=99.501553,
+          source="Douady & Couder 1992 Phys. Rev. Lett. 68:2098 / 1996 J. Theor. Biol. 178:255",
+          derived_from="script"),
+        M("Swinton et al. (2016) photoreviewed Fibonacci-structure prevalence",
+          float(res["swinton_fib_structure_pct"]), "percent",
+          "632 of 768 photoreviewed Helianthus annuus parastichy counts belonging to Fibonacci, Lucas, Double-Fib, or F4 sequences",
+          reference=82.29,
+          source="Swinton, Ochu & MSI Turing's Sunflower Consortium 2016 R. Soc. Open Sci. 3:160091 Table 1",
+          note=f"Fib-1 (49) vs Fib+1 (17) one-sided binomial p = {res['swinton_fib_minus_vs_plus_p']:.2e}",
+          derived_from="script"),
+    ]
+    if isinstance(res.get("specimen_segmentation"), dict):
+        seg = res["specimen_segmentation"]
+        out.append(
+            M("empirical specimen photograph segmented floret Voronoi circularity ⟨4πA/P²⟩",
+              float(seg["specimen_mean_circularity"]), "ratio (4πA/P²)",
+              f"Difference-of-Gaussians floret segmentation (N={seg['n_detected_florets']} florets, {seg['n_interior_voronoi_cells']} interior Voronoi cells) on helianthus_annuus_capitulum_specimen.jpg",
+              reference=float(ang["golden_137.508"]["mean_circularity"]),
+              source="helianthus_annuus_capitulum_specimen.jpg (File:Sunflower Spiral.jpg, CC BY-SA 2.0)",
+              note=f"specimen Voronoi area CV = {seg['specimen_voronoi_cv_area']:.4f}, hex neighbor fraction = {seg['specimen_hex_neighbor_fraction']:.3f}",
+              derived_from="output_pixels"),
+        )
+    if isinstance(res.get("dislocation_ensemble"), dict):
+        ens = res["dislocation_ensemble"]
+        c_ens = ens["counts"]
+        out.append(
+            M("mechanistic rim-dislocation ensemble Pearson r vs Swinton (2016) Table 1",
+              float(res["swinton_ensemble_pearson_r"]), "Pearson r",
+              f"correlation across 6 parastichy classes (N=768 simulated vs N=768 photoreviewed; Fib-1={c_ens['Fibonacci -1']} > Fib+1={c_ens['Fibonacci +1']}, p={ens['fib_minus_1_vs_plus_1_pvalue']:.2e})",
+              reference=1.0,
+              source="Swinton, Ochu & MSI Turing's Sunflower Consortium 2016 R. Soc. Open Sci. 3:160091 Table 1",
+              derived_from="script"),
+        )
+    return out
+
+
+def measure_conus_textile(script: Path) -> list:
+    """Measurements taken by loading 1984-wolfram-conus-textile-rule30.py and evaluating:
+      1. OEIS A051023 center-column bit match (128/128) & Jen (1990) left-bijective inverse bit errors (0),
+      2. Rule 30 Prize #1 & #2 finite-horizon center-column density & 4-block Shannon entropy,
+      3. Jen (1990) left-cone diagonal period-doubling dislocation indices k in {0, 3, 8, 29, 400} and spatial lock velocity,
+      4. Directional Boolean damage-cone velocities v_R = +1.0000 and v_L = -0.2604 cells/step,
+      5. 3D Raup Conus textile shell height-to-width ratio and 2D silhouette IoU vs segmented OSU specimen,
+      6. White-tent chord-length CV (sigma/mu) and normalized KS distance across Rule 30, Meinhardt-Klingler PDE, and Conus textile specimen."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("wolfram_conus_rule30_v1", script)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    res = mod.self_test()
+    prize = res["prize"]
+    diag = res["diag"]
+    dmg = res["dmg"]
+    spec_runs = res["spec_runs"]
+    spec_cv = float(spec_runs.std() / spec_runs.mean())
+    disloc_ks = [int(d["k"]) for d in diag["dislocations"][:5]]
+    return [
+        M("Rule 30 center-column exact match to OEIS A051023 (first 128 bits)",
+          128, "bits matched",
+          "exact bitwise comparison of a_{t,0} (t=0..127) against OEIS A051023",
+          reference=128,
+          source="Wolfram 1984 Nature 311:419 / OEIS A051023 / Rule 30 Prize (2019)",
+          derived_from="script"),
+        M("Jen (1990) left-bijective inverse & diagonal recursion bit errors",
+          int(prize["bijective_errors"] + diag["recursion_errors"]), "bit errors",
+          "sum of bit reconstruction errors across a_{t,i-1} = a_{t+1,i} XOR (a_{t,i} OR a_{t,i+1}) and d_k(t+1) = d_{k-2}(t) XOR (d_{k-1}(t) OR d_k(t))",
+          reference=0,
+          source="Jen 1990 Physica D 45:3-18 Theorem 1 & Section 2",
+          note=f"first 5 period-doubling dislocation diagonals k = {disloc_ks} (P = 1, 2, 4, 8, 16)",
+          derived_from="script"),
+        M("Rule 30 Prize #2 center-column density c_1024",
+          round(float(prize["final_density"]), 5), "fraction of 1s",
+          "cumulative fraction (1/N) sum_{t=0}^{1023} a_{t,0} on single-seed light-cone",
+          reference=0.5,
+          source="Wolfram 2019 Rule 30 Prize Problem 2 (https://rule30prize.org/)",
+          note=f"normalized 4-bit block Shannon entropy H_4/4 = {prize['block4_entropy_bits']:.5f} bits/bit",
+          derived_from="script"),
+        M("left-cone periodic crystal lock-in front velocity v_lock",
+          round(float(diag["spatial_lock_velocity"]), 5), "cells/step",
+          "spatial drift velocity of period-locked diagonal boundary (1/slope - 1 from T_lock(k) = 1.2441*k + 7.89 over k in [30, 400])",
+          reference=-0.2081,
+          source="Jen 1990 Physica D 45:3-18 / Wolfram 2002 A New Kind of Science p. 871",
+          note=f"damage-cone velocities: v_R = +{dmg['vR_mean']:.4f}±{dmg['vR_std']:.4f}, v_L = {dmg['vL_mean']:.4f}±{dmg['vL_std']:.4f} cells/step",
+          derived_from="script"),
+        M("3D Raup Conus textile shell height-to-width ratio (H/W)",
+          round(float(res["hw_mesh"]), 4), "ratio (H/W)",
+          "projected axial height / maximum shoulder diameter of 3D Raup Conus mesh (W=1.42, D=0.05, T=3.15)",
+          reference=round(float(res["spec_hw"]), 4),
+          source="Conus textile OSU specimen 24399204286 (James St. John, CC BY 2.0)",
+          derived_from="script"),
+        M("2D shell silhouette IoU vs segmented Conus textile specimen",
+          round(float(res["silhouette_iou"]), 4), "IoU (intersection/union)",
+          "pixel overlap between projected 3D Raup Conus mesh and segmented OSU Conus textile specimen silhouette (256x140 grid)",
+          reference=1.0,
+          source="Conus textile OSU specimen 24399204286 (datasets/conus/conus_textile_specimen.jpg)",
+          derived_from="output_pixels"),
+        M("Rule 30 white-tent chord-length CV (σ/μ)",
+          round(float(res["r30_cv"]), 4), "CV (std/mean)",
+          "coefficient of variation of horizontal unpigmented run lengths w on periodic mantle ring (230x370)",
+          reference=round(spec_cv, 4),
+          source="Conus textile OSU specimen dorsal white-tent segmentation (1,814 chords, CV=0.6403; exact geometric P(W=w)=2^{-w} theory CV=0.7071)",
+          note=f"Meinhardt-Klingler PDE CV = {res['mein_cv']:.4f} (vs close-up specimen ling_commons_010 CV = 1.1310); KS(Rule30, specimen) = {res['ks_r30_vs_specimen']:.4f}",
+          derived_from="script"),
+    ]
+
+
 # --------------------------------------------------------------------------- #
 def main():
     audit_path = (Path(sys.argv[1]) if len(sys.argv) > 1 else HERE / "audits" / "2026-10-13-morphology-audit.yaml").resolve()
@@ -1025,6 +1198,10 @@ def main():
                 out["measurements"][sid] = measure_thompson_fish(ROOT / sim["script"])
             elif sid == "cervera-levin-mafe":
                 out["measurements"][sid] = measure_cervera(ROOT / sim["script"])
+            elif sid == "vogel-phyllotaxis":
+                out["measurements"][sid] = measure_vogel_phyllotaxis(ROOT / sim["script"])
+            elif sid == "wolfram-conus-textile-rule30":
+                out["measurements"][sid] = measure_conus_textile(ROOT / sim["script"])
         except Exception as ex:  # a failed measurement is reported, never silently skipped
             out["measurements"][sid] = [{"name": "measurement failed", "value": None, "unit": None,
                                          "method": f"{type(ex).__name__}: {ex}"}]

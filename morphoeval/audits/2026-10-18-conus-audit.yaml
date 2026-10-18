@@ -1,0 +1,194 @@
+# MorphoEval audit — Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation, 2026-10-18
+#
+# Evaluates `1984-wolfram-conus-textile-rule30.py` across the 7 MorphoEval axes:
+#   - Wolfram (1983, 1984, 2002) Elementary Cellular Automaton Rule 30 (`p XOR (q OR r)`)
+#     and the 2019 Wolfram Rule 30 Prize Problems #1-#3 (OEIS A051023 center column,
+#     Erica Jen 1990 left-bijective inverse & diagonal period-doubling dislocation cascade,
+#     and directional Boolean damage-cone velocities).
+#   - Meinhardt & Klingler (1987) 3-component activator-substrate-hormone reaction-diffusion
+#     PDE for mollusk mantle-edge tent pigmentation and lesion scar recovery.
+#   - Raup (1966) 3D biconical Conus shell mesh (`W=1.42, D=0.05, T=3.15`) validated against
+#     segmented OSU Conus textile specimen photography (`24399204286`, James St. John, CC BY 2.0).
+
+audit:
+  id: 2026-10-18-conus-audit
+  rubric_version: 0.1.0
+  date: "2026-10-18"
+  supersedes: null
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: fb234bc
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      First formal 7-axis MorphoEval audit of `1984-wolfram-conus-textile-rule30.py`,
+      covering Wolfram Rule 30 (1984/2019 Prize Problems), Erica Jen's (1990)
+      left-cone period-doubling dislocation theorem, Meinhardt & Klingler's (1987)
+      mantle-edge activator-substrate-hormone PDE, 3D Raup Conus shell texture
+      mapping, and 1D space-time defect-front kymograph tooling.
+
+references:
+  wolfram1983:
+    title: "Statistical mechanics of cellular automata"
+    authors: "Wolfram S"
+    venue: "Reviews of Modern Physics 55(3):601-644 (1983)"
+    doi: 10.1103/RevModPhys.55.601
+  wolfram1984:
+    title: "Cellular automata as models of complexity"
+    authors: "Wolfram S"
+    venue: "Nature 311(5985):419-424 (1984)"
+    doi: 10.1038/311419a0
+  meinhardt1987:
+    title: "A model for pigment pattern formation on the shells of mollusks"
+    authors: "Meinhardt H, Klingler M"
+    venue: "Journal of Theoretical Biology 126(1):63-89 (1987)"
+    doi: 10.1016/S0022-5193(87)80101-7
+  jen1990:
+    title: "Aperiodicity in one-dimensional cellular automata"
+    authors: "Jen E"
+    venue: "Physica D: Nonlinear Phenomena 45(1-3):3-18 (1990)"
+    doi: 10.1016/0167-2789(90)90169-P
+  raup1966:
+    title: "Geometric analysis of shell coiling: general problems"
+    authors: "Raup DM"
+    venue: "Journal of Paleontology 40(5):1178-1190 (1966)"
+    url: https://www.jstor.org/stable/1301992
+
+simulations:
+  - id: wolfram-conus-textile-rule30
+    name: "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation"
+    organism: "Conus textile Linnaeus, 1758 (textile cone snail)"
+    script: 1984-wolfram-conus-textile-rule30.py
+    output: conus_textile_rule30_comparison.png
+    also:
+      - docs/media/conus_textile_rule30.gif
+      - docs/media/conus_rule30_kymograph_defect_fronts.png
+      - conus_textile_rule30_metrics.csv
+      - conus_rule30_defect_fronts.csv
+    domain: morphogenesis
+    status: evaluated
+    supersedes_audit_id: null
+    claim_boundary:
+      reported_in_source:
+        - "Wolfram (1983, 1984, 2002) introduces elementary cellular automaton Rule 30 (a_{t+1,i} = a_{t,i-1} XOR (a_{t,i} OR a_{t,i+1})) as a discrete generative model of Conus textile tent pigmentation and poses the 2019 Rule 30 Prize Problems on the center column a_{t,0} (OEIS A051023)"
+        - "Jen (1990) proves left-bijective spatial invertibility a_{t,i-1} = a_{t+1,i} XOR (a_{t,i} OR a_{t,i+1}) and the left-cone diagonal period-doubling cascade d_k(t+1) = d_{k-2}(t) XOR (d_{k-1}(t) OR d_k(t)) gated by all-zero synchronizing barriers d_{k-1} = 0"
+        - "Meinhardt & Klingler (1987) formulate a 1D mantle-edge activator-substrate-hormone reaction-diffusion PDE generating self-extinguishing pigment triangles and V-shaped lesion recovery wakes"
+      reconstructed_in_script:
+        - "Exact Boolean and GF(2) ANF Rule 30 evolution, 1024-step single-seed light-cone, Jen (1990) left-bijective reconstruction and k=0..414 diagonal period-doubling cascade (k = 0, 3, 8, 29, 400), directional Boolean damage-cone ensemble, Meinhardt-Klingler PDE kymograph and lesion scar simulation, and 3D Raup Conus shell projection validated against segmented OSU Conus textile photography"
+      transfer_boundary:
+        - "Cross-model 1D space-time defect-front kymograph comparison linking Rule 30 / Meinhardt mantle wakes to Zhang-Goldstein-Levin (2025) frozen-defect cell sorting and Cervera-Levin-Mafe (2021) bioelectric domain-wall propagation"
+      does_not_claim:
+        - "Infinite-horizon proof of the open 2019 Wolfram Rule 30 Prize Problems #1-#3 (verifies finite-horizon statistics through t = 1024 and exact diagonal periods through k = 414)"
+    source_refs: [wolfram1983, wolfram1984, meinhardt1987, jen1990, raup1966]
+    summary: >-
+      Side-by-side generative reproduction and 1D space-time kymograph analysis of
+      Wolfram (1984, 2002) Rule 30 cellular automata and Meinhardt & Klingler's
+      (1987) activator-substrate-hormone reaction-diffusion PDE mapped onto a 3D
+      Raup (1966) Conus textile shell mesh. Validated against OEIS A051023
+      (128/128 bits), Erica Jen's (1990) left-bijective inverse and diagonal
+      period-doubling theorem (0 bit errors; dislocations at k = 0, 3, 8, 29, 400),
+      and segmented OSU Conus textile specimen photography (H/W error 0.07%,
+      2D silhouette IoU 0.8353, white-tent chord CV 0.7069 vs specimen 0.6403).
+    scores:
+      model-fidelity:
+        value: 89
+        rationale: >-
+          Implements both the discrete Wolfram Rule 30 cellular automaton (in both
+          Boolean XOR/OR and GF(2) Algebraic Normal Form) and the continuous
+          Meinhardt-Klingler (1987) 3-species activator-substrate-hormone mantle-edge
+          PDE, plus Erica Jen's (1990) left-bijective spatial inverse, left-cone
+          diagonal recursion d_k(t+1) = d_{k-2}(t) XOR (d_{k-1}(t) OR d_k(t)), and
+          asymmetric Boolean Jacobian damage-cone analysis.
+        evidence:
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [140, 273], note: "Rule 30 Boolean/ANF steppers, Jen (1990) left-bijective inverse, and Prize #1-#3 diagnostics"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [276, 422], note: "GF(2) Boolean Jacobian verification, diagonal period-doubling cascade k=0..414, and damage-cone ensemble"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [627, 704], note: "Meinhardt-Klingler (1987) activator-substrate-hormone PDE and 3D Raup Conus shell mesh"}
+      specimen-match:
+        value: 84
+        rationale: >-
+          Directly segments two Wikimedia Commons Conus textile photographs
+          (`stjohn_osu_24399204286`, CC BY 2.0, and `ling_commons_010`, Public Domain).
+          The 3D Raup Conus mesh matches the OSU specimen's height-to-width ratio
+          within 0.07% (1.8342 vs 1.8330) and achieves a 2D silhouette IoU of 0.8353.
+          Rule 30 reproduces the full-shell white-tent chord-length CV (0.7069 vs
+          specimen 0.6403, KS = 0.2389), while the Meinhardt-Klingler PDE matches the
+          multi-scale close-up dorsal whorl dispersion (CV = 1.1050 vs 1.1310).
+        evidence:
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [837, 855], note: "self_test(): 3D Raup mesh H/W, silhouette IoU, and chord-length KS/CV comparisons against segmented specimen"}
+          - {file: conus_textile_rule30_comparison.png, lines: [0, 0], note: "Panel C silhouette IoU overlay (0.835) + segmented dorsal tents; Panel F white-chord CCDF tail comparison"}
+      parameter-expressivity:
+        value: 85
+        rationale: >-
+          Contrasts Rule 30 against Rule 90 (linear XOR / Sierpinski negative control)
+          and the continuous Meinhardt-Klingler PDE across intact growth and pinned
+          mantle-edge lesion perturbations, sweeps diagonal index k across 415 left-cone
+          diagonals and 25 damage-cone random seeds, and compares 1D space-time
+          defect-front kymographs across four repository morphogenetic paradigms.
+        evidence:
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [425, 620], note: "Pinned mantle-defect wakes (Rule 30 vs Meinhardt PDE) and cross-model kymograph front simulations"}
+          - {file: docs/media/conus_rule30_kymograph_defect_fronts.png, lines: [0, 0], note: "6-panel space-time kymograph & defect-front diagnostic figure"}
+      morphometric-validation:
+        value: 88
+        rationale: >-
+          Seven quantitative morphometrics and algebraic invariants are verified in
+          `self_test()` and exported to `conus_textile_rule30_metrics.csv` and
+          `conus_rule30_defect_fronts.csv`: 128/128 OEIS A051023 bit match, 0 bit
+          errors on Jen's left-bijective inverse and diagonal recursion, exact
+          dislocation indices k in {0, 3, 8, 29, 400}, damage-cone velocities
+          v_R = +1.0000 and v_L = -0.2604, shell H/W = 1.8342 (ref 1.8330),
+          silhouette IoU = 0.8353, and white-chord CV = 0.7069 (theory 1/sqrt(2) = 0.7071,
+          specimen 0.6403).
+        evidence:
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [799, 913], note: "self_test(): 9 automated assertion blocks covering algebraic, statistical, and geometric metrics"}
+          - {file: conus_textile_rule30_metrics.csv, lines: [0, 0], note: "System-by-system pigment fraction, white-chord mean/CV, KS distance, fractal dimension, and silhouette IoU"}
+          - {file: conus_rule30_defect_fronts.csv, lines: [0, 0], note: "17 defect-front and dislocation rows across Rule 30, Meinhardt PDE, sorting, and bioelectricity"}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Cites Wolfram (1983, 1984, 2002), the 2019 Wolfram Rule 30 Prize, OEIS
+          A051023, Jen (1990), Meinhardt & Klingler (1987), Raup (1966), and both
+          Wikimedia Commons specimen photographs in `datasets/conus/paper_citations.bib`,
+          with SHA-256 locks verified on `conus_textile_reference.json` and both
+          specimen JPEGs.
+        evidence:
+          - {file: datasets/conus/paper_citations.bib, lines: [1, 95], note: "Complete BibTeX citations for primary papers, OEIS/Rule 30 Prize, and Commons specimens"}
+          - {file: datasets/conus/conus_textile_reference.json, lines: [1, 80], note: "SHA-256 pinned specimen metadata, RLE masks, and OEIS A051023 benchmark"}
+      code-traceability:
+        value: 89
+        rationale: >-
+          All figure titles, legends, and annotations in both 6-panel figures are
+          dynamically formatted from the dictionary returned by `self_test()`,
+          preventing hardcoded label drift between computed metrics and plotted text.
+        evidence:
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [973, 1148], note: "render_comparison_figure(): dynamic formatting of all 6 panels from self_test() results"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [1285, 1504], note: "render_kymograph_defect_front_figure(): dynamic formatting of dislocation indices, velocities, and sorting/bioelectric fronts"}
+      repro-package:
+        value: 89
+        rationale: >-
+          Deterministic RNG seeds (`42`, `100..124`, `2025`), fast `--self-test-only`
+          entrypoint, automatic specimen verification/caching with SHA-256 checks,
+          and complete PNG, GIF, and CSV outputs.
+        evidence:
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [1507, 1560], note: "CLI entrypoint supporting --self-test-only and --no-gif with deterministic seeds"}
+          - {file: docs/media/conus_textile_rule30.gif, lines: [0, 0], note: "36-frame animated 1x2 comparison of Rule 30 vs Meinhardt PDE on 3D rotating Conus shells"}
+    remediation:
+      - "Extend 3D Conus shell texture comparison from 2D orthographic silhouette IoU to unwrapped cylindrical UV registration against 360-degree photogrammetry of a single Conus textile shell."
+      - "Include the 4-variable Meinhardt (1995) branched-travelling-wave system with explicit point-arrest hormone pulses for large triangular tent cascades."
