@@ -6,8 +6,13 @@ Compare simulated trajectories, wave propagation patterns, and spatial
 distributions to help validate simulation parameters against real data.
 """
 
+import os
+import sys
 import pandas as pd
 import numpy as np
+import matplotlib
+if any(flag in sys.argv for flag in ("--output", "--lane-b-csv")) or not os.environ.get("DISPLAY"):
+    matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse, Circle, Arrow
 import argparse
@@ -248,17 +253,167 @@ def compare_simulated_vs_real(sim_df, real_df, output_path=None):
         plt.show()
 
 
+def compare_paired_ab_simulations(df_a, df_b, meta_a=None, meta_b=None, output_path=None):
+    """
+    Compare two deterministic seed-locked Ca²⁺ wave simulations (Lane A vs. Lane B),
+    plotting side-by-side spatial trajectories, activity time series, and paired delta
+    curves (ΔArea(t), ΔActiveTracks(t), and secondary-embryo B recruitment).
+    """
+    fig, axes = plt.subplots(2, 3, figsize=(16.5, 9.5))
+
+    label_a = (meta_a or {}).get('scenario', 'Lane A')
+    label_b = (meta_b or {}).get('scenario', 'Lane B')
+    seed_val = (meta_a or {}).get('seed', 'locked')
+
+    # 1. Spatial trajectories (Lane A vs Lane B)
+    ax = axes[0, 0]
+    for tid in df_a['track_id'].unique():
+        tr = df_a[df_a['track_id'] == tid]
+        ax.plot(tr['x'], tr['y'], color='#1f77b4', alpha=0.55, lw=1.2)
+    for tid in df_b['track_id'].unique():
+        tr = df_b[df_b['track_id'] == tid]
+        ax.plot(tr['x'], tr['y'], color='#ff7f0e', alpha=0.55, lw=1.2, ls='--')
+
+    for meta in (meta_a, meta_b):
+        if meta and 'embryos' in meta:
+            for emb in meta['embryos']:
+                ell = Ellipse(
+                    (emb['center_x'], emb['center_y']),
+                    width=emb['length'],
+                    height=emb['width'],
+                    angle=emb.get('angle', 0),
+                    fill=False,
+                    edgecolor='black',
+                    lw=1.5,
+                    ls=':',
+                )
+                ax.add_patch(ell)
+                ax.text(emb['center_x'], emb['center_y'] + emb['width'] * 0.6, f"Embryo {emb['id']}", ha='center', fontweight='bold', fontsize=9)
+            break
+    if meta_a and 'pokes' in meta_a:
+        for p in meta_a['pokes']:
+            ax.scatter([p['x']], [p['y']], s=160, c='red', marker='X', zorder=10, edgecolors='black', label='Poke site')
+
+    ax.plot([], [], color='#1f77b4', lw=2, label=f'Lane A ({label_a})')
+    ax.plot([], [], color='#ff7f0e', lw=2, ls='--', label=f'Lane B ({label_b})')
+    ax.set_xlabel('X (pixels)')
+    ax.set_ylabel('Y (pixels)')
+    ax.set_title('(A) Seed-Locked Spatial Trajectories', fontweight='bold')
+    ax.legend(fontsize=8, loc='upper right')
+    ax.grid(True, alpha=0.3)
+    ax.axis('equal')
+
+    # 2. Total Ca²⁺ Spark Area over time: Lane A vs Lane B
+    ax = axes[0, 1]
+    all_times = sorted(set(df_a['time_s'].unique()).union(set(df_b['time_s'].unique())))
+    area_a = df_a.groupby('time_s')['area'].sum().reindex(all_times, fill_value=0.0)
+    area_b = df_b.groupby('time_s')['area'].sum().reindex(all_times, fill_value=0.0)
+    ax.plot(all_times, area_a.values, color='#1f77b4', lw=2.2, label=f'Lane A ({label_a})')
+    ax.plot(all_times, area_b.values, color='#ff7f0e', lw=2.2, ls='--', label=f'Lane B ({label_b})')
+    ax.set_xlabel('Time since poke (s)')
+    ax.set_ylabel('Total Ca²⁺ Spark Area (px²)')
+    ax.set_title('(B) Ca²⁺ Activity Over Time', fontweight='bold')
+    ax.legend(fontsize=8)
+    ax.grid(True, alpha=0.3)
+
+    # 3. Paired Delta Activity Curve ΔArea(t) = Area_B(t) - Area_A(t)
+    ax = axes[0, 2]
+    delta_area = area_b.values - area_a.values
+    ax.plot(all_times, delta_area, color='#8e44ad', lw=2.2, label='Paired $\\Delta$Area ($B - A$)')
+    ax.fill_between(all_times, 0, delta_area, color='#8e44ad', alpha=0.20)
+    ax.axhline(0, color='gray', ls='--', lw=1.0)
+    ax.set_xlabel('Time since poke (s)')
+    ax.set_ylabel('$\\Delta$ Ca²⁺ Area ($B - A$, px²)')
+    ax.set_title(f'(C) Paired Activity Divergence (Total $\\Delta$={int(delta_area.sum()):+d} px²)', fontweight='bold')
+    ax.legend(fontsize=8)
+    ax.grid(True, alpha=0.3)
+
+    # 4. Active Tracks over time & Paired ΔTracks(t)
+    ax = axes[1, 0]
+    ntr_a = df_a.groupby('time_s')['track_id'].nunique().reindex(all_times, fill_value=0)
+    ntr_b = df_b.groupby('time_s')['track_id'].nunique().reindex(all_times, fill_value=0)
+    delta_ntr = ntr_b.values - ntr_a.values
+    ax.plot(all_times, ntr_a.values, color='#1f77b4', lw=2.0, label='Lane A tracks')
+    ax.plot(all_times, ntr_b.values, color='#ff7f0e', lw=2.0, ls='--', label='Lane B tracks')
+    ax.plot(all_times, delta_ntr, color='#2ca02c', lw=2.0, ls=':', label='Paired $\\Delta$Tracks ($B - A$)')
+    ax.axhline(0, color='gray', ls='--', lw=0.8)
+    ax.set_xlabel('Time since poke (s)')
+    ax.set_ylabel('Active Spark Tracks')
+    ax.set_title('(D) Active Spark Tracks & Paired $\\Delta$Tracks', fontweight='bold')
+    ax.legend(fontsize=8)
+    ax.grid(True, alpha=0.3)
+
+    # 5. Per-Embryo Recruitment Breakdown (Embryo A vs Embryo B)
+    ax = axes[1, 1]
+    emb_ids = sorted(set(df_a['embryo_id'].dropna().unique()).union(set(df_b['embryo_id'].dropna().unique())))
+    x = np.arange(len(emb_ids))
+    w = 0.35
+    cnt_a = [int((df_a['embryo_id'] == eid).sum()) for eid in emb_ids]
+    cnt_b = [int((df_b['embryo_id'] == eid).sum()) for eid in emb_ids]
+    ax.bar(x - w / 2, cnt_a, w, color='#1f77b4', alpha=0.88, label=f'Lane A ({label_a})')
+    ax.bar(x + w / 2, cnt_b, w, color='#ff7f0e', alpha=0.88, label=f'Lane B ({label_b})')
+    ax.set_xticks(x)
+    ax.set_xticklabels([f'Embryo {eid}' for eid in emb_ids])
+    ax.set_ylabel('Spark Track States')
+    ax.set_title('(E) Per-Embryo Spark State Recruitment', fontweight='bold')
+    ax.legend(fontsize=8)
+    ax.grid(axis='y', alpha=0.3)
+
+    # 6. Paired A/B Verification Summary Table
+    ax = axes[1, 2]
+    ax.axis('off')
+    embA_a = df_a[df_a['embryo_id'] == 'A'].reset_index(drop=True)
+    embA_b = df_b[df_b['embryo_id'] == 'A'].reset_index(drop=True)
+    embA_match = (
+        len(embA_a) == len(embA_b)
+        and np.allclose(embA_a['x'].values, embA_b['x'].values)
+        and np.allclose(embA_a['y'].values, embA_b['y'].values)
+    )
+    rows = [
+        ['Metric', 'Lane A', 'Lane B', 'Paired Δ (B-A)'],
+        ['Scenario', label_a, label_b, f'seed={seed_val}'],
+        ['Track states', str(len(df_a)), str(len(df_b)), f'{len(df_b)-len(df_a):+d}'],
+        ['Unique tracks', str(df_a['track_id'].nunique()), str(df_b['track_id'].nunique()), f"{df_b['track_id'].nunique()-df_a['track_id'].nunique():+d}"],
+        ['Total Ca²⁺ area', str(int(df_a['area'].sum())), str(int(df_b['area'].sum())), f"{int(df_b['area'].sum()-df_a['area'].sum()):+d}"],
+        ['Embryos active', ','.join(sorted(df_a['embryo_id'].unique())), ','.join(sorted(df_b['embryo_id'].unique())), 'Embryo A locked: ' + ('YES' if embA_match else 'NO')],
+    ]
+    tbl = ax.table(cellText=rows[1:], colLabels=rows[0], cellLoc='center', loc='center')
+    tbl.auto_set_font_size(False)
+    tbl.set_fontsize(8.5)
+    tbl.scale(1.0, 1.8)
+    ax.set_title('(F) Seed-Locked Paired A/B Summary', fontweight='bold', pad=15)
+
+    fig.suptitle(
+        f'Deterministic Paired A/B Ca²⁺ Wave Simulation Comparison (seed={seed_val})\n'
+        f'Lane A: {label_a} vs. Lane B: {label_b}',
+        fontsize=12.5,
+        fontweight='bold',
+        y=1.01,
+    )
+    plt.tight_layout()
+    if output_path:
+        plt.savefig(output_path, dpi=150, bbox_inches='tight')
+        print(f"Saved paired A/B simulation plot to {output_path}")
+    else:
+        plt.show()
+    plt.close(fig)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Visualize simulated Ca²⁺ wave data"
     )
     parser.add_argument(
         'sim_csv',
-        help='Path to simulated spark_tracks.csv'
+        help='Path to simulated spark_tracks.csv (or Lane A CSV)'
     )
     parser.add_argument(
         '--real-csv',
         help='Path to real spark_tracks.csv for comparison'
+    )
+    parser.add_argument(
+        '--lane-b-csv',
+        help='Path to Lane B simulated CSV for deterministic paired A/B comparison'
     )
     parser.add_argument(
         '--output',
@@ -278,7 +433,13 @@ def main():
     sim_df = pd.read_csv(args.sim_csv)
     metadata = load_simulation_metadata(args.sim_csv)
     
-    if args.compare and args.real_csv:
+    if args.lane_b_csv:
+        print(f"Loading paired Lane B data from {args.lane_b_csv}...")
+        df_b = pd.read_csv(args.lane_b_csv)
+        meta_b = load_simulation_metadata(args.lane_b_csv)
+        output = args.output or 'simulation_paired_ab_comparison.png'
+        compare_paired_ab_simulations(sim_df, df_b, meta_a=metadata, meta_b=meta_b, output_path=output)
+    elif args.compare and args.real_csv:
         print(f"Loading real data from {args.real_csv}...")
         real_df = pd.read_csv(args.real_csv)
         

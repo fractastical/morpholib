@@ -1547,6 +1547,96 @@ def make_gif(output: str, n_frames: int = 24, fps: int = 8) -> None:
     print(f"Saved animation to {output}  ({len(frames)} frames)")
 
 
+def export_field_overlay_2d(output_json: Path) -> Dict[str, Any]:
+    """Export the 5-band bioelectric node voltages, gap-junction edge conductances,
+    and 1D AP/ML reaction-diffusion morphogen grids in a renderer-neutral `FieldOverlay2D`
+    JSON bundle (compatible with MesmerPrism/rusty-optics & rusty-matter)."""
+    canonical_scenarios = [
+        "Baseline",
+        "GapJunctionBlockOctanol",
+        "TransientDepolarizationMemory",
+        "TransientDepolarizationNoMemoryControl",
+        "DoubleHeadCutAndBlock",
+    ]
+    circuit_overlays = []
+    for scen in canonical_scenarios:
+        res = run_rusty_matter_planarian_scenario(scen)
+        band_keys = list(res.band_mean_v.keys())
+        n_bands = len(band_keys)
+        nodes = [
+            {
+                "node_id": i,
+                "band": k,
+                "ap_position": round(i / max(n_bands - 1, 1), 3),
+                "voltage_v": round(float(res.band_mean_v[k]), 6),
+                "memory_m": round(float(res.band_memory[k]), 6),
+                "head_readout": round(float(res.band_head_readout[k]), 6),
+            }
+            for i, k in enumerate(band_keys)
+        ]
+        edges = [
+            {
+                "from_node": i,
+                "to_node": i + 1,
+                "mean_gap_conductance_g": round(float(res.mean_conductance), 6),
+                "cross_cut_base_conductance": round(float(res.cross_cut_base_conductance), 6),
+            }
+            for i in range(max(n_bands - 1, 0))
+        ]
+        circuit_overlays.append(
+            {
+                "scenario": scen,
+                "time_final": round(float(res.trajectory_time_s[-1]), 3),
+                "anterior_mean_v": round(float(res.anterior_mean_v), 6),
+                "posterior_mean_v": round(float(res.posterior_mean_v), 6),
+                "ap_delta_v": round(float(res.ap_delta_v), 6),
+                "posterior_head_readout": round(float(res.posterior_head_readout), 6),
+                "nodes": nodes,
+                "edges": edges,
+            }
+        )
+
+    rd_slices = []
+    for f2 in (1.0, 0.65, 0.42, 0.25):
+        x, m1, m2 = rd_antagonistic_1d(D2=D2_0 * f2, **RD_KW)
+        xs = compute_wavefront_position(x, m1, m2)
+        rd_slices.append(
+            {
+                "f2": float(f2),
+                "D2": round(float(D2_0 * f2), 6),
+                "wavefront_x_star": round(float(xs), 5),
+                "x_grid": [round(float(v), 4) for v in x],
+                "m1_anterior": [round(float(v), 5) for v in m1],
+                "m2_posterior": [round(float(v), 5) for v in m2],
+            }
+        )
+    ml_slices = []
+    for f3 in (1.0, 0.5, 0.25):
+        z3, m3, lam = lateral_index_for_f3(f3)
+        ml_slices.append(
+            {
+                "f3": float(f3),
+                "centre_edge_ratio_lambda": round(float(lam), 5),
+                "z_grid": [round(float(v), 4) for v in z3],
+                "m3_lateral": [round(float(v), 5) for v in m3],
+            }
+        )
+
+    payload = {
+        "schema_version": "rusty-optics-field-overlay-2d.v1",
+        "upstream_attribution": "MesmerPrism/rusty-optics & rusty-matter (MIT OR Apache-2.0)",
+        "model": "Cervera, Levin & Mafe (2021) gap-junction reaction-diffusion + rusty-matter 5-band bioelectric circuit",
+        "circuit_overlays": circuit_overlays,
+        "rd_ap_profiles": rd_slices,
+        "rd_ml_profiles": ml_slices,
+    }
+    output_json = Path(output_json)
+    output_json.parent.mkdir(parents=True, exist_ok=True)
+    output_json.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    print(f"Saved FieldOverlay2D JSON snapshot to {output_json}")
+    return payload
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="Cervera, Levin & Mafe (2021) + MesmerPrism/rusty-matter planarian bioelectric synthesis"
@@ -1570,7 +1660,18 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         action="store_true",
         help="Fixture SHA-256; port parity at every sampled frame; RD solver checks; f3 not inert; CSV fields recomputed",
     )
+    parser.add_argument(
+        "--export-frame",
+        type=Path,
+        default=None,
+        help="Export renderer-neutral FieldOverlay2D JSON snapshot (5-band bioelectric circuit + RD profiles) to this path",
+    )
     args = parser.parse_args(argv)
+
+    if args.export_frame is not None:
+        export_field_overlay_2d(args.export_frame)
+        if args.no_show and args.gif is None:
+            return 0
 
     if args.self_test:
         checksums = verify_fixture_checksums()

@@ -41,6 +41,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--no-show", action="store_true")
     ap.add_argument("--out", default=None, help="save the figure here instead of / as well as showing it")
+    ap.add_argument("--export-mesh", default=None, help="export the 3x3 W x T morphospace slice as a SurfaceMesh3D JSON or OBJ file")
     args = ap.parse_args(argv)
 
     data_file = Path(__file__).resolve().parent / "datasets" / "raup" / "variables.json"
@@ -55,6 +56,14 @@ def main(argv=None):
     else:
         Ws, Ts, D_fixed = [1.2, 2.6, 4.0], [0.0, 2.0, 4.0], 0.1
         print(f"{data_file} not found; using built-in ranges")
+
+    if args.export_mesh:
+        from create_raup_animations import export_meshes
+        slice_shells = [
+            {"name": f"W_{W:.2f}_T_{T:.2f}", "cf": f"D={D_fixed:.2f}", "W": float(W), "D": float(D_fixed), "T": float(T), "S": 1.0, "turns": 5}
+            for W in Ws for T in Ts
+        ]
+        export_meshes(slice_shells, Path(args.export_mesh), res=32)
 
     fig, axs = plt.subplots(3, 3, subplot_kw={"projection": "3d"}, figsize=(12, 12))
     fig.subplots_adjust(0, 0, 1, 0.93, wspace=0, hspace=0.05)

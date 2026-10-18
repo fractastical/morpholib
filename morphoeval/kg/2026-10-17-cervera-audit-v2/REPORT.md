@@ -1,12 +1,12 @@
 # MorphoEval report — audit `2026-10-17-cervera-audit-v2`
 
-Rubric **0.1.0** · checkpoint `a0d6848` · assessor `pkr:model/gpt-5.6-sol` (pk:LLMClaimAssessment) · tracked in https://github.com/fractastical/morpholib/issues/1
+Rubric **0.1.0** · checkpoint `a0d6848` · assessor `pkr:model/gpt-5.6-sol` (pk:LLMClaimAssessment) · tracked in https://github.com/fractastical/morpholib/issues/1 · supersession chain `2026-10-17-cervera-audit -> 2026-10-17-cervera-audit-v2`
 
-Scores are 0–100 (emitted as `pk:hasProbability` = score/100 on the LLM assessment of the dimension hypothesis); Overall is the rubric-weighted mean and the claim's `pk:weightOfEvidence`. Unevaluated scripts carry no nanopubs yet.
+Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not calibrated probabilities; `pk:hasProbability` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings for ProbKnow template conformance). Faithfulness (weight 70) is decomposed into **Model Impl.** (weight 30: `model-fidelity` + `parameter-expressivity`) and **Bio. Val.** (weight 40: `specimen-match` + `morphometric-validation`). When a dimension is flagged `not_applicable`, **Overall (app.)** renormalises weights over applicable dimensions (mathematically neutral), whereas **Overall (pad.)** substitutes 50 (shrinking the weighted average toward 50). Unevaluated scripts carry no nanopubs yet.
 
-| Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Faithfulness | Reproducibility | **Overall** | verdict |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| Cervera–Levin–Mafe gap-junction reaction–diffusion and bioelectric synthesis (`2021-Cervera–Levin–Mafe.py`) | 45 | 42 | 58 | 48 | 82 | 60 | 84 | 46.4 | 76.9 | **55.6** | partially faithful |
+| Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Model Impl. (30) | Bio. Val. (40) | Repro. (30) | Overall (app.) | **Overall (pad.)** | verdict |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| Cervera–Levin–Mafe gap-junction reaction–diffusion and bioelectric synthesis (`2021-Cervera–Levin–Mafe.py`) | 45 | 42 | 58 | 48 | 82 | 60 | 84 | 49.3 | 44.2 | 76.9 | 55.6 | **55.6** | partially faithful |
 
 ## Findings and remediation
 
@@ -36,6 +36,29 @@ Remediation:
 - Validate the crop model on more independent experiments, include sampling uncertainty and simple baselines, and explain whether a 23.5-point held-out RMSE is adequate for the intended claim.
 - Map f3 to a measured lateral morphology such as auricle width or head shape and compare it with specimens or source figures; otherwise describe f3 only as signal-profile expressivity.
 - Calibrate or remove the illustrative 24-hour circuit overlay, generate legend values and pulse bounds from the simulation, and either source or remove the crop-specific rusty-matter wound-gain lookup.
+
+## Morphology snapshot
+
+The binaries stay out of git; the sha256 pins the exact file that was scored, and the morphometrics record the form itself (written into the reasoning of the morphometric-validation assessment).
+
+### Cervera–Levin–Mafe gap-junction reaction–diffusion and bioelectric synthesis
+- **spec_fingerprint** (semantic model + inputs): `ca184becec2bf47d8a969d42711868cd85769dd013f7492905afdaf9707bf2fc`
+- **input_dataset_sha256**: `datasets/planform/planform_canonical_silhouettes_v1.json` (`cac26e64a315ed81…`)
+- `cervera_levin_mafe_bioelectric_morphospace.png` — artifact_sha256 `3f521835636f3530…`, 547,708 B, 2330×1781 px
+- `cervera_levin_mafe_metrics.csv` — artifact_sha256 `36e3036d0379d9fc…`, 5,146 B, 
+- `cervera_levin_mafe_gj_block.gif` — **not on disk at snapshot time** (no hash, no measurements)
+
+| measurement | value | reference | method |
+|---|---:|---|---|
+| rusty-matter trace parity, max |Δ| | 0.0332 state units | 0.0 | maximum absolute difference across all 5 scenarios, 11 sampled steps and 4 state averages against rusty_matter_planarian_traces.json |
+| symmetric RD wavefront x*(f2=1) | 0.5 AP fraction | 0.5 | zero crossing of m1(x) - m2(x) when D2 = D2_0 |
+| pharynx-boundary criterion x*_b | 0.5833 AP fraction | — | posterior end of the Planform #1 wild-type pharynx on the AP extent *(crossed at f2_b = 0.4197 (where x*(f2_b) = 0.5833))* |
+| anterior body-area fraction on S. mediterranea silhouette (f2=1 -> f2=0.25) | 0.1561 fraction of body area | — | increase in real-silhouette mask area anterior to x*(f2) from f2=1.0 (0.483) to f2=0.25 (0.639) |
+| ML centre/edge ratio λ(f3), f3=1.0 vs f3=0.3 | 0.1855 ratio difference | >0 (monotonic decrease under lateral gap-junction blockade) | m3(L_z/2)/m3(0) drop from f3=1.0 (0.197) to f3=0.3 (0.011) |
+| Oviedo 2010 octanol crop-gradient training RMSE | 4.1871 percentage points | 0.0 | 1-parameter fit f2(p) = 1 - 0.58*p against Oviedo et al. 2010 octanol double-head frequencies (Exps 415-418, n=4 crops) |
+| Oviedo 2010 triple-innexin RNAi held-out RMSE | 23.5215 percentage points | 0.0 | held-out prediction error of the octanol-fitted curve against Dj-Inx-12 + Dj-Inx-5/13 RNAi double-head frequencies (Exps 446-449, n=4 crops) *(Pearson r = 0.943)* |
+| circuit posterior head readout, memory ON vs memory OFF control | 0.9185 readout [0,1] | 0.23491399812436778 | final posterior head-identity readout R_head,post under TransientDepolarizationMemory *(hysteresis memory sustains depolarised head fate after transient pulse ends)* |
+| Planform #1 Wild Type vs #2 Double Head silhouette IoU | 0.9478 ratio | <1.0 (posterior tail replaced by ectopic head cap) | 256x256 shared-canvas intersection-over-union of decoded Lobo et al. (2013) graph silhouettes |
 
 ## Environment at checkpoint
 

@@ -866,6 +866,86 @@ def _pad(im: Image.Image, W: int, H: int) -> Image.Image:
     return bg
 
 
+def export_implicit_slice_2d(
+    morphs: Dict[int, Morphology],
+    out: Path,
+    ids: Sequence[int] = FIG1_IDS,
+    sdf_res: int = 64,
+) -> Dict:
+    """Export decoded Limbform morphologies as a renderer-neutral `ImplicitSlice2D` JSON
+    bundle (compatible with MesmerPrism/rusty-optics & rusty-lattice), including segment
+    and digit polygons, joint landmarks, and signed distance fields (SDF)."""
+    import json
+    from scipy.ndimage import distance_transform_edt
+
+    slices = []
+    for mid in ids:
+        if mid not in morphs:
+            continue
+        m = morphs[mid]
+        mask, (x0, x1, y0, y1) = silhouette(m, res=sdf_res, smooth=0.0)
+        dx = (x1 - x0) / max(sdf_res - 1, 1)
+        dy = (y1 - y0) / max(sdf_res - 1, 1)
+        d_out = distance_transform_edt(~mask, sampling=(dy, dx))
+        d_in = distance_transform_edt(mask, sampling=(dy, dx))
+        sdf = d_out - d_in
+        mm = morphometrics(m)
+        joints_list = [
+            {
+                "joint_id": int(jid),
+                "centre_xy": [round(float(m.positions[jid][0]), 3), round(float(m.positions[jid][1]), 3)],
+                "proximodistal_distance": round(float(m.pd_of_joint.get(jid, 0.0)), 3),
+            }
+            for jid in sorted(m.joints)
+        ]
+        segments_list = [
+            {
+                "link_id": int(l.id),
+                "from_joint": int(l.from_joint),
+                "to_joint": int(l.to_joint),
+                "n_bones": int(l.n_bones),
+                "polygon_xy": [[round(float(px), 3), round(float(py), 3)] for px, py in poly[::2]],
+            }
+            for l, poly in m.segments
+        ]
+        digits_list = [
+            {
+                "digit_index": int(idx),
+                "n_bones": int(d.n_bones),
+                "polygon_xy": [[round(float(px), 3), round(float(py), 3)] for px, py in poly[::2]],
+            }
+            for idx, (d, poly, _, _) in enumerate(m.digit_polys)
+        ]
+        slices.append(
+            {
+                "schema_version": "rusty-optics-implicit-slice-2d.v1",
+                "morphology_id": int(mid),
+                "name": m.name,
+                "category": m.category,
+                "grid_resolution": [int(sdf_res), int(sdf_res)],
+                "bounds_xy": [round(float(x0), 3), round(float(x1), 3), round(float(y0), 3), round(float(y1), 3)],
+                "morphometrics": mm,
+                "joints": joints_list,
+                "segments": segments_list,
+                "digits": digits_list,
+                "sdf_min": round(float(sdf.min()), 4),
+                "sdf_max": round(float(sdf.max()), 4),
+                "sdf_grid": [[round(float(val), 3) for val in row] for row in sdf],
+            }
+        )
+    payload = {
+        "schema_version": "rusty-optics-implicit-slice-2d-bundle.v1",
+        "upstream_attribution": "MesmerPrism/rusty-optics & rusty-lattice (MIT OR Apache-2.0)",
+        "model": "Lobo et al. (2014) LimbformDB 2.1.0 graph-decoded 2D limb morphologies",
+        "slices": slices,
+    }
+    out = Path(out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    print(f"  exported ImplicitSlice2D JSON bundle ({len(slices)} limb slices) to {out}")
+    return payload
+
+
 def write_csv(morphs: Dict[int, Morphology], first: Dict, out: Path) -> None:
     import csv
     rows = []
@@ -889,6 +969,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     p.add_argument("--out-dir", default=".")
     p.add_argument("--ids", type=int, nargs="*", help="morphology ids for the gallery")
     p.add_argument("--csv", help="write per-morphology measurements to this CSV")
+    p.add_argument("--export-frame", help="write renderer-neutral ImplicitSlice2D JSON bundle (segments + SDF) to this path")
     p.add_argument("--no-anim", action="store_true")
     p.add_argument("--no-gallery", action="store_true")
     p.add_argument("--fps", type=int, default=2)
@@ -915,6 +996,9 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         render_gallery(morphs, ids, out_dir / "limbform_wildtype_gallery.png")
     if args.csv:
         write_csv(morphs, first, Path(args.csv))
+    if args.export_frame:
+        export_ids = args.ids if args.ids else FIG1_IDS
+        export_implicit_slice_2d(morphs, Path(args.export_frame), ids=export_ids)
     if not args.no_anim:
         render_timeline(morphs, first, out_dir / "limbform_morphospace_timeline.gif", fps=args.fps,
                         per_page=args.per_page)

@@ -733,6 +733,21 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
         emit(f"{sim['id']}-overall.trig",
              B.nanopub(f"{sim['name']} — MorphoEval overall {gs['overall']}/100", PK.LLMClaimAssessment, overall_au,
                        dom, tr, B.provenance_extraction(agents, papers), "llm-assessment", "provenance-extraction", pub))
+        try:
+            from morphoeval.math_kg import add_math_triples_for_simulation
+        except ImportError:
+            from math_kg import add_math_triples_for_simulation  # type: ignore[no-redef]
+        add_math_triples_for_simulation(
+            g=merged,
+            sim_id=sim["id"],
+            audit_id=A["id"],
+            sim=sim,
+            measurements=B.measurements.get(sim["id"], []),
+            references=papers,
+            repo=B.repo or "https://github.com/fractastical/morpholib",
+            commit=B.commit or "HEAD",
+            overall_score=gs["overall"],
+        )
         rows.append((sim, gs))
 
     merged_path = out_dir / f"morphoeval_{A['id']}.ttl"

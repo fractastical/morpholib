@@ -1,0 +1,135 @@
+# MorphoEval Audit & Dual Provenance Schema (v0.2.0)
+# Integrates dual semantic/byte provenance (`spec_fingerprint` vs `artifact_sha256`),
+# fail-closed audit supersession chains (`supersedes` / `supersedes_audit_id`),
+# and 4-tier claim-boundary validation from MesmerPrism/rusty-manifold & combinatorial-swarmability.
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: "MorphoEval Audit & Provenance Schema"
+version: "0.2.0"
+upstream_provenance_attribution:
+  repository: "https://github.com/MesmerPrism/rusty-manifold"
+  license: "MIT OR Apache-2.0"
+  crates:
+    - "crates/rusty-manifold-provenance/src/lib.rs"
+    - "crates/rusty-manifold-audit/src/lib.rs"
+
+type: object
+required:
+  - audit
+  - references
+  - simulations
+
+properties:
+  audit:
+    type: object
+    required:
+      - id
+      - rubric_version
+      - date
+      - assessor
+      - checkpoint
+    properties:
+      id:
+        type: string
+        description: "Unique audit identifier (e.g., 2026-10-17-cervera-audit-v2)"
+      rubric_version:
+        type: string
+        description: "Target version in morphoeval/rubric.yaml (e.g., 0.1.0)"
+      date:
+        type: string
+        pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+      supersedes:
+        type: [string, "null"]
+        description: "Prior audit ID that this audit supersedes (fail-closed version chain)"
+      supersedes_audit_id:
+        type: [string, "null"]
+        description: "Alias for audit.supersedes linking to prior morphoeval/audits/<id>.yaml"
+      assessor:
+        type: object
+        required: [id, label]
+        properties:
+          id: {type: string}
+          label: {type: string}
+          homepage: {type: string}
+      checkpoint:
+        type: object
+        required: [repository, commit]
+        properties:
+          repository: {type: string}
+          commit: {type: string}
+          environment: {type: object}
+          note: {type: string}
+
+  references:
+    type: object
+    additionalProperties:
+      type: object
+      required: [title]
+      properties:
+        title: {type: string}
+        authors: {type: string}
+        venue: {type: string}
+        doi: {type: string}
+        url: {type: string}
+
+  simulations:
+    type: array
+    items:
+      type: object
+      required: [id, name, script, status]
+      properties:
+        id: {type: string}
+        name: {type: string}
+        script: {type: string}
+        also:
+          type: array
+          items: {type: string}
+        output: {type: string}
+        organism: {type: string}
+        domain: {type: string}
+        status:
+          type: string
+          enum: ["evaluated", "pending", "unevaluated"]
+        supersedes_audit_id:
+          type: [string, "null"]
+          description: "Optional per-simulation prior audit ID superseded by this evaluation"
+        provenance:
+          type: object
+          description: "Dual semantic/byte provenance stamp (MesmerPrism/rusty-manifold-provenance)"
+          properties:
+            spec_fingerprint:
+              type: string
+              pattern: "^[0-9a-f]{64}$"
+              description: "Canonical SHA-256 of mathematical model parameters, grid resolution, and RNG seed (invariant to Matplotlib/Pillow rendering changes)"
+            artifact_sha256:
+              type: string
+              pattern: "^[0-9a-f]{64}$"
+              description: "Byte-level SHA-256 of the primary rendered output artifact on disk"
+            input_dataset_sha256:
+              type: object
+              additionalProperties:
+                type: string
+                pattern: "^[0-9a-f]{64}$"
+              description: "Map of upstream input dataset/fixture filenames to their verified SHA-256 digests"
+        claim_boundary:
+          type: object
+          description: "Structured claim boundary separating source claims from script reconstruction"
+          required:
+            - reported_in_source
+            - reconstructed_in_script
+            - does_not_claim
+          properties:
+            reported_in_source:
+              type: array
+              items: {type: string}
+            reconstructed_in_script:
+              type: array
+              items: {type: string}
+            transfer_boundary:
+              type: array
+              items: {type: string}
+            does_not_claim:
+              type: array
+              items: {type: string}
+        scores:
+          type: object

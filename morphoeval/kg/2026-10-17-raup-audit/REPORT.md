@@ -1,12 +1,12 @@
 # MorphoEval report — audit `2026-10-17-raup-audit`
 
-Rubric **0.1.0** · checkpoint `ba6fd20` · assessor `pkr:model/claude-fable-5-1` (pk:LLMClaimAssessment) · tracked in https://github.com/fractastical/morpholib/issues/1
+Rubric **0.1.0** · checkpoint `ba6fd20` · assessor `pkr:model/claude-fable-5-1` (pk:LLMClaimAssessment) · tracked in https://github.com/fractastical/morpholib/issues/1 · supersession chain `2026-10-13-morphology-audit -> 2026-10-17-raup-audit`
 
-Scores are 0–100 (emitted as `pk:hasProbability` = score/100 on the LLM assessment of the dimension hypothesis); Overall is the rubric-weighted mean and the claim's `pk:weightOfEvidence`. Unevaluated scripts carry no nanopubs yet.
+Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not calibrated probabilities; `pk:hasProbability` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings for ProbKnow template conformance). Faithfulness (weight 70) is decomposed into **Model Impl.** (weight 30: `model-fidelity` + `parameter-expressivity`) and **Bio. Val.** (weight 40: `specimen-match` + `morphometric-validation`). When a dimension is flagged `not_applicable`, **Overall (app.)** renormalises weights over applicable dimensions (mathematically neutral), whereas **Overall (pad.)** substitutes 50 (shrinking the weighted average toward 50). Unevaluated scripts carry no nanopubs yet.
 
-| Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Faithfulness | Reproducibility | **Overall** | verdict |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| Raup shell coiling morphospace (`create_raup_animations.py`) | 80 | 45 | 70 | 45 | 75 | 75 | 80 | 58.6 | 77.0 | **64.1** | mostly faithful |
+| Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Model Impl. (30) | Bio. Val. (40) | Repro. (30) | Overall (app.) | **Overall (pad.)** | verdict |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| Raup shell coiling morphospace (`create_raup_animations.py`) | 80 | 45 | 70 | 45 | 75 | 75 | 80 | 76.7 | 45.0 | 77.0 | 64.1 | **64.1** | mostly faithful |
 
 ## Findings and remediation
 
@@ -40,9 +40,11 @@ Remediation:
 The binaries stay out of git; the sha256 pins the exact file that was scored, and the morphometrics record the form itself (written into the reasoning of the morphometric-validation assessment).
 
 ### Raup shell coiling morphospace
-- `raup_empirical_comparison.png` — sha256 `c50dbee57d0a6495…`, 562,658 B, 1630×1070 px
-- `raup_shell_animation.gif` — sha256 `986555a0032be189…`, 15,189,434 B, 1200×800 px, 100 frames
-- `raup_shell_metrics.csv` — sha256 `384d298d81f5373f…`, 483 B, 
+- **spec_fingerprint** (semantic model + inputs): `99d02b160418b61e3ca5605bf1327defebc58c14533242de5ba9809a805bf905`
+- **input_dataset_sha256**: `datasets/raup/variables.json` (`c9c9cfaf70faa9a5…`)
+- `raup_empirical_comparison.png` — artifact_sha256 `c50dbee57d0a6495…`, 562,658 B, 1630×1070 px
+- `raup_shell_animation.gif` — artifact_sha256 `986555a0032be189…`, 15,189,434 B, 1200×800 px, 100 frames
+- `raup_shell_metrics.csv` — artifact_sha256 `384d298d81f5373f…`, 483 B, 
 
 | measurement | value | reference | method |
 |---|---:|---|---|

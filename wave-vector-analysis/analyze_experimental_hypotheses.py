@@ -681,11 +681,125 @@ def plot_condition_comparison(tracks_df1, tracks_df2, label1="Condition 1", labe
         plt.show()
 
 
+def analyze_oscillatory_coherence(tracks_df, clusters_df=None):
+    """
+    Compute oscillatory coherence, inter-spark interval (ISI) variability,
+    normalized Shannon temporal entropy, and Embryo A <-> Embryo B phase-locking
+    value (PLV) and zero-lag cross-correlation.
+
+    Adapted from MesmerPrism/PolarH10 (IBI/ISI CV & spectral/Shannon entropy) and
+    MesmerPrism/rusty-lsl (multi-channel phase-locking & cross-correlation).
+
+    Args:
+        tracks_df: DataFrame with spark_tracks.csv data
+        clusters_df: Optional DataFrame with vector_clusters.csv data
+
+    Returns:
+        Dictionary of oscillatory and inter-embryo coherence metrics
+    """
+    from scipy.signal import hilbert
+
+    df = tracks_df[tracks_df['time_s'] >= 0].copy() if (tracks_df['time_s'] >= 0).any() else tracks_df.copy()
+
+    def _embryo_isi_and_entropy(sub_df):
+        # Event times: use per-track first appearance times when distinct, or all frame event times
+        if len(sub_df) == 0:
+            return {'n_events': 0, 'mean_isi_s': np.nan, 'cv_isi': np.nan, 'shannon_entropy_norm': np.nan}
+        onset_times = np.sort(sub_df.groupby('track_id')['time_s'].min().values)
+        isis = np.diff(onset_times)
+        isis_pos = isis[isis > 0]
+        if len(isis_pos) == 0:
+            # Tracks initiated simultaneously at poke -> use inter-frame spark state intervals
+            all_times = np.sort(sub_df['time_s'].unique())
+            isis_pos = np.diff(all_times)
+            isis_pos = isis_pos[isis_pos > 0]
+        if len(isis_pos) >= 2:
+            mean_isi = float(np.mean(isis_pos))
+            cv_isi = float(np.std(isis_pos, ddof=1) / max(mean_isi, 1e-9))
+        elif len(isis_pos) == 1:
+            mean_isi = float(isis_pos[0])
+            cv_isi = 0.0
+        else:
+            mean_isi = np.nan
+            cv_isi = np.nan
+
+        # Normalized Shannon temporal entropy of activity distribution across time bins
+        act = sub_df.groupby('time_s')['area'].sum().values.astype(float)
+        total = act.sum()
+        if len(act) >= 2 and total > 0:
+            p = act / total
+            p = p[p > 0]
+            h = -float(np.sum(p * np.log(p)))
+            h_norm = h / float(np.log(len(act))) if len(act) > 1 else 0.0
+        else:
+            h_norm = np.nan
+        return {
+            'n_events': int(len(onset_times)),
+            'mean_isi_s': mean_isi,
+            'cv_isi': cv_isi,
+            'shannon_entropy_norm': h_norm,
+        }
+
+    stats_all = _embryo_isi_and_entropy(df)
+    stats_a = _embryo_isi_and_entropy(df[df['embryo_id'] == 'A']) if 'embryo_id' in df.columns else {}
+    stats_b = _embryo_isi_and_entropy(df[df['embryo_id'] == 'B']) if 'embryo_id' in df.columns else {}
+
+    # Inter-embryo (A <-> B) phase-locking value (PLV) and cross-correlation on uniform time grid
+    plv_ab = np.nan
+    xcorr_zero_lag = np.nan
+    peak_lag_s = np.nan
+    peak_xcorr = np.nan
+    if 'embryo_id' in df.columns:
+        df_a = df[df['embryo_id'] == 'A']
+        df_b = df[df['embryo_id'] == 'B']
+        if len(df_a) > 0 and len(df_b) > 0:
+            t_min = float(min(df['time_s'].min(), 0.0))
+            t_max = float(df['time_s'].max())
+            dt_vals = np.diff(np.sort(df['time_s'].unique()))
+            dt = float(np.median(dt_vals[dt_vals > 0])) if len(dt_vals[dt_vals > 0]) > 0 else 1.0
+            n_grid = max(int(round((t_max - t_min) / max(dt, 1e-3))) + 1, 8)
+            t_grid = np.linspace(t_min, t_max, n_grid)
+            sig_a = np.interp(t_grid, df_a.groupby('time_s')['area'].sum().index.values,
+                              df_a.groupby('time_s')['area'].sum().values, left=0.0, right=0.0)
+            sig_b = np.interp(t_grid, df_b.groupby('time_s')['area'].sum().index.values,
+                              df_b.groupby('time_s')['area'].sum().values, left=0.0, right=0.0)
+            sig_a_z = sig_a - np.mean(sig_a)
+            sig_b_z = sig_b - np.mean(sig_b)
+            if np.std(sig_a_z) > 1e-9 and np.std(sig_b_z) > 1e-9:
+                phase_a = np.angle(hilbert(sig_a_z))
+                phase_b = np.angle(hilbert(sig_b_z))
+                plv_ab = float(np.abs(np.mean(np.exp(1j * (phase_a - phase_b)))))
+                xcorr_zero_lag = float(np.corrcoef(sig_a_z, sig_b_z)[0, 1])
+                full_corr = np.correlate(sig_a_z / (np.std(sig_a_z) * len(sig_a_z)),
+                                         sig_b_z / np.std(sig_b_z), mode='full')
+                lags = np.arange(-len(sig_a_z) + 1, len(sig_a_z)) * ((t_max - t_min) / max(n_grid - 1, 1))
+                best_idx = int(np.argmax(full_corr))
+                peak_xcorr = float(full_corr[best_idx])
+                peak_lag_s = float(lags[best_idx])
+
+    return {
+        'overall_n_events': stats_all['n_events'],
+        'overall_mean_isi_s': stats_all['mean_isi_s'],
+        'overall_cv_isi': stats_all['cv_isi'],
+        'overall_shannon_entropy_norm': stats_all['shannon_entropy_norm'],
+        'embryo_a_n_events': stats_a.get('n_events', 0),
+        'embryo_a_cv_isi': stats_a.get('cv_isi', np.nan),
+        'embryo_a_shannon_entropy_norm': stats_a.get('shannon_entropy_norm', np.nan),
+        'embryo_b_n_events': stats_b.get('n_events', 0),
+        'embryo_b_cv_isi': stats_b.get('cv_isi', np.nan),
+        'embryo_b_shannon_entropy_norm': stats_b.get('shannon_entropy_norm', np.nan),
+        'inter_embryo_plv': plv_ab,
+        'inter_embryo_zero_lag_corr': xcorr_zero_lag,
+        'inter_embryo_peak_corr': peak_xcorr,
+        'inter_embryo_peak_lag_s': peak_lag_s,
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description='Analyze experimental hypotheses')
     parser.add_argument('tracks_csv', help='Path to spark_tracks.csv')
     parser.add_argument('--clusters-csv', help='Path to vector_clusters.csv')
-    parser.add_argument('--analysis', choices=['activity', 'directionality', 'spatial', 'tail', 'compare'],
+    parser.add_argument('--analysis', choices=['activity', 'directionality', 'spatial', 'tail', 'compare', 'coherence'],
                        default='activity', help='Type of analysis to perform')
     parser.add_argument('--embryo', choices=['A', 'B'], help='Filter to specific embryo')
     parser.add_argument('--output', help='Output file path for plots')
@@ -759,6 +873,12 @@ def main():
         plot_condition_comparison(tracks_df, tracks_df2, 
                                  label1=args.label1, label2=args.label2,
                                  output_path=args.output)
+
+    elif args.analysis == 'coherence':
+        results = analyze_oscillatory_coherence(tracks_df, clusters_df)
+        print("\n=== Oscillatory Coherence & Telemetry Analysis (PolarH10 / rusty-lsl) ===")
+        for key, value in results.items():
+            print(f"{key}: {value}")
 
 
 if __name__ == '__main__':

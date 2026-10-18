@@ -730,6 +730,349 @@ def write_csv(morphs: Dict[int, Morphology], first: Dict, out: Path) -> None:
     print(f"  saved {out}  ({len(rows)} rows)")
 
 
+CANONICAL_SILHOUETTE_IDS: Tuple[int, ...] = (1, 2, 3, 20, 24)
+
+CANONICAL_SILHOUETTE_ROLES: Dict[int, Dict[str, str]] = {
+    1: {
+        "canonical_key": "wild_type",
+        "rusty_matter_outcome_label": "wild_type",
+        "source_target_anchor": "source:planformdb_250::target:planformdb_curated_subset",
+        "biological_role": "Normal wild-type anterior-posterior polarity (1 head, 1 trunk with 1 pharynx, 1 tail).",
+    },
+    2: {
+        "canonical_key": "double_head_two_pharynxes",
+        "rusty_matter_outcome_label": "double_head_two_pharynges",
+        "source_target_anchor": "source:oviedo_2010_dev_biol::target:gap_block_conductance_and_crop_position",
+        "biological_role": "Bipolar two-headed planarian with duplicated pharynx induced by octanol gap-junction blockade or triple innexin RNAi (Oviedo et al. 2010).",
+    },
+    3: {
+        "canonical_key": "side_head",
+        "rusty_matter_outcome_label": "ectopic_lateral_head",
+        "source_target_anchor": "source:planformdb_250::target:planformdb_curated_subset",
+        "biological_role": "Ectopic lateral head branching off the trunk with secondary pharynx and VNC.",
+    },
+    20: {
+        "canonical_key": "headless",
+        "rusty_matter_outcome_label": "failed_ap_regeneration",
+        "source_target_anchor": "source:emmons_bell_2015_ijms::target:species_like_head_labels::future_outcome_taxonomy",
+        "biological_role": "Acephalic / headless regenerant (trunk + tail only, no brain or eyes).",
+    },
+    24: {
+        "canonical_key": "double_head_one_pharynx",
+        "rusty_matter_outcome_label": "double_head_like",
+        "source_target_anchor": "source:durant_2019_biophys_j::target:persistent_bioelectric_memory_vs_transient_modulation",
+        "biological_role": "Bipolar two-headed planarian with a single central pharynx.",
+    },
+}
+
+
+def silhouette_iou(m_a: Morphology, m_b: Morphology, res: int = 256) -> float:
+    """Intersection-over-union of two decoded Planform silhouettes on a shared grid."""
+    pts = np.vstack(list(m_a.outlines.values()) + list(m_b.outlines.values()))
+    x0, x1 = float(pts[:, 0].min() - 10.0), float(pts[:, 0].max() + 10.0)
+    y0, y1 = float(pts[:, 1].min() - 10.0), float(pts[:, 1].max() + 10.0)
+    gx, gy = np.meshgrid(np.linspace(x0, x1, res), np.linspace(y0, y1, res))
+    grid = np.column_stack([gx.ravel(), gy.ravel()])
+    ma = np.zeros(len(grid), dtype=bool)
+    mb = np.zeros(len(grid), dtype=bool)
+    for poly in m_a.outlines.values():
+        ma |= MplPath(poly).contains_points(grid)
+    for poly in m_b.outlines.values():
+        mb |= MplPath(poly).contains_points(grid)
+    return float((ma & mb).sum() / max((ma | mb).sum(), 1))
+
+
+def export_silhouettes_json(
+    morphs: Dict[int, Morphology],
+    out: Path,
+    ids: Sequence[int] = CANONICAL_SILHOUETTE_IDS,
+    outline_points_per_arc: int = 16,
+) -> Dict:
+    """Export a rights-safe JSON silhouette & morphometrics fixture for canonical Planform phenotypes.
+
+    Designed for downstream consumption by MesmerPrism/rusty-matter
+    (docs/PLANARIAN_METRIC_TARGETS.md) and 2021-Cervera-Levin-Mafe.py.
+    Contains decoded region outlines, organ landmarks, morphometrics, and
+    pairwise silhouette IoU against #1 Wild type, preserving the Lobo Lab
+    PlanformDB 2.5.0 notice.
+    """
+    import json
+
+    wt = morphs[1]
+    records = []
+    for mid in ids:
+        if mid not in morphs:
+            continue
+        m = morphs[mid]
+        mm = morphometrics(m)
+        role = CANONICAL_SILHOUETTE_ROLES.get(
+            mid,
+            {
+                "canonical_key": m.name.lower().replace(" ", "_").replace(",", ""),
+                "rusty_matter_outcome_label": "unclassified_teaching_abstraction",
+                "source_target_anchor": "source:planformdb_250::target:planformdb_curated_subset",
+                "biological_role": m.name,
+            },
+        )
+        regions_out = []
+        for rid, reg in sorted(m.regions.items()):
+            cx, cy = m.positions[rid]
+            poly_compact = region_outline(m, rid, per_arc=outline_points_per_arc)
+            regions_out.append(
+                {
+                    "region_id": int(rid),
+                    "type": reg.type,
+                    "center": [round(float(cx), 4), round(float(cy), 4)],
+                    "radii_params": [round(float(p), 4) for p in reg.params if not math.isnan(p)],
+                    "control_points_polar": [
+                        {"angle_rad": round(float(ang), 6), "radius": round(float(rad), 4)}
+                        for ang, rad in control_points(m, rid)
+                    ],
+                    "outline_polygon": [
+                        [round(float(pt[0]), 3), round(float(pt[1]), 3)] for pt in poly_compact
+                    ],
+                }
+            )
+        links_out = [
+            {
+                "from_region": int(lk.from_region),
+                "to_region": int(lk.to_region),
+                "dist": round(float(lk.dist), 4),
+                "ratio": round(float(lk.ratio), 6),
+                "ang_rad": round(float(lk.ang), 6),
+            }
+            for lk in m.links
+        ]
+        organs_out = []
+        for o in m.organs:
+            rcx, rcy = m.positions[o.region]
+            entry = {
+                "region_id": int(o.region),
+                "kind": o.kind,
+                "offset_from_region": [round(float(o.vx), 4), round(float(o.vy), 4)],
+                "world_position": [round(float(rcx + o.vx), 4), round(float(rcy + o.vy), 4)],
+            }
+            if o.rot is not None:
+                entry["rotation_rad"] = round(float(o.rot), 6)
+            if o.ends is not None:
+                entry["line_ends_relative"] = [round(float(v), 4) for v in o.ends]
+            organs_out.append(entry)
+
+        x0, x1, y0, y1 = extent(m, pad=0.0)
+        iou_vs_wt = 1.0 if mid == 1 else round(silhouette_iou(wt, m), 4)
+        records.append(
+            {
+                "morphology_id": int(m.id),
+                "name": m.name,
+                "canonical_key": role["canonical_key"],
+                "rusty_matter_outcome_label": role["rusty_matter_outcome_label"],
+                "source_target_anchor": role["source_target_anchor"],
+                "biological_role": role["biological_role"],
+                "morphometrics": {
+                    "n_regions": int(mm["n_regions"]),
+                    "n_heads": int(mm["n_heads"]),
+                    "n_trunks": int(mm["n_trunks"]),
+                    "n_tails": int(mm["n_tails"]),
+                    "n_eyes": int(mm["n_eyes"]),
+                    "n_brains": int(mm["n_brains"]),
+                    "n_pharynges": int(mm["n_pharynges"]),
+                    "n_vnc": int(mm["n_vnc"]),
+                    "ap_length": float(mm["ap_length"]),
+                    "ml_width": float(mm["ml_width"]),
+                    "aspect": float(mm["aspect"]),
+                    "area": float(mm["area"]),
+                    "length_rel_wt": float(mm["length_rel_wt"]),
+                    "iou_vs_wild_type": float(iou_vs_wt),
+                    "head_region_ap_fraction": round(
+                        sum(
+                            float(np.ptp(region_outline(m, r.id)[:, 1]))
+                            for r in m.regions.values()
+                            if r.type == "Head"
+                        )
+                        / max(float(mm["ap_length"]), 1e-6),
+                        4,
+                    ),
+                },
+                "bounding_box_unpadded": {
+                    "x_min": round(float(x0), 3),
+                    "x_max": round(float(x1), 3),
+                    "y_min": round(float(y0), 3),
+                    "y_max": round(float(y1), 3),
+                },
+                "regions": regions_out,
+                "links": links_out,
+                "organs": organs_out,
+            }
+        )
+
+    payload = {
+        "schema_id": "morpholib.planform.canonical_silhouettes.v1",
+        "fixture_id": "fixture.planform.canonical_silhouettes.v1",
+        "evidence_type": "decoded_graph_formalism_silhouettes",
+        "image_policy": "generated mathematical polygons decoded from PlanformDB graph parameters; no paper figure reuse",
+        "coordinate_convention": "+y is anterior, +x is right lateral; origin (0, 0) at root trunk centre; WT AP length = 560.0 units",
+        "database_provenance": {
+            "source_id": "planformdb_250",
+            "file_name": "planformDB_2.5.0.edb",
+            "sha256": PLANFORM_DB_SHA256,
+            "bytes": PLANFORM_DB_BYTES,
+            "notice": (
+                "All contents of Planform, Copyright 2012-2016 Daniel Lobo. Use for research and "
+                "educational purposes is free of charge, provided proper citation is given to the "
+                "database and the functional work that gave rise to the datasets used."
+            ),
+            "primary_citations": [
+                {
+                    "authors": "Lobo D, Malone TJ, Levin M",
+                    "year": 2013,
+                    "title": "Towards a bioinformatics of patterning: a computational approach to understanding regulative morphogenesis",
+                    "venue": "Biology Open 2(2):156-169",
+                    "doi": "10.1242/bio.20123400",
+                },
+                {
+                    "authors": "Lobo D, Malone TJ, Levin M",
+                    "year": 2013,
+                    "title": "Planform: an application and database of graph-encoded planarian regenerative experiments",
+                    "venue": "Bioinformatics 29(8):1098-1100",
+                    "doi": "10.1093/bioinformatics/btt088",
+                },
+            ],
+        },
+        "downstream_targets": [
+            "MesmerPrism/rusty-matter::docs/PLANARIAN_METRIC_TARGETS.md",
+            "source:planformdb_250::target:planformdb_curated_subset",
+            "source:beane_2013_dev::target:head_size_scaling::future_metric",
+            "source:emmons_bell_2015_ijms::target:species_like_head_labels::future_outcome_taxonomy",
+        ],
+        "morphologies": records,
+    }
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with open(out, "w", encoding="utf-8") as fh:
+        json.dump(payload, fh, indent=2)
+        fh.write("\n")
+    print(f"  saved {out}  ({len(records)} canonical morphologies)")
+    return payload
+
+
+def load_canonical_fixture_morphologies(fixture_path: Optional[Path] = None) -> Dict[int, Morphology]:
+    """Load the 6 canonical Planform morphologies from the vendored JSON fixture when
+    `planformDB_2.5.0.edb` is not present locally."""
+    import json
+    fp = fixture_path or (Path(__file__).resolve().parent / "datasets" / "planform" / "planform_canonical_silhouettes_v1.json")
+    data = json.loads(fp.read_text(encoding="utf-8"))
+    morphs: Dict[int, Morphology] = {}
+    for rec in data.get("morphologies", []):
+        mid = int(rec["morphology_id"])
+        regs = {
+            int(r["region_id"]): Region(
+                id=int(r["region_id"]),
+                type=str(r["type"]),
+                params=[float(p) for p in r["radii_params"]],
+            )
+            for r in rec.get("regions", [])
+        }
+        lks = [
+            Link(
+                from_region=int(lk["from_region"]),
+                to_region=int(lk["to_region"]),
+                dist=float(lk["dist"]),
+                ratio=float(lk["ratio"]),
+                ang=float(lk["ang_rad"]),
+            )
+            for lk in rec.get("links", [])
+        ]
+        orgs = [
+            Organ(
+                kind=str(o["kind"]),
+                region=int(o["region_id"]),
+                vx=float(o["offset_from_region"][0]),
+                vy=float(o["offset_from_region"][1]),
+                rot=float(o["rotation_rad"]) if "rotation_rad" in o else None,
+                ends=tuple(float(v) for v in o["line_ends_relative"]) if "line_ends_relative" in o else None,
+            )
+            for o in rec.get("organs", [])
+        ]
+        m = Morphology(id=mid, name=str(rec["name"]), regions=regs, links=lks, organs=orgs)
+        layout(m)
+        m.outlines = {rid: region_outline(m, rid) for rid in m.regions}
+        morphs[mid] = m
+    return morphs
+
+
+def export_implicit_slice_2d(
+    morphs: Dict[int, Morphology],
+    out: Path,
+    ids: Sequence[int] = CANONICAL_SILHOUETTE_IDS,
+    sdf_res: int = 64,
+) -> Dict:
+    """Export decoded Planform morphologies as a renderer-neutral `ImplicitSlice2D` JSON
+    bundle (compatible with MesmerPrism/rusty-optics & rusty-lattice), including region
+    polygons, organ landmarks, and signed distance fields (SDF < 0 inside, > 0 outside)."""
+    import json
+    from scipy.ndimage import distance_transform_edt
+
+    slices = []
+    for mid in ids:
+        if mid not in morphs:
+            continue
+        m = morphs[mid]
+        mask, (x0, x1, y0, y1) = silhouette(m, res=sdf_res, smooth=0.0)
+        dx = (x1 - x0) / max(sdf_res - 1, 1)
+        dy = (y1 - y0) / max(sdf_res - 1, 1)
+        d_out = distance_transform_edt(~mask, sampling=(dy, dx))
+        d_in = distance_transform_edt(mask, sampling=(dy, dx))
+        sdf = d_out - d_in
+        mm = morphometrics(m)
+        regions_list = [
+            {
+                "region_id": int(rid),
+                "type": reg.type,
+                "centre_xy": [round(float(m.positions[rid][0]), 3), round(float(m.positions[rid][1]), 3)],
+                "polygon_xy": [[round(float(px), 3), round(float(py), 3)] for px, py in m.outlines[rid][::2]],
+            }
+            for rid, reg in sorted(m.regions.items())
+        ]
+        organs_list = [
+            {
+                "organ_index": int(idx),
+                "kind": o.kind,
+                "region_id": int(o.region),
+                "centre_xy": [
+                    round(float(m.positions[o.region][0] + o.vx), 3),
+                    round(float(m.positions[o.region][1] + o.vy), 3),
+                ],
+            }
+            for idx, o in enumerate(m.organs)
+        ]
+        slices.append(
+            {
+                "schema_version": "rusty-optics-implicit-slice-2d.v1",
+                "morphology_id": int(mid),
+                "name": m.name,
+                "grid_resolution": [int(sdf_res), int(sdf_res)],
+                "bounds_xy": [round(float(x0), 3), round(float(x1), 3), round(float(y0), 3), round(float(y1), 3)],
+                "morphometrics": mm,
+                "regions": regions_list,
+                "organs": organs_list,
+                "sdf_min": round(float(sdf.min()), 4),
+                "sdf_max": round(float(sdf.max()), 4),
+                "zero_contour_area_units2": float(mm["area"]),
+                "sdf_grid": [[round(float(val), 3) for val in row] for row in sdf],
+            }
+        )
+    payload = {
+        "schema_version": "rusty-optics-implicit-slice-2d-bundle.v1",
+        "upstream_attribution": "MesmerPrism/rusty-optics & rusty-lattice (MIT OR Apache-2.0)",
+        "model": "Lobo et al. (2013) PlanformDB 2.5.0 graph-decoded 2D planarian morphologies",
+        "slices": slices,
+    }
+    out = Path(out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    print(f"  exported ImplicitSlice2D JSON bundle ({len(slices)} slices) to {out}")
+    return payload
+
+
 def check_encoding(morphs: Dict[int, Morphology]) -> None:
     """Report whether every region obeys the parameter-count rule of the formalism."""
     bad = 0
@@ -755,15 +1098,26 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     p.add_argument("--out-dir", default=".", help="where to write outputs (default: cwd)")
     p.add_argument("--ids", type=int, nargs="*", help="morphology ids for the gallery (default: a curated set)")
     p.add_argument("--csv", help="write per-morphology morphometrics CSV to this path")
+    p.add_argument("--export-silhouettes", help="write canonical Planform silhouettes JSON fixture to this path")
+    p.add_argument("--export-frame", help="write renderer-neutral ImplicitSlice2D JSON bundle (polygons + SDF) to this path")
     p.add_argument("--no-anim", action="store_true", help="skip the timeline GIF")
     p.add_argument("--no-gallery", action="store_true", help="skip the gallery PNG")
     p.add_argument("--fps", type=int, default=2)
     p.add_argument("--per-page", type=int, default=8, help="morphologies per timeline frame")
     args = p.parse_args(argv)
 
-    db = resolve_db_path(args.db, strict=args.strict_db)
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    cand_db = args.db or os.getenv("PLANFORM_DB_PATH")
+    if (not cand_db or not Path(cand_db).is_file()) and args.export_frame and args.no_gallery and args.no_anim and not args.strict_db:
+        print("PlanformDB .edb not provided; loading canonical morphologies from datasets/planform/planform_canonical_silhouettes_v1.json")
+        morphs = load_canonical_fixture_morphologies()
+        export_ids = args.ids if args.ids else CANONICAL_SILHOUETTE_IDS
+        export_implicit_slice_2d(morphs, Path(args.export_frame), ids=export_ids)
+        return
+
+    db = resolve_db_path(args.db, strict=args.strict_db)
 
     print(f"Loading {db}")
     morphs = load_morphologies(db)
@@ -778,6 +1132,12 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         render_gallery(morphs, ids, out_dir / "planform_morphology_gallery.png")
     if args.csv:
         write_csv(morphs, first, Path(args.csv))
+    if args.export_silhouettes:
+        export_ids = args.ids if args.ids else CANONICAL_SILHOUETTE_IDS
+        export_silhouettes_json(morphs, Path(args.export_silhouettes), ids=export_ids)
+    if args.export_frame:
+        export_ids = args.ids if args.ids else CANONICAL_SILHOUETTE_IDS
+        export_implicit_slice_2d(morphs, Path(args.export_frame), ids=export_ids)
     if not args.no_anim:
         render_timeline(morphs, first, out_dir / "planform_morphospace_timeline.gif",
                         fps=args.fps, per_page=args.per_page)
