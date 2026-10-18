@@ -44,6 +44,8 @@ $$a_{t+1,\,i} \;=\; a_{t,\,i-1} \,\oplus\, \bigl(a_{t,\,i} \lor a_{t,\,i+1}\bigr
 
 ![1D Space-Time Kymograph & Defect-Front Tooling](../../docs/media/conus_rule30_kymograph_defect_fronts.png)
 
+> **Mathematical Review Brief:** See [`docs/RULE30_DEFECT_FRONTS_MATH_REVIEW.md`](../../docs/RULE30_DEFECT_FRONTS_MATH_REVIEW.md) for the standalone mathematical review document detailing the **Kogge–Stone carry-lookahead factorization** of the diagonal cycle-transfer operator $\mathcal{T}_P$ (Theorem 1), the **time-shift equivariance proof** of why $k_1 = 3, k_2 = 8, k_3 = 29, k_4 = 400$ and the first $P=16$ barrier at $k - 1 = 53\,207$ are transient-independent (Theorem 2), and the **exhaustive 15-split / 16-leaf acyclicity theorem** proving that every branch on the $P=16$ plateau doubles to $P=32$ in $k_5 \in [87\,867,\, 894\,235]$ (Theorem 3).
+
 ## MorphoEval 7-Axis Audit & Published Nanopublications (`2026-10-18-conus-audit`)
 
 Evaluated at commit `fb234bc` under MorphoEval Rubric `0.1.0` ([`morphoeval/audits/2026-10-18-conus-audit.yaml`](../../morphoeval/audits/2026-10-18-conus-audit.yaml) · [`morphoeval/kg/2026-10-18-conus-audit/REPORT.md`](../../morphoeval/kg/2026-10-18-conus-audit/REPORT.md)):

@@ -380,6 +380,107 @@ def extract_diagonal_period_cascade(cone: np.ndarray, k_max: int = 415) -> dict:
     }
 
 
+def koggestone_next_u16(a: int, b: int) -> int:
+    """Closed-form O(log2 P) = 4-step Kogge-Stone parallel-prefix carry-lookahead transfer
+    operator T_16(a, b) on 16-bit periodic diagonal orbits over F_2[Z/16Z] (for b != 0).
+
+    Rewrites d_k(t) = (d_{k-2}(t-1) ^ d_{k-1}(t-1)) ^ (~d_{k-1}(t-1) & d_k(t-1)) = g_0 ^ (p_0 & d_k(t-1))
+    and performs 4 doubling rounds s = 1, 2, 4, 8 to annihilate p_4 = 0 and return c_k = g_4.
+    """
+    ab = a ^ b
+    nb = (~b) & 0xFFFF
+    g = ((ab << 1) & 0xFFFF) | (ab >> 15)
+    p = ((nb << 1) & 0xFFFF) | (nb >> 15)
+    g ^= p & (((g << 1) & 0xFFFF) | (g >> 15))
+    p &= ((p << 1) & 0xFFFF) | (p >> 15)
+    g ^= p & (((g << 2) & 0xFFFF) | (g >> 14))
+    p &= ((p << 2) & 0xFFFF) | (p >> 14)
+    g ^= p & (((g << 4) & 0xFFFF) | (g >> 12))
+    p &= ((p << 4) & 0xFFFF) | (p >> 12)
+    g ^= p & (((g << 8) & 0xFFFF) | (g >> 8))
+    return g
+
+
+def verify_koggestone_p16_barrier_tree() -> dict:
+    """Verify Theorems 1, 2 & 3 (docs/RULE30_DEFECT_FRONTS_MATH_REVIEW.md):
+      1. Purely algebraic recovery of transient-independent dislocations k = 3, 8, 29, 400
+         and the first P=16 all-zero barrier at k - 1 = 53,207 (upstream weight 6, even parity).
+      2. Exhaustive traversal of the P=16 binary decision tree under T_16, proving it has
+         15 internal even-parity split nodes, 16 odd-parity P=16->32 leaf nodes in
+         k_5 in [87867, 894235], and 0 cycles.
+    """
+    def _step_cycle_vec(c_km2: np.ndarray, c_km1: np.ndarray) -> tuple[np.ndarray, bool]:
+        P = len(c_km1)
+        ones = np.where(c_km1 == 1)[0]
+        if len(ones) > 0:
+            t0 = int(ones[0])
+            c_k = np.zeros(P, dtype=np.uint8)
+            c_k[(t0 + 1) % P] = c_km2[t0] ^ 1
+            for s in range(1, P):
+                t = (t0 + s) % P
+                c_k[(t + 1) % P] = c_km2[t] ^ (c_km1[t] | c_k[t])
+            return c_k, False
+        parity = int(np.sum(c_km2)) & 1
+        P_new = 2 * P if parity == 1 else P
+        c_km2_ext = np.tile(c_km2, P_new // P)
+        c_k = np.zeros(P_new, dtype=np.uint8)
+        for t in range(P_new - 1):
+            c_k[t + 1] = c_km2_ext[t] ^ c_k[t]
+        return c_k, (parity == 1)
+
+    c_km2 = np.array([1], dtype=np.uint8)
+    c_km1 = np.array([1], dtype=np.uint8)
+    alg_dislocs = [0]
+    for k in range(2, 401):
+        c_k, doubled = _step_cycle_vec(c_km2, c_km1)
+        if doubled:
+            c_km1 = np.tile(c_km1, 2)
+            alg_dislocs.append(k)
+        c_km2, c_km1 = c_km1, c_k
+
+    w_399 = sum(int(c_km2[t]) << t for t in range(16))
+    w_400 = sum(int(c_km1[t]) << t for t in range(16))
+
+    queue = [("root", 400, w_399, w_400)]
+    splits = []
+    leaves = []
+    while queue:
+        path, k_start, a, b = queue.pop(0)
+        k = k_start
+        while True:
+            k += 1
+            if b == 0:
+                wt = a.bit_count()
+                if wt & 1:
+                    leaves.append({"path": path, "k5": k, "plateau_width": k - 400, "upstream_weight": wt})
+                else:
+                    splits.append({"path": path, "k_split": k, "barrier_km1": k - 1, "upstream_weight": wt})
+                    for br in (0, 1):
+                        w_next = 0
+                        bit = br
+                        for t in range(16):
+                            w_next |= bit << t
+                            bit ^= (a >> t) & 1
+                        p_new = ("" if path == "root" else path) + str(br)
+                        queue.append((p_new, k, 0, w_next))
+                break
+            a, b = b, koggestone_next_u16(a, b)
+
+    k5_vals = [leaf["k5"] for leaf in leaves]
+    return {
+        "algebraic_dislocations_k0_to_k4": alg_dislocs,
+        "first_even_barrier_km1": int(splits[0]["barrier_km1"]),
+        "first_even_split_k": int(splits[0]["k_split"]),
+        "first_even_upstream_weight": int(splits[0]["upstream_weight"]),
+        "n_even_splits": len(splits),
+        "n_odd_p32_leaves": len(leaves),
+        "k5_min": int(min(k5_vals)),
+        "k5_max": int(max(k5_vals)),
+        "splits": splits,
+        "leaves": leaves,
+    }
+
+
 def compute_damage_cone_ensemble(n_seeds: int = 25, ring_w: int = 512, ring_steps: int = 160) -> dict:
     """Measure directional left (v_L) and right (v_R) Boolean damage-cone velocities across an ensemble
     of random initial states with a single center-bit flip at t = 0.
@@ -878,6 +979,13 @@ def self_test() -> dict:
     assert cross["inv_selection"] < cross["inv_bubble"], "Selection must achieve lower post-defect inversions than Bubble"
     assert cross["x_star_initial"] < cross["bipolar_threshold"] < cross["x_star_final"], "Bioelectric wavefront did not cross bipolar threshold"
 
+    # Check 10: Kogge-Stone Carry-Lookahead Cycle-Transfer Operator & P=16 Even-Parity Barrier Tree
+    ks_tree = verify_koggestone_p16_barrier_tree()
+    assert ks_tree["algebraic_dislocations_k0_to_k4"] == [0, 3, 8, 29, 400], "Algebraic dislocations mismatch"
+    assert ks_tree["first_even_barrier_km1"] == 53207 and ks_tree["first_even_upstream_weight"] == 6, "First even barrier mismatch"
+    assert ks_tree["n_even_splits"] == 15 and ks_tree["n_odd_p32_leaves"] == 16, "P=16 barrier tree size mismatch"
+    assert ks_tree["k5_min"] == 87867 and ks_tree["k5_max"] == 894235, "P=16->32 leaf bounds mismatch"
+
     return {
         "fixture": fixture,
         "spec_sil": spec_sil,
@@ -910,6 +1018,7 @@ def self_test() -> dict:
         "dmg": dmg,
         "wakes": wakes,
         "cross": cross,
+        "ks_tree": ks_tree,
     }
 
 
@@ -1531,6 +1640,11 @@ def main(argv: list[str] | None = None) -> int:
         f"[kymograph_defect_fronts] OK | diagonal recursion errors={diag['recursion_errors']} | "
         f"dislocations: {disloc_str} | lock velocity={diag['spatial_lock_velocity']:.4f} cells/step | "
         f"damage cone v_R=+{dmg['vR_mean']:.4f}±{dmg['vR_std']:.4f}, v_L={dmg['vL_mean']:.4f}±{dmg['vL_std']:.4f}"
+    )
+    kst = res["ks_tree"]
+    print(
+        f"[koggestone_p16_tree] OK | first even-parity barrier k-1={kst['first_even_barrier_km1']} (wt={kst['first_even_upstream_weight']}) | "
+        f"acyclic tree: {kst['n_even_splits']} even splits -> {kst['n_odd_p32_leaves']} odd P=32 leaves in k_5 in [{kst['k5_min']}, {kst['k5_max']}]"
     )
     print(
         f"[morphometrics] Conus textile H/W={res['hw_mesh']:.4f} (specimen {res['spec_hw']:.4f}), "
