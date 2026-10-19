@@ -1,0 +1,62 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace — Model fidelity to source: 30/100" ;
+        rdfs:comment "Spacing law diffusion_length (L64-67) is the correct form, but alpha and tau are free knobs set by the script (alpha_field = 1.0 at L179, alpha_lab = 0.30 at L180 described as a least-squares fit with no data or fit in the file), and the text panel states that 0.66 cm records a ~20 h rhythmic metabolism (L238-239) whereas 0.66 cm was computed at tau = 12 h (L193, L207; tau = 20 h gives 0.85 cm). Panels (d-f) and the GIF do not implement Petroff's diffusion-limited growth: they credit Batchelor et al. 2004 (L31-34, L86-98), modify it with an unsourced quadratic crest weight w_photic = 0.12 + 0.88*(z/z_max)^2 (L126-130) and 3-point smoothing (L141-142), and never integrate the docstring's own KPZ equation dh/dt = v + lambda*(1 + 1/2 (dh/dr)^2) (L34, L85, L296). Evidence: 2010-petroff-stromatolite.py L64–L67: diffusion_length ell = alpha*sqrt(D*tau) <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L64-L67>; 2010-petroff-stromatolite.py L126–L142: ad-hoc w_photic = 0.12 + 0.88*(z/z_max)^2, pinned basal feet, and 3-point Laplacian smoothing <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L126-L142>; 2010-petroff-stromatolite.py L193–L240: computes ell = 0.66 cm at tau = 12 h while text panel claims ~20 h rhythmic metabolism <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L193-L240>." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-model-fidelity> ;
+        pk:hasProbability "0.3"^^xsd:double ;
+        pk:hasVerdict "unfaithful" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-model-fidelity> rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace (2010-petroff-stromatolite.py, docs/media/petroff_stromatolite_dome_to_cone.gif) satisfies the MorphoEval 0.1.0 criterion 'Model fidelity to source' for Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats)" ;
+        dct:identifier "morphoeval/0.1.0/model-fidelity" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Cursor subagent e65a3d81-92b5-4bb2-941f-4566032cb3cd, blinded second assessor)" .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.physa.2004.01.065>,
+            <https://doi.org/10.1073/pnas.1001978107> .
+    <https://doi.org/10.1016/j.physa.2004.01.065> dct:date "2004"^^xsd:gYear ;
+        dct:title "A mathematical model of stromatolite lamina accretion" .
+    <https://doi.org/10.1073/pnas.1001978107> dct:date "2010"^^xsd:gYear ;
+        dct:title "Biophysical basis for the geometry of conical stromatolites" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace — Model fidelity to source 30/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-19T21:03:38Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

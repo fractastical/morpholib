@@ -1,0 +1,73 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAKbOL9f4YLadrAhALB6YEXs_YVl5K-9BJKxKYRQnV73g/> .
+@prefix this: <https://w3id.org/np/RAKbOL9f4YLadrAhALB6YEXs_YVl5K-9BJKxKYRQnV73g> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:provenance {
+    sub1:assertion prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.7717/peerj.17037> .
+
+    <https://doi.org/10.7717/peerj.17037> dcterms:date "2024"^^xsd:gYear ;
+        dcterms:title "Coral geometry and why it matters" .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity — Model fidelity to source: 62/100" ;
+        rdfs:comment "The master rule V(t+1) = V(t) + G*S(t)/rho (L15-16, L64-67) and the four shape derivations (hemisphere L68-78, disc L81-89, cone L92-104, cylinder L107-110) are algebraically exact for a 1-year discrete step. However, the discrete annual step introduces a time-step artifact presented as geometry: hemisphere_extension (L70) and panel (c) (L173-182) show C rising from 0.52 cm/yr at r = 0.5 cm toward a plateau G/rho = 1.25 cm/yr, whereas in the continuous model dV/dt = 2*pi*r^2*dr/dt = G*(2*pi*r^2)/rho implies dr/dt = G/rho identically for all r (and the discrete disc extension is ~30% below continuum at G/(rho*h) = 2.5). In addition, upper-surface-only disc S (L82), baseless cone S (L93-94), and single-cylinder branching (L107-110) are not explicitly stated as simplifying assumptions. Evidence: 2024-kahng-coral-geometry.py L68–L110: discrete 1-yr volume-step extension and SAP functions for the 4 shapes <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L68-L110>; 2024-kahng-coral-geometry.py L172–L185: panel (c) plots discrete 1-yr hemisphere/cone extension curve rising to G/rho plateau <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L172-L185>." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-model-fidelity> ;
+        pk:hasProbability "0.62"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-model-fidelity> rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity (2024-kahng-coral-geometry.py, docs/media/kahng_coral_geometry_growth.gif) satisfies the MorphoEval 0.1.0 criterion 'Model fidelity to source' for Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris)" ;
+        dcterms:identifier "morphoeval/0.1.0/model-fidelity" .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Cursor subagent e65a3d81-92b5-4bb2-941f-4566032cb3cd, blinded second assessor)" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "I1bQRAXW05LYfP/flhnj7ugDkhrXKI1RZjSYAkwZbQPbBBfZE2KnPoIai0QNtjWLJaxGDP2IxTU/EjyZSoiuoJB91Uahyub5kMOtcW2ftupVIYLMi6SfZ9YFJkNdPZXno1191j22qFWSeIkCMDKFwBCdIvJh9NmrR7akZQ2eyz9GmBmErqVcYtm1VlLJM3dTfqCf/9rooPAozkXgWNnsHAqyyQWUrqIRFbvyySBEUAzv8MwGCBl82kZ4jVdykvYIxS1cmJWKw30b40ARkyAWu7I9LSMH+RrKkNN6Ze9gqpPvO/d48TQWZYBv9wqGgKbP95slob66ySMX6wg1JlCt0Q==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity — Model fidelity to source 62/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-19T21:03:38Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf orcid:0009-0007-4948-9192 .
+}
+

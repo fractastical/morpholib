@@ -1,0 +1,337 @@
+# MorphoEval audit — Petroff et al. (2010) Conical Stromatolites & Kahng et al. (2024) Coral Colony Geometry, 2026-10-19
+#
+# Dual-agent assessment of `2010-petroff-stromatolite.py` (`petroff-stromatolite`) and
+# `2024-kahng-coral-geometry.py` (`kahng-coral-geometry`) at commit 5564750:
+#   - Primary assessor: Gemini 4 Argon (Cursor agent)
+#   - Independent blinded second assessor: Claude Fable 5.1 (subagent e65a3d81-92b5-4bb2-941f-4566032cb3cd),
+#     published separately in `2026-10-19-petroff-kahng-second-assessor-audit.yaml` (`role: second_assessor`).
+#
+# Scores are uncalibrated criterion-referenced ratings on the rubric's 0-100 scale (not
+# calibrated probabilities). Line numbers refer to the files at commit 5564750.
+
+audit:
+  id: 2026-10-19-petroff-kahng-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  supersedes: null
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Fable 5.1 (independent blinded second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (independent blinded subagent e65a3d81-92b5-4bb2-941f-4566032cb3cd)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 5564750
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      First evaluation of `2010-petroff-stromatolite.py` and `2024-kahng-coral-geometry.py`
+      (previously listed as `status: unevaluated` in `2026-10-13-morphology-audit.yaml`).
+
+references:
+  petroff2010:
+    title: "Biophysical basis for the geometry of conical stromatolites"
+    authors: "Petroff AP, Sim MS, Maslov A, Krupenin M, Rothman DH, Bosak T"
+    venue: "Proceedings of the National Academy of Sciences USA 107(22):9956-9961 (2010)"
+    doi: 10.1073/pnas.1001978107
+  batchelor2004:
+    title: "A mathematical model of stromatolitelamina accretion"
+    authors: "Batchelor MT, Burne RV, Henry BI, Jackson MJ"
+    venue: "Physica A 337(1-2):319-336 (2004)"
+    doi: 10.1016/j.physa.2004.01.065
+  kahng2024:
+    title: "Coral geometry and why it matters"
+    authors: "Kahng SE, Odle E, Wakeman KC"
+    venue: "PeerJ 12:e17037 (2024)"
+    doi: 10.7717/peerj.17037
+  kahng_repo:
+    title: "coral_geometry_modeling — reference code and analysis"
+    authors: "Odle E, Kahng SE, Wakeman KC"
+    venue: "GitHub repository (2024)"
+    url: https://github.com/ericodle/coral_geometry_modeling
+
+simulations:
+  - id: petroff-stromatolite
+    name: "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace"
+    organism: "Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats)"
+    script: 2010-petroff-stromatolite.py
+    output: petroff_stromatolite_morphospace.png
+    also:
+      - docs/media/petroff_stromatolite_dome_to_cone.gif
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [petroff2010, batchelor2004]
+    claim_boundary:
+      reported_in_source:
+        - "Petroff et al. (2010): nutrient diffusion over active photosynthetic period tau sets inter-cone spacing ell = alpha * sqrt(D * tau) (~1 cm for daily cycle), and diffusive flux gradients along the mat interface govern lamina accretion and conical geometry"
+        - "Batchelor et al. (2004): deterministic KPZ / normal-plus-vertical lamina accretion dh/dt = v + lambda * (1 + 1/2 (dh/dr)^2) transitions from domes to cones as beta = v / lambda increases"
+      reconstructed_in_script:
+        - "Algebraic diffusion-length spacing law ell = alpha * sqrt(D * tau) for alpha in {1.0, 0.30}, hexagonal close-packed cone lattice, and a 2D Lagrangian polyline front advancing by lambda * n_hat + v * w_photic * z_hat with pinned basal endpoints and 3-point Laplacian smoothing"
+      transfer_boundary:
+        - "The dome-to-cone lamina solver does not solve Petroff et al.'s Laplace diffusion equation (nabla^2 c = 0) or local diffusive flux; it substitutes a modified Batchelor et al. (2004) kinematic front with an ad-hoc photic weighting w_photic = 0.12 + 0.88*(z/z_max)^2"
+      does_not_claim:
+        - "Direct comparison to digitized Yellowstone mat or Proterozoic Conophyton thin-section photographs or empirical cone-spacing histograms"
+    summary: >-
+      `2010-petroff-stromatolite.py` implements Petroff et al.'s (2010) diffusion-competition
+      spacing formula `ell = alpha * sqrt(D * tau)` (`ell = 0.66 cm` at `tau = 12 h`, `D = 1e-5 cm^2/s`,
+      `alpha = 1.0`), renders a hexagonal packing diagram, and sweeps `beta = v/lambda` across
+      `{0.3, 1.5, 5.0}` (and `0.2 -> 6.0` in the 70-frame GIF) to illustrate the transition from squat
+      domes (`H/W = 0.67`) to tall cones (`H/W = 2.62`). However, the lamina growth model is not Petroff
+      et al.'s diffusive-flux solver (`nabla^2 c = 0` with growth proportional to normal flux `dc/dn`),
+      nor is it an exact integration of the Batchelor et al. (2004) KPZ equation printed in the docstring:
+      it advances a pinned-base Lagrangian front with an unsourced quadratic crest-weighting
+      `w_photic = 0.12 + 0.88*(z/z_max)^2` and 3-point smoothing, and compares against no empirical
+      stromatolite thin sections or measured spacing distributions.
+    scores:
+      model-fidelity:
+        value: 44
+        rationale: >-
+          Correctly evaluates the diffusive spacing relation `ell = alpha * sqrt(D * tau)` (L64-67) and
+          hexagonal lattice geometry (L70-81). However, (-22) the lamina cross-section model (L113-163)
+          does not solve Petroff et al.'s (2010) diffusive nutrient field (`nabla^2 c = 0`) or flux-driven
+          lamina growth (`v_n prop dc/dn`), so the top row (diffusion spacing) and bottom row (lamina shapes)
+          are mathematically uncoupled; (-14) relative to the Batchelor et al. (2004) equation cited in the
+          docstring (`dh/dt = v + lambda*(1 + 1/2 (dh/dr)^2)`, L34, L296), `_advance_front` introduces an
+          uncited quadratic photic crest weight `w_photic = 0.12 + 0.88 * (z / z.max())**2` (L130), pins
+          the basal endpoints at `+-base_half` (L136-137), and applies a 3-point Laplacian smoothing filter
+          (L141-142); and (-8) the text panel states that `ell ~ 0.66 cm` records a `~20 h` rhythmic
+          metabolism (L238-239) whereas `0.66 cm` was computed from `tau = 12 h` (L193, L235).
+        evidence:
+          - {file: 2010-petroff-stromatolite.py, lines: [64, 81], note: "diffusion_length ell = alpha*sqrt(D*tau) and hex_lattice"}
+          - {file: 2010-petroff-stromatolite.py, lines: [113, 143], note: "_advance_front uses ad-hoc w_photic = 0.12 + 0.88*(z/z_max)^2, pinned base, and 3-point smoothing instead of Petroff diffusive flux or pure Batchelor KPZ"}
+          - {file: 2010-petroff-stromatolite.py, lines: [233, 240], note: "text panel computes ell = 0.66 cm from tau = 12 h but prose says '~20 h rhythmic metabolism'"}
+      specimen-match:
+        value: 30
+        rationale: >-
+          The three bottom panels (`beta = 0.3, 1.5, 5.0`) and 70-frame animation clearly show internal
+          lamina stacking and axial-zone crest thickening as `beta` increases. However, (-30) no fossil
+          *Conophyton* thin-section, modern Yellowstone microbial mat photograph, or digitized figure from
+          Petroff et al. (2010) is shown or overlaid; (-15) pinning the basal feet at `x = +-1` (L136-137)
+          while starting from a triangular seed (L153) causes the `beta = 0.3` dome (Panel d) to form a
+          steep-walled flat-topped trapezoid with a central crease rather than a hemispheroidal domal
+          stromatolite; and (-15) the `beta = 5.0` sharp cone sits atop a vertical cylinder base with a
+          rounded tip rather than exhibiting straight conical flanks.
+        evidence:
+          - {file: petroff_stromatolite_morphospace.png, lines: [0, 0], note: "6-panel summary figure; no specimen thin-section or field photo; panel (d) dome has vertical side walls and central seed kink"}
+          - {file: docs/media/petroff_stromatolite_dome_to_cone.gif, lines: [0, 0], note: "70-frame ping-pong animation sweeping beta = 0.2 -> 6.0"}
+          - {file: 2010-petroff-stromatolite.py, lines: [136, 155], note: "triangular seed z0 and pinned endpoints x[0]=-base_half, x[-1]=base_half"}
+      parameter-expressivity:
+        value: 60
+        rationale: >-
+          Sweeps daylight span `tau` continuously across `1..48 h` for two `alpha` regimes (`1.0` and `0.30`,
+          L187-192), compares three `beta = v/lambda` regimes (`0.3, 1.5, 5.0`, L249-253) in the static
+          figure, and sweeps `beta` logarithmically across 36 values (`0.2 -> 6.0`, L306) in `make_gif`,
+          producing a strictly monotonic increase in height/width aspect ratio (`0.631 -> 3.030`). Deduct 25
+          points because no model parameters (`beta`, `D`, `alpha`, `smooth`, `seed_height`) are exposed on
+          the CLI (L336-348), and 15 points because `lambda = 1.0`, `base_half = 1.0`, and `smooth = 0.03`
+          are held fixed.
+        evidence:
+          - {file: 2010-petroff-stromatolite.py, lines: [249, 273], note: "3 beta regimes (0.3, 1.5, 5.0) plotted on shared vertical scale"}
+          - {file: 2010-petroff-stromatolite.py, lines: [300, 334], note: "make_gif sweeps 36 log-spaced beta values from 0.2 to 6.0"}
+          - {file: 2010-petroff-stromatolite.py, lines: [336, 348], note: "CLI exposes only -o/--output, --gif, and --no-show"}
+      morphometric-validation:
+        value: 25
+        rationale: >-
+          Computes `diffusion_length` at `tau in {3, 6, 12, 24} h` and `aspect_ratio` (`height / width`) on
+          the top lamina of each grown profile (`0.6716`, `1.1674`, `2.6177` for `beta = 0.3, 1.5, 5.0`).
+          Deduct 40 points because no empirical cone-spacing measurements (Yellowstone modern mats, lab
+          cultures, or Archean/Proterozoic fossils from Petroff et al. Table 1 / Fig. 2-3) are loaded or
+          compared statistically; deduct 20 points because flank angle, apex curvature radius, and axial
+          lamina thickening ratio are not measured; and deduct 15 points because the `0.5-1.5 cm` shaded
+          band in Panel (a) (L198) is hardcoded rather than derived from a dataset.
+        evidence:
+          - {file: 2010-petroff-stromatolite.py, lines: [165, 171], note: "aspect_ratio computes height/width for figure annotation only"}
+          - {file: 2010-petroff-stromatolite.py, lines: [198, 198], note: "hardcoded axhspan(0.5, 1.5) in panel (a)"}
+          - {file: 2010-petroff-stromatolite.py, lines: [290, 298], note: "console printout of diffusion_length for tau = 3, 6, 12, 24 h"}
+      source-traceability:
+        value: 52
+        rationale: >-
+          Module docstring cites Petroff et al. (2010) with full author list, title, journal, volume, pages,
+          and PMCID (`PMC2890478`, L5-8), and names Batchelor, Burne, Henry & Jackson (2004) and Fejes Tóth
+          (1948). Deduct 20 points because neither the primary paper's DOI (`10.1073/pnas.1001978107`) nor
+          full bibliographic details/DOIs for Batchelor et al. (2004) and Fejes Tóth (1948) are recorded in
+          the script; deduct 18 points because no `datasets/petroff/` directory, `README.md`, or
+          `paper_citations.bib` exists; and deduct 10 points because `alpha_lab = 0.30` (L180) and the Bakal
+          Formation `10-20 cm` spacing note (L241-243) lack specific table/figure pointers.
+        evidence:
+          - {file: 2010-petroff-stromatolite.py, lines: [5, 8], note: "Petroff et al. 2010 citation with PMC2890478 but no DOI string"}
+          - {file: 2010-petroff-stromatolite.py, lines: [27, 35], note: "short inline mentions of Fejes Toth 1948 and Batchelor et al. 2004 without venue or DOI"}
+          - {file: 2010-petroff-stromatolite.py, lines: [179, 180], note: "alpha_field = 1.0 and alpha_lab = 0.30 without table/figure citation"}
+      code-traceability:
+        value: 50
+        rationale: >-
+          Functions are compact and clearly structured into Section (1) (`diffusion_length`, `hex_lattice`,
+          citing Petroff Eq. 2 and Fig. 4) and Section (2) (`_resample`, `_advance_front`,
+          `grow_stromatolite`, `aspect_ratio`). Deduct 25 points because the docstring and console printout
+          display the small-slope KPZ PDE `dh/dt = v + lambda * (1 + 1/2 (dh/dr)^2)` (L34, L85, L296) while
+          `_advance_front` actually integrates a Lagrangian normal+vertical velocity modulated by `w_photic`
+          and Laplacian smoothing; and deduct 25 points because the constants `0.12` and `0.88` in `w_photic`
+          (L130) and `smooth = 0.03` (L147) have no source equation provenance.
+        evidence:
+          - {file: 2010-petroff-stromatolite.py, lines: [64, 74], note: "docstrings cite Petroff Eq. 2 and Fig. 4"}
+          - {file: 2010-petroff-stromatolite.py, lines: [85, 98], note: "header explains transition from graph KPZ equation to Lagrangian front v*z_hat + lambda*n_hat"}
+          - {file: 2010-petroff-stromatolite.py, lines: [126, 143], note: "untraced w_photic = 0.12 + 0.88*(z/z_max)^2 and 3-point smoothing"}
+      repro-package:
+        value: 70
+        rationale: >-
+          The script is purely deterministic (no RNG), runs in < 1 s using only `numpy`, `matplotlib`, and
+          `Pillow` (all pinned in `requirements.txt` and `requirements.lock.txt`), and supports `-o/--output`,
+          `--gif`, and `--no-show`. Deduct 12 points because there is no `--self-test` mode or CSV metrics
+          export; deduct 10 points because the docstring usage block (L45-48) omits `--gif` and the default
+          output path is the repo root rather than `docs/media/petroff_stromatolite_dome_to_cone.gif`; and
+          deduct 8 points because `show=True` is the default when no `--no-show` flag is passed.
+        evidence:
+          - {file: 2010-petroff-stromatolite.py, lines: [45, 48], note: "docstring CLI examples omit --gif"}
+          - {file: 2010-petroff-stromatolite.py, lines: [336, 348], note: "argparse entrypoint with -o/--output, --gif, --no-show"}
+          - {file: requirements.lock.txt, lines: [1, 51], note: "pinned Python 3.14.7, numpy 2.5.4, matplotlib 3.10.7, pillow 12.0.0"}
+    remediation:
+      - "2010-petroff-stromatolite.py:86-163 Implement Petroff et al.'s (2010) steady-state nutrient diffusion field (nabla^2 c = 0 around periodic absorbing cones with normal velocity proportional to local diffusive flux dc/dn), and clearly separate it from the Batchelor et al. (2004) KPZ / Lagrangian front model."
+      - "2010-petroff-stromatolite.py:126-143,238-239 Document or remove the ad-hoc photic weighting `w_photic = 0.12 + 0.88*(z/z.max())**2`, release or widen the pinned basal footprint for the dome regime (`beta = 0.3`), and reconcile the `tau = 12 h` calculation (`ell = 0.66 cm`) with the `~20 h` text annotation."
+      - "Create `datasets/petroff/` with a SHA-256-pinned transcription of Petroff et al.'s measured modern, lab, and fossil cone spacings plus a segmented *Conophyton* thin-section profile, and add `--self-test` and CSV metrics export."
+
+  - id: kahng-coral-geometry
+    name: "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity"
+    organism: "Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris)"
+    script: 2024-kahng-coral-geometry.py
+    output: kahng_coral_geometry_morphospace.png
+    also:
+      - docs/media/kahng_coral_geometry_growth.gif
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [kahng2024, kahng_repo]
+    claim_boundary:
+      reported_in_source:
+        - "Kahng, Odle & Wakeman (2024): colony volume increment V(t+1) = V(t) + G*S(t)/rho implies that surface-area productivity (SAP = dS/S) and linear extension C are governed by how S:V scales with colony size across hemispheroids, cones, flat discs, and cylinders"
+      reconstructed_in_script:
+        - "Exact 1-year discrete volume-step algebraic functions for hemisphere, fixed-aspect cone, fixed-thickness flat disc, and fixed-diameter cylinder (`hemisphere_extension`, `hemisphere_sap`, `disc_extension`, `disc_sap`, `cone_extension`, `cone_sap`, `cylinder_sap`), 6-panel comparative figure, and 15-year log-area animation"
+      transfer_boundary:
+        - "Uses a finite 1-year step V(t+1) = V(t) + G*S(t)/rho without comparing against the continuum differential limit (dV/dt = G*S/rho, where hemisphere dR/dt = G/rho is strictly constant at all radii), and uses schematic 2D matplotlib patches rather than 3D coral colony meshes or empirical growth time series"
+      does_not_claim:
+        - "3D hydrodynamic polyp-scale morphogenesis or direct statistical fitting to raw field colony time series"
+    summary: >-
+      `2024-kahng-coral-geometry.py` faithfully encodes the discrete annual volume-accretion master rule
+      `V(t+1) = V(t) + G*S(t)/rho` and the four idealized geometric families from Kahng, Odle & Wakeman
+      (2024) (hemispheroid, cone, flat disc, and cylinder), reproducing their surface-area productivity
+      (`SAP = dS/S`), linear extension (`C`), aspect-ratio dependence (Fig. 3), diameter/thickness scaling,
+      and the ~19x microfragmentation SAP speedup for massive *Porites* (`r = 1 cm` vs `r = 25 cm`). Its
+      main limitations are that the finite 1-year step introduces small-radius curvature in hemisphere/cone
+      extension (`C = 0.52 -> 1.25 cm/yr` vs the exact continuum `dr/dt = G/rho = 1.25 cm/yr`), the equal-`G, rho`
+      comparison applies `G = 1.50 g cm^-2 yr^-1` to a thin `h = 0.5 cm` disc (producing `26 cm/yr` extension
+      at `r = 30 cm`), and no empirical colony growth tables or coral specimen photographs are overlaid.
+    scores:
+      model-fidelity:
+        value: 74
+        rationale: >-
+          All seven algebraic functions (`hemisphere_extension`, `hemisphere_sap`, `disc_extension`,
+          `disc_sap`, `cone_extension`, `cone_sap`, `cylinder_sap`, L68-110) are exact consequences of the
+          paper's discrete annual volume rule `V(t+1) = V(t) + G*S(t)/rho` under the stated surface/volume
+          formulas (`V = 2/3 pi r^3, S = 2 pi r^2`; `V = h pi r^2, S = pi r^2`; `V = pi h^3/(3 alpha^2),
+          S = pi h^2 sqrt(1+alpha^2)/alpha^2`; `V = pi r^2 L, S = 2 pi r L`). Deduct 14 points because the
+          script does not contrast the finite 1-yr step (`r(t+1) - r(t)`, which rises from `0.52` to
+          `1.20 cm/yr` in Panel c) against the instantaneous continuum limit `dr/dt = G/rho = 1.25 cm/yr`
+          (where hemisphere linear extension is strictly size-independent); and deduct 12 points because
+          general oblate/prolate hemispheroids and multi-branch colony self-shading are simplified to a
+          spherical hemisphere and single cylinder without explicit boundary notes.
+        evidence:
+          - {file: 2024-kahng-coral-geometry.py, lines: [57, 60], note: "empirical parameter dictionaries MASSIVE, BRANCH, DISC, and COMMON"}
+          - {file: 2024-kahng-coral-geometry.py, lines: [68, 110], note: "exact discrete 1-year extension and SAP formulas for hemisphere, disc, cone, and cylinder"}
+          - {file: 2024-kahng-coral-geometry.py, lines: [172, 185], note: "panel (c) plots discrete 1-yr extension approaching continuum plateau G/rho and sqrt(2)*G/rho"}
+      specimen-match:
+        value: 42
+        rationale: >-
+          Panel (a) draws clear 2D geometric glyphs annotated with `(V, S, S:V trend)` for the four coral
+          growth forms, Panels (b-e) reproduce the analytical curves of Kahng et al. (2024) (including Fig. 3
+          cone aspect ratios and Fig. 6 shape comparisons), and the GIF animates 15 years of hemisphere and
+          cone cross-sectional growth alongside log surface-area trajectories. Deduct 35 points because no
+          real coral colony photographs, CT-scanned 3D colony meshes, or digitized empirical data points from
+          *Porites*, *Acropora*, or *Leptoseris* are overlaid; and deduct 23 points because in Panel (c) and
+          the GIF, applying `COMMON` (`G=1.50, rho=1.20`) to a `0.5 cm` flat disc drives disc extension to
+          `26.1 cm/yr` at `r = 30 cm` and area to `~10^9 cm^2` at year 15, visually dwarfing the realistic
+          hemisphere and cone curves.
+        evidence:
+          - {file: kahng_coral_geometry_morphospace.png, lines: [0, 0], note: "6-panel analytical figure with 2D shape glyphs and SAP/extension curves"}
+          - {file: docs/media/kahng_coral_geometry_growth.gif, lines: [0, 0], note: "16-unique-frame animation of 15-year colony growth and log-area trajectories"}
+          - {file: 2024-kahng-coral-geometry.py, lines: [116, 147], note: "_draw_glyphs schematic 2D patches"}
+      parameter-expressivity:
+        value: 72
+        rationale: >-
+          Sweeps colony size `0.5..30 cm` across all four geometries (Panels b, c), sweeps cone aspect ratio
+          `alpha in {0.5, 1.0, 2.0, 4.0}` (Panel d), sweeps cylinder branch diameter `0.3..4.0 cm` and disc
+          plate thickness `0.05..1.5 cm` (Panel e), and contrasts species-specific calcification regimes
+          (`MASSIVE`, `BRANCH`, `DISC`) with the shape-isolating `COMMON` regime. Deduct 18 points because no
+          model parameters (`G`, `rho`, `alpha`, `h`, `r`, `years`) are configurable via CLI flags (L320-331),
+          and deduct 10 points because step size `dt` is fixed to `1 yr`.
+        evidence:
+          - {file: 2024-kahng-coral-geometry.py, lines: [158, 211], note: "sweeps over colony size, cone aspect ratio alpha, branch diameter 2r, and plate thickness h"}
+          - {file: 2024-kahng-coral-geometry.py, lines: [320, 331], note: "CLI exposes only -o/--output, --no-show, and --gif"}
+      morphometric-validation:
+        value: 38
+        rationale: >-
+          Computes and reports asymptotic linear extensions (`1.28 cm/yr` for massive *Porites*; `2.00, 2.53,
+          3.99, 7.36 cm/yr` for *Acropora* cones with `alpha = 0.5..4`), size-independent SAP (`0.114 /yr` for
+          *Leptoseris* disc; `7.143 /yr` for *Acropora* cylinder), and the `18.9x` (`~19x`) microfragmentation
+          SAP ratio between `r = 1 cm` (`1.86 /yr`) and `r = 25 cm` (`0.10 /yr`). Deduct 42 points because no
+          empirical colony growth dataset (e.g., Lough 2008 *Porites* cores, Hughes 1987 *Acropora*, or Kahng
+          2023 *Leptoseris* measurements) is loaded to compute residuals or $R^2$; and deduct 20 points
+          because no CSV table or automated `--self-test` verification is emitted.
+        evidence:
+          - {file: 2024-kahng-coral-geometry.py, lines: [215, 236], note: "computes sap_small (r=1 cm), sap_large (r=25 cm), and ~19x microfragmentation ratio"}
+          - {file: 2024-kahng-coral-geometry.py, lines: [250, 264], note: "console verification printout of asymptotic C and size-independent SAP"}
+      source-traceability:
+        value: 74
+        rationale: >-
+          Module docstring records full authors, title, journal (`PeerJ 12:e17037`), year, PMCID
+          (`PMC10909345`), resolving DOI (`10.7717/peerj.17037`), and upstream GitHub repository
+          (`github.com/ericodle/coral_geometry_modeling`), plus inline attribution to Raup & Graus (1972),
+          Lough (2008), Hughes (1987), and Kahng (2023). Deduct 16 points because no `datasets/kahng/`
+          directory, `README.md`, or `paper_citations.bib` with full DOIs for the empirical parameter sources
+          (Lough 2008, Hughes 1987, Kahng 2023) is vendored; and deduct 10 points because the upstream
+          `ericodle/coral_geometry_modeling` commit hash is not pinned.
+        evidence:
+          - {file: 2024-kahng-coral-geometry.py, lines: [5, 10], note: "complete citation, PMCID, DOI 10.7717/peerj.17037, and upstream GitHub repo URL"}
+          - {file: 2024-kahng-coral-geometry.py, lines: [57, 60], note: "parameter attributions to Lough 2008, Hughes 1987, Kahng 2023, and paper Fig. 6"}
+      code-traceability:
+        value: 75
+        rationale: >-
+          Every geometric function states its exact volume $V$, active calcifying surface area $S$, and
+          resulting one-step algebraic relation in its docstring, and the module docstring summarizes the four
+          geometries' $(S:V, C, \text{SAP})$ scaling regimes in a table mapped to Appendix A / Results and
+          Figs. 3 & 6 of Kahng et al. (2024). Deduct 15 points because exact equation numbers from Kahng et al.
+          (2024) Appendix A are not cited per function, and deduct 10 points because the distinction between
+          discrete 1-yr difference equations and continuous ODE rates is not noted in `hemisphere_extension`.
+        evidence:
+          - {file: 2024-kahng-coral-geometry.py, lines: [25, 31], note: "summary table mapping 4 coral geometries to S:V, C, and SAP trends"}
+          - {file: 2024-kahng-coral-geometry.py, lines: [68, 110], note: "per-function V and S formulas referencing Appendix A / Results"}
+      repro-package:
+        value: 72
+        rationale: >-
+          Completely deterministic (no RNG), runs in < 1 s under the locked environment (`requirements.lock.txt`),
+          and provides `-o/--output`, `--no-show`, and `--gif` CLI flags. Deduct 12 points for lacking a
+          `--self-test` flag and CSV metrics output; deduct 8 points because `--gif` is omitted from the
+          docstring usage examples (L38-41) and `show=True` is the default; and deduct 8 points because
+          Pillow deduplicates the trailing hold frames (`frames += [frames[-1]] * (fps * 2)` at L314) from 24
+          to 16 frames on disk.
+        evidence:
+          - {file: 2024-kahng-coral-geometry.py, lines: [38, 41], note: "docstring CLI usage block"}
+          - {file: 2024-kahng-coral-geometry.py, lines: [314, 331], note: "GIF save and argparse CLI entrypoint"}
+          - {file: requirements.lock.txt, lines: [1, 51], note: "locked dependencies in requirements.lock.txt"}
+    remediation:
+      - "2024-kahng-coral-geometry.py:68-110,172-185 Plot the exact continuum differential extension rates (dr/dt = G/rho for hemisphere, dh/dt = G*sqrt(1+alpha^2)/rho for cone, dr/dt = G*r/(2*rho*h) for disc) alongside the discrete 1-year Euler step curves, and use realistic DISC parameters (or dual y-axes) in Panel (c)."
+      - "Vendor `datasets/kahng/` with SHA-256-pinned empirical growth tables from Lough (2008), Hughes (1987), and Kahng (2023) / Kahng et al. (2024), overlay observed colony extension/SAP data points, and add `--self-test` and CSV metrics export."

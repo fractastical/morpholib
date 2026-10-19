@@ -172,6 +172,24 @@ CANONICAL_MODEL_SPECS: dict[str, dict] = {
             "datasets/venation/reticulate_vein_skeleton_specimen.jpg",
         ],
     },
+    "petroff-stromatolite": {
+        "model": "Petroff et al. (2010) diffusion-competition spacing law ell = alpha*sqrt(D*tau) + Batchelor et al. (2004) Lagrangian normal/phototactic lamina front",
+        "D_cm2_s": 1e-5,
+        "alpha_field": 1.0,
+        "alpha_lab": 0.30,
+        "betas": [0.3, 1.5, 5.0],
+        "n_steps": 700,
+        "t_total": 0.85,
+        "inputs": [],
+    },
+    "kahng-coral-geometry": {
+        "model": "Kahng, Odle & Wakeman (2024) reef-coral colony calcification geometry V(t+1) = V(t) + G*S(t)/rho across hemispheroid, cone, flat disc, and cylindrical branches",
+        "massive": {"G": 1.64, "rho": 1.28},
+        "branch": {"G": 2.50, "rho": 1.40},
+        "disc": {"G": 0.061, "rho": 2.67, "h": 0.20},
+        "common": {"G": 1.50, "rho": 1.20},
+        "inputs": [],
+    },
 }
 
 
@@ -1260,6 +1278,97 @@ def measure_runions_leaf_venation(script: Path) -> list:
     return out
 
 
+def measure_petroff_stromatolite(script: Path) -> list:
+    """Morphometric measurements for 2010-petroff-stromatolite.py: diffusion-competition
+    spacing ell(tau=12 h), hexagonal lattice nearest-neighbour spacing, and dome-to-cone
+    lamina height/width aspect ratios across beta = v/lambda in {0.3, 1.5, 5.0}."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("petroff_stromatolite", script)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+
+    ell_12h_field = float(mod.diffusion_length(12 * 3600.0, D=1e-5, alpha=1.0))
+    ell_12h_lab = float(mod.diffusion_length(12 * 3600.0, D=1e-5, alpha=0.30))
+    pts = mod.hex_lattice(ell_12h_field, nx=7, ny=6)
+    from scipy.spatial.distance import pdist
+    nn_dist = float(np.min(pdist(pts)))
+    ars = {}
+    for beta in (0.3, 1.5, 5.0):
+        laminae = mod.grow_stromatolite(v=beta * 1.0, lam=1.0)
+        ars[beta] = float(mod.aspect_ratio(laminae[-1]))
+    return [
+        M("field cone spacing ell at tau = 12 h (D = 1e-5 cm^2/s, alpha = 1.0)",
+          round(ell_12h_field, 4), "cm",
+          "diffusion_length(12 * 3600, D=1e-5, alpha=1.0) = alpha * sqrt(D * tau)",
+          reference=1.0,
+          source="Petroff et al. 2010 PNAS 107(22):9956-9961 Eq. 2 (~1 cm Yellowstone field spacing)",
+          note=f"lab clumps (alpha=0.30) ell(12 h) = {ell_12h_lab:.4f} cm; hex_lattice min NN distance = {nn_dist:.4f} cm",
+          derived_from="script"),
+        M("dome regime (beta = 0.3) final lamina height/width aspect ratio",
+          round(ars[0.3], 4), "height/width",
+          "aspect_ratio(grow_stromatolite(v=0.3, lam=1.0)[-1])",
+          derived_from="script"),
+        M("cone regime (beta = 1.5) final lamina height/width aspect ratio",
+          round(ars[1.5], 4), "height/width",
+          "aspect_ratio(grow_stromatolite(v=1.5, lam=1.0)[-1])",
+          derived_from="script"),
+        M("sharp cone regime (beta = 5.0) final lamina height/width aspect ratio",
+          round(ars[5.0], 4), "height/width",
+          "aspect_ratio(grow_stromatolite(v=5.0, lam=1.0)[-1])",
+          note=f"monotonic aspect-ratio progression across beta=(0.3, 1.5, 5.0): {ars[0.3]:.3f} < {ars[1.5]:.3f} < {ars[5.0]:.3f}",
+          derived_from="script"),
+    ]
+
+
+def measure_kahng_coral_geometry(script: Path) -> list:
+    """Morphometric measurements for 2024-kahng-coral-geometry.py: asymptotic linear
+    extension C vs discrete 1-yr step extension, size-independent SAP for discs and
+    cylinders, and microfragmentation SAP speedup ratio (r = 1 cm vs r = 25 cm)."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("kahng_coral_geometry", script)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+
+    G_m, rho_m = mod.MASSIVE["G"], mod.MASSIVE["rho"]
+    c_asymp_porites = float(G_m / rho_m)
+    c_r30_porites = float(mod.hemisphere_extension(np.array([30.0]), G_m, rho_m)[0])
+    c_r1_porites = float(mod.hemisphere_extension(np.array([1.0]), G_m, rho_m)[0])
+    sap_r1 = float(mod.hemisphere_sap(np.array([1.0]), G_m, rho_m)[0])
+    sap_r25 = float(mod.hemisphere_sap(np.array([25.0]), G_m, rho_m)[0])
+    sap_ratio = sap_r1 / sap_r25
+    sap_disc_leptoseris = float(mod.disc_sap(mod.DISC["G"], mod.DISC["rho"], mod.DISC["h"]))
+    sap_cyl_acropora = float(mod.cylinder_sap(mod.BRANCH["G"], mod.BRANCH["rho"], r=0.5))
+    return [
+        M("massive Porites hemisphere linear extension C at r = 30 cm (discrete 1-yr step)",
+          round(c_r30_porites, 4), "cm/yr",
+          "hemisphere_extension(r=30 cm, G=1.64, rho=1.28) = (r^3 + 3*G*r^2/rho)^(1/3) - r",
+          reference=round(c_asymp_porites, 4),
+          source="Kahng, Odle & Wakeman 2024 PeerJ 12:e17037 Appendix A (continuum C = G/rho = 1.2812 cm/yr)",
+          note=f"at r = 1 cm discrete step gives C = {c_r1_porites:.4f} cm/yr due to 1-yr forward-Euler discretization",
+          derived_from="script"),
+        M("massive Porites microfragmentation SAP speedup ratio (r = 1 cm vs r = 25 cm)",
+          round(sap_ratio, 4), "SAP(1 cm) / SAP(25 cm)",
+          "hemisphere_sap(r=1 cm) / hemisphere_sap(r=25 cm) for G=1.64, rho=1.28",
+          reference=18.92,
+          source="Kahng, Odle & Wakeman 2024 PeerJ 12:e17037 (SAP(1 cm)=1.8558/yr vs SAP(25 cm)=0.0981/yr)",
+          derived_from="script"),
+        M("deep-water Leptoseris flat-disc size-independent SAP (h = 0.20 cm)",
+          round(sap_disc_leptoseris, 4), "yr^-1",
+          "disc_sap(G=0.061, rho=2.67, h=0.20) = G / (rho * h)",
+          reference=round(0.061 / (2.67 * 0.20), 4),
+          source="Kahng, Odle & Wakeman 2024 PeerJ 12:e17037 / Kahng 2023",
+          derived_from="script"),
+        M("branching Acropora cylinder size-independent SAP (r = 0.50 cm)",
+          round(sap_cyl_acropora, 4), "yr^-1",
+          "cylinder_sap(G=2.50, rho=1.40, r=0.50) = 2 * G / (rho * r)",
+          reference=round(2.0 * 2.50 / (1.40 * 0.50), 4),
+          source="Kahng, Odle & Wakeman 2024 PeerJ 12:e17037 / Hughes 1987",
+          derived_from="script"),
+    ]
+
+
 # --------------------------------------------------------------------------- #
 def compute_quick_gate(sim: dict, prov: dict, outputs: list[dict], measurements: list[dict]) -> dict:
     """Deterministic zero-token pre-gate (adapted from Wang, Berkovich, Marom & Buehler,
@@ -1357,6 +1466,10 @@ def main():
                 out["measurements"][sid] = measure_conus_textile(ROOT / sim["script"])
             elif sid == "runions-leaf-venation":
                 out["measurements"][sid] = measure_runions_leaf_venation(ROOT / sim["script"])
+            elif sid == "petroff-stromatolite":
+                out["measurements"][sid] = measure_petroff_stromatolite(ROOT / sim["script"])
+            elif sid == "kahng-coral-geometry":
+                out["measurements"][sid] = measure_kahng_coral_geometry(ROOT / sim["script"])
         except Exception as ex:  # a failed measurement is reported, never silently skipped
             out["measurements"][sid] = [{"name": "measurement failed", "value": None, "unit": None,
                                          "method": f"{type(ex).__name__}: {ex}"}]

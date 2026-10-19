@@ -1,0 +1,62 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace — Morphometric validation: 15/100" ;
+        rdfs:comment "Only one morphometric is computed, aspect_ratio (L165-171), which the docstring notes is used only to annotate the figure, and it is compared with nothing measured. The shaded 0.5-1.5 cm band (L198) stands in for the paper's measured spacing distributions without data, and no lamina-thickness, apex-angle, or crest-zone-width metric is computed. Evidence: 2010-petroff-stromatolite.py L165–L171: aspect_ratio height/width with no reference comparison <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L165-L171>; 2010-petroff-stromatolite.py L198–L198: unsourced axhspan(0.5, 1.5) band <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L198-L198>. Measurements (measure_outputs.py): field cone spacing ell at tau = 12 h (D = 1e-5 cm^2/s, alpha = 1.0) = 0.6573 cm (reference 1.0, Petroff et al. 2010 PNAS 107(22):9956-9961 Eq. 2 (~1 cm Yellowstone field spacing)) [diffusion_length(12 * 3600, D=1e-5, alpha=1.0) = alpha * sqrt(D * tau)] — lab clumps (alpha=0.30) ell(12 h) = 0.1972 cm; hex_lattice min NN distance = 0.6573 cm; dome regime (beta = 0.3) final lamina height/width aspect ratio = 0.6692 height/width [aspect_ratio(grow_stromatolite(v=0.3, lam=1.0)[-1])]; cone regime (beta = 1.5) final lamina height/width aspect ratio = 1.1696 height/width [aspect_ratio(grow_stromatolite(v=1.5, lam=1.0)[-1])]; sharp cone regime (beta = 5.0) final lamina height/width aspect ratio = 2.6191 height/width [aspect_ratio(grow_stromatolite(v=5.0, lam=1.0)[-1])] — monotonic aspect-ratio progression across beta=(0.3, 1.5, 5.0): 0.669 < 1.170 < 2.619." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-morphometric-validation> ;
+        pk:hasProbability "0.15"^^xsd:double ;
+        pk:hasVerdict "not faithful" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-morphometric-validation> rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace (2010-petroff-stromatolite.py, docs/media/petroff_stromatolite_dome_to_cone.gif) satisfies the MorphoEval 0.1.0 criterion 'Morphometric validation' for Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats)" ;
+        dct:identifier "morphoeval/0.1.0/morphometric-validation" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Cursor subagent e65a3d81-92b5-4bb2-941f-4566032cb3cd, blinded second assessor)" .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.physa.2004.01.065>,
+            <https://doi.org/10.1073/pnas.1001978107> .
+    <https://doi.org/10.1016/j.physa.2004.01.065> dct:date "2004"^^xsd:gYear ;
+        dct:title "A mathematical model of stromatolite lamina accretion" .
+    <https://doi.org/10.1073/pnas.1001978107> dct:date "2010"^^xsd:gYear ;
+        dct:title "Biophysical basis for the geometry of conical stromatolites" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace — Morphometric validation 15/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-19T21:03:38Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

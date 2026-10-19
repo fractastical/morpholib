@@ -106,6 +106,21 @@ SCRIPT_META = {
         "target": "none (generic 2D periodic grid at f=0.055, k=0.062)",
         "validity": "Canonical Gray-Scott reaction-diffusion PDE; chemical pattern generator not tied to a specific organism's anatomy.",
     },
+    "2001-bressloff-v1-form-constants.py": {
+        "kind": "reproduce",
+        "target": "Horton & Hoyt (1991) human V1 linear magnification data M_lin(r)",
+        "validity": "Analytical retino-cortical log-polar map + E(2) eigenmodes on V1; upgraded in v2 with full S^1 orientation tuning and bifurcation PDE.",
+    },
+    "2010-petroff-stromatolite.py": {
+        "kind": "reproduce",
+        "target": "published field spacing range ~1 cm (Yellowstone Conophyton; no specimen image)",
+        "validity": "Exact diffusive length scale ell = sqrt(D * tau) * f(alpha); lamina cross-section uses an analytic height-squared photic-weight proxy (Batchelor et al. 2004 + w_photic) rather than solving Laplace's equation nabla^2 c = 0.",
+    },
+    "2024-kahng-coral-geometry.py": {
+        "kind": "reproduce",
+        "target": "published Porites/Leptoseris/Acropora parameters & microfragmentation SAP speedup (no specimen mesh)",
+        "validity": "Exact volumetric/surface identities and continuum SAP = (G/rho)*(dS/dV); discrete 1-yr step introduces O(C/r) truncation in small-r hemispheres and uses shared G=1.50 g/cm^2/yr across disparate taxa.",
+    },
     "1900-planformDB_parser.py": {
         "kind": "decode (superseded)",
         "target": "none (convex hull of organ points)",
@@ -304,6 +319,9 @@ def blinded_table(latest_active, hist_blinded) -> str:
         "cervera-levin-mafe": "Verifies commit `0154143` fixes (`f2_for_shift` bisection and dynamic Panel D legend); notes uncited pharynx-posterior threshold `x*_b = 0.5833`.",
         "chindapol-coral-flow": "Explicit 2D lattice DLA-with-drift proxy for 3D COMSOL Navier–Stokes + advection–diffusion; noisy 2D pixel tip detection without Fig. 9–12 overlay.",
         "turing-gray-scott": "Inline comment mislabels consumed substrate `U` as an 'inhibitor'; saves `turing_patterns_black_neon.gif` (mismatching `docs/media/turing_gray_scott.gif`).",
+        "bressloff-v1-form-constants": "Pass-1 plotted pure cos(kx*x + ky*y) without S^1 orientation tuning or ODE/PDE integration; remediated in v2 with full V1 x S^1 E(2) fields.",
+        "kahng-coral-geometry": "Discrete 1-yr forward-Euler step makes hemisphere extension appear size-dependent (0.52 -> 1.25 cm/yr vs exact continuum G/rho = 1.25 cm/yr); applying COMMON (G=1.50) to a 0.5 cm disc yields 26 cm/yr extension at r = 30 cm.",
+        "petroff-stromatolite": "Lamina front uses Batchelor et al. (2004) + ad-hoc w_photic = 0.12 + 0.88*(z/z_max)^2 and pinned basal feet rather than Petroff et al.'s (2010) diffusive-flux solver (nabla^2 c = 0); text panel claims 0.66 cm records a ~20 h rhythm when computed at tau = 12 h.",
     }
     for sim in ordered_sims:
         p = prim_by_sim[sim]

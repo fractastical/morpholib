@@ -1,0 +1,318 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-code-traceability> a pk:LLMClaimAssessment ;
+    rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity — Code-to-model traceability: 58/100" ;
+    rdfs:comment "Every function docstring states V, S, and the resulting formula (L68-110), and the module header table (L25-30) maps shapes to scaling predictions and cites Appendix A / Results (L66), Fig. 6 (L60, L156), and Fig. 3 (L187). Deduct points because no specific equation numbers from Appendix A are given and the annual forward-Euler discretization is not traced to a specific equation in the paper. Evidence: 2024-kahng-coral-geometry.py L25–L31: header summary table <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L25-L31>; 2024-kahng-coral-geometry.py L64–L110: Appendix A / Results reference and function docstrings <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L64-L110>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-code-traceability> ;
+    pk:hasProbability 5.8e-01 ;
+    pk:hasVerdict "partially faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-model-fidelity> a pk:LLMClaimAssessment ;
+    rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity — Model fidelity to source: 62/100" ;
+    rdfs:comment "The master rule V(t+1) = V(t) + G*S(t)/rho (L15-16, L64-67) and the four shape derivations (hemisphere L68-78, disc L81-89, cone L92-104, cylinder L107-110) are algebraically exact for a 1-year discrete step. However, the discrete annual step introduces a time-step artifact presented as geometry: hemisphere_extension (L70) and panel (c) (L173-182) show C rising from 0.52 cm/yr at r = 0.5 cm toward a plateau G/rho = 1.25 cm/yr, whereas in the continuous model dV/dt = 2*pi*r^2*dr/dt = G*(2*pi*r^2)/rho implies dr/dt = G/rho identically for all r (and the discrete disc extension is ~30% below continuum at G/(rho*h) = 2.5). In addition, upper-surface-only disc S (L82), baseless cone S (L93-94), and single-cylinder branching (L107-110) are not explicitly stated as simplifying assumptions. Evidence: 2024-kahng-coral-geometry.py L68–L110: discrete 1-yr volume-step extension and SAP functions for the 4 shapes <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L68-L110>; 2024-kahng-coral-geometry.py L172–L185: panel (c) plots discrete 1-yr hemisphere/cone extension curve rising to G/rho plateau <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L172-L185>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-model-fidelity> ;
+    pk:hasProbability 6.2e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-morphometric-validation> a pk:LLMClaimAssessment ;
+    rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity — Morphometric validation: 22/100" ;
+    rdfs:comment "The script prints G/rho = 1.28 cm/yr for massive Porites (L252), the ~19x microfragmentation SAP ratio between r = 1 cm and r = 25 cm (L231, L263), and Leptoseris SAP = 0.114 yr^-1 (L258), but never compares them against observed coral extension or fragment growth tables (Lough 2008, Hughes 1987, Kahng 2023), and computes no fit, residual, or observed-vs-model validation metric. Evidence: 2024-kahng-coral-geometry.py L215–L236: printedPorites SAP at r=1 cm vs r=25 cm <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L215-L236>; 2024-kahng-coral-geometry.py L250–L264: console printout of analytical formulas without empirical residual comparison <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L250-L264>. Measurements (measure_outputs.py): massive Porites hemisphere linear extension C at r = 30 cm (discrete 1-yr step) = 1.2301 cm/yr (reference 1.2812, Kahng, Odle & Wakeman 2024 PeerJ 12:e17037 Appendix A (continuum C = G/rho = 1.2812 cm/yr)) [hemisphere_extension(r=30 cm, G=1.64, rho=1.28) = (r^3 + 3*G*r^2/rho)^(1/3) - r] — at r = 1 cm discrete step gives C = 0.6920 cm/yr due to 1-yr forward-Euler discretization; massive Porites microfragmentation SAP speedup ratio (r = 1 cm vs r = 25 cm) = 18.6207 SAP(1 cm) / SAP(25 cm) (reference 18.92, Kahng, Odle & Wakeman 2024 PeerJ 12:e17037 (SAP(1 cm)=1.8558/yr vs SAP(25 cm)=0.0981/yr)) [hemisphere_sap(r=1 cm) / hemisphere_sap(r=25 cm) for G=1.64, rho=1.28]; deep-water Leptoseris flat-disc size-independent SAP (h = 0.20 cm) = 0.1142 yr^-1 (reference 0.1142, Kahng, Odle & Wakeman 2024 PeerJ 12:e17037 / Kahng 2023) [disc_sap(G=0.061, rho=2.67, h=0.20) = G / (rho * h)]; branching Acropora cylinder size-independent SAP (r = 0.50 cm) = 7.1429 yr^-1 (reference 7.1429, Kahng, Odle & Wakeman 2024 PeerJ 12:e17037 / Hughes 1987) [cylinder_sap(G=2.50, rho=1.40, r=0.50) = 2 * G / (rho * r)]." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-morphometric-validation> ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-1>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-2>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-3>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-4> ;
+    pk:hasProbability 2.2e-01 ;
+    pk:hasVerdict "unfaithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-overall> a pk:LLMClaimAssessment ;
+    rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity — MorphoEval overall 49.1/100" ;
+    rdfs:comment "Blinded second-assessor pass. The script encodes Kahng, Odle & Wakeman's (2024) accounting rule — skeleton volume grows by G*S/rho per step — and derives, for four idealised shapes (hemisphere, fixed-aspect cone, fixed-thickness disc, fixed-radius cylinder), the one-step linear extension and surface-area productivity (dS/S). The algebra for V(t+1) -> size(t+1) is correct for every shape, and the qualitative conclusions match the paper. However, the script's annual forward-Euler step makes hemisphere extension look size-dependent (0.52 cm/yr at r = 0.5 cm rising to 1.25 cm/yr), whereas the continuous geometry gives C = G/rho at every size; the 'equal G, rho' comparison applies G = 1.5 g cm^-2 yr^-1 to a 0.5 cm plate (yielding 26 cm/yr extension at r = 30 cm and S ~ 10^9 cm^2 after 15 years in the GIF); and no measured coral growth data are compared with the model output. Overall 49.1/100 (faithfulness 42.9, reproducibility 63.7; model-implementation 64.0/100, biological-validation 27.0/100, applicable-only overall 49.1/100; uncalibrated rubric score, not a calibrated probability); rubric morphoeval 0.1.0; checkpoint commit 5564750; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 62, Morphological realism / specimen match 30, Parameter expressivity 68, Morphometric validation 22, Source and data traceability 68, Code-to-model traceability 58, Reproducibility package 64. Output judged: kahng_coral_geometry_morphospace.png: rendered output of 2024-kahng-coral-geometry.py at 5564750, image/png, 282553 B, 1774×1267 px, artifact_sha256 fa8ce6cd95b493eee42054724462d8d7e6380dd161cc7899a464457cd765f812 (sha256 fa8ce6cd95b493eee42054724462d8d7e6380dd161cc7899a464457cd765f812), spec_fingerprint 833cc6f3d6f3988fa15a852dd8366b15c68ef56d6fd98635b3250ff241f4746a. Dual provenance: spec_fingerprint: 833cc6f3d6f3988fa15a852dd8366b15c68ef56d6fd98635b3250ff241f4746a; artifact_sha256: fa8ce6cd95b493eee42054724462d8d7e6380dd161cc7899a464457cd765f812." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry> ;
+    pk:evidenceAgainst "remediation needed: 2024-kahng-coral-geometry.py:57-59 — Vendor empirical coral extension/calcification tables from Lough (2008), Hughes (1987), and Kahng (2023) in datasets/kahng/ with full DOIs and SHA-256 digests, and compare model C and SAP against observed colony growth.",
+        "remediation needed: 2024-kahng-coral-geometry.py:60,160-178 — Use biologically realistic DISC parameters in panel (c) so a 0.5 cm plate does not extend at 26 cm/yr and obscure the hemisphere and cone curves.",
+        "remediation needed: 2024-kahng-coral-geometry.py:68-110,173-182 — Separate continuous differential rates (hemisphere dr/dt = G/rho identically; cone dh/dt = G*sqrt(1+alpha^2)/rho; disc dr/dt = G*r/(2*rho*h)) from the discrete 1-yr Euler step, and expose dt as a parameter." ;
+    pk:hasProbability 4.91e-01 ;
+    pk:hasVerdict "partially faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-parameter-expressivity> a pk:LLMClaimAssessment ;
+    rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity — Parameter expressivity: 68/100" ;
+    rdfs:comment "Cone aspect ratio alpha monotonically raises cone SAP (panel d, L189-196), branch diameter and plate thickness monotonically lower SAP (panel e, L199-211), and colony size monotonically lowers hemisphere/cone SAP (panel b). However, applying the COMMON parameter set (G=1.50, rho=1.20, L60) to a 0.5 cm disc gives SAP = 2.5 yr^-1 and extension 26 cm/yr at r = 30 cm (panel c), which dominates the vertical axis and compresses the hemisphere and cone curves; panel (e) conflates branch diameter and plate thickness on a single x-axis (L201-207); and step size dt is not exposed. Evidence: 2024-kahng-coral-geometry.py L60–L60: COMMON = dict(G=1.50, rho=1.20) <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L60-L60>; 2024-kahng-coral-geometry.py L172–L211: panels (c), (d), and (e) parameter sweeps <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L172-L211>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-parameter-expressivity> ;
+    pk:hasProbability 6.8e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-repro-package> a pk:LLMClaimAssessment ;
+    rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity — Reproducibility package: 64/100" ;
+    rdfs:comment "Deterministic (no RNG), backed by requirements.lock.txt, with CLI flags at L320-331. However, --gif (L326) is omitted from the documented 'Run it' block (L38-41), show=True is the default (L327), GIF rendering via buffer_rgba (L312) is backend/font dependent, Pillow deduplicates the trailing hold frames (L314) from 24 to 16 frames on disk, and there is no self-test. Evidence: 2024-kahng-coral-geometry.py L38–L41: Run it block omits --gif <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L38-L41>; 2024-kahng-coral-geometry.py L312–L331: GIF frame deduplication and CLI entrypoint <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L312-L331>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-repro-package> ;
+    pk:hasProbability 6.4e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-source-traceability> a pk:LLMClaimAssessment ;
+    rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity — Source and data traceability: 68/100" ;
+    rdfs:comment "DOI (10.7717/peerj.17037), PMC ID (PMC10909345), journal, and the authors' GitHub repository are all given in the header (L5-9). However, the empirical parameter sources ('Lough 2008', 'Hughes 1987', 'Kahng 2023' at L57-59) are cited by author-year only without DOIs, table numbers, or page numbers, and no dataset files or SHA-256 digests are present. Evidence: 2024-kahng-coral-geometry.py L5–L9: PeerJ DOI, PMCID, and GitHub repository URL <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L5-L9>; 2024-kahng-coral-geometry.py L57–L60: short author-year parameter citations without DOIs or table numbers <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L57-L60>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-source-traceability> ;
+    pk:hasProbability 6.8e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-specimen-match> a pk:LLMClaimAssessment ;
+    rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity — Morphological realism / specimen match: 30/100" ;
+    rdfs:comment "Output consists of analytical line plots plus four schematic 2D matplotlib patches (_draw_glyphs at L116-147; Wedge and Polygon in the GIF at L294-296), with no coral colony photograph, 3D mesh, or measured colony outline. The glyphs are shape-distinct and labelled with V and S expressions (L135-140), though three rectangles (L128-130) are a schematic stand-in for branching Acropora. Evidence: kahng_coral_geometry_morphospace.png (generated output, not in repo): analytical curves + 4 schematic 2D glyphs; no specimen photo or empirical data points — kahng_coral_geometry_morphospace.png: rendered output of 2024-kahng-coral-geometry.py at 5564750, image/png, 282553 B, 1774×1267 px, artifact_sha256 fa8ce6cd95b493eee42054724462d8d7e6380dd161cc7899a464457cd765f812 (sha256 fa8ce6cd95b493eee42054724462d8d7e6380dd161cc7899a464457cd765f812), spec_fingerprint 833cc6f3d6f3988fa15a852dd8366b15c68ef56d6fd98635b3250ff241f4746a; docs/media/kahng_coral_geometry_growth.gif (generated output, not in repo): 15-year growth animation of Wedge, Polygon, and log-area curves — docs/media/kahng_coral_geometry_growth.gif: rendered output of 2024-kahng-coral-geometry.py at 5564750, image/gif, 248080 B, 720×300 px, 16 frames, artifact_sha256 6d2629a5bb1c8f33c60c72f9efa435dd70cdefc0e7c5cbb050c7a50bb1ac50d0 (sha256 6d2629a5bb1c8f33c60c72f9efa435dd70cdefc0e7c5cbb050c7a50bb1ac50d0), spec_fingerprint 833cc6f3d6f3988fa15a852dd8366b15c68ef56d6fd98635b3250ff241f4746a; 2024-kahng-coral-geometry.py L116–L147: _draw_glyphs schematic 2D shapes <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L116-L147>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-specimen-match> ;
+    pk:hasProbability 3e-01 ;
+    pk:hasVerdict "unfaithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-code-traceability> a pk:LLMClaimAssessment ;
+    rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace — Code-to-model traceability: 35/100" ;
+    rdfs:comment "Equation and figure tags ('Petroff Eq. 2' at L21, L66; 'Petroff, Fig. 4' at L73) are present, but the growth model (L86-163) is traced to a different paper than the one in the filename/title, w_photic (L130) and smooth (L141-142) trace to no equation at all, and the equation printed to the console (L296) differs from the Lagrangian rule actually integrated. Evidence: 2010-petroff-stromatolite.py L85–L143: docstring/console KPZ equation vs Lagrangian front with w_photic and smoothing <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L85-L143>; 2010-petroff-stromatolite.py L296–L297: console prints dh/dt = v + lambda*(1 + 1/2 (dh/dr)^2) <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L296-L297>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-code-traceability> ;
+    pk:hasProbability 3.5e-01 ;
+    pk:hasVerdict "unfaithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-model-fidelity> a pk:LLMClaimAssessment ;
+    rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace — Model fidelity to source: 30/100" ;
+    rdfs:comment "Spacing law diffusion_length (L64-67) is the correct form, but alpha and tau are free knobs set by the script (alpha_field = 1.0 at L179, alpha_lab = 0.30 at L180 described as a least-squares fit with no data or fit in the file), and the text panel states that 0.66 cm records a ~20 h rhythmic metabolism (L238-239) whereas 0.66 cm was computed at tau = 12 h (L193, L207; tau = 20 h gives 0.85 cm). Panels (d-f) and the GIF do not implement Petroff's diffusion-limited growth: they credit Batchelor et al. 2004 (L31-34, L86-98), modify it with an unsourced quadratic crest weight w_photic = 0.12 + 0.88*(z/z_max)^2 (L126-130) and 3-point smoothing (L141-142), and never integrate the docstring's own KPZ equation dh/dt = v + lambda*(1 + 1/2 (dh/dr)^2) (L34, L85, L296). Evidence: 2010-petroff-stromatolite.py L64–L67: diffusion_length ell = alpha*sqrt(D*tau) <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L64-L67>; 2010-petroff-stromatolite.py L126–L142: ad-hoc w_photic = 0.12 + 0.88*(z/z_max)^2, pinned basal feet, and 3-point Laplacian smoothing <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L126-L142>; 2010-petroff-stromatolite.py L193–L240: computes ell = 0.66 cm at tau = 12 h while text panel claims ~20 h rhythmic metabolism <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L193-L240>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-model-fidelity> ;
+    pk:hasProbability 3e-01 ;
+    pk:hasVerdict "unfaithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-morphometric-validation> a pk:LLMClaimAssessment ;
+    rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace — Morphometric validation: 15/100" ;
+    rdfs:comment "Only one morphometric is computed, aspect_ratio (L165-171), which the docstring notes is used only to annotate the figure, and it is compared with nothing measured. The shaded 0.5-1.5 cm band (L198) stands in for the paper's measured spacing distributions without data, and no lamina-thickness, apex-angle, or crest-zone-width metric is computed. Evidence: 2010-petroff-stromatolite.py L165–L171: aspect_ratio height/width with no reference comparison <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L165-L171>; 2010-petroff-stromatolite.py L198–L198: unsourced axhspan(0.5, 1.5) band <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L198-L198>. Measurements (measure_outputs.py): field cone spacing ell at tau = 12 h (D = 1e-5 cm^2/s, alpha = 1.0) = 0.6573 cm (reference 1.0, Petroff et al. 2010 PNAS 107(22):9956-9961 Eq. 2 (~1 cm Yellowstone field spacing)) [diffusion_length(12 * 3600, D=1e-5, alpha=1.0) = alpha * sqrt(D * tau)] — lab clumps (alpha=0.30) ell(12 h) = 0.1972 cm; hex_lattice min NN distance = 0.6573 cm; dome regime (beta = 0.3) final lamina height/width aspect ratio = 0.6692 height/width [aspect_ratio(grow_stromatolite(v=0.3, lam=1.0)[-1])]; cone regime (beta = 1.5) final lamina height/width aspect ratio = 1.1696 height/width [aspect_ratio(grow_stromatolite(v=1.5, lam=1.0)[-1])]; sharp cone regime (beta = 5.0) final lamina height/width aspect ratio = 2.6191 height/width [aspect_ratio(grow_stromatolite(v=5.0, lam=1.0)[-1])] — monotonic aspect-ratio progression across beta=(0.3, 1.5, 5.0): 0.669 < 1.170 < 2.619." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-morphometric-validation> ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-1>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-2>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-3>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-4> ;
+    pk:hasProbability 1.5e-01 ;
+    pk:hasVerdict "not faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-overall> a pk:LLMClaimAssessment ;
+    rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace — MorphoEval overall 34.0/100" ;
+    rdfs:comment "Blinded second-assessor pass. The script reproduces one scalar relation from Petroff et al. (2010), ell = alpha*sqrt(D*tau), plots it against tau with two script-chosen alpha values, draws a hexagonal lattice of harvest disks at ell(tau=12 h) ~ 0.66 cm, and prints a verbal 'reading the fossil' panel. The lower half of the figure and the GIF are not Petroff's model: they integrate a Lagrangian front advanced by v*z_hat + lambda*n_hat (attributed in the code to Batchelor et al. 2004), multiplied by an ad hoc crest-weighting w_photic = 0.12 + 0.88*(z/z_max)^2, with Laplacian smoothing, a pinned base, and a triangular seed. Petroff et al.'s actual shape argument is nutrient-flux limited (quasi-steady diffusion field around neighbouring cones, mat growth set by local diffusive flux), and the paper's evidence is measured cone-spacing distributions from modern Yellowstone mats, laboratory cultures, and Proterozoic/Archean fossils; none of those data or that model appear here. Overall 34.0/100 (faithfulness 27.5, reproducibility 49.1; model-implementation 38.3/100, biological-validation 19.4/100, applicable-only overall 34.0/100; uncalibrated rubric score, not a calibrated probability); rubric morphoeval 0.1.0; checkpoint commit 5564750; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 30, Morphological realism / specimen match 22, Parameter expressivity 55, Morphometric validation 15, Source and data traceability 45, Code-to-model traceability 35, Reproducibility package 62. Output judged: petroff_stromatolite_morphospace.png: rendered output of 2010-petroff-stromatolite.py at 5564750, image/png, 328721 B, 1736×1244 px, artifact_sha256 8e00cc6fabe5cf24f1544cbc867b0f6e9501cf7099a7b3da7166a2bf8fd1be01 (sha256 8e00cc6fabe5cf24f1544cbc867b0f6e9501cf7099a7b3da7166a2bf8fd1be01), spec_fingerprint 2b3289aae8f3466486ffbc5f503dd7585e6e1c2863ac78c108d1488932cf713f. Dual provenance: spec_fingerprint: 2b3289aae8f3466486ffbc5f503dd7585e6e1c2863ac78c108d1488932cf713f; artifact_sha256: 8e00cc6fabe5cf24f1544cbc867b0f6e9501cf7099a7b3da7166a2bf8fd1be01." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite> ;
+    pk:evidenceAgainst "remediation needed: 2010-petroff-stromatolite.py:136-137 — Release the pinned basal footprint so beta < 1 produces a convex domal stromatolite rather than a vertical-walled trapezoid.",
+        "remediation needed: 2010-petroff-stromatolite.py:193,207,238-239 — Make tau = 12 h (ell = 0.66 cm) and the '~20 h rhythmic metabolism' text panel consistent, and vendor measured modern/lab/fossil cone-spacing distributions and a Conophyton thin-section outline in datasets/petroff/.",
+        "remediation needed: 2010-petroff-stromatolite.py:86-163 — Solve nabla^2 c = 0 around a periodic array of absorbing mats and grow the surface at a rate proportional to local diffusive flux dc/dn, rather than substituting a modified Batchelor front with ad-hoc w_photic (L126-130)." ;
+    pk:hasProbability 3.4e-01 ;
+    pk:hasVerdict "unfaithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-parameter-expressivity> a pk:LLMClaimAssessment ;
+    rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace — Parameter expressivity: 55/100" ;
+    rdfs:comment "beta monotonically controls height/width (0.63 to 3.03 across beta = 0.2 to 6.0 in the GIF sweep at L300-334 and regimes at L249-253), and tau monotonically controls ell (L187-192). However, apex sharpness and flank slope are constrained by the pinned footprint (L136-137) and smooth (L141-142, L146); lambda is fixed at 1 throughout (L248, L305); and seed_height, base_half, smooth, and t_total (L146-147) are hidden parameters with no CLI exposure. Evidence: 2010-petroff-stromatolite.py L187–L192: tau sweep 1..48 h for alpha_field and alpha_lab <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L187-L192>; 2010-petroff-stromatolite.py L249–L253: three beta regimes (0.3, 1.5, 5.0) <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L249-L253>; 2010-petroff-stromatolite.py L300–L334: 36-step geomspace sweep of beta in make_gif <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L300-L334>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-parameter-expressivity> ;
+    pk:hasProbability 5.5e-01 ;
+    pk:hasVerdict "partially faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-repro-package> a pk:LLMClaimAssessment ;
+    rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace — Reproducibility package: 62/100" ;
+    rdfs:comment "Deterministic (no RNG), backed by requirements.txt and requirements.lock.txt, with CLI flags documented at L336-348. However, --gif is omitted from the 'Run it' docstring block (L45-48), show=True is the default (L344), GIF capture via fig.canvas.buffer_rgba() (L329) is font/backend dependent, and there is no self-test. Evidence: 2010-petroff-stromatolite.py L45–L48: Run it block omits --gif <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L45-L48>; 2010-petroff-stromatolite.py L328–L348: canvas buffer_rgba GIF capture and show=True default <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L328-L348>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-repro-package> ;
+    pk:hasProbability 6.2e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-source-traceability> a pk:LLMClaimAssessment ;
+    rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace — Source and data traceability: 45/100" ;
+    rdfs:comment "Paper cited with journal, volume, pages, and PMC ID (L5-8), but no DOI is given in the file. Batchelor et al. 2004 (L32) and Fejes Toth 1948 (L27) are cited by author/year only without title, venue, or DOI; 'Bakal Formation' and 'eddy diffusivity D_eff ~ Re*D' (L241-243) are asserted without reference; and 'alpha_lab = 0.30 least-squares fit' (L180) cites no data table. Evidence: 2010-petroff-stromatolite.py L5–L8: Petroff et al. 2010 citation lacking DOI <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L5-L8>; 2010-petroff-stromatolite.py L27–L35: author-year only mentions of Fejes Toth 1948 and Batchelor et al. 2004 <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L27-L35>; 2010-petroff-stromatolite.py L180–L243: unreferenced alpha_lab = 0.30 fit and Bakal Formation note <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L180-L243>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-source-traceability> ;
+    pk:hasProbability 4.5e-01 ;
+    pk:hasVerdict "partially faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-specimen-match> a pk:LLMClaimAssessment ;
+    rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace — Morphological realism / specimen match: 22/100" ;
+    rdfs:comment "No specimen photograph, thin-section, or Petroff figure is rendered or overlaid anywhere. The 'DOME' at beta = 0.3 (panel d, GIF frame 0) is a flat-topped trapezoid with vertical walls and a residual central kink inherited from the triangular seed (L152); it does not resemble a domal stromatolite. The 'CONE' and 'SHARP CONE' (panels e, f) are parabolic bullets sitting on a fixed-width cylinder because the feet are pinned at +-1 (L136-137), with a rounded apex rather than straight-flanked Conophyton cones. Partial credit for axial crest lamina thickening at large beta and visual distinction across the three regimes. Evidence: petroff_stromatolite_morphospace.png (generated output, not in repo): panel (d) dome is a vertical-walled trapezoid with central crease; panels (e-f) sit on pinned cylinder bases — petroff_stromatolite_morphospace.png: rendered output of 2010-petroff-stromatolite.py at 5564750, image/png, 328721 B, 1736×1244 px, artifact_sha256 8e00cc6fabe5cf24f1544cbc867b0f6e9501cf7099a7b3da7166a2bf8fd1be01 (sha256 8e00cc6fabe5cf24f1544cbc867b0f6e9501cf7099a7b3da7166a2bf8fd1be01), spec_fingerprint 2b3289aae8f3466486ffbc5f503dd7585e6e1c2863ac78c108d1488932cf713f; docs/media/petroff_stromatolite_dome_to_cone.gif (generated output, not in repo): 70-frame animation across beta = 0.2 -> 6.0 — docs/media/petroff_stromatolite_dome_to_cone.gif: rendered output of 2010-petroff-stromatolite.py at 5564750, image/gif, 920055 B, 560×416 px, 70 frames, artifact_sha256 b7f825720b31f42faa4f7424f916639a76f36dfd50a2025cb0706b4d9ea55514 (sha256 b7f825720b31f42faa4f7424f916639a76f36dfd50a2025cb0706b4d9ea55514), spec_fingerprint 2b3289aae8f3466486ffbc5f503dd7585e6e1c2863ac78c108d1488932cf713f; 2010-petroff-stromatolite.py L136–L154: pinned basal endpoints x[0]=-base_half, x[-1]=base_half and triangular seed <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L136-L154>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-specimen-match> ;
+    pk:hasProbability 2.2e-01 ;
+    pk:hasVerdict "unfaithful" .
+
+<https://w3id.org/probknow/resource/claim/morphoeval-kahng-coral-geometry> a pk:Claim ;
+    rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity (Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris))" ;
+    schema:about "Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris)" ;
+    pk:derivedFromPaper <https://doi.org/10.7717/peerj.17037> ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-1>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-2>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-3>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-4> ;
+    pk:hypothesisType "Mathematical Morphogenesis Model" ;
+    pk:weightOfEvidence 4.91e-01 .
+
+<https://w3id.org/probknow/resource/claim/morphoeval-petroff-stromatolite> a pk:Claim ;
+    rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace (Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats))" ;
+    schema:about "Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats)" ;
+    pk:derivedFromPaper <https://doi.org/10.1016/j.physa.2004.01.065>,
+        <https://doi.org/10.1073/pnas.1001978107> ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-1>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-2>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-3>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-4> ;
+    pk:hypothesisType "Mathematical Morphogenesis Model" ;
+    pk:weightOfEvidence 3.4e-01 .
+
+<https://w3id.org/probknow/resource/concept/math-of-biology> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Validated Mathematics of Biological Form" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry> rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity faithfully reproduces Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris) morphology" ;
+    dct:identifier "morphoeval/0.1.0/overall" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-code-traceability> rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity (2024-kahng-coral-geometry.py, docs/media/kahng_coral_geometry_growth.gif) satisfies the MorphoEval 0.1.0 criterion 'Code-to-model traceability' for Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris)" ;
+    dct:identifier "morphoeval/0.1.0/code-traceability" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-model-fidelity> rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity (2024-kahng-coral-geometry.py, docs/media/kahng_coral_geometry_growth.gif) satisfies the MorphoEval 0.1.0 criterion 'Model fidelity to source' for Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris)" ;
+    dct:identifier "morphoeval/0.1.0/model-fidelity" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-morphometric-validation> rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity (2024-kahng-coral-geometry.py, docs/media/kahng_coral_geometry_growth.gif) satisfies the MorphoEval 0.1.0 criterion 'Morphometric validation' for Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris)" ;
+    dct:identifier "morphoeval/0.1.0/morphometric-validation" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-parameter-expressivity> rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity (2024-kahng-coral-geometry.py, docs/media/kahng_coral_geometry_growth.gif) satisfies the MorphoEval 0.1.0 criterion 'Parameter expressivity' for Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris)" ;
+    dct:identifier "morphoeval/0.1.0/parameter-expressivity" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-repro-package> rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity (2024-kahng-coral-geometry.py, docs/media/kahng_coral_geometry_growth.gif) satisfies the MorphoEval 0.1.0 criterion 'Reproducibility package' for Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris)" ;
+    dct:identifier "morphoeval/0.1.0/repro-package" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-source-traceability> rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity (2024-kahng-coral-geometry.py, docs/media/kahng_coral_geometry_growth.gif) satisfies the MorphoEval 0.1.0 criterion 'Source and data traceability' for Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris)" ;
+    dct:identifier "morphoeval/0.1.0/source-traceability" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-specimen-match> rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity (2024-kahng-coral-geometry.py, docs/media/kahng_coral_geometry_growth.gif) satisfies the MorphoEval 0.1.0 criterion 'Morphological realism / specimen match' for Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris)" ;
+    dct:identifier "morphoeval/0.1.0/specimen-match" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite> rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace faithfully reproduces Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats) morphology" ;
+    dct:identifier "morphoeval/0.1.0/overall" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-code-traceability> rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace (2010-petroff-stromatolite.py, docs/media/petroff_stromatolite_dome_to_cone.gif) satisfies the MorphoEval 0.1.0 criterion 'Code-to-model traceability' for Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats)" ;
+    dct:identifier "morphoeval/0.1.0/code-traceability" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-model-fidelity> rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace (2010-petroff-stromatolite.py, docs/media/petroff_stromatolite_dome_to_cone.gif) satisfies the MorphoEval 0.1.0 criterion 'Model fidelity to source' for Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats)" ;
+    dct:identifier "morphoeval/0.1.0/model-fidelity" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-morphometric-validation> rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace (2010-petroff-stromatolite.py, docs/media/petroff_stromatolite_dome_to_cone.gif) satisfies the MorphoEval 0.1.0 criterion 'Morphometric validation' for Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats)" ;
+    dct:identifier "morphoeval/0.1.0/morphometric-validation" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-parameter-expressivity> rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace (2010-petroff-stromatolite.py, docs/media/petroff_stromatolite_dome_to_cone.gif) satisfies the MorphoEval 0.1.0 criterion 'Parameter expressivity' for Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats)" ;
+    dct:identifier "morphoeval/0.1.0/parameter-expressivity" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-repro-package> rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace (2010-petroff-stromatolite.py, docs/media/petroff_stromatolite_dome_to_cone.gif) satisfies the MorphoEval 0.1.0 criterion 'Reproducibility package' for Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats)" ;
+    dct:identifier "morphoeval/0.1.0/repro-package" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-source-traceability> rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace (2010-petroff-stromatolite.py, docs/media/petroff_stromatolite_dome_to_cone.gif) satisfies the MorphoEval 0.1.0 criterion 'Source and data traceability' for Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats)" ;
+    dct:identifier "morphoeval/0.1.0/source-traceability" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-specimen-match> rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace (2010-petroff-stromatolite.py, docs/media/petroff_stromatolite_dome_to_cone.gif) satisfies the MorphoEval 0.1.0 criterion 'Morphological realism / specimen match' for Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats)" ;
+    dct:identifier "morphoeval/0.1.0/specimen-match" .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-1> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "massive Porites hemisphere linear extension C at r = 30 cm (discrete 1-yr step)" ;
+    dct:description "hemisphere_extension(r=30 cm, G=1.64, rho=1.28) = (r^3 + 3*G*r^2/rho)^(1/3) - r" ;
+    dct:source "Kahng, Odle & Wakeman 2024 PeerJ 12:e17037 Appendix A (continuum C = G/rho = 1.2812 cm/yr)" ;
+    rdfs:comment "at r = 1 cm discrete step gives C = 0.6920 cm/yr due to 1-yr forward-Euler discretization" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris)" ;
+    schema:error 3.9884e+00 ;
+    schema:targetValue 1.2812e+00 ;
+    schema:unitText "cm/yr" ;
+    schema:value 1.2301e+00 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-2> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "massive Porites microfragmentation SAP speedup ratio (r = 1 cm vs r = 25 cm)" ;
+    dct:description "hemisphere_sap(r=1 cm) / hemisphere_sap(r=25 cm) for G=1.64, rho=1.28" ;
+    dct:source "Kahng, Odle & Wakeman 2024 PeerJ 12:e17037 (SAP(1 cm)=1.8558/yr vs SAP(25 cm)=0.0981/yr)" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris)" ;
+    schema:error 1.5819e+00 ;
+    schema:targetValue 1.892e+01 ;
+    schema:unitText "SAP(1 cm) / SAP(25 cm)" ;
+    schema:value 1.86207e+01 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-3> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "deep-water Leptoseris flat-disc size-independent SAP (h = 0.20 cm)" ;
+    dct:description "disc_sap(G=0.061, rho=2.67, h=0.20) = G / (rho * h)" ;
+    dct:source "Kahng, Odle & Wakeman 2024 PeerJ 12:e17037 / Kahng 2023" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris)" ;
+    schema:error 0e+00 ;
+    schema:targetValue 1.142e-01 ;
+    schema:unitText "yr^-1" ;
+    schema:value 1.142e-01 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-4> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "branching Acropora cylinder size-independent SAP (r = 0.50 cm)" ;
+    dct:description "cylinder_sap(G=2.50, rho=1.40, r=0.50) = 2 * G / (rho * r)" ;
+    dct:source "Kahng, Odle & Wakeman 2024 PeerJ 12:e17037 / Hughes 1987" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris)" ;
+    schema:error 0e+00 ;
+    schema:targetValue 7.1429e+00 ;
+    schema:unitText "yr^-1" ;
+    schema:value 7.1429e+00 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-1> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "field cone spacing ell at tau = 12 h (D = 1e-5 cm^2/s, alpha = 1.0)" ;
+    dct:description "diffusion_length(12 * 3600, D=1e-5, alpha=1.0) = alpha * sqrt(D * tau)" ;
+    dct:source "Petroff et al. 2010 PNAS 107(22):9956-9961 Eq. 2 (~1 cm Yellowstone field spacing)" ;
+    rdfs:comment "lab clumps (alpha=0.30) ell(12 h) = 0.1972 cm; hex_lattice min NN distance = 0.6573 cm" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats)" ;
+    schema:error 3.427e+01 ;
+    schema:targetValue 1e+00 ;
+    schema:unitText "cm" ;
+    schema:value 6.573e-01 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-2> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "dome regime (beta = 0.3) final lamina height/width aspect ratio" ;
+    dct:description "aspect_ratio(grow_stromatolite(v=0.3, lam=1.0)[-1])" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats)" ;
+    schema:unitText "height/width" ;
+    schema:value 6.692e-01 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-3> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "cone regime (beta = 1.5) final lamina height/width aspect ratio" ;
+    dct:description "aspect_ratio(grow_stromatolite(v=1.5, lam=1.0)[-1])" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats)" ;
+    schema:unitText "height/width" ;
+    schema:value 1.1696e+00 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-4> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "sharp cone regime (beta = 5.0) final lamina height/width aspect ratio" ;
+    dct:description "aspect_ratio(grow_stromatolite(v=5.0, lam=1.0)[-1])" ;
+    rdfs:comment "monotonic aspect-ratio progression across beta=(0.3, 1.5, 5.0): 0.669 < 1.170 < 2.619" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats)" ;
+    schema:unitText "height/width" ;
+    schema:value 2.6191e+00 .
+
+<https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+    rdfs:label "Claude Fable 5.1 (Cursor subagent e65a3d81-92b5-4bb2-941f-4566032cb3cd, blinded second assessor)" .
+

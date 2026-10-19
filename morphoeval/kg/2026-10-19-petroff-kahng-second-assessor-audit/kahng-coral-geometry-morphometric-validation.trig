@@ -1,0 +1,59 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity — Morphometric validation: 22/100" ;
+        rdfs:comment "The script prints G/rho = 1.28 cm/yr for massive Porites (L252), the ~19x microfragmentation SAP ratio between r = 1 cm and r = 25 cm (L231, L263), and Leptoseris SAP = 0.114 yr^-1 (L258), but never compares them against observed coral extension or fragment growth tables (Lough 2008, Hughes 1987, Kahng 2023), and computes no fit, residual, or observed-vs-model validation metric. Evidence: 2024-kahng-coral-geometry.py L215–L236: printedPorites SAP at r=1 cm vs r=25 cm <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L215-L236>; 2024-kahng-coral-geometry.py L250–L264: console printout of analytical formulas without empirical residual comparison <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L250-L264>. Measurements (measure_outputs.py): massive Porites hemisphere linear extension C at r = 30 cm (discrete 1-yr step) = 1.2301 cm/yr (reference 1.2812, Kahng, Odle & Wakeman 2024 PeerJ 12:e17037 Appendix A (continuum C = G/rho = 1.2812 cm/yr)) [hemisphere_extension(r=30 cm, G=1.64, rho=1.28) = (r^3 + 3*G*r^2/rho)^(1/3) - r] — at r = 1 cm discrete step gives C = 0.6920 cm/yr due to 1-yr forward-Euler discretization; massive Porites microfragmentation SAP speedup ratio (r = 1 cm vs r = 25 cm) = 18.6207 SAP(1 cm) / SAP(25 cm) (reference 18.92, Kahng, Odle & Wakeman 2024 PeerJ 12:e17037 (SAP(1 cm)=1.8558/yr vs SAP(25 cm)=0.0981/yr)) [hemisphere_sap(r=1 cm) / hemisphere_sap(r=25 cm) for G=1.64, rho=1.28]; deep-water Leptoseris flat-disc size-independent SAP (h = 0.20 cm) = 0.1142 yr^-1 (reference 0.1142, Kahng, Odle & Wakeman 2024 PeerJ 12:e17037 / Kahng 2023) [disc_sap(G=0.061, rho=2.67, h=0.20) = G / (rho * h)]; branching Acropora cylinder size-independent SAP (r = 0.50 cm) = 7.1429 yr^-1 (reference 7.1429, Kahng, Odle & Wakeman 2024 PeerJ 12:e17037 / Hughes 1987) [cylinder_sap(G=2.50, rho=1.40, r=0.50) = 2 * G / (rho * r)]." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-morphometric-validation> ;
+        pk:hasProbability "0.22"^^xsd:double ;
+        pk:hasVerdict "unfaithful" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-morphometric-validation> rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity (2024-kahng-coral-geometry.py, docs/media/kahng_coral_geometry_growth.gif) satisfies the MorphoEval 0.1.0 criterion 'Morphometric validation' for Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris)" ;
+        dct:identifier "morphoeval/0.1.0/morphometric-validation" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Cursor subagent e65a3d81-92b5-4bb2-941f-4566032cb3cd, blinded second assessor)" .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.7717/peerj.17037> .
+    <https://doi.org/10.7717/peerj.17037> dct:date "2024"^^xsd:gYear ;
+        dct:title "Coral geometry and why it matters" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity — Morphometric validation 22/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-19T21:03:38Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-kahng-coral-geometry-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
