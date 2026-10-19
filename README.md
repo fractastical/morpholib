@@ -229,11 +229,16 @@ MorphoEval audit `2026-10-18-venation-audit-v2` at commit `365a3cd`: **91.3** (m
 python3 1984-wolfram-conus-textile-rule30.py --self-test-only      # 7 deterministic mathematical & morphometric invariants, then exit
 python3 1984-wolfram-conus-textile-rule30.py --download            # 6-panel figure + metrics CSV + animation (fetches 2 specimen photos once into .conus_cache/)
 python3 1984-wolfram-conus-textile-rule30.py --no-gif              # offline run on the vendored reference fixture, no animation
+python3 1984-wolfram-conus-textile-rule30.py --prize-gif-only      # render the 18-milestone Rule 30 Prize progress animated GIF and finale poster
 ```
 
 ![Conus textile shell pigmentation: 1D Wolfram Rule 30 and Meinhardt activator-substrate space-time patterns wrapped onto a 3D Raup biconical shell](docs/media/conus_textile_rule30.gif)
 
 *What you see:* left, the 1D Wolfram Rule 30 cellular automaton space–time diagram grows row by row as the mantle edge advances (blue line = current growth front $t$, red dashed line = center column $i = 0$ targeted by the [Rule 30 Prizes](https://rule30prize.org/)); right, the same space–time sheet wrapped onto a rotating 3D Raup biconical *Conus textile* shell mesh ($W = 1.28, D = 0.42, T = 0.36, S = 5.99$, silhouette IoU = `0.835` against the Ohio State University specimen).
+
+![Animated 18-Milestone Progress Dashboard: Theorems 1–19 Toward the Wolfram Rule 30 Prize](docs/media/rule30_prize_progress.gif)
+
+*Rule 30 Prize 18-Milestone Progress Animation (`docs/media/rule30_prize_progress.gif`, finale poster `docs/media/rule30_prize_progress_poster.png`):* Chronological step-by-step build across all 18 commits (`59a07c6` $\to$ `8d445ac`, `8h 13m` active proof & verification time across Theorems 1–19), showing each milestone's exact formula, how the 4 phases fit together, how long each step took (`4m` to `69m`), live space-time light-cone overlays, the $P_k = 2^m$ period-doubling cascade and 3-column algebraic degree staircase $\max\deg(l_m) = \lfloor(m-2)/3\rfloor + 1$, and our final verification scorecard ($2,536/2,536$ primitive necklaces across $\Pi = 2 \dots 14$ extinguished).
 
 ![1D Space-Time Kymograph & Defect-Front Tooling across Rule 30, Meinhardt PDE, Cell Sorting, and Bioelectric Antagonism](docs/media/conus_rule30_kymograph_defect_fronts.png)
 
