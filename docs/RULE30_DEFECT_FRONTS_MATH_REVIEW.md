@@ -157,6 +157,36 @@ Does either branch get trapped in a spatial cycle of period-16 diagonals (which 
 
 *Computational Proof.* Verified exhaustively in `1.2 s` by `verify_koggestone_p16_barrier_tree()` in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py). $\square$
 
+### 3.3 Why Post-Barrier Trajectories Can Never Cycle for *Any* $P = 2^m$ (Theorem 4 — Resolving Open Problem A)
+
+Does Theorem 3's cycle-freeness depend on a lucky property of $P \le 16$, or is there a structural reason why post-barrier trajectories **never** get trapped in a spatial cycle for **any** $P = 2^m$?
+
+First, an exhaustive census (`verify_backward_determinism_and_barrier_census()`) across the entire non-barrier domain $\mathcal{D}_P = \mathbb{F}_2^P \times (\mathbb{F}_2^P \setminus \{\mathbf{0}_P\})$ reveals that $\mathcal{D}_P$ *does* contain non-absorbing cycles:
+- $P = 2$: `10 / 12` pairs (`83.33%`) hit $v = \mathbf{0}_2$ (max `4` steps); `2` states lie on a non-absorbing cycle.
+- $P = 4$: `226 / 240` pairs (`94.17%`) hit $v = \mathbf{0}_4$ (max `28` steps); `14` states lie on non-absorbing cycles.
+- $P = 8$: `59,770 / 65,280` pairs (`91.56%`) hit $v = \mathbf{0}_8$ (max `667` steps); `5,510` states lie on non-absorbing cycles.
+
+**Yet when restricted to the $2^P - 1$ post-barrier entry states $(\mathbf{0}_P, b)$ ($b \ne \mathbf{0}_P$), `0 / 3` ($P=2$), `0 / 15` ($P=4$), and `0 / 255` ($P=8$) ever enter a cycle — `100%` hit the absorbing barrier $v = \mathbf{0}_P$!** Why? Because the cycle-transfer operator is globally backward-deterministic:
+
+> **Theorem 4 (Global Backward-Determinism & Unconditional Post-Barrier Non-Cycling for All $P = 2^m$).**  
+> For every $P = 2^m$ ($m \ge 0$), let $F_P(u, v) = (v, \mathcal{T}_P(u, v)) = (v, w)$ on the non-barrier domain $\mathcal{D}_P = \mathbb{F}_2^P \times (\mathbb{F}_2^P \setminus \{\mathbf{0}_P\})$. Then:
+> 1. **Exact Backward Determinism (Injectivity of $F_P$):** Since $w(t+1) = u(t) \oplus (v(t) \lor w(t))$ and XOR is an involution on $\mathbb{F}_2^P$, $u$ is uniquely determined by $(v, w)$:
+>    $$u \;=\; \mathrm{rotr}_1(w) \,\oplus\, (v \lor w) \qquad \Longleftrightarrow \qquad F_P^{-1}(v, w) \;=\; \bigl(\mathrm{rotr}_1(w) \oplus (v \lor w),\, v\bigr).$$
+>    Hence $F_P$ is **strictly injective (in-degree $\le 1$)** on the finite set $\mathcal{D}_P$.
+> 2. **Post-Barrier Entries Are In-Degree-$0$ Sources in $\mathcal{D}_P$:** Any predecessor $(u_{-1}, v_{-1})$ of a post-barrier state $(\mathbf{0}_P, b)$ under $F_P$ must have $v_{-1} = \mathbf{0}_P \notin \mathcal{D}_P$. Thus **every post-barrier entry state $(\mathbf{0}_P, b)$ has in-degree $0$ within $\mathcal{D}_P$**.
+> 3. **Unconditional Non-Cycling Within Segments:** In any finite directed graph where every vertex has in-degree $\le 1$ and out-degree $\le 1$, connected components are disjoint pure cycles (every vertex has in-degree $1$) and directed paths starting at in-degree-$0$ sources that must exit the domain. Because $(\mathbf{0}_P, b)$ has in-degree $0$, its forward trajectory can neither revisit $(\mathbf{0}_P, b)$ nor merge into any cycle (which would require a vertex of in-degree $2$). By the Pigeonhole Principle, **for every $P = 2^m$ and every $b \in \mathbb{F}_2^P \setminus \{\mathbf{0}_P\}$, the forward trajectory from $(\mathbf{0}_P, b)$ hits the next all-zero barrier $v = \mathbf{0}_P$ in at most $|\mathcal{D}_P| = 2^P(2^P - 1)$ steps.**
+> 4. **Global Acyclicity Across Even-Parity Splits:** Even at an all-zero barrier $v = \mathbf{0}_P$, the backward map $(v, w) \mapsto \bigl(\mathrm{rotr}_1(w) \oplus w,\, v\bigr)$ remains a single-valued deterministic function on all of $(\mathbb{F}_2^P)^2$ (merging the two forward branches $w^{(0)}$ and $w^{(1)} = \overline{w^{(0)}}$ 2-to-1 onto the same even-parity upstream state $u$). Because reverse-diagonal evolution $k \mapsto k - 1$ is globally deterministic on $(\mathbb{F}_2^P)^2$ and traces back to the fixed-point boundary $(c_0, c_1) = (\mathbf{1}_P, \mathbf{1}_P)$, **no sequence of even-parity splits can ever form a cycle for any $P = 2^m$.** Every binary barrier tree on plateau $P = 2^m$ is unconditionally finite and cycle-free, and every branch must terminate at an odd-parity leaf ($\Omega = 1$) where the period doubles $2^m \to 2^{m+1}$. $\square$
+
+### 3.4 Exact Causal Bit-Sliced Resolution of the Unit-Seed Path on $P = 16 \to 32$ (Resolving Open Problem C)
+
+Which of the 16 root-to-leaf paths in Table 3.2 does the actual unit-seed Rule 30 light-cone take?
+
+> **Proposition 1 (Causal Truncation & 64-Bit Time-Parallel Kogge–Stone Diagonal Solver).**  
+> Because the diagonal recurrence $d_k(t) = \bigl(d_{k-2}(t-1) \oplus d_{k-1}(t-1)\bigr) \oplus \bigl(\overline{d_{k-1}(t-1)} \land d_k(t-1)\bigr)$ ($d_k(0) = 0$ for $k \ge 1$, $d_0(t) = 1$) depends **only on $k - 2$ and $k - 1$ and never on $k + 1$**, the entire right half of the 2D light-cone is causally irrelevant to diagonal $k$. Packing 64 consecutive time steps into each `uint64` word and applying 6-step intra-word + inter-word Kogge–Stone prefix lookahead (`step_diagonal_bitsliced_u64()`) evolves $T = 128\,000$ time steps across $k = 0 \dots 87\,868$ in `6.5 s` (`0` bit errors against the 2D light-cone), yielding the exact unit-seed trajectory through the $P = 16$ barrier tree:
+> 1. **Root Split ($k = 53\,208$, $T_{\text{lock}} = 71\,114$):** At the first even-parity barrier $c_{53207} = \mathbf{0}_{16}$, the unit seed selects **branch $\sigma_1 = 0$** (`c16 = 0x3082` in LSB-first time order, i.e., `0x8c20` in MSB-first order, weight $3$).
+> 2. **Second Even Split ($k = 58\,287$, $T_{\text{lock}} = 77\,910$):** At the second even-parity barrier $c_{58286} = \mathbf{0}_{16}$ (upstream weight $10$), the unit seed selects **branch $\sigma_2 = 1$** (`c16 = 0xb5a7`, weight $10$).
+> 3. **Exact $P = 16 \to 32$ Period-Doubling Leaf ($k_5 = 87\,867$, $T_{\text{lock}} = 117\,324$):** Following path $\sigma = \mathtt{01}$ (the shortest root-to-leaf path in the 16-leaf tree!), the unit seed hits the odd-parity barrier $c_{87866} = \mathbf{0}_{16}$ (upstream weight $\mathrm{wt}(c_{87865}) = 5$, odd) and **doubles to period $P = 32$ at exact diagonal $k_5 = 87\,867$** (`c32 = 0xcf3030cf`, where the second 16-bit half `0xcf30` is the exact bitwise complement of `0x30cf`!).
+
 ---
 
 ## 4. Physical Lock-In Velocity & Connection to Wolfram's Rule 30 Prize #1
@@ -164,26 +194,28 @@ Does either branch get trapped in a spatial cycle of period-16 diagonals (which 
 Why doesn't the periodic left crystal eventually invade the center column $i = 0$ and force $a_{t,0}$ to become periodic (Rule 30 Prize Problem #1)?
 
 1. **Condition for Center-Column Capture:** Since $i = -t + k$, the center column $i = 0$ corresponds to the diagonal $k(t) = t$. For the periodic crystal to reach $i = 0$, the lock-in time $T_{\text{lock}}(k)$ would have to satisfy $\limsup_{k\to\infty} T_{\text{lock}}(k)/k \le 1$.
-2. **Empirical & Structural Delay Slope ($\mathrm{d}T_{\text{lock}}/\mathrm{d}k > 1$):** Across the 371-diagonal period-8 plateau ($k \in [30, 400]$), least-squares linear regression gives:
-   $$T_{\text{lock}}(k) \;\approx\; 1.2441\,k \;+\; 7.89 \qquad \Longrightarrow \qquad v_{\text{diag}} \;=\; \frac{\mathrm{d}k_{\text{lock}}}{\mathrm{d}t} \;=\; \frac{1}{1.2441} \;=\; 0.8038 \;<\; 1\text{ diagonals/step}.$$
-   In physical space $i = k - t$, the phase boundary between the periodic crystal and the chaotic right interior therefore recedes **leftward** at velocity:
-   $$v_{\text{lock}} \;=\; v_{\text{diag}} - 1 \;=\; -0.1962\text{ cells/step}.$$
-   Why is $\mathrm{d}T_{\text{lock}}/\mathrm{d}k > 1$? Whenever $c_{k-1}(t) = 0$ across a run of $r$ consecutive time steps (where $p_0(t) = 1$), $d_k$ cannot synchronize immediately at step $T_{\text{lock}}(k-1) + 1$; it must wait an additional synchronization delay $\Delta T \ge 1$ until the next `1` in $c_{k-1}$ arrives to clear the carry-propagate chain.
+2. **Empirical & Structural Delay Slope ($\mathrm{d}T_{\text{lock}}/\mathrm{d}k > 1$) Across $P = 8$ and $P = 16$ (Open Problem B):**
+   - Across the 371-diagonal **$P = 8$ plateau** ($k \in [30, 400]$), least-squares linear regression gives $\mathrm{d}T_{\text{lock}}/\mathrm{d}k = 1.2441$ steps/diagonal ($v_{\text{diag}} = 0.8038$, $v_{\text{lock}} = -0.1962$ cells/step; secant rate $468 / 371 = 1.2615$), with asymptotic ones density `1,485 / 2,968 = 0.500337` (`50.03%`).
+   - Across the full 87,467-diagonal **$P = 16$ plateau** ($k \in [400, 87\,867]$), least-squares linear regression gives:
+     $$T_{\text{lock}}(k) \;\approx\; 1.3358\,k \;+\; 45.73 \qquad \bigl(\text{secant rate } \frac{117\,324 - 498}{87\,867 - 400} = 1.3357\text{ steps/diagonal}\bigr),$$
+     corresponding to $v_{\text{diag}} = 0.7486 < 1$ diagonals/step and a **steeper leftward crystal recession velocity**:
+     $$v_{\text{lock}}^{(P=16)} \;=\; v_{\text{diag}} - 1 \;=\; -0.2514\text{ cells/step},$$
+     with asymptotic ones density `699,888 / 1,399,472 = 0.500109` (`50.01%`, within $1.09 \times 10^{-4}$ of $1/2$).
+   - **Why is $\mathrm{d}T_{\text{lock}}/\mathrm{d}k > 1$?** Whenever $c_{k-1}(t) = 0$ across a run of $r$ consecutive time steps (where $p_0(t) = 1$), $d_k$ cannot synchronize immediately at step $T_{\text{lock}}(k-1) + 1$; it must wait an additional synchronization delay $\Delta T \ge 1$ until the next `1` in $c_{k-1}$ arrives to clear the carry-propagate chain.
 
 ---
 
-## 5. Open Mathematical Problems Suggested by This Formulation
+## 5. Status of the Four Mathematical Problems (GitHub Issues `#14`–`#17`)
 
-We highlight four concrete open problems suitable for mathematical collaboration, each tracked in a dedicated GitHub issue:
-
-1. **Problem A — General Acyclicity of the Kogge–Stone Graph $\mathcal{G}_{2^m}$ ([Issue #14](https://github.com/fractastical/morpholib/issues/14)):**  
-   On the state space $\mathcal{S}_P = \mathbb{F}_2^P \times \mathbb{F}_2^P$ ($P = 2^m$), does the deterministic Kogge–Stone map $(u, v) \mapsto (v, \mathcal{T}_P(u, v))$ (for $v \ne \mathbf{0}_P$) contain **any** directed cycles that avoid the absorbing barrier $v = \mathbf{0}_P$ and are reachable from the period-doubled entry states $(0, c_{k_m})$? Theorem 3 proves that for $m = 0, 1, 2, 3, 4$ ($P \le 16$), every reachable trajectory hits $v = \mathbf{0}_P$ and exits to $2P = 32$ in at most $11$ even-parity splits. Extending this non-cycling proof to $P = 32$ and general $m$ would provide a purely finite-algebraic proof of unbounded period doubling on the left cone without requiring infinite-lattice ergodic assumptions.
-2. **Problem B — Lower Bound on Mean Synchronization Delay $\langle \Delta T_{\text{lock}} \rangle > 1$ ([Issue #15](https://github.com/fractastical/morpholib/issues/15)):**  
-   By Theorem 1, the extra lock-in delay $\Delta T_{\text{lock}}(k) = T_{\text{lock}}(k) - T_{\text{lock}}(k-1)$ at diagonal $k$ is governed by the waiting time to the next `1` in $c_{k-1}(t)$ (i.e., the run-length distribution of `1`s in the propagate mask $p_0 = \overline{c_{k-1}}$). Proving rigorously that $\liminf_{K\to\infty} \frac{1}{K}\sum_{k=1}^K \Delta T_{\text{lock}}(k) > 1$ would prove unconditionally that the periodic left phase boundary recedes leftward ($v_{\text{lock}} < 0$) and can never capture the center column $i = 0$.
-3. **Problem C — Exact Selection of the True Unit-Seed Path in the $P=16$ Binary Tree ([Issue #16](https://github.com/fractastical/morpholib/issues/16)):**  
-   By Theorem 3, the unit-seed Rule 30 light-cone must follow one of the 16 root-to-leaf paths in Table 3.2 (entering $P = 32$ at one of the 16 values $k_5 \in [87\,867,\, 894\,235]$). Determining which branch bit $\sigma_1 \in \{0, 1\}$ the single-cell seed selects at the first even-parity split $k = 53\,208$ requires evaluating $d_{53208}(t)$ just past $t = T_{\text{lock}}(53208) \approx 1.244 \times 53\,208 \approx 66\,200$ steps — a concrete finite bit-sliced computation ($\approx 2.2 \times 10^9$ cell updates) that pins down the exact path in our 16-leaf tree.
-4. **Problem D — Exact 2D Tent Slope Asymmetry & Cross-Model 1D Defect-Front Universality ([Issue #17](https://github.com/fractastical/morpholib/issues/17)):**  
-   Quantify the left-slope vs. right-slope erosion asymmetry of white triangles in Rule 30 (`100 -> 1` deterministic left slope vs. `001 -> 1` exterior-state-modulated right slope) against the symmetric excitable wave-branching slopes of the Meinhardt–Klingler (1987) PDE and cylindrical UV unwrappings of *Conus textile* shells.
+1. **Problem A — General Acyclicity of the Kogge–Stone Graph $\mathcal{G}_{2^m}$ ([Issue #14](https://github.com/fractastical/morpholib/issues/14)) — RESOLVED by Theorem 4:**  
+   Proved unconditionally for all $P = 2^m$ ($m \ge 0$) via global backward determinism $F_P^{-1}(v, w) = (\mathrm{rotr}_1(w) \oplus (v \lor w), v)$: post-barrier entries $(\mathbf{0}_P, b)$ are in-degree-$0$ sources in $\mathcal{D}_P$ and can never enter a cycle either within a segment or across even-parity splits.
+2. **Problem B — Lower Bound on Mean Synchronization Delay $\langle \Delta T_{\text{lock}} \rangle > 1$ ([Issue #15](https://github.com/fractastical/morpholib/issues/15)) — Verified to $k_5 = 87\,867$:**  
+   Exact bit-sliced measurement across all $87\,467$ diagonals of the $P = 16$ plateau confirms that the lock-in delay slope *increases* from $1.2441$ ($P=8$) to $1.3358$ steps/diagonal ($P=16$, $v_{\text{lock}} = -0.2514$ cells/step) while the plateau bit density converges even closer to $1/2$ (`0.500109`). A rigorous lower bound showing that the fraction of positive-delay diagonals stays bounded away from $0$ as $m \to \infty$ remains the key bridge to Wolfram's Prize Problem #1.
+3. **Problem C — Exact Selection of the True Unit-Seed Path in the $P=16$ Binary Tree ([Issue #16](https://github.com/fractastical/morpholib/issues/16)) — RESOLVED by Proposition 1:**  
+   Solved in `6.5 s` via causal truncation + 64-bit time-parallel Kogge–Stone lookahead: the unit seed takes branch $\sigma = \mathtt{01}$ ($k = 53\,208 \to 58\,287 \to 87\,867$) and doubles to $P = 32$ at exact diagonal **$k_5 = 87\,867$** ($T_{\text{lock}}(87\,867) = 117\,324$).
+4. **Problem D — Exact 2D Tent Extinction & Spatiotemporal Chirality Across Models ([Issue #17](https://github.com/fractastical/morpholib/issues/17)) — Quantified in `evaluate_white_tent_extinction_and_drift()`:**  
+   - **Interior White-Tent Extinction Law (`1 0^w 1 -> 0^{w-2}`):** For every white chord of width $w \ge 4$ bounded by pigmented walls (`1`), both Rule 30 (`100 -> 1`, `001 -> 1`) and Rule 90 (`100 -> 1`, `001 -> 1`) erode the interior white run by **100% deterministic 1 cell/step from both the left and right edges** (`frac_exact_2px_erosion = 1.0000`, `mean_dw = -2.0000`), whereas continuous Meinhardt–Klingler PDE waves (`frac_exact_2px_erosion = 0.2391`, `mean_dw = -1.7826`) and the segmented *Conus textile* specimen (`frac_left_erosion_1px = 0.3065`, `frac_right_erosion_1px = 0.2161`, `mean_dw = -1.4355`) exhibit smooth, asymmetric front rounding.
+   - **Where Rule 30's Visual Asymmetry Lives (1-Step Shift Cross-Correlation Chirality $\Delta C = C(\Delta x = +1) - C(\Delta x = -1)$):** Because `111 -> 0` hollows out black runs of width $\ge 3$ while `110 -> 0` vs. `011 -> 1` creates a sharp directional asymmetry on **black** pigment fronts, the 1-step spatiotemporal shift cross-correlation asymmetry is strongly chiral in Rule 30 ($\Delta C = -0.4973$, with $C(+1) = -0.5010$ vs. $C(-1) = -0.0037$), zero in symmetric Rule 90 ($\Delta C = -0.0004$) and Meinhardt PDE ($\Delta C = 0.0000$), and mildly chiral in the obliquely coiled *Conus textile* shell ($\Delta C = +0.0206$).
 
 ---
 
