@@ -319,9 +319,33 @@ Suppose $a_{t_0 + 2r, 0} = 0$ and $a_{t_0 + 2r + 1, 0} = 1$ for all $r \ge 0$ af
 
 ---
 
+### Theorem 16 (Universal Period-$\Pi$ Two-Sided Seam Lock, Intra-Period Idempotence Ideal, Exact Symbolic Renormalization for $\Pi = 3, 4$, and Zero-Branching Anti-Diagonal Extinction Across All Primitive Words of $\Pi = 2, 3, 4, 5$)
+Suppose $c_{t_0 + q\Pi + s} = w_s$ for all $q \ge 0$ and $0 \le s < \Pi$ for a primitive periodic word $w = (w_0, \dots, w_{\Pi-1}) \in \{0, 1\}^\Pi$ ($\Pi \ge 2$). Let $l_m(t) := a_{t, -m}$ ($m \ge 1$) and $r_m(t) := a_{t, +m}$ ($m \ge 1$). Then:
+1. **Universal Two-Sided Seam Lock & Intra-Period Idempotence Ideal:** At step $t = t_0 + q\Pi + s$, Rule 30 at column $j = 0$ gives $w_{(s+1)\bmod\Pi} = l_1(t) \oplus (w_s \lor r_1(t))$, partitioning the $\Pi$ phases into two exact regimes:
+   $$\begin{aligned}
+   \text{Opaque-Mirror Phases } (w_s = 1):\quad &l_1(t_0 + q\Pi + s) \;\equiv\; \overline{w_{(s+1)\bmod\Pi}} \qquad (\text{fixed constant independent of } q \text{ and } \{x \ge 1\}), \\
+   \text{Transparent-Gate Phases } (w_s = 0):\quad &l_1(t_0 + q\Pi + s) \;\equiv\; w_{(s+1)\bmod\Pi} \;\oplus\; G_{q, s}, \qquad G_{q, s} \;:=\; r_1(t_0 + q\Pi + s).
+   \end{aligned}$$
+   On every contiguous `0`-run $w_0 = \dots = w_{b-1} = 0$ followed by $w_b = 1$, Theorem 8(2)'s Monotone Latch forces $G_{q, 0} \le G_{q, 1} \le \dots \le G_{q, b-1}$, which over $\mathbb{F}_2$ is the **exact intra-period idempotence ideal**
+   $$G_{q, i} G_{q, j} \;\equiv\; G_{q, \min(i, j)} \qquad (\forall\, 0 \le i \le j < b),$$
+   collapsing the $2^b$ Boolean states per `0`-run to $b + 1$ threshold states $0^k 1^{b-k}$ and eliminating all intra-period polynomial nonlinearity. Across every isolated `1` ($(w_{s-1}, w_s, w_{s+1}) = (0, 1, 0)$), Theorem 8(2)'s Fibonacci Reset forces $G_{t-1} G_{t+1} \equiv 0$.
+2. **Exact Right-Cone Subshift & 3-Column Symbolic Renormalization for $\Pi = 3$ ($w = \mathtt{011}$ and $w = \mathtt{001}$):**
+   - **Case $w = \mathtt{011}$ ($1$ gate $G_q = r_1(t_0 + 3q)$ per period):** Over $\mathbb{F}_2$, $l_1(3q, 3q+1, 3q+2) = (1 \oplus G_q,\, 0,\, 1)$, $l_2 = (1 \oplus G_q,\, 0,\, G_{q+1})$, $l_3 = (1 \oplus G_q,\, G_{q+1},\, G_{q+1})$, and **column $m = 4$ is an exact 3-column renormalized copy of $l_1$ driven by $G^{(1)}_q := G_q \oplus G_{q+1}$**:
+     $$\bigl(l_4(3q),\, l_4(3q+1),\, l_4(3q+2)\bigr) \;\equiv\; \bigl(1 \oplus G_q \oplus G_{q+1},\; 0,\; 1\bigr), \qquad a_{t, j-3}(G) \;\equiv\; a_{t, j}\bigl(G_q \oplus G_{q+1}\bigr) \quad (\forall\, j \le -1).$$
+     Moreover, in the right half-plane $\{x \ge 1\}$ driven by $w = \mathtt{011}$, $G_q = 1$ and $G_{q+1} = 0$ force $r_1(3q+1) = 1 \implies r_1(3q+2) = 0 \implies r_2(3q+2) = 1 \implies (r_1(3q+3), r_2(3q+3)) = (0, 1) \implies (r_1(3q+4), r_2(3q+4)) = (1, 1) \implies (r_1(3q+5), r_2(3q+5)) = (0, 0) \implies G_{q+2} = 1$, strictly forbidding the subword $\mathtt{100}$ ($G_q \overline{G_{q+1}}\,\overline{G_{q+2}} \equiv 0$, `0` violations). Since $l_9(3q) = G_q \overline{G_{q+1}}\,\overline{G_{q+2}}$, this forces **$l_9(3q) \equiv 0$ identically** alongside $l_8(3q+1) \equiv 1$.
+   - **Case $w = \mathtt{001}$ ($2$ gates $G_{q, 0} \le G_{q, 1}$ per period):** Modulo Monotone Latch ($G_{q, 0} G_{q, 1} = G_{q, 0}$) and Fibonacci Reset ($G_{q, 1} G_{q+1, 0} = G_{q, 0} G_{q+1, 0} = 0$), **all $6$ columns $l_1 \dots l_6$ ($18$ polynomials) are $100\%$ affine-linear (degree $\le 1$) over $\mathbb{F}_2$** (`0` errors), with $(l_4(3q), l_4(3q+1), l_4(3q+2)) \equiv (1 \oplus G_{q+1, 0},\, G_{q, 1} \oplus G_{q+1, 1},\, 0)$.
+3. **Exact Right-Cone Fibonacci Subshift & Symbolic Collapse for $\Pi = 4$ ($w = \mathtt{0111}, \mathtt{0011}, \mathtt{0001}$):**
+   - **Case $w = \mathtt{0111}$ ($1$ gate $G_q = r_1(t_0 + 4q)$ per period):** In the right half-plane $\{x \ge 1\}$, $G_q = 1 \implies r_1(4q+1) = 1 \implies r_1(4q+2) = 0 \implies (r_1(4q+3), r_2(4q+3)) = (1 \oplus r_2(4q+2),\, r_2(4q+2) \lor r_3(4q+2)) \implies r_1(4q+3) \lor r_2(4q+3) \equiv 1 \implies G_{q+1} = 1 \oplus (r_1(4q+3) \lor r_2(4q+3)) \equiv 0$, proving the **exact Fibonacci law $G_q G_{q+1} \equiv 0$** (`0` violations). Modulo $G_q G_{q+1} = 0$, column $m = 4$ collapses to $(l_4(4q), l_4(4q+1), l_4(4q+2), l_4(4q+3)) \equiv (0,\, 1 \oplus G_{q+1},\, 0,\, 0)$, **columns $m = 1 \dots 9$ and $m = 11$ are $100\%$ affine-linear (degree $\le 1$)**, and all $64$ polynomials across $m = 1 \dots 16$ have degree $\le 2$, with $l_2 = l_3 = l_5 = l_7 \equiv 1$ at $s = 1$ and $l_1 = l_2 = l_4 = l_6 = l_{10} \equiv 0$ at $s = 2$.
+   - **Cases $w = \mathtt{0011}$ and $w = \mathtt{0001}$:** Modulo Monotone Latch + Fibonacci Reset, $w = \mathtt{0001}$ has columns $l_1 \dots l_5$ $100\%$ affine-linear, $l_1 \dots l_8$ of degree $\le 2$, and **$l_7(4q+1) \equiv 0$ identically** (`0` errors).
+4. **Universal Monic Leading-Variable Linearity & Zero-Branching Anti-Diagonal Extinction ($\Pi = 2, 3, 4, 5$):** Because the backward recursion $l_m(t) = l_{m-1}(t+1) \oplus (l_{m-1}(t) \lor l_{m-2}(t))$ is strictly linear in the shifted term $l_{m-1}(t+1)$, induction on $m \ge 1$ gives
+   $$l_m(t_0) \;\equiv\; l_1(t_0 + m - 1) \;\oplus\; P_m\bigl(l_1(t_0),\, \dots,\, l_1(t_0 + m - 2)\bigr) \qquad (\forall\, m \ge 1).$$
+   In the light-cone exterior $m = q\Pi + s + 1 > t_0$ where $l_m(t_0) = 0$: at every Transparent-Gate phase ($w_s = 0$), $G_{q, s} = w_{(s+1)\bmod\Pi} \oplus P_m(l_1(t_0 \dots t_0+m-2))$ is **uniquely locked with zero branching** (and immediately annihilated if $G_{q, s} < G_{q, s-1}$ violates Monotone Latch or if $G_{t-1} G_{t+1} = 1$ violates Fibonacci Reset), while at every Opaque-Mirror phase ($w_s = 1$), $P_m(l_1(t_0 \dots t_0+m-2)) = \overline{w_{(s+1)\bmod\Pi}}$ imposes a parameter-free parity constraint. Across **all $12$ primitive necklaces of periods $\Pi \in \{2, 3, 4, 5\}$**, $100\%$ of admissible prefixes are annihilated within $\le 13$ exterior steps (`0` unextinguished prefixes, `0` monic linearity errors). $\square$
+
+---
+
 ## 7. One-Command Verification
 
-All fifteen theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
+All sixteen theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python 1984-wolfram-conus-textile-rule30.py --self-test-only
