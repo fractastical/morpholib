@@ -1,0 +1,581 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-19-bressloff-v1-loop
+  target_simulation: bressloff-v1-form-constants
+  paper: Bressloff, Cowan, Golubitsky, Thomas & Wiener (2001) Phil. Trans. R. Soc.
+    B 356:299 / (2002) Neural Comput. 14:473 V1 Euclidean symmetry-breaking & Klüver
+    form constants; Rule, Stoffregen & Ermentrout (2011) flicker phosphenes
+  created_at: '2026-10-19T20:16:22.911Z'
+  builder_model: claude-fable-5-1
+  primary_assessor: claude-fable-5-1
+  second_assessor: gemini-4-argon
+  repository_commit_start: 68c4a1a
+  notes: Third instrumented 12-step run. Tier A steps 1-3, 5, 6 were completed on
+    2026-10-17 (commits edc41c8, 09b5ec3) before loop telemetry existed; they are
+    recorded here from the git history and re-verified, and timed only for the re-verification.
+    Step 4 (Lean) and Tier B are new.
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 2860.465
+  wall_time_min: 47.67
+  tier_a_wall_s: 195.083
+  tier_b_wall_s: 2665.382
+  cpu_user_s: 20.81
+  cpu_sys_s: 1.0
+  input_tokens: 37252
+  output_tokens: 214285
+  subagent_tokens: 43210
+  total_llm_tokens: 294747
+  artifact_tokens: 69340
+  tier_a_llm_tokens: 71859
+  tier_b_llm_tokens: 222888
+  effective_tokens_per_s: 103.0
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: scout-agent
+  model: claude-fable-5-1
+  status: completed
+  started_at: '2026-10-19T20:16:23.003Z'
+  ended_at: '2026-10-19T20:17:24.633Z'
+  duration_s: 61.63
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 16219
+    output_tokens: 21080
+    subagent_tokens: 0
+    total_llm_tokens: 37299
+    artifact_tokens: 0
+    method: transcript-jsonl+BPE
+  artifacts: []
+  commands: []
+  notes: 'Re-verify the 2026-10-17 scout: Bressloff 2001/2002 + Ermentrout-Cowan 1979
+    + Rule 2011, upstream MesmerPrism/bressloff-v1-form-constants fixtures; Scout
+    re-verified: Bressloff et al. 2001 (10.1098/rstb.2000.0769) and 2002 (10.1162/089976602317250861),
+    Ermentrout & Cowan 1979 (10.1007/BF00336965), Rule, Stoffregen & Ermentrout 2011
+    (10.1371/journal.pcbi.1002158); fixtures vendored from MesmerPrism/bressloff-v1-form-constants@344863a
+    (MIT). Gap identified for Tier B: the only reference data are upstream software
+    reports and the papers'' own figures, no psychophysical or anatomical specimen
+    data.'
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: paper-agent
+  model: claude-fable-5-1
+  status: completed
+  started_at: '2026-10-19T20:19:03.072Z'
+  ended_at: '2026-10-19T20:19:03.143Z'
+  duration_s: 0.071
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 14203
+    output_tokens: 0
+    subagent_tokens: 0
+    total_llm_tokens: 14203
+    artifact_tokens: 0
+    method: calibrated-bpe-regex
+  artifacts: []
+  commands: []
+  notes: 'Re-read the governing equations against the script: log-polar map x=(α/ε)ln(εr/w0),
+    y=(β/ε)θ (2001 §2, 2002 Eq. 2.1); even/odd orientation eigenbranches and Fourier-Bessel
+    lateral coupling (2001 §4, Figs 16-17); cubic amplitude equations with γ0=γ3(0),
+    γ3(θ) and roll-stability criterion 2γ3(θ)>γ0 (2001 §5, Eqs 5.12-5.15, Figs 37-40);
+    Rule 2011 Floquet multipliers +1/-1 (Fig 8); Equations in script match the cited
+    forms: branch_selection_for implements roll stable iff 2γ(θ)>γ0 for all θ in {90°,
+    rhombic, 120°} and rhombic/square stable iff 2γ(θ)<γ0 (lines 528-548); render_cortical_and_retinal_planform
+    implements the inverse log-polar pullback (lines 738-748); amplitude_gamma2/3
+    average over 720 orientation samples (lines 436-460). Three laws selected for
+    Lean: pullback classification (Ermentrout-Cowan 1979 / Bressloff 2001), amplitude
+    roll-lattice boundary, Floquet 2:1 return map.'
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: tool
+  model: claude-fable-5-1
+  status: completed
+  started_at: '2026-10-19T20:19:03.214Z'
+  ended_at: '2026-10-19T20:19:04.662Z'
+  duration_s: 1.414
+  cpu_user_s: 1.25
+  cpu_sys_s: 0.08
+  max_rss_mb: 157.5
+  runs_count: 1
+  tokens:
+    input_tokens: 24
+    output_tokens: 450
+    subagent_tokens: 0
+    total_llm_tokens: 474
+    artifact_tokens: 0
+    method: explicit+BPE
+  artifacts: []
+  commands:
+  - command: ./venv/bin/python3 2001-bressloff-v1-form-constants.py --self-test
+    exit_code: 0
+    wall_s: 1.414
+    cpu_user_s: 1.25
+    cpu_sys_s: 0.08
+    stdout_tokens: 450
+  notes: 'Formal source re-verification: SHA-256 of the three vendored MesmerPrism
+    fixtures + exact parity with upstream stability_reports'
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: builder+lean
+  model: claude-fable-5-1
+  status: completed
+  started_at: '2026-10-19T20:19:11.509Z'
+  ended_at: '2026-10-19T20:21:06.513Z'
+  duration_s: 115.003
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 19054
+    subagent_tokens: 0
+    total_llm_tokens: 19054
+    artifact_tokens: 19054
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: morphoeval/lean/MathOfBiology.lean
+    bytes: 27658
+    sha256: 38e4c5ad9a09ba7c1c063fd11fd7ec53d1130cd56700046d75bdd70a56beabb3
+    tokens: 64
+  - file: morphoeval/math_kg.py
+    bytes: 77542
+    sha256: e05c8529bdc13ed3e6f68fc0e6e918f163b573de41274269bcf7e4ec18d2093a
+    tokens: 18990
+  commands: []
+  notes: 'Write Section 14 of MathOfBiology.lean (Bressloff V1 laws) and register
+    in MATH_LAWS_REGISTRY; Section 14 added to MathOfBiology.lean: retino_cortical_phase
+    with ermentrout_cowan_tunnel_rings / _funnel_rays / _log_spiral; amplitude_rhs
+    with bressloff_roll_fixed_point / _roll_transverse_growth / _roll_stable_iff (γ0
+    < 2γ3(θ)) and the Fig. 38 instance (decide); floquet_iterate with rule_2011_harmonic_returns_each_period
+    / _period_doubling_even_odd (induction). Kernel check exit 0, 0 sorry, ~0.4 s.
+    Three laws registered in MATH_LAWS_REGISTRY (bressloff-v1-form-constants-1..3);
+    the laws enter math_kg.py --lean / --build once the head audit exists (step 9),
+    bringing the registry to 25 declarations.'
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder
+  model: claude-fable-5-1
+  status: completed
+  started_at: '2026-10-19T20:21:22.166Z'
+  ended_at: '2026-10-19T20:21:30.032Z'
+  duration_s: 7.829
+  cpu_user_s: 7.25
+  cpu_sys_s: 0.29
+  max_rss_mb: 172.9
+  runs_count: 1
+  tokens:
+    input_tokens: 24
+    output_tokens: 563
+    subagent_tokens: 0
+    total_llm_tokens: 587
+    artifact_tokens: 0
+    method: explicit+BPE
+  artifacts: []
+  commands:
+  - command: ./venv/bin/python3 2001-bressloff-v1-form-constants.py --self-test
+    exit_code: 0
+    wall_s: 7.829
+    cpu_user_s: 7.25
+    cpu_sys_s: 0.29
+    stdout_tokens: 563
+  notes: 'Script re-verification only: 2001-bressloff-v1-form-constants.py was written
+    2026-10-17 (edc41c8, 09b5ec3); no Pass 1 code changes. Self-test re-run.'
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: tool
+  model: claude-fable-5-1
+  status: completed
+  started_at: '2026-10-19T20:21:30.113Z'
+  ended_at: '2026-10-19T20:21:39.288Z'
+  duration_s: 9.136
+  cpu_user_s: 8.64
+  cpu_sys_s: 0.35
+  max_rss_mb: 231.6
+  runs_count: 1
+  tokens:
+    input_tokens: 37
+    output_tokens: 205
+    subagent_tokens: 0
+    total_llm_tokens: 242
+    artifact_tokens: 660
+    method: explicit+BPE
+  artifacts:
+  - file: bressloff_v1_form_constants_morphospace.png
+    bytes: 908688
+    sha256: 73edc6aee671456e1d6bdea2581ca8805eabb8aff6b03e95d59ddb3d6ce27514
+    tokens: 64
+  - file: bressloff_v1_metrics.csv
+    bytes: 1508
+    sha256: 2b6efe3a19972d59918b8fd9d2000a5eee12b9093a7cf407e1fa5171f0324294
+    tokens: 532
+  - file: docs/media/bressloff_v1_form_constants.gif
+    bytes: 1498952
+    sha256: df4acc7ae32e7ef54dcf2f78e982ae47357d3edbef3027a4a13b66d0bcecb018
+    tokens: 64
+  commands:
+  - command: ./venv/bin/python3 2001-bressloff-v1-form-constants.py --no-show --gif
+      docs/media/bressloff_v1_form_constants.gif
+    exit_code: 0
+    wall_s: 9.136
+    cpu_user_s: 8.64
+    cpu_sys_s: 0.35
+    stdout_tokens: 205
+  notes: Regenerate comparison figure, metrics CSV and GIF from the current script
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: assessor x2 (claude-fable-5-1 primary, gemini-4-argon blinded 2nd)
+  model: claude-fable-5-1
+  status: completed
+  started_at: '2026-10-19T20:21:59.352Z'
+  ended_at: '2026-10-19T20:40:46.614Z'
+  duration_s: 1127.261
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 3207
+    output_tokens: 89177
+    subagent_tokens: 14227
+    total_llm_tokens: 106611
+    artifact_tokens: 13021
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-bressloff-audit.yaml
+    bytes: 28185
+    sha256: f546a99adc7516534877e55e745d1925dda4f2fe0b3c1c27a268a50cfe2dbed3
+    tokens: 7144
+  - file: morphoeval/audits/2026-10-19-bressloff-second-assessor-audit.yaml
+    bytes: 24392
+    sha256: 04a46e87cebd69242bda0a0e845a695b719fe881ec4023b8f9ace78457f25347
+    tokens: 5877
+  commands: []
+  notes: 'Dual-agent audit of 2001-bressloff-v1-form-constants.py at 68c4a1a; both
+    assessors launched in parallel as subagents with no access to prior audits/KG/runs;
+    Primary (claude-fable-5-1, subagent f48114a0): mf 55, sm 52, pe 35, mv 22, st
+    72, ct 60, rp 85 -> 53.0. Blinded second (gemini-4-argon, subagent e9901030):
+    mf 75, sm 73, pe 80, mv 62, st 92, ct 90, rp 94 -> 78.2. Panel mean 65.6. Both
+    independently found: parity test ignores the fixture''s own failed fig40 triangle/honeycomb
+    check; Rule 2011 panel drawn from a fixture marked calibration_claim_allowed=false;
+    preset-driven renders mislabelled mode=spiral; m4/m6 discriminator ~1 for rolls;
+    no empirical comparison. Written as 2026-10-19-bressloff-audit.yaml (primary scores
+    + second_assessor block, 11 remediation items) and 2026-10-19-bressloff-second-assessor-audit.yaml
+    (role second_assessor).'
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: tool (measure_outputs.py)
+  model: null
+  status: completed
+  started_at: '2026-10-19T20:40:46.708Z'
+  ended_at: '2026-10-19T20:40:49.375Z'
+  duration_s: 2.628
+  cpu_user_s: 2.27
+  cpu_sys_s: 0.18
+  max_rss_mb: 166.7
+  runs_count: 1
+  tokens:
+    input_tokens: 66
+    output_tokens: 622
+    subagent_tokens: 0
+    total_llm_tokens: 688
+    artifact_tokens: 3107
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-bressloff-audit.measurements.yaml
+    bytes: 5948
+    sha256: ff229eab5a22003b2abadca7f851ec146fc78c6ea18c6aec05091e4f723c7fe0
+    tokens: 1730
+  - file: morphoeval/audits/2026-10-19-bressloff-second-assessor-audit.measurements.yaml
+    bytes: 4290
+    sha256: 679f92bfea4c8b7da49b469e398918e06c0f92a4e9851e4ca107e38ed9c81543
+    tokens: 1377
+  commands:
+  - command: sh -c ./venv/bin/python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-bressloff-audit.yaml
+      && ./venv/bin/python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-19-bressloff-second-assessor-audit.yaml
+    exit_code: 0
+    wall_s: 2.628
+    cpu_user_s: 2.27
+    cpu_sys_s: 0.18
+    stdout_tokens: 622
+  notes: Fingerprint outputs and run measure_bressloff() for both v1 audits
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: tool (build_morphoeval_kg.py)
+  model: null
+  status: completed
+  started_at: '2026-10-19T20:40:58.694Z'
+  ended_at: '2026-10-19T20:40:59.147Z'
+  duration_s: 0.413
+  cpu_user_s: 0.35
+  cpu_sys_s: 0.03
+  max_rss_mb: 51.5
+  runs_count: 1
+  tokens:
+    input_tokens: 76
+    output_tokens: 446
+    subagent_tokens: 0
+    total_llm_tokens: 522
+    artifact_tokens: 10409
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-bressloff-audit/REPORT.md
+    bytes: 20556
+    sha256: fba6723493851767cdb2bce17cf861e8eabd1d83fdddd55d42d452c84719d3cd
+    tokens: 5460
+  - file: morphoeval/kg/2026-10-19-bressloff-second-assessor-audit/REPORT.md
+    bytes: 19931
+    sha256: 0c080f02a77878d8477a51d250d0530a8219510138791edf0a1d34640e5cc47a
+    tokens: 4949
+  commands:
+  - command: sh -c ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-bressloff-audit.yaml
+      --conform --query && ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-19-bressloff-second-assessor-audit.yaml
+      --conform --query
+    exit_code: 0
+    wall_s: 0.413
+    cpu_user_s: 0.35
+    cpu_sys_s: 0.03
+    stdout_tokens: 446
+  notes: Build ProbKnow nanopubs for the primary v1 audit (10) and the second-assessor
+    audit (8), with conformance check
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: tool (sign_morphoeval.py + check_signed.mjs)
+  model: null
+  status: completed
+  started_at: '2026-10-19T20:41:10.082Z'
+  ended_at: '2026-10-19T20:41:11.154Z'
+  duration_s: 1.03
+  cpu_user_s: 1.04
+  cpu_sys_s: 0.07
+  max_rss_mb: 156.1
+  runs_count: 1
+  tokens:
+    input_tokens: 117
+    output_tokens: 1634
+    subagent_tokens: 0
+    total_llm_tokens: 1751
+    artifact_tokens: 1202
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-bressloff-audit/published.json
+    bytes: 1898
+    sha256: f3bf5b5ceb834c519803a33e5defc8a552dd2570c468bb1b1948dc4bb7d1c67c
+    tokens: 660
+  - file: morphoeval/kg/2026-10-19-bressloff-second-assessor-audit/published.json
+    bytes: 1556
+    sha256: 6d64651c41cb014450223ee0773aebacc37951a83ebd2bceb21de780b3a9b290
+    tokens: 542
+  commands:
+  - command: sh -c ./venv/bin/python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-bressloff-audit
+      && ./venv/bin/python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-19-bressloff-second-assessor-audit
+      && NANOPUB_SIGN_DIR=/tmp/npsign node morphoeval/check_signed.mjs morphoeval/kg/2026-10-19-bressloff-audit/signed/*.trig
+      morphoeval/kg/2026-10-19-bressloff-second-assessor-audit/signed/*.trig
+    exit_code: 0
+    wall_s: 1.03
+    cpu_user_s: 1.04
+    cpu_sys_s: 0.07
+    stdout_tokens: 1634
+  notes: Sign 10 + 8 nanopubs with RSA trusty URIs; verify independently with @nanopub/sign
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: tool
+  model: null
+  status: completed
+  started_at: '2026-10-19T20:41:11.229Z'
+  ended_at: '2026-10-19T20:41:11.287Z'
+  duration_s: 0.015
+  cpu_user_s: 0.01
+  cpu_sys_s: 0.0
+  max_rss_mb: 11.4
+  runs_count: 1
+  tokens:
+    input_tokens: 66
+    output_tokens: 28
+    subagent_tokens: 0
+    total_llm_tokens: 94
+    artifact_tokens: 660
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-bressloff-audit/published.json
+    bytes: 1898
+    sha256: f3bf5b5ceb834c519803a33e5defc8a552dd2570c468bb1b1948dc4bb7d1c67c
+    tokens: 660
+  commands:
+  - command: ./venv/bin/python3 -c import json;[print(k,len(json.load(open(f'morphoeval/kg/{k}/published.json'))))
+      for k in ['2026-10-19-bressloff-audit','2026-10-19-bressloff-second-assessor-audit']]
+    exit_code: 0
+    wall_s: 0.015
+    cpu_user_s: 0.01
+    cpu_sys_s: 0.0
+    stdout_tokens: 28
+  notes: 'Record signed Pass 1 manifests (published: null; publication to the registry
+    is a separate decision)'
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: builder + assessor x2 (claude-fable-5-1 primary re-score, gemini-4-argon
+    blinded 2nd re-score)
+  model: claude-fable-5-1
+  status: completed
+  started_at: '2026-10-19T20:41:21.037Z'
+  ended_at: '2026-10-19T21:06:55.073Z'
+  duration_s: 1534.035
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 3213
+    output_tokens: 81026
+    subagent_tokens: 28983
+    total_llm_tokens: 113222
+    artifact_tokens: 21227
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-bressloff-audit-v2.yaml
+    bytes: 32447
+    sha256: ff1b81229d778a9ea93729434efb836e394c292a749fde8f1f4e3eba3892ceaa
+    tokens: 8241
+    parent_artifact_ids:
+    - a13316962147c9ba0f4cfb662e93d1425cd961a6c52b8d6435481b7641cbb5ec
+    - af12b2c1aa3e38faf984166b3aa227a2aa064480a98279f14c004342ce2e7dd4
+    - 5e349c7b80185de463e1ea8656a2fe91a83523c212875af4ce46d09e9dde2a8e
+    - 90d639ebb4601be59308699e128ac9b59574a9da6dbc47f0c7ad00be8d9e4a8f
+    - 1103bd04973101359d2d7c3c47172c220c0a73cecb3353e960a7646a8fb4990a
+    - cfd1cd3d5233aa2841c6aadae7ac542d95dffd1c32e9914e3309de5e45bc6723
+    - 3477cfd20396322f8cb665174d54c3427c02d8519b9ebab053ff114706e3b886
+  - file: morphoeval/audits/2026-10-19-bressloff-audit-v2.measurements.yaml
+    bytes: 9034
+    sha256: f29378b4906175ad9db222fcd6fdfbc09a59425264ce31e707cbf94a9936c005
+    tokens: 2535
+    parent_artifact_ids:
+    - a13316962147c9ba0f4cfb662e93d1425cd961a6c52b8d6435481b7641cbb5ec
+    - af12b2c1aa3e38faf984166b3aa227a2aa064480a98279f14c004342ce2e7dd4
+    - 5e349c7b80185de463e1ea8656a2fe91a83523c212875af4ce46d09e9dde2a8e
+    - 90d639ebb4601be59308699e128ac9b59574a9da6dbc47f0c7ad00be8d9e4a8f
+    - 1103bd04973101359d2d7c3c47172c220c0a73cecb3353e960a7646a8fb4990a
+    - cfd1cd3d5233aa2841c6aadae7ac542d95dffd1c32e9914e3309de5e45bc6723
+    - 3477cfd20396322f8cb665174d54c3427c02d8519b9ebab053ff114706e3b886
+  - file: morphoeval/audits/2026-10-19-bressloff-second-assessor-audit-v2.yaml
+    bytes: 26442
+    sha256: e0464ba2309e75bdba34e6c23f3b19583ad31ee3b1bb1570758bd47e09e17515
+    tokens: 6275
+    parent_artifact_ids:
+    - a13316962147c9ba0f4cfb662e93d1425cd961a6c52b8d6435481b7641cbb5ec
+    - af12b2c1aa3e38faf984166b3aa227a2aa064480a98279f14c004342ce2e7dd4
+    - 5e349c7b80185de463e1ea8656a2fe91a83523c212875af4ce46d09e9dde2a8e
+    - 90d639ebb4601be59308699e128ac9b59574a9da6dbc47f0c7ad00be8d9e4a8f
+    - 1103bd04973101359d2d7c3c47172c220c0a73cecb3353e960a7646a8fb4990a
+    - cfd1cd3d5233aa2841c6aadae7ac542d95dffd1c32e9914e3309de5e45bc6723
+    - 3477cfd20396322f8cb665174d54c3427c02d8519b9ebab053ff114706e3b886
+  - file: morphoeval/audits/2026-10-19-bressloff-second-assessor-audit-v2.measurements.yaml
+    bytes: 6253
+    sha256: a853dd070a8d00cefbdbee34720d5a7e34746a67a8c8cc97739d0b33a7f2535e
+    tokens: 1921
+    parent_artifact_ids:
+    - a13316962147c9ba0f4cfb662e93d1425cd961a6c52b8d6435481b7641cbb5ec
+    - af12b2c1aa3e38faf984166b3aa227a2aa064480a98279f14c004342ce2e7dd4
+    - 5e349c7b80185de463e1ea8656a2fe91a83523c212875af4ce46d09e9dde2a8e
+    - 90d639ebb4601be59308699e128ac9b59574a9da6dbc47f0c7ad00be8d9e4a8f
+    - 1103bd04973101359d2d7c3c47172c220c0a73cecb3353e960a7646a8fb4990a
+    - cfd1cd3d5233aa2841c6aadae7ac542d95dffd1c32e9914e3309de5e45bc6723
+    - 3477cfd20396322f8cb665174d54c3427c02d8519b9ebab053ff114706e3b886
+  - file: morphoeval/kg/2026-10-19-bressloff-audit-v2/published.json
+    bytes: 1898
+    sha256: c56be3e0363de27c5891263373c9c4589171f1fb8eb9a15a0d10aa2f7f7d52bb
+    tokens: 676
+    parent_artifact_ids:
+    - a13316962147c9ba0f4cfb662e93d1425cd961a6c52b8d6435481b7641cbb5ec
+    - af12b2c1aa3e38faf984166b3aa227a2aa064480a98279f14c004342ce2e7dd4
+    - 5e349c7b80185de463e1ea8656a2fe91a83523c212875af4ce46d09e9dde2a8e
+    - 90d639ebb4601be59308699e128ac9b59574a9da6dbc47f0c7ad00be8d9e4a8f
+    - 1103bd04973101359d2d7c3c47172c220c0a73cecb3353e960a7646a8fb4990a
+    - cfd1cd3d5233aa2841c6aadae7ac542d95dffd1c32e9914e3309de5e45bc6723
+    - 3477cfd20396322f8cb665174d54c3427c02d8519b9ebab053ff114706e3b886
+  - file: morphoeval/kg/2026-10-19-bressloff-second-assessor-audit-v2/published.json
+    bytes: 1556
+    sha256: 1037e2e0c059a500206f16cf05eba72406eb0073332c2f0c3304b0e2b4edab82
+    tokens: 552
+    parent_artifact_ids:
+    - a13316962147c9ba0f4cfb662e93d1425cd961a6c52b8d6435481b7641cbb5ec
+    - af12b2c1aa3e38faf984166b3aa227a2aa064480a98279f14c004342ce2e7dd4
+    - 5e349c7b80185de463e1ea8656a2fe91a83523c212875af4ce46d09e9dde2a8e
+    - 90d639ebb4601be59308699e128ac9b59574a9da6dbc47f0c7ad00be8d9e4a8f
+    - 1103bd04973101359d2d7c3c47172c220c0a73cecb3353e960a7646a8fb4990a
+    - cfd1cd3d5233aa2841c6aadae7ac542d95dffd1c32e9914e3309de5e45bc6723
+    - 3477cfd20396322f8cb665174d54c3427c02d8519b9ebab053ff114706e3b886
+  - file: bressloff_v1_metrics.csv
+    bytes: 2983
+    sha256: 525b9a2413dbd8214a47a3080df7ba044052ba336d68d52951443ebd03f2d8fa
+    tokens: 963
+    parent_artifact_ids:
+    - a13316962147c9ba0f4cfb662e93d1425cd961a6c52b8d6435481b7641cbb5ec
+    - af12b2c1aa3e38faf984166b3aa227a2aa064480a98279f14c004342ce2e7dd4
+    - 5e349c7b80185de463e1ea8656a2fe91a83523c212875af4ce46d09e9dde2a8e
+    - 90d639ebb4601be59308699e128ac9b59574a9da6dbc47f0c7ad00be8d9e4a8f
+    - 1103bd04973101359d2d7c3c47172c220c0a73cecb3353e960a7646a8fb4990a
+    - cfd1cd3d5233aa2841c6aadae7ac542d95dffd1c32e9914e3309de5e45bc6723
+    - 3477cfd20396322f8cb665174d54c3427c02d8519b9ebab053ff114706e3b886
+  - file: docs/media/bressloff_v1_form_constants.gif
+    bytes: 2282654
+    sha256: 12087533329905e1581829715b978712ba3293d1dc6daea2b2e6d70615b13b11
+    tokens: 64
+    parent_artifact_ids:
+    - a13316962147c9ba0f4cfb662e93d1425cd961a6c52b8d6435481b7641cbb5ec
+    - af12b2c1aa3e38faf984166b3aa227a2aa064480a98279f14c004342ce2e7dd4
+    - 5e349c7b80185de463e1ea8656a2fe91a83523c212875af4ce46d09e9dde2a8e
+    - 90d639ebb4601be59308699e128ac9b59574a9da6dbc47f0c7ad00be8d9e4a8f
+    - 1103bd04973101359d2d7c3c47172c220c0a73cecb3353e960a7646a8fb4990a
+    - cfd1cd3d5233aa2841c6aadae7ac542d95dffd1c32e9914e3309de5e45bc6723
+    - 3477cfd20396322f8cb665174d54c3427c02d8519b9ebab053ff114706e3b886
+  commands: []
+  notes: 'Pass 2 remediation of the 11 pinned findings from both assessors, then re-score;
+    Pass 2: all 11 Pass-1 remediation items implemented (exact two-regime retino-cortical
+    map with analytic inverse and hemifield mirroring; |k|=q*/d_hyp quantised to torus
+    cycles; fixture paper-expectation checks surfaced incl. fig40 H0/Hpi degeneracy;
+    global vs lattice-local selection + stability booleans in CSV/titles; Rule 2011
+    panel labelled diagnostic with RMS 0.154; normalised m4/m6 discriminator; GIF
+    on PNG presets; Horton & Hoyt 1991 magnification anchor fixture, RMS rel. err
+    6.8%; bib/PMID/import/gif-path fixes; provenance ledger panel). Checkpoint 9b18c52;
+    PNG/CSV deterministic. Re-scored blind by both assessors in parallel: primary
+    62.8 (was 53.0, +9.8; impl 61.3, bio 51.9, repro 78.8), second 79.2 (was 78.2,
+    +1.0; impl 76.0, bio 72.8, repro 91.1), panel mean 71.0 (was 65.6). 10 + 8 nanopubs
+    built with --supersede-from (v1 unpublished, so supersession is recorded as supersedes_audit_id
+    in pk:context), signed, 18/18 verified. 15 remaining findings recorded under remediation
+    for a future pass (gallery presets impose lattices the cubic equations do not
+    select; 11 further failures in fixture runs[].checks not counted; scalar max-over-phi
+    contoured rendering; GIF 60-degree label vs 45-degree preset; 2k vs sqrt3-k harmonic
+    explanation; alpha/beta provenance; dead drift param; lateral_wide_sigma mismatch
+    between gallery and Panel A).'

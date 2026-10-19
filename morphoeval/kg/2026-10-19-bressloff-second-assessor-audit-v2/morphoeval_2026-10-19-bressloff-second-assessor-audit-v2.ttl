@@ -1,0 +1,332 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-code-traceability> a pk:LLMClaimAssessment ;
+    rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Code-to-model traceability: 86/100" ;
+    rdfs:comment "Core mathematical functions—including retino_cortical_forward, retino_cortical_inverse, cortical_magnification_horton_hoyt, local_weight_coeff, lateral_weight_coeff, branch_growth, amplitude_gamma2, and amplitude_gamma3—carry clear docstrings citing the corresponding sections, equations, and figures in Bressloff et al. (2001/2002) and Horton and Hoyt (1991). Preset identifiers in PAPER_PRESETS and spec_to_preset also map directly to numbered figures in the 2001 and 2002 papers. Deduct 5 points because orientation_eigen_details truncates the Fourier series at max_harmonic = 4 (versus 10 in branch_coupling_sum) and clamps each harmonic coefficient to [-1.5, 1.5] via np.clip without citing where this heuristic originates. Deduct 5 points because _make_branch_candidate ranks branches using an undocumented potential score mode_count * (0.5 * lam * amp^2 + |eta| * amp^3 / 3 - 0.25 * denom * amp^4) not pinned to a published equation, and amplitude_gamma2/amplitude_gamma3 omit the sigmoid nonlinearity prefactors and linear resolvent of Eqs. 5.14-5.15 without comment. Deduct 4 points because planform_modes hardcodes arbitrary phase-drift multipliers (0.35, -0.25, -1.0, 0.5) and _eval_xy substitutes tanh(sharpness * max_phi |val|) for Bressloff's oriented contour rendering without tracing these approximations to rust-v1-sim. Evidence: 2001-bressloff-v1-form-constants.py L389–L470: Equation-pinned implementations of local_weight_coeff (Eq. 3.12), lateral_weight_coeff (Eq. 4.9), and branch_growth (Section 4, Figs. 16-17). <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L389-L470>; 2001-bressloff-v1-form-constants.py L480–L507: Unexplained [-1.5, 1.5] np.clip bound and max_harmonic = 4 truncation in orientation_eigen_details. <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L480-L507>; 2001-bressloff-v1-form-constants.py L553–L592: Heuristic branch-selection score formula in _make_branch_candidate without an equation citation. <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L553-L592>; 2001-bressloff-v1-form-constants.py L759–L850: Hardcoded phase-drift multipliers in planform_modes and max-over-orientation tanh rendering in _eval_xy. <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L759-L850>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-code-traceability> ;
+    pk:hasProbability 8.6e-01 ;
+    pk:hasVerdict "faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-model-fidelity> a pk:LLMClaimAssessment ;
+    rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Model fidelity to source: 76/100" ;
+    dct:references <https://w3id.org/probknow/resource/math-law/bressloff-v1-form-constants-1>,
+        <https://w3id.org/probknow/resource/math-law/bressloff-v1-form-constants-2>,
+        <https://w3id.org/probknow/resource/math-law/bressloff-v1-form-constants-3> ;
+    rdfs:comment "The script accurately implements the two-regime retino-cortical log-polar map and its exact analytical inverse with the published Bressloff et al. (2001 Section 2; 2002 Eq. 2.1) constants (eps = 0.051, w0 = 0.087, alpha = 3/pi, beta = 1.589/2). It also implements the local orientation harmonics (Eq. 3.12), Fourier-Bessel lateral coupling harmonics (Eq. 4.9), O(beta^2) perturbative dispersion curves (Figs. 16-17), and roll-stability criterion 2*gamma_3(theta) > gamma_0, matching the upstream Rust reference to 2.22e-16. Deduct 10 points because neither the Bressloff (2001 Eq. 3.1) nonlinear integro-differential neural field nor the Rule et al. (2011) periodically forced E-I Floquet system is solved dynamically in Python; planforms are static cosine sums and the Floquet tongues are loaded pre-computed from rule-2011-floquet.json. Deduct 6 points because render_cortical_and_retinal_planform computes retinal polar angle as arctan2(vg, abs(ug)), which restricts theta to [-pi/2, pi/2] (half the 2*pi*beta/eps torus) and forces mirror reflection across the vertical meridian u = 0, destroying spiral chirality. Deduct 5 points because the cubic overlap integrals omit firing-rate nonlinearity derivatives and linear resolvents, eigenfunction harmonics are clamped to [-1.5, 1.5], and quintic terms needed to lift the odd-branch H0/H_pi degeneracy are absent. Deduct 3 points because three of the four gallery panels render a hardcoded preset pattern rather than the branch selected by the cubic amplitude equations. Evidence: 2001-bressloff-v1-form-constants.py L95–L120: Exact two-regime log-polar retino-cortical map and analytical inverse with published alpha, beta, eps, w0 constants. <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L95-L120>; 2001-bressloff-v1-form-constants.py L423–L507: Fourier-Bessel lateral coupling W_n^lat(q), perturbative dispersion branch_growth, and [-1.5, 1.5] harmonic clamping in orientation_eigen_details. <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L423-L507>; 2001-bressloff-v1-form-constants.py L810–L865: Static trigonometric planform evaluation bypassing branch selection when pattern != 'auto', and bilateral folding via theta_hemi = np.arctan2(vg, np.abs(ug)). <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L810-L865>; 2001-bressloff-v1-form-constants.py L1134–L1145: Rule et al. (2011) Floquet report loaded statically from rule-2011-floquet.json without in-script Floquet integration. <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L1134-L1145>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-model-fidelity> ;
+    pk:hasProbability 7.6e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-morphometric-validation> a pk:LLMClaimAssessment ;
+    rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Morphometric validation: 74/100" ;
+    rdfs:comment "The script performs a direct quantitative comparison of the Bressloff retino-cortical map's analytical derivative dx/dr against the empirical human V1 linear magnification law M(E) = 17.3/(E + 0.75) mm/deg from Horton and Hoyt (1991) over 1-40 deg, reporting 6.78% RMS relative error, 30.0% max relative error, implied A and E2 constants, and 0-90 deg cortical extent. It also computes 2D radial and azimuthal FFT power-spectrum metrics (k*, ring sharpness, m2/m4/m6 harmonics) on the cortical sheets and transparently discloses the fig40 odd-hex degeneracy and Rule (2011) acceptance failures. Deduct 10 points because the headline 2.22e-16 calibration parity in verify_paper_calibration_parity is parity with another software implementation (MesmerPrism/bressloff-v1-form-constants, explicitly marked 'not a digitized paper figure' in paper-calibration.json) rather than empirical data or digitized curves from Bressloff et al. (2001). Deduct 7 points because spectral_ring_metrics is evaluated only on the flat cortical torus and no morphometrics (such as radial ring spacing vs eccentricity or spiral pitch) are measured on the rendered retinal pullbacks or compared to psychophysical data. Deduct 5 points because verify_paper_calibration_parity checks only the 5 entries in stability_reports (10/11 checks passed) and ignores the 16 preset entries in paper-calibration.json['runs'], where 7 presets have status 'review' and 10 same-lattice-branch checks fail (including fig31_square_even). Deduct 4 points because the Rule (2011) Fig. 8 RMS beta error (0.154) is read verbatim from rule-2011-floquet.json rather than computed from simulated fields. Evidence: 2001-bressloff-v1-form-constants.py L133–L164: Analytical comparison of model cortical magnification against Horton & Hoyt (1991) over 1-40 deg eccentricity. <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L133-L164>; 2001-bressloff-v1-form-constants.py L878–L938: 2D radial and azimuthal FFT spectral ring discriminator computed on cortical planforms. <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L878-L938>; 2001-bressloff-v1-form-constants.py L943–L1041: Parity check comparing against paper-calibration.json['stability_reports'] while omitting the 16 entries in paper-calibration.json['runs']. <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L943-L1041>; datasets/bressloff/paper-calibration.json L345–L412: Upstream run entry for fig31_square_even with status 'review' and failed same-lattice-branch checks omitted from the script's summary. <https://github.com/fractastical/morpholib/blob/9b18c52/datasets/bressloff/paper-calibration.json#L345-L412>. Measurements (measure_outputs.py): bressloff-v1-form-constants stability_reports parity, max |Δ| = 0.0 dimensionless (reference 0.0, MesmerPrism/bressloff-v1-form-constants commit 344863a1bd9e8a8e8c9cb20aced2897f3ffb2c4c) [maximum absolute error across all 5 Bressloff (2001) stability_reports (q*, λ*, γ(0), γ(θ), η_hex) vs paper-calibration.json]; Mexican-hat lateral inhibition critical wavenumber q* (Bressloff 2001 Fig. 16) = 1.028 dimensionless wavenumber (reference >0.5 (finite Turing/Euclidean symmetry-breaking wavelength), Bressloff et al. 2001 Phil. Trans. R. Soc. B 356:299 Fig. 16) [maximizer of max(λ_even(q), λ_odd(q)) with lateral_inhibition = 0.27] — interior peak prominence = 0.1200; Gaussian-only negative control critical wavenumber q* (lateral_inhibition = 0) = 0.05 dimensionless wavenumber (reference 0.05, q_min boundary of [0.05, 3.0] grid (monotonically decaying dispersion, prominence = 0.0)) [maximizer of λ(q) when Mexican-hat surround inhibition is removed (lateral_inhibition = 0.0)] — interior peak prominence = 0.00e+00; Klüver Tunnel/Rings cortical planform spectral ring sharpness = 31.331 ratio (peak/median PSD) (reference >5.0, Bressloff et al. 2001 Fig. 7 / Klüver 1966 Tunnel form constant) [2D FFT radial power spectrum peak/median ratio at k* = 11 cycles]; Klüver Honeycomb/Hex linear cortical planform spectral ring wavenumber k* = 11.0 cycles / domain (reference 11 (q*/d_hyp = 11.27 cycles), Bressloff et al. 2001 Fig. 35 / Klüver 1966 Honeycomb form constant) [dominant radial FFT wavenumber of the linear 3-mode hexagonal eigenmode superposition (non-contoured, weak tanh); the rendered wavenumber is q*/d_hyp quantised to integer cycles on the 2πβ/ε torus] — contoured-rendering k* = 21 (power moves to the √3·k difference ring); FFT lattice class = hexagonal; Retino-cortical magnification vs Horton & Hoyt (1991), RMS relative error over 1-40 deg = 0.0678 dimensionless (reference 0 (perfect agreement); map-implied A = α/ε = 18.72 mm/deg, E2 = w0/ε = 1.71 deg vs 17.3, 0.75, Horton & Hoyt 1991 Arch. Ophthalmol. 109:816 (doi:10.1001/archopht.1991.01080060080030); datasets/bressloff/horton_hoyt_1991_magnification.json) [RMS of (α/(w0+εr) − 17.3/(E+0.75)) / (17.3/(E+0.75)) over 157 eccentricities in [1, 40] deg] — max |rel err| = 0.300; fovea→90° extent 74.6 mm (model) vs 83.0 mm (H&H); Upstream fixture paper-expectation checks passed (paper-calibration.json) = 10.0 count (reference 11.0, MesmerPrism/bressloff-v1-form-constants commit 344863a1bd9e8a8e8c9cb20aced2897f3ffb2c4c, stability_reports[*].checks) [number of the fixture's own expected-vs-actual checks that pass, out of 11] — fig40_odd_hex_bifurcation/selected-pattern: expected triangle, actual honeycomb; Rule et al. (2011) Fig. 8 overlay domain-normalised RMS β error (diagnostic, no calibration claim) = 0.154 normalised wavenumber β (reference <= 0.10 acceptance threshold (NOT met), Rule, Stoffregen & Ermentrout 2011 PLoS Comput. Biol. 7:e1002158 Fig. 8 via upstream fixture) [rule-2011-floquet.json source_curve_comparison.domain_beta_mapping.rms_error] — acceptance_status = outside-threshold-diagnostic; calibration_claim_allowed = False." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-morphometric-validation> ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-1>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-2>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-3>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-4>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-5>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-6>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-7>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-8> ;
+    pk:hasProbability 7.4e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-overall> a pk:LLMClaimAssessment ;
+    rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — MorphoEval overall 79.2/100" ;
+    rdfs:comment "Blinded second-assessor pass. 2001-bressloff-v1-form-constants.py faithfully ports the analytical perturbative dispersion relation, Fourier-Bessel lateral coupling, cubic normal-form overlap integrals, and two-regime log-polar retino-cortical map from MesmerPrism/bressloff-v1-form-constants, reproducing its five stability reports to 2.22e-16 and anchoring linear cortical magnification against Horton and Hoyt (1991) with 6.8% RMS relative error. However, it does not dynamically integrate the Bressloff (2001) V1 integro-differential neural field or compute the Rule et al. (2011) Floquet multipliers in Python, instead rendering static trigonometric superpositions and plotting pre-computed boundary curves from a static JSON fixture. Critically, the retinal pullback folds the horizontal coordinate via abs(ug) inside arctan2(vg, abs(ug)), forcing mirror symmetry across the vertical meridian and turning the oblique spiral roll into achiral heart/chevron cusps. Moreover, all four rendered gallery panels share identical biophysical parameters (q* = 1.4475, k* = 11 cycles) and differ only because the categorical pattern name and angle are manually switched, with three of the four rendered patterns differing from the cubic amplitude-equation selection. Overall 79.2/100 (faithfulness 74.1, reproducibility 91.1; model-implementation 76.0/100, biological-validation 72.8/100, applicable-only overall 79.2/100; uncalibrated rubric score, not a calibrated probability); rubric morphoeval 0.1.0; checkpoint commit 9b18c52; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 76, Morphological realism / specimen match 72, Parameter expressivity 76, Morphometric validation 74, Source and data traceability 94, Code-to-model traceability 86, Reproducibility package 92. Output judged: bressloff_v1_form_constants_morphospace.png: rendered output of 2001-bressloff-v1-form-constants.py at 9b18c52, image/png, 1048700 B, 2029×2087 px, artifact_sha256 b1c581d309d1ca62f759f511d26db59cb769c50d4aa1615f14631ebca9a943d4 (sha256 b1c581d309d1ca62f759f511d26db59cb769c50d4aa1615f14631ebca9a943d4), spec_fingerprint fff701034002726a27d7e6e2ee5c626f921c8d06f78514d8965ad139e7a192a7. Dual provenance: spec_fingerprint: fff701034002726a27d7e6e2ee5c626f921c8d06f78514d8965ad139e7a192a7; artifact_sha256: b1c581d309d1ca62f759f511d26db59cb769c50d4aa1615f14631ebca9a943d4; input_dataset_sha256: {datasets/bressloff/driven-neural-fields-registry.json=4f07b5175a48bcb5..., datasets/bressloff/paper-calibration.json=af12b2c1aa3e38fa..., datasets/bressloff/rule-2011-floquet.json=5e349c7b80185de4...}. Supersedes audit: 2026-10-19-bressloff-second-assessor-audit." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants> ;
+    pk:evidenceAgainst "remediation needed: 2001-bressloff-v1-form-constants.py:1134-1145 & 1404-1436 — The script does not implement the Rule, Stoffregen & Ermentrout (2011) parametrically forced E-I neural field or Floquet monodromy solver; it loads pre-computed curves from `datasets/bressloff/rule-2011-floquet.json` and plots all 20 `boundary_curves` across five different forcing amplitudes (`amplitude = 0.4, 0.6, 0.8, 1.0, 1.2`) and multiple branches onto Panel C without filtering by amplitude.",
+        "remediation needed: 2001-bressloff-v1-form-constants.py:489-501 & 579-581 — `orientation_eigen_details` silently clamps $O(\\beta)$ eigenfunction harmonics to `[-1.5, 1.5]` via `np.clip` and truncates at `max_harmonic = 4` (vs 10 in `branch_coupling_sum`), and `_make_branch_candidate` ranks competing branches with an undocumented heuristic score without equation citations.",
+        "remediation needed: 2001-bressloff-v1-form-constants.py:810-814 & 1092-1100 — All four gallery presets in `kluver_presets` share identical biophysical coupling parameters (`parity='even'`, `lateral_spread_deg=60.0`, `eigen_beta=0.35`, `lateral_sigma=1.0`, `lateral_wide_sigma=1.5`, yielding identical `q* = 1.4475` and `k* = 11`) and bypass `branch_selection` because `pattern != 'auto'`, so three of the four rendered panels (`rings`, `spiral`, `cobweb`) do not match the globally selected cubic branch (`hexagonal`, `rhombic`, `hexagonal`), and `fig31_square_even` (`cobweb`) is unstable even in lattice-local square scope (`selected_family = 'roll'`).",
+        "remediation needed: 2001-bressloff-v1-form-constants.py:838-850 & 1578 — Contoured planforms are approximated by the scalar envelope `np.tanh(best * eff_params.sharpness)` with `best = max_phi |val|` rather than oriented hypercolumn contour segments, and `make_gif` (line 1578) overrides `contour_mode = 'noncontoured'` while `planform_modes` (line 763) uses a non-integer phase multiplier `p_scale = 0.35` for `cobweb`, causing a phase-wrap jump in the animation.",
+        "remediation needed: 2001-bressloff-v1-form-constants.py:861 — `theta_hemi = np.arctan2(vg, np.abs(ug))` takes `np.abs(ug)`, restricting retinal polar angle to `[-pi/2, pi/2]` and reflecting the left visual hemifield across the vertical meridian `ug = 0`; this breaks chiral logarithmic spirals (`fig33_rhombic_even_roll`) into bilaterally symmetric heart/chevron curves with sharp vertical-meridian cusps.",
+        "remediation needed: 2001-bressloff-v1-form-constants.py:91 & datasets/bressloff/README.md:13 — `driven-neural-fields-registry.json` is SHA-256-pinned and credited in `datasets/bressloff/README.md` with the Gaussian negative control (`mackay_gaussian_kernel_negative_check` from Tamekue, Prandi & Chitour 2024), but the script never reads `driven-neural-fields-registry.json` beyond checksum verification and `paper_citations.bib` omits Tamekue et al. (2024) and Klüver (1966).",
+        "remediation needed: 2001-bressloff-v1-form-constants.py:966-1041 — `verify_paper_calibration_parity` and `summarize_fixture_checks` iterate only over the 5 entries in `cal_data['stability_reports']` (reporting 10/11 checks passed) and ignore the 16 preset runs in `cal_data['runs']` of `datasets/bressloff/paper-calibration.json`, where 7 presets have `status: 'review'` and 10 `same-lattice-branch-*` checks fail (including `fig31_square_even` at lines 361-379)." ;
+    pk:hasProbability 7.92e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-parameter-expressivity> a pk:LLMClaimAssessment ;
+    rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Parameter expressivity: 76/100" ;
+    rdfs:comment "Panel A demonstrates that widening lateral angular spread theta_0 from 0 deg (fig16_odd) to 60 deg (fig17_even) switches the critical eigenbranch from odd (q* = 1.0280) to even (q* = 1.0008), and that zeroing Mexican-hat lateral inhibition (lateral_inhibition = 0) collapses the interior wavenumber peak to q_min = 0.05. Panel B continuously sweeps wavevector intersection angle theta from 0 deg to 180 deg across the 0.5*gamma_3(0) roll/lattice stability threshold for both parity branches. Deduct 14 points because all four rendered form-constant presets in kluver_presets share identical biophysical coupling parameters (parity = 'even', lateral_spread_deg = 60.0, eigen_beta = 0.35, lateral_sigma = 1.0, lateral_wide_sigma = 1.5), yielding the exact same critical wavenumber q* = 1.4475 and k* = 11 cycles; the gallery morphologies change only because the categorical pattern string and pattern_angle_deg are manually switched in planform_modes. Deduct 6 points because none of the odd-parity planform presets (fig32_square_odd, fig34_rhombic_odd, fig36_triangle_odd) are rendered to show parity-driven contour changes. Deduct 4 points because continuous scale and tuning parameters (eigen_beta, hypercolumn_mm, local_sigma_deg, lateral_wide_sigma) are never swept across a range to show monotonic control of rendered wavelength or autonomous bifurcation switching, and preset wave_count values are unused. Evidence: 2001-bressloff-v1-form-constants.py L288–L368: PAPER_PRESETS definitions showing identical biophysical coupling parameters across all four rendered even-branch gallery presets. <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L288-L368>; 2001-bressloff-v1-form-constants.py L726–L790: Quantised q*-derived wavenumber ignoring preset wave_count, and manual pattern string dispatch in planform_modes. <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L726-L790>; 2001-bressloff-v1-form-constants.py L1092–L1132: Gallery loop over four hardcoded presets alongside the three-curve marginal-stability comparison (theta_0 = 0, theta_0 = 60, and I_lat = 0). <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L1092-L1132>; bressloff_v1_metrics.csv (generated output, not in repo): Exported metrics confirming all four rendered Klüver presets have identical critical_q = 1.447468 and linear_k_star = 11. — bressloff_v1_metrics.csv: rendered output of 2001-bressloff-v1-form-constants.py at 9b18c52, text/csv, 2983 B, artifact_sha256 525b9a2413dbd8214a47a3080df7ba044052ba336d68d52951443ebd03f2d8fa (sha256 525b9a2413dbd8214a47a3080df7ba044052ba336d68d52951443ebd03f2d8fa), spec_fingerprint fff701034002726a27d7e6e2ee5c626f921c8d06f78514d8965ad139e7a192a7." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-parameter-expressivity> ;
+    pk:hasProbability 7.6e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-repro-package> a pk:LLMClaimAssessment ;
+    rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Reproducibility package: 92/100" ;
+    rdfs:comment "The script is completely deterministic with zero stochastic dependencies, regenerates bressloff_v1_metrics.csv byte-for-byte identically on CLI execution, and provides a fast (~1.5 s) --self-test mode that verifies all four fixture SHA-256 digests, calibration parity, map inversion, magnification error bounds, and spectral classifications. It automatically selects the headless Agg backend when --no-show, --self-test, or no DISPLAY is present, and both requirements.txt and requirements.lock.txt pin a working Python environment. Deduct 4 points because the script docstring does not document its CLI flags (--out, --csv, --gif, --no-show, --self-test) or example invocations, README.md mentions only --gif PATH, and AGENTS.md omits the script from its top-level command list. Deduct 2 points because run_bressloff_analysis and make_gif write to output_png, output_csv, and output_gif without creating parent directories via parent.mkdir(parents=True, exist_ok=True), raising FileNotFoundError if a non-existent output directory is passed. Deduct 2 points for minor precision-bound drift between README.md ('<= 6.7e-16'), the script docstring ('~1e-15'), and actual self-test output ('2.22e-16'). Evidence: 2001-bressloff-v1-form-constants.py L1–L80: Module docstring lacking CLI usage examples, followed by automatic headless Agg backend selection. <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L1-L80>; 2001-bressloff-v1-form-constants.py L1628–L1739: Comprehensive deterministic self_test() suite and argparse CLI entrypoint in main(). <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L1628-L1739>; requirements.lock.txt L1–L51: Pinned dependency lockfile for the ./venv execution environment. <https://github.com/fractastical/morpholib/blob/9b18c52/requirements.lock.txt#L1-L51>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-repro-package> ;
+    pk:hasProbability 9.2e-01 ;
+    pk:hasVerdict "faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-source-traceability> a pk:LLMClaimAssessment ;
+    rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Source and data traceability: 94/100" ;
+    rdfs:comment "All five primary papers (Bressloff et al. 2001, Bressloff et al. 2002, Ermentrout and Cowan 1979, Rule et al. 2011, and Horton and Hoyt 1991) are cited with resolvable DOIs and PMIDs in the script docstring, datasets/bressloff/README.md, and datasets/bressloff/paper_citations.bib. The upstream repository MesmerPrism/bressloff-v1-form-constants is pinned to exact commit 344863a1bd9e8a8e8c9cb20aced2897f3ffb2c4c with full MIT license attribution to Karacsony and Holzapfel, and horton_hoyt_1991_magnification.json is clearly distinguished as a repository-authored empirical fixture. Runtime SHA-256 verification via verify_fixture_checksums guards all four JSON files in datasets/bressloff/. Deduct 4 points because driven-neural-fields-registry.json is SHA-256-pinned and described in datasets/bressloff/README.md as providing the Gaussian negative control (mackay_gaussian_kernel_negative_check from Tamekue, Prandi and Chitour 2024), yet the script never reads that file beyond checksum verification and Tamekue et al. (2024) is absent from paper_citations.bib. Deduct 2 points because Klüver (1966), the foundational source for the four form-constant taxonomy named throughout the script, lacks a formal bibliographic entry. Evidence: 2001-bressloff-v1-form-constants.py L11–L37: Primary literature DOIs/PMIDs and upstream MesmerPrism/bressloff-v1-form-constants commit hash in module docstring. <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L11-L37>; 2001-bressloff-v1-form-constants.py L87–L93: SHA-256 checksum dictionary pinning all four JSON fixtures, including the otherwise unread driven-neural-fields-registry.json. <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L87-L93>; datasets/bressloff/README.md L7–L39: Provenance table, fixture caveats, primary literature links, and MIT license notice. <https://github.com/fractastical/morpholib/blob/9b18c52/datasets/bressloff/README.md#L7-L39>; datasets/bressloff/paper_citations.bib L1–L69: BibTeX entries for the five primary papers with DOIs and PMIDs. <https://github.com/fractastical/morpholib/blob/9b18c52/datasets/bressloff/paper_citations.bib#L1-L69>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-source-traceability> ;
+    pk:hasProbability 9.4e-01 ;
+    pk:hasVerdict "faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-specimen-match> a pk:LLMClaimAssessment ;
+    rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Morphological realism / specimen match: 72/100" ;
+    rdfs:comment "On the flat cortical sheet, the four gallery panels clearly distinguish vertical rolls, oblique rolls, square lattices, and hexagonal lattices, and the Tunnel/Rings retinal pullback produces concentric rings that dilate with eccentricity as expected for Klüver's tunnel form constant. Panel D also provides a clean visual comparison between the Bressloff map's linear magnification and the empirical human V1 curve of Horton and Hoyt (1991). Deduct 10 points because the Spiral/Funnel retinal pullback (Col 2, fig33_rhombic_even_roll) fails to produce a logarithmic spiral or radial funnel, instead rendering bilaterally symmetric heart/chevron loops with vertical-meridian cusps caused by arctan2(vg, abs(ug)). Deduct 8 points because _eval_xy renders scalar tanh(sharpness * max_phi |val|) in continuous twilight_shifted pseudocolor (and make_gif forces noncontoured mode) rather than Bressloff's oriented contour segments, causing the Cobweb and Honeycomb retinal pullbacks at 160x160 resolution to appear as radially warped moiré spot interference. Deduct 6 points because no empirical subject drawings or digitized paper curves are overlaid, and Panel C plots all 20 Floquet boundary curves across five forcing amplitudes (0.4 to 1.2) on top of one another under two legend labels while failing upstream acceptance (RMS beta error 0.154 > 0.10). Deduct 4 points because planform_modes assigns p_scale = 0.35 to the second cobweb mode, creating a discontinuous phase jump at the loop boundary in docs/media/bressloff_v1_form_constants.gif. Evidence: bressloff_v1_form_constants_morphospace.png (generated output, not in repo): Composite 4x4 figure showing distinct cortical lattices, concentric tunnel pullback, cusped heart-shaped spiral pullback, warped moire cobweb/honeycomb pullbacks, and multi-amplitude Floquet overlay. — bressloff_v1_form_constants_morphospace.png: rendered output of 2001-bressloff-v1-form-constants.py at 9b18c52, image/png, 1048700 B, 2029×2087 px, artifact_sha256 b1c581d309d1ca62f759f511d26db59cb769c50d4aa1615f14631ebca9a943d4 (sha256 b1c581d309d1ca62f759f511d26db59cb769c50d4aa1615f14631ebca9a943d4), spec_fingerprint fff701034002726a27d7e6e2ee5c626f921c8d06f78514d8965ad139e7a192a7; docs/media/bressloff_v1_form_constants.gif (generated output, not in repo): 36-frame phase-drift animation forced to noncontoured mode with visible cobweb phase discontinuity and bilateral cusp in the spiral panel. — docs/media/bressloff_v1_form_constants.gif: rendered output of 2001-bressloff-v1-form-constants.py at 9b18c52, image/gif, 2282654 B, 640×340 px, 36 frames, artifact_sha256 12087533329905e1581829715b978712ba3293d1dc6daea2b2e6d70615b13b11 (sha256 12087533329905e1581829715b978712ba3293d1dc6daea2b2e6d70615b13b11), spec_fingerprint fff701034002726a27d7e6e2ee5c626f921c8d06f78514d8965ad139e7a192a7; 2001-bressloff-v1-form-constants.py L838–L865: Scalar max_phi envelope rendering and arctan2(vg, abs(ug)) hemifield reflection producing the vertical-meridian cusp. <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L838-L865>; 2001-bressloff-v1-form-constants.py L1404–L1436: Panel C loop plotting all 20 boundary_curves across five forcing amplitudes from rule-2011-floquet.json under two legend entries. <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L1404-L1436>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-specimen-match> ;
+    pk:hasProbability 7.2e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/claim/morphoeval-bressloff-v1-form-constants> a pk:Claim ;
+    rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants (Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes)" ;
+    dct:conformsTo <https://w3id.org/probknow/resource/math-law/bressloff-v1-form-constants-1>,
+        <https://w3id.org/probknow/resource/math-law/bressloff-v1-form-constants-2>,
+        <https://w3id.org/probknow/resource/math-law/bressloff-v1-form-constants-3> ;
+    schema:about "Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+    pk:derivedFromPaper <https://doi.org/10.1001/archopht.1991.01080060080030>,
+        <https://doi.org/10.1007/BF00336965>,
+        <https://doi.org/10.1098/rstb.2000.0769>,
+        <https://doi.org/10.1162/089976602317250861>,
+        <https://doi.org/10.1371/journal.pcbi.1002158> ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-1>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-2>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-3>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-4>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-5>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-6>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-7>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-8> ;
+    pk:hypothesisType "Euclidean Symmetry-Breaking Neural-Field Bifurcation & Log-Polar Retino-Cortical Geometry" ;
+    pk:weightOfEvidence 7.92e-01 .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants> rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants faithfully reproduces Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes morphology" ;
+    dct:identifier "morphoeval/0.1.0/overall" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-code-traceability> rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants (2001-bressloff-v1-form-constants.py, docs/media/bressloff_v1_form_constants.gif, bressloff_v1_metrics.csv, datasets/bressloff/horton_hoyt_1991_magnification.json) satisfies the MorphoEval 0.1.0 criterion 'Code-to-model traceability' for Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+    dct:identifier "morphoeval/0.1.0/code-traceability" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-model-fidelity> rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants (2001-bressloff-v1-form-constants.py, docs/media/bressloff_v1_form_constants.gif, bressloff_v1_metrics.csv, datasets/bressloff/horton_hoyt_1991_magnification.json) satisfies the MorphoEval 0.1.0 criterion 'Model fidelity to source' for Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+    dct:identifier "morphoeval/0.1.0/model-fidelity" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-morphometric-validation> rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants (2001-bressloff-v1-form-constants.py, docs/media/bressloff_v1_form_constants.gif, bressloff_v1_metrics.csv, datasets/bressloff/horton_hoyt_1991_magnification.json) satisfies the MorphoEval 0.1.0 criterion 'Morphometric validation' for Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+    dct:identifier "morphoeval/0.1.0/morphometric-validation" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-parameter-expressivity> rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants (2001-bressloff-v1-form-constants.py, docs/media/bressloff_v1_form_constants.gif, bressloff_v1_metrics.csv, datasets/bressloff/horton_hoyt_1991_magnification.json) satisfies the MorphoEval 0.1.0 criterion 'Parameter expressivity' for Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+    dct:identifier "morphoeval/0.1.0/parameter-expressivity" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-repro-package> rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants (2001-bressloff-v1-form-constants.py, docs/media/bressloff_v1_form_constants.gif, bressloff_v1_metrics.csv, datasets/bressloff/horton_hoyt_1991_magnification.json) satisfies the MorphoEval 0.1.0 criterion 'Reproducibility package' for Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+    dct:identifier "morphoeval/0.1.0/repro-package" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-source-traceability> rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants (2001-bressloff-v1-form-constants.py, docs/media/bressloff_v1_form_constants.gif, bressloff_v1_metrics.csv, datasets/bressloff/horton_hoyt_1991_magnification.json) satisfies the MorphoEval 0.1.0 criterion 'Source and data traceability' for Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+    dct:identifier "morphoeval/0.1.0/source-traceability" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-specimen-match> rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants (2001-bressloff-v1-form-constants.py, docs/media/bressloff_v1_form_constants.gif, bressloff_v1_metrics.csv, datasets/bressloff/horton_hoyt_1991_magnification.json) satisfies the MorphoEval 0.1.0 criterion 'Morphological realism / specimen match' for Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+    dct:identifier "morphoeval/0.1.0/specimen-match" .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-1> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "bressloff-v1-form-constants stability_reports parity, max |Δ|" ;
+    dct:description "maximum absolute error across all 5 Bressloff (2001) stability_reports (q*, λ*, γ(0), γ(θ), η_hex) vs paper-calibration.json" ;
+    dct:source "MesmerPrism/bressloff-v1-form-constants commit 344863a1bd9e8a8e8c9cb20aced2897f3ffb2c4c" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+    schema:error 0e+00 ;
+    schema:targetValue 0e+00 ;
+    schema:unitText "dimensionless" ;
+    schema:value 0e+00 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-2> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "Mexican-hat lateral inhibition critical wavenumber q* (Bressloff 2001 Fig. 16)" ;
+    dct:description "maximizer of max(λ_even(q), λ_odd(q)) with lateral_inhibition = 0.27" ;
+    dct:source "Bressloff et al. 2001 Phil. Trans. R. Soc. B 356:299 Fig. 16" ;
+    rdfs:comment "interior peak prominence = 0.1200" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+    schema:targetValue ">0.5 (finite Turing/Euclidean symmetry-breaking wavelength)" ;
+    schema:unitText "dimensionless wavenumber" ;
+    schema:value 1.028e+00 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-3> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "Gaussian-only negative control critical wavenumber q* (lateral_inhibition = 0)" ;
+    dct:description "maximizer of λ(q) when Mexican-hat surround inhibition is removed (lateral_inhibition = 0.0)" ;
+    dct:source "q_min boundary of [0.05, 3.0] grid (monotonically decaying dispersion, prominence = 0.0)" ;
+    rdfs:comment "interior peak prominence = 0.00e+00" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+    schema:error 0e+00 ;
+    schema:targetValue 5e-02 ;
+    schema:unitText "dimensionless wavenumber" ;
+    schema:value 5e-02 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-4> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "Klüver Tunnel/Rings cortical planform spectral ring sharpness" ;
+    dct:description "2D FFT radial power spectrum peak/median ratio at k* = 11 cycles" ;
+    dct:source "Bressloff et al. 2001 Fig. 7 / Klüver 1966 Tunnel form constant" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+    schema:targetValue ">5.0" ;
+    schema:unitText "ratio (peak/median PSD)" ;
+    schema:value 3.1331e+01 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-5> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "Klüver Honeycomb/Hex linear cortical planform spectral ring wavenumber k*" ;
+    dct:description "dominant radial FFT wavenumber of the linear 3-mode hexagonal eigenmode superposition (non-contoured, weak tanh); the rendered wavenumber is q*/d_hyp quantised to integer cycles on the 2πβ/ε torus" ;
+    dct:source "Bressloff et al. 2001 Fig. 35 / Klüver 1966 Honeycomb form constant" ;
+    rdfs:comment "contoured-rendering k* = 21 (power moves to the √3·k difference ring); FFT lattice class = hexagonal" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+    schema:targetValue "11 (q*/d_hyp = 11.27 cycles)" ;
+    schema:unitText "cycles / domain" ;
+    schema:value 1.1e+01 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-6> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "Retino-cortical magnification vs Horton & Hoyt (1991), RMS relative error over 1-40 deg" ;
+    dct:description "RMS of (α/(w0+εr) − 17.3/(E+0.75)) / (17.3/(E+0.75)) over 157 eccentricities in [1, 40] deg" ;
+    dct:source "Horton & Hoyt 1991 Arch. Ophthalmol. 109:816 (doi:10.1001/archopht.1991.01080060080030); datasets/bressloff/horton_hoyt_1991_magnification.json" ;
+    rdfs:comment "max |rel err| = 0.300; fovea→90° extent 74.6 mm (model) vs 83.0 mm (H&H)" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+    schema:targetValue "0 (perfect agreement); map-implied A = α/ε = 18.72 mm/deg, E2 = w0/ε = 1.71 deg vs 17.3, 0.75" ;
+    schema:unitText "dimensionless" ;
+    schema:value 6.78e-02 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-7> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "Upstream fixture paper-expectation checks passed (paper-calibration.json)" ;
+    dct:description "number of the fixture's own expected-vs-actual checks that pass, out of 11" ;
+    dct:source "MesmerPrism/bressloff-v1-form-constants commit 344863a1bd9e8a8e8c9cb20aced2897f3ffb2c4c, stability_reports[*].checks" ;
+    rdfs:comment "fig40_odd_hex_bifurcation/selected-pattern: expected triangle, actual honeycomb" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+    schema:error 9.0909e+00 ;
+    schema:targetValue 1.1e+01 ;
+    schema:unitText "count" ;
+    schema:value 1e+01 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-bressloff-second-assessor-audit-v2-bressloff-v1-form-constants-8> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "Rule et al. (2011) Fig. 8 overlay domain-normalised RMS β error (diagnostic, no calibration claim)" ;
+    dct:description "rule-2011-floquet.json source_curve_comparison.domain_beta_mapping.rms_error" ;
+    dct:source "Rule, Stoffregen & Ermentrout 2011 PLoS Comput. Biol. 7:e1002158 Fig. 8 via upstream fixture" ;
+    rdfs:comment "acceptance_status = outside-threshold-diagnostic; calibration_claim_allowed = False" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+    schema:targetValue "<= 0.10 acceptance threshold (NOT met)" ;
+    schema:unitText "normalised wavenumber β" ;
+    schema:value 1.54e-01 .
+
+<https://w3id.org/probknow/resource/concept/math-of-biology> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Validated Mathematics of Biological Form" ;
+    skos:narrower <https://w3id.org/probknow/resource/math-law/bressloff-v1-form-constants-1>,
+        <https://w3id.org/probknow/resource/math-law/bressloff-v1-form-constants-2>,
+        <https://w3id.org/probknow/resource/math-law/bressloff-v1-form-constants-3> .
+
+<https://w3id.org/probknow/resource/math-law/bressloff-v1-form-constants-1> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Ermentrout & Cowan (1979) / Bressloff et al. (2001) Retino-Cortical Pullback Classification" ;
+    dct:description "Maps V1 roll planforms onto Klüver's tunnel, funnel and spiral form constants; the cortical lattice orientation decides which retinal form constant is seen | Variables: r, θ: retinal polar coordinates; x, y: cortical coordinates (mm); α, β: cortical magnification constants; ε: foveal scale; w₀: foveal radius; (k_x, k_y): cortical planform wavevector" ;
+    dct:source "Ermentrout & Cowan (1979) Biol. Cybern. 34:137; Bressloff et al. (2001) Phil. Trans. R. Soc. B 356:299 §2; Bressloff et al. (2002) Neural Comput. 14:473 Eq. 2.1" ;
+    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L96-L121,L759-L790,L854-L863>,
+        <https://github.com/fractastical/morpholib/blob/9b18c52/morphoeval/lean/MathOfBiology.lean#L507-L531> ;
+    skos:broader <https://w3id.org/probknow/resource/concept/math-of-biology> ;
+    skos:definition """def retino_cortical_phase (kx ky x y : Int) : Int := kx * x + ky * y
+theorem ermentrout_cowan_tunnel_rings (kx x y y' : Int) :
+    retino_cortical_phase kx 0 x y = retino_cortical_phase kx 0 x y' := by simp [retino_cortical_phase]
+theorem ermentrout_cowan_funnel_rays (ky x x' y : Int) :
+    retino_cortical_phase 0 ky x y = retino_cortical_phase 0 ky x' y := by simp [retino_cortical_phase]
+theorem ermentrout_cowan_log_spiral (kx ky x x' y y' : Int) :
+    retino_cortical_phase kx ky x y - retino_cortical_phase kx ky x' y' =
+    kx * (x - x') + ky * (y - y') := by
+  simp [retino_cortical_phase, Int.mul_sub]
+  omega"""^^pk:lean4 ;
+    skos:notation "x = (α/ε) ln(ε r/w₀),  y = (β/ε) θ;  phase(k_x, k_y) = k_x x + k_y y:  k_y = 0 → rings (tunnel),  k_x = 0 → rays (funnel),  else log-spiral θ = c − (k_x/k_y) ln r" ;
+    prov:wasDerivedFrom <https://doi.org/10.1001/archopht.1991.01080060080030>,
+        <https://doi.org/10.1007/BF00336965>,
+        <https://doi.org/10.1098/rstb.2000.0769>,
+        <https://doi.org/10.1162/089976602317250861>,
+        <https://doi.org/10.1371/journal.pcbi.1002158> ;
+    schema:programmingLanguage "Lean 4" ;
+    pk:hypothesisType "Euclidean Symmetry-Breaking Neural-Field Bifurcation & Log-Polar Retino-Cortical Geometry" ;
+    pk:leanDeclaration "MathOfBiology.retino_cortical_phase" ;
+    pk:leanTheorem "MathOfBiology.ermentrout_cowan_log_spiral" ;
+    pk:leanVerified true .
+
+<https://w3id.org/probknow/resource/math-law/bressloff-v1-form-constants-2> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Bressloff et al. (2001) Cubic Amplitude-Equation Roll/Lattice Stability Boundary" ;
+    dct:description "Selects rolls vs rhombic, square or hexagonal lattices (Figs. 37–40); decides whether a hallucination is a single-family tunnel/spiral or a cobweb/honeycomb | Variables: A_i: squared mode amplitudes; λ: bifurcation parameter (distance past marginal stability); γ₀ = γ₃(0): self-coupling; γ₃(θ): cross-mode cubic coupling at wavevector angle θ (Eq. 5.15)" ;
+    dct:source "Bressloff et al. (2001) Phil. Trans. R. Soc. B 356:299 §5 Eqs. 5.12–5.15, Figs. 37–40" ;
+    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L516-L541,L595-L693>,
+        <https://github.com/fractastical/morpholib/blob/9b18c52/morphoeval/lean/MathOfBiology.lean#L533-L561> ;
+    skos:broader <https://w3id.org/probknow/resource/concept/math-of-biology> ;
+    skos:definition """def amplitude_rhs (lam gamma0 gamma_theta a_self a_other : Int) : Int :=
+  lam - gamma0 * a_self - 2 * gamma_theta * a_other
+theorem bressloff_roll_fixed_point (gamma0 gamma_theta a : Int) :
+    amplitude_rhs (gamma0 * a) gamma0 gamma_theta a 0 = 0 := by simp [amplitude_rhs]
+theorem bressloff_roll_transverse_growth (gamma0 gamma_theta a : Int) :
+    amplitude_rhs (gamma0 * a) gamma0 gamma_theta 0 a = (gamma0 - 2 * gamma_theta) * a := by
+  simp [amplitude_rhs, Int.sub_mul]
+theorem bressloff_roll_stable_iff (gamma0 gamma_theta : Int) :
+    amplitude_rhs (gamma0 * 1) gamma0 gamma_theta 0 1 < 0 ↔ gamma0 < 2 * gamma_theta := by
+  simp [amplitude_rhs]
+  omega
+theorem bressloff_fig38_roll_unstable :
+    amplitude_rhs (3768 * 1) 3768 1869 0 1 = 30 := by decide"""^^pk:lean4 ;
+    skos:notation "dA₁/dt = A₁ (λ − γ₀ A₁ − 2 γ₃(θ) A₂);  roll fixed point λ = γ₀ A₁;  transverse growth (γ₀ − 2γ₃(θ)) A₁;  roll stable ⇔ γ₀ < 2 γ₃(θ)" ;
+    prov:wasDerivedFrom <https://doi.org/10.1001/archopht.1991.01080060080030>,
+        <https://doi.org/10.1007/BF00336965>,
+        <https://doi.org/10.1098/rstb.2000.0769>,
+        <https://doi.org/10.1162/089976602317250861>,
+        <https://doi.org/10.1371/journal.pcbi.1002158> ;
+    schema:programmingLanguage "Lean 4" ;
+    pk:hypothesisType "Euclidean Symmetry-Breaking Neural-Field Bifurcation & Log-Polar Retino-Cortical Geometry" ;
+    pk:leanDeclaration "MathOfBiology.amplitude_rhs" ;
+    pk:leanTheorem "MathOfBiology.bressloff_roll_stable_iff" ;
+    pk:leanVerified true .
+
+<https://w3id.org/probknow/resource/math-law/bressloff-v1-form-constants-3> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Rule, Stoffregen & Ermentrout (2011) Floquet Resonance Tongues (1:1 Harmonic vs 2:1 Period-Doubling)" ;
+    dct:description "Separates flicker-induced stripe phosphenes (harmonic tongue) from period-doubled hexagonal phosphenes (subharmonic tongue) across (T, β) | Variables: μ: Floquet multiplier of the homogeneous flicker orbit; T: forcing period (ms); β: normalised wave number; n: number of elapsed forcing periods" ;
+    dct:source "Rule, Stoffregen & Ermentrout (2011) PLoS Comput. Biol. 7(9):e1002158 Fig. 8" ;
+    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L1134-L1146,L1397-L1456>,
+        <https://github.com/fractastical/morpholib/blob/9b18c52/morphoeval/lean/MathOfBiology.lean#L563-L588> ;
+    skos:broader <https://w3id.org/probknow/resource/concept/math-of-biology> ;
+    skos:definition """def floquet_iterate (mu : Int) : Nat → Int
+  | 0 => 1
+  | n + 1 => mu * floquet_iterate mu n
+theorem rule_2011_harmonic_returns_each_period (n : Nat) : floquet_iterate 1 n = 1
+theorem rule_2011_period_doubling_even_odd (n : Nat) :
+    floquet_iterate (-1) (2 * n) = 1 ∧ floquet_iterate (-1) (2 * n + 1) = -1"""^^pk:lean4 ;
+    skos:notation "mode after n forcing periods = μⁿ;  μ = +1 (1:1 stripes) → μⁿ = 1;  μ = −1 (2:1 hexagons) → μ^{2n} = 1, μ^{2n+1} = −1" ;
+    prov:wasDerivedFrom <https://doi.org/10.1001/archopht.1991.01080060080030>,
+        <https://doi.org/10.1007/BF00336965>,
+        <https://doi.org/10.1098/rstb.2000.0769>,
+        <https://doi.org/10.1162/089976602317250861>,
+        <https://doi.org/10.1371/journal.pcbi.1002158> ;
+    schema:programmingLanguage "Lean 4" ;
+    pk:hypothesisType "Euclidean Symmetry-Breaking Neural-Field Bifurcation & Log-Polar Retino-Cortical Geometry" ;
+    pk:leanDeclaration "MathOfBiology.floquet_iterate" ;
+    pk:leanTheorem "MathOfBiology.rule_2011_period_doubling_even_odd" ;
+    pk:leanVerified true .
+
+<https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+    rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+

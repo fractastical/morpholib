@@ -1,0 +1,89 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAc7xT1rDNH5s0YTzntmLbzTwDojQ3tJ1rHXjwIns_v2U/> .
+@prefix this: <https://w3id.org/np/RAc7xT1rDNH5s0YTzntmLbzTwDojQ3tJ1rHXjwIns_v2U> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-audit-v2-bressloff-v1-form-constants-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Model fidelity to source: 72/100" ;
+        rdfs:comment "The core equations are implemented in the published form: W_n = exp(-2 n^2 xi^2) - A exp(-2 n^2 xi_hat^2) for the local coupling, the lateral harmonics as the Hankel transform of a normalised Gaussian difference exp(-xi^2 q^2/4) I_n(xi^2 q^2/4) with the anisotropy factor sin(2 n theta_0)/(2 n theta_0) and sign (-1)^n, the dispersion relation lambda_pm(q) = W_1 + beta (W_0 pm W_2) + beta^2 sum_m (W_{m-1} pm W_{m+1})^2/(W_1 - W_m), gamma_3(theta) and eta_hex as orientation integrals of the eigenfunction, the roll criterion 2 gamma_3(theta) > gamma_0, and the exact map x = (alpha/eps) ln(1 + eps r/w_0), y = beta r theta/(w_0 + eps r). Deductions: parity is verified only against the Rust port's own scan values, never against a number, curve or critical wavenumber reported in the paper (-8); branch selection adds a non-paper free-energy \"score\" ranking, a lattice-local fallback, coefficient clipping to +-1.5 and an assumed-stable even hexagon rather than the paper's per-lattice stability analysis (-6); the \"contoured\" planform is rendered as max over phi of a scalar activity then tanh-sharpened, discarding the orientation field that defines contoured planforms in Figs 31-36 (-6); the map constants alpha = 3/pi and beta = 1.589/2 are asserted without derivation (-3); the gallery presets silently inherit lateral_wide_sigma = 1.5 while the Fig 16/17 panel uses 3.0, so the rendered q* = 1.45 is not the q* = 1.0 shown in Panel A (-5). Evidence: 2001-bressloff-v1-form-constants.py L389–L438: Local W_n and lateral Fourier-Bessel W_n^lat(q) with sin(2n theta0)/(2n theta0) anisotropy and normalised-Gaussian 0.5 prefactor; matches Bressloff 2001 Sections 3-4 <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L389-L438>; 2001-bressloff-v1-form-constants.py L449–L469: Second-order perturbative dispersion relation lambda_even/odd(q); m=0 term vanishes on the odd branch as in the paper <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L449-L469>; 2001-bressloff-v1-form-constants.py L554–L640: Cubic coefficients and roll criterion 2*gamma3 > gamma0 are correct, but global selection uses an ad-hoc energy score and even-hex stability is assumed <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L554-L640>; 2001-bressloff-v1-form-constants.py L837–L850: Contoured rendering collapses the orientation field to max_phi |activity| then tanh(sharpness*.); not the oriented-segment planform of the paper <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L837-L850>." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-model-fidelity> ;
+        pk:hasProbability "0.72"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-model-fidelity> rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants (2001-bressloff-v1-form-constants.py, docs/media/bressloff_v1_form_constants.gif, bressloff_v1_metrics.csv, datasets/bressloff/horton_hoyt_1991_magnification.json) satisfies the MorphoEval 0.1.0 criterion 'Model fidelity to source' for Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+        dcterms:identifier "morphoeval/0.1.0/model-fidelity" .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary) + Gemini 4 Argon (independent blinded second assessor)" .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "COxbg1K26dN/sCTfdDNxYRYEz9AKCkF970WuJf01J261LQKwL7JcZx0TVFFgbO0YIgySqjeYkNUpEeIEg6Wuh7/kpFPSUPrDeNZB5B+ajlTuhQE0weUc7pNC6mFd7voc0943wYMS0RBRBPSm9UqufOEtEYPgu/YqBuHYm7UQGMfEng3bARJ9HhYf7okwcrt7b4vO/8x0NsJ9XTn1FS6SSV99IjJKShj2jxH12KXCtH1nIRCm8nbX6yVFEC6BqWFT32/a1ANqt8WY7tvhfmV/lgSyE9wo6SQ9w/9bbd0BC8kElwHyWxSouAw0veLySvszlID4yw8wdUM4FxcYKvu7lw==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Model fidelity to source 72/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-19T21:05:45Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-audit-v2-bressloff-v1-form-constants-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf orcid:0009-0007-4948-9192 .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1001/archopht.1991.01080060080030> dcterms:date "1991"^^xsd:gYear ;
+        dcterms:title "The representation of the visual field in human striate cortex: a revision of the classic Holmes map" .
+
+    <https://doi.org/10.1007/BF00336965> dcterms:date "1979"^^xsd:gYear ;
+        dcterms:title "A mathematical theory of visual hallucination patterns" .
+
+    <https://doi.org/10.1098/rstb.2000.0769> dcterms:date "2001"^^xsd:gYear ;
+        dcterms:title "Geometric visual hallucinations, Euclidean symmetry and the functional architecture of striate cortex" .
+
+    <https://doi.org/10.1162/089976602317250861> dcterms:date "2002"^^xsd:gYear ;
+        dcterms:title "What geometric visual hallucinations tell us about the visual cortex" .
+
+    <https://doi.org/10.1371/journal.pcbi.1002158> dcterms:date "2011"^^xsd:gYear ;
+        dcterms:title "A model for the origin and properties of flicker-induced geometric phosphenes" .
+
+    sub1:assertion prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1001/archopht.1991.01080060080030>,
+            <https://doi.org/10.1007/BF00336965>,
+            <https://doi.org/10.1098/rstb.2000.0769>,
+            <https://doi.org/10.1162/089976602317250861>,
+            <https://doi.org/10.1371/journal.pcbi.1002158> .
+}
+

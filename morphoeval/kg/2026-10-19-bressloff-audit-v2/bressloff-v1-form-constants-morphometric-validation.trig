@@ -1,0 +1,71 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-audit-v2-bressloff-v1-form-constants-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Morphometric validation: 45/100" ;
+        rdfs:comment "Quantitative metrics are computed on the output (radial FFT ring k*, ring sharpness, azimuthal m2/m4/m6 lattice discriminator) and a genuinely empirical comparison exists: the map's magnification dx/dr is compared with Horton & Hoyt (1991) M(E) = 17.3/(E + 0.75) over 1-40 degrees, with the 6.8% RMS, 30% maximum and the A = 18.72 vs 17.3, E2 = 1.71 vs 0.75 mismatch all disclosed. Deductions: the FFT metrics are compared only to the model's own q*-derived cycle count and to the preset's intended lattice class, i.e. self-consistency, not to any measured specimen value (-20); the magnification check validates a map parameter, not a morphometric of the rendered form, and no ring count, wavelength or lambda_c = 8.7 mm is compared with subject reports or the paper's hypercolumn-wavelength estimate (-15); the Rule (2011) panel plots an upstream numerical fixture that fails 4 of its own acceptance checks and contains no psychophysical flicker data (-12); the stated explanation of the hex contoured k* = 21 as the sqrt(3)k difference ring does not match (sqrt(3)*11 = 19.05; the measured power peak is at 21-22, the 2k tanh harmonic) (-8). Evidence: 2001-bressloff-v1-form-constants.py L133–L164: Horton & Hoyt comparison: RMS/max relative error and implied A, E2; the one literature-anchored quantitative check <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L133-L164>; 2001-bressloff-v1-form-constants.py L878–L937: FFT ring and azimuthal metrics compared against model's own rendered_cycles and intended lattice class only <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L878-L937>; 2001-bressloff-v1-form-constants.py L1103–L1111: sqrt(3)k explanation for hex contoured k*; measured peak is at 2k not sqrt(3)k <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L1103-L1111>; 2001-bressloff-v1-form-constants.py L1133–L1145: Rule 2011 panel is a pass-through of fixture curves with calibration_claim_allowed=false; no empirical phosphene data <https://github.com/fractastical/morpholib/blob/9b18c52/2001-bressloff-v1-form-constants.py#L1133-L1145>. Measurements (measure_outputs.py): bressloff-v1-form-constants stability_reports parity, max |Δ| = 0.0 dimensionless (reference 0.0, MesmerPrism/bressloff-v1-form-constants commit 344863a1bd9e8a8e8c9cb20aced2897f3ffb2c4c) [maximum absolute error across all 5 Bressloff (2001) stability_reports (q*, λ*, γ(0), γ(θ), η_hex) vs paper-calibration.json]; Mexican-hat lateral inhibition critical wavenumber q* (Bressloff 2001 Fig. 16) = 1.028 dimensionless wavenumber (reference >0.5 (finite Turing/Euclidean symmetry-breaking wavelength), Bressloff et al. 2001 Phil. Trans. R. Soc. B 356:299 Fig. 16) [maximizer of max(λ_even(q), λ_odd(q)) with lateral_inhibition = 0.27] — interior peak prominence = 0.1200; Gaussian-only negative control critical wavenumber q* (lateral_inhibition = 0) = 0.05 dimensionless wavenumber (reference 0.05, q_min boundary of [0.05, 3.0] grid (monotonically decaying dispersion, prominence = 0.0)) [maximizer of λ(q) when Mexican-hat surround inhibition is removed (lateral_inhibition = 0.0)] — interior peak prominence = 0.00e+00; Klüver Tunnel/Rings cortical planform spectral ring sharpness = 31.331 ratio (peak/median PSD) (reference >5.0, Bressloff et al. 2001 Fig. 7 / Klüver 1966 Tunnel form constant) [2D FFT radial power spectrum peak/median ratio at k* = 11 cycles]; Klüver Honeycomb/Hex linear cortical planform spectral ring wavenumber k* = 11.0 cycles / domain (reference 11 (q*/d_hyp = 11.27 cycles), Bressloff et al. 2001 Fig. 35 / Klüver 1966 Honeycomb form constant) [dominant radial FFT wavenumber of the linear 3-mode hexagonal eigenmode superposition (non-contoured, weak tanh); the rendered wavenumber is q*/d_hyp quantised to integer cycles on the 2πβ/ε torus] — contoured-rendering k* = 21 (power moves to the √3·k difference ring); FFT lattice class = hexagonal; Retino-cortical magnification vs Horton & Hoyt (1991), RMS relative error over 1-40 deg = 0.0678 dimensionless (reference 0 (perfect agreement); map-implied A = α/ε = 18.72 mm/deg, E2 = w0/ε = 1.71 deg vs 17.3, 0.75, Horton & Hoyt 1991 Arch. Ophthalmol. 109:816 (doi:10.1001/archopht.1991.01080060080030); datasets/bressloff/horton_hoyt_1991_magnification.json) [RMS of (α/(w0+εr) − 17.3/(E+0.75)) / (17.3/(E+0.75)) over 157 eccentricities in [1, 40] deg] — max |rel err| = 0.300; fovea→90° extent 74.6 mm (model) vs 83.0 mm (H&H); Upstream fixture paper-expectation checks passed (paper-calibration.json) = 10.0 count (reference 11.0, MesmerPrism/bressloff-v1-form-constants commit 344863a1bd9e8a8e8c9cb20aced2897f3ffb2c4c, stability_reports[*].checks) [number of the fixture's own expected-vs-actual checks that pass, out of 11] — fig40_odd_hex_bifurcation/selected-pattern: expected triangle, actual honeycomb; Rule et al. (2011) Fig. 8 overlay domain-normalised RMS β error (diagnostic, no calibration claim) = 0.154 normalised wavenumber β (reference <= 0.10 acceptance threshold (NOT met), Rule, Stoffregen & Ermentrout 2011 PLoS Comput. Biol. 7:e1002158 Fig. 8 via upstream fixture) [rule-2011-floquet.json source_curve_comparison.domain_beta_mapping.rms_error] — acceptance_status = outside-threshold-diagnostic; calibration_claim_allowed = False." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-morphometric-validation> ;
+        pk:hasProbability "0.45"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-morphometric-validation> rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants (2001-bressloff-v1-form-constants.py, docs/media/bressloff_v1_form_constants.gif, bressloff_v1_metrics.csv, datasets/bressloff/horton_hoyt_1991_magnification.json) satisfies the MorphoEval 0.1.0 criterion 'Morphometric validation' for Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+        dct:identifier "morphoeval/0.1.0/morphometric-validation" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary) + Gemini 4 Argon (independent blinded second assessor)" .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1001/archopht.1991.01080060080030>,
+            <https://doi.org/10.1007/BF00336965>,
+            <https://doi.org/10.1098/rstb.2000.0769>,
+            <https://doi.org/10.1162/089976602317250861>,
+            <https://doi.org/10.1371/journal.pcbi.1002158> .
+    <https://doi.org/10.1001/archopht.1991.01080060080030> dct:date "1991"^^xsd:gYear ;
+        dct:title "The representation of the visual field in human striate cortex: a revision of the classic Holmes map" .
+    <https://doi.org/10.1007/BF00336965> dct:date "1979"^^xsd:gYear ;
+        dct:title "A mathematical theory of visual hallucination patterns" .
+    <https://doi.org/10.1098/rstb.2000.0769> dct:date "2001"^^xsd:gYear ;
+        dct:title "Geometric visual hallucinations, Euclidean symmetry and the functional architecture of striate cortex" .
+    <https://doi.org/10.1162/089976602317250861> dct:date "2002"^^xsd:gYear ;
+        dct:title "What geometric visual hallucinations tell us about the visual cortex" .
+    <https://doi.org/10.1371/journal.pcbi.1002158> dct:date "2011"^^xsd:gYear ;
+        dct:title "A model for the origin and properties of flicker-induced geometric phosphenes" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Morphometric validation 45/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-19T21:05:45Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-audit-v2-bressloff-v1-form-constants-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

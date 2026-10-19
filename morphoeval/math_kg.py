@@ -548,7 +548,7 @@ MATH_LAWS_REGISTRY: dict[str, dict[str, Any]] = {
         "equations": [
             {
                 "law_name": "Ermentrout & Cowan (1979) / Bressloff et al. (2001) Retino-Cortical Pullback Classification",
-                "formula": "x = (α/ε) ln(ε r/w₀),  y = (β/ε) θ;  phase(k_x, k_y) = k_x x + k_y y:  k_y = 0 → rings (tunnel),  k_x = 0 → rays (funnel),  else log-spiral θ = c − (k_x/k_y) ln r",
+                "formula": "x = (α/ε) ln(1 + ε r/w₀),  y = β r θ/(w₀ + ε r)  (far field ε r ≫ w₀: x ≈ (α/ε) ln(ε r/w₀), y ≈ (β/ε) θ);  phase(k_x, k_y) = k_x x + k_y y:  k_y = 0 → rings (tunnel),  k_x = 0 → rays (funnel),  else log-spiral θ = c − (k_x/k_y) ln r",
                 "lean_decl": "MathOfBiology.retino_cortical_phase",
                 "lean_theorem": "MathOfBiology.ermentrout_cowan_log_spiral",
                 "lean_locus": "morphoeval/lean/MathOfBiology.lean#L507-L531",

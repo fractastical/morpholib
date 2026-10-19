@@ -13,7 +13,7 @@ options added in the same change; inputs as documented for each script.
 | `turing_gray_scott.gif` | `python3 1952-turing-morpho.py` → `turing_patterns.gif` (legacy, tracked at the repo root) | 500 → 60 |
 | `raup_shell_coiling.gif` | `python3 create_raup_animations.py` → `raup_shell_animation.gif` (remade 2026-10-17 after the model fix; 660 px, the full-size file is no longer tracked) | 100 → 48 |
 | `conus_textile_rule30.gif` | `python3 1984-wolfram-conus-textile-rule30.py --download` → `docs/media/conus_textile_rule30.gif` (2026-10-18: 1D Rule 30 space–time mantle accretion alongside rotating 3D Raup *Conus textile* shell with silhouette IoU 0.835) | 36 → 36 |
-| `bressloff_v1_form_constants.gif` | `python3 2001-bressloff-v1-form-constants.py --no-show --gif bressloff.gif` (2026-10-17: steps through Klüver's 4 form-constant families one at a time, 1×2 panel of V1 cortical lattice → retinal log-polar pullback) | 36 → 36 |
+| `bressloff_v1_form_constants.gif` | `python3 2001-bressloff-v1-form-constants.py --no-show --gif` (default path is this file; 2026-10-19 Pass 2: same four presets and q*-derived wavenumber as the PNG gallery, exact retino-cortical map, central 40° of the visual field; steps through Klüver's 4 form-constant families one at a time, 1×2 panel of V1 cortical torus → retinal pullback) | 36 → 36 |
 | `petroff_stromatolite_dome_to_cone.gif` | `python3 2010-petroff-stromatolite.py --no-show --gif petroff.gif` | 70 → 70 |
 | `chindapol_coral_flow_growth.gif` | `python3 2013-chindapol-coral-flow.py --no-show --gif chindapol.gif` | 48 → 48 |
 | `planform_morphospace_timeline.gif` | `PLANFORM_DB_PATH=… python3 2013-lobo-planform-morphology.py` → `planform_morphospace_timeline.gif` | 63 → 63 |
