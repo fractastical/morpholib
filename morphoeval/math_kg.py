@@ -543,6 +543,79 @@ MATH_LAWS_REGISTRY: dict[str, dict[str, Any]] = {
             },
         ],
     },
+    "bressloff-v1-form-constants": {
+        "math_family": "Euclidean Symmetry-Breaking Neural-Field Bifurcation & Log-Polar Retino-Cortical Geometry",
+        "equations": [
+            {
+                "law_name": "Ermentrout & Cowan (1979) / Bressloff et al. (2001) Retino-Cortical Pullback Classification",
+                "formula": "x = (α/ε) ln(ε r/w₀),  y = (β/ε) θ;  phase(k_x, k_y) = k_x x + k_y y:  k_y = 0 → rings (tunnel),  k_x = 0 → rays (funnel),  else log-spiral θ = c − (k_x/k_y) ln r",
+                "lean_decl": "MathOfBiology.retino_cortical_phase",
+                "lean_theorem": "MathOfBiology.ermentrout_cowan_log_spiral",
+                "lean_locus": "morphoeval/lean/MathOfBiology.lean#L507-L531",
+                "lean_code": (
+                    "def retino_cortical_phase (kx ky x y : Int) : Int := kx * x + ky * y\n"
+                    "theorem ermentrout_cowan_tunnel_rings (kx x y y' : Int) :\n"
+                    "    retino_cortical_phase kx 0 x y = retino_cortical_phase kx 0 x y' := by simp [retino_cortical_phase]\n"
+                    "theorem ermentrout_cowan_funnel_rays (ky x x' y : Int) :\n"
+                    "    retino_cortical_phase 0 ky x y = retino_cortical_phase 0 ky x' y := by simp [retino_cortical_phase]\n"
+                    "theorem ermentrout_cowan_log_spiral (kx ky x x' y y' : Int) :\n"
+                    "    retino_cortical_phase kx ky x y - retino_cortical_phase kx ky x' y' =\n"
+                    "    kx * (x - x') + ky * (y - y') := by\n"
+                    "  simp [retino_cortical_phase, Int.mul_sub]\n"
+                    "  omega"
+                ),
+                "variables": "r, θ: retinal polar coordinates; x, y: cortical coordinates (mm); α, β: cortical magnification constants; ε: foveal scale; w₀: foveal radius; (k_x, k_y): cortical planform wavevector",
+                "role": "Maps V1 roll planforms onto Klüver's tunnel, funnel and spiral form constants; the cortical lattice orientation decides which retinal form constant is seen",
+                "source_citation": "Ermentrout & Cowan (1979) Biol. Cybern. 34:137; Bressloff et al. (2001) Phil. Trans. R. Soc. B 356:299 §2; Bressloff et al. (2002) Neural Comput. 14:473 Eq. 2.1",
+                "code_locus": "2001-bressloff-v1-form-constants.py#L96-L121,L759-L790,L854-L863",
+            },
+            {
+                "law_name": "Bressloff et al. (2001) Cubic Amplitude-Equation Roll/Lattice Stability Boundary",
+                "formula": "dA₁/dt = A₁ (λ − γ₀ A₁ − 2 γ₃(θ) A₂);  roll fixed point λ = γ₀ A₁;  transverse growth (γ₀ − 2γ₃(θ)) A₁;  roll stable ⇔ γ₀ < 2 γ₃(θ)",
+                "lean_decl": "MathOfBiology.amplitude_rhs",
+                "lean_theorem": "MathOfBiology.bressloff_roll_stable_iff",
+                "lean_locus": "morphoeval/lean/MathOfBiology.lean#L533-L561",
+                "lean_code": (
+                    "def amplitude_rhs (lam gamma0 gamma_theta a_self a_other : Int) : Int :=\n"
+                    "  lam - gamma0 * a_self - 2 * gamma_theta * a_other\n"
+                    "theorem bressloff_roll_fixed_point (gamma0 gamma_theta a : Int) :\n"
+                    "    amplitude_rhs (gamma0 * a) gamma0 gamma_theta a 0 = 0 := by simp [amplitude_rhs]\n"
+                    "theorem bressloff_roll_transverse_growth (gamma0 gamma_theta a : Int) :\n"
+                    "    amplitude_rhs (gamma0 * a) gamma0 gamma_theta 0 a = (gamma0 - 2 * gamma_theta) * a := by\n"
+                    "  simp [amplitude_rhs, Int.sub_mul]\n"
+                    "theorem bressloff_roll_stable_iff (gamma0 gamma_theta : Int) :\n"
+                    "    amplitude_rhs (gamma0 * 1) gamma0 gamma_theta 0 1 < 0 ↔ gamma0 < 2 * gamma_theta := by\n"
+                    "  simp [amplitude_rhs]\n"
+                    "  omega\n"
+                    "theorem bressloff_fig38_roll_unstable :\n"
+                    "    amplitude_rhs (3768 * 1) 3768 1869 0 1 = 30 := by decide"
+                ),
+                "variables": "A_i: squared mode amplitudes; λ: bifurcation parameter (distance past marginal stability); γ₀ = γ₃(0): self-coupling; γ₃(θ): cross-mode cubic coupling at wavevector angle θ (Eq. 5.15)",
+                "role": "Selects rolls vs rhombic, square or hexagonal lattices (Figs. 37–40); decides whether a hallucination is a single-family tunnel/spiral or a cobweb/honeycomb",
+                "source_citation": "Bressloff et al. (2001) Phil. Trans. R. Soc. B 356:299 §5 Eqs. 5.12–5.15, Figs. 37–40",
+                "code_locus": "2001-bressloff-v1-form-constants.py#L516-L541,L595-L693",
+            },
+            {
+                "law_name": "Rule, Stoffregen & Ermentrout (2011) Floquet Resonance Tongues (1:1 Harmonic vs 2:1 Period-Doubling)",
+                "formula": "mode after n forcing periods = μⁿ;  μ = +1 (1:1 stripes) → μⁿ = 1;  μ = −1 (2:1 hexagons) → μ^{2n} = 1, μ^{2n+1} = −1",
+                "lean_decl": "MathOfBiology.floquet_iterate",
+                "lean_theorem": "MathOfBiology.rule_2011_period_doubling_even_odd",
+                "lean_locus": "morphoeval/lean/MathOfBiology.lean#L563-L588",
+                "lean_code": (
+                    "def floquet_iterate (mu : Int) : Nat → Int\n"
+                    "  | 0 => 1\n"
+                    "  | n + 1 => mu * floquet_iterate mu n\n"
+                    "theorem rule_2011_harmonic_returns_each_period (n : Nat) : floquet_iterate 1 n = 1\n"
+                    "theorem rule_2011_period_doubling_even_odd (n : Nat) :\n"
+                    "    floquet_iterate (-1) (2 * n) = 1 ∧ floquet_iterate (-1) (2 * n + 1) = -1"
+                ),
+                "variables": "μ: Floquet multiplier of the homogeneous flicker orbit; T: forcing period (ms); β: normalised wave number; n: number of elapsed forcing periods",
+                "role": "Separates flicker-induced stripe phosphenes (harmonic tongue) from period-doubled hexagonal phosphenes (subharmonic tongue) across (T, β)",
+                "source_citation": "Rule, Stoffregen & Ermentrout (2011) PLoS Comput. Biol. 7(9):e1002158 Fig. 8",
+                "code_locus": "2001-bressloff-v1-form-constants.py#L1134-L1146,L1397-L1456",
+            },
+        ],
+    },
 }
 
 

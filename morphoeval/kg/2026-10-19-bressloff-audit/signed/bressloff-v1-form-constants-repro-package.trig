@@ -1,0 +1,85 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAcalHdQYJ08EJkEsdqFBlE9GUgbhCYZxuDr3zHd2_0Xg/> .
+@prefix this: <https://w3id.org/np/RAcalHdQYJ08EJkEsdqFBlE9GUgbhCYZxuDr3zHd2_0Xg> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1007/BF00336965> dcterms:date "1979"^^xsd:gYear ;
+        dcterms:title "A mathematical theory of visual hallucination patterns" .
+
+    <https://doi.org/10.1098/rstb.2000.0769> dcterms:date "2001"^^xsd:gYear ;
+        dcterms:title "Geometric visual hallucinations, Euclidean symmetry and the functional architecture of striate cortex" .
+
+    <https://doi.org/10.1162/089976602317250861> dcterms:date "2002"^^xsd:gYear ;
+        dcterms:title "What geometric visual hallucinations tell us about the visual cortex" .
+
+    <https://doi.org/10.1371/journal.pcbi.1002158> dcterms:date "2011"^^xsd:gYear ;
+        dcterms:title "A model for the origin and properties of flicker-induced geometric phosphenes" .
+
+    sub1:assertion prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/BF00336965>,
+            <https://doi.org/10.1098/rstb.2000.0769>,
+            <https://doi.org/10.1162/089976602317250861>,
+            <https://doi.org/10.1371/journal.pcbi.1002158> .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-audit-bressloff-v1-form-constants-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Reproducibility package: 85/100" ;
+        rdfs:comment "Re-running `--no-show --out --csv --gif` reproduced the committed PNG, CSV and GIF byte-for-byte (SHA-256 73edc6ae..., 2b6efe3a..., df4acc7a...), the pipeline uses no RNG so no seed is needed, requirements.lock.txt pins exact versions with Python 3.14.7 / macOS arm64 and the venv matches (numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, pillow 12.0.0), fixtures are SHA-pinned and the run fails closed on mismatch, and `--self-test` passes in about 1.5 s. -5: the README section documents only `--gif PATH`; `--self-test`, `--no-show`, `--out` and `--csv` appear only in argparse. -4: `from scipy.special import iv as bessel_iv` is unused (the script has its own power series), so scipy is a spurious hard dependency. -3: the default `--gif` path is the repo root while the committed asset lives in docs/media, so the documented invocation does not regenerate the shipped file in place. -3: the README claims parity <= 6.7e-16 while the run reports 2.22e-16, a stale number that should be generated, not hand-written. Evidence: 2001-bressloff-v1-form-constants.py L1326–L1343: argparse flags --out/--csv/--gif/--no-show/--self-test; outputs byte-identical on re-run <https://github.com/fractastical/morpholib/blob/68c4a1a/2001-bressloff-v1-form-constants.py#L1326-L1343>; requirements.lock.txt L1–L5: exact pip freeze with Python 3.14.7, macOS arm64, 2026-10-17 <https://github.com/fractastical/morpholib/blob/68c4a1a/requirements.lock.txt#L1-L5>; 2001-bressloff-v1-form-constants.py L69–L69: unused scipy import bessel_iv <https://github.com/fractastical/morpholib/blob/68c4a1a/2001-bressloff-v1-form-constants.py#L69-L69>; README.md L484–L488: documents only --gif PATH and claims <= 6.7e-16 parity <https://github.com/fractastical/morpholib/blob/68c4a1a/README.md#L484-L488>." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-repro-package> ;
+        pk:hasProbability "0.85"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-repro-package> rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants (2001-bressloff-v1-form-constants.py, docs/media/bressloff_v1_form_constants.gif, bressloff_v1_metrics.csv) satisfies the MorphoEval 0.1.0 criterion 'Reproducibility package' for Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+        dcterms:identifier "morphoeval/0.1.0/repro-package" .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary) + Gemini 4 Argon (independent blinded second assessor)" .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "GIb9EvlUz5CeJtyLvPr98yqWe6TrmZnx6SFWgJuq1SbjJXHmEm9jxK4fjHh1FfR+s7cqV7kjw5EhF1bEB5/JGjoyfWhoRcoIe+a/nSH5eV4yR0BbQCPZ1UUOpVcbNSBM9SFBgjvZuz5wfOJE/NqgnyFm5n0sLgDZrafBJ3187PMeQzV/tatp/jza9QfIenyclO5t822a4AmJPCZU0tfzcYyZm4IvMCPddcitXpKvwfbOvFyCI4PHXmZSS15wHKgXgPJiMcsO/CabJVxfTte3D/lcITPx7Uo+jb9A+B9MmzfCTJSdKGkK+kDulb139kqltR1IIYPaXxyb/tR0g4kvUg==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Reproducibility package 85/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-19T20:40:58Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-audit-bressloff-v1-form-constants-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf orcid:0009-0007-4948-9192 .
+}
+

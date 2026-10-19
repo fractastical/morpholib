@@ -1,0 +1,85 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAaJctotyDlKMez8Th2Sykkb1ow32nRZq4WGuePeHS658/> .
+@prefix this: <https://w3id.org/np/RAaJctotyDlKMez8Th2Sykkb1ow32nRZq4WGuePeHS658> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-audit-bressloff-v1-form-constants-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Model fidelity to source: 55/100" ;
+        rdfs:comment "The lateral coupling W_n^lat(q) = (-1)^n/2 [e^{-x} I_n(x) - I e^{-x'} I_n(x')] with x = xi^2 q^2/4 and the sin(2n theta0)/(2n theta0) spread factor, the local Gaussian-difference harmonics e^{-2n^2 xi^2}, the second-order dispersion relation lambda_pm = W_1 + beta(W0 +- W2) + beta^2 sum (...)^2/(W_1 - W_m), and the roll/lattice criterion 2 gamma_3(theta) > gamma_0 all match the 2001 paper as I know it, and the Fig. 38 numbers (gamma_0 = 0.3768, gamma_3(2pi/3) = 0.1869) agree with the Lean Section 14 instance. -12: the \"exact parity\" is against the Rust implementation's actual outputs, and the fixture's own fig40_odd_hex_bifurcation check (expected triangle, actual honeycomb, passed=false) is silently reported as [PASS] because the script compares only to rep[\"selected_*\"]. -8: branch_selection_for scopes selection to the preset's lattice, so identical gamma/q* produce \"hexagonal\" for fig38 and \"rhombic\" for rhombic_stability_angle; the selected family is an input, not a model prediction. -7: for every non-auto preset the rendered wavenumber is 2 pi wave_count / extent rather than the critical q*, so the cortical wavelength never comes from the marginal-stability curve. -6: the pullback uses the asymptotic r_R = (w0/eps) exp(eps x/alpha) instead of Eq. 2.1's x = (alpha/eps) ln(1 + eps r/w0), y = beta r theta/(w0 + eps r), which introduces an artificial foveal singularity that has to be masked. -6: ad-hoc regularisers not in the paper (coefficient clips to +-1.5, safe_denominator, a max-over-phi scalar field standing in for the oriented-segment double map). -6: the m = 0 normalisation of the second-order term and the alpha = 3/pi, beta = 1.589/2 constants are taken from the Rust code and cannot be checked against a cited equation. Evidence: 2001-bressloff-v1-form-constants.py L343–L358: Fourier-Bessel lateral harmonic with (-1)^n sign, exp(-x) I_n(x) and spread factor matches 2001 Section 4 form <https://github.com/fractastical/morpholib/blob/68c4a1a/2001-bressloff-v1-form-constants.py#L343-L358>; 2001-bressloff-v1-form-constants.py L835–L857: parity loop compares to rep['selected_pattern'] (Rust actual), never to rep['checks'] where fig40 expected 'triangle' and passed=false <https://github.com/fractastical/morpholib/blob/68c4a1a/2001-bressloff-v1-form-constants.py#L835-L857>; 2001-bressloff-v1-form-constants.py L557–L587: lattice-local scoping makes selected_family depend on preset pattern; fig38 and rhombic_stability_angle CSV rows have identical gamma/q* but different selections <https://github.com/fractastical/morpholib/blob/68c4a1a/2001-bressloff-v1-form-constants.py#L557-L587>; 2001-bressloff-v1-form-constants.py L747–L761: far-field log-polar asymptote with r_min clamp instead of Eq. 2.1; wave_number from wave_count at 638-642, not q* <https://github.com/fractastical/morpholib/blob/68c4a1a/2001-bressloff-v1-form-constants.py#L747-L761>." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-model-fidelity> ;
+        pk:hasProbability "0.55"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-model-fidelity> rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants (2001-bressloff-v1-form-constants.py, docs/media/bressloff_v1_form_constants.gif, bressloff_v1_metrics.csv) satisfies the MorphoEval 0.1.0 criterion 'Model fidelity to source' for Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+        dcterms:identifier "morphoeval/0.1.0/model-fidelity" .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary) + Gemini 4 Argon (independent blinded second assessor)" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1007/BF00336965> dcterms:date "1979"^^xsd:gYear ;
+        dcterms:title "A mathematical theory of visual hallucination patterns" .
+
+    <https://doi.org/10.1098/rstb.2000.0769> dcterms:date "2001"^^xsd:gYear ;
+        dcterms:title "Geometric visual hallucinations, Euclidean symmetry and the functional architecture of striate cortex" .
+
+    <https://doi.org/10.1162/089976602317250861> dcterms:date "2002"^^xsd:gYear ;
+        dcterms:title "What geometric visual hallucinations tell us about the visual cortex" .
+
+    <https://doi.org/10.1371/journal.pcbi.1002158> dcterms:date "2011"^^xsd:gYear ;
+        dcterms:title "A model for the origin and properties of flicker-induced geometric phosphenes" .
+
+    sub1:assertion prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/BF00336965>,
+            <https://doi.org/10.1098/rstb.2000.0769>,
+            <https://doi.org/10.1162/089976602317250861>,
+            <https://doi.org/10.1371/journal.pcbi.1002158> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "vUToRrHUSI8wSXkhUqSM2bfoHTbeqzKKY35J3ZXDDxOyQ5GyoiORMLNA3jAnKwh1oU8F9OZU/xwTSiEL1Uno69jFcGI4m4vRauqcyD4rSTiDxBkxyyXmGLsY2mKI3RP0gmwFtyqTc/jfNKcTdS9f8GN5rPsFBHrQjYUeUcrng5SgjP4vLNjJkxfozzCiMrXW7XBkV56mZTcJYlMvBj1FldCbfji4PK+k2x37O/arUfQ3Gdc5uu9Cwpx0+gbTzViQP+oGFpx+sFz0+vck594uLNuhQocHrOG8odjMoYVa4k2mdhFfB1J708tyPvCsvoN+8geYIsn7oGe/kFRnv7FuuQ==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Model fidelity to source 55/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-19T20:40:58Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-audit-bressloff-v1-form-constants-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf orcid:0009-0007-4948-9192 .
+}
+

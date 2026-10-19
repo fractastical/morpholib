@@ -4,7 +4,7 @@
   Formal Lean 4 Specification & Machine-Checked Proofs for the
   "Validated Mathematics of Biological Form" Knowledge Graph (`morphoeval/math_kg.py`).
 
-  Covers all 12 evaluated morphogenesis models and all 19 governing mathematical laws
+  Covers all 14 evaluated morphogenesis models and all 25 governing mathematical laws
   in pure core Lean 4 (zero external dependencies, zero `sorry`s, sub-second kernel check).
 
   Verify with the Lean 4 kernel:
@@ -219,6 +219,58 @@ def gray_scott_react_v (F k u v : Int) : Int :=
 theorem gray_scott_homogeneous_equilibrium (F k : Int) :
     gray_scott_react_u F 1 0 = 0 ∧ gray_scott_react_v F k 1 0 = 0 := by
   simp [gray_scott_react_u, gray_scott_react_v]
+
+/-- Law 2 (`turing-gray-scott-2`):
+    Turing (1952) Section 8 Equal-Diffusion Stability Theorem:
+    For any 2-morphogen reaction Jacobian `J` with negative trace `tr0 = -(t_neg + 1) < 0`
+    and positive determinant `det0 = d_pos + 1 > 0`, under equal diffusion `D_u = D_v = D`
+    at wavenumber squared `q = k^2`, the Fourier-mode trace `tr(q) = tr0 - 2*D*q` is strictly
+    negative and the Fourier-mode determinant `det(q) = D^2*q^2 - D*tr0*q + det0` is strictly
+    positive for all `D, q : Nat`. Equal diffusion can never trigger a Turing instability. -/
+def turing_equal_diff_trace_neg (t_neg D q : Nat) : Nat :=
+  (t_neg + 1) + 2 * D * q
+
+def turing_equal_diff_det (t_neg d_pos D q : Nat) : Nat :=
+  (D * q) * (D * q) + D * q * (t_neg + 1) + (d_pos + 1)
+
+theorem turing_equal_diffusion_no_instability (t_neg d_pos D q : Nat) :
+    turing_equal_diff_trace_neg t_neg D q ≥ 1 ∧
+    turing_equal_diff_det t_neg d_pos D q ≥ d_pos + 1 := by
+  simp [turing_equal_diff_trace_neg, turing_equal_diff_det]
+  omega
+
+/-- Law 3 (`turing-gray-scott-3`):
+    Turing (1952) Section 8-9 Differential-Diffusion Instability Theorem:
+    For a 2-morphogen activator-inhibitor Jacobian `J = [[a, b], [c, d]]`, the Fourier-mode
+    determinant at wavenumber squared `q` is
+    `det_J(q) = D_u * D_v * q^2 - (d * D_u + a * D_v) * q + (a * d - b * c)`.
+    For the stable reaction system `(a = 2, b = -3, c = 3, d = -3)` (`tr = -1 < 0`, `det = 3 > 0`),
+    equal diffusion `(D_u = 1, D_v = 1)` keeps `det_J(1) = 5 > 0`, whereas fast inhibitor
+    diffusion `(D_u = 1, D_v = 7)` drives `det_J(1) = -1 < 0` (Turing bifurcation). -/
+def turing_fourier_det (a b c d Du Dv q : Int) : Int :=
+  Du * Dv * q * q - (d * Du + a * Dv) * q + (a * d - b * c)
+
+theorem turing_differential_diffusion_instability :
+    turing_fourier_det 2 (-3) 3 (-3) 1 1 0 = 3 ∧
+    turing_fourier_det 2 (-3) 3 (-3) 1 1 1 = 5 ∧
+    turing_fourier_det 2 (-3) 3 (-3) 1 6 1 = 0 ∧
+    turing_fourier_det 2 (-3) 3 (-3) 1 7 1 = -1 := by
+  decide
+
+/-- Law 4 (`turing-gray-scott-4`):
+    Pearson (1993) Saddle-Node Bifurcation Law:
+    The nontrivial Gray-Scott homogeneous steady states `(U_±, V_±)` satisfy the quadratic
+    `F * V^2 - (F + k) * V + (F + k)^2 = 0` (in scaled units), whose discriminant factor
+    `Delta_SN(F, s) = F - 4 * s^2` (where `s = F + k`) vanishes identically on Pearson's
+    saddle-node parabola `F = 4 * (F + k)^2`. -/
+def pearson_sn_discriminant (F s : Int) : Int :=
+  F - 4 * s * s
+
+theorem pearson_saddle_node_discriminant (s : Int) :
+    pearson_sn_discriminant (4 * s * s) s = 0 ∧
+    pearson_sn_discriminant (4 * s * s - 1) s = -1 := by
+  simp [pearson_sn_discriminant]
+  omega
 
 
 -- ============================================================================
@@ -445,5 +497,93 @@ theorem katifori_2012_edge_deletion_merges_areoles (n_edges k_bridges : Nat) (h 
     planar_cycle_count (n_edges + k_bridges) (n_edges + 1) - 1 := by
   simp [planar_cycle_count]
   omega
+
+-- ============================================================================
+-- 14. Ermentrout & Cowan (1979), Bressloff, Cowan, Golubitsky, Thomas & Wiener
+--     (2001, 2002) V1 Form Constants & Rule, Stoffregen & Ermentrout (2011)
+--     Flicker Phosphenes (`bressloff-v1-form-constants`)
+-- ============================================================================
+
+/-- Law 1 (`bressloff-v1-form-constants-1`):
+    Ermentrout & Cowan (1979) / Bressloff et al. (2001 §2, 2002 Eq. 2.1) retino-cortical
+    pullback classification.  Under the log-polar map `x = (α/ε) ln(ε r/w₀)`, `y = (β/ε) θ`
+    a cortical plane wave with wavevector `(k_x, k_y)` has phase `k_x x + k_y y`.  Here `x`
+    stands for the logarithmic radial coordinate and `y` for the azimuthal one (both in
+    integer phase units).  A wave with `k_y = 0` depends on `r` only (concentric rings —
+    Klüver's tunnel), a wave with `k_x = 0` depends on `θ` only (radial rays — the funnel),
+    and when both components are non-zero the phase difference between two retinal points is
+    `k_x Δ(ln r) + k_y Δθ`, so every level set is a logarithmic spiral `θ = c − (k_x/k_y) ln r`. -/
+def retino_cortical_phase (kx ky x y : Int) : Int :=
+  kx * x + ky * y
+
+theorem ermentrout_cowan_tunnel_rings (kx x y y' : Int) :
+    retino_cortical_phase kx 0 x y = retino_cortical_phase kx 0 x y' := by
+  simp [retino_cortical_phase]
+
+theorem ermentrout_cowan_funnel_rays (ky x x' y : Int) :
+    retino_cortical_phase 0 ky x y = retino_cortical_phase 0 ky x' y := by
+  simp [retino_cortical_phase]
+
+theorem ermentrout_cowan_log_spiral (kx ky x x' y y' : Int) :
+    retino_cortical_phase kx ky x y - retino_cortical_phase kx ky x' y' =
+    kx * (x - x') + ky * (y - y') := by
+  simp [retino_cortical_phase, Int.mul_sub]
+  omega
+
+/-- Law 2 (`bressloff-v1-form-constants-2`):
+    Bressloff et al. (2001 §5, Eqs. 5.12–5.15, Figs. 37–40) cubic amplitude equations.
+    For two critical modes with amplitudes squared `A₁, A₂`, the normal form is
+    `dA₁/dt ∝ A₁ (λ − γ₀ A₁ − 2 γ₃(θ) A₂)` with `γ₀ = γ₃(0)`.  A roll (`A₂ = 0`) is a
+    fixed point when `λ = γ₀ A₁`; the growth rate of the transverse mode at that roll is
+    `λ − 2 γ₃(θ) A₁ = (γ₀ − 2 γ₃(θ)) A₁`, so in units where the roll amplitude is one the
+    roll is stable against the lattice at angle `θ` iff `γ₀ < 2 γ₃(θ)` — the dashed
+    `½ γ₃(0)` roll/lattice boundary of the figure.  The instance values are the even-branch
+    hexagonal-bifurcation report (Fig. 38, `γ₀ = 0.3768`, `γ₃(2π/3) = 0.1869`, scaled by
+    10⁴), where the transverse growth is `+0.0030 > 0` and the roll loses stability. -/
+def amplitude_rhs (lam gamma0 gamma_theta a_self a_other : Int) : Int :=
+  lam - gamma0 * a_self - 2 * gamma_theta * a_other
+
+theorem bressloff_roll_fixed_point (gamma0 gamma_theta a : Int) :
+    amplitude_rhs (gamma0 * a) gamma0 gamma_theta a 0 = 0 := by
+  simp [amplitude_rhs]
+
+theorem bressloff_roll_transverse_growth (gamma0 gamma_theta a : Int) :
+    amplitude_rhs (gamma0 * a) gamma0 gamma_theta 0 a = (gamma0 - 2 * gamma_theta) * a := by
+  simp [amplitude_rhs, Int.sub_mul]
+
+theorem bressloff_roll_stable_iff (gamma0 gamma_theta : Int) :
+    amplitude_rhs (gamma0 * 1) gamma0 gamma_theta 0 1 < 0 ↔ gamma0 < 2 * gamma_theta := by
+  simp [amplitude_rhs]
+  omega
+
+theorem bressloff_fig38_roll_unstable :
+    amplitude_rhs (3768 * 1) 3768 1869 0 1 = 30 := by
+  decide
+
+/-- Law 3 (`bressloff-v1-form-constants-3`):
+    Rule, Stoffregen & Ermentrout (2011, Fig. 8) Floquet resonance tongues.  A spatial mode
+    of the periodically flickered cortex is multiplied by its Floquet multiplier `μ` once per
+    forcing period `T`.  The harmonic (`1:1`, stripe) tongue has `μ = +1` and returns after one
+    period; the subharmonic (`2:1`, period-doubling hexagon) tongue has `μ = −1`, changes sign
+    after one period and returns only after two — after any even number of periods the mode
+    is back in phase, after any odd number it is inverted. -/
+def floquet_iterate (mu : Int) : Nat → Int
+  | 0 => 1
+  | n + 1 => mu * floquet_iterate mu n
+
+theorem rule_2011_harmonic_returns_each_period (n : Nat) :
+    floquet_iterate 1 n = 1 := by
+  induction n with
+  | zero => rfl
+  | succ k ih => simp [floquet_iterate, ih]
+
+theorem rule_2011_period_doubling_even_odd (n : Nat) :
+    floquet_iterate (-1) (2 * n) = 1 ∧ floquet_iterate (-1) (2 * n + 1) = -1 := by
+  induction n with
+  | zero => decide
+  | succ k ih =>
+    have h2 : 2 * (k + 1) = 2 * k + 1 + 1 := by omega
+    rw [h2]
+    simp [floquet_iterate, ih.1]
 
 end MathOfBiology

@@ -1,0 +1,68 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-second-assessor-audit-bressloff-v1-form-constants-code-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Code-to-model traceability: 90/100" ;
+        rdfs:comment "Core mathematical functions in 2001-bressloff-v1-form-constants.py are clearly annotated with specific section, equation, and figure pointers to Bressloff et al. (2001/2002), including Eq. 2.1 for the retino-cortical log-polar map, Eq. 3.12 for local orientation harmonics, Eq. 4.9 for Fourier-Bessel lateral weights, Figs. 16-17 for perturbative dispersion curves, and Eqs. 5.14-5.15 / Figs. 37-40 for quadratic and cubic amplitude integrals. In addition, Section 14 of morphoeval/lean/MathOfBiology.lean formally documents and proves the algebraic laws underlying the log-polar wave pullback, cubic roll stability boundary, and Floquet multiplier periodicity. We deduct 6 points because several upstream implementation heuristics in the code—such as clamping perturbative eigenfunction coefficients to [-1.5, 1.5], the candidate scoring formula in _make_branch_candidate, the hard-coded phase-scale multipliers (0.35, -0.25, 0.5) in planform_modes, and the max-over-orientation tanh rendering surrogate—are presented alongside paper equations without noting that they are software heuristics rather than equations from Bressloff et al. We deduct 4 points because the CSV export schema overloads three incompatible quantity types into shared columns (gamma0_or_k_star, gamma_cross_or_sharpness, eta_hex_or_m4_m6) and writes gamma_hex into gamma_cross_or_sharpness even for rhombic calibration rows. Evidence: 2001-bressloff-v1-form-constants.py L309–L459: Equation-pinned docstrings for Eq. 3.12, Eq. 4.9, Section 4 Figs. 16-17, Eq. 5.14, and Eq. 5.15 alongside undocumented [-1.5, 1.5] eigenfunction clipping <https://github.com/fractastical/morpholib/blob/68c4a1a/2001-bressloff-v1-form-constants.py#L309-L459>; 2001-bressloff-v1-form-constants.py L660–L691: Hard-coded phase_scale multipliers (0.35, -0.25, 0.5) in planform_modes lack paper equation or section provenance <https://github.com/fractastical/morpholib/blob/68c4a1a/2001-bressloff-v1-form-constants.py#L660-L691>; 2001-bressloff-v1-form-constants.py L959–L989: CSV export overloads column headers across sections and writes gamma_hex into gamma_cross_or_sharpness for rhombic rows <https://github.com/fractastical/morpholib/blob/68c4a1a/2001-bressloff-v1-form-constants.py#L959-L989>; morphoeval/lean/MathOfBiology.lean L507–L589: Lean 4 theorems formally linking retino-cortical phase geometry, cubic roll stability (gamma0 < 2*gamma_theta), and Floquet period doubling to source equations <https://github.com/fractastical/morpholib/blob/68c4a1a/morphoeval/lean/MathOfBiology.lean#L507-L589>." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-code-traceability> ;
+        pk:hasProbability "0.9"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-code-traceability> rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants (2001-bressloff-v1-form-constants.py, docs/media/bressloff_v1_form_constants.gif, bressloff_v1_metrics.csv) satisfies the MorphoEval 0.1.0 criterion 'Code-to-model traceability' for Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+        dct:identifier "morphoeval/0.1.0/code-traceability" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/BF00336965>,
+            <https://doi.org/10.1098/rstb.2000.0769>,
+            <https://doi.org/10.1162/089976602317250861>,
+            <https://doi.org/10.1371/journal.pcbi.1002158> .
+    <https://doi.org/10.1007/BF00336965> dct:date "1979"^^xsd:gYear ;
+        dct:title "A mathematical theory of visual hallucination patterns" .
+    <https://doi.org/10.1098/rstb.2000.0769> dct:date "2001"^^xsd:gYear ;
+        dct:title "Geometric visual hallucinations, Euclidean symmetry and the functional architecture of striate cortex" .
+    <https://doi.org/10.1162/089976602317250861> dct:date "2002"^^xsd:gYear ;
+        dct:title "What geometric visual hallucinations tell us about the visual cortex" .
+    <https://doi.org/10.1371/journal.pcbi.1002158> dct:date "2011"^^xsd:gYear ;
+        dct:title "A model for the origin and properties of flicker-induced geometric phosphenes" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Code-to-model traceability 90/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-19T20:40:59Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-second-assessor-audit-bressloff-v1-form-constants-code-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

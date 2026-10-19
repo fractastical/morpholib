@@ -1,0 +1,68 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-second-assessor-audit-bressloff-v1-form-constants-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Morphometric validation: 62/100" ;
+        rdfs:comment "The script computes 2D FFT spectral metrics (k_star_cycles, wavelength_grid_cells, ring_sharpness, and azimuthal harmonics m=2, 4, 6) in spectral_ring_metrics, evaluates cubic coupling coefficients across five calibration presets in verify_paper_calibration_parity, and quantifies peak prominence for the Gaussian negative control. However, we deduct 20 points because the headline machine-precision validation (max_abs_err_vs_rust = 2.22e-16) compares the script exclusively against another software implementation (MesmerPrism/bressloff-v1-form-constants in Rust) evaluating the identical algebraic formulas, and paper-calibration.json explicitly notes that its targets are analytic normalization checks rather than digitized paper figures. We deduct 12 points because no empirical biological or psychophysical measurements (such as human flicker-phosphene frequency/wavenumber data from Rule et al. 2011 or V1 hypercolumn psychophysical spacing) are compared in the script or CSV, and the error column max_abs_err_vs_rust is hardcoded to 0.000e+00 for all kluver_form_constant and negative_control rows. Finally, we deduct 6 points because spectral_ring_metrics is evaluated only on the Cartesian cortical sheet (recovering the prescribed input wave_count) rather than the retinal pullback, and the exported CSV summary metric max(azimuthal_m4_square, azimuthal_m6_hex) yields ~0.98 for 1D roll gratings (since a 1D cosine grating has all even azimuthal Fourier harmonics near 1), failing to distinguish square or hexagonal lattices from simple stripes. Evidence: bressloff_v1_metrics.csv (generated output, not in repo): Exported metrics table showing Rust regression residuals (2.22e-16), hardcoded 0.000e+00 errors for gallery rows, and m4/m6 values of 0.9862/0.9815 on 1D rolls — bressloff_v1_metrics.csv: rendered output of 2001-bressloff-v1-form-constants.py at 68c4a1a, text/csv, 1508 B, artifact_sha256 2b6efe3a19972d59918b8fd9d2000a5eee12b9093a7cf407e1fa5171f0324294 (sha256 2b6efe3a19972d59918b8fd9d2000a5eee12b9093a7cf407e1fa5171f0324294), spec_fingerprint fff701034002726a27d7e6e2ee5c626f921c8d06f78514d8965ad139e7a192a7; 2001-bressloff-v1-form-constants.py L793–L812: spectral_ring_metrics computes unsubtracted even azimuthal harmonics c2, c4, c6 on the cortical grid, where 1D rolls saturate all even harmonics <https://github.com/fractastical/morpholib/blob/68c4a1a/2001-bressloff-v1-form-constants.py#L793-L812>; 2001-bressloff-v1-form-constants.py L818–L877: verify_paper_calibration_parity compares against upstream Rust JSON outputs including fig40 where upstream recorded actual='honeycomb' vs expected='triangle' <https://github.com/fractastical/morpholib/blob/68c4a1a/2001-bressloff-v1-form-constants.py#L818-L877>; datasets/bressloff/paper-calibration.json L37–L43: Upstream fixture explicitly states the report is an analytic-normalized software calibration check, not a digitized paper figure <https://github.com/fractastical/morpholib/blob/68c4a1a/datasets/bressloff/paper-calibration.json#L37-L43>. Measurements (measure_outputs.py): bressloff-v1-form-constants stability_reports parity, max |Δ| = 0.0 dimensionless (reference 0.0, MesmerPrism/bressloff-v1-form-constants commit 344863a1bd9e8a8e8c9cb20aced2897f3ffb2c4c) [maximum absolute error across all 5 Bressloff (2001) stability_reports (q*, λ*, γ(0), γ(θ), η_hex) vs paper-calibration.json]; Mexican-hat lateral inhibition critical wavenumber q* (Bressloff 2001 Fig. 16) = 1.028 dimensionless wavenumber (reference >0.5 (finite Turing/Euclidean symmetry-breaking wavelength), Bressloff et al. 2001 Phil. Trans. R. Soc. B 356:299 Fig. 16) [maximizer of max(λ_even(q), λ_odd(q)) with lateral_inhibition = 0.27] — interior peak prominence = 0.1200; Gaussian-only negative control critical wavenumber q* (lateral_inhibition = 0) = 0.05 dimensionless wavenumber (reference 0.05, q_min boundary of [0.05, 3.0] grid (monotonically decaying dispersion, prominence = 0.0)) [maximizer of λ(q) when Mexican-hat surround inhibition is removed (lateral_inhibition = 0.0)] — interior peak prominence = 0.00e+00; Klüver Tunnel/Rings cortical planform spectral ring sharpness = 30.556 ratio (peak/median PSD) (reference >5.0, Bressloff et al. 2001 Fig. 7 / Klüver 1966 Tunnel form constant) [2D FFT radial power spectrum peak/median ratio at k* = 14 cycles]; Klüver Honeycomb/Hex cortical planform spectral ring wavenumber k* = 24.0 cycles / domain (reference >0, Bressloff et al. 2001 Fig. 35 / Klüver 1966 Honeycomb form constant) [dominant radial FFT wavenumber of the 3-mode hexagonal cortical planform] — ring sharpness = 7.76." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-morphometric-validation> ;
+        pk:hasProbability "0.62"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-morphometric-validation> rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants (2001-bressloff-v1-form-constants.py, docs/media/bressloff_v1_form_constants.gif, bressloff_v1_metrics.csv) satisfies the MorphoEval 0.1.0 criterion 'Morphometric validation' for Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
+        dct:identifier "morphoeval/0.1.0/morphometric-validation" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/BF00336965>,
+            <https://doi.org/10.1098/rstb.2000.0769>,
+            <https://doi.org/10.1162/089976602317250861>,
+            <https://doi.org/10.1371/journal.pcbi.1002158> .
+    <https://doi.org/10.1007/BF00336965> dct:date "1979"^^xsd:gYear ;
+        dct:title "A mathematical theory of visual hallucination patterns" .
+    <https://doi.org/10.1098/rstb.2000.0769> dct:date "2001"^^xsd:gYear ;
+        dct:title "Geometric visual hallucinations, Euclidean symmetry and the functional architecture of striate cortex" .
+    <https://doi.org/10.1162/089976602317250861> dct:date "2002"^^xsd:gYear ;
+        dct:title "What geometric visual hallucinations tell us about the visual cortex" .
+    <https://doi.org/10.1371/journal.pcbi.1002158> dct:date "2011"^^xsd:gYear ;
+        dct:title "A model for the origin and properties of flicker-induced geometric phosphenes" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Morphometric validation 62/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-19T20:40:59Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-second-assessor-audit-bressloff-v1-form-constants-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

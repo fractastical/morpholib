@@ -25,8 +25,13 @@ Primary Sources
 4. Rule M, Stoffregen M, Ermentrout B (2011).
    A model for the origin and properties of flicker-induced geometric phosphenes.
    PLoS Computational Biology 7(9):e1002158.
-   https://doi.org/10.1371/journal.pcbi.1002158 (PMID: 21980279)
-5. Upstream reference implementation & calibration fixtures:
+   https://doi.org/10.1371/journal.pcbi.1002158 (PMID: 21980269)
+5. Horton JC, Hoyt WF (1991).
+   The representation of the visual field in human striate cortex: a revision of the
+   classic Holmes map. Archives of Ophthalmology 109(6):816-824.
+   https://doi.org/10.1001/archopht.1991.01080060080030 (PMID: 2043069)
+   Empirical anchor: linear cortical magnification M(E) = 17.3 / (E + 0.75) mm/deg.
+6. Upstream reference implementation & calibration fixtures:
    MesmerPrism/bressloff-v1-form-constants (commit 344863a1bd9e8a8e8c9cb20aced2897f3ffb2c4c, MIT License;
    derived from karacsm/V1-sim by Márton Karácsony, extended by Till Holzapfel).
 
@@ -39,8 +44,18 @@ Scope & Claim Boundary
   `MesmerPrism/bressloff-v1-form-constants/rust-v1-sim/src/models/bressloff/planform.rs`
   and reproduce all 5 `stability_reports` in `datasets/bressloff/paper-calibration.json`
   to machine precision (~1e-15).
-* The inverse retino-cortical pullback r_R = (w0/eps) * exp(eps * x / alpha),
-  theta_R = eps * y / beta follows Bressloff et al. (2001, Section 2; 2002, Eq. 2.1).
+* The retino-cortical map is the exact two-regime form of Bressloff et al. (2001,
+  Section 2; 2002, Eq. 2.1): x = (alpha/eps) ln(1 + eps r/w0), y = beta r theta/(w0 + eps r),
+  inverted analytically for the retinal pullback (no foveal hole; only r = 0 is undefined).
+  Its linear magnification dx/dr = alpha/(w0 + eps r) is compared against the human
+  Horton & Hoyt (1991) law M(E) = 17.3/(E + 0.75) mm/deg over 1-40 deg eccentricity.
+* Rendered planforms use the model's critical wavenumber q* (quantised to integer cycles
+  on the periodic cortical torus) and are labelled with both the rendered lattice and the
+  branch the cubic amplitude equations select globally; parity with the upstream fixture is
+  reported separately from the fixture's own paper-expectation checks (fig40's odd-branch
+  hexagon/triangle choice is degenerate at cubic order and is flagged, not hidden).
+* The Rule et al. (2011) Fig. 8 overlay is drawn from an upstream fixture whose
+  `calibration_claim_allowed` flag is false; the panel states this and the overlap RMS.
 * The Gaussian-only negative control removes Mexican-hat lateral inhibition
   (lateral_inhibition = 0), verifying that the Turing/Euclidean band-pass wavenumber
   peak q* collapses to q -> 0 (homogeneous mode).
@@ -66,7 +81,6 @@ if any(flag in sys.argv for flag in ("--no-show", "--self-test")) or not os.envi
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.special import iv as bessel_iv
 
 REPO_ROOT = Path(__file__).resolve().parent
 BRESSLOFF_DATASET_DIR = REPO_ROOT / "datasets" / "bressloff"
@@ -75,6 +89,7 @@ FIXTURE_CHECKSUMS: Dict[str, str] = {
     "paper-calibration.json": "af12b2c1aa3e38faf984166b3aa227a2aa064480a98279f14c004342ce2e7dd4",
     "rule-2011-floquet.json": "5e349c7b80185de463e1ea8656a2fe91a83523c212875af4ce46d09e9dde2a8e",
     "driven-neural-fields-registry.json": "4f07b5175a48bcb50bad4998953505a3f92faf4c6f5514d2b4643c2a67c36b10",
+    "horton_hoyt_1991_magnification.json": "90d639ebb4601be59308699e128ac9b59574a9da6dbc47f0c7ad00be8d9e4a8f",
 }
 
 # Retino-cortical log-polar mapping constants (Bressloff et al. 2001 Section 2; 2002 Eq. 2.1)
@@ -82,6 +97,71 @@ RETINO_EPS: float = 0.051
 RETINO_W0: float = 0.087
 RETINO_ALPHA: float = 3.0 / math.pi
 RETINO_BETA: float = 1.589 / 2.0
+
+
+# =============================================================================
+# 0. Exact retino-cortical map (Bressloff et al. 2001 §2; 2002 Eq. 2.1) and the
+#    Horton & Hoyt (1991) cortical-magnification anchor
+# =============================================================================
+def retino_cortical_forward(r_deg: np.ndarray, theta: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """Retina (r in deg, theta in rad) -> cortex (x_c, y_c in mm): x = (α/ε) ln(1 + ε r/w₀), y = β r θ/(w₀ + ε r)."""
+    r = np.asarray(r_deg, dtype=float)
+    x_c = (RETINO_ALPHA / RETINO_EPS) * np.log1p(RETINO_EPS * r / RETINO_W0)
+    y_c = RETINO_BETA * r * np.asarray(theta, dtype=float) / (RETINO_W0 + RETINO_EPS * r)
+    return x_c, y_c
+
+
+def retino_cortical_inverse(x_c: np.ndarray, y_c: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """Cortex (x_c, y_c in mm) -> retina (r in deg, theta in rad); exact inverse of `retino_cortical_forward`."""
+    x = np.asarray(x_c, dtype=float)
+    r = (RETINO_W0 / RETINO_EPS) * np.expm1(RETINO_EPS * x / RETINO_ALPHA)
+    r_safe = np.maximum(r, 1.0e-12)
+    theta = np.asarray(y_c, dtype=float) * (RETINO_W0 + RETINO_EPS * r_safe) / (RETINO_BETA * r_safe)
+    return r, theta
+
+
+def cortical_magnification_model(ecc_deg: np.ndarray) -> np.ndarray:
+    """Linear magnification of the Bressloff map, dx/dr = α/(w₀ + ε r) in mm/deg."""
+    return RETINO_ALPHA / (RETINO_W0 + RETINO_EPS * np.asarray(ecc_deg, dtype=float))
+
+
+def cortical_magnification_horton_hoyt(ecc_deg: np.ndarray, a_mm_per_deg: float, e2_deg: float) -> np.ndarray:
+    """Horton & Hoyt (1991) human V1 linear magnification M(E) = A/(E + E₂) mm/deg (A = 17.3, E₂ = 0.75)."""
+    return a_mm_per_deg / (np.asarray(ecc_deg, dtype=float) + e2_deg)
+
+
+def compare_cortical_magnification() -> Dict[str, Any]:
+    """Compare the map's magnification with Horton & Hoyt (1991) over 1-40 deg and return the residuals."""
+    with open(BRESSLOFF_DATASET_DIR / "horton_hoyt_1991_magnification.json", "r", encoding="utf-8") as fh:
+        hh = json.load(fh)
+    a_hh = float(hh["A_mm_per_deg"])
+    e2_hh = float(hh["E2_deg"])
+    lo, hi = (float(v) for v in hh.get("comparison_range_deg", [1.0, 40.0]))
+    ecc = np.linspace(lo, hi, 157)
+    m_model = cortical_magnification_model(ecc)
+    m_hh = cortical_magnification_horton_hoyt(ecc, a_hh, e2_hh)
+    rel = (m_model - m_hh) / m_hh
+    # The model is algebraically of Horton-Hoyt form with A = α/ε and E₂ = w₀/ε
+    a_model = RETINO_ALPHA / RETINO_EPS
+    e2_model = RETINO_W0 / RETINO_EPS
+    # Total cortical extent fovea -> 90 deg along the horizontal meridian (mm)
+    extent_model = float(retino_cortical_forward(np.array([90.0]), np.array([0.0]))[0][0])
+    extent_hh = a_hh * math.log((90.0 + e2_hh) / e2_hh)
+    return {
+        "eccentricity_deg": ecc,
+        "model_mm_per_deg": m_model,
+        "horton_hoyt_mm_per_deg": m_hh,
+        "rel_error": rel,
+        "rms_rel_error": float(np.sqrt(np.mean(rel * rel))),
+        "max_abs_rel_error": float(np.max(np.abs(rel))),
+        "model_A_mm_per_deg": a_model,
+        "model_E2_deg": e2_model,
+        "hh_A_mm_per_deg": a_hh,
+        "hh_E2_deg": e2_hh,
+        "model_extent_0_90_mm": extent_model,
+        "hh_extent_0_90_mm": extent_hh,
+        "source": hh.get("source", "Horton & Hoyt (1991) Arch. Ophthalmol. 109:816"),
+    }
 
 
 # =============================================================================
@@ -541,6 +621,9 @@ def branch_selection_for(params: BressloffParams, q: float, growth: float) -> Di
         gamma0 + 2.0 * gamma_rhombic, 0.0, gamma_rhombic > 0.0 and 2.0 * gamma_rhombic < gamma0,
     )
     hex_pattern = "hex_pi" if eta_hex < 0.0 else "honeycomb"
+    # At cubic order the odd branch has eta_hex = 0, so H0 (honeycomb) and H_pi (triangle) are
+    # degenerate; the fixture's "honeycomb" label is kept for parity but flagged as undetermined.
+    hex_pattern_degenerate = params.parity != "even" or abs(eta_hex) < 1.0e-12
     hex_stable = (
         gamma_hex > 0.0
         and (params.parity == "even" or 2.0 * gamma_hex < gamma0)
@@ -601,6 +684,11 @@ def branch_selection_for(params: BressloffParams, q: float, growth: float) -> Di
         "global_selected_family": global_selected["family"],
         "global_selected_pattern": global_selected["pattern"],
         "global_selected_stable": global_selected["stable"],
+        "roll_stable": roll_stable,
+        "square_stable": square["stable"],
+        "rhombic_stable": rhombic["stable"],
+        "hex_stable": hex_stable,
+        "hex_pattern_degenerate": hex_pattern_degenerate,
         "candidates": candidates,
     }
 
@@ -635,11 +723,15 @@ def stability_scan(params: BressloffParams) -> Dict[str, Any]:
     eff_params = BressloffParams(**{**params.__dict__})
     if eff_params.pattern == "auto":
         eff_params.parity = critical_branch
-    wave_number = (
-        critical_q / max(eff_params.hypercolumn_mm, 1.0e-9)
-        if eff_params.pattern == "auto"
-        else 2.0 * math.pi * eff_params.wave_count / max(float(eff_params.n) * cell_mm_for(eff_params), 1.0e-9)
-    )
+    # Rendered wavenumber is always derived from the model's critical q* (|k| = q*/d_hyp), then
+    # quantised to an integer number of cycles on the periodic cortical torus of circumference
+    # L = 2*pi*beta/eps so that the FFT ring sits exactly on k*. The preset `wave_count` is kept
+    # only as a legacy reference value and no longer drives the figure.
+    torus_mm = float(eff_params.n) * cell_mm_for(eff_params)
+    wave_number_qstar = critical_q / max(eff_params.hypercolumn_mm, 1.0e-9)
+    cycles_unquantised = wave_number_qstar * torus_mm / (2.0 * math.pi)
+    rendered_cycles = max(1, int(round(cycles_unquantised)))
+    wave_number = 2.0 * math.pi * float(rendered_cycles) / torus_mm
     q_eval = wave_number * eff_params.hypercolumn_mm
     bsel = branch_selection_for(eff_params, critical_q, critical_growth)
 
@@ -652,6 +744,13 @@ def stability_scan(params: BressloffParams) -> Dict[str, Any]:
         "critical_growth": critical_growth,
         "rendered_parity": eff_params.parity,
         "wave_number": wave_number,
+        "wave_number_source": "critical_q / hypercolumn_mm, quantised to integer torus cycles",
+        "wave_number_qstar_unquantised": wave_number_qstar,
+        "rendered_cycles": rendered_cycles,
+        "cycles_unquantised": cycles_unquantised,
+        "critical_wavelength_mm": 2.0 * math.pi / max(wave_number_qstar, 1.0e-12),
+        "torus_mm": torus_mm,
+        "preset_wave_count_legacy": float(eff_params.wave_count),
         "q_eval": q_eval,
         "branch_selection": bsel,
     }
@@ -695,8 +794,17 @@ def render_cortical_and_retinal_planform(
     params: BressloffParams,
     phase: float = 0.0,
     retinal_res: int = 160,
+    retinal_max_deg: float = 40.0,
 ) -> Tuple[np.ndarray, np.ndarray, Dict[str, Any]]:
-    """Evaluate a V1 cortical planform on [-extent/2, extent/2]^2 and its log-polar retinal pullback."""
+    """Evaluate a V1 cortical planform on the torus [0, L] x [-L/2, L/2] and its exact retinal pullback.
+
+    L = 2*pi*beta/eps is the far-field circumference of the retino-cortical map; x_c = 0 is the fovea.
+    The retinal panel covers the central disc |r| <= `retinal_max_deg` using the exact inverse of
+    x = (alpha/eps) ln(1 + eps r/w0), y = beta r theta/(w0 + eps r); each hemifield (theta in
+    [-pi/2, pi/2] from the horizontal meridian) is mapped onto the same planform, i.e. both
+    hemispheres are assumed to carry the same bilateral eigenmode, so the vertical meridian is
+    continuous by construction and there is no foveal hole (only r = 0 itself is singular).
+    """
     stab = stability_scan(params)
     eff_params = BressloffParams(**{**params.__dict__})
     if eff_params.pattern == "auto":
@@ -713,8 +821,8 @@ def render_cortical_and_retinal_planform(
     eigen = orientation_eigen_details(eff_params, q_eval)
     modes = planform_modes(eff_params, eff_pattern)
 
-    # 1) Cortical grid (x_c, y_c) in mm
-    xs = (np.arange(eff_params.n, dtype=float) + 0.5) * cell_mm - half
+    # 1) Cortical torus grid (x_c in [0, L] with the fovea at x_c = 0, y_c in [-L/2, L/2]) in mm
+    xs = (np.arange(eff_params.n, dtype=float) + 0.5) * cell_mm
     ys = (np.arange(eff_params.n, dtype=float) + 0.5) * cell_mm - half
     xg, yg = np.meshgrid(xs, ys)
 
@@ -743,23 +851,24 @@ def render_cortical_and_retinal_planform(
 
     cortical_field = _eval_xy(xg, yg)
 
-    # 2) Retinal visual-field pullback via forward log-polar V1 map:
-    # r_R = (w0 / eps) * exp(eps * x_c / alpha), theta_R = eps * y_c / beta
-    # => x_c = (alpha / eps) * ln(eps * r_R / w0), y_c = (beta / eps) * theta_R
-    r_min = (RETINO_W0 / RETINO_EPS) * math.exp(-RETINO_EPS * half / RETINO_ALPHA)
-    r_max = (RETINO_W0 / RETINO_EPS) * math.exp(RETINO_EPS * half / RETINO_ALPHA)
+    # 2) Retinal visual-field pullback through the exact retino-cortical map.
+    #    theta is measured from the horizontal meridian within each hemifield so that the
+    #    left/right hemifields hit the same cortical planform mirror-symmetrically.
+    r_max = float(retinal_max_deg)
     u_lin = np.linspace(-r_max, r_max, retinal_res)
     ug, vg = np.meshgrid(u_lin, u_lin)
     r_ret = np.hypot(ug, vg)
-    theta_ret = np.arctan2(vg, ug)
-    r_clamped = np.maximum(r_ret, r_min)
-    x_cort = (RETINO_ALPHA / RETINO_EPS) * np.log(RETINO_EPS * r_clamped / RETINO_W0)
-    y_cort = (RETINO_BETA / RETINO_EPS) * theta_ret
+    theta_hemi = np.arctan2(vg, np.abs(ug))
+    x_cort, y_cort = retino_cortical_forward(r_ret, theta_hemi)
     retinal_field = _eval_xy(x_cort, y_cort)
-    # Mask outside retinal disc or inside foveal singularity r < r_min
-    valid_disc = (r_ret <= r_max) & (r_ret >= r_min)
-    retinal_field = np.where(valid_disc, retinal_field, np.nan)
+    retinal_field = np.where(r_ret <= r_max, retinal_field, np.nan)
 
+    x_cort_max = float(retino_cortical_forward(np.array([r_max]), np.array([0.0]))[0][0])
+    stab = dict(stab)
+    stab["rendered_pattern"] = eff_pattern
+    stab["retinal_max_deg"] = r_max
+    stab["cortical_x_for_retinal_max_mm"] = x_cort_max
+    stab["cortical_torus_mm"] = extent
     return cortical_field, retinal_field, stab
 
 
@@ -802,6 +911,19 @@ def spectral_ring_metrics(field: np.ndarray) -> Dict[str, float]:
     else:
         c2 = c4 = c6 = 0.0
 
+    # Normalised discriminator: a single wavevector pair gives c2 = c4 = c6 = 1 (all harmonics of a
+    # two-point ring), so m4/m6 alone cannot separate rolls from lattices. Use the excess over m2.
+    m4_excess = max(c4 - c2, 0.0)
+    m6_excess = max(c6 - c2, 0.0)
+    if c2 > 0.8:
+        lattice_class = "roll"
+    elif m4_excess > 0.4 and m4_excess >= m6_excess:
+        lattice_class = "square"
+    elif m6_excess > 0.4:
+        lattice_class = "hexagonal"
+    else:
+        lattice_class = "mixed/rhombic"
+
     return {
         "k_star_cycles": float(k_star_idx),
         "wavelength_grid_cells": round(wavelength_px, 3),
@@ -809,6 +931,9 @@ def spectral_ring_metrics(field: np.ndarray) -> Dict[str, float]:
         "azimuthal_m2_roll": round(c2, 4),
         "azimuthal_m4_square": round(c4, 4),
         "azimuthal_m6_hex": round(c6, 4),
+        "m4_excess_over_m2": round(m4_excess, 4),
+        "m6_excess_over_m2": round(m6_excess, 4),
+        "lattice_class": lattice_class,
     }
 
 
@@ -816,7 +941,13 @@ def spectral_ring_metrics(field: np.ndarray) -> Dict[str, float]:
 # 4. Upstream Parity Checks against `MesmerPrism/bressloff-v1-form-constants`
 # =============================================================================
 def verify_paper_calibration_parity(tol: float = 1.0e-9) -> Tuple[bool, float, List[Dict[str, Any]]]:
-    """Verify exact numerical parity with `datasets/bressloff/paper-calibration.json` stability_reports."""
+    """Verify exact numerical parity with `datasets/bressloff/paper-calibration.json` stability_reports.
+
+    Parity means this script reproduces the upstream fixture's *actual* values. The fixture also
+    carries its own paper-expectation `checks` (expected vs actual); those are surfaced per row as
+    `fixture_checks` / `fixture_checks_passed` and are NOT folded into the parity verdict, so a
+    fixture-level failure (fig40: expected 'triangle', actual 'honeycomb') is reported, not hidden.
+    """
     cal_path = BRESSLOFF_DATASET_DIR / "paper-calibration.json"
     with open(cal_path, "r", encoding="utf-8") as fh:
         cal_data = json.load(fh)
@@ -855,6 +986,15 @@ def verify_paper_calibration_parity(tol: float = 1.0e-9) -> Tuple[bool, float, L
             and bsel["selected_pattern"] == rep["selected_pattern"]
         )
         all_ok = all_ok and branch_match and (row_err <= tol)
+        fixture_checks = [
+            {
+                "name": str(c.get("name")),
+                "expected": c.get("expected"),
+                "actual": c.get("actual"),
+                "passed": bool(c.get("passed")),
+            }
+            for c in rep.get("checks", [])
+        ]
         rows.append(
             {
                 "id": rep_id,
@@ -865,6 +1005,12 @@ def verify_paper_calibration_parity(tol: float = 1.0e-9) -> Tuple[bool, float, L
                 "ref_critical_q": float(rep["critical_q"]),
                 "selected_family": bsel["selected_family"],
                 "selected_pattern": bsel["selected_pattern"],
+                "selected_scope": bsel["selected_scope"],
+                "global_selected_family": bsel["global_selected_family"],
+                "global_selected_pattern": bsel["global_selected_pattern"],
+                "global_selected_stable": bsel["global_selected_stable"],
+                "roll_stable": bsel["roll_stable"],
+                "hex_pattern_degenerate": bsel["hex_pattern_degenerate"],
                 "gamma0": bsel["gamma0"],
                 "gamma_square": bsel["gamma_square"],
                 "gamma_rhombic": bsel["gamma_rhombic"],
@@ -872,9 +1018,27 @@ def verify_paper_calibration_parity(tol: float = 1.0e-9) -> Tuple[bool, float, L
                 "eta_hex": bsel["eta_hex"],
                 "max_abs_err": row_err,
                 "branch_match": branch_match,
+                "fixture_checks": fixture_checks,
+                "fixture_checks_passed": all(c["passed"] for c in fixture_checks),
+                "fixture_failed_checks": [c for c in fixture_checks if not c["passed"]],
             }
         )
     return all_ok, max_err, rows
+
+
+def summarize_fixture_checks(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    """Aggregate the upstream fixture's own paper-expectation checks across all stability reports."""
+    total = sum(len(r["fixture_checks"]) for r in rows)
+    failed = [(r["id"], c) for r in rows for c in r["fixture_failed_checks"]]
+    return {
+        "total": total,
+        "passed": total - len(failed),
+        "failed": [
+            {"report": rid, "name": c["name"], "expected": c["expected"], "actual": c["actual"]}
+            for rid, c in failed
+        ],
+        "all_passed": not failed,
+    }
 
 
 def evaluate_gaussian_negative_control() -> Dict[str, float]:
@@ -914,8 +1078,15 @@ def run_bressloff_analysis(
     parity_ok, max_cal_err, cal_rows = verify_paper_calibration_parity()
     if not parity_ok:
         raise RuntimeError(f"Bressloff calibration parity failed: max_err={max_cal_err:.3e}")
+    fixture_summary = summarize_fixture_checks(cal_rows)
+    for f in fixture_summary["failed"]:
+        print(
+            f"[WARN] upstream fixture paper-expectation check failed: {f['report']}/{f['name']} "
+            f"expected={f['expected']!r} actual={f['actual']!r} (reported, not hidden)"
+        )
 
     neg_ctrl = evaluate_gaussian_negative_control()
+    magnification = compare_cortical_magnification()
 
     # Representative Klüver form-constant presets across Bressloff (2001) Figs. 31-36 & 2002 Fig. 7
     kluver_presets = [
@@ -929,6 +1100,15 @@ def run_bressloff_analysis(
         p = make_preset_params(pid, n=96, m=16)
         cort, ret, stab = render_cortical_and_retinal_planform(p, phase=0.0, retinal_res=160)
         spec = spectral_ring_metrics(cort)
+        # The contoured rendering (max over orientation φ, then tanh) is strongly nonlinear and, for
+        # multi-mode lattices, moves most FFT power to the difference-wavevector ring (|k_i - k_j| =
+        # √3 k for hexagons). The spectral check against q* is therefore made on the linear
+        # eigenmode superposition (non-contoured, weak tanh); both spectra are reported.
+        p_lin = BressloffParams(**{**p.__dict__})
+        p_lin.contour_mode = "noncontoured"
+        p_lin.sharpness = 0.5
+        cort_lin, _ret_lin, _stab_lin = render_cortical_and_retinal_planform(p_lin, phase=0.0, retinal_res=16)
+        spec_lin = spectral_ring_metrics(cort_lin)
         rendered_gallery.append(
             {
                 "preset_id": pid,
@@ -937,6 +1117,7 @@ def run_bressloff_analysis(
                 "retinal": ret,
                 "stability": stab,
                 "spectral": spec,
+                "spectral_linear": spec_lin,
             }
         )
 
@@ -952,8 +1133,20 @@ def run_bressloff_analysis(
     # Load Rule et al. (2011) Floquet resonance tongue report
     with open(BRESSLOFF_DATASET_DIR / "rule-2011-floquet.json", "r", encoding="utf-8") as fh:
         floquet_data = json.load(fh)
+    floquet_fit = floquet_data["source_curve_comparison"].get("fit_objective", {})
+    floquet_status = {
+        "acceptance_status": str(floquet_fit.get("acceptance_status", "unknown")),
+        "calibration_claim_allowed": bool(floquet_fit.get("calibration_claim_allowed", False)),
+        "domain_rms_beta_error": float(
+            floquet_data["source_curve_comparison"]["domain_beta_mapping"]["rms_error"]
+        ),
+        "domain_rms_beta_error_max": float(floquet_fit.get("domain_normalized_rms_beta_error_max", float("nan"))),
+        "failed_acceptance_checks": list(floquet_fit.get("failed_acceptance_checks", [])),
+    }
 
-    # Write CSV summary
+    # Write CSV summary. Lattice selection is reported twice: `selected_*` is the branch chosen within
+    # the preset's target lattice (lattice-local scope) and `global_selected_*` is the branch the
+    # cubic amplitude equations select with no lattice restriction.
     with open(output_csv, "w", newline="", encoding="utf-8") as fh:
         writer = csv.writer(fh)
         writer.writerow(
@@ -964,14 +1157,26 @@ def run_bressloff_analysis(
                 "parity",
                 "selected_family",
                 "selected_pattern",
+                "selected_scope",
+                "global_selected_family",
+                "global_selected_stable",
+                "roll_stable",
+                "rendered_pattern",
                 "critical_q",
                 "gamma0_or_k_star",
                 "gamma_cross_or_sharpness",
                 "eta_hex_or_m4_m6",
+                "lattice_class_or_flag",
+                "fixture_paper_checks",
                 "max_abs_err_vs_rust",
             ]
         )
         for r in cal_rows:
+            n_checks = len(r["fixture_checks"])
+            n_pass = sum(1 for c in r["fixture_checks"] if c["passed"])
+            fail_txt = "; ".join(
+                f"{c['name']}: expected {c['expected']} got {c['actual']}" for c in r["fixture_failed_checks"]
+            )
             writer.writerow(
                 [
                     "stability_calibration",
@@ -980,29 +1185,45 @@ def run_bressloff_analysis(
                     r["critical_branch"],
                     r["selected_family"],
                     r["selected_pattern"],
+                    r["selected_scope"],
+                    r["global_selected_family"],
+                    str(bool(r["global_selected_stable"])),
+                    str(bool(r["roll_stable"])),
+                    "",
                     f"{r['critical_q']:.6f}",
                     f"{r['gamma0']:.6f}",
                     f"{r['gamma_hex']:.6f}",
                     f"{r['eta_hex']:.6f}",
+                    "hex_H0/Hpi_degenerate_at_cubic_order" if r["hex_pattern_degenerate"] else "",
+                    f"{n_pass}/{n_checks}" + (f" FAILED[{fail_txt}]" if fail_txt else ""),
                     f"{r['max_abs_err']:.3e}",
                 ]
             )
         for g in rendered_gallery:
             sp = g["spectral"]
             st = g["stability"]
+            bs = st["branch_selection"]
             writer.writerow(
                 [
                     "kluver_form_constant",
                     g["preset_id"],
                     g["title"].replace("\n", " "),
                     st["rendered_parity"],
-                    st["branch_selection"]["selected_family"],
-                    st["branch_selection"]["selected_pattern"],
-                    f"{st['q_eval']:.6f}",
+                    bs["selected_family"],
+                    bs["selected_pattern"],
+                    bs["selected_scope"],
+                    bs["global_selected_family"],
+                    str(bool(bs["global_selected_stable"])),
+                    str(bool(bs["roll_stable"])),
+                    st["rendered_pattern"],
+                    f"{st['critical_q']:.6f}",
                     f"{sp['k_star_cycles']:.2f}",
                     f"{sp['ring_sharpness']:.3f}",
-                    f"{ max(sp['azimuthal_m4_square'], sp['azimuthal_m6_hex']):.4f}",
-                    "0.000e+00",
+                    f"{max(sp['m4_excess_over_m2'], sp['m6_excess_over_m2']):.4f}",
+                    sp["lattice_class"],
+                    f"rendered_cycles={st['rendered_cycles']} (q*/d_hyp -> {st['cycles_unquantised']:.2f} cyc); "
+                    f"linear_k_star={g['spectral_linear']['k_star_cycles']:.0f}; contoured_k_star={sp['k_star_cycles']:.0f}",
+                    "n/a",
                 ]
             )
         writer.writerow(
@@ -1013,45 +1234,96 @@ def run_bressloff_analysis(
                 "odd",
                 "homogeneous",
                 "none",
+                "global", "homogeneous", "False", "False", "",
                 f"{neg_ctrl['gaussian_control_critical_q']:.6f}",
                 f"{neg_ctrl['mexican_hat_peak_prominence']:.6f}",
                 f"{neg_ctrl['gaussian_control_peak_prominence']:.6f}",
                 "0.0000",
-                "0.000e+00",
+                "",
+                "",
+                "n/a",
+            ]
+        )
+        writer.writerow(
+            [
+                "magnification_anchor",
+                "horton_hoyt_1991",
+                "Horton & Hoyt 1991 M(E)=17.3/(E+0.75)",
+                "", "", "", "", "", "", "", "",
+                f"{magnification['rms_rel_error']:.6f}",
+                f"{magnification['model_A_mm_per_deg']:.6f}",
+                f"{magnification['model_E2_deg']:.6f}",
+                f"{magnification['max_abs_rel_error']:.6f}",
+                f"model_extent_0_90={magnification['model_extent_0_90_mm']:.2f}mm vs HH {magnification['hh_extent_0_90_mm']:.2f}mm",
+                "rms_rel_err / A_model / E2_model / max_rel_err over 1-40 deg",
+                "n/a",
+            ]
+        )
+        writer.writerow(
+            [
+                "floquet_diagnostic",
+                "rule_2011_fig8_overlay",
+                "Rule et al. 2011 Fig. 8",
+                "", "", "", "", "", "", "", "",
+                f"{floquet_status['domain_rms_beta_error']:.6f}",
+                f"{floquet_status['domain_rms_beta_error_max']:.6f}",
+                "", "",
+                floquet_status["acceptance_status"],
+                f"calibration_claim_allowed={floquet_status['calibration_claim_allowed']}; "
+                f"failed={','.join(floquet_status['failed_acceptance_checks'])}",
+                "n/a",
             ]
         )
 
-    # Render 3x4 synthesis figure
-    fig = plt.figure(figsize=(15.5, 11.2), dpi=150)
-    gs = fig.add_gridspec(3, 4, height_ratios=[1.0, 1.0, 1.08], hspace=0.38, wspace=0.28)
+    # Render 4x4 synthesis figure
+    fig = plt.figure(figsize=(15.5, 15.0), dpi=150)
+    gs = fig.add_gridspec(4, 4, height_ratios=[1.0, 1.0, 1.08, 0.95], hspace=0.5, wspace=0.3)
 
     cmap_planform = "twilight_shifted"
     for col, g in enumerate(rendered_gallery):
         ax_c = fig.add_subplot(gs[0, col])
         ax_r = fig.add_subplot(gs[1, col])
+        st = g["stability"]
+        bs = st["branch_selection"]
+        torus = st["cortical_torus_mm"]
 
-        ax_c.imshow(g["cortical"], cmap=cmap_planform, vmin=-1.0, vmax=1.0, origin="lower")
+        ax_c.imshow(
+            g["cortical"], cmap=cmap_planform, vmin=-1.0, vmax=1.0, origin="lower",
+            extent=(0.0, torus, -0.5 * torus, 0.5 * torus),
+        )
+        ax_c.axvline(st["cortical_x_for_retinal_max_mm"], color="white", ls="--", lw=0.9, alpha=0.85)
+        ax_c.text(
+            st["cortical_x_for_retinal_max_mm"] + 1.5, -0.47 * torus, f"{st['retinal_max_deg']:.0f}°",
+            color="white", fontsize=7.0, va="bottom",
+        )
         ax_c.set_title(
             f"V1 Cortex: {g['title']}\n"
-            f"$k^*={g['spectral']['k_star_cycles']:.0f}$ cyc, sharpness={g['spectral']['ring_sharpness']:.1f}",
-            fontsize=9.0,
+            f"$k^*$ lin {g['spectral_linear']['k_star_cycles']:.0f} / cont {g['spectral']['k_star_cycles']:.0f} cyc "
+            f"($q^*/d_{{hyp}}$={st['cycles_unquantised']:.1f})\n"
+            f"$\\lambda_c$={st['critical_wavelength_mm']:.1f} mm, FFT class: {g['spectral']['lattice_class']}",
+            fontsize=7.4,
             fontweight="bold",
         )
         ax_c.set_xticks([])
         ax_c.set_yticks([])
         if col == 0:
-            ax_c.set_ylabel("V1 Cortical Sheet $(x_c, y_c)$", fontsize=9.5, fontweight="bold")
+            ax_c.set_ylabel("V1 Cortical Sheet $(x_c, y_c)$, fovea at left", fontsize=9.0, fontweight="bold")
 
-        im_r = ax_r.imshow(g["retinal"], cmap=cmap_planform, vmin=-1.0, vmax=1.0, origin="lower")
+        rmax = st["retinal_max_deg"]
+        ax_r.imshow(
+            g["retinal"], cmap=cmap_planform, vmin=-1.0, vmax=1.0, origin="lower",
+            extent=(-rmax, rmax, -rmax, rmax),
+        )
         ax_r.set_title(
-            f"Retinal Pullback $(r_R, \\theta_R)$\n"
-            f"parity={g['stability']['rendered_parity']}, mode={g['stability']['branch_selection']['selected_pattern']}",
-            fontsize=8.8,
+            f"Retinal Pullback (exact map, $|r|\\leq{rmax:.0f}°$)\n"
+            f"rendered={st['rendered_pattern']} | {bs['selected_scope']}: {bs['selected_family']}\n"
+            f"global cubic selection: {bs['global_selected_family']}{'' if bs['global_selected_stable'] else ' (unstable)'}",
+            fontsize=7.4,
         )
         ax_r.set_xticks([])
         ax_r.set_yticks([])
         if col == 0:
-            ax_r.set_ylabel("Retinal Visual Field (Log-Polar)", fontsize=9.5, fontweight="bold")
+            ax_r.set_ylabel("Retinal Visual Field (exact inverse map)", fontsize=9.0, fontweight="bold")
 
     # Bottom Row Panel A (cols 0..1): Bressloff (2001) Figs. 16 & 17 marginal stability + Gaussian negative control
     ax_stab = fig.add_subplot(gs[2, 0:2])
@@ -1113,8 +1385,10 @@ def run_bressloff_analysis(
     ax_amp.set_xlabel("Wavevector Intersection Angle $\\theta$ (deg)", fontsize=9.0)
     ax_amp.set_ylabel("Cubic Coupling $\\gamma_3(\\theta)$", fontsize=9.0)
     ax_amp.set_title(
-        f"B. Amplitude Selection (Figs. 37–40)\nRust parity max $|\\Delta| = {max_cal_err:.1e}$",
-        fontsize=9.2,
+        f"B. Amplitude Selection (Figs. 37–40)\nRust parity max $|\\Delta| = {max_cal_err:.1e}$\n"
+        f"fixture paper checks {fixture_summary['passed']}/{fixture_summary['total']}"
+        + (" (fig40 H0/Hπ degenerate)" if not fixture_summary["all_passed"] else ""),
+        fontsize=8.0,
         fontweight="bold",
     )
     ax_amp.legend(fontsize=7.5, loc="upper right")
@@ -1163,19 +1437,86 @@ def run_bressloff_analysis(
     ax_rule.set_xlabel("Flicker Forcing Period $T$ (ms)", fontsize=9.0)
     ax_rule.set_ylabel("Normalized Wavenumber $\\beta_{\\mathrm{source}}$", fontsize=9.0)
     ax_rule.set_title(
-        "C. Rule et al. (2011) Fig. 8 Floquet Tongues\n(1:1 Stripes vs. 2:1 Period-Doubling Hex)",
-        fontsize=9.2,
+        "C. Rule et al. (2011) Fig. 8 Floquet Tongues\nDIAGNOSTIC OVERLAY — "
+        f"{floquet_status['acceptance_status']},\ncalibration_claim_allowed={floquet_status['calibration_claim_allowed']}",
+        fontsize=8.0,
         fontweight="bold",
+        color="#7b241c",
     )
-    ax_rule.legend(fontsize=7.8, loc="upper right")
+    ax_rule.text(
+        0.02, 0.03,
+        f"domain-normalised RMS β error = {floquet_status['domain_rms_beta_error']:.3f} "
+        f"(threshold {floquet_status['domain_rms_beta_error_max']:.2f})\n"
+        f"failed: {len(floquet_status['failed_acceptance_checks'])} acceptance checks\n"
+        "numerical calibration targets, not the published figure",
+        transform=ax_rule.transAxes, fontsize=6.4, va="bottom", ha="left", color="#7b241c",
+        bbox=dict(boxstyle="round,pad=0.25", fc="#fdf2f0", ec="#e6b0aa", lw=0.6),
+    )
+    ax_rule.legend(fontsize=7.4, loc="upper right")
     ax_rule.grid(alpha=0.25)
+
+    # Bottom Row Panel D (cols 0..1): empirical anchor — cortical magnification vs Horton & Hoyt (1991)
+    ax_mag = fig.add_subplot(gs[3, 0:2])
+    ax_mag.plot(
+        magnification["eccentricity_deg"], magnification["horton_hoyt_mm_per_deg"],
+        color="#1b2631", lw=2.4,
+        label=f"Horton & Hoyt (1991) human V1: $M(E)=A/(E+E_2)$, A={magnification['hh_A_mm_per_deg']:.1f}, $E_2$={magnification['hh_E2_deg']:.2f}°",
+    )
+    ax_mag.plot(
+        magnification["eccentricity_deg"], magnification["model_mm_per_deg"],
+        color="#2980b9", lw=2.0, ls="--",
+        label=f"Bressloff map $dx/dr=\\alpha/(w_0+\\epsilon r)$: A={magnification['model_A_mm_per_deg']:.2f}, $E_2$={magnification['model_E2_deg']:.2f}°",
+    )
+    ax_mag.set_yscale("log")
+    ax_mag.set_xlabel("Eccentricity $E$ (deg)", fontsize=9.0)
+    ax_mag.set_ylabel("Linear magnification (mm / deg)", fontsize=9.0)
+    ax_mag.set_title(
+        "D. Empirical anchor: retino-cortical magnification vs. Horton & Hoyt (1991)\n"
+        f"RMS relative error {100.0 * magnification['rms_rel_error']:.1f}% (max {100.0 * magnification['max_abs_rel_error']:.1f}%) over 1–40°; "
+        f"fovea→90° extent {magnification['model_extent_0_90_mm']:.1f} mm (model) vs {magnification['hh_extent_0_90_mm']:.1f} mm (H&H)",
+        fontsize=9.0, fontweight="bold",
+    )
+    ax_mag.legend(fontsize=7.6, loc="upper right")
+    ax_mag.grid(alpha=0.25, which="both")
+
+    # Bottom Row Panel E (cols 2..3): calibration & provenance ledger (what is and is not claimed)
+    ax_led = fig.add_subplot(gs[3, 2:4])
+    ax_led.axis("off")
+    ledger_lines = [
+        f"Fixture SHA-256: {sum(1 for ok, _ in checksums.values() if ok)}/{len(checksums)} verified",
+        f"Rust stability parity (q*, γ0, γ(θ), η): max |Δ| = {max_cal_err:.1e}, {len(cal_rows)} reports",
+        f"Upstream fixture paper-expectation checks: {fixture_summary['passed']}/{fixture_summary['total']} passed",
+    ]
+    for f in fixture_summary["failed"]:
+        ledger_lines.append(f"   ✗ {f['report']}/{f['name']}:")
+        ledger_lines.append(f"     expected '{f['expected']}', got '{f['actual']}'")
+    ledger_lines += [
+        "   odd branch has η_hex = 0 ⇒ H0 (honeycomb) vs Hπ (triangle) undetermined",
+        "   at cubic order; quintic selection (Bressloff 2001 §5) NOT implemented",
+        "Lattice scope: gallery presets select within their target lattice",
+        "   (lattice-local); the unrestricted global branch is printed under",
+        "   each retinal panel and in the CSV",
+        "Rendered |k| = q*/d_hyp, quantised to integer cycles on the L = 2πβ/ε",
+        "   torus (preset wave_count no longer used)",
+        "Retinal pullback: exact x=(α/ε)ln(1+εr/w₀), y=βrθ/(w₀+εr);",
+        "   both hemispheres carry the same mode (mirror-symmetric)",
+        f"Rule (2011) overlay: {floquet_status['acceptance_status']},",
+        f"   RMS β err {floquet_status['domain_rms_beta_error']:.3f} — no calibration claim",
+        f"Negative control: Gaussian-only (I_lat=0) q* → {neg_ctrl['gaussian_control_critical_q']:.2f},",
+        f"   interior-peak prominence {neg_ctrl['gaussian_control_peak_prominence']:.1e}",
+    ]
+    ax_led.text(
+        0.0, 1.0, "\n".join(ledger_lines), transform=ax_led.transAxes, fontsize=7.0, va="top", ha="left",
+        family="monospace", bbox=dict(boxstyle="round,pad=0.4", fc="#f8f9f9", ec="#b3b6b7", lw=0.7),
+    )
+    ax_led.set_title("E. Calibration & provenance ledger (claims vs. diagnostics)", fontsize=9.0, fontweight="bold")
 
     fig.suptitle(
         "Bressloff–Cowan–Golubitsky–Thomas–Wiener (2001/2002) V1 Euclidean Symmetry-Breaking & Form Constants\n"
-        "Cortical Orientation Planforms, Log-Polar Retinal Pullbacks, Amplitude Selection & Rule (2011) Flicker Floquet Tongues",
-        fontsize=11.5,
+        "Cortical Orientation Planforms, Exact Retinal Pullbacks, Amplitude Selection, Horton–Hoyt Magnification Anchor & Rule (2011) Floquet Diagnostics",
+        fontsize=11.0,
         fontweight="bold",
-        y=0.99,
+        y=0.995,
     )
     fig.savefig(output_png, dpi=150, bbox_inches="tight")
     if show:
@@ -1189,22 +1530,30 @@ def run_bressloff_analysis(
         "parity_ok": parity_ok,
         "max_cal_err": max_cal_err,
         "calibration_rows": cal_rows,
+        "fixture_checks": fixture_summary,
         "negative_control": neg_ctrl,
         "gallery": rendered_gallery,
-        "floquet_overlap_rms": float(
-            floquet_data["source_curve_comparison"]["domain_beta_mapping"]["rms_error"]
-        ),
+        "magnification": magnification,
+        "floquet_status": floquet_status,
+        "floquet_overlap_rms": floquet_status["domain_rms_beta_error"],
         "output_png": str(output_png),
         "output_csv": str(output_csv),
     }
 
 
+DEFAULT_GIF_PATH = REPO_ROOT / "docs" / "media" / "bressloff_v1_form_constants.gif"
+
+
 def make_gif(
-    output_gif: Path = REPO_ROOT / "bressloff_v1_form_constants.gif",
+    output_gif: Path = DEFAULT_GIF_PATH,
     n_frames: int = 36,
     fps: int = 8,
 ) -> None:
-    """Animate Klüver's 4 form-constant families one at a time (1x2: V1 cortical lattice -> retinal log-polar pullback)."""
+    """Animate the same four Klüver presets as the PNG gallery (1x2: V1 cortical torus -> exact retinal pullback).
+
+    The only difference from the static figure is `contour_mode="noncontoured"` so the phase sweep is
+    smooth; wavenumber, parity, lattice and map are identical to the PNG (no wave-count override).
+    """
     from PIL import Image
 
     presets = [
@@ -1223,13 +1572,12 @@ def make_gif(
         phase = 2.0 * math.pi * float(local_fi) / float(frames_per_preset)
         _pid, lbl, sub, p = params_list[idx]
 
-        # Non-contoured spatial envelope + continuous angle sweep for smooth, clean visual motion
+        # Non-contoured spatial envelope + continuous phase sweep for smooth motion; same q*-derived
+        # wavenumber, parity and lattice as the PNG gallery.
         p_anim = BressloffParams(**{**p.__dict__})
         p_anim.contour_mode = "noncontoured"
-        p_anim.wave_count = 3.5
-        p_anim.sharpness = 1.6
 
-        cort, ret, _stab = render_cortical_and_retinal_planform(p_anim, phase=phase, retinal_res=140)
+        cort, ret, stab_anim = render_cortical_and_retinal_planform(p_anim, phase=phase, retinal_res=140)
 
         fig, axes = plt.subplots(1, 2, figsize=(6.4, 3.4), dpi=100, facecolor="#fafaf8")
         fig.subplots_adjust(left=0.04, right=0.96, bottom=0.06, top=0.80, wspace=0.10)
@@ -1240,12 +1588,15 @@ def make_gif(
 
         axes[1].set_facecolor("#fafaf8")
         axes[1].imshow(ret, cmap="twilight_shifted", vmin=-1.0, vmax=1.0, origin="lower", interpolation="bilinear")
-        axes[1].set_title("Retina (log-polar visual field)", fontsize=10.0, fontweight="bold", color="#1e293b", pad=6)
+        axes[1].set_title(
+            f"Retina (exact map, |r| ≤ {stab_anim['retinal_max_deg']:.0f}°)",
+            fontsize=10.0, fontweight="bold", color="#1e293b", pad=6,
+        )
         axes[1].axis("off")
 
         fig.suptitle(
-            f"Bressloff et al. (2001) — {lbl}",
-            fontsize=11.5,
+            f"Bressloff et al. (2001) — {lbl}  (k*={stab_anim['rendered_cycles']} cyc, non-contoured)",
+            fontsize=9.5,
             fontweight="bold",
             color="#0f172a",
             y=0.95,
@@ -1295,8 +1646,38 @@ def self_test() -> bool:
         check(
             r["branch_match"],
             f"  {r['id']} ({r['paper_figure']}): branch={r['critical_branch']}, "
-            f"q*={r['critical_q']:.4f}, selected={r['selected_family']}/{r['selected_pattern']}",
+            f"q*={r['critical_q']:.4f}, selected={r['selected_family']}/{r['selected_pattern']} "
+            f"[{r['selected_scope']}; global={r['global_selected_family']}]",
         )
+    fx = summarize_fixture_checks(rows)
+    print(
+        f"[INFO] upstream fixture paper-expectation checks: {fx['passed']}/{fx['total']} passed"
+        + "".join(
+            f"\n       ✗ {f['report']}/{f['name']}: expected {f['expected']!r}, actual {f['actual']!r}"
+            for f in fx["failed"]
+        )
+    )
+    check(
+        any(f["report"] == "fig40_odd_hex_bifurcation" and f["name"] == "selected-pattern" for f in fx["failed"]),
+        "Known fig40 odd-hex H0/Hπ degeneracy is surfaced (not hidden) by the parity report",
+    )
+
+    # Exact retino-cortical map round-trip and Horton & Hoyt anchor
+    r_test = np.array([0.5, 2.0, 10.0, 40.0, 90.0])
+    th_test = np.array([-1.2, -0.3, 0.0, 0.7, 1.5])
+    xc, yc = retino_cortical_forward(r_test, th_test)
+    r_back, th_back = retino_cortical_inverse(xc, yc)
+    check(
+        bool(np.allclose(r_back, r_test, rtol=1e-10, atol=1e-10) and np.allclose(th_back, th_test, rtol=1e-10, atol=1e-10)),
+        f"Exact retino-cortical map inverts analytically (max |Δr| = {np.max(np.abs(r_back - r_test)):.1e} deg)",
+    )
+    mag = compare_cortical_magnification()
+    check(
+        mag["rms_rel_error"] < 0.25,
+        f"Map magnification within 25% RMS of Horton & Hoyt (1991) over 1-40 deg "
+        f"(RMS rel. err = {100.0 * mag['rms_rel_error']:.1f}%, A={mag['model_A_mm_per_deg']:.2f} vs 17.3, "
+        f"E2={mag['model_E2_deg']:.2f} vs 0.75 deg)",
+    )
 
     neg = evaluate_gaussian_negative_control()
     check(
@@ -1314,10 +1695,23 @@ def self_test() -> bool:
             output_csv=Path(td) / "metrics.csv",
             show=False,
         )
-        ks = [g["spectral"]["k_star_cycles"] for g in res["gallery"]]
+        ks = [g["spectral_linear"]["k_star_cycles"] for g in res["gallery"]]
+        ks_c = [g["spectral"]["k_star_cycles"] for g in res["gallery"]]
+        cyc = [g["stability"]["rendered_cycles"] for g in res["gallery"]]
         check(
-            all(k >= 6.0 for k in ks),
-            f"All 4 Klüver form-constant cortical planforms exhibit clear non-zero spectral rings: k* = {ks}",
+            all(k >= 6.0 for k in ks) and all(abs(k - c) <= 1.0 for k, c in zip(ks, cyc)),
+            f"All 4 Klüver linear planforms have FFT rings at the q*-derived cycle count: k* = {ks}, rendered = {cyc} "
+            f"(contoured-rendering k* = {ks_c}; hex moves power to the √3·k difference ring)",
+        )
+        classes = [g["spectral"]["lattice_class"] for g in res["gallery"]]
+        check(
+            classes == ["roll", "roll", "square", "hexagonal"],
+            f"Normalised azimuthal discriminator classifies rings/spiral as roll, cobweb as square, honeycomb as hexagonal: {classes}",
+        )
+        check(
+            not res["floquet_status"]["calibration_claim_allowed"] and res["floquet_overlap_rms"] > 0.1,
+            f"Rule (2011) overlay is reported as diagnostic only (status={res['floquet_status']['acceptance_status']}, "
+            f"RMS β err={res['floquet_overlap_rms']:.3f})",
         )
     return ok
 
@@ -1326,7 +1720,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--out", default=str(REPO_ROOT / "bressloff_v1_form_constants_morphospace.png"))
     parser.add_argument("--csv", default=str(REPO_ROOT / "bressloff_v1_metrics.csv"))
-    parser.add_argument("--gif", nargs="?", const=str(REPO_ROOT / "bressloff_v1_form_constants.gif"))
+    parser.add_argument("--gif", nargs="?", const=str(DEFAULT_GIF_PATH), help=f"Write the animation (default path: {DEFAULT_GIF_PATH.relative_to(REPO_ROOT)})")
     parser.add_argument("--no-show", action="store_true", help="Do not open interactive matplotlib window")
     parser.add_argument("--self-test", action="store_true", help="Run deterministic self-test and exit")
     args = parser.parse_args(argv)

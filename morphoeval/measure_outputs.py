@@ -879,6 +879,7 @@ def measure_bressloff(script: Path) -> list:
         )
     neg = res["negative_control"]
     gal = {g["preset_id"]: g for g in res["gallery"]}
+    mag = res["magnification"]
     return [
         M("bressloff-v1-form-constants stability_reports parity, max |Δ|",
           float(res["max_cal_err"]), "dimensionless",
@@ -906,12 +907,35 @@ def measure_bressloff(script: Path) -> list:
           reference=">5.0",
           source="Bressloff et al. 2001 Fig. 7 / Klüver 1966 Tunnel form constant",
           derived_from="script"),
-        M("Klüver Honeycomb/Hex cortical planform spectral ring wavenumber k*",
-          float(gal["fig35_hex_zero_even"]["spectral"]["k_star_cycles"]), "cycles / domain",
-          "dominant radial FFT wavenumber of the 3-mode hexagonal cortical planform",
-          reference=">0",
+        M("Klüver Honeycomb/Hex linear cortical planform spectral ring wavenumber k*",
+          float(gal["fig35_hex_zero_even"]["spectral_linear"]["k_star_cycles"]), "cycles / domain",
+          "dominant radial FFT wavenumber of the linear 3-mode hexagonal eigenmode superposition (non-contoured, weak tanh); "
+          "the rendered wavenumber is q*/d_hyp quantised to integer cycles on the 2πβ/ε torus",
+          reference=f"{gal['fig35_hex_zero_even']['stability']['rendered_cycles']} (q*/d_hyp = {gal['fig35_hex_zero_even']['stability']['cycles_unquantised']:.2f} cycles)",
           source="Bressloff et al. 2001 Fig. 35 / Klüver 1966 Honeycomb form constant",
-          note=f"ring sharpness = {gal['fig35_hex_zero_even']['spectral']['ring_sharpness']:.2f}",
+          note=f"contoured-rendering k* = {gal['fig35_hex_zero_even']['spectral']['k_star_cycles']:.0f} (power moves to the √3·k difference ring); "
+               f"FFT lattice class = {gal['fig35_hex_zero_even']['spectral']['lattice_class']}",
+          derived_from="script"),
+        M("Retino-cortical magnification vs Horton & Hoyt (1991), RMS relative error over 1-40 deg",
+          float(mag["rms_rel_error"]), "dimensionless",
+          "RMS of (α/(w0+εr) − 17.3/(E+0.75)) / (17.3/(E+0.75)) over 157 eccentricities in [1, 40] deg",
+          reference="0 (perfect agreement); map-implied A = α/ε = %.2f mm/deg, E2 = w0/ε = %.2f deg vs 17.3, 0.75" % (mag["model_A_mm_per_deg"], mag["model_E2_deg"]),
+          source="Horton & Hoyt 1991 Arch. Ophthalmol. 109:816 (doi:10.1001/archopht.1991.01080060080030); datasets/bressloff/horton_hoyt_1991_magnification.json",
+          note=f"max |rel err| = {mag['max_abs_rel_error']:.3f}; fovea→90° extent {mag['model_extent_0_90_mm']:.1f} mm (model) vs {mag['hh_extent_0_90_mm']:.1f} mm (H&H)",
+          derived_from="script"),
+        M("Upstream fixture paper-expectation checks passed (paper-calibration.json)",
+          float(res["fixture_checks"]["passed"]), "count",
+          "number of the fixture's own expected-vs-actual checks that pass, out of %d" % res["fixture_checks"]["total"],
+          reference=float(res["fixture_checks"]["total"]),
+          source="MesmerPrism/bressloff-v1-form-constants commit 344863a1bd9e8a8e8c9cb20aced2897f3ffb2c4c, stability_reports[*].checks",
+          note="; ".join(f"{f['report']}/{f['name']}: expected {f['expected']}, actual {f['actual']}" for f in res["fixture_checks"]["failed"]) or "all passed",
+          derived_from="script"),
+        M("Rule et al. (2011) Fig. 8 overlay domain-normalised RMS β error (diagnostic, no calibration claim)",
+          float(res["floquet_status"]["domain_rms_beta_error"]), "normalised wavenumber β",
+          "rule-2011-floquet.json source_curve_comparison.domain_beta_mapping.rms_error",
+          reference=f"<= {res['floquet_status']['domain_rms_beta_error_max']:.2f} acceptance threshold (NOT met)",
+          source="Rule, Stoffregen & Ermentrout 2011 PLoS Comput. Biol. 7:e1002158 Fig. 8 via upstream fixture",
+          note=f"acceptance_status = {res['floquet_status']['acceptance_status']}; calibration_claim_allowed = {res['floquet_status']['calibration_claim_allowed']}",
           derived_from="script"),
     ]
 
