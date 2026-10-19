@@ -313,30 +313,50 @@
     rdfs:label "Cervera-Levin-Mafe (2021) Gap-Junction Coupled Membrane Potential ODE" ;
     dct:description "Models bioelectric pattern memory, bistable polarized vs. depolarized domains, and double-head (2H) vs. wild-type (1H) planarian regeneration attractors | Variables: V_i: transmembrane voltage of cell i; C_m: membrane capacitance; I_dep, I_hyp: inward/outward ion currents; G_{ij}: gap-junction conductance" ;
     dct:source "Cervera, Levin & Mafe (2021) J. Phys. Chem. B / Bioelectrochemistry" ;
-    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/a0d6848/2021-Cervera–Levin–Mafe.py#L65-L185> ;
+    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/a0d6848/2021-Cervera–Levin–Mafe.py#L65-L185>,
+        <https://github.com/fractastical/morpholib/blob/a0d6848/morphoeval/lean/MathOfBiology.lean#L229-L237> ;
     skos:broader <https://w3id.org/probknow/resource/concept/math-of-biology> ;
+    skos:definition """def gap_junction_current (G_ij V_i V_j : Int) : Int := G_ij * (V_j - V_i)
+theorem cervera_equipotential_zero_current (G_ij V : Int) :
+    gap_junction_current G_ij V V = 0 := by
+  simp [gap_junction_current]"""^^pk:lean4 ;
     skos:notation "C_m dV_i/dt = -I_dep(V_i) - I_hyp(V_i) + ∑_{j ∈ N(i)} G_{ij}(V_i, V_j) (V_j - V_i)" ;
     prov:wasDerivedFrom <https://doi.org/10.1016/j.bioelechem.2019.107410>,
         <https://doi.org/10.1016/j.biosystems.2021.104511>,
         <https://doi.org/10.1016/j.bpj.2019.01.029>,
         <https://doi.org/10.1016/j.ydbio.2009.12.012>,
         <https://doi.org/10.1093/bioinformatics/btt088> ;
-    pk:hypothesisType "Bioelectric Gap-Junction Coupled Nonlinear Dynamical Network" .
+    schema:programmingLanguage "Lean 4" ;
+    pk:hypothesisType "Bioelectric Gap-Junction Coupled Nonlinear Dynamical Network" ;
+    pk:leanDeclaration "MathOfBiology.gap_junction_current" ;
+    pk:leanTheorem "MathOfBiology.cervera_equipotential_zero_current" ;
+    pk:leanVerified false,
+        true .
 
 <https://w3id.org/probknow/resource/math-law/cervera-levin-mafe-2> a skos:Concept,
         pk:Concept ;
     rdfs:label "Voltage-Gated Bell-Boltzmann Gap-Junction Conductance" ;
     dct:description "Nonlinear intercellular coupling that isolates depolarized wounds or unlocks regional tissue-level bioelectric synchronization | Variables: G_0: maximum open gap-junction conductance; V_th: gating threshold voltage; V_0: thermal/voltage slope factor" ;
     dct:source "Cervera, Levin & Mafe (2021)" ;
-    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/a0d6848/2021-Cervera–Levin–Mafe.py#L110-L160> ;
+    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/a0d6848/2021-Cervera–Levin–Mafe.py#L110-L160>,
+        <https://github.com/fractastical/morpholib/blob/a0d6848/morphoeval/lean/MathOfBiology.lean#L239-L248> ;
     skos:broader <https://w3id.org/probknow/resource/concept/math-of-biology> ;
+    skos:definition """def bell_boltzmann_denom (b_i b_j : Nat) : Nat := (1 + b_i) * (1 + b_j)
+theorem cervera_bell_boltzmann_symmetric (b_i b_j : Nat) :
+    bell_boltzmann_denom b_i b_j = bell_boltzmann_denom b_j b_i := by
+  simp [bell_boltzmann_denom, Nat.mul_comm]"""^^pk:lean4 ;
     skos:notation "G_{ij}(V_i, V_j) = G_0 / [ (1 + exp((V_i - V_th)/V_0)) (1 + exp((V_j - V_th)/V_0)) ]" ;
     prov:wasDerivedFrom <https://doi.org/10.1016/j.bioelechem.2019.107410>,
         <https://doi.org/10.1016/j.biosystems.2021.104511>,
         <https://doi.org/10.1016/j.bpj.2019.01.029>,
         <https://doi.org/10.1016/j.ydbio.2009.12.012>,
         <https://doi.org/10.1093/bioinformatics/btt088> ;
-    pk:hypothesisType "Bioelectric Gap-Junction Coupled Nonlinear Dynamical Network" .
+    schema:programmingLanguage "Lean 4" ;
+    pk:hypothesisType "Bioelectric Gap-Junction Coupled Nonlinear Dynamical Network" ;
+    pk:leanDeclaration "MathOfBiology.bell_boltzmann_denom" ;
+    pk:leanTheorem "MathOfBiology.cervera_bell_boltzmann_symmetric" ;
+    pk:leanVerified false,
+        true .
 
 <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> a skos:Concept,
         pk:Concept ;

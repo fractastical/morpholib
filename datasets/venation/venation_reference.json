@@ -1,0 +1,161 @@
+{
+  "dataset_id": "runions-2005-price-2013-katifori-2012-leaf-venation-v1",
+  "version": "1.0.0",
+  "created": "2026-10-18",
+  "license": "CC-BY-4.0",
+  "primary_sources": [
+    {
+      "id": "runions2005",
+      "authors": "Runions A, Fuhrer M, Lane B, Federl P, Rolland-Lagan A-G, Prusinkiewicz P",
+      "year": 2005,
+      "title": "Modeling and visualization of leaf venation patterns",
+      "journal": "ACM Transactions on Graphics (SIGGRAPH 2005)",
+      "volume": "24(3)",
+      "pages": "702-711",
+      "doi": "10.1145/1073204.1073251",
+      "role": "Auxin space-colonization algorithm (Eq. 1), Relative Neighborhood Graph / Urquhart closed venation (Eq. 2-3), Murray's law vein tapering (Sec. 3.5), and Table 1 parameter registry across 15 canonical venation regimes."
+    },
+    {
+      "id": "murray1926",
+      "authors": "Murray CD",
+      "year": 1926,
+      "title": "The physiological principle of minimum work. I. The vascular system and the cost of blood volume",
+      "journal": "Proceedings of the National Academy of Sciences of the USA",
+      "volume": "12(3)",
+      "pages": "207-214",
+      "doi": "10.1073/pnas.12.3.207",
+      "role": "Minimum-work laminar Poiseuille transport + metabolic volume cost optimization yielding r_parent^3 = sum r_child^3."
+    },
+    {
+      "id": "price2013",
+      "authors": "Price CA, Knox S-JC, Brodribb TJ",
+      "year": 2013,
+      "title": "The Influence of Branch Order on Optimal Leaf Vein Geometries: Murray's Law and Area Preserving Branching",
+      "journal": "PLoS ONE",
+      "volume": "8(12)",
+      "pages": "e85420",
+      "doi": "10.1371/journal.pone.0085420",
+      "role": "Empirical measurements of 349 cleared leaf vein networks (1,514,771 vein junctions) across Horton-Strahler orders 1-8."
+    },
+    {
+      "id": "katifori2012",
+      "authors": "Katifori E, Magnasco MO",
+      "year": 2012,
+      "title": "Quantifying Loopy Network Architectures",
+      "journal": "PLoS ONE",
+      "volume": "7(6)",
+      "pages": "e37994",
+      "doi": "10.1371/journal.pone.0037994",
+      "role": "Hierarchical loop decomposition of planar reticulate leaf venation into binary nesting trees and additive vs. multiplicative loop nesting."
+    },
+    {
+      "id": "ronellenfitsch2015",
+      "authors": "Ronellenfitsch H, Lasser J, Daly DC, Katifori E",
+      "year": 2015,
+      "title": "Topological Phenotypes Constitute a New Dimension in the Phenotypic Space of Leaf Venation Networks",
+      "journal": "PLoS Computational Biology",
+      "volume": "11(12)",
+      "pages": "e1004680",
+      "doi": "10.1371/journal.pcbi.1004680",
+      "role": "Empirical topological nesting numbers and vein tapering lengths across 186 cleared leaves (137 species)."
+    }
+  ],
+  "runions_2005_equations": {
+    "vein_node_advance_eq1": {
+      "formula": "v' = v + D * (n_vec / ||n_vec||),  n_vec = sum_{s in S(v)} (s - v) / ||s - v||",
+      "step_length_D": 1.0,
+      "open_influence_set": "S(v) = {s in S : argmin_{u in V} ||s - u|| = v} (Voronoi cell of vein node v)",
+      "open_kill_condition": "Remove auxin source s when min_{v in V} ||s - v|| < d_k"
+    },
+    "closed_rng_neighborhood_eq2_eq3": {
+      "formula": "V(s) = {v in V : forall u in V, ||v - s|| < max(||u - s||, ||v - u||)},  S(v) = {s in S : v in V(s)}",
+      "closed_kill_condition": "When any v in V(s) enters kill radius d_k, tag V(s); remove s only when all tagged veins reach within d_k of s (creating closed anastomosing loops / areoles)."
+    },
+    "murray_law_sec3_5": {
+      "formula": "r_parent^gamma = sum_{i=1}^k r_child_i^gamma",
+      "developmental_exponent_gamma": 3.0,
+      "area_preserving_exponent_gamma": 2.0,
+      "symmetric_bifurcation_area_ratio_murray": 1.2599210498948732,
+      "symmetric_bifurcation_area_ratio_davinci": 1.0
+    }
+  },
+  "runions_2005_table1_regimes": [
+    {"name": "Param. search dk", "figure": "9a-e", "algorithm": "closed", "d_k": [40, 20, 10, 5, 1], "b_s": 10, "L_i": 270, "growth_type": "marginal", "L_f": 1600, "delta_L": 8.0, "rho_x_1e6": 600, "murray_n": 2},
+    {"name": "Param. search rho", "figure": "9f-h", "algorithm": "closed", "d_k": 1, "b_s": 10, "L_i": 270, "growth_type": "marginal", "L_f": 1600, "delta_L": 8.0, "rho_x_1e6": [60, 300, 6000], "murray_n": 2},
+    {"name": "Slow marginal growth", "figure": "9i", "algorithm": "open", "d_k": 40, "b_s": 1, "L_i": 4500, "growth_type": "marginal", "L_f": 112000, "delta_L": 34.0, "rho_x_1e6": 300, "murray_n": 2},
+    {"name": "Ginkgo", "figure": "10", "algorithm": "open", "d_k": 100, "b_s": 1, "L_i": 10, "growth_type": "marginal", "L_f": 50000, "delta_L": 15.0, "rho_x_1e6": 300, "murray_n": 2},
+    {"name": "Alchemilla", "figure": "11", "algorithm": "open", "d_k": 10, "b_s": 1, "L_i": 3200, "growth_type": "marginal", "L_f": 4500, "delta_L": 9.0, "rho_x_1e6": 200, "murray_n": 2},
+    {"name": "Sweetgum", "figure": "12", "algorithm": "open", "d_k": 1, "b_s": 1, "L_i": 1200, "growth_type": "marginal", "L_f": 6700, "delta_L": 7.0, "rho_x_1e6": 200, "murray_n": 2},
+    {"name": "Toothed margin", "figure": "13 left", "algorithm": "closed", "d_k": 1, "b_s": 10, "L_i": 6600, "growth_type": "marginal", "L_f": 26000, "delta_L": 40.0, "rho_x_1e6": 10, "murray_n": 2},
+    {"name": "Tertiary vein emergence", "figure": "13 right", "algorithm": "closed", "d_k": 1, "b_s": 1, "L_i": 3500, "growth_type": "marginal", "L_f": 24000, "delta_L": 60.0, "rho_x_1e6": 20, "murray_n": 2},
+    {"name": "Orchid", "figure": "14 left", "algorithm": "closed", "d_k": 1, "b_s": 10, "L_i": 6500, "growth_type": "none", "L_f": 6500, "delta_L": 0.0, "rho_x_1e6": 600, "murray_n": 2},
+    {"name": "Reticulate pattern", "figure": "15", "algorithm": "closed", "d_k": 1, "b_s": 15, "L_i": 225, "growth_type": "isogonic", "L_f": 4500, "delta_L": 40.5, "rho_x_1e6": 200, "murray_n": 2},
+    {"name": "Nankin cherry", "figure": "16", "algorithm": "open", "d_k": 30, "b_s": 1, "L_i": 1100, "growth_type": "marginal", "L_f": 5500, "delta_L": 11.0, "rho_x_1e6": 40, "murray_n": 2},
+    {"name": "Grass", "figure": "17", "algorithm": "closed", "d_k": 1, "b_s": 30, "L_i": 13000, "growth_type": "none", "L_f": 13000, "delta_L": 0.0, "rho_x_1e6": 100, "murray_n": 2},
+    {"name": "Poplar", "figure": "18-19", "algorithm": "closed", "d_k": 1, "b_s": 2, "L_i": 115, "growth_type": "isogonic", "L_f": 3500, "delta_L": 9.0, "rho_x_1e6": 200, "murray_n": 2},
+    {"name": "Developmental Arabidopsis", "figure": "20", "algorithm": "closed", "d_k": 1, "b_s": 3, "L_i": 23, "growth_type": "nonuniform", "L_f": 184, "delta_L": 1.0, "rho_x_1e6": 5000, "murray_n": 3},
+    {"name": "Trillium", "figure": "21", "algorithm": "closed", "d_k": 1, "b_s": 30, "L_i": 4500, "growth_type": "none", "L_f": 4500, "delta_L": 0.0, "rho_x_1e6": 100, "murray_n": 2}
+  ],
+  "price_2013_empirical_benchmarks": {
+    "total_cleared_leaves": 349,
+    "smithsonian_cleared_leaves": 339,
+    "western_australia_cleared_leaves": 10,
+    "total_vein_junctions": 1514771,
+    "median_radius_taper_exponent_alpha": 2.96,
+    "murray_theoretical_exponent_alpha": 3.0,
+    "mean_log10_alpha": 0.52,
+    "murray_theoretical_log10_alpha": 0.47712125471966244,
+    "global_mean_area_ratio_daughter_over_parent": 1.25,
+    "species_level_mean_area_ratio": 1.26,
+    "species_level_median_area_ratio": 1.23,
+    "species_level_area_ratio_range": [0.99, 1.58],
+    "murray_symmetric_area_ratio_2_pow_1_3": 1.2599210498948732,
+    "area_preserving_area_ratio": 1.0,
+    "fraction_junctions_symmetry_gt_0_80": 0.90,
+    "fraction_junctions_symmetry_gt_0_90": 0.70,
+    "fraction_junctions_exact_symmetry_1_00": 0.18,
+    "horton_strahler_orders": [
+      {"strahler_order": 1, "role": "terminal minor veinlets", "empirical_area_ratio_median": 1.25, "empirical_area_ratio_variance": 0.203, "empirical_area_ratio_kurtosis": 2.41, "effective_exponent_gamma": 2.98},
+      {"strahler_order": 2, "role": "2nd-order minor veins", "empirical_area_ratio_median": 1.24, "empirical_area_ratio_variance": 0.162, "empirical_area_ratio_kurtosis": 2.51, "effective_exponent_gamma": 2.91},
+      {"strahler_order": 3, "role": "3rd-order tertiary veins", "empirical_area_ratio_median": 1.22, "empirical_area_ratio_variance": 0.129, "empirical_area_ratio_kurtosis": 2.69, "effective_exponent_gamma": 2.78},
+      {"strahler_order": 4, "role": "4th-order fine secondary veins", "empirical_area_ratio_median": 1.19, "empirical_area_ratio_variance": 0.115, "empirical_area_ratio_kurtosis": 2.90, "effective_exponent_gamma": 2.61},
+      {"strahler_order": 5, "role": "5th-order secondary veins", "empirical_area_ratio_median": 1.14, "empirical_area_ratio_variance": 0.092, "empirical_area_ratio_kurtosis": 3.36, "effective_exponent_gamma": 2.39},
+      {"strahler_order": 6, "role": "6th-order major lateral veins", "empirical_area_ratio_median": 1.09, "empirical_area_ratio_variance": 0.060, "empirical_area_ratio_kurtosis": 4.61, "effective_exponent_gamma": 2.21},
+      {"strahler_order": 7, "role": "7th-order basal primary/midrib", "empirical_area_ratio_median": 1.04, "empirical_area_ratio_variance": 0.030, "empirical_area_ratio_kurtosis": 8.07, "effective_exponent_gamma": 2.08},
+      {"strahler_order": 8, "role": "8th-order petiole/trunk midrib", "empirical_area_ratio_median": 1.01, "empirical_area_ratio_variance": 0.028, "empirical_area_ratio_kurtosis": 9.94, "effective_exponent_gamma": 2.02}
+    ]
+  },
+  "katifori_ronellenfitsch_topology_benchmarks": {
+    "num_cleared_leaflets": 186,
+    "num_species": 137,
+    "pca_variance_explained_pc1_plus_pc2": 0.81,
+    "pca_pc1_geometry_variance": 0.52,
+    "pca_pc2_topology_variance": 0.29,
+    "lda_fragment_accuracy_geometry_only": 0.35,
+    "lda_fragment_accuracy_geometry_plus_topology": 0.54,
+    "welch_t_stat": 15.8,
+    "welch_p_value": 0.0001,
+    "protium_grandifolium_low_noise_params": {"alpha": 0.25, "beta": 0.50, "rho": 0.20, "f_n": 0.10, "unweighted_nesting_i_u": 0.68},
+    "dalbergia_miscolobium_high_noise_params": {"alpha": 0.25, "beta": 0.30, "rho": 0.20, "f_n": 0.45, "unweighted_nesting_i_u": 0.44}
+  },
+  "specimen_images": [
+    {
+      "file": "datasets/venation/ginkgo_open_venation_specimen.jpg",
+      "commons_title": "File:Ginkgo biloba 01 SR 87-36-02 A.jpg",
+      "species": "Ginkgo biloba (maidenhair tree)",
+      "venation_class": "open dichotomous venation (zero anastomoses, L = E - V + 1 = 0)",
+      "license": "CC BY-SA 3.0",
+      "bytes": 776431,
+      "sha256": "5a620943881fe69889ff21c48f174c4b9a966369edd575daeb93dc8f82085d4b"
+    },
+    {
+      "file": "datasets/venation/reticulate_vein_skeleton_specimen.jpg",
+      "commons_title": "File:Vein skeleton of a leaf (de-ghosted).jpg",
+      "species": "Dicotyledonous angiosperm cleared leaf vein skeleton",
+      "venation_class": "closed reticulate venation (hierarchically nested areole loops, L = E - V + 1 > 0)",
+      "license": "CC BY-SA 3.0",
+      "bytes": 309006,
+      "sha256": "6d06d3e545bd585bad4530aaa1034353e4cf7ec24815f054df903bb576e55aa0"
+    }
+  ]
+}

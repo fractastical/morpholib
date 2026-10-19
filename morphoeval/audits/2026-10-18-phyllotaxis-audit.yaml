@@ -1,0 +1,192 @@
+# MorphoEval audit — Vogel (1979) / Douady–Couder (1992) Golden-Angle Phyllotaxis, 2026-10-18 (v1)
+#
+# Dual-agent initial assessment of `1979-vogel-phyllotaxis.py` and `datasets/phyllotaxis/`:
+#   - Primary assessor: Gemini 4 Argon (Cursor agent)
+#   - Independent second assessor: Claude Sonnet 5.5 High (subagent b0be5bf9-03db-432a-ba7c-871f94727f7d)
+#
+# Key findings from the independent second assessor (Claude Sonnet 5.5 High) that anchor
+# the v1 scores and drive the Step 12 remediation pass:
+#   1. In `compute_packing_metrics()`, unbounded Voronoi cells on degenerate rational spokes
+#      (e.g. alpha = 120.0 deg) are clipped out by `0.05 < area < 20.0`, leaving only a few
+#      tiny interior triangles with artificially low `voronoi_cv_area = 0.000314`.
+#   2. Panel C's CV labels (`CV=0.141`, `CV=0.118`) and Panel E's legend initial angles
+#      (`155°`, `122°`, `104°`) were hardcoded strings that drifted from the actual
+#      parameters passed (`175°`, `130°`, `99.8°`).
+#   3. The real specimen photograph (`helianthus_annuus_capitulum_specimen.jpg`) is only
+#      displayed visually in Panel A (`ax_a.imshow`) without extracting pixel/Fourier
+#      parastichy modes or floret centroids from the image itself.
+#   4. The noisy ensemble in Panel F used small angular jitter (`sigma=0.72 deg`) without
+#      local radial plastochron / transition-zone jitter, yielding 0% `Fibonacci - 1` and
+#      0% `Fibonacci + 1` grain defects despite Swinton et al. (2016) reporting 6.4% Fib-1
+#      and 2.2% Fib+1.
+
+audit:
+  id: 2026-10-18-phyllotaxis-audit
+  rubric_version: 0.1.0
+  date: "2026-10-18"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent subagent b0be5bf9-03db-432a-ba7c-871f94727f7d)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: c89d18d
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Initial v1 reproduction of Vogel (1979) planar spiral phyllotaxis, Douady &
+      Couder (1992, 1996) Hofmeister inhibitory dynamics, and Swinton, Ochu & MSI
+      Turing's Sunflower Consortium (2016) Helianthus annuus parastichy survey.
+
+references:
+  vogel1979:
+    title: "A better way to construct the sunflower head"
+    authors: "Vogel H"
+    venue: "Mathematical Biosciences 44(3-4):179-189 (1979)"
+    doi: 10.1016/0025-5564(79)90080-4
+  douady1992:
+    title: "Phyllotaxis as a physical self-organized growth process"
+    authors: "Douady S, Couder Y"
+    venue: "Physical Review Letters 68(13):2098-2101 (1992)"
+    doi: 10.1103/PhysRevLett.68.2098
+  douady1996:
+    title: "Phyllotaxis as a Dynamical Self Organizing Process Part I: The Spiral Modes Resulting from Time-Periodic Iterations"
+    authors: "Douady S, Couder Y"
+    venue: "Journal of Theoretical Biology 178(3):255-273 (1996)"
+    doi: 10.1006/jtbi.1996.0024
+  swinton2016:
+    title: "Novel Fibonacci and non-Fibonacci structure in the sunflower: results of a citizen science experiment"
+    authors: "Swinton J, Ochu E, The MSI Turing's Sunflower Consortium"
+    venue: "Royal Society Open Science 3(5):160091 (2016); Dryad dataset doi:10.5061/dryad.f9k77"
+    doi: 10.1098/rsos.160091
+
+simulations:
+  - id: vogel-phyllotaxis
+    name: "Vogel (1979) & Douady–Couder (1992) Golden-Angle Phyllotaxis"
+    organism: "Helianthus annuus (sunflower capitulum)"
+    script: 1979-vogel-phyllotaxis.py
+    output: vogel_phyllotaxis_comparison.png
+    also: [docs/media/vogel_phyllotaxis_growth.gif, vogel_phyllotaxis_metrics.csv]
+    domain: morphogenesis
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Vogel (1979) defines planar capitulum spiral placement r_n = c*sqrt(n), theta_n = n*alpha_0 with golden divergence angle alpha_0 = 360/tau^2 = 137.507764 deg"
+        - "Douady & Couder (1992, 1996) demonstrate self-organized convergence of repulsive Hofmeister primordia on a radially advecting meristem ring to the golden and Lucas noble angles"
+        - "Swinton, Ochu & MSI Turing's Sunflower Consortium (2016) report 768 photoreviewed parastichy counts across 657 Helianthus annuus heads (82.3% Fibonacci structure; 49 Fib-1 vs 17 Fib+1, binomial p = 3.3e-5)"
+      reconstructed_in_script:
+        - "Planar Vogel spiral generator, Delaunay/Voronoi contact parastichy detector across concentric annuli, quasi-static Douady-Couder Hofmeister relaxation, and Swinton (2016) empirical survey comparison"
+      transfer_boundary:
+        - "Noisy divergence ensemble and bijugate whorl extensions used to compare model parastichy distributions with Swinton et al. (2016) Table 1"
+      does_not_claim:
+        - "In v1, floret centroids/parastichy modes are not yet extracted from the specimen photograph pixels, and Fib-1/Fib+1 grain defects are not yet produced by the noisy simulation ensemble"
+    source_refs: [vogel1979, douady1992, douady1996, swinton2016]
+    summary: >-
+      Initial v1 implementation of Vogel (1979) golden-angle phyllotaxis and
+      Douady & Couder (1992) Hofmeister inhibitory dynamics, paired with
+      Swinton et al. (2016) Royal Society Helianthus annuus survey tables and
+      two Wikimedia Commons specimen photographs. Independent audit by Claude
+      Sonnet 5.5 High scored v1 at 64.3 overall, surfacing four concrete bugs
+      and missing measurements targeted for Step 12 remediation.
+    scores:
+      model-fidelity:
+        value: 72
+        rationale: >-
+          Vogel's (1979) planar generative spiral r_n = c*sqrt(n), theta_n = n*alpha_0
+          and Delaunay rising Fibonacci parastichy cascade (8,13)->(13,21)->(21,34)->(34,55)
+          are implemented accurately. Douady & Couder's (1992) Hofmeister inhibitory
+          energy minimization converges to 137.59 deg (Fibonacci) and 99.38 deg (Lucas),
+          though the Lucas branch is seeded near its basin (99.8 deg) rather than
+          emerging purely from plastochron bifurcation.
+        evidence:
+          - {file: 1979-vogel-phyllotaxis.py, lines: [109, 155], note: "vogel_spiral(): exact r_n = c*sqrt(n), theta_n = n*alpha_0 and J-jugate extension"}
+          - {file: 1979-vogel-phyllotaxis.py, lines: [274, 336], note: "simulate_douady_couder_hofmeister(): Hofmeister repulsive energy minimization"}
+      specimen-match:
+        value: 55
+        rationale: >-
+          Two real CC-licensed Helianthus annuus capitulum photographs are vendored
+          and displayed in Panel A with verified SHA-256 digests, and Swinton et al.'s
+          (2016) 768 photoreviewed parastichy counts are plotted in Panel F. However,
+          in v1 the specimen photograph is only shown via imshow() without pixel/Fourier
+          parastichy extraction, and the simulated ensemble produces 0% Fib-1 and Fib+1
+          defects.
+        evidence:
+          - {file: 1979-vogel-phyllotaxis.py, lines: [552, 581], note: "Panel A displays helianthus_annuus_capitulum_specimen.jpg and annotated inset"}
+          - {file: 1979-vogel-phyllotaxis.py, lines: [778, 804], note: "Panel F noisy Vogel ensemble yields 0% Fib-1 and Fib+1 in v1"}
+          - {file: vogel_phyllotaxis_comparison.png, lines: [0, 0], note: "6-panel comparison figure"}
+      parameter-expressivity:
+        value: 68
+        rationale: >-
+          Divergence angle alpha_deg, floret count n_florets, jugacy J, and plastochron
+          schedule G_start/G_end are parameterized and swept across Panels B, C, D, and E.
+          However, angular/radial noise sigma is not systematically swept and no parameter
+          regime is shown generating the empirical Fib-1 > Fib+1 grain-defect asymmetry.
+        evidence:
+          - {file: 1979-vogel-phyllotaxis.py, lines: [659, 686], note: "Panel C 2x2 parameter comparison across 137.3, 137.6, 99.502, and bijugate J=2"}
+          - {file: 1979-vogel-phyllotaxis.py, lines: [691, 703], note: "Panel D alpha_scan across [136.6, 138.4] deg"}
+      morphometric-validation:
+        value: 45
+        rationale: >-
+          While Delaunay parastichy pairs and NND-CV behave properly near the golden angle,
+          the independent audit discovered that compute_packing_metrics() clips Voronoi
+          cell areas to 0.05 < area < 20.0, allowing degenerate rational 120 deg spokes
+          to report a lower voronoi_cv_area (0.000314) than the golden angle (0.0445),
+          and Panel C's CV labels were hardcoded strings inconsistent with the CSV.
+        evidence:
+          - {file: 1979-vogel-phyllotaxis.py, lines: [215, 267], note: "compute_packing_metrics(): area filter lets degenerate 120 deg lattice score 0.000314"}
+          - {file: vogel_phyllotaxis_metrics.csv, lines: [0, 0], note: "rational_120.0 row has voronoi_cv_area=0.000314 in v1"}
+      source-traceability:
+        value: 80
+        rationale: >-
+          DOIs for Vogel (1979), Douady & Couder (1992, 1996), Swinton et al. (2016),
+          and Dryad (10.5061/dryad.f9k77) are recorded in phyllotaxis_reference.json
+          and paper_citations.bib, and both Wikimedia Commons photographs have verified
+          SHA-1 and SHA-256 digests. Historical surveys (Schoute 1938, Weisse 1897,
+          Jean 1994) should also be added to paper_citations.bib.
+        evidence:
+          - {file: datasets/phyllotaxis/phyllotaxis_reference.json, lines: [1, 135], note: "DOIs, equations, SHA-256 locks, and Swinton (2016) Tables 1-4"}
+          - {file: datasets/phyllotaxis/paper_citations.bib, lines: [1, 41], note: "BibTeX citations with DOIs"}
+      code-traceability:
+        value: 66
+        rationale: >-
+          Functions are clearly documented against paper sections, but the independent
+          assessor caught three code-to-label mismatches: Panel E legend says initial
+          angles 155/122/104 deg while code passes 175/130/99.8 deg; Panel C labels
+          Sunflower 171 as (29,47) whereas JSON records (47,76); and Panel C CV labels
+          were hardcoded rather than formatted from compute_packing_metrics().
+        evidence:
+          - {file: 1979-vogel-phyllotaxis.py, lines: [659, 665], note: "Hardcoded CV strings and Sunflower 171 parastichy pair mismatch"}
+          - {file: 1979-vogel-phyllotaxis.py, lines: [729, 738], note: "Panel E legend initial angles vs function call arguments"}
+      repro-package:
+        value: 78
+        rationale: >-
+          Self-contained script with --self-test, deterministic RNG seeds, verified
+          dataset image SHA-256 checks, static PNG, animated GIF, and CSV outputs.
+          Can be improved by hashing phyllotaxis_reference.json and reporting output
+          digests directly.
+        evidence:
+          - {file: 1979-vogel-phyllotaxis.py, lines: [375, 474], note: "run_self_tests() verifying SHA-256, cascade, and convergence"}
+          - {file: docs/media/vogel_phyllotaxis_growth.gif, lines: [0, 0], note: "Animated growth GIF"}
+    remediation:
+      - "Extract quantitative morphometrics (2D polar/radial Fourier parastichy spectrum and detected floret centroids) directly from the empirical specimen photograph (`helianthus_annuus_capitulum_specimen.jpg` and `helianthus_parastichy_annotated.jpg`) and compare against the Vogel model."
+      - "Fix `compute_packing_metrics()` so degenerate rational angles (e.g. 120 deg) are penalized by bounding the Capitulum disk (or using bounded Voronoi / NND + angular coverage uniformity) so the golden angle is a true global optimum across [90 deg, 170 deg], and format Panel C CV labels dynamically from the computed metrics."
+      - "Model and test the Swinton et al. (2016) Fib-1 > Fib+1 grain-defect asymmetry mechanistically (via plastochron/radial transition-zone noise on finite capitula where outer-rim parastichy transitions are Incomplete by 1 spiral more often than supernumerary by 1 spiral) and report chi-square / binomial agreement against Table 1."
+      - "Fix all code-traceability mismatches found by the second assessor (Panel E legend initial angles, Sunflower 171 (47,76) outer zone, F4 vs Fib+1 classification of 14, and BibTeX entries for Schoute 1938, Weisse 1897, and Jean 1994)."

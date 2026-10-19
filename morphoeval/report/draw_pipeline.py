@@ -128,6 +128,7 @@ PAPERS = [  # (gif, caption lines, kind)
     ("kahng_coral_geometry_growth.gif",   "Kahng, Odle & Wakeman 2024\nPeerJ\ncoral geometry", "reproduce"),
     ("zhang_sorting_morphogenesis.gif",   "Zhang, Goldstein & Levin 2025\nAdaptive Behavior\nself-sorting cell arrays & chimeras", "reproduce"),
     ("odonata_wing_cells_deep_time.gif",  "Eshghi, Buesch & Gorb 2026\nZenodo, Tables S1–S3\nOdonata wing cells, fossil vs extant", "test"),
+    ("vogel_phyllotaxis_growth.gif",      "Vogel 1979 · Swinton et al. 2016\nMath Biosci · R Soc Open Sci\ngolden-angle Helianthus phyllotaxis", "reproduce"),
 ]
 KIND_COL = {"reproduce": "#2563eb", "decode": "#059669", "test": "#d97706"}
 YS = 40.5                                                    # bottom of the outputs band (box 6)
@@ -147,14 +148,58 @@ def gif_frame(name: str, frac: float = 0.55):
     return frames[int(frac * (len(frames) - 1))]
 
 
-def strip(ax):
-    """Box 6: the outputs.  Two rows of thumbnails (8 + 6), each a frame of a script's own animation, labelled
+def load_telemetry_map(telemetry_path: Path | None) -> tuple[dict[str, dict], dict]:
+    if not telemetry_path:
+        return {}, {}
+    import yaml
+    p = Path(telemetry_path)
+    if not p.exists():
+        cand = ROOT / "morphoeval" / "runs" / f"{telemetry_path}.yaml"
+        if cand.exists():
+            p = cand
+        else:
+            raise FileNotFoundError(f"Telemetry file not found: {telemetry_path}")
+    doc = yaml.safe_load(p.read_text(encoding="utf-8"))
+    by_slug = {}
+    for s in doc.get("steps") or []:
+        by_slug[s["slug"]] = s
+    return by_slug, doc
+
+
+def fmt_time_tok(step_entry: dict) -> str:
+    dur = float(step_entry.get("duration_s") or 0.0)
+    cpu = float(step_entry.get("cpu_user_s") or 0.0) + float(step_entry.get("cpu_sys_s") or 0.0)
+    tok = int((step_entry.get("tokens") or {}).get("total_llm_tokens") or 0)
+    art = int((step_entry.get("tokens") or {}).get("artifact_tokens") or 0)
+    if dur >= 60.0:
+        t_str = f"{dur:.1f}s ({dur / 60.0:.1f}m)"
+    elif dur >= 1.0:
+        t_str = f"{dur:.1f}s"
+    else:
+        t_str = f"{dur * 1000:.0f}ms"
+    if cpu >= 0.2:
+        t_str += f" · CPU {cpu:.1f}s"
+    if tok >= 1000:
+        tok_str = f"{tok / 1000.0:.1f}k tok"
+    else:
+        tok_str = f"{tok} tok"
+    if art >= 1000 and tok < 1000:
+        tok_str += f" (+{art / 1000.0:.1f}k art)"
+    return f"{t_str}  ·  {tok_str}"
+
+
+def strip(ax, telemetry_step: dict | None = None):
+    """Box 6: the outputs.  Two rows of thumbnails (8 + 7), each a frame of a script's own animation, labelled
     with the paper it comes from.  Framed like a tier-A box because it is one: the thing Compare and Audit look at."""
     cols, gap, wide = 8, 0.9, 2.5; tw = (97.0 - (cols - 2) * gap - wide) / cols; row_h = 14.2   # the last gap is wider: the fix loop runs through it
     top = YS + 2 * row_h + 5.8
     col_x = [1.5 + c * (tw + gap) + (wide - gap if c == cols - 1 else 0) for c in range(cols)]
     ax.add_patch(FancyBboxPatch((1.0, YS + 0.4), 98.0, top - YS - 0.4, boxstyle="round,pad=0.4,rounding_size=1.2", fc="#eff6ff", ec=EDGE, lw=1.0, zorder=1))
     ax.text(50, top - 2.0, "6  Output & compare", ha="center", va="center", fontsize=9.2, fontweight="bold", color=EDGE)
+    if telemetry_step:
+        badge_txt = fmt_time_tok(telemetry_step)
+        ax.text(14.5, top - 2.0, badge_txt, ha="left", va="center", fontsize=6.4, fontweight="bold", color="#1e3a8a",
+                bbox=dict(boxstyle="round,pad=0.28,rounding_size=0.4", fc="#dbeafe", ec="#2563eb", lw=0.8), zorder=5)
     ax.text(50, top - 4.3, "what each script produces — its own animation, here a frame of it, labelled with the paper it reproduces — "
             "set beside the authors' figures or real specimens; distinct forms must come out distinct.  This is what gets scored.",
             ha="center", va="center", fontsize=6.6, color="#1e293b")
@@ -166,7 +211,10 @@ def strip(ax):
         th = min(th, row_h - 6.2)
         ax.imshow(img, extent=(x, x + tw, y + 5.6, y + 5.6 + th), zorder=3, interpolation="lanczos")
         THUMBS.append((gif, (x, x + tw, y + 5.6, y + 5.6 + th)))
-        ax.add_patch(FancyBboxPatch((x, y + 5.6), tw, th, boxstyle="square,pad=0", fc="none", ec="#94a3b8", lw=0.5, zorder=4))
+        is_vogel = "vogel" in gif
+        ax.add_patch(FancyBboxPatch((x, y + 5.6), tw, th, boxstyle="square,pad=0", fc="none",
+                                     ec=RED if (is_vogel and telemetry_step) else "#94a3b8",
+                                     lw=1.3 if (is_vogel and telemetry_step) else 0.5, zorder=4))
         ax.add_patch(FancyBboxPatch((x, y + 4.9), tw, 0.5, boxstyle="square,pad=0", fc=KIND_COL[kind], ec="none", zorder=3))
         ax.text(x + tw / 2, y + 2.3, cap, ha="center", va="center", fontsize=5.3, color="#1e293b", linespacing=1.15, zorder=3)
     # Inline legend in top-right of Box 6 header (leaving col_x[7] of row 2 open for the remediation loop)
@@ -179,13 +227,21 @@ def strip(ax):
     return top, col_x[7] - wide / 2                                    # band top; x of the (wide) gap between columns 7 and 8
 
 
-def box(ax, key):
+def box(ax, key, telemetry_step: dict | None = None):
     x, y, w, h, col, title, body = BOXES[key]
     ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.4,rounding_size=1.2", fc=col, ec=EDGE, lw=1.0))
-    ax.text(x + w / 2, y + h - 2.3, title, ha="center", va="center", fontsize=9.2, fontweight="bold", color=EDGE)
-    ax.text(x + w / 2, y + h / 2 - 1.2 + (0.6 if key in TERMS else -0.8), body, ha="center", va="center", fontsize=6.6, color="#1e293b", linespacing=1.25)
+    ax.text(x + w / 2, y + h - 2.1, title, ha="center", va="center", fontsize=9.0, fontweight="bold", color=EDGE)
+    if telemetry_step:
+        badge_txt = fmt_time_tok(telemetry_step)
+        is_remed = key == "remed"
+        badge_fc = "#991b1b" if is_remed else "#0f172a"
+        ax.text(x + w / 2, y + h - 4.5, badge_txt, ha="center", va="center", fontsize=5.55, fontweight="bold",
+                color="white", bbox=dict(boxstyle="round,pad=0.22,rounding_size=0.35", fc=badge_fc, ec="none"), zorder=5)
+        ax.text(x + w / 2, y + h / 2 - 1.5, body, ha="center", va="center", fontsize=6.1, color="#1e293b", linespacing=1.18)
+    else:
+        ax.text(x + w / 2, y + h / 2 - 1.2 + (0.6 if key in TERMS else -0.8), body, ha="center", va="center", fontsize=6.6, color="#1e293b", linespacing=1.25)
     if key in TERMS:
-        ax.text(x + w / 2, y + 1.8, TERMS[key], ha="center", va="center", fontsize=5.2, color="#64748b", family="monospace")
+        ax.text(x + w / 2, y + 1.6, TERMS[key], ha="center", va="center", fontsize=5.1, color="#64748b", family="monospace")
 
 
 def note(ax):
@@ -277,23 +333,54 @@ def animate(fig, out: Path, n_frames: int = 40, duration_ms: int = 130, dpi: int
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=str(ROOT / "docs" / "media" / "morphoeval_pipeline.png"))
+    ap.add_argument("--telemetry", default=None, help="Run ID or path to morphoeval/runs/<run-id>.yaml to annotate step times and tokens")
     ap.add_argument("--svg", action="store_true")
     ap.add_argument("--gif", action="store_true", help="also write the animated version next to --out")
     args = ap.parse_args(argv)
+
+    tmap, tdoc = load_telemetry_map(args.telemetry)
+    THUMBS.clear()
 
     fig, ax = plt.subplots(figsize=(FIG_W, FIG_H)); fig.subplots_adjust(0, 0, 1, 1)
     ax.set_xlim(0, 100); ax.set_ylim(0, YLIM); ax.set_aspect("auto"); ax.axis("off")
 
     # box 6, the outputs, between the tiers
-    band_top, x_gap = strip(ax)
+    band_top, x_gap = strip(ax, tmap.get("output"))
 
     # tier labels
-    ax.text(XA[1], YA + H + 4.6, "A  Making a reproduction", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
-    ax.text(XA[1], YA + H + 2.0, "each paper goes through A once; then round B, and back into A, until it holds", fontsize=7.5, style="italic", color="#475569", va="center")
-    ax.text(XB[1] + 2.0, YB + H + 2.0, "B  Auditing it — the MorphoEval cycle", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
+    if tdoc:
+        tot = tdoc.get("totals") or {}
+        run_meta = tdoc.get("run") or {}
+        ta_s = float(tot.get("tier_a_wall_s") or 0.0)
+        tb_s = float(tot.get("tier_b_wall_s") or 0.0)
+        tot_s = float(tot.get("wall_time_s") or 0.0)
+        ta_k = int(tot.get("tier_a_llm_tokens") or 0) / 1000.0
+        tb_k = int(tot.get("tier_b_llm_tokens") or 0) / 1000.0
+        tot_k = int(tot.get("total_llm_tokens") or 0) / 1000.0
+        art_k = int(tot.get("artifact_tokens") or 0) / 1000.0
+        ax.text(
+            XA[1], YA + H + 4.6,
+            f"A  Making a reproduction   [Tier A total: {ta_s:.1f}s ({ta_s / 60.0:.2f} min) · {ta_k:.1f}k LLM tokens]",
+            fontsize=10.2, fontweight="bold", color=EDGE, va="center",
+        )
+        ax.text(
+            XA[1], YA + H + 2.0,
+            f"Instrumented run `{run_meta.get('id')}` ({run_meta.get('target_simulation')}) — "
+            f"12/12 steps completed in {tot_s:.1f}s ({tot_s / 60.0:.2f} min) · {tot_k:.1f}k LLM tok · {art_k:.1f}k artifact tok",
+            fontsize=7.3, fontweight="bold", color="#1e40af", va="center",
+        )
+        ax.text(
+            XB[1] + 2.0, YB + H + 2.0,
+            f"B  Auditing it — the MorphoEval cycle   [Tier B total: {tb_s:.1f}s ({tb_s / 60.0:.2f} min) · {tb_k:.1f}k LLM tokens]",
+            fontsize=10.0, fontweight="bold", color=EDGE, va="center",
+        )
+    else:
+        ax.text(XA[1], YA + H + 4.6, "A  Making a reproduction", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
+        ax.text(XA[1], YA + H + 2.0, "each paper goes through A once; then round B, and back into A, until it holds", fontsize=7.5, style="italic", color="#475569", va="center")
+        ax.text(XB[1] + 2.0, YB + H + 2.0, "B  Auditing it — the MorphoEval cycle", fontsize=10.5, fontweight="bold", color=EDGE, va="center")
 
     for k in BOXES:
-        box(ax, k)
+        box(ax, k, tmap.get(k))
     # the people: who decides what the agent is pointed at, and what to fix next
     x, y, w, h = BOXES["scout"][:4]
     person(ax, x + 1.0, y + h + 1.2, 1.1); ax.text(x + 3.0, y + h + 2.9, HUMANS["scout"], fontsize=6.4, color=HUMAN, va="center", fontweight="bold", linespacing=1.1)
@@ -313,16 +400,16 @@ def main(argv=None):
     arrow(ax, "paper", "r", "source", "l")
     arrow(ax, "source", "r", "rules", "l")
     arrow(ax, "rules", "r", "script", "l")
-    ax.text(XA[0], YA - 2.4, "five of the fourteen papers come with the authors' own or reference code; it is read to settle what they meant, never copied",
+    ax.text(XA[0], YA - 2.4, "five of the fifteen papers come with the authors' own or reference code; it is read to settle what they meant, never copied",
             ha="left", va="center", fontsize=6.6, color="#64748b", style="italic")
 
     # Script -> outputs (down into box 6), outputs -> Audit (down out of box 6)
     xs = XA[4] + WA / 2 + 4.0
     ax.add_patch(FancyArrowPatch((xs, YA), (xs, band_top), arrowstyle="-|>", mutation_scale=11, lw=1.1, color=EDGE, shrinkA=2, shrinkB=1))
-    ax.text(xs + 1.2, (YA + band_top) / 2, "writes", fontsize=6.6, color=EDGE, va="center", ha="left")
+    ax.text(xs + 1.2, (YA + band_top) / 2, "writes (3.7s)" if tdoc else "writes", fontsize=6.6, color=EDGE, va="center", ha="left")
     xa = XB[0] + W - 2.0
     ax.add_patch(FancyArrowPatch((xa, YS + 0.4), (xa, YB + H), arrowstyle="-|>", mutation_scale=11, lw=1.1, color=EDGE, shrinkA=1, shrinkB=2))
-    ax.text(xa + 1.2, YS - 2.2, "scored, with evidence", fontsize=6.6, color=EDGE, va="center", ha="left")
+    ax.text(xa + 1.2, YS - 2.2, "scored, with evidence (170.1s)" if tdoc else "scored, with evidence", fontsize=6.6, color=EDGE, va="center", ha="left")
 
     # tier B, left -> right
     arrow(ax, "audit", "r", "measure", "l")
@@ -334,14 +421,34 @@ def main(argv=None):
     # the loop: straight up from Remediate, between two columns of outputs, into Script
     y0 = YB + H; y1 = YA
     ax.add_patch(FancyArrowPatch((x_gap, y0 + 0.5), (x_gap, y1), arrowstyle="-|>", mutation_scale=11, lw=1.2, color=RED, shrinkA=0, shrinkB=2, zorder=5))
-    ax.text(x_gap - 1.5, YS - 2.6, "the builder agent re-works the script — its fidelity to the paper, its sources, its checks —\n"
+    if tdoc and "remed" in tmap:
+        rem_s = float(tmap["remed"].get("duration_s") or 0.0)
+        rem_k = int((tmap["remed"].get("tokens") or {}).get("total_llm_tokens") or 0) / 1000.0
+        loop_lbl = (
+            f"CLOSED REMEDIATION LOOP ({rem_s:.1f}s / {rem_s / 60.0:.1f}m · {rem_k:.1f}k LLM tok): "
+            "builder re-works the script, re-renders & re-measures;\n"
+            "Vogel phyllotaxis score rose from 64.3/100 (v1) -> 85.9/100 (v2, +21.6 pts) "
+            "with 10/10 signed nanopubs superseding v1"
+        )
+    else:
+        loop_lbl = (
+            "the builder agent re-works the script — its fidelity to the paper, its sources, its checks —\n"
             "the outputs are re-made and the assessor judges the touched scores again; the old statements\n"
-            "stay on record, marked as replaced (nothing published is ever edited)",
-            ha="right", va="center", fontsize=6.4, color=RED, linespacing=1.2)
+            "stay on record, marked as replaced (nothing published is ever edited)"
+        )
+    ax.text(x_gap - 1.5, YS - 2.6, loop_lbl, ha="right", va="center", fontsize=6.4, fontweight="bold" if tdoc else "normal", color=RED, linespacing=1.2)
     agent(ax, x_gap - 46.0, YS - 4.6, 1.0)                               # the builder, at the start of the loop's label
     note(ax)
 
-    ax.text(50, YLIM - 2.6, "How a body gets its form, and how a form gets into this repository", ha="center", va="center", fontsize=12.5, fontweight="bold", color=EDGE)
+    if tdoc:
+        tot = tdoc.get("totals") or {}
+        ax.text(
+            50, YLIM - 2.6,
+            f"MorphoEval 12-Step Closed-Loop Pipeline — Timed Execution ({tot.get('wall_time_s', 0):.1f}s / {tot.get('wall_time_min', 0):.2f} min · {tot.get('total_llm_tokens', 0):,} LLM tokens)",
+            ha="center", va="center", fontsize=12.0, fontweight="bold", color=EDGE,
+        )
+    else:
+        ax.text(50, YLIM - 2.6, "How a body gets its form, and how a form gets into this repository", ha="center", va="center", fontsize=12.5, fontweight="bold", color=EDGE)
     ax.text(50, YLIM - 5.2, "morphogenesis is how a body gets its shape and regeneration how it gets it back; the newer papers here hold that the pattern is stored bioelectrically,\n"
             "as a map of cell voltages — change the voltage and a planarian regrows two heads.  Each paper becomes a running program; MorphoEval scores how faithfully, 0–100 on seven questions.",
             ha="center", va="top", fontsize=7.4, color="#1e293b", linespacing=1.35)

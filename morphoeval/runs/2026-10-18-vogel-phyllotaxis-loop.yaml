@@ -1,0 +1,502 @@
+schema_version: morphoeval-loop-telemetry-0.1.0
+run:
+  id: 2026-10-18-vogel-phyllotaxis-loop
+  target_simulation: vogel-phyllotaxis
+  paper: Vogel (1979) / Douady & Couder (1992, 1996) Golden-Angle Phyllotaxis & Swinton
+    et al. (2016) Royal Society Helianthus Parastichy Dataset
+  created_at: '2026-10-18T18:03:18.181Z'
+  builder_model: gemini-4-argon
+  primary_assessor: gemini-4-argon
+  second_assessor: claude-sonnet-5-5-high
+  repository_commit_start: c89d18d
+  notes: First full 12-step instrumented MorphoEval loop run, starting from an active
+    literature/dataset scout
+totals:
+  steps_completed: 12
+  steps_total: 12
+  wall_time_s: 1014.295
+  wall_time_min: 16.9
+  tier_a_wall_s: 348.044
+  tier_b_wall_s: 666.251
+  cpu_user_s: 5.11
+  cpu_sys_s: 0.53
+  input_tokens: 61270
+  output_tokens: 99266
+  subagent_tokens: 6512
+  total_llm_tokens: 167048
+  artifact_tokens: 66061
+  tier_a_llm_tokens: 121602
+  tier_b_llm_tokens: 45446
+  effective_tokens_per_s: 164.7
+steps:
+- num: 1
+  slug: scout
+  tier: A
+  title: 1  Scout
+  actor: scout-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-18T18:03:18.249Z'
+  ended_at: '2026-10-18T18:03:41.410Z'
+  duration_s: 23.161
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 28358
+    output_tokens: 0
+    subagent_tokens: 0
+    total_llm_tokens: 28358
+    artifact_tokens: 0
+    method: calibrated-bpe-regex
+  artifacts: []
+  commands: []
+  notes: Scouting botanical morphogenesis models and open empirical datasets (Vogel
+    1979, Douady & Couder 1992/1996, Swinton et al. 2016 Royal Society Turing-Sunflower
+    parastichy dataset, Gielis 2003); Scouted botanical morphogenesis gap in morpholib;
+    selected Vogel (1979) Math. Biosci. 44:179 + Douady & Couder (1992) PRL 68:2098
+    + Swinton, Ochu & MSI Turing's Sunflower Consortium (2016) R. Soc. Open Sci. 3:160091
+    (DOI 10.1098/rsos.160091, Dryad 10.5061/dryad.f9k77, 657 real Helianthus annuus
+    seedheads)
+- num: 2
+  slug: paper
+  tier: A
+  title: 2  Paper
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-18T18:03:41.540Z'
+  ended_at: '2026-10-18T18:04:01.955Z'
+  duration_s: 20.415
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 27090
+    output_tokens: 0
+    subagent_tokens: 0
+    total_llm_tokens: 27090
+    artifact_tokens: 0
+    method: calibrated-bpe-regex
+  artifacts: []
+  commands: []
+  notes: Extracting equations and empirical tables from Vogel (1979), Douady & Couder
+    (1992/1996), and Swinton et al. (2016); Extracted Vogel (1979) planar spiral equations
+    (r_n = c*sqrt(n), theta_n = n*alpha_0), Douady & Couder (1992/1996) repulsive-primordia
+    Hofmeister/plastochron dynamical equations on the shoot apical meristem (van Iterson
+    bifurcation tree), and Swinton, Ochu & MSI Turing's Sunflower Consortium (2016)
+    Tables 1-4 (768 photoreviewed parastichy counts and 368 parastichy pairs across
+    657 Helianthus annuus seedheads)
+- num: 3
+  slug: source
+  tier: A
+  title: 3  Formal source
+  actor: builder-agent+tool
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-18T19:35:24.342Z'
+  ended_at: '2026-10-18T19:35:39.166Z'
+  duration_s: 14.82
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 0
+    output_tokens: 3826
+    subagent_tokens: 0
+    total_llm_tokens: 3826
+    artifact_tokens: 3826
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: datasets/phyllotaxis/phyllotaxis_reference.json
+    bytes: 7814
+    sha256: 432d1eeebf62bdc70f4b6dd34f9a8e9b1c7a956728d842666f0efb6c149ff0a7
+    tokens: 2437
+  - file: datasets/phyllotaxis/paper_citations.bib
+    bytes: 1450
+    sha256: 61f6626a8213d6bd9320f9d0871e97a27ffbc89214fc81e2daebb08b8aa67512
+    tokens: 438
+  - file: datasets/phyllotaxis/README.md
+    bytes: 2666
+    sha256: fb312010067d5bc73acfd9dae516161f21d1a541a4d94773322fe44d5cbbe31f
+    tokens: 823
+  - file: datasets/phyllotaxis/helianthus_annuus_capitulum_specimen.jpg
+    bytes: 398926
+    sha256: c76483eea3e564fee9cf41913e03fc0874ea95b23e82aa901f5d083d074546ff
+    tokens: 64
+  - file: datasets/phyllotaxis/helianthus_parastichy_annotated.jpg
+    bytes: 62865
+    sha256: 7cd34354e23584cbc558f459c8eb3b1418092067b1f624b1b381a7eb8915f00e
+    tokens: 64
+  commands: []
+  notes: Fetching empirical Swinton et al. (2016) Dryad dataset (doi:10.5061/dryad.f9k77)
+    and CC-licensed Helianthus annuus capitulum specimen photograph into datasets/phyllotaxis/;
+    Vendored Swinton et al. (2016) Royal Society Tables 1-4 & named specimens, Vogel
+    (1979) / Douady-Couder (1992) formal equations, and two CC-licensed Helianthus
+    annuus capitulum photographs with SHA-256 locks
+- num: 4
+  slug: rules
+  tier: A
+  title: 4  Pin the rules
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-18T19:35:39.234Z'
+  ended_at: '2026-10-18T19:36:22.851Z'
+  duration_s: 43.617
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 3019
+    output_tokens: 44043
+    subagent_tokens: 0
+    total_llm_tokens: 47062
+    artifact_tokens: 0
+    method: transcript-jsonl+BPE
+  artifacts: []
+  commands: []
+  notes: 'Verifying quantitative phyllotaxis rules: Delaunay/Voronoi parastichy pair
+    transitions, packing uniformity vs rational/Lucas control angles, and Swinton
+    (2016) empirical table invariants; Verified Swinton (2016) Table 1 (768 counts,
+    632 Fib-structure, p=3.30e-5 for Fib-1 vs Fib+1) and Table 3 (368 pairs), and
+    verified Delaunay/Voronoi rising phyllotaxis cascade (8,13)->(13,21)->(21,34)->(34,55)->(55,89)
+    on Vogel golden-angle lattice'
+- num: 5
+  slug: script
+  tier: A
+  title: 5  Script
+  actor: builder-agent
+  model: gemini-4-argon
+  status: completed
+  started_at: '2026-10-18T19:36:22.924Z'
+  ended_at: '2026-10-18T19:40:25.296Z'
+  duration_s: 242.372
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 2437
+    output_tokens: 12695
+    subagent_tokens: 0
+    total_llm_tokens: 15132
+    artifact_tokens: 12695
+    method: calibrated-bpe-regex
+  artifacts:
+  - file: 1979-vogel-phyllotaxis.py
+    bytes: 46034
+    sha256: 62372b48439a1f4c5d4587c1ac7fed8c437d7dfe13adb7bcfb8fdd7ae43b7314
+    tokens: 12695
+  commands: []
+  notes: Writing 1979-vogel-phyllotaxis.py with Vogel (1979) generative spiral, Douady
+    & Couder (1992) Hofmeister inhibitory dynamics, Delaunay parastichy detector,
+    Swinton (2016) empirical validation, and --self-test; Implemented 1979-vogel-phyllotaxis.py
+    with Vogel (1979) generative spiral, Douady & Couder (1992/1996) Hofmeister plastochron
+    ramp, Delaunay/Voronoi parastichy detector, Swinton (2016) empirical validator,
+    and passing --self-test
+- num: 6
+  slug: output
+  tier: A
+  title: 6  Output & compare
+  actor: tool
+  model: 1979-vogel-phyllotaxis.py
+  status: completed
+  started_at: '2026-10-18T19:40:36.825Z'
+  ended_at: '2026-10-18T19:40:40.516Z'
+  duration_s: 3.659
+  cpu_user_s: 3.33
+  cpu_sys_s: 0.3
+  max_rss_mb: 305.8
+  runs_count: 1
+  tokens:
+    input_tokens: 16
+    output_tokens: 118
+    subagent_tokens: 0
+    total_llm_tokens: 134
+    artifact_tokens: 267
+    method: explicit+BPE
+  artifacts:
+  - file: vogel_phyllotaxis_comparison.png
+    bytes: 2155516
+    sha256: 98e2578361a0d0405b5a71cddc2f9ada03e666fcfb80e10ed5b14086a937b07d
+    tokens: 64
+  - file: docs/media/vogel_phyllotaxis_growth.gif
+    bytes: 877508
+    sha256: 8e8d60ceff1e2574ef41906e7f2dabc2a47ce15029dc16d80519dcee4f693897
+    tokens: 64
+  - file: vogel_phyllotaxis_metrics.csv
+    bytes: 317
+    sha256: 6f49a262bb096f0224a616c0d5df079ce4277b3b324c4abde34c661191bfecf4
+    tokens: 139
+  commands:
+  - command: ./venv/bin/python3 1979-vogel-phyllotaxis.py
+    exit_code: 0
+    wall_s: 3.659
+    cpu_user_s: 3.33
+    cpu_sys_s: 0.3
+    stdout_tokens: 118
+  notes: Rendered 6-panel static comparison figure, centripetal growth animation GIF,
+    and morphometric CSV
+- num: 7
+  slug: audit
+  tier: B
+  title: 7  Dual-agent audit
+  actor: dual-assessors
+  model: gemini-4-argon + claude-sonnet-5-5-high
+  status: completed
+  started_at: '2026-10-18T19:42:06.229Z'
+  ended_at: '2026-10-18T19:44:56.342Z'
+  duration_s: 170.113
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 48
+    output_tokens: 132
+    subagent_tokens: 6512
+    total_llm_tokens: 6692
+    artifact_tokens: 3168
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-18-phyllotaxis-audit.yaml
+    bytes: 12717
+    sha256: 03a1a6b36375c0848cb4e560de0ecaeab007ee8b68844562cb7e03e55a9a6d8b
+    tokens: 3168
+  commands: []
+  notes: 'Running dual-agent MorphoEval audit on 1979-vogel-phyllotaxis.py across
+    all 7 rubric dimensions; Dual-agent v1 audit completed (Gemini 4 Argon + Claude
+    Sonnet 5.5 High subagent b0be5bf9-03db-432a-ba7c-871f94727f7d): v1 weighted overall
+    64.3, with 4 concrete remediation targets identified'
+- num: 8
+  slug: measure
+  tier: B
+  title: 8  Measure
+  actor: tool
+  model: measure_outputs.py
+  status: completed
+  started_at: '2026-10-18T19:44:56.421Z'
+  ended_at: '2026-10-18T19:44:57.570Z'
+  duration_s: 1.112
+  cpu_user_s: 0.73
+  cpu_sys_s: 0.12
+  max_rss_mb: 137.8
+  runs_count: 1
+  tokens:
+    input_tokens: 30
+    output_tokens: 244
+    subagent_tokens: 0
+    total_llm_tokens: 274
+    artifact_tokens: 1444
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-18-phyllotaxis-audit.measurements.yaml
+    bytes: 4422
+    sha256: 4bae3d4b2398e00e33a6b97f5fba31cdd1d6dc623500a253d2d3feb244fb4a5f
+    tokens: 1444
+  commands:
+  - command: ./venv/bin/python3 morphoeval/measure_outputs.py morphoeval/audits/2026-10-18-phyllotaxis-audit.yaml
+    exit_code: 0
+    wall_s: 1.112
+    cpu_user_s: 0.73
+    cpu_sys_s: 0.12
+    stdout_tokens: 244
+  notes: Fingerprinted rendered outputs (spec_fingerprint + artifact_sha256) and computed
+    independent morphometrics sidecar
+- num: 9
+  slug: build
+  tier: B
+  title: 9  Write as claims
+  actor: tool
+  model: build_morphoeval_kg.py
+  status: completed
+  started_at: '2026-10-18T19:45:12.215Z'
+  ended_at: '2026-10-18T19:45:28.448Z'
+  duration_s: 0.402
+  cpu_user_s: 0.28
+  cpu_sys_s: 0.05
+  max_rss_mb: 48.5
+  runs_count: 2
+  tokens:
+    input_tokens: 70
+    output_tokens: 225
+    subagent_tokens: 0
+    total_llm_tokens: 295
+    artifact_tokens: 13440
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-18-phyllotaxis-audit/morphoeval_2026-10-18-phyllotaxis-audit.ttl
+    bytes: 29713
+    sha256: 4340491a09f720c17355c131bb6e7eb6344d88a893ec6e304183f2d22057d1ab
+    tokens: 8467
+  - file: morphoeval/kg/2026-10-18-phyllotaxis-audit/REPORT.md
+    bytes: 9519
+    sha256: 9560876db48c769d06293a83d8e6e8693099c27a161262d23c23cde037c61e01
+    tokens: 2528
+  - file: morphoeval/kg/2026-10-18-phyllotaxis-audit/vogel-phyllotaxis-overall.trig
+    bytes: 8550
+    sha256: f7859596c72ac680e049090aea63a02fe6b59b56d65e725ae9e80a521993640d
+    tokens: 2445
+  commands:
+  - command: ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-18-phyllotaxis-audit.yaml
+      --conform --query
+    exit_code: 1
+    wall_s: 0.137
+    cpu_user_s: 0.09
+    cpu_sys_s: 0.02
+    stdout_tokens: 24
+  - command: ./venv/bin/python3 morphoeval/build_morphoeval_kg.py morphoeval/audits/2026-10-18-phyllotaxis-audit.yaml
+      --conform --query
+    exit_code: 0
+    wall_s: 0.265
+    cpu_user_s: 0.19
+    cpu_sys_s: 0.03
+    stdout_tokens: 201
+  notes: Built ProbKnow-conformant TriG nanopubs, merged Turtle graph, and REPORT.md
+    for v1 phyllotaxis audit; Built ProbKnow-conformant TriG nanopubs, merged Turtle
+    graph, and REPORT.md for v1 phyllotaxis audit
+- num: 10
+  slug: publish
+  tier: B
+  title: 10 Sign & verify
+  actor: tool
+  model: sign_morphoeval.py + check_signed.mjs
+  status: completed
+  started_at: '2026-10-18T19:45:28.527Z'
+  ended_at: '2026-10-18T19:46:01.352Z'
+  duration_s: 0.788
+  cpu_user_s: 0.76
+  cpu_sys_s: 0.06
+  max_rss_mb: 144.7
+  runs_count: 2
+  tokens:
+    input_tokens: 94
+    output_tokens: 917
+    subagent_tokens: 0
+    total_llm_tokens: 1011
+    artifact_tokens: 3439
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-18-phyllotaxis-audit/published.json
+    bytes: 1808
+    sha256: 76291022f79e3a159ea6b45c63c2616c80f9c5289951b5cb7b2949f8b22819a4
+    tokens: 661
+  - file: morphoeval/kg/2026-10-18-phyllotaxis-audit/signed/vogel-phyllotaxis-overall.trig
+    bytes: 9688
+    sha256: 9a41580640d0082c2a3001957e7e1a0b0f2a35eca779e50f79592878ac3a2b39
+    tokens: 2778
+  commands:
+  - command: bash -c ./venv/bin/python3 morphoeval/sign_morphoeval.py morphoeval/kg/2026-10-18-phyllotaxis-audit
+      && node morphoeval/check_signed.mjs morphoeval/kg/2026-10-18-phyllotaxis-audit/signed
+    exit_code: 2
+    wall_s: 0.631
+    cpu_user_s: 0.51
+    cpu_sys_s: 0.04
+    stdout_tokens: 514
+  - command: bash -c NANOPUB_SIGN_DIR=/tmp/nanopub-check node morphoeval/check_signed.mjs
+      morphoeval/kg/2026-10-18-phyllotaxis-audit/signed/*.trig
+    exit_code: 0
+    wall_s: 0.157
+    cpu_user_s: 0.25
+    cpu_sys_s: 0.02
+    stdout_tokens: 403
+  notes: Cryptographically signed all 10 v1 TriG nanopubs and verified RSA signatures
+    and trusty URI digests via check_signed.mjs; Cryptographically signed all 10 v1
+    TriG nanopubs and verified RSA signatures and trusty URI digests (10/10 ok) via
+    check_signed.mjs
+- num: 11
+  slug: graph
+  tier: B
+  title: 11 Public record
+  actor: tool
+  model: published.json + REPORT.md
+  status: completed
+  started_at: '2026-10-18T19:46:01.426Z'
+  ended_at: '2026-10-18T19:46:01.484Z'
+  duration_s: 0.017
+  cpu_user_s: 0.01
+  cpu_sys_s: 0.0
+  max_rss_mb: 11.4
+  runs_count: 1
+  tokens:
+    input_tokens: 72
+    output_tokens: 30
+    subagent_tokens: 0
+    total_llm_tokens: 102
+    artifact_tokens: 3189
+    method: explicit+BPE
+  artifacts:
+  - file: morphoeval/kg/2026-10-18-phyllotaxis-audit/published.json
+    bytes: 1808
+    sha256: 76291022f79e3a159ea6b45c63c2616c80f9c5289951b5cb7b2949f8b22819a4
+    tokens: 661
+  - file: morphoeval/kg/2026-10-18-phyllotaxis-audit/REPORT.md
+    bytes: 9519
+    sha256: 9560876db48c769d06293a83d8e6e8693099c27a161262d23c23cde037c61e01
+    tokens: 2528
+  commands:
+  - command: ./venv/bin/python3 -c import json; d=json.load(open('morphoeval/kg/2026-10-18-phyllotaxis-audit/published.json'));
+      print('Signed nanopubs recorded:', len(d), 'overall URI:', d.get('vogel-phyllotaxis-overall.trig',
+      {}).get('nanopub'))
+    exit_code: 0
+    wall_s: 0.017
+    cpu_user_s: 0.01
+    cpu_sys_s: 0.0
+    stdout_tokens: 30
+  notes: Recorded trusty URIs in published.json and verified SPARQL / ProbKnow graph
+    report
+- num: 12
+  slug: remed
+  tier: B->A
+  title: 12 Remediate & re-score
+  actor: builder+assessor
+  model: gemini-4-argon + claude-sonnet-5-5-high
+  status: completed
+  started_at: '2026-10-18T19:46:15.156Z'
+  ended_at: '2026-10-18T19:54:28.975Z'
+  duration_s: 493.819
+  cpu_user_s: 0.0
+  cpu_sys_s: 0.0
+  max_rss_mb: 0.0
+  runs_count: 1
+  tokens:
+    input_tokens: 36
+    output_tokens: 37036
+    subagent_tokens: 0
+    total_llm_tokens: 37072
+    artifact_tokens: 24593
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: 1979-vogel-phyllotaxis.py
+    bytes: 57770
+    sha256: 012c514cdea55cf4553a6b335403b6f7a31d027a838c638e9f86fb1354a2b86a
+    tokens: 15710
+  - file: morphoeval/audits/2026-10-18-phyllotaxis-audit-v2.yaml
+    bytes: 14562
+    sha256: 74f684f93b40badab7e992bfdce323ac445f3a390caa713277a9f9903ac41399
+    tokens: 3758
+  - file: morphoeval/audits/2026-10-18-phyllotaxis-audit-v2.measurements.yaml
+    bytes: 5396
+    sha256: 3fae72cf4fa19d6bdbce51d2706ae0078426ab9d734009d89b68252ae9c55099
+    tokens: 1727
+  - file: morphoeval/kg/2026-10-18-phyllotaxis-audit-v2/published.json
+    bytes: 1808
+    sha256: c4f702c43898c81c5771f16200e39dc11770a17e3e8f9234fc8282e42c73b20a
+    tokens: 635
+  - file: morphoeval/kg/2026-10-18-phyllotaxis-audit-v2/REPORT.md
+    bytes: 9796
+    sha256: 429a5f55ab80d18fb0d6474ea9d67a225784d0902f419ba22691e0c89f6079b1
+    tokens: 2763
+  commands: []
+  notes: Remediating all 6 defects from the independent Claude Sonnet 5.5 High audit
+    (specimen image 2D polar-FFT parastichy extraction, bounded Voronoi CV metric,
+    mechanistic Fib-1 > Fib+1 dislocation defect ensemble, and code/label traceability
+    fixes); Remediated all 4 v1 audit findings (DoG floret segmentation on specimen
+    photo, bounded Voronoi CV metric, mechanistic Fib-1 > Fib+1 dislocation ensemble,
+    and code/BibTeX traceability); re-scored v2 at 85.7 (+21.4 pts over v1 64.3) with
+    npx:supersedes links and 10/10 verified trusty URIs

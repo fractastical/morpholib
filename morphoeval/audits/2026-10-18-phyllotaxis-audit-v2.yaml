@@ -1,0 +1,221 @@
+# MorphoEval audit — Vogel (1979) / Douady–Couder (1992) Golden-Angle Phyllotaxis, 2026-10-18 (v2 remediated)
+#
+# Re-score after Step 12 remediation; supersedes `2026-10-18-phyllotaxis-audit` (v1 overall 64.3).
+#
+# What was remediated in response to the independent second assessor (Claude Sonnet 5.5 High,
+# subagent b0be5bf9-03db-432a-ba7c-871f94727f7d):
+#   1. Direct Specimen Photograph Floret Segmentation (`segment_specimen_photograph()`, L310-377):
+#      `helianthus_annuus_capitulum_specimen.jpg` is no longer merely displayed via `imshow()`.
+#      Difference-of-Gaussians (sigma_1=2.2, sigma_2=6.5 px) segments N=621 individual florets
+#      and computes 402 bounded interior Voronoi cells directly on the specimen pixels,
+#      yielding empirical cell circularity <4*pi*A/P^2> = 0.7934 (vs Vogel golden-angle model
+#      0.8525 and sub-golden 137.3 deg 0.7045) and area CV = 0.2530. Segmented centroids are
+#      overlaid in Panel A and written to `vogel_phyllotaxis_metrics.csv`.
+#   2. Bounded Voronoi & Circularity Packing Metric (`compute_packing_metrics()`, L223-303):
+#      Added a 72-vertex outer boundary ring at r = 1.06 * R_max and radial disk clipping
+#      so degenerate rational angles (e.g. 120.0 deg 3-spoke pinwheels) can no longer escape
+#      via unbounded Voronoi regions. `rational_120.0` now has `voronoi_cv_area = 0.6207`
+#      (worse than golden `0.0072` by 86x) and `mean_circularity = 0.0284`, and `run_self_tests()`
+#      asserts that the golden angle strictly beats 137.3 deg, 137.6 deg, and 120.0 deg on
+#      Voronoi area CV, NND CV, and Voronoi circularity.
+#   3. Mechanistic Rim-Dislocation Model for Swinton et al. (2016) `Fib-1 > Fib+1` Asymmetry
+#      (`simulate_swinton_dislocation_ensemble()`, L470-555):
+#      Evaluates Delaunay contact-chain loss at the outer rim of noisy capitula relative to
+#      the zero-noise reference lattice of identical floret count N, reproducing both the
+#      6-category Swinton Table 1 distribution (Pearson r = 0.9950 across N=768 simulated vs
+#      N=768 photoreviewed counts) and the statistically significant excess of `Fibonacci - 1`
+#      (68) over `Fibonacci + 1` (22, one-sided binomial p = 6.25e-7).
+#   4. Code & Source Traceability Fixes:
+#      - Panel C labels are dynamically formatted from `summary["angle_metrics"]` and test both
+#        (29,47) and (47,76) Lucas zones (Sunflower 171) and (26,42)/(42,68) bijugate zones.
+#      - Panel E legends are formatted directly from `dc_main["initial_divergence_deg"]` and
+#        `dc_main["mean_divergence_deg"]`.
+#      - `EXPECTED_REFERENCE_JSON_SHA256` is verified in `run_self_tests()`, and Schoute (1938),
+#        Weisse (1897), Jean (1994), Dryad (2016), and both Wikimedia Commons specimen items
+#        are cited in `datasets/phyllotaxis/paper_citations.bib`.
+
+audit:
+  id: 2026-10-18-phyllotaxis-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-18"
+  supersedes: 2026-10-18-phyllotaxis-audit
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (remediation verification)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent subagent b0be5bf9-03db-432a-ba7c-871f94727f7d)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: c89d18d
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Remediated v2 reproduction of Vogel (1979) planar spiral phyllotaxis,
+      Douady & Couder (1992, 1996) Hofmeister inhibitory dynamics, direct
+      Difference-of-Gaussians floret segmentation on Helianthus annuus specimen
+      photography, and mechanistic rim-dislocation modeling of Swinton et al.
+      (2016) Table 1.
+
+references:
+  vogel1979:
+    title: "A better way to construct the sunflower head"
+    authors: "Vogel H"
+    venue: "Mathematical Biosciences 44(3-4):179-189 (1979)"
+    doi: 10.1016/0025-5564(79)90080-4
+  douady1992:
+    title: "Phyllotaxis as a physical self-organized growth process"
+    authors: "Douady S, Couder Y"
+    venue: "Physical Review Letters 68(13):2098-2101 (1992)"
+    doi: 10.1103/PhysRevLett.68.2098
+  douady1996:
+    title: "Phyllotaxis as a Dynamical Self Organizing Process Part I: The Spiral Modes Resulting from Time-Periodic Iterations"
+    authors: "Douady S, Couder Y"
+    venue: "Journal of Theoretical Biology 178(3):255-273 (1996)"
+    doi: 10.1006/jtbi.1996.0024
+  swinton2016:
+    title: "Novel Fibonacci and non-Fibonacci structure in the sunflower: results of a citizen science experiment"
+    authors: "Swinton J, Ochu E, The MSI Turing's Sunflower Consortium"
+    venue: "Royal Society Open Science 3(5):160091 (2016); Dryad dataset doi:10.5061/dryad.f9k77"
+    doi: 10.1098/rsos.160091
+  jean1994:
+    title: "Phyllotaxis: A Systemic Study in Plant Morphogenesis"
+    authors: "Jean RV"
+    venue: "Cambridge University Press (1994), ISBN 9780521404822"
+    url: https://www.cambridge.org/9780521404822
+
+simulations:
+  - id: vogel-phyllotaxis
+    name: "Vogel (1979) & Douady–Couder (1992) Golden-Angle Phyllotaxis"
+    organism: "Helianthus annuus (sunflower capitulum)"
+    script: 1979-vogel-phyllotaxis.py
+    output: vogel_phyllotaxis_comparison.png
+    also: [docs/media/vogel_phyllotaxis_growth.gif, vogel_phyllotaxis_metrics.csv]
+    domain: morphogenesis
+    status: evaluated
+    supersedes_audit_id: 2026-10-18-phyllotaxis-audit
+    claim_boundary:
+      reported_in_source:
+        - "Vogel (1979) defines planar capitulum spiral placement r_n = c*sqrt(n), theta_n = n*alpha_0 with golden divergence angle alpha_0 = 360/tau^2 = 137.507764 deg"
+        - "Douady & Couder (1992, 1996) demonstrate self-organized convergence of repulsive Hofmeister primordia on a radially advecting meristem ring to the golden and Lucas noble angles"
+        - "Swinton, Ochu & MSI Turing's Sunflower Consortium (2016) report 768 photoreviewed parastichy counts across 657 Helianthus annuus heads (82.3% Fibonacci structure; 49 Fib-1 vs 17 Fib+1, binomial p = 5.07e-5)"
+      reconstructed_in_script:
+        - "Planar Vogel spiral generator, Delaunay/Voronoi rising Fibonacci parastichy cascade (8,13)->(13,21)->(21,34)->(34,55), bounded Voronoi area CV & circularity optimality, Douady-Couder Hofmeister relaxation, DoG floret segmentation on helianthus_annuus_capitulum_specimen.jpg, and rim-dislocation ensemble reproducing Fib-1 > Fib+1"
+      transfer_boundary:
+        - "Outer-rim Delaunay contact-chain loss on noisy capitula used to model the empirical excess of Fibonacci-1 over Fibonacci+1 counts in Swinton et al. (2016)"
+      does_not_claim:
+        - "Full 3D auxin PIN1 transport PDE simulation on a curved dome (uses Vogel's kinematic spiral and Douady & Couder's effective Hofmeister inhibitory potential)"
+    source_refs: [vogel1979, douady1992, douady1996, swinton2016, jean1994]
+    summary: >-
+      Remediated v2 reproduction of Vogel (1979) and Douady & Couder (1992, 1996)
+      golden-angle phyllotaxis validated against Swinton et al. (2016) Royal
+      Society Helianthus annuus parastichy data and direct Difference-of-Gaussians
+      floret segmentation on a real capitulum photograph (621 segmented florets,
+      402 interior Voronoi cells, mean circularity 0.793 vs 0.853 model). All
+      four defects surfaced in the v1 dual-agent audit are resolved and verified
+      by automated assertions in `run_self_tests()`.
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >-
+          Vogel's (1979) planar spiral law, rising Fibonacci parastichy cascade
+          (8,13)->(13,21)->(21,34)->(34,55), Lucas (29,47)->(47,76) branch, and
+          bijugate 2*(21,34) = (42,68) whorls are reproduced and verified by
+          Delaunay contact-graph topology. Douady & Couder's (1992) Hofmeister
+          repulsive energy minimization converges from disparate initial angles
+          (175 deg and 130 deg -> 137.59 deg; 99.8 deg -> 99.38 deg), and the
+          noisy rim-dislocation ensemble mechanistically links outer-rim contact
+          chain loss to Swinton et al.'s (2016) Fib-1 > Fib+1 grain-defect bias.
+        evidence:
+          - {file: 1979-vogel-phyllotaxis.py, lines: [110, 154], note: "vogel_spiral(): exact planar spiral and multijugate whorl generator"}
+          - {file: 1979-vogel-phyllotaxis.py, lines: [383, 441], note: "simulate_douady_couder_hofmeister(): Hofmeister repulsive energy minimization"}
+          - {file: 1979-vogel-phyllotaxis.py, lines: [470, 562], note: "simulate_swinton_dislocation_ensemble(): rim contact-chain loss mechanism"}
+      specimen-match:
+        value: 84
+        rationale: >-
+          Panel A segments 621 florets directly from `helianthus_annuus_capitulum_specimen.jpg`
+          via Difference-of-Gaussians filtering and measures 402 bounded interior
+          Voronoi cells (mean circularity 0.7934 vs 0.8525 in the ideal Vogel lattice
+          and 0.7045 in the 137.3 deg control). Panel F compares all 6 parastichy
+          categories against Swinton et al. (2016) Table 1 (N=768 photoreviewed counts)
+          and Schoute (1938, N=319), achieving Pearson r = 0.9950 and reproducing
+          Fib-1 (68) > Fib+1 (22) (p = 6.25e-7).
+        evidence:
+          - {file: 1979-vogel-phyllotaxis.py, lines: [310, 377], note: "segment_specimen_photograph(): DoG floret centroid segmentation & Voronoi circularity"}
+          - {file: 1979-vogel-phyllotaxis.py, lines: [754, 799], note: "Panel A overlays 621 segmented florets on real Helianthus capitulum photo"}
+          - {file: vogel_phyllotaxis_comparison.png, lines: [0, 0], note: "6-panel comparison figure with segmented florets and Swinton survey match"}
+      parameter-expressivity:
+        value: 82
+        rationale: >-
+          Sweeps divergence angle alpha across [136.6, 138.4] deg plus Lucas (99.502 deg),
+          rational (120.0 deg), and bijugate (J=2) regimes, plastochron schedule G(n)
+          across [0.65, 0.04], floret count N across [30, 600] in the growth animation,
+          and angular/radial noise in the 384-head dislocation ensemble.
+        evidence:
+          - {file: 1979-vogel-phyllotaxis.py, lines: [856, 922], note: "Panel C 2x2 sensitivity grid with dynamically computed NND CV labels"}
+          - {file: 1979-vogel-phyllotaxis.py, lines: [927, 960], note: "Panel D alpha resonance scan across 76 angles"}
+      morphometric-validation:
+        value: 86
+        rationale: >-
+          Bounded Voronoi polygon clipping with 72 outer guard vertices completely
+          resolves the v1 unbounded-cell artifact: `rational_120.0` now scores
+          `voronoi_cv_area = 0.6207` and `mean_circularity = 0.0284`, while the
+          golden angle (`137.5078 deg`) simultaneously minimizes `voronoi_cv_area`
+          (`0.007209`), minimizes `nnd_cv` (`0.011108`), and maximizes Voronoi
+          circularity (`0.852513`). All 7 morphometrics are independently verified
+          in `2026-10-18-phyllotaxis-audit-v2.measurements.yaml`.
+        evidence:
+          - {file: 1979-vogel-phyllotaxis.py, lines: [223, 303], note: "compute_packing_metrics(): bounded Voronoi cells with guard ring & disk clipping"}
+          - {file: 1979-vogel-phyllotaxis.py, lines: [634, 654], note: "run_self_tests(): asserts golden angle beats 137.3, 137.6, and 120.0 deg on all 3 metrics"}
+          - {file: vogel_phyllotaxis_metrics.csv, lines: [0, 0], note: "6 regimes including empirical_specimen_helianthus_jpg"}
+      source-traceability:
+        value: 90
+        rationale: >-
+          All primary and historical sources (Vogel 1979, Douady & Couder 1992/1996,
+          Swinton et al. 2016, Dryad dataset 10.5061/dryad.f9k77, Schoute 1938,
+          Weisse 1897, Jean 1994, and both Wikimedia Commons specimen photographs)
+          are cited in `datasets/phyllotaxis/paper_citations.bib` and locked by
+          SHA-256 digests verified on every run of `--self-test`.
+        evidence:
+          - {file: 1979-vogel-phyllotaxis.py, lines: [586, 596], note: "SHA-256 verification of phyllotaxis_reference.json and both specimen JPEGs"}
+          - {file: datasets/phyllotaxis/paper_citations.bib, lines: [1, 88], note: "Complete BibTeX entries for primary papers, historical surveys, Dryad, and Commons assets"}
+      code-traceability:
+        value: 88
+        rationale: >-
+          Every code-to-label discrepancy noted by the second assessor in v1 has
+          been eliminated: Panel C and Panel E format their labels directly from
+          the computed dictionary values, Sunflower 171 is verified on its exact
+          (47, 76) outer-zone Lucas pair, and `classify_parastichy_number()` cleanly
+          separates `Fibonacci + 1` (14) from `F4` (9, 23, 37, 60, 97).
+        evidence:
+          - {file: 1979-vogel-phyllotaxis.py, lines: [614, 626], note: "Exact verification of Lucas (29,47)->(47,76) and Bijugate (26,42)->(42,68) zones"}
+          - {file: 1979-vogel-phyllotaxis.py, lines: [969, 994], note: "Panel E legend dynamically formatted from simulation dictionary"}
+      repro-package:
+        value: 88
+        rationale: >-
+          Deterministic RNG seeds (`1979`, `2016`, `42`), fast `--self-test` (<1.5 s),
+          explicit virtualenv invocation instructions in docstring, SHA-256 locks on
+          all input JSON/JPEG files, and SHA-256 digest reporting for all generated
+          PNG, GIF, and CSV artifacts.
+        evidence:
+          - {file: 1979-vogel-phyllotaxis.py, lines: [1247, 1277], note: "CLI entrypoint running self-tests first and printing output SHA-256 digests"}
+          - {file: docs/media/vogel_phyllotaxis_growth.gif, lines: [0, 0], note: "27-frame centripetal growth animation"}
+    remediation:
+      - "Extend specimen image analysis from 2D planar projection to 3D dome surface profilometry when micro-CT capitulum scans become available."
+      - "Couple the Douady–Couder Hofmeister potential directly to a continuum auxin-PIN1 reaction-advection-diffusion solver on the meristematic dome (Jönsson et al. 2006 / Newell et al. 2008)."

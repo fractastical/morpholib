@@ -1,11 +1,17 @@
 @prefix dct: <http://purl.org/dc/terms/> .
 @prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <https://w3id.org/probknow/resource/claim/morphoeval-planform-morphology-animation> a pk:Claim ;
-    rdfs:label "PlanformDB planarian morphology animation faithfully reproduces Planaria (Schmidtea mediterranea, Dugesia japonica) morphology" ;
+    rdfs:label "PlanformDB planarian morphology animation (Planaria (Schmidtea mediterranea, Dugesia japonica))",
+        "PlanformDB planarian morphology animation faithfully reproduces Planaria (Schmidtea mediterranea, Dugesia japonica) morphology" ;
+    dct:conformsTo <https://w3id.org/probknow/resource/math-law/planform-morphology-animation-1> ;
     dct:description "The simulation script(s) 2013-lobo-planform-morphology.py implement the cited source model as published and produce forms that match real Planaria (Schmidtea mediterranea, Dugesia japonica) specimens and the source authors' figures. A belief under audit, not a fact: its credibility is the weight of evidence (MorphoEval 0.1.0 overall 66.5/100, audit 2026-10-14-morphology-audit) and the assessments." ;
+    schema:about "Planaria (Schmidtea mediterranea, Dugesia japonica)" ;
     pk:context "script(s): https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py; output: planform_morphology_gallery.png; organism: Planaria (Schmidtea mediterranea, Dugesia japonica); checkpoint commit: https://github.com/fractastical/morpholib/commit/161f269; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0" ;
     pk:derivedFromPaper <https://doi.org/10.1016/j.bpj.2017.04.011>,
         <https://doi.org/10.1093/bioinformatics/btt088>,
@@ -18,6 +24,15 @@
         <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-repro-package>,
         <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-source-traceability>,
         <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-specimen-match> ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-1>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-2>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-3>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-4>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-5>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-6>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-7>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-8> ;
+    pk:hypothesisType "Formal Anatomical Region Graph Grammar & Polar Geometry" ;
     pk:weightOfEvidence 6.65e-01 .
 
 <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-code-traceability> a pk:LLMClaimAssessment ;
@@ -30,6 +45,7 @@
 
 <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-model-fidelity> a pk:LLMClaimAssessment ;
     rdfs:label "PlanformDB planarian morphology animation — Model fidelity to source: 85/100" ;
+    dct:references <https://w3id.org/probknow/resource/math-law/planform-morphology-animation-1> ;
     rdfs:comment "Region shape parameters are interpreted with the formalism's own rule (0 links -> 4 radii right/anterior/left/posterior; 1 link -> +90/+180/+270 deg from the edge; k >= 2 links -> one radius per bisector of consecutive edges), region centres are placed from the RegionsLink Dist/Ang labels and borders at Ratio*Dist, and the rule is checked at load time against all 1181 regions in the database. The only element not taken from the source is how consecutive control radii are joined: a superellipse arc (n = 2.2 free, n = 7 at a border) chosen to reproduce Planform's Fig. 1D; the paper does not publish Planform's interpolant. Evidence: 2013-lobo-planform-morphology.py L20–L34: formalism as implemented, with the radii-count rule <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L20-L34>; 2013-lobo-planform-morphology.py L286–L314: control_points(): radii -> directions per link count <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L286-L314>; 2013-lobo-planform-morphology.py L248–L272: layout(): centres from Dist/Ang, borders from Ratio <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L248-L272>; 2013-lobo-planform-morphology.py L701–L715: check_encoding(): 1181/1181 regions obey the rule <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L701-L715>; 2013-lobo-planform-morphology.py L317–L355: superellipse interpolant between radii (not from the source) <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L317-L355>." ;
     pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
     pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-planform-morphology-animation-model-fidelity> ;
@@ -41,6 +57,14 @@
     rdfs:comment "The script computes silhouette morphometrics (AP length, ML width, aspect, area, region and organ counts, length relative to wild type) for every morphology and can write them as CSV, and the measurements sidecar checks the decoded wild type against the radii encoded in the database (560 x 120 units). Nothing is yet compared with measurements of real animals or with values reported in the literature; the reference is the formalism, not a specimen. Evidence: 2013-lobo-planform-morphology.py L386–L412: morphometrics() <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L386-L412>; 2013-lobo-planform-morphology.py L684–L698: write_csv() <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L684-L698>; 2013-lobo-planform-morphology.py L713–L714: wild-type AP/ML printed at load <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L713-L714>. Measurements (measure_outputs.py): wild-type silhouette AP length = 557.6 Planform units (reference 560, PlanformDB 2.5.0 RegionParam/RegionsLink of morphology 1 (80+200+200+80)) [union of decoded region outlines of Morphology 1, rasterised; bbox extent along the AP axis]; wild-type silhouette ML width = 119.8 Planform units (reference 120, trunk lateral radii 60+60) [as above, across the ML axis]; wild-type AP/ML aspect = 4.653 ratio (reference 4.667, encoded radii) [AP length / ML width of the decoded silhouette] — S. mediterranea in Lobo et al. 2013 Fig. 1A is of this order; the formalism, not a specimen, is the reference; morphologies rendered = 369 count [Morphology rows with at least one encoded region] — 372 rows in the database; 3 have no regions (Lethal, Midbody Buldge, Double head, side tail); distinct body silhouettes = 167 count (reference 369, upper bound: one silhouette per morphology) [unique (AP length, ML width, area to 100 units, #heads, #tails) tuples over all rendered morphologies] — 115 morphologies share the wild-type body and differ only in organs (ectopic eyes, doubled CNS, pharynx position, ...), which is how the database encodes them; distinct encodings (regions + links + organs) = 369 count (reference 369, every morphology row is a distinct phenotype) [unique tuples of every encoded number read from the database]; IoU wild type vs double head (#24) = 0.8884 ratio (reference < 1; the two bodies differ only at the posterior cap (tail -> second head), the rest of the difference is organs) [intersection-over-union of the two decoded silhouettes on a shared canvas (region centres aligned by layout)]; IoU wild type vs headless (#20) = 0.6116 ratio (reference ≈ (trunk+tail area)/(whole-body area) if the head is simply absent) [as above]." ;
     pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
     pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-planform-morphology-animation-morphometric-validation> ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-1>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-2>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-3>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-4>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-5>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-6>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-7>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-8> ;
     pk:hasProbability 4.5e-01 ;
     pk:hasVerdict "partially faithful" .
 
@@ -88,6 +112,11 @@
     pk:hasProbability 6e-01 ;
     pk:hasVerdict "mostly faithful" .
 
+<https://w3id.org/probknow/resource/concept/math-of-biology> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Validated Mathematics of Biological Form" ;
+    skos:narrower <https://w3id.org/probknow/resource/math-law/planform-morphology-animation-1> .
+
 <https://w3id.org/probknow/resource/hypothesis/morphoeval-planform-morphology-animation> rdfs:label "PlanformDB planarian morphology animation faithfully reproduces Planaria (Schmidtea mediterranea, Dugesia japonica) morphology" ;
     dct:identifier "morphoeval/0.1.0/overall" .
 
@@ -111,6 +140,121 @@
 
 <https://w3id.org/probknow/resource/hypothesis/morphoeval-planform-morphology-animation-specimen-match> rdfs:label "PlanformDB planarian morphology animation (2013-lobo-planform-morphology.py) satisfies the MorphoEval 0.1.0 criterion 'Morphological realism / specimen match' for Planaria (Schmidtea mediterranea, Dugesia japonica)" ;
     dct:identifier "morphoeval/0.1.0/specimen-match" .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-1> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "wild-type silhouette AP length" ;
+    dct:description "union of decoded region outlines of Morphology 1, rasterised; bbox extent along the AP axis" ;
+    dct:source "PlanformDB 2.5.0 RegionParam/RegionsLink of morphology 1 (80+200+200+80)" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Planaria (Schmidtea mediterranea, Dugesia japonica)" ;
+    schema:error 4.286e-01 ;
+    schema:targetValue 5.6e+02 ;
+    schema:unitText "Planform units" ;
+    schema:value 5.576e+02 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-2> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "wild-type silhouette ML width" ;
+    dct:description "as above, across the ML axis" ;
+    dct:source "trunk lateral radii 60+60" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Planaria (Schmidtea mediterranea, Dugesia japonica)" ;
+    schema:error 1.667e-01 ;
+    schema:targetValue 1.2e+02 ;
+    schema:unitText "Planform units" ;
+    schema:value 1.198e+02 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-3> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "wild-type AP/ML aspect" ;
+    dct:description "AP length / ML width of the decoded silhouette" ;
+    dct:source "encoded radii" ;
+    rdfs:comment "S. mediterranea in Lobo et al. 2013 Fig. 1A is of this order; the formalism, not a specimen, is the reference" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Planaria (Schmidtea mediterranea, Dugesia japonica)" ;
+    schema:error 3e-01 ;
+    schema:targetValue 4.667e+00 ;
+    schema:unitText "ratio" ;
+    schema:value 4.653e+00 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-4> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "morphologies rendered" ;
+    dct:description "Morphology rows with at least one encoded region" ;
+    rdfs:comment "372 rows in the database; 3 have no regions (Lethal, Midbody Buldge, Double head, side tail)" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Planaria (Schmidtea mediterranea, Dugesia japonica)" ;
+    schema:unitText "count" ;
+    schema:value 3.69e+02 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-5> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "distinct body silhouettes" ;
+    dct:description "unique (AP length, ML width, area to 100 units, #heads, #tails) tuples over all rendered morphologies" ;
+    dct:source "upper bound: one silhouette per morphology" ;
+    rdfs:comment "115 morphologies share the wild-type body and differ only in organs (ectopic eyes, doubled CNS, pharynx position, ...), which is how the database encodes them" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Planaria (Schmidtea mediterranea, Dugesia japonica)" ;
+    schema:error 5.47425e+01 ;
+    schema:targetValue 3.69e+02 ;
+    schema:unitText "count" ;
+    schema:value 1.67e+02 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-6> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "distinct encodings (regions + links + organs)" ;
+    dct:description "unique tuples of every encoded number read from the database" ;
+    dct:source "every morphology row is a distinct phenotype" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Planaria (Schmidtea mediterranea, Dugesia japonica)" ;
+    schema:error 0e+00 ;
+    schema:targetValue 3.69e+02 ;
+    schema:unitText "count" ;
+    schema:value 3.69e+02 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-7> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "IoU wild type vs double head (#24)" ;
+    dct:description "intersection-over-union of the two decoded silhouettes on a shared canvas (region centres aligned by layout)" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Planaria (Schmidtea mediterranea, Dugesia japonica)" ;
+    schema:targetValue "< 1; the two bodies differ only at the posterior cap (tail -> second head), the rest of the difference is organs" ;
+    schema:unitText "ratio" ;
+    schema:value 8.884e-01 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-14-morphology-audit-planform-morphology-animation-8> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "IoU wild type vs headless (#20)" ;
+    dct:description "as above" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Planaria (Schmidtea mediterranea, Dugesia japonica)" ;
+    schema:targetValue "≈ (trunk+tail area)/(whole-body area) if the head is simply absent" ;
+    schema:unitText "ratio" ;
+    schema:value 6.116e-01 .
+
+<https://w3id.org/probknow/resource/math-law/planform-morphology-animation-1> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Lobo et al. (2013) PlanformDB Region-Link Polar Graph Encoding" ;
+    dct:description "Decodes all 369 relational planarian body morphologies and internal organ placements (eyes, brain, pharynx) from PlanformDB | Variables: p_A, p_B: connected body-region centers; θ_{AB}: polar attachment angle; r_{ant}, r_{post}, r_{lat}: directional semi-axes" ;
+    dct:source "Lobo, Malone & Levin (2013) PLoS Comput. Biol. 9(10):e1003287" ;
+    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L80-L240>,
+        <https://github.com/fractastical/morpholib/blob/161f269/morphoeval/lean/MathOfBiology.lean#L256-L266> ;
+    skos:broader <https://w3id.org/probknow/resource/concept/math-of-biology> ;
+    skos:definition """def planform_wildtype_ap_length (r_head r_ant_trunk r_post_trunk r_tail : Nat) : Nat :=
+  r_head + r_ant_trunk + r_post_trunk + r_tail
+theorem lobo_2013_wildtype_dimensions :
+    planform_wildtype_ap_length 80 200 200 80 = 560 ∧ (60 + 60 : Nat) = 120 := by decide"""^^pk:lean4 ;
+    skos:notation "p_B = p_A + r_A(θ_{AB}) u(θ_{AB}) + d_{AB} u(θ_{AB}),   R_i(φ) = piecewise-ellipse(r_{ant}, r_{post}, r_{lat})" ;
+    prov:wasDerivedFrom <https://doi.org/10.1016/j.bpj.2017.04.011>,
+        <https://doi.org/10.1093/bioinformatics/btt088>,
+        <https://doi.org/10.1242/bio.20123400> ;
+    schema:programmingLanguage "Lean 4" ;
+    pk:hypothesisType "Formal Anatomical Region Graph Grammar & Polar Geometry" ;
+    pk:leanDeclaration "MathOfBiology.planform_wildtype_ap_length" ;
+    pk:leanTheorem "MathOfBiology.lobo_2013_wildtype_dimensions" ;
+    pk:leanVerified false,
+        true .
 
 <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
     rdfs:label "Claude Fable 5.1 (Cursor agent)" .
