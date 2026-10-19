@@ -2,7 +2,7 @@
 
 This directory holds reference reports and SHA-256-pinned fixtures vendored from [`MesmerPrism/bressloff-v1-form-constants`](https://github.com/MesmerPrism/bressloff-v1-form-constants) at commit `344863a1bd9e8a8e8c9cb20aced2897f3ffb2c4c` (MIT License; derived from [`karacsm/V1-sim`](https://github.com/karacsm/V1-sim) by Márton Karácsony, extended by Till Holzapfel).
 
-![Bressloff V1 form constants: cortical planforms and retinal log-polar pullbacks across Klüver's four families](../../docs/media/bressloff_v1_form_constants.gif)
+![Bressloff V1 form constants: cortical planforms and retinal pullbacks across Klüver's four families plus the cubic-selected rhombic lattice, each badged SELECTED / STABLE / IMPOSED](../../docs/media/bressloff_v1_form_constants.gif)
 
 ## Vendored Fixtures
 
@@ -15,8 +15,14 @@ This directory holds reference reports and SHA-256-pinned fixtures vendored from
 
 ## Fixture caveats surfaced by the script
 
-* `paper-calibration.json` carries its own paper-expectation `checks`. 10 of 11 pass; `fig40_odd_hex_bifurcation/selected-pattern` expects `triangle` but the fixture (and this script, which reproduces it to $2\times10^{-16}$) gives `honeycomb`. On the odd branch $\eta_{hex} = 0$, so $H_0$ (honeycomb) and $H_\pi$ (triangle) are degenerate at cubic order; the quintic selection of Bressloff et al. (2001, §5) is not implemented. The script reports this in the CSV (`fixture_paper_checks` column), the figure ledger, and the self-test — it is not folded into the parity verdict.
-* `rule-2011-floquet.json` has `fit_objective.acceptance_status = outside-threshold-diagnostic` and `calibration_claim_allowed = false` (domain-normalised RMS $\beta$ error 0.154 against a 0.10 threshold; 4 failed acceptance checks). The Rule (2011) Fig. 8 panel is therefore labelled a diagnostic overlay, not a reproduction.
+* `paper-calibration.json` carries its own paper-expectation `checks` in two places, and the script counts both: the 5 `stability_reports` (11 checks, 10 pass) and the 24 preset `runs` (122 checks, 111 pass; 17 runs `status: pass`, 7 `review`). All 12 failures are listed in the CSV (`fixture_paper_checks` column), the figure ledger and the self-test, and none is folded into the parity verdict:
+  * `fig40_odd_hex_bifurcation/selected-pattern` expects `triangle` but the fixture (and this script, which reproduces it to $2\times10^{-16}$) gives `honeycomb`. On the odd branch $\eta_{hex} = 0$, so $H_0$ (honeycomb) and $H_\pi$ (triangle) are degenerate at cubic order; the quintic selection of Bressloff et al. (2001, §5) is not implemented. The same degeneracy fails `fig36_triangle_odd/same-lattice-branch-pattern`.
+  * The square presets (`fig31_square_even`, `fig32_square_odd`, `fig5_square_cortical`, `fig6_visual_field_planforms`) fail `same-lattice-branch-family` (expected `square`, actual `roll`) and `same-lattice-branch-pattern` (expected `cobweb`, actual `spiral`): with these eigenfunctions $2\gamma_3(90°) > \gamma_3(0)$, so the square branch is unstable at cubic order and the cobweb is an imposed lattice. The script labels every gallery panel accordingly (`SELECTED` / `STABLE, coexists` / `IMPOSED: unstable`).
+  * `fig35_hex_even` and `fig5_hex_cortical` expect `hex_pi` but $\eta_{hex} > 0$ selects `honeycomb` ($H_0$).
+* All 24 preset runs are reproduced exactly (q*, critical branch, selected family/pattern/scope, rendered pattern; max $|\Delta q^*| = 2\times10^{-16}$); the 9 presets that were previously missing from the script (`fig31_square_even_roll`, `fig32_square_odd_roll`, `fig34_rhombic_odd_roll`, `fig36_hex_zero_odd`, `fig5_*_cortical`, `fig6_visual_field_planforms`) were added from `rust-v1-sim/src/models/bressloff/presets.rs:642-806`.
+* Map constants: $w_0 = 0.087$ and $\epsilon = 0.051$ are the papers' values; $\alpha = 3/\pi$ and $\beta = 1.589/2$ are **not** given in either paper ("α and β are constants") and come from upstream `rust-v1-sim/src/params.rs:5-8`. Bressloff et al. (2002, §1.1) do state the implied scale — 11.5 mm/deg foveal magnification (⇒ $\alpha \approx 1.00$; upstream's 3/π gives 10.98, −4.6%), 5.75 mm/deg at 1.7°, 30–36 perceived stripes and a cortical wavelength of 2.4–3.2 mm. The rendered planforms have $\lambda_c = 2\pi d_{hyp}/q^* = 8.7$ mm (11 cycles on the 97.9 mm torus), **3.1× longer than the paper's estimate**; the script reports this in Panel D, the CSV (`paper_scale_anchor` row) and the self-test rather than rescaling.
+* `rule-2011-floquet.json` has `fit_objective.acceptance_status = outside-threshold-diagnostic` and `calibration_claim_allowed = false` (domain-normalised RMS $\beta$ error 0.154 against a 0.10 threshold; 4 failed acceptance checks). The script does not implement the Rule (2011) parametrically forced E–I field or a Floquet solver; the Fig. 8 panel draws the fixture's 16 boundary curves (5 forcing amplitudes, shaded separately) and is labelled a diagnostic overlay, not a reproduction.
+* `driven-neural-fields-registry.json` is read (9 examples) and its `mackay_gaussian_kernel_negative_check` entry (Tamekue, Prandi & Chitour 2024) is cross-referenced as the registry analogue of the script's Gaussian-only negative control; it is not re-implemented.
 
 ## Primary Literature
 
@@ -25,8 +31,10 @@ This directory holds reference reports and SHA-256-pinned fixtures vendored from
 3. **Ermentrout GB, Cowan JD (1979)**. *A mathematical theory of visual hallucination patterns*. **Biological Cybernetics** 34(3):137–150. [`doi:10.1007/BF00336965`](https://doi.org/10.1007/BF00336965)
 4. **Rule M, Stoffregen M, Ermentrout B (2011)**. *A model for the origin and properties of flicker-induced geometric phosphenes*. **PLoS Computational Biology** 7(9):e1002158. [`doi:10.1371/journal.pcbi.1002158`](https://doi.org/10.1371/journal.pcbi.1002158) (PMID 21980269)
 5. **Horton JC, Hoyt WF (1991)**. *The representation of the visual field in human striate cortex: a revision of the classic Holmes map*. **Archives of Ophthalmology** 109(6):816–824. [`doi:10.1001/archopht.1991.01080060080030`](https://doi.org/10.1001/archopht.1991.01080060080030) (PMID 2043069)
+6. **Tamekue C, Prandi D, Chitour Y (2024)**. *A mathematical model of the visual MacKay effect*. **SIAM Journal on Applied Dynamical Systems** 23(3):2138–2178. [`doi:10.1137/23M1616686`](https://doi.org/10.1137/23M1616686) — source of the driven neural-field examples in `driven-neural-fields-registry.json`.
+7. **Klüver H (1966)**. *Mescal and Mechanisms of Hallucinations*. University of Chicago Press — origin of the four form-constant classes.
 
-`paper_citations.bib` holds the same five references.
+`paper_citations.bib` holds the same seven references.
 
 ## License & Notice
 
