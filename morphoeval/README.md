@@ -18,7 +18,7 @@ morphoeval/
   build_morphoeval_kg.py           audit -> ProbKnow nanopubs (.trig) + merged .ttl + REPORT.md
   sign_morphoeval.py               sign / publish (test -> prod) -> kg/<audit-id>/signed/ + published.json
   check_signed.mjs                 independent trusty+signature verification (@nanopub/sign, Rust/WASM)
-  vendor/probknow-1.1.ttl          vendored ontology for the offline --conform check
+  vendor/probknow-1.3.ttl          vendored ontology for the offline --conform check
   vendor/templates/*.trig          the ProbKnow Space's governed template nanopubs (shape check)
   kg/<audit-id>/                   generated graph for that audit (commit it: it IS the checkpoint)
 ```
@@ -37,7 +37,7 @@ morphoeval/
 
 To avoid conflating faithful code with valid biology, `faithfulness` (weight 70) is decomposed and reported along two separate sub-axes: **model-implementation fidelity** (`impl.`, weight 30 = `model-fidelity` 20 + `parameter-expressivity` 10) and **biological/empirical validation** (`bio.`, weight 40 = `specimen-match` 25 + `morphometric-validation` 15), alongside **reproducibility** (`repro.`, weight 30).
 
-**Score semantics (`[0, 100]` uncalibrated ratings vs probabilities):** MorphoEval scores are uncalibrated, criterion-referenced ratings on `0–100`, not probabilities ($s = 76$ does not mean $P(\text{faithful}) = 0.76$). When serialized into the governed ProbKnow Space templates (`RAku3DIN` and `RAIVOEuh`), `score / 100` is written to `pk:hasProbability` and `overall / 100` to `pk:weightOfEvidence` strictly as a unit-interval rescaling for template conformance (or omitted via `--omit-probability`).
+**Score semantics (`[0, 100]` uncalibrated ratings vs probabilities):** MorphoEval scores are uncalibrated, criterion-referenced ratings on `0–100`, not probabilities ($s = 76$ does not mean $P(\text{faithful}) = 0.76$). When serialized into the governed ProbKnow rubric-assessment template (`RAOAK6Fe`), `score / 100` is written to `pk:hasScore` — defined in ontology ≥ 1.2 as an uncalibrated score on the unit interval, never `pk:hasProbability` ([project-delphi-ontology #12](https://github.com/fractastical/project-delphi-ontology/issues/12)) — and `overall / 100` to the claim's `pk:weightOfEvidence` as the same rescaling (omit it via `--omit-probability`).
 
 **Non-applicable (`not_applicable`) dimensions and baseline-50 shrinkage:** Rule carried over from the siblings: **score only what the evidence supports** — every score needs at least one code locus, and scripts that were not inspected are listed `unevaluated` with no scores. When a dimension is structurally inapplicable (`not_applicable: true`), substituting `50` into the 100-weight sum produces $\bar{s}_{\text{pad}} = (1 - \alpha)\bar{s}_{\text{app}} + 50\alpha$, where $\alpha = w_{\text{NA}} / 100$. Mathematically, substituting `50` is **not** neutral: it shrinks scores toward `50` (penalising scripts with $\bar{s}_{\text{app}} > 50$ and rewarding scripts with $\bar{s}_{\text{app}} < 50$). Only weight renormalisation over applicable dimensions ($\bar{s}_{\text{app}}$) is mathematically neutral; MorphoEval therefore reports **both** the applicable-only renormalised score (`app.`) and the baseline-50 padded score (`pad.`).
 
@@ -134,7 +134,7 @@ No MorphoEval-specific namespace. Everything is expressed in the
 [ProbKnow / Project Delphi ontology](https://github.com/fractastical/probknow-ontology)
 (`pk:` = `https://w3id.org/probknow/ontology/`, individuals under
 `pkr:` = `https://w3id.org/probknow/resource/`), vendored in
-`vendor/probknow-1.1.ttl` for an offline conformance check (`--conform`). This
+`vendor/probknow-1.3.ttl` for an offline conformance check (`--conform`). This
 puts simulation checkpoints in the same probabilistic knowledge graph as the
 Levin-lab claims, so Science Oracle queries work unchanged.
 
@@ -163,22 +163,34 @@ Nanodash renders each one with its form and the Space counts it as conformant.
 The template nanopubs are vendored in `vendor/templates/` and `--conform` checks
 every assertion, provenance and pubinfo graph against the statements of the
 template it links (placeholder prefixes, datatypes, the 0–1 regex on
-probabilities, required/repeatable statements). Earlier nanopubs (2026-10-13 /
+scores, required/repeatable statements). Earlier nanopubs (2026-10-13 /
 2026-10-14) used a freer shape and are being re-issued with `npx:supersedes`.
+
+Since 2026-10-19 the builder targets the **rubric assessment** template
+(`RAOAK6Fe`), the **rubric** template (`RAbjeus1`), claim template v3
+(`RApE-nGp`) and provenance template v2 (`RAaYeFYF`), following tkuhn's review
+in [project-delphi-ontology #12](https://github.com/fractastical/project-delphi-ontology/issues/12):
+rubric scores are `pk:hasScore` (ontology ≥ 1.2), never `pk:hasProbability`;
+the hypothesis node is gone (the (claim, dimension) pair plays that role);
+assessment IRIs no longer carry the audit id, so a re-score supersedes the same
+resource instead of leaving the old one dangling. The nanopubs published before
+that date (generic LLM-assessment template `RAku3DIN`, `pk:hasProbability`)
+are to be re-issued with `--supersede`; `vendor/templates/` keeps their
+templates so `--conform` still checks them.
 
 | MorphoEval notion | ProbKnow term (template) |
 |---|---|
-| "script S faithfully reproduces organism O under source model P" | `pkr:claim/morphoeval-<sim>` a **`pk:Claim`** (claim template): `rdfs:label`, `dct:description`, `pk:context` (scripts, output, organism, commit, environment, non-DOI sources) · `pk:derivedFromPaper <doi>` · `pk:hasAssessment` → the 8 assessments · `pk:weightOfEvidence` = overall/100 (unit-interval rescaled uncalibrated rubric score, optional via `--omit-probability`) |
-| one rubric score | `pkr:assessment/<audit>-<sim>-<dim>` a **`pk:LLMClaimAssessment`** (LLM-assessment template) · `pk:evaluatesHypothesis pkr:hypothesis/morphoeval-<sim>-<dim>` ("<sim> satisfies the criterion <dim>", `dct:identifier "morphoeval/0.1.0/<dim>"`) · `pk:assessedBy pkr:model/<assessor>` a `pk:Model` · `pk:hasProbability` = score/100 (unit-interval rescaled uncalibrated rubric score, not $P(\text{faithful})$; optional via `--omit-probability`) · `pk:hasVerdict` band · `rdfs:comment` = rationale + evidence loci (commit-pinned GitHub `#L<a>-L<b>`, sha256-fingerprinted outputs, morphometrics with their reference values) · `pk:evidenceFor` / `pk:evidenceAgainst` when an evidence entry is marked `supports: true|false` |
-| checkpoint | `…-overall`, the same template, evaluating `pkr:hypothesis/morphoeval-<sim>` (the claim proposition); remediation items as `pk:evidenceAgainst` |
-| the rubric | `pkr:concept/morphoeval-rubric-0.1.0` a `pk:Concept` (`skos:narrower` one `pk:Concept` per dimension); no governed template exists for a rubric, so it carries only the provenance and pubinfo templates |
-| provenance | "Extracted from a paper by ProbKnow" template: `prov:wasAttributedTo` the model and the publisher, `prov:wasDerivedFrom` each DOI with `dct:title` / `dct:date`; the rubric uses the generic "Attributed to" template |
-| the scorer | `pkr:model/<assessor-id>` (`claude-fable-5-1`, `gpt-5.6-sol`, or `gemini-4-argon`) a `pk:Model` (`prov:actedOnBehalfOf` the publisher's ORCID, in pubinfo) |
+| "script S faithfully reproduces organism O under source model P" | `pkr:claim/morphoeval-<sim>` a **`pk:Claim`** (claim template v3): `rdfs:label`, `dct:description`, `pk:context` (scripts, output, organism, commit, environment, non-DOI sources) · `pk:derivedFromPaper <doi>` · `pk:hasAssessment` → the 8 assessments · `dct:subject` each script as a `schema:SoftwareSourceCode` (`schema:codeRepository`, `schema:version` = commit, `schema:programmingLanguage`) · `pk:weightOfEvidence` = overall/100 (unit-interval rescaled uncalibrated rubric score, optional via `--omit-probability`) |
+| one rubric score | `pkr:assessment/morphoeval-<sim>-<dim>` a **`pk:LLMClaimAssessment`** (rubric-assessment template; stable across re-scores, `-second-assessor` suffix for an independent second assessor) · `<claim> pk:hasAssessment <it>` · `dct:subject pkr:concept/morphoeval-0.1.0-<dim>` · `pk:assessmentType "morphoeval/0.1.0/<dim>"` · `pk:assessedBy pkr:model/<assessor>` a `pk:Model` · `pk:hasScore` = score/100 (uncalibrated rubric score on the unit interval, not $P(\text{faithful})$; required by the template) · `pk:hasVerdict` band · `dct:date` · `dct:description` = rationale · `pk:hasEvidence` → one `pk:EvidenceItem` per evidence entry (`rdfs:label` file + line range, `dct:description` note, `prov:wasDerivedFrom` the commit-pinned GitHub `#L<a>-L<b>`) and, on `morphometric-validation`, one per measurement (`schema:PropertyValue` with `schema:name` / `schema:value` / `schema:unitText` / `schema:measurementTechnique` and its `schema:valueReference`) · `pk:evidenceAgainst` for entries marked `supports: false` |
+| checkpoint | `…-overall`, the same template, with the rubric itself as `dct:subject` and `pk:assessmentType "morphoeval/0.1.0/overall"`; remediation items and open needs as `pk:evidenceAgainst` |
+| the rubric | `pkr:concept/morphoeval-rubric-0.1.0` a `pk:Concept` (rubric template; `skos:narrower` one `pk:Concept` per dimension, the dimension id in its `dct:description`) |
+| provenance | "Extracted from a paper by ProbKnow" template v2: `prov:wasAttributedTo` the model and the publisher, `prov:wasDerivedFrom` each source (DOI, dataset or repository URL) with `dct:title` / `dct:date` (the parenthesised year of `venue`, or an explicit `year`), `rdfs:seeAlso` the tracking issue; the rubric uses the generic "Attributed to" template |
+| the scorer | `pkr:model/<assessor-id>` (`claude-fable-5-1`, `gpt-5.6-sol`, or `gemini-4-argon`) a `pk:Model` (`dct:identifier`, `prov:actedOnBehalfOf` the publisher's ORCID, in the assertion) |
 
-The templates carry evidence as literals, so the code loci, output fingerprints
-and morphometrics that used to be separate `pk:EvidenceItem` / `schema:` nodes
-are now written into the assessment's `rdfs:comment` (and the REPORT.md); the
-audit YAML and measurements sidecars are unchanged.
+Evidence is back as nodes: the rubric-assessment template has a grouped
+statement for `pk:EvidenceItem`s (code loci, generated outputs, measurements
+with their reference values), so they are no longer folded into a comment
+literal; the audit YAML and measurements sidecars are unchanged.
 
 Verdict bands on the 0–100 scale: ≥80 *faithful* · 60–79 *mostly faithful* ·
 40–59 *partially faithful* · 20–39 *unfaithful* · <20 *not faithful*.
@@ -405,6 +417,7 @@ For a complete, step-by-step walkthrough of how a 12-step MorphoEval + Lean 4 ru
 | Runions leaf venation (`2005-runions-leaf-venation.py`) ([sample run](./runs/2026-10-18-runions-venation-loop.md)) | 365a3cd, audit 2026-10-18-venation-v2 (was 40.9) | Gemini 4 Argon + Claude Sonnet 5.5 | 90.7 | 89.8 | 93.9 | 91.3 | **91.3** |
 | Wolfram / Meinhardt *Conus textile* Rule 30 (`1984-wolfram-conus-textile-rule30.py`) | fb234bc, audit 2026-10-18-conus | Gemini 4 Argon (blinded 2nd assessor Claude Fable 5.1: 50.5, see below) | 87.7 | 85.5 | 89.3 | 87.3 | **87.3** |
 | Vogel / Douady–Couder golden-angle phyllotaxis (`1979-vogel-phyllotaxis.py`) | c89d18d, audit 2026-10-18-phyllotaxis-v2 (was 64.3) | Gemini 4 Argon + Claude Sonnet 5.5 | 84.7 | 84.8 | 88.7 | 85.9 | **85.9** |
+| Turing / Pearson / Kondo–Asai reaction–diffusion (`1952-turing-morpho.py`) ([sample run](./runs/2026-10-19-turing-morpho-loop.md)) | b9976f8, audit 2026-10-19-turing-audit-v2 (was 38.0 in Pass 1; 52.7 at f3fe478) | Gemini 4 Argon + Claude Sonnet 5.5 (79.1; was 25.1 in Pass 1) | 88.3 | 79.4 | 90.3 | 85.5 | **85.5** |
 | Hoffmann–Donoughe wing venation (`2018-hoffmann-wing-venation.py`) | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 81.7 | 80.0 | 71.3 | 77.8 | **77.8** |
 | Thompson *Scarus* → *Pomacanthus* (`thompson/1917-thompson-scarus-pomacanthus.py`) | 232e8f8, audit 2026-10-17-thompson (was 70.2) | Claude Fable 5.1 | 70.3 | 77.3 | 82.0 | 76.6 | **76.6** |
 | Odonata wing cells, fossil vs extant (`2026-eshghi-odonata-wing-cells.py`) | fbbcaf6, audit 2026-10-14-odonata | Claude Fable 5.1 | 63.3 (`70.0` app.) | 85.0 | 78.0 | 78.9 | **76.0** |
@@ -415,7 +428,6 @@ For a complete, step-by-step walkthrough of how a 12-step MorphoEval + Lean 4 ru
 | Bressloff V1 form constants (`2001-bressloff-v1-form-constants.py`) ([sample run](./runs/2026-10-19-bressloff-v1-loop.md)) | d6f3c94, audit 2026-10-19-bressloff-v3 (was 62.8 at 9b18c52, 53.0 at 68c4a1a) | Claude Fable 5.1 (blinded 2nd assessor Gemini 4 Argon: 80.9, see below) | 64.0 | 60.0 | 81.6 | 67.7 | **67.7** |
 | Cervera–Levin–Mafe bioelectric synthesis (`2021-Cervera–Levin–Mafe.py`) | a0d6848, audit 2026-10-17-cervera-v2 (was 44.9 at e71ca55) | **GPT‑5.6 Sol (OpenAI)** | 49.3 | 44.3 | 76.9 | 55.6 | **55.6** |
 | Chindapol coral flow (`2013-chindapol-coral-flow.py`) | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 53.3 | 43.8 | 70.0 | 55.5 | **55.5** |
-| Gray–Scott (Turing) (`1952-turing-morpho.py`) | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 75.0 | 38.8 (`20.0` app.) | 49.0 | 53.6 | **52.7** |
 | ~~PlanformDB planarian animation (`1900-planformDB_parser.py`)~~ superseded | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 9.3 | 2.5 | 36.3 | 14.7 | ~~14.7~~ |
 | Petroff stromatolite (`2010-petroff-stromatolite.py`), Kahng coral (`2024-kahng-coral-geometry.py`), Zhang sorting morphogenesis (`sorting-morphogenesis/`), Thompson demo (`thompson/1917-thompson.py`) | — | — | — | — | — | — | *unevaluated* |
 

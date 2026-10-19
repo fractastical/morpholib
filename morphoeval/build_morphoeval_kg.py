@@ -6,41 +6,47 @@ MorphoEval is the morphology-simulation sibling of BioEval / NeuroEval: a
 versioned, weighted rubric (morphoeval/rubric.yaml) scored 0-100 per dimension
 for each simulation script, so simulations can be checkpointed and re-scored.
 
-The graph is expressed in the ProbKnow / Project Delphi ontology (v1.1,
+The graph is expressed in the ProbKnow / Project Delphi ontology (v1.3,
 https://w3id.org/probknow/ontology/, vendored in morphoeval/vendor/) and shaped by
 the governed templates of the ProbKnow Space (https://w3id.org/spaces/probknow;
 template nanopubs vendored in morphoeval/vendor/templates/), so every nanopub
 links the template it was created from, Nanodash renders it with that form, and
 the checkpoints live in the same probabilistic knowledge graph as the Levin-lab
-claims.  Mapping:
+claims.  Mapping (rubric scores are pk:hasScore, never pk:hasProbability — see
+project-delphi-ontology #12):
 
-    per simulation   pk:Claim (ProbKnow claim template)
+    per simulation   pk:Claim (ProbKnow claim template v3)
                        pkr:claim/morphoeval-<sim>: label, description, pk:context
                        (scripts, output, organism, commit, non-DOI sources),
                        pk:derivedFromPaper <doi>, pk:hasAssessment -> the 8
-                       assessments, pk:weightOfEvidence = overall / 100
-                       (optional unit-interval rescaling of the uncalibrated
-                       0-100 rubric score; omit with --omit-probability)
-    per dimension    pk:LLMClaimAssessment (ProbKnow LLM-assessment template)
-                       pkr:assessment/<audit>-<sim>-<dim> pk:evaluatesHypothesis
-                       pkr:hypothesis/morphoeval-<sim>-<dim> ("<sim> satisfies the
-                       criterion <dim>", dct:identifier "morphoeval/<rubric>/<dim>"),
+                       assessments, dct:subject each script as a
+                       schema:SoftwareSourceCode pinned to the checkpoint commit,
+                       pk:weightOfEvidence = overall / 100 (optional unit-interval
+                       rescaling of the uncalibrated 0-100 rubric score; omit
+                       with --omit-probability)
+    per dimension    pk:LLMClaimAssessment (ProbKnow rubric-assessment template)
+                       pkr:assessment/morphoeval-<sim>-<dim> (stable across
+                       re-scores; "-<role>" suffix for a second assessor):
+                       <claim> pk:hasAssessment <it>, dct:subject the dimension
+                       concept, pk:assessmentType "morphoeval/<rubric>/<dim>",
                        pk:assessedBy pkr:model/<assessor> a pk:Model,
-                       pk:hasProbability = score/100 (unit-interval rescaled
-                       uncalibrated rubric score, optional under RAku3DIN;
-                       omit with --omit-probability), pk:hasVerdict band,
-                       rdfs:comment = rationale + evidence loci (commit-pinned
-                       GitHub line ranges, fingerprinted outputs, morphometrics),
-                       pk:evidenceFor / pk:evidenceAgainst when the audit marks
-                       an evidence entry `supports: true|false`
-    overall          the same, evaluating pkr:hypothesis/morphoeval-<sim> (the
-                       claim proposition); remediation items as pk:evidenceAgainst
+                       pk:hasScore = score/100 (uncalibrated rubric score on the
+                       unit interval, required by the template), pk:hasVerdict
+                       band, dct:date, dct:description = rationale,
+                       pk:hasEvidence -> pk:EvidenceItem per evidence entry
+                       (label, note, prov:wasDerivedFrom the commit-pinned line
+                       range) and per morphometric measurement
+                       (schema:PropertyValue with its reference value),
+                       pk:evidenceAgainst for entries marked `supports: false`
+    overall          the same, with the rubric itself as dct:subject;
+                       remediation items and open needs as pk:evidenceAgainst
     rubric           pk:Concept with skos:narrower pk:Concept per dimension
-                       (no governed template exists for a rubric)
+                       (ProbKnow rubric template)
 
-Provenance follows the Space's "Extracted from a paper by ProbKnow" template
-(prov:wasAttributedTo the model and the publisher; prov:wasDerivedFrom each DOI,
-with its title and year), the rubric the generic "Attributed to" template.
+Provenance follows the Space's "Extracted from a paper by ProbKnow" template v2
+(prov:wasAttributedTo the model and the publisher; prov:wasDerivedFrom each
+source — DOI, dataset or repository URL — with its title and year; rdfs:seeAlso
+the tracking issue), the rubric the generic "Attributed to" template.
 Pubinfo: rdfs:label, dct:created (full UTC timestamp), dct:creator <ORCID>,
 dct:license CC BY 4.0, npx:hasNanopubType, npx:introduces, pk:domain, and the
 nt:wasCreatedFrom{,Provenance,Pubinfo}Template links (Creator, License, ProbKnow
@@ -86,7 +92,7 @@ from rdflib.namespace import DCTERMS, FOAF, PROV, RDF, RDFS, SKOS, XSD
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 RUBRIC_PATH = HERE / "rubric.yaml"
-ONTOLOGY_PATH = HERE / "vendor" / "probknow-1.1.ttl"
+ONTOLOGY_PATH = HERE / "vendor" / "probknow-1.3.ttl"
 TEMPLATE_DIR = HERE / "vendor" / "templates"
 
 NP = Namespace("http://www.nanopub.org/nschema#")
@@ -101,15 +107,25 @@ THIS = URIRef(TEMP)
 # by tkuhn/probknow-ontology nanopubs/signed/template-iris.json, plus the ecosystem's Creator,
 # License and Supersedes pubinfo templates and the generic "Attributed to" provenance template.
 TEMPLATES = {
-    "claim": URIRef("https://w3id.org/np/RAIVOEuhWNK4BuCbL_XRChRVlV6LKpFicBzwHpmuRxHWI/template"),
-    "llm-assessment": URIRef("https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template"),
-    "provenance-extraction": URIRef("https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg"),
+    "claim": URIRef("https://w3id.org/np/RApE-nGpCMigXqZjeHuYuMJEVTGmTlNTlZl7IcHi_fhdQ/template"),           # claim v3
+    "rubric-assessment": URIRef("https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template"),
+    "rubric": URIRef("https://w3id.org/np/RAbjeus1yO4SqlPLnpIWNLS6nvW0DGF3879tVduuE0y00/template"),
+    "provenance-extraction": URIRef("https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA"),  # v2
     "provenance-attributed": URIRef("https://w3id.org/np/RA7lSq6MuK_TIC6JMSHvLtee3lpLoZDOqLJCLXevnrPoU"),
     "pubinfo-creator": URIRef("https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI"),
     "pubinfo-license": URIRef("https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8"),
     "pubinfo-domain": URIRef("https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0"),
     "pubinfo-supersedes": URIRef("https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw"),
 }
+# Templates the 2026-10-13 … 2026-10-19 nanopubs were built against (claim v2, the generic
+# LLM-assessment template, provenance v1); still vendored so `--conform` can check those files.
+LEGACY_TEMPLATES = {
+    "claim-v2": URIRef("https://w3id.org/np/RAIVOEuhWNK4BuCbL_XRChRVlV6LKpFicBzwHpmuRxHWI/template"),
+    "llm-assessment": URIRef("https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template"),
+    "provenance-extraction-v1": URIRef("https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg"),
+}
+SCHEMA = Namespace("https://schema.org/")
+LANGUAGE_BY_SUFFIX = {".py": "Python", ".lean": "Lean 4", ".jl": "Julia", ".r": "R", ".R": "R", ".m": "MATLAB"}
 LATEST_VERSION_API = ("https://query.knowledgepixels.com/api/"
                       "RAiRsB2YywxjsBMkVRTREJBooXhf2ZOHoUs5lxciEl37I/get-latest-version-of-np")
 
@@ -285,9 +301,21 @@ def ref_uri(ref: dict) -> URIRef:
     return URIRef(f"https://doi.org/{ref['doi']}") if ref.get("doi") else URIRef(ref["url"])
 
 
+YEAR = r"(1[5-9]\d\d|20\d\d)"
+
+
 def ref_year(ref: dict):
-    m = re.search(r"\b(1[89]\d\d|20\d\d)\b", str(ref.get("year") or ref.get("venue") or ""))
-    return m.group(1) if m else None
+    """Publication year of a reference: an explicit ``year`` field, else the parenthesised
+    year in ``venue`` ("Evolution 73:1873-1884 (2019)" -> 2019), else the last year-like
+    number in ``venue`` (page ranges and volume numbers come before the year, never after)."""
+    if ref.get("year"):
+        m = re.search(YEAR, str(ref["year"]))
+        return m.group(1) if m else None
+    venue = str(ref.get("venue") or "")
+    if (m := re.search(r"\(" + YEAR + r"\)", venue)):
+        return m.group(1)
+    hits = re.findall(r"(?<![\d:/-])" + YEAR + r"(?![\d-])", venue)   # not part of a page range or URL path
+    return hits[-1] if hits else None
 
 
 def unit_interval(x: float) -> Literal:
@@ -311,8 +339,12 @@ def squash(text) -> str:
 def _bind(g):
     for p, n in (("this", Namespace(TEMP)), ("sub", Namespace(TEMP)), ("np", NP), ("npx", NPX), ("nt", NT),
                  ("pk", PK), ("pkr", PKR), ("prov", PROV), ("dct", DCTERMS), ("rdfs", RDFS),
-                 ("skos", SKOS), ("foaf", FOAF), ("xsd", XSD)):
+                 ("skos", SKOS), ("foaf", FOAF), ("xsd", XSD), ("schema", SCHEMA)):
         g.bind(p, n)
+
+
+def slug(text: str) -> str:
+    return re.sub(r"-+", "-", re.sub(r"[^A-Za-z0-9]+", "-", str(text))).strip("-").lower()
 
 
 class NanopubBuilder:
@@ -407,19 +439,103 @@ class NanopubBuilder:
         return "; ".join(parts)
 
     # ---- graphs ------------------------------------------------------------ #
-    def provenance_extraction(self, agents, papers):
-        """'Extracted from a paper by ProbKnow' provenance: attributed to the agents, derived from
-        each DOI with its title and year.  Only DOI IRIs fit the template's placeholder."""
+    def provenance_extraction(self, agents, papers, see_also=()):
+        """'Extracted from a paper by ProbKnow' provenance (v2): attributed to the agents, derived
+        from each source (DOI IRI, or the URL of a dataset / repository) with its title and year,
+        rdfs:seeAlso the tracking issue."""
         asrt = URIRef(TEMP + "assertion")
         t = [(asrt, PROV.wasAttributedTo, a) for a in agents]
         for r in papers:
-            if not r.get("doi"):
-                continue
             pu = ref_uri(r)
             t += [(asrt, PROV.wasDerivedFrom, pu), (pu, DCTERMS.title, Literal(squash(r["title"])))]
             if (y := ref_year(r)):
                 t.append((pu, DCTERMS.date, Literal(y, datatype=XSD.gYear)))
+        t += [(asrt, RDFS.seeAlso, s) for s in see_also if s is not None]
         return t
+
+    # ---- ProbKnow resources ----------------------------------------------------- #
+    def assessment_uri(self, sim: dict, dim_id: str) -> URIRef:
+        """Stable across re-scores (no audit id: the pass is identified by dct:created, the
+        commit in the description and the npx:supersedes chain); an independent second
+        assessor's assessments are a different resource, suffixed with the role."""
+        role = self.A.get("role")
+        suffix = f"-{slug(role)}" if role and role != "primary" else ""
+        return PKR[f"assessment/morphoeval-{sim['id']}-{dim_id}{suffix}"]
+
+    def evidence_items(self, sim: dict, au: URIRef, dim_id: str, entries: list) -> list:
+        """pk:EvidenceItem nodes (rubric-assessment template, grouped statement 17) for the
+        evidence entries that are not marked ``supports: false``: one line label, the note as
+        description, prov:wasDerivedFrom the commit-pinned file/line range."""
+        t, n = [], 0
+        for e in entries:
+            if e.get("supports") is False:
+                continue
+            n += 1
+            ev = PKR[f"evidence/morphoeval-{sim['id']}-{dim_id}-{n}"]
+            a, b = e["lines"]
+            label = f"{e['file']} L{a}–L{b}" if b > 0 else f"{e['file']} (generated output)"
+            desc = squash(e.get("note", "")) or None
+            if b <= 0:
+                desc = (desc + " — " if desc else "") + self.output_text(sim, e["file"])
+            t += [(au, PK.hasEvidence, ev), (ev, RDF.type, PK.EvidenceItem), (ev, RDFS.label, Literal(label))]
+            if desc:
+                t.append((ev, DCTERMS.description, Literal(desc)))
+            if b > 0 and self.repo and self.commit:
+                t.append((ev, PROV.wasDerivedFrom, URIRef(f"{self.repo}/blob/{self.commit}/{e['file']}#L{a}-L{b}")))
+        return t
+
+    def measurement_items(self, sim: dict, au: URIRef) -> list:
+        """Morphometric measurements as schema:PropertyValue evidence items with their reference
+        values (rubric-assessment template, statements 17f–17n)."""
+        t = []
+        for m in self.measurements.get(sim["id"], []):
+            if m.get("value") is None:
+                continue
+            ev = PKR[f"evidence/morphoeval-{sim['id']}-measurement-{slug(m['name'])}"]
+            label = f"{m['name']} = {m['value']}" + (f" {m['unit']}" if m.get("unit") else "")
+            t += [(au, PK.hasEvidence, ev), (ev, RDF.type, PK.EvidenceItem), (ev, RDF.type, SCHEMA.PropertyValue),
+                  (ev, RDFS.label, Literal(label)), (ev, SCHEMA.name, Literal(m["name"])),
+                  (ev, SCHEMA.value, Literal(str(m["value"])))]
+            if m.get("unit"):
+                t.append((ev, SCHEMA.unitText, Literal(m["unit"])))
+            if m.get("method"):
+                t.append((ev, SCHEMA.measurementTechnique, Literal(squash(m["method"]))))
+            if m.get("note"):
+                t.append((ev, DCTERMS.description, Literal(squash(m["note"]))))
+            if m.get("reference_value") is not None:
+                ref = URIRef(str(ev) + "-reference")
+                t += [(ev, SCHEMA.valueReference, ref), (ref, RDF.type, SCHEMA.PropertyValue),
+                      (ref, SCHEMA.value, Literal(str(m["reference_value"])))]
+                if m.get("reference_source"):
+                    t.append((ref, DCTERMS.source, Literal(squash(m["reference_source"]))))
+        return t
+
+    def artifact_triples(self, claim: URIRef, scripts: list) -> list:
+        """The assessed scripts as schema:SoftwareSourceCode artifacts of the claim (claim
+        template v3, grouped statement 09), pinned to the checkpoint commit."""
+        if not (self.repo and self.commit):
+            return []
+        t = []
+        for s in scripts:
+            art = self.script_uri(s)
+            t += [(claim, DCTERMS.subject, art), (art, RDF.type, SCHEMA.SoftwareSourceCode),
+                  (art, RDFS.label, Literal(s)), (art, SCHEMA.codeRepository, URIRef(self.repo)),
+                  (art, SCHEMA.version, Literal(self.commit))]
+            if (lang := LANGUAGE_BY_SUFFIX.get(Path(s).suffix)):
+                t.append((art, SCHEMA.programmingLanguage, Literal(lang)))
+        return t
+
+    def model_triples(self) -> list:
+        a = self.A["assessor"]
+        t = [(self.model, RDF.type, PK.Model), (self.model, RDFS.label, Literal(self.model_label)),
+             (self.model, DCTERMS.identifier, Literal(a["id"])), (self.model, PROV.actedOnBehalfOf, self.orcid)]
+        if a.get("homepage"):
+            t.append((self.model, FOAF.homepage, URIRef(a["homepage"])))
+        return t
+
+    def assessment_date(self):
+        d = self.A.get("date")
+        return Literal(str(d), datatype=XSD.date, normalize=False) if d else None
 
     def nanopub(self, label: str, nptype: URIRef, introduces: URIRef, domain_slug: str,
                 assertion, provenance, template_key: str | None, provenance_key: str, pubinfo_extra=()):
@@ -590,7 +706,7 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
             superseded.append((name, old))
         p.write_text(text); written.append(p); _merge(ds)
 
-    # ---- 1. rubric as a pk:Concept with one narrower concept per dimension (no governed template) -- #
+    # ---- 1. rubric as a pk:Concept with one narrower concept per dimension (ProbKnow rubric template) -- #
     if not is_second_assessor:
         tr = [(rubric_uri, RDF.type, PK.Concept),
               (rubric_uri, RDF.type, SKOS.Concept),
@@ -598,9 +714,11 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
               (rubric_uri, DCTERMS.description, Literal(
                   "Weighted 0-100 rubric for the faithfulness of a morphology simulation to its organism and "
                   "source model; Overall = weighted mean. Each score is a pk:LLMClaimAssessment (ProbKnow "
-                  "LLM-assessment template) that evaluates the hypothesis pkr:hypothesis/morphoeval-<sim>-<dimension> "
-                  "with pk:hasProbability = score/100 and a pk:hasVerdict band; the overall score evaluates "
-                  "pkr:hypothesis/morphoeval-<sim> and is also the pk:weightOfEvidence of the pk:Claim."))]
+                  "rubric-assessment template) of the pk:Claim pkr:claim/morphoeval-<sim> against one dimension "
+                  "(dct:subject the dimension concept, pk:assessmentType morphoeval/<version>/<dimension>) with "
+                  "pk:hasScore = score/100 — an uncalibrated rubric score, not a probability — and a pk:hasVerdict "
+                  "band; the overall score has the rubric itself as dct:subject and is also the "
+                  "pk:weightOfEvidence of the claim."))]
         if rubric_src:
             tr.append((rubric_uri, RDFS.seeAlso, rubric_src))
         for d in rubric["dimensions"]:
@@ -608,11 +726,11 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
             tr += [(rubric_uri, SKOS.narrower, du), (du, SKOS.broader, rubric_uri),
                    (du, RDF.type, PK.Concept), (du, RDF.type, SKOS.Concept),
                    (du, RDFS.label, Literal(d["name"])),
-                   (du, DCTERMS.identifier, Literal(f"morphoeval/{rubric['version']}/{d['id']}")),
-                   (du, DCTERMS.description, Literal(f"[{d['group']}, weight {d['weight']}/100] " + squash(d["question"])))]
+                   (du, DCTERMS.description, Literal(f"[{d['group']}, weight {d['weight']}/100, id morphoeval/"
+                                                     f"{rubric['version']}/{d['id']}] " + squash(d["question"])))]
         emit("00-rubric.trig", B.nanopub(f"MorphoEval rubric v{rubric['version']}", PK.Concept, rubric_uri, default_domain,
                                          tr, [(URIRef(TEMP + "assertion"), PROV.wasAttributedTo, B.orcid)],
-                                         None, "provenance-attributed"))
+                                         "rubric", "provenance-attributed"))
 
     rows = []
     for sim in audit["simulations"]:
@@ -625,15 +743,29 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
         organism = sim.get("organism", "unspecified organism")
         scripts = [sim["script"]] + list(sim.get("also", []))
         gs = group_scores(rubric, sim["scores"])
-        hyp_claim = PKR[f"hypothesis/morphoeval-{sim['id']}"]
         claim_label = f"{sim['name']} faithfully reproduces {organism} morphology"
-        model_triples = [(B.model, RDF.type, PK.Model), (B.model, RDFS.label, Literal(B.model_label))]
+        model_triples = B.model_triples()
         agents = [B.model, B.orcid]
         pub_common = [(THIS, RDFS.seeAlso, issue)] if issue else []
-        pub_common += [(THIS, DCTERMS.conformsTo, rubric_uri),
-                       (B.model, PROV.actedOnBehalfOf, B.orcid)]
-        assessments = [PKR[f"assessment/{A['id']}-{sim['id']}-{d['id']}"] for d in rubric["dimensions"]]
-        overall_au = PKR[f"assessment/{A['id']}-{sim['id']}-overall"]
+        pub_common += [(THIS, DCTERMS.conformsTo, rubric_uri)]
+        assessments = [B.assessment_uri(sim, d["id"]) for d in rubric["dimensions"]]
+        overall_au = B.assessment_uri(sim, "overall")
+        date = B.assessment_date()
+
+        def assessment_core(au, label, dimension, atype, score, verdict_text, description):
+            """The rubric-assessment template's required core: type, label, date, description,
+            claim -> assessment, dimension, model, assessment type, verdict, score."""
+            t = [(au, RDF.type, PK.LLMClaimAssessment), (au, RDFS.label, Literal(label))]
+            if date is not None:
+                t.append((au, DCTERMS.date, date))
+            t += [(au, DCTERMS.description, Literal(description)),
+                  (claim, PK.hasAssessment, au),
+                  (au, DCTERMS.subject, dimension),
+                  (au, PK.assessedBy, B.model),
+                  (au, PK.assessmentType, Literal(atype)),
+                  (au, PK.hasVerdict, Literal(verdict_text)),
+                  (au, PK.hasScore, unit_interval(score / 100.0))]
+            return t + model_triples
 
         # ---- 2. the faithfulness CLAIM (ProbKnow claim template) ------------------------ #
         if not is_second_assessor:
@@ -661,43 +793,31 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
                 tr.append((claim, PK.weightOfEvidence, unit_interval(gs["overall"] / 100.0)))
             tr += [(claim, PK.derivedFromPaper, ref_uri(r)) for r in papers if r.get("doi")]
             tr += [(claim, PK.hasAssessment, au) for au in assessments + [overall_au]]
+            tr += B.artifact_triples(claim, scripts)
             pub = [(THIS, RDFS.seeAlso, B.script_uri(s)) for s in scripts] + ([(THIS, RDFS.seeAlso, issue)] if issue else [])
             emit(f"{sim['id']}-claim.trig",
                  B.nanopub(f"Claim: {sim['name']} is faithful", PK.Claim, claim, dom, tr,
-                           B.provenance_extraction([B.orcid], papers), "claim", "provenance-extraction", pub))
+                           B.provenance_extraction([B.orcid], papers, [issue]), "claim", "provenance-extraction", pub))
 
-        # ---- 3. one pk:LLMClaimAssessment per rubric dimension (LLM-assessment template) -- #
+        # ---- 3. one pk:LLMClaimAssessment per rubric dimension (ProbKnow rubric-assessment template) -- #
         for d, au in zip(rubric["dimensions"], assessments):
             did, s = d["id"], sim["scores"][d["id"]]
-            hyp = PKR[f"hypothesis/morphoeval-{sim['id']}-{did}"]
-            reasoning = squash(s["rationale"])
-            loci = [B.evidence_text(sim, e) for e in s.get("evidence", []) if "supports" not in e]
-            if loci:
-                reasoning += " Evidence: " + "; ".join(loci) + "."
-            if did == "morphometric-validation" and (mt := B.measurement_text(sim)):
-                reasoning += " Measurements (measure_outputs.py): " + mt + "."
             verdict_text = ("not applicable (neutral baseline)" if s.get("not_applicable") else verdict(s["value"]))
-            tr = [(au, RDF.type, PK.LLMClaimAssessment),
-                  (au, RDFS.label, Literal(f"{sim['name']} — {d['name']}: {s['value']}/100")),
-                  (au, PK.evaluatesHypothesis, hyp),
-                  (hyp, RDFS.label, Literal(f"{sim['name']} ({', '.join(scripts)}) satisfies the MorphoEval "
-                                            f"{rubric['version']} criterion '{d['name']}' for {organism}")),
-                  (hyp, DCTERMS.identifier, Literal(f"morphoeval/{rubric['version']}/{did}")),
-                  (au, PK.assessedBy, B.model)]
-            if not omit_prob:
-                tr.append((au, PK.hasProbability, unit_interval(s["value"] / 100.0)))
-            tr += [(au, PK.hasVerdict, Literal(verdict_text)),
-                   (au, RDFS.comment, Literal(reasoning))] + model_triples
-            for e in s.get("evidence", []):
-                if "supports" in e:
-                    tr.append((au, PK.evidenceFor if e["supports"] else PK.evidenceAgainst, Literal(B.evidence_text(sim, e))))
-            pub = pub_common + [(THIS, PK.assessmentType, Literal(f"morphoeval/{rubric['version']}/{did}")),
-                                (THIS, DCTERMS.subject, PKR[f"concept/morphoeval-{rubric['version']}-{did}"])]
+            tr = assessment_core(au, f"{sim['name']} — {d['name']}: {s['value']}/100",
+                                 PKR[f"concept/morphoeval-{rubric['version']}-{did}"],
+                                 f"morphoeval/{rubric['version']}/{did}", s["value"], verdict_text,
+                                 squash(s["rationale"]))
+            tr += [(au, PK.evidenceAgainst, Literal(B.evidence_text(sim, e)))
+                   for e in s.get("evidence", []) if e.get("supports") is False]
+            tr += B.evidence_items(sim, au, did, s.get("evidence", []))
+            if did == "morphometric-validation":
+                tr += B.measurement_items(sim, au)
             emit(f"{sim['id']}-{did}.trig",
                  B.nanopub(f"{sim['name']} — {d['name']} {s['value']}/100", PK.LLMClaimAssessment, au, dom, tr,
-                           B.provenance_extraction(agents, papers), "llm-assessment", "provenance-extraction", pub))
+                           B.provenance_extraction(agents, papers, [issue]), "rubric-assessment",
+                           "provenance-extraction", pub_common))
 
-        # ---- 4. overall checkpoint assessment (same template, evaluating the claim proposition) -- #
+        # ---- 4. overall checkpoint assessment (same template, dct:subject the rubric itself) -- #
         env = ", ".join(f"{k} {v}" for k, v in B.env.items())
         sub_note = (f"; model-implementation {gs['model_implementation']}/100, biological-validation "
                     f"{gs['biological_validation']}/100, applicable-only overall {gs['overall_applicable']}/100; "
@@ -716,16 +836,8 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
             reasoning += f" Supersedes audit: {sup_id}."
         if (cb_txt := B.claim_boundary_text(sim)):
             reasoning += f" Claim boundary: {cb_txt}."
-        tr = [(overall_au, RDF.type, PK.LLMClaimAssessment),
-              (overall_au, RDFS.label, Literal(f"{sim['name']} — MorphoEval overall {gs['overall']}/100")),
-              (overall_au, PK.evaluatesHypothesis, hyp_claim),
-              (hyp_claim, RDFS.label, Literal(claim_label)),
-              (hyp_claim, DCTERMS.identifier, Literal(f"morphoeval/{rubric['version']}/overall")),
-              (overall_au, PK.assessedBy, B.model)]
-        if not omit_prob:
-            tr.append((overall_au, PK.hasProbability, unit_interval(gs["overall"] / 100.0)))
-        tr += [(overall_au, PK.hasVerdict, Literal(verdict(gs["overall"]))),
-               (overall_au, RDFS.comment, Literal(reasoning))] + model_triples
+        tr = assessment_core(overall_au, f"{sim['name']} — MorphoEval overall {gs['overall']}/100", rubric_uri,
+                             f"morphoeval/{rubric['version']}/overall", gs["overall"], verdict(gs["overall"]), reasoning)
         tr += [(overall_au, PK.evidenceAgainst, Literal(f"remediation needed: {squash(fix)}"))
                for fix in sim.get("remediation", [])]
         for nd in sim.get("needs", []):
@@ -739,11 +851,11 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
                 tr.append((overall_au, PK.evidenceAgainst, Literal(
                     f"open need [{nd.get('need_type')}/{nd.get('target_dimension')}, pressure P={p_score}]: {squash(nd.get('description', ''))}"
                 )))
-        pub = pub_common + [(THIS, PK.assessmentType, Literal(f"morphoeval/{rubric['version']}/overall")),
-                            (THIS, RDFS.seeAlso, claim)]
+        pub = pub_common + [(THIS, RDFS.seeAlso, claim)]
         emit(f"{sim['id']}-overall.trig",
              B.nanopub(f"{sim['name']} — MorphoEval overall {gs['overall']}/100", PK.LLMClaimAssessment, overall_au,
-                       dom, tr, B.provenance_extraction(agents, papers), "llm-assessment", "provenance-extraction", pub))
+                       dom, tr, B.provenance_extraction(agents, papers, [issue]), "rubric-assessment",
+                       "provenance-extraction", pub))
         try:
             from morphoeval.math_kg import add_math_triples_for_simulation
         except ImportError:
@@ -803,7 +915,11 @@ class Template:
                                              "o": g.value(s, RDF.object), "optional": False, "repeatable": False})
                 cur["optional"] |= NT.OptionalStatement in types
                 cur["repeatable"] |= NT.RepeatableStatement in types
-        self.statements = list(by_id.values())
+                order = g.value(s, NT.statementOrder)
+                cur["order"] = int(str(order)) if order is not None and str(order).isdigit() else 10 ** 6
+        # the template author's order: statements about the introduced resource come first, so a
+        # triple is matched against them before a same-namespace placeholder statement gets a go
+        self.statements = sorted(by_id.values(), key=lambda st: (st["order"], st["id"]))
         self.placeholders = {}
         for s, _, kind in g.triples((None, RDF.type, None)):
             if str(kind).startswith(str(NT)) and str(kind).endswith(("Placeholder", "IntroducedResource")):
@@ -820,10 +936,15 @@ class Template:
         key = str(pattern)
         if key in special:
             return value == special[key]
+        introduced = special.get("introduced")
         if "~~ARTIFACTCODE~~" in key:                       # introduced resource: same namespace, own local id
+            if introduced is not None:
+                return value == introduced
             return isinstance(value, URIRef) and str(value).startswith(key.split("~~")[0])
         if pattern in self.placeholders:
             ph = self.placeholders[pattern]
+            if introduced is not None and value == introduced and "~~ARTIFACTCODE~~" not in key:
+                return False                                # a placeholder never stands for the introduced resource
             kinds = {str(k).split("/")[-1] for k in ph["kinds"]}
             literal_kind = bool(kinds & {"LiteralPlaceholder", "LongLiteralPlaceholder", "RestrictedChoicePlaceholder"})
             if literal_kind != isinstance(value, Literal) and "RestrictedChoicePlaceholder" not in kinds:
@@ -874,7 +995,7 @@ class Template:
 
 def load_templates() -> dict[str, Template]:
     out = {}
-    for key, uri in TEMPLATES.items():
+    for key, uri in {**LEGACY_TEMPLATES, **TEMPLATES}.items():
         code = str(uri).split("/np/")[1][:8]
         matches = list(TEMPLATE_DIR.glob(f"*.{code}.trig"))
         if matches:
@@ -925,7 +1046,8 @@ def conformance(files: list[Path]) -> list[str]:
         if created is not None and (created.datatype != XSD.dateTime or "T00:00:00" in str(created)):
             probs.append(f"{f.name}: dct:created {created} is not a full xsd:dateTime with a real time")
         special = {str(NT.ASSERTION): G["assertion"], str(NT.NANOPUB): THIS,
-                   str(NT.CREATOR): pub.value(THIS, DCTERMS.creator)}
+                   str(NT.CREATOR): pub.value(THIS, DCTERMS.creator),
+                   "introduced": pub.value(THIS, NPX.introduces)}
         # assertion against its template
         tmpl = [str(o) for o in pub.objects(THIS, NT.wasCreatedFromTemplate)]
         if tmpl:
@@ -958,16 +1080,23 @@ def conformance(files: list[Path]) -> list[str]:
         if (THIS, NPX.supersedes, None) in pub and TEMPLATES["pubinfo-supersedes"] not in set(pub.objects(THIS, NT.wasCreatedFromPubinfoTemplate)):
             probs.append(f"{f.name}: npx:supersedes without the Supersedes pubinfo template link")
         for s, p, o in asrt:
-            if p in (PK.weightOfEvidence, PK.hasConfidence, PK.hasProbability):
+            if p in (PK.weightOfEvidence, PK.hasConfidence, PK.hasProbability, PK.hasScore):
                 if not (0.0 <= float(o) <= 1.0):
                     probs.append(f"{f.name}: {p.n3(ds.namespace_manager)} {o} outside [0,1]")
+            if p == PK.hasProbability and (s, RDF.type, PK.LLMClaimAssessment) in asrt \
+                    and (s, PK.assessmentType, None) in asrt:
+                # project-delphi-ontology #12: a rubric score is a pk:hasScore, not a probability.
+                probs.append(f"{f.name}: rubric assessment {s.n3(ds.namespace_manager)} carries pk:hasProbability; "
+                             "use pk:hasScore (rubric-assessment template)")
             if p == PK.hasProbability:
-                # Issue #9 regression guard: whenever pk:hasProbability is emitted on a rubric
-                # assessment, pubinfo must declare dct:conformsTo the MorphoEval rubric concept
-                # so the unit-interval value cannot be mistaken for an unanchored probability.
+                # Issue #9 regression guard for the legacy (pre-rubric-template) files: pk:hasProbability
+                # on an assessment needs dct:conformsTo the MorphoEval rubric concept in pubinfo so the
+                # unit-interval value cannot be mistaken for an unanchored probability.
                 conforms = [str(c) for c in pub.objects(THIS, DCTERMS.conformsTo)]
                 if not any("morphoeval-rubric-" in c for c in conforms):
                     probs.append(f"{f.name}: pk:hasProbability used without dct:conformsTo morphoeval-rubric link in pubinfo")
+            if p == PK.hasScore and (s, DCTERMS.subject, None) not in asrt:
+                probs.append(f"{f.name}: pk:hasScore on {s.n3(ds.namespace_manager)} without dct:subject <rubric dimension>")
     return probs
 
 
@@ -983,8 +1112,8 @@ def report(rubric, audit, rows) -> str:
          f"assessor `pkr:model/{A['assessor']['id']}` (pk:LLMClaimAssessment) · "
          f"tracked in {A.get('tracked_by', '—')}{chain_note}", "",
          "Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not calibrated probabilities; "
-         "`pk:hasProbability` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings "
-         "for ProbKnow template conformance). Faithfulness (weight 70) is decomposed into **Model Impl.** "
+         "`pk:hasScore` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings "
+         "for the ProbKnow rubric-assessment template). Faithfulness (weight 70) is decomposed into **Model Impl.** "
          "(weight 30: `model-fidelity` + `parameter-expressivity`) and **Bio. Val.** (weight 40: `specimen-match` "
          "+ `morphometric-validation`). When a dimension is flagged `not_applicable`, **Overall (app.)** "
          "renormalises weights over applicable dimensions (mathematically neutral), whereas **Overall (pad.)** "
@@ -1072,12 +1201,12 @@ DEMO_QUERY = """
 PREFIX pk:   <%s>
 PREFIX dct:  <http://purl.org/dc/terms/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-SELECT ?claim ?p ?verdict ?model WHERE {
-  ?a a pk:LLMClaimAssessment ; pk:evaluatesHypothesis ?h ; pk:hasProbability ?p ; pk:hasVerdict ?verdict ; pk:assessedBy ?m .
-  ?h rdfs:label ?claim ; dct:identifier ?code .
+SELECT ?claim ?score ?verdict ?model WHERE {
+  ?c pk:hasAssessment ?a ; rdfs:label ?claim .
+  ?a a pk:LLMClaimAssessment ; pk:assessmentType ?code ; pk:hasScore ?score ; pk:hasVerdict ?verdict ; pk:assessedBy ?m .
   ?m rdfs:label ?model .
   FILTER(STRENDS(?code, "/overall"))
-} ORDER BY ?p
+} ORDER BY ?score
 """
 
 
@@ -1096,7 +1225,8 @@ def main():
     ap.add_argument("--no-resolve-heads", action="store_true",
                     help="do not check on Nanopub Query that a superseded URI is still the head of its chain")
     ap.add_argument("--omit-probability", action="store_true",
-                    help="omit pk:hasProbability and pk:weightOfEvidence (optional in RAku3DIN / RAIVOEuh)")
+                    help="omit pk:weightOfEvidence on the claim (optional in the claim template); pk:hasScore on the "
+                         "assessments is required by the rubric-assessment template and is always written")
     ap.add_argument("--list-needs", action="store_true",
                     help="list pressure-ranked open remediation needs across all morphoeval/audits/*.yaml and exit")
     args = ap.parse_args()
@@ -1191,7 +1321,7 @@ def main():
     if args.query:
         print("\nSPARQL: overall assessments")
         for r in merged.query(DEMO_QUERY % PK):
-            print(f"  {float(r.p):.3f}  {str(r.verdict):20s} {r.claim}   [assessed by {r.model}]")
+            print(f"  {float(r.score):.3f}  {str(r.verdict):20s} {r.claim}   [assessed by {r.model}]")
 
 
 if __name__ == "__main__":

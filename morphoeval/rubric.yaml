@@ -24,11 +24,12 @@
 #   Scores on [0, 100] are criterion-referenced ordinal/interval ratings, not
 #   calibrated frequentist or Bayesian probabilities.  A score of 76 does not
 #   mean a 76% probability that the reproduction is faithful.  When serialized
-#   into the governed ProbKnow templates (RAku3DIN / RAIVOEuh), which provide
-#   only pk:hasProbability and pk:weightOfEvidence as [0, 1] numeric slots,
-#   value / 100 is a unit-interval rescaling of the uncalibrated rubric score
-#   for template conformance and sorting only (or may be omitted via
-#   `build_morphoeval_kg.py --omit-probability`).
+#   into the governed ProbKnow rubric-assessment template (RAOAK6Fe), value / 100
+#   is written to pk:hasScore (ontology >= 1.2), which is defined as an
+#   uncalibrated score on the unit interval and is never pk:hasProbability
+#   (project-delphi-ontology #12).  The claim's pk:weightOfEvidence = overall / 100
+#   is the same rescaling and may be omitted via
+#   `build_morphoeval_kg.py --omit-probability`.
 #
 # Scoring rule and N/A handling:
 #   Score what the evidence supports; do not credit unverifiable claims and do
@@ -46,15 +47,16 @@ version: 0.1.0
 scale: {min: 0, max: 100, neutral_baseline: 50}
 # Expressed in the ProbKnow ontology (no rubric-specific namespace), shaped by the
 # ProbKnow Space's governed templates (https://w3id.org/spaces/probknow):
-#   rubric    -> pkr:concept/morphoeval-rubric-<version>  a pk:Concept
+#   rubric    -> pkr:concept/morphoeval-rubric-<version>  a pk:Concept (rubric template)
 #   dimension -> pkr:concept/morphoeval-<version>-<id>    a pk:Concept
-#   score     -> pk:LLMClaimAssessment (LLM-assessment template) evaluating the
-#                hypothesis pkr:hypothesis/morphoeval-<sim>-<id> ("<sim> satisfies
-#                this criterion"), dct:identifier "morphoeval/<version>/<id>",
-#                pk:hasProbability = value / scale.max (unit-interval rescaled
-#                uncalibrated rubric score, optional under RAku3DIN), pk:hasVerdict band
-#   overall   -> the same, evaluating pkr:hypothesis/morphoeval-<sim> (the claim
-#                proposition); the pk:Claim carries pk:weightOfEvidence = overall / max
+#   score     -> pkr:assessment/morphoeval-<sim>-<id> a pk:LLMClaimAssessment
+#                (rubric-assessment template): <claim> pk:hasAssessment <it>,
+#                dct:subject the dimension concept, pk:assessmentType
+#                "morphoeval/<version>/<id>", pk:hasScore = value / scale.max
+#                (uncalibrated rubric score on [0, 1]), pk:hasVerdict band,
+#                pk:hasEvidence -> pk:EvidenceItem per evidence entry / measurement
+#   overall   -> the same, with the rubric itself as dct:subject; the pk:Claim
+#                carries pk:weightOfEvidence = overall / max
 ontology: https://w3id.org/probknow/ontology/
 
 # Provenance & Claim-Boundary extensions (schema in morphoeval/schema.yaml;
