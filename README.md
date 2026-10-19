@@ -1,37 +1,162 @@
 # Infinite Morphospace
 
-A collection of small, self-contained reproductions of published models of biological form — from D'Arcy Thompson's transformations to present-day developmental and palaeobiological datasets — plus an evaluation layer ([MorphoEval](#morphoeval-how-faithful-are-these-reproductions)) that scores how faithfully each reproduction follows its source and publishes the scores as nanopublications.
+A collection of small, self-contained reproductions of published models of biological form — from D'Arcy Thompson's transformations to present-day developmental and palaeobiological datasets — plus an evaluation layer ([MorphoEval](#part-1--how-it-works-the-12-step-morphoeval--lean-4-loop)) that scores how faithfully each reproduction follows its source and publishes the scores as nanopublications.
+
+**Contents:**
+1. [**Part 1 — How It Works: The 12-Step MorphoEval + Lean 4 Loop**](#part-1--how-it-works-the-12-step-morphoeval--lean-4-loop)
+   - [The 12-Step Closed Loop (Tier A Build → Lean 4 Proofs → Tier B Dual-Agent Audit → Step 12 Remediation)](#the-12-step-closed-loop)
+   - [Worked Sample Run Walkthrough (`2026-10-18-runions-venation-loop`: `40.9 → 91.3`, `+50.4` pts)](#worked-sample-run-walkthrough-409--913-504-pts)
+   - [MorphoEval Scoreboard (All 13 Audited Simulations)](#morphoeval-scoreboard-all-13-audited-simulations)
+   - [The Mathematics, Machine-Checked in Lean 4 and Queryable in RDF/SQL](#the-mathematics-machine-checked-in-lean-4-and-queryable-in-rdfsql)
+   - [Repository Map & Quick Start](#repository-map--quick-start)
+2. [**Part 2 — The Simulations (17 Models of Biological Form, 1917–2026)**](#part-2--the-simulations-17-models-of-biological-form-19172026)
+   - [Index of All Simulations (by Year)](#index-of-all-simulations-by-year)
+   - [Detailed Simulation Walkthroughs (Best-Scoring First)](#detailed-simulation-walkthroughs-best-scoring-first)
+3. [**Part 3 — Data Sources, Extending the Repository & Analysis Tools**](#part-3--data-sources-extending-the-repository--analysis-tools)
+
+---
 
 ## How a body gets its form
 
-Morphogenesis is how a living thing gets its shape, and regeneration is how it gets it back: cells divide, move and signal until a body plan appears, or reappears after a cut. The classic models of form reproduced here are geometric ([Thompson's transformations](#thompson1917-thompsonpy), [Raup's coiling shells](#1966-rauppy), [Vogel's golden-angle sunflower head](#1979-vogel-phyllotaxispy)), chemical ([Turing's reacting and diffusing morphogens](#1952-turing-morphopy), [Meinhardt's shell pigmentation beside Wolfram's Rule 30](#1984-wolfram-conus-textile-rule30py)) or physical ([coral](#2013-chindapol-coral-flowpy) and [stromatolite](#2010-petroff-stromatolitepy) growth shaped by flow and light). The newer idea most of the rest turn on is that the pattern is also stored and read out *bioelectrically*: every cell holds a resting voltage across its membrane, neighbouring cells share it through gap junctions, and the resulting voltage map across a tissue tells it where a head, a tail or a limb belongs. Change the voltage and the form changes — block the junctions and a planarian regrows two heads. That is the experiment the [Planform](#2013-lobo-planform-morphologypy) and [Limbform](#2014-lobo-limbform-morphologypy) databases record, hundreds of variants at a time, as formal graphs of what was cut, what was blocked and what grew back, and that the [Cervera–Levin–Mafe](#2021-cerveralevinmafepy) model puts into equations. The repository turns such papers into running programs whose output *is* the form; MorphoEval then scores how faithfully each program follows its paper.
+Morphogenesis is how a living thing gets its shape, and regeneration is how it gets it back: cells divide, move and signal until a body plan appears, or reappears after a cut. The classic models of form reproduced here are geometric ([Thompson's transformations](#thompson1917-thompsonpy), [Raup's coiling shells](#1966-rauppy), [Vogel's golden-angle sunflower head](#1979-vogel-phyllotaxispy), [Runions's auxin space-colonisation leaf veins](#2005-runions-leaf-venationpy)), chemical ([Turing's reacting and diffusing morphogens](#1952-turing-morphopy), [Meinhardt's shell pigmentation beside Wolfram's Rule 30](#1984-wolfram-conus-textile-rule30py)) or physical ([coral](#2013-chindapol-coral-flowpy) and [stromatolite](#2010-petroff-stromatolitepy) growth shaped by flow and light). The newer idea most of the rest turn on is that the pattern is also stored and read out *bioelectrically*: every cell holds a resting voltage across its membrane, neighbouring cells share it through gap junctions, and the resulting voltage map across a tissue tells it where a head, a tail or a limb belongs. Change the voltage and the form changes — block the junctions and a planarian regrows two heads. That is the experiment the [Planform](#2013-lobo-planform-morphologypy) and [Limbform](#2014-lobo-limbform-morphologypy) databases record, hundreds of variants at a time, as formal graphs of what was cut, what was blocked and what grew back, and that the [Cervera–Levin–Mafe](#2021-cerveralevinmafepy) model puts into equations. The repository turns such papers into running programs whose output *is* the form; MorphoEval then scores how faithfully each program follows its paper.
 
 ![The reproductions, with their MorphoEval scores](./docs/media/all_forms_montage.gif)
 
 *Every animated form in the repository, 1917–2026 (the Thompson Scarus → Pomacanthus fit is a still and is represented by its score), each animation playing once per loop; the last tile is the MorphoEval overall score. Made by [`docs/media/make_montage.py`](./docs/media/make_montage.py) from the per-script animations below.*
 
+---
+
+## Part 1 — How It Works: The 12-Step MorphoEval + Lean 4 Loop
+
+### The 12-Step Closed Loop
+
 ![How a reproduction is made and how MorphoEval scores it](./docs/media/morphoeval_pipeline.gif)
 
-*From paper to reproduction to signed evaluation — the MorphoEval pipeline ([animated GIF](./docs/media/morphoeval_pipeline.gif) · [high-res PNG](./docs/media/morphoeval_pipeline.png) · [section below](#morphoeval-how-faithful-are-these-reproductions)). Tier A shows how each reproduction is built from its primary paper and formal data; Box 6 plays the reproductions' own animations side by side; Tier B shows the dual-agent MorphoEval audit cycle across Anthropic (`claude-fable-5-1`), Google (`gemini-4-argon`), and OpenAI (`gpt-5.6-sol`).*
+*From paper to reproduction to signed evaluation — the MorphoEval pipeline ([animated GIF](./docs/media/morphoeval_pipeline.gif) · [high-res PNG](./docs/media/morphoeval_pipeline.png) · [Mermaid source](./morphoeval/README.md#the-cycle)).*
 
-Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) are written to the working directory and are git-ignored. Every entry below has a small animation of the morphology it produces (in [`docs/media/`](./docs/media/), downsized copies of the scripts' own GIF output; [`docs/media/README.md`](./docs/media/README.md) records how each was made). Setup: `python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt` (lower bounds; `requirements.lock.txt` has the exact versions the MorphoEval audits were run with — Python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, scikit-image 0.26.0 — and installs cleanly into a fresh venv).
+Every simulation in this repository is built and evaluated through a **12-step closed loop** split into two tiers:
 
-## Repository map
+- **Tier A — Making a reproduction (Steps 1–6):**
+  1. **`1 Scout` (👤 + 🤖):** Pick a classic paper, an open empirical dataset, or a quantitative biological claim worth testing.
+  2. **`2 Paper` (🤖):** Extract the exact governing equations, algorithmic rules, and empirical reference tables from the primary literature.
+  3. **`3 Formal source` (🤖):** Vendor or cache the empirical tables and specimen photographs in `datasets/<name>/` and lock every file by **SHA-256** so any altered input is refused.
+  4. **`4 Pin the rules` (🤖 + Lean 4):** Formalize the paper's core mathematical invariants as machine-checked theorems in [`morphoeval/lean/MathOfBiology.lean`](./morphoeval/lean/MathOfBiology.lean) (`0 sorry`, verified by the Lean 4 kernel in ~1 s) and test them on every record.
+  5. **`5 Script` (🤖 builder):** Write one self-contained Python program (`<year>-<author>-<model>.py`) that reproduces the model, decodes the formal graph, or tests the claim, complete with deterministic `--self-test` assertions.
+  6. **`6 Output & compare` (tool):** Render the static comparison figure (`.png`), growth/morphospace animation (`.gif` in `docs/media/`), and quantitative morphometrics table (`.csv`), placing simulated outputs directly beside segmented real specimens.
+- **Tier B — Auditing it & closing the remediation loop (Steps 7–12):**
+  7. **`7 Dual-agent audit` (🤖🤖 assessors from different companies):** Two independent LLM assessors from different providers (`claude-fable-5-1` / `claude-sonnet-5-5-high` from Anthropic, `gemini-4-argon` from Google, `gpt-5.6-sol` from OpenAI) score the script across **7 weighted dimensions (0–100)** with commit-pinned `#L<a>-L<b>` code loci:
+     - **Model-implementation fidelity (`impl.`, weight 30):** `model-fidelity` (20) + `parameter-expressivity` (10)
+     - **Biological/empirical validation (`bio.`, weight 40):** `specimen-match` (25) + `morphometric-validation` (15)
+     - **Reproducibility (`repro.`, weight 30):** `source-traceability` (10) + `code-traceability` (8) + `repro-package` (12)
+  8. **`8 Measure` (`measure_outputs.py`):** Hash rendered outputs (`spec_fingerprint` + `artifact_sha256`) and independently compute morphometric residuals against the empirical data in `morphoeval/audits/<audit>.measurements.yaml`.
+  9. **`9 Write as claims` (`build_morphoeval_kg.py`):** Compile the audit and measurements into governed [ProbKnow Space](https://w3id.org/spaces/probknow) RDF nanopublications (`pk:Claim` + `pk:LLMClaimAssessment`).
+  10. **`10 Sign & publish` (`sign_morphoeval.py` + `check_signed.mjs`):** Cryptographically sign every `.trig` nanopublication with RSA-2048 keys, mint immutable trusty URIs (`https://w3id.org/np/RA…`), and verify signatures via `@nanopub/sign`.
+  11. **`11 Public record` (`published.json` + `REPORT.md`):** Commit the signed nanopubs and SPARQL summary report under `morphoeval/kg/<audit>/`.
+  12. **`12 Remediate` (👤 + 🤖 loop back to Step 5):** Every defect found by the independent second assessor becomes an explicit checklist item. The builder re-works Step 5 (and Step 4 Lean proofs), regenerates Step 6 outputs, re-audits in Step 7, and signs a new set of nanopublications that point to the Pass 1 nanopubs via `npx:supersedes` (nothing published is ever overwritten).
+
+---
+
+### Worked Sample Run Walkthrough (`40.9 → 91.3`, `+50.4` pts)
+
+To see in detail how a complete 12-step run works from start to finish — including the exact CLI commands, Lean 4 formal proofs, Pass 1 defects caught by the second assessor, Pass 2 code fixes, per-step wall-clock & token telemetry, and signed `npx:supersedes` nanopublications — read the full sample run guide:
+
+👉 **[Full Step-by-Step Sample Run Walkthrough: `morphoeval/runs/2026-10-18-runions-venation-loop.md`](./morphoeval/runs/2026-10-18-runions-venation-loop.md)** (and the companion phyllotaxis run: **[`morphoeval/runs/2026-10-18-vogel-phyllotaxis-loop.md`](./morphoeval/runs/2026-10-18-vogel-phyllotaxis-loop.md)**)
+
+![Sample 12-Step Closed-Loop Run — Runions (2005) Leaf Venation: Pass 1 (40.9/100) + Pass 2 Remediation Loop (91.3/100, +50.4 pts)](./docs/media/runions_venation_closed_loop.png)
+
+*Walkthrough of the 12-step closed loop on [`2005-runions-leaf-venation.py`](./2005-runions-leaf-venation.py) ([step-by-step sample run MD](./morphoeval/runs/2026-10-18-runions-venation-loop.md) · [animated GIF](./docs/media/runions_venation_closed_loop.gif) · [high-res PNG](./docs/media/runions_venation_closed_loop.png)), generated from `morphoeval/runs/telemetry.sqlite` via `python3 morphoeval/track_loop.py single-loop --run-id 2026-10-18-runions-venation-loop`.*
+
+- **Sample Run 1 — Runions (2005) Leaf Venation, Murray's Law & Katifori Areole Topology ([`morphoeval/runs/2026-10-18-runions-venation-loop.md`](./morphoeval/runs/2026-10-18-runions-venation-loop.md)):** 12/12 steps, `24.14 min` (`1,448.6 s`) wall-clock, `56.0k` LLM tokens, `76.1k` artifact tokens, `6.4 s` CPU. Pass 1 (`8.00 min`, `37.6k` tokens) scored **40.9 / 100** after the independent second assessor (`claude-sonnet-5-5-high`, Anthropic) surfaced 5 defects (unsegmented specimen photos, 571 local 3-cycle triangles and 375 crossing edges, a synthetic proxy in Katifori loop nesting, circular JSON sampling in the Strahler test, and a trivial list-sum Lean theorem); Pass 2 (`+16.14 min`, `+18.4k` tokens) remediated all 5 defects and raised the score to **91.3 / 100** (**`+50.4` points**), superseding the 10 Pass 1 nanopubs (`RAr1cgMldoJ0TNph39c2kPLgtEnQrZfZMuVQ9LIQn1Zds` `npx:supersedes` `RA1d48WWn1smAInc0HnmtBRDiapTHGT77VXw_774OTjfc`).
+- **Sample Run 2 — Vogel (1979) / Douady–Couder (1992) Phyllotaxis ([`morphoeval/runs/2026-10-18-vogel-phyllotaxis-loop.md`](./morphoeval/runs/2026-10-18-vogel-phyllotaxis-loop.md)):** 12/12 steps, `16.90 min` (`1,014.3 s`) wall-clock, `167.0k` LLM tokens, `5.6 s` CPU; Pass 1 (`8.7 min`) scored **64.3 / 100** and Pass 2 (`+8.2 min`) remediated all 4 findings to **85.9 / 100** (**`+21.6` points**; [closed-loop diagram](./docs/media/vogel_phyllotaxis_closed_loop.png) · [animated GIF](./docs/media/vogel_phyllotaxis_closed_loop.gif)).
+
+---
+
+### MorphoEval Scoreboard (All 13 Audited Simulations)
+
+Scores on `[0, 100]` are **uncalibrated criterion-referenced ratings**, not probabilities ($s = 76$ does not mean $P(\text{faithful}) = 0.76$); when serialized into the governed ProbKnow templates (`pk:LLMClaimAssessment` and `pk:Claim`), `score / 100` in `pk:hasProbability` and `overall / 100` in `pk:weightOfEvidence` are unit-interval rescalings for template conformance. Where a dimension is structurally non-applicable (`not_applicable`), substituting baseline `50` shrinks scores linearly toward `50` ($\bar{s}_{\text{pad}} = (1-\alpha)\bar{s}_{\text{app}} + 50\alpha$); the table therefore reports both the weight-renormalised applicable-only mean (`app.`) and the baseline-50 padded score (`pad.`), plus the second-assessor score (`gemini-4-argon`, Google, for the 10 scripts in the 2026-10-17 pass) and two-assessor panel mean:
+
+| simulation | checkpoint | primary assessor | impl. (30) | bio. (40) | repro. (30) | primary app. / **pad.** | 2nd assessor (`gemini-4-argon`) app. / **pad.** | panel mean **pad.** |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+| Runions leaf venation (`2005-runions-leaf-venation.py`) ([sample run](./morphoeval/runs/2026-10-18-runions-venation-loop.md)) | 365a3cd, audit 2026-10-18-venation-v2 (was 40.9) | Gemini 4 Argon, with Claude Sonnet 5.5 (Anthropic) as second assessor inside the audit | 90.7 | 89.8 | 93.9 | 91.3 / **91.3** | — (second assessor is in the primary audit) | — |
+| Wolfram / Meinhardt *Conus textile* Rule 30 (`1984-wolfram-conus-textile-rule30.py`) | fb234bc, audit 2026-10-18-conus | Gemini 4 Argon | 87.7 | 85.5 | 89.3 | 87.3 / **87.3** | — (not yet second-assessed) | — |
+| Vogel / Douady–Couder golden-angle phyllotaxis (`1979-vogel-phyllotaxis.py`) ([sample run](./morphoeval/runs/2026-10-18-vogel-phyllotaxis-loop.md)) | c89d18d, audit 2026-10-18-phyllotaxis-v2 (was 64.3) | Gemini 4 Argon, with Claude Sonnet 5.5 (Anthropic) as second assessor inside the audit | 84.7 | 84.8 | 88.7 | 85.9 / **85.9** | — (second assessor is in the primary audit) | — |
+| Hoffmann–Donoughe wing venation (`2018-hoffmann-wing-venation.py`) | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 81.7 | 80.0 | 71.3 | 77.8 / **77.8** | 81.3 / **81.3** | **79.5** |
+| Thompson *Scarus* → *Pomacanthus* on real landmarks and outlines (`thompson/1917-thompson-scarus-pomacanthus.py`) | 232e8f8, audit 2026-10-17-thompson (re-score of 2026-10-16: 70.2) | Claude Fable 5.1 | 70.3 | 77.3 | 82.0 | 76.6 / **76.6** | 90.8 / **90.8** | **83.7** |
+| Odonata wing cells, fossil vs extant (`2026-eshghi-odonata-wing-cells.py`) | fbbcaf6, audit 2026-10-14-odonata | Claude Fable 5.1 | 63.3 (`70.0` app.) | 85.0 | 78.0 | 78.9 / **76.0** | 91.4 / **87.3** | **81.7** |
+| Limbform limb morphologies (`2014-lobo-limbform-morphology.py`) | 747c57f, audit 2026-10-14-limbform | Claude Fable 5.1 | 81.7 | 61.3 | 74.3 | 71.3 / **71.3** | 83.6 / **83.6** | **77.5** |
+| WormGUIDES *C. elegans* embryo atlas + connectome (`2015-santella-wormguides-celegans.py`) | f39a409, audit 2026-10-16-celegans (re-score of 2026-10-15: 67.7) | Claude Fable 5.1 | 70.0 (`80.0` app.) | 64.4 | 78.0 | 72.4 / **70.2** | 81.9 / **78.7** | **74.4** |
+| Planform planarian morphology (`2013-lobo-planform-morphology.py`) | 161f269, audit 2026-10-14 | Claude Fable 5.1 | 81.7 | 55.0 | 66.7 | 66.5 / **66.5** | 76.5 / **76.5** | **71.5** |
+| Raup shell coiling (`create_raup_animations.py`) | ba6fd20, audit 2026-10-17-raup (re-score of 2026-10-13: 37.3) | Claude Fable 5.1 | 76.7 | 45.0 | 77.0 | 64.1 / **64.1** | 79.3 / **79.3** | **71.7** |
+| Cervera–Levin–Mafe bioelectric synthesis (`2021-Cervera–Levin–Mafe.py`) | a0d6848, audit 2026-10-17-cervera-v2 (was 44.9 at e71ca55) | **GPT‑5.6 Sol (OpenAI)** | 49.3 | 44.3 | 76.9 | 55.6 / **55.6** | 60.7 / **60.7** | **58.1** |
+| Chindapol coral flow (`2013-chindapol-coral-flow.py`) | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 53.3 | 43.8 | 70.0 | 55.5 / **55.5** | 56.0 / **56.0** | **55.7** |
+| Gray–Scott (Turing) (`1952-turing-morpho.py`) | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 75.0 | 38.8 (`20.0` app.) | 49.0 | 53.6 / **52.7** | 37.8 / **40.9** | **46.8** |
+| Planform animation (`1900-planformDB_parser.py`), superseded | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 9.3 | 2.5 | 36.3 | 14.7 / ~~14.7~~ | — | — |
+| Bressloff V1 form constants (`2001-bressloff-v1-form-constants.py`), Petroff stromatolite (`2010-petroff-stromatolite.py`), Kahng coral (`2024-kahng-coral-geometry.py`), Zhang sorting morphogenesis (`sorting-morphogenesis/`), Thompson demo (`thompson/1917-thompson.py`) | — | — | — | — | — | — | — | *unevaluated* |
+
+Across all 10 active evaluated scripts in the dual-agent pass (`2026-10-17-blinded-sample-audit.yaml`, `gemini-4-argon`, Google), rank-order agreement with the primary assessors (`claude-fable-5-1`, Anthropic on 9 scripts; `gpt-5.6-sol`, OpenAI on `2021-Cervera–Levin–Mafe.py`) is strong (Spearman $\rho = 0.891$, Kendall $\tau = 0.778$, Pearson $r = 0.920$ on padded scores; $\rho = 0.903$ on applicable-only scores; and exact $\rho = 1.00$, $\tau = 1.00$ on the initial 5-script strictly blinded subset; dimension-level $\rho = 0.796$, $r = 0.813$ across all 70 dimension pairs, mean absolute difference $10.4$ points), while the independent passes surfaced concrete defects the builder had missed (including a 65-character SHA-256 typo in `2014-lobo-limbform-morphology.py`).
+
+201 nanopubs are on the production network, of which 101 are the current heads of their primary version chains (46 from 2026-10-13, 9 from the 2026-10-14 planarian re-score, 9 from the 2026-10-14 Odonata audit, 10 from the Limbform audit, 9 from the 2026-10-16 C. elegans re-score, 9 from the 2026-10-17 Thompson re-score, 9 from the 2026-10-17 Raup re-score, 9 from the 2026-10-17 Cervera–Levin–Mafe re-score, which supersedes the 9 of the first Cervera audit the same day — both by OpenAI's GPT‑5.6 Sol —, 10 from the 2026-10-18 *Conus textile* audit, and 54 conformant re-issues of 2026-10-16 that `npx:supersedes` the pre-template versions). Signed and verified (`check_signed.mjs`) but not yet published: the 80 second-assessor nanopubs in `morphoeval/kg/2026-10-17-blinded-sample-audit/signed/`, the 20 phyllotaxis nanopubs (v1 and the v2 set that supersedes it) in `morphoeval/kg/2026-10-18-phyllotaxis-audit*/signed/`, and the 20 leaf-venation nanopubs (v1 and the v2 set that supersedes it) in `morphoeval/kg/2026-10-18-venation-audit*/signed/`. Full workflow, tooling notes and the rubric text: [`morphoeval/README.md`](./morphoeval/README.md).
+
+---
+
+### The Mathematics, Machine-Checked in Lean 4 and Queryable in RDF/SQL
+
+The audits record *that* a script follows its paper; they do not say *what* the paper's mathematics is in a form a machine can check or a query can reach. [`morphoeval/math_kg.py`](./morphoeval/math_kg.py) and [`morphoeval/lean/MathOfBiology.lean`](./morphoeval/lean/MathOfBiology.lean) add that layer. For every evaluated model the governing laws are written three times — as the formula a biologist would recognise, as a Lean 4 definition with a theorem about it that the Lean kernel checks (`0 sorry`), and as RDF that joins the laws to the claims, the scores, the measured numbers and the commit-pinned lines of code (`morphoeval/kg/math_of_biology.ttl`, **13 models**, **22 verified laws**, **136 measurements**, **3,491 triples**):
+
+| system (`sim_id`) | law | Lean theorem |
+|---|---|---|
+| `runions-leaf-venation` | Murray r^γ conserved root → tips over any binary tree `VeinTree` | `murray_1926_tree_conservation` |
+| | Runions 2005 Toussaint RNG lune test ⇔ its definition and symmetric | `runions_2005_rng_lune_iff`, `runions_2005_rng_lune_symmetric` |
+| | Katifori 2012 Euler–Poincaré areole count (tree = 0, anastomosis +1, deletion −1) | `katifori_2012_tree_zero_cycles`, `…_anastomosis_adds_cycle`, `…_edge_deletion_merges_areoles` |
+| `wolfram-conus-textile-rule30` | Rule 30 Boolean form ≡ GF(2) normal form | `rule30_anf_equiv` |
+| | Jen 1990 left-bijective inverse; diagonal barrier shielding | `jen_1990_left_bijective`, `jen_1990_barrier_shielding` |
+| | Meinhardt–Klingler activator reaction is quiescent at a = 0 | `meinhardt_basal_quiescence` |
+| `vogel-phyllotaxis` | Vogel r² = c²n adds constant annulus area; Fibonacci cascade | `vogel_constant_annulus_area`, `vogel_fibonacci_parastichy_cascade` |
+| | Douady–Couder pair kernel symmetric in distance | `douady_couder_kernel_symmetric` |
+| | rim dislocation can only lower a parastichy count | `swinton_rim_dislocation_nonincreasing` |
+| `raup-shell-coiling` | whorl radius multiplies by W each whorl | `raup_whorl_expansion_recovery` |
+| | T recovered from Δz/Δr | `raup_translation_rate_recovery` |
+| `thompson-scarus-pomacanthus` | TPS kernel r² ln r² vanishes at a landmark | `tps_kernel_zero_at_origin` |
+| | a unit shear is area-preserving (det = 1) | `thompson_unit_shear_area_preserving` |
+| `turing-gray-scott` | (u, v) = (1, 0) is a homogeneous equilibrium | `gray_scott_homogeneous_equilibrium` |
+| `cervera-levin-mafe` | gap-junction current vanishes at equipotential | `cervera_equipotential_zero_current` |
+| | Bell–Boltzmann conductance symmetric in (i, j) | `cervera_bell_boltzmann_symmetric` |
+| `planform-morphology-animation` | wild-type AP length from the four region radii = 560 | `lobo_2013_wildtype_dimensions` |
+| `lobo-limbform-morphology` | a three-segment limb tree has three segments | `lobo_2014_three_segment_axis` |
+| `santella-wormguides-celegans` | nuclear-position interpolation hits both endpoints | `sulston_nuclear_lerp_endpoints` |
+| `hoffmann-wing-venation` | shoelace edge term is antisymmetric | `hoffmann_shoelace_antisymmetric` |
+| `eshghi-odonata-wing-cells` | isotropic second moments give zero elongation | `eshghi_isotropic_zero_elongation` |
+| `chindapol-coral-flow` | Péclet numerator vanishes at zero flow | `chindapol_zero_flow_diffusive` |
+
+```bash
+lean morphoeval/lean/MathOfBiology.lean                 # kernel-check all 22 theorems (exit 0, 0 sorry)
+python3 morphoeval/math_kg.py --preset equations        # SPARQL table: organism, formula, Lean theorem, verified?
+python3 morphoeval/math_kg.py --sim runions-leaf-venation # one system's card: scores, DOIs, Lean proofs, measurements
+python3 morphoeval/math_kg.py --preset exact-matches    # measurements within 1.5 % of their published reference
+```
+
+---
+
+### Repository Map & Quick Start
+
+Each script is run directly (`python3 <script>.py`); rendered outputs (PNG/GIF) are written to the working directory and are git-ignored. Setup: `python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt` (lower bounds; `requirements.lock.txt` pins the exact audit environment — Python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, scikit-image 0.26.0).
 
 | path | what it is |
 |---|---|
 | `<year>-<author>-<model>.py` (root), [`thompson/`](./thompson/), [`sorting-morphogenesis/`](./sorting-morphogenesis/) | one self-contained script per paper: it reproduces the paper's model, decodes the authors' formal encoding, or tests a published claim; then draws, measures and checks itself (`--self-test` where present) |
-| [`datasets/<name>/`](#data-sources) | the formal source for each script: vendored tables and fixtures, SHA-256 pins for files that are fetched rather than vendored, a `README.md` with sources and licences, and `paper_citations.bib` |
+| [`datasets/<name>/`](#part-3--data-sources-extending-the-repository--analysis-tools) | the formal source for each script: vendored tables and fixtures, SHA-256 pins for files that are fetched rather than vendored, a `README.md` with sources and licences, and `paper_citations.bib` |
 | `.<name>_cache/` (git-ignored) | downloads the scripts make on first run (databases, atlases, photographs, scans), each verified against a pin recorded in the script or in `datasets/` |
 | [`docs/media/`](./docs/media/) | downsized GIF/PNG of every reproduction for this README, the montage, the pipeline diagram; [`docs/media/README.md`](./docs/media/README.md) records how each was made |
-| [`morphoeval/`](./morphoeval/) | the audit layer: rubric, audit YAMLs, output measurement, nanopub builder/signer/verifier, per-audit knowledge graphs (`kg/`), loop telemetry (`runs/`), and the Lean-checked "math of biology" graph |
+| [`morphoeval/`](./morphoeval/) | the audit layer: rubric, audit YAMLs, output measurement, nanopub builder/signer/verifier, per-audit knowledge graphs (`kg/`), worked sample loop runs (`runs/`), and the Lean-checked "math of biology" graph (`lean/MathOfBiology.lean`, `math_kg.py`) |
 | [`nanopubs/`](./nanopubs/) | the older Planform/wave nanopublication toolchain (separate from MorphoEval's signer) |
 | [`wave-vector-analysis/`](./wave-vector-analysis/) | the Ca²⁺ wave imaging pipeline and its analysis docs (independent of the reproductions) |
 | [`CITATION.cff`](./CITATION.cff), [`.zenodo.json`](./.zenodo.json), [`LICENSE`](./LICENSE) (MIT) | how to cite; Zenodo deposit metadata for the MorphoEval report |
 
-Adding a new reproduction follows the same shape each time; see [Extending the repository](#extending-the-repository).
+---
 
-## Index, by year
+## Part 2 — The Simulations (17 Models of Biological Form, 1917–2026)
+
+### Index of All Simulations (by Year)
 
 | year | model | script | MorphoEval (primary / 2nd assessor) |
 |---|---|---|---|
@@ -39,10 +164,10 @@ Adding a new reproduction follows the same shape each time; see [Extending the r
 | 1917 | Thompson, transformations on a real fish | [`thompson/1917-thompson.py`](./thompson/1917-thompson.py) | — |
 | 1952 | Turing / Gray–Scott reaction–diffusion | [`1952-turing-morpho.py`](./1952-turing-morpho.py) | 52.7 / 40.9 |
 | 1966 | Raup, shell coiling | [`1966-raup.py`](./1966-raup.py), [`create_raup_animations.py`](./create_raup_animations.py) | 64.1 / 79.3 |
-| 1979 / 1992 | Vogel / Douady & Couder, golden-angle phyllotaxis on real *Helianthus* capitula | [`1979-vogel-phyllotaxis.py`](./1979-vogel-phyllotaxis.py) | 85.9 (v2; v1 64.3) / dual-assessed within the audit |
+| 1979 / 1992 | Vogel / Douady & Couder, golden-angle phyllotaxis on real *Helianthus* capitula ([sample 12-step run](./morphoeval/runs/2026-10-18-vogel-phyllotaxis-loop.md)) | [`1979-vogel-phyllotaxis.py`](./1979-vogel-phyllotaxis.py) | 85.9 (v2; v1 64.3) / dual-assessed within the audit |
 | 1984 / 1987 | Wolfram / Meinhardt & Klingler, *Conus textile* shell pigmentation & Rule 30 | [`1984-wolfram-conus-textile-rule30.py`](./1984-wolfram-conus-textile-rule30.py) | 87.3 / — |
 | 2001 | Bressloff et al., V1 Euclidean symmetry-breaking & retino-cortical form constants | [`2001-bressloff-v1-form-constants.py`](./2001-bressloff-v1-form-constants.py) | unevaluated |
-| 2005 | Runions et al., auxin space-colonisation leaf venation, Murray's law and areole loop topology ([sample 12-step run](./morphoeval/runs/2026-10-18-runions-venation-loop.md)) | [`2005-runions-leaf-venation.py`](./2005-runions-leaf-venation.py) | 91.3 (v2; v1 40.9) / dual-assessed within the audit |
+| 2005 | Runions et al., auxin space-colonisation leaf venation, Murray's law and areole loop topology ([sample 12-step run](./morphoeval/runs/2026-10-18-runions-venation-loop.md)) | [`2005-runions-leaf-venation.py`](./2005-runions-leaf-venation.py) | **91.3** (v2; v1 40.9) / dual-assessed within the audit |
 | 2010 | Petroff et al., conical stromatolites | [`2010-petroff-stromatolite.py`](./2010-petroff-stromatolite.py) | unevaluated |
 | 2013 | Chindapol et al., flow-driven coral growth | [`2013-chindapol-coral-flow.py`](./2013-chindapol-coral-flow.py) | 55.5 / 56.0 |
 | 2013 | Lobo, Malone & Levin, Planform planarian morphologies | [`2013-lobo-planform-morphology.py`](./2013-lobo-planform-morphology.py), [`1900-planformDB_parser.py`](./1900-planformDB_parser.py) | 66.5 / 76.5 |
@@ -54,9 +179,9 @@ Adding a new reproduction follows the same shape each time; see [Extending the r
 | 2025 | Zhang, Goldstein & Levin, autonomous cell-view sorting morphogenesis & chimeric arrays | [`sorting-morphogenesis/`](./sorting-morphogenesis/) | unevaluated |
 | 2026 | Eshghi et al., fossil vs living Odonata wing cells | [`2026-eshghi-odonata-wing-cells.py`](./2026-eshghi-odonata-wing-cells.py) | 76.0 / 87.3 |
 
-## The reproductions, best-scoring first
+### Detailed Simulation Walkthroughs (Best-Scoring First)
 
-Sections are ordered by MorphoEval overall score (the table under [MorphoEval](#morphoeval-how-faithful-are-these-reproductions) gives the breakdown), with the five unevaluated scripts after them in year order. A high score means the reproduction is close to its source and checked against it, not that the underlying model is better biology.
+Sections are ordered by MorphoEval overall score (see the [Scoreboard](#morphoeval-scoreboard-all-13-audited-simulations) above for the sub-axis breakdown), with the five unevaluated scripts after them in year order. A high score means the reproduction is close to its source and checked against it, not that the underlying model is better biology.
 
 ### [2005-runions-leaf-venation.py](./2005-runions-leaf-venation.py)
 
@@ -407,128 +532,11 @@ python3 sorting-morphogenesis/run_experiments.py --gif zhang.gif --gif-only
 
 **Reference:** Zhang T, Goldstein A, Levin M (2025). Classical sorting algorithms as a model of morphogenesis: Self-sorting arrays reveal unexpected competencies in a minimal model of basal intelligence. *Adaptive Behavior* 33(1):25–54. [DOI](https://doi.org/10.1177/10597123241269740). Code: [Zhangtaining/cell_research](https://github.com/Zhangtaining/cell_research) (pinned commit `1fd2bd59`; replication notes in [issue #2](https://github.com/Zhangtaining/cell_research/issues/2)).
 
-## MorphoEval: how faithful are these reproductions?
+---
 
-[`morphoeval/`](./morphoeval/) is a seven-dimension rubric (model fidelity, specimen match, parameter expressivity, morphometric validation, source traceability, code traceability, reproducibility package; weights sum to 100) applied as a pilot case study to the scripts above, with every score backed by line-pinned evidence at a recorded commit and by measurements taken on the rendered outputs. To prevent conflating faithful code with valid biology, faithfulness (weight 70) is decomposed and reported along two separate axes — **model-implementation fidelity** (`impl.`, weight 30: `model-fidelity` + `parameter-expressivity`) and **biological/empirical validation** (`bio.`, weight 40: `specimen-match` + `morphometric-validation`) — alongside **reproducibility** (`repro.`, weight 30). Scores on `[0, 100]` are **uncalibrated criterion-referenced ratings**, not probabilities ($s = 76$ does not mean $P(\text{faithful}) = 0.76$); when serialized into the governed ProbKnow templates (`pk:LLMClaimAssessment` and `pk:Claim`), `score / 100` in `pk:hasProbability` and `overall / 100` in `pk:weightOfEvidence` are unit-interval rescalings for template conformance. Audits are YAML files under `morphoeval/audits/`. Each score is published as a *nanopublication*: the smallest publishable unit of science — one statement ("this script's reproduction of Raup 1966 scores 64.1/100 on the MorphoEval rubric (mostly faithful)") packaged with who asserted it, when, on what evidence and under what licence, cryptographically signed, and stored on a public network of servers under a permanent address that anyone can cite, fetch or query. Published statements are never edited; a re-score publishes new ones that point at those they replace, so the history stays visible, and other assessors (other models, or people) can publish their own assessment of the same hypothesis next to ours.
+## Part 3 — Data Sources, Extending the Repository & Analysis Tools
 
-How a body gets its form, and how a form gets into the repository. Two lines under the title say what morphogenesis is and that the newer papers hold the pattern to be stored bioelectrically. Tier A: a person scouts — picks a paper, dataset or claim worth the work and points the agent at it — then paper → its formal source → rules pinned and verified on the data → script. Box 6, between the tiers, is what the scripts produce: the reproductions' own animations (playing), each labelled with its paper and colour-coded by what the script does with it (reproduce the paper's model from its equations, decode the authors' formal encoding, or test a published claim), set beside the authors' figures or specimens — this is what gets scored. Tier B: the audit cycle, from the reviewer's scores to signed public statements, to a person who reads them and decides what to fix next; the builder agent then re-works the script — its fidelity to the paper, its sources, its checks — and the fix runs back up through the outputs into the script. Purple figures mark where people decide; the robots are the builder agent (writes and re-works the code) and the assessor agents (score it); a robot's colour is the company whose model it is, read from the audits — box 7 ("7 Dual-agent audit") shows Anthropic's robot (`claude-fable-5-1`), Google's (`gemini-4-argon`), and OpenAI's (`gpt-5.6-sol`), and the aim is that **no script relies solely on its builder grading itself**: of the 13 evaluated scripts, the 10 audited up to 2026-10-17 are dual-scored across two companies' models by the second-assessor pass below, the phyllotaxis and leaf-venation scripts were dual-scored inside their own audits (Google primary, Anthropic second), and the *Conus* script so far has one assessor (Google). Primary assessors: Anthropic on 9 scripts, Google on 3, OpenAI on 1. The Mermaid source is in [`morphoeval/README.md`](./morphoeval/README.md#the-cycle):
-
-![How a reproduction is made and how MorphoEval scores it](./docs/media/morphoeval_pipeline.gif)
-
-Where a dimension is structurally non-applicable (`not_applicable`), substituting baseline `50` shrinks scores linearly toward `50` ($\bar{s}_{\text{pad}} = (1-\alpha)\bar{s}_{\text{app}} + 50\alpha$); the table therefore reports both the weight-renormalised applicable-only mean (`app.`) and the baseline-50 padded score (`pad.`), plus the second-assessor score (`gemini-4-argon`, Google, for the 10 scripts in the 2026-10-17 pass) and two-assessor panel mean:
-
-| simulation | checkpoint | primary assessor | impl. (30) | bio. (40) | repro. (30) | primary app. / **pad.** | 2nd assessor (`gemini-4-argon`) app. / **pad.** | panel mean **pad.** |
-|---|---|---|---:|---:|---:|---:|---:|---:|
-| Runions leaf venation (`2005-runions-leaf-venation.py`) ([sample run](./morphoeval/runs/2026-10-18-runions-venation-loop.md)) | 365a3cd, audit 2026-10-18-venation-v2 (was 40.9) | Gemini 4 Argon, with Claude Sonnet 5.5 (Anthropic) as second assessor inside the audit | 90.7 | 89.8 | 93.9 | 91.3 / **91.3** | — (second assessor is in the primary audit) | — |
-| Wolfram / Meinhardt *Conus textile* Rule 30 (`1984-wolfram-conus-textile-rule30.py`) | fb234bc, audit 2026-10-18-conus | Gemini 4 Argon | 87.7 | 85.5 | 89.3 | 87.3 / **87.3** | — (not yet second-assessed) | — |
-| Vogel / Douady–Couder golden-angle phyllotaxis (`1979-vogel-phyllotaxis.py`) | c89d18d, audit 2026-10-18-phyllotaxis-v2 (was 64.3) | Gemini 4 Argon, with Claude Sonnet 5.5 (Anthropic) as second assessor inside the audit | 84.7 | 84.8 | 88.7 | 85.9 / **85.9** | — (second assessor is in the primary audit) | — |
-| Hoffmann–Donoughe wing venation (`2018-hoffmann-wing-venation.py`) | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 81.7 | 80.0 | 71.3 | 77.8 / **77.8** | 81.3 / **81.3** | **79.5** |
-| Thompson *Scarus* → *Pomacanthus* on real landmarks and outlines (`thompson/1917-thompson-scarus-pomacanthus.py`) | 232e8f8, audit 2026-10-17-thompson (re-score of 2026-10-16: 70.2) | Claude Fable 5.1 | 70.3 | 77.3 | 82.0 | 76.6 / **76.6** | 90.8 / **90.8** | **83.7** |
-| Odonata wing cells, fossil vs extant (`2026-eshghi-odonata-wing-cells.py`) | fbbcaf6, audit 2026-10-14-odonata | Claude Fable 5.1 | 63.3 (`70.0` app.) | 85.0 | 78.0 | 78.9 / **76.0** | 91.4 / **87.3** | **81.7** |
-| Limbform limb morphologies (`2014-lobo-limbform-morphology.py`) | 747c57f, audit 2026-10-14-limbform | Claude Fable 5.1 | 81.7 | 61.3 | 74.3 | 71.3 / **71.3** | 83.6 / **83.6** | **77.5** |
-| WormGUIDES *C. elegans* embryo atlas + connectome (`2015-santella-wormguides-celegans.py`) | f39a409, audit 2026-10-16-celegans (re-score of 2026-10-15: 67.7) | Claude Fable 5.1 | 70.0 (`80.0` app.) | 64.4 | 78.0 | 72.4 / **70.2** | 81.9 / **78.7** | **74.4** |
-| Planform planarian morphology (`2013-lobo-planform-morphology.py`) | 161f269, audit 2026-10-14 | Claude Fable 5.1 | 81.7 | 55.0 | 66.7 | 66.5 / **66.5** | 76.5 / **76.5** | **71.5** |
-| Raup shell coiling (`create_raup_animations.py`) | ba6fd20, audit 2026-10-17-raup (re-score of 2026-10-13: 37.3) | Claude Fable 5.1 | 76.7 | 45.0 | 77.0 | 64.1 / **64.1** | 79.3 / **79.3** | **71.7** |
-| Cervera–Levin–Mafe bioelectric synthesis (`2021-Cervera–Levin–Mafe.py`) | a0d6848, audit 2026-10-17-cervera-v2 (was 44.9 at e71ca55) | **GPT‑5.6 Sol (OpenAI)** | 49.3 | 44.3 | 76.9 | 55.6 / **55.6** | 60.7 / **60.7** | **58.1** |
-| Chindapol coral flow (`2013-chindapol-coral-flow.py`) | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 53.3 | 43.8 | 70.0 | 55.5 / **55.5** | 56.0 / **56.0** | **55.7** |
-| Gray–Scott (Turing) (`1952-turing-morpho.py`) | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 75.0 | 38.8 (`20.0` app.) | 49.0 | 53.6 / **52.7** | 37.8 / **40.9** | **46.8** |
-| Planform animation (`1900-planformDB_parser.py`), superseded | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 9.3 | 2.5 | 36.3 | 14.7 / ~~14.7~~ | — | — |
-| Bressloff V1 form constants (`2001-bressloff-v1-form-constants.py`), Petroff stromatolite (`2010-petroff-stromatolite.py`), Kahng coral (`2024-kahng-coral-geometry.py`), Zhang sorting morphogenesis (`sorting-morphogenesis/`), Thompson demo (`thompson/1917-thompson.py`) | — | — | — | — | — | — | — | *unevaluated* |
-
-Across all 10 active evaluated scripts in the dual-agent pass (`2026-10-17-blinded-sample-audit.yaml`, `gemini-4-argon`, Google), rank-order agreement with the primary assessors (`claude-fable-5-1`, Anthropic on 9 scripts; `gpt-5.6-sol`, OpenAI on `2021-Cervera–Levin–Mafe.py`) is strong (Spearman $\rho = 0.891$, Kendall $\tau = 0.778$, Pearson $r = 0.920$ on padded scores; $\rho = 0.903$ on applicable-only scores; and exact $\rho = 1.00$, $\tau = 1.00$ on the initial 5-script strictly blinded subset; dimension-level $\rho = 0.796$, $r = 0.813$ across all 70 dimension pairs, mean absolute difference $10.4$ points), while the independent passes surfaced concrete defects the builder had missed (including a 65-character SHA-256 typo in `2014-lobo-limbform-morphology.py`).
-
-201 nanopubs are on the production network, of which 101 are the current heads of their primary version chains (46 from 2026-10-13, 9 from the 2026-10-14 planarian re-score, 9 from the 2026-10-14 Odonata audit, 10 from the Limbform audit, 9 from the 2026-10-16 C. elegans re-score, 9 from the 2026-10-17 Thompson re-score, 9 from the 2026-10-17 Raup re-score, 9 from the 2026-10-17 Cervera–Levin–Mafe re-score, which supersedes the 9 of the first Cervera audit the same day — both by OpenAI's GPT‑5.6 Sol —, 10 from the 2026-10-18 *Conus textile* audit, and 54 conformant re-issues of 2026-10-16 that `npx:supersedes` the pre-template versions). Signed and verified (`check_signed.mjs`) but not yet published: the 80 second-assessor nanopubs in `morphoeval/kg/2026-10-17-blinded-sample-audit/signed/`, the 20 phyllotaxis nanopubs (v1 and the v2 set that supersedes it) in `morphoeval/kg/2026-10-18-phyllotaxis-audit*/signed/`, and the 20 leaf-venation nanopubs (v1 and the v2 set that supersedes it) in `morphoeval/kg/2026-10-18-venation-audit*/signed/`. URIs, publication stage and version histories are in `morphoeval/kg/<audit>/published.json`. Since 2026-10-15 the nanopubs follow the governed templates of the [ProbKnow Space](https://w3id.org/spaces/probknow) (template links in pubinfo, full timestamps); the current rubric nanopub is https://w3id.org/np/RAhBMChdpmgS_yBfy8cfYXpfKktqlUD72A9bxZzvWDkYM (superseding the original RAjd9dIu…), and every nanopub that was still the head of its chain on 2026-10-16 has been re-issued in that shape with unchanged scores and evidence. Remediation is tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1); the data-format review for the ProbKnow template is [project-delphi-ontology#12](https://github.com/fractastical/project-delphi-ontology/issues/12). MorphoEval is the simulation-faithfulness sibling of BioEval ([10.5281/zenodo.20567719](https://doi.org/10.5281/zenodo.20567719)) and NeuroEval ([10.5281/zenodo.20622878](https://doi.org/10.5281/zenodo.20622878)). Full workflow, tooling notes and the rubric text: [`morphoeval/README.md`](./morphoeval/README.md).
-
-### Loop telemetry & worked sample runs (added 2026-10-18)
-
-[`morphoeval/track_loop.py`](./morphoeval/track_loop.py) times and tokens the 12-step loop — `init` / `start` / `end` / `exec` per step, `summary --md --csv --plot` at the end — into `morphoeval/runs/<run-id>.yaml` (plus `.trig` for the graph, `telemetry.sqlite` and `telemetry_events.jsonl`); it reads the agent transcripts to attribute input, output and subagent tokens to steps and records the SHA-256 of every artifact each step produced. Two complete 12-step runs have been recorded end-to-end and serve as detailed sample runs showing how Tier A build, Lean 4 formal verification, Tier B dual-agent audit, and Step 12 → Step 5 → Step 11 remediation work in practice:
-- **Sample Run 1 — Runions (2005) Leaf Venation, Murray's Law & Katifori Areole Topology ([`morphoeval/runs/2026-10-18-runions-venation-loop.md`](./morphoeval/runs/2026-10-18-runions-venation-loop.md)):** 12/12 steps, `24.14 min` (`1,448.6 s`) wall-clock, `56.0k` LLM tokens, `76.1k` artifact tokens, `6.4 s` CPU. Pass 1 (`8.00 min`, `37.6k` tokens) scored **40.9 / 100** after the independent second assessor (`claude-sonnet-5-5-high`) surfaced 5 defects (unsegmented specimen photos, 571 local 3-cycle triangles and 375 crossing edges, a synthetic proxy in Katifori loop nesting, circular JSON sampling in the Strahler test, and a trivial list-sum Lean theorem); Pass 2 (`+16.14 min`, `+18.4k` tokens) remediated all 5 defects and raised the score to **91.3 / 100** (**`+50.4` points**), superseding the 10 Pass 1 nanopubs (`RAr1cgMldoJ0TNph39c2kPLgtEnQrZfZMuVQ9LIQn1Zds` `npx:supersedes` `RA1d48WWn1smAInc0HnmtBRDiapTHGT77VXw_774OTjfc`).
-- **Sample Run 2 — Vogel (1979) / Douady–Couder (1992) Phyllotaxis ([`morphoeval/runs/2026-10-18-vogel-phyllotaxis-loop.md`](./morphoeval/runs/2026-10-18-vogel-phyllotaxis-loop.md)):** 12/12 steps, `16.90 min` (`1,014.3 s`) wall-clock, `167.0k` LLM tokens, `5.6 s` CPU; Pass 1 (`8.7 min`) scored **64.3 / 100** and Pass 2 (`+8.2 min`) remediated all 4 findings to **85.9 / 100** (**`+21.6` points**; [closed-loop diagram](./docs/media/vogel_phyllotaxis_closed_loop.png) · [animated GIF](./docs/media/vogel_phyllotaxis_closed_loop.gif)).
-
-![Sample 12-Step Closed-Loop Run — Runions (2005) Leaf Venation: Pass 1 (40.9/100) + Pass 2 Remediation Loop (91.3/100, +50.4 pts)](./docs/media/runions_venation_closed_loop.png)
-
-*Walkthrough of the 12-step closed loop on [`2005-runions-leaf-venation.py`](./2005-runions-leaf-venation.py) ([step-by-step sample run MD](./morphoeval/runs/2026-10-18-runions-venation-loop.md) · [animated GIF](./docs/media/runions_venation_closed_loop.gif) · [high-res PNG](./docs/media/runions_venation_closed_loop.png)), generated from `morphoeval/runs/telemetry.sqlite` via `python3 morphoeval/track_loop.py single-loop --run-id 2026-10-18-runions-venation-loop`.*
-
-### The mathematics, machine-checked and queryable
-
-The audits record *that* a script follows its paper; they do not say *what* the paper's mathematics is in a form a machine can check or a query can reach. [`morphoeval/math_kg.py`](./morphoeval/math_kg.py) and [`morphoeval/lean/MathOfBiology.lean`](./morphoeval/lean/MathOfBiology.lean) add that layer. For every evaluated model the governing laws are written three times — as the formula a biologist would recognise, as a Lean 4 definition with a theorem about it that the Lean kernel checks, and as RDF that joins the laws to the claims, the scores, the measured numbers and the commit-pinned lines of code — and the result is one graph you can ask questions of.
-
-**The Lean module.** `MathOfBiology.lean` is a single file in core Lean 4 (no Mathlib, no dependencies, no `sorry`; the kernel checks it in about a second). Each law is a small executable definition plus a theorem that pins down one structural property of it: an algebraic identity (Rule 30's Boolean form equals its GF(2) polynomial, `rule30_anf_equiv`, by case analysis over all eight inputs), an exact inverse (Jen's left-bijectivity, `jen_1990_left_bijective`), an equilibrium (Gray–Scott's (u, v) = (1, 0) is a fixed point of the reaction terms, `gray_scott_homogeneous_equilibrium`), a conservation law (Murray's r^γ is conserved from the root of any vascular tree to the sum over its tips, `murray_1926_tree_conservation`, by structural induction over `VeinTree`), a recovery identity (Raup's T is recovered from an axial step, `raup_translation_rate_recovery`), a kinematic constant (each Vogel floret adds the same annular area, `vogel_constant_annulus_area`, and the Fibonacci cascade (8,13)…(55,89) is `decide`d), a symmetry (Douady–Couder's pair kernel, the Bell–Boltzmann gap-junction conductance, Toussaint's relative-neighbourhood lune `runions_2005_rng_lune_iff` and `runions_2005_rng_lune_symmetric`), a topological bookkeeping rule (Euler's L = E − V + 1 for areoles: a spanning tree has none, each anastomosis adds one, deleting a bridge merges two, `katifori_2012_*`). All 22 laws across the 13 scored systems are listed below. What a theorem here establishes is that the *stated* law has the property claimed, as stated — not that the Python solves the PDE correctly or that the biology obeys it; those are what the audit's `model-fidelity` and `morphometric-validation` scores are for, and the graph keeps the two kinds of statement distinguishable.
-
-| system (`sim_id`) | law | Lean theorem |
-|---|---|---|
-| `runions-leaf-venation` | Murray r^γ conserved root → tips over any binary tree `VeinTree` | `murray_1926_tree_conservation` |
-| | Runions 2005 Toussaint RNG lune test ⇔ its definition and symmetric | `runions_2005_rng_lune_iff`, `runions_2005_rng_lune_symmetric` |
-| | Katifori 2012 Euler–Poincaré areole count (tree = 0, anastomosis +1, deletion −1) | `katifori_2012_tree_zero_cycles`, `…_anastomosis_adds_cycle`, `…_edge_deletion_merges_areoles` |
-| `wolfram-conus-textile-rule30` | Rule 30 Boolean form ≡ GF(2) normal form | `rule30_anf_equiv` |
-| | Jen 1990 left-bijective inverse; diagonal barrier shielding | `jen_1990_left_bijective`, `jen_1990_barrier_shielding` |
-| | Meinhardt–Klingler activator reaction is quiescent at a = 0 | `meinhardt_basal_quiescence` |
-| `vogel-phyllotaxis` | Vogel r² = c²n adds constant annulus area; Fibonacci cascade | `vogel_constant_annulus_area`, `vogel_fibonacci_parastichy_cascade` |
-| | Douady–Couder pair kernel symmetric in distance | `douady_couder_kernel_symmetric` |
-| | rim dislocation can only lower a parastichy count | `swinton_rim_dislocation_nonincreasing` |
-| `raup-shell-coiling` | whorl radius multiplies by W each whorl | `raup_whorl_expansion_recovery` |
-| | T recovered from Δz/Δr | `raup_translation_rate_recovery` |
-| `thompson-scarus-pomacanthus` | TPS kernel r² ln r² vanishes at a landmark | `tps_kernel_zero_at_origin` |
-| | a unit shear is area-preserving (det = 1) | `thompson_unit_shear_area_preserving` |
-| `turing-gray-scott` | (u, v) = (1, 0) is a homogeneous equilibrium | `gray_scott_homogeneous_equilibrium` |
-| `cervera-levin-mafe` | gap-junction current vanishes at equipotential | `cervera_equipotential_zero_current` |
-| | Bell–Boltzmann conductance symmetric in (i, j) | `cervera_bell_boltzmann_symmetric` |
-| `planform-morphology-animation` | wild-type AP length from the four region radii = 560 | `lobo_2013_wildtype_dimensions` |
-| `lobo-limbform-morphology` | a three-segment limb tree has three segments | `lobo_2014_three_segment_axis` |
-| `santella-wormguides-celegans` | nuclear-position interpolation hits both endpoints | `sulston_nuclear_lerp_endpoints` |
-| `hoffmann-wing-venation` | shoelace edge term is antisymmetric | `hoffmann_shoelace_antisymmetric` |
-| `eshghi-odonata-wing-cells` | isotropic second moments give zero elongation | `eshghi_isotropic_zero_elongation` |
-| `chindapol-coral-flow` | Péclet numerator vanishes at zero flow | `chindapol_zero_flow_diffusive` |
-
-```bash
-lean morphoeval/lean/MathOfBiology.lean            # the kernel check itself (exit 0 = every theorem holds)
-python3 morphoeval/math_kg.py --lean               # same check, then the 22 registered declarations with their status
-```
-
-**What the graph contains.** `math_kg.py --build` first runs that kernel check (the result goes into every law as `pk:leanVerified true|false`; it refuses a module containing `sorry`), then reads the *head* audit of every evaluated simulation — following `supersedes` so a re-scored script contributes once — together with its `*.measurements.yaml` sidecar, and writes three things: [`morphoeval/kg/math_of_biology.ttl`](./morphoeval/kg/math_of_biology.ttl) (flat Turtle, ~3,490 triples), `math_of_biology.trig` (the same as a named graph) and three SQLite tables in `morphoeval/runs/telemetry.sqlite`. Everything is in the ProbKnow vocabulary already used by the nanopubs, with `skos:`, `schema:` and `prov:` for what it lacks:
-
-| node | type | what it carries |
-|---|---|---|
-| `pkr:claim/morphoeval-<sim>` | `pk:Claim` | the same claim IRI the published nanopubs assert; `schema:about` the organism, `pk:hypothesisType` the mathematical family, `pk:weightOfEvidence` = overall/100, `pk:derivedFromPaper` the DOIs, `dct:conformsTo` each of its laws, `pk:hasEvidence` each measurement, the 4-tier claim boundary as `schema:additionalProperty` |
-| `pkr:math-law/<sim>-<k>` | `pk:Concept`, `skos:Concept` | `rdfs:label` the law's name · `skos:notation` the formula in plain notation · `skos:definition` the Lean `def` + `theorem` source **typed `^^pk:lean4`** · `pk:leanDeclaration`, `pk:leanTheorem` the qualified Lean names · `pk:leanVerified` · `dct:description` role and variables · `dct:source` the paper's equation or section · `rdfs:seeAlso` two commit-pinned GitHub URLs, the Python lines that implement it and the Lean lines that state it · `skos:broader pkr:concept/math-of-biology` |
-| `pkr:evidence/<audit>-<sim>-<k>` | `pk:EvidenceItem`, `schema:QuantitativeValue` | one measured number from the sidecar: `schema:value`, `schema:targetValue` (the reference), `schema:unitText`, `schema:error` (relative error, %), `dct:source` (where the reference comes from), `dct:description` (the method), `prov:wasGeneratedBy` (the output file it was taken from), and `pk:pValue` / `pk:statisticalTest` when the note states a test |
-
-The SQLite side is the same content flattened: `math_models` (one row per system: scores, family, head audit, claim IRI, DOIs, `spec_fingerprint`), `math_equations` (one row per law with `formula`, `lean_code`, `lean_theorem`, `lean_verified`, `code_locus`, `lean_locus`), `math_measurements` (one row per number with `value_num`, `ref_num`, `rel_error_pct`, `within_5pct`, `p_value`). At the current build: 13 models, 22 equations (all verified), 136 measurements.
-
-**How to query it.** Four ways, from canned to free:
-
-```bash
-# 1. presets — SPARQL over the .ttl, printed as a table
-python3 morphoeval/math_kg.py --preset equations      # every law: organism, formula, Lean theorem, verified?
-python3 morphoeval/math_kg.py --preset lean-proofs    # the Lean source of every law (skos:definition typed pk:lean4)
-python3 morphoeval/math_kg.py --preset exact-matches  # measurements within 1.5 % of their published reference
-python3 morphoeval/math_kg.py --preset by-family      # systems grouped by mathematical family, with weight of evidence
-python3 morphoeval/math_kg.py --preset p-values       # measurements that carry a statistical test
-python3 morphoeval/math_kg.py --sim vogel-phyllotaxis # one system's card: scores, DOIs, each law with its Lean proof, each measurement
-python3 morphoeval/math_kg.py --measurements --max-error-pct 1
-
-# 2. your own SPARQL (rdflib, over morphoeval/kg/math_of_biology.ttl)
-python3 morphoeval/math_kg.py --sparql '
-PREFIX pk: <https://w3id.org/probknow/ontology/>  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-SELECT ?law ?thm WHERE { ?eq a pk:Concept ; rdfs:label ?law ; pk:leanTheorem ?thm ; pk:leanVerified true .
-                         FILTER(CONTAINS(?thm, "1990")) }'
-#   → Erica Jen (1990) Left-Bijective Spatial Inverse … | MathOfBiology.jen_1990_left_bijective
-
-# 3. your own SQL (sqlite3 or --sql, over morphoeval/runs/telemetry.sqlite)
-python3 morphoeval/math_kg.py --sql "SELECT sim_id, COUNT(*) n, ROUND(AVG(rel_error_pct),2) mean_err
-                                     FROM math_measurements WHERE rel_error_pct IS NOT NULL
-                                     GROUP BY sim_id ORDER BY mean_err"
-#   → thompson-scarus-pomacanthus 6 0.01 · raup-shell-coiling 18 0.05 · vogel-phyllotaxis 8 4.25 · …
-
-# 4. any triple store: load math_of_biology.ttl (or the .trig) next to the signed nanopubs;
-#    the claim IRIs are identical, so a law joins to its published assessments without mapping
-```
-
-A few questions the graph can answer that nothing else in the repository can: what mathematical family each system's claim rests on, with its weight of evidence, equation count and measurement count side by side (`by-family`; the family strings are free text per system, so related ones — reaction–diffusion for Turing and the Meinhardt half of *Conus*, polygonal morphometrics for Hoffmann and Eshghi — are visible but not yet grouped); which measured numbers agree with their source and which do not (`exact-matches` returns 57 measurements within 1.5 % of their reference, from the 128/128 OEIS A051023 bits and the 1330/1330 Sulston names to the 923 vein domains; the per-system mean error above puts Thompson and Raup at ~0 % and the Cervera model, whose measurements are mostly against qualitative targets, far from it); which claims rest on a stated p-value (currently the two Swinton comparisons of the phyllotaxis script); and, for any law, the exact lines of Python and Lean that implement and state it at the commit that was scored. The `.trig` and the shared `pkr:claim/…` IRIs mean the same questions can be put across the nanopub network once the graph is published there, which it has not yet been.
-
-Lean 4 must be on `PATH` (or in `~/.elan/bin`) for the kernel check; without it `--build` still writes the graph with `pk:leanVerified false` and says why. The graph files and the SQLite tables are derived artifacts: rebuild them after any audit, sidecar or Lean change rather than editing them.
-
-## Data sources
+### Data sources
 
 Every script's inputs are either **vendored** in `datasets/<name>/` or **fetched on first run** into a git-ignored `.<name>_cache/`, and in both cases pinned by SHA-256 so a changed file is refused. Nothing is hand-copied from a figure without saying so, and no proprietary or unlicensed file is in the repository. The table is the complete list as of 2026-10-19; each folder's `README.md` has the exact file names, sizes, hashes, query URLs and retrieval dates.
 
@@ -551,7 +559,7 @@ Every script's inputs are either **vendored** in `datasets/<name>/` or **fetched
 
 Scripts with no external data (`1952-turing-morpho.py`, `2010-petroff-stromatolite.py`, `2013-chindapol-coral-flow.py`, `2024-kahng-coral-geometry.py`) run from the papers' equations alone, and the *Conus* script builds its own Raup shell mesh rather than reading `datasets/raup/`. Live services are used only at build time and their results vendored with the query and date: GBIF species match and the Paleobiology Database (Odonata families and ages) and Nanopub Query (resolving the heads of version chains before superseding). Two instances where the data did not match its source are recorded rather than silently corrected: Eshghi et al.'s Table S1 row #7 and swapped pair #23/#24 ([`datasets/odonata/NOTE_TO_AUTHORS.md`](./datasets/odonata/NOTE_TO_AUTHORS.md)) and PlanformDB experiment 434's control semantics (`conflicting_control_semantics` flag).
 
-## Extending the repository
+### Extending the repository
 
 A new reproduction is one script, one dataset folder, one audit. The 12 steps the loop tracks are the checklist; the first six are what you do, the last six are what MorphoEval does to it.
 
@@ -567,23 +575,19 @@ A new reproduction is one script, one dataset folder, one audit. The 12 steps th
 
 Re-scoring an existing script after a fix follows step 7 with a new audit file that names the one it `supersedes`; published nanopubs are never edited.
 
-## Analysis tools
+### Analysis tools
 
-### [Ca²⁺ Wave Vector Analysis](./wave-vector-analysis/)
+#### [Ca²⁺ Wave Vector Analysis](./wave-vector-analysis/)
 
 A complete pipeline for detecting and tracking Ca²⁺ signaling waves in time-lapse microscopy images of embryos. Processes multi-page TIFF images to detect bright spark events, track them across frames, segment embryos, and generate comprehensive analysis outputs. Includes visualization tools and supports 16-bit scientific imaging data.
 
 **See [`wave-vector-analysis/README.md`](./wave-vector-analysis/README.md) for full documentation.**
 
-#### Visualization Example
-
-Flow field visualization showing spatial vector fields of Ca²⁺ wave propagation:
-
 ![Ca²⁺ Wave Flow Field](wave-vector-analysis/analysis_results/artistic/flow_field_aurora.png)
 
 *Spatial vector field showing wave propagation directions and speeds. This visualization complements standard analysis tools by providing spatial flow patterns not available in direction distribution plots.*
 
-### [Nanopublications](./nanopubs/)
+#### [Nanopublications](./nanopubs/)
 
 Nanopublication-related files including wave files (.trig format), hypothesis mappings, and scripts for processing and canonicalizing nanopublications. These tools enable structured representation and sharing of scientific findings in a machine-readable format. The MorphoEval nanopubs use their own signer and verifier (see [`morphoeval/README.md`](./morphoeval/README.md)) because nanopub-py 2.1 does not work on Python 3.14.
 

@@ -1684,8 +1684,10 @@ def render_single_cycle_loop(
         # Step 6: Single-Cycle Output & Compare Showcase (Middle Band)
         # -----------------------------------------------------------------
         s6_act = active_step == 6
+        s6_p1_done = is_summary or pass_num == 2 or (active_step is not None and active_step >= 6)
         s6_p2_done = is_summary or (pass_num == 2 and active_step is not None and active_step in {6, 7, 8, 9, 10, 11})
         box6_x, box6_y, box6_w, box6_h = 3.0, 31.5, 79.5, 29.0
+        box6_alpha = 1.0 if s6_p1_done else 0.45
         ax.add_patch(
             FancyBboxPatch(
                 (box6_x, box6_y),
@@ -1695,6 +1697,7 @@ def render_single_cycle_loop(
                 fc=BG_ACTIVE if s6_act else BG_CARD,
                 ec=(ACCENT_GREEN if pass_num == 2 else STROKE_ACTIVE) if s6_act else (ACCENT_GREEN if s6_p2_done else STROKE),
                 lw=2.2 if s6_act else 1.2,
+                alpha=box6_alpha,
                 zorder=2,
             )
         )
@@ -1706,7 +1709,7 @@ def render_single_cycle_loop(
                 if is_venation
                 else "6  Output & compare — Vogel (1979) Golden-Angle Phyllotaxis Cycle Results"
             ),
-            color=TEXT_PRI,
+            color=TEXT_PRI if s6_p1_done else TEXT_TER,
             fontsize=10.0,
             fontweight="bold",
             va="center",
@@ -1720,6 +1723,7 @@ def render_single_cycle_loop(
                 boxstyle="round,pad=0.1,rounding_size=0.5",
                 fc=BG_BADGE,
                 ec="none",
+                alpha=box6_alpha,
                 zorder=3,
             )
         )
@@ -1730,94 +1734,152 @@ def render_single_cycle_loop(
                 "P1 (v1): 1.9s (181 tok)  |  P2 (v2 re-render): +1.8s (+203 tok)"
                 if is_venation
                 else "P1 (v1): 3.7s (134 tok)  |  P2 (v2 re-render): +5.8s (+180 tok)"
-            ),
-            color=ACCENT_GREEN if s6_p2_done else ACCENT_BLUE,
+            )
+            if s6_p1_done
+            else "Pending Step 6: simulation & figures not yet generated",
+            color=(ACCENT_GREEN if s6_p2_done else ACCENT_BLUE) if s6_p1_done else TEXT_TER,
             fontsize=7.8,
             fontweight="bold",
             va="center",
             zorder=4,
         )
 
-        # Embed 3 crisp visual sub-panels inside Box 6:
+        # Embed 3 crisp visual sub-panels inside Box 6 ONLY after Step 6 is reached!
         sub_y0, sub_y1 = box6_y + 4.4, box6_y + box6_h - 5.2
 
-        # Sub-panel 6A: Specimen
-        img_6a = seg_crop_pil if (s6_p2_done and seg_crop_pil is not None) else spec_pil
-        if img_6a is not None:
-            ax.imshow(img_6a, extent=(4.4, 23.4, sub_y0, sub_y1), zorder=3, interpolation="bilinear", aspect="auto")
-            ax.add_patch(
-                FancyBboxPatch(
-                    (4.4, sub_y0),
-                    19.0,
-                    sub_y1 - sub_y0,
-                    boxstyle="square,pad=0",
-                    fc="none",
-                    ec=ACCENT_GREEN if s6_p2_done else ACCENT_AMBER,
-                    lw=1.1,
+        if not s6_p1_done:
+            # Before Step 6 in Pass 1 (Steps 1..5): simulation outputs do not exist yet
+            placeholders = [
+                (4.4, 19.0, "6A. Specimen Comparison", "Created at Step 6\n(after Step 5 Script runs)"),
+                (24.8, 32.8, "6B. Simulation Growth Animation", f"Awaiting Step 6 (Output & compare)\nCurrently at Pass 1 · Step {active_step}"),
+                (59.0, 22.2, "6C. Quantitative Benchmark Curve", "Created at Step 6\n(model vs. empirical table)"),
+            ]
+            for px0, pw0, ptitle, psub in placeholders:
+                ax.add_patch(
+                    FancyBboxPatch(
+                        (px0, sub_y0),
+                        pw0,
+                        sub_y1 - sub_y0,
+                        boxstyle="round,pad=0.1,rounding_size=0.5",
+                        fc=BG_MAIN,
+                        ec=STROKE,
+                        lw=0.9,
+                        ls="--",
+                        alpha=0.55,
+                        zorder=3,
+                    )
+                )
+                ax.text(
+                    px0 + pw0 / 2.0,
+                    (sub_y0 + sub_y1) / 2.0 + 2.0,
+                    ptitle,
+                    color=TEXT_TER,
+                    fontsize=7.8,
+                    fontweight="bold",
+                    ha="center",
+                    va="center",
                     zorder=4,
                 )
+                ax.text(
+                    px0 + pw0 / 2.0,
+                    (sub_y0 + sub_y1) / 2.0 - 2.2,
+                    psub,
+                    color=TEXT_TER,
+                    fontsize=6.9,
+                    ha="center",
+                    va="center",
+                    linespacing=1.3,
+                    zorder=4,
+                )
+            ax.text(
+                box6_x + box6_w / 2.0,
+                box6_y + 2.2,
+                "Step 6 has not run yet — simulation figure, growth GIF, and morphometric CSV are first created at Step 6.",
+                color=TEXT_TER,
+                fontsize=7.3,
+                style="italic",
+                ha="center",
+                va="center",
+                zorder=4,
             )
-        ax.text(
-            13.9,
-            box6_y + 2.2,
-            (
-                ("A. P2: 168 Specimen Areoles (i_u=0.613) + Ginkgo" if s6_p2_done else "A. P1: Display-Only Specimen (0 areoles segmented)")
-                if is_venation
-                else ("A. P2: 621 DoG Florets Segmented (circ=0.793)" if s6_p2_done else "A. P1: Display-Only Specimen (0 florets segmented)")
-            ),
-            color=ACCENT_GREEN if s6_p2_done else ACCENT_AMBER,
-            fontsize=7.1,
-            fontweight="bold",
-            ha="center",
-            va="center",
-            zorder=4,
-        )
+        else:
+            # Sub-panel 6A: Specimen
+            img_6a = seg_crop_pil if (s6_p2_done and seg_crop_pil is not None) else spec_pil
+            if img_6a is not None:
+                ax.imshow(img_6a, extent=(4.4, 23.4, sub_y0, sub_y1), zorder=3, interpolation="bilinear", aspect="auto")
+                ax.add_patch(
+                    FancyBboxPatch(
+                        (4.4, sub_y0),
+                        19.0,
+                        sub_y1 - sub_y0,
+                        boxstyle="square,pad=0",
+                        fc="none",
+                        ec=ACCENT_GREEN if s6_p2_done else ACCENT_AMBER,
+                        lw=1.1,
+                        zorder=4,
+                    )
+                )
+            ax.text(
+                13.9,
+                box6_y + 2.2,
+                (
+                    ("A. P2: 168 Specimen Areoles (i_u=0.613) + Ginkgo" if s6_p2_done else "A. P1: Display-Only Specimen (0 areoles segmented)")
+                    if is_venation
+                    else ("A. P2: 621 DoG Florets Segmented (circ=0.793)" if s6_p2_done else "A. P1: Display-Only Specimen (0 florets segmented)")
+                ),
+                color=ACCENT_GREEN if s6_p2_done else ACCENT_AMBER,
+                fontsize=7.1,
+                fontweight="bold",
+                ha="center",
+                va="center",
+                zorder=4,
+            )
 
-        # Sub-panel 6B: Live animated frame
-        if growth_frames:
-            f_idx = growth_frame_idx % len(growth_frames) if growth_frame_idx >= 0 else len(growth_frames) - 1
-            gf_pil = growth_frames[f_idx]
-            ax.imshow(gf_pil, extent=(24.8, 57.6, sub_y0, sub_y1), zorder=3, interpolation="bilinear", aspect="auto")
-            ax.add_patch(
-                FancyBboxPatch((24.8, sub_y0), 32.8, sub_y1 - sub_y0, boxstyle="square,pad=0", fc="none", ec=ACCENT_BLUE, lw=1.0, zorder=4)
+            # Sub-panel 6B: Live animated frame
+            if growth_frames:
+                f_idx = growth_frame_idx % len(growth_frames) if growth_frame_idx >= 0 else len(growth_frames) - 1
+                gf_pil = growth_frames[f_idx]
+                ax.imshow(gf_pil, extent=(24.8, 57.6, sub_y0, sub_y1), zorder=3, interpolation="bilinear", aspect="auto")
+                ax.add_patch(
+                    FancyBboxPatch((24.8, sub_y0), 32.8, sub_y1 - sub_y0, boxstyle="square,pad=0", fc="none", ec=ACCENT_BLUE, lw=1.0, zorder=4)
+                )
+            ax.text(
+                41.2,
+                box6_y + 2.2,
+                (
+                    "B. Animated Space-Colonization Venation (V=1,099, L=409 Loops, 358 Areoles)"
+                    if is_venation
+                    else "B. Animated Vogel Growth & Delaunay Cascade (8,13)→(13,21)→(21,34)→(34,55)"
+                ),
+                color=TEXT_PRI,
+                fontsize=7.3,
+                fontweight="bold",
+                ha="center",
+                va="center",
+                zorder=4,
             )
-        ax.text(
-            41.2,
-            box6_y + 2.2,
-            (
-                "B. Animated Space-Colonization Venation (V=1,099, L=409 Loops, 358 Areoles)"
-                if is_venation
-                else "B. Animated Vogel Growth & Delaunay Cascade (8,13)→(13,21)→(21,34)→(34,55)"
-            ),
-            color=TEXT_PRI,
-            fontsize=7.3,
-            fontweight="bold",
-            ha="center",
-            va="center",
-            zorder=4,
-        )
 
-        # Sub-panel 6C: Empirical vs Model Curve
-        if survey_crop_pil is not None:
-            ax.imshow(survey_crop_pil, extent=(59.0, 81.2, sub_y0, sub_y1), zorder=3, interpolation="bilinear", aspect="auto")
-            ax.add_patch(
-                FancyBboxPatch((59.0, sub_y0), 22.2, sub_y1 - sub_y0, boxstyle="square,pad=0", fc="none", ec=ACCENT_PURPLE, lw=0.9, zorder=4)
+            # Sub-panel 6C: Empirical vs Model Curve
+            if survey_crop_pil is not None:
+                ax.imshow(survey_crop_pil, extent=(59.0, 81.2, sub_y0, sub_y1), zorder=3, interpolation="bilinear", aspect="auto")
+                ax.add_patch(
+                    FancyBboxPatch((59.0, sub_y0), 22.2, sub_y1 - sub_y0, boxstyle="square,pad=0", fc="none", ec=ACCENT_PURPLE, lw=0.9, zorder=4)
+                )
+            ax.text(
+                70.1,
+                box6_y + 2.2,
+                (
+                    ("C. P2: Measured Strahler Tree r=0.968 (Price 2013)" if s6_p2_done else "C. P1: Circular JSON Sampling (no grown tree)")
+                    if is_venation
+                    else ("C. P2: Swinton Match r=0.995 (Fib−1 > Fib+1)" if s6_p2_done else "C. P1: 0% Fib−1 / Fib+1 Grain Defects")
+                ),
+                color=ACCENT_GREEN if s6_p2_done else ACCENT_AMBER,
+                fontsize=7.1,
+                fontweight="bold",
+                ha="center",
+                va="center",
+                zorder=4,
             )
-        ax.text(
-            70.1,
-            box6_y + 2.2,
-            (
-                ("C. P2: Measured Strahler Tree r=0.968 (Price 2013)" if s6_p2_done else "C. P1: Circular JSON Sampling (no grown tree)")
-                if is_venation
-                else ("C. P2: Swinton Match r=0.995 (Fib−1 > Fib+1)" if s6_p2_done else "C. P1: 0% Fib−1 / Fib+1 Grain Defects")
-            ),
-            color=ACCENT_GREEN if s6_p2_done else ACCENT_AMBER,
-            fontsize=7.1,
-            fontweight="bold",
-            ha="center",
-            va="center",
-            zorder=4,
-        )
 
         # Arrow Step 6 -> Step 7
         s7_cx = 10.2
@@ -2140,19 +2202,54 @@ def render_single_cycle_loop(
         schedule: list[tuple[int | None, int, int, str | None, float, int, int]] = []
         n_gf = max(len(growth_frames), 1)
 
-        p1_banners = {
-            1: "PASS 1 · Step 1 [Scout · 23.2s · 28.4k tok]: Selected Vogel (1979), Douady & Couder (1992), and Swinton (2016) Helianthus dataset.",
-            2: "PASS 1 · Step 2 [Paper · 20.4s · 27.1k tok]: Extracted planar spiral r_n = c*sqrt(n), theta_n = n*137.5078° & Hofmeister energy equations.",
-            3: "PASS 1 · Step 3 [Formal source · 14.8s · 3.8k tok]: Vendored Swinton (2016) Tables 1-4 & 2 Helianthus specimen photos with SHA-256 locks.",
-            4: "PASS 1 · Step 4 [Pin the rules · 43.6s · 47.1k tok]: Verified Delaunay parastichy cascade (8,13)->(13,21)->(21,34)->(34,55) & Table 1 invariants.",
-            5: "PASS 1 · Step 5 [Script v1 · 242.4s · 15.1k tok]: Wrote initial 1979-vogel-phyllotaxis.py (before specimen floret segmentation).",
-            6: "PASS 1 · Step 6 [Output v1 · 3.7s · 134 tok]: Rendered initial v1 figure & growth animation (specimen photo display-only in v1).",
-            7: "PASS 1 · Step 7 [Dual-agent audit v1 · 170.1s · 6.7k tok]: Scored v1 at 64.3/100; Claude Sonnet 5.5 High found 4 concrete defects.",
-            8: "PASS 1 · Step 8 [Measure v1 · 1.1s · 274 tok]: Fingerprinted v1 outputs & recorded initial morphometrics sidecar.",
-            9: "PASS 1 · Step 9 [Write as claims v1 · 402ms · 295 tok]: Built 10 initial v1 ProbKnow TriG nanopublications.",
-            10: "PASS 1 · Step 10 [Sign & publish v1 · 788ms · 1.0k tok]: Cryptographically signed & verified all 10 v1 nanopubs.",
-            11: "PASS 1 · Step 11 [Public record v1 · 17ms · 102 tok]: Pass 1 finished at 520.5s (8.67m, 130.0k tok) with v1 score 64.3/100.",
-        }
+        if is_venation:
+            p1_banners = {
+                1: "PASS 1 · Step 1 [Scout · 70ms · 0 tok]: Selected Runions (2005) leaf venation, Murray (1926), Price (2013) & Katifori (2012).",
+                2: "PASS 1 · Step 2 [Paper · 33.6s · 0 tok]: Extracted Eqs. 1–4, Table 1 (15 regimes), and Price (2013) 349-leaf scaling table.",
+                3: "PASS 1 · Step 3 [Formal source · 64.1s · 27.5k tok]: Vendored datasets/venation/ & 2 leaf specimen photos with SHA-256 locks.",
+                4: "PASS 1 · Step 4 [Pin the rules · 26.7s · 64 tok]: Proved Lean 4 theorems in MathOfBiology.lean Section 13 (0 sorry).",
+                5: "PASS 1 · Step 5 [Script v1 · 190.6s · 7.7k tok]: Wrote initial 2005-runions-leaf-venation.py (before Step 6 runs simulation).",
+                6: "PASS 1 · Step 6 [Output v1 · 1.9s · 181 tok]: First simulation run! Rendered v1 figure, growth GIF & metrics CSV.",
+                7: "PASS 1 · Step 7 [Dual-agent audit v1 · 159.9s · 831 tok]: Scored v1 at 40.9/100; Claude Sonnet 5.5 High found 5 concrete defects.",
+                8: "PASS 1 · Step 8 [Measure v1 · 2.0s · 262 tok]: Fingerprinted v1 outputs & recorded initial morphometrics sidecar.",
+                9: "PASS 1 · Step 9 [Write as claims v1 · 160ms · 121 tok]: Built 10 initial v1 ProbKnow TriG nanopublications.",
+                10: "PASS 1 · Step 10 [Sign & publish v1 · 670ms · 756 tok]: Cryptographically signed & verified all 10 v1 nanopubs.",
+                11: "PASS 1 · Step 11 [Public record v1 · 20ms · 185 tok]: Pass 1 finished at 479.8s (8.00m, 37.6k tok) with v1 score 40.9/100.",
+            }
+            p2_banners = {
+                12: "PASS 2 LOOP · Step 12 [Remediate Triage · +159.2s · +2.2k tok]: Triaged 5 v1 audit defects & launched feedback loop back to Step 5!",
+                5: "PASS 2 LOOP · Step 5 [Script v2 Re-Work · +620.0s · +12.4k tok]: Added specimen segmentation, tagged V(s) planar RNG & grown Strahler tree.",
+                6: "PASS 2 LOOP · Step 6 [Output v2 Re-Render · +1.8s · +203 tok]: Re-rendered v2 comparison figure (168 specimen areoles, 0 crossings) & GIF.",
+                7: "PASS 2 LOOP · Step 7 [Re-Audit v2 · +185.0s · +2.8k tok]: Re-scored remediated dimensions — score jumped from 40.9 → 91.3 (+50.4 pts)!",
+                8: "PASS 2 LOOP · Step 8 [Re-Measure v2 · +2.1s · +280 tok]: Verified 168 specimen areoles, 358 model areoles & r=0.968 in v2 sidecar.",
+                9: "PASS 2 LOOP · Step 9 [Claims v2 · +220ms · +140 tok]: Emitted 10 v2 nanopubs linked to v1 via npx:supersedes.",
+                10: "PASS 2 LOOP · Step 10 [Sign v2 · +550ms · +513 tok]: Signed & verified all 10 v2 trusty URIs (20/20 total verified).",
+                11: "PASS 2 LOOP · Step 11 [Public record v2 · +50ms · +110 tok]: Pass 2 complete (+968.8s, +18.4k tok) → Total 1,448.6s (24.14m), Score 91.3/100!",
+            }
+        else:
+            p1_banners = {
+                1: "PASS 1 · Step 1 [Scout · 23.2s · 28.4k tok]: Selected Vogel (1979), Douady & Couder (1992), and Swinton (2016) Helianthus dataset.",
+                2: "PASS 1 · Step 2 [Paper · 20.4s · 27.1k tok]: Extracted planar spiral r_n = c*sqrt(n), theta_n = n*137.5078° & Hofmeister energy equations.",
+                3: "PASS 1 · Step 3 [Formal source · 14.8s · 3.8k tok]: Vendored Swinton (2016) Tables 1-4 & 2 Helianthus specimen photos with SHA-256 locks.",
+                4: "PASS 1 · Step 4 [Pin the rules · 43.6s · 47.1k tok]: Verified Delaunay parastichy cascade (8,13)->(13,21)->(21,34)->(34,55) & Table 1 invariants.",
+                5: "PASS 1 · Step 5 [Script v1 · 242.4s · 15.1k tok]: Wrote initial 1979-vogel-phyllotaxis.py (before Step 6 runs simulation).",
+                6: "PASS 1 · Step 6 [Output v1 · 3.7s · 134 tok]: First simulation run! Rendered initial v1 figure & growth animation.",
+                7: "PASS 1 · Step 7 [Dual-agent audit v1 · 170.1s · 6.7k tok]: Scored v1 at 64.3/100; Claude Sonnet 5.5 High found 4 concrete defects.",
+                8: "PASS 1 · Step 8 [Measure v1 · 1.1s · 274 tok]: Fingerprinted v1 outputs & recorded initial morphometrics sidecar.",
+                9: "PASS 1 · Step 9 [Write as claims v1 · 402ms · 295 tok]: Built 10 initial v1 ProbKnow TriG nanopublications.",
+                10: "PASS 1 · Step 10 [Sign & publish v1 · 788ms · 1.0k tok]: Cryptographically signed & verified all 10 v1 nanopubs.",
+                11: "PASS 1 · Step 11 [Public record v1 · 17ms · 102 tok]: Pass 1 finished at 520.5s (8.67m, 130.0k tok) with v1 score 64.3/100.",
+            }
+            p2_banners = {
+                12: "PASS 2 LOOP · Step 12 [Remediate Triage · +14.2s · +2.1k tok]: Triaged 4 v1 audit defects & launched feedback loop back to Step 5!",
+                5: "PASS 2 LOOP · Step 5 [Script v2 Re-Work · +400.7s · +26.4k tok]: Added 621-floret DoG segmentation, bounded Voronoi ring & rim-dislocation model.",
+                6: "PASS 2 LOOP · Step 6 [Output v2 Re-Render · +5.8s · +180 tok]: Re-rendered v2 comparison figure (with 621 segmented florets) & growth GIF.",
+                7: "PASS 2 LOOP · Step 7 [Re-Audit v2 · +49.0s · +6.8k tok]: Touch-scored remediated dimensions — score jumped from 64.3 → 85.9 (+21.6 pts)!",
+                8: "PASS 2 LOOP · Step 8 [Re-Measure v2 · +12.5s · +310 tok]: Verified bounded Voronoi optimality & 621 segmented florets in v2 sidecar.",
+                9: "PASS 2 LOOP · Step 9 [Claims v2 · +10.7s · +320 tok]: Emitted 10 v2 nanopubs linked to v1 via npx:supersedes.",
+                10: "PASS 2 LOOP · Step 10 [Sign v2 · +800ms · +890 tok]: Signed & verified all 10 v2 trusty URIs (20/20 total verified).",
+                11: "PASS 2 LOOP · Step 11 [Public record v2 · +100ms · +112 tok]: Pass 2 complete (+493.8s, +37.1k tok) → Total 1,014.3s (16.90m), Score 85.9/100!",
+            }
 
         cw, ct = 0.0, 0
         for snum in range(1, 12):
@@ -2160,25 +2257,13 @@ def render_single_cycle_loop(
             cw += float(pb["p1_s"])
             ct += int(pb["p1_tok"])
             if snum < 6:
-                schedule.append((snum, 1, 0, p1_banners[snum], cw, ct, 400))
+                schedule.append((snum, 1, -1, p1_banners[snum], cw, ct, 400))
             elif snum == 6:
                 for k in range(5):
                     gf_i = int((k / 4.0) * (n_gf // 2))
                     schedule.append((6, 1, gf_i, p1_banners[6], cw, ct, 220))
             else:
                 schedule.append((snum, 1, n_gf // 2, p1_banners[snum], cw, ct, 420 if snum != 7 else 650))
-
-        # Now Pass 2: Step 12 triggers the loop back to Step 5, then runs Steps 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11
-        p2_banners = {
-            12: "PASS 2 LOOP · Step 12 [Remediate Triage · +14.2s · +2.1k tok]: Triaged 4 v1 audit defects & launched feedback loop back to Step 5!",
-            5: "PASS 2 LOOP · Step 5 [Script v2 Re-Work · +400.7s · +26.4k tok]: Added 621-floret DoG segmentation, bounded Voronoi ring & rim-dislocation model.",
-            6: "PASS 2 LOOP · Step 6 [Output v2 Re-Render · +5.8s · +180 tok]: Re-rendered v2 comparison figure (with 621 segmented florets) & growth GIF.",
-            7: "PASS 2 LOOP · Step 7 [Re-Audit v2 · +49.0s · +6.8k tok]: Touch-scored remediated dimensions — score jumped from 64.3 → 85.9 (+21.6 pts)!",
-            8: "PASS 2 LOOP · Step 8 [Re-Measure v2 · +12.5s · +310 tok]: Verified bounded Voronoi optimality & 621 segmented florets in v2 sidecar.",
-            9: "PASS 2 LOOP · Step 9 [Claims v2 · +10.7s · +320 tok]: Emitted 10 v2 nanopubs linked to v1 via npx:supersedes.",
-            10: "PASS 2 LOOP · Step 10 [Sign v2 · +800ms · +890 tok]: Signed & verified all 10 v2 trusty URIs (20/20 total verified).",
-            11: "PASS 2 LOOP · Step 11 [Public record v2 · +100ms · +112 tok]: Pass 2 complete (+493.8s, +37.1k tok) → Total 1,014.3s (16.90m), Score 85.9/100!",
-        }
 
         for snum in [12, 5, 6, 7, 8, 9, 10, 11]:
             pb = PASS_BREAKDOWN[snum]

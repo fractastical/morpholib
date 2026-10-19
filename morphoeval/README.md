@@ -398,8 +398,11 @@ Tracked in [morpholib#1](https://github.com/fractastical/morpholib/issues/1). Fa
 
 ### Primary checkpoint chain (`role: primary`)
 
+For a complete, step-by-step walkthrough of how a 12-step MorphoEval + Lean 4 run works from Step 1 (`scout`) through Step 7 (`audit`) to Step 12 (`remed` Pass 2 loop), see **[`runs/2026-10-18-runions-venation-loop.md`](./runs/2026-10-18-runions-venation-loop.md)** (`40.9 → 91.3`, `+50.4` pts) and **[`runs/2026-10-18-vogel-phyllotaxis-loop.md`](./runs/2026-10-18-vogel-phyllotaxis-loop.md)** (`64.3 → 85.9`, `+21.6` pts).
+
 | Simulation | checkpoint | assessor | impl. (30) | bio. (40) | repro. (30) | overall (app.) | overall (pad.) |
 |---|---|---|---:|---:|---:|---:|---:|
+| Runions leaf venation (`2005-runions-leaf-venation.py`) ([sample run](./runs/2026-10-18-runions-venation-loop.md)) | 365a3cd, audit 2026-10-18-venation-v2 (was 40.9) | Gemini 4 Argon + Claude Sonnet 5.5 | 90.7 | 89.8 | 93.9 | 91.3 | **91.3** |
 | Wolfram / Meinhardt *Conus textile* Rule 30 (`1984-wolfram-conus-textile-rule30.py`) | fb234bc, audit 2026-10-18-conus | Gemini 4 Argon | 87.7 | 85.5 | 89.3 | 87.3 | **87.3** |
 | Vogel / Douady–Couder golden-angle phyllotaxis (`1979-vogel-phyllotaxis.py`) | c89d18d, audit 2026-10-18-phyllotaxis-v2 (was 64.3) | Gemini 4 Argon + Claude Sonnet 5.5 | 84.7 | 84.8 | 88.7 | 85.9 | **85.9** |
 | Hoffmann–Donoughe wing venation (`2018-hoffmann-wing-venation.py`) | f3fe478, audit 2026-10-13 | Claude Fable 5.1 | 81.7 | 80.0 | 71.3 | 77.8 | **77.8** |
