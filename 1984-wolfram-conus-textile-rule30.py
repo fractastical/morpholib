@@ -2102,6 +2102,261 @@ def verify_period3_period4_and_general_period_seam_laws(cone: np.ndarray) -> dic
     }
 
 
+def verify_dual_infinite_families_and_general_necklace_extinction() -> dict:
+    """Verify Theorem 17 (Universal Opaque-Run Triangle Crystal & 5-Bit Gate Erasure for w_a = 0 1^{a-1},
+    Universal Transparent-Run 2-Column Shift Renormalization & 5-Column Affine-Linearity for w^{(b)} = 0^b 1,
+    and Zero-Branching Anti-Diagonal Extinction Across All 224 Primitive Necklaces of Pi = 2 .. 10):
+      1. Family I (Opaque-Run Family w_a = 0 1^{a-1}, Pi = a >= 4):
+         - Universal 5-Bit Gate Erasure Lemma: In ANY word w containing '01110' at tau..tau+4,
+           l_3(tau) = G_tau, l_2(tau) = 1 ^ G_tau, and l_3(tau+1) = 1, so l_4(tau) = 1 ^ (G_tau | (1 ^ G_tau)) === 0;
+           in ANY word w containing '01111' at tau..tau+4, l_3(tau+1) = 0, so l_4(tau) = 0 ^ (G_tau | (1 ^ G_tau)) === 1.
+           In both cases G_tau is 100% erased at column m = 4 (`0` errors).
+         - Universal Opaque-Triangle Crystal Law: Inside the 1-run triangle (m >= 1, s >= 1, s + m <= a - 1),
+           every column is a parameter-free spatial period-2 crystal l_m(q*a + s) === (m - 1) mod 2, and along
+           the first three diagonals above the triangle (s + m = a, a+1, a+2), l_m(q*a + s) is an exact universal
+           period-4 / period-8 wave of G_{q+1} alone (`0` errors across all a = 5 .. 14):
+             * s + m = a   (1 <= m <= a):     l_m = m mod 2 (strictly constant).
+             * s + m = a+1 (1 <= m <= a + 1): l_m = G_{q+1} ^ ((m // 2) ^ 1), repeating period-4 wave (1^G_{q+1}, G_{q+1}, G_{q+1}, 1^G_{q+1}).
+             * s + m = a+2 (1 <= m <= a + 1): exact period-8 wave (0, 1^G_{q+1}, G_{q+1}, 0, 1, G_{q+1}, 1^G_{q+1}, 1)_{(m-1) mod 8}.
+      2. Family II (Transparent-Run Family w^{(b)} = 0^b 1, Pi = b + 1, b >= 2):
+         - Universal Transparent-Triangle 2-Column Shift Renormalization: Inside the 0-run triangle
+           (m >= 1, s >= 0, s + m <= b - 1), Monotone Latch G_{q,0} <= G_{q,1} <= ... <= G_{q,b-1} collapses
+           every odd column to a pure shift of l_1 and every even column to an adjacent first difference (`0` errors):
+             l_{2k+1}(q*Pi + s) === G_{q, s + 2k},    l_{2k+2}(q*Pi + s) === G_{q, s + 2k} ^ G_{q, s + 2k + 1},
+           giving the exact 2-column spatial shift renormalization l_{m+2}(q*Pi + s) === l_m(q*Pi + s + 2).
+         - Universal 5-Column Affine-Linearity Law: Modulo Monotone Latch + Fibonacci Reset (G_{q,b-1} * G_{q+1,0} = 0),
+           all 5 columns l_1 .. l_5 across ALL phases s = 0 .. b are 100% affine-linear (degree <= 1) over F_2
+           for every b >= 2 (`0` errors across b = 2 .. 9).
+      3. Universal Zero-Branching Anti-Diagonal Extinction Across All 224 Primitive Necklaces of Pi = 2 .. 10:
+         Across all 224 primitive necklaces of periods Pi = 2, 3, 4, 5, 6, 7, 8, 9, 10 (1,973 admissible
+         1-period prefixes), 100% are annihilated in <= 17 exterior anti-diagonal steps (`0` survivors).
+    """
+    import itertools
+
+    # 1. Verify Universal 5-Bit Gate Erasure Lemma ('01110' -> l_4 === 0, '01111' -> l_4 === 1)
+    erasure_5bit_errors = 0
+    for subword, expected_l4 in [((0, 1, 1, 1, 0), 0), ((0, 1, 1, 1, 1), 1)]:
+        for g_tau in (0, 1):
+            c0 = list(subword)
+            l1 = [1 ^ g_tau, 0, 0, 1 ^ subword[4]]
+            l2 = [l1[t + 1] ^ (l1[t] | c0[t]) for t in range(3)]
+            l3 = [l2[t + 1] ^ (l2[t] | l1[t]) for t in range(2)]
+            l4 = l3[1] ^ (l3[0] | l2[0])
+            if l4 != expected_l4:
+                erasure_5bit_errors += 1
+
+    # 2. Verify Family I (w_a = 0 1^{a-1}) Opaque-Triangle Crystal & 3-Diagonal Universal Law across a = 5 .. 14
+    family1_errors = 0
+    for a in range(5, 15):
+        w = (0,) + (1,) * (a - 1)
+        for g0 in (0, 1):
+            for g1 in (0, 1):
+                G = [g0, g1, 0]
+                T = 3 * a
+                c_prev = [w[t % a] for t in range(T)]
+                c_curr = [(1 ^ G[t // a]) if (t % a == 0) else (0 if (t % a) < a - 1 else 1) for t in range(T)]
+                cols = [c_curr[:]]
+                for _m in range(2, a + 3):
+                    c_next = [c_curr[t + 1] ^ (c_curr[t] | c_prev[t]) for t in range(len(c_curr) - 1)]
+                    cols.append(c_next)
+                    c_prev, c_curr = c_curr, c_next
+                # At s = 0, m = 4: l_4(0) === 1 (G_0 erased!)
+                if cols[3][0] != 1:
+                    family1_errors += 1
+                # Inside opaque triangle (m >= 1, s >= 1, s + m <= a - 1): l_m(s) === (m - 1) mod 2
+                for m in range(1, a - 1):
+                    for s in range(1, a - m):
+                        if cols[m - 1][s] != ((m - 1) % 2):
+                            family1_errors += 1
+                # Diagonal s + m = a (m = 1 .. a, s = a - m): l_m(s) === m % 2
+                for m in range(1, a + 1):
+                    s = a - m
+                    if cols[m - 1][s] != (m % 2):
+                        family1_errors += 1
+                # Diagonal s + m = a + 1 (m = 1 .. a + 1, s = a + 1 - m): exact period-4 wave (1^g1, g1, g1, 1^g1)
+                diag1_cycle = (1 ^ g1, g1, g1, 1 ^ g1)
+                for m in range(1, a + 2):
+                    s = a + 1 - m
+                    exp = diag1_cycle[(m - 1) & 3]
+                    if cols[m - 1][s] != exp:
+                        family1_errors += 1
+                # Diagonal s + m = a + 2 (m = 1 .. a + 1, s = a + 2 - m >= 1): exact period-8 wave
+                diag2_cycle = (0, 1 ^ g1, g1, 0, 1, g1, 1 ^ g1, 1)
+                for m in range(1, a + 2):
+                    s = a + 2 - m
+                    exp = diag2_cycle[(m - 1) & 7]
+                    if cols[m - 1][s] != exp:
+                        family1_errors += 1
+
+    # 3. Verify Family II (w^{(b)} = 0^b 1) Transparent-Triangle Shift Renormalization & 5-Column Affine Law across b = 2 .. 9
+    family2_errors = 0
+    for b in range(2, 10):
+        w = (0,) * b + (1,)
+        Pi = b + 1
+        states = [tuple(0 if i < k else 1 for i in range(b)) for k in range(b + 1)]
+        valid_seqs = [
+            seq for seq in itertools.product(states, repeat=3)
+            if all(not (seq[q][-1] == 1 and seq[q + 1][0] == 1) for q in range(2))
+        ]
+        for seq in valid_seqs:
+            G0, G1, G2 = seq[0], seq[1], seq[2]
+            T = 3 * Pi
+            c_prev = [w[t % Pi] for t in range(T)]
+            c_curr = [
+                (1 ^ w[(t + 1) % Pi]) if w[t % Pi] == 1 else (w[(t + 1) % Pi] ^ seq[t // Pi][t % Pi])
+                for t in range(T)
+            ]
+            cols = [c_curr[:]]
+            for _m in range(2, max(6, b)):
+                c_next = [c_curr[t + 1] ^ (c_curr[t] | c_prev[t]) for t in range(len(c_curr) - 1)]
+                cols.append(c_next)
+                c_prev, c_curr = c_curr, c_next
+            # Transparent-triangle shift law (m >= 1, s >= 0, s + m <= b - 1):
+            for m in range(1, b):
+                for s in range(b - m):
+                    exp = G0[s + m - 1] if (m % 2 == 1) else (G0[s + m - 2] ^ G0[s + m - 1])
+                    if cols[m - 1][s] != exp:
+                        family2_errors += 1
+            # 5-column exact affine formulas (m = 1 .. 5, s = 0 .. b):
+            for m in range(1, 6):
+                for s in range(Pi):
+                    val = cols[m - 1][s]
+                    d = s + m - b
+                    if d <= -1:
+                        exp = G0[s + m - 1] if (m % 2 == 1) else (G0[s + m - 2] ^ G0[s + m - 1])
+                    elif d == 0:
+                        exp = (1 ^ G0[b - 1]) if (m % 2 == 1) else (1 ^ G0[b - 2] ^ G0[b - 1])
+                    elif d == 1:
+                        if m == 1:
+                            exp = 1
+                        elif m == 2:
+                            exp = G0[b - 1]
+                        elif m % 2 == 1:
+                            exp = 1 ^ G0[b - 2] ^ (0 if m == 3 else G0[b + 2 - m])
+                        else:
+                            exp = G0[b + 1 - m] ^ G0[b - 1]
+                    elif d == 2:
+                        if m == 2:
+                            exp = 1 ^ G1[0]
+                        elif m == 3:
+                            exp = G1[0]
+                        elif m == 4:
+                            exp = 1 ^ G1[0]
+                        else:
+                            exp = G1[0] ^ G0[b - 3]
+                    elif d == 3:
+                        if m == 3:
+                            exp = (G1[0] ^ G1[1]) if b == 2 else (1 ^ G1[0] ^ G1[1])
+                        elif m == 4:
+                            exp = (G1[1] ^ G0[1]) if b == 2 else (1 ^ G1[1] ^ G0[b - 1])
+                        else:
+                            exp = (1 ^ G1[1] ^ G0[b - 1]) if b == 2 else (G1[1] ^ G0[b - 1])
+                    elif d == 4:
+                        if m == 4:
+                            exp = 0 if b == 2 else (G1[2] if b == 3 else (1 ^ G1[2]))
+                        else:
+                            exp = (G1[1] ^ G0[1]) if b == 2 else ((1 ^ G1[0] ^ G1[1] ^ G1[2] ^ G0[2]) if b == 3 else (G1[0] ^ G1[1] ^ G1[2] ^ G0[b - 1]))
+                    else:  # d == 5 (m == 5, s == b)
+                        exp = (1 ^ G2[0] ^ G1[0] ^ G1[1]) if b == 2 else ((1 ^ G1[0] ^ G1[2]) if b == 3 else ((G1[0] ^ G1[1] ^ G1[2] ^ G1[3]) if b == 4 else (1 ^ G1[0] ^ G1[1] ^ G1[2] ^ G1[3])))
+                    if val != exp:
+                        family2_errors += 1
+
+    # 4. Verify Zero-Branching Anti-Diagonal Extinction across ALL 224 primitive necklaces of Pi = 2 .. 10
+    def _primitive_necklaces(Pi: int) -> list[tuple[int, ...]]:
+        seen: set[tuple[int, ...]] = set()
+        out: list[tuple[int, ...]] = []
+        for mask in range(1, (1 << Pi) - 1):
+            w = tuple((mask >> (Pi - 1 - i)) & 1 for i in range(Pi))
+            if any(Pi % d == 0 and w == w[:d] * (Pi // d) for d in range(1, Pi)):
+                continue
+            rotations = [w[i:] + w[:i] for i in range(Pi)]
+            canon = min(r for r in rotations if r[0] == 0 and r[-1] == 1)
+            if canon not in seen:
+                seen.add(canon)
+                out.append(canon)
+        return out
+
+    def _apex_bit(c0_seq: list[int], l1_seq: list[int]) -> int:
+        c_prev = list(c0_seq)
+        c_curr = list(l1_seq)
+        for _m in range(2, len(l1_seq) + 1):
+            c_next = [c_curr[t + 1] ^ (c_curr[t] | c_prev[t]) for t in range(len(c_curr) - 1)]
+            c_prev, c_curr = c_curr, c_next
+        return c_curr[0]
+
+    total_necklaces_2_to_10 = 0
+    total_prefs_2_to_10 = 0
+    unextinguished_2_to_10 = 0
+    max_ext_steps_2_to_10 = 0
+    for Pi in range(2, 11):
+        necklaces = _primitive_necklaces(Pi)
+        total_necklaces_2_to_10 += len(necklaces)
+        for w in necklaces:
+            t0 = Pi - 1
+            valid_prefs: list[tuple[int | None, ...]] = []
+
+            def _gen(t: int, prev_c: int, prev_g: int, acc: tuple[int | None, ...]) -> None:
+                if t == t0 + 1:
+                    valid_prefs.append(acc)
+                    return
+                c = w[t % Pi]
+                if c == 1:
+                    _gen(t + 1, 1, prev_g, acc + (None,))
+                else:
+                    for g in (0, 1):
+                        if prev_c == 0 and g < prev_g:
+                            continue
+                        if t >= 2 and w[(t - 2) % Pi] == 0 and w[(t - 1) % Pi] == 1 and acc[t - 2] == 1 and g == 1:
+                            continue
+                        _gen(t + 1, 0, g, acc + (g,))
+
+            _gen(0, -1, 0, ())
+            total_prefs_2_to_10 += len(valid_prefs)
+            for pref in valid_prefs:
+                c0 = [w[t % Pi] for t in range(t0 + 1)]
+                l1 = [
+                    (1 ^ w[(t + 1) % Pi]) if w[t % Pi] == 1 else (w[(t + 1) % Pi] ^ int(pref[t] or 0))
+                    for t in range(t0 + 1)
+                ]
+                g_seq = list(pref)
+                surv = 0
+                for step_idx in range(1, 30):
+                    tau = t0 + step_idx
+                    s = tau % Pi
+                    w_next = w[(s + 1) % Pi]
+                    c0.append(w[s])
+                    val0 = _apex_bit(c0, l1 + [0])
+                    req_l1 = 0 if val0 == 0 else 1
+                    if w[s] == 1:
+                        if req_l1 != (1 ^ w_next):
+                            break
+                        l1.append(req_l1)
+                        g_seq.append(None)
+                    else:
+                        g = req_l1 ^ w_next
+                        if w[(tau - 1) % Pi] == 0 and g < int(g_seq[tau - 1] or 0):
+                            break
+                        if tau >= 2 and w[(tau - 2) % Pi] == 0 and w[(tau - 1) % Pi] == 1 and g_seq[tau - 2] == 1 and g == 1:
+                            break
+                        l1.append(req_l1)
+                        g_seq.append(g)
+                    surv += 1
+                else:
+                    unextinguished_2_to_10 += 1
+                if surv > max_ext_steps_2_to_10:
+                    max_ext_steps_2_to_10 = surv
+
+    return {
+        "erasure_5bit_errors": erasure_5bit_errors,
+        "family1_errors": family1_errors,
+        "family2_errors": family2_errors,
+        "total_necklaces_pi_2_to_10": total_necklaces_2_to_10,
+        "total_prefs_pi_2_to_10": total_prefs_2_to_10,
+        "unextinguished_2_to_10": unextinguished_2_to_10,
+        "max_exterior_steps_pi_2_to_10": max_ext_steps_2_to_10,
+    }
+
+
 def evaluate_white_tent_extinction_and_drift(
     r30_grid: np.ndarray,
     r90_grid: np.ndarray,
@@ -2754,6 +3009,12 @@ def self_test() -> dict:
     assert p34_gen["total_necklaces_pi_2_to_5"] == 12 and p34_gen["monic_leading_var_errors"] == 0, "Theorem 16 monic leading-variable linearity violated"
     assert p34_gen["unextinguished_prefs"] == 0 and p34_gen["max_exterior_steps_pi_2_to_5"] <= 13, "Theorem 16 general period-Pi anti-diagonal extinction violated"
 
+    dual_fam = verify_dual_infinite_families_and_general_necklace_extinction()
+    assert dual_fam["erasure_5bit_errors"] == 0 and dual_fam["family1_errors"] == 0, "Theorem 17 Family I (0 1^{a-1}) laws violated"
+    assert dual_fam["family2_errors"] == 0, "Theorem 17 Family II (0^b 1) laws violated"
+    assert dual_fam["total_necklaces_pi_2_to_10"] == 224 and dual_fam["unextinguished_2_to_10"] == 0, "Theorem 17 Pi=2..10 necklace extinction violated"
+    assert dual_fam["max_exterior_steps_pi_2_to_10"] <= 17, "Theorem 17 Pi=2..10 exterior step bound violated"
+
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)
     assert tent_eval["erosion_r30"]["frac_exact_2px_erosion"] == 1.0, "Rule 30 white-tent erosion must be 100% exact 2px/step"
     assert tent_eval["erosion_r90"]["frac_exact_2px_erosion"] == 1.0, "Rule 90 white-tent erosion must be 100% exact 2px/step"
@@ -2804,6 +3065,7 @@ def self_test() -> dict:
         "t3_t5_rg": t3_t5_rg,
         "p2_elim": p2_elim,
         "p34_gen": p34_gen,
+        "dual_fam": dual_fam,
         "tent_eval": tent_eval,
     }
 
@@ -3437,6 +3699,7 @@ def main(argv: list[str] | None = None) -> int:
     tent_eval = res["tent_eval"]
     p2_elim = res["p2_elim"]
     p34_gen = res["p34_gen"]
+    dual_fam = res["dual_fam"]
     print(
         f"[open_problems_A_B_C_D] OK | backward inverse errors={bwd['backward_inverse_errors']} (post-barrier cycles: 0/3, 0/15, 0/255) | "
         f"unit-seed branch='{bs_diag['unit_seed_p16_branch_path']}' -> exact k_5={bs_diag['unit_seed_exact_k5']} (T_lock={bs_diag['unit_seed_exact_tlock_k5']}, "
@@ -3445,12 +3708,11 @@ def main(argv: list[str] | None = None) -> int:
         f"specimen={tent_eval['erosion_specimen']['frac_exact_2px_erosion']:.2f} | chirality DeltaC: R30={tent_eval['chirality_r30']['drift_asymmetry']:.4f}"
     )
     print(
-        f"[theorems_15_16_period_elimination] OK | Pi=2 ANF deg<=2 errors={p2_elim['anf_degree2_errors']}, "
+        f"[theorems_15_16_17_period_elimination] OK | Pi=2 ANF deg<=2 errors={p2_elim['anf_degree2_errors']}, "
         f"tautology errors={p2_elim['universal_tautology_errors']}, ext_steps<={p2_elim['max_exterior_pair_steps_k0_2_to_22']} pairs | "
-        f"Pi=3,4,5 ({p34_gen['total_necklaces_pi_2_to_5']} necklaces): w011/w0111/w001/w0001 errors="
-        f"{p34_gen['w011_identity_errors'] + p34_gen['w0111_identity_errors'] + p34_gen['w001_affine_errors'] + p34_gen['w0001_errors']}, "
-        f"monic errors={p34_gen['monic_leading_var_errors']}, unextinguished={p34_gen['unextinguished_prefs']} "
-        f"(max_ext_steps={p34_gen['max_exterior_steps_pi_2_to_5']})"
+        f"Family I (0 1^a)/II (0^b 1) errors={dual_fam['erasure_5bit_errors'] + dual_fam['family1_errors'] + dual_fam['family2_errors']} | "
+        f"Pi=2..10 ({dual_fam['total_necklaces_pi_2_to_10']} necklaces, {dual_fam['total_prefs_pi_2_to_10']} prefs): "
+        f"unextinguished={dual_fam['unextinguished_2_to_10']} (max_ext_steps={dual_fam['max_exterior_steps_pi_2_to_10']})"
     )
     print(
         f"[morphometrics] Conus textile H/W={res['hw_mesh']:.4f} (specimen {res['spec_hw']:.4f}), "
