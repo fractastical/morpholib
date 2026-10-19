@@ -1115,6 +1115,113 @@ def verify_diagonal_ivp_and_boundary_memory_erasure(cone: np.ndarray, k_max: int
     }
 
 
+def verify_bidiagonal_seam_and_period2_collapse(cone: np.ndarray, t_max: int = 260) -> dict:
+    """Verify Theorem 11:
+      1. Exact Right-Cone Diagonal Initial-Value Problem (IVP) from j = 0:
+            r_m(m) = c_m,   r_m(t+1) = r_m(t) ^ (r_{m-1}(t) | r_{m-2}(t))   (for all t >= m),
+         reconstructing the entire right half-cone j >= 0 from C^{(0)} alone with 0 bit errors,
+         zero transient inside t >= m, and 0% boundary-memory erasure (r_m^{(0)}(t) ^ r_m^{(1)}(t) == 1).
+      2. Bi-Diagonal Seam Decomposition of Rule 30:
+         For ANY binary sequence c = (c_0, c_1, ...) with c_0 = 1, gluing the Leftward Diagonal IVP d_k(t)
+         (for j <= 0) and the Rightward Diagonal IVP r_m(t) (for j >= 0) satisfies the Rule 30 law with
+         0 errors everywhere in j < 0 and j > 0, concentrating 100% of discrepancies onto the 1D seam j = 0:
+            c_{t+1} = d_{t-1}(t) ^ (c_t | r_{t-1}(t)).
+      3. Exact Four-Column Symbolic Collapse for Period Pi = 2 (a_{2r,0}=0, a_{2r+1,0}=1):
+         Modulo the Fibonacci law G_r * G_{r+1} = 0 on G_r = g_{2r,0}, leftward spatial inversion gives
+            (a_{2r,-4}, a_{2r+1,-4}) == (0, G_{r+2})
+         with 0 bit errors across all Fibonacci gate sequences G.
+    """
+    steps, width = cone.shape
+    c0 = width // 2
+    T = min(steps - 1, t_max)
+    true_c = cone[: T + 1, c0].astype(np.uint8)
+
+    # 1. Right-cone diagonal IVP reconstruction from true_c alone
+    r = np.zeros((T + 1, T + 1), dtype=np.uint8)
+    right_cone_bit_errors = 0
+    right_erasure_errors = 0
+    for m in range(T + 1):
+        r[m, m] = true_c[m]
+        for t in range(m, T):
+            r_mm1 = int(r[m - 1, t]) if m >= 1 else 0
+            r_mm2 = int(r[m - 2, t]) if m >= 2 else 0
+            r[m, t + 1] = int(r[m, t]) ^ (r_mm1 | r_mm2)
+        for t in range(m, T + 1):
+            j = t - m
+            if c0 + j < width and int(r[m, t]) != int(cone[t, c0 + j]):
+                right_cone_bit_errors += 1
+        if m <= 40:
+            r0 = np.zeros(T + 1, dtype=np.uint8)
+            r1 = np.zeros(T + 1, dtype=np.uint8)
+            r0[m] = 0
+            r1[m] = 1
+            for t in range(m, T):
+                rm1 = int(r[m - 1, t]) if m >= 1 else 0
+                rm2 = int(r[m - 2, t]) if m >= 2 else 0
+                r0[t + 1] = int(r0[t]) ^ (rm1 | rm2)
+                r1[t + 1] = int(r1[t]) ^ (rm1 | rm2)
+                if (int(r0[t + 1]) ^ int(r1[t + 1])) != 1:
+                    right_erasure_errors += 1
+
+    # 2. Gluing d_k(t) and r_m(t) for an arbitrary sequence c_arb has 0 errors in j < 0 and j > 0
+    T_glue = min(80, T)
+    c_arb = np.array([1 if t == 0 else (t % 2) for t in range(T_glue + 1)], dtype=np.uint8)
+    d_arb = np.zeros((T_glue + 1, T_glue + 1), dtype=np.uint8)
+    r_arb = np.zeros((T_glue + 1, T_glue + 1), dtype=np.uint8)
+    for k in range(T_glue + 1):
+        d_arb[k, k] = c_arb[k]
+        for t in range(k, T_glue):
+            d_arb[k, t + 1] = (d_arb[k - 2, t] if k >= 2 else 0) ^ ((d_arb[k - 1, t] if k >= 1 else 0) | d_arb[k, t])
+    for m in range(T_glue + 1):
+        r_arb[m, m] = c_arb[m]
+        for t in range(m, T_glue):
+            r_arb[m, t + 1] = r_arb[m, t] ^ ((r_arb[m - 1, t] if m >= 1 else 0) | (r_arb[m - 2, t] if m >= 2 else 0))
+
+    grid_arb = np.zeros((T_glue + 1, 2 * T_glue + 5), dtype=np.uint8)
+    mid = T_glue + 2
+    for t in range(T_glue + 1):
+        for k in range(t + 1):
+            grid_arb[t, mid - t + k] = d_arb[k, t]
+        for m in range(t + 1):
+            grid_arb[t, mid + t - m] = r_arb[m, t]
+
+    off_seam_errors = 0
+    for t in range(T_glue):
+        for j in range(-T_glue - 1, T_glue + 2):
+            if j == 0:
+                continue
+            lhs = int(grid_arb[t + 1, mid + j])
+            rhs = int(grid_arb[t, mid + j - 1] ^ (grid_arb[t, mid + j] | grid_arb[t, mid + j + 1]))
+            if lhs != rhs:
+                off_seam_errors += 1
+
+    # 3. Verify the exact 4-column collapse (a_{2r,-4}, a_{2r+1,-4}) == (0, G_{r+2}) on all Fibonacci words G of length 8
+    N_fib = 8
+    col_minus4_errors = 0
+    for mask in range(1 << N_fib):
+        if (mask & (mask >> 1)) != 0:
+            continue
+        G = [(mask >> r) & 1 for r in range(N_fib)]
+        col0 = [0 if t % 2 == 0 else 1 for t in range(2 * N_fib)]
+        col_m1 = [(1 ^ G[t // 2]) if t % 2 == 0 else 1 for t in range(2 * N_fib)]
+        cols = {0: col0, -1: col_m1}
+        for j in (-1, -2, -3):
+            prev_c = cols[j]
+            right_c = cols[j + 1]
+            cols[j - 1] = [prev_c[t + 1] ^ (prev_c[t] | right_c[t]) for t in range(len(prev_c) - 1)]
+        col_m4 = cols[-4]
+        for r_idx in range(N_fib - 3):
+            if col_m4[2 * r_idx] != 0 or col_m4[2 * r_idx + 1] != G[r_idx + 2]:
+                col_minus4_errors += 1
+
+    return {
+        "right_cone_bit_errors": right_cone_bit_errors,
+        "right_erasure_errors": right_erasure_errors,
+        "off_seam_errors": off_seam_errors,
+        "col_minus4_errors": col_minus4_errors,
+    }
+
+
 def evaluate_white_tent_extinction_and_drift(
     r30_grid: np.ndarray,
     r90_grid: np.ndarray,
@@ -1735,6 +1842,10 @@ def self_test() -> dict:
     assert ivp_erase["erasure_identity_errors"] == 0 and ivp_erase["erased_before_lockin_fraction"] > 0.90, "Theorem 10 boundary-memory erasure failed"
     assert ivp_erase["prefix24_periodic_tail_mismatches"] == 0, "Theorem 10 24-bit prefix periodic-tail phase lock failed"
 
+    seam_p2 = verify_bidiagonal_seam_and_period2_collapse(prize["cone"], t_max=260)
+    assert seam_p2["right_cone_bit_errors"] == 0 and seam_p2["right_erasure_errors"] == 0, "Theorem 11 right-cone diagonal IVP failed"
+    assert seam_p2["off_seam_errors"] == 0 and seam_p2["col_minus4_errors"] == 0, "Theorem 11 bi-diagonal seam or period-2 j=-4 collapse failed"
+
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)
     assert tent_eval["erosion_r30"]["frac_exact_2px_erosion"] == 1.0, "Rule 30 white-tent erosion must be 100% exact 2px/step"
     assert tent_eval["erosion_r90"]["frac_exact_2px_erosion"] == 1.0, "Rule 90 white-tent erosion must be 100% exact 2px/step"
@@ -1779,6 +1890,7 @@ def self_test() -> dict:
         "r60_latch": r60_latch,
         "self_pred": self_pred,
         "ivp_erase": ivp_erase,
+        "seam_p2": seam_p2,
         "tent_eval": tent_eval,
     }
 

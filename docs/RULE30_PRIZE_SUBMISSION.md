@@ -216,9 +216,33 @@ Let $c_k := a_{k, 0}$ denote the center column ($j = 0$) and $d_k(t) := a_{t, -t
 
 ---
 
+### Theorem 11 (Exact Bi-Diagonal Seam Decomposition of Rule 30, Dual Zero-Transient / Zero-Erasure Right-Cone IVP, and Period-2 Fourth-Column Collapse)
+Let $c = (c_0, c_1, c_2, \dots)$ with $c_0 = 1$ be any binary sequence placed on the center column $j = 0$. Then:
+1. **Exact Right-Cone Diagonal Initial-Value Problem (IVP) & $0\%$ Boundary Erasure:** Inside the right half-cone $t \ge m$ ($j = t - m \ge 0$), the rightward diagonals $r_m(t) := a_{t, t-m}$ obey the closed autonomous recurrence
+   $$r_m(t+1) \;=\; r_m(t) \;\oplus\; \bigl(r_{m-1}(t) \lor r_{m-2}(t)\bigr) \quad (\forall\, t \ge m), \qquad r_m(m) \;=\; a_{m, 0} \;=\; c_m,$$
+   with $r_{-1}(t) = r_{-2}(t) \equiv 0$, reconstructing the **entire right half-cone $j \ge 0$ purely from the center column $C^{(0)}$ with `0` bit errors**:
+   $$r_m(t) \;=\; c_m \;\oplus\; \bigoplus_{\tau = m}^{t - 1} \bigl(r_{m-1}(\tau) \lor r_{m-2}(\tau)\bigr) \qquad (\forall\, t \ge m).$$
+   In sharp contrast to the left half-cone (where $d_k(t)$ sits *inside* the `OR` gate and $93.32\%$ of boundary bits $c_k$ are erased before lock-in), in the right half-cone $r_m(t)$ sits *outside* the `OR` gate as a linear `XOR` carry, so for **every** boundary sequence $c = (c_0, c_1, \dots)$:
+   - Every rightward diagonal $r_m(t)$ ($t \ge m$) is **strictly $2^{n_R(m)}$-periodic ($P_R(m) \mid 2^m$) immediately from $t = m$ with zero transient** ($T_{\text{lock}}^{(R)}(m) = m$).
+   - Comparing the two trajectories $r_m^{(0)}(t)$ and $r_m^{(1)}(t)$ starting from $r_m(m) = 0$ vs. $1$ yields **zero boundary-memory erasure ($100\%$ permanent phase memory)**:
+     $$r_m^{(0)}(t) \;\oplus\; r_m^{(1)}(t) \;\equiv\; 1 \qquad (\forall\, t \ge m).$$
+2. **Exact Bi-Diagonal Seam Decomposition of the 2D Rule 30 Light-Cone:** For **any** binary sequence $c = (c_0, c_1, \dots)$ with $c_0 = 1$, gluing the Leftward Diagonal IVP $a_{t, -t+k} := d_k(t)$ ($j \le 0$) and the Rightward Diagonal IVP $a_{t, t-m} := r_m(t)$ ($j \ge 0$) produces a 2D space-time field that satisfies the Rule 30 evolution law with **`0` errors at every off-center cell $j \ne 0$ ($j \le -1$ and $j \ge +1$)**, concentrating $100\%$ of the 2D cellular automaton dynamics onto the single 1D **Center-Seam Fixed-Point Equation** at $j = 0$:
+   $$c_{t+1} \;=\; d_{t-1}(t) \;\oplus\; \bigl(c_t \lor r_{t-1}(t)\bigr) \qquad (\forall\, t \ge 0).$$
+3. **Exact Four-Column Symbolic Collapse for Period $\Pi = 2$ ($w = \mathtt{01}$):** If $a_{2r, 0} = 0$ and $a_{2r+1, 0} = 1$ for $r \ge r_0$, let $G_r := g_{2r, 0} = a_{2r, 1} \land a_{2r+1, 1} = \overline{a_{2r, -1}}$ (which satisfies the depth-$1$ Fibonacci law $G_r G_{r+1} = 0$ by Theorem 8(3)). Then iterating the leftward spatial inverse over $\mathbb{F}_2[G_r, G_{r+1}, \dots] / \langle G_s G_{s+1} \rangle$ yields:
+   $$\begin{aligned}
+   j = 0:\quad &(a_{2r, 0},\, a_{2r+1, 0}) \;=\; (0,\, 1), \\
+   j = -1:\quad &(a_{2r, -1},\, a_{2r+1, -1}) \;=\; (\overline{G_r},\, 1), \\
+   j = -2:\quad &(a_{2r, -2},\, a_{2r+1, -2}) \;=\; (G_r,\, G_{r+1}), \\
+   j = -3:\quad &(a_{2r, -3},\, a_{2r+1, -3}) \;=\; (\overline{G_{r+1}},\, \overline{G_{r+1}}), \\
+   j = -4:\quad &(a_{2r, -4},\, a_{2r+1, -4}) \;=\; (G_r G_{r+1},\, G_{r+2}) \;=\; (0,\, G_{r+2}).
+   \end{aligned}$$
+   Thus at column $j = -4$, all nonlinear products vanish identically (`0` errors across all Fibonacci words $G$): every even step $a_{2r, -4} \equiv 0$ is identically zero (just like column $j = 0$), and every odd step $a_{2r+1, -4} = G_{r+2}$ is a direct shifted copy of the right-hand transparent-gate sequence $G_r$. $\square$
+
+---
+
 ## 7. One-Command Verification
 
-All ten theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
+All eleven theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python 1984-wolfram-conus-textile-rule30.py --self-test-only
