@@ -41,6 +41,21 @@ SUPERSEDED_SCRIPTS = {"1900-planformDB_parser.py"}
 
 # Epistemic role, empirical validation target, and mechanistic / model-validity status for each script
 SCRIPT_META = {
+    "2005-runions-leaf-venation.py": {
+        "kind": "reproduce",
+        "target": "real specimens (segmented dicot skeleton 168 areoles + Ginkgo leaf) & Price 2013 (349 leaves)",
+        "validity": "Implements Runions (2005) open Voronoi & closed Toussaint RNG space-colonization with persistent V(s) tagging, planar segment-intersection enforcement, Murray/Price Strahler scaling, and planar dual areole nesting.",
+    },
+    "1984-wolfram-conus-textile-rule30.py": {
+        "kind": "reproduce",
+        "target": "real specimens (OSU & Commons Conus textile photos; H/W error 0.07%, IoU 0.835) & OEIS A051023",
+        "validity": "Exact Rule 30 / Jen (1990) cellular automaton half; blinded 2nd assessor (50.5 vs 87.3) flagged that the Meinhardt PDE uses an unsourced relaxation divisor and stochastic injection and Raup T is swamped by axial_ext.",
+    },
+    "1979-vogel-phyllotaxis.py": {
+        "kind": "reproduce",
+        "target": "real specimens (621 DoG-segmented florets on H. annuus photo + Swinton 2016 N=768 capitula)",
+        "validity": "Implements Vogel (1979) spiral, bounded Voronoi optimality, Douady-Couder (1992) Hofmeister relaxation, and rim-dislocation ensemble reproducing Swinton's Fib-1 > Fib+1 asymmetry.",
+    },
     "thompson/1917-thompson-scarus-pomacanthus.py": {
         "kind": "test",
         "target": "real specimens (791 fish species landmarks + 2 segmented photos)",
@@ -105,7 +120,10 @@ def sh(*cmd, **kw) -> str:
 
 def load_audits() -> list[dict]:
     out = []
-    files = [p for p in glob.glob(str(ROOT / "morphoeval" / "audits" / "*.yaml")) if ".measurements." not in p]
+    tracked = set(sh("git", "ls-files", "morphoeval/audits/*.yaml").splitlines())
+    files = [str(ROOT / p) for p in tracked if ".measurements." not in p]
+    if not files:
+        files = [p for p in glob.glob(str(ROOT / "morphoeval" / "audits" / "*.yaml")) if ".measurements." not in p]
     files.sort(key=lambda f: Path(f).stem)
     for f in files:
         a = yaml.safe_load(open(f))
@@ -271,10 +289,11 @@ def blinded_table(latest_active, hist_blinded) -> str:
     blind_ranks = {sim: idx + 1 for idx, sim in enumerate(sorted(ordered_sims, key=lambda s: -blind_by_sim[s]["overall"]))}
 
     rows = [
-        "| script | primary (`claude-fable-5-1` / `gpt-5.6-sol`†) impl. / bio. / repro. | 2nd assessor (`gemini-4-argon`) impl. / bio. / repro. | primary app. / **pad.** (rank) | 2nd assessor app. / **pad.** (rank) | Δ pad. (Δ app.) | panel mean **pad.** | independent defects / observations surfaced by 2nd pass |",
+        "| script | primary (`claude-fable-5-1` / `gpt-5.6-sol`† / `gemini-4-argon`‡) impl. / bio. / repro. | 2nd assessor (`gemini-4-argon` / `claude-fable-5-1`‡) impl. / bio. / repro. | primary app. / **pad.** (rank) | 2nd assessor app. / **pad.** (rank) | Δ pad. (Δ app.) | panel mean **pad.** | independent defects / observations surfaced by 2nd pass |",
         "|" + "-" * 28 + "|" + "-" * 22 + "|" + "-" * 22 + "|" + "-" * 18 + "|" + "-" * 18 + "|---------:|------:|" + "-" * 42 + "|",
     ]
     defects = {
+        "wolfram-conus-textile-rule30": "CA/Jen half verified exact; PDE uses unsourced relaxation divisor & stochastic injection (extinguishes without it); inert Raup T; non-discriminating chord metric; D_box > 2; wrong DOIs in script/.bib.",
         "hoffmann-wing-venation": "`fetch_wing_png()` lacks a SHA-256 digest check on the remote zip; stale docstring claim on `scikit-image`/`Pillow`; fixed 18 Lloyd steps.",
         "thompson-scarus-pomacanthus": "2-anchor silhouette registration vs 17-landmark fit; collapsed museum vs live extended fin posture.",
         "eshghi-odonata-wing-cells": "`fossil_drawing()` (<128, largest component) vs `_read_drawing()` (<160, >=150 px) threshold mismatch; overwrites tracked CSV in place.",
@@ -292,7 +311,7 @@ def blinded_table(latest_active, hist_blinded) -> str:
         dp = b["overall"] - p["overall"]
         da = b["overall_app"] - p["overall_app"]
         p_mean = 0.5 * (p["overall"] + b["overall"])
-        dagger = "†" if p["assessor"] == "gpt-5.6-sol" else ""
+        dagger = "†" if p["assessor"] == "gpt-5.6-sol" else ("‡" if p["assessor"] == "gemini-4-argon" else "")
         rows.append(
             f"| `{p['script']}`{dagger} | {p['impl']:.1f} / {p['bio']:.1f} / {p['repro']:.1f} | "
             f"{b['impl']:.1f} / {b['bio']:.1f} / {b['repro']:.1f} | "
@@ -302,13 +321,14 @@ def blinded_table(latest_active, hist_blinded) -> str:
         )
     rows.append("")
     rows.append(
-        "Table: Complete 10-script dual-agent evaluation (`2026-10-17-blinded-sample-audit.yaml`, `gemini-4-argon`, Google) "
-        "compared against the primary checkpoint scores (`claude-fable-5-1`, Anthropic on 9 scripts; †`gpt-5.6-sol`, OpenAI on `2021-Cervera–Levin–Mafe.py`). "
-        "Across all 10 active scripts, overall rank-order concordance is strong (Spearman ρ = 0.891, p = 0.00054; Kendall τ = 0.778, p = 0.00095; "
-        "Pearson r = 0.920, p = 0.00017 on padded scores; Spearman ρ = 0.903 on applicable-only scores), and across the original 5-script blinded subset "
-        "(`thompson`, `odonata`, `limbform`, `raup`, `turing`) rank order is exact (Spearman ρ = 1.00, Kendall τ = 1.00). "
-        "Across all 70 script × dimension pairs (10 scripts × 7 dimensions), Spearman ρ = 0.796 (p = 1.7 × 10⁻¹⁶) and Pearson r = 0.813 (p = 1.3 × 10⁻¹⁷), "
-        "with a mean signed calibration offset of +6.5 points and mean absolute difference (MAD) of 10.4 points."
+        "Table: Cross-company second-assessor evaluation across the 11 scripts with standalone `role: second_assessor` audits: "
+        "the 10-script `gemini-4-argon` pass (`2026-10-17-blinded-sample-audit.yaml`, paired with `claude-fable-5-1` on 9 scripts and †`gpt-5.6-sol` on `2021-Cervera–Levin–Mafe.py`) "
+        "plus the ‡blinded `claude-fable-5-1` pass (`2026-10-19-conus-second-assessor-audit.yaml`) on `1984-wolfram-conus-textile-rule30.py` (primary `gemini-4-argon`). "
+        "(The remaining 2 active evaluated scripts, `2005-runions-leaf-venation.py` and `1979-vogel-phyllotaxis.py`, were dual-assessed inside their 12-step closed remediation loops by `gemini-4-argon` + `claude-sonnet-5-5-high`.) "
+        "Across the 10-script `gemini-4-argon` pass, rank-order concordance with the primary assessors is strong (Spearman ρ = 0.891, p = 0.00054; Kendall τ = 0.778, p = 0.00095; "
+        "Pearson r = 0.920, p = 0.00017 on padded scores; Spearman ρ = 0.903 on applicable-only scores; exact ρ = 1.00, τ = 1.00 on the initial 5-script blinded subset; "
+        "dimension-level ρ = 0.796, r = 0.813 across 70 pairs, MAD = 10.4 points). Adding the blinded *Conus textile* replication (where `claude-fable-5-1` scored 50.5 vs `gemini-4-argon` 87.3, Δ = −36.8 points) "
+        "brings the 11-script (77-dimension-pair) cross-company comparison to provider-paired Spearman ρ = 0.678 (p = 1.3 × 10⁻¹¹), Pearson r = 0.664, and MAD = 13.8 points."
     )
     return "\n".join(rows)
 
@@ -337,24 +357,42 @@ def history_table(hist_all) -> str:
     return "\n".join(rows)
 
 
-def nanopub_counts() -> tuple[int, int, int]:
-    """(published to production, current heads, locally signed second-assessor nanopubs)."""
+def nanopub_counts() -> tuple[int, int, int, int]:
+    """(published to production, current heads, locally signed second-assessor nanopubs, locally signed unpublished primary nanopubs)."""
     import re
     prod = set()
+    superseded_by_prod = set()
     blinded_signed = 0
-    for f in glob.glob(str(ROOT / "morphoeval" / "kg" / "*" / "published.json")):
-        is_blinded = "blinded-sample" in f
-        for e in json.load(open(f)).values():
+    primary_unpub_signed = 0
+    pat = re.compile(r"npx:supersedes\s+<([^>]+)>")
+    tracked = set(sh("git", "ls-files", "morphoeval/kg/*/published.json").splitlines())
+    pub_files = [str(ROOT / p) for p in sorted(tracked)] if tracked else sorted(glob.glob(str(ROOT / "morphoeval" / "kg" / "*" / "published.json")))
+    for f in pub_files:
+        is_blinded = ("blinded-sample" in f) or ("second-assessor" in f)
+        sdir = Path(f).parent / "signed"
+        for k, e in json.load(open(f)).items():
             if is_blinded and e.get("nanopub"):
                 blinded_signed += 1
+            elif not is_blinded and e.get("nanopub") and not any(v.get("published") == "prod" for v in [e] + e.get("history", [])):
+                primary_unpub_signed += 1
             for v in [e] + e.get("history", []):
                 if v.get("published") == "prod" and v.get("nanopub"):
                     prod.add(v["nanopub"])
-    superseded = set()
-    pat = re.compile(r"npx:supersedes\s+<([^>]+)>")
-    for f in glob.glob(str(ROOT / "morphoeval" / "kg" / "*" / "signed" / "*.trig")):
-        superseded.update(pat.findall(Path(f).read_text()))
-    heads_offline = prod - superseded
+            if e.get("published") == "prod" and (sdir / k).exists():
+                superseded_by_prod.update(pat.findall((sdir / k).read_text()))
+            all_vers = e.get("history", []) + [e]
+            for i in range(1, len(all_vers)):
+                if all_vers[i].get("published") == "prod" and all_vers[i - 1].get("nanopub"):
+                    superseded_by_prod.add(all_vers[i - 1]["nanopub"])
+    # Also record cross-directory supersession where 2026-10-14-morphology-audit history[0] replaced 2026-10-13-morphology-audit
+    p13 = ROOT / "morphoeval" / "kg" / "2026-10-13-morphology-audit" / "published.json"
+    p14 = ROOT / "morphoeval" / "kg" / "2026-10-14-morphology-audit" / "published.json"
+    if p13.exists() and p14.exists():
+        d13, d14 = json.load(open(p13)), json.load(open(p14))
+        for k in d14:
+            if k in d13 and d13[k].get("published") == "prod":
+                superseded_by_prod.add(d13[k]["nanopub"])
+    heads_offline = prod - superseded_by_prod
     try:
         import importlib.util
         spec = importlib.util.spec_from_file_location("bmk", ROOT / "morphoeval" / "build_morphoeval_kg.py")
@@ -368,10 +406,10 @@ def nanopub_counts() -> tuple[int, int, int]:
         heads &= prod
         if heads != heads_offline:
             print(f"  heads: Nanopub Query {len(heads)}, offline record {len(heads_offline)} (using the query)")
-        return len(prod), len(heads), blinded_signed
+        return len(prod), len(heads), blinded_signed, primary_unpub_signed
     except Exception as ex:                                     # noqa: BLE001
         print(f"  head resolution unavailable ({ex}); using the offline record")
-        return len(prod), len(heads_offline), blinded_signed
+        return len(prod), len(heads_offline), blinded_signed, primary_unpub_signed
 
 
 def main(argv=None):
@@ -385,7 +423,7 @@ def main(argv=None):
     rubric = yaml.safe_load(open(RUBRIC))
     audits = load_audits()
     latest_active, latest_superseded, hist_primary, hist_blinded, hist_all = collect(audits, rubric)
-    n_pub_auto, n_heads_auto, n_blinded_np = nanopub_counts()
+    n_pub_auto, n_heads_auto, n_blinded_np, n_prim_unpub_np = nanopub_counts()
     if args.counts:
         n_pub, n_heads = (int(x) for x in args.counts.split(","))
     else:
@@ -396,6 +434,7 @@ def main(argv=None):
                    env={**os.environ, "MPLBACKEND": "Agg"})
 
     n_primary_audits = sum(1 for a in audits if a["audit"].get("role") != "second_assessor")
+    n_blinded_audits = sum(1 for a in audits if a["audit"].get("role") == "second_assessor")
     n_total_audits = len(audits)
 
     text = (HERE / "report.md").read_text()
@@ -407,11 +446,12 @@ def main(argv=None):
         "{{DECOMPOSITION_TABLE}}": decomposition_table(latest_active),
         "{{BLINDED_TABLE}}": blinded_table(latest_active, hist_blinded),
         "{{HISTORY_TABLE}}": history_table(hist_all),
-        "{{N_SCRIPTS_TOTAL}}": "14",
+        "{{N_SCRIPTS_TOTAL}}": "18",
         "{{N_SCRIPTS_ACTIVE}}": str(len(latest_active)),
         "{{N_SCRIPTS_EVALUATED}}": str(len(latest_active) + len(latest_superseded)),
         "{{N_SCRIPTS_UNEVALUATED}}": "5",
         "{{N_PRIMARY_AUDITS}}": str(n_primary_audits),
+        "{{N_BLINDED_AUDITS}}": str(n_blinded_audits),
         "{{N_PRIMARY_PASSES}}": str(len(hist_primary)),
         "{{N_BLINDED_PASSES}}": str(len(hist_blinded)),
         "{{N_TOTAL_AUDITS}}": str(n_total_audits),
@@ -420,6 +460,7 @@ def main(argv=None):
         "{{N_NANOPUBS}}": str(n_pub),
         "{{N_HEADS}}": str(n_heads),
         "{{N_BLINDED_NANOPUBS}}": str(n_blinded_np),
+        "{{N_PRIMARY_UNPUB_NANOPUBS}}": str(n_prim_unpub_np),
     }
     for k, v in fill.items():
         text = text.replace(k, v)

@@ -47,9 +47,14 @@ def provider(homepage):
 
 def assessors_from_audits():
     """Distinct (company, colour, model label) of the assessors named in the audits, in order of first use."""
-    import yaml
+    import subprocess, yaml
     seen, counts, passes = {}, {}, {}
-    for f in sorted(p for p in (ROOT / "morphoeval" / "audits").glob("*.yaml") if ".measurements." not in p.name):
+    try:
+        tracked = subprocess.check_output(["git", "ls-files", "morphoeval/audits/*.yaml"], cwd=ROOT, text=True).splitlines()
+        audit_files = [ROOT / p for p in sorted(tracked) if ".measurements." not in p]
+    except Exception:
+        audit_files = sorted(p for p in (ROOT / "morphoeval" / "audits").glob("*.yaml") if ".measurements." not in p.name)
+    for f in audit_files:
         doc = yaml.safe_load(open(f))
         a = (doc.get("audit") or {}).get("assessor") or {}
         name, col = provider(a.get("homepage"))
@@ -101,7 +106,7 @@ BOXES = {
 }
 # the file or term behind each tier-B box, in small type under the plain-language body
 TERMS = {
-    "scout": "so far: 15 papers, chosen by hand", "paper": "Raup 1966 · PlanformDB · Thompson 1917",
+    "scout": "so far: 16 papers, chosen by hand", "paper": "Raup 1966 · PlanformDB · Thompson 1917",
     "source": "SHA-256 pinned · datasets/<paper>/", "rules": "e.g. 1181/1181 regions, 3137/3146 joints",
     "script": "<year>-<author>-<model>.py", "audit": "audits/<date>-<name>.yaml", "measure": "measure_outputs.py",
     "build": "build_morphoeval_kg.py (RDF)", "publish": "sign_morphoeval.py",
@@ -118,6 +123,7 @@ PAPERS = [  # (gif, caption lines, kind)
     ("raup_shell_coiling.gif",            "Raup 1966\nJ Paleontol\nshell-coiling morphospace", "reproduce"),
     ("conus_textile_rule30.gif",          "Wolfram 1984 · Meinhardt 1987\nNature · J Theor Biol\nConus textile & Rule 30", "reproduce"),
     ("bressloff_v1_form_constants.gif",   "Bressloff et al. 2001\nPhil Trans R Soc B\nV1 form constants & retinal map", "reproduce"),
+    ("runions_leaf_venation_growth.gif",  "Runions et al. 2005 · Price 2013\nACM TOG · PLoS ONE\nleaf venation & Murray's law", "reproduce"),
     ("petroff_stromatolite_dome_to_cone.gif", "Petroff et al. 2010\nPNAS\nconical stromatolites", "reproduce"),
     ("chindapol_coral_flow_growth.gif",   "Chindapol et al. 2013\nPLoS Comput Biol\ncoral growth in flow", "reproduce"),
     ("planform_morphospace_timeline.gif", "Lobo, Malone & Levin 2013\nBioinformatics\nPlanform, PlanformDB 2.5.0", "decode"),
@@ -189,9 +195,9 @@ def fmt_time_tok(step_entry: dict) -> str:
 
 
 def strip(ax, telemetry_step: dict | None = None):
-    """Box 6: the outputs.  Two rows of thumbnails (8 + 7), each a frame of a script's own animation, labelled
+    """Box 6: the outputs.  Two rows of thumbnails (9 + 7), each a frame of a script's own animation, labelled
     with the paper it comes from.  Framed like a tier-A box because it is one: the thing Compare and Audit look at."""
-    cols, gap, wide = 8, 0.9, 2.5; tw = (97.0 - (cols - 2) * gap - wide) / cols; row_h = 14.2   # the last gap is wider: the fix loop runs through it
+    cols, gap, wide = 9, 0.8, 2.5; tw = (97.0 - (cols - 2) * gap - wide) / cols; row_h = 14.2   # the last gap is wider: the fix loop runs through it
     top = YS + 2 * row_h + 5.8
     col_x = [1.5 + c * (tw + gap) + (wide - gap if c == cols - 1 else 0) for c in range(cols)]
     ax.add_patch(FancyBboxPatch((1.0, YS + 0.4), 98.0, top - YS - 0.4, boxstyle="round,pad=0.4,rounding_size=1.2", fc="#eff6ff", ec=EDGE, lw=1.0, zorder=1))
@@ -217,14 +223,14 @@ def strip(ax, telemetry_step: dict | None = None):
                                      lw=1.3 if (is_vogel and telemetry_step) else 0.5, zorder=4))
         ax.add_patch(FancyBboxPatch((x, y + 4.9), tw, 0.5, boxstyle="square,pad=0", fc=KIND_COL[kind], ec="none", zorder=3))
         ax.text(x + tw / 2, y + 2.3, cap, ha="center", va="center", fontsize=5.3, color="#1e293b", linespacing=1.15, zorder=3)
-    # Inline legend in top-right of Box 6 header (leaving col_x[7] of row 2 open for the remediation loop)
+        # Inline legend in top-right of Box 6 header (leaving col_x[cols - 1] of row 2 open for the remediation loop)
     lx0 = 66.5; ly0 = top - 2.1
     for j, (k, c) in enumerate(KIND_COL.items()):
         xj = lx0 + j * 10.6
         ax.add_patch(FancyBboxPatch((xj, ly0 - 0.25), 1.3, 0.5, boxstyle="square,pad=0", fc=c, ec="none", zorder=3))
         ax.text(xj + 1.6, ly0, {"reproduce": "reproduce model", "decode": "decode encoding",
                                 "test": "test claim"}[k], fontsize=5.3, va="center", color=EDGE, zorder=3)
-    return top, col_x[7] - wide / 2                                    # band top; x of the (wide) gap between columns 7 and 8
+    return top, col_x[cols - 1] - wide / 2                             # band top; x of the (wide) gap before the last column
 
 
 def box(ax, key, telemetry_step: dict | None = None):

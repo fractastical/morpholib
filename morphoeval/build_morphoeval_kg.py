@@ -961,6 +961,13 @@ def conformance(files: list[Path]) -> list[str]:
             if p in (PK.weightOfEvidence, PK.hasConfidence, PK.hasProbability):
                 if not (0.0 <= float(o) <= 1.0):
                     probs.append(f"{f.name}: {p.n3(ds.namespace_manager)} {o} outside [0,1]")
+            if p == PK.hasProbability:
+                # Issue #9 regression guard: whenever pk:hasProbability is emitted on a rubric
+                # assessment, pubinfo must declare dct:conformsTo the MorphoEval rubric concept
+                # so the unit-interval value cannot be mistaken for an unanchored probability.
+                conforms = [str(c) for c in pub.objects(THIS, DCTERMS.conformsTo)]
+                if not any("morphoeval-rubric-" in c for c in conforms):
+                    probs.append(f"{f.name}: pk:hasProbability used without dct:conformsTo morphoeval-rubric link in pubinfo")
     return probs
 
 

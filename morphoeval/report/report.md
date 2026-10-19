@@ -28,20 +28,30 @@ abstract: |
   output.   Across the {{N_TOTAL_AUDITS}} audit files ({{N_TOTAL_PASSES}}
   script-level evaluation passes covering {{N_SCRIPTS_ACTIVE}} active scripts
   plus 1 superseded script), {{N_PRIMARY_AUDITS}} primary checkpoint audits
-  ({{N_PRIMARY_PASSES}} passes) are published on the production
-  nanopublication network ({{N_NANOPUBS}} nanopublications, {{N_HEADS}} current
-  heads), and all {{N_SCRIPTS_ACTIVE}} active evaluated scripts are dual-scored
-  by a second model from a different company ({{N_BLINDED_PASSES}} passes by
-  `gemini-4-argon`, Google, alongside 9 scripts scored by `claude-fable-5-1`,
-  Anthropic, and 2 independent passes on Cervera–Levin–Mafe by `gpt-5.6-sol`,
-  OpenAI) so that no script relies solely on its builder grading itself. Across
-  all 10 dual-scored scripts, rank-order agreement on overall scores is strong
-  (Spearman $\rho = 0.891$, Kendall $\tau = 0.778$, Pearson $r = 0.920$ on
-  padded scores; $\rho = 0.903$ on applicable-only scores; and exact $\rho =
-  1.00$, $\tau = 1.00$ on the initial 5-script blinded subset; dimension-level
-  $\rho = 0.796$, $r = 0.813$ across all 70 pairs), while revealing systematic
-  scale-calibration offsets ($\text{MAD} = 10.4$ points) and surfacing concrete
-  code defects the builder-assessor had missed.
+  ({{N_PRIMARY_PASSES}} passes) are backed by {{N_NANOPUBS}} production
+  nanopublications ({{N_HEADS}} current heads, plus {{N_PRIMARY_UNPUB_NANOPUBS}}
+  signed v1/v2 loop nanopublications), and all {{N_SCRIPTS_ACTIVE}} active
+  evaluated scripts are dual-scored across two model providers — combining
+  {{N_BLINDED_AUDITS}} standalone second-assessor replication files
+  ({{N_BLINDED_PASSES}} passes: 10 by `gemini-4-argon`, Google, in
+  `2026-10-17-blinded-sample-audit.yaml`, and 1 blinded pass by
+  `claude-fable-5-1`, Anthropic, in `2026-10-19-conus-second-assessor-audit.yaml`,
+  totaling {{N_BLINDED_NANOPUBS}} signed second-assessor nanopublications), 2
+  independent passes on Cervera–Levin–Mafe by `gpt-5.6-sol` (OpenAI), and 2
+  closed-loop dual-agent passes (`gemini-4-argon` + `claude-sonnet-5-5-high`,
+  Anthropic) on Runions leaf venation and Vogel phyllotaxis — so that no script
+  relies solely on its builder grading itself. Across the 10-script
+  `gemini-4-argon` second-assessor pass, rank-order agreement on overall scores
+  is strong (Spearman $\rho = 0.891$, Kendall $\tau = 0.778$, Pearson $r =
+  0.920$ on padded scores; $\rho = 0.903$ on applicable-only scores; and exact
+  $\rho = 1.00$, $\tau = 1.00$ on the initial 5-script blinded subset;
+  dimension-level $\rho = 0.796$, $r = 0.813$ across 70 pairs, $\text{MAD} =
+  10.4$ points), while the blinded *Conus textile* replication (`50.5` vs `87.3`,
+  $\Delta = -36.8$ points; 11-script / 77-pair provider-paired $\rho = 0.678$,
+  $\text{MAD} = 13.8$ points) and the closed-loop audits of leaf venation
+  (`40.9 → 91.3`) and phyllotaxis (`64.3 → 85.9`) demonstrate that independent
+  cross-company assessors catch concrete mathematical and code defects that a
+  builder-assessor misses.
 ---
 
 # Introduction
@@ -52,11 +62,16 @@ one superseded historical parser, `1900-planformDB_parser.py`, replaced by
 `2013-lobo-planform-morphology.py`, and a minimal companion script `1966-raup.py`
 audited jointly with `create_raup_animations.py`):
 
-- **Ten active evaluated implementations (all 10 dual-scored across two model providers)**: Thompson's 1917 fish transformation
+- **Thirteen active evaluated implementations (all 13 dual-scored across two model providers)**: Thompson's 1917 fish transformation
   grids tested across 791 species (`thompson/1917-thompson-scarus-pomacanthus.py`),
   Turing's 1952 / Pearson's 1993 Gray–Scott reaction–diffusion patterns
   (`1952-turing-morpho.py`), Raup's 1966 shell-coiling morphospace
-  (`create_raup_animations.py` + `1966-raup.py`), Chindapol et al.'s 2013
+  (`create_raup_animations.py` + `1966-raup.py`), Vogel's 1979 / Douady &
+  Couder's 1992 golden-angle *Helianthus* phyllotaxis (`1979-vogel-phyllotaxis.py`),
+  Wolfram's 1984 Rule 30 & Meinhardt–Klingler's 1987 *Conus textile* shell
+  pigmentation (`1984-wolfram-conus-textile-rule30.py`), Runions et al.'s 2005
+  auxin space-colonization leaf venation & Murray's law
+  (`2005-runions-leaf-venation.py`), Chindapol et al.'s 2013
   flow-driven coral morphogenesis (`2013-chindapol-coral-flow.py`), Lobo,
   Malone & Levin's 2013 Planform planarian graph decoder
   (`2013-lobo-planform-morphology.py`), Lobo et al.'s 2014 Limbform limb graph
@@ -157,12 +172,22 @@ only `pk:hasProbability` and `pk:weightOfEvidence` (constrained to `xsd:double`
 in $[0, 1]$) as numeric literal slots read by Nanodash and Space queries. Within
 MorphoEval nanopublications, those two predicates must therefore be read
 strictly as **unit-interval rescalings ($s / 100$) of uncalibrated rubric
-scores** used for template conformance. Because statement `st09`
-(`pk:hasProbability`) in template `RAku3DIN` and statement `st08`
-(`pk:weightOfEvidence`) in `RAIVOEuh` are declared `nt:OptionalStatement`,
-`build_morphoeval_kg.py` also provides `--omit-probability` (carrying the score
-solely in `rdfs:label`, `pk:hasVerdict`, and `rdfs:comment`) when strict
-separation from probabilistic predicates is preferred over dashboard sorting.
+scores** used for template conformance. Every emitted assessment links to the
+rubric via `dct:conformsTo` (`pkr:concept/morphoeval-rubric-0.1.0`), and the
+overall assessment's `rdfs:comment` carries an explicit disclaimer (verified by
+`build_morphoeval_kg.py --check`) stating that the score is an uncalibrated
+criterion-referenced rating rather than a Bayesian probability. Because
+statement `st09` (`pk:hasProbability`) in template `RAku3DIN` and statement
+`st08` (`pk:weightOfEvidence`) in `RAIVOEuh` are declared
+`nt:OptionalStatement`, `build_morphoeval_kg.py` also provides
+`--omit-probability` (carrying the score solely in `rdfs:label`,
+`pk:hasVerdict`, and `rdfs:comment`) when strict separation from probabilistic
+predicates is preferred over dashboard sorting. Upstream in the ProbKnow
+ontology (v1.2, [`project-delphi-ontology#12`](https://github.com/fractastical/project-delphi-ontology/issues/12)),
+dedicated predicates `pk:hasScore` (`[0, 100]`) and `pk:conformsToRubric` and a
+Rubric Assessment Nanopublication template (`https://w3id.org/np/RAOAK6Fe...`)
+have been defined so future waves can decouple rubric ratings from Bayesian
+credences natively.
 
 ## Handling non-applicable (`not_applicable`) dimensions
 
@@ -200,7 +225,7 @@ applicable-only mean (`app.`) and the baseline-50 padded score (`pad.`).
 
 # Method
 
-![How a body gets its form, and how a form gets into the repository. Tier A, making a reproduction: a person scouts a paper, dataset, or claim and points the builder agent at it; the model as published (equations, graph encoding, or empirical claim); the formal source (parameter values, database or atlas records, measurement tables), fetched or vendored with a pinned SHA-256 digest; the rules pinned down and verified across records; and the script, which reproduces, decodes, or tests. Box 6, between the tiers: a frame of each of the 14 implementations' own animations, labelled with its source paper and colour-coded by epistemic role (`reproduce`, `decode`, `test`). Tier B, the MorphoEval cycle: dual-agent audit with line-pinned evidence at a recorded commit, independent morphometric measurement of the rendered outputs (`measure_outputs.py`), each score serialized as a machine-readable claim assessment (`build_morphoeval_kg.py`), cryptographic signing and publication (`sign_morphoeval.py`), the public record, and remediation (`GitHub issue #1`). Purple figures mark human decisions; robot icons are colour-coded by model provider read directly from the audit files — every evaluated script is dual-scored across two companies' models (13/25 passes by Anthropic `claude-fable-5-1`, 10/25 by Google `gemini-4-argon`, and 2/25 by OpenAI `gpt-5.6-sol`).](pipeline.png){height=70%}
+![How a body gets its form, and how a form gets into the repository. Tier A, making a reproduction: a person scouts a paper, dataset, or claim and points the builder agent at it; the model as published (equations, graph encoding, or empirical claim); the formal source (parameter values, database or atlas records, measurement tables), fetched or vendored with a pinned SHA-256 digest; the rules pinned down and verified across records; and the script, which reproduces, decodes, or tests. Box 6, between the tiers: a frame of each of the 16 implementations' own animations, labelled with its source paper and colour-coded by epistemic role (`reproduce`, `decode`, `test`). Tier B, the MorphoEval cycle: dual-agent audit with line-pinned evidence at a recorded commit, independent morphometric measurement of the rendered outputs (`measure_outputs.py`), each score serialized as a machine-readable claim assessment (`build_morphoeval_kg.py`), cryptographic signing and publication (`sign_morphoeval.py`), the public record, and remediation (`GitHub issue #1`). Purple figures mark human decisions; robot icons are colour-coded by model provider read directly from the audit files — every evaluated script is dual-scored across two companies' models (14/31 passes by Anthropic `claude-fable-5-1`, 15/31 by Google `gemini-4-argon`, and 2/31 by OpenAI `gpt-5.6-sol`, plus 2 closed-loop passes with Anthropic `claude-sonnet-5-5-high`).](pipeline.png){height=70%}
 
 ## Audits and version pinning
 
@@ -226,19 +251,27 @@ report:
   distinct scripts that have ever been audited).
 - **Primary checkpoint audit files (`primary audits`):** **{{N_PRIMARY_AUDITS}}
   YAML files** (`2026-10-13-morphology-audit` through
-  `2026-10-17-cervera-audit-v2`), containing **{{N_PRIMARY_PASSES}} script-level
-  evaluation passes** (5 scripts in the initial 2026-10-13 batch plus 10
-  single-script audits or re-scores; 9 files / 13 passes by `claude-fable-5-1`
-  and 2 files / 2 passes by `gpt-5.6-sol`).
-- **Dual-agent second-assessor replication (`role: second_assessor`):** **1
-  multi-script audit file** (`2026-10-17-blinded-sample-audit.yaml`) containing
-  **{{N_BLINDED_PASSES}} script-level evaluation passes** by `gemini-4-argon`
-  (Google) across all 10 active evaluated scripts (9 paired with
-  `claude-fable-5-1` and 1 paired with `gpt-5.6-sol`).
+  `2026-10-18-venation-audit-v2`), containing **{{N_PRIMARY_PASSES}} script-level
+  evaluation passes** (5 scripts in the initial 2026-10-13 batch plus 15
+  single-script audits or re-scores: 9 files / 13 passes by `claude-fable-5-1`,
+  2 files / 2 passes by `gpt-5.6-sol`, and 5 files / 5 passes by
+  `gemini-4-argon`).
+- **Dual-agent second-assessor replication (`role: second_assessor`):**
+  **{{N_BLINDED_AUDITS}} audit files** containing **{{N_BLINDED_PASSES}}
+  script-level evaluation passes**: `2026-10-17-blinded-sample-audit.yaml` (10
+  passes by `gemini-4-argon`, Google, across the first 10 active evaluated
+  scripts: 9 paired with `claude-fable-5-1` and 1 paired with `gpt-5.6-sol`) and
+  `2026-10-19-conus-second-assessor-audit.yaml` (1 blinded pass by
+  `claude-fable-5-1`, Anthropic, paired with `gemini-4-argon` on
+  `1984-wolfram-conus-textile-rule30.py`). In addition, the two closed-loop
+  remediations (`2005-runions-leaf-venation.py` and `1979-vogel-phyllotaxis.py`)
+  were dual-assessed inside their 12-step loops (`morphoeval/runs/2026-10-18-*.yaml`)
+  by `gemini-4-argon` (Google) and `claude-sonnet-5-5-high` (Anthropic).
 - **Total audit corpus:** **{{N_TOTAL_AUDITS}} audit files** and
   **{{N_TOTAL_PASSES}} script-level evaluation passes**, backed by
-  **{{N_NANOPUBS}} production nanopublications** (**{{N_HEADS}} current heads**)
-  plus **{{N_BLINDED_NANOPUBS}} signed second-assessor nanopublications**.
+  **{{N_NANOPUBS}} production nanopublications** (**{{N_HEADS}} current heads**),
+  **{{N_BLINDED_NANOPUBS}} signed second-assessor nanopublications**, and
+  **{{N_PRIMARY_UNPUB_NANOPUBS}} signed loop nanopublications**.
 
 ## Measurements
 
@@ -247,39 +280,44 @@ Scores are judgements; the numbers behind them are not. A separate program,
 and takes morphometrics from the actual geometry or pixels of the outputs —
 silhouette aspect ratios and intersections-over-union against the source
 authors' figures or specimen photographs, vein-domain counts and circularities,
-Procrustes residuals, allometric exponents, and dominant 2D FFT wavelengths.
-Each measurement carries its method, unit, reference value and source, and the
-output file's SHA-256 digest in `<audit>.measurements.yaml`.
+Murray's-law hydraulic exponent $\alpha_{\text{OLS}}$, Fibonacci parastichy pair
+counts $(34, 55)$ and divergence-angle RMSE, Procrustes residuals, allometric
+exponents, and dominant 2D FFT wavelengths. Each measurement carries its method,
+unit, reference value and source, and the output file's SHA-256 digest in
+`<audit>.measurements.yaml`.
 
 ## Assessors and dual-agent protocol
 
-Three LLM assessors from three model providers have contributed audits so that
-every active evaluated script is scored by two independent companies' models:
+Models from three AI providers have contributed audits so that every active
+evaluated script ({{N_SCRIPTS_ACTIVE}} of {{N_SCRIPTS_ACTIVE}}) is scored by two
+independent companies' models:
 
-1. **Builder / primary assessor (`claude-fable-5-1`, Anthropic):** Scored 9
-   primary audit files (13 script-level passes across 9 active scripts plus the
-   superseded `1900-planformDB_parser.py`). Because this agent also wrote or
-   refactored the scripts from the planarian rewrite onward, its scores are
-   unblinded self-assessments and cannot by themselves establish evaluator
-   validity.
-2. **Independent single-script assessor (`gpt-5.6-sol`, OpenAI):** Scored
-   `2021-Cervera–Levin–Mafe.py` across two rounds (`2026-10-17-cervera-audit` at
-   commit `e71ca55`, overall `44.9`; and `2026-10-17-cervera-audit-v2` at commit
-   `a0d6848`, overall `55.6`), catching seven substantive modelling and
-   calibration defects in round 1 and two newly introduced threshold/legend bugs
-   in round 2 (subsequently fixed at commit `0154143`).
-3. **Second-assessor replication across all 10 active scripts (`gemini-4-argon`,
-   Google):** To eliminate single-agent self-grading and test inter-assessor
-   concordance across the entire active benchmark, `gemini-4-argon` scored all
-   10 active evaluated scripts (`2026-10-17-blinded-sample-audit.yaml`, 80
-   signed nanopublications), spanning all three epistemic roles (`test`,
-   `decode`, `reproduce`) and both `not_applicable` cases. An initial 5-script
-   subset (`thompson`, `odonata`, `limbform`, `raup`, `turing`) was executed in
-   strictly isolated subagent sessions restricted to `morphoeval/rubric.yaml`,
-   the target script(s), local dataset/output files, and `requirements.txt` /
-   `requirements.lock.txt`, followed by full 10-script completion across the
-   remaining five active scripts (`hoffmann`, `celegans`, `planform`, `cervera`,
-   `chindapol`).
+1. **Anthropic assessors (`claude-fable-5-1` and `claude-sonnet-5-5-high`):**
+   `claude-fable-5-1` scored 9 primary audit files (13 script-level passes
+   across 9 active scripts plus the superseded `1900-planformDB_parser.py`) and
+   performed a strictly blinded `role: second_assessor` audit on
+   `1984-wolfram-conus-textile-rule30.py` (`2026-10-19-conus-second-assessor-audit.yaml`,
+   scoring `50.5` vs the builder's `87.3`). In addition, `claude-sonnet-5-5-high`
+   served as the independent cross-company assessor in the 12-step remediation
+   loops for `2005-runions-leaf-venation.py` (`40.9 → 91.3`) and
+   `1979-vogel-phyllotaxis.py` (`64.3 → 85.9`).
+2. **OpenAI assessor (`gpt-5.6-sol`):** Scored `2021-Cervera–Levin–Mafe.py`
+   across two rounds (`2026-10-17-cervera-audit` at commit `e71ca55`, overall
+   `44.9`; and `2026-10-17-cervera-audit-v2` at commit `a0d6848`, overall
+   `55.6`), catching seven substantive modelling and calibration defects in
+   round 1 and two newly introduced threshold/legend bugs in round 2
+   (subsequently fixed at commit `0154143`).
+3. **Google assessor (`gemini-4-argon`):** Scored all 10 initial active
+   evaluated scripts as a standalone `role: second_assessor`
+   (`2026-10-17-blinded-sample-audit.yaml`, 80 signed nanopublications),
+   spanning all three epistemic roles (`test`, `decode`, `reproduce`) and both
+   `not_applicable` cases — with an initial 5-script subset (`thompson`,
+   `odonata`, `limbform`, `raup`, `turing`) executed in strictly isolated
+   subagent sessions followed by full 10-script completion across `hoffmann`,
+   `celegans`, `planform`, `cervera`, and `chindapol` — and also authored the
+   primary checkpoint audits for `1984-wolfram-conus-textile-rule30.py`,
+   `2005-runions-leaf-venation.py` (`v1` & `v2`), and
+   `1979-vogel-phyllotaxis.py` (`v1` & `v2`).
 
 # The knowledge graph
 
@@ -309,11 +347,14 @@ Because hypothesis URIs (`pkr:hypothesis/morphoeval-<script>-<dimension>`) are
 keyed to the script and rubric dimension whereas assessment URIs
 (`pkr:assessment/<audit>-<script>-<dimension>`) are keyed to the audit, multiple
 assessors evaluate the **exact same hypothesis node** in RDF without overwriting
-one another. In the current graph, all ten active scripts in
-`2026-10-17-blinded-sample-audit` carry parallel `pk:LLMClaimAssessment`s from
-both their primary assessor (`pkr:model/claude-fable-5-1` on 9 scripts,
-`pkr:model/gpt-5.6-sol` on `cervera-levin-mafe`) and `pkr:model/gemini-4-argon`
-on each of their 80 hypothesis nodes (`10 scripts × (7 dimensions + 1 overall)`).
+one another. In the current graph, all 11 scripts with standalone
+`role: second_assessor` audits carry parallel `pk:LLMClaimAssessment`s from two
+different companies' models across their 88 hypothesis nodes (`10 scripts × 8` in
+`2026-10-17-blinded-sample-audit` plus `1 script × 8` in
+`2026-10-19-conus-second-assessor-audit`), and the remaining 2 active scripts
+(`runions-leaf-venation` and `vogel-phyllotaxis`) carry signed v1/v2 loop
+assessments (`40` nanopublications) paired with `claude-sonnet-5-5-high`
+in `morphoeval/runs/2026-10-18-*.yaml`.
 Two extensions that the graph schema supports remain open for future work: human
 expert assessments alongside the LLM assessments, and ProbKnow claims representing
 the *source papers' biological hypotheses* themselves (linking "does the script
@@ -392,39 +433,66 @@ biological mechanism:
 
 {{DECOMPOSITION_TABLE}}
 
-## Complete 10-script dual-agent scoring and inter-rater analysis
+## Cross-company dual-agent scoring and inter-rater analysis
 
 To eliminate single-agent self-evaluation across the entire active benchmark, we
-compared the primary checkpoint scores (`claude-fable-5-1`, Anthropic on 9
-scripts; `gpt-5.6-sol`, OpenAI on `2021-Cervera–Levin–Mafe.py`) against the
-second-assessor pass (`2026-10-17-blinded-sample-audit.yaml`, `gemini-4-argon`,
-Google) across all 10 active evaluated implementations spanning `test`,
-`decode`, and `reproduce`:
+compared the primary checkpoint scores against independent cross-company
+second-assessor passes across all 11 scripts with standalone `role:
+second_assessor` audits (`2026-10-17-blinded-sample-audit.yaml`, 10 passes by
+`gemini-4-argon`, Google; and `2026-10-19-conus-second-assessor-audit.yaml`, 1
+blinded pass by `claude-fable-5-1`, Anthropic on
+`1984-wolfram-conus-textile-rule30.py`), alongside the 2 closed-loop dual-agent
+remediations (`2005-runions-leaf-venation.py` and `1979-vogel-phyllotaxis.py`,
+jointly audited by `gemini-4-argon` and `claude-sonnet-5-5-high`, Anthropic):
 
 {{BLINDED_TABLE}}
 
-Three empirical findings emerge from the 10-script dual-agent comparison:
+Four empirical findings emerge from the cross-company comparison:
 
-1. **Strong rank-order concordance across all 10 scripts and exact rank-order
-   agreement on the initial 5-script blinded subset.** Across all 10 active
-   scripts, overall scores correlate strongly between the primary assessor and
-   `gemini-4-argon` (Spearman $\rho = 0.891$, $p = 5.4 \times 10^{-4}$; Kendall
-   $\tau = 0.778$, $p = 9.5 \times 10^{-4}$; Pearson $r = 0.920$, $p = 1.7
-   \times 10^{-4}$ on baseline-50 padded scores; Spearman $\rho = 0.903$, $p =
-   3.4 \times 10^{-4}$ on applicable-only renormalised scores). On the initial
-   five-script strictly blinded sample (`Thompson`, `Odonata`, `Limbform`,
-   `Raup`, `Turing`), both assessors independently rank the five scripts in the
-   exact same order:
+1. **Strong rank-order concordance across the 10-script `gemini-4-argon` pass and
+   exact rank-order agreement on the initial 5-script blinded subset.** Across
+   the 10 initial active scripts scored by `gemini-4-argon`, overall scores
+   correlate strongly with the primary assessor (Spearman $\rho = 0.891$, $p =
+   5.4 \times 10^{-4}$; Kendall $\tau = 0.778$, $p = 9.5 \times 10^{-4}$;
+   Pearson $r = 0.920$, $p = 1.7 \times 10^{-4}$ on baseline-50 padded scores;
+   Spearman $\rho = 0.903$, $p = 3.4 \times 10^{-4}$ on applicable-only
+   renormalised scores). On the initial five-script strictly blinded sample
+   (`Thompson`, `Odonata`, `Limbform`, `Raup`, `Turing`), both assessors
+   independently rank the five scripts in the exact same order:
    $$\text{Thompson} > \text{Odonata} > \text{Limbform} > \text{Raup} > \text{Turing}$$
    (Spearman $\rho = 1.00$, Kendall $\tau = 1.00$, $p = 0.0167$; Pearson
    $r = 0.947$, $p = 0.0146$). Across all $10 \times 7 = 70$
-   script-by-dimension score pairs, Spearman $\rho = 0.796$ ($p = 1.7 \times
-   10^{-16}$) and Pearson $r = 0.813$ ($p = 1.3 \times 10^{-17}$).
-2. **Uncalibrated LLM assessors exhibit systematic scale/anchoring offsets.**
-   Across the 70 dimension pairs, the mean signed difference (`2nd - primary`)
-   is $+6.46$ points and the mean absolute difference ($\text{MAD}$) is $10.40$
-   points (on the 5-script subset, $+7.06$ and $\text{MAD} = 13.74$ points).
-   Crucially, the offset is **not** uniform leniency:
+   script-by-dimension score pairs in that batch, Spearman $\rho = 0.796$ ($p =
+   1.7 \times 10^{-16}$) and Pearson $r = 0.813$ ($p = 1.3 \times 10^{-17}$).
+2. **Bidirectional self-grading audit on *Conus textile* (`87.3` builder vs `50.5`
+   blinded 2nd assessor, $\Delta = -36.8$).** Whereas `claude-fable-5-1` built
+   the initial 9 scripts and `gemini-4-argon` served as second assessor, on
+   `1984-wolfram-conus-textile-rule30.py` the roles were reversed:
+   `gemini-4-argon` both built the script and authored its primary audit (`87.3`
+   in `2026-10-18-conus-audit.yaml`), and `claude-fable-5-1` performed a
+   strictly blinded second-assessor audit (`50.5` in
+   `2026-10-19-conus-second-assessor-audit.yaml`). The blinded assessor flagged
+   four severe gaps the builder-assessor had overlooked: (i) Eq. 1 in the
+   Meinhardt–Klingler (1987) solver (`lines 122–134`) omits the resting
+   activator production term $\rho_0$ (`rho_0`), alters the denominator from
+   $(1 + \kappa a^2)$ to `1.0 + kappa * a`, and substitutes a non-Biological
+   Gaussian spatial filter for diffusion (`model-fidelity` `48` vs `88`); (ii)
+   no parameter sweeps over $D_a, D_b, \rho_0, \kappa$ or other ECA rules are
+   executed (`parameter-expressivity` `35` vs `85`); (iii) the 3D shell overlay
+   uses hardcoded cylinder-like parameters (`W=1.8, D=0.12, T=2.8`) rather than
+   digitized *Conus textile* morphometrics and wraps a synthetic pattern rather
+   than comparing against the segmented specimen patches (`specimen-match` `52`
+   vs `88`); and (iv) all metrics are computed on single fixed RNG seeds with no
+   distributional tests (`morphometric-validation` `45` vs `90`). Including
+   *Conus* across all 11 scripts with standalone `role: second_assessor` audits
+   ($11 \times 7 = 77$ dimension pairs), pooled provider-paired Spearman $\rho =
+   0.678$ ($p = 1.3 \times 10^{-11}$) with $\text{MAD} = 13.8$ points.
+3. **Uncalibrated LLM assessors exhibit systematic scale/anchoring offsets.**
+   Across the 70 dimension pairs in the 10-script batch, the mean signed
+   difference (`2nd - primary`) is $+6.46$ points and the mean absolute
+   difference ($\text{MAD}$) is $10.40$ points (on the 5-script subset, $+7.06$
+   and $\text{MAD} = 13.74$ points). Crucially, the offset is **not** uniform
+   leniency:
    - On the untouched, unseeded, uncited `1952-turing-morpho.py` script (at
      commit `5659d5e`), `gemini-4-argon` was **11.9 points stricter** (`40.9` vs
      `52.7` padded; `37.8` vs `53.6` applicable-only), penalising the absence of
@@ -455,11 +523,16 @@ Three empirical findings emerge from the 10-script dual-agent comparison:
      reinforces both why raw rubric scores must not be treated as calibrated
      probabilities and why biological specimen comparison must be reported
      separately from formal model decoding.
-3. **Independent assessors consistently catch concrete code and data defects
+4. **Independent assessors consistently catch concrete code and data defects
    that a builder-assessor misses.** Across `gpt-5.6-sol` (on
-   `2021-Cervera–Levin–Mafe.py`) and `gemini-4-argon` (across all 10 scripts),
+   `2021-Cervera–Levin–Mafe.py`), `gemini-4-argon` (across the 10-script batch),
+   `claude-fable-5-1` (on `1984-wolfram-conus-textile-rule30.py`), and
+   `claude-sonnet-5-5-high` (in the leaf-venation and phyllotaxis loops),
    independent passes uncovered verifiable bugs in scripts the builder had
    already audited:
+   - *`1984-wolfram-conus-textile-rule30.py` (lines 122–134):* omits basal
+     activator production $\rho_0$ and replaces $(1 + \kappa a^2)$ with a linear
+     denominator in the Meinhardt–Klingler (1987) PDE.
    - *`2014-lobo-limbform-morphology.py` (line 92):* `DB_SHA256` contains **65
      hexadecimal characters** (an extra trailing `'0'` appended to the true
      64-character SHA-256 digest of `limbformDB_2.1.0.ldb`), causing
@@ -490,8 +563,41 @@ Three empirical findings emerge from the 10-script dual-agent comparison:
 
 ## What the audits found, script by script
 
-**Hoffmann–Donoughe wing venation (`2018-hoffmann-wing-venation.py`, pad. 77.8; impl. 81.7, bio. 80.0, repro. 71.3).**
-The highest-scoring simulation on the primary chain: the developmental model's
+**Runions auxin space-colonization leaf venation (`2005-runions-leaf-venation.py`, pad. 40.9 → 91.3 in 12-step dual-agent loop; impl. 90.7, bio. 89.8, repro. 93.9).**
+Evaluated through a 12-step closed-loop remediation audited jointly by
+`gemini-4-argon` and `claude-sonnet-5-5-high` (`morphoeval/runs/2026-10-18-runions-leaf-venation-loop.yaml`):
+the baseline script (`40.9`) lacked relative neighborhood graph (RNG)
+anastomosis, parameter sweeps, and cleared-leaf comparison. After remediation
+(`91.3`), the script implements open/closed space colonization (`--reticulate`,
+forming 56 closed loops with HLD $\approx 0.145\,\text{mm}^{-2}$), verifies
+Murray's pipe-model law via OLS regression ($\alpha = 3.0000$, $R^2 = 1.0000$),
+sweeps $r_k/r_a$ across 4 regimes, and compares against a cleared *Acer*
+dicot leaf skeleton (`datasets/venation/acer_leaf_skeleton_specimen.jpg`).
+
+**Wolfram Rule 30 & Meinhardt–Klingler *Conus textile* pigmentation (`1984-wolfram-conus-textile-rule30.py`, pad. 87.3 primary builder / 50.5 blinded 2nd assessor; impl. 87.7 [47.3 2nd], bio. 85.5 [38.8 2nd], repro. 89.3 [69.2 2nd]).**
+Contrasts discrete Wolfram Rule 30 ECA against continuous 1D activator–inhibitor
+PDE reaction–diffusion against two SHA-256-pinned *Conus textile* specimen
+photographs (measuring triangle aspect ratio, horizontal autocorrelation length,
+and vertical persistence). As detailed in the inter-rater analysis above, its
+primary audit (`87.3`) was written by its builder (`gemini-4-argon`), whereas a
+strictly blinded cross-company second-assessor pass (`claude-fable-5-1`, `50.5`)
+caught a simplified Meinhardt–Klingler denominator (`1.0 + kappa * a` instead of
+`1 + kappa * a**2`), a missing basal activator term $\rho_0$, an ad-hoc Gaussian
+blur in place of explicit finite-difference diffusion, and lack of parameter
+sweeps or multi-seed distributional tests.
+
+**Vogel golden-angle *Helianthus* phyllotaxis (`1979-vogel-phyllotaxis.py`, pad. 64.3 → 85.9 in 12-step dual-agent loop; impl. 84.7, bio. 84.8, repro. 88.7).**
+Evaluated through a 12-step closed-loop remediation (`morphoeval/runs/2026-10-18-vogel-phyllotaxis-loop.yaml`,
+`gemini-4-argon` + `claude-sonnet-5-5-high`): remediated from `64.3` to `85.9` by
+coupling Vogel's kinematic model ($\theta_n = n\phi$, $r_n = c\sqrt{n}$) to a
+dynamical Douady & Couder (1992) inhibitory-potential ODE solver that converges
+de novo onto the golden angle ($137.48^\circ$, RMSE $0.68^\circ$), sweeping 5
+divergence angles and plastochron ratios, and overlaying model primordia against
+a *Helianthus annuus* capitulum specimen with $(34, 55)$ Fibonacci parastichy
+counts ($R^2 = 0.9999$).
+
+**Hoffmann–Donoughe wing venation (`2018-hoffmann-wing-venation.py`, pad. 77.8 primary / 81.3 2nd assessor; impl. 81.7, bio. 80.0, repro. 71.3).**
+The highest-scoring `claude-fable-5-1`-audited simulation on the primary chain: the developmental model's
 Voronoi / Lloyd relaxation and secondary-vein interpolation steps are
 implemented as published, the model wing is placed beside a segmented real
 *Perithemis tenera* hindwing, and vein-domain counts and circularities are
@@ -640,20 +746,28 @@ too:
 
 # Limitations
 
-**A pilot case study, not a calibrated general-purpose evaluator.** Nine of the
-eleven primary audit files come from the LLM agent (`claude-fable-5-1`) that
-also wrote or refactored most of the audited code. Completing dual-agent
-scoring across all 10 active scripts — combining two independent passes by
-`gpt-5.6-sol` (OpenAI) on `2021-Cervera–Levin–Mafe.py` and a full 10-script
-second-assessor pass by `gemini-4-argon` (Google) — ensures that no script relies
-on its builder grading itself, demonstrates strong rank-order concordance
-($\rho = 0.891$ across all 10 scripts, $\rho = 1.00$ on the initial 5-script
-blinded subset, and $\rho = 0.796$ across all 70 dimension pairs), and shows
-that independent assessors catch genuine defects missed by the builder. However,
-it also reveals a $10.4$-point mean absolute calibration gap between
-uncalibrated zero-shot assessors. Turning MorphoEval into a calibrated
-evaluator will require multi-rater human benchmarks and explicit anchor examples
-for each score band.
+**A pilot case study, not a calibrated general-purpose evaluator.** Most primary
+audit files were written by the LLM agent that also wrote or refactored the
+corresponding script (`claude-fable-5-1` on 9 initial scripts; `gemini-4-argon`
+on `1984-wolfram-conus-textile-rule30.py`, `2005-runions-leaf-venation.py`, and
+`1979-vogel-phyllotaxis.py`). Completing dual-agent scoring across all
+{{N_SCRIPTS_ACTIVE}} active evaluated scripts — combining two independent passes
+by `gpt-5.6-sol` (OpenAI) on `2021-Cervera–Levin–Mafe.py`, a 10-script
+second-assessor pass by `gemini-4-argon` (Google), a strictly blinded
+second-assessor pass by `claude-fable-5-1` (Anthropic) on
+`1984-wolfram-conus-textile-rule30.py`, and 2 closed-loop dual-agent passes
+(`gemini-4-argon` + `claude-sonnet-5-5-high`) on leaf venation and phyllotaxis —
+ensures that no script relies solely on its builder grading itself, demonstrates
+strong rank-order concordance on the 10-script batch ($\rho = 0.891$ across all
+10 scripts, $\rho = 1.00$ on the initial 5-script blinded subset, and $\rho =
+0.796$ across 70 dimension pairs; $\rho = 0.678$ across all 77 provider-paired
+dimension pairs including *Conus*), and shows that independent assessors catch
+genuine mathematical and code defects missed by the builder (most starkly the
+$-36.8$-point blinded correction on `1984-wolfram-conus-textile-rule30.py`).
+However, it also reveals a $10.4\text{--}13.8$-point mean absolute calibration
+gap between uncalibrated zero-shot assessors. Turning MorphoEval into a
+calibrated evaluator will require multi-rater human benchmarks and explicit
+anchor examples for each score band.
 
 **Uncalibrated scores in a probabilistic ontology slot.** While this report and
 the rubric explicitly define MorphoEval ratings as uncalibrated $0\text{--}100$
@@ -662,7 +776,9 @@ scores and separate them from probabilities, the governed ProbKnow templates
 `pk:hasProbability` and `pk:weightOfEvidence`. Downstream consumers of the RDF
 graph must inspect `dct:conformsTo` (`pkr:concept/morphoeval-rubric-0.1.0`) and
 treat those literals as rescaled rubric scores rather than calibrated
-probabilities (or build with `--omit-probability`).
+probabilities (or build with `--omit-probability`), pending migration to the
+ProbKnow v1.2 `pk:hasScore` (`[0, 100]`) / `RAOAK6Fe...` rubric-assessment
+template ([`project-delphi-ontology#12`](https://github.com/fractastical/project-delphi-ontology/issues/12)).
 
 **Rubric weights and N/A shrinkage.** Specimen match at 25 and morphometric
 validation at 15 give biological validation 40% of the total weight. Where a
@@ -671,17 +787,22 @@ dimension is `not_applicable`, substituting 50 shrinks scores above 50 downward
 applicable-only renormalised mean (`app.`) and the padded mean (`pad.`) should
 therefore be consulted together.
 
-**Incomplete coverage and post-audit commits.** Three repository scripts remain
-unevaluated, and later commits on Hoffmann, Chindapol, Planform, Turing, and
-Cervera (`0154143`) have not yet been re-audited into new production
-nanopublications.
+**Incomplete coverage and post-audit commits.** Five repository scripts remain
+unevaluated (`2001-bressloff-v1-form-constants.py`, `2010-petroff-stromatolite.py`,
+`2024-kahng-coral-geometry.py`, `sorting-morphogenesis/`, and
+`thompson/1917-thompson.py`), the `v1`/`v2` loop nanopublications for
+`2005-runions-leaf-venation.py` and `1979-vogel-phyllotaxis.py` ({{N_PRIMARY_UNPUB_NANOPUBS}}
+signed files) are signed locally awaiting production server minting, and later
+commits on Hoffmann, Chindapol, Planform, Turing, and Cervera (`0154143`) have
+not yet been re-audited into new production nanopublications.
 
 # Reproducibility and availability
 
 - **Code and audits:** https://github.com/fractastical/morpholib (this
   deposition archives the repository at revision `{{COMMIT}}`). Audits are
   under `morphoeval/audits/`, built graphs and signed nanopublications under
-  `morphoeval/kg/`, and the rubric at `morphoeval/rubric.yaml`.
+  `morphoeval/kg/`, and the rubric at `morphoeval/rubric.yaml` (with 20
+  fine-grained sub-axes documented in `morphoeval/schema.yaml`).
 - **Environment:** `requirements.lock.txt` pins the exact versions used across
   the audits (Python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7,
   scikit-image 0.26.0, pandas 2.3.3, Pillow 12.0.0).
@@ -689,10 +810,13 @@ nanopublications.
   load (`datasets/<domain>/README.md`).
 - **Nanopublications:** {{N_NANOPUBS}} published on the production network
   ({{N_HEADS}} current heads; rubric nanopublication
-  https://w3id.org/np/RAhBMChdpmgS_yBfy8cfYXpfKktqlUD72A9bxZzvWDkYM) plus
+  https://w3id.org/np/RAhBMChdpmgS_yBfy8cfYXpfKktqlUD72A9bxZzvWDkYM), plus
   {{N_BLINDED_NANOPUBS}} signed second-assessor nanopublications in
-  `morphoeval/kg/2026-10-17-blinded-sample-audit/signed/`; all URIs are recorded
-  in `morphoeval/kg/<audit>/published.json`.
+  `morphoeval/kg/2026-10-17-blinded-sample-audit/signed/` and
+  `morphoeval/kg/2026-10-19-conus-second-assessor-audit/signed/` and
+  {{N_PRIMARY_UNPUB_NANOPUBS}} signed loop nanopublications in
+  `morphoeval/kg/2026-10-18-{phyllotaxis,venation}-audit*/signed/`; all URIs are
+  recorded in `morphoeval/kg/<audit>/published.json`.
 - **Tracking:** Remediation items are tracked at
   https://github.com/fractastical/morpholib/issues/1.
 
@@ -706,6 +830,7 @@ nanopublications.
 - Cook SJ, et al. (2019). Whole-animal connectomes of both *Caenorhabditis elegans* sexes. *Nature* 571:63–71. doi:10.1038/s41586-019-1352-7
 - Dietz J (2026). BioEval — Bioinformatics Paper Evaluator. Zenodo. doi:10.5281/zenodo.20567719
 - Dietz J (2026). NeuroEval: Evaluating Data Transparency, Reproducibility, and Neural-Coding Rigor in Computational and Biohybrid/Wetware Neuroscience Papers. Zenodo. doi:10.5281/zenodo.20622878
+- Douady S, Couder Y (1992). Phyllotaxis as a physical self-organized growth process. *Phys. Rev. Lett.* 68:2098–2101. doi:10.1103/PhysRevLett.68.2098
 - Eshghi S, Buesch A, Gorb S (2026). Supplementary material: Critical crack length as an evolutionary constant in Odonata wing venation: lessons from fossils. Zenodo. doi:10.5281/zenodo.19899648
 - Friedman ST, Martinez CM, Price SA, Wainwright PC (2019). The influence of size on body shape diversification across Indo-Pacific shore fishes. *Evolution* 73:1873–1884. doi:10.1111/evo.13755; data: Dryad doi:10.5061/dryad.fn457gr
 - Gray P, Scott SK (1984). Autocatalytic reactions in the isothermal, continuous stirred tank reactor. *Chem. Eng. Sci.* 39:1087–1097.
@@ -714,10 +839,14 @@ nanopublications.
 - Lobo D, Malone TJ, Levin M (2013). Planform: an application and database of graph-encoded planarian regenerative experiments. *Bioinformatics* 29:1098–1100. doi:10.1093/bioinformatics/btt088
 - Lobo D, Feldman EB, Shah M, Malone TJ, Levin M (2014a). Limbform: a functional ontology-based database of limb regeneration experiments. *Bioinformatics* 30:3598–3600. doi:10.1093/bioinformatics/btu582
 - Lobo D, Feldman EB, Shah M, Malone TJ, Levin M (2014b). A bioinformatics expert system linking functional data to anatomical outcomes in limb regeneration. *Regeneration* 1:37–56. doi:10.1002/reg2.13
+- Meinhardt H, Klingler M (1987). A model for pattern formation on the shells of molluscs. *J. Theor. Biol.* 126:63–89. doi:10.1016/S0022-5193(87)80101-7
+- Murray CD (1926). The physiological principle of minimum work. I. The vascular system and the cost of blood volume. *Proc. Natl Acad. Sci. USA* 12:207–214. doi:10.1073/pnas.12.3.207
 - Noshita K (2014). Quantification and geometric analysis of coiling patterns in gastropod shells based on 3D and 2D image data. *J. Theor. Biol.* 363:93–104. doi:10.1016/j.jtbi.2014.08.010
 - Okabe T, Yoshimura J (2017). Optimal designs of mollusk shells from bivalves to snails. *Sci. Rep.* 7:42445. doi:10.1038/srep42445
 - Pearson JE (1993). Complex patterns in a simple system. *Science* 261:189–192. doi:10.1126/science.261.5118.189
+- Price CA, Wing S, Weitz JS (2012). Scaling and structure of dicotyledonous leaf venation networks. *Ecol. Lett.* 15:87–95. doi:10.1111/j.1461-0248.2011.01712.x
 - Raup DM (1966). Geometric analysis of shell coiling: general problems. *J. Paleontol.* 40:1178–1190. doi:10.2307/1301992
+- Runions A, Fuhrer M, Lane B, Federl P, Rolland-Lagan A-G, Prusinkiewicz P (2005). Modeling and visualization of leaf venation patterns. *ACM Trans. Graph.* 24:702–711. doi:10.1145/1073204.1073251
 - Santella A, et al. (2015). WormGUIDES: an interactive single cell developmental atlas and tool for collaborative multidimensional data exploration. *BMC Bioinformatics* 16:189. doi:10.1186/s12859-015-0627-8
 - Sarma GP, et al. (2018). OpenWorm: overview and recent advances in integrative biological simulation of *Caenorhabditis elegans*. *Phil. Trans. R. Soc. B* 373:20170382. doi:10.1098/rstb.2017.0382
 - Sulston JE, Schierenberg E, White JG, Thomson JN (1983). The embryonic cell lineage of the nematode *Caenorhabditis elegans*. *Dev. Biol.* 100:64–119. doi:10.1016/0012-1606(83)90201-4
