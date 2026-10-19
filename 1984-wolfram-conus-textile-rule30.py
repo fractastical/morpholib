@@ -611,9 +611,15 @@ def step_diagonal_bitsliced_u64(w_km2: np.ndarray, w_km1: np.ndarray) -> np.ndar
 
 
 def verify_bitsliced_diagonal_solver(cone: np.ndarray, k_check: int = 415) -> dict:
-    """Verify that the causal 64-bit time-parallel Kogge-Stone diagonal solver matches
-    the full 2D Rule 30 light-cone with 0 bit errors across all k < k_check and t < 1024,
-    and measure the P=16 plateau lock-in slope up to k = 2,000 (T = 4,096).
+    """Verify:
+      1. The causal 64-bit time-parallel Kogge-Stone diagonal solver matches the full 2D Rule 30
+         light-cone with 0 bit errors across all k < k_check and t < 1024.
+      2. Theorem 5 (Exact Transient-Defect Recurrence & Carry-Run Lock-In Dichotomy for Problem B):
+         For e_k(t) := d_k(t) ^ c_k(t) and t_star(k) := max(T_lock(k-2), T_lock(k-1)):
+           - e_k(t+1) = e_{k-2}(t) ^ (e_{k-1}(t) & ~c_k(t)) ^ (~d_{k-1}(t) & e_k(t)) (0 bit errors),
+           - If e_k(t_star(k)) == 1, then T_lock(k) == t_star(k) + 1 + r_{k-1}(t_star(k)) exactly,
+             where r_{k-1}(t) is the zero-run length in c_{k-1} starting at t;
+             otherwise e_k(t_star(k)) == 0 and T_lock(k) <= t_star(k) (verified 100% across k=2..414).
     """
     n_steps = cone.shape[0]
     mid = cone.shape[1] // 2
@@ -621,22 +627,62 @@ def verify_bitsliced_diagonal_solver(cone: np.ndarray, k_check: int = 415) -> di
     w0 = np.full(n_words_1024, ~np.uint64(0), dtype=np.uint64)
     w1 = np.full(n_words_1024, ~np.uint64(0), dtype=np.uint64)
     w1[0] ^= np.uint64(1)
-    w_km2, w_km1 = w0, w1
+    W = [w0, w1]
+    T_locks = [0, 1]
     bit_errors = 0
+    defect_recurrence_errors = 0
+    dichotomy_matches = 0
+    active_carry_cnt = 0
+    r_vals = []
+
     for k in range(2, k_check):
-        w_k = step_diagonal_bitsliced_u64(w_km2, w_km1)
+        w_k = step_diagonal_bitsliced_u64(W[-2], W[-1])
+        W.append(w_k)
         bits = np.unpackbits(w_k.view(np.uint8), bitorder="little")
-        # Compare against cone[t, mid - t + k] for valid indices:
         ts = np.arange(n_steps)
         cols = mid - ts + k
         valid = (cols >= 0) & (cols < cone.shape[1])
         true_bits = np.zeros(n_steps, dtype=np.uint8)
         true_bits[valid] = cone[ts[valid], cols[valid]]
         bit_errors += int(np.sum(bits != true_bits))
-        w_km2, w_km1 = w_km1, w_k
+
+        diff_words = np.where(w_k != w_k[-1])[0]
+        j_last = int(diff_words[-1]) if len(diff_words) > 0 else 0
+        t_lock = 64 * j_last + int(w_k[j_last] ^ w_k[-1]).bit_length() if len(diff_words) > 0 else 0
+        T_locks.append(t_lock)
+
+        # Verify Theorem 5 (Transient-defect recurrence & Carry-Run Dichotomy):
+        d_km2 = np.unpackbits(W[k - 2].view(np.uint8), bitorder="little")
+        d_km1 = np.unpackbits(W[k - 1].view(np.uint8), bitorder="little")
+        d_k = bits
+        e_km2 = np.unpackbits((W[k - 2] ^ W[k - 2][-1]).view(np.uint8), bitorder="little")
+        e_km1 = np.unpackbits((W[k - 1] ^ W[k - 1][-1]).view(np.uint8), bitorder="little")
+        e_k = np.unpackbits((W[k] ^ W[k][-1]).view(np.uint8), bitorder="little")
+        c_k = d_k ^ e_k
+        c_km1 = d_km1 ^ e_km1
+        rhs = e_km2[:-1] ^ (e_km1[:-1] & (1 ^ c_k[:-1])) ^ ((1 ^ d_km1[:-1]) & e_k[:-1])
+        defect_recurrence_errors += int(np.sum(e_k[1:] != rhs))
+
+        t_star = max(T_locks[k - 2], T_locks[k - 1])
+        if e_k[t_star] == 1:
+            active_carry_cnt += 1
+            r = 0
+            while t_star + r < len(c_km1) and c_km1[t_star + r] == 0:
+                r += 1
+            r_vals.append(r)
+            if t_lock == t_star + 1 + r:
+                dichotomy_matches += 1
+        else:
+            if t_lock <= t_star:
+                dichotomy_matches += 1
 
     return {
         "bitsliced_bit_errors_vs_cone": bit_errors,
+        "defect_recurrence_errors": defect_recurrence_errors,
+        "dichotomy_matches": dichotomy_matches,
+        "dichotomy_total": k_check - 2,
+        "active_carry_fraction": round(active_carry_cnt / max(1, k_check - 2), 4),
+        "mean_zero_run_r": round(float(np.mean(r_vals)), 4) if r_vals else 0.0,
         "unit_seed_p16_branch_path": "01",
         "unit_seed_exact_k5": 87867,
         "unit_seed_exact_tlock_k5": 117324,
@@ -1237,6 +1283,8 @@ def self_test() -> dict:
 
     bs_diag = verify_bitsliced_diagonal_solver(prize["cone"], k_check=415)
     assert bs_diag["bitsliced_bit_errors_vs_cone"] == 0, "Causal bit-sliced diagonal solver mismatch vs 2D cone"
+    assert bs_diag["defect_recurrence_errors"] == 0, "Transient-defect recurrence identity mismatch"
+    assert bs_diag["dichotomy_matches"] == bs_diag["dichotomy_total"], "Carry-run lock-in dichotomy mismatch"
     assert bs_diag["unit_seed_exact_k5"] == 87867 and bs_diag["unit_seed_p16_branch_path"] == "01", "Unit-seed k5 mismatch"
 
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)

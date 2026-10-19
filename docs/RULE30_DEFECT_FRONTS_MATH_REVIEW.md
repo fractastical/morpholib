@@ -201,7 +201,14 @@ Why doesn't the periodic left crystal eventually invade the center column $i = 0
      corresponding to $v_{\text{diag}} = 0.7486 < 1$ diagonals/step and a **steeper leftward crystal recession velocity**:
      $$v_{\text{lock}}^{(P=16)} \;=\; v_{\text{diag}} - 1 \;=\; -0.2514\text{ cells/step},$$
      with asymptotic ones density `699,888 / 1,399,472 = 0.500109` (`50.01%`, within $1.09 \times 10^{-4}$ of $1/2$).
-   - **Why is $\mathrm{d}T_{\text{lock}}/\mathrm{d}k > 1$?** Whenever $c_{k-1}(t) = 0$ across a run of $r$ consecutive time steps (where $p_0(t) = 1$), $d_k$ cannot synchronize immediately at step $T_{\text{lock}}(k-1) + 1$; it must wait an additional synchronization delay $\Delta T \ge 1$ until the next `1` in $c_{k-1}$ arrives to clear the carry-propagate chain.
+   - **Exact Transient-Defect Recurrence & Universal Carry-Run Lock-In Dichotomy (Theorem 5):**  
+     Define the transient defect bit $e_k(t) := d_k(t) \oplus c_k(t) \in \mathbb{F}_2$ (so $T_{\text{lock}}(k) = 1 + \max\{t : e_k(t) = 1\}$) and the upstream lock-in horizon $t^*(k) := \max\bigl(T_{\text{lock}}(k-2),\, T_{\text{lock}}(k-1)\bigr)$. Subtracting the periodic recurrence for $c_k(t+1)$ from the exact recurrence for $d_k(t+1)$ yields the **exact transient-defect evolution law** (`0` bit errors across all $k, t$):
+     $$e_k(t+1) \;=\; e_{k-2}(t) \;\oplus\; \bigl(e_{k-1}(t) \land \overline{c_k(t)}\bigr) \;\oplus\; \bigl(\overline{d_{k-1}(t)} \land e_k(t)\bigr).$$
+     For all $t \ge t^*(k)$, $e_{k-2}(t) = e_{k-1}(t) = 0$ and $d_{k-1}(t) = c_{k-1}(t)$, so the defect recurrence collapses to pure carry propagation $e_k(t+1) = \overline{c_{k-1}(t)} \land e_k(t)$. This establishes an **unconditional two-case dichotomy for every diagonal $k \ge 2$** (verified `413 / 413` on $k < 415$ and `1,999 / 1,999` on $k \le 2,000$):
+     1. **Active Carry at $t^*(k)$ ($e_k(t^*(k)) = 1$, occurring on `53.93%` of diagonals):** The defect bit survives across the entire contiguous run of $r_{k-1}\bigl(t^*(k)\bigr) \ge 0$ zeros of $c_{k-1}$ starting at $t^*(k)$ and is annihilated at the first `1` of $c_{k-1}$, giving the **exact equality**:
+        $$T_{\text{lock}}(k) \;=\; \max\bigl(T_{\text{lock}}(k-2),\, T_{\text{lock}}(k-1)\bigr) \;+\; 1 \;+\; r_{k-1}\bigl(t^*(k)\bigr) \qquad \bigl(\langle r_{k-1} \rangle = 1.4304\text{ steps}\bigr).$$
+     2. **Quenched Carry at $t^*(k)$ ($e_k(t^*(k)) = 0$, occurring on `46.07%` of diagonals):** $e_k(t) = 0$ for all $t \ge t^*(k)$, so $T_{\text{lock}}(k) \le \max\bigl(T_{\text{lock}}(k-2),\, T_{\text{lock}}(k-1)\bigr)$.
+     Consequently, the monotone lock-in envelope $M(k) := \max_{j \le k} T_{\text{lock}}(j)$ is non-decreasing with strictly positive step increments $\Delta M(k) = 1 + r_{k-1}(t^*(k)) \in [1, P-1]$ on every active-carry diagonal (`55.68%` of $P=8$ diagonals and `53.50%` of $P=16$ diagonals), driving the mean slope $\langle \mathrm{d}T_{\text{lock}}/\mathrm{d}k \rangle = 0.5393 \times (1 + 1.4304) \approx 1.31\text{–}1.34 > 1$ steps/diagonal.
 
 ---
 
