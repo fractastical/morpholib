@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,27 +17,48 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-17-raup-audit-raup-shell-coiling-parameter-expressivity> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-raup-shell-coiling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-raup-shell-coiling-parameter-expressivity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-raup-shell-coiling-parameter-expressivity> a pk:LLMClaimAssessment ;
         rdfs:label "Raup shell coiling morphospace — Parameter expressivity: 70/100" ;
-        rdfs:comment "Each of W, D, T now has its own visible monotone effect, shown on two sheets (W x D at fixed T, W x T at fixed D) and on the 3 x 3 W x T slice of 1966-raup.py, and the self-test asserts the T effect. S is exposed in the function but not swept in any figure, and D is swept only together with W rather than on its own; the ranges on the sheets are the dataset's indicative bounds, not Raup's. Evidence: create_raup_animations.py L236–L259: create_parameter_space_visualization(): the two sheets <https://github.com/fractastical/morpholib/blob/ba6fd20/create_raup_animations.py#L236-L259>; 1966-raup.py L40–L71: W x T slice at fixed D <https://github.com/fractastical/morpholib/blob/ba6fd20/1966-raup.py#L40-L71>; create_raup_animations.py L147–L151: spire_over_width strictly increasing in T asserted <https://github.com/fractastical/morpholib/blob/ba6fd20/create_raup_animations.py#L147-L151>." ;
+        dct:date "2026-10-17"^^xsd:date ;
+        dct:description "Each of W, D, T now has its own visible monotone effect, shown on two sheets (W x D at fixed T, W x T at fixed D) and on the 3 x 3 W x T slice of 1966-raup.py, and the self-test asserts the T effect. S is exposed in the function but not swept in any figure, and D is swept only together with W rather than on its own; the ranges on the sheets are the dataset's indicative bounds, not Raup's." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-raup-shell-coiling-parameter-expressivity> ;
-        pk:hasProbability "0.7"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-raup-shell-coiling-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-raup-shell-coiling-parameter-expressivity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-raup-shell-coiling-parameter-expressivity-3> ;
+        pk:hasScore "0.7"^^xsd:double ;
         pk:hasVerdict "mostly faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-raup-shell-coiling-parameter-expressivity> rdfs:label "Raup shell coiling morphospace (create_raup_animations.py, 1966-raup.py) satisfies the MorphoEval 0.1.0 criterion 'Parameter expressivity' for Coiled molluscs in general; the six panels are labelled cf. Nautilus, Turritella, an ammonite, Conus, Cerithium, Helix (resemblance, not specimens)" ;
-        dct:identifier "morphoeval/0.1.0/parameter-expressivity" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-raup-shell-coiling-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "create_raup_animations.py L236–L259" ;
+        dct:description "create_parameter_space_visualization(): the two sheets" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/ba6fd20/create_raup_animations.py#L236-L259> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-raup-shell-coiling-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "1966-raup.py L40–L71" ;
+        dct:description "W x T slice at fixed D" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/ba6fd20/1966-raup.py#L40-L71> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-raup-shell-coiling-parameter-expressivity-3> a pk:EvidenceItem ;
+        rdfs:label "create_raup_animations.py L147–L151" ;
+        dct:description "spire_over_width strictly increasing in T asserted" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/ba6fd20/create_raup_animations.py#L147-L151> .
     <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
-        rdfs:label "Claude Fable 5.1 (Cursor agent)" .
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
         prov:wasDerivedFrom <https://doi.org/10.1016/j.jtbi.2014.08.010>,
             <https://doi.org/10.1038/srep42445>,
             <https://doi.org/10.1126/science.138.3537.150>,
             <https://doi.org/10.1126/science.147.3663.1294>,
-            <https://doi.org/10.2307/1301992> .
+            <https://doi.org/10.2307/1301992>,
+            <https://pubs.geoscienceworld.org/jpaleontol/article-abstract/41/1/43/80199/geometric-analysis-of-shell-coiling-coiling-in> .
     <https://doi.org/10.1016/j.jtbi.2014.08.010> dct:date "2014"^^xsd:gYear ;
         dct:title "Quantification and geometric analysis of coiling patterns in gastropod shells based on 3D and 2D image data" .
     <https://doi.org/10.1038/srep42445> dct:date "2017"^^xsd:gYear ;
@@ -47,25 +69,26 @@ sub:provenance {
         dct:title "Theoretical morphology of the coiled shell" .
     <https://doi.org/10.2307/1301992> dct:date "1966"^^xsd:gYear ;
         dct:title "Geometric analysis of shell coiling: general problems" .
+    <https://pubs.geoscienceworld.org/jpaleontol/article-abstract/41/1/43/80199/geometric-analysis-of-shell-coiling-coiling-in> dct:date "1967"^^xsd:gYear ;
+        dct:title "Geometric analysis of shell coiling: coiling in ammonoids" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "Raup shell coiling morphospace — Parameter expressivity 70/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-17T19:00:00Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:45:17Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-raup-audit-raup-shell-coiling-parameter-expressivity> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-raup-shell-coiling-parameter-expressivity> ;
+        npx:supersedes <https://w3id.org/np/RA9b4uNlFl3ksC_UxvSg37rrgvKS4GFVw3PhonYWauWoQ> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

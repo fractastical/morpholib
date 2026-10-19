@@ -2,11 +2,11 @@
 
 Rubric **0.1.0** · checkpoint `747c57f` · assessor `pkr:model/claude-fable-5-1` (pk:LLMClaimAssessment) · tracked in https://github.com/fractastical/morpholib/issues/1
 
-Scores are 0–100 (emitted as `pk:hasProbability` = score/100 on the LLM assessment of the dimension hypothesis); Overall is the rubric-weighted mean and the claim's `pk:weightOfEvidence`. Unevaluated scripts carry no nanopubs yet.
+Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not calibrated probabilities; `pk:hasScore` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings for the ProbKnow rubric-assessment template). Faithfulness (weight 70) is decomposed into **Model Impl.** (weight 30: `model-fidelity` + `parameter-expressivity`) and **Bio. Val.** (weight 40: `specimen-match` + `morphometric-validation`). When a dimension is flagged `not_applicable`, **Overall (app.)** renormalises weights over applicable dimensions (mathematically neutral), whereas **Overall (pad.)** substitutes 50 (shrinking the weighted average toward 50). Unevaluated scripts carry no nanopubs yet.
 
-| Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Faithfulness | Reproducibility | **Overall** | verdict |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| LimbformDB limb morphologies (`2014-lobo-limbform-morphology.py`) | 85 | 65 | 75 | 55 | 85 | 75 | 65 | 70.0 | 74.3 | **71.3** | mostly faithful |
+| Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Model Impl. (30) | Bio. Val. (40) | Repro. (30) | Overall (app.) | **Overall (pad.)** | verdict |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| LimbformDB limb morphologies (`2014-lobo-limbform-morphology.py`) | 85 | 65 | 75 | 55 | 85 | 75 | 65 | 81.7 | 61.2 | 74.3 | 71.3 | **71.3** | mostly faithful |
 
 ## Findings and remediation
 
@@ -40,7 +40,7 @@ Remediation:
 The binaries stay out of git; the sha256 pins the exact file that was scored, and the morphometrics record the form itself (written into the reasoning of the morphometric-validation assessment).
 
 ### LimbformDB limb morphologies
-- `limbform_wildtype_gallery.png` — sha256 `d561f4aab1075697…`, 620,043 B, 2400×1875 px
+- `limbform_wildtype_gallery.png` — artifact_sha256 `d561f4aab1075697…`, 620,043 B, 2400×1875 px
 
 | measurement | value | reference | method |
 |---|---:|---|---|

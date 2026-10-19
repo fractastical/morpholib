@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,21 +17,36 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-hoffmann-wing-venation-model-fidelity> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-hoffmann-wing-venation> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-hoffmann-wing-venation-model-fidelity-second-assessor-gemini-4-argon> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-hoffmann-wing-venation-model-fidelity-second-assessor-gemini-4-argon> a pk:LLMClaimAssessment ;
         rdfs:label "Hoffmann-Donoughe insect wing venation — Model fidelity to source: 82/100" ;
-        rdfs:comment "Implements the core SI 3.3-3.4 pipeline on the real wing boundary and primary-vein scaffold: local density weighting proportional to 1/cell^2, damped Lloyd equilibration (step 0.55) inside the primary-vein compartments, and secondary veins drawn as Voronoi bisectors between sites sharing the same primary compartment. Deducts 18 points because local cell size is derived from the Euclidean distance transform of the real wing's all-vein mask (dt) rather than from primary-vein thickness as in the paper, and Lloyd relaxation terminates after a fixed n_iter=18 iterations rather than the paper's 0.1%-of-wing-length displacement threshold. Evidence: 2018-hoffmann-wing-venation.py L111–L133: segment_wing() derives local cell size from distance_transform_edt(~vein) <https://github.com/fractastical/morpholib/blob/5659d5e/2018-hoffmann-wing-venation.py#L111-L133>; 2018-hoffmann-wing-venation.py L164–L195: model_wing() seeds n_cells weighted by 1/cell^2 and runs n_iter=18 fixed Lloyd iterations <https://github.com/fractastical/morpholib/blob/5659d5e/2018-hoffmann-wing-venation.py#L164-L195>." ;
+        dct:date "2026-10-17"^^xsd:date ;
+        dct:description "Implements the core SI 3.3-3.4 pipeline on the real wing boundary and primary-vein scaffold: local density weighting proportional to 1/cell^2, damped Lloyd equilibration (step 0.55) inside the primary-vein compartments, and secondary veins drawn as Voronoi bisectors between sites sharing the same primary compartment. Deducts 18 points because local cell size is derived from the Euclidean distance transform of the real wing's all-vein mask (dt) rather than from primary-vein thickness as in the paper, and Lloyd relaxation terminates after a fixed n_iter=18 iterations rather than the paper's 0.1%-of-wing-length displacement threshold." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-hoffmann-wing-venation-model-fidelity> ;
-        pk:hasProbability "0.82"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-hoffmann-wing-venation-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-hoffmann-wing-venation-model-fidelity-2> ;
+        pk:hasScore "0.82"^^xsd:double ;
         pk:hasVerdict "faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-hoffmann-wing-venation-model-fidelity> rdfs:label "Hoffmann-Donoughe insect wing venation (2018-hoffmann-wing-venation.py) satisfies the MorphoEval 0.1.0 criterion 'Model fidelity to source' for Dragonfly Arigomphus villosipes (hindwing)" ;
-        dct:identifier "morphoeval/0.1.0/model-fidelity" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-hoffmann-wing-venation-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2018-hoffmann-wing-venation.py L111–L133" ;
+        dct:description "segment_wing() derives local cell size from distance_transform_edt(~vein)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5659d5e/2018-hoffmann-wing-venation.py#L111-L133> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-hoffmann-wing-venation-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2018-hoffmann-wing-venation.py L164–L195" ;
+        dct:description "model_wing() seeds n_cells weighted by 1/cell^2 and runs n_iter=18 fixed Lloyd iterations" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5659d5e/2018-hoffmann-wing-venation.py#L164-L195> .
     <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
-        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
         prov:wasDerivedFrom <https://doi.org/10.1073/pnas.1721248115> .
     <https://doi.org/10.1073/pnas.1721248115> dct:date "2018"^^xsd:gYear ;
@@ -40,20 +56,17 @@ sub:provenance {
 sub:pubinfo {
     sub: rdfs:label "Hoffmann-Donoughe insect wing venation — Model fidelity to source 82/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-18T01:49:13Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:43Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-hoffmann-wing-venation-model-fidelity> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-hoffmann-wing-venation-model-fidelity-second-assessor-gemini-4-argon> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

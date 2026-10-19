@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,26 +17,52 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-parameter-expressivity> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-wolfram-conus-textile-rule30> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-wolfram-conus-textile-rule30-parameter-expressivity-second-assessor-claude-fable-5-1> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-wolfram-conus-textile-rule30-parameter-expressivity-second-assessor-claude-fable-5-1> a pk:LLMClaimAssessment ;
         rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation — Parameter expressivity: 18/100" ;
-        rdfs:comment "No morphospace parameter is swept or exposed. raup_conus_mesh is called once with the defaults W=1.28, D=0.42, T=0.36, S=5.99 and the PDE constants are hard-coded inside run_meinhardt_conus; the only CLI knobs are --frames and --fps. I probed the mesh myself: W 1.28 to 1.5 moves H/W 1.834 to 1.912 and S 5.99 to 3.0 moves it to 0.919, so W, D and S do act, but T=0.0 and T=0.36 yield identical H/W 1.8342 and IoU within 0.0005, meaning the translation parameter does not control spire height in the range used (deduction 25). The absence of any sweep, montage or figure demonstrating monotonic control of form costs a further 45; the Rule 90 control and the seed/k scans in the defect-front figure are diagnostics, not morphospace exploration, and earn only partial credit. Twelve further points are withheld because the PDE regime cannot be varied without editing source. Evidence: 1984-wolfram-conus-textile-rule30.py L668–L676: Single hard-coded Raup parameter set; never varied anywhere in the script <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L668-L676>; 1984-wolfram-conus-textile-rule30.py L637–L641: PDE constants hard-coded with no CLI or sweep <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L637-L641>; 1984-wolfram-conus-textile-rule30.py L1507–L1514: CLI exposes only --no-gif, --self-test-only, --download, --frames, --fps <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L1507-L1514>; 1984-wolfram-conus-textile-rule30.py L688–L703: zc = T*rc is dwarfed by b*axial_ext; T in [0, 0.36] has zero silhouette effect (verified numerically) <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L688-L703>." ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "No morphospace parameter is swept or exposed. raup_conus_mesh is called once with the defaults W=1.28, D=0.42, T=0.36, S=5.99 and the PDE constants are hard-coded inside run_meinhardt_conus; the only CLI knobs are --frames and --fps. I probed the mesh myself: W 1.28 to 1.5 moves H/W 1.834 to 1.912 and S 5.99 to 3.0 moves it to 0.919, so W, D and S do act, but T=0.0 and T=0.36 yield identical H/W 1.8342 and IoU within 0.0005, meaning the translation parameter does not control spire height in the range used (deduction 25). The absence of any sweep, montage or figure demonstrating monotonic control of form costs a further 45; the Rule 90 control and the seed/k scans in the defect-front figure are diagnostics, not morphospace exploration, and earn only partial credit. Twelve further points are withheld because the PDE regime cannot be varied without editing source." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-parameter-expressivity> ;
-        pk:hasProbability "0.18"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-wolfram-conus-textile-rule30-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-wolfram-conus-textile-rule30-parameter-expressivity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-wolfram-conus-textile-rule30-parameter-expressivity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-wolfram-conus-textile-rule30-parameter-expressivity-4> ;
+        pk:hasScore "0.18"^^xsd:double ;
         pk:hasVerdict "not faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-parameter-expressivity> rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation (1984-wolfram-conus-textile-rule30.py, docs/media/conus_textile_rule30.gif, docs/media/conus_rule30_kymograph_defect_fronts.png, conus_textile_rule30_metrics.csv, conus_rule30_defect_fronts.csv) satisfies the MorphoEval 0.1.0 criterion 'Parameter expressivity' for Conus textile Linnaeus, 1758 (textile cone snail)" ;
-        dct:identifier "morphoeval/0.1.0/parameter-expressivity" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-wolfram-conus-textile-rule30-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "1984-wolfram-conus-textile-rule30.py L668–L676" ;
+        dct:description "Single hard-coded Raup parameter set; never varied anywhere in the script" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L668-L676> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-wolfram-conus-textile-rule30-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "1984-wolfram-conus-textile-rule30.py L637–L641" ;
+        dct:description "PDE constants hard-coded with no CLI or sweep" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L637-L641> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-wolfram-conus-textile-rule30-parameter-expressivity-3> a pk:EvidenceItem ;
+        rdfs:label "1984-wolfram-conus-textile-rule30.py L1507–L1514" ;
+        dct:description "CLI exposes only --no-gif, --self-test-only, --download, --frames, --fps" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L1507-L1514> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-wolfram-conus-textile-rule30-parameter-expressivity-4> a pk:EvidenceItem ;
+        rdfs:label "1984-wolfram-conus-textile-rule30.py L688–L703" ;
+        dct:description "zc = T*rc is dwarfed by b*axial_ext; T in [0, 0.36] has zero silhouette effect (verified numerically)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L688-L703> .
     <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
-        rdfs:label "Claude Fable 5.1 (Cursor agent, blinded second assessor)" .
+        rdfs:label "Claude Fable 5.1 (Cursor agent, blinded second assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
         prov:wasDerivedFrom <https://doi.org/10.1016/0167-2789(90)90169-P>,
             <https://doi.org/10.1016/S0022-5193(87)80101-7>,
             <https://doi.org/10.1038/311419a0>,
-            <https://doi.org/10.1103/RevModPhys.55.601> .
+            <https://doi.org/10.1103/RevModPhys.55.601>,
+            <https://www.jstor.org/stable/1301992> .
     <https://doi.org/10.1016/0167-2789(90)90169-P> dct:date "1990"^^xsd:gYear ;
         dct:title "Aperiodicity in one-dimensional cellular automata" .
     <https://doi.org/10.1016/S0022-5193(87)80101-7> dct:date "1987"^^xsd:gYear ;
@@ -44,25 +71,24 @@ sub:provenance {
         dct:title "Cellular automata as models of complexity" .
     <https://doi.org/10.1103/RevModPhys.55.601> dct:date "1983"^^xsd:gYear ;
         dct:title "Statistical mechanics of cellular automata" .
+    <https://www.jstor.org/stable/1301992> dct:date "1966"^^xsd:gYear ;
+        dct:title "Geometric analysis of shell coiling: general problems" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation — Parameter expressivity 18/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-19T20:02:08Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:44Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-parameter-expressivity> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-wolfram-conus-textile-rule30-parameter-expressivity-second-assessor-claude-fable-5-1> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

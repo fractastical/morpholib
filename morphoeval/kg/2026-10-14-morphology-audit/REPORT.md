@@ -2,18 +2,18 @@
 
 Rubric **0.1.0** · checkpoint `161f269` · assessor `pkr:model/claude-fable-5-1` (pk:LLMClaimAssessment) · tracked in https://github.com/fractastical/morpholib/issues/1
 
-Scores are 0–100 (emitted as `pk:hasProbability` = score/100 on the LLM assessment of the dimension hypothesis); Overall is the rubric-weighted mean and the claim's `pk:weightOfEvidence`. Unevaluated scripts carry no nanopubs yet.
+Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not calibrated probabilities; `pk:hasScore` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings for the ProbKnow rubric-assessment template). Faithfulness (weight 70) is decomposed into **Model Impl.** (weight 30: `model-fidelity` + `parameter-expressivity`) and **Bio. Val.** (weight 40: `specimen-match` + `morphometric-validation`). When a dimension is flagged `not_applicable`, **Overall (app.)** renormalises weights over applicable dimensions (mathematically neutral), whereas **Overall (pad.)** substitutes 50 (shrinking the weighted average toward 50). Unevaluated scripts carry no nanopubs yet.
 
-| Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Faithfulness | Reproducibility | **Overall** | verdict |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| PlanformDB planarian morphology animation (`2013-lobo-planform-morphology.py`) | 85 | 60 | 75 | 45 | 70 | 75 | 60 | 66.1 | 67.3 | **66.5** | mostly faithful |
-| Raup shell coiling morphospace (`create_raup_animations.py`) | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
-| Hoffmann-Donoughe insect wing venation (`2018-hoffmann-wing-venation.py`) | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
-| Chindapol flow-driven coral growth (`2013-chindapol-coral-flow.py`) | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
-| Gray-Scott reaction-diffusion patterns (`1952-turing-morpho.py`) | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
-| Petroff stromatolite morphospace (`2010-petroff-stromatolite.py`) | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
-| Kahng coral geometry morphospace (`2024-kahng-coral-geometry.py`) | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
-| Cervera-Levin-Mafe bioelectric morphospace (`2021-Cervera–Levin–Mafe.py`) | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
+| Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Model Impl. (30) | Bio. Val. (40) | Repro. (30) | Overall (app.) | **Overall (pad.)** | verdict |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| PlanformDB planarian morphology animation (`2013-lobo-planform-morphology.py`) | 85 | 60 | 75 | 45 | 70 | 75 | 60 | 81.7 | 54.4 | 67.3 | 66.5 | **66.5** | mostly faithful |
+| Raup shell coiling morphospace (`create_raup_animations.py`) | — | — | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
+| Hoffmann-Donoughe insect wing venation (`2018-hoffmann-wing-venation.py`) | — | — | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
+| Chindapol flow-driven coral growth (`2013-chindapol-coral-flow.py`) | — | — | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
+| Gray-Scott reaction-diffusion patterns (`1952-turing-morpho.py`) | — | — | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
+| Petroff stromatolite morphospace (`2010-petroff-stromatolite.py`) | — | — | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
+| Kahng coral geometry morphospace (`2024-kahng-coral-geometry.py`) | — | — | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
+| Cervera-Levin-Mafe bioelectric morphospace (`2021-Cervera–Levin–Mafe.py`) | — | — | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
 
 ## Findings and remediation
 
@@ -47,8 +47,8 @@ Remediation:
 The binaries stay out of git; the sha256 pins the exact file that was scored, and the morphometrics record the form itself (written into the reasoning of the morphometric-validation assessment).
 
 ### PlanformDB planarian morphology animation
-- `planform_morphology_gallery.png` — sha256 `77a7dfa087bf8944…`, 443,915 B, 1920×2160 px
-- `planform_morphospace_timeline.gif` — sha256 `f7c8cadf3c06c835…`, 3,265,519 B, 1500×780 px, 63 frames
+- `planform_morphology_gallery.png` — artifact_sha256 `77a7dfa087bf8944…`, 443,915 B, 1920×2160 px
+- `planform_morphospace_timeline.gif` — artifact_sha256 `f7c8cadf3c06c835…`, 3,265,519 B, 1500×780 px, 63 frames
 
 | measurement | value | reference | method |
 |---|---:|---|---|

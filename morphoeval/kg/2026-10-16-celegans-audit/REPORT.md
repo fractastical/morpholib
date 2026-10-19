@@ -1,12 +1,12 @@
 # MorphoEval report — audit `2026-10-16-celegans-audit`
 
-Rubric **0.1.0** · checkpoint `303a87e` · assessor `pkr:model/claude-fable-5-1` (pk:LLMClaimAssessment) · tracked in https://github.com/fractastical/morpholib/issues/1
+Rubric **0.1.0** · checkpoint `303a87e` · assessor `pkr:model/claude-fable-5-1` (pk:LLMClaimAssessment) · tracked in https://github.com/fractastical/morpholib/issues/1 · supersession chain `2026-10-15-celegans-audit -> 2026-10-16-celegans-audit`
 
-Scores are 0–100 (emitted as `pk:hasProbability` = score/100 on the LLM assessment of the dimension hypothesis); Overall is the rubric-weighted mean and the claim's `pk:weightOfEvidence`. Unevaluated scripts carry no nanopubs yet.
+Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not calibrated probabilities; `pk:hasScore` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings for the ProbKnow rubric-assessment template). Faithfulness (weight 70) is decomposed into **Model Impl.** (weight 30: `model-fidelity` + `parameter-expressivity`) and **Bio. Val.** (weight 40: `specimen-match` + `morphometric-validation`). When a dimension is flagged `not_applicable`, **Overall (app.)** renormalises weights over applicable dimensions (mathematically neutral), whereas **Overall (pad.)** substitutes 50 (shrinking the weighted average toward 50). Unevaluated scripts carry no nanopubs yet.
 
-| Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Faithfulness | Reproducibility | **Overall** | verdict |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| WormGUIDES C. elegans embryo atlas with the OpenWorm connectome (`2015-santella-wormguides-celegans.py`) | 80 | 62 | 50 | 72 | 85 | 75 | 70 | 67.6 | 76.3 | **70.2** | mostly faithful |
+| Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Model Impl. (30) | Bio. Val. (40) | Repro. (30) | Overall (app.) | **Overall (pad.)** | verdict |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| WormGUIDES C. elegans embryo atlas with the OpenWorm connectome (`2015-santella-wormguides-celegans.py`) | 80 | 62 | 50* | 72 | 85 | 75 | 70 | 70.0 | 65.8 | 76.3 | 72.4 | **70.2** | mostly faithful |
 
 ## Findings and remediation
 
@@ -41,7 +41,7 @@ Remediation:
 The binaries stay out of git; the sha256 pins the exact file that was scored, and the morphometrics record the form itself (written into the reasoning of the morphometric-validation assessment).
 
 ### WormGUIDES C. elegans embryo atlas with the OpenWorm connectome
-- `celegans_four_views.png` — sha256 `eb4b60086280c9a1…`, 424,197 B, 2240×1680 px
+- `celegans_four_views.png` — artifact_sha256 `eb4b60086280c9a1…`, 424,197 B, 2240×1680 px
 
 | measurement | value | reference | method |
 |---|---:|---|---|

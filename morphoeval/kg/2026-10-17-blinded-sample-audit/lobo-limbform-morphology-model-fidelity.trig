@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,47 +17,66 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-lobo-limbform-morphology-model-fidelity> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-lobo-limbform-morphology> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-lobo-limbform-morphology-model-fidelity-second-assessor-gemini-4-argon> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-lobo-limbform-morphology-model-fidelity-second-assessor-gemini-4-argon> a pk:LLMClaimAssessment ;
         rdfs:label "LimbformDB limb morphologies — Model fidelity to source: 88/100" ;
-        rdfs:comment "Faithfully decodes LimbformDB 2.1.0's five-table relational graph (Morphology, Link, JointParam, LinkSubJoint, Digit) using recursive vector accumulation, cyclic half-angle bisectors at branching joints, +90/+180/+270 deg terminal caps, double-counted host segments at ectopic sub-joints, and periodic Catmull-Rom splines, satisfying the joint-radius count rule on 3,137 of 3,146 joints (99.71%). Deducts 12 points because Link.side, Link.reversed, Link.inverted, and Digit.reversed are parsed into dataclasses (lines 146-148, 165) but never used in layout() or draw_morphology(), and because 9 mutant joints require mean-radius padding. Evidence: 2014-lobo-limbform-morphology.py L140–L178: Link, SubJoint, Digit, and Morphology dataclasses (including unused side/reversed/inverted fields) <https://github.com/fractastical/morpholib/blob/5659d5e/2014-lobo-limbform-morphology.py#L140-L178>; 2014-lobo-limbform-morphology.py L275–L421: layout(), _edges_of(), and control_points() implementing recursive tree layout and bisector radii <https://github.com/fractastical/morpholib/blob/5659d5e/2014-lobo-limbform-morphology.py#L275-L421>; 2014-lobo-limbform-morphology.py L606–L620: check_encoding() verifies 3,137/3,146 joints match the radius rule <https://github.com/fractastical/morpholib/blob/5659d5e/2014-lobo-limbform-morphology.py#L606-L620>." ;
+        dct:date "2026-10-17"^^xsd:date ;
+        dct:description "Faithfully decodes LimbformDB 2.1.0's five-table relational graph (Morphology, Link, JointParam, LinkSubJoint, Digit) using recursive vector accumulation, cyclic half-angle bisectors at branching joints, +90/+180/+270 deg terminal caps, double-counted host segments at ectopic sub-joints, and periodic Catmull-Rom splines, satisfying the joint-radius count rule on 3,137 of 3,146 joints (99.71%). Deducts 12 points because Link.side, Link.reversed, Link.inverted, and Digit.reversed are parsed into dataclasses (lines 146-148, 165) but never used in layout() or draw_morphology(), and because 9 mutant joints require mean-radius padding." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-model-fidelity> ;
-        pk:hasProbability "0.88"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-lobo-limbform-morphology-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-lobo-limbform-morphology-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-lobo-limbform-morphology-model-fidelity-3> ;
+        pk:hasScore "0.88"^^xsd:double ;
         pk:hasVerdict "faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology-model-fidelity> rdfs:label "LimbformDB limb morphologies (2014-lobo-limbform-morphology.py) satisfies the MorphoEval 0.1.0 criterion 'Model fidelity to source' for Urodele and anuran amphibians, decapod crustaceans, orthopteroid insects and a spider (LimbformDB 2.1.0)" ;
-        dct:identifier "morphoeval/0.1.0/model-fidelity" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-lobo-limbform-morphology-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2014-lobo-limbform-morphology.py L140–L178" ;
+        dct:description "Link, SubJoint, Digit, and Morphology dataclasses (including unused side/reversed/inverted fields)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5659d5e/2014-lobo-limbform-morphology.py#L140-L178> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-lobo-limbform-morphology-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2014-lobo-limbform-morphology.py L275–L421" ;
+        dct:description "layout(), _edges_of(), and control_points() implementing recursive tree layout and bisector radii" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5659d5e/2014-lobo-limbform-morphology.py#L275-L421> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-lobo-limbform-morphology-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "2014-lobo-limbform-morphology.py L606–L620" ;
+        dct:description "check_encoding() verifies 3,137/3,146 joints match the radius rule" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5659d5e/2014-lobo-limbform-morphology.py#L606-L620> .
     <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
-        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
         prov:wasDerivedFrom <https://doi.org/10.1002/reg2.13>,
-            <https://doi.org/10.1093/bioinformatics/btu582> .
+            <https://doi.org/10.1093/bioinformatics/btu582>,
+            <https://lobolab.umbc.edu/limbform/downloads/limbformDB_2.1.0.ldb> .
     <https://doi.org/10.1002/reg2.13> dct:date "2014"^^xsd:gYear ;
         dct:title "A bioinformatics expert system linking functional data to anatomical outcomes in limb regeneration" .
     <https://doi.org/10.1093/bioinformatics/btu582> dct:date "2014"^^xsd:gYear ;
         dct:title "Limbform: a functional ontology-based database of limb regeneration experiments" .
+    <https://lobolab.umbc.edu/limbform/downloads/limbformDB_2.1.0.ldb> dct:title "LimbformDB 2.1.0 (31 Jul 2014), the Limbform database file" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "LimbformDB limb morphologies — Model fidelity to source 88/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-18T01:49:13Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:43Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-lobo-limbform-morphology-model-fidelity> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-lobo-limbform-morphology-model-fidelity-second-assessor-gemini-4-argon> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

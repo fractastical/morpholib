@@ -1,10 +1,12 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
 @prefix pk: <https://w3id.org/probknow/ontology/> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
 @prefix sub: <http://purl.org/nanopub/temp/np001/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -16,21 +18,107 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-turing-gray-scott-morphometric-validation> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-turing-gray-scott> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-turing-gray-scott-morphometric-validation-second-assessor-gemini-4-argon> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-turing-gray-scott-morphometric-validation-second-assessor-gemini-4-argon> a pk:LLMClaimAssessment ;
         rdfs:label "Gray-Scott reaction-diffusion patterns — Morphometric validation: 5/100" ;
-        rdfs:comment "Zero quantitative analysis: no spatial wavelength, structure factor / FFT power spectrum, spot-count, or phase-diagram comparison is computed. Evidence: 1952-turing-morpho.py L1–L76: entire script contains only array updates and Matplotlib animation rendering <https://github.com/fractastical/morpholib/blob/5659d5e/1952-turing-morpho.py#L1-L76>. Measurements (measure_outputs.py): dominant wavelength (last frame) = 14.2857 grid cells [peak of the radial power spectrum of the axes-box image, scaled to the N=200 grid] — Gray–Scott f=0.055,k=0.062 labyrinth; no specimen or literature wavelength recorded; pattern coverage (last frame) = 0.2477 fraction [fraction of axes box in the high-V (yellow) band]; connected high-V components (last frame) = 1 count [scipy.ndimage.label on the yellow mask]; fraction of pattern pixels changed, first→last frame = 0.252 fraction (reference >0 for an evolving simulation) [XOR of yellow masks of frame 0 and the last frame] — ≈0 means the GIF shows a frozen pattern; Pearson coral labyrinth (F=0.055, k=0.062) spectral ring wavenumber k* = 11.0 cycles / domain (reference >0 (Turing band-pass ring), Pearson 1993 Science 261:189 Pattern η/γ) [peak of 2D radial PSD P(k) on N=160x160 grid after 4000 steps] — λ* = 14.55 grid cells, ring sharpness = 718.1; Pearson mitosis spots (F=0.028, k=0.062) connected components vs coral labyrinth = 129 count (reference 14, Pearson 1993 Science 261:189 Pattern λ/θ vs Pattern η/γ) [connected high-activator components in self-replicating spot regime] — spots remain disconnected (>100 components) whereas coral labyrinth percolates; equal-diffusion negative control (Du=Dv=0.10) spectral wavenumber k* = 0.0 cycles / domain (reference 0.0, Turing 1952 Phil. Trans. R. Soc. B 237:37 (diffusion-driven instability requires Du != Dv)) [dominant wavenumber when differential diffusivity is removed (Du = Dv = 0.10 at F=0.055, k=0.062)] — spatial σ_V = 0.00e+00, ring sharpness = 0.0." ;
+        dct:date "2026-10-17"^^xsd:date ;
+        dct:description "Zero quantitative analysis: no spatial wavelength, structure factor / FFT power spectrum, spot-count, or phase-diagram comparison is computed." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-turing-gray-scott-morphometric-validation> ;
-        pk:hasProbability "0.05"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-connected-high-v-components-last-frame>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-dominant-wavelength-last-frame>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-equal-diffusion-negative-control-du-dv-0-10-spectral-wavenumber-k>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-fraction-of-pattern-pixels-changed-first-last-frame>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pattern-coverage-last-frame>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pearson-coral-labyrinth-f-0-055-k-0-062-spectral-ring-wavenumber-k>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pearson-mitosis-spots-f-0-028-k-0-062-connected-components-vs-coral-labyrinth>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-morphometric-validation-1> ;
+        pk:hasScore "0.05"^^xsd:double ;
         pk:hasVerdict "not faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-turing-gray-scott-morphometric-validation> rdfs:label "Gray-Scott reaction-diffusion patterns (1952-turing-morpho.py) satisfies the MorphoEval 0.1.0 criterion 'Morphometric validation' for Generic (Turing pattern formation)" ;
-        dct:identifier "morphoeval/0.1.0/morphometric-validation" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-connected-high-v-components-last-frame> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "connected high-V components (last frame) = 1 count" ;
+        schema:measurementTechnique "scipy.ndimage.label on the yellow mask" ;
+        schema:name "connected high-V components (last frame)" ;
+        schema:unitText "count" ;
+        schema:value "1" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-dominant-wavelength-last-frame> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "dominant wavelength (last frame) = 14.2857 grid cells" ;
+        dct:description "Gray–Scott f=0.055,k=0.062 labyrinth; no specimen or literature wavelength recorded" ;
+        schema:measurementTechnique "peak of the radial power spectrum of the axes-box image, scaled to the N=200 grid" ;
+        schema:name "dominant wavelength (last frame)" ;
+        schema:unitText "grid cells" ;
+        schema:value "14.2857" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-equal-diffusion-negative-control-du-dv-0-10-spectral-wavenumber-k> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "equal-diffusion negative control (Du=Dv=0.10) spectral wavenumber k* = 0.0 cycles / domain" ;
+        dct:description "spatial σ_V = 0.00e+00, ring sharpness = 0.0" ;
+        schema:measurementTechnique "dominant wavenumber when differential diffusivity is removed (Du = Dv = 0.10 at F=0.055, k=0.062)" ;
+        schema:name "equal-diffusion negative control (Du=Dv=0.10) spectral wavenumber k*" ;
+        schema:unitText "cycles / domain" ;
+        schema:value "0.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-equal-diffusion-negative-control-du-dv-0-10-spectral-wavenumber-k-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-equal-diffusion-negative-control-du-dv-0-10-spectral-wavenumber-k-reference> a schema:PropertyValue ;
+        dct:source "Turing 1952 Phil. Trans. R. Soc. B 237:37 (diffusion-driven instability requires Du != Dv)" ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-fraction-of-pattern-pixels-changed-first-last-frame> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "fraction of pattern pixels changed, first→last frame = 0.252 fraction" ;
+        dct:description "≈0 means the GIF shows a frozen pattern" ;
+        schema:measurementTechnique "XOR of yellow masks of frame 0 and the last frame" ;
+        schema:name "fraction of pattern pixels changed, first→last frame" ;
+        schema:unitText "fraction" ;
+        schema:value "0.252" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-fraction-of-pattern-pixels-changed-first-last-frame-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-fraction-of-pattern-pixels-changed-first-last-frame-reference> a schema:PropertyValue ;
+        schema:value ">0 for an evolving simulation" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pattern-coverage-last-frame> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "pattern coverage (last frame) = 0.2477 fraction" ;
+        schema:measurementTechnique "fraction of axes box in the high-V (yellow) band" ;
+        schema:name "pattern coverage (last frame)" ;
+        schema:unitText "fraction" ;
+        schema:value "0.2477" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pearson-coral-labyrinth-f-0-055-k-0-062-spectral-ring-wavenumber-k> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Pearson coral labyrinth (F=0.055, k=0.062) spectral ring wavenumber k* = 11.0 cycles / domain" ;
+        dct:description "λ* = 14.55 grid cells, ring sharpness = 718.1" ;
+        schema:measurementTechnique "peak of 2D radial PSD P(k) on N=160x160 grid after 4000 steps" ;
+        schema:name "Pearson coral labyrinth (F=0.055, k=0.062) spectral ring wavenumber k*" ;
+        schema:unitText "cycles / domain" ;
+        schema:value "11.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pearson-coral-labyrinth-f-0-055-k-0-062-spectral-ring-wavenumber-k-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pearson-coral-labyrinth-f-0-055-k-0-062-spectral-ring-wavenumber-k-reference> a schema:PropertyValue ;
+        dct:source "Pearson 1993 Science 261:189 Pattern η/γ" ;
+        schema:value ">0 (Turing band-pass ring)" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pearson-mitosis-spots-f-0-028-k-0-062-connected-components-vs-coral-labyrinth> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Pearson mitosis spots (F=0.028, k=0.062) connected components vs coral labyrinth = 129 count" ;
+        dct:description "spots remain disconnected (>100 components) whereas coral labyrinth percolates" ;
+        schema:measurementTechnique "connected high-activator components in self-replicating spot regime" ;
+        schema:name "Pearson mitosis spots (F=0.028, k=0.062) connected components vs coral labyrinth" ;
+        schema:unitText "count" ;
+        schema:value "129" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pearson-mitosis-spots-f-0-028-k-0-062-connected-components-vs-coral-labyrinth-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-measurement-pearson-mitosis-spots-f-0-028-k-0-062-connected-components-vs-coral-labyrinth-reference> a schema:PropertyValue ;
+        dct:source "Pearson 1993 Science 261:189 Pattern λ/θ vs Pattern η/γ" ;
+        schema:value "14" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-turing-gray-scott-morphometric-validation-1> a pk:EvidenceItem ;
+        rdfs:label "1952-turing-morpho.py L1–L76" ;
+        dct:description "entire script contains only array updates and Matplotlib animation rendering" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5659d5e/1952-turing-morpho.py#L1-L76> .
     <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
-        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
         prov:wasDerivedFrom <https://doi.org/10.1098/rstb.1952.0012>,
             <https://doi.org/10.1126/science.261.5118.189> .
@@ -43,20 +131,17 @@ sub:provenance {
 sub:pubinfo {
     sub: rdfs:label "Gray-Scott reaction-diffusion patterns — Morphometric validation 5/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-18T01:49:13Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:43Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-turing-gray-scott-morphometric-validation> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-turing-gray-scott-morphometric-validation-second-assessor-gemini-4-argon> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

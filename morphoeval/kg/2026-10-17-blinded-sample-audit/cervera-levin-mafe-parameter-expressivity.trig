@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,27 +17,46 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-cervera-levin-mafe-parameter-expressivity> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-cervera-levin-mafe> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-cervera-levin-mafe-parameter-expressivity-second-assessor-gemini-4-argon> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-cervera-levin-mafe-parameter-expressivity-second-assessor-gemini-4-argon> a pk:LLMClaimAssessment ;
         rdfs:label "Cervera–Levin–Mafe gap-junction reaction–diffusion and bioelectric synthesis — Parameter expressivity: 62/100" ;
-        rdfs:comment "Sweeps f2 across [0.25, 1.0] (monotonically shifting the AP wavefront x*(f2) from 0.500 to 0.648 and anterior silhouette area from 0.483 to 0.639) and sweeps f3 across [0.30, 1.0] (reducing the ML centre/edge ratio lambda(f3) from 0.197 to 0.011), and compares 5 rusty-matter bioelectric scenarios across 3 crop positions. Deducts 38 points because f3 has no effect on the rendered 2D worm morphology and the phenotype output is a binary switch rather than a continuous morphogenetic deformation. Evidence: 2021-Cervera–Levin–Mafe.py L302–L359: wavefront_for_f2(), lateral_index_for_f3(), and f2_for_shift() <https://github.com/fractastical/morpholib/blob/5659d5e/2021-Cervera–Levin–Mafe.py#L302-L359>; 2021-Cervera–Levin–Mafe.py L965–L978: f2 and f3 parameter sweeps <https://github.com/fractastical/morpholib/blob/5659d5e/2021-Cervera–Levin–Mafe.py#L965-L978>." ;
+        dct:date "2026-10-17"^^xsd:date ;
+        dct:description "Sweeps f2 across [0.25, 1.0] (monotonically shifting the AP wavefront x*(f2) from 0.500 to 0.648 and anterior silhouette area from 0.483 to 0.639) and sweeps f3 across [0.30, 1.0] (reducing the ML centre/edge ratio lambda(f3) from 0.197 to 0.011), and compares 5 rusty-matter bioelectric scenarios across 3 crop positions. Deducts 38 points because f3 has no effect on the rendered 2D worm morphology and the phenotype output is a binary switch rather than a continuous morphogenetic deformation." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-cervera-levin-mafe-parameter-expressivity> ;
-        pk:hasProbability "0.62"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-cervera-levin-mafe-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-cervera-levin-mafe-parameter-expressivity-2> ;
+        pk:hasScore "0.62"^^xsd:double ;
         pk:hasVerdict "mostly faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-cervera-levin-mafe-parameter-expressivity> rdfs:label "Cervera–Levin–Mafe gap-junction reaction–diffusion and bioelectric synthesis (2021-Cervera–Levin–Mafe.py, 2013-lobo-planform-morphology.py) satisfies the MorphoEval 0.1.0 criterion 'Parameter expressivity' for Planarians; photograph is Schmidtea mediterranea, empirical PlanformDB subset is Dugesia japonica" ;
-        dct:identifier "morphoeval/0.1.0/parameter-expressivity" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-cervera-levin-mafe-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2021-Cervera–Levin–Mafe.py L302–L359" ;
+        dct:description "wavefront_for_f2(), lateral_index_for_f3(), and f2_for_shift()" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5659d5e/2021-Cervera–Levin–Mafe.py#L302-L359> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-cervera-levin-mafe-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2021-Cervera–Levin–Mafe.py L965–L978" ;
+        dct:description "f2 and f3 parameter sweeps" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5659d5e/2021-Cervera–Levin–Mafe.py#L965-L978> .
     <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
-        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        prov:wasDerivedFrom <https://doi.org/10.1016/j.bioelechem.2019.107410>,
+        prov:wasDerivedFrom <https://commons.wikimedia.org/wiki/File:Smediterranea.jpg>,
+            <https://doi.org/10.1016/j.bioelechem.2019.107410>,
             <https://doi.org/10.1016/j.biosystems.2021.104511>,
             <https://doi.org/10.1016/j.bpj.2019.01.029>,
             <https://doi.org/10.1016/j.ydbio.2009.12.012>,
-            <https://doi.org/10.1093/bioinformatics/btt088> .
+            <https://doi.org/10.1093/bioinformatics/btt088>,
+            <https://github.com/MesmerPrism/rusty-matter/tree/ad111fa7ecfd8f43d292ff3b1d27d3af2741d828> .
+    <https://commons.wikimedia.org/wiki/File:Smediterranea.jpg> dct:date "2010"^^xsd:gYear ;
+        dct:title "Smediterranea.jpg, from A Low Percent Ethanol Method for Immobilizing Planarians" .
     <https://doi.org/10.1016/j.bioelechem.2019.107410> dct:date "2020"^^xsd:gYear ;
         dct:title "Bioelectrical model of head-tail patterning based on cell ion channels and intercellular gap junctions" .
     <https://doi.org/10.1016/j.biosystems.2021.104511> dct:date "2021"^^xsd:gYear ;
@@ -47,25 +67,23 @@ sub:provenance {
         dct:title "Long-range neural and gap junction protein-mediated cues control polarity during planarian regeneration" .
     <https://doi.org/10.1093/bioinformatics/btt088> dct:date "2013"^^xsd:gYear ;
         dct:title "Planform: an application and database of graph-encoded planarian regenerative experiments" .
+    <https://github.com/MesmerPrism/rusty-matter/tree/ad111fa7ecfd8f43d292ff3b1d27d3af2741d828> dct:title "MesmerPrism/rusty-matter planarian bioelectric circuit and fixtures" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "Cervera–Levin–Mafe gap-junction reaction–diffusion and bioelectric synthesis — Parameter expressivity 62/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-18T01:49:13Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:43Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-cervera-levin-mafe-parameter-expressivity> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-cervera-levin-mafe-parameter-expressivity-second-assessor-gemini-4-argon> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

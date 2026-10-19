@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,46 +17,52 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-audit-kahng-coral-geometry-overall> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-kahng-coral-geometry> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-kahng-coral-geometry-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-kahng-coral-geometry-overall> a pk:LLMClaimAssessment ;
         rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity — MorphoEval overall 60.2/100" ;
-        rdfs:comment "`2024-kahng-coral-geometry.py` faithfully encodes the discrete annual volume-accretion master rule `V(t+1) = V(t) + G*S(t)/rho` and the four idealized geometric families from Kahng, Odle & Wakeman (2024) (hemispheroid, cone, flat disc, and cylinder), reproducing their surface-area productivity (`SAP = dS/S`), linear extension (`C`), aspect-ratio dependence (Fig. 3), diameter/thickness scaling, and the ~19x microfragmentation SAP speedup for massive *Porites* (`r = 1 cm` vs `r = 25 cm`). Its main limitations are that the finite 1-year step introduces small-radius curvature in hemisphere/cone extension (`C = 0.52 -> 1.25 cm/yr` vs the exact continuum `dr/dt = G/rho = 1.25 cm/yr`), the equal-`G, rho` comparison applies `G = 1.50 g cm^-2 yr^-1` to a thin `h = 0.5 cm` disc (producing `26 cm/yr` extension at `r = 30 cm`), and no empirical colony growth tables or coral specimen photographs are overlaid. Overall 60.2/100 (faithfulness 54.6, reproducibility 73.5); rubric morphoeval 0.1.0; checkpoint commit 5564750; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 74, Morphological realism / specimen match 42, Parameter expressivity 72, Morphometric validation 38, Source and data traceability 74, Code-to-model traceability 75, Reproducibility package 72. Output judged: kahng_coral_geometry_morphospace.png: rendered output of 2024-kahng-coral-geometry.py at 5564750, image/png, 282553 B, 1774×1267 px, artifact_sha256 fa8ce6cd95b493eee42054724462d8d7e6380dd161cc7899a464457cd765f812 (sha256 fa8ce6cd95b493eee42054724462d8d7e6380dd161cc7899a464457cd765f812), spec_fingerprint 833cc6f3d6f3988fa15a852dd8366b15c68ef56d6fd98635b3250ff241f4746a. Dual provenance: spec_fingerprint: 833cc6f3d6f3988fa15a852dd8366b15c68ef56d6fd98635b3250ff241f4746a; artifact_sha256: fa8ce6cd95b493eee42054724462d8d7e6380dd161cc7899a464457cd765f812. Claim boundary: reported_in_source: Kahng, Odle & Wakeman (2024): colony volume increment V(t+1) = V(t) + G*S(t)/rho implies that surface-area productivity (SAP = dS/S) and linear extension C are governed by how S:V scales with colony size across hemispheroids, cones, flat discs, and cylinders; reconstructed_in_script: Exact 1-year discrete volume-step algebraic functions for hemisphere, fixed-aspect cone, fixed-thickness flat disc, and fixed-diameter cylinder (`hemisphere_extension`, `hemisphere_sap`, `disc_extension`, `disc_sap`, `cone_extension`, `cone_sap`, `cylinder_sap`), 6-panel comparative figure, and 15-year log-area animation; transfer_boundary: Uses a finite 1-year step V(t+1) = V(t) + G*S(t)/rho without comparing against the continuum differential limit (dV/dt = G*S/rho, where hemisphere dR/dt = G/rho is strictly constant at all radii), and uses schematic 2D matplotlib patches rather than 3D coral colony meshes or empirical growth time series; does_not_claim: 3D hydrodynamic polyp-scale morphogenesis or direct statistical fitting to raw field colony time series." ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "`2024-kahng-coral-geometry.py` faithfully encodes the discrete annual volume-accretion master rule `V(t+1) = V(t) + G*S(t)/rho` and the four idealized geometric families from Kahng, Odle & Wakeman (2024) (hemispheroid, cone, flat disc, and cylinder), reproducing their surface-area productivity (`SAP = dS/S`), linear extension (`C`), aspect-ratio dependence (Fig. 3), diameter/thickness scaling, and the ~19x microfragmentation SAP speedup for massive *Porites* (`r = 1 cm` vs `r = 25 cm`). Its main limitations are that the finite 1-year step introduces small-radius curvature in hemisphere/cone extension (`C = 0.52 -> 1.25 cm/yr` vs the exact continuum `dr/dt = G/rho = 1.25 cm/yr`), the equal-`G, rho` comparison applies `G = 1.50 g cm^-2 yr^-1` to a thin `h = 0.5 cm` disc (producing `26 cm/yr` extension at `r = 30 cm`), and no empirical colony growth tables or coral specimen photographs are overlaid. Overall 60.2/100 (faithfulness 54.6, reproducibility 73.5); rubric morphoeval 0.1.0; checkpoint commit 5564750; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 74, Morphological realism / specimen match 42, Parameter expressivity 72, Morphometric validation 38, Source and data traceability 74, Code-to-model traceability 75, Reproducibility package 72. Output judged: kahng_coral_geometry_morphospace.png: rendered output of 2024-kahng-coral-geometry.py at 5564750, image/png, 282553 B, 1774×1267 px, artifact_sha256 fa8ce6cd95b493eee42054724462d8d7e6380dd161cc7899a464457cd765f812 (sha256 fa8ce6cd95b493eee42054724462d8d7e6380dd161cc7899a464457cd765f812), spec_fingerprint 833cc6f3d6f3988fa15a852dd8366b15c68ef56d6fd98635b3250ff241f4746a. Dual provenance: spec_fingerprint: 833cc6f3d6f3988fa15a852dd8366b15c68ef56d6fd98635b3250ff241f4746a; artifact_sha256: fa8ce6cd95b493eee42054724462d8d7e6380dd161cc7899a464457cd765f812. Claim boundary: reported_in_source: Kahng, Odle & Wakeman (2024): colony volume increment V(t+1) = V(t) + G*S(t)/rho implies that surface-area productivity (SAP = dS/S) and linear extension C are governed by how S:V scales with colony size across hemispheroids, cones, flat discs, and cylinders; reconstructed_in_script: Exact 1-year discrete volume-step algebraic functions for hemisphere, fixed-aspect cone, fixed-thickness flat disc, and fixed-diameter cylinder (`hemisphere_extension`, `hemisphere_sap`, `disc_extension`, `disc_sap`, `cone_extension`, `cone_sap`, `cylinder_sap`), 6-panel comparative figure, and 15-year log-area animation; transfer_boundary: Uses a finite 1-year step V(t+1) = V(t) + G*S(t)/rho without comparing against the continuum differential limit (dV/dt = G*S/rho, where hemisphere dR/dt = G/rho is strictly constant at all radii), and uses schematic 2D matplotlib patches rather than 3D coral colony meshes or empirical growth time series; does_not_claim: 3D hydrodynamic polyp-scale morphogenesis or direct statistical fitting to raw field colony time series." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
         pk:evidenceAgainst "remediation needed: 2024-kahng-coral-geometry.py:68-110,172-185 Plot the exact continuum differential extension rates (dr/dt = G/rho for hemisphere, dh/dt = G*sqrt(1+alpha^2)/rho for cone, dr/dt = G*r/(2*rho*h) for disc) alongside the discrete 1-year Euler step curves, and use realistic DISC parameters (or dual y-axes) in Panel (c).",
             "remediation needed: Vendor `datasets/kahng/` with SHA-256-pinned empirical growth tables from Lough (2008), Hughes (1987), and Kahng (2023) / Kahng et al. (2024), overlay observed colony extension/SAP data points, and add `--self-test` and CSV metrics export." ;
-        pk:hasProbability "0.602"^^xsd:double ;
+        pk:hasScore "0.602"^^xsd:double ;
         pk:hasVerdict "mostly faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry> rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity faithfully reproduces Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris) morphology" ;
-        dct:identifier "morphoeval/0.1.0/overall" .
     <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
-        rdfs:label "Gemini 4 Argon (primary) + Claude Fable 5.1 (independent blinded second assessor)" .
+        rdfs:label "Gemini 4 Argon (primary) + Claude Fable 5.1 (independent blinded second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        prov:wasDerivedFrom <https://doi.org/10.7717/peerj.17037> .
+        prov:wasDerivedFrom <https://doi.org/10.7717/peerj.17037>,
+            <https://github.com/ericodle/coral_geometry_modeling> .
     <https://doi.org/10.7717/peerj.17037> dct:date "2024"^^xsd:gYear ;
         dct:title "Coral geometry and why it matters" .
+    <https://github.com/ericodle/coral_geometry_modeling> dct:date "2024"^^xsd:gYear ;
+        dct:title "coral_geometry_modeling — reference code and analysis" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity — MorphoEval overall 60.2/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-19T21:03:38Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:44Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-audit-kahng-coral-geometry-overall> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-kahng-coral-geometry-overall> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
             <https://w3id.org/probknow/resource/claim/morphoeval-kahng-coral-geometry> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

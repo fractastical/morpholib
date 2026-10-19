@@ -1,10 +1,12 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
 @prefix pk: <https://w3id.org/probknow/ontology/> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
 @prefix sub: <http://purl.org/nanopub/temp/np001/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -16,21 +18,134 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-validation> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-planform-morphology-animation> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-planform-morphology-animation-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-planform-morphology-animation-morphometric-validation> a pk:LLMClaimAssessment ;
         rdfs:label "PlanformDB planarian morphology animation — Morphometric validation: 45/100" ;
-        rdfs:comment "The script computes silhouette morphometrics (AP length, ML width, aspect, area, region and organ counts, length relative to wild type) for every morphology and can write them as CSV, and the measurements sidecar checks the decoded wild type against the radii encoded in the database (560 x 120 units). Nothing is yet compared with measurements of real animals or with values reported in the literature; the reference is the formalism, not a specimen. Evidence: 2013-lobo-planform-morphology.py L386–L412: morphometrics() <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L386-L412>; 2013-lobo-planform-morphology.py L684–L698: write_csv() <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L684-L698>; 2013-lobo-planform-morphology.py L713–L714: wild-type AP/ML printed at load <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L713-L714>. Measurements (measure_outputs.py): wild-type silhouette AP length = 557.6 Planform units (reference 560, PlanformDB 2.5.0 RegionParam/RegionsLink of morphology 1 (80+200+200+80)) [union of decoded region outlines of Morphology 1, rasterised; bbox extent along the AP axis]; wild-type silhouette ML width = 119.8 Planform units (reference 120, trunk lateral radii 60+60) [as above, across the ML axis]; wild-type AP/ML aspect = 4.653 ratio (reference 4.667, encoded radii) [AP length / ML width of the decoded silhouette] — S. mediterranea in Lobo et al. 2013 Fig. 1A is of this order; the formalism, not a specimen, is the reference; morphologies rendered = 369 count [Morphology rows with at least one encoded region] — 372 rows in the database; 3 have no regions (Lethal, Midbody Buldge, Double head, side tail); distinct body silhouettes = 167 count (reference 369, upper bound: one silhouette per morphology) [unique (AP length, ML width, area to 100 units, #heads, #tails) tuples over all rendered morphologies] — 115 morphologies share the wild-type body and differ only in organs (ectopic eyes, doubled CNS, pharynx position, ...), which is how the database encodes them; distinct encodings (regions + links + organs) = 369 count (reference 369, every morphology row is a distinct phenotype) [unique tuples of every encoded number read from the database]; IoU wild type vs double head (#24) = 0.8884 ratio (reference < 1; the two bodies differ only at the posterior cap (tail -> second head), the rest of the difference is organs) [intersection-over-union of the two decoded silhouettes on a shared canvas (region centres aligned by layout)]; IoU wild type vs headless (#20) = 0.6116 ratio (reference ≈ (trunk+tail area)/(whole-body area) if the head is simply absent) [as above]." ;
+        dct:date "2026-10-14"^^xsd:date ;
+        dct:description "The script computes silhouette morphometrics (AP length, ML width, aspect, area, region and organ counts, length relative to wild type) for every morphology and can write them as CSV, and the measurements sidecar checks the decoded wild type against the radii encoded in the database (560 x 120 units). Nothing is yet compared with measurements of real animals or with values reported in the literature; the reference is the formalism, not a specimen." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-planform-morphology-animation-morphometric-validation> ;
-        pk:hasProbability "0.45"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-distinct-body-silhouettes>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-distinct-encodings-regions-links-organs>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-iou-wild-type-vs-double-head-24>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-iou-wild-type-vs-headless-20>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-morphologies-rendered>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-wild-type-ap-ml-aspect>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-wild-type-silhouette-ap-length>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-wild-type-silhouette-ml-width>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-morphometric-validation-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-morphometric-validation-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-morphometric-validation-3> ;
+        pk:hasScore "0.45"^^xsd:double ;
         pk:hasVerdict "partially faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-planform-morphology-animation-morphometric-validation> rdfs:label "PlanformDB planarian morphology animation (2013-lobo-planform-morphology.py) satisfies the MorphoEval 0.1.0 criterion 'Morphometric validation' for Planaria (Schmidtea mediterranea, Dugesia japonica)" ;
-        dct:identifier "morphoeval/0.1.0/morphometric-validation" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-distinct-body-silhouettes> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "distinct body silhouettes = 167 count" ;
+        dct:description "115 morphologies share the wild-type body and differ only in organs (ectopic eyes, doubled CNS, pharynx position, ...), which is how the database encodes them" ;
+        schema:measurementTechnique "unique (AP length, ML width, area to 100 units, #heads, #tails) tuples over all rendered morphologies" ;
+        schema:name "distinct body silhouettes" ;
+        schema:unitText "count" ;
+        schema:value "167" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-distinct-body-silhouettes-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-distinct-body-silhouettes-reference> a schema:PropertyValue ;
+        dct:source "upper bound: one silhouette per morphology" ;
+        schema:value "369" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-distinct-encodings-regions-links-organs> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "distinct encodings (regions + links + organs) = 369 count" ;
+        schema:measurementTechnique "unique tuples of every encoded number read from the database" ;
+        schema:name "distinct encodings (regions + links + organs)" ;
+        schema:unitText "count" ;
+        schema:value "369" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-distinct-encodings-regions-links-organs-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-distinct-encodings-regions-links-organs-reference> a schema:PropertyValue ;
+        dct:source "every morphology row is a distinct phenotype" ;
+        schema:value "369" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-iou-wild-type-vs-double-head-24> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "IoU wild type vs double head (#24) = 0.8884 ratio" ;
+        schema:measurementTechnique "intersection-over-union of the two decoded silhouettes on a shared canvas (region centres aligned by layout)" ;
+        schema:name "IoU wild type vs double head (#24)" ;
+        schema:unitText "ratio" ;
+        schema:value "0.8884" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-iou-wild-type-vs-double-head-24-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-iou-wild-type-vs-double-head-24-reference> a schema:PropertyValue ;
+        schema:value "< 1; the two bodies differ only at the posterior cap (tail -> second head), the rest of the difference is organs" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-iou-wild-type-vs-headless-20> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "IoU wild type vs headless (#20) = 0.6116 ratio" ;
+        schema:measurementTechnique "as above" ;
+        schema:name "IoU wild type vs headless (#20)" ;
+        schema:unitText "ratio" ;
+        schema:value "0.6116" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-iou-wild-type-vs-headless-20-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-iou-wild-type-vs-headless-20-reference> a schema:PropertyValue ;
+        schema:value "≈ (trunk+tail area)/(whole-body area) if the head is simply absent" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-morphologies-rendered> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "morphologies rendered = 369 count" ;
+        dct:description "372 rows in the database; 3 have no regions (Lethal, Midbody Buldge, Double head, side tail)" ;
+        schema:measurementTechnique "Morphology rows with at least one encoded region" ;
+        schema:name "morphologies rendered" ;
+        schema:unitText "count" ;
+        schema:value "369" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-wild-type-ap-ml-aspect> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "wild-type AP/ML aspect = 4.653 ratio" ;
+        dct:description "S. mediterranea in Lobo et al. 2013 Fig. 1A is of this order; the formalism, not a specimen, is the reference" ;
+        schema:measurementTechnique "AP length / ML width of the decoded silhouette" ;
+        schema:name "wild-type AP/ML aspect" ;
+        schema:unitText "ratio" ;
+        schema:value "4.653" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-wild-type-ap-ml-aspect-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-wild-type-ap-ml-aspect-reference> a schema:PropertyValue ;
+        dct:source "encoded radii" ;
+        schema:value "4.667" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-wild-type-silhouette-ap-length> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "wild-type silhouette AP length = 557.6 Planform units" ;
+        schema:measurementTechnique "union of decoded region outlines of Morphology 1, rasterised; bbox extent along the AP axis" ;
+        schema:name "wild-type silhouette AP length" ;
+        schema:unitText "Planform units" ;
+        schema:value "557.6" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-wild-type-silhouette-ap-length-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-wild-type-silhouette-ap-length-reference> a schema:PropertyValue ;
+        dct:source "PlanformDB 2.5.0 RegionParam/RegionsLink of morphology 1 (80+200+200+80)" ;
+        schema:value "560" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-wild-type-silhouette-ml-width> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "wild-type silhouette ML width = 119.8 Planform units" ;
+        schema:measurementTechnique "as above, across the ML axis" ;
+        schema:name "wild-type silhouette ML width" ;
+        schema:unitText "Planform units" ;
+        schema:value "119.8" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-wild-type-silhouette-ml-width-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-measurement-wild-type-silhouette-ml-width-reference> a schema:PropertyValue ;
+        dct:source "trunk lateral radii 60+60" ;
+        schema:value "120" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-morphometric-validation-1> a pk:EvidenceItem ;
+        rdfs:label "2013-lobo-planform-morphology.py L386–L412" ;
+        dct:description "morphometrics()" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L386-L412> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-morphometric-validation-2> a pk:EvidenceItem ;
+        rdfs:label "2013-lobo-planform-morphology.py L684–L698" ;
+        dct:description "write_csv()" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L684-L698> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-planform-morphology-animation-morphometric-validation-3> a pk:EvidenceItem ;
+        rdfs:label "2013-lobo-planform-morphology.py L713–L714" ;
+        dct:description "wild-type AP/ML printed at load" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/161f269/2013-lobo-planform-morphology.py#L713-L714> .
     <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
-        rdfs:label "Claude Fable 5.1 (Cursor agent)" .
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
         prov:wasDerivedFrom <https://doi.org/10.1016/j.bpj.2017.04.011>,
             <https://doi.org/10.1093/bioinformatics/btt088>,
@@ -46,22 +161,19 @@ sub:provenance {
 sub:pubinfo {
     sub: rdfs:label "PlanformDB planarian morphology animation — Morphometric validation 45/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-16T18:52:23Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:45:06Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-morphometric-validation> ;
-        npx:supersedes <https://w3id.org/np/RAumxNKaGb7M8SzbWquN4uraOUByraE8CExNqWs3vpT44> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-planform-morphology-animation-morphometric-validation> ;
+        npx:supersedes <https://w3id.org/np/RA2OAjdpo94EbDM688Cpxp9d1VvtDFJJoh-cpYLxPPDLw> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/levin-lab> .
-    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/levin-lab> rdfs:label "levin-lab" .
 }

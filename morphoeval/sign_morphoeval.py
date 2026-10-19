@@ -91,9 +91,11 @@ def main():
         prev = entry.get("nanopub")
         if prev and prev != uri:
             supersedes = {str(o) for o in np_.pubinfo.objects(None, NPX.supersedes)}
-            if prev not in supersedes:
+            if prev not in supersedes and entry.get("published") in ("test", "prod"):
                 sys.exit(f"{f.name}: content changed since it was recorded as {prev} (now {uri}) but does not "
                          "npx:supersedes it; published nanopubs are immutable — rebuild with --supersede")
+            # a signed-but-never-published version is not on the network: it is simply replaced
+            # (kept in history) and must not be superseded, which would leave a dangling link
             history = entry.get("history", []) + [{"nanopub": prev, "published": entry.get("published"), "date": entry.get("date")}]
             entry = {"history": history}            # new version starts unpublished
         # The lexical form of every literal is part of the trusty hash, and the hash was computed

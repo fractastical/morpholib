@@ -1,12 +1,12 @@
 # MorphoEval report — audit `2026-10-17-thompson-audit`
 
-Rubric **0.1.0** · checkpoint `232e8f8` · assessor `pkr:model/claude-fable-5-1` (pk:LLMClaimAssessment) · tracked in https://github.com/fractastical/morpholib/issues/1
+Rubric **0.1.0** · checkpoint `232e8f8` · assessor `pkr:model/claude-fable-5-1` (pk:LLMClaimAssessment) · tracked in https://github.com/fractastical/morpholib/issues/1 · supersession chain `2026-10-16-thompson-audit -> 2026-10-17-thompson-audit`
 
-Scores are 0–100 (emitted as `pk:hasProbability` = score/100 on the LLM assessment of the dimension hypothesis); Overall is the rubric-weighted mean and the claim's `pk:weightOfEvidence`. Unevaluated scripts carry no nanopubs yet.
+Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not calibrated probabilities; `pk:hasScore` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings for the ProbKnow rubric-assessment template). Faithfulness (weight 70) is decomposed into **Model Impl.** (weight 30: `model-fidelity` + `parameter-expressivity`) and **Bio. Val.** (weight 40: `specimen-match` + `morphometric-validation`). When a dimension is flagged `not_applicable`, **Overall (app.)** renormalises weights over applicable dimensions (mathematically neutral), whereas **Overall (pad.)** substitutes 50 (shrinking the weighted average toward 50). Unevaluated scripts carry no nanopubs yet.
 
-| Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Faithfulness | Reproducibility | **Overall** | verdict |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| Thompson's Scarus -> Pomacanthus coordinate transformation fitted to real species (`thompson/1917-thompson-scarus-pomacanthus.py`) | 78 | 72 | 55 | 86 | 92 | 80 | 75 | 74.3 | 82.0 | **76.6** | mostly faithful |
+| Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Model Impl. (30) | Bio. Val. (40) | Repro. (30) | Overall (app.) | **Overall (pad.)** | verdict |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| Thompson's Scarus -> Pomacanthus coordinate transformation fitted to real species (`thompson/1917-thompson-scarus-pomacanthus.py`) | 78 | 72 | 55 | 86 | 92 | 80 | 75 | 70.3 | 77.2 | 82.0 | 76.6 | **76.6** | mostly faithful |
 
 ## Findings and remediation
 
@@ -42,9 +42,9 @@ Remediation:
 The binaries stay out of git; the sha256 pins the exact file that was scored, and the morphometrics record the form itself (written into the reasoning of the morphometric-validation assessment).
 
 ### Thompson's Scarus -> Pomacanthus coordinate transformation fitted to real species
-- `thompson_outline_metrics.csv` — sha256 `5faf2c6943c4de3b…`, 268 B, 
-- `thompson_scarus_pomacanthus.png` — sha256 `d243f51e2b90b1a2…`, 739,620 B, 2520×1540 px
-- `thompson_scarus_pomacanthus_outlines.png` — sha256 `df6479f9f47f28fc…`, 903,004 B, 2520×1470 px
+- `thompson_outline_metrics.csv` — artifact_sha256 `5faf2c6943c4de3b…`, 268 B, 
+- `thompson_scarus_pomacanthus.png` — artifact_sha256 `d243f51e2b90b1a2…`, 739,620 B, 2520×1540 px
+- `thompson_scarus_pomacanthus_outlines.png` — artifact_sha256 `df6479f9f47f28fc…`, 903,004 B, 2520×1470 px
 
 | measurement | value | reference | method |
 |---|---:|---|---|

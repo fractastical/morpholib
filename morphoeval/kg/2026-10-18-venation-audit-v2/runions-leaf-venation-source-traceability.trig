@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,21 +17,36 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-18-venation-audit-v2-runions-leaf-venation-source-traceability> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-runions-leaf-venation> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-runions-leaf-venation-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-runions-leaf-venation-source-traceability> a pk:LLMClaimAssessment ;
         rdfs:label "Runions et al. (2005) Leaf Venation Space-Colonization & Murray's Law — Source and data traceability: 95/100" ;
-        rdfs:comment "Complete DOIs, BibTeX entries, and SHA-256 locks for Runions et al. (2005), Murray (1926), Price et al. (2013), Katifori & Magnasco (2012), Ronellenfitsch et al. (2015), and both Wikimedia Commons specimen photographs, with the Table 1 count description corrected to 15 regimes. Evidence: datasets/venation/venation_reference.json L1–L165: Complete reference JSON with 15 Table 1 regimes and specimen SHA-256 locks <https://github.com/fractastical/morpholib/blob/c89d18d/datasets/venation/venation_reference.json#L1-L165>; datasets/venation/paper_citations.bib L1–L55: BibTeX citations <https://github.com/fractastical/morpholib/blob/c89d18d/datasets/venation/paper_citations.bib#L1-L55>." ;
+        dct:date "2026-10-18"^^xsd:date ;
+        dct:description "Complete DOIs, BibTeX entries, and SHA-256 locks for Runions et al. (2005), Murray (1926), Price et al. (2013), Katifori & Magnasco (2012), Ronellenfitsch et al. (2015), and both Wikimedia Commons specimen photographs, with the Table 1 count description corrected to 15 regimes." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-runions-leaf-venation-source-traceability> ;
-        pk:hasProbability "0.95"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-runions-leaf-venation-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-runions-leaf-venation-source-traceability-2> ;
+        pk:hasScore "0.95"^^xsd:double ;
         pk:hasVerdict "faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-runions-leaf-venation-source-traceability> rdfs:label "Runions et al. (2005) Leaf Venation Space-Colonization & Murray's Law (2005-runions-leaf-venation.py, docs/media/runions_leaf_venation_growth.gif, runions_leaf_venation_metrics.csv) satisfies the MorphoEval 0.1.0 criterion 'Source and data traceability' for Ginkgo biloba (open dichotomous venation) & angiosperm dicot lamina (reticulate venation)" ;
-        dct:identifier "morphoeval/0.1.0/source-traceability" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-runions-leaf-venation-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "datasets/venation/venation_reference.json L1–L165" ;
+        dct:description "Complete reference JSON with 15 Table 1 regimes and specimen SHA-256 locks" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/c89d18d/datasets/venation/venation_reference.json#L1-L165> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-runions-leaf-venation-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/venation/paper_citations.bib L1–L55" ;
+        dct:description "BibTeX citations" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/c89d18d/datasets/venation/paper_citations.bib#L1-L55> .
     <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
-        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" .
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
         prov:wasDerivedFrom <https://doi.org/10.1073/pnas.12.3.207>,
             <https://doi.org/10.1145/1073204.1073251>,
@@ -52,20 +68,17 @@ sub:provenance {
 sub:pubinfo {
     sub: rdfs:label "Runions et al. (2005) Leaf Venation Space-Colonization & Murray's Law — Source and data traceability 95/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-19T17:48:57Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:45:23Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-18-venation-audit-v2-runions-leaf-venation-source-traceability> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-runions-leaf-venation-source-traceability> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

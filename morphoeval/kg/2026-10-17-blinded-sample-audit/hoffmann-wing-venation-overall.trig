@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,21 +17,26 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-hoffmann-wing-venation-overall> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-hoffmann-wing-venation> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-hoffmann-wing-venation-overall-second-assessor-gemini-4-argon> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-hoffmann-wing-venation-overall-second-assessor-gemini-4-argon> a pk:LLMClaimAssessment ;
         rdfs:label "Hoffmann-Donoughe insect wing venation — MorphoEval overall 81.3/100" ;
-        rdfs:comment "Blinded second-assessor pass (gemini-4-argon). Implements Hoffmann et al.'s (2018) SI 3.3-3.4 secondary-vein model (density-weighted seeding, damped centroidal-Voronoi / Lloyd equilibration, and Voronoi bisectors) on the segmented primary-vein scaffold of Arigomphus villosipes (923 vein domains), comparing circularity, area, and proximal-distal trends against the real wing and the regular-hexagon ceiling. Overall 81.3/100 (faithfulness 81.5, reproducibility 80.8; model-implementation 77.3/100, biological-validation 84.6/100, applicable-only overall 81.3/100; uncalibrated rubric score, not a calibrated probability); rubric morphoeval 0.1.0; checkpoint commit 5659d5e; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, pandas 2.3.3, scikit-image 0.26.0, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 82, Morphological realism / specimen match 85, Parameter expressivity 68, Morphometric validation 84, Source and data traceability 84, Code-to-model traceability 78, Reproducibility package 80. Output judged: hoffmann_wing_recapitulation.png: rendered output of 2018-hoffmann-wing-venation.py at 5659d5e, image/png, 179027 B, 1730×1206 px, sha256 43b99ec8ae8205b3f12cfd0cde6d3ab1935463e222f66a0f5c16ec15d49e1108." ;
+        dct:date "2026-10-17"^^xsd:date ;
+        dct:description "Blinded second-assessor pass (gemini-4-argon). Implements Hoffmann et al.'s (2018) SI 3.3-3.4 secondary-vein model (density-weighted seeding, damped centroidal-Voronoi / Lloyd equilibration, and Voronoi bisectors) on the segmented primary-vein scaffold of Arigomphus villosipes (923 vein domains), comparing circularity, area, and proximal-distal trends against the real wing and the regular-hexagon ceiling. Overall 81.3/100 (faithfulness 81.5, reproducibility 80.8; model-implementation 77.3/100, biological-validation 84.6/100, applicable-only overall 81.3/100; uncalibrated rubric score, not a calibrated probability); rubric morphoeval 0.1.0; checkpoint commit 5659d5e; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, pandas 2.3.3, scikit-image 0.26.0, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 82, Morphological realism / specimen match 85, Parameter expressivity 68, Morphometric validation 84, Source and data traceability 84, Code-to-model traceability 78, Reproducibility package 80. Output judged: hoffmann_wing_recapitulation.png: rendered output of 2018-hoffmann-wing-venation.py at 5659d5e, image/png, 179027 B, 1730×1206 px, artifact_sha256 43b99ec8ae8205b3f12cfd0cde6d3ab1935463e222f66a0f5c16ec15d49e1108 (sha256 43b99ec8ae8205b3f12cfd0cde6d3ab1935463e222f66a0f5c16ec15d49e1108)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-hoffmann-wing-venation> ;
-        pk:hasProbability "0.813"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:hasScore "0.813"^^xsd:double ;
         pk:hasVerdict "faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-hoffmann-wing-venation> rdfs:label "Hoffmann-Donoughe insect wing venation faithfully reproduces Dragonfly Arigomphus villosipes (hindwing) morphology" ;
-        dct:identifier "morphoeval/0.1.0/overall" .
     <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
-        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
         prov:wasDerivedFrom <https://doi.org/10.1073/pnas.1721248115> .
     <https://doi.org/10.1073/pnas.1721248115> dct:date "2018"^^xsd:gYear ;
@@ -40,20 +46,18 @@ sub:provenance {
 sub:pubinfo {
     sub: rdfs:label "Hoffmann-Donoughe insect wing venation — MorphoEval overall 81.3/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-18T01:49:13Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:43Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-hoffmann-wing-venation-overall> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-hoffmann-wing-venation-overall-second-assessor-gemini-4-argon> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
             <https://w3id.org/probknow/resource/claim/morphoeval-hoffmann-wing-venation> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

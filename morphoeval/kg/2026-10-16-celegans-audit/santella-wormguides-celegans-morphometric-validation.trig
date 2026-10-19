@@ -1,10 +1,12 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
 @prefix pk: <https://w3id.org/probknow/ontology/> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
 @prefix sub: <http://purl.org/nanopub/temp/np001/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -16,27 +18,229 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-16-celegans-audit-santella-wormguides-celegans-morphometric-validation> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-santella-wormguides-celegans> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-santella-wormguides-celegans-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-santella-wormguides-celegans-morphometric-validation> a pk:LLMClaimAssessment ;
         rdfs:label "WormGUIDES C. elegans embryo atlas with the OpenWorm connectome — Morphometric validation: 72/100" ;
-        rdfs:comment "Re-scored from 65. Per-frame morphometrics are computed and written to CSV (nucleus count by founder, extents, mean diameter, normalised E-cell radius) and compared in the script's own output against the literature: 113 deaths listed and all present, 562-571 nuclei at 330-350 min against ~550, 580 nuclei at the last frame against 558 at hatching (671 generated), E-cell ingression at 26 cells against the ~30-cell stage, and the 300 connectome neurons against 302. The calibration now has checks of its own: the fitted length leaves the shell width unfitted and it comes out 29.2 um against the ~30 um egg; the 13 sampled shell meshes bound the scale to 0.1649-0.1750 um per unit; the nuclear overrun of each shell mesh is measured (19.0 units for the static early mesh, 1.8 at frame 330); and the previous nuclear-cloud estimate is recomputed as a cross-check (2 % lower). The timing anchor still disagrees (movie-minute 73 against 100 min) and is reported as a discrepancy, not explained, and no nuclear-diameter reference is compared. Evidence: 2015-santella-wormguides-celegans.py L348–L368: shell_report(): shell lengths, nuclear overrun, scale bracket <https://github.com/fractastical/morpholib/blob/303a87e/2015-santella-wormguides-celegans.py#L348-L368>; 2015-santella-wormguides-celegans.py L370–L388: measure(): per-frame morphometrics <https://github.com/fractastical/morpholib/blob/303a87e/2015-santella-wormguides-celegans.py#L370-L388>; 2015-santella-wormguides-celegans.py L401–L423: literature_checks(): the anchors printed <https://github.com/fractastical/morpholib/blob/303a87e/2015-santella-wormguides-celegans.py#L401-L423>; morphoeval/measure_outputs.py L383–L468: measure_celegans(): the same values plus the four shell measurements in the sidecar <https://github.com/fractastical/morpholib/blob/303a87e/morphoeval/measure_outputs.py#L383-L468>; celegans_four_views.png (generated output, not in repo): the output judged — celegans_four_views.png: rendered output of 2015-santella-wormguides-celegans.py at 303a87e, image/png, 424197 B, 2240×1680 px, sha256 eb4b60086280c9a1740358c26fc655598f25d2adad63a9fcdb9c3a7980cc3bd6. Measurements (measure_outputs.py): lineage names parsing as Sulston names = 1330 count (reference 1330, all distinct names in the atlas) [distinct names in the 360 nuclei files matching ^(AB|MS|E|C|D|EMS|P[0-4]|Z[23])[aplrdv]*$]; cells first seen after their parent = 1326 count (reference 1326, all cells whose parent is in the movie (4 founders present at frame 1 have parents that predate it)) [non-founder cells whose parent name appears in an earlier frame]; calibration = 0.1649 µm per atlas unit [x extent of the atlas's eggshell outline mesh at frame 330 (obj_files/embryo_t330.obj, 'Embryo Outline' in CellShapesConfig.csv; 303.1 units) set to the 50 µm egg length] — assumption: Gönczy et al. 1999 JCB 144:927 ('50-µm-long cell'); the atlas coordinates are unit-less (ProductionInfo X/Y/Z_SCALE = 1); the earlier nuclear-cloud estimate gives 0.1617; the sampled shell meshes give 0.1649-0.1750; eggshell width under the calibration = 29.238 µm (reference 30.0, Gönczy et al. 1999 JCB 144:927 / WormAtlas: the egg is ~50 x 30 µm) [y extent of the eggshell outline mesh at frame 330 (z extent 28.9 µm)] — a consistency check of the calibration: the width is not fitted; eggshell length spread across sampled shell meshes = 17.3733 atlas units [max - min x extent of the eggshell meshes at frames [1, 30, 60, 100, 200, 250, 280, 300, 320, 330, 340, 350, 359] (285.8-303.1)] — one static mesh is reused for frames 1-~250, re-segmented per frame from ~280; the spread bounds the scale uncertainty (~6 %); nuclear overrun of the shell in x = 19.0129 atlas units [largest distance by which a nucleus (centroid ± radius) lies outside the shell mesh's x range at the sampled frames] — 1.8 units at frame 330; the overrun is against the static early mesh, which is why the calibration uses the re-segmented shell; nuclear cloud width at the last frame = 27.28 µm [y span of nuclear centroids + one mean diameter under the calibration] — nuclei do not reach the eggshell; compare the eggshell width above; nuclei at the last frame = 580 count (reference 558, WormAtlas, Embryo introduction (Sulston et al. 1983), accessed 2026-10-15: 558 cells at hatching (671 generated, 113 deaths)) [valid rows of t360-nuclei (movie-minute 379)] — the movie ends before hatching; 553 of the 580 nuclei carry a parts-list identity; maximum nucleus count = 585 count (reference 550, WormAtlas, Embryo introduction (Sulston et al. 1983), accessed 2026-10-15: ~550 cells at the end of proliferation (330-350 min)) [maximum over the 360 frames]; deaths listed by the atlas = 113 count (reference 113, WormAtlas, Embryo introduction (Sulston et al. 1983), accessed 2026-10-15: 113 embryonic cell deaths) [names in CellDeaths.csv]; listed dying cells that occur in the movie = 113 count (reference 113) [CellDeaths.csv names present in at least one nuclei file]; gastrulation onset, cell count = 26 count (reference 30, WormAtlas, Embryo introduction (Sulston et al. 1983), accessed 2026-10-15: ~30-cell stage (26-28 cells when Ea/Ep ingress)) [first frame from which the E cells sit at < 0.8 of the median normalised radius for 5 frames]; gastrulation onset, movie-minute = 73 min (reference 100, WormAtlas, Embryo introduction (Sulston et al. 1983), accessed 2026-10-15: Ea/Ep enter the embryo at 100 min after first cleavage) [same frame, frame index + movie start offset] — discrepancy: the atlas clock runs ~27 min ahead of the Sulston schedule at the same cell stage; not resolved by the script (temperature or time origin); nuclei at movie-minute 330-350 = 562-571 count (reference 550, WormAtlas, Embryo introduction (Sulston et al. 1983), accessed 2026-10-15: ~550 cells at 330-350 min) [nucleus count over that window]; neurons in the connectome edge list = 300 count (reference 302, Cook et al. 2019 / White et al. 1986: 302 hermaphrodite neurons) [upper-case node names of c302 herm_full_edgelist.csv after DA01->DA1 canonicalisation] — CANL/CANR are 'no synapses' in the WormGUIDES parts list and so cannot appear in an edge list." ;
+        dct:date "2026-10-16"^^xsd:date ;
+        dct:description "Re-scored from 65. Per-frame morphometrics are computed and written to CSV (nucleus count by founder, extents, mean diameter, normalised E-cell radius) and compared in the script's own output against the literature: 113 deaths listed and all present, 562-571 nuclei at 330-350 min against ~550, 580 nuclei at the last frame against 558 at hatching (671 generated), E-cell ingression at 26 cells against the ~30-cell stage, and the 300 connectome neurons against 302. The calibration now has checks of its own: the fitted length leaves the shell width unfitted and it comes out 29.2 um against the ~30 um egg; the 13 sampled shell meshes bound the scale to 0.1649-0.1750 um per unit; the nuclear overrun of each shell mesh is measured (19.0 units for the static early mesh, 1.8 at frame 330); and the previous nuclear-cloud estimate is recomputed as a cross-check (2 % lower). The timing anchor still disagrees (movie-minute 73 against 100 min) and is reported as a discrepancy, not explained, and no nuclear-diameter reference is compared." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-santella-wormguides-celegans-morphometric-validation> ;
-        pk:hasProbability "0.72"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-calibration>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-cells-first-seen-after-their-parent>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-deaths-listed-by-the-atlas>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-eggshell-length-spread-across-sampled-shell-meshes>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-eggshell-width-under-the-calibration>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-gastrulation-onset-cell-count>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-gastrulation-onset-movie-minute>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-lineage-names-parsing-as-sulston-names>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-listed-dying-cells-that-occur-in-the-movie>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-maximum-nucleus-count>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-neurons-in-the-connectome-edge-list>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-nuclear-cloud-width-at-the-last-frame>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-nuclear-overrun-of-the-shell-in-x>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-nuclei-at-movie-minute-330-350>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-nuclei-at-the-last-frame>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-morphometric-validation-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-morphometric-validation-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-morphometric-validation-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-morphometric-validation-4>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-morphometric-validation-5> ;
+        pk:hasScore "0.72"^^xsd:double ;
         pk:hasVerdict "mostly faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-santella-wormguides-celegans-morphometric-validation> rdfs:label "WormGUIDES C. elegans embryo atlas with the OpenWorm connectome (2015-santella-wormguides-celegans.py) satisfies the MorphoEval 0.1.0 criterion 'Morphometric validation' for Caenorhabditis elegans embryo, 4-cell stage to ~580 nuclei (strain JIM113, diSPIM series DISPIM_061416)" ;
-        dct:identifier "morphoeval/0.1.0/morphometric-validation" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-calibration> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "calibration = 0.1649 µm per atlas unit" ;
+        dct:description "assumption: Gönczy et al. 1999 JCB 144:927 ('50-µm-long cell'); the atlas coordinates are unit-less (ProductionInfo X/Y/Z_SCALE = 1); the earlier nuclear-cloud estimate gives 0.1617; the sampled shell meshes give 0.1649-0.1750" ;
+        schema:measurementTechnique "x extent of the atlas's eggshell outline mesh at frame 330 (obj_files/embryo_t330.obj, 'Embryo Outline' in CellShapesConfig.csv; 303.1 units) set to the 50 µm egg length" ;
+        schema:name "calibration" ;
+        schema:unitText "µm per atlas unit" ;
+        schema:value "0.1649" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-cells-first-seen-after-their-parent> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "cells first seen after their parent = 1326 count" ;
+        schema:measurementTechnique "non-founder cells whose parent name appears in an earlier frame" ;
+        schema:name "cells first seen after their parent" ;
+        schema:unitText "count" ;
+        schema:value "1326" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-cells-first-seen-after-their-parent-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-cells-first-seen-after-their-parent-reference> a schema:PropertyValue ;
+        dct:source "all cells whose parent is in the movie (4 founders present at frame 1 have parents that predate it)" ;
+        schema:value "1326" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-deaths-listed-by-the-atlas> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "deaths listed by the atlas = 113 count" ;
+        schema:measurementTechnique "names in CellDeaths.csv" ;
+        schema:name "deaths listed by the atlas" ;
+        schema:unitText "count" ;
+        schema:value "113" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-deaths-listed-by-the-atlas-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-deaths-listed-by-the-atlas-reference> a schema:PropertyValue ;
+        dct:source "WormAtlas, Embryo introduction (Sulston et al. 1983), accessed 2026-10-15: 113 embryonic cell deaths" ;
+        schema:value "113" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-eggshell-length-spread-across-sampled-shell-meshes> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "eggshell length spread across sampled shell meshes = 17.3733 atlas units" ;
+        dct:description "one static mesh is reused for frames 1-~250, re-segmented per frame from ~280; the spread bounds the scale uncertainty (~6 %)" ;
+        schema:measurementTechnique "max - min x extent of the eggshell meshes at frames [1, 30, 60, 100, 200, 250, 280, 300, 320, 330, 340, 350, 359] (285.8-303.1)" ;
+        schema:name "eggshell length spread across sampled shell meshes" ;
+        schema:unitText "atlas units" ;
+        schema:value "17.3733" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-eggshell-width-under-the-calibration> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "eggshell width under the calibration = 29.238 µm" ;
+        dct:description "a consistency check of the calibration: the width is not fitted" ;
+        schema:measurementTechnique "y extent of the eggshell outline mesh at frame 330 (z extent 28.9 µm)" ;
+        schema:name "eggshell width under the calibration" ;
+        schema:unitText "µm" ;
+        schema:value "29.238" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-eggshell-width-under-the-calibration-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-eggshell-width-under-the-calibration-reference> a schema:PropertyValue ;
+        dct:source "Gönczy et al. 1999 JCB 144:927 / WormAtlas: the egg is ~50 x 30 µm" ;
+        schema:value "30.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-gastrulation-onset-cell-count> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "gastrulation onset, cell count = 26 count" ;
+        schema:measurementTechnique "first frame from which the E cells sit at < 0.8 of the median normalised radius for 5 frames" ;
+        schema:name "gastrulation onset, cell count" ;
+        schema:unitText "count" ;
+        schema:value "26" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-gastrulation-onset-cell-count-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-gastrulation-onset-cell-count-reference> a schema:PropertyValue ;
+        dct:source "WormAtlas, Embryo introduction (Sulston et al. 1983), accessed 2026-10-15: ~30-cell stage (26-28 cells when Ea/Ep ingress)" ;
+        schema:value "30" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-gastrulation-onset-movie-minute> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "gastrulation onset, movie-minute = 73 min" ;
+        dct:description "discrepancy: the atlas clock runs ~27 min ahead of the Sulston schedule at the same cell stage; not resolved by the script (temperature or time origin)" ;
+        schema:measurementTechnique "same frame, frame index + movie start offset" ;
+        schema:name "gastrulation onset, movie-minute" ;
+        schema:unitText "min" ;
+        schema:value "73" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-gastrulation-onset-movie-minute-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-gastrulation-onset-movie-minute-reference> a schema:PropertyValue ;
+        dct:source "WormAtlas, Embryo introduction (Sulston et al. 1983), accessed 2026-10-15: Ea/Ep enter the embryo at 100 min after first cleavage" ;
+        schema:value "100" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-lineage-names-parsing-as-sulston-names> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "lineage names parsing as Sulston names = 1330 count" ;
+        schema:measurementTechnique "distinct names in the 360 nuclei files matching ^(AB|MS|E|C|D|EMS|P[0-4]|Z[23])[aplrdv]*$" ;
+        schema:name "lineage names parsing as Sulston names" ;
+        schema:unitText "count" ;
+        schema:value "1330" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-lineage-names-parsing-as-sulston-names-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-lineage-names-parsing-as-sulston-names-reference> a schema:PropertyValue ;
+        dct:source "all distinct names in the atlas" ;
+        schema:value "1330" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-listed-dying-cells-that-occur-in-the-movie> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "listed dying cells that occur in the movie = 113 count" ;
+        schema:measurementTechnique "CellDeaths.csv names present in at least one nuclei file" ;
+        schema:name "listed dying cells that occur in the movie" ;
+        schema:unitText "count" ;
+        schema:value "113" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-listed-dying-cells-that-occur-in-the-movie-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-listed-dying-cells-that-occur-in-the-movie-reference> a schema:PropertyValue ;
+        schema:value "113" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-maximum-nucleus-count> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "maximum nucleus count = 585 count" ;
+        schema:measurementTechnique "maximum over the 360 frames" ;
+        schema:name "maximum nucleus count" ;
+        schema:unitText "count" ;
+        schema:value "585" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-maximum-nucleus-count-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-maximum-nucleus-count-reference> a schema:PropertyValue ;
+        dct:source "WormAtlas, Embryo introduction (Sulston et al. 1983), accessed 2026-10-15: ~550 cells at the end of proliferation (330-350 min)" ;
+        schema:value "550" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-neurons-in-the-connectome-edge-list> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "neurons in the connectome edge list = 300 count" ;
+        dct:description "CANL/CANR are 'no synapses' in the WormGUIDES parts list and so cannot appear in an edge list" ;
+        schema:measurementTechnique "upper-case node names of c302 herm_full_edgelist.csv after DA01->DA1 canonicalisation" ;
+        schema:name "neurons in the connectome edge list" ;
+        schema:unitText "count" ;
+        schema:value "300" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-neurons-in-the-connectome-edge-list-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-neurons-in-the-connectome-edge-list-reference> a schema:PropertyValue ;
+        dct:source "Cook et al. 2019 / White et al. 1986: 302 hermaphrodite neurons" ;
+        schema:value "302" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-nuclear-cloud-width-at-the-last-frame> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "nuclear cloud width at the last frame = 27.28 µm" ;
+        dct:description "nuclei do not reach the eggshell; compare the eggshell width above" ;
+        schema:measurementTechnique "y span of nuclear centroids + one mean diameter under the calibration" ;
+        schema:name "nuclear cloud width at the last frame" ;
+        schema:unitText "µm" ;
+        schema:value "27.28" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-nuclear-overrun-of-the-shell-in-x> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "nuclear overrun of the shell in x = 19.0129 atlas units" ;
+        dct:description "1.8 units at frame 330; the overrun is against the static early mesh, which is why the calibration uses the re-segmented shell" ;
+        schema:measurementTechnique "largest distance by which a nucleus (centroid ± radius) lies outside the shell mesh's x range at the sampled frames" ;
+        schema:name "nuclear overrun of the shell in x" ;
+        schema:unitText "atlas units" ;
+        schema:value "19.0129" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-nuclei-at-movie-minute-330-350> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "nuclei at movie-minute 330-350 = 562-571 count" ;
+        schema:measurementTechnique "nucleus count over that window" ;
+        schema:name "nuclei at movie-minute 330-350" ;
+        schema:unitText "count" ;
+        schema:value "562-571" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-nuclei-at-movie-minute-330-350-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-nuclei-at-movie-minute-330-350-reference> a schema:PropertyValue ;
+        dct:source "WormAtlas, Embryo introduction (Sulston et al. 1983), accessed 2026-10-15: ~550 cells at 330-350 min" ;
+        schema:value "550" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-nuclei-at-the-last-frame> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "nuclei at the last frame = 580 count" ;
+        dct:description "the movie ends before hatching; 553 of the 580 nuclei carry a parts-list identity" ;
+        schema:measurementTechnique "valid rows of t360-nuclei (movie-minute 379)" ;
+        schema:name "nuclei at the last frame" ;
+        schema:unitText "count" ;
+        schema:value "580" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-nuclei-at-the-last-frame-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-measurement-nuclei-at-the-last-frame-reference> a schema:PropertyValue ;
+        dct:source "WormAtlas, Embryo introduction (Sulston et al. 1983), accessed 2026-10-15: 558 cells at hatching (671 generated, 113 deaths)" ;
+        schema:value "558" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-morphometric-validation-1> a pk:EvidenceItem ;
+        rdfs:label "2015-santella-wormguides-celegans.py L348–L368" ;
+        dct:description "shell_report(): shell lengths, nuclear overrun, scale bracket" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/303a87e/2015-santella-wormguides-celegans.py#L348-L368> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-morphometric-validation-2> a pk:EvidenceItem ;
+        rdfs:label "2015-santella-wormguides-celegans.py L370–L388" ;
+        dct:description "measure(): per-frame morphometrics" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/303a87e/2015-santella-wormguides-celegans.py#L370-L388> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-morphometric-validation-3> a pk:EvidenceItem ;
+        rdfs:label "2015-santella-wormguides-celegans.py L401–L423" ;
+        dct:description "literature_checks(): the anchors printed" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/303a87e/2015-santella-wormguides-celegans.py#L401-L423> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-morphometric-validation-4> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/measure_outputs.py L383–L468" ;
+        dct:description "measure_celegans(): the same values plus the four shell measurements in the sidecar" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/303a87e/morphoeval/measure_outputs.py#L383-L468> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-santella-wormguides-celegans-morphometric-validation-5> a pk:EvidenceItem ;
+        rdfs:label "celegans_four_views.png (generated output)" ;
+        dct:description "the output judged — celegans_four_views.png: rendered output of 2015-santella-wormguides-celegans.py at 303a87e, image/png, 424197 B, 2240×1680 px, artifact_sha256 eb4b60086280c9a1740358c26fc655598f25d2adad63a9fcdb9c3a7980cc3bd6 (sha256 eb4b60086280c9a1740358c26fc655598f25d2adad63a9fcdb9c3a7980cc3bd6)" .
     <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
-        rdfs:label "Claude Fable 5.1 (Cursor agent)" .
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
         prov:wasDerivedFrom <https://doi.org/10.1016/0012-1606(83)90201-4>,
             <https://doi.org/10.1038/s41586-019-1352-7>,
             <https://doi.org/10.1083/jcb.144.5.927>,
             <https://doi.org/10.1098/rstb.2017.0382>,
-            <https://doi.org/10.1186/s12859-015-0627-8> .
+            <https://doi.org/10.1186/s12859-015-0627-8>,
+            <https://github.com/openworm/c302/tree/f54d92d7e9d2410ff6c47d9ae866649f1a419ee8>,
+            <https://github.com/zhirongbaolab/WormGUIDES/tree/17be611f10cdc8ea438e67dc9ca3de859487a05e> .
     <https://doi.org/10.1016/0012-1606(83)90201-4> dct:date "1983"^^xsd:gYear ;
         dct:title "The embryonic cell lineage of the nematode Caenorhabditis elegans" .
     <https://doi.org/10.1038/s41586-019-1352-7> dct:date "2019"^^xsd:gYear ;
@@ -47,27 +251,26 @@ sub:provenance {
         dct:title "OpenWorm: overview and recent advances in integrative biological simulation of Caenorhabditis elegans" .
     <https://doi.org/10.1186/s12859-015-0627-8> dct:date "2015"^^xsd:gYear ;
         dct:title "WormGUIDES: an interactive single cell developmental atlas and tool for collaborative multidimensional data exploration" .
+    <https://github.com/openworm/c302/tree/f54d92d7e9d2410ff6c47d9ae866649f1a419ee8> dct:title "c302: NeuroML-based C. elegans nervous-system models, commit f54d92d7e9d2410ff6c47d9ae866649f1a419ee8" .
+    <https://github.com/zhirongbaolab/WormGUIDES/tree/17be611f10cdc8ea438e67dc9ca3de859487a05e> dct:title "WormGUIDES atlas and application source, commit 17be611f10cdc8ea438e67dc9ca3de859487a05e" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "WormGUIDES C. elegans embryo atlas with the OpenWorm connectome — Morphometric validation 72/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-16T21:14:48Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:45:11Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-16-celegans-audit-santella-wormguides-celegans-morphometric-validation> ;
-        npx:supersedes <https://w3id.org/np/RA0PRGMXO0xLOXvT1Cr7uyQdllUh7zfdHdArS4fJurmDM> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-santella-wormguides-celegans-morphometric-validation> ;
+        npx:supersedes <https://w3id.org/np/RAq5iZhO6PbM4AoWG4AW2XnHy4PtubpxGbTxRfFh5KjjY> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

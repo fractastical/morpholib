@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,32 +17,50 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-thompson-scarus-pomacanthus-model-fidelity> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-thompson-scarus-pomacanthus> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-thompson-scarus-pomacanthus-model-fidelity-second-assessor-gemini-4-argon> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-thompson-scarus-pomacanthus-model-fidelity-second-assessor-gemini-4-argon> a pk:LLMClaimAssessment ;
         rdfs:label "Thompson's Scarus -> Pomacanthus transformation fitted to real species — Model fidelity to source: 94/100" ;
-        rdfs:comment "Operationalises Thompson's freehand coordinate transformations (1917, pp. 749-751, Figs. 375-376) into an explicit nested hierarchy of five analytical families (similarity, affine, projective/Moebius, oblique coaxial circles via complex log-ratio and power-shear, and Bookstein 1989 exact thin-plate spline). Fits all parametric models via multi-start non-linear least squares (fit_family) and verifies exact round-trip invertibility of the bipolar map (inv_coaxial) to machine precision in self_test(). Deducts 6 points only because Thompson's original grids were drawn freehand without algebraic formulas, so the 9-parameter bipolar power-shear equation is a modern formalisation rather than an equation printed in 1917, and Thompson's printed grid lines are not digitised as numerical coordinates. Evidence: thompson/1917-thompson-scarus-pomacanthus.py L256–L360: procrustes_align(), fit_affine(), fit_moebius(), fit_coaxial(), inv_coaxial(), and fit_tps() <https://github.com/fractastical/morpholib/blob/5659d5e/thompson/1917-thompson-scarus-pomacanthus.py#L256-L360>; thompson/1917-thompson-scarus-pomacanthus.py L443–L463: self_test() verifies TPS interpolation (< 1e-9), nested hierarchy bounds, and coaxial inversion (< 1e-9) <https://github.com/fractastical/morpholib/blob/5659d5e/thompson/1917-thompson-scarus-pomacanthus.py#L443-L463>." ;
+        dct:date "2026-10-17"^^xsd:date ;
+        dct:description "Operationalises Thompson's freehand coordinate transformations (1917, pp. 749-751, Figs. 375-376) into an explicit nested hierarchy of five analytical families (similarity, affine, projective/Moebius, oblique coaxial circles via complex log-ratio and power-shear, and Bookstein 1989 exact thin-plate spline). Fits all parametric models via multi-start non-linear least squares (fit_family) and verifies exact round-trip invertibility of the bipolar map (inv_coaxial) to machine precision in self_test(). Deducts 6 points only because Thompson's original grids were drawn freehand without algebraic formulas, so the 9-parameter bipolar power-shear equation is a modern formalisation rather than an equation printed in 1917, and Thompson's printed grid lines are not digitised as numerical coordinates." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-thompson-scarus-pomacanthus-model-fidelity> ;
-        pk:hasProbability "0.94"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-model-fidelity-2> ;
+        pk:hasScore "0.94"^^xsd:double ;
         pk:hasVerdict "faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-thompson-scarus-pomacanthus-model-fidelity> rdfs:label "Thompson's Scarus -> Pomacanthus transformation fitted to real species (thompson/1917-thompson-scarus-pomacanthus.py) satisfies the MorphoEval 0.1.0 criterion 'Model fidelity to source' for Scarus spp. -> Pomacanthus spp., plus three other teleost pairs across 791 species" ;
-        dct:identifier "morphoeval/0.1.0/model-fidelity" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "thompson/1917-thompson-scarus-pomacanthus.py L256–L360" ;
+        dct:description "procrustes_align(), fit_affine(), fit_moebius(), fit_coaxial(), inv_coaxial(), and fit_tps()" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5659d5e/thompson/1917-thompson-scarus-pomacanthus.py#L256-L360> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "thompson/1917-thompson-scarus-pomacanthus.py L443–L463" ;
+        dct:description "self_test() verifies TPS interpolation (< 1e-9), nested hierarchy bounds, and coaxial inversion (< 1e-9)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5659d5e/thompson/1917-thompson-scarus-pomacanthus.py#L443-L463> .
     <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
-        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        prov:wasDerivedFrom <https://doi.org/10.1007/978-3-642-93093-5>,
+        prov:wasDerivedFrom <https://archive.org/details/ongrowthform1917thom>,
+            <https://doi.org/10.1007/978-3-642-93093-5>,
             <https://doi.org/10.1109/34.24792>,
             <https://doi.org/10.1111/evo.13755>,
             <https://doi.org/10.1371/journal.pone.0112732>,
             <https://doi.org/10.5061/dryad.fn457gr> .
+    <https://archive.org/details/ongrowthform1917thom> dct:date "1917"^^xsd:gYear ;
+        dct:title "On Growth and Form, chapter XVII, On the theory of transformations, or the comparison of related forms" .
     <https://doi.org/10.1007/978-3-642-93093-5> dct:date "1978"^^xsd:gYear ;
         dct:title "The measurement of biological shape and shape change" .
     <https://doi.org/10.1109/34.24792> dct:date "1989"^^xsd:gYear ;
         dct:title "Principal warps: thin-plate splines and the decomposition of deformations" .
-    <https://doi.org/10.1111/evo.13755> dct:date "1873"^^xsd:gYear ;
+    <https://doi.org/10.1111/evo.13755> dct:date "1919"^^xsd:gYear ;
         dct:title "The influence of size on body shape diversification across Indo-Pacific shore fishes" .
     <https://doi.org/10.1371/journal.pone.0112732> dct:date "2014"^^xsd:gYear ;
         dct:title "A morphospace for reef fishes: elongation is the dominant axis of body shape evolution" .
@@ -52,20 +71,17 @@ sub:provenance {
 sub:pubinfo {
     sub: rdfs:label "Thompson's Scarus -> Pomacanthus transformation fitted to real species — Model fidelity to source 94/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-18T01:49:13Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:43Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-thompson-scarus-pomacanthus-model-fidelity> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-thompson-scarus-pomacanthus-model-fidelity-second-assessor-gemini-4-argon> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

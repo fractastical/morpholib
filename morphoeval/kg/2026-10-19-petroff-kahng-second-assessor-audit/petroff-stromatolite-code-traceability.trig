@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,21 +17,36 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-code-traceability> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-petroff-stromatolite> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-petroff-stromatolite-code-traceability-second-assessor-claude-fable-5-1> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-petroff-stromatolite-code-traceability-second-assessor-claude-fable-5-1> a pk:LLMClaimAssessment ;
         rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace — Code-to-model traceability: 35/100" ;
-        rdfs:comment "Equation and figure tags ('Petroff Eq. 2' at L21, L66; 'Petroff, Fig. 4' at L73) are present, but the growth model (L86-163) is traced to a different paper than the one in the filename/title, w_photic (L130) and smooth (L141-142) trace to no equation at all, and the equation printed to the console (L296) differs from the Lagrangian rule actually integrated. Evidence: 2010-petroff-stromatolite.py L85–L143: docstring/console KPZ equation vs Lagrangian front with w_photic and smoothing <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L85-L143>; 2010-petroff-stromatolite.py L296–L297: console prints dh/dt = v + lambda*(1 + 1/2 (dh/dr)^2) <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L296-L297>." ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Equation and figure tags ('Petroff Eq. 2' at L21, L66; 'Petroff, Fig. 4' at L73) are present, but the growth model (L86-163) is traced to a different paper than the one in the filename/title, w_photic (L130) and smooth (L141-142) trace to no equation at all, and the equation printed to the console (L296) differs from the Lagrangian rule actually integrated." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-code-traceability> ;
-        pk:hasProbability "0.35"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-petroff-stromatolite-code-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-petroff-stromatolite-code-traceability-2> ;
+        pk:hasScore "0.35"^^xsd:double ;
         pk:hasVerdict "unfaithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-code-traceability> rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace (2010-petroff-stromatolite.py, docs/media/petroff_stromatolite_dome_to_cone.gif) satisfies the MorphoEval 0.1.0 criterion 'Code-to-model traceability' for Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats)" ;
-        dct:identifier "morphoeval/0.1.0/code-traceability" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-petroff-stromatolite-code-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2010-petroff-stromatolite.py L85–L143" ;
+        dct:description "docstring/console KPZ equation vs Lagrangian front with w_photic and smoothing" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L85-L143> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-petroff-stromatolite-code-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "2010-petroff-stromatolite.py L296–L297" ;
+        dct:description "console prints dh/dt = v + lambda*(1 + 1/2 (dh/dr)^2)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L296-L297> .
     <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
-        rdfs:label "Claude Fable 5.1 (Cursor subagent e65a3d81-92b5-4bb2-941f-4566032cb3cd, blinded second assessor)" .
+        rdfs:label "Claude Fable 5.1 (Cursor subagent e65a3d81-92b5-4bb2-941f-4566032cb3cd, blinded second assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
         prov:wasDerivedFrom <https://doi.org/10.1016/j.physa.2004.01.065>,
             <https://doi.org/10.1073/pnas.1001978107> .
@@ -43,20 +59,17 @@ sub:provenance {
 sub:pubinfo {
     sub: rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace — Code-to-model traceability 35/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-19T21:03:38Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:44Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-second-assessor-audit-petroff-stromatolite-code-traceability> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-petroff-stromatolite-code-traceability-second-assessor-claude-fable-5-1> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

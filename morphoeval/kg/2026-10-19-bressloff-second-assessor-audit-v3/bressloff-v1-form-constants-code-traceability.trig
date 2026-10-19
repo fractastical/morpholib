@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,28 +17,55 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-second-assessor-audit-v3-bressloff-v1-form-constants-code-traceability> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-bressloff-v1-form-constants> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-bressloff-v1-form-constants-code-traceability-second-assessor-gemini-4-argon> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-bressloff-v1-form-constants-code-traceability-second-assessor-gemini-4-argon> a pk:LLMClaimAssessment ;
         rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Code-to-model traceability: 91/100" ;
-        rdfs:comment "Modelling functions in 2001-bressloff-v1-form-constants.py consistently cite specific sections, equations, and figures of Bressloff et al. (2001/2002) alongside exact file and line numbers in upstream rust-v1-sim (planform.rs, params.rs, presets.rs). All 24 presets in PAPER_PRESETS map directly to numbered figures in Bressloff et al. (2001/2002), and Section 14 of morphoeval/lean/MathOfBiology.lean machine-checks the retino-cortical pullback classification, the 2*gamma_3(theta) > gamma_0 roll-stability criterion, and the +-1 Floquet multiplier return maps. However, the per-mode phase multipliers in planform_modes (0.35 for cobweb, -0.25 for rhombic, -1.0 and 0.5 for hex_pi) and preset sharpness values (1.8, 2.1, 2.3) are unmotivated upstream rendering heuristics with no citation or derivation from Bressloff et al. (-5 pts). Additionally, the README.md section for 2001-bressloff-v1-form-constants.py misdescribes the code's contoured hexagonal FFT peak as moving to the sqrt(3)k ring (whereas the code and self-test show the dominant peak is at 2k) and omits the --sweep, --preset, and --hemifield-mode CLI flags (-4 pts). Evidence: 2001-bressloff-v1-form-constants.py L313–L499: PAPER_PRESETS mapping all 24 preset IDs to Bressloff (2001/2002) figures <https://github.com/fractastical/morpholib/blob/d6f3c94/2001-bressloff-v1-form-constants.py#L313-L499>; 2001-bressloff-v1-form-constants.py L615–L696: Traceability comments linking orientation_eigen_details and amplitude_gamma2/3 to Bressloff 2001 §4.2-§5 and upstream planform.rs:745-770 <https://github.com/fractastical/morpholib/blob/d6f3c94/2001-bressloff-v1-form-constants.py#L615-L696>; 2001-bressloff-v1-form-constants.py L982–L1014: planform_modes with undocumented per-mode phase multipliers (0.35, -0.25, -1.0, 0.5) <https://github.com/fractastical/morpholib/blob/d6f3c94/2001-bressloff-v1-form-constants.py#L982-L1014>; morphoeval/lean/MathOfBiology.lean L510–L596: Lean 4 Section 14 theorems for retino-cortical pullback, cubic roll stability, and Floquet period doubling <https://github.com/fractastical/morpholib/blob/d6f3c94/morphoeval/lean/MathOfBiology.lean#L510-L596>." ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Modelling functions in 2001-bressloff-v1-form-constants.py consistently cite specific sections, equations, and figures of Bressloff et al. (2001/2002) alongside exact file and line numbers in upstream rust-v1-sim (planform.rs, params.rs, presets.rs). All 24 presets in PAPER_PRESETS map directly to numbered figures in Bressloff et al. (2001/2002), and Section 14 of morphoeval/lean/MathOfBiology.lean machine-checks the retino-cortical pullback classification, the 2*gamma_3(theta) > gamma_0 roll-stability criterion, and the +-1 Floquet multiplier return maps. However, the per-mode phase multipliers in planform_modes (0.35 for cobweb, -0.25 for rhombic, -1.0 and 0.5 for hex_pi) and preset sharpness values (1.8, 2.1, 2.3) are unmotivated upstream rendering heuristics with no citation or derivation from Bressloff et al. (-5 pts). Additionally, the README.md section for 2001-bressloff-v1-form-constants.py misdescribes the code's contoured hexagonal FFT peak as moving to the sqrt(3)k ring (whereas the code and self-test show the dominant peak is at 2k) and omits the --sweep, --preset, and --hemifield-mode CLI flags (-4 pts)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-code-traceability> ;
-        pk:hasProbability "0.91"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-code-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-code-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-code-traceability-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-code-traceability-4> ;
+        pk:hasScore "0.91"^^xsd:double ;
         pk:hasVerdict "faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-code-traceability> rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants (2001-bressloff-v1-form-constants.py, docs/media/bressloff_v1_form_constants.gif, bressloff_v1_metrics.csv, datasets/bressloff/horton_hoyt_1991_magnification.json) satisfies the MorphoEval 0.1.0 criterion 'Code-to-model traceability' for Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
-        dct:identifier "morphoeval/0.1.0/code-traceability" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-code-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2001-bressloff-v1-form-constants.py L313–L499" ;
+        dct:description "PAPER_PRESETS mapping all 24 preset IDs to Bressloff (2001/2002) figures" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d6f3c94/2001-bressloff-v1-form-constants.py#L313-L499> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-code-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "2001-bressloff-v1-form-constants.py L615–L696" ;
+        dct:description "Traceability comments linking orientation_eigen_details and amplitude_gamma2/3 to Bressloff 2001 §4.2-§5 and upstream planform.rs:745-770" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d6f3c94/2001-bressloff-v1-form-constants.py#L615-L696> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-code-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "2001-bressloff-v1-form-constants.py L982–L1014" ;
+        dct:description "planform_modes with undocumented per-mode phase multipliers (0.35, -0.25, -1.0, 0.5)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d6f3c94/2001-bressloff-v1-form-constants.py#L982-L1014> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-code-traceability-4> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/MathOfBiology.lean L510–L596" ;
+        dct:description "Lean 4 Section 14 theorems for retino-cortical pullback, cubic roll stability, and Floquet period doubling" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d6f3c94/morphoeval/lean/MathOfBiology.lean#L510-L596> .
     <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
-        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
         prov:wasDerivedFrom <https://doi.org/10.1001/archopht.1991.01080060080030>,
             <https://doi.org/10.1007/BF00336965>,
             <https://doi.org/10.1098/rstb.2000.0769>,
             <https://doi.org/10.1137/23M1616686>,
             <https://doi.org/10.1162/089976602317250861>,
-            <https://doi.org/10.1371/journal.pcbi.1002158> .
+            <https://doi.org/10.1371/journal.pcbi.1002158>,
+            <https://github.com/MesmerPrism/bressloff-v1-form-constants>,
+            <https://press.uchicago.edu/ucp/books/book/chicago/M/bo3645325.html> .
     <https://doi.org/10.1001/archopht.1991.01080060080030> dct:date "1991"^^xsd:gYear ;
         dct:title "The representation of the visual field in human striate cortex: a revision of the classic Holmes map" .
     <https://doi.org/10.1007/BF00336965> dct:date "1979"^^xsd:gYear ;
@@ -50,25 +78,25 @@ sub:provenance {
         dct:title "What geometric visual hallucinations tell us about the visual cortex" .
     <https://doi.org/10.1371/journal.pcbi.1002158> dct:date "2011"^^xsd:gYear ;
         dct:title "A model for the origin and properties of flicker-induced geometric phosphenes" .
+    <https://github.com/MesmerPrism/bressloff-v1-form-constants> dct:title "bressloff-v1-form-constants: reference implementation and calibration reports (commit 344863a)" .
+    <https://press.uchicago.edu/ucp/books/book/chicago/M/bo3645325.html> dct:date "1966"^^xsd:gYear ;
+        dct:title "Mescal and Mechanisms of Hallucinations" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Code-to-model traceability 91/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-19T22:06:22Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:43Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-second-assessor-audit-v3-bressloff-v1-form-constants-code-traceability> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-bressloff-v1-form-constants-code-traceability-second-assessor-gemini-4-argon> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

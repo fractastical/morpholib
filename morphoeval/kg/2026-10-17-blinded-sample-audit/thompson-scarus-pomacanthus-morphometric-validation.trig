@@ -1,10 +1,12 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
 @prefix pk: <https://w3id.org/probknow/ontology/> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
 @prefix sub: <http://purl.org/nanopub/temp/np001/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
@@ -16,32 +18,277 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-thompson-scarus-pomacanthus-morphometric-validation> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-thompson-scarus-pomacanthus> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-thompson-scarus-pomacanthus-morphometric-validation-second-assessor-gemini-4-argon> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-thompson-scarus-pomacanthus-morphometric-validation-second-assessor-gemini-4-argon> a pk:LLMClaimAssessment ;
         rdfs:label "Thompson's Scarus -> Pomacanthus transformation fitted to real species — Morphometric validation: 96/100" ;
-        rdfs:comment "Computes per-landmark and RMS Procrustes residuals, leave-one-landmark-out cross-validation (LOO-CV), AIC-like parameter penalty, Bookstein's thin-plate spline bending energy (J = 0.258) and partial-warp spectrum (14 non-affine principal warps), plus rasterised silhouette Intersection-over-Union (IoU) and mean/95th-percentile symmetric boundary distances exported to thompson_outline_metrics.csv. Demonstrates quantitatively that Thompson's coaxial-circle family fails LOO-CV (0.0970 vs 0.0568 for similarity) and leaves silhouette IoU (0.6182) below baseline similarity (0.6615). Evidence: thompson/1917-thompson-scarus-pomacanthus.py L389–L412: leave_one_out_rms() implements 17-fold leave-one-landmark-out cross-validation <https://github.com/fractastical/morpholib/blob/5659d5e/thompson/1917-thompson-scarus-pomacanthus.py#L389-L412>; thompson/1917-thompson-scarus-pomacanthus.py L663–L718: outline_metrics() and compute_outline_comparison() compute rasterised IoU and boundary distances <https://github.com/fractastical/morpholib/blob/5659d5e/thompson/1917-thompson-scarus-pomacanthus.py#L663-L718>; thompson_outline_metrics.csv L1–L7: exported quantitative table of landmark RMS, LOO-CV RMS, silhouette IoU, and boundary distances <https://github.com/fractastical/morpholib/blob/5659d5e/thompson_outline_metrics.csv#L1-L7>. Measurements (measure_outputs.py): species in the landmark table = 791 count (reference 791, Friedman et al. 2019, Dryad 10.5061/dryad.fn457gr (Claverie & Wainwright 2014 landmarks), CC0: 'nearly 800 species') [rows of trimmed_tps_Claverie2014.csv (sha256 checked)]; Scarus species = 22 count [rows whose genus is Scarus]; Pomacanthus species = 9 count [rows whose genus is Pomacanthus]; Procrustes distance, Scarus mean to Pomacanthus mean = 0.0312 Procrustes units (RMS per landmark) [RMS landmark distance after optimal similarity superimposition of the genus means (unit centroid size)]; affine residual = 0.0259 Procrustes units [RMS after a least-squares affine map (6 parameters)] — explains 30.9 % of the Procrustes distance; Moebius residual (isogonal coaxial circles) = 0.0311 Procrustes units [RMS after a least-squares Moebius map z -> (az+b)/(cz+1), the conformal map that turns the Cartesian grid into two orthogonal pencils of coaxial circles] — explains 0.8 %: a conformal map cannot change the depth/length ratio; oblique coaxial-circle residual = 0.0256 Procrustes units [RMS after an affine map followed by z -> z/(cz+1) (8 parameters): coaxial circles whose two pencils need not be orthogonal, the family Thompson's Fig. 376 belongs to as drawn] — explains 32.4 %; thin-plate spline bending energy = 0.6778 dimensionless [bending energy of the exact TPS from the Scarus mean to the Pomacanthus mean (Bookstein 1989)]; within-Pomacanthus RMS (noise floor) = 0.0132 Procrustes units [RMS of the Pomacanthus species about their own Procrustes mean] — species range 0.0090-0.0180; within-Scarus 0.0099; leave-one-landmark-out RMS of the oblique coaxial family = 0.0371 Procrustes units [each landmark predicted by the 8-parameter map fitted to the other 16] — compare with the Procrustes distance: the family has no predictive value for held-out landmarks if it is not smaller; depth/length, Scarus mean = 0.3772 ratio [landmark extent in y over extent in x]; depth/length, Pomacanthus mean = 0.5873 ratio [landmark extent in y over extent in x]; percentile of Scarus -> Pomacanthus among all genus pairs (oblique coaxial, explained share) = 31.1475 percent [share of the 3782 ordered pairs of genus means (genera with >= 3 spp.) explained less well] — median pair 43 %; Scarus -> Chaetodon spp., median explained by oblique coaxial circles = 35.12 percent [median over the 54 Chaetodon species] — range 12-61 %; silhouette area, Scarus ghobban = 214862 pixels [segmented mask at 0.25 scale; photograph SHA-256 732f1e68da7e... checked by the script]; caudal-peduncle anchor, Scarus ghobban = 0.7919 fraction of silhouette length [x of the peduncle anchor between the anterior-most and posterior-most mask columns (fish facing left)] — plausible range for a perciform fish ~0.75-0.90; the anchor fixes the registration of the landmarks to the photograph; silhouette area, Pomacanthus semicirculatus = 92699 pixels [segmented mask at 0.25 scale; photograph SHA-256 5622e415149a... checked by the script]; caudal-peduncle anchor, Pomacanthus semicirculatus = 0.8395 fraction of silhouette length [x of the peduncle anchor between the anterior-most and posterior-most mask columns (fish facing left)] — plausible range for a perciform fish ~0.75-0.90; the anchor fixes the registration of the landmarks to the photograph; silhouette IoU, similarity = 0.662 ratio (reference 0.6619, the script's own IoU (skimage.draw.polygon, 1000-px grid)) [Scarus ghobban silhouette carried by the map fitted to the 17 landmarks of S. ghobban -> P. semicirculatus, against the P. semicirculatus silhouette; point-in-polygon on a 900 x 900 grid (independent of the script's rasteriser)] — boundary distance 0.0404 = 5.6 % of body length; landmark RMS 0.0388; the no-deformation baseline; silhouette IoU, affine = 0.6515 ratio (reference 0.6515, the script's own IoU (skimage.draw.polygon, 1000-px grid)) [Scarus ghobban silhouette carried by the map fitted to the 17 landmarks of S. ghobban -> P. semicirculatus, against the P. semicirculatus silhouette; point-in-polygon on a 900 x 900 grid (independent of the script's rasteriser)] — boundary distance 0.0466 = 6.5 % of body length; landmark RMS 0.0322; silhouette IoU, moebius = 0.6449 ratio (reference 0.6448, the script's own IoU (skimage.draw.polygon, 1000-px grid)) [Scarus ghobban silhouette carried by the map fitted to the 17 landmarks of S. ghobban -> P. semicirculatus, against the P. semicirculatus silhouette; point-in-polygon on a 900 x 900 grid (independent of the script's rasteriser)] — boundary distance 0.0427 = 5.9 % of body length; landmark RMS 0.0381; silhouette IoU, coaxial = 0.6185 ratio (reference 0.6184, the script's own IoU (skimage.draw.polygon, 1000-px grid)) [Scarus ghobban silhouette carried by the map fitted to the 17 landmarks of S. ghobban -> P. semicirculatus, against the P. semicirculatus silhouette; point-in-polygon on a 900 x 900 grid (independent of the script's rasteriser)] — boundary distance 0.0509 = 7.0 % of body length; landmark RMS 0.0303; silhouette IoU, tps = 0.6287 ratio (reference 0.6287, the script's own IoU (skimage.draw.polygon, 1000-px grid)) [Scarus ghobban silhouette carried by the map fitted to the 17 landmarks of S. ghobban -> P. semicirculatus, against the P. semicirculatus silhouette; point-in-polygon on a 900 x 900 grid (independent of the script's rasteriser)] — boundary distance 0.0477 = 6.6 % of body length; landmark RMS 0.0000." ;
+        dct:date "2026-10-17"^^xsd:date ;
+        dct:description "Computes per-landmark and RMS Procrustes residuals, leave-one-landmark-out cross-validation (LOO-CV), AIC-like parameter penalty, Bookstein's thin-plate spline bending energy (J = 0.258) and partial-warp spectrum (14 non-affine principal warps), plus rasterised silhouette Intersection-over-Union (IoU) and mean/95th-percentile symmetric boundary distances exported to thompson_outline_metrics.csv. Demonstrates quantitatively that Thompson's coaxial-circle family fails LOO-CV (0.0970 vs 0.0568 for similarity) and leaves silhouette IoU (0.6182) below baseline similarity (0.6615)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-thompson-scarus-pomacanthus-morphometric-validation> ;
-        pk:hasProbability "0.96"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-affine-residual>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-caudal-peduncle-anchor-pomacanthus-semicirculatus>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-caudal-peduncle-anchor-scarus-ghobban>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-depth-length-pomacanthus-mean>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-depth-length-scarus-mean>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-leave-one-landmark-out-rms-of-the-oblique-coaxial-family>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-moebius-residual-isogonal-coaxial-circles>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-oblique-coaxial-circle-residual>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-percentile-of-scarus-pomacanthus-among-all-genus-pairs-oblique-coaxial-explained-share>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-pomacanthus-species>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-procrustes-distance-scarus-mean-to-pomacanthus-mean>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-scarus-chaetodon-spp-median-explained-by-oblique-coaxial-circles>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-scarus-species>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-area-pomacanthus-semicirculatus>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-area-scarus-ghobban>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-affine>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-coaxial>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-moebius>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-similarity>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-tps>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-species-in-the-landmark-table>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-thin-plate-spline-bending-energy>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-within-pomacanthus-rms-noise-floor>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-morphometric-validation-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-morphometric-validation-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-morphometric-validation-3> ;
+        pk:hasScore "0.96"^^xsd:double ;
         pk:hasVerdict "faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-thompson-scarus-pomacanthus-morphometric-validation> rdfs:label "Thompson's Scarus -> Pomacanthus transformation fitted to real species (thompson/1917-thompson-scarus-pomacanthus.py) satisfies the MorphoEval 0.1.0 criterion 'Morphometric validation' for Scarus spp. -> Pomacanthus spp., plus three other teleost pairs across 791 species" ;
-        dct:identifier "morphoeval/0.1.0/morphometric-validation" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-affine-residual> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "affine residual = 0.0259 Procrustes units" ;
+        dct:description "explains 30.9 % of the Procrustes distance" ;
+        schema:measurementTechnique "RMS after a least-squares affine map (6 parameters)" ;
+        schema:name "affine residual" ;
+        schema:unitText "Procrustes units" ;
+        schema:value "0.0259" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-caudal-peduncle-anchor-pomacanthus-semicirculatus> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "caudal-peduncle anchor, Pomacanthus semicirculatus = 0.8395 fraction of silhouette length" ;
+        dct:description "plausible range for a perciform fish ~0.75-0.90; the anchor fixes the registration of the landmarks to the photograph" ;
+        schema:measurementTechnique "x of the peduncle anchor between the anterior-most and posterior-most mask columns (fish facing left)" ;
+        schema:name "caudal-peduncle anchor, Pomacanthus semicirculatus" ;
+        schema:unitText "fraction of silhouette length" ;
+        schema:value "0.8395" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-caudal-peduncle-anchor-scarus-ghobban> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "caudal-peduncle anchor, Scarus ghobban = 0.7919 fraction of silhouette length" ;
+        dct:description "plausible range for a perciform fish ~0.75-0.90; the anchor fixes the registration of the landmarks to the photograph" ;
+        schema:measurementTechnique "x of the peduncle anchor between the anterior-most and posterior-most mask columns (fish facing left)" ;
+        schema:name "caudal-peduncle anchor, Scarus ghobban" ;
+        schema:unitText "fraction of silhouette length" ;
+        schema:value "0.7919" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-depth-length-pomacanthus-mean> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "depth/length, Pomacanthus mean = 0.5873 ratio" ;
+        schema:measurementTechnique "landmark extent in y over extent in x" ;
+        schema:name "depth/length, Pomacanthus mean" ;
+        schema:unitText "ratio" ;
+        schema:value "0.5873" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-depth-length-scarus-mean> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "depth/length, Scarus mean = 0.3772 ratio" ;
+        schema:measurementTechnique "landmark extent in y over extent in x" ;
+        schema:name "depth/length, Scarus mean" ;
+        schema:unitText "ratio" ;
+        schema:value "0.3772" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-leave-one-landmark-out-rms-of-the-oblique-coaxial-family> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "leave-one-landmark-out RMS of the oblique coaxial family = 0.0371 Procrustes units" ;
+        dct:description "compare with the Procrustes distance: the family has no predictive value for held-out landmarks if it is not smaller" ;
+        schema:measurementTechnique "each landmark predicted by the 8-parameter map fitted to the other 16" ;
+        schema:name "leave-one-landmark-out RMS of the oblique coaxial family" ;
+        schema:unitText "Procrustes units" ;
+        schema:value "0.0371" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-moebius-residual-isogonal-coaxial-circles> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Moebius residual (isogonal coaxial circles) = 0.0311 Procrustes units" ;
+        dct:description "explains 0.8 %: a conformal map cannot change the depth/length ratio" ;
+        schema:measurementTechnique "RMS after a least-squares Moebius map z -> (az+b)/(cz+1), the conformal map that turns the Cartesian grid into two orthogonal pencils of coaxial circles" ;
+        schema:name "Moebius residual (isogonal coaxial circles)" ;
+        schema:unitText "Procrustes units" ;
+        schema:value "0.0311" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-oblique-coaxial-circle-residual> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "oblique coaxial-circle residual = 0.0256 Procrustes units" ;
+        dct:description "explains 32.4 %" ;
+        schema:measurementTechnique "RMS after an affine map followed by z -> z/(cz+1) (8 parameters): coaxial circles whose two pencils need not be orthogonal, the family Thompson's Fig. 376 belongs to as drawn" ;
+        schema:name "oblique coaxial-circle residual" ;
+        schema:unitText "Procrustes units" ;
+        schema:value "0.0256" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-percentile-of-scarus-pomacanthus-among-all-genus-pairs-oblique-coaxial-explained-share> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "percentile of Scarus -> Pomacanthus among all genus pairs (oblique coaxial, explained share) = 31.1475 percent" ;
+        dct:description "median pair 43 %" ;
+        schema:measurementTechnique "share of the 3782 ordered pairs of genus means (genera with >= 3 spp.) explained less well" ;
+        schema:name "percentile of Scarus -> Pomacanthus among all genus pairs (oblique coaxial, explained share)" ;
+        schema:unitText "percent" ;
+        schema:value "31.1475" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-pomacanthus-species> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Pomacanthus species = 9 count" ;
+        schema:measurementTechnique "rows whose genus is Pomacanthus" ;
+        schema:name "Pomacanthus species" ;
+        schema:unitText "count" ;
+        schema:value "9" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-procrustes-distance-scarus-mean-to-pomacanthus-mean> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Procrustes distance, Scarus mean to Pomacanthus mean = 0.0312 Procrustes units (RMS per landmark)" ;
+        schema:measurementTechnique "RMS landmark distance after optimal similarity superimposition of the genus means (unit centroid size)" ;
+        schema:name "Procrustes distance, Scarus mean to Pomacanthus mean" ;
+        schema:unitText "Procrustes units (RMS per landmark)" ;
+        schema:value "0.0312" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-scarus-chaetodon-spp-median-explained-by-oblique-coaxial-circles> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Scarus -> Chaetodon spp., median explained by oblique coaxial circles = 35.12 percent" ;
+        dct:description "range 12-61 %" ;
+        schema:measurementTechnique "median over the 54 Chaetodon species" ;
+        schema:name "Scarus -> Chaetodon spp., median explained by oblique coaxial circles" ;
+        schema:unitText "percent" ;
+        schema:value "35.12" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-scarus-species> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Scarus species = 22 count" ;
+        schema:measurementTechnique "rows whose genus is Scarus" ;
+        schema:name "Scarus species" ;
+        schema:unitText "count" ;
+        schema:value "22" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-area-pomacanthus-semicirculatus> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "silhouette area, Pomacanthus semicirculatus = 92699 pixels" ;
+        schema:measurementTechnique "segmented mask at 0.25 scale; photograph SHA-256 5622e415149a... checked by the script" ;
+        schema:name "silhouette area, Pomacanthus semicirculatus" ;
+        schema:unitText "pixels" ;
+        schema:value "92699" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-area-scarus-ghobban> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "silhouette area, Scarus ghobban = 214862 pixels" ;
+        schema:measurementTechnique "segmented mask at 0.25 scale; photograph SHA-256 732f1e68da7e... checked by the script" ;
+        schema:name "silhouette area, Scarus ghobban" ;
+        schema:unitText "pixels" ;
+        schema:value "214862" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-affine> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "silhouette IoU, affine = 0.6515 ratio" ;
+        dct:description "boundary distance 0.0466 = 6.5 % of body length; landmark RMS 0.0322" ;
+        schema:measurementTechnique "Scarus ghobban silhouette carried by the map fitted to the 17 landmarks of S. ghobban -> P. semicirculatus, against the P. semicirculatus silhouette; point-in-polygon on a 900 x 900 grid (independent of the script's rasteriser)" ;
+        schema:name "silhouette IoU, affine" ;
+        schema:unitText "ratio" ;
+        schema:value "0.6515" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-affine-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-affine-reference> a schema:PropertyValue ;
+        dct:source "the script's own IoU (skimage.draw.polygon, 1000-px grid)" ;
+        schema:value "0.6515" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-coaxial> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "silhouette IoU, coaxial = 0.6185 ratio" ;
+        dct:description "boundary distance 0.0509 = 7.0 % of body length; landmark RMS 0.0303" ;
+        schema:measurementTechnique "Scarus ghobban silhouette carried by the map fitted to the 17 landmarks of S. ghobban -> P. semicirculatus, against the P. semicirculatus silhouette; point-in-polygon on a 900 x 900 grid (independent of the script's rasteriser)" ;
+        schema:name "silhouette IoU, coaxial" ;
+        schema:unitText "ratio" ;
+        schema:value "0.6185" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-coaxial-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-coaxial-reference> a schema:PropertyValue ;
+        dct:source "the script's own IoU (skimage.draw.polygon, 1000-px grid)" ;
+        schema:value "0.6184" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-moebius> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "silhouette IoU, moebius = 0.6449 ratio" ;
+        dct:description "boundary distance 0.0427 = 5.9 % of body length; landmark RMS 0.0381" ;
+        schema:measurementTechnique "Scarus ghobban silhouette carried by the map fitted to the 17 landmarks of S. ghobban -> P. semicirculatus, against the P. semicirculatus silhouette; point-in-polygon on a 900 x 900 grid (independent of the script's rasteriser)" ;
+        schema:name "silhouette IoU, moebius" ;
+        schema:unitText "ratio" ;
+        schema:value "0.6449" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-moebius-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-moebius-reference> a schema:PropertyValue ;
+        dct:source "the script's own IoU (skimage.draw.polygon, 1000-px grid)" ;
+        schema:value "0.6448" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-similarity> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "silhouette IoU, similarity = 0.662 ratio" ;
+        dct:description "boundary distance 0.0404 = 5.6 % of body length; landmark RMS 0.0388; the no-deformation baseline" ;
+        schema:measurementTechnique "Scarus ghobban silhouette carried by the map fitted to the 17 landmarks of S. ghobban -> P. semicirculatus, against the P. semicirculatus silhouette; point-in-polygon on a 900 x 900 grid (independent of the script's rasteriser)" ;
+        schema:name "silhouette IoU, similarity" ;
+        schema:unitText "ratio" ;
+        schema:value "0.662" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-similarity-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-similarity-reference> a schema:PropertyValue ;
+        dct:source "the script's own IoU (skimage.draw.polygon, 1000-px grid)" ;
+        schema:value "0.6619" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-tps> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "silhouette IoU, tps = 0.6287 ratio" ;
+        dct:description "boundary distance 0.0477 = 6.6 % of body length; landmark RMS 0.0000" ;
+        schema:measurementTechnique "Scarus ghobban silhouette carried by the map fitted to the 17 landmarks of S. ghobban -> P. semicirculatus, against the P. semicirculatus silhouette; point-in-polygon on a 900 x 900 grid (independent of the script's rasteriser)" ;
+        schema:name "silhouette IoU, tps" ;
+        schema:unitText "ratio" ;
+        schema:value "0.6287" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-tps-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-silhouette-iou-tps-reference> a schema:PropertyValue ;
+        dct:source "the script's own IoU (skimage.draw.polygon, 1000-px grid)" ;
+        schema:value "0.6287" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-species-in-the-landmark-table> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "species in the landmark table = 791 count" ;
+        schema:measurementTechnique "rows of trimmed_tps_Claverie2014.csv (sha256 checked)" ;
+        schema:name "species in the landmark table" ;
+        schema:unitText "count" ;
+        schema:value "791" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-species-in-the-landmark-table-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-species-in-the-landmark-table-reference> a schema:PropertyValue ;
+        dct:source "Friedman et al. 2019, Dryad 10.5061/dryad.fn457gr (Claverie & Wainwright 2014 landmarks), CC0: 'nearly 800 species'" ;
+        schema:value "791" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-thin-plate-spline-bending-energy> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "thin-plate spline bending energy = 0.6778 dimensionless" ;
+        schema:measurementTechnique "bending energy of the exact TPS from the Scarus mean to the Pomacanthus mean (Bookstein 1989)" ;
+        schema:name "thin-plate spline bending energy" ;
+        schema:unitText "dimensionless" ;
+        schema:value "0.6778" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-measurement-within-pomacanthus-rms-noise-floor> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "within-Pomacanthus RMS (noise floor) = 0.0132 Procrustes units" ;
+        dct:description "species range 0.0090-0.0180; within-Scarus 0.0099" ;
+        schema:measurementTechnique "RMS of the Pomacanthus species about their own Procrustes mean" ;
+        schema:name "within-Pomacanthus RMS (noise floor)" ;
+        schema:unitText "Procrustes units" ;
+        schema:value "0.0132" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-morphometric-validation-1> a pk:EvidenceItem ;
+        rdfs:label "thompson/1917-thompson-scarus-pomacanthus.py L389–L412" ;
+        dct:description "leave_one_out_rms() implements 17-fold leave-one-landmark-out cross-validation" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5659d5e/thompson/1917-thompson-scarus-pomacanthus.py#L389-L412> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-morphometric-validation-2> a pk:EvidenceItem ;
+        rdfs:label "thompson/1917-thompson-scarus-pomacanthus.py L663–L718" ;
+        dct:description "outline_metrics() and compute_outline_comparison() compute rasterised IoU and boundary distances" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5659d5e/thompson/1917-thompson-scarus-pomacanthus.py#L663-L718> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-thompson-scarus-pomacanthus-morphometric-validation-3> a pk:EvidenceItem ;
+        rdfs:label "thompson_outline_metrics.csv L1–L7" ;
+        dct:description "exported quantitative table of landmark RMS, LOO-CV RMS, silhouette IoU, and boundary distances" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5659d5e/thompson_outline_metrics.csv#L1-L7> .
     <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
-        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        prov:wasDerivedFrom <https://doi.org/10.1007/978-3-642-93093-5>,
+        prov:wasDerivedFrom <https://archive.org/details/ongrowthform1917thom>,
+            <https://doi.org/10.1007/978-3-642-93093-5>,
             <https://doi.org/10.1109/34.24792>,
             <https://doi.org/10.1111/evo.13755>,
             <https://doi.org/10.1371/journal.pone.0112732>,
             <https://doi.org/10.5061/dryad.fn457gr> .
+    <https://archive.org/details/ongrowthform1917thom> dct:date "1917"^^xsd:gYear ;
+        dct:title "On Growth and Form, chapter XVII, On the theory of transformations, or the comparison of related forms" .
     <https://doi.org/10.1007/978-3-642-93093-5> dct:date "1978"^^xsd:gYear ;
         dct:title "The measurement of biological shape and shape change" .
     <https://doi.org/10.1109/34.24792> dct:date "1989"^^xsd:gYear ;
         dct:title "Principal warps: thin-plate splines and the decomposition of deformations" .
-    <https://doi.org/10.1111/evo.13755> dct:date "1873"^^xsd:gYear ;
+    <https://doi.org/10.1111/evo.13755> dct:date "1919"^^xsd:gYear ;
         dct:title "The influence of size on body shape diversification across Indo-Pacific shore fishes" .
     <https://doi.org/10.1371/journal.pone.0112732> dct:date "2014"^^xsd:gYear ;
         dct:title "A morphospace for reef fishes: elongation is the dominant axis of body shape evolution" .
@@ -52,20 +299,17 @@ sub:provenance {
 sub:pubinfo {
     sub: rdfs:label "Thompson's Scarus -> Pomacanthus transformation fitted to real species — Morphometric validation 96/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-18T01:49:13Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:43Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-thompson-scarus-pomacanthus-morphometric-validation> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-thompson-scarus-pomacanthus-morphometric-validation-second-assessor-gemini-4-argon> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

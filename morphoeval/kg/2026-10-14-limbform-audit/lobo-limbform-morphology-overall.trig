@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,51 +17,58 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-overall> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-lobo-limbform-morphology> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-lobo-limbform-morphology-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-lobo-limbform-morphology-overall> a pk:LLMClaimAssessment ;
         rdfs:label "LimbformDB limb morphologies — MorphoEval overall 71.3/100" ;
-        rdfs:comment "Decodes the Limbform formalism (segments as graph edges with length and direction, joints as vertices with border radii, sub-joints for grafts, digits with phalanx counts) for 555 of the 565 morphology rows of LimbformDB 2.1.0 — the other 10 are outcome labels without geometry — and draws each limb as a smooth outline through the joint control points with the paper's proximodistal red-to-blue gradient, green coxa, yellow basis/trochanter, black long bones and blue digits. Against the paper's own cartoons of the five Fig. 1 wild types the decoded silhouettes have the same topology, pose and segment/digit counts; bounding-box-aligned IoU is 0.41-0.74 (best for the cricket leg, worst for the frog hindlimb, where the thigh-shank angle differs). The joint-radius rule of the formalism holds for 3137 of 3146 joints when a sub-joint counts its host segment twice. Overall 71.3/100 (faithfulness 70.0, reproducibility 74.3); rubric morphoeval 0.1.0; checkpoint commit 747c57f; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, pandas 2.3.3, scikit-image 0.26.0, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 85, Morphological realism / specimen match 65, Parameter expressivity 75, Morphometric validation 55, Source and data traceability 85, Code-to-model traceability 75, Reproducibility package 65. Output judged: limbform_wildtype_gallery.png: rendered output of 2014-lobo-limbform-morphology.py at 747c57f, image/png, 620043 B, 2400×1875 px, sha256 d561f4aab10756976c3fd5caf7a8c516da13c1cd9395d6cb5a54b8a2f5b10236." ;
+        dct:date "2026-10-14"^^xsd:date ;
+        dct:description "Decodes the Limbform formalism (segments as graph edges with length and direction, joints as vertices with border radii, sub-joints for grafts, digits with phalanx counts) for 555 of the 565 morphology rows of LimbformDB 2.1.0 — the other 10 are outcome labels without geometry — and draws each limb as a smooth outline through the joint control points with the paper's proximodistal red-to-blue gradient, green coxa, yellow basis/trochanter, black long bones and blue digits. Against the paper's own cartoons of the five Fig. 1 wild types the decoded silhouettes have the same topology, pose and segment/digit counts; bounding-box-aligned IoU is 0.41-0.74 (best for the cricket leg, worst for the frog hindlimb, where the thigh-shank angle differs). The joint-radius rule of the formalism holds for 3137 of 3146 joints when a sub-joint counts its host segment twice. Overall 71.3/100 (faithfulness 70.0, reproducibility 74.3); rubric morphoeval 0.1.0; checkpoint commit 747c57f; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, pandas 2.3.3, scikit-image 0.26.0, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 85, Morphological realism / specimen match 65, Parameter expressivity 75, Morphometric validation 55, Source and data traceability 85, Code-to-model traceability 75, Reproducibility package 65. Output judged: limbform_wildtype_gallery.png: rendered output of 2014-lobo-limbform-morphology.py at 747c57f, image/png, 620043 B, 2400×1875 px, artifact_sha256 d561f4aab10756976c3fd5caf7a8c516da13c1cd9395d6cb5a54b8a2f5b10236 (sha256 d561f4aab10756976c3fd5caf7a8c516da13c1cd9395d6cb5a54b8a2f5b10236)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
         pk:evidenceAgainst "remediation needed: Ask the Lobo lab for the LimbformDB licence so the file can be vendored with its hash.",
             "remediation needed: Compare at least the five wild types with photographs of the real limbs (Fig. 1 A-E), e.g. segment-length ratios, not only with the paper's cartoons.",
             "remediation needed: Confirm the Ang convention and the joint-radius order against the Limbform software source or the authors, and explain the Fig. 1 B''/C'' silhouette residuals.",
             "remediation needed: Pin the Python 3.14 environment (exact versions) in requirements or a lock file." ;
-        pk:hasProbability "0.713"^^xsd:double ;
+        pk:hasScore "0.713"^^xsd:double ;
         pk:hasVerdict "mostly faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-lobo-limbform-morphology> rdfs:label "LimbformDB limb morphologies faithfully reproduces Urodele and anuran amphibians, decapod crustaceans, orthopteroid insects and a spider (LimbformDB 2.1.0) morphology" ;
-        dct:identifier "morphoeval/0.1.0/overall" .
     <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
-        rdfs:label "Claude Fable 5.1 (Cursor agent)" .
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
         prov:wasDerivedFrom <https://doi.org/10.1002/reg2.13>,
-            <https://doi.org/10.1093/bioinformatics/btu582> .
+            <https://doi.org/10.1093/bioinformatics/btu582>,
+            <https://lobolab.umbc.edu/limbform/downloads/limbformDB_2.1.0.ldb> .
     <https://doi.org/10.1002/reg2.13> dct:date "2014"^^xsd:gYear ;
         dct:title "A bioinformatics expert system linking functional data to anatomical outcomes in limb regeneration" .
     <https://doi.org/10.1093/bioinformatics/btu582> dct:date "2014"^^xsd:gYear ;
         dct:title "Limbform: a functional ontology-based database of limb regeneration experiments" .
+    <https://lobolab.umbc.edu/limbform/downloads/limbformDB_2.1.0.ldb> dct:title "LimbformDB 2.1.0 (31 Jul 2014), the Limbform database file" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "LimbformDB limb morphologies — MorphoEval overall 71.3/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-15T19:54:46Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:41:13Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-14-limbform-audit-lobo-limbform-morphology-overall> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-lobo-limbform-morphology-overall> ;
+        npx:supersedes <https://w3id.org/np/RAigC703-8xp36R98DNYNGYXOQBYJC0AILHoOICjOsMkM> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
             <https://w3id.org/probknow/resource/claim/morphoeval-lobo-limbform-morphology> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,21 +17,30 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-hoffmann-wing-venation-specimen-match> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-hoffmann-wing-venation> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-hoffmann-wing-venation-specimen-match> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-hoffmann-wing-venation-specimen-match> a pk:LLMClaimAssessment ;
         rdfs:label "Hoffmann-Donoughe insect wing venation — Morphological realism / specimen match: 85/100" ;
-        rdfs:comment "Output is built on the real specimen outline and real primary veins; panel (b) is recognisably the same wing as panel (a). Evidence: hoffmann_wing_recapitulation.png (generated output, not in repo): panels (a) real vs (b) model — hoffmann_wing_recapitulation.png: rendered output of 2018-hoffmann-wing-venation.py at f3fe478, image/png, 179027 B, 1730×1206 px, sha256 43b99ec8ae8205b3f12cfd0cde6d3ab1935463e222f66a0f5c16ec15d49e1108." ;
+        dct:date "2026-10-13"^^xsd:date ;
+        dct:description "Output is built on the real specimen outline and real primary veins; panel (b) is recognisably the same wing as panel (a)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-hoffmann-wing-venation-specimen-match> ;
-        pk:hasProbability "0.85"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-hoffmann-wing-venation-specimen-match-1> ;
+        pk:hasScore "0.85"^^xsd:double ;
         pk:hasVerdict "faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-hoffmann-wing-venation-specimen-match> rdfs:label "Hoffmann-Donoughe insect wing venation (2018-hoffmann-wing-venation.py) satisfies the MorphoEval 0.1.0 criterion 'Morphological realism / specimen match' for Dragonfly Arigomphus villosipes (hindwing)" ;
-        dct:identifier "morphoeval/0.1.0/specimen-match" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-hoffmann-wing-venation-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "hoffmann_wing_recapitulation.png (generated output)" ;
+        dct:description "panels (a) real vs (b) model — hoffmann_wing_recapitulation.png: rendered output of 2018-hoffmann-wing-venation.py at f3fe478, image/png, 179027 B, 1730×1206 px, artifact_sha256 43b99ec8ae8205b3f12cfd0cde6d3ab1935463e222f66a0f5c16ec15d49e1108 (sha256 43b99ec8ae8205b3f12cfd0cde6d3ab1935463e222f66a0f5c16ec15d49e1108)" .
     <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
-        rdfs:label "Claude Fable 5.1 (Cursor agent)" .
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
         prov:wasDerivedFrom <https://doi.org/10.1073/pnas.1721248115> .
     <https://doi.org/10.1073/pnas.1721248115> dct:date "2018"^^xsd:gYear ;
@@ -40,22 +50,19 @@ sub:provenance {
 sub:pubinfo {
     sub: rdfs:label "Hoffmann-Donoughe insect wing venation — Morphological realism / specimen match 85/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-16T18:51:44Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:44:53Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-13-morphology-audit-hoffmann-wing-venation-specimen-match> ;
-        npx:supersedes <https://w3id.org/np/RAERx2IFqVwPSS2EySk_ayvHrsL9XOiQO1dKkA-sop8oI> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-hoffmann-wing-venation-specimen-match> ;
+        npx:supersedes <https://w3id.org/np/RAnyUiVyOjSyfkm7PQb498zEu5cpoIv-7eWf9kzVHJxVI> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

@@ -26,7 +26,7 @@ project-delphi-ontology #12):
                        with --omit-probability)
     per dimension    pk:LLMClaimAssessment (ProbKnow rubric-assessment template)
                        pkr:assessment/morphoeval-<sim>-<dim> (stable across
-                       re-scores; "-<role>" suffix for a second assessor):
+                       re-scores; "-<role>-<assessor>" suffix for a second assessor):
                        <claim> pk:hasAssessment <it>, dct:subject the dimension
                        concept, pk:assessmentType "morphoeval/<rubric>/<dim>",
                        pk:assessedBy pkr:model/<assessor> a pk:Model,
@@ -457,9 +457,10 @@ class NanopubBuilder:
     def assessment_uri(self, sim: dict, dim_id: str) -> URIRef:
         """Stable across re-scores (no audit id: the pass is identified by dct:created, the
         commit in the description and the npx:supersedes chain); an independent second
-        assessor's assessments are a different resource, suffixed with the role."""
+        assessor's assessments are a different resource, suffixed with the role and the
+        assessing model (two second assessors of one script must not share an IRI)."""
         role = self.A.get("role")
-        suffix = f"-{slug(role)}" if role and role != "primary" else ""
+        suffix = f"-{slug(role)}-{slug(self.A['assessor']['id'])}" if role and role != "primary" else ""
         return PKR[f"assessment/morphoeval-{sim['id']}-{dim_id}{suffix}"]
 
     def evidence_items(self, sim: dict, au: URIRef, dim_id: str, entries: list) -> list:
@@ -679,16 +680,19 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
         p = out_dir / name
         text = serialize_trig(ds)
         prev = supersede.get(name) if supersede else None
-        if prev and prev.get("text") is not None:
-            same_dir = Path(prev.get("path", "")).resolve() == p.resolve()
-            if _content(prev["text"]) == _content(text) and not same_dir:   # identical to one published from another audit
-                unchanged.append((name, prev["nanopub"]))
-                if p.exists():
-                    p.unlink()
-                return
-            if prev["text"] == text:            # same dir, nothing changed: just rewrite as-is
-                p.write_text(text); written.append(p); _merge(ds)
-                return
+        if prev:
+            same_dir = same_dir_prev(prev, p)
+            if prev.get("text") is not None:
+                if _content(prev["text"]) == _content(text) and not same_dir:   # identical to one published from another audit
+                    unchanged.append((name, prev["nanopub"]))
+                    if p.exists():
+                        p.unlink()
+                    return
+                if prev["text"] == text:        # same dir, nothing changed: just rewrite as-is
+                    p.write_text(text); written.append(p); _merge(ds)
+                    return
+            # prev["text"] is None when the unsigned file was removed on an earlier build because
+            # the chain's head had moved to another audit dir; the head check below settles it
             old = prev["nanopub"]
             if resolve_heads:
                 head = heads.get(old) or latest_version(old)
@@ -1222,6 +1226,9 @@ def main():
     ap.add_argument("--supersede-from", metavar="KG_DIR", action="append", default=[],
                     help="another audit's kg dir: same-named nanopubs supersede the URIs in its published.json; "
                          "identical ones are not re-emitted (repeatable; this dir's own manifest wins)")
+    ap.add_argument("--rubric-from", metavar="KG_DIR", action="append", default=[],
+                    help="the audit dir the rubric nanopub is published from: 00-rubric.trig is not re-emitted here "
+                         "when identical to that dir's (use when this audit shares no simulation with it)")
     ap.add_argument("--no-resolve-heads", action="store_true",
                     help="do not check on Nanopub Query that a superseded URI is still the head of its chain")
     ap.add_argument("--omit-probability", action="store_true",
@@ -1276,15 +1283,17 @@ def main():
         return
     out_dir = Path(args.out) if args.out else HERE / "kg" / audit["audit"]["id"]
     supersede = None
-    if args.supersede or args.supersede_from:
+    if args.supersede or args.supersede_from or args.rubric_from:
         supersede = {}
-        dirs = [Path(d) for d in args.supersede_from] + ([out_dir] if args.supersede else [])
-        for prev_dir in dirs:                              # later dirs override earlier ones; own dir last
+        # (dir, only these names or None); later dirs override earlier ones, own dir last
+        dirs = [(Path(d), {"00-rubric.trig"}) for d in args.rubric_from]
+        dirs += [(Path(d), None) for d in args.supersede_from] + ([(out_dir, None)] if args.supersede else [])
+        for prev_dir, only in dirs:
             mp = prev_dir / "published.json"
             if not mp.exists():
                 sys.exit(f"--supersede: no {mp}")
             for n, m in json.loads(mp.read_text()).items():
-                if not m.get("published"):
+                if not m.get("published") or (only and n not in only):
                     continue
                 prev_file = prev_dir / n
                 supersede[n] = {"nanopub": m["nanopub"], "path": str(prev_file),

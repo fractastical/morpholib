@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,27 +17,46 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-cervera-levin-mafe-model-fidelity> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-cervera-levin-mafe> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-cervera-levin-mafe-model-fidelity-second-assessor-gemini-4-argon> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-cervera-levin-mafe-model-fidelity-second-assessor-gemini-4-argon> a pk:LLMClaimAssessment ;
         rdfs:label "Cervera–Levin–Mafe gap-junction reaction–diffusion and bioelectric synthesis — Model fidelity to source: 50/100" ;
-        rdfs:comment "Explicitly documents in its header scope statement that the full texts of Cervera, Levin & Mafe (2021) and Cervera et al. (2020) were not accessible and that the 1D reaction-diffusion solver (rd_antagonistic_1d and rd_linear_1d) and rusty-matter 2-node ODE port are qualitative analogues. At commit 5659d5e, f2 and f3 both drive distinct 1D boundary-value solvers, and the inverse threshold finder f2_for_shift() bisects on the unclipped wavefront x*(f2) = x*_b (recovering f2_b = 0.422 where x*(f2_b) = 0.5833). Held at 50 because the equations and constants are local constructions rather than verified transcriptions of the 2021/2020 papers, rd_antagonistic_1d's docstring (line 231) still claims to implement the paper's equations, and m3 (f3) is not coupled to any morphological boundary. Evidence: 2021-Cervera–Levin–Mafe.py L27–L47: explicit scope statement disclaiming equation-level fidelity to the inaccessible 2021/2020 full papers <https://github.com/fractastical/morpholib/blob/5659d5e/2021-Cervera–Levin–Mafe.py#L27-L47>; 2021-Cervera–Levin–Mafe.py L213–L359: rd_antagonistic_1d(), rd_linear_1d(), wavefront_for_f2(), and unclipped f2_for_shift() <https://github.com/fractastical/morpholib/blob/5659d5e/2021-Cervera–Levin–Mafe.py#L213-L359>." ;
+        dct:date "2026-10-17"^^xsd:date ;
+        dct:description "Explicitly documents in its header scope statement that the full texts of Cervera, Levin & Mafe (2021) and Cervera et al. (2020) were not accessible and that the 1D reaction-diffusion solver (rd_antagonistic_1d and rd_linear_1d) and rusty-matter 2-node ODE port are qualitative analogues. At commit 5659d5e, f2 and f3 both drive distinct 1D boundary-value solvers, and the inverse threshold finder f2_for_shift() bisects on the unclipped wavefront x*(f2) = x*_b (recovering f2_b = 0.422 where x*(f2_b) = 0.5833). Held at 50 because the equations and constants are local constructions rather than verified transcriptions of the 2021/2020 papers, rd_antagonistic_1d's docstring (line 231) still claims to implement the paper's equations, and m3 (f3) is not coupled to any morphological boundary." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-cervera-levin-mafe-model-fidelity> ;
-        pk:hasProbability "0.5"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-cervera-levin-mafe-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-cervera-levin-mafe-model-fidelity-2> ;
+        pk:hasScore "0.5"^^xsd:double ;
         pk:hasVerdict "partially faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-cervera-levin-mafe-model-fidelity> rdfs:label "Cervera–Levin–Mafe gap-junction reaction–diffusion and bioelectric synthesis (2021-Cervera–Levin–Mafe.py, 2013-lobo-planform-morphology.py) satisfies the MorphoEval 0.1.0 criterion 'Model fidelity to source' for Planarians; photograph is Schmidtea mediterranea, empirical PlanformDB subset is Dugesia japonica" ;
-        dct:identifier "morphoeval/0.1.0/model-fidelity" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-cervera-levin-mafe-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2021-Cervera–Levin–Mafe.py L27–L47" ;
+        dct:description "explicit scope statement disclaiming equation-level fidelity to the inaccessible 2021/2020 full papers" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5659d5e/2021-Cervera–Levin–Mafe.py#L27-L47> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-cervera-levin-mafe-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2021-Cervera–Levin–Mafe.py L213–L359" ;
+        dct:description "rd_antagonistic_1d(), rd_linear_1d(), wavefront_for_f2(), and unclipped f2_for_shift()" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5659d5e/2021-Cervera–Levin–Mafe.py#L213-L359> .
     <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
-        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        prov:wasDerivedFrom <https://doi.org/10.1016/j.bioelechem.2019.107410>,
+        prov:wasDerivedFrom <https://commons.wikimedia.org/wiki/File:Smediterranea.jpg>,
+            <https://doi.org/10.1016/j.bioelechem.2019.107410>,
             <https://doi.org/10.1016/j.biosystems.2021.104511>,
             <https://doi.org/10.1016/j.bpj.2019.01.029>,
             <https://doi.org/10.1016/j.ydbio.2009.12.012>,
-            <https://doi.org/10.1093/bioinformatics/btt088> .
+            <https://doi.org/10.1093/bioinformatics/btt088>,
+            <https://github.com/MesmerPrism/rusty-matter/tree/ad111fa7ecfd8f43d292ff3b1d27d3af2741d828> .
+    <https://commons.wikimedia.org/wiki/File:Smediterranea.jpg> dct:date "2010"^^xsd:gYear ;
+        dct:title "Smediterranea.jpg, from A Low Percent Ethanol Method for Immobilizing Planarians" .
     <https://doi.org/10.1016/j.bioelechem.2019.107410> dct:date "2020"^^xsd:gYear ;
         dct:title "Bioelectrical model of head-tail patterning based on cell ion channels and intercellular gap junctions" .
     <https://doi.org/10.1016/j.biosystems.2021.104511> dct:date "2021"^^xsd:gYear ;
@@ -47,25 +67,23 @@ sub:provenance {
         dct:title "Long-range neural and gap junction protein-mediated cues control polarity during planarian regeneration" .
     <https://doi.org/10.1093/bioinformatics/btt088> dct:date "2013"^^xsd:gYear ;
         dct:title "Planform: an application and database of graph-encoded planarian regenerative experiments" .
+    <https://github.com/MesmerPrism/rusty-matter/tree/ad111fa7ecfd8f43d292ff3b1d27d3af2741d828> dct:title "MesmerPrism/rusty-matter planarian bioelectric circuit and fixtures" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "Cervera–Levin–Mafe gap-junction reaction–diffusion and bioelectric synthesis — Model fidelity to source 50/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-18T01:49:13Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:43Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-cervera-levin-mafe-model-fidelity> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-cervera-levin-mafe-model-fidelity-second-assessor-gemini-4-argon> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

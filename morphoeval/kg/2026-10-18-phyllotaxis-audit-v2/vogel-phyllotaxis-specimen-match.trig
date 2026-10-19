@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,53 +17,72 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-18-phyllotaxis-audit-v2-vogel-phyllotaxis-specimen-match> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-vogel-phyllotaxis> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-vogel-phyllotaxis-specimen-match> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-vogel-phyllotaxis-specimen-match> a pk:LLMClaimAssessment ;
         rdfs:label "Vogel (1979) & Douady–Couder (1992) Golden-Angle Phyllotaxis — Morphological realism / specimen match: 84/100" ;
-        rdfs:comment "Panel A segments 621 florets directly from `helianthus_annuus_capitulum_specimen.jpg` via Difference-of-Gaussians filtering and measures 402 bounded interior Voronoi cells (mean circularity 0.7934 vs 0.8525 in the ideal Vogel lattice and 0.7045 in the 137.3 deg control). Panel F compares all 6 parastichy categories against Swinton et al. (2016) Table 1 (N=768 photoreviewed counts) and Schoute (1938, N=319), achieving Pearson r = 0.9950 and reproducing Fib-1 (68) > Fib+1 (22) (p = 6.25e-7). Evidence: 1979-vogel-phyllotaxis.py L310–L377: segment_specimen_photograph(): DoG floret centroid segmentation & Voronoi circularity <https://github.com/fractastical/morpholib/blob/c89d18d/1979-vogel-phyllotaxis.py#L310-L377>; 1979-vogel-phyllotaxis.py L754–L799: Panel A overlays 621 segmented florets on real Helianthus capitulum photo <https://github.com/fractastical/morpholib/blob/c89d18d/1979-vogel-phyllotaxis.py#L754-L799>; vogel_phyllotaxis_comparison.png (generated output, not in repo): 6-panel comparison figure with segmented florets and Swinton survey match — vogel_phyllotaxis_comparison.png: rendered output of 1979-vogel-phyllotaxis.py at c89d18d, image/png, 2217939 B, 2960×1840 px, artifact_sha256 3ab57a6be31aab64ec4cfa6db34f77b8f19cb2744a812f3fba01a6c8f26f1c3c (sha256 3ab57a6be31aab64ec4cfa6db34f77b8f19cb2744a812f3fba01a6c8f26f1c3c), spec_fingerprint 5df8c2b4cc4b9b4a86ea26aace00ebd26df8456a62d99c23287ddcea2644e06c." ;
+        dct:date "2026-10-18"^^xsd:date ;
+        dct:description "Panel A segments 621 florets directly from `helianthus_annuus_capitulum_specimen.jpg` via Difference-of-Gaussians filtering and measures 402 bounded interior Voronoi cells (mean circularity 0.7934 vs 0.8525 in the ideal Vogel lattice and 0.7045 in the 137.3 deg control). Panel F compares all 6 parastichy categories against Swinton et al. (2016) Table 1 (N=768 photoreviewed counts) and Schoute (1938, N=319), achieving Pearson r = 0.9950 and reproducing Fib-1 (68) > Fib+1 (22) (p = 6.25e-7)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-vogel-phyllotaxis-specimen-match> ;
-        pk:hasProbability "0.84"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-vogel-phyllotaxis-specimen-match-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-vogel-phyllotaxis-specimen-match-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-vogel-phyllotaxis-specimen-match-3> ;
+        pk:hasScore "0.84"^^xsd:double ;
         pk:hasVerdict "faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-vogel-phyllotaxis-specimen-match> rdfs:label "Vogel (1979) & Douady–Couder (1992) Golden-Angle Phyllotaxis (1979-vogel-phyllotaxis.py, docs/media/vogel_phyllotaxis_growth.gif, vogel_phyllotaxis_metrics.csv) satisfies the MorphoEval 0.1.0 criterion 'Morphological realism / specimen match' for Helianthus annuus (sunflower capitulum)" ;
-        dct:identifier "morphoeval/0.1.0/specimen-match" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-vogel-phyllotaxis-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "1979-vogel-phyllotaxis.py L310–L377" ;
+        dct:description "segment_specimen_photograph(): DoG floret centroid segmentation & Voronoi circularity" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/c89d18d/1979-vogel-phyllotaxis.py#L310-L377> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-vogel-phyllotaxis-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "1979-vogel-phyllotaxis.py L754–L799" ;
+        dct:description "Panel A overlays 621 segmented florets on real Helianthus capitulum photo" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/c89d18d/1979-vogel-phyllotaxis.py#L754-L799> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-vogel-phyllotaxis-specimen-match-3> a pk:EvidenceItem ;
+        rdfs:label "vogel_phyllotaxis_comparison.png (generated output)" ;
+        dct:description "6-panel comparison figure with segmented florets and Swinton survey match — vogel_phyllotaxis_comparison.png: rendered output of 1979-vogel-phyllotaxis.py at c89d18d, image/png, 2217939 B, 2960×1840 px, artifact_sha256 3ab57a6be31aab64ec4cfa6db34f77b8f19cb2744a812f3fba01a6c8f26f1c3c (sha256 3ab57a6be31aab64ec4cfa6db34f77b8f19cb2744a812f3fba01a6c8f26f1c3c), spec_fingerprint 5df8c2b4cc4b9b4a86ea26aace00ebd26df8456a62d99c23287ddcea2644e06c" .
     <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
-        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (remediation verification)" .
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (remediation verification)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
         prov:wasDerivedFrom <https://doi.org/10.1006/jtbi.1996.0024>,
             <https://doi.org/10.1016/0025-5564(79)90080-4>,
             <https://doi.org/10.1098/rsos.160091>,
-            <https://doi.org/10.1103/PhysRevLett.68.2098> .
+            <https://doi.org/10.1103/PhysRevLett.68.2098>,
+            <https://www.cambridge.org/9780521404822> .
     <https://doi.org/10.1006/jtbi.1996.0024> dct:date "1996"^^xsd:gYear ;
         dct:title "Phyllotaxis as a Dynamical Self Organizing Process Part I: The Spiral Modes Resulting from Time-Periodic Iterations" .
     <https://doi.org/10.1016/0025-5564(79)90080-4> dct:date "1979"^^xsd:gYear ;
         dct:title "A better way to construct the sunflower head" .
     <https://doi.org/10.1098/rsos.160091> dct:date "2016"^^xsd:gYear ;
         dct:title "Novel Fibonacci and non-Fibonacci structure in the sunflower: results of a citizen science experiment" .
-    <https://doi.org/10.1103/PhysRevLett.68.2098> dct:date "2098"^^xsd:gYear ;
+    <https://doi.org/10.1103/PhysRevLett.68.2098> dct:date "1992"^^xsd:gYear ;
         dct:title "Phyllotaxis as a physical self-organized growth process" .
+    <https://www.cambridge.org/9780521404822> dct:date "1994"^^xsd:gYear ;
+        dct:title "Phyllotaxis: A Systemic Study in Plant Morphogenesis" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "Vogel (1979) & Douady–Couder (1992) Golden-Angle Phyllotaxis — Morphological realism / specimen match 84/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-18T19:54:28Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:45:23Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-18-phyllotaxis-audit-v2-vogel-phyllotaxis-specimen-match> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-vogel-phyllotaxis-specimen-match> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

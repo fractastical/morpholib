@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,27 +17,34 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-santella-wormguides-celegans-overall> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-santella-wormguides-celegans> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-santella-wormguides-celegans-overall-second-assessor-gemini-4-argon> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-santella-wormguides-celegans-overall-second-assessor-gemini-4-argon> a pk:LLMClaimAssessment ;
         rdfs:label "WormGUIDES C. elegans embryo atlas with the OpenWorm connectome — MorphoEval overall 78.7/100" ;
-        rdfs:comment "Blinded second-assessor pass (gemini-4-argon). Decodes 360 frames of 3D nuclear coordinates and diameters from the WormGUIDES C. elegans embryogenesis atlas (Santella et al. 2015), verifies Sulston lineage naming and parent-before-child ordering across all 1,330 cells, calibrates spatial units against the frame-330 eggshell OBJ mesh (0.1649 um/unit), documents the static early shell mesh overrun, and pairs the developmental atlas with the OpenWorm c302 hermaphrodite connectome (300 neurons). Overall 78.7/100 (faithfulness 75.1, reproducibility 86.9; model-implementation 72.7/100, biological-validation 77.0/100, applicable-only overall 81.9/100; uncalibrated rubric score, not a calibrated probability); rubric morphoeval 0.1.0; checkpoint commit 5659d5e; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, pandas 2.3.3, scikit-image 0.26.0, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 84, Morphological realism / specimen match 74, Parameter expressivity 50, Morphometric validation 82, Source and data traceability 92, Code-to-model traceability 82, Reproducibility package 86. Output judged: celegans_four_views.png: rendered output of 2015-santella-wormguides-celegans.py at 5659d5e, image/png, 424197 B, 2240×1680 px, sha256 eb4b60086280c9a1740358c26fc655598f25d2adad63a9fcdb9c3a7980cc3bd6." ;
+        dct:date "2026-10-17"^^xsd:date ;
+        dct:description "Blinded second-assessor pass (gemini-4-argon). Decodes 360 frames of 3D nuclear coordinates and diameters from the WormGUIDES C. elegans embryogenesis atlas (Santella et al. 2015), verifies Sulston lineage naming and parent-before-child ordering across all 1,330 cells, calibrates spatial units against the frame-330 eggshell OBJ mesh (0.1649 um/unit), documents the static early shell mesh overrun, and pairs the developmental atlas with the OpenWorm c302 hermaphrodite connectome (300 neurons). Overall 78.7/100 (faithfulness 75.1, reproducibility 86.9; model-implementation 72.7/100, biological-validation 77.0/100, applicable-only overall 81.9/100; uncalibrated rubric score, not a calibrated probability); rubric morphoeval 0.1.0; checkpoint commit 5659d5e; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, pandas 2.3.3, scikit-image 0.26.0, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 84, Morphological realism / specimen match 74, Parameter expressivity 50, Morphometric validation 82, Source and data traceability 92, Code-to-model traceability 82, Reproducibility package 86. Output judged: celegans_four_views.png: rendered output of 2015-santella-wormguides-celegans.py at 5659d5e, image/png, 424197 B, 2240×1680 px, artifact_sha256 eb4b60086280c9a1740358c26fc655598f25d2adad63a9fcdb9c3a7980cc3bd6 (sha256 eb4b60086280c9a1740358c26fc655598f25d2adad63a9fcdb9c3a7980cc3bd6)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-santella-wormguides-celegans> ;
-        pk:hasProbability "0.787"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:hasScore "0.787"^^xsd:double ;
         pk:hasVerdict "mostly faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-santella-wormguides-celegans> rdfs:label "WormGUIDES C. elegans embryo atlas with the OpenWorm connectome faithfully reproduces Caenorhabditis elegans embryo, 4-cell stage to ~580 nuclei (strain JIM113, diSPIM series DISPIM_061416) morphology" ;
-        dct:identifier "morphoeval/0.1.0/overall" .
     <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
-        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
         prov:wasDerivedFrom <https://doi.org/10.1016/0012-1606(83)90201-4>,
             <https://doi.org/10.1038/s41586-019-1352-7>,
             <https://doi.org/10.1083/jcb.144.5.927>,
             <https://doi.org/10.1098/rstb.2017.0382>,
-            <https://doi.org/10.1186/s12859-015-0627-8> .
+            <https://doi.org/10.1186/s12859-015-0627-8>,
+            <https://github.com/openworm/c302/tree/f54d92d7e9d2410ff6c47d9ae866649f1a419ee8>,
+            <https://github.com/zhirongbaolab/WormGUIDES/tree/17be611f10cdc8ea438e67dc9ca3de859487a05e> .
     <https://doi.org/10.1016/0012-1606(83)90201-4> dct:date "1983"^^xsd:gYear ;
         dct:title "The embryonic cell lineage of the nematode Caenorhabditis elegans" .
     <https://doi.org/10.1038/s41586-019-1352-7> dct:date "2019"^^xsd:gYear ;
@@ -47,25 +55,25 @@ sub:provenance {
         dct:title "OpenWorm: overview and recent advances in integrative biological simulation of Caenorhabditis elegans" .
     <https://doi.org/10.1186/s12859-015-0627-8> dct:date "2015"^^xsd:gYear ;
         dct:title "WormGUIDES: an interactive single cell developmental atlas and tool for collaborative multidimensional data exploration" .
+    <https://github.com/openworm/c302/tree/f54d92d7e9d2410ff6c47d9ae866649f1a419ee8> dct:title "c302: NeuroML-based C. elegans nervous-system models, commit f54d92d7e9d2410ff6c47d9ae866649f1a419ee8" .
+    <https://github.com/zhirongbaolab/WormGUIDES/tree/17be611f10cdc8ea438e67dc9ca3de859487a05e> dct:title "WormGUIDES atlas and application source, commit 17be611f10cdc8ea438e67dc9ca3de859487a05e" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "WormGUIDES C. elegans embryo atlas with the OpenWorm connectome — MorphoEval overall 78.7/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-18T01:49:13Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:43Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-santella-wormguides-celegans-overall> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-santella-wormguides-celegans-overall-second-assessor-gemini-4-argon> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
             <https://w3id.org/probknow/resource/claim/morphoeval-santella-wormguides-celegans> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

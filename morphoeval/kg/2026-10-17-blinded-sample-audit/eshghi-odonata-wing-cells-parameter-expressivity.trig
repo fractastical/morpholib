@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,47 +17,56 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-eshghi-odonata-wing-cells-parameter-expressivity> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-eshghi-odonata-wing-cells> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-eshghi-odonata-wing-cells-parameter-expressivity-second-assessor-gemini-4-argon> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-eshghi-odonata-wing-cells-parameter-expressivity-second-assessor-gemini-4-argon> a pk:LLMClaimAssessment ;
         rdfs:label "Odonata wing cells through deep time — Parameter expressivity: 50/100" ;
-        rdfs:comment "Empirical macroevolutionary scaling and image-resegmentation pipeline operating on fixed museum and extant specimen archives rather than a parameterised generative model; marked not_applicable per the rubric. Evidence: 2026-eshghi-odonata-wing-cells.py L1–L45: docstring defines script as an empirical test of scaling predictions across 69 fossil and 394 extant wings <https://github.com/fractastical/morpholib/blob/5659d5e/2026-eshghi-odonata-wing-cells.py#L1-L45>." ;
+        dct:date "2026-10-17"^^xsd:date ;
+        dct:description "Empirical macroevolutionary scaling and image-resegmentation pipeline operating on fixed museum and extant specimen archives rather than a parameterised generative model; marked not_applicable per the rubric." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-eshghi-odonata-wing-cells-parameter-expressivity> ;
-        pk:hasProbability "0.5"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-eshghi-odonata-wing-cells-parameter-expressivity-1> ;
+        pk:hasScore "0.5"^^xsd:double ;
         pk:hasVerdict "not applicable (neutral baseline)" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-eshghi-odonata-wing-cells-parameter-expressivity> rdfs:label "Odonata wing cells through deep time (2026-eshghi-odonata-wing-cells.py) satisfies the MorphoEval 0.1.0 criterion 'Parameter expressivity' for Odonata (fossil Late Jurassic-Eocene; extant Anisoptera and Zygoptera)" ;
-        dct:identifier "morphoeval/0.1.0/parameter-expressivity" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-eshghi-odonata-wing-cells-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2026-eshghi-odonata-wing-cells.py L1–L45" ;
+        dct:description "docstring defines script as an empirical test of scaling predictions across 69 fossil and 394 extant wings" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5659d5e/2026-eshghi-odonata-wing-cells.py#L1-L45> .
     <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
-        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
         prov:wasDerivedFrom <https://doi.org/10.1073/pnas.1721248115>,
-            <https://doi.org/10.5281/zenodo.19899648> .
+            <https://doi.org/10.5281/zenodo.19899648>,
+            <https://paleobiodb.org/data1.2/occs/list.csv?base_name=Odonatoptera&show=class,coords&idreso=genus> .
     <https://doi.org/10.1073/pnas.1721248115> dct:date "2018"^^xsd:gYear ;
         dct:title "A simple developmental model recapitulates complex insect wing venation patterns" .
     <https://doi.org/10.5281/zenodo.19899648> dct:date "2026"^^xsd:gYear ;
         dct:title "Critical Crack Length as an Evolutionary Constant in Odonata Wing Venation: Lessons from Fossils — Supplementary Material" .
+    <https://paleobiodb.org/data1.2/occs/list.csv?base_name=Odonatoptera&show=class,coords&idreso=genus> dct:title "The Paleobiology Database, Odonatoptera occurrences" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "Odonata wing cells through deep time — Parameter expressivity 50/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-18T01:49:13Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:43Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-17-blinded-sample-audit-eshghi-odonata-wing-cells-parameter-expressivity> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-eshghi-odonata-wing-cells-parameter-expressivity-second-assessor-gemini-4-argon> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/palaeobiology> .
-    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/palaeobiology> rdfs:label "palaeobiology" .
 }

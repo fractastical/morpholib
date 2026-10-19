@@ -2,11 +2,11 @@
 
 Rubric **0.1.0** · checkpoint `fbbcaf6` · assessor `pkr:model/claude-fable-5-1` (pk:LLMClaimAssessment) · tracked in https://github.com/fractastical/morpholib/issues/1
 
-Scores are 0–100 (emitted as `pk:hasProbability` = score/100 on the LLM assessment of the dimension hypothesis); Overall is the rubric-weighted mean and the claim's `pk:weightOfEvidence`. Unevaluated scripts carry no nanopubs yet.
+Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not calibrated probabilities; `pk:hasScore` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings for the ProbKnow rubric-assessment template). Faithfulness (weight 70) is decomposed into **Model Impl.** (weight 30: `model-fidelity` + `parameter-expressivity`) and **Bio. Val.** (weight 40: `specimen-match` + `morphometric-validation`). When a dimension is flagged `not_applicable`, **Overall (app.)** renormalises weights over applicable dimensions (mathematically neutral), whereas **Overall (pad.)** substitutes 50 (shrinking the weighted average toward 50). Unevaluated scripts carry no nanopubs yet.
 
-| Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Faithfulness | Reproducibility | **Overall** | verdict |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| Odonata wing cells through deep time (`2026-eshghi-odonata-wing-cells.py`) | 70 | 85 | 50 | 85 | 90 | 70 | 70 | 75.7 | 76.7 | **76.0** | mostly faithful |
+| Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Model Impl. (30) | Bio. Val. (40) | Repro. (30) | Overall (app.) | **Overall (pad.)** | verdict |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| Odonata wing cells through deep time (`2026-eshghi-odonata-wing-cells.py`) | 70 | 85 | 50* | 85 | 90 | 70 | 70 | 63.3 | 85.0 | 76.7 | 78.9 | **76.0** | mostly faithful |
 
 ## Findings and remediation
 
@@ -40,7 +40,7 @@ Remediation:
 The binaries stay out of git; the sha256 pins the exact file that was scored, and the morphometrics record the form itself (written into the reasoning of the morphometric-validation assessment).
 
 ### Odonata wing cells through deep time
-- `odonata_fossil_resegmentation.png` — sha256 `ab6f3b9f89fbcff0…`, 286,190 B, 1663×1323 px
+- `odonata_fossil_resegmentation.png` — artifact_sha256 `ab6f3b9f89fbcff0…`, 286,190 B, 1663×1323 px
 
 | measurement | value | reference | method |
 |---|---:|---|---|

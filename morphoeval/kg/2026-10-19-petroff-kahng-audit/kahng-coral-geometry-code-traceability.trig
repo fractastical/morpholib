@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,44 +17,59 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-audit-kahng-coral-geometry-code-traceability> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-kahng-coral-geometry> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-kahng-coral-geometry-code-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-kahng-coral-geometry-code-traceability> a pk:LLMClaimAssessment ;
         rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity — Code-to-model traceability: 75/100" ;
-        rdfs:comment "Every geometric function states its exact volume $V$, active calcifying surface area $S$, and resulting one-step algebraic relation in its docstring, and the module docstring summarizes the four geometries' $(S:V, C, \\text{SAP})$ scaling regimes in a table mapped to Appendix A / Results and Figs. 3 & 6 of Kahng et al. (2024). Deduct 15 points because exact equation numbers from Kahng et al. (2024) Appendix A are not cited per function, and deduct 10 points because the distinction between discrete 1-yr difference equations and continuous ODE rates is not noted in `hemisphere_extension`. Evidence: 2024-kahng-coral-geometry.py L25–L31: summary table mapping 4 coral geometries to S:V, C, and SAP trends <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L25-L31>; 2024-kahng-coral-geometry.py L68–L110: per-function V and S formulas referencing Appendix A / Results <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L68-L110>." ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Every geometric function states its exact volume $V$, active calcifying surface area $S$, and resulting one-step algebraic relation in its docstring, and the module docstring summarizes the four geometries' $(S:V, C, \\text{SAP})$ scaling regimes in a table mapped to Appendix A / Results and Figs. 3 & 6 of Kahng et al. (2024). Deduct 15 points because exact equation numbers from Kahng et al. (2024) Appendix A are not cited per function, and deduct 10 points because the distinction between discrete 1-yr difference equations and continuous ODE rates is not noted in `hemisphere_extension`." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-code-traceability> ;
-        pk:hasProbability "0.75"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-kahng-coral-geometry-code-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-kahng-coral-geometry-code-traceability-2> ;
+        pk:hasScore "0.75"^^xsd:double ;
         pk:hasVerdict "mostly faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-kahng-coral-geometry-code-traceability> rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity (2024-kahng-coral-geometry.py, docs/media/kahng_coral_geometry_growth.gif) satisfies the MorphoEval 0.1.0 criterion 'Code-to-model traceability' for Scleractinian reef corals (massive Porites, branching Acropora, plating Leptoseris)" ;
-        dct:identifier "morphoeval/0.1.0/code-traceability" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-kahng-coral-geometry-code-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2024-kahng-coral-geometry.py L25–L31" ;
+        dct:description "summary table mapping 4 coral geometries to S:V, C, and SAP trends" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L25-L31> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-kahng-coral-geometry-code-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "2024-kahng-coral-geometry.py L68–L110" ;
+        dct:description "per-function V and S formulas referencing Appendix A / Results" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5564750/2024-kahng-coral-geometry.py#L68-L110> .
     <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
-        rdfs:label "Gemini 4 Argon (primary) + Claude Fable 5.1 (independent blinded second assessor)" .
+        rdfs:label "Gemini 4 Argon (primary) + Claude Fable 5.1 (independent blinded second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        prov:wasDerivedFrom <https://doi.org/10.7717/peerj.17037> .
+        prov:wasDerivedFrom <https://doi.org/10.7717/peerj.17037>,
+            <https://github.com/ericodle/coral_geometry_modeling> .
     <https://doi.org/10.7717/peerj.17037> dct:date "2024"^^xsd:gYear ;
         dct:title "Coral geometry and why it matters" .
+    <https://github.com/ericodle/coral_geometry_modeling> dct:date "2024"^^xsd:gYear ;
+        dct:title "coral_geometry_modeling — reference code and analysis" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "Kahng, Odle & Wakeman (2024) Reef-Coral Colony Geometry & Surface-Area Productivity — Code-to-model traceability 75/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-19T21:03:38Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:44Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-audit-kahng-coral-geometry-code-traceability> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-kahng-coral-geometry-code-traceability> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,26 +17,52 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-model-fidelity> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-wolfram-conus-textile-rule30> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-wolfram-conus-textile-rule30-model-fidelity-second-assessor-claude-fable-5-1> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-wolfram-conus-textile-rule30-model-fidelity-second-assessor-claude-fable-5-1> a pk:LLMClaimAssessment ;
         rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation — Model fidelity to source: 62/100" ;
-        rdfs:comment "I verified by hand that the Boolean form l XOR (c OR r) and the GF(2) ANF reproduce the Rule 30 truth table (00011110), that run_eca uses the standard Wolfram neighbourhood indexing so Rule 90 is also correct, that Jen's inverse a_{t,i-1} = a_{t+1,i} XOR (a_{t,i} OR a_{t,i+1}) follows algebraically and is applied with the right time offsets, that the diagonal recursion d_k(t+1) = d_{k-2}(t) XOR (d_{k-1}(t) OR d_k(t)) is an exact change of variables, and that the three Boolean partial derivatives are right; the CA half is exemplary. The Meinhardt-Klingler half is a loose analogue, not the published equations: autocatalysis is divided by a relaxation variable b with db/dt = mu_b (a - b), which is neither the 1987 activator-depleted-substrate system nor the hormone that modulates activator decay in the Oliva model, parameter names and values are unsourced, and a stochastic rule injecting +0.90 activator at random high-substrate sites plus hard clipping of a, s, b is load-bearing (with the injection removed the pattern extinguishes to 0.9 percent pigment in steps 148-221 and a saturates at the 5.0 clip); deduction 20. The Raup mesh uses W^(theta/2pi) and r_c = a(1+D)/(1-D) correctly but replaces Raup's generating curve with an ad hoc envelope carrying six unsourced constants, so that T has no effect on the silhouette for T in [0, 0.36]; deduction 10. Remaining 8 points lost for over-naming a sufficiency check as an iff theorem, a 0.36 vs 0.40 D2 mismatch in the bioelectric panel, and cross-model panels that are toy re-implementations. Evidence: 1984-wolfram-conus-textile-rule30.py L140–L182: Rule 30 Boolean/ANF steps, generic ECA evolution and Jen left inverse; all verified against the truth table and algebra <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L140-L182>; 1984-wolfram-conus-textile-rule30.py L296–L318: Diagonal recursion d_k(t+1)=d_{k-2}^(d_{k-1}|d_k) is an exact coordinate change; 0 errors confirmed on re-run <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L296-L318>; 1984-wolfram-conus-textile-rule30.py L645–L660: PDE: production divided by relaxation variable b, random +0.90 activator injection with p=0.18 per substep, and clipping; not the published M&K equations and the injection is load-bearing <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L645-L660>; 1984-wolfram-conus-textile-rule30.py L691–L704: Ad hoc biconical envelope (0.468, 1.28, 0.78, 1.05, 1.55, 0.42) replaces Raup's generating curve; Z extent set by S*axial_ext so T is swamped <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L691-L704>." ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "I verified by hand that the Boolean form l XOR (c OR r) and the GF(2) ANF reproduce the Rule 30 truth table (00011110), that run_eca uses the standard Wolfram neighbourhood indexing so Rule 90 is also correct, that Jen's inverse a_{t,i-1} = a_{t+1,i} XOR (a_{t,i} OR a_{t,i+1}) follows algebraically and is applied with the right time offsets, that the diagonal recursion d_k(t+1) = d_{k-2}(t) XOR (d_{k-1}(t) OR d_k(t)) is an exact change of variables, and that the three Boolean partial derivatives are right; the CA half is exemplary. The Meinhardt-Klingler half is a loose analogue, not the published equations: autocatalysis is divided by a relaxation variable b with db/dt = mu_b (a - b), which is neither the 1987 activator-depleted-substrate system nor the hormone that modulates activator decay in the Oliva model, parameter names and values are unsourced, and a stochastic rule injecting +0.90 activator at random high-substrate sites plus hard clipping of a, s, b is load-bearing (with the injection removed the pattern extinguishes to 0.9 percent pigment in steps 148-221 and a saturates at the 5.0 clip); deduction 20. The Raup mesh uses W^(theta/2pi) and r_c = a(1+D)/(1-D) correctly but replaces Raup's generating curve with an ad hoc envelope carrying six unsourced constants, so that T has no effect on the silhouette for T in [0, 0.36]; deduction 10. Remaining 8 points lost for over-naming a sufficiency check as an iff theorem, a 0.36 vs 0.40 D2 mismatch in the bioelectric panel, and cross-model panels that are toy re-implementations." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-model-fidelity> ;
-        pk:hasProbability "0.62"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-wolfram-conus-textile-rule30-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-wolfram-conus-textile-rule30-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-wolfram-conus-textile-rule30-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-wolfram-conus-textile-rule30-model-fidelity-4> ;
+        pk:hasScore "0.62"^^xsd:double ;
         pk:hasVerdict "mostly faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-model-fidelity> rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation (1984-wolfram-conus-textile-rule30.py, docs/media/conus_textile_rule30.gif, docs/media/conus_rule30_kymograph_defect_fronts.png, conus_textile_rule30_metrics.csv, conus_rule30_defect_fronts.csv) satisfies the MorphoEval 0.1.0 criterion 'Model fidelity to source' for Conus textile Linnaeus, 1758 (textile cone snail)" ;
-        dct:identifier "morphoeval/0.1.0/model-fidelity" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-wolfram-conus-textile-rule30-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "1984-wolfram-conus-textile-rule30.py L140–L182" ;
+        dct:description "Rule 30 Boolean/ANF steps, generic ECA evolution and Jen left inverse; all verified against the truth table and algebra" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L140-L182> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-wolfram-conus-textile-rule30-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "1984-wolfram-conus-textile-rule30.py L296–L318" ;
+        dct:description "Diagonal recursion d_k(t+1)=d_{k-2}^(d_{k-1}|d_k) is an exact coordinate change; 0 errors confirmed on re-run" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L296-L318> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-wolfram-conus-textile-rule30-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "1984-wolfram-conus-textile-rule30.py L645–L660" ;
+        dct:description "PDE: production divided by relaxation variable b, random +0.90 activator injection with p=0.18 per substep, and clipping; not the published M&K equations and the injection is load-bearing" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L645-L660> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-wolfram-conus-textile-rule30-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "1984-wolfram-conus-textile-rule30.py L691–L704" ;
+        dct:description "Ad hoc biconical envelope (0.468, 1.28, 0.78, 1.05, 1.55, 0.42) replaces Raup's generating curve; Z extent set by S*axial_ext so T is swamped" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L691-L704> .
     <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
-        rdfs:label "Claude Fable 5.1 (Cursor agent, blinded second assessor)" .
+        rdfs:label "Claude Fable 5.1 (Cursor agent, blinded second assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
         prov:wasDerivedFrom <https://doi.org/10.1016/0167-2789(90)90169-P>,
             <https://doi.org/10.1016/S0022-5193(87)80101-7>,
             <https://doi.org/10.1038/311419a0>,
-            <https://doi.org/10.1103/RevModPhys.55.601> .
+            <https://doi.org/10.1103/RevModPhys.55.601>,
+            <https://www.jstor.org/stable/1301992> .
     <https://doi.org/10.1016/0167-2789(90)90169-P> dct:date "1990"^^xsd:gYear ;
         dct:title "Aperiodicity in one-dimensional cellular automata" .
     <https://doi.org/10.1016/S0022-5193(87)80101-7> dct:date "1987"^^xsd:gYear ;
@@ -44,25 +71,24 @@ sub:provenance {
         dct:title "Cellular automata as models of complexity" .
     <https://doi.org/10.1103/RevModPhys.55.601> dct:date "1983"^^xsd:gYear ;
         dct:title "Statistical mechanics of cellular automata" .
+    <https://www.jstor.org/stable/1301992> dct:date "1966"^^xsd:gYear ;
+        dct:title "Geometric analysis of shell coiling: general problems" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation — Model fidelity to source 62/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-19T20:02:08Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:44Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-model-fidelity> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-wolfram-conus-textile-rule30-model-fidelity-second-assessor-claude-fable-5-1> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

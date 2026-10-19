@@ -2,7 +2,7 @@
 
 Rubric **0.1.0** · checkpoint `5659d5e` · assessor `pkr:model/gemini-4-argon` (pk:LLMClaimAssessment) · tracked in https://github.com/fractastical/morpholib/issues/1
 
-Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not calibrated probabilities; `pk:hasProbability` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings for ProbKnow template conformance). Faithfulness (weight 70) is decomposed into **Model Impl.** (weight 30: `model-fidelity` + `parameter-expressivity`) and **Bio. Val.** (weight 40: `specimen-match` + `morphometric-validation`). When a dimension is flagged `not_applicable`, **Overall (app.)** renormalises weights over applicable dimensions (mathematically neutral), whereas **Overall (pad.)** substitutes 50 (shrinking the weighted average toward 50). Unevaluated scripts carry no nanopubs yet.
+Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not calibrated probabilities; `pk:hasScore` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings for the ProbKnow rubric-assessment template). Faithfulness (weight 70) is decomposed into **Model Impl.** (weight 30: `model-fidelity` + `parameter-expressivity`) and **Bio. Val.** (weight 40: `specimen-match` + `morphometric-validation`). When a dimension is flagged `not_applicable`, **Overall (app.)** renormalises weights over applicable dimensions (mathematically neutral), whereas **Overall (pad.)** substitutes 50 (shrinking the weighted average toward 50). Unevaluated scripts carry no nanopubs yet.
 
 | Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Model Impl. (30) | Bio. Val. (40) | Repro. (30) | Overall (app.) | **Overall (pad.)** | verdict |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
@@ -214,8 +214,8 @@ Blinded second-assessor pass (gemini-4-argon). Replaces Chindapol et al.'s (2013
 The binaries stay out of git; the sha256 pins the exact file that was scored, and the morphometrics record the form itself (written into the reasoning of the morphometric-validation assessment).
 
 ### Thompson's Scarus -> Pomacanthus transformation fitted to real species
-- `thompson_scarus_pomacanthus.png` — sha256 `d243f51e2b90b1a2…`, 739,620 B, 2520×1540 px
-- `thompson_scarus_pomacanthus_outlines.png` — sha256 `df6479f9f47f28fc…`, 903,004 B, 2520×1470 px
+- `thompson_scarus_pomacanthus.png` — artifact_sha256 `d243f51e2b90b1a2…`, 739,620 B, 2520×1540 px
+- `thompson_scarus_pomacanthus_outlines.png` — artifact_sha256 `df6479f9f47f28fc…`, 903,004 B, 2520×1470 px
 
 | measurement | value | reference | method |
 |---|---:|---|---|
@@ -244,7 +244,7 @@ The binaries stay out of git; the sha256 pins the exact file that was scored, an
 | silhouette IoU, tps | 0.6287 ratio | 0.6287 | Scarus ghobban silhouette carried by the map fitted to the 17 landmarks of S. ghobban -> P. semicirculatus, against the P. semicirculatus silhouette; point-in-polygon on a 900 x 900 grid (independent of the script's rasteriser) *(boundary distance 0.0477 = 6.6 % of body length; landmark RMS 0.0000)* |
 
 ### Odonata wing cells through deep time
-- `odonata_fossil_resegmentation.png` — sha256 `ab6f3b9f89fbcff0…`, 286,190 B, 1663×1323 px
+- `odonata_fossil_resegmentation.png` — artifact_sha256 `ab6f3b9f89fbcff0…`, 286,190 B, 1663×1323 px
 
 | measurement | value | reference | method |
 |---|---:|---|---|
@@ -265,8 +265,8 @@ The binaries stay out of git; the sha256 pins the exact file that was scored, an
 | fossil median cell length, re-segmented | 0.8275 mm | 0.7837 | median over wings of the script's own per-wing median cell length |
 
 ### LimbformDB limb morphologies
-- `docs/media/limbform_morphospace_timeline.gif` — sha256 `1997a7a304d4f6f3…`, 2,172,060 B, 720×405 px, 66 frames
-- `limbform_wildtype_gallery.png` — sha256 `d561f4aab1075697…`, 620,043 B, 2400×1875 px
+- `docs/media/limbform_morphospace_timeline.gif` — artifact_sha256 `1997a7a304d4f6f3…`, 2,172,060 B, 720×405 px, 66 frames
+- `limbform_wildtype_gallery.png` — artifact_sha256 `d561f4aab1075697…`, 620,043 B, 2400×1875 px
 
 | measurement | value | reference | method |
 |---|---:|---|---|
@@ -291,8 +291,8 @@ The binaries stay out of git; the sha256 pins the exact file that was scored, an
 | bounding-box aspect, #491 Wild type, right leg I, huntsman spider | 1.5391 ratio | 1.455 | longer / shorter side of the decoded silhouette's bounding box |
 
 ### Raup shell coiling morphospace
-- `raup_empirical_comparison.png` — sha256 `c50dbee57d0a6495…`, 562,658 B, 1630×1070 px
-- `raup_shell_animation.gif` — sha256 `986555a0032be189…`, 15,189,434 B, 1200×800 px, 100 frames
+- `raup_empirical_comparison.png` — artifact_sha256 `c50dbee57d0a6495…`, 562,658 B, 1630×1070 px
+- `raup_shell_animation.gif` — artifact_sha256 `986555a0032be189…`, 15,189,434 B, 1200×800 px, 100 frames
 
 | measurement | value | reference | method |
 |---|---:|---|---|
@@ -316,7 +316,7 @@ The binaries stay out of git; the sha256 pins the exact file that was scored, an
 | recovered whorl expansion W, 'Globose' (W=3.0, D=0.1, T=1.0) | 3.0 ratio | 3.0 | centre distance from the axis at the aperture / one revolution earlier |
 
 ### Gray-Scott reaction-diffusion patterns
-- `turing_patterns.gif` — sha256 `0ddf48cbca6cf3df…`, 14,075,347 B, 1280×960 px, 500 frames
+- `turing_patterns.gif` — artifact_sha256 `0ddf48cbca6cf3df…`, 14,075,347 B, 1280×960 px, 500 frames
 
 | measurement | value | reference | method |
 |---|---:|---|---|
@@ -329,8 +329,8 @@ The binaries stay out of git; the sha256 pins the exact file that was scored, an
 | equal-diffusion negative control (Du=Dv=0.10) spectral wavenumber k* | 0.0 cycles / domain | 0.0 | dominant wavenumber when differential diffusivity is removed (Du = Dv = 0.10 at F=0.055, k=0.062) *(spatial σ_V = 0.00e+00, ring sharpness = 0.0)* |
 
 ### Hoffmann-Donoughe insect wing venation
-- `docs/media/hoffmann_wing_lloyd.gif` — sha256 `e53e2133c7bebee1…`, 901,133 B, 720×403 px, 19 frames
-- `hoffmann_wing_recapitulation.png` — sha256 `43b99ec8ae8205b3…`, 179,027 B, 1730×1206 px
+- `docs/media/hoffmann_wing_lloyd.gif` — artifact_sha256 `e53e2133c7bebee1…`, 901,133 B, 720×403 px, 19 frames
+- `hoffmann_wing_recapitulation.png` — artifact_sha256 `43b99ec8ae8205b3…`, 179,027 B, 1730×1206 px
 
 | measurement | value | reference | method |
 |---|---:|---|---|
@@ -339,8 +339,8 @@ The binaries stay out of git; the sha256 pins the exact file that was scored, an
 | vein-domain count, real wing (all) | 923 count | — | peaks of the distance transform inside the segmented real wing *(wing area 1905316 px)* |
 
 ### WormGUIDES C. elegans embryo atlas with the OpenWorm connectome
-- `celegans_four_views.png` — sha256 `eb4b60086280c9a1…`, 424,197 B, 2240×1680 px
-- `docs/media/celegans_embryo_timeline.gif` — sha256 `e8d760778e3dbd34…`, 2,445,902 B, 720×374 px, 60 frames
+- `celegans_four_views.png` — artifact_sha256 `eb4b60086280c9a1…`, 424,197 B, 2240×1680 px
+- `docs/media/celegans_embryo_timeline.gif` — artifact_sha256 `e8d760778e3dbd34…`, 2,445,902 B, 720×374 px, 60 frames
 
 | measurement | value | reference | method |
 |---|---:|---|---|
@@ -361,8 +361,8 @@ The binaries stay out of git; the sha256 pins the exact file that was scored, an
 | neurons in the connectome edge list | 300 count | 302 | upper-case node names of c302 herm_full_edgelist.csv after DA01->DA1 canonicalisation *(CANL/CANR are 'no synapses' in the WormGUIDES parts list and so cannot appear in an edge list)* |
 
 ### PlanformDB planarian morphology animation
-- `planform_morphology_gallery.png` — sha256 `77a7dfa087bf8944…`, 443,915 B, 1920×2160 px
-- `planform_morphospace_timeline.gif` — sha256 `f7c8cadf3c06c835…`, 3,265,519 B, 1500×780 px, 63 frames
+- `planform_morphology_gallery.png` — artifact_sha256 `77a7dfa087bf8944…`, 443,915 B, 1920×2160 px
+- `planform_morphospace_timeline.gif` — artifact_sha256 `f7c8cadf3c06c835…`, 3,265,519 B, 1500×780 px, 63 frames
 
 | measurement | value | reference | method |
 |---|---:|---|---|
@@ -376,8 +376,8 @@ The binaries stay out of git; the sha256 pins the exact file that was scored, an
 | IoU wild type vs headless (#20) | 0.6116 ratio | ≈ (trunk+tail area)/(whole-body area) if the head is simply absent | as above |
 
 ### Cervera–Levin–Mafe gap-junction reaction–diffusion and bioelectric synthesis
-- `cervera_levin_mafe_bioelectric_morphospace.png` — sha256 `3f521835636f3530…`, 547,708 B, 2330×1781 px
-- `cervera_levin_mafe_gj_block.gif` — sha256 `214238f0d75fdcfa…`, 1,398,777 B, 560×378 px, 46 frames
+- `cervera_levin_mafe_bioelectric_morphospace.png` — artifact_sha256 `3f521835636f3530…`, 547,708 B, 2330×1781 px
+- `cervera_levin_mafe_gj_block.gif` — artifact_sha256 `214238f0d75fdcfa…`, 1,398,777 B, 560×378 px, 46 frames
 
 | measurement | value | reference | method |
 |---|---:|---|---|
@@ -392,8 +392,8 @@ The binaries stay out of git; the sha256 pins the exact file that was scored, an
 | Planform #1 Wild Type vs #2 Double Head silhouette IoU | 0.9478 ratio | <1.0 (posterior tail replaced by ectopic head cap) | 256x256 shared-canvas intersection-over-union of decoded Lobo et al. (2013) graph silhouettes |
 
 ### Chindapol flow-driven coral growth
-- `chindapol_coral_flow_morphospace.png` — sha256 `c431f9a5ae368f84…`, 235,376 B, 1726×1231 px
-- `docs/media/chindapol_coral_flow_growth.gif` — sha256 `30eaa02efc49579c…`, 737,329 B, 720×288 px, 48 frames
+- `chindapol_coral_flow_morphospace.png` — artifact_sha256 `c431f9a5ae368f84…`, 235,376 B, 1726×1231 px
+- `docs/media/chindapol_coral_flow_growth.gif` — artifact_sha256 `30eaa02efc49579c…`, 737,329 B, 720×288 px, 48 frames
 
 ## Environment at checkpoint
 

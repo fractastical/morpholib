@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,32 +17,39 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-16-celegans-audit-santella-wormguides-celegans-overall> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-santella-wormguides-celegans> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-santella-wormguides-celegans-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-santella-wormguides-celegans-overall> a pk:LLMClaimAssessment ;
         rdfs:label "WormGUIDES C. elegans embryo atlas with the OpenWorm connectome — MorphoEval overall 70.2/100" ;
-        rdfs:comment "Downloads the WormGUIDES atlas at a pinned commit and verifies 429 files against a SHA-256 manifest; decodes the 360 StarryNite nuclei tables with the column semantics of the WormGUIDES loader (valid flag, x, y, z, diameter, lineage name) and the movie-start offset of ProductionInfo.csv; checks that all 1330 distinct names follow the Sulston grammar and that every cell whose parent is in the movie appears after it (1326/1326); re-derives the lineage chart from the names; sets the atlas's own eggshell outline mesh at frame 330 to the 50 um egg length (0.1649 um per unit; the shell's unfitted width comes out 29.2 um, the 13 sampled shell meshes bracket the scale at 0.1649-0.1750, the earlier nuclear-cloud estimate was 0.1617); draws the nuclei to scale inside the shell outline at six stages, 51 single-cell meshes at frame 330 and the c302 connectome adjacency matrix (300 neurons after name canonicalisation). Reports that the atlas reuses a static shell mesh for frames 1-~250 that the nuclei overrun by up to 19 units. Against WormAtlas's quotation of Sulston et al. the cell-stage anchors agree (113 listed deaths all present, 562-571 nuclei at 330-350 min against ~550, E-cell ingression at 26 cells against the ~30-cell stage) but the clock runs ~27 min ahead (gastrulation at movie-minute 73 against 100), which the script reports and does not resolve. Overall 70.2/100 (faithfulness 67.6, reproducibility 76.3); rubric morphoeval 0.1.0; checkpoint commit 303a87e; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 80, Morphological realism / specimen match 62, Parameter expressivity 50, Morphometric validation 72, Source and data traceability 85, Code-to-model traceability 75, Reproducibility package 70. Output judged: celegans_four_views.png: rendered output of 2015-santella-wormguides-celegans.py at 303a87e, image/png, 424197 B, 2240×1680 px, sha256 eb4b60086280c9a1740358c26fc655598f25d2adad63a9fcdb9c3a7980cc3bd6." ;
+        dct:date "2026-10-16"^^xsd:date ;
+        dct:description "Downloads the WormGUIDES atlas at a pinned commit and verifies 429 files against a SHA-256 manifest; decodes the 360 StarryNite nuclei tables with the column semantics of the WormGUIDES loader (valid flag, x, y, z, diameter, lineage name) and the movie-start offset of ProductionInfo.csv; checks that all 1330 distinct names follow the Sulston grammar and that every cell whose parent is in the movie appears after it (1326/1326); re-derives the lineage chart from the names; sets the atlas's own eggshell outline mesh at frame 330 to the 50 um egg length (0.1649 um per unit; the shell's unfitted width comes out 29.2 um, the 13 sampled shell meshes bracket the scale at 0.1649-0.1750, the earlier nuclear-cloud estimate was 0.1617); draws the nuclei to scale inside the shell outline at six stages, 51 single-cell meshes at frame 330 and the c302 connectome adjacency matrix (300 neurons after name canonicalisation). Reports that the atlas reuses a static shell mesh for frames 1-~250 that the nuclei overrun by up to 19 units. Against WormAtlas's quotation of Sulston et al. the cell-stage anchors agree (113 listed deaths all present, 562-571 nuclei at 330-350 min against ~550, E-cell ingression at 26 cells against the ~30-cell stage) but the clock runs ~27 min ahead (gastrulation at movie-minute 73 against 100), which the script reports and does not resolve. Overall 70.2/100 (faithfulness 67.6, reproducibility 76.3); rubric morphoeval 0.1.0; checkpoint commit 303a87e; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 80, Morphological realism / specimen match 62, Parameter expressivity 50, Morphometric validation 72, Source and data traceability 85, Code-to-model traceability 75, Reproducibility package 70. Output judged: celegans_four_views.png: rendered output of 2015-santella-wormguides-celegans.py at 303a87e, image/png, 424197 B, 2240×1680 px, artifact_sha256 eb4b60086280c9a1740358c26fc655598f25d2adad63a9fcdb9c3a7980cc3bd6 (sha256 eb4b60086280c9a1740358c26fc655598f25d2adad63a9fcdb9c3a7980cc3bd6). Supersedes audit: 2026-10-15-celegans-audit." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-santella-wormguides-celegans> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
         pk:evidenceAgainst "remediation needed: Draw the connectome with chemical and electrical edges separated, and keep the muscle/end-organ nodes that Cook et al. include.",
             "remediation needed: Pin the Python 3.14 environment (exact versions) in requirements or a lock file.",
             "remediation needed: Place a WormGUIDES figure panel (Santella et al. 2015 is CC BY) or a DIC frame beside the decoded nuclei at the same stage and measure the agreement.",
             "remediation needed: Replace the 50 um assumption with the acquisition voxel size of DISPIM_061416 (not in the repository's ProductionInfo.csv; ask the Bao lab), and ask why the shell mesh is static for frames 1-~250 while the nuclei overrun it.",
             "remediation needed: Resolve the ~27 min clock offset against Sulston's schedule (recording temperature, or the meaning of \"movie start time 20 min\") with the Bao lab or the diSPIM metadata." ;
-        pk:hasProbability "0.702"^^xsd:double ;
+        pk:hasScore "0.702"^^xsd:double ;
         pk:hasVerdict "mostly faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-santella-wormguides-celegans> rdfs:label "WormGUIDES C. elegans embryo atlas with the OpenWorm connectome faithfully reproduces Caenorhabditis elegans embryo, 4-cell stage to ~580 nuclei (strain JIM113, diSPIM series DISPIM_061416) morphology" ;
-        dct:identifier "morphoeval/0.1.0/overall" .
     <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
-        rdfs:label "Claude Fable 5.1 (Cursor agent)" .
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
         prov:wasDerivedFrom <https://doi.org/10.1016/0012-1606(83)90201-4>,
             <https://doi.org/10.1038/s41586-019-1352-7>,
             <https://doi.org/10.1083/jcb.144.5.927>,
             <https://doi.org/10.1098/rstb.2017.0382>,
-            <https://doi.org/10.1186/s12859-015-0627-8> .
+            <https://doi.org/10.1186/s12859-015-0627-8>,
+            <https://github.com/openworm/c302/tree/f54d92d7e9d2410ff6c47d9ae866649f1a419ee8>,
+            <https://github.com/zhirongbaolab/WormGUIDES/tree/17be611f10cdc8ea438e67dc9ca3de859487a05e> .
     <https://doi.org/10.1016/0012-1606(83)90201-4> dct:date "1983"^^xsd:gYear ;
         dct:title "The embryonic cell lineage of the nematode Caenorhabditis elegans" .
     <https://doi.org/10.1038/s41586-019-1352-7> dct:date "2019"^^xsd:gYear ;
@@ -52,27 +60,27 @@ sub:provenance {
         dct:title "OpenWorm: overview and recent advances in integrative biological simulation of Caenorhabditis elegans" .
     <https://doi.org/10.1186/s12859-015-0627-8> dct:date "2015"^^xsd:gYear ;
         dct:title "WormGUIDES: an interactive single cell developmental atlas and tool for collaborative multidimensional data exploration" .
+    <https://github.com/openworm/c302/tree/f54d92d7e9d2410ff6c47d9ae866649f1a419ee8> dct:title "c302: NeuroML-based C. elegans nervous-system models, commit f54d92d7e9d2410ff6c47d9ae866649f1a419ee8" .
+    <https://github.com/zhirongbaolab/WormGUIDES/tree/17be611f10cdc8ea438e67dc9ca3de859487a05e> dct:title "WormGUIDES atlas and application source, commit 17be611f10cdc8ea438e67dc9ca3de859487a05e" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "WormGUIDES C. elegans embryo atlas with the OpenWorm connectome — MorphoEval overall 70.2/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-16T21:14:48Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:45:11Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-16-celegans-audit-santella-wormguides-celegans-overall> ;
-        npx:supersedes <https://w3id.org/np/RASUT7taw502ymt3A17lN_bXMn4rC1HY3FNs1ai8YkZSQ> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-santella-wormguides-celegans-overall> ;
+        npx:supersedes <https://w3id.org/np/RAqDf8b5w5WNe3Chr8OWp5uUyU8U1Bz5BrbGdamyd4BOU> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
             <https://w3id.org/probknow/resource/claim/morphoeval-santella-wormguides-celegans> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

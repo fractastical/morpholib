@@ -2,18 +2,18 @@
 
 Rubric **0.1.0** · checkpoint `f3fe478` · assessor `pkr:model/claude-fable-5-1` (pk:LLMClaimAssessment) · tracked in https://github.com/fractastical/morpholib/issues/1
 
-Scores are 0–100 (emitted as `pk:hasProbability` = score/100 on the LLM assessment of the dimension hypothesis); Overall is the rubric-weighted mean and the claim's `pk:weightOfEvidence`. Unevaluated scripts carry no nanopubs yet.
+Scores are **uncalibrated criterion-referenced rubric ratings on 0–100** (not calibrated probabilities; `pk:hasScore` = score/100 and `pk:weightOfEvidence` = overall/100 are unit-interval rescalings for the ProbKnow rubric-assessment template). Faithfulness (weight 70) is decomposed into **Model Impl.** (weight 30: `model-fidelity` + `parameter-expressivity`) and **Bio. Val.** (weight 40: `specimen-match` + `morphometric-validation`). When a dimension is flagged `not_applicable`, **Overall (app.)** renormalises weights over applicable dimensions (mathematically neutral), whereas **Overall (pad.)** substitutes 50 (shrinking the weighted average toward 50). Unevaluated scripts carry no nanopubs yet.
 
-| Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Faithfulness | Reproducibility | **Overall** | verdict |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| PlanformDB planarian morphology animation (`1900-planformDB_parser.py`) | 10 | 5 | 5 | 0 | 55 | 15 | 35 | 5.4 | 36.3 | **14.7** | not faithful |
-| Raup shell coiling morphospace (`create_raup_animations.py`) | 35 | 30 | 25 | 20 | 65 | 45 | 60 | 28.6 | 57.7 | **37.3** | unfaithful |
-| Hoffmann-Donoughe insect wing venation (`2018-hoffmann-wing-venation.py`) | 85 | 85 | 65 | 80 | 90 | 75 | 50 | 81.1 | 70.0 | **77.8** | mostly faithful |
-| Chindapol flow-driven coral growth (`2013-chindapol-coral-flow.py`) | 40 | 45 | 70 | 55 | 80 | 65 | 65 | 49.3 | 70.0 | **55.5** | partially faithful |
-| Gray-Scott reaction-diffusion patterns (`1952-turing-morpho.py`) | 85 | 50 | 55 | 20 | 55 | 55 | 40 | 54.3 | 49.0 | **52.7** | partially faithful |
-| Petroff stromatolite morphospace (`2010-petroff-stromatolite.py`) | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
-| Kahng coral geometry morphospace (`2024-kahng-coral-geometry.py`) | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
-| Cervera-Levin-Mafe bioelectric morphospace (`2021-Cervera–Levin–Mafe.py`) | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
+| Simulation | model-fidelity (20) | specimen-match (25) | parameter-expressivity (10) | morphometric-validation (15) | source-traceability (10) | code-traceability (8) | repro-package (12) | Model Impl. (30) | Bio. Val. (40) | Repro. (30) | Overall (app.) | **Overall (pad.)** | verdict |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| PlanformDB planarian morphology animation (`1900-planformDB_parser.py`) | 10 | 5 | 5 | 0 | 55 | 15 | 35 | 8.3 | 3.1 | 36.3 | 14.7 | **14.7** | not faithful |
+| Raup shell coiling morphospace (`create_raup_animations.py`) | 35 | 30 | 25 | 20 | 65 | 45 | 60 | 31.7 | 26.2 | 57.7 | 37.3 | **37.3** | unfaithful |
+| Hoffmann-Donoughe insect wing venation (`2018-hoffmann-wing-venation.py`) | 85 | 85 | 65 | 80 | 90 | 75 | 50 | 78.3 | 83.1 | 70.0 | 77.8 | **77.8** | mostly faithful |
+| Chindapol flow-driven coral growth (`2013-chindapol-coral-flow.py`) | 40 | 45 | 70 | 55 | 80 | 65 | 65 | 50.0 | 48.8 | 70.0 | 55.5 | **55.5** | partially faithful |
+| Gray-Scott reaction-diffusion patterns (`1952-turing-morpho.py`) | 85 | 50* | 55 | 20 | 55 | 55 | 40 | 75.0 | 38.8 | 49.0 | 53.6 | **52.7** | partially faithful |
+| Petroff stromatolite morphospace (`2010-petroff-stromatolite.py`) | — | — | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
+| Kahng coral geometry morphospace (`2024-kahng-coral-geometry.py`) | — | — | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
+| Cervera-Levin-Mafe bioelectric morphospace (`2021-Cervera–Levin–Mafe.py`) | — | — | — | — | — | — | — | — | — | — | — | *unevaluated* | — |
 
 ## Findings and remediation
 
@@ -141,7 +141,7 @@ Remediation:
 The binaries stay out of git; the sha256 pins the exact file that was scored, and the morphometrics record the form itself (written into the reasoning of the morphometric-validation assessment).
 
 ### PlanformDB planarian morphology animation
-- `planform_morphology_animation.gif` — sha256 `27256acdd26eee57…`, 802,794 B, 3200×2000 px, 34 frames
+- `planform_morphology_animation.gif` — artifact_sha256 `27256acdd26eee57…`, 802,794 B, 3200×2000 px, 34 frames
 
 | measurement | value | reference | method |
 |---|---:|---|---|
@@ -150,7 +150,7 @@ The binaries stay out of git; the sha256 pins the exact file that was scored, an
 | frames with a silhouette | 34 count | — | frames where a component was found *(of 34)* |
 
 ### Raup shell coiling morphospace
-- `raup_shell_animation.gif` — sha256 `aea20e93a9a79a94…`, 24,248,756 B, 3600×2400 px, 161 frames
+- `raup_shell_animation.gif` — artifact_sha256 `aea20e93a9a79a94…`, 24,248,756 B, 3600×2400 px, 161 frames
 
 | measurement | value | reference | method |
 |---|---:|---|---|
@@ -162,7 +162,7 @@ The binaries stay out of git; the sha256 pins the exact file that was scored, an
 | effective translation rate T_eff, 'Wide' (nominal T=0.3) | 0.0019 ratio | 0.3 | Δz over the last whorl ÷ generating-curve centre radius, from raup_shell(W,D,T,turns=6) *(shell height/width = 0.006)* |
 
 ### Hoffmann-Donoughe insect wing venation
-- `hoffmann_wing_recapitulation.png` — sha256 `43b99ec8ae8205b3…`, 179,027 B, 1730×1206 px
+- `hoffmann_wing_recapitulation.png` — artifact_sha256 `43b99ec8ae8205b3…`, 179,027 B, 1730×1206 px
 
 | measurement | value | reference | method |
 |---|---:|---|---|
@@ -174,7 +174,7 @@ The binaries stay out of git; the sha256 pins the exact file that was scored, an
 - `chindapol_coral_flow_morphospace.png` — **not on disk at snapshot time** (no hash, no measurements)
 
 ### Gray-Scott reaction-diffusion patterns
-- `turing_patterns.gif` — sha256 `0ddf48cbca6cf3df…`, 14,075,347 B, 1280×960 px, 500 frames
+- `turing_patterns.gif` — artifact_sha256 `0ddf48cbca6cf3df…`, 14,075,347 B, 1280×960 px, 500 frames
 
 | measurement | value | reference | method |
 |---|---:|---|---|

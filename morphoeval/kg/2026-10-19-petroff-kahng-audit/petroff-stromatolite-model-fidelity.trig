@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,21 +17,41 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-audit-petroff-stromatolite-model-fidelity> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-petroff-stromatolite> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-petroff-stromatolite-model-fidelity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-petroff-stromatolite-model-fidelity> a pk:LLMClaimAssessment ;
         rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace — Model fidelity to source: 44/100" ;
-        rdfs:comment "Correctly evaluates the diffusive spacing relation `ell = alpha * sqrt(D * tau)` (L64-67) and hexagonal lattice geometry (L70-81). However, (-22) the lamina cross-section model (L113-163) does not solve Petroff et al.'s (2010) diffusive nutrient field (`nabla^2 c = 0`) or flux-driven lamina growth (`v_n prop dc/dn`), so the top row (diffusion spacing) and bottom row (lamina shapes) are mathematically uncoupled; (-14) relative to the Batchelor et al. (2004) equation cited in the docstring (`dh/dt = v + lambda*(1 + 1/2 (dh/dr)^2)`, L34, L296), `_advance_front` introduces an uncited quadratic photic crest weight `w_photic = 0.12 + 0.88 * (z / z.max())**2` (L130), pins the basal endpoints at `+-base_half` (L136-137), and applies a 3-point Laplacian smoothing filter (L141-142); and (-8) the text panel states that `ell ~ 0.66 cm` records a `~20 h` rhythmic metabolism (L238-239) whereas `0.66 cm` was computed from `tau = 12 h` (L193, L235). Evidence: 2010-petroff-stromatolite.py L64–L81: diffusion_length ell = alpha*sqrt(D*tau) and hex_lattice <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L64-L81>; 2010-petroff-stromatolite.py L113–L143: _advance_front uses ad-hoc w_photic = 0.12 + 0.88*(z/z_max)^2, pinned base, and 3-point smoothing instead of Petroff diffusive flux or pure Batchelor KPZ <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L113-L143>; 2010-petroff-stromatolite.py L233–L240: text panel computes ell = 0.66 cm from tau = 12 h but prose says '~20 h rhythmic metabolism' <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L233-L240>." ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Correctly evaluates the diffusive spacing relation `ell = alpha * sqrt(D * tau)` (L64-67) and hexagonal lattice geometry (L70-81). However, (-22) the lamina cross-section model (L113-163) does not solve Petroff et al.'s (2010) diffusive nutrient field (`nabla^2 c = 0`) or flux-driven lamina growth (`v_n prop dc/dn`), so the top row (diffusion spacing) and bottom row (lamina shapes) are mathematically uncoupled; (-14) relative to the Batchelor et al. (2004) equation cited in the docstring (`dh/dt = v + lambda*(1 + 1/2 (dh/dr)^2)`, L34, L296), `_advance_front` introduces an uncited quadratic photic crest weight `w_photic = 0.12 + 0.88 * (z / z.max())**2` (L130), pins the basal endpoints at `+-base_half` (L136-137), and applies a 3-point Laplacian smoothing filter (L141-142); and (-8) the text panel states that `ell ~ 0.66 cm` records a `~20 h` rhythmic metabolism (L238-239) whereas `0.66 cm` was computed from `tau = 12 h` (L193, L235)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-model-fidelity> ;
-        pk:hasProbability "0.44"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-petroff-stromatolite-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-petroff-stromatolite-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-petroff-stromatolite-model-fidelity-3> ;
+        pk:hasScore "0.44"^^xsd:double ;
         pk:hasVerdict "partially faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-petroff-stromatolite-model-fidelity> rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace (2010-petroff-stromatolite.py, docs/media/petroff_stromatolite_dome_to_cone.gif) satisfies the MorphoEval 0.1.0 criterion 'Model fidelity to source' for Photosynthetic microbial mats and conical stromatolites (Conophyton / Yellowstone modern mats)" ;
-        dct:identifier "morphoeval/0.1.0/model-fidelity" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-petroff-stromatolite-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2010-petroff-stromatolite.py L64–L81" ;
+        dct:description "diffusion_length ell = alpha*sqrt(D*tau) and hex_lattice" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L64-L81> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-petroff-stromatolite-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2010-petroff-stromatolite.py L113–L143" ;
+        dct:description "_advance_front uses ad-hoc w_photic = 0.12 + 0.88*(z/z_max)^2, pinned base, and 3-point smoothing instead of Petroff diffusive flux or pure Batchelor KPZ" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L113-L143> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-petroff-stromatolite-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "2010-petroff-stromatolite.py L233–L240" ;
+        dct:description "text panel computes ell = 0.66 cm from tau = 12 h but prose says '~20 h rhythmic metabolism'" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/5564750/2010-petroff-stromatolite.py#L233-L240> .
     <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
-        rdfs:label "Gemini 4 Argon (primary) + Claude Fable 5.1 (independent blinded second assessor)" .
+        rdfs:label "Gemini 4 Argon (primary) + Claude Fable 5.1 (independent blinded second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
         prov:wasDerivedFrom <https://doi.org/10.1016/j.physa.2004.01.065>,
             <https://doi.org/10.1073/pnas.1001978107> .
@@ -43,20 +64,17 @@ sub:provenance {
 sub:pubinfo {
     sub: rdfs:label "Petroff et al. (2010) Conical Stromatolite Spacing Law & Dome-to-Cone Morphospace — Model fidelity to source 44/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-19T21:03:38Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:44Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-petroff-kahng-audit-petroff-stromatolite-model-fidelity> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-petroff-stromatolite-model-fidelity> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

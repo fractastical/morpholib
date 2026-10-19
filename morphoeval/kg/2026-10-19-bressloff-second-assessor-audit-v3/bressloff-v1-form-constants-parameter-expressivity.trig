@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,28 +17,55 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-second-assessor-audit-v3-bressloff-v1-form-constants-parameter-expressivity> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-bressloff-v1-form-constants> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-bressloff-v1-form-constants-parameter-expressivity-second-assessor-gemini-4-argon> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-bressloff-v1-form-constants-parameter-expressivity-second-assessor-gemini-4-argon> a pk:LLMClaimAssessment ;
         rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Parameter expressivity: 76/100" ;
-        rdfs:comment "The script provides parameter_sweep and a --sweep CLI flag covering six biophysical coupling parameters (lateral_wide_sigma, lateral_inhibition, lateral_spread_deg, lateral_sigma, eigen_beta, local_sigma_deg) and plots three sweeps in Panels F and G. Increasing lateral_wide_sigma from 1.5 to 6.0 monotonically lowers q* from 1.46 to 0.70, increasing lateral_inhibition from 0 to 1 monotonically raises q* from the 0.05 floor to 1.00, and sweeping lateral_spread_deg from 0 to 90 degrees induces two parity flips between odd and even branches at 45 and 90 degrees. However, all five gallery columns share the exact same biophysical coupling parameters (lateral_sigma=1.0, lateral_wide_sigma=1.5, lateral_inhibition=1.0, lateral_spread_deg=60.0, eigen_beta=0.35, giving identical q* = 1.447468 and 11 cycles) and differ solely via manual preset overrides of pattern and pattern_angle_deg (-12 pts). Moreover, across all six sweepable parameters, the unrestricted cubic branch selection remains locked to rhombic (roll_ever_stable=False and square_ever_stable=False everywhere), so sweeping the model's coupling parameters never drives transitions across Klüver's form- constant families (-8 pts). Finally, the lateral_spread_deg sweep in Panel G evaluates q* on a 128-point grid (step 0.0272) over which q* takes only three discrete values between 0.9465 and 1.0280, yielding a quantized step curve (-4 pts). Evidence: 2001-bressloff-v1-form-constants.py L380–L460: Gallery presets in PAPER_PRESETS share identical coupling parameters and vary only pattern, pattern_angle_deg, and sharpness <https://github.com/fractastical/morpholib/blob/d6f3c94/2001-bressloff-v1-form-constants.py#L380-L460>; 2001-bressloff-v1-form-constants.py L1506–L1560: SWEEPABLE_PARAMS and parameter_sweep implementation over 6 coupling parameters <https://github.com/fractastical/morpholib/blob/d6f3c94/2001-bressloff-v1-form-constants.py#L1506-L1560>; 2001-bressloff-v1-form-constants.py L1687–L1707: Sweep summaries confirming unrestricted_selected_family is solely rhombic and roll_ever_stable / square_ever_stable are always False <https://github.com/fractastical/morpholib/blob/d6f3c94/2001-bressloff-v1-form-constants.py#L1687-L1707>; bressloff_v1_metrics.csv L31–L43: CSV kluver_form_constant and parameter_sweep rows showing identical critical_q=1.447468 across all 5 gallery presets and 3-bin quantization in lateral_spread_deg <https://github.com/fractastical/morpholib/blob/d6f3c94/bressloff_v1_metrics.csv#L31-L43>." ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "The script provides parameter_sweep and a --sweep CLI flag covering six biophysical coupling parameters (lateral_wide_sigma, lateral_inhibition, lateral_spread_deg, lateral_sigma, eigen_beta, local_sigma_deg) and plots three sweeps in Panels F and G. Increasing lateral_wide_sigma from 1.5 to 6.0 monotonically lowers q* from 1.46 to 0.70, increasing lateral_inhibition from 0 to 1 monotonically raises q* from the 0.05 floor to 1.00, and sweeping lateral_spread_deg from 0 to 90 degrees induces two parity flips between odd and even branches at 45 and 90 degrees. However, all five gallery columns share the exact same biophysical coupling parameters (lateral_sigma=1.0, lateral_wide_sigma=1.5, lateral_inhibition=1.0, lateral_spread_deg=60.0, eigen_beta=0.35, giving identical q* = 1.447468 and 11 cycles) and differ solely via manual preset overrides of pattern and pattern_angle_deg (-12 pts). Moreover, across all six sweepable parameters, the unrestricted cubic branch selection remains locked to rhombic (roll_ever_stable=False and square_ever_stable=False everywhere), so sweeping the model's coupling parameters never drives transitions across Klüver's form- constant families (-8 pts). Finally, the lateral_spread_deg sweep in Panel G evaluates q* on a 128-point grid (step 0.0272) over which q* takes only three discrete values between 0.9465 and 1.0280, yielding a quantized step curve (-4 pts)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-parameter-expressivity> ;
-        pk:hasProbability "0.76"^^xsd:double ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-parameter-expressivity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-parameter-expressivity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-parameter-expressivity-4> ;
+        pk:hasScore "0.76"^^xsd:double ;
         pk:hasVerdict "mostly faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-bressloff-v1-form-constants-parameter-expressivity> rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants (2001-bressloff-v1-form-constants.py, docs/media/bressloff_v1_form_constants.gif, bressloff_v1_metrics.csv, datasets/bressloff/horton_hoyt_1991_magnification.json) satisfies the MorphoEval 0.1.0 criterion 'Parameter expressivity' for Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes" ;
-        dct:identifier "morphoeval/0.1.0/parameter-expressivity" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2001-bressloff-v1-form-constants.py L380–L460" ;
+        dct:description "Gallery presets in PAPER_PRESETS share identical coupling parameters and vary only pattern, pattern_angle_deg, and sharpness" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d6f3c94/2001-bressloff-v1-form-constants.py#L380-L460> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2001-bressloff-v1-form-constants.py L1506–L1560" ;
+        dct:description "SWEEPABLE_PARAMS and parameter_sweep implementation over 6 coupling parameters" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d6f3c94/2001-bressloff-v1-form-constants.py#L1506-L1560> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-parameter-expressivity-3> a pk:EvidenceItem ;
+        rdfs:label "2001-bressloff-v1-form-constants.py L1687–L1707" ;
+        dct:description "Sweep summaries confirming unrestricted_selected_family is solely rhombic and roll_ever_stable / square_ever_stable are always False" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d6f3c94/2001-bressloff-v1-form-constants.py#L1687-L1707> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-parameter-expressivity-4> a pk:EvidenceItem ;
+        rdfs:label "bressloff_v1_metrics.csv L31–L43" ;
+        dct:description "CSV kluver_form_constant and parameter_sweep rows showing identical critical_q=1.447468 across all 5 gallery presets and 3-bin quantization in lateral_spread_deg" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d6f3c94/bressloff_v1_metrics.csv#L31-L43> .
     <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
-        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" .
+        rdfs:label "Gemini 4 Argon (Cursor agent, blinded second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
         prov:wasDerivedFrom <https://doi.org/10.1001/archopht.1991.01080060080030>,
             <https://doi.org/10.1007/BF00336965>,
             <https://doi.org/10.1098/rstb.2000.0769>,
             <https://doi.org/10.1137/23M1616686>,
             <https://doi.org/10.1162/089976602317250861>,
-            <https://doi.org/10.1371/journal.pcbi.1002158> .
+            <https://doi.org/10.1371/journal.pcbi.1002158>,
+            <https://github.com/MesmerPrism/bressloff-v1-form-constants>,
+            <https://press.uchicago.edu/ucp/books/book/chicago/M/bo3645325.html> .
     <https://doi.org/10.1001/archopht.1991.01080060080030> dct:date "1991"^^xsd:gYear ;
         dct:title "The representation of the visual field in human striate cortex: a revision of the classic Holmes map" .
     <https://doi.org/10.1007/BF00336965> dct:date "1979"^^xsd:gYear ;
@@ -50,25 +78,25 @@ sub:provenance {
         dct:title "What geometric visual hallucinations tell us about the visual cortex" .
     <https://doi.org/10.1371/journal.pcbi.1002158> dct:date "2011"^^xsd:gYear ;
         dct:title "A model for the origin and properties of flicker-induced geometric phosphenes" .
+    <https://github.com/MesmerPrism/bressloff-v1-form-constants> dct:title "bressloff-v1-form-constants: reference implementation and calibration reports (commit 344863a)" .
+    <https://press.uchicago.edu/ucp/books/book/chicago/M/bo3645325.html> dct:date "1966"^^xsd:gYear ;
+        dct:title "Mescal and Mechanisms of Hallucinations" .
 }
 
 sub:pubinfo {
     sub: rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Parameter expressivity 76/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-19T22:06:22Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:46:43Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
-        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-bressloff-second-assessor-audit-v3-bressloff-v1-form-constants-parameter-expressivity> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-bressloff-v1-form-constants-parameter-expressivity-second-assessor-gemini-4-argon> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
-    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
 }

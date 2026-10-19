@@ -1,4 +1,5 @@
 @prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix np: <http://www.nanopub.org/nschema#> .
 @prefix npx: <http://purl.org/nanopub/x/> .
 @prefix nt: <https://w3id.org/np/o/ntemplate/> .
@@ -16,25 +17,30 @@ sub:Head {
 }
 
 sub:assertion {
-    <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-overall> a pk:LLMClaimAssessment ;
+    <https://w3id.org/probknow/resource/claim/morphoeval-planform-morphology-animation> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-planform-morphology-animation-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-planform-morphology-animation-overall> a pk:LLMClaimAssessment ;
         rdfs:label "PlanformDB planarian morphology animation — MorphoEval overall 66.5/100" ;
-        rdfs:comment "Rewritten. The region graph of every PlanformDB morphology is now decoded exactly (polar radii per region, centres and borders from the RegionsLink labels, organs from the organ table) and drawn in Planform's own cartoon convention; wild type, double head, headless, cyclops and the other canonical phenotypes are visually distinct and recognisable as Planform drawings. Remaining gap: the formalism stores three radii per head, so species features such as auricles or a triangular head are not in the data and the renders still read as cartoons, not specimens. Overall 66.5/100 (faithfulness 66.1, reproducibility 67.3); rubric morphoeval 0.1.0; checkpoint commit 161f269; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 85, Morphological realism / specimen match 60, Parameter expressivity 75, Morphometric validation 45, Source and data traceability 70, Code-to-model traceability 75, Reproducibility package 60. Output judged: planform_morphology_gallery.png: rendered output of 2013-lobo-planform-morphology.py at 161f269, image/png, 443915 B, 1920×2160 px, sha256 77a7dfa087bf89441dc35c64bc0c96bccfdc15d44a3d600df766fb723a87ace5." ;
+        dct:date "2026-10-14"^^xsd:date ;
+        dct:description "Rewritten. The region graph of every PlanformDB morphology is now decoded exactly (polar radii per region, centres and borders from the RegionsLink labels, organs from the organ table) and drawn in Planform's own cartoon convention; wild type, double head, headless, cyclops and the other canonical phenotypes are visually distinct and recognisable as Planform drawings. Remaining gap: the formalism stores three radii per head, so species features such as auricles or a triangular head are not in the data and the renders still read as cartoons, not specimens. Overall 66.5/100 (faithfulness 66.1, reproducibility 67.3); rubric morphoeval 0.1.0; checkpoint commit 161f269; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 85, Morphological realism / specimen match 60, Parameter expressivity 75, Morphometric validation 45, Source and data traceability 70, Code-to-model traceability 75, Reproducibility package 60. Output judged: planform_morphology_gallery.png: rendered output of 2013-lobo-planform-morphology.py at 161f269, image/png, 443915 B, 1920×2160 px, artifact_sha256 77a7dfa087bf89441dc35c64bc0c96bccfdc15d44a3d600df766fb723a87ace5 (sha256 77a7dfa087bf89441dc35c64bc0c96bccfdc15d44a3d600df766fb723a87ace5)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
         pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
-        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-planform-morphology-animation> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
         pk:evidenceAgainst "remediation needed: Add per-species outline templates (auricles, head shape) layered on the decoded regions, clearly marked as not from the database.",
             "remediation needed: Compare the decoded aspect ratio and organ positions with measurements on photographed S. mediterranea / D. japonica.",
             "remediation needed: Pin dependency versions for the Python 3.14 environment used here.",
             "remediation needed: Record the sha256 and version of the PlanformDB file used, and its download location." ;
-        pk:hasProbability "0.665"^^xsd:double ;
+        pk:hasScore "0.665"^^xsd:double ;
         pk:hasVerdict "mostly faithful" .
-    <https://w3id.org/probknow/resource/hypothesis/morphoeval-planform-morphology-animation> rdfs:label "PlanformDB planarian morphology animation faithfully reproduces Planaria (Schmidtea mediterranea, Dugesia japonica) morphology" ;
-        dct:identifier "morphoeval/0.1.0/overall" .
     <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
-        rdfs:label "Claude Fable 5.1 (Cursor agent)" .
+        rdfs:label "Claude Fable 5.1 (Cursor agent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
 }
 
 sub:provenance {
-    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
             <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
         prov:wasDerivedFrom <https://doi.org/10.1016/j.bpj.2017.04.011>,
             <https://doi.org/10.1093/bioinformatics/btt088>,
@@ -50,22 +56,20 @@ sub:provenance {
 sub:pubinfo {
     sub: rdfs:label "PlanformDB planarian morphology animation — MorphoEval overall 66.5/100" ;
         dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
-        dct:created "2026-10-16T18:52:23Z"^^xsd:dateTime ;
+        dct:created "2026-10-19T23:45:06Z"^^xsd:dateTime ;
         dct:creator <https://orcid.org/0009-0007-4948-9192> ;
         dct:license <https://creativecommons.org/licenses/by/4.0/> ;
         npx:hasNanopubType pk:LLMClaimAssessment ;
-        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-14-morphology-audit-planform-morphology-animation-overall> ;
-        npx:supersedes <https://w3id.org/np/RAKRYXxcHkuCChjbOsyQpN-E7Bz6xe5vWBUtpRvOnQkQo> ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-planform-morphology-animation-overall> ;
+        npx:supersedes <https://w3id.org/np/RA-MZ3Q2yHT5I_z2qhOk6S_wt1ekKtjlPAKyBt32V-NRE> ;
         rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
             <https://w3id.org/probknow/resource/claim/morphoeval-planform-morphology-animation> ;
-        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
         nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
             <https://w3id.org/np/RAoTD7udB2KtUuOuAe74tJi1t3VzK0DyWS7rYVAq1GRvw>,
             <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
             <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
-        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
-        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
         pk:domain <https://w3id.org/probknow/resource/domain/levin-lab> .
-    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
     <https://w3id.org/probknow/resource/domain/levin-lab> rdfs:label "levin-lab" .
 }
