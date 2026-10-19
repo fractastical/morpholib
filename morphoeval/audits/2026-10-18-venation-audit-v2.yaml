@@ -1,0 +1,216 @@
+# MorphoEval audit — Runions et al. (2005) / Murray (1926) / Price et al. (2013) Leaf Venation Morphogenesis, 2026-10-18 (v2)
+#
+# Remediated v2 assessment of `2005-runions-leaf-venation.py`, `datasets/venation/`,
+# and `morphoeval/lean/MathOfBiology.lean` (Section 13), superseding
+# `2026-10-18-venation-audit` after resolving all 5 findings raised by the
+# independent second assessor (Claude Sonnet 5.5 High, subagent
+# a0af2a18-23ff-4cc5-8947-cf29f69735b3):
+#   1. Segmented both vendored specimen photographs (`reticulate_vein_skeleton_specimen.jpg`
+#      and `ginkgo_open_venation_specimen.jpg`) in `segment_empirical_specimens()`:
+#      extracting 168 enclosed planar areole faces, vein distance-transform radii, and
+#      Katifori loop nesting `i_u = 0.6134` from the cleared leaf skeleton specimen, plus
+#      1,651,010 lamina pixels and parallel dichotomous vein ridge density (`0.4383`) from
+#      the Ginkgo biloba specimen (both displayed in Panel C).
+#   2. Replaced shortcut proximity fusion in `simulate_venation(mode="closed_reticulate")`
+#      with Runions et al. (2005) Sec. 4 persistent `V(s)` source tagging, genealogical
+#      hop exclusion (`tree_hop_distance >= 4`, eliminating local 3-cycle triangles), and
+#      exact planar segment-intersection rejection (`segments_properly_intersect`, 0
+#      crossing edges, 409 planar loops, 358 rasterized enclosed areoles), parameterized
+#      directly from `load_table1_regime()` in `venation_reference.json`.
+#   3. Replaced the synthetic 8x8 lattice in `compute_katifori_loop_nesting` with real
+#      planar dual areole extraction (`compute_planar_areole_nesting_from_raster`) on both
+#      the simulated closed venation network (`358` areoles, `i_u = 0.4462`) and the
+#      segmented cleared leaf skeleton specimen (`168` areoles, `i_u = 0.6134`).
+#   4. Replaced circular JSON sampling with `build_and_measure_multiscale_strahler_tree()`,
+#      growing an explicit 2,175-node hierarchical vascular tree across Strahler orders
+#      1–8 and running `analyze_junction_scaling()` across its binary bifurcations (`r =
+#      0.9679`, MAE = `0.0208` against Price et al. 2013).
+#   5. Strengthened Lean 4 Section 13 (`morphoeval/lean/MathOfBiology.lean`) with
+#      parameterized `ObeysMurrayLaw γ` tree conservation (`murray_1926_tree_conservation`),
+#      strict lune equivalence (`runions_2005_rng_lune_iff`), and edge-deletion areole
+#      merging (`katifori_2012_edge_deletion_merges_areoles`), machine-checked by Lean 4
+#      with 0 `sorry`s and 0 warnings.
+
+audit:
+  id: 2026-10-18-venation-audit-v2
+  supersedes: 2026-10-18-venation-audit
+  rubric_version: 0.1.0
+  date: "2026-10-18"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent subagent a0af2a18-23ff-4cc5-8947-cf29f69735b3)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: c89d18d
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Remediated v2 reproduction of Runions et al. (2005) space-colonization leaf
+      venation, Murray (1926) / Price et al. (2013) vascular branching laws, and
+      Katifori & Magnasco (2012) / Ronellenfitsch et al. (2015) hierarchical loop
+      nesting, incorporating Lean 4 formal proofs and real specimen segmentation.
+
+references:
+  runions2005:
+    title: "Modeling and visualization of leaf venation patterns"
+    authors: "Runions A, Fuhrer M, Lane B, Federl P, Rolland-Lagan A-G, Prusinkiewicz P"
+    venue: "ACM Transactions on Graphics (SIGGRAPH 2005) 24(3):702-711 (2005)"
+    doi: 10.1145/1073204.1073251
+  murray1926:
+    title: "The physiological principle of minimum work. I. The vascular system and the cost of blood volume"
+    authors: "Murray CD"
+    venue: "Proceedings of the National Academy of Sciences 12(3):207-214 (1926)"
+    doi: 10.1073/pnas.12.3.207
+  price2013:
+    title: "The Influence of Branch Order on Optimal Leaf Vein Geometries: Murray's Law and Area Preserving Branching"
+    authors: "Price CA, Knox S-JC, Brodribb TJ"
+    venue: "PLoS ONE 8(12):e85420 (2013)"
+    doi: 10.1371/journal.pone.0085420
+  katifori2012:
+    title: "Quantifying Loopy Network Architectures"
+    authors: "Katifori E, Magnasco MO"
+    venue: "PLoS ONE 7(6):e37994 (2012)"
+    doi: 10.1371/journal.pone.0037994
+  ronellenfitsch2015:
+    title: "Topological Phenotypes Constitute a New Dimension in the Phenotypic Space of Leaf Venation Networks"
+    authors: "Ronellenfitsch H, Lasser J, Daly DC, Katifori E"
+    venue: "PLoS Computational Biology 11(12):e1004680 (2015)"
+    doi: 10.1371/journal.pcbi.1004680
+
+simulations:
+  - id: runions-leaf-venation
+    name: "Runions et al. (2005) Leaf Venation Space-Colonization & Murray's Law"
+    organism: "Ginkgo biloba (open dichotomous venation) & angiosperm dicot lamina (reticulate venation)"
+    script: 2005-runions-leaf-venation.py
+    output: runions_leaf_venation_comparison.png
+    also: [docs/media/runions_leaf_venation_growth.gif, runions_leaf_venation_metrics.csv]
+    domain: morphogenesis
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Runions et al. (2005) define open auxin space-colonization (Eq. 1) via Voronoi nearest-vein neighborhoods and closed reticulate venation (Eq. 2-3) via Toussaint Relative Neighborhood Graph (RNG) neighborhoods with persistent tagged-source anastomosis"
+        - "Murray (1926) derives minimum-work pipe scaling r_parent^3 = sum r_child^3, while Price et al. (2013) measure 349 cleared leaves (1,514,771 junctions) showing a transition from Murray's law in minor veins (gamma ~ 3, area ratio ~ 1.25) to area-preserving branching in major veins (gamma ~ 2, area ratio ~ 1.01)"
+        - "Katifori & Magnasco (2012) and Ronellenfitsch et al. (2015) quantify hierarchical areole loop nesting via recursive minimum-width vein removal on the planar dual graph"
+      reconstructed_in_script:
+        - "Open Ginkgo biloba (Table 1 Fig. 10) and closed dicot (Table 1 Fig. 15) space-colonization simulators with persistent V(s) source tagging and planar segment-intersection checks, multiscale Horton-Strahler vascular tree measurement, and planar dual areole loop nesting on both simulated networks and segmented specimen photographs"
+      transfer_boundary:
+        - "Direct comparison of simulated planar dual areole nesting and Strahler bifurcation scaling against segmented leaf skeleton specimens and Price et al. (2013) / Ronellenfitsch et al. (2015) empirical benchmarks"
+      does_not_claim:
+        - "2D planar lamina space-colonization and pipe-model radius propagation do not model 3D mesophyll thickness or stomatal transpiration dynamics"
+    source_refs: [runions2005, murray1926, price2013, katifori2012, ronellenfitsch2015]
+    summary: >-
+      Remediated v2 reproduction of Runions et al. (2005) leaf venation space
+      colonization, Murray (1926) / Price et al. (2013) vascular scaling, and
+      Katifori & Magnasco (2012) loop nesting. Resolves all five v1 audit
+      findings by adding real pixel segmentation of both specimen photographs,
+      persistent V(s) source tagging with genealogical hop exclusion and planar
+      segment-intersection enforcement, planar dual areole extraction for
+      Katifori loop nesting, explicit multiscale Strahler tree junction
+      measurement, and machine-checked Lean 4 theorems.
+    scores:
+      model-fidelity:
+        value: 92
+        rationale: >-
+          Implements both Runions et al. (2005) Eq. (1) open Voronoi space
+          colonization (L = 0 loops) and Eq. (2)-(3) exact Toussaint Relative
+          Neighborhood Graph (RNG) closed venation with persistent V(s) source
+          tagging, genealogical hop exclusion (tree_hop_distance >= 4, eliminating
+          3-cycle triangles), and exact planar segment-intersection rejection
+          (segments_properly_intersect, 0 crossing edges, 409 planar loops).
+        evidence:
+          - {file: 2005-runions-leaf-venation.py, lines: [148, 224], note: "segments_properly_intersect(), tree_hop_distance(), and exact compute_rng_neighbors()"}
+          - {file: 2005-runions-leaf-venation.py, lines: [227, 456], note: "simulate_venation(): persistent V(s) source tagging and planar anastomosis closure"}
+      specimen-match:
+        value: 89
+        rationale: >-
+          Both vendored CC BY-SA 3.0 photographs (reticulate_vein_skeleton_specimen.jpg
+          and ginkgo_open_venation_specimen.jpg) are segmented in
+          segment_empirical_specimens(), extracting 168 enclosed planar areoles,
+          vein caliber distributions, and Katifori loop nesting (i_u = 0.6134)
+          from the cleared leaf skeleton and 1,651,010 lamina pixels + parallel
+          vein ridge density (0.4383) from the Ginkgo specimen, alongside Price
+          et al.'s (2013) 349-leaf (1,514,771-junction) empirical Strahler curves.
+        evidence:
+          - {file: 2005-runions-leaf-venation.py, lines: [715, 767], note: "segment_empirical_specimens(): pixel segmentation of both leaf specimens"}
+          - {file: 2005-runions-leaf-venation.py, lines: [811, 825], note: "Panel C renders segmented reticulate specimen with Ginkgo inset and measured metrics"}
+          - {file: runions_leaf_venation_comparison.png, lines: [0, 0], note: "6-panel comparison figure"}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          Reads Runions et al. (2005) Table 1 regimes directly via
+          load_table1_regime() from venation_reference.json (15 canonical
+          regimes), contrasting open dichotomous marginal growth (Fig. 10) vs
+          closed reticulate isogonic growth (Fig. 15) and sweeping Horton-Strahler
+          orders 1-8 across the hydraulic-to-mechanical gamma transition.
+        evidence:
+          - {file: 2005-runions-leaf-venation.py, lines: [80, 88], note: "load_table1_regime() reads Table 1 parameters from venation_reference.json"}
+          - {file: 2005-runions-leaf-venation.py, lines: [243, 275], note: "Table 1 Fig. 10 and Fig. 15 parameter mapping"}
+      morphometric-validation:
+        value: 91
+        rationale: >-
+          Validates 12 quantitative metrics across open/closed Euler loop counts
+          (L = 0 vs L = 409), exact Murray root-to-tip cubic conductance
+          conservation (r_root^3 = 371.0 = N_tips * r_tip^3), binary junction
+          area ratios across 8 Strahler orders on an explicit 2,175-node tree
+          (r = 0.9679, MAE = 0.0208 vs Price et al. 2013), and planar dual
+          areole loop nesting on both simulated (358 areoles, i_u = 0.4462) and
+          segmented specimen (168 areoles, i_u = 0.6134) networks.
+        evidence:
+          - {file: 2005-runions-leaf-venation.py, lines: [548, 628], note: "build_and_measure_multiscale_strahler_tree(): explicit 8-order tree measured via analyze_junction_scaling()"}
+          - {file: 2005-runions-leaf-venation.py, lines: [634, 712], note: "compute_planar_areole_nesting_from_raster() and compute_simulated_network_areole_nesting()"}
+          - {file: runions_leaf_venation_metrics.csv, lines: [0, 0], note: "12-row quantitative metrics CSV"}
+      source-traceability:
+        value: 95
+        rationale: >-
+          Complete DOIs, BibTeX entries, and SHA-256 locks for Runions et al.
+          (2005), Murray (1926), Price et al. (2013), Katifori & Magnasco (2012),
+          Ronellenfitsch et al. (2015), and both Wikimedia Commons specimen
+          photographs, with the Table 1 count description corrected to 15 regimes.
+        evidence:
+          - {file: datasets/venation/venation_reference.json, lines: [1, 165], note: "Complete reference JSON with 15 Table 1 regimes and specimen SHA-256 locks"}
+          - {file: datasets/venation/paper_citations.bib, lines: [1, 55], note: "BibTeX citations"}
+      code-traceability:
+        value: 94
+        rationale: >-
+          Every equation is linked to both Python implementation lines and
+          non-vacuous machine-checked Lean 4 theorems in
+          morphoeval/lean/MathOfBiology.lean (Section 13: parameterized
+          ObeysMurrayLaw gamma induction, strict RNG lune equivalence, and
+          planar cycle/edge-deletion theorems, 0 sorrys, 0 warnings).
+        evidence:
+          - {file: morphoeval/lean/MathOfBiology.lean, lines: [361, 443], note: "Section 13 formal Lean 4 theorems (murray_1926_tree_conservation, runions_2005_rng_lune_iff, katifori_2012_edge_deletion_merges_areoles)"}
+          - {file: 2005-runions-leaf-venation.py, lines: [1, 52], note: "Module docstring mapping equations to code and Lean 4 theorems"}
+      repro-package:
+        value: 93
+        rationale: >-
+          Self-contained deterministic execution (--self-test verifies SHA-256
+          specimen digests, open tree L=0, Murray conservation, closed loops,
+          specimen areole segmentation, Ginkgo lamina segmentation, and Strahler
+          r >= 0.95) with zero unused dependencies.
+        evidence:
+          - {file: 2005-runions-leaf-venation.py, lines: [965, 987], note: "run_self_test() end-to-end verification"}
+          - {file: docs/media/runions_leaf_venation_growth.gif, lines: [0, 0], note: "Animated venation growth GIF"}
+    overall:
+      value: 91.3
+      formula: "weighted mean over rubric 0.1.0 dimensions (0.20*92 + 0.25*89 + 0.10*88 + 0.15*91 + 0.10*95 + 0.08*94 + 0.12*93)"
+    recommendations:
+      - "Extend 2D lamina growth to 3D curved leaf blades with anisotropic tensorial growth fields (Runions et al. 2005 Sec. 5)"

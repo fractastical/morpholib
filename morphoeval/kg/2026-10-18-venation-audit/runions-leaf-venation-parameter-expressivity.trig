@@ -1,0 +1,71 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-18-venation-audit-runions-leaf-venation-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Runions et al. (2005) Leaf Venation Space-Colonization & Murray's Law — Parameter expressivity: 40/100" ;
+        rdfs:comment "Runions Table 1 (15 parameter regimes) is vendored in venation_reference.json, but simulate_venation() hardcodes step_D, b_s, b_v, and d_k per mode without reading Table 1 or sweeping parameters. Evidence: 2005-runions-leaf-venation.py L215–L241: Hardcoded step_D, b_s, b_v, d_k in simulate_venation() <https://github.com/fractastical/morpholib/blob/c89d18d/2005-runions-leaf-venation.py#L215-L241>." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-runions-leaf-venation-parameter-expressivity> ;
+        pk:hasProbability "0.4"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-runions-leaf-venation-parameter-expressivity> rdfs:label "Runions et al. (2005) Leaf Venation Space-Colonization & Murray's Law (2005-runions-leaf-venation.py, docs/media/runions_leaf_venation_growth.gif, runions_leaf_venation_metrics.csv) satisfies the MorphoEval 0.1.0 criterion 'Parameter expressivity' for Ginkgo biloba (open dichotomous venation) & angiosperm dicot lamina (reticulate venation)" ;
+        dct:identifier "morphoeval/0.1.0/parameter-expressivity" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1073/pnas.12.3.207>,
+            <https://doi.org/10.1145/1073204.1073251>,
+            <https://doi.org/10.1371/journal.pcbi.1004680>,
+            <https://doi.org/10.1371/journal.pone.0037994>,
+            <https://doi.org/10.1371/journal.pone.0085420> .
+    <https://doi.org/10.1073/pnas.12.3.207> dct:date "1926"^^xsd:gYear ;
+        dct:title "The physiological principle of minimum work. I. The vascular system and the cost of blood volume" .
+    <https://doi.org/10.1145/1073204.1073251> dct:date "2005"^^xsd:gYear ;
+        dct:title "Modeling and visualization of leaf venation patterns" .
+    <https://doi.org/10.1371/journal.pcbi.1004680> dct:date "2015"^^xsd:gYear ;
+        dct:title "Topological Phenotypes Constitute a New Dimension in the Phenotypic Space of Leaf Venation Networks" .
+    <https://doi.org/10.1371/journal.pone.0037994> dct:date "2012"^^xsd:gYear ;
+        dct:title "Quantifying Loopy Network Architectures" .
+    <https://doi.org/10.1371/journal.pone.0085420> dct:date "2013"^^xsd:gYear ;
+        dct:title "The Influence of Branch Order on Optimal Leaf Vein Geometries: Murray's Law and Area Preserving Branching" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Runions et al. (2005) Leaf Venation Space-Colonization & Murray's Law — Parameter expressivity 40/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-19T16:30:05Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-18-venation-audit-runions-leaf-venation-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

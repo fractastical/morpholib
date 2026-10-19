@@ -1315,11 +1315,17 @@ def render_single_cycle_loop(
 
     FIG_W, FIG_H = 14.0, 9.0
     DPI = 130
+    is_venation = str(run.get("target_simulation", "")) == "runions-leaf-venation"
 
     # Load real cycle visual assets for Box 6 (specimen photo, growth GIF frames, comparison panels)
-    specimen_img_path = ROOT / "datasets" / "phyllotaxis" / "helianthus_annuus_capitulum_specimen.jpg"
-    growth_gif_path = ROOT / "docs" / "media" / "vogel_phyllotaxis_growth.gif"
-    comp_png_path = ROOT / "vogel_phyllotaxis_comparison.png"
+    if is_venation:
+        specimen_img_path = ROOT / "datasets" / "venation" / "reticulate_vein_skeleton_specimen.jpg"
+        growth_gif_path = ROOT / "docs" / "media" / "runions_leaf_venation_growth.gif"
+        comp_png_path = ROOT / "runions_leaf_venation_comparison.png"
+    else:
+        specimen_img_path = ROOT / "datasets" / "phyllotaxis" / "helianthus_annuus_capitulum_specimen.jpg"
+        growth_gif_path = ROOT / "docs" / "media" / "vogel_phyllotaxis_growth.gif"
+        comp_png_path = ROOT / "vogel_phyllotaxis_comparison.png"
 
     spec_pil = Image.open(specimen_img_path).convert("RGB") if specimen_img_path.exists() else None
     growth_frames: list[Image.Image] = []
@@ -1328,32 +1334,50 @@ def render_single_cycle_loop(
             growth_frames = [f.convert("RGB") for f in ImageSequence.Iterator(im)]
     comp_pil = Image.open(comp_png_path).convert("RGB") if comp_png_path.exists() else None
 
-    # Crop Panel A (DoG-segmented specimen) and Panel F (Swinton survey bar chart) from vogel_phyllotaxis_comparison.png
     seg_crop_pil = None
     survey_crop_pil = None
     if comp_pil is not None:
         cw, ch = comp_pil.size
-        # Top-left panel (row 1, col 1 of 2x3 grid): specimen with 621 green DoG floret rings
-        seg_crop_pil = comp_pil.crop((int(cw * 0.035), int(ch * 0.085), int(cw * 0.345), int(ch * 0.515)))
-        # Bottom-right panel (row 2, col 3 of 2x3 grid): Swinton (2016) vs Rim-Dislocation bar chart
-        survey_crop_pil = comp_pil.crop((int(cw * 0.665), int(ch * 0.50), int(cw * 0.985), int(ch * 0.955)))
+        if is_venation:
+            # Top-right panel (Panel C: segmented reticulate + Ginkgo inset) & bottom-left panel (Panel D: Price 2013 Strahler curve)
+            seg_crop_pil = comp_pil.crop((int(cw * 0.665), int(ch * 0.065), int(cw * 0.985), int(ch * 0.495)))
+            survey_crop_pil = comp_pil.crop((int(cw * 0.015), int(ch * 0.505), int(cw * 0.345), int(ch * 0.955)))
+        else:
+            # Top-left panel (row 1, col 1 of 2x3 grid): specimen with 621 green DoG floret rings
+            seg_crop_pil = comp_pil.crop((int(cw * 0.035), int(ch * 0.085), int(cw * 0.345), int(ch * 0.515)))
+            # Bottom-right panel (row 2, col 3 of 2x3 grid): Swinton (2016) vs Rim-Dislocation bar chart
+            survey_crop_pil = comp_pil.crop((int(cw * 0.665), int(ch * 0.50), int(cw * 0.985), int(ch * 0.955)))
 
-    # Exact per-step breakdown between Pass 1 (Initial v1: Steps 1->11 = 520.5s, 130.0k tok)
-    # and Pass 2 (Closed-Loop Remediation: Step 12 -> Steps 5->11 = 493.8s, 37.1k tok)
-    PASS_BREAKDOWN: dict[int, dict[str, Any]] = {
-        1: {"p1_s": 23.16, "p1_tok": 28358, "p2_s": None, "p2_tok": None},
-        2: {"p1_s": 20.42, "p1_tok": 27090, "p2_s": None, "p2_tok": None},
-        3: {"p1_s": 14.82, "p1_tok": 3826, "p2_s": None, "p2_tok": None},
-        4: {"p1_s": 43.62, "p1_tok": 47062, "p2_s": None, "p2_tok": None},
-        5: {"p1_s": 242.37, "p1_tok": 15132, "p2_s": 400.72, "p2_tok": 26350},
-        6: {"p1_s": 3.66, "p1_tok": 134, "p2_s": 5.78, "p2_tok": 180},
-        7: {"p1_s": 170.11, "p1_tok": 6692, "p2_s": 48.97, "p2_tok": 6800},
-        8: {"p1_s": 1.11, "p1_tok": 274, "p2_s": 12.52, "p2_tok": 310},
-        9: {"p1_s": 0.402, "p1_tok": 295, "p2_s": 10.74, "p2_tok": 320},
-        10: {"p1_s": 0.788, "p1_tok": 1011, "p2_s": 0.80, "p2_tok": 890},
-        11: {"p1_s": 0.017, "p1_tok": 102, "p2_s": 0.10, "p2_tok": 112},
-        12: {"p1_s": None, "p1_tok": None, "p2_s": 14.19, "p2_tok": 2110},
-    }
+    if is_venation:
+        PASS_BREAKDOWN: dict[int, dict[str, Any]] = {
+            1: {"p1_s": 0.07, "p1_tok": 0, "p2_s": None, "p2_tok": None},
+            2: {"p1_s": 33.56, "p1_tok": 0, "p2_s": None, "p2_tok": None},
+            3: {"p1_s": 64.13, "p1_tok": 27514, "p2_s": None, "p2_tok": None},
+            4: {"p1_s": 26.74, "p1_tok": 64, "p2_s": None, "p2_tok": None},
+            5: {"p1_s": 190.60, "p1_tok": 7672, "p2_s": 620.00, "p2_tok": 12400},
+            6: {"p1_s": 1.91, "p1_tok": 181, "p2_s": 1.76, "p2_tok": 203},
+            7: {"p1_s": 159.92, "p1_tok": 831, "p2_s": 185.00, "p2_tok": 2800},
+            8: {"p1_s": 1.99, "p1_tok": 262, "p2_s": 2.10, "p2_tok": 280},
+            9: {"p1_s": 0.16, "p1_tok": 121, "p2_s": 0.22, "p2_tok": 140},
+            10: {"p1_s": 0.67, "p1_tok": 756, "p2_s": 0.55, "p2_tok": 513},
+            11: {"p1_s": 0.02, "p1_tok": 185, "p2_s": 0.05, "p2_tok": 110},
+            12: {"p1_s": None, "p1_tok": None, "p2_s": 159.15, "p2_tok": 2189},
+        }
+    else:
+        PASS_BREAKDOWN = {
+            1: {"p1_s": 23.16, "p1_tok": 28358, "p2_s": None, "p2_tok": None},
+            2: {"p1_s": 20.42, "p1_tok": 27090, "p2_s": None, "p2_tok": None},
+            3: {"p1_s": 14.82, "p1_tok": 3826, "p2_s": None, "p2_tok": None},
+            4: {"p1_s": 43.62, "p1_tok": 47062, "p2_s": None, "p2_tok": None},
+            5: {"p1_s": 242.37, "p1_tok": 15132, "p2_s": 400.72, "p2_tok": 26350},
+            6: {"p1_s": 3.66, "p1_tok": 134, "p2_s": 5.78, "p2_tok": 180},
+            7: {"p1_s": 170.11, "p1_tok": 6692, "p2_s": 48.97, "p2_tok": 6800},
+            8: {"p1_s": 1.11, "p1_tok": 274, "p2_s": 12.52, "p2_tok": 310},
+            9: {"p1_s": 0.402, "p1_tok": 295, "p2_s": 10.74, "p2_tok": 320},
+            10: {"p1_s": 0.788, "p1_tok": 1011, "p2_s": 0.80, "p2_tok": 890},
+            11: {"p1_s": 0.017, "p1_tok": 102, "p2_s": 0.10, "p2_tok": 112},
+            12: {"p1_s": None, "p1_tok": None, "p2_s": 14.19, "p2_tok": 2110},
+        }
 
     def draw_cycle_canvas(
         active_step: int | None = None,
@@ -1398,10 +1422,16 @@ def render_single_cycle_loop(
             va="center",
         )
         if is_summary:
-            sub_hdr = (
-                "Pass 1 (Steps 1→11, v1): 520.5s (8.67m) · 130.0k tok → 64.3/100   |   "
-                "Pass 2 Loop (Steps 12→5→11, v2): +493.8s (8.23m) · +37.1k tok → 85.9/100 (+21.6)"
-            )
+            if is_venation:
+                sub_hdr = (
+                    "Pass 1 (Steps 1→11, v1): 479.8s (8.00m) · 37.6k tok → 40.9/100   |   "
+                    "Pass 2 Loop (Steps 12→5→11, v2): +968.8s (16.15m) · +18.4k tok → 91.3/100 (+50.4)"
+                )
+            else:
+                sub_hdr = (
+                    "Pass 1 (Steps 1→11, v1): 520.5s (8.67m) · 130.0k tok → 64.3/100   |   "
+                    "Pass 2 Loop (Steps 12→5→11, v2): +493.8s (8.23m) · +37.1k tok → 85.9/100 (+21.6)"
+                )
             sub_col = ACCENT_BLUE
         elif pass_num == 1:
             sub_hdr = f"PASS 1 of 2 (Initial Reproduction & Audit, Steps 1→11)  ·  Active Step {active_step}"
@@ -1430,16 +1460,18 @@ def render_single_cycle_loop(
             ha="right",
             va="center",
         )
+        p1_sc_lbl = "40.9" if is_venation else "64.3"
+        p2_sc_lbl = "91.3" if is_venation else "85.9"
         score_str = (
-            "Score: 64.3 (P1) → 85.9 (P2)"
+            f"Score: {p1_sc_lbl} (P1) → {p2_sc_lbl} (P2)"
             if (is_summary or (pass_num == 2 and active_step is not None and active_step >= 7 and active_step != 12))
-            else ("Score: 64.3/100 (P1 v1)" if (pass_num == 1 and (active_step or 0) >= 7) or active_step == 12 else "Score: pending Step 7")
+            else (f"Score: {p1_sc_lbl}/100 (P1 v1)" if (pass_num == 1 and (active_step or 0) >= 7) or active_step == 12 else "Score: pending Step 7")
         )
         ax.text(
             98.2,
             91.6,
             f"Cumulative: {disp_wall:.1f}s ({disp_wall / 60.0:.2f}m) · {disp_tok:,} tok · {score_str}",
-            color=ACCENT_GREEN if "85.9" in score_str else TEXT_PRI,
+            color=ACCENT_GREEN if p2_sc_lbl in score_str else TEXT_PRI,
             fontsize=9.2,
             fontweight="bold",
             ha="right",
@@ -1452,7 +1484,11 @@ def render_single_cycle_loop(
         ax.text(
             3.0,
             85.2,
-            "A  Making a reproduction — Steps 1–4 run once (102.0s · 106.3k tok); Step 5 runs in Pass 1 (242.4s) & Pass 2 Loop (+400.7s)",
+            (
+                "A  Making a reproduction — Steps 1–4 run once (124.5s · 27.6k tok, Lean 4 verified); Step 5 runs in Pass 1 (190.6s) & Pass 2 (+620.0s)"
+                if is_venation
+                else "A  Making a reproduction — Steps 1–4 run once (102.0s · 106.3k tok); Step 5 runs in Pass 1 (242.4s) & Pass 2 Loop (+400.7s)"
+            ),
             color=TEXT_PRI,
             fontsize=9.8,
             fontweight="bold",
@@ -1563,7 +1599,7 @@ def render_single_cycle_loop(
                 ax.text(
                     x + 1.1,
                     y + box_a_h - 5.35,
-                    f"P1 (v1): 242.4s · 15.1k tok",
+                    f"P1 (v1): {_fmt_dur_badge(pb['p1_s'])} · {_fmt_tok_badge(pb['p1_tok'])}",
                     color=ACCENT_BLUE if is_done_p1 else TEXT_TER,
                     fontsize=7.6,
                     fontweight="bold",
@@ -1585,7 +1621,7 @@ def render_single_cycle_loop(
                 ax.text(
                     x + 1.1,
                     y + box_a_h - 8.85,
-                    f"P2 (v2): +400.7s · +26.4k tok",
+                    f"P2 (v2): +{_fmt_dur_badge(pb['p2_s'])} · +{_fmt_tok_badge(pb['p2_tok'])}",
                     color=ACCENT_GREEN if is_done_p2 else TEXT_TER,
                     fontsize=7.6,
                     fontweight="bold",
@@ -1595,7 +1631,7 @@ def render_single_cycle_loop(
                 ax.text(
                     x + 0.8,
                     y + 4.1,
-                    "1979-vogel-phyllotaxis.py",
+                    "2005-runions-leaf-venation.py" if is_venation else "1979-vogel-phyllotaxis.py",
                     color=TEXT_SEC,
                     fontsize=7.3,
                     va="center",
@@ -1604,7 +1640,11 @@ def render_single_cycle_loop(
                 ax.text(
                     x + 0.8,
                     y + 1.8,
-                    "P2 adds DoG + bounded Voronoi" if is_done_p2 else "P1 initial implementation",
+                    (
+                        ("P2 adds tagged RNG + dual areoles" if is_done_p2 else "P1 initial implementation")
+                        if is_venation
+                        else ("P2 adds DoG + bounded Voronoi" if is_done_p2 else "P1 initial implementation")
+                    ),
                     color=ACCENT_GREEN if is_done_p2 else TEXT_TER,
                     fontsize=7.0,
                     fontweight="bold" if is_done_p2 else "normal",
@@ -1661,7 +1701,11 @@ def render_single_cycle_loop(
         ax.text(
             box6_x + 1.3,
             box6_y + box6_h - 2.6,
-            "6  Output & compare — Vogel (1979) Golden-Angle Phyllotaxis Cycle Results",
+            (
+                "6  Output & compare — Runions (2005) Leaf Venation, Murray's Law & Katifori Loop Results"
+                if is_venation
+                else "6  Output & compare — Vogel (1979) Golden-Angle Phyllotaxis Cycle Results"
+            ),
             color=TEXT_PRI,
             fontsize=10.0,
             fontweight="bold",
@@ -1682,7 +1726,11 @@ def render_single_cycle_loop(
         ax.text(
             box6_x + 45.2,
             box6_y + box6_h - 2.65,
-            "P1 (v1): 3.7s (134 tok)  |  P2 (v2 re-render): +5.8s (+180 tok)",
+            (
+                "P1 (v1): 1.9s (181 tok)  |  P2 (v2 re-render): +1.8s (+203 tok)"
+                if is_venation
+                else "P1 (v1): 3.7s (134 tok)  |  P2 (v2 re-render): +5.8s (+180 tok)"
+            ),
             color=ACCENT_GREEN if s6_p2_done else ACCENT_BLUE,
             fontsize=7.8,
             fontweight="bold",
@@ -1691,10 +1739,9 @@ def render_single_cycle_loop(
         )
 
         # Embed 3 crisp visual sub-panels inside Box 6:
-        #   In Pass 1: Panel A shows raw unsegmented photo; in Pass 2 / Summary: Panel A shows the 621 green DoG floret rings!
         sub_y0, sub_y1 = box6_y + 4.4, box6_y + box6_h - 5.2
 
-        # Sub-panel 6A: Specimen (raw in Pass 1 vs 621 DoG-segmented florets in Pass 2)
+        # Sub-panel 6A: Specimen
         img_6a = seg_crop_pil if (s6_p2_done and seg_crop_pil is not None) else spec_pil
         if img_6a is not None:
             ax.imshow(img_6a, extent=(4.4, 23.4, sub_y0, sub_y1), zorder=3, interpolation="bilinear", aspect="auto")
@@ -1713,7 +1760,11 @@ def render_single_cycle_loop(
         ax.text(
             13.9,
             box6_y + 2.2,
-            "A. P2: 621 DoG Florets Segmented (circ=0.793)" if s6_p2_done else "A. P1: Display-Only Specimen (0 florets segmented)",
+            (
+                ("A. P2: 168 Specimen Areoles (i_u=0.613) + Ginkgo" if s6_p2_done else "A. P1: Display-Only Specimen (0 areoles segmented)")
+                if is_venation
+                else ("A. P2: 621 DoG Florets Segmented (circ=0.793)" if s6_p2_done else "A. P1: Display-Only Specimen (0 florets segmented)")
+            ),
             color=ACCENT_GREEN if s6_p2_done else ACCENT_AMBER,
             fontsize=7.1,
             fontweight="bold",
@@ -1722,7 +1773,7 @@ def render_single_cycle_loop(
             zorder=4,
         )
 
-        # Sub-panel 6B: Live animated frame from vogel_phyllotaxis_growth.gif
+        # Sub-panel 6B: Live animated frame
         if growth_frames:
             f_idx = growth_frame_idx % len(growth_frames) if growth_frame_idx >= 0 else len(growth_frames) - 1
             gf_pil = growth_frames[f_idx]
@@ -1733,7 +1784,11 @@ def render_single_cycle_loop(
         ax.text(
             41.2,
             box6_y + 2.2,
-            "B. Animated Vogel Growth & Delaunay Cascade (8,13)→(13,21)→(21,34)→(34,55)",
+            (
+                "B. Animated Space-Colonization Venation (V=1,099, L=409 Loops, 358 Areoles)"
+                if is_venation
+                else "B. Animated Vogel Growth & Delaunay Cascade (8,13)→(13,21)→(21,34)→(34,55)"
+            ),
             color=TEXT_PRI,
             fontsize=7.3,
             fontweight="bold",
@@ -1742,7 +1797,7 @@ def render_single_cycle_loop(
             zorder=4,
         )
 
-        # Sub-panel 6C: Swinton et al. (2016) Empirical vs Model Bar Chart
+        # Sub-panel 6C: Empirical vs Model Curve
         if survey_crop_pil is not None:
             ax.imshow(survey_crop_pil, extent=(59.0, 81.2, sub_y0, sub_y1), zorder=3, interpolation="bilinear", aspect="auto")
             ax.add_patch(
@@ -1751,7 +1806,11 @@ def render_single_cycle_loop(
         ax.text(
             70.1,
             box6_y + 2.2,
-            "C. P2: Swinton Match r=0.995 (Fib−1 > Fib+1)" if s6_p2_done else "C. P1: 0% Fib−1 / Fib+1 Grain Defects",
+            (
+                ("C. P2: Measured Strahler Tree r=0.968 (Price 2013)" if s6_p2_done else "C. P1: Circular JSON Sampling (no grown tree)")
+                if is_venation
+                else ("C. P2: Swinton Match r=0.995 (Fib−1 > Fib+1)" if s6_p2_done else "C. P1: 0% Fib−1 / Fib+1 Grain Defects")
+            ),
             color=ACCENT_GREEN if s6_p2_done else ACCENT_AMBER,
             fontsize=7.1,
             fontweight="bold",
@@ -1773,7 +1832,14 @@ def render_single_cycle_loop(
                 zorder=3,
             )
         )
-        ax.text(s7_cx + 0.8, 29.2, "scored in Pass 1 (170.1s) & re-scored in Pass 2 (+49.0s)", color=TEXT_SEC, fontsize=7.7, va="center")
+        ax.text(
+            s7_cx + 0.8,
+            29.2,
+            "scored in Pass 1 (159.9s) & re-scored in Pass 2 (+185.0s)" if is_venation else "scored in Pass 1 (170.1s) & re-scored in Pass 2 (+49.0s)",
+            color=TEXT_SEC,
+            fontsize=7.7,
+            va="center",
+        )
 
         # -----------------------------------------------------------------
         # Tier B Header & Boxes (Steps 7..12)
@@ -1781,7 +1847,11 @@ def render_single_cycle_loop(
         ax.text(
             3.0,
             26.6,
-            "B  Auditing it (MorphoEval cycle) — Pass 1 v1 (Steps 7–11: 172.4s · 8.4k tok → 64.3)  |  Pass 2 v2 Re-Audit & Supersede (+73.1s · +8.4k tok → 85.9)",
+            (
+                "B  Auditing it (MorphoEval cycle) — Pass 1 v1 (Steps 7–11: 162.8s · 2.2k tok → 40.9)  |  Pass 2 v2 Re-Audit & Supersede (+187.9s · +3.8k tok → 91.3)"
+                if is_venation
+                else "B  Auditing it (MorphoEval cycle) — Pass 1 v1 (Steps 7–11: 172.4s · 8.4k tok → 64.3)  |  Pass 2 v2 Re-Audit & Supersede (+73.1s · +8.4k tok → 85.9)"
+            ),
             color=TEXT_PRI,
             fontsize=9.4,
             fontweight="bold",
@@ -1942,10 +2012,12 @@ def render_single_cycle_loop(
                 zorder=3,
             )
             if snum == 7:
-                b_foot = "P1: 64.3 → P2: 85.9" if is_done_p2 else "P1 v1 score: 64.3/100"
+                b_foot = (
+                    (f"P1: {p1_sc_lbl} → P2: {p2_sc_lbl}" if is_done_p2 else f"P1 v1 score: {p1_sc_lbl}/100")
+                )
                 f_col = ACCENT_GREEN if is_done_p2 else (ACCENT_AMBER if is_done_p1 else TEXT_TER)
             elif snum == 12:
-                b_foot = "4 v1 defects → Pass 2"
+                b_foot = ("5 v1 defects → Pass 2" if is_venation else "4 v1 defects → Pass 2")
                 f_col = ACCENT_AMBER if is_done_p2 else TEXT_TER
             elif snum == 10:
                 b_foot = "10 v1 + 10 v2 signed" if is_done_p2 else "10/10 v1 signed"
@@ -2019,18 +2091,25 @@ def render_single_cycle_loop(
         )
         ax.text(90.5, 56.1, "CLOSED LOOP", color=ACCENT_GREEN if loop_active else TEXT_TER, fontsize=8.1, fontweight="bold", ha="center", va="center", zorder=5)
         ax.text(90.5, 53.3, "1st Pass (1→11):", color=TEXT_SEC if loop_active else TEXT_TER, fontsize=6.9, ha="center", va="center", zorder=5)
-        ax.text(90.5, 50.8, "8.7m (520.5s) · 64.3", color=ACCENT_BLUE if loop_active else TEXT_TER, fontsize=7.2, fontweight="bold", ha="center", va="center", zorder=5)
+        ax.text(90.5, 50.8, "8.0m (479.8s) · 40.9" if is_venation else "8.7m (520.5s) · 64.3", color=ACCENT_BLUE if loop_active else TEXT_TER, fontsize=7.2, fontweight="bold", ha="center", va="center", zorder=5)
         ax.text(90.5, 47.6, "2nd Pass (12→5→11):", color=TEXT_SEC if loop_active else TEXT_TER, fontsize=6.9, ha="center", va="center", zorder=5)
-        ax.text(90.5, 45.1, "+8.2m (+493.8s) · 85.9", color=ACCENT_GREEN if loop_active else TEXT_TER, fontsize=7.2, fontweight="bold", ha="center", va="center", zorder=5)
+        ax.text(90.5, 45.1, "+16.1m (+968.8s) · 91.3" if is_venation else "+8.2m (+493.8s) · 85.9", color=ACCENT_GREEN if loop_active else TEXT_TER, fontsize=7.2, fontweight="bold", ha="center", va="center", zorder=5)
         ax.plot([84.4, 96.6], [42.6, 42.6], color=STROKE, lw=0.9, zorder=5)
         ax.text(90.5, 40.3, "Total (P1 + P2):", color=TEXT_PRI if loop_active else TEXT_TER, fontsize=7.2, fontweight="bold", ha="center", va="center", zorder=5)
-        ax.text(90.5, 37.7, "16.9m (1,014.3s)", color=TEXT_PRI if loop_active else TEXT_TER, fontsize=7.8, fontweight="bold", ha="center", va="center", zorder=5)
-        ax.text(90.5, 35.2, "167.0k tok · +21.6 pts", color=ACCENT_GREEN if loop_active else TEXT_TER, fontsize=6.9, fontweight="bold", ha="center", va="center", zorder=5)
+        ax.text(90.5, 37.7, "24.1m (1,448.6s)" if is_venation else "16.9m (1,014.3s)", color=TEXT_PRI if loop_active else TEXT_TER, fontsize=7.8, fontweight="bold", ha="center", va="center", zorder=5)
+        ax.text(90.5, 35.2, "56.0k tok · +50.4 pts" if is_venation else "167.0k tok · +21.6 pts", color=ACCENT_GREEN if loop_active else TEXT_TER, fontsize=6.9, fontweight="bold", ha="center", va="center", zorder=5)
 
         # Bottom Live Step Ticker Bar
         foot_msg = banner_text or (
-            "Two-Pass Summary: Pass 1 (Steps 1→11) took 520.5s (130.0k tok) and scored 64.3/100; "
-            "Step 12 looped back to Step 5 for Pass 2 (Steps 12→5→11, +493.8s, +37.1k tok), raising the score to 85.9/100 (+21.6)."
+            (
+                "Two-Pass Summary: Pass 1 (Steps 1→11) took 479.8s (37.6k tok) and scored 40.9/100; "
+                "Step 12 looped back to Step 5 for Pass 2 (Steps 12→5→11, +968.8s, +18.4k tok), raising the score to 91.3/100 (+50.4)."
+            )
+            if is_venation
+            else (
+                "Two-Pass Summary: Pass 1 (Steps 1→11) took 520.5s (130.0k tok) and scored 64.3/100; "
+                "Step 12 looped back to Step 5 for Pass 2 (Steps 12→5→11, +493.8s, +37.1k tok), raising the score to 85.9/100 (+21.6)."
+            )
         )
         ax.text(
             3.0,
