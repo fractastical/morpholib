@@ -728,6 +728,17 @@ def build(rubric, audit, out_dir: Path, supersede: dict | None = None, resolve_h
                (overall_au, RDFS.comment, Literal(reasoning))] + model_triples
         tr += [(overall_au, PK.evidenceAgainst, Literal(f"remediation needed: {squash(fix)}"))
                for fix in sim.get("remediation", [])]
+        for nd in sim.get("needs", []):
+            if nd.get("status", "open") != "resolved":
+                n_val = float(nd.get("novelty_n", 1.0))
+                c_val = float(nd.get("contradiction_c", 0.0))
+                d_val = float(nd.get("depth_d", 1.0))
+                a_val = float(nd.get("age_days_a", 0.0))
+                import math as _math
+                p_score = round(2.0 * n_val + c_val + 0.5 * d_val + 0.2 * _math.log(1.0 + max(0.0, a_val)), 3)
+                tr.append((overall_au, PK.evidenceAgainst, Literal(
+                    f"open need [{nd.get('need_type')}/{nd.get('target_dimension')}, pressure P={p_score}]: {squash(nd.get('description', ''))}"
+                )))
         pub = pub_common + [(THIS, PK.assessmentType, Literal(f"morphoeval/{rubric['version']}/overall")),
                             (THIS, RDFS.seeAlso, claim)]
         emit(f"{sim['id']}-overall.trig",
@@ -999,6 +1010,13 @@ def report(rubric, audit, rows) -> str:
             L.append(f"- **{d['name']}: {s['value']}** — {squash(s['rationale'])}  \n  evidence: {ev}")
         if sim.get("remediation"):
             L += ["", "Remediation:"] + [f"- {r}" for r in sim["remediation"]]
+        if sim.get("needs"):
+            import math as _math
+            L += ["", "Structured open needs (pressure $P = 2n + c + 0.5d + 0.2\\ln(1+a)$):"]
+            for nd in sim["needs"]:
+                p_sc = round(2.0 * float(nd.get("novelty_n", 1.0)) + float(nd.get("contradiction_c", 0.0))
+                             + 0.5 * float(nd.get("depth_d", 1.0)) + 0.2 * _math.log(1.0 + max(0.0, float(nd.get("age_days_a", 0.0)))), 3)
+                L.append(f"- **[{nd.get('status', 'open').upper()} · P={p_sc}]** `{nd.get('need_type')}` → `{nd.get('target_dimension')}`: {squash(nd.get('description', ''))}")
         L.append("")
     ms = audit.get("_measurements")
     if ms:
@@ -1058,7 +1076,7 @@ SELECT ?claim ?p ?verdict ?model WHERE {
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("audit")
+    ap.add_argument("audit", nargs="?", default=None)
     ap.add_argument("--out", default=None, help="output dir (default morphoeval/kg/<audit-id>)")
     ap.add_argument("--check", action="store_true", help="validate the audit only")
     ap.add_argument("--conform", action="store_true", help="run the offline ProbKnow + template-shape conformance check")
@@ -1072,7 +1090,46 @@ def main():
                     help="do not check on Nanopub Query that a superseded URI is still the head of its chain")
     ap.add_argument("--omit-probability", action="store_true",
                     help="omit pk:hasProbability and pk:weightOfEvidence (optional in RAku3DIN / RAIVOEuh)")
+    ap.add_argument("--list-needs", action="store_true",
+                    help="list pressure-ranked open remediation needs across all morphoeval/audits/*.yaml and exit")
     args = ap.parse_args()
+
+    if args.list_needs:
+        import math as _math
+        items = []
+        for yml in sorted((HERE / "audits").glob("*.yaml")):
+            if yml.name.endswith(".measurements.yaml"):
+                continue
+            doc = yaml.safe_load(yml.read_text()) or {}
+            if (doc.get("audit") or {}).get("role") == "second_assessor":
+                continue
+            aid = (doc.get("audit") or {}).get("id", yml.stem)
+            for sim in doc.get("simulations") or []:
+                if sim.get("status") != "evaluated":
+                    continue
+                sid = sim["id"]
+                explicit_needs = sim.get("needs") or []
+                if explicit_needs:
+                    for nd in explicit_needs:
+                        if nd.get("status", "open") == "resolved":
+                            continue
+                        p_sc = round(2.0 * float(nd.get("novelty_n", 1.0)) + float(nd.get("contradiction_c", 0.0))
+                                     + 0.5 * float(nd.get("depth_d", 1.0)) + 0.2 * _math.log(1.0 + max(0.0, float(nd.get("age_days_a", 0.0)))), 3)
+                        items.append((p_sc, aid, sid, nd.get("need_type", "remediation"), nd.get("target_dimension", "overall"), squash(nd.get("description", ""))))
+                else:
+                    # Synthesize pressure-ranked needs from remediation items + lowest-scoring dimension
+                    scores = sim.get("scores") or {}
+                    min_dim = min(scores, key=lambda k: scores[k].get("value", 100)) if scores else "overall"
+                    min_val = scores.get(min_dim, {}).get("value", 75)
+                    n_val = round((100.0 - float(min_val)) / 50.0, 3)
+                    for idx, fix in enumerate(sim.get("remediation") or []):
+                        p_sc = round(2.0 * n_val + 0.5 * (1.0 + 0.2 * idx), 3)
+                        items.append((p_sc, aid, sid, "remediation_gap", min_dim, squash(fix)))
+        items.sort(key=lambda x: (-x[0], x[2]))
+        print(f"Open MorphoEval Needs ({len(items)} items ranked by pressure P = 2n + c + 0.5d + 0.2*ln(1+a)):")
+        for rank, (psc, aid, sid, ntype, tdim, desc) in enumerate(items[:20], 1):
+            print(f"  {rank:2d}. [P={psc:5.3f}] {sid} ({aid}) -> {tdim} [{ntype}]: {desc[:110]}")
+        return
 
     rubric, audit = load(Path(args.audit))
     if errs := validate(rubric, audit):

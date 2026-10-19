@@ -723,3 +723,6 @@ nanopublications.
 - Sulston JE, Schierenberg E, White JG, Thomson JN (1983). The embryonic cell lineage of the nematode *Caenorhabditis elegans*. *Dev. Biol.* 100:64–119. doi:10.1016/0012-1606(83)90201-4
 - Thompson DW (1917). *On Growth and Form.* Cambridge University Press. Scan: https://archive.org/details/ongrowthform1917thom
 - Turing AM (1952). The chemical basis of morphogenesis. *Phil. Trans. R. Soc. Lond. B* 237:37–72. doi:10.1098/rstb.1952.0012
+- Vogel H (1979). A better way to construct the sunflower head. *Math. Biosci.* 44:179–189. doi:10.1016/0025-5564(79)90080-4
+- Wang P, Berkovich A, Marom N, Buehler MJ (2026). Rethinking scientific publishing for the agentic era: Artifact-first living records via ScienceClaw and Infinite. *MRS Bull.* doi:10.1557/s43577-026-01180-1
+- Wolfram S (1984). Cellular automata as models of complexity. *Nature* 311:419–424. doi:10.1038/311419a0

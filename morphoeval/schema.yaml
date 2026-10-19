@@ -131,5 +131,26 @@ properties:
             does_not_claim:
               type: array
               items: {type: string}
+        needs:
+          type: array
+          description: "Structured gap-routing needs (Wang, Berkovich, Marom & Buehler, MRS Bull. 2026) with pressure score P = 2n + c + 0.5d + 0.2*log(1+a)"
+          items:
+            type: object
+            required: [need_type, target_dimension, description]
+            properties:
+              id: {type: string}
+              need_type:
+                type: string
+                enum: ["specimen_comparison", "morphometric_validation", "model_equation", "parameter_sweep", "provenance_lock", "independent_assessor"]
+              target_dimension: {type: string}
+              description: {type: string}
+              status:
+                type: string
+                enum: ["open", "claimed", "resolved"]
+              claimed_by: {type: [string, "null"]}
+              novelty_n: {type: number}
+              contradiction_c: {type: number}
+              depth_d: {type: number}
+              age_days_a: {type: number}
         scores:
           type: object

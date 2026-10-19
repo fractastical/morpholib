@@ -160,6 +160,18 @@ CANONICAL_MODEL_SPECS: dict[str, dict] = {
             "datasets/conus/conus_textile_010.jpg",
         ],
     },
+    "runions-leaf-venation": {
+        "model": "Runions et al. (2005) Auxin Space-Colonization Leaf Venation + Murray (1926) / Price et al. (2013) Vascular Scaling + Katifori (2012) Loop Nesting",
+        "open_eq": "v' = v + D * (sum_{s in S(v)} (s-v)/||s-v||) / ||sum_{s in S(v)} (s-v)/||s-v||||",
+        "closed_rng_eq": "V(s) = {v in V : forall u in V, ||v-s|| < max(||u-s||, ||v-u||)}",
+        "murray_law": "r_parent^gamma = sum_{i in children} r_i^gamma",
+        "seed": 42,
+        "inputs": [
+            "datasets/venation/venation_reference.json",
+            "datasets/venation/ginkgo_open_venation_specimen.jpg",
+            "datasets/venation/reticulate_vein_skeleton_specimen.jpg",
+        ],
+    },
 }
 
 
@@ -1154,15 +1166,132 @@ def measure_conus_textile(script: Path) -> list:
     ]
 
 
+def measure_runions_leaf_venation(script: Path) -> list:
+    """Morphometric measurements for 2005-runions-leaf-venation.py: open Ginkgo biloba
+    space-colonization tree topology (L = E - V + 1 = 0), Murray (1926) pipe-model
+    cubic conductance conservation (r_root^3 = sum r_tip^3), Price et al. (2013)
+    Horton-Strahler bifurcation area ratios, Katifori & Magnasco (2012) loop nesting,
+    and empirical specimen segmentation metrics when present."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("runions_venation", script)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    metrics = mod.render_outputs()
+
+    out = [
+        M("open Ginkgo venation anastomosing cycle count L = E - V + 1",
+          int(metrics["open_euler_loops"]), "loops",
+          "Euler-Poincaré independent cycle rank E - V + 1 on open Voronoi space-colonization tree",
+          reference=0,
+          source="Runions et al. 2005 ACM Trans. Graph. 24(3):702-711 Sec. 3 (open venation tree)",
+          derived_from="script"),
+        M("Murray's cube law root-to-tip conservation ratio r_root^3 / (N_tips * r_tip^3)",
+          round(float(metrics["open_murray_root_r3"]) / max(float(metrics["open_murray_tip_sum_r3"]), 1.0), 6),
+          "ratio",
+          "ratio of petiole root cubic radius r_root^3 to sum of terminal veinlet cubic radii sum r_tip^3",
+          reference=1.0,
+          source="Murray 1926 PNAS 12:207 / Runions et al. 2005 Sec. 3.5 / Lean 4 theorem murray_1926_tree_conservation",
+          note=f"r_root^3 = {metrics['open_murray_root_r3']:.1f}, N_tips = {int(metrics['open_murray_tip_sum_r3'])}",
+          derived_from="script"),
+        M("open venation binary junction median daughter/parent area ratio (A_1 + A_2)/A_0",
+          round(float(metrics["open_murray_median_area_ratio"]), 4), "area ratio",
+          "median (r_1^2 + r_2^2) / r_0^2 across binary bifurcations of the grown open venation tree",
+          reference=round(2.0 ** (1.0 / 3.0), 4),
+          source="Murray 1926 symmetric bifurcation 2^{1/3} = 1.2599 / Price et al. 2013 PLoS ONE e85420 Fig. 3",
+          derived_from="script"),
+        M("closed reticulate venation anastomosing loop count L = E - V + 1",
+          int(metrics["closed_euler_loops"]), "areole loops",
+          "Euler cycle rank E - V + 1 of closed Relative Neighborhood Graph (RNG) space-colonization network",
+          reference=150,
+          source="Runions et al. 2005 ACM Trans. Graph. 24(3):702-711 Sec. 4 Eq. (2)-(3)",
+          note=f"V = {metrics['closed_num_nodes']}, E = {metrics['closed_num_edges']}",
+          derived_from="script"),
+        M("Horton-Strahler order 1 vs order 8 median area-ratio shift",
+          round(float(metrics["price_2013_order1_area_ratio"]) - float(metrics["price_2013_order8_area_ratio"]), 4),
+          "delta area ratio",
+          "decrease in median daughter/parent cross-sectional area ratio from terminal minor veins (order 1) to major midveins (order 8)",
+          reference=0.24,
+          source="Price, Knox & Brodribb 2013 PLoS ONE 8(12):e85420 Fig. 4 (order 1 median 1.25 -> order 8 median 1.01)",
+          note=f"Pearson r across Strahler orders = {metrics['price_2013_strahler_pearson_r']:.4f}",
+          derived_from="script"),
+        M("Katifori & Magnasco (2012) unweighted hierarchical loop nesting number i_u",
+          round(float(metrics["katifori_multiplicative_nesting_i_u"]), 4), "nesting index i_u",
+          "mean subtree partition balance q_j = 1 - |r_j - s_j|/(r_j + s_j - 1) under iterative minimum-width vein removal",
+          reference=0.68,
+          source="Katifori & Magnasco 2012 PLoS ONE e37994 / Ronellenfitsch et al. 2015 PLoS Comput. Biol. e1004680 Fig. 3b",
+          note=f"high-noise / additive control i_u = {metrics['katifori_additive_nesting_i_u']:.4f}",
+          derived_from="script"),
+    ]
+    if "specimen_reticulate_areoles" in metrics:
+        out.append(
+            M("segmented reticulate leaf skeleton specimen areole count",
+              int(metrics["specimen_reticulate_areoles"]), "areoles",
+              "connected enclosed areole faces segmented directly from datasets/venation/reticulate_vein_skeleton_specimen.jpg",
+              reference=180,
+              source="Wikimedia Commons File:Vein skeleton of a leaf (de-ghosted).jpg (CC BY-SA 3.0)",
+              note=f"segmented specimen nesting index i_u = {metrics.get('specimen_reticulate_nesting_i_u', 0.0):.4f}, Ginkgo open specimen loops = {metrics.get('specimen_ginkgo_loops', 0)}",
+              derived_from="output_pixels")
+        )
+    return out
+
+
 # --------------------------------------------------------------------------- #
+def compute_quick_gate(sim: dict, prov: dict, outputs: list[dict], measurements: list[dict]) -> dict:
+    """Deterministic zero-token pre-gate (adapted from Wang, Berkovich, Marom & Buehler,
+    MRS Bull. 2026 `discovery_rubric.py`):
+      - provenance (15): spec_fingerprint + artifact_sha256 + DOI/URL references present
+      - quantitative (25): >= 3 numeric morphometric measurements extracted
+      - baseline (20): at least 1 measurement carries an explicit reference_value
+      - uncertainty (20): script or measurements include CV / std / CI / p-value / RMSE / IoU dispersion
+      - delta (20): explicit negative control, alternative model comparison, or supersession delta
+      Total: 0..100, plus claim_boundary summary if present on the simulation."""
+    has_spec = bool(prov.get("spec_fingerprint"))
+    has_art = bool(prov.get("artifact_sha256"))
+    has_refs = bool(sim.get("source_refs"))
+    s_prov = (5 if has_spec else 0) + (5 if has_art else 0) + (5 if has_refs else 0)
+
+    valid_m = [m for m in measurements if m.get("value") is not None]
+    s_quant = min(25, int(round(25.0 * min(len(valid_m), 4) / 4.0)))
+
+    ref_m = [m for m in valid_m if m.get("reference_value") is not None]
+    s_base = min(20, int(round(20.0 * min(len(ref_m), 2) / 2.0)))
+
+    unc_terms = ("cv", "std", "rmse", "iou", "ks", "p=", "p-value", "ci", "±", "dispersion", "variance", "entropy")
+    m_blob = " ".join(
+        f"{m.get('name', '')} {m.get('unit', '')} {m.get('method', '')} {m.get('note', '')}".lower()
+        for m in valid_m
+    )
+    n_unc = sum(1 for t in unc_terms if t in m_blob)
+    s_unc = min(20, 10 * min(n_unc, 2))
+
+    delta_terms = ("control", "vs", "null", "baseline", "alternative", "pertur", "defect", "supersede", "ratio")
+    n_delta = sum(1 for t in delta_terms if t in m_blob)
+    s_delta = min(20, 10 * min(n_delta, 2))
+
+    total = s_prov + s_quant + s_base + s_unc + s_delta
+    return {
+        "total": total,
+        "provenance_15": s_prov,
+        "quantitative_25": s_quant,
+        "baseline_20": s_base,
+        "uncertainty_20": s_unc,
+        "delta_20": s_delta,
+        "result_quality": "validated" if (total >= 80 and len(ref_m) >= 2) else ("screened" if total >= 50 else "incomplete"),
+    }
+
+
 def main():
-    audit_path = (Path(sys.argv[1]) if len(sys.argv) > 1 else HERE / "audits" / "2026-10-13-morphology-audit.yaml").resolve()
+    quick_gate_only = "--quick-gate" in sys.argv
+    argv_clean = [a for a in sys.argv[1:] if a != "--quick-gate"]
+    audit_path = (Path(argv_clean[0]) if argv_clean else HERE / "audits" / "2026-10-13-morphology-audit.yaml").resolve()
     audit = yaml.safe_load(audit_path.read_text())
     supersedes_id = audit.get("audit", {}).get("supersedes") or audit.get("audit", {}).get("supersedes_audit_id")
     out = {
         "audit": audit["audit"]["id"],
         "supersedes_audit_id": supersedes_id,
         "provenance": {},
+        "quick_gate": {},
         "outputs": {},
         "measurements": {},
         "missing": [],
@@ -1202,6 +1331,8 @@ def main():
                 out["measurements"][sid] = measure_vogel_phyllotaxis(ROOT / sim["script"])
             elif sid == "wolfram-conus-textile-rule30":
                 out["measurements"][sid] = measure_conus_textile(ROOT / sim["script"])
+            elif sid == "runions-leaf-venation":
+                out["measurements"][sid] = measure_runions_leaf_venation(ROOT / sim["script"])
         except Exception as ex:  # a failed measurement is reported, never silently skipped
             out["measurements"][sid] = [{"name": "measurement failed", "value": None, "unit": None,
                                          "method": f"{type(ex).__name__}: {ex}"}]
@@ -1221,9 +1352,19 @@ def main():
             "artifact_sha256": primary_art,
             "input_dataset_sha256": compute_input_dataset_sha256(sid),
         }
+        if sim.get("claim_boundary"):
+            out["provenance"][sid]["claim_boundary"] = sim["claim_boundary"]
+        qg = compute_quick_gate(
+            sim,
+            out["provenance"][sid],
+            out["outputs"].get(sid, []),
+            out["measurements"].get(sid, []),
+        )
+        out["quick_gate"][sid] = qg
         print(f"{sid}: {len(out['outputs'].get(sid, []))} output(s) fingerprinted "
               f"(spec_fingerprint={out['provenance'][sid]['spec_fingerprint'][:16]}…), "
-              f"{len(out['measurements'].get(sid, []))} measurement(s)")
+              f"{len(out['measurements'].get(sid, []))} measurement(s), "
+              f"quick_gate={qg['total']}/100 ({qg['result_quality']})")
         for m in out["measurements"].get(sid, []):
             ref = f"   [ref {m['reference_value']}]" if m.get("reference_value") is not None else ""
             print(f"    {m['name']}: {m['value']} {m['unit'] or ''}{ref}")
