@@ -796,6 +796,79 @@ def verify_rightward_diagonal_zero_transient_and_gate_dichotomy(cone: np.ndarray
     }
 
 
+def verify_rule60_residual_and_latch_reset_laws(cone: np.ndarray) -> dict:
+    """Verify Theorem 8 (Universal Rule-60 Residual Identity, Uncoupled Column Recursion,
+    and Dual Monotone-Latch / Fibonacci-Reset Subshift Laws):
+      1. Across every space-time cell (t, j) of Rule 30, the transparent-gate flux
+             g_{t,j} := (~a_{t,j}) & a_{t,j+1}
+         is identically equal to the intra-column consecutive-11 autocorrelation of column j+1
+         AND to the linear Rule-60 residual of columns (j-1, j):
+             (~a_{t,j}) & a_{t,j+1}  ==  a_{t,j+1} & a_{t+1,j+1}  ==  a_{t+1,j} ^ a_{t,j} ^ a_{t,j-1},
+         with strict orthogonality a_{t,j} & g_{t,j} == 0.
+      2. Consequently, vertical columns C^{(j)} = (a_{t,j})_{t>=0} obey the uncoupled recursion
+             C^{(j-1)} = D(C^{(j)}) ^ Q(C^{(j+1)}),
+         where D(c)_t = c_t ^ c_{t+1} and Q(c)_t = c_t & c_{t+1}.
+      3. Column j acts as a strict mode controller on column j+1:
+           - Transparent mode (a_{t,j} == 0): a_{t,j+1} <= a_{t+1,j+1} (Monotone Latch; 10 forbidden),
+             so on every 0-run of length L in column j, C^{(j+1)} is a step word 0^s 1^{L-s}.
+           - Opaque mode (a_{t,j} == 1): a_{t,j+1} + a_{t+1,j+1} <= 1 (Fibonacci Reset; 11 forbidden).
+      4. Knowing (C^{(0)}, Q(C^{(1)})) (equivalently (C^{(-1)}, C^{(0)})) uniquely forces a_{t,1} on
+         ~72.7% of all time steps via 4 local boundary rules.
+    """
+    T = cone.shape[0] - 1
+    mid = cone.shape[1] // 2
+    a_t_j = cone[:T, 1:-2].astype(np.uint8)
+    a_t_j1 = cone[:T, 2:-1].astype(np.uint8)
+    a_t1_j1 = cone[1 : T + 1, 2:-1].astype(np.uint8)
+    a_t1_j = cone[1 : T + 1, 1:-2].astype(np.uint8)
+    a_t_jm1 = cone[:T, :-3].astype(np.uint8)
+
+    g_spatial = (1 ^ a_t_j) & a_t_j1
+    g_temporal = a_t_j1 & a_t1_j1
+    g_rule60 = a_t1_j ^ a_t_j ^ a_t_jm1
+
+    spatial_vs_temporal_errors = int(np.sum(g_spatial != g_temporal))
+    temporal_vs_rule60_errors = int(np.sum(g_temporal != g_rule60))
+    orthogonality_errors = int(np.sum((a_t_j & g_temporal) != 0))
+
+    # Dual subshift laws on (C^{(0)}, C^{(1)}):
+    a0 = cone[:T, mid].astype(np.uint8)
+    a1 = cone[:T, mid + 1].astype(np.uint8)
+    a1_next = cone[1 : T + 1, mid + 1].astype(np.uint8)
+    g0 = a1 & a1_next
+
+    latch_violations = int(np.sum((a0 == 0) & (a1 == 1) & (a1_next == 0)))
+    fibonacci_reset_violations = int(np.sum((a0 == 1) & (a1 == 1) & (a1_next == 1)))
+
+    # 4-rule local reconstruction of a_{t,1} from (a_{t,0}, g_{t,0}):
+    forced = np.zeros(T, dtype=bool)
+    recon = np.zeros(T, dtype=np.uint8)
+    for t in range(T):
+        if a0[t] == 0:
+            forced[t] = True
+            recon[t] = g0[t]
+        elif t >= 1 and g0[t - 1] == 1:
+            forced[t] = True
+            recon[t] = 1
+        elif t >= 2 and a0[t - 1] == 1 and g0[t - 2] == 1:
+            forced[t] = True
+            recon[t] = 0
+        elif t + 1 < T and a0[t + 1] == 0 and g0[t + 1] == 1:
+            forced[t] = True
+            recon[t] = 0
+
+    recon_errors = int(np.sum(recon[forced] != a1[forced]))
+    return {
+        "spatial_vs_temporal_errors": spatial_vs_temporal_errors,
+        "temporal_vs_rule60_errors": temporal_vs_rule60_errors,
+        "orthogonality_errors": orthogonality_errors,
+        "latch_violations": latch_violations,
+        "fibonacci_reset_violations": fibonacci_reset_violations,
+        "forced_a1_errors": recon_errors,
+        "forced_a1_fraction": round(float(np.mean(forced)), 4),
+    }
+
+
 def evaluate_white_tent_extinction_and_drift(
     r30_grid: np.ndarray,
     r90_grid: np.ndarray,
@@ -1399,6 +1472,12 @@ def self_test() -> dict:
     assert r_diag["center_opaque_mirror_errors"] == 0 and r_diag["center_transparent_gate_errors"] == 0, "Theorem 7 OR-gate dichotomy violated"
     assert r_diag["rightward_period_at_m55"] == (1 << 23), "Theorem 7 rightward period at m=55 mismatch"
 
+    r60_latch = verify_rule60_residual_and_latch_reset_laws(prize["cone"])
+    assert r60_latch["spatial_vs_temporal_errors"] == 0 and r60_latch["temporal_vs_rule60_errors"] == 0, "Theorem 8 Rule-60 residual identity violated"
+    assert r60_latch["orthogonality_errors"] == 0, "Theorem 8 orthogonality violated"
+    assert r60_latch["latch_violations"] == 0 and r60_latch["fibonacci_reset_violations"] == 0, "Theorem 8 Monotone-Latch / Fibonacci-Reset violated"
+    assert r60_latch["forced_a1_errors"] == 0 and r60_latch["forced_a1_fraction"] > 0.70, "Theorem 8 4-rule reconstruction failed"
+
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)
     assert tent_eval["erosion_r30"]["frac_exact_2px_erosion"] == 1.0, "Rule 30 white-tent erosion must be 100% exact 2px/step"
     assert tent_eval["erosion_r90"]["frac_exact_2px_erosion"] == 1.0, "Rule 90 white-tent erosion must be 100% exact 2px/step"
@@ -1440,6 +1519,7 @@ def self_test() -> dict:
         "bwd": bwd,
         "bs_diag": bs_diag,
         "r_diag": r_diag,
+        "r60_latch": r60_latch,
         "tent_eval": tent_eval,
     }
 

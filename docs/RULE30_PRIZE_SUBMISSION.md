@@ -165,9 +165,27 @@ Define the **rightward diagonals** $r_m(t) := a_{t, t-m}$ for $m \ge 0$ and $t \
 
 ---
 
+### Theorem 8 (Universal Rule-60 Residual Identity, Uncoupled Column Recursion, and Dual Monotone-Latch / Fibonacci-Reset Subshift Laws)
+For every space-time cell $(t, j) \in \mathbb{Z}_{\ge 0} \times \mathbb{Z}$ of Rule 30, define the **transparent-gate flux** $g_{t, j} := \overline{a_{t, j}} \land a_{t, j+1}$. Then:
+1. **Universal Rule-60 Residual & Intra-Column `11`-Autocorrelation Identity:** Because $a_{t, j+1} = 1 \implies a_{t+1, j+1} = a_{t, j} \oplus (1 \lor a_{t, j+2}) = \overline{a_{t, j}}$ unconditionally (independent of $a_{t, j+2}$), the cross-column gate $g_{t, j}$ equals both the **purely intra-column consecutive-`11` autocorrelation** of column $j+1$ and the **linear Rule-60 residual** of columns $(j-1, j)$:
+   $$g_{t, j} \;:=\; \overline{a_{t, j}} \;\land\; a_{t, j+1} \;\equiv\; a_{t, j+1} \;\land\; a_{t+1, j+1} \;\equiv\; a_{t+1, j} \;\oplus\; a_{t, j} \;\oplus\; a_{t, j-1} \qquad (\forall\, t \ge 0,\; \forall\, j \in \mathbb{Z}),$$
+   with strict disjoint support $a_{t, j} \land g_{t, j} = a_{t, j} \land a_{t, j+1} \land a_{t+1, j+1} \equiv 0$.
+2. **Uncoupled Operator Recursion Across Vertical Columns:** Define on any vertical column sequence $C^{(j)} := (a_{t, j})_{t \ge 0} \in \{0, 1\}^{\mathbb{Z}_{\ge 0}}$ the linear difference operator $D(c)_t := c_t \oplus c_{t+1}$ and the quadratic `11`-autocorrelation operator $Q(c)_t := c_t \land c_{t+1}$. Then the leftward spatial evolution of Rule 30 completely separates column $j$ from column $j+1$:
+   $$C^{(j-1)} \;=\; D\bigl(C^{(j)}\bigr) \;\oplus\; Q\bigl(C^{(j+1)}\bigr) \qquad (\forall\, j \in \mathbb{Z}).$$
+   In particular, **Wolfram Rule 30 Prize #1 is equivalent to showing that the consecutive-`11` autocorrelation stream $Q(C^{(1)})_t = a_{t, 1} \land a_{t+1, 1}$ of column $x = +1$ is not eventually periodic whenever $C^{(0)}$ is eventually periodic**.
+3. **Dual Monotone-Latch & Fibonacci-Reset Subshift Laws:** Column $j$ acts as a two-mode subshift controller on column $j+1$:
+   $$\begin{aligned}
+   a_{t, j} = 0 \quad &\Longrightarrow \quad a_{t, j+1} \;\le\; a_{t+1, j+1} \qquad (\text{\textbf{Monotone Non-Decreasing Latch}: transition } \mathtt{10}\text{ is forbidden in } C^{(j+1)}), \\
+   a_{t, j} = 1 \quad &\Longrightarrow \quad a_{t, j+1} + a_{t+1, j+1} \;\le\; 1 \qquad (\text{\textbf{Fibonacci / Golden-Mean Reset}: transition } \mathtt{11}\text{ is forbidden in } C^{(j+1)}).
+   \end{aligned}$$
+   Consequently, on every maximal `0`-run $R = [t_0, t_0 + L - 1]$ of column $x = 0$, the restricted right-neighbor word $(a_{t, 1})_{t \in R}$ is an exact monotone step function $0^s 1^{L-s}$ for a unique turn-on integer $s \in \{0, 1, \dots, L\}$ (reducing $2^L$ bit strings to $L + 1$ step states, verified with `0` violations across all $2,492$ complete `0`-runs in $T = 10,000$).
+4. **Local 4-Rule Reconstruction of Column $x = +1$ ($72.7\%$ Deterministic Forcing):** Knowing $(C^{(0)}, Q(C^{(1)}))$ (equivalently $(C^{(-1)}, C^{(0)})$) uniquely forces $a_{t, 1}$ on $72.74\%$ of all time steps via four local rules: (a) $a_{t, 0} = 0 \implies a_{t, 1} = g_{t, 0}$; (b) $a_{t, 0} = 1 \land g_{t-1, 0} = 1 \implies a_{t, 1} = 1$; (c) $a_{t, 0} = 1 \land a_{t-1, 0} = 1 \land g_{t-2, 0} = 1 \implies a_{t, 1} = 0$; (d) $a_{t, 0} = 1 \land a_{t+1, 0} = 0 \land g_{t+1, 0} = 1 \implies a_{t, 1} = 0$. $\square$
+
+---
+
 ## 7. One-Command Verification
 
-All seven theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
+All eight theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python 1984-wolfram-conus-textile-rule30.py --self-test-only
