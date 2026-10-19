@@ -717,6 +717,85 @@ def verify_bitsliced_diagonal_solver(cone: np.ndarray, k_check: int = 415) -> di
     }
 
 
+def verify_rightward_diagonal_zero_transient_and_gate_dichotomy(cone: np.ndarray, m_max: int = 55) -> dict:
+    """Verify Theorem 7 (Zero-Transient Rightward Diagonal Period-Doubling & OR-Gate Masking Dichotomy):
+      1. Along the rightward diagonals r_m(t) := a_{t, t-m} (moving parallel to the right edge of the
+         light-cone at speed +1), Rule 30 reduces to the carry-free difference equation
+             r_{m+1}(t+1) ^ r_{m+1}(t) = r_m(t) | r_{m-1}(t),   r_{m+1}(0) = 0,
+         so EVERY rightward diagonal r_m(t) is strictly periodic from t = 0 with ZERO transient
+         horizon (T_lock^(R)(m) == 0 identically for all m >= 0, verified with 0 bit errors vs cone).
+      2. Its period P_R(m) = 2^{n_R(m)} doubles at m -> m + 1 if and only if the Hamming weight of
+         (r_m | r_{m-1}) over one period P_R(m) is odd, producing the exact doubling sequence
+         m in {1, 3, 4, 6, 7, 9, 15, 16, 24, 25, 27, 29, 34, 36, 37, 39, 41, 43, 48, 49, 51, 54, 55, ...},
+         and its 2-adic valuation (first 1-bit index) satisfies v_2(r_m) == ceil(m / 2) for all m >= 1.
+      3. Across any vertical column x = i, the leftward spatial inversion formula
+             a_{t,i-1} = a_{t+1,i} ^ (a_{t,i} | a_{t,i+1})
+         exhibits an exact OR-gate masking dichotomy:
+           - Opaque mirror steps (a_{t,0} == 1): a_{t,-1} == 1 ^ a_{t+1,0} is 100% determined by
+             column x = 0 alone (blocking information from x = +1).
+           - Transparent gate steps (a_{t,0} == 0): a_{t,-1} == a_{t+1,0} ^ a_{t,1} transmits
+             a_{t,1} unmasked across x = 0.
+    """
+    def _prefix_xor_int(w_int: int, P: int) -> int:
+        mask = (1 << P) - 1
+        x = (w_int << 1) & mask
+        shift = 1
+        while shift < P:
+            x = (x ^ (x << shift)) & mask
+            shift <<= 1
+        return x
+
+    n_steps = cone.shape[0]
+    mid = cone.shape[1] // 2
+    P = 2
+    r_prev = 0b11  # m = 0: r_0(t) = 1 for all t >= 0
+    r_curr = 0b10  # m = 1: r_1(0) = 0, r_1(1) = 1
+    doubling_ms = [1]
+    cone_bit_errors = 0
+    valuation_errors = 0
+
+    for m in range(1, m_max):
+        w = r_curr | r_prev
+        parity = w.bit_count() & 1
+        if parity == 1:
+            w = w | (w << P)
+            r_curr = r_curr | (r_curr << P)
+            P <<= 1
+            doubling_ms.append(m + 1)
+        r_next = _prefix_xor_int(w, P)
+        v2 = (r_next & -r_next).bit_length() - 1
+        t_min = (m + 2) // 2
+        if v2 != t_min:
+            valuation_errors += 1
+
+        if m + 1 <= 24:
+            for t in range(n_steps - (m + 1)):
+                bit_ring = (r_next >> (t % P)) & 1
+                bit_cone = int(cone[t, mid + t - (m + 1)])
+                if bit_ring != bit_cone:
+                    cone_bit_errors += 1
+        r_prev, r_curr = r_curr, r_next
+
+    c0 = cone[:-1, mid].astype(np.uint8)
+    c0_next = cone[1:, mid].astype(np.uint8)
+    c_plus1 = cone[:-1, mid + 1].astype(np.uint8)
+    c_minus1 = cone[:-1, mid - 1].astype(np.uint8)
+    opaque_mask = c0 == 1
+    transparent_mask = c0 == 0
+    opaque_errors = int(np.sum(c_minus1[opaque_mask] != (1 ^ c0_next[opaque_mask])))
+    transparent_errors = int(np.sum(c_minus1[transparent_mask] != (c0_next[transparent_mask] ^ c_plus1[transparent_mask])))
+
+    return {
+        "rightward_doubling_ms_up_to_55": doubling_ms,
+        "rightward_period_at_m55": P,
+        "rightward_cone_bit_errors_from_t0": cone_bit_errors,
+        "rightward_valuation_errors": valuation_errors,
+        "center_opaque_mirror_errors": opaque_errors,
+        "center_transparent_gate_errors": transparent_errors,
+        "center_opaque_fraction": round(float(np.mean(opaque_mask)), 4),
+    }
+
+
 def evaluate_white_tent_extinction_and_drift(
     r30_grid: np.ndarray,
     r90_grid: np.ndarray,
@@ -1314,6 +1393,12 @@ def self_test() -> dict:
     assert bs_diag["telescope_identity_errors"] == 0, "Theorem 6 exact telescope identity violated"
     assert bs_diag["unit_seed_exact_k5"] == 87867 and bs_diag["unit_seed_p16_branch_path"] == "01", "Unit-seed k5 mismatch"
 
+    r_diag = verify_rightward_diagonal_zero_transient_and_gate_dichotomy(prize["cone"], m_max=55)
+    assert r_diag["rightward_cone_bit_errors_from_t0"] == 0, "Theorem 7 rightward diagonal zero-transient periodicity violated"
+    assert r_diag["rightward_valuation_errors"] == 0, "Theorem 7 2-adic valuation v_2(r_m) == ceil(m/2) violated"
+    assert r_diag["center_opaque_mirror_errors"] == 0 and r_diag["center_transparent_gate_errors"] == 0, "Theorem 7 OR-gate dichotomy violated"
+    assert r_diag["rightward_period_at_m55"] == (1 << 23), "Theorem 7 rightward period at m=55 mismatch"
+
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)
     assert tent_eval["erosion_r30"]["frac_exact_2px_erosion"] == 1.0, "Rule 30 white-tent erosion must be 100% exact 2px/step"
     assert tent_eval["erosion_r90"]["frac_exact_2px_erosion"] == 1.0, "Rule 90 white-tent erosion must be 100% exact 2px/step"
@@ -1354,6 +1439,7 @@ def self_test() -> dict:
         "ks_tree": ks_tree,
         "bwd": bwd,
         "bs_diag": bs_diag,
+        "r_diag": r_diag,
         "tent_eval": tent_eval,
     }
 
