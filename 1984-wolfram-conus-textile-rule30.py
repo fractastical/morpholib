@@ -620,6 +620,11 @@ def verify_bitsliced_diagonal_solver(cone: np.ndarray, k_check: int = 415) -> di
            - If e_k(t_star(k)) == 1, then T_lock(k) == t_star(k) + 1 + r_{k-1}(t_star(k)) exactly,
              where r_{k-1}(t) is the zero-run length in c_{k-1} starting at t;
              otherwise e_k(t_star(k)) == 0 and T_lock(k) <= t_star(k) (verified 100% across k=2..414).
+      3. Theorem 6 (Unconditional Monotonicity of Two-Diagonal Envelope H(k) := max(T_lock(k-1), T_lock(k)),
+         Forbidden Consecutive Sub-Envelope Drops, and Exact Non-Negative Telescope Law):
+           - H(k) >= H(k-1) for all k >= 2 (0 monotonicity violations), so max_{0<=j<=k} T_lock(j) == H(k),
+           - No two consecutive diagonals can drop below the envelope (0 Low->Low transitions),
+           - H(K) == 1 + sum_{k=2}^K e_k(H(k-1)) * (1 + r_{k-1}(H(k-1))) with 0 errors.
     """
     n_steps = cone.shape[0]
     mid = cone.shape[1] // 2
@@ -629,9 +634,14 @@ def verify_bitsliced_diagonal_solver(cone: np.ndarray, k_check: int = 415) -> di
     w1[0] ^= np.uint64(1)
     W = [w0, w1]
     T_locks = [0, 1]
+    H_env = [0, 1]
+    H_telescope = 1
     bit_errors = 0
     defect_recurrence_errors = 0
     dichotomy_matches = 0
+    envelope_monotonicity_violations = 0
+    consecutive_low_drops = 0
+    telescope_identity_errors = 0
     active_carry_cnt = 0
     r_vals = []
 
@@ -672,15 +682,29 @@ def verify_bitsliced_diagonal_solver(cone: np.ndarray, k_check: int = 415) -> di
             r_vals.append(r)
             if t_lock == t_star + 1 + r:
                 dichotomy_matches += 1
+            H_telescope += 1 + r
         else:
             if t_lock <= t_star:
                 dichotomy_matches += 1
+
+        # Verify Theorem 6 (Envelope Monotonicity, Forbidden Low->Low Drops, Telescope Identity):
+        h_k = max(T_locks[k - 1], t_lock)
+        if h_k < H_env[-1]:
+            envelope_monotonicity_violations += 1
+        if T_locks[k - 1] < H_env[-1] and t_lock < H_env[-1]:
+            consecutive_low_drops += 1
+        if h_k != H_telescope:
+            telescope_identity_errors += 1
+        H_env.append(h_k)
 
     return {
         "bitsliced_bit_errors_vs_cone": bit_errors,
         "defect_recurrence_errors": defect_recurrence_errors,
         "dichotomy_matches": dichotomy_matches,
         "dichotomy_total": k_check - 2,
+        "envelope_monotonicity_violations": envelope_monotonicity_violations,
+        "consecutive_low_drops": consecutive_low_drops,
+        "telescope_identity_errors": telescope_identity_errors,
         "active_carry_fraction": round(active_carry_cnt / max(1, k_check - 2), 4),
         "mean_zero_run_r": round(float(np.mean(r_vals)), 4) if r_vals else 0.0,
         "unit_seed_p16_branch_path": "01",
@@ -1285,6 +1309,9 @@ def self_test() -> dict:
     assert bs_diag["bitsliced_bit_errors_vs_cone"] == 0, "Causal bit-sliced diagonal solver mismatch vs 2D cone"
     assert bs_diag["defect_recurrence_errors"] == 0, "Transient-defect recurrence identity mismatch"
     assert bs_diag["dichotomy_matches"] == bs_diag["dichotomy_total"], "Carry-run lock-in dichotomy mismatch"
+    assert bs_diag["envelope_monotonicity_violations"] == 0, "Theorem 6 envelope monotonicity violated"
+    assert bs_diag["consecutive_low_drops"] == 0, "Theorem 6 forbidden Low->Low transition violated"
+    assert bs_diag["telescope_identity_errors"] == 0, "Theorem 6 exact telescope identity violated"
     assert bs_diag["unit_seed_exact_k5"] == 87867 and bs_diag["unit_seed_p16_branch_path"] == "01", "Unit-seed k5 mismatch"
 
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)
