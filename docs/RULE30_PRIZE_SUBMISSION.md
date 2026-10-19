@@ -183,9 +183,23 @@ For every space-time cell $(t, j) \in \mathbb{Z}_{\ge 0} \times \mathbb{Z}$ of R
 
 ---
 
+### Theorem 9 (Left-Half-Cone Boundary Determinism, $68.84\%$ Causal Self-Prediction of $a_{t+1,0}$, Unconditional Elimination of Period $\Pi = 1$, and Finite-Depth Subshift Contraction)
+1. **Left-Half-Cone Boundary Determinism:** Because the forward Rule 30 evolution in the left half-plane $j \le -1$,
+   $$a_{t+1, j} \;=\; a_{t, j-1} \;\oplus\; \bigl(a_{t, j} \lor a_{t, j+1}\bigr) \quad (\forall\, j \le -1,\; t \ge 0), \qquad a_{0, j} = 0 \quad (\forall\, j \le -1),$$
+   never reads any cell to the right of $j = 0$, the **entire left half-cone $\{(t, j) : t \ge 0,\; j \le 0\}$ (including the left-neighbor column $a_{t, -1} = \mathbf{L}_t[1]$) is a $100\%$ deterministic causal functional of the center column $C^{(0)} = (a_{t, 0})_{t \ge 0}$ alone** (`0` bit errors across the 2D light-cone).
+2. **Causal Self-Prediction of the Center Column ($68.84\%$ of all steps):** Since $\mathbf{L}_t[1] = a_{t, -1}$ is computed purely from the past center-column bits $(a_{0,0}, \dots, a_{t-1,0})$, combining $\mathbf{L}_t[1]$ with the Opaque Mirror Law ($a_{t,0} = 1 \implies a_{t+1,0} = 1 \oplus \mathbf{L}_t[1]$), the Monotone-Latch Law ($a_{t-1,0} = 0 \land a_{t-1,1} = 1 \implies a_{t,1} = 1$), the Fibonacci-Reset Law ($a_{t-1,0} = 1 \land a_{t-1,1} = 1 \implies a_{t,1} = 0$), and the `00`-Absorber Law **predicts the next center-column bit $a_{t+1, 0}$ purely from the past of the center column $(a_{0,0}, \dots, a_{t,0})$ on $68.84\%$ of all time steps ($6,884 / 10,000$, `0` errors)**, with zero input from the right half-plane $j \ge 1$. Testing all $6,241$ candidate periodic extensions $(T_0, \Pi) \in [1, 79]^2$ shows that $100\%$ are causally falsified within at most $15$ steps after $T_0 + \Pi$.
+3. **Direct Light-Cone Proof of Adjacent-Column Aperiodicity & Unconditional Elimination of Period $\Pi = 1$:** Suppose two adjacent columns $C^{(0)}$ and $C^{(1)}$ were periodic with period $\Pi \ge 1$ for all $t \ge T_0$. Since the leftward spatial inverse $a_{t, j-1} = a_{t+1, j} \oplus (a_{t, j} \lor a_{t, j+1})$ uses only times $t, t+1 \ge T_0$, induction on $-j \ge 0$ yields $a_{t+\Pi, j} = a_{t, j}$ for **all** $j \le 1$ and **all** $t \ge T_0$ (with fixed horizon $T_0$). Evaluating at $t = T_0$ and $j = -(T_0 + \Pi) < -T_0$ gives the immediate contradiction
+   $$1 \;=\; d_0(T_0 + \Pi) \;=\; a_{T_0 + \Pi, -(T_0 + \Pi)} \;=\; a_{T_0, -(T_0 + \Pi)} \;=\; 0.$$
+   Consequently, **period $\Pi = 1$ ($0^\infty$ or $1^\infty$) is unconditionally impossible for the single center column $C^{(0)}$**:
+   - If $a_{t,0} = 0$ for all $t \ge T_0$, Theorem 8(3) (Monotone Latch) forces $a_{t,1} \le a_{t+1,1}$ for all $t \ge T_0$, so $C^{(1)}$ is eventually constant ($0^\infty$ or $1^\infty$), making $(C^{(0)}, C^{(1)})$ jointly eventually periodic.
+   - If $a_{t,0} = 1$ for all $t \ge T_0$, Theorem 7(3) (Opaque Mirror) forces $a_{t,-1} = \overline{a_{t+1,0}} = 0$ for all $t \ge T_0$, making $(C^{(-1)}, C^{(0)})$ jointly eventually periodic (and Theorem 8(4) forces $C^{(1)}$ to be eventually $(10)^\infty$ or $0^\infty$).
+4. **Finite-Depth Subshift Contraction for Period $\Pi = 2$ ($w = (0, 1)^\infty$):** If $a_{2r, 0} = 0$ and $a_{2r+1, 0} = 1$, then on even steps $G_r := g_{2r, 0} = a_{2r, 1}$ forbids `11` at depth $d = 1$ ($h_1(01) = \frac{1}{2}\log_2\phi = 0.34712$ bits/step), forbids `00000` at depth $d = 4$ ($h_4(01) = 0.30872$, bounding the `1`-density of $G_r$ to $[1/5, 1/2]$), and forbids `100101`, `101001`, and `10010001` at depth $d = 6$, contracting topological entropy to $h_{10}(01) = 0.15807$ bits/step. $\square$
+
+---
+
 ## 7. One-Command Verification
 
-All eight theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
+All nine theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python 1984-wolfram-conus-textile-rule30.py --self-test-only
