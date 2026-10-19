@@ -1,0 +1,68 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/assessment/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation — Reproducibility package: 78/100" ;
+        rdfs:comment "requirements.txt gives lower bounds and requirements.lock.txt gives exact pins with Python 3.14.7, platform and date; every RNG is seeded (42, 17, 100+idx) and no wall clock or unseeded randomness is used. I re-ran the script from the worktree in about 35 s and all five artefacts (two CSVs, two PNGs, GIF) were byte-identical to the shipped ones, which is the strongest possible determinism evidence. The fixture is verified at load and the run works offline. Deductions: the README's documented invocation is wrong, since --no-photos and --no-anim do not exist (argparse exits 2) and --self-test only works through argparse prefix abbreviation of --self-test-only (deduction 12). There is no regeneration path for the specimen-derived fixture, so the input side of the package is not reproducible (deduction 6). No test runner or CI hook wraps the self-test, and matplotlib emits cache-directory warnings when HOME is not writable (deduction 4). Evidence: requirements.lock.txt L1–L10: Exact pip freeze pins with interpreter version, platform and date <https://github.com/fractastical/morpholib/blob/fb234bc/requirements.lock.txt#L1-L10>; 1984-wolfram-conus-textile-rule30.py L1507–L1514: Actual flags are --no-gif/--self-test-only/--download/--frames/--fps; README documents --self-test, --no-photos, --no-anim <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L1507-L1514>; 1984-wolfram-conus-textile-rule30.py L155–L158: Seeded default_rng throughout; outputs byte-identical on re-run <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L155-L158>; conus_textile_rule30_comparison.png (generated output, not in repo): SHA-256 identical before and after my regeneration — conus_textile_rule30_comparison.png: rendered output of 1984-wolfram-conus-textile-rule30.py at fb234bc, image/png, 611089 B, 2640×1632 px, artifact_sha256 b204b836cd08e75a085169a5eb32b8069015a423668ea8a4963f251c1d130e41 (sha256 b204b836cd08e75a085169a5eb32b8069015a423668ea8a4963f251c1d130e41), spec_fingerprint 6baf9ffa515c0c89775df3b58f398571f7894e64d20534778dff610ad08bc313." ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-repro-package> ;
+        pk:hasProbability "0.78"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-repro-package> rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation (1984-wolfram-conus-textile-rule30.py, docs/media/conus_textile_rule30.gif, docs/media/conus_rule30_kymograph_defect_fronts.png, conus_textile_rule30_metrics.csv, conus_rule30_defect_fronts.csv) satisfies the MorphoEval 0.1.0 criterion 'Reproducibility package' for Conus textile Linnaeus, 1758 (textile cone snail)" ;
+        dct:identifier "morphoeval/0.1.0/repro-package" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Cursor agent, blinded second assessor)" .
+}
+
+sub:provenance {
+    sub:assertion prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0167-2789(90)90169-P>,
+            <https://doi.org/10.1016/S0022-5193(87)80101-7>,
+            <https://doi.org/10.1038/311419a0>,
+            <https://doi.org/10.1103/RevModPhys.55.601> .
+    <https://doi.org/10.1016/0167-2789(90)90169-P> dct:date "1990"^^xsd:gYear ;
+        dct:title "Aperiodicity in one-dimensional cellular automata" .
+    <https://doi.org/10.1016/S0022-5193(87)80101-7> dct:date "1987"^^xsd:gYear ;
+        dct:title "A model for pigment pattern formation on the shells of mollusks" .
+    <https://doi.org/10.1038/311419a0> dct:date "1984"^^xsd:gYear ;
+        dct:title "Cellular automata as models of complexity" .
+    <https://doi.org/10.1103/RevModPhys.55.601> dct:date "1983"^^xsd:gYear ;
+        dct:title "Statistical mechanics of cellular automata" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation — Reproducibility package 78/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-19T20:02:08Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RA6svHudOcFjOo5Vr5kSCv1kVitLgngsx3xNQBeY_0bUg> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAku3DINcetdFUnyTLflyV-8ep3QOCuL-IpGdS984vw8s/template> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

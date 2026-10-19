@@ -1,0 +1,307 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-code-traceability> a pk:LLMClaimAssessment ;
+    rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation — Code-to-model traceability: 55/100" ;
+    rdfs:comment "The CA section is well traced: every function docstring states the equation it implements and the source (Rule 30 Boolean/ANF, Jen 1990 inverse, diagonal recursion, Boolean Jacobian, prize problems 1-3), and the figure text repeats the identities. The PDE section cites Meinhardt-Klingler 1987 Eq. 5 and Meinhardt 1995 Ch. 5-6 but the implemented equations, variable roles (b as a relaxation divisor) and parameter symbols (rho, rho0, kappa, mu_a, sigma_s, mu_s, mu_b) do not correspond to those sources, and the stochastic injection and clipping steps have no citation at all (deduction 20). The Raup mesh names W, D, T, S but the envelope constants and the T*rc translation have no equation or figure reference (deduction 10). The lesion experiment cites M&K 1987 Fig. 12, but the cell-sorting and bioelectric panels cite papers by name only and hard-code the 0.583 threshold and a 0.36 factor that the labels call 0.40 (deduction 10). Two figure labels are hard-coded strings rather than computed values (deduction 5). Evidence: 1984-wolfram-conus-textile-rule30.py L24–L40: Module docstring lists equations per model; PDE form here differs from what the code integrates (no b-division, no injection) <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L24-L40>; 1984-wolfram-conus-textile-rule30.py L627–L641: PDE cites Eq. 5 / Ch. 5-6 but uses unsourced parameter symbols and values <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L627-L641>; 1984-wolfram-conus-textile-rule30.py L595–L595: D2_blocked = 0.36*D1 while CSV law string (line 1272) and panel F label (line 1495) say 0.40 <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L595-L595>; 1984-wolfram-conus-textile-rule30.py L1426–L1427: Hard-coded 'v_L=-0.26, v_R=+1' label instead of measured values <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L1426-L1427>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-code-traceability> ;
+    pk:hasProbability 5.5e-01 ;
+    pk:hasVerdict "partially faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-model-fidelity> a pk:LLMClaimAssessment ;
+    rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation — Model fidelity to source: 62/100" ;
+    dct:references <https://w3id.org/probknow/resource/math-law/wolfram-conus-textile-rule30-1>,
+        <https://w3id.org/probknow/resource/math-law/wolfram-conus-textile-rule30-2>,
+        <https://w3id.org/probknow/resource/math-law/wolfram-conus-textile-rule30-3> ;
+    rdfs:comment "I verified by hand that the Boolean form l XOR (c OR r) and the GF(2) ANF reproduce the Rule 30 truth table (00011110), that run_eca uses the standard Wolfram neighbourhood indexing so Rule 90 is also correct, that Jen's inverse a_{t,i-1} = a_{t+1,i} XOR (a_{t,i} OR a_{t,i+1}) follows algebraically and is applied with the right time offsets, that the diagonal recursion d_k(t+1) = d_{k-2}(t) XOR (d_{k-1}(t) OR d_k(t)) is an exact change of variables, and that the three Boolean partial derivatives are right; the CA half is exemplary. The Meinhardt-Klingler half is a loose analogue, not the published equations: autocatalysis is divided by a relaxation variable b with db/dt = mu_b (a - b), which is neither the 1987 activator-depleted-substrate system nor the hormone that modulates activator decay in the Oliva model, parameter names and values are unsourced, and a stochastic rule injecting +0.90 activator at random high-substrate sites plus hard clipping of a, s, b is load-bearing (with the injection removed the pattern extinguishes to 0.9 percent pigment in steps 148-221 and a saturates at the 5.0 clip); deduction 20. The Raup mesh uses W^(theta/2pi) and r_c = a(1+D)/(1-D) correctly but replaces Raup's generating curve with an ad hoc envelope carrying six unsourced constants, so that T has no effect on the silhouette for T in [0, 0.36]; deduction 10. Remaining 8 points lost for over-naming a sufficiency check as an iff theorem, a 0.36 vs 0.40 D2 mismatch in the bioelectric panel, and cross-model panels that are toy re-implementations. Evidence: 1984-wolfram-conus-textile-rule30.py L140–L182: Rule 30 Boolean/ANF steps, generic ECA evolution and Jen left inverse; all verified against the truth table and algebra <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L140-L182>; 1984-wolfram-conus-textile-rule30.py L296–L318: Diagonal recursion d_k(t+1)=d_{k-2}^(d_{k-1}|d_k) is an exact coordinate change; 0 errors confirmed on re-run <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L296-L318>; 1984-wolfram-conus-textile-rule30.py L645–L660: PDE: production divided by relaxation variable b, random +0.90 activator injection with p=0.18 per substep, and clipping; not the published M&K equations and the injection is load-bearing <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L645-L660>; 1984-wolfram-conus-textile-rule30.py L691–L704: Ad hoc biconical envelope (0.468, 1.28, 0.78, 1.05, 1.55, 0.42) replaces Raup's generating curve; Z extent set by S*axial_ext so T is swamped <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L691-L704>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-model-fidelity> ;
+    pk:hasProbability 6.2e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-morphometric-validation> a pk:LLMClaimAssessment ;
+    rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation — Morphometric validation: 45/100" ;
+    rdfs:comment "Quantitative metrics are genuinely computed on the output and compared to specimen numbers: H/W 1.8342 vs 1.8330, silhouette IoU 0.835, white-chord mean/CV, KS of mean-normalised chords, pigment fraction and a box-counting dimension, all written to CSV and drawn in panel F; the Rule 30 geometric law P(W=w)=2^-w (mean 2, CV 0.707) is correctly derived and confirmed. Deductions: the chord metric has no discriminating power, since Rule 90 (KS 0.2627, CV 0.697) and Rule 150 (KS 0.252) match Rule 30 (KS 0.2623, CV 0.7075) and Rule 110 scores better (KS 0.2448), and the specimen CV 0.640 is actually closer to the Rule 90 control; this is never stated (deduction 20). The box-counting estimator returns 2.155 for iid random bits and 2.17 for Rule 30, which is impossible for a planar set, so D_box is invalid (deduction 10). H/W and IoU are calibration, not validation: the mesh constants were tuned to the same single outline the self-test then asserts within 1.5 percent (deduction 10). The specimen-derived numbers are not reproducible (no segmentation code; the 1814 chord runs cannot be regenerated from the vendored 148x92 lattice, which yields 667 runs of mean 11.5), only one of two specimens is used quantitatively, and the Meinhardt CV test window 0.60-1.35 is nearly vacuous (deduction 15). Evidence: 1984-wolfram-conus-textile-rule30.py L836–L854: H/W, IoU, KS and box-dimension comparisons against fixture values; thresholds 1.5 percent and IoU>0.82 <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L836-L854>; conus_textile_rule30_metrics.csv (generated output, not in repo): Rule 30 KS 0.2623 vs Rule 90 KS 0.2627; D_box 2.17 and 2.15 exceed 2; pigment fraction 0.50 vs specimen 0.355 — conus_textile_rule30_metrics.csv: rendered output of 1984-wolfram-conus-textile-rule30.py at fb234bc, text/csv, 644 B, artifact_sha256 da34a299061268e937c073cc835a76f836bf1d976c145e9484147e922e21fa19 (sha256 da34a299061268e937c073cc835a76f836bf1d976c145e9484147e922e21fa19), spec_fingerprint 6baf9ffa515c0c89775df3b58f398571f7894e64d20534778dff610ad08bc313; 1984-wolfram-conus-textile-rule30.py L740–L753: box_counting_dimension on edges with scales 2..32 of a 148x92 grid; gives 2.155 on iid noise <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L740-L753>; 1984-wolfram-conus-textile-rule30.py L829–L834: Meinhardt tent test accepts any CV in [0.60, 1.35]; current value 1.1045 while README reports 0.6929 <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L829-L834>. Measurements (measure_outputs.py): Rule 30 center-column exact match to OEIS A051023 (first 128 bits) = 128 bits matched (reference 128, Wolfram 1984 Nature 311:419 / OEIS A051023 / Rule 30 Prize (2019)) [exact bitwise comparison of a_{t,0} (t=0..127) against OEIS A051023]; Jen (1990) left-bijective inverse & diagonal recursion bit errors = 0 bit errors (reference 0, Jen 1990 Physica D 45:3-18 Theorem 1 & Section 2) [sum of bit reconstruction errors across a_{t,i-1} = a_{t+1,i} XOR (a_{t,i} OR a_{t,i+1}) and d_k(t+1) = d_{k-2}(t) XOR (d_{k-1}(t) OR d_k(t))] — first 5 period-doubling dislocation diagonals k = [0, 3, 8, 29, 400] (P = 1, 2, 4, 8, 16); Rule 30 Prize #2 center-column density c_1024 = 0.4785 fraction of 1s (reference 0.5, Wolfram 2019 Rule 30 Prize Problem 2 (https://rule30prize.org/)) [cumulative fraction (1/N) sum_{t=0}^{1023} a_{t,0} on single-seed light-cone] — normalized 4-bit block Shannon entropy H_4/4 = 0.99640 bits/bit; left-cone periodic crystal lock-in front velocity v_lock = -0.1962 cells/step (reference -0.2081, Jen 1990 Physica D 45:3-18 / Wolfram 2002 A New Kind of Science p. 871) [spatial drift velocity of period-locked diagonal boundary (1/slope - 1 from T_lock(k) = 1.2441*k + 7.89 over k in [30, 400])] — damage-cone velocities: v_R = +1.0000±0.0000, v_L = -0.2604±0.1024 cells/step; 3D Raup Conus textile shell height-to-width ratio (H/W) = 1.8342 ratio (H/W) (reference 1.833, Conus textile OSU specimen 24399204286 (James St. John, CC BY 2.0)) [projected axial height / maximum shoulder diameter of 3D Raup Conus mesh (W=1.42, D=0.05, T=3.15)]; 2D shell silhouette IoU vs segmented Conus textile specimen = 0.8353 IoU (intersection/union) (reference 1.0, Conus textile OSU specimen 24399204286 (datasets/conus/conus_textile_specimen.jpg)) [pixel overlap between projected 3D Raup Conus mesh and segmented OSU Conus textile specimen silhouette (256x140 grid)]; Rule 30 white-tent chord-length CV (σ/μ) = 0.7075 CV (std/mean) (reference 0.6403, Conus textile OSU specimen dorsal white-tent segmentation (1,814 chords, CV=0.6403; exact geometric P(W=w)=2^{-w} theory CV=0.7071)) [coefficient of variation of horizontal unpigmented run lengths w on periodic mantle ring (230x370)] — Meinhardt-Klingler PDE CV = 1.1045 (vs close-up specimen ling_commons_010 CV = 1.1310); KS(Rule30, specimen) = 0.2623." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-morphometric-validation> ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-1>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-2>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-3>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-4>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-5>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-6>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-7> ;
+    pk:hasProbability 4.5e-01 ;
+    pk:hasVerdict "partially faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-overall> a pk:LLMClaimAssessment ;
+    rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation — MorphoEval overall 50.5/100" ;
+    rdfs:comment "Blinded second-assessor pass. The script evolves Wolfram's elementary CA Rule 30 (plus a Rule 90 control) on a periodic ring, verifies the centre column against OEIS A051023, checks Jen's left-bijective inverse, the left-cone diagonal recursion and period-doubling lock-in cascade, and a Boolean-Jacobian damage cone. In parallel it integrates a three-variable activator/substrate/relaxation PDE labelled Meinhardt-Klingler (1987) with an added stochastic activator-injection rule, texture-maps both space-time sheets onto a single fixed Raup-style biconical mesh, and compares silhouette H/W, IoU, white-chord statistics and a box-counting dimension against numbers vendored in a SHA-256-pinned fixture derived (by unpublished means) from two Wikimedia Conus textile photographs. A second figure adds unrelated cell-sorting and bioelectric domain-wall kymographs. I re-ran the script (35 s) and obtained byte-identical CSV, PNG and GIF outputs. Overall 50.5/100 (faithfulness 42.4, reproducibility 69.2; model-implementation 47.3/100, biological-validation 38.8/100, applicable-only overall 50.5/100; uncalibrated rubric score, not a calibrated probability); rubric morphoeval 0.1.0; checkpoint commit fb234bc; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 62, Morphological realism / specimen match 35, Parameter expressivity 18, Morphometric validation 45, Source and data traceability 70, Code-to-model traceability 55, Reproducibility package 78. Output judged: conus_textile_rule30_comparison.png: rendered output of 1984-wolfram-conus-textile-rule30.py at fb234bc, image/png, 611089 B, 2640×1632 px, artifact_sha256 b204b836cd08e75a085169a5eb32b8069015a423668ea8a4963f251c1d130e41 (sha256 b204b836cd08e75a085169a5eb32b8069015a423668ea8a4963f251c1d130e41), spec_fingerprint 6baf9ffa515c0c89775df3b58f398571f7894e64d20534778dff610ad08bc313. Dual provenance: spec_fingerprint: 6baf9ffa515c0c89775df3b58f398571f7894e64d20534778dff610ad08bc313; artifact_sha256: b204b836cd08e75a085169a5eb32b8069015a423668ea8a4963f251c1d130e41; input_dataset_sha256: {datasets/conus/conus_textile_reference.json=dfcb500d87a39390...}." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30> ;
+    pk:evidenceAgainst "remediation needed: Bioelectric panel inconsistency: D2_blocked = 0.36*D1 at 1984-wolfram-conus-textile-rule30.py:595 while the CSV governing_law string (line 1272) and panel F x-label (line 1495) state 0.40; panel D label at line 1426 hard-codes 'v_L=-0.26' instead of the measured value.",
+        "remediation needed: DOI disagreement for Wolfram 1986 (10.1016/0196-8858(86)90029-1 at 1984-wolfram-conus-textile-rule30.py:11 and datasets/conus/paper_citations.bib:20 vs 90028-X in README) and for Meinhardt 1995 (978-3-662-03125-4 at line 19 and bib line 61 vs 03107-0 in README); at least one of each pair is wrong.",
+        "remediation needed: DOI resolution by the audit integrator (Crossref, 2026-10-19), not part of the blinded pass: Wolfram 1986 is 10.1016/0196-8858(86)90028-X (the README is right; script line 11 and paper_citations.bib line 20 carry the DOI of an unrelated Adv. Appl. Math. paper), and Meinhardt 1995 is 10.1007/978-3-662-13135-0 (neither 978-3-662-03107-0 in the README nor 978-3-662-03125-4 in the script and .bib is the book; they resolve to unrelated Springer volumes).",
+        "remediation needed: Fixture provenance is broken: stjohn_white_chord_runs_px (1814 runs, mean 26.9 px) cannot be regenerated from body_whorl_tents_148x92_bitstrings (667 runs, mean 11.5) and no segmentation script exists in the worktree; unpack_specimen_masks at 1984-wolfram-conus-textile-rule30.py:125-134 simply trusts the vendored arrays.",
+        "remediation needed: README-documented flags --no-photos and --no-anim are not implemented; argparse at 1984-wolfram-conus-textile-rule30.py:1507-1514 rejects them with exit code 2, and --self-test only works via prefix abbreviation of --self-test-only.",
+        "remediation needed: Raup translation parameter T is inert in the range used: raup_conus_mesh (1984-wolfram-conus-textile-rule30.py:688-703) gives identical H/W 1.8342 for T=0.0 and T=0.36 because Z extent is set by the ad hoc axial_ext constants at line 699 times S; W, D, T, S are never swept.",
+        "remediation needed: The 'Meinhardt-Klingler' PDE at 1984-wolfram-conus-textile-rule30.py:645-660 adds an unsourced stochastic activator injection (p=0.18 per substep, +0.90 at a random high-substrate site) and hard clipping; with the injection removed the pattern extinguishes (0.9 percent pigment over steps 148-221) and activator saturates at the 5.0 clip, so the published equations alone do not produce the shown output.",
+        "remediation needed: The white-chord morphometric cannot discriminate the hypothesis from controls: with the same seed/grid, Rule 90 gives KS 0.2627 and Rule 150 KS 0.252 vs Rule 30 KS 0.2623, and Rule 110 does better (KS 0.2448); self_test lines 844-850 and write_metrics_csv lines 919-970 never flag this.",
+        "remediation needed: box_counting_dimension (1984-wolfram-conus-textile-rule30.py:740-753) returns 2.155 for iid random bits and 2.17 for Rule 30, exceeding the planar bound of 2, so the D_box column in conus_textile_rule30_metrics.csv is an estimator artefact of the 2..32 scale range on a 148x92 grid." ;
+    pk:hasProbability 5.05e-01 ;
+    pk:hasVerdict "partially faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-parameter-expressivity> a pk:LLMClaimAssessment ;
+    rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation — Parameter expressivity: 18/100" ;
+    rdfs:comment "No morphospace parameter is swept or exposed. raup_conus_mesh is called once with the defaults W=1.28, D=0.42, T=0.36, S=5.99 and the PDE constants are hard-coded inside run_meinhardt_conus; the only CLI knobs are --frames and --fps. I probed the mesh myself: W 1.28 to 1.5 moves H/W 1.834 to 1.912 and S 5.99 to 3.0 moves it to 0.919, so W, D and S do act, but T=0.0 and T=0.36 yield identical H/W 1.8342 and IoU within 0.0005, meaning the translation parameter does not control spire height in the range used (deduction 25). The absence of any sweep, montage or figure demonstrating monotonic control of form costs a further 45; the Rule 90 control and the seed/k scans in the defect-front figure are diagnostics, not morphospace exploration, and earn only partial credit. Twelve further points are withheld because the PDE regime cannot be varied without editing source. Evidence: 1984-wolfram-conus-textile-rule30.py L668–L676: Single hard-coded Raup parameter set; never varied anywhere in the script <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L668-L676>; 1984-wolfram-conus-textile-rule30.py L637–L641: PDE constants hard-coded with no CLI or sweep <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L637-L641>; 1984-wolfram-conus-textile-rule30.py L1507–L1514: CLI exposes only --no-gif, --self-test-only, --download, --frames, --fps <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L1507-L1514>; 1984-wolfram-conus-textile-rule30.py L688–L703: zc = T*rc is dwarfed by b*axial_ext; T in [0, 0.36] has zero silhouette effect (verified numerically) <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L688-L703>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-parameter-expressivity> ;
+    pk:hasProbability 1.8e-01 ;
+    pk:hasVerdict "not faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-repro-package> a pk:LLMClaimAssessment ;
+    rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation — Reproducibility package: 78/100" ;
+    rdfs:comment "requirements.txt gives lower bounds and requirements.lock.txt gives exact pins with Python 3.14.7, platform and date; every RNG is seeded (42, 17, 100+idx) and no wall clock or unseeded randomness is used. I re-ran the script from the worktree in about 35 s and all five artefacts (two CSVs, two PNGs, GIF) were byte-identical to the shipped ones, which is the strongest possible determinism evidence. The fixture is verified at load and the run works offline. Deductions: the README's documented invocation is wrong, since --no-photos and --no-anim do not exist (argparse exits 2) and --self-test only works through argparse prefix abbreviation of --self-test-only (deduction 12). There is no regeneration path for the specimen-derived fixture, so the input side of the package is not reproducible (deduction 6). No test runner or CI hook wraps the self-test, and matplotlib emits cache-directory warnings when HOME is not writable (deduction 4). Evidence: requirements.lock.txt L1–L10: Exact pip freeze pins with interpreter version, platform and date <https://github.com/fractastical/morpholib/blob/fb234bc/requirements.lock.txt#L1-L10>; 1984-wolfram-conus-textile-rule30.py L1507–L1514: Actual flags are --no-gif/--self-test-only/--download/--frames/--fps; README documents --self-test, --no-photos, --no-anim <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L1507-L1514>; 1984-wolfram-conus-textile-rule30.py L155–L158: Seeded default_rng throughout; outputs byte-identical on re-run <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L155-L158>; conus_textile_rule30_comparison.png (generated output, not in repo): SHA-256 identical before and after my regeneration — conus_textile_rule30_comparison.png: rendered output of 1984-wolfram-conus-textile-rule30.py at fb234bc, image/png, 611089 B, 2640×1632 px, artifact_sha256 b204b836cd08e75a085169a5eb32b8069015a423668ea8a4963f251c1d130e41 (sha256 b204b836cd08e75a085169a5eb32b8069015a423668ea8a4963f251c1d130e41), spec_fingerprint 6baf9ffa515c0c89775df3b58f398571f7894e64d20534778dff610ad08bc313." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-repro-package> ;
+    pk:hasProbability 7.8e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-source-traceability> a pk:LLMClaimAssessment ;
+    rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation — Source and data traceability: 70/100" ;
+    rdfs:comment "All seven primary papers carry journal, volume, pages and DOI in both the module docstring and datasets/conus/paper_citations.bib, and the Rule 30 prize URL and OEIS id are given. Input provenance is strong where it exists: the fixture JSON is SHA-256 pinned and verified on every run, both photographs have Wikimedia URL, author, licence, byte count and SHA-256 which are checked on --download, and I confirmed all three digests match the files on disk. Deductions: the specimen-derived content of the fixture (silhouette row bounds, 148x92 tent lattice, 1814 chord runs) has no generating code or method description anywhere in the worktree, so the chain from photograph to number is broken and the lattice and chord list are mutually inconsistent (deduction 15). The Wolfram 1986 DOI in the script and bib (…90029-1) differs from the one in the README (…90028-X), and the Meinhardt 1995 DOI likewise (…03125-4 vs …03107-0); at least one of each pair is wrong and I could not resolve them from the sandbox (deduction 8). Zhang 2025, Cervera 2021 and the PlanformDB threshold 0.583 are invoked in code without any identifier in this script or fixture (deduction 7). Evidence: 1984-wolfram-conus-textile-rule30.py L70–L98: Fixture SHA-256 pinned and verified at load; matches on-disk digest dfcb500d… <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L70-L98>; 1984-wolfram-conus-textile-rule30.py L101–L122: Photos downloaded with URL from fixture and SHA-256 verified; both cache files match <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L101-L122>; datasets/conus/paper_citations.bib L12–L21: Wolfram 1986 DOI 10.1016/0196-8858(86)90029-1 disagrees with README's 90028-X <https://github.com/fractastical/morpholib/blob/fb234bc/datasets/conus/paper_citations.bib#L12-L21>; 1984-wolfram-conus-textile-rule30.py L125–L134: Specimen masks unpacked from vendored fixture; no segmentation code exists to regenerate them <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L125-L134>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-source-traceability> ;
+    pk:hasProbability 7e-01 ;
+    pk:hasVerdict "mostly faithful" .
+
+<https://w3id.org/probknow/resource/assessment/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-specimen-match> a pk:LLMClaimAssessment ;
+    rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation — Morphological realism / specimen match: 35/100" ;
+    rdfs:comment "I viewed both cached photographs and all rendered outputs side by side. Real Conus textile shows thin dark reticulated lines bounding large white tents at fine scale over a smooth cone; the rendered Rule 30 kymograph (random initial row, 50 percent density, one cell = 2 px) reads as binary noise, and the 3D Rule 30 shell carries a 90x54 block texture that looks like a checkerboard rather than tents; the Meinhardt kymograph shows a few horizontal bands and sparse V shapes on blank cream and the Meinhardt shell is almost uniformly cream in both the PNG and GIF. Pigment fraction 0.50 (Rule 30) vs 0.355 (specimen) is tabulated but never addressed. Credit is given for the shell outline: the biconical mesh is recognisably a cone shell and its silhouette IoU of 0.835 against the fixture outline is a genuine quantitative overlap (deduction 10 for a visibly wider shoulder and spire than the specimen in panel C). The photographs themselves are only hashed, never displayed or analysed, so no figure places the model next to a real specimen (deduction 20); pigment-pattern realism is poor at the rendered resolution (deduction 35). Rule 30 and the Meinhardt output are visually distinct from each other, which is the one criterion fully met. Evidence: conus_textile_rule30_comparison.png (generated output, not in repo): Panel D Rule 30 looks like 50 percent binary noise; panel E Meinhardt shell nearly uniform cream; panel C overlays fixture silhouette, not the photo — conus_textile_rule30_comparison.png: rendered output of 1984-wolfram-conus-textile-rule30.py at fb234bc, image/png, 611089 B, 2640×1632 px, artifact_sha256 b204b836cd08e75a085169a5eb32b8069015a423668ea8a4963f251c1d130e41 (sha256 b204b836cd08e75a085169a5eb32b8069015a423668ea8a4963f251c1d130e41), spec_fingerprint 6baf9ffa515c0c89775df3b58f398571f7894e64d20534778dff610ad08bc313; conus_textile_rule30.gif (generated output, not in repo): Rule 30 shell is a coarse 90x54 block checkerboard; Meinhardt shell shows no tent network — conus_textile_rule30.gif: rendered output of 1984-wolfram-conus-textile-rule30.py at fb234bc, image/gif, 590905 B, 640×340 px, 36 frames, artifact_sha256 0f2462a3e14406d8ddf81072352b1e8758745c1f6d12875567de4f17ce8a1bc1 (sha256 0f2462a3e14406d8ddf81072352b1e8758745c1f6d12875567de4f17ce8a1bc1), spec_fingerprint 6baf9ffa515c0c89775df3b58f398571f7894e64d20534778dff610ad08bc313; .conus_cache/conus_textile_stjohn_ccby2.jpg (generated output, not in repo): Real specimen: thin brown lines enclosing large white tents, ~35 percent pigment; never rendered beside the model — .conus_cache/conus_textile_stjohn_ccby2.jpg: rendered output of 1984-wolfram-conus-textile-rule30.py at fb234bc, image/jpeg, 101322 B, 500×897 px, artifact_sha256 53409ef2518c010613002d68f48f27d236ed22f924d13391d082fab804fcf3c4 (sha256 53409ef2518c010613002d68f48f27d236ed22f924d13391d082fab804fcf3c4), spec_fingerprint 6baf9ffa515c0c89775df3b58f398571f7894e64d20534778dff610ad08bc313; 1984-wolfram-conus-textile-rule30.py L1095–L1124: Panel E maps only r30_grid[:90,:54] and mein_kymo[:180,:110] onto 5.5 whorls, so each CA row spans ~22 degrees of coiling <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L1095-L1124>." ;
+    pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+    pk:evaluatesHypothesis <https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-specimen-match> ;
+    pk:hasProbability 3.5e-01 ;
+    pk:hasVerdict "unfaithful" .
+
+<https://w3id.org/probknow/resource/claim/morphoeval-wolfram-conus-textile-rule30> a pk:Claim ;
+    rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation (Conus textile Linnaeus, 1758 (textile cone snail))" ;
+    dct:conformsTo <https://w3id.org/probknow/resource/math-law/wolfram-conus-textile-rule30-1>,
+        <https://w3id.org/probknow/resource/math-law/wolfram-conus-textile-rule30-2>,
+        <https://w3id.org/probknow/resource/math-law/wolfram-conus-textile-rule30-3> ;
+    schema:about "Conus textile Linnaeus, 1758 (textile cone snail)" ;
+    pk:derivedFromPaper <https://doi.org/10.1016/0167-2789(90)90169-P>,
+        <https://doi.org/10.1016/S0022-5193(87)80101-7>,
+        <https://doi.org/10.1038/311419a0>,
+        <https://doi.org/10.1103/RevModPhys.55.601> ;
+    pk:hasEvidence <https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-1>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-2>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-3>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-4>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-5>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-6>,
+        <https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-7> ;
+    pk:hypothesisType "Elementary Cellular Automata (GF(2)) & Reaction-Diffusion PDE" ;
+    pk:weightOfEvidence 5.05e-01 .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30> rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation faithfully reproduces Conus textile Linnaeus, 1758 (textile cone snail) morphology" ;
+    dct:identifier "morphoeval/0.1.0/overall" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-code-traceability> rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation (1984-wolfram-conus-textile-rule30.py, docs/media/conus_textile_rule30.gif, docs/media/conus_rule30_kymograph_defect_fronts.png, conus_textile_rule30_metrics.csv, conus_rule30_defect_fronts.csv) satisfies the MorphoEval 0.1.0 criterion 'Code-to-model traceability' for Conus textile Linnaeus, 1758 (textile cone snail)" ;
+    dct:identifier "morphoeval/0.1.0/code-traceability" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-model-fidelity> rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation (1984-wolfram-conus-textile-rule30.py, docs/media/conus_textile_rule30.gif, docs/media/conus_rule30_kymograph_defect_fronts.png, conus_textile_rule30_metrics.csv, conus_rule30_defect_fronts.csv) satisfies the MorphoEval 0.1.0 criterion 'Model fidelity to source' for Conus textile Linnaeus, 1758 (textile cone snail)" ;
+    dct:identifier "morphoeval/0.1.0/model-fidelity" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-morphometric-validation> rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation (1984-wolfram-conus-textile-rule30.py, docs/media/conus_textile_rule30.gif, docs/media/conus_rule30_kymograph_defect_fronts.png, conus_textile_rule30_metrics.csv, conus_rule30_defect_fronts.csv) satisfies the MorphoEval 0.1.0 criterion 'Morphometric validation' for Conus textile Linnaeus, 1758 (textile cone snail)" ;
+    dct:identifier "morphoeval/0.1.0/morphometric-validation" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-parameter-expressivity> rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation (1984-wolfram-conus-textile-rule30.py, docs/media/conus_textile_rule30.gif, docs/media/conus_rule30_kymograph_defect_fronts.png, conus_textile_rule30_metrics.csv, conus_rule30_defect_fronts.csv) satisfies the MorphoEval 0.1.0 criterion 'Parameter expressivity' for Conus textile Linnaeus, 1758 (textile cone snail)" ;
+    dct:identifier "morphoeval/0.1.0/parameter-expressivity" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-repro-package> rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation (1984-wolfram-conus-textile-rule30.py, docs/media/conus_textile_rule30.gif, docs/media/conus_rule30_kymograph_defect_fronts.png, conus_textile_rule30_metrics.csv, conus_rule30_defect_fronts.csv) satisfies the MorphoEval 0.1.0 criterion 'Reproducibility package' for Conus textile Linnaeus, 1758 (textile cone snail)" ;
+    dct:identifier "morphoeval/0.1.0/repro-package" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-source-traceability> rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation (1984-wolfram-conus-textile-rule30.py, docs/media/conus_textile_rule30.gif, docs/media/conus_rule30_kymograph_defect_fronts.png, conus_textile_rule30_metrics.csv, conus_rule30_defect_fronts.csv) satisfies the MorphoEval 0.1.0 criterion 'Source and data traceability' for Conus textile Linnaeus, 1758 (textile cone snail)" ;
+    dct:identifier "morphoeval/0.1.0/source-traceability" .
+
+<https://w3id.org/probknow/resource/hypothesis/morphoeval-wolfram-conus-textile-rule30-specimen-match> rdfs:label "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation (1984-wolfram-conus-textile-rule30.py, docs/media/conus_textile_rule30.gif, docs/media/conus_rule30_kymograph_defect_fronts.png, conus_textile_rule30_metrics.csv, conus_rule30_defect_fronts.csv) satisfies the MorphoEval 0.1.0 criterion 'Morphological realism / specimen match' for Conus textile Linnaeus, 1758 (textile cone snail)" ;
+    dct:identifier "morphoeval/0.1.0/specimen-match" .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-1> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "Rule 30 center-column exact match to OEIS A051023 (first 128 bits)" ;
+    dct:description "exact bitwise comparison of a_{t,0} (t=0..127) against OEIS A051023" ;
+    dct:source "Wolfram 1984 Nature 311:419 / OEIS A051023 / Rule 30 Prize (2019)" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Conus textile Linnaeus, 1758 (textile cone snail)" ;
+    schema:error 0e+00 ;
+    schema:targetValue 1.28e+02 ;
+    schema:unitText "bits matched" ;
+    schema:value 1.28e+02 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-2> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "Jen (1990) left-bijective inverse & diagonal recursion bit errors" ;
+    dct:description "sum of bit reconstruction errors across a_{t,i-1} = a_{t+1,i} XOR (a_{t,i} OR a_{t,i+1}) and d_k(t+1) = d_{k-2}(t) XOR (d_{k-1}(t) OR d_k(t))" ;
+    dct:source "Jen 1990 Physica D 45:3-18 Theorem 1 & Section 2" ;
+    rdfs:comment "first 5 period-doubling dislocation diagonals k = [0, 3, 8, 29, 400] (P = 1, 2, 4, 8, 16)" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Conus textile Linnaeus, 1758 (textile cone snail)" ;
+    schema:error 0e+00 ;
+    schema:targetValue 0e+00 ;
+    schema:unitText "bit errors" ;
+    schema:value 0e+00 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-3> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "Rule 30 Prize #2 center-column density c_1024" ;
+    dct:description "cumulative fraction (1/N) sum_{t=0}^{1023} a_{t,0} on single-seed light-cone" ;
+    dct:source "Wolfram 2019 Rule 30 Prize Problem 2 (https://rule30prize.org/)" ;
+    rdfs:comment "normalized 4-bit block Shannon entropy H_4/4 = 0.99640 bits/bit" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Conus textile Linnaeus, 1758 (textile cone snail)" ;
+    schema:error 4.3e+00 ;
+    schema:targetValue 5e-01 ;
+    schema:unitText "fraction of 1s" ;
+    schema:value 4.785e-01 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-4> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "left-cone periodic crystal lock-in front velocity v_lock" ;
+    dct:description "spatial drift velocity of period-locked diagonal boundary (1/slope - 1 from T_lock(k) = 1.2441*k + 7.89 over k in [30, 400])" ;
+    dct:source "Jen 1990 Physica D 45:3-18 / Wolfram 2002 A New Kind of Science p. 871" ;
+    rdfs:comment "damage-cone velocities: v_R = +1.0000±0.0000, v_L = -0.2604±0.1024 cells/step" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Conus textile Linnaeus, 1758 (textile cone snail)" ;
+    schema:error 5.7184e+00 ;
+    schema:targetValue -2.081e-01 ;
+    schema:unitText "cells/step" ;
+    schema:value -1.962e-01 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-5> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "3D Raup Conus textile shell height-to-width ratio (H/W)" ;
+    dct:description "projected axial height / maximum shoulder diameter of 3D Raup Conus mesh (W=1.42, D=0.05, T=3.15)" ;
+    dct:source "Conus textile OSU specimen 24399204286 (James St. John, CC BY 2.0)" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Conus textile Linnaeus, 1758 (textile cone snail)" ;
+    schema:error 6.55e-02 ;
+    schema:targetValue 1.833e+00 ;
+    schema:unitText "ratio (H/W)" ;
+    schema:value 1.8342e+00 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-6> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "2D shell silhouette IoU vs segmented Conus textile specimen" ;
+    dct:description "pixel overlap between projected 3D Raup Conus mesh and segmented OSU Conus textile specimen silhouette (256x140 grid)" ;
+    dct:source "Conus textile OSU specimen 24399204286 (datasets/conus/conus_textile_specimen.jpg)" ;
+    prov:wasGeneratedBy "output_pixels" ;
+    schema:about "Conus textile Linnaeus, 1758 (textile cone snail)" ;
+    schema:error 1.647e+01 ;
+    schema:targetValue 1e+00 ;
+    schema:unitText "IoU (intersection/union)" ;
+    schema:value 8.353e-01 .
+
+<https://w3id.org/probknow/resource/evidence/2026-10-19-conus-second-assessor-audit-wolfram-conus-textile-rule30-7> a schema:QuantitativeValue,
+        pk:EvidenceItem ;
+    rdfs:label "Rule 30 white-tent chord-length CV (σ/μ)" ;
+    dct:description "coefficient of variation of horizontal unpigmented run lengths w on periodic mantle ring (230x370)" ;
+    dct:source "Conus textile OSU specimen dorsal white-tent segmentation (1,814 chords, CV=0.6403; exact geometric P(W=w)=2^{-w} theory CV=0.7071)" ;
+    rdfs:comment "Meinhardt-Klingler PDE CV = 1.1045 (vs close-up specimen ling_commons_010 CV = 1.1310); KS(Rule30, specimen) = 0.2623" ;
+    prov:wasGeneratedBy "script" ;
+    schema:about "Conus textile Linnaeus, 1758 (textile cone snail)" ;
+    schema:error 1.04951e+01 ;
+    schema:targetValue 6.403e-01 ;
+    schema:unitText "CV (std/mean)" ;
+    schema:value 7.075e-01 .
+
+<https://w3id.org/probknow/resource/concept/math-of-biology> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Validated Mathematics of Biological Form" ;
+    skos:narrower <https://w3id.org/probknow/resource/math-law/wolfram-conus-textile-rule30-1>,
+        <https://w3id.org/probknow/resource/math-law/wolfram-conus-textile-rule30-2>,
+        <https://w3id.org/probknow/resource/math-law/wolfram-conus-textile-rule30-3> .
+
+<https://w3id.org/probknow/resource/math-law/wolfram-conus-textile-rule30-1> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Wolfram (1983, 1984) Rule 30 Boolean & GF(2) Algebraic Normal Form" ;
+    dct:description "Discrete chaotic generator of self-similar white triangular tents on Conus textile shells and OEIS A051023 center column | Variables: a_{t,i} ∈ {0, 1}: pigment state at mantle cell i and step t; ⊕: XOR; ∨: OR" ;
+    dct:source "Wolfram (1983) Rev. Mod. Phys. 55:601; (1984) Nature 311:419" ;
+    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L96-L152>,
+        <https://github.com/fractastical/morpholib/blob/fb234bc/morphoeval/lean/MathOfBiology.lean#L21-L37> ;
+    skos:broader <https://w3id.org/probknow/resource/concept/math-of-biology> ;
+    skos:definition """def rule30 (p q r : Bool) : Bool := bne p (q || r)
+def rule30_anf (p q r : Bool) : Bool := bne (bne p q) (bne r (q && r))
+theorem rule30_anf_equiv (p q r : Bool) : rule30 p q r = rule30_anf p q r := by
+  cases p <;> cases q <;> cases r <;> rfl"""^^pk:lean4 ;
+    skos:notation "a_{t+1, i} = a_{t, i-1} ⊕ (a_{t, i} ∨ a_{t, i+1}) ≡ a_{t, i-1} + a_{t, i} + a_{t, i+1} + a_{t, i} a_{t, i+1} (mod 2)" ;
+    prov:wasDerivedFrom <https://doi.org/10.1016/0167-2789(90)90169-P>,
+        <https://doi.org/10.1016/S0022-5193(87)80101-7>,
+        <https://doi.org/10.1038/311419a0>,
+        <https://doi.org/10.1103/RevModPhys.55.601> ;
+    schema:programmingLanguage "Lean 4" ;
+    pk:hypothesisType "Elementary Cellular Automata (GF(2)) & Reaction-Diffusion PDE" ;
+    pk:leanDeclaration "MathOfBiology.rule30" ;
+    pk:leanTheorem "MathOfBiology.rule30_anf_equiv" ;
+    pk:leanVerified true .
+
+<https://w3id.org/probknow/resource/math-law/wolfram-conus-textile-rule30-2> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Erica Jen (1990) Left-Bijective Spatial Inverse & Diagonal Period-Doubling Recursion" ;
+    dct:description "Proves exact left-bijectivity (0 bit errors) and explains why left-cone diagonals lock into period-doubling crystals separated by d_{k-1}=0 barriers | Variables: d_k(t) = a_{t, k-t}: k-th left-cone diagonal; P_k = 2^m: exact temporal period doubling at k ∈ {0, 3, 8, 29, 400, ...}" ;
+    dct:source "Jen (1990) Physica D 45(1-3):3-18 Theorem 1 & Section 2" ;
+    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L172-L256>,
+        <https://github.com/fractastical/morpholib/blob/fb234bc/morphoeval/lean/MathOfBiology.lean#L39-L61> ;
+    skos:broader <https://w3id.org/probknow/resource/concept/math-of-biology> ;
+    skos:definition """def rule30_left_inverse (a_next q r : Bool) : Bool := bne a_next (q || r)
+theorem jen_1990_left_bijective (p q r : Bool) :
+    rule30_left_inverse (rule30 p q r) q r = p := by
+  cases p <;> cases q <;> cases r <;> rfl
+theorem jen_1990_barrier_shielding (d_km2 d_k : Bool) :
+    jen_diagonal_step d_km2 true d_k = !d_km2 := by
+  cases d_km2 <;> cases d_k <;> rfl"""^^pk:lean4 ;
+    skos:notation "a_{t, i-1} = a_{t+1, i} ⊕ (a_{t, i} ∨ a_{t, i+1}),   d_k(t+1) = d_{k-2}(t) ⊕ (d_{k-1}(t) ∨ d_k(t))" ;
+    prov:wasDerivedFrom <https://doi.org/10.1016/0167-2789(90)90169-P>,
+        <https://doi.org/10.1016/S0022-5193(87)80101-7>,
+        <https://doi.org/10.1038/311419a0>,
+        <https://doi.org/10.1103/RevModPhys.55.601> ;
+    schema:programmingLanguage "Lean 4" ;
+    pk:hypothesisType "Elementary Cellular Automata (GF(2)) & Reaction-Diffusion PDE" ;
+    pk:leanDeclaration "MathOfBiology.rule30_left_inverse" ;
+    pk:leanTheorem "MathOfBiology.jen_1990_left_bijective" ;
+    pk:leanVerified true .
+
+<https://w3id.org/probknow/resource/math-law/wolfram-conus-textile-rule30-3> a skos:Concept,
+        pk:Concept ;
+    rdfs:label "Meinhardt & Klingler (1987) 3-Species Activator-Substrate-Hormone Mantle PDE" ;
+    dct:description "Continuous biochemical mechanism producing self-extinguishing pigment triangles and V-shaped travelling waves after mantle lesion | Variables: a(x,t): pigment activator; s(x,t): depleted substrate; h(x,t): fast-diffusing systemic hormone" ;
+    dct:source "Meinhardt & Klingler (1987) J. Theor. Biol. 126(1):63-89 Eq. (1)-(3)" ;
+    rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/fb234bc/1984-wolfram-conus-textile-rule30.py#L315-L412>,
+        <https://github.com/fractastical/morpholib/blob/fb234bc/morphoeval/lean/MathOfBiology.lean#L63-L82> ;
+    skos:broader <https://w3id.org/probknow/resource/concept/math-of-biology> ;
+    skos:definition """def meinhardt_activator_reaction (rho kappa rho0 mu_a : Nat) (a s : Nat) : Int :=
+  Int.ofNat (rho * s * (a * a + rho0 * (1 + kappa * a * a))) -
+    Int.ofNat (mu_a * a * (1 + kappa * a * a))
+theorem meinhardt_basal_quiescence (rho kappa mu_a s : Nat) :
+    meinhardt_activator_reaction rho kappa 0 mu_a 0 s = 0 := by
+  simp [meinhardt_activator_reaction]"""^^pk:lean4 ;
+    skos:notation "∂a/∂t = ρ s (a^2 / (1 + κ a^2) + ρ_0) - μ_a a + D_a ∂^2a/∂x^2,   ∂s/∂t = σ (h / (1 + γ h)) - ρ s a^2 - μ_s s + D_s ∂^2s/∂x^2" ;
+    prov:wasDerivedFrom <https://doi.org/10.1016/0167-2789(90)90169-P>,
+        <https://doi.org/10.1016/S0022-5193(87)80101-7>,
+        <https://doi.org/10.1038/311419a0>,
+        <https://doi.org/10.1103/RevModPhys.55.601> ;
+    schema:programmingLanguage "Lean 4" ;
+    pk:hypothesisType "Elementary Cellular Automata (GF(2)) & Reaction-Diffusion PDE" ;
+    pk:leanDeclaration "MathOfBiology.meinhardt_activator_reaction" ;
+    pk:leanTheorem "MathOfBiology.meinhardt_basal_quiescence" ;
+    pk:leanVerified true .
+
+<https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+    rdfs:label "Claude Fable 5.1 (Cursor agent, blinded second assessor)" .
+

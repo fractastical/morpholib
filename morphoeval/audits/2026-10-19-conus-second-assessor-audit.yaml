@@ -1,0 +1,285 @@
+# MorphoEval audit — Blinded second-assessor replication of the Conus textile Rule 30 /
+# Meinhardt–Klingler audit, 2026-10-19.
+#
+# Purpose: give `1984-wolfram-conus-textile-rule30.py` the same cross-company dual
+# scoring every other evaluated script already has.  The primary audit
+# (2026-10-18-conus-audit, gemini-4-argon, Google, commit fb234bc) was the only
+# evaluated script in the corpus with a single assessor.  This pass scores the
+# identical checkpoint with an assessor from a different provider
+# (claude-fable-5-1, Anthropic).
+#
+# Protocol: the assessor worked in a detached git worktree at commit fb234bc from
+# which morphoeval/audits/, morphoeval/kg/, morphoeval/runs/ and
+# morphoeval/README.md had been removed, was told not to read the scoring tables
+# of README.md, not to inspect other commits, and not to search for prior
+# evaluations.  It had the script, datasets/conus/, the cached specimen
+# photographs, requirements*.txt, morphoeval/rubric.yaml, and the outputs
+# regenerated from that exact code (whose spec_fingerprint and artifact_sha256
+# match the primary audit's measurement sidecar byte for byte).  It was asked to
+# verify the equations against the cited sources, to look at the rendered images,
+# and to pin every deduction to a file and line range.
+#
+# These assessments do NOT supersede the primary chain; they are parallel
+# pk:LLMClaimAssessments of the same pkr:hypothesis/morphoeval-<sim>-<dim>
+# nodes by a second pk:Model.  Scores are uncalibrated criterion-referenced
+# scores on the rubric's 0-100 scale (not calibrated probabilities).  Line
+# numbers refer to the files at commit fb234bc.
+
+audit:
+  id: 2026-10-19-conus-second-assessor-audit
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  role: second_assessor
+  blinded: true
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Cursor agent, blinded second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: fb234bc
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Same checkpoint as the primary audit 2026-10-18-conus-audit (fb234bc), so
+      the two assessments score byte-identical code.  Outputs were regenerated in
+      the worktree with the environment above (the primary audit ran under numpy
+      2.4.2 / scipy 1.17.0 / matplotlib 3.10.8 / Pillow 12.1.1); the regenerated
+      conus_textile_rule30_comparison.png has the same artifact_sha256
+      (b204b836…) and the same spec_fingerprint (6baf9ffa…) as recorded in the
+      primary audit's measurement sidecar, so the rendering is deterministic
+      across those library versions.  The script has since gained Rule 30
+      Theorems 6-10 (commits after fb234bc); those are out of scope here.
+
+references:
+  wolfram1983:
+    title: "Statistical mechanics of cellular automata"
+    authors: "Wolfram S"
+    venue: "Reviews of Modern Physics 55(3):601-644 (1983)"
+    doi: 10.1103/RevModPhys.55.601
+  wolfram1984:
+    title: "Cellular automata as models of complexity"
+    authors: "Wolfram S"
+    venue: "Nature 311(5985):419-424 (1984)"
+    doi: 10.1038/311419a0
+  meinhardt1987:
+    title: "A model for pigment pattern formation on the shells of mollusks"
+    authors: "Meinhardt H, Klingler M"
+    venue: "Journal of Theoretical Biology 126(1):63-89 (1987)"
+    doi: 10.1016/S0022-5193(87)80101-7
+  jen1990:
+    title: "Aperiodicity in one-dimensional cellular automata"
+    authors: "Jen E"
+    venue: "Physica D: Nonlinear Phenomena 45(1-3):3-18 (1990)"
+    doi: 10.1016/0167-2789(90)90169-P
+  raup1966:
+    title: "Geometric analysis of shell coiling: general problems"
+    authors: "Raup DM"
+    venue: "Journal of Paleontology 40(5):1178-1190 (1966)"
+    url: https://www.jstor.org/stable/1301992
+
+simulations:
+  - id: wolfram-conus-textile-rule30
+    name: "Wolfram (1984) Rule 30 & Meinhardt–Klingler (1987) Conus textile Pigmentation"
+    organism: "Conus textile Linnaeus, 1758 (textile cone snail)"
+    script: 1984-wolfram-conus-textile-rule30.py
+    output: conus_textile_rule30_comparison.png
+    also:
+      - docs/media/conus_textile_rule30.gif
+      - docs/media/conus_rule30_kymograph_defect_fronts.png
+      - conus_textile_rule30_metrics.csv
+      - conus_rule30_defect_fronts.csv
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [wolfram1983, wolfram1984, meinhardt1987, jen1990, raup1966]
+    summary: >-
+      Blinded second-assessor pass. The script evolves Wolfram's elementary CA Rule 30 (plus a
+      Rule 90 control) on a periodic ring, verifies the centre column against OEIS A051023,
+      checks Jen's left-bijective inverse, the left-cone diagonal recursion and period-doubling
+      lock-in cascade, and a Boolean-Jacobian damage cone. In parallel it integrates a
+      three-variable activator/substrate/relaxation PDE labelled Meinhardt-Klingler (1987) with
+      an added stochastic activator-injection rule, texture-maps both space-time sheets onto a
+      single fixed Raup-style biconical mesh, and compares silhouette H/W, IoU, white-chord
+      statistics and a box-counting dimension against numbers vendored in a SHA-256-pinned
+      fixture derived (by unpublished means) from two Wikimedia Conus textile photographs. A
+      second figure adds unrelated cell-sorting and bioelectric domain-wall kymographs. I re-ran
+      the script (35 s) and obtained byte-identical CSV, PNG and GIF outputs.
+    scores:
+      model-fidelity:
+        value: 62
+        rationale: >-
+          I verified by hand that the Boolean form l XOR (c OR r) and the GF(2) ANF reproduce the
+          Rule 30 truth table (00011110), that run_eca uses the standard Wolfram neighbourhood
+          indexing so Rule 90 is also correct, that Jen's inverse a_{t,i-1} = a_{t+1,i} XOR
+          (a_{t,i} OR a_{t,i+1}) follows algebraically and is applied with the right time offsets,
+          that the diagonal recursion d_k(t+1) = d_{k-2}(t) XOR (d_{k-1}(t) OR d_k(t)) is an exact
+          change of variables, and that the three Boolean partial derivatives are right; the CA
+          half is exemplary. The Meinhardt-Klingler half is a loose analogue, not the published
+          equations: autocatalysis is divided by a relaxation variable b with db/dt = mu_b (a - b),
+          which is neither the 1987 activator-depleted-substrate system nor the hormone that
+          modulates activator decay in the Oliva model, parameter names and values are unsourced,
+          and a stochastic rule injecting +0.90 activator at random high-substrate sites plus hard
+          clipping of a, s, b is load-bearing (with the injection removed the pattern extinguishes
+          to 0.9 percent pigment in steps 148-221 and a saturates at the 5.0 clip); deduction 20.
+          The Raup mesh uses W^(theta/2pi) and r_c = a(1+D)/(1-D) correctly but replaces Raup's
+          generating curve with an ad hoc envelope carrying six unsourced constants, so that T has
+          no effect on the silhouette for T in [0, 0.36]; deduction 10. Remaining 8 points lost
+          for over-naming a sufficiency check as an iff theorem, a 0.36 vs 0.40 D2 mismatch in
+          the bioelectric panel, and cross-model panels that are toy re-implementations.
+        evidence:
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [140, 182], note: "Rule 30 Boolean/ANF steps, generic ECA evolution and Jen left inverse; all verified against the truth table and algebra"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [296, 318], note: "Diagonal recursion d_k(t+1)=d_{k-2}^(d_{k-1}|d_k) is an exact coordinate change; 0 errors confirmed on re-run"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [645, 660], note: "PDE: production divided by relaxation variable b, random +0.90 activator injection with p=0.18 per substep, and clipping; not the published M&K equations and the injection is load-bearing"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [691, 704], note: "Ad hoc biconical envelope (0.468, 1.28, 0.78, 1.05, 1.55, 0.42) replaces Raup's generating curve; Z extent set by S*axial_ext so T is swamped"}
+      specimen-match:
+        value: 35
+        rationale: >-
+          I viewed both cached photographs and all rendered outputs side by side. Real Conus
+          textile shows thin dark reticulated lines bounding large white tents at fine scale over
+          a smooth cone; the rendered Rule 30 kymograph (random initial row, 50 percent density,
+          one cell = 2 px) reads as binary noise, and the 3D Rule 30 shell carries a 90x54 block
+          texture that looks like a checkerboard rather than tents; the Meinhardt kymograph shows
+          a few horizontal bands and sparse V shapes on blank cream and the Meinhardt shell is
+          almost uniformly cream in both the PNG and GIF. Pigment fraction 0.50 (Rule 30) vs 0.355
+          (specimen) is tabulated but never addressed. Credit is given for the shell outline: the
+          biconical mesh is recognisably a cone shell and its silhouette IoU of 0.835 against the
+          fixture outline is a genuine quantitative overlap (deduction 10 for a visibly wider
+          shoulder and spire than the specimen in panel C). The photographs themselves are only
+          hashed, never displayed or analysed, so no figure places the model next to a real
+          specimen (deduction 20); pigment-pattern realism is poor at the rendered resolution
+          (deduction 35). Rule 30 and the Meinhardt output are visually distinct from each other,
+          which is the one criterion fully met.
+        evidence:
+          - {file: conus_textile_rule30_comparison.png, lines: [0, 0], note: "Panel D Rule 30 looks like 50 percent binary noise; panel E Meinhardt shell nearly uniform cream; panel C overlays fixture silhouette, not the photo"}
+          - {file: conus_textile_rule30.gif, lines: [0, 0], note: "Rule 30 shell is a coarse 90x54 block checkerboard; Meinhardt shell shows no tent network"}
+          - {file: .conus_cache/conus_textile_stjohn_ccby2.jpg, lines: [0, 0], note: "Real specimen: thin brown lines enclosing large white tents, ~35 percent pigment; never rendered beside the model"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [1095, 1124], note: "Panel E maps only r30_grid[:90,:54] and mein_kymo[:180,:110] onto 5.5 whorls, so each CA row spans ~22 degrees of coiling"}
+      parameter-expressivity:
+        value: 18
+        rationale: >-
+          No morphospace parameter is swept or exposed. raup_conus_mesh is called once with the
+          defaults W=1.28, D=0.42, T=0.36, S=5.99 and the PDE constants are hard-coded inside
+          run_meinhardt_conus; the only CLI knobs are --frames and --fps. I probed the mesh
+          myself: W 1.28 to 1.5 moves H/W 1.834 to 1.912 and S 5.99 to 3.0 moves it to 0.919, so
+          W, D and S do act, but T=0.0 and T=0.36 yield identical H/W 1.8342 and IoU within 0.0005,
+          meaning the translation parameter does not control spire height in the range used
+          (deduction 25). The absence of any sweep, montage or figure demonstrating monotonic
+          control of form costs a further 45; the Rule 90 control and the seed/k scans in the
+          defect-front figure are diagnostics, not morphospace exploration, and earn only partial
+          credit. Twelve further points are withheld because the PDE regime cannot be varied
+          without editing source.
+        evidence:
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [668, 676], note: "Single hard-coded Raup parameter set; never varied anywhere in the script"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [637, 641], note: "PDE constants hard-coded with no CLI or sweep"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [1507, 1514], note: "CLI exposes only --no-gif, --self-test-only, --download, --frames, --fps"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [688, 703], note: "zc = T*rc is dwarfed by b*axial_ext; T in [0, 0.36] has zero silhouette effect (verified numerically)"}
+      morphometric-validation:
+        value: 45
+        rationale: >-
+          Quantitative metrics are genuinely computed on the output and compared to specimen
+          numbers: H/W 1.8342 vs 1.8330, silhouette IoU 0.835, white-chord mean/CV, KS of
+          mean-normalised chords, pigment fraction and a box-counting dimension, all written to
+          CSV and drawn in panel F; the Rule 30 geometric law P(W=w)=2^-w (mean 2, CV 0.707) is
+          correctly derived and confirmed. Deductions: the chord metric has no discriminating
+          power, since Rule 90 (KS 0.2627, CV 0.697) and Rule 150 (KS 0.252) match Rule 30 (KS
+          0.2623, CV 0.7075) and Rule 110 scores better (KS 0.2448), and the specimen CV 0.640
+          is actually closer to the Rule 90 control; this is never stated (deduction 20). The
+          box-counting estimator returns 2.155 for iid random bits and 2.17 for Rule 30, which is
+          impossible for a planar set, so D_box is invalid (deduction 10). H/W and IoU are
+          calibration, not validation: the mesh constants were tuned to the same single outline
+          the self-test then asserts within 1.5 percent (deduction 10). The specimen-derived
+          numbers are not reproducible (no segmentation code; the 1814 chord runs cannot be
+          regenerated from the vendored 148x92 lattice, which yields 667 runs of mean 11.5), only
+          one of two specimens is used quantitatively, and the Meinhardt CV test window 0.60-1.35
+          is nearly vacuous (deduction 15).
+        evidence:
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [836, 854], note: "H/W, IoU, KS and box-dimension comparisons against fixture values; thresholds 1.5 percent and IoU>0.82"}
+          - {file: conus_textile_rule30_metrics.csv, lines: [0, 0], note: "Rule 30 KS 0.2623 vs Rule 90 KS 0.2627; D_box 2.17 and 2.15 exceed 2; pigment fraction 0.50 vs specimen 0.355"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [740, 753], note: "box_counting_dimension on edges with scales 2..32 of a 148x92 grid; gives 2.155 on iid noise"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [829, 834], note: "Meinhardt tent test accepts any CV in [0.60, 1.35]; current value 1.1045 while README reports 0.6929"}
+      source-traceability:
+        value: 70
+        rationale: >-
+          All seven primary papers carry journal, volume, pages and DOI in both the module
+          docstring and datasets/conus/paper_citations.bib, and the Rule 30 prize URL and OEIS
+          id are given. Input provenance is strong where it exists: the fixture JSON is SHA-256
+          pinned and verified on every run, both photographs have Wikimedia URL, author, licence,
+          byte count and SHA-256 which are checked on --download, and I confirmed all three
+          digests match the files on disk. Deductions: the specimen-derived content of the
+          fixture (silhouette row bounds, 148x92 tent lattice, 1814 chord runs) has no generating
+          code or method description anywhere in the worktree, so the chain from photograph to
+          number is broken and the lattice and chord list are mutually inconsistent (deduction
+          15). The Wolfram 1986 DOI in the script and bib (…90029-1) differs from the one in the
+          README (…90028-X), and the Meinhardt 1995 DOI likewise (…03125-4 vs …03107-0); at least
+          one of each pair is wrong and I could not resolve them from the sandbox (deduction 8).
+          Zhang 2025, Cervera 2021 and the PlanformDB threshold 0.583 are invoked in code without
+          any identifier in this script or fixture (deduction 7).
+        evidence:
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [70, 98], note: "Fixture SHA-256 pinned and verified at load; matches on-disk digest dfcb500d…"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [101, 122], note: "Photos downloaded with URL from fixture and SHA-256 verified; both cache files match"}
+          - {file: datasets/conus/paper_citations.bib, lines: [12, 21], note: "Wolfram 1986 DOI 10.1016/0196-8858(86)90029-1 disagrees with README's 90028-X"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [125, 134], note: "Specimen masks unpacked from vendored fixture; no segmentation code exists to regenerate them"}
+      code-traceability:
+        value: 55
+        rationale: >-
+          The CA section is well traced: every function docstring states the equation it
+          implements and the source (Rule 30 Boolean/ANF, Jen 1990 inverse, diagonal recursion,
+          Boolean Jacobian, prize problems 1-3), and the figure text repeats the identities. The
+          PDE section cites Meinhardt-Klingler 1987 Eq. 5 and Meinhardt 1995 Ch. 5-6 but the
+          implemented equations, variable roles (b as a relaxation divisor) and parameter symbols
+          (rho, rho0, kappa, mu_a, sigma_s, mu_s, mu_b) do not correspond to those sources, and
+          the stochastic injection and clipping steps have no citation at all (deduction 20). The
+          Raup mesh names W, D, T, S but the envelope constants and the T*rc translation have no
+          equation or figure reference (deduction 10). The lesion experiment cites M&K 1987 Fig.
+          12, but the cell-sorting and bioelectric panels cite papers by name only and hard-code
+          the 0.583 threshold and a 0.36 factor that the labels call 0.40 (deduction 10). Two
+          figure labels are hard-coded strings rather than computed values (deduction 5).
+        evidence:
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [24, 40], note: "Module docstring lists equations per model; PDE form here differs from what the code integrates (no b-division, no injection)"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [627, 641], note: "PDE cites Eq. 5 / Ch. 5-6 but uses unsourced parameter symbols and values"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [595, 595], note: "D2_blocked = 0.36*D1 while CSV law string (line 1272) and panel F label (line 1495) say 0.40"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [1426, 1427], note: "Hard-coded 'v_L=-0.26, v_R=+1' label instead of measured values"}
+      repro-package:
+        value: 78
+        rationale: >-
+          requirements.txt gives lower bounds and requirements.lock.txt gives exact pins with
+          Python 3.14.7, platform and date; every RNG is seeded (42, 17, 100+idx) and no wall
+          clock or unseeded randomness is used. I re-ran the script from the worktree in about
+          35 s and all five artefacts (two CSVs, two PNGs, GIF) were byte-identical to the
+          shipped ones, which is the strongest possible determinism evidence. The fixture is
+          verified at load and the run works offline. Deductions: the README's documented
+          invocation is wrong, since --no-photos and --no-anim do not exist (argparse exits 2) and
+          --self-test only works through argparse prefix abbreviation of --self-test-only
+          (deduction 12). There is no regeneration path for the specimen-derived fixture, so the
+          input side of the package is not reproducible (deduction 6). No test runner or CI hook
+          wraps the self-test, and matplotlib emits cache-directory warnings when HOME is not
+          writable (deduction 4).
+        evidence:
+          - {file: requirements.lock.txt, lines: [1, 10], note: "Exact pip freeze pins with interpreter version, platform and date"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [1507, 1514], note: "Actual flags are --no-gif/--self-test-only/--download/--frames/--fps; README documents --self-test, --no-photos, --no-anim"}
+          - {file: 1984-wolfram-conus-textile-rule30.py, lines: [155, 158], note: "Seeded default_rng throughout; outputs byte-identical on re-run"}
+          - {file: conus_textile_rule30_comparison.png, lines: [0, 0], note: "SHA-256 identical before and after my regeneration"}
+    remediation:
+      - "README-documented flags --no-photos and --no-anim are not implemented; argparse at 1984-wolfram-conus-textile-rule30.py:1507-1514 rejects them with exit code 2, and --self-test only works via prefix abbreviation of --self-test-only."
+      - "The 'Meinhardt-Klingler' PDE at 1984-wolfram-conus-textile-rule30.py:645-660 adds an unsourced stochastic activator injection (p=0.18 per substep, +0.90 at a random high-substrate site) and hard clipping; with the injection removed the pattern extinguishes (0.9 percent pigment over steps 148-221) and activator saturates at the 5.0 clip, so the published equations alone do not produce the shown output."
+      - "Raup translation parameter T is inert in the range used: raup_conus_mesh (1984-wolfram-conus-textile-rule30.py:688-703) gives identical H/W 1.8342 for T=0.0 and T=0.36 because Z extent is set by the ad hoc axial_ext constants at line 699 times S; W, D, T, S are never swept."
+      - "The white-chord morphometric cannot discriminate the hypothesis from controls: with the same seed/grid, Rule 90 gives KS 0.2627 and Rule 150 KS 0.252 vs Rule 30 KS 0.2623, and Rule 110 does better (KS 0.2448); self_test lines 844-850 and write_metrics_csv lines 919-970 never flag this."
+      - "box_counting_dimension (1984-wolfram-conus-textile-rule30.py:740-753) returns 2.155 for iid random bits and 2.17 for Rule 30, exceeding the planar bound of 2, so the D_box column in conus_textile_rule30_metrics.csv is an estimator artefact of the 2..32 scale range on a 148x92 grid."
+      - "Fixture provenance is broken: stjohn_white_chord_runs_px (1814 runs, mean 26.9 px) cannot be regenerated from body_whorl_tents_148x92_bitstrings (667 runs, mean 11.5) and no segmentation script exists in the worktree; unpack_specimen_masks at 1984-wolfram-conus-textile-rule30.py:125-134 simply trusts the vendored arrays."
+      - "Bioelectric panel inconsistency: D2_blocked = 0.36*D1 at 1984-wolfram-conus-textile-rule30.py:595 while the CSV governing_law string (line 1272) and panel F x-label (line 1495) state 0.40; panel D label at line 1426 hard-codes 'v_L=-0.26' instead of the measured value."
+      - "DOI disagreement for Wolfram 1986 (10.1016/0196-8858(86)90029-1 at 1984-wolfram-conus-textile-rule30.py:11 and datasets/conus/paper_citations.bib:20 vs 90028-X in README) and for Meinhardt 1995 (978-3-662-03125-4 at line 19 and bib line 61 vs 03107-0 in README); at least one of each pair is wrong."
+      - "DOI resolution by the audit integrator (Crossref, 2026-10-19), not part of the blinded pass: Wolfram 1986 is 10.1016/0196-8858(86)90028-X (the README is right; script line 11 and paper_citations.bib line 20 carry the DOI of an unrelated Adv. Appl. Math. paper), and Meinhardt 1995 is 10.1007/978-3-662-13135-0 (neither 978-3-662-03107-0 in the README nor 978-3-662-03125-4 in the script and .bib is the book; they resolve to unrelated Springer volumes)."
