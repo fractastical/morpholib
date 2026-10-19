@@ -1,0 +1,105 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-bressloff-v1-form-constants> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-bressloff-v1-form-constants-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-bressloff-v1-form-constants-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Reproducibility package: 84/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "requirements.lock.txt pins exact versions (numpy 2.5.4, matplotlib 3.10.7, pillow 12.0.0, Python 3.14.7) and the venv matches; the script uses no random numbers at all; fixture digests are verified before any computation and the run aborts on mismatch; --self-test ran clean here (40 PASS, 0 FAIL, 75 s) and the PNG/CSV/GIF on disk are consistent with the printed numbers; Agg is forced when --no-show/--self-test or no DISPLAY is set. Deductions: (a) -6 because the README documents \"27 checks in ~12 s\" and \"--hemifield-mode {full-field,bilateral-mirror}\" and says --preset selects what is rendered, none of which is true of this code; (b) -4 because --gif is not part of the documented default invocation and the regenerated GIF would be produced by a separate ~100 s run, so artefact regeneration is two commands; (c) -3 because importing the script as a module by path fails under Python 3.14 unless the module is first registered in sys.modules (dataclass resolution), which hampers reuse/testing; (d) -3 because the audit-stated HEAD (2aac102) does not match the checkout (9df331b), so the artefact->commit binding in the documentation cannot be confirmed from the repo alone." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-repro-package-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-repro-package-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-repro-package-4> ;
+        pk:hasScore "0.84"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "requirements.lock.txt L1–L40" ;
+        dct:description "Exact pins incl. numpy 2.5.4, matplotlib 3.10.7, pillow 12.0.0; Python 3.14.7 stated." ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/2aac102/requirements.lock.txt#L1-L40> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "2001-bressloff-v1-form-constants.py L320–L329" ;
+        dct:description "verify_fixture_checksums; run_bressloff_analysis raises on any mismatch (lines 2333-2336)." ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/2aac102/2001-bressloff-v1-form-constants.py#L320-L329> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-repro-package-3> a pk:EvidenceItem ;
+        rdfs:label "2001-bressloff-v1-form-constants.py L3420–L3430" ;
+        dct:description "self_test entry; 40 checks all PASS in my run (75 s), consistent with on-disk PNG/CSV values." ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/2aac102/2001-bressloff-v1-form-constants.py#L3420-L3430> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-repro-package-4> a pk:EvidenceItem ;
+        rdfs:label "README.md L441–L441" ;
+        dct:description "States '--self-test runs 27 checks ... in ~12 s' and a two-value --hemifield-mode; both stale." ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/2aac102/README.md#L441-L441> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary) + Gemini 4 Argon (independent blinded second assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1001/archopht.1991.01080060080030>,
+            <https://doi.org/10.1007/BF00336965>,
+            <https://doi.org/10.1088/0951-7715/13/4/317>,
+            <https://doi.org/10.1098/rstb.2000.0769>,
+            <https://doi.org/10.1137/23M1616686>,
+            <https://doi.org/10.1162/089976602317250861>,
+            <https://doi.org/10.1371/journal.pcbi.1002158>,
+            <https://github.com/MesmerPrism/bressloff-v1-form-constants>,
+            <https://press.uchicago.edu/ucp/books/book/chicago/M/bo3645325.html> .
+    <https://doi.org/10.1001/archopht.1991.01080060080030> dct:date "1991"^^xsd:gYear ;
+        dct:title "The representation of the visual field in human striate cortex: a revision of the classic Holmes map" .
+    <https://doi.org/10.1007/BF00336965> dct:date "1979"^^xsd:gYear ;
+        dct:title "A mathematical theory of visual hallucination patterns" .
+    <https://doi.org/10.1088/0951-7715/13/4/317> dct:date "2000"^^xsd:gYear ;
+        dct:title "Pattern formation with a conservation law" .
+    <https://doi.org/10.1098/rstb.2000.0769> dct:date "2001"^^xsd:gYear ;
+        dct:title "Geometric visual hallucinations, Euclidean symmetry and the functional architecture of striate cortex" .
+    <https://doi.org/10.1137/23M1616686> dct:date "2024"^^xsd:gYear ;
+        dct:title "A mathematical model of the visual MacKay effect" .
+    <https://doi.org/10.1162/089976602317250861> dct:date "2002"^^xsd:gYear ;
+        dct:title "What geometric visual hallucinations tell us about the visual cortex" .
+    <https://doi.org/10.1371/journal.pcbi.1002158> dct:date "2011"^^xsd:gYear ;
+        dct:title "A model for the origin and properties of flicker-induced geometric phosphenes" .
+    <https://github.com/MesmerPrism/bressloff-v1-form-constants> dct:title "bressloff-v1-form-constants: reference implementation and calibration reports (commit 344863a)" .
+    <https://press.uchicago.edu/ucp/books/book/chicago/M/bo3645325.html> dct:date "1966"^^xsd:gYear ;
+        dct:title "Mescal and Mechanisms of Hallucinations" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Reproducibility package 84/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-19T23:43:42Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-bressloff-v1-form-constants-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

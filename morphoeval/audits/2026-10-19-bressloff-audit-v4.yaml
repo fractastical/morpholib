@@ -1,0 +1,415 @@
+# MorphoEval audit — Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants, 2026-10-19 (v4)
+#
+# Pass 4 re-score of `2001-bressloff-v1-form-constants.py` and `datasets/bressloff/` after the STRUCTURAL rebuild
+# in the instrumented loop `morphoeval/runs/2026-10-19-bressloff-v1-loop-pass4`, superseding
+# `2026-10-19-bressloff-audit-v3` (67.7 primary / 80.9 second assessor). Same protocol as Passes 1-3:
+#   - Primary assessor: Claude Fable 5.1 (fresh subagent 6a280e8e-1405-4409-9d3b-f69b881c4250)
+#   - Independent blinded second assessor: Gemini 4 Argon (subagent c41911b9-7fe2-4c62-a885-6216af5ebad2),
+#     published separately as `2026-10-19-bressloff-second-assessor-audit-v4.yaml` (role: second_assessor).
+# Both ran in parallel against commit 2aac102 with no access to each other's work, to the earlier audits,
+# KG or run files, or to git history.
+#
+# What Pass 4 changed (the structural items left open by v3):
+#   1. Full cubic coefficients of Bressloff 2001 Eq. 5.15: gamma(theta) = [3 s3 Gamma_3 - 2 s2^2 Q]/N with sigmoid
+#      firing-rate derivative weights at baseline sigma0 and the quadratic feedback Q through the linear resolvent;
+#      eta-aware Lambda_r < Lambda_h thresholds; sigma0 = 1/2 reduces to the upstream bare overlaps (parity kept).
+#   2. Roll stability tested against every perturbation direction theta (5-degree grid), squares/rhombi against all
+#      external directions; a near_resonant (feedback-dominated) and subcritical flag mark unreliable cells.
+#   3. Exact orientation-space operator diagonalised; its dominant harmonic DERIVES contoured (m=1) vs
+#      non-contoured (m=0) instead of a preset flag; switch at A_loc ~ 0.24-0.25; fixture presets that impose a
+#      non-critical harmonic/parity are flagged. Derived non-contoured regime: rolls stable and SELECTED, so the
+#      gallery tunnel and spiral are now selected planforms (3 SELECTED / 1 STABLE / 1 IMPOSED of 5).
+#   4. Conformal complex-log angular map (2001 Section 2) as the default retinal pullback: torus closes exactly, seam
+#      0.00, spiral chirality 0.89 (LR+UD reflection metric); exact 2002 map kept with finite seam metric on all four
+#      half-meridians; k_x and k_y quantised to torus cycles.
+#   5. paper_scale_tunnel preset (q scan to 6): lambda_c = 2.60 mm in the paper's 2.4-3.2 mm; 29 rings fovea-90 deg
+#      on the alpha = 3/pi map vs 32 on the Horton-Hoyt map (paper 30-36) — residual shortfall attributed to alpha.
+#   6. Regime map A_loc x sigma0 (Panel G), local-inhibition and sigma0 sweeps that change the selected family,
+#      retinal morphometrics, signed contour envelope with the exact u(phi); self-test 27 -> 41 checks;
+#      measure_bressloff 13 -> 19 measurements.
+#
+# Scores below are the primary assessor's: overall 70.6 (impl. 70.0, bio. 63.0, repro. 81.3), from 67.7.
+# The second assessor scored 85.2 (impl. 83.3, bio. 81.5, repro. 91.9), from 80.9; panel mean 77.9.
+# Remaining findings (both assessors) are listed under `remediation`.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not
+# calibrated probabilities). Line numbers refer to the files at commit 2aac102.
+
+audit:
+  id: 2026-10-19-bressloff-audit-v4
+  supersedes: 2026-10-19-bressloff-audit-v3
+  rubric_version: 0.1.0
+  date: "2026-10-19"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (primary) + Gemini 4 Argon (independent blinded second assessor)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (independent blinded subagent c41911b9-7fe2-4c62-a885-6216af5ebad2)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 2aac102
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      2aac102 is the Pass 4 checkpoint: it contains the structurally rebuilt
+      2001-bressloff-v1-form-constants.py (3847 lines; 41 self-test checks), the updated
+      datasets/bressloff/README.md and paper_citations.bib (+ Matthews & Cox 2000), the rewritten
+      measure_bressloff() hook (19 measurements), updated math_kg loci and the regenerated GIF. PNG and
+      CSV regenerate byte-identically at this commit (SHA-256 59ee2445..., 1619e719...).
+
+references:
+  bressloff2001:
+    title: "Geometric visual hallucinations, Euclidean symmetry and the functional architecture of striate cortex"
+    authors: "Bressloff PC, Cowan JD, Golubitsky M, Thomas PJ, Wiener MC"
+    venue: "Philosophical Transactions of the Royal Society of London B 356(1407):299-330 (2001)"
+    doi: 10.1098/rstb.2000.0769
+  bressloff2002:
+    title: "What geometric visual hallucinations tell us about the visual cortex"
+    authors: "Bressloff PC, Cowan JD, Golubitsky M, Thomas PJ, Wiener MC"
+    venue: "Neural Computation 14(3):473-491 (2002)"
+    doi: 10.1162/089976602317250861
+  ermentrout1979:
+    title: "A mathematical theory of visual hallucination patterns"
+    authors: "Ermentrout GB, Cowan JD"
+    venue: "Biological Cybernetics 34(3):137-150 (1979)"
+    doi: 10.1007/BF00336965
+  rule2011:
+    title: "A model for the origin and properties of flicker-induced geometric phosphenes"
+    authors: "Rule M, Stoffregen M, Ermentrout B"
+    venue: "PLoS Computational Biology 7(9):e1002158 (2011)"
+    doi: 10.1371/journal.pcbi.1002158
+  horton1991:
+    title: "The representation of the visual field in human striate cortex: a revision of the classic Holmes map"
+    authors: "Horton JC, Hoyt WF"
+    venue: "Archives of Ophthalmology 109(6):816-824 (1991)"
+    doi: 10.1001/archopht.1991.01080060080030
+  tamekue2024:
+    title: "A mathematical model of the visual MacKay effect"
+    authors: "Tamekue C, Prandi D, Chitour Y"
+    venue: "SIAM Journal on Applied Dynamical Systems 23(3):2138-2178 (2024)"
+    doi: 10.1137/23M1616686
+  kluver1966:
+    title: "Mescal and Mechanisms of Hallucinations"
+    authors: "Klüver H"
+    venue: "University of Chicago Press (1966)"
+    url: https://press.uchicago.edu/ucp/books/book/chicago/M/bo3645325.html
+  matthews2000:
+    title: "Pattern formation with a conservation law"
+    authors: "Matthews PC, Cox SM"
+    venue: "Nonlinearity 13(4):1293-1320 (2000)"
+    doi: 10.1088/0951-7715/13/4/317
+  mesmerprism_v1sim:
+    title: "bressloff-v1-form-constants: reference implementation and calibration reports (commit 344863a)"
+    authors: "Karácsony M, Holzapfel T (MesmerPrism)"
+    venue: "GitHub repository, MIT License (2023-2026); derived from karacsm/V1-sim"
+    url: https://github.com/MesmerPrism/bressloff-v1-form-constants
+
+simulations:
+  - id: bressloff-v1-form-constants
+    name: "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants"
+    organism: "Homo sapiens primary visual cortex (V1) — geometric visual hallucinations (Klüver form constants) and flicker phosphenes"
+    script: 2001-bressloff-v1-form-constants.py
+    output: bressloff_v1_form_constants_morphospace.png
+    also:
+      - docs/media/bressloff_v1_form_constants.gif
+      - bressloff_v1_metrics.csv
+      - datasets/bressloff/horton_hoyt_1991_magnification.json
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [bressloff2001, bressloff2002, ermentrout1979, rule2011, horton1991, tamekue2024, kluver1966, matthews2000, mesmerprism_v1sim]
+    supersedes_audit_id: 2026-10-19-bressloff-audit-v3
+    claim_boundary:
+      reported_in_source:
+        - "Bressloff et al. (2001, 2002): a Euclidean shift-twist symmetric neural field on the orientation-hypercolumn lattice of V1 undergoes a Turing-type instability whose even/odd, contoured (m=1) / non-contoured (m=0) planforms, pulled back through the retino-cortical map (2001 Section 2: x=(alpha/eps)ln(1+eps r/w0), y=beta theta/eps; 2002 Eq. 1.1: y=beta r theta/(w0+eps r)), give Klüver's four form constants; cubic amplitude equations (2001 Eqs. 5.9-5.15) with coefficients built from the firing-rate derivatives sigma_2, sigma_3 and a quadratic-feedback term select rolls, rhombi, squares or hexagons; the 2002 paper states a foveal magnification of 11.5 mm/deg, 30-36 perceived stripes and a cortical wavelength of 2.4-3.2 mm"
+        - "Ermentrout & Cowan (1979): cortical rolls map to tunnels, funnels and spirals under the log-polar retino-cortical map (the non-contoured limit)"
+        - "Horton & Hoyt (1991): human V1 linear cortical magnification follows M(E) = 17.3/(E + 0.75) mm/deg"
+        - "Rule, Stoffregen & Ermentrout (2011): periodic flicker drives 1:1 (stripe) and 2:1 period-doubling (hexagon) Floquet resonance tongues over forcing period and wave number"
+        - "Tamekue, Prandi & Chitour (2024): a Gaussian-only (no Mexican-hat) lateral kernel produces no MacKay-type pattern, used here as the negative control"
+      reconstructed_in_script:
+        - "Perturbative Fourier-Bessel even/odd dispersion scans with exact parity to the upstream fixture (5 stability_reports, 24 preset runs, all 133 paper-expectation checks counted, 121 pass) kept as branch_selection_upstream; PLUS the exact Hermitian orientation-space operator on e^{2 i m phi}, |m| <= 8, diagonalised directly (top eigenvalue within 3e-4 of the perturbative scan, dq* = 0) whose dominant harmonic derives the contoured/non-contoured regime (switch at local inhibition A_loc ~ 0.24-0.25 where W0 = W1); fixture presets that impose a non-critical harmonic or parity are flagged (imposed_harmonic, parity_imposed_subcritical)"
+        - "Full cubic amplitude coefficients gamma(theta) = [3 s3 Gamma_3 - 2 s2^2 Q]/N with sigmoid derivative weights s2 = (1-2 sigma0)/2, s3 = (6 sigma0(1-sigma0)-1)/6 and the quadratic feedback Q through the resolvent (lambda_c - W_K)^-1 W_K at K = 0 and K = k_i +/- k_j (critical direction removed); eta = 2 s2 Gamma_2 / N with the eta-aware thresholds Lambda_r < Lambda_h; roll stability tested against every perturbation direction theta on a 5-degree grid, squares/rhombi against all external directions; at sigma0 = 1/2 the coefficients reduce to the upstream bare overlaps (gamma(60)/gamma(0) 0.4864 vs 0.4870); a feedback_fraction > 1 flag (near_resonant) and a gamma(0) <= 0 flag (subcritical) mark where the cubic truncation is unreliable; a regime map over A_loc x sigma0 (260 cells) and sweeps over lateral width, lateral inhibition, lateral spread, local inhibition and sigma0"
+        - "Gallery of five planforms rendered at each branch's own q* with k_x and k_y quantised to integer torus cycles: derived non-contoured tunnel and spiral (SELECTED: rolls stable with min 2 gamma/gamma0 - 1 = +0.92), contoured cobweb (IMPOSED-unstable), honeycomb (STABLE-coexisting) and the selected rhombic lattice; contoured planforms use the signed envelope with the exact eigenfunction u(phi) and an orientation field drawn as line elements in cortex and, via the tangent map phi_R = phi + theta_R, in the visual field"
+        - "Retinal pullback through the conformal complex-log angular coordinate by default (cortical torus closes exactly: seam 0.00, spiral chirality 0.89 with the LR/UD reflection metric) with the exact 2002 coordinate retained (--retinal-map exact) and its seams quantified on all four half-meridians under full-field, chiral-mirror and bilateral-mirror conventions; retinal morphometrics (ring counts fovea to 90 degrees on the model map and the Horton-Hoyt map, spoke count, cortical roll angle vs visual log-spiral angle)"
+        - "A paper_scale_tunnel preset (lateral widths / 3.3, q scan to 6): q* = 4.84, lambda_c = 2.60 mm (paper 2.4-3.2), 29 rings fovea to 90 degrees on the alpha = 3/pi map vs 32 on the Horton-Hoyt map (paper 30-36); comparison of the map's magnification with Horton & Hoyt (1991) (RMS 6.8%) and with the 2002 paper's own scale anchors; a Gaussian-only negative control cross-referenced to the vendored registry; and a diagnostic overlay of the Rule (2011) tongue boundaries (16 curves over 5 forcing amplitudes) with its calibration status printed"
+      transfer_boundary:
+        - "Numerical parity to 2.2e-16 is with the MesmerPrism/bressloff-v1-form-constants Rust implementation's stability_reports and runs, not with digitised figures of the 2001 paper; alpha = 3/pi and beta = 1.589/2 are the upstream params.rs values; the parity presets' rendered wavelength 8.7 mm is 3.1x the paper's and the paper-scale preset is a repo-added parameter choice (lateral widths / 3.3) that reaches the paper's wavelength but not the paper's parameter values"
+        - "The quadratic-feedback term is evaluated through the linear resolvent of the same flat-dispersion operator, whose uniform K = 0 mode is nearly marginal; for sigma0 != 1/2 the feedback dominates the bare cubic term (resolvent gain 50-2000) and the script flags these cells near_resonant instead of reporting a selection (178 of 260 regime-map cells are subcritical or feedback-dominated) — a mean-mode-coupled amplitude equation (Matthews & Cox 2000) would be needed there"
+        - "In the contoured (m = 1) regime rolls and squares are unstable for every sigma0 and the cobweb remains an imposed lattice; the non-contoured regime in which tunnels and spirals are SELECTED is reached by lowering the local inhibition to A_loc = 0.15 (a repo-added preset), not by the fixture's parameters"
+        - "The conformal angular map removes the pullback seam by construction (the torus closes exactly); the exact 2002 map's seams (left meridian 11.0 full-field; vertical meridians 10.3 chiral-mirror) are quantified, not fixed, because that map cannot close the torus at finite r"
+      does_not_claim:
+        - "Fifth-order (quintic) resolution of the odd-branch hexagon/triangle degeneracy or of the subcritical sigma0 <= 0.25 cases (Bressloff 2001 Section 5), a mean-mode-coupled amplitude equation for the near-resonant K = 0 mode, a Floquet solver or validated reproduction of Rule (2011) Fig. 8 (the vendored fixture is marked diagnostic-only upstream and the script says so), a derivation of the paper's parameter values from first principles, or a comparison with subject drawings of hallucinations"
+    summary: >-
+      The script is a serious, well-instrumented implementation of the Bressloff et al. (2001/2002) orientation-
+      hypercolumn model: the local/lateral Fourier-Bessel harmonics, the perturbative even/odd dispersion curves, the
+      exact diagonalisation of the orientation operator (which genuinely derives the m=0 non-contoured vs m=1
+      contoured regime for the auto presets), the sigmoid-expansion weights, the eta-aware hexagon/roll thresholds and
+      the two-regime log-polar map all check out against the papers as I know them, and the retinal pullbacks of the
+      tunnel and the chiral, seamless spiral are convincing. Its weak points are structural rather than cosmetic: the
+      "full cubic" quadratic-feedback path is a reconstruction that is unusable (subcritical / near-resonant) at every
+      sigma0 != 1/2 in the very regime the gallery renders, the badged honeycomb is actually drawn with wavevectors at
+      +-114.6 deg because of torus quantisation, the 1e-15 parity is with a Rust port rather than with any digitised
+      paper figure, and the only empirical comparisons are the paper's own 30-36 stripe / 2.4-3.2 mm statements and
+      Horton & Hoyt's magnification law, neither of which the parity presets meet (lambda_c 9.0 mm, 3.2x too long).
+      Provenance (DOIs, PMIDs, SHA-256 pins, lock file, 40 passing self-test checks, no RNG) is strong, but the README
+      section describing the script is stale relative to this Pass-4 code.
+    scores:
+      model-fidelity:
+        value: 74
+        rationale: >-
+          Verified against the papers: the local harmonics W_n = e^{-2n^2 xi^2} - A e^{-2n^2 xihat^2}, the lateral
+          Fourier-Bessel harmonics (-1)^n e^{-x} I_n(x) with x = xi^2 q^2/4 and the sin(2n theta0)/(2n theta0) spread
+          factor, the O(beta^2) dispersion lambda_+- = W_1 + beta(W_0 +- W_2) + ..., the 2001 Eq. 2.1 map with the
+          paper's w0 = 0.087 and eps = 0.051, the sigmoid ratios s_2 = (1-2 sigma0)/2 and s_3 = (6
+          sigma0(1-sigma0)-1)/6, and the standard Lambda_r = eta^2 gamma0/(2 gamma_hex - gamma0)^2 < Lambda_h
+          thresholds are all correct, and the m=0/m=1 regime is read off the exact operator's top eigenvector rather
+          than imposed (the fixture presets that impose it are flagged). Deductions: (a) -8 because the quadratic-
+          feedback term Q and its 3 s_3 / 2 s_2^2 prefactors are "derived here for the operator as implemented", not
+          pinned to Eq. 5.15, and in the derived m=0 regime the path is subcritical/near-resonant at every sigma0 !=
+          1/2 (my sweep 0.3-0.7 gave roll margins of -105 to -117 and SUBCRITICAL at 4/5 points), so the new physics
+          is untestable where the gallery lives; (b) -6 because the rendered hexagonal planform has wavevectors at 0,
+          +-114.6 deg (n_y = 10 of 11 cycles), a 5.4 deg distortion that contradicts the "< 1 degree" docstring claim,
+          so the badged 60-deg hexagon is not what is drawn; (c) -5 because the 1e-15 "parity" is with the MesmerPrism
+          Rust port, no paper curve (Figs. 16-17, 37-40) is digitised and compared, and alpha, beta come from that
+          port; (d) -4 because the parity presets sit 3.2x off the paper's wavelength and the paper-scale preset is an
+          ad hoc 1/3.3 rescaling of the lateral widths; (e) -3 because the perturbative n=1 q* (1.491) is still what
+          the CSV calls critical_q for the m=0 gallery rows that are actually rendered at q_mode = 1.404.
+        evidence:
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [615, 695], note: "Local/lateral harmonics and perturbative dispersion match Bressloff 2001 Eqs. 3.12/4.9/4.14-16 (1D anisotropic Weber integral, spread factor, (-1)^n)."}
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [825, 922], note: "Correct sigmoid expansion ratios; exact Hermitian operator and derived critical harmonic (m=0 vs m=1) from exact_dispersion_scan."}
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [947, 1008], note: "Quadratic feedback Q through resolvent R_K; feedback_fraction/near_resonant flags — reconstruction, not transcribed from Eq. 5.15."}
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [1603, 1616], note: "k_y quantisation moves the hex modes from +-120 to +-114.6 deg at 11 cycles, contradicting the '<1 degree' claim at line 1570."}
+      specimen-match:
+        value: 66
+        rationale: >-
+          Side by side with Kluever's families as drawn in Bressloff 2001 Fig. 1 / Ermentrout & Cowan 1979, column I
+          is a clean concentric tunnel and column II a continuous, handed log-spiral (chirality 0.89, seam 0.00 on the
+          conformal map — I checked the PNG at full resolution and found no meridian discontinuity), and the badges
+          (SELECTED/IMPOSED/STABLE) agree with the printed roll margins (+0.92, -0.34) and with the cubic numbers in
+          the CSV. Deductions: (a) -10 because the contoured honeycomb (IV) and rhombic (V) panels in the PNG are
+          sparse fields of bright blobs with white line elements that are hard to recognise as a honeycomb and hard to
+          tell apart from each other; the GIF's envelope rendering of the same presets is far more honeycomb-like, so
+          the contoured visualisation, not the model, is what fails here; (b) -8 because the "honeycomb" is a
+          65/115-degree lattice after quantisation, not a hexagonal one, so it is not the Fig. 35 planform it is
+          labelled as; (c) -8 because the gallery shows ~5.8 rings in the central 40 deg (lambda_c 9.0 mm) where the
+          paper and subjects report 30-36 stripes over the field, so the density of the forms is off by ~3x and only
+          the small Panel D inset renders a paper-scale tunnel; (d) -8 because no actual specimen image
+          (Kluever/Siegel drawings, Bressloff Fig. 1, Rule phosphene photos) is placed beside the output; the match is
+          to the family labels, judged by the viewer.
+        evidence:
+          - {file: bressloff_v1_form_constants_morphospace.png, lines: [0, 0], note: "Cols I-II: tunnel rings and seamless chiral spiral convincing; cols IV-V: sparse blob fields with line segments, weakly distinct from each other."}
+          - {file: docs/media/bressloff_v1_form_constants.gif, lines: [0, 0], note: "Envelope-only frames 3/5 and 4/5 read clearly as cobweb and honeycomb; badges carried per frame."}
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [1640, 1659], note: "Contoured rendering = tanh(sharpness * max_phi a); produces lambda/2 envelope and the blob-like look of panels III-V."}
+          - {file: bressloff_v1_metrics.csv, lines: [0, 0], note: "kluver rows: chirality 0.892 / seam 0.000 for the spiral; rings_analytic 5.76 in 1-40 deg for every gallery preset."}
+      parameter-expressivity:
+        value: 62
+        rationale: >-
+          A morphospace parameter does control form: my --sweep local_inhibition run (0.05-0.6) moves the critical
+          harmonic from m=0 to m=1 and the unrestricted selection through roll -> square -> hexagonal -> rhombic with
+          a monotonically falling roll margin, and the lateral sweeps move q* monotonically (xihat_lat: 1.46 -> 0.70)
+          and flip parity at theta0 = 45 and 90 deg, all shown in Panels F/G and the CSV. Deductions: (a) -14 because
+          the sigma0 axis, the only new physical parameter of the full-cubic path, is unusable in the gallery's m=0
+          regime (near-resonant/subcritical at every value except 0.5 in my sweep; 178/260 regime-map cells greyed),
+          so it does not visibly control anything; (b) -10 because the sweeps never render a planform, so the form
+          change is shown only as colour codes and family strings, not as images; (c) -8 because three of the five
+          gallery forms (cobweb, honeycomb, rhombic) still come from the preset's pattern string and pattern_angle_deg
+          rather than from a swept parameter, and the spiral pitch is a rendering input; (d) -6 because --preset does
+          not change what the figure renders (it only seeds --sweep), contrary to the README.
+        evidence:
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [2212, 2222], note: "Eight sweepable couplings including local_inhibition (regime) and sigmoid_baseline (feedback)."}
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [2225, 2254], note: "regime_map over A_loc x sigma0 records family, harmonic, subcritical and near_resonant per cell."}
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [3780, 3781], note: "--preset is documented as 'Base paper preset for --sweep' only; the gallery presets are hard-coded at lines 2367-2373."}
+          - {file: bressloff_v1_metrics.csv, lines: [0, 0], note: "parameter_sweep rows: local_inhibition families hexagonal/rhombic/roll/square; sigmoid_baseline q* constant 1.491 with no reliable form change."}
+      morphometric-validation:
+        value: 58
+        rationale: >-
+          Quantities are computed on the output and compared with numbers from the literature: ring counts fovea -> 90
+          deg versus the paper's 30-36 perceived stripes, lambda_c versus 2.4-3.2 mm, foveal magnification versus 11.5
+          mm/deg, the map's M(E) versus Horton & Hoyt (1991) over 1-40 deg (RMS 6.8%), plus internal FFT k*, spoke
+          counts, spiral pitch, chirality and seam metrics, and the disagreements are printed rather than tuned away.
+          Deductions: (a) -14 because the reference values are the paper's own summary statements and a magnification
+          law, not measurements on hallucination/phosphene specimens (no Kluever/Siegel spiral pitch, no ring-spacing
+          data, nothing from Rule 2011's psychophysics is compared to a model-derived quantity); (b) -10 because the
+          gallery presets fail the one perceptual criterion they are compared to (9.0 vs 2.4-3.2 mm; 8.4 rings vs
+          30-36) and only the ad hoc paper-scale preset reaches it, and only on the Horton & Hoyt map (32.2) not on
+          the model's own map (29.0); (c) -8 because the honeycomb/cobweb/rhombic panels have no morphometric compared
+          to anything (cell size, spoke count 0.0 reported but unreferenced); (d) -5 because spiral pitch is validated
+          against the requested angle (self-consistency), and the H&H comparison hides a 30% max error and E2 = 1.71
+          vs 0.75 deg behind the RMS figure; (e) -5 because the Floquet panel reports only the fixture's RMS, no
+          quantity of this model.
+        evidence:
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [1791, 1878], note: "retinal_morphometrics: rings 0-90 on model and H&H maps vs 30-36, spokes, spiral pitch, visual spiral angle."}
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [235, 306], note: "compare_cortical_magnification (H&H 1991) and compare_paper_scale_anchors (2002 section 1.1 statements)."}
+          - {file: bressloff_v1_metrics.csv, lines: [0, 0], note: "retinal_morphometrics rows: 8.4/9.3 rings (gallery, out of range) vs 29.0/32.2 (paper_scale_tunnel); magnification_anchor max rel err 0.30."}
+          - {file: datasets/bressloff/horton_hoyt_1991_magnification.json, lines: [1, 15], note: "Only empirical anchor file: A = 17.3 mm/deg, E2 = 0.75 deg, with DOI/PMID."}
+      source-traceability:
+        value: 84
+        rationale: >-
+          All eight sources carry DOIs (and PMIDs where they exist) in the docstring, the dataset README and the .bib
+          file; the upstream repository is named with commit 344863a1 and MIT licence; all four fixtures are
+          SHA-256-pinned and verified fail-closed at run time (I recomputed the digests and they match); the
+          provenance of each map constant (paper vs upstream params.rs line) is recorded in
+          RETINO_CONSTANT_PROVENANCE. Deductions: (a) -6 because the top-level README section describing this script
+          is stale (gallery badges "IMPOSED (tunnel, spiral, cobweb)", lambda_c 8.7 mm, left-meridian seam,
+          --hemifield-mode without chiral-mirror, --preset "selects what is rendered"), so a reader following it is
+          misled about the current provenance chain; (b) -5 because the three calibration fixtures are another
+          program's output, not paper data, and the specific upstream file/line pointers (params.rs:5-8,
+          presets.rs:642-806, planform.rs) are not resolvable URLs; (c) -5 because the Rule 2011 fixture is used with
+          calibration_claim_allowed = false and no provenance of how its curves relate to the published figure is
+          given beyond "numerical calibration targets".
+        evidence:
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [11, 48], note: "Eight primary sources with DOI/PMID and the upstream commit and licence."}
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [152, 179], note: "SHA-256 pins for the four fixtures and per-constant provenance of w0, eps, alpha, beta."}
+          - {file: datasets/bressloff/README.md, lines: [7, 14], note: "Fixture table with digests and upstream paths; H&H file marked as repo-authored."}
+          - {file: README.md, lines: [433, 440], note: "Script section still describes the pre-Pass-4 state (IMPOSED tunnel/spiral, 8.7 mm, bilateral-mirror only, --preset selects rendering)."}
+      code-traceability:
+        value: 74
+        rationale: >-
+          Nearly every modelling function carries an equation or figure pointer (Eq. 3.12, 4.9, 4.14-4.16, 5.14, 5.15,
+          section 4a, 2002 section 1.1, Figs. 16-17, 29-36, 37-40), the section-2b comment states the amplitude
+          equations being solved, and upstream artefacts (m <= 4 truncation, +-1.5 clamp, 10-harmonic sum) are
+          labelled as such with their planform.rs lines. Deductions: (a) -8 because the central new step, the Q term
+          with its 3 s_3 and 2 s_2^2 prefactors and the two resolvent insertions at K = k_i +- k_j, is tied to no
+          specific equation of the paper ("derived here for the operator as implemented"); (b) -6 because the ledger
+          hard-codes the explanation "=> 2k harmonic of tanh o max" while the numbers it prints (0.97/1.00/ 0.17) show
+          the sqrt(3)k ring dominating; (c) -5 because the 0.5 and (-1)^n factors in lateral_weight_coeff, the
+          sharpness/tanh rendering nonlinearity and sigma0 = 1/2 as "the paper's case" are asserted without a
+          reference; (d) -4 for stale in-code comments (line 2429: "/3.1 so q* ~ 4.5 and lambda_c ~ 2.8 mm" versus the
+          preset's /3.3, 4.84, 2.60 mm) and the false "< 1 degree" quantisation claim; (e) -3 because the docstring's
+          "exact two-regime map" paragraph still describes the exact map as the pullback used, whereas the default is
+          now conformal.
+        evidence:
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [796, 817], note: "Section-2b comment: amplitude equations, gamma(theta), eta, Q and R_K defined, flagged as derived for the implemented operator."}
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [3202, 3203], note: "Ledger text '=> 2k harmonic' is hard-coded although the printed power triple shows sqrt(3)k dominant."}
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [2429, 2432], note: "Stale comment '/3.1, q* ~ 4.5, lambda_c ~ 2.8 mm' vs preset values /3.3, 4.84, 2.60."}
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [711, 721], note: "Upstream truncation/clamp documented with planform.rs line pointers (good practice)."}
+      repro-package:
+        value: 84
+        rationale: >-
+          requirements.lock.txt pins exact versions (numpy 2.5.4, matplotlib 3.10.7, pillow 12.0.0, Python 3.14.7) and
+          the venv matches; the script uses no random numbers at all; fixture digests are verified before any
+          computation and the run aborts on mismatch; --self-test ran clean here (40 PASS, 0 FAIL, 75 s) and the
+          PNG/CSV/GIF on disk are consistent with the printed numbers; Agg is forced when --no-show/--self-test or no
+          DISPLAY is set. Deductions: (a) -6 because the README documents "27 checks in ~12 s" and "--hemifield-mode
+          {full-field,bilateral-mirror}" and says --preset selects what is rendered, none of which is true of this
+          code; (b) -4 because --gif is not part of the documented default invocation and the regenerated GIF would be
+          produced by a separate ~100 s run, so artefact regeneration is two commands; (c) -3 because importing the
+          script as a module by path fails under Python 3.14 unless the module is first registered in sys.modules
+          (dataclass resolution), which hampers reuse/testing; (d) -3 because the audit-stated HEAD (2aac102) does not
+          match the checkout (9df331b), so the artefact->commit binding in the documentation cannot be confirmed from
+          the repo alone.
+        evidence:
+          - {file: requirements.lock.txt, lines: [1, 40], note: "Exact pins incl. numpy 2.5.4, matplotlib 3.10.7, pillow 12.0.0; Python 3.14.7 stated."}
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [320, 329], note: "verify_fixture_checksums; run_bressloff_analysis raises on any mismatch (lines 2333-2336)."}
+          - {file: 2001-bressloff-v1-form-constants.py, lines: [3420, 3430], note: "self_test entry; 40 checks all PASS in my run (75 s), consistent with on-disk PNG/CSV values."}
+          - {file: README.md, lines: [441, 441], note: "States '--self-test runs 27 checks ... in ~12 s' and a two-value --hemifield-mode; both stale."}
+    remediation:
+    - >-
+      2001-bressloff-v1-form-constants.py:1603-1616 (claim at 1568-1572): k_y quantisation to integer torus cycles
+      turns the fig35_hex_zero_even wavevectors into (0, +-114.62 deg) with n_y = 10 of 11 cycles — a 5.4 deg
+      distortion, not '< 1 degree' — so the panel badged 'STABLE, coexists' as a 60-deg hexagon renders a 65/115-deg
+      lattice; pick n or the cycle count so 11*sin(60) is near-integer, or quantise |k| and angle jointly and print
+      the realised angles on the panel.
+    - >-
+      2001-bressloff-v1-form-constants.py:3202-3203: the ledger line is hard-coded to say '=> 2k harmonic of tanh o
+      max' while the values it prints for the hex panel (power at k/sqrt3k/2k = 0.97/1.00/0.17) show the sqrt(3)k
+      difference ring dominating; derive the label from argmax of the three powers (the self-test at 3697-3702 already
+      accepts either).
+    - >-
+      2001-bressloff-v1-form-constants.py:947-1008 with 2221/2478: in the derived m=0 regime the full-cubic path is
+      subcritical and near-resonant at every sigma0 != 0.5 (my `--sweep sigmoid_baseline:0.3:0.7:5 --preset
+      roll_noncontoured_derived` gave roll margins -105..-117 and 'hexagonal SUBCRITICAL' at 4/5 points; resonance_gap
+      0.019), so the sigma0 parameter and the quadratic-feedback machinery contribute nothing testable where the
+      gallery lives; either implement the Matthews-Cox mean-mode coupling or restrict the sigma0 sweep/regime map to
+      the reliable window and state that in Panel B/G titles.
+    - >-
+      2001-bressloff-v1-form-constants.py:2642 (and 1457): the kluver_form_constant CSV rows write stab['critical_q']
+      = 1.491139 (the perturbative n=1-anchored scan) under the column 'critical_q' for the two m=0 panels that are
+      rendered at q_mode = 1.403797; write q_mode (or add a column) so the CSV's q* matches the rendered wavelength
+      8.95 mm.
+    - >-
+      README.md:433-441: the author's section is stale relative to Pass 4 — it says `--preset ID` 'select[s] what is
+      rendered' (it only seeds `--sweep`, script 3780/3819), lists `--hemifield-mode {full-field,bilateral-mirror}`
+      (chiral-mirror missing), claims '27 checks in ~12 s' (40 checks, 75 s here), badges tunnel/spiral/cobweb as
+      IMPOSED (now SELECTED/SELECTED/IMPOSED) and quotes lambda_c 8.7 mm for the gallery (now 9.0 mm for the derived
+      presets).
+    - >-
+      2001-bressloff-v1-form-constants.py:796-817 and 988-992: the quadratic-feedback coefficient gamma = [3 s3 Gamma3
+      - 2 s2^2 Q]/N with Q = <u0^2 R_0[u_th^2]> + <u0 u_th (R_+ + R_-)[u0 u_th]> is introduced as 'derived here for
+      the operator as implemented'; no equation number of Bressloff 2001 section 5 is cited for the prefactors or for
+      the K = 0 / K = k_i +- k_j decomposition, and no digitised Fig. 37-40 value is compared — add the paper's
+      expression (or an appendix derivation) and at least one numeric check against the published coefficient curves
+      rather than only against the Rust port.
+    - >-
+      2001-bressloff-v1-form-constants.py:1280-1283: with eta = 0 at sigma0 = 1/2 the honeycomb's 'STABLE, coexists'
+      badge rests on d_h/gamma0 = 2*gamma(60)/gamma0 - 1 = -0.0083, i.e. a 0.8% margin from the exactly-marginal pure-
+      cos(2 phi) value 1/2, on a 5-deg theta grid with 720 phi samples and interpolated shifts; print the margin on
+      the badge and test its sensitivity to ORIENT_SAMPLES/ORIENT_HARMONICS before calling the hexagon stable.
+    - >-
+      2001-bressloff-v1-form-constants.py:2429: comment reads 'lateral widths /3.1 so q* ~ 4.5 and lambda_c ~ 2.8 mm'
+      but the paper_scale_tunnel preset (588-592) divides by 3.3 and yields q* = 4.84, lambda_c = 2.60 mm; align the
+      comment with the preset.
+    - >-
+      [second assessor, gemini-4-argon] 2001-bressloff-v1-form-constants.py:855 — `exact_orientation_modes` computes
+      the dominant harmonic via `dom = int(abs(_HARM_M[int(np.argmax(np.abs(v)))]))` on complex exponential
+      coefficients `e^{2im*phi}` instead of combining conjugate pairs into the real harmonic L2 norm `sqrt(|v_+m|^2 +
+      |v_-m|^2) = sqrt(2)*|v_m|` for `m >= 1`; this biases the m=0 vs m=1 classification by sqrt(2), misclassifies
+      modes with up to 66.7% m=1 power (e.g. A_loc=0.24-0.25) as `harmonic=0`, shifts the reported full-operator
+      harmonic flip to `A_loc=0.275` (`bressloff_v1_metrics.csv:47`), and leaves `exact_curves['even_1']` as `NaN` at
+      118/128 wavenumbers at `A_loc=0.24`.
+    - >-
+      [second assessor, gemini-4-argon] 2001-bressloff-v1-form-constants.py:926-937 — `resolvent_apply` projects out
+      the critical eigenspace only when `abs(lam_c - vals[i]) < 1.0e-6 * max(abs(lam_c), 1e-12)`, which removes the
+      `|k_1 - k_2| = q*` triad resonance at `theta = 60 deg` (`Q(60 deg) = 0.3170`) but leaves an unprojected near-
+      resonant pole on the critical branch at adjacent grid angles `theta = 55 deg` (`Q = 0.6991`) and `theta = 65
+      deg` (`Q = 0.8307`), creating artificial spikes in Panel B for `sigma0 != 0.5` and shifting
+      `rhombic_theta_optimal_deg` from `45 deg` to `55 deg` at `sigma0 = 0.4` (`2001-bressloff-v1-form-
+      constants.py:3598-3601`).
+    - >-
+      [second assessor, gemini-4-argon] 2001-bressloff-v1-form-constants.py:2686 — In the `cubic_coefficients_full`
+      CSV writer, `'bare gamma3/N @ same'` is computed as `3.0 * bs['s3'] * v / bs['gamma0']`, omitting the `1 / N`
+      (`N = <u_0^2>`) factor present in `bs['gamma0']` (`line 992`); for all `m=1` gallery presets (`N ~ 0.5`), the
+      exported bare ratios in `bressloff_v1_metrics.csv:38-40` (`0.500, 0.416, 0.248...`) are halved relative to
+      `gamma(theta)/gamma(0)` (`1.000, 0.832, 0.496...`) at `sigma0 = 0.5`.
+    - >-
+      [second assessor, gemini-4-argon] 2001-bressloff-v1-form-constants.py:2480-2496 — `sweep_summary` (and the
+      `parameter_sweep` CSV rows at `lines 2807-2828` plus `kluver_form_constant` CSV rows at `line 2643`) aggregates
+      `q_star_min`, `q_star_max`, and `parity_flips` from the perturbative `n=1` fields (`critical_q`,
+      `critical_branch`) rather than `critical_q_exact` / `q_mode` and `critical_parity_exact`, causing
+      `bressloff_v1_metrics.csv:55` to report two false parity flips at `A_loc = 0.225, 0.25` and a false `q*_min =
+      0.729134` from the `O(beta^2)` zero-denominator singularity at `W_1^loc = W_0^loc`, and logging `critical_q =
+      1.491139` instead of `1.403797` for the `m=0` gallery presets (`bressloff_v1_metrics.csv:31-32,56`).
+    - >-
+      [second assessor, gemini-4-argon] 2001-bressloff-v1-form-constants.py:2933-2952 — Panel A defines `stab_gal =
+      rendered_gallery[0]['stability']` (which is `roll_noncontoured_derived` at `A_loc = 0.15`, where `n=1`
+      perturbation theory is invalid because `W_1^loc < W_0^loc`) and plots `stab_gal['even_growth']` (`q* = 1.49`)
+      under the label `'Gallery presets even (theta_0=60 deg, xi_hat_lat=1.5, q*=1.49)'`, misrepresenting the
+      contoured `A_loc = 1.0` gallery presets in Columns III-V (`q* = 1.45`).
+    - >-
+      [second assessor, gemini-4-argon] 2001-bressloff-v1-form-constants.py:3361-3390 — `make_gif` passes
+      `envelope_only=True` (`line 3362`) and hardcodes `'non-contoured'` in `fig.suptitle` (`line 3389`) for all five
+      gallery presets, stripping the contoured `argmax_phi` envelope and orientation line elements from Columns 3-5
+      (`fig31_square_even`, `fig35_hex_zero_even`, `fig33_rhombic_even`) and mislabeling them as non-contoured in
+      `docs/media/bressloff_v1_form_constants.gif`.
+    - >-
+      [second assessor, gemini-4-argon] README.md:435-458 — The top-level `README.md` section `###
+      [2001-bressloff-v1-form-constants.py]` is stale from Pass 3: it states that tunnel and spiral are badged
+      `IMPOSED: unstable`, that the cubic coefficients are bare overlaps without `sigma0` weights or quadratic
+      feedback, that no swept parameter changes the selected family, that the default pullback has a 7-10x left-
+      meridian seam, and that `--self-test` runs 27 checks in ~12 s, contradicting the Pass 4 code and outputs.

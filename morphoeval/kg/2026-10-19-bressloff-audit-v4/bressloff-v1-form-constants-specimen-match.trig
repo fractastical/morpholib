@@ -1,0 +1,102 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-bressloff-v1-form-constants> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-bressloff-v1-form-constants-specimen-match> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-bressloff-v1-form-constants-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Morphological realism / specimen match: 66/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "Side by side with Kluever's families as drawn in Bressloff 2001 Fig. 1 / Ermentrout & Cowan 1979, column I is a clean concentric tunnel and column II a continuous, handed log-spiral (chirality 0.89, seam 0.00 on the conformal map — I checked the PNG at full resolution and found no meridian discontinuity), and the badges (SELECTED/IMPOSED/STABLE) agree with the printed roll margins (+0.92, -0.34) and with the cubic numbers in the CSV. Deductions: (a) -10 because the contoured honeycomb (IV) and rhombic (V) panels in the PNG are sparse fields of bright blobs with white line elements that are hard to recognise as a honeycomb and hard to tell apart from each other; the GIF's envelope rendering of the same presets is far more honeycomb-like, so the contoured visualisation, not the model, is what fails here; (b) -8 because the \"honeycomb\" is a 65/115-degree lattice after quantisation, not a hexagonal one, so it is not the Fig. 35 planform it is labelled as; (c) -8 because the gallery shows ~5.8 rings in the central 40 deg (lambda_c 9.0 mm) where the paper and subjects report 30-36 stripes over the field, so the density of the forms is off by ~3x and only the small Panel D inset renders a paper-scale tunnel; (d) -8 because no actual specimen image (Kluever/Siegel drawings, Bressloff Fig. 1, Rule phosphene photos) is placed beside the output; the match is to the family labels, judged by the viewer." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-specimen-match-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-specimen-match-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-specimen-match-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-specimen-match-4> ;
+        pk:hasScore "0.66"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "bressloff_v1_form_constants_morphospace.png (generated output)" ;
+        dct:description "Cols I-II: tunnel rings and seamless chiral spiral convincing; cols IV-V: sparse blob fields with line segments, weakly distinct from each other. — bressloff_v1_form_constants_morphospace.png: rendered output of 2001-bressloff-v1-form-constants.py at 2aac102, image/png, 1852599 B, 3577×2495 px, artifact_sha256 59ee2445fa3cc7fe6fa27a91b99eb16d2b412d31933f5869271e80c9a736ef7c (sha256 59ee2445fa3cc7fe6fa27a91b99eb16d2b412d31933f5869271e80c9a736ef7c), spec_fingerprint fff701034002726a27d7e6e2ee5c626f921c8d06f78514d8965ad139e7a192a7" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "docs/media/bressloff_v1_form_constants.gif (generated output)" ;
+        dct:description "Envelope-only frames 3/5 and 4/5 read clearly as cobweb and honeycomb; badges carried per frame. — docs/media/bressloff_v1_form_constants.gif: rendered output of 2001-bressloff-v1-form-constants.py at 2aac102, image/gif, 2361492 B, 640×350 px, 36 frames, artifact_sha256 c6cebc034d11971f6d0f6cd89024fd1f534502f80f2c691e11654b0508241a39 (sha256 c6cebc034d11971f6d0f6cd89024fd1f534502f80f2c691e11654b0508241a39), spec_fingerprint fff701034002726a27d7e6e2ee5c626f921c8d06f78514d8965ad139e7a192a7" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-specimen-match-3> a pk:EvidenceItem ;
+        rdfs:label "2001-bressloff-v1-form-constants.py L1640–L1659" ;
+        dct:description "Contoured rendering = tanh(sharpness * max_phi a); produces lambda/2 envelope and the blob-like look of panels III-V." ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/2aac102/2001-bressloff-v1-form-constants.py#L1640-L1659> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-specimen-match-4> a pk:EvidenceItem ;
+        rdfs:label "bressloff_v1_metrics.csv (generated output)" ;
+        dct:description "kluver rows: chirality 0.892 / seam 0.000 for the spiral; rings_analytic 5.76 in 1-40 deg for every gallery preset. — bressloff_v1_metrics.csv: rendered output of 2001-bressloff-v1-form-constants.py at 2aac102, text/csv, 17613 B, artifact_sha256 1619e7198598fdae123dd701231fe52479d532c0c9779e0393b25451a1e0b81f (sha256 1619e7198598fdae123dd701231fe52479d532c0c9779e0393b25451a1e0b81f), spec_fingerprint fff701034002726a27d7e6e2ee5c626f921c8d06f78514d8965ad139e7a192a7" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary) + Gemini 4 Argon (independent blinded second assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1001/archopht.1991.01080060080030>,
+            <https://doi.org/10.1007/BF00336965>,
+            <https://doi.org/10.1088/0951-7715/13/4/317>,
+            <https://doi.org/10.1098/rstb.2000.0769>,
+            <https://doi.org/10.1137/23M1616686>,
+            <https://doi.org/10.1162/089976602317250861>,
+            <https://doi.org/10.1371/journal.pcbi.1002158>,
+            <https://github.com/MesmerPrism/bressloff-v1-form-constants>,
+            <https://press.uchicago.edu/ucp/books/book/chicago/M/bo3645325.html> .
+    <https://doi.org/10.1001/archopht.1991.01080060080030> dct:date "1991"^^xsd:gYear ;
+        dct:title "The representation of the visual field in human striate cortex: a revision of the classic Holmes map" .
+    <https://doi.org/10.1007/BF00336965> dct:date "1979"^^xsd:gYear ;
+        dct:title "A mathematical theory of visual hallucination patterns" .
+    <https://doi.org/10.1088/0951-7715/13/4/317> dct:date "2000"^^xsd:gYear ;
+        dct:title "Pattern formation with a conservation law" .
+    <https://doi.org/10.1098/rstb.2000.0769> dct:date "2001"^^xsd:gYear ;
+        dct:title "Geometric visual hallucinations, Euclidean symmetry and the functional architecture of striate cortex" .
+    <https://doi.org/10.1137/23M1616686> dct:date "2024"^^xsd:gYear ;
+        dct:title "A mathematical model of the visual MacKay effect" .
+    <https://doi.org/10.1162/089976602317250861> dct:date "2002"^^xsd:gYear ;
+        dct:title "What geometric visual hallucinations tell us about the visual cortex" .
+    <https://doi.org/10.1371/journal.pcbi.1002158> dct:date "2011"^^xsd:gYear ;
+        dct:title "A model for the origin and properties of flicker-induced geometric phosphenes" .
+    <https://github.com/MesmerPrism/bressloff-v1-form-constants> dct:title "bressloff-v1-form-constants: reference implementation and calibration reports (commit 344863a)" .
+    <https://press.uchicago.edu/ucp/books/book/chicago/M/bo3645325.html> dct:date "1966"^^xsd:gYear ;
+        dct:title "Mescal and Mechanisms of Hallucinations" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Morphological realism / specimen match 66/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-19T23:43:42Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-bressloff-v1-form-constants-specimen-match> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

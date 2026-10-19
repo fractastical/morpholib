@@ -18,22 +18,22 @@ run:
     seam metric and hemisphere handling, (kx,ky) torus quantisation, paper-scale preset,
     retinal morphometrics, H_pi definition cited.'
 totals:
-  steps_completed: 4
+  steps_completed: 12
   steps_total: 12
-  wall_time_s: 3395.79
-  wall_time_min: 56.6
-  tier_a_wall_s: 3395.79
-  tier_b_wall_s: 0.0
+  wall_time_s: 5301.29
+  wall_time_min: 88.35
+  tier_a_wall_s: 4176.65
+  tier_b_wall_s: 1124.64
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
-  input_tokens: 6464
-  output_tokens: 268508
-  subagent_tokens: 0
-  total_llm_tokens: 274972
-  artifact_tokens: 6185
-  tier_a_llm_tokens: 274972
-  tier_b_llm_tokens: 0
-  effective_tokens_per_s: 81.0
+  input_tokens: 8148
+  output_tokens: 434799
+  subagent_tokens: 42132
+  total_llm_tokens: 485079
+  artifact_tokens: 553434
+  tier_a_llm_tokens: 345215
+  tier_b_llm_tokens: 139864
+  effective_tokens_per_s: 91.5
 steps:
 - num: 1
   slug: scout
@@ -137,7 +137,7 @@ steps:
   title: 5  Script
   actor: builder
   model: claude-fable-5.1
-  status: done
+  status: completed
   started_at: '2026-10-19T22:30:58.344Z'
   ended_at: '2026-10-19T23:27:33.834Z'
   duration_s: 3395.491
@@ -186,167 +186,245 @@ steps:
   slug: output
   tier: A
   title: 6  Output & compare
-  actor: tool
-  model: claude-fable-5-1
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: primary-assessor
+  model: claude-fable-5.1
+  status: completed
+  started_at: '2026-10-19T23:27:58.331Z'
+  ended_at: '2026-10-19T23:40:59.191Z'
+  duration_s: 780.86
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
-    input_tokens: 0
-    output_tokens: 0
-    subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    input_tokens: 364
+    output_tokens: 48756
+    subagent_tokens: 21123
+    total_llm_tokens: 70243
+    artifact_tokens: 5489
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: /tmp/bressloff_primary_block_v4.yaml
+    bytes: 20611
+    sha256: 7e79a9d721afee542289f5da81806d1cca6bde199c770eaac024c624e725c871
+    tokens: 5489
   commands: []
-  notes: null
+  notes: 'Blinded primary assessor on 2aac102 (Pass 4 structural rebuild); Blinded
+    primary assessor (Claude Fable 5.1): mf74 sm66 pe62 mv58 st84 ct74 rp84 = 70.6
+    (v3 67.7); 8 findings'
 - num: 7
   slug: audit
   tier: B
   title: 7  Dual-agent audit
-  actor: dual-assessors
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: second-assessor
+  model: gemini-4-argon-medium
+  status: completed
+  started_at: '2026-10-19T23:27:58.420Z'
+  ended_at: '2026-10-19T23:40:38.216Z'
+  duration_s: 759.796
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
-    input_tokens: 0
-    output_tokens: 0
-    subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    input_tokens: 176
+    output_tokens: 46766
+    subagent_tokens: 21009
+    total_llm_tokens: 67951
+    artifact_tokens: 6426
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: /tmp/bressloff_second_block_v4.yaml
+    bytes: 24576
+    sha256: f1577c8e7124fc2828ed2725ca8a6bfd4d18f85f691fd712f64227d42cc9e0cf
+    tokens: 6426
   commands: []
-  notes: null
+  notes: 'Blinded second assessor on 2aac102; Blinded second assessor (Gemini 4 Argon):
+    mf82 sm80 pe86 mv84 st93 ct89 rp93 = 85.6 (v3 80.9); 7 findings'
 - num: 8
   slug: measure
   tier: B
   title: 8  Measure
-  actor: tool (measure_outputs.py)
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: orchestrator
+  model: claude-fable-5.1
+  status: completed
+  started_at: '2026-10-19T23:41:10.985Z'
+  ended_at: '2026-10-19T23:44:11.444Z'
+  duration_s: 180.458
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
-    input_tokens: 0
-    output_tokens: 0
+    input_tokens: 48
+    output_tokens: 22951
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 22999
+    artifact_tokens: 31481
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: morphoeval/audits/2026-10-19-bressloff-audit-v4.yaml
+    bytes: 40458
+    sha256: 826a7aa286ebe70a55262260e514d211a3d1396faa4aa719d6da6d950cdefac3
+    tokens: 10632
+  - file: morphoeval/audits/2026-10-19-bressloff-second-assessor-audit-v4.yaml
+    bytes: 37166
+    sha256: 7e4a61b36280cecd184d6709d098c7d4b5b8dbd7ed9aa0e91093d449ecb7fcb5
+    tokens: 9475
+  - file: morphoeval/audits/2026-10-19-bressloff-audit-v4.measurements.yaml
+    bytes: 21304
+    sha256: cf91865a1687bf31724668b8621c4ac2de1e72618d762db605f842355ecc619a
+    tokens: 5683
+  - file: morphoeval/audits/2026-10-19-bressloff-second-assessor-audit-v4.measurements.yaml
+    bytes: 21336
+    sha256: 2aa82695029ee365ed1a8a306c3f57656cbfcc8fe325997ed1a660cc5bb301ad
+    tokens: 5691
   commands: []
-  notes: null
+  notes: v4 audits built from both blocks; measurements; KG build/sign/verify; v4
+    audits (primary 70.6, second 85.2, panel 77.9) + 19 measurements each; PNG/CSV
+    byte-identical to 2aac102
 - num: 9
   slug: build
   tier: B
   title: 9  Write as claims
-  actor: tool (build_morphoeval_kg.py)
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: orchestrator
+  model: claude-fable-5.1
+  status: completed
+  started_at: '2026-10-19T23:44:11.550Z'
+  ended_at: '2026-10-19T23:44:11.646Z'
+  duration_s: 0.097
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 1500
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 1500
+    artifact_tokens: 74373
+    method: explicit (orchestrator commands + notes; generated files counted under
+      artifact_tokens only)
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-bressloff-audit-v4/morphoeval_2026-10-19-bressloff-audit-v4.ttl
+    bytes: 137938
+    sha256: 5ecc7826457b0908e43d8fe47f75b4d87fe08b36506149cf51d4b1fbf0e4091c
+    tokens: 39449
+  - file: morphoeval/kg/2026-10-19-bressloff-second-assessor-audit-v4/morphoeval_2026-10-19-bressloff-second-assessor-audit-v4.ttl
+    bytes: 122065
+    sha256: 80209458cc6e9f1bb95cd7e1fc264e1207bb83d5acda0b76f9233369079e6002
+    tokens: 34924
   commands: []
-  notes: null
+  notes: 'KG built: 906 triples primary, 10+8 nanopubs; ProbKnow conformance OK; supersedes
+    v3 chains'
 - num: 10
   slug: publish
   tier: B
   title: 10 Sign & verify
-  actor: tool (sign_morphoeval.py + check_signed.mjs)
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: orchestrator
+  model: claude-fable-5.1
+  status: completed
+  started_at: '2026-10-19T23:44:11.749Z'
+  ended_at: '2026-10-19T23:44:11.842Z'
+  duration_s: 0.093
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 800
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 800
+    artifact_tokens: 1218
+    method: explicit (orchestrator commands + notes; generated files counted under
+      artifact_tokens only)
+  artifacts:
+  - file: morphoeval/kg/2026-10-19-bressloff-audit-v4/published.json
+    bytes: 1898
+    sha256: 9cb300d63b515f6faa2a8cf0abf50985c54627082e68f05a1e9f5d9bde0b874d
+    tokens: 655
+  - file: morphoeval/kg/2026-10-19-bressloff-second-assessor-audit-v4/published.json
+    bytes: 1556
+    sha256: 03c6aaf7494a4fa48fa8f7b6a93bf7bd02c94e3004d5a31ca9d16bb5594a6b32
+    tokens: 563
   commands: []
-  notes: null
+  notes: '18 nanopubs signed (sign_morphoeval.py) and independently verified (check_signed.mjs:
+    10 ok + 8 ok, 0 failed)'
 - num: 11
   slug: graph
   tier: B
   title: 11 Public record
-  actor: tool
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: orchestrator
+  model: claude-fable-5.1
+  status: completed
+  started_at: '2026-10-19T23:44:11.931Z'
+  ended_at: '2026-10-19T23:45:04.455Z'
+  duration_s: 52.524
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
     input_tokens: 0
-    output_tokens: 0
+    output_tokens: 1200
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 1200
+    artifact_tokens: 373208
+    method: explicit (orchestrator commands + notes; generated files counted under
+      artifact_tokens only)
+  artifacts:
+  - file: morphoeval/kg/math_of_biology.ttl
+    bytes: 657865
+    sha256: 18a364fcea7fbcefb2a80b748ba639f1f7120b47e9883648d8ec8754fb444552
+    tokens: 186821
+  - file: morphoeval/kg/math_of_biology.trig
+    bytes: 674890
+    sha256: c1089d7c1f81a7fb1d3ee531f3c59d68246066fd12d9a0d727ad73b206bf05e8
+    tokens: 186387
   commands: []
-  notes: null
+  notes: 'Math KG rebuilt in a clean worktree at 317bc3c: 16 models, 25 equations,
+    Lean 4.35.0 VERIFIED 0 sorry, 163 measurements, 4638 triples; Bressloff loci updated
+    to Pass 4 functions'
 - num: 12
   slug: remed
   tier: B->A
   title: 12 Remediate & re-score
-  actor: builder+assessor
-  model: null
-  status: pending
-  started_at: null
-  ended_at: null
-  duration_s: 0.0
+  actor: builder
+  model: claude-fable-5.1
+  status: completed
+  started_at: '2026-10-19T23:45:04.595Z'
+  ended_at: '2026-10-19T23:47:16.268Z'
+  duration_s: 131.672
   cpu_user_s: 0.0
   cpu_sys_s: 0.0
   max_rss_mb: 0.0
-  runs_count: 0
+  runs_count: 1
   tokens:
-    input_tokens: 0
-    output_tokens: 0
+    input_tokens: 1096
+    output_tokens: 44318
     subagent_tokens: 0
-    total_llm_tokens: 0
-    artifact_tokens: 0
-    method: none
-  artifacts: []
+    total_llm_tokens: 45414
+    artifact_tokens: 55054
+    method: transcript-jsonl+BPE
+  artifacts:
+  - file: README.md
+    bytes: 147127
+    sha256: 06d0e0e89b4880eba9516a1ee0b10039c9a94a6eab2f672b403a33b4e26f5608
+    tokens: 38958
+  - file: morphoeval/README.md
+    bytes: 52828
+    sha256: cf963506dfd62b51e8fd1575d8101fab63bc647c3b6dafe09acad0692fe82578
+    tokens: 14440
+  - file: docs/media/README.md
+    bytes: 6154
+    sha256: a2f65d6a6f4dd57bd407eb8486c0f818987a574ab9dda53771fb0b098526f269
+    tokens: 1656
   commands: []
-  notes: null
+  notes: 'Docs + closure: README/morphoeval README/docs-media README to v4; remaining
+    findings carried as remediation; Docs updated to v4 (README script section, scoreboard,
+    nanopub counts; morphoeval README second-assessor section; media README). Remaining
+    15 findings (8 primary + 7 second) carried as v4 remediation for a possible Pass
+    5: ky-quantised hex angle, conjugate-pair harmonic norm, resolvent pole projection,
+    perturbative q* in sweep/CSV rows, Panel A gallery curve, GIF contoured envelope,
+    honeycomb margin, paper-curve digitisation'

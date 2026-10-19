@@ -1,0 +1,105 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-bressloff-v1-form-constants> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-bressloff-v1-form-constants-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-bressloff-v1-form-constants-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Source and data traceability: 84/100" ;
+        dct:date "2026-10-19"^^xsd:date ;
+        dct:description "All eight sources carry DOIs (and PMIDs where they exist) in the docstring, the dataset README and the .bib file; the upstream repository is named with commit 344863a1 and MIT licence; all four fixtures are SHA-256-pinned and verified fail-closed at run time (I recomputed the digests and they match); the provenance of each map constant (paper vs upstream params.rs line) is recorded in RETINO_CONSTANT_PROVENANCE. Deductions: (a) -6 because the top-level README section describing this script is stale (gallery badges \"IMPOSED (tunnel, spiral, cobweb)\", lambda_c 8.7 mm, left-meridian seam, --hemifield-mode without chiral-mirror, --preset \"selects what is rendered\"), so a reader following it is misled about the current provenance chain; (b) -5 because the three calibration fixtures are another program's output, not paper data, and the specific upstream file/line pointers (params.rs:5-8, presets.rs:642-806, planform.rs) are not resolvable URLs; (c) -5 because the Rule 2011 fixture is used with calibration_claim_allowed = false and no provenance of how its curves relate to the published figure is given beyond \"numerical calibration targets\"." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-source-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-source-traceability-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-source-traceability-4> ;
+        pk:hasScore "0.84"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2001-bressloff-v1-form-constants.py L11–L48" ;
+        dct:description "Eight primary sources with DOI/PMID and the upstream commit and licence." ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/2aac102/2001-bressloff-v1-form-constants.py#L11-L48> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "2001-bressloff-v1-form-constants.py L152–L179" ;
+        dct:description "SHA-256 pins for the four fixtures and per-constant provenance of w0, eps, alpha, beta." ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/2aac102/2001-bressloff-v1-form-constants.py#L152-L179> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-source-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "datasets/bressloff/README.md L7–L14" ;
+        dct:description "Fixture table with digests and upstream paths; H&H file marked as repo-authored." ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/2aac102/datasets/bressloff/README.md#L7-L14> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bressloff-v1-form-constants-source-traceability-4> a pk:EvidenceItem ;
+        rdfs:label "README.md L433–L440" ;
+        dct:description "Script section still describes the pre-Pass-4 state (IMPOSED tunnel/spiral, 8.7 mm, bilateral-mirror only, --preset selects rendering)." ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/2aac102/README.md#L433-L440> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary) + Gemini 4 Argon (independent blinded second assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1001/archopht.1991.01080060080030>,
+            <https://doi.org/10.1007/BF00336965>,
+            <https://doi.org/10.1088/0951-7715/13/4/317>,
+            <https://doi.org/10.1098/rstb.2000.0769>,
+            <https://doi.org/10.1137/23M1616686>,
+            <https://doi.org/10.1162/089976602317250861>,
+            <https://doi.org/10.1371/journal.pcbi.1002158>,
+            <https://github.com/MesmerPrism/bressloff-v1-form-constants>,
+            <https://press.uchicago.edu/ucp/books/book/chicago/M/bo3645325.html> .
+    <https://doi.org/10.1001/archopht.1991.01080060080030> dct:date "1991"^^xsd:gYear ;
+        dct:title "The representation of the visual field in human striate cortex: a revision of the classic Holmes map" .
+    <https://doi.org/10.1007/BF00336965> dct:date "1979"^^xsd:gYear ;
+        dct:title "A mathematical theory of visual hallucination patterns" .
+    <https://doi.org/10.1088/0951-7715/13/4/317> dct:date "2000"^^xsd:gYear ;
+        dct:title "Pattern formation with a conservation law" .
+    <https://doi.org/10.1098/rstb.2000.0769> dct:date "2001"^^xsd:gYear ;
+        dct:title "Geometric visual hallucinations, Euclidean symmetry and the functional architecture of striate cortex" .
+    <https://doi.org/10.1137/23M1616686> dct:date "2024"^^xsd:gYear ;
+        dct:title "A mathematical model of the visual MacKay effect" .
+    <https://doi.org/10.1162/089976602317250861> dct:date "2002"^^xsd:gYear ;
+        dct:title "What geometric visual hallucinations tell us about the visual cortex" .
+    <https://doi.org/10.1371/journal.pcbi.1002158> dct:date "2011"^^xsd:gYear ;
+        dct:title "A model for the origin and properties of flicker-induced geometric phosphenes" .
+    <https://github.com/MesmerPrism/bressloff-v1-form-constants> dct:title "bressloff-v1-form-constants: reference implementation and calibration reports (commit 344863a)" .
+    <https://press.uchicago.edu/ucp/books/book/chicago/M/bo3645325.html> dct:date "1966"^^xsd:gYear ;
+        dct:title "Mescal and Mechanisms of Hallucinations" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Bressloff et al. (2001/2002) V1 Euclidean Symmetry-Breaking & Klüver Form Constants — Source and data traceability 84/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-19T23:43:42Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-bressloff-v1-form-constants-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
