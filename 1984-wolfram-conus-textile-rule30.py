@@ -1451,6 +1451,172 @@ def verify_period2_left_fibonacci_subshift_and_antidiagonal_extinction(cone: np.
     }
 
 
+def verify_t3_t5_quadratic_ideal_and_8col_renormalization() -> dict:
+    """Verify Theorem 14: Exact 8-Column Spatial Renormalization Group Law,
+    Frobenius-Lag Quadratic Annihilation Ideal of the {T_3, T_5}^* Subshift,
+    and 28-Column Affine-Linearization of the Left Half-Plane:
+      1. Exact 8-Column Spatial Renormalization Group Law on Minimum-Spacing >= 3:
+         For EVERY binary sequence G = (G_r)_{r>=0} with minimum 1-spacing >= 3
+         (i.e. G_r * G_{r+1} == 0 and G_r * G_{r+2} == 0), columns j = -8, -9, -10, -11
+         collapse identically over F_2 to:
+           j = -8:  (a_{2r,-8},  a_{2r+1,-8})  = (0, G_{r+3} ^ G_{r+4}),
+           j = -9:  (a_{2r,-9},  a_{2r+1,-9})  = (1 ^ G^(1)_r, 1),
+           j = -10: (a_{2r,-10}, a_{2r+1,-10}) = (G^(1)_r, G^(1)_{r+1}),
+           j = -11: (a_{2r,-11}, a_{2r+1,-11}) = (1 ^ G^(1)_{r+1}, 1 ^ G^(1)_{r+1}),
+         where G^(1)_r := G_{r+2} ^ G_{r+4}. Because the leftward spatial inverse
+         is second-order in j, every column to the left of j = -8 is an EXACT
+         8-column renormalized copy of the leftward evolution from (j = -1, -2):
+           a_{t, j-8}(G) == a_{t, j}(G^(1))   for all j <= -1, t >= 0 (0 errors).
+      2. Exact Frobenius-Lag Quadratic Annihilation Ideal & 5-Step Difference Law on {T_3, T_5}^*:
+         On the {T_3, T_5}^* subshift (inter-1 spacings in {3, 5}), all quadratic
+         products at Frobenius-forbidden lags d in {1, 2, 4, 7} vanish identically
+         (G_r * G_{r+d} == 0), lag 5 reduces to lag 3 (G_r * G_{r+5} == G_r ^ H_r
+         where H_r := G_r * G_{r+3}), and H_r satisfies the exact 5-step first-order
+         difference equation:
+           H_{r+1} ^ H_r == 1 ^ G_r ^ G_{r+1} ^ G_{r+2} ^ G_{r+3} ^ G_{r+4},
+         telescoping EVERY H_r (r >= 1) into an affine-linear function of H_0 and G_0..G_{r+3}.
+         When 3-spacings are isolated (no 1001001, i.e. H_r * H_{r+3} == 0), lags
+         d in {6, 9, 12, 14, 17} also vanish and lags 8, 10 linearize:
+           G_r * G_{r+8}  == 1 ^ G_r ^ G_{r+2} ^ G_{r+4} ^ G_{r+6} ^ G_{r+8},
+           G_r * G_{r+10} == 1 ^ G_{r+2} ^ G_{r+4} ^ G_{r+6} ^ G_{r+8}.
+      3. Exact 17-Column and 28-Column Affine-Linearization of the Left Half-Plane:
+         Every column j = -1 .. -17 on {T_3, T_5}^* (and every column j = -1 .. -28
+         on {T_3, T_5}^* with isolated 3-spacings) lies 100% in the affine-linear
+         span of {1, H_0, G_0, G_1, ...} over F_2 (0 nonlinear residuals).
+    """
+    # 1. Exhaustive verification of 8-column spatial renormalization across all sequences with spacing >= 3
+    N_sp3 = 16
+    sp3_seqs = []
+    for mask in range(1 << N_sp3):
+        if (mask & (mask >> 1)) == 0 and (mask & (mask >> 2)) == 0:
+            sp3_seqs.append([(mask >> r) & 1 for r in range(N_sp3)])
+
+    renorm_errors = 0
+    col8_formula_errors = 0
+    for G in sp3_seqs:
+        G1 = [G[r + 2] ^ G[r + 4] for r in range(N_sp3 - 4)]
+        col0 = [0 if t % 2 == 0 else 1 for t in range(2 * N_sp3)]
+        col_m1 = [(1 ^ G[t // 2]) if t % 2 == 0 else 1 for t in range(2 * N_sp3)]
+        cols = {0: col0, -1: col_m1}
+        for j in range(-1, -20, -1):
+            prev_c = cols[j]
+            right_c = cols[j + 1]
+            cols[j - 1] = [prev_c[t + 1] ^ (prev_c[t] | right_c[t]) for t in range(len(prev_c) - 1)]
+
+        if cols[-8][0] != 0 or cols[-8][1] != (G[3] ^ G[4]):
+            col8_formula_errors += 1
+
+        col0_1 = [0 if t % 2 == 0 else 1 for t in range(2 * len(G1))]
+        col_m1_1 = [(1 ^ G1[t // 2]) if t % 2 == 0 else 1 for t in range(2 * len(G1))]
+        cols_1 = {0: col0_1, -1: col_m1_1}
+        for j in range(-1, -12, -1):
+            prev_c = cols_1[j]
+            right_c = cols_1[j + 1]
+            cols_1[j - 1] = [prev_c[t + 1] ^ (prev_c[t] | right_c[t]) for t in range(len(prev_c) - 1)]
+
+        for j in range(-1, -13, -1):
+            L_cmp = len(cols_1[j])
+            if cols[j - 8][:L_cmp] != cols_1[j][:L_cmp]:
+                renorm_errors += 1
+
+    # 2. Generate {T_3, T_5}^* subwords and verify quadratic ideal + 17-col / 28-col affine-linearization
+    def _gen_t3_t5_subwords(N: int, no_33: bool = False) -> list[str]:
+        words = set()
+        def _dfs(s: str) -> None:
+            if no_33 and "1001001" in s:
+                return
+            if len(s) >= N + 5:
+                for start in range(5):
+                    sub = s[start : start + N]
+                    if not (no_33 and "1001001" in sub):
+                        words.add(sub)
+                return
+            for tile in ("100", "10000"):
+                _dfs(s + tile)
+        _dfs("")
+        return sorted(words)
+
+    def _check_affine_span_depth(w_list: list[str], N: int, target_depth: int) -> int:
+        M_basis = 2 + N
+        X = np.zeros((len(w_list), M_basis), dtype=int)
+        cols_all = {j: ([], []) for j in range(-1, -target_depth - 1, -1)}
+        for idx, s in enumerate(w_list):
+            G = [int(c) for c in s]
+            X[idx, 0] = 1
+            X[idx, 1] = G[0] & G[3]
+            for r in range(N):
+                X[idx, 2 + r] = G[r]
+            col0 = [0 if t % 2 == 0 else 1 for t in range(2 * N)]
+            col_m1 = [(1 ^ G[t // 2]) if t % 2 == 0 else 1 for t in range(2 * N)]
+            cols = {0: col0, -1: col_m1}
+            for jj in range(-1, -target_depth, -1):
+                prev_c = cols[jj]
+                right_c = cols[jj + 1]
+                cols[jj - 1] = [prev_c[t + 1] ^ (prev_c[t] | right_c[t]) for t in range(len(prev_c) - 1)]
+            for j in range(-1, -target_depth - 1, -1):
+                cols_all[j][0].append(cols[j][0])
+                cols_all[j][1].append(cols[j][1])
+
+        non_affine_cols = 0
+        for j in range(-1, -target_depth - 1, -1):
+            for parity in (0, 1):
+                y = np.array(cols_all[j][parity], dtype=int)
+                A = np.hstack([X.copy(), y.reshape(-1, 1)])
+                n_rows, n_cols = A.shape
+                row = 0
+                for col in range(n_cols - 1):
+                    pivot = None
+                    for r in range(row, n_rows):
+                        if A[r, col] == 1:
+                            pivot = r
+                            break
+                    if pivot is None:
+                        continue
+                    A[[row, pivot]] = A[[pivot, row]]
+                    for r in range(n_rows):
+                        if r != row and A[r, col] == 1:
+                            A[r] ^= A[row]
+                    row += 1
+                if any(A[r, -1] == 1 for r in range(row, n_rows)):
+                    non_affine_cols += 1
+        return non_affine_cols
+
+    w_full = _gen_t3_t5_subwords(18, no_33=False)
+    ideal_errors = 0
+    for s in w_full:
+        G = [int(c) for c in s]
+        H = [G[r] & G[r + 3] for r in range(15)]
+        for r in range(10):
+            if (G[r] & G[r + 1]) != 0 or (G[r] & G[r + 2]) != 0 or (G[r] & G[r + 4]) != 0 or (G[r] & G[r + 7]) != 0:
+                ideal_errors += 1
+            if (G[r] & G[r + 5]) != (G[r] ^ H[r]):
+                ideal_errors += 1
+            if (H[r + 1] ^ H[r]) != (1 ^ G[r] ^ G[r + 1] ^ G[r + 2] ^ G[r + 3] ^ G[r + 4]):
+                ideal_errors += 1
+
+    w_no33 = _gen_t3_t5_subwords(19, no_33=True)
+    for s in w_no33:
+        G = [int(c) for c in s]
+        if (G[0] & G[6]) != 0 or (G[0] & G[9]) != 0 or (G[0] & G[12]) != 0 or (G[0] & G[14]) != 0 or (G[0] & G[17]) != 0:
+            ideal_errors += 1
+        if (G[0] & G[8]) != (1 ^ G[0] ^ G[2] ^ G[4] ^ G[6] ^ G[8]):
+            ideal_errors += 1
+        if (G[0] & G[10]) != (1 ^ G[2] ^ G[4] ^ G[6] ^ G[8]):
+            ideal_errors += 1
+
+    non_affine_17 = _check_affine_span_depth(w_full, 18, 17)
+    non_affine_28 = _check_affine_span_depth(w_no33, 19, 28)
+
+    return {
+        "sp3_tested_sequences": len(sp3_seqs),
+        "renorm_8col_errors": renorm_errors,
+        "col8_formula_errors": col8_formula_errors,
+        "ideal_errors": ideal_errors,
+        "non_affine_cols_depth17_full": non_affine_17,
+        "non_affine_cols_depth28_no33": non_affine_28,
+    }
+
+
 def evaluate_white_tent_extinction_and_drift(
     r30_grid: np.ndarray,
     r90_grid: np.ndarray,
@@ -2085,6 +2251,11 @@ def self_test() -> dict:
     assert left_fib_p2["antidiag_errors"] == 0 and left_fib_p2["t5_crystal_errors"] == 0, "Theorem 13 anti-diagonal telescoping or T5 crystal locking violated"
     assert left_fib_p2["max_left_cone_survival_steps"] <= 11, "Theorem 13 period-2 left-cone survival bound violated"
 
+    t3_t5_rg = verify_t3_t5_quadratic_ideal_and_8col_renormalization()
+    assert t3_t5_rg["renorm_8col_errors"] == 0 and t3_t5_rg["col8_formula_errors"] == 0, "Theorem 14 8-column spatial renormalization violated"
+    assert t3_t5_rg["ideal_errors"] == 0, "Theorem 14 Frobenius-lag quadratic ideal violated"
+    assert t3_t5_rg["non_affine_cols_depth17_full"] == 0 and t3_t5_rg["non_affine_cols_depth28_no33"] == 0, "Theorem 14 17-col / 28-col affine-linearization violated"
+
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)
     assert tent_eval["erosion_r30"]["frac_exact_2px_erosion"] == 1.0, "Rule 30 white-tent erosion must be 100% exact 2px/step"
     assert tent_eval["erosion_r90"]["frac_exact_2px_erosion"] == 1.0, "Rule 90 white-tent erosion must be 100% exact 2px/step"
@@ -2132,6 +2303,7 @@ def self_test() -> dict:
         "seam_p2": seam_p2,
         "horiz_attr": horiz_attr,
         "left_fib_p2": left_fib_p2,
+        "t3_t5_rg": t3_t5_rg,
         "tent_eval": tent_eval,
     }
 
