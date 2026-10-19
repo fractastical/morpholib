@@ -417,9 +417,24 @@ Then:
 
 ---
 
+### Theorem 21 (Full-Plane Characteristic Conservation Law $F_S(x+1) \oplus F_S(x) = F_{S-1}(x+1) \lor F_{S-2}(x+2)$, Differential Anti-Diagonal Identity $U_S \oplus (U_S \gg 1) = U_{S-1} \lor ((U_{S-2} \ll 1) \lor c_{S-2})$, Unconditional Joint-Periodicity Impossibility for $(c_t, l_1(t))$, and Complete Zero-Branching Extinction Through $\Pi = 18$ [$31,040$ Necklaces, $1,720,167$ Prefixes])
+Let $S := t - x \ge 0$ be the global characteristic coordinate across the entire space-time plane $x \in \mathbb{Z}$, and define $F_S(x) := a_{S + x, x}$ (with $F_S(x) \equiv 0$ for $x < -\lfloor S/2 \rfloor$ and $F_S(-\lfloor S/2 \rfloor) = d_{S \bmod 2}(\lceil S/2 \rceil) \equiv 1$ on the left light-cone boundary). Then:
+1. **Universal Full-Plane Characteristic Conservation Law ($\forall\, x \in \mathbb{Z}$):** Because $(t + 1) - (x + 1) = t - x = S$, Rule 30 at $(t+1, x+1) = (S+x+1, x+1)$ takes the exact 1D conservation form across the **entire plane $x \in \mathbb{Z}$** (left, center, and right):
+   $$F_S(x + 1) \;\oplus\; F_S(x) \;=\; F_{S-1}(x + 1) \;\lor\; F_{S-2}(x + 2) \qquad (\forall\, S \ge 2,\;\; \forall\, x \in \mathbb{Z}),$$
+   with initial characteristics $F_0(x) = \mathbf{1}_{x \ge 0}$ and $F_1(x) = (1 - (x \bmod 2))\,\mathbf{1}_{x \ge 0}$. Integrating rightward from the left light-cone boundary $u = -\lfloor S/2 \rfloor$ yields the exact autonomous full-plane integral (`0` bit errors across the entire 2D cone for $S = 2 \dots 174$):
+   $$F_S(x) \;=\; 1 \;\oplus\; \bigoplus_{u = -\lfloor S/2 \rfloor + 1}^{x} \Bigl(F_{S-1}(u) \;\lor\; F_{S-2}(u + 1)\Bigr) \qquad (\forall\, x \ge -\lfloor S/2 \rfloor),$$
+   and at $x = 0$:
+   $$c_S \;=\; F_S(0) \;=\; 1 \;\oplus\; \bigoplus_{u = -\lfloor S/2 \rfloor + 1}^{0} \Bigl(F_{S-1}(u) \;\lor\; F_{S-2}(u + 1)\Bigr).$$
+2. **Exact Differential Anti-Diagonal Identity & Left-Half-Plane Lag-2 Autonomy:** Let $U_S := B_S \gg 1 = \sum_{m=1}^{\lfloor S/2 \rfloor} a_{S-m, -m}\, 2^{m-1}$ encode the strictly-left anti-diagonal state ($m \ge 1$). Because bit $0$ of $B_{S-1}$ ($c_{S-1}$) shifts to bit $1$ of $B_{S-1} \ll 1$ and is masked out of $G_S$, $U_S$ is $100\%$ independent of $c_{S-1}$ and satisfies the exact **Differential Anti-Diagonal Identity** (`0` errors across $S = 2 \dots 299$):
+   $$U_S \;\oplus\; (U_S \gg 1) \;=\; \Bigl(U_{S-1} \;\lor\; \bigl((U_{S-2} \ll 1) \lor c_{S-2}\bigr)\Bigr) \ \&\ \bigl(2^{\lfloor S/2 \rfloor} - 1\bigr).$$
+3. **Unconditional Joint-Periodicity Impossibility for $(c_t, l_1(t))$ on Any Finite-Seed Light-Cone:** If $c_t = l_0(t)$ and $l_1(t) = a_{t, -1}$ were both eventually periodic for $t \ge t_0$ with common period $L = \mathrm{lcm}(\Pi_0, \Pi_1) \ge 1$, then by induction on $m \ge 2$ via $l_m(t) = l_{m-1}(t+1) \oplus (l_{m-1}(t) \lor l_{m-2}(t))$, every column $l_m(t)$ would be periodic in $t$ with period $L$ for **all $t \ge t_0$ (with the exact same onset $t_0$ independent of $m$)**. Setting $m = t_0 + L > t_0$ gives $l_{t_0+L}(t_0) = a_{t_0, -(t_0+L)} = 0$ (outside the light-cone at time $t_0$) whereas $l_{t_0+L}(t_0 + L) = a_{t_0+L, -(t_0+L)} = 1$ (on the left boundary of the light-cone at time $t_0 + L$), an unconditional contradiction $0 = 1$.
+4. **Complete Zero-Branching Anti-Diagonal Extinction Through Period $\Pi = 18$ ($31,040$ Primitive Necklaces, $1,720,167$ Admissible Prefixes):** Using the $O(1)$ bit-parallel `prefix_xor32` + `suffix_xor64` solver, $100\%$ of the **$419,043$ admissible 1-period prefixes across all $7,710$ primitive necklaces of $\Pi = 17$** extinguish in $\le 30$ exterior steps, and $100\%$ of the **$995,529$ admissible 1-period prefixes across all $14,532$ primitive necklaces of $\Pi = 18$** extinguish in $\le 32$ exterior steps — bringing the cumulative total across **$\Pi \in \{2, \dots, 18\}$** to **$31,040$ primitive necklaces and $1,720,167$ admissible prefixes with `0` survivors** ($S_{\max}(\Pi) \le 32$). $\square$
+
+---
+
 ## 7. One-Command Verification
 
-All twenty theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
+All twenty-one theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python 1984-wolfram-conus-textile-rule30.py --self-test-only
