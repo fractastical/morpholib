@@ -881,8 +881,11 @@ def measure_turing(gif: Path, N: int = 200, script: Path | None = None) -> list:
 
 def measure_bressloff(script: Path) -> list:
     """Measurements taken by loading 2001-bressloff-v1-form-constants.py: exact parity against
-    MesmerPrism/bressloff-v1-form-constants stability_reports, Klüver form-constant spectral rings,
-    and the Gaussian-only (no lateral inhibition) negative control."""
+    MesmerPrism/bressloff-v1-form-constants stability_reports, the exact orientation operator vs
+    the perturbative scan, full-cubic (Eq. 5.15) branch selection incl. roll stability over all
+    theta, the derived contoured/non-contoured regime, retinal pullback seams and chirality under
+    the conformal and exact angular maps, the paper-scale preset, and the Gaussian-only negative
+    control."""
     import importlib.util
     import tempfile
     spec = importlib.util.spec_from_file_location("bressloff_v1", script)
@@ -898,12 +901,35 @@ def measure_bressloff(script: Path) -> list:
     neg = res["negative_control"]
     gal = {g["preset_id"]: g for g in res["gallery"]}
     mag = res["magnification"]
+    tun = gal["roll_noncontoured_derived"]
+    spi = gal["spiral_noncontoured_derived"]
+    hexg = gal["fig35_hex_zero_even"]
+    bs_tun = tun["stability"]["branch_selection"]
+    bs_rh = gal["fig33_rhombic_even"]["stability"]["branch_selection"]
+    ps = res["paper_scale"]
+    reg = res["regime_map"]
+    n_cells = int(reg["family"].size)
+    n_unreliable = int((reg["subcritical"] | reg["near_resonant"]).sum())
     return [
         M("bressloff-v1-form-constants stability_reports parity, max |Δ|",
           float(res["max_cal_err"]), "dimensionless",
-          "maximum absolute error across all 5 Bressloff (2001) stability_reports (q*, λ*, γ(0), γ(θ), η_hex) vs paper-calibration.json",
+          "maximum absolute error across all 5 Bressloff (2001) stability_reports (q*, λ*, γ(0), γ(θ), η_hex) vs paper-calibration.json "
+          "(upstream bare-overlap path, branch_selection_upstream)",
           reference=0.0,
           source="MesmerPrism/bressloff-v1-form-constants commit 344863a1bd9e8a8e8c9cb20aced2897f3ffb2c4c",
+          derived_from="script"),
+        M("Exact orientation operator (|m| ≤ 8) vs perturbative n=1 scan at fig17: |Δλ_c|",
+          float(abs(res["exact_vs_perturbative"]["dlambda"])), "dimensionless growth rate",
+          "top eigenvalue of the Hermitian W_k matrix on e^{2imφ} at the perturbative q* minus the perturbative λ_even(q*)",
+          reference=f"0 (|Δq*| = {abs(res['exact_vs_perturbative']['dq']):.0e})",
+          source="Bressloff et al. 2001 §4 Eqs. 4.5-4.12 (perturbative) vs direct diagonalisation",
+          derived_from="script"),
+        M("Local-inhibition threshold A_loc at which the critical harmonic switches m=0 → m=1 (W₀ = W₁)",
+          float(res["local_inhibition_threshold"]), "dimensionless",
+          "root of W_0^loc(A) − W_1^loc(A) for the fig17 local kernel; below it the top eigenvector of the exact operator is φ-independent (non-contoured)",
+          reference=f"gallery I-II derived harmonic m = {tun['stability']['critical_harmonic_exact']} at A_loc = 0.15; full-operator switch in the regime map at ≈ 0.25",
+          source="Bressloff et al. 2001 §4a (non-contoured, Ermentrout & Cowan 1979 limit) vs §4b (contoured)",
+          note=f"derived contour mode for gallery I-II = {tun['stability']['derived_contour_mode']}",
           derived_from="script"),
         M("Mexican-hat lateral inhibition critical wavenumber q* (Bressloff 2001 Fig. 16)",
           float(neg["mexican_hat_critical_q"]), "dimensionless wavenumber",
@@ -919,22 +945,39 @@ def measure_bressloff(script: Path) -> list:
           source="q_min boundary of [0.05, 3.0] grid (monotonically decaying dispersion, prominence = 0.0)",
           note=f"interior peak prominence = {neg['gaussian_control_peak_prominence']:.2e}",
           derived_from="script"),
-        M("Klüver Tunnel/Rings cortical planform spectral ring sharpness",
-          float(gal["fig7_lattice_tunnel"]["spectral"]["ring_sharpness"]), "ratio (peak/median PSD)",
-          f"2D FFT radial power spectrum peak/median ratio at k* = {gal['fig7_lattice_tunnel']['spectral']['k_star_cycles']:.0f} cycles",
+        M("Full-cubic roll stability margin min_θ [2γ(θ)/γ(0) − 1] in the derived non-contoured regime (gallery tunnel)",
+          float(bs_tun["roll_min_margin"]), "dimensionless",
+          "Eq. 5.15 γ(θ) = [3s₃Γ₃ − 2s₂²Q]/N on a 5° grid, σ₀ = ½; rolls are linearly stable iff γ(0) > 0 and this margin is > 0 for every θ",
+          reference=">0 (rolls stable); contoured m=1 fig33 margin = %.2f (rolls unstable, selected %s@%.0f°)" % (
+              bs_rh["roll_min_margin"], bs_rh["unrestricted_selected_family"], bs_rh["rhombic_theta_optimal_deg"]),
+          source="Bressloff et al. 2001 §5 Eqs. 5.9-5.15; branch_selection_full()",
+          note=f"gallery tunnel: γ(0) = {bs_tun['gamma0']:+.3f}, unrestricted selection = {bs_tun['unrestricted_selected_family']}, "
+               f"feedback_fraction = {bs_tun['feedback_fraction']:.2e}, near_resonant = {bs_tun['near_resonant']}",
+          derived_from="script"),
+        M("Regime-map cells (A_loc × σ₀) where the cubic truncation is unreliable (subcritical or feedback-dominated)",
+          float(n_unreliable), "count",
+          f"out of {n_cells} cells: γ(0) ≤ 0, or |2s₂²Q| > |3s₃Γ₃| because the flat-dispersion K=0 mode is nearly marginal (resolvent gain 50-2000)",
+          reference="0 (fully reliable cubic analysis); all σ₀ = ½ cells are reliable",
+          source="Bressloff et al. 2001 §5; mean-mode coupling per Matthews & Cox 2000 not implemented",
+          note="selection is greyed out in Panel G for these cells rather than reported",
+          derived_from="script"),
+        M("Klüver Tunnel/Rings cortical planform spectral ring sharpness (derived non-contoured roll)",
+          float(tun["spectral"]["ring_sharpness"]), "ratio (peak/median PSD)",
+          f"2D FFT radial power spectrum peak/median ratio at k* = {tun['spectral']['k_star_cycles']:.0f} cycles",
           reference=">5.0",
-          source="Bressloff et al. 2001 Fig. 7 / Klüver 1966 Tunnel form constant",
+          source="Bressloff et al. 2001 Fig. 29 / Klüver 1966 Tunnel form constant",
+          note=f"k_x, k_y quantised to integer torus cycles (n_y = {tun['stability']['rendered_modes'][0]['n_y']})",
           derived_from="script"),
         M("Klüver Honeycomb/Hex linear cortical planform spectral ring wavenumber k*",
-          float(gal["fig35_hex_zero_even"]["spectral_linear"]["k_star_cycles"]), "cycles / domain",
+          float(hexg["spectral_linear"]["k_star_cycles"]), "cycles / domain",
           "dominant radial FFT wavenumber of the linear 3-mode hexagonal eigenmode superposition (non-contoured, weak tanh); "
           "the rendered wavenumber is q*/d_hyp quantised to integer cycles on the 2πβ/ε torus",
-          reference=f"{gal['fig35_hex_zero_even']['stability']['rendered_cycles']} (q*/d_hyp = {gal['fig35_hex_zero_even']['stability']['cycles_unquantised']:.2f} cycles)",
+          reference=f"{hexg['stability']['rendered_cycles']} (q*/d_hyp = {hexg['stability']['cycles_unquantised']:.2f} cycles)",
           source="Bressloff et al. 2001 Fig. 35 / Klüver 1966 Honeycomb form constant",
-          note=f"contoured-rendering k* = {gal['fig35_hex_zero_even']['spectral']['k_star_cycles']:.0f} = 2k harmonic of tanh∘max "
-               f"(normalised power at k/√3k/2k = {gal['fig35_hex_zero_even']['harmonics']['power_at_k']:.2f}/"
-               f"{gal['fig35_hex_zero_even']['harmonics']['power_at_sqrt3_k']:.2f}/{gal['fig35_hex_zero_even']['harmonics']['power_at_2k']:.2f}); "
-               f"FFT lattice class = {gal['fig35_hex_zero_even']['spectral']['lattice_class']}",
+          note=f"contoured-rendering k* = {hexg['spectral']['k_star_cycles']:.0f} = √3k/2k harmonic of tanh∘argmax_φ "
+               f"(normalised power at k/√3k/2k = {hexg['harmonics']['power_at_k']:.2f}/"
+               f"{hexg['harmonics']['power_at_sqrt3_k']:.2f}/{hexg['harmonics']['power_at_2k']:.2f}); "
+               f"FFT lattice class = {hexg['spectral']['lattice_class']}",
           derived_from="script"),
         M("Retino-cortical magnification vs Horton & Hoyt (1991), RMS relative error over 1-40 deg",
           float(mag["rms_rel_error"]), "dimensionless",
@@ -961,15 +1004,15 @@ def measure_bressloff(script: Path) -> list:
           source="MesmerPrism/bressloff-v1-form-constants commit 344863a1bd9e8a8e8c9cb20aced2897f3ffb2c4c, runs[*]",
           note=f"max |Δq*| = {res['max_run_err']:.2e}",
           derived_from="script"),
-        M("Gallery panels whose rendered lattice is the branch the cubic amplitude equations select (rhombic angle free)",
+        M("Gallery panels whose rendered lattice is the branch the full cubic amplitude equations select (rhombic angle free)",
           float(res["gallery_selected_count"]), "count",
           "rendered family == unrestricted_selected_family, out of %d gallery panels; %d further panels are linearly stable branches that lose the Lyapunov tie-break, %d are imposed (unstable at cubic order)" % (
               len(res["gallery"]), res["gallery_stable_coexisting_count"], res["gallery_imposed_count"]),
           reference=float(len(res["gallery"])),
-          source="Bressloff et al. 2001 §5 cubic amplitude equations (Eqs. 5.9-5.15), evaluated by branch_selection_for()",
+          source="Bressloff et al. 2001 §5 cubic amplitude equations (Eqs. 5.9-5.15), evaluated by branch_selection_full()",
           note="; ".join(f"{g['preset_id']}: {g['lattice_consistency']}" for g in res["gallery"]),
           derived_from="script"),
-        M("Rendered cortical wavelength λ_c relative to the paper's stated 2.4-3.2 mm",
+        M("Rendered cortical wavelength λ_c relative to the paper's stated 2.4-3.2 mm (parity-preset lateral widths)",
           float(res["scale_anchor"]["wavelength_ratio_model_over_paper"]), "ratio",
           "λ_c = 2π d_hyp / q* (d_hyp = 2 mm, q* from the gallery preset) divided by the midpoint 2.8 mm of Bressloff 2002 §1.1's 2.4-3.2 mm",
           reference="1.0 (paper scale); paper also states 30-36 perceived stripes vs %d rendered cycles" % res["scale_anchor"]["rendered_cycles"],
@@ -977,13 +1020,30 @@ def measure_bressloff(script: Path) -> list:
           note=f"λ_c = {res['scale_anchor']['critical_wavelength_model_mm']:.2f} mm; foveal magnification {res['scale_anchor']['foveal_magnification_model']:.2f} vs 11.5 mm/deg "
                f"(α = 3/π from upstream params.rs vs α ≈ {res['scale_anchor']['alpha_implied_by_paper']:.2f} implied by the paper)",
           derived_from="script"),
-        M("Spiral retinal pullback mirror symmetry (full-field convention)",
-          float(gal["fig33_rhombic_even_roll"]["diag_full"]["mirror_symmetry"]), "Pearson r",
-          "correlation between the retinal field and its left-right reflection; chiral spirals give |r| << 1, the bilateral-mirror convention gives 1.0",
-          reference=f"{gal['fig33_rhombic_even_roll']['diag_mirror']['mirror_symmetry']:.3f} (bilateral-mirror mode, same preset)",
+        M("Paper-scale preset (paper_scale_tunnel, lateral widths / 3.3): critical cortical wavelength λ_c",
+          float(ps["anchor"]["critical_wavelength_model_mm"]), "mm",
+          f"2π d_hyp / q* with q* = {ps['stability']['rendered_q']:.2f} from a q scan to 6 on the same operator",
+          reference="2.4-3.2 mm (Bressloff 2002 §1.1)",
+          source="Bressloff et al. 2002 Neural Comput. 14:473 §1.1",
+          note=f"fovea→90° ring count {ps['morphometrics']['rings_fovea_to_90']:.1f} on the α = 3/π map ({ps['morphometrics']['model_extent_0_90_mm']:.0f} mm) vs "
+               f"{ps['morphometrics']['rings_fovea_to_90_hh']:.1f} on the Horton-Hoyt map ({ps['morphometrics']['hh_extent_0_90_mm']:.0f} mm; paper 30-36): "
+               f"residual shortfall is the map's α, not q*",
+          derived_from="script"),
+        M("Spiral retinal pullback chirality 1 − max(|r_LR|, |r_UD|) (conformal map, full-field)",
+          float(spi["diag_full"]["chirality"]), "dimensionless",
+          "1 minus the largest |Pearson r| between the retinal field and its left-right / up-down reflections; a chiral log-spiral gives ≈1, an achiral pattern 0",
+          reference=f"{spi['diag_mirror']['chirality']:.3f} (bilateral-mirror convention, same preset, exact map: chirality destroyed)",
           source="Bressloff et al. 2001 Fig. 33b / 2002 §1.1 (logarithmic spirals are oblique rolls under the complex-log map)",
-          note=f"left-horizontal-meridian seam contrast {gal['fig33_rhombic_even_roll']['diag_full']['seam_contrast']:.1f}x (full-field) vs "
-               f"{gal['fig33_rhombic_even_roll']['diag_mirror']['seam_contrast']:.1f}x (mirror)",
+          note=f"cobweb (fig31) chirality = {gal['fig31_square_even']['diag_full']['chirality']:.3f}; spiral pitch {spi['morphometrics']['spiral_pitch_deg']:.1f}° "
+               f"(n_y = {spi['morphometrics']['first_mode_ny']})",
+          derived_from="script"),
+        M("Spiral retinal pullback seam contrast, conformal angular map (rendered default)",
+          float(spi["diag_full"]["seam_contrast"]), "normalised excess discontinuity",
+          "max over the four half-meridians of (|Δfield| across the meridian − local |∇field| scale) / RMS field; 0 = no seam",
+          reference=f"exact 2002 map: full-field {spi['diag_fullfield']['seam_contrast']:.2f} (left meridian {spi['diag_fullfield']['seam_h_left']:.2f}), "
+                    f"chiral-mirror {spi['diag_chiral']['seam_contrast']:.2f}, bilateral-mirror {spi['diag_mirror']['seam_contrast']:.2f}",
+          source="Bressloff et al. 2001 §2 (y = βθ/ε conformal coordinate) vs 2002 Eq. 1.1 (y = βrθ/(w₀+εr))",
+          note="the exact map cannot close the cortical torus at finite r, so y-odd planforms seam; the conformal map closes it exactly",
           derived_from="script"),
         M("Critical-branch parity flips over the lateral-spread sweep θ₀ ∈ [0°, 90°]",
           float(res["sweep_summary"]["lateral_spread_deg"]["parity_flips"]), "count",
@@ -991,7 +1051,8 @@ def measure_bressloff(script: Path) -> list:
           reference="≥1 (Bressloff 2001 §4: even planforms selected for θ₀ ≳ 45°)",
           source="Bressloff et al. 2001 Phil. Trans. R. Soc. B 356:299 §4, Figs. 16-17",
           note=f"flips at θ₀ ≈ {[round(v) for v in res['sweep_summary']['lateral_spread_deg']['parity_flip_values']]}°; "
-               f"q* over ξ̂_lat 1.5→6: {res['sweep_summary']['lateral_wide_sigma']['q_star_max']:.2f}→{res['sweep_summary']['lateral_wide_sigma']['q_star_min']:.2f}",
+               f"q* over ξ̂_lat 1.5→6: {res['sweep_summary']['lateral_wide_sigma']['q_star_max']:.2f}→{res['sweep_summary']['lateral_wide_sigma']['q_star_min']:.2f}; "
+               f"A_loc sweep harmonic flips at {[round(v, 3) for v in res['sweep_summary']['local_inhibition']['harmonic_flip_values']]}",
           derived_from="script"),
         M("Rule et al. (2011) Fig. 8 overlay domain-normalised RMS β error (diagnostic, no calibration claim)",
           float(res["floquet_status"]["domain_rms_beta_error"]), "normalised wavenumber β",

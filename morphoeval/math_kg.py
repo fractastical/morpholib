@@ -548,7 +548,7 @@ MATH_LAWS_REGISTRY: dict[str, dict[str, Any]] = {
         "equations": [
             {
                 "law_name": "Ermentrout & Cowan (1979) / Bressloff et al. (2001) Retino-Cortical Pullback Classification",
-                "formula": "x = (α/ε) ln(1 + ε r/w₀),  y = β r θ/(w₀ + ε r)  (far field ε r ≫ w₀: x ≈ (α/ε) ln(ε r/w₀), y ≈ (β/ε) θ);  phase(k_x, k_y) = k_x x + k_y y:  k_y = 0 → rings (tunnel),  k_x = 0 → rays (funnel),  else log-spiral θ = c − (k_x/k_y) ln r",
+                "formula": "x = (α/ε) ln(1 + ε r/w₀),  y = β θ/ε (conformal, 2001 §2; default) or y = β r θ/(w₀ + ε r) (2002 Eq. 1.1, `exact`);  phase(k_x, k_y) = k_x x + k_y y:  k_y = 0 → rings (tunnel),  k_x = 0 → rays (funnel),  else log-spiral θ = c − (k_x/k_y) ln r",
                 "lean_decl": "MathOfBiology.retino_cortical_phase",
                 "lean_theorem": "MathOfBiology.ermentrout_cowan_log_spiral",
                 "lean_locus": "morphoeval/lean/MathOfBiology.lean#L507-L531",
@@ -567,11 +567,11 @@ MATH_LAWS_REGISTRY: dict[str, dict[str, Any]] = {
                 "variables": "r, θ: retinal polar coordinates; x, y: cortical coordinates (mm); α, β: cortical magnification constants; ε: foveal scale; w₀: foveal radius; (k_x, k_y): cortical planform wavevector",
                 "role": "Maps V1 roll planforms onto Klüver's tunnel, funnel and spiral form constants; the cortical lattice orientation decides which retinal form constant is seen",
                 "source_citation": "Ermentrout & Cowan (1979) Biol. Cybern. 34:137; Bressloff et al. (2001) Phil. Trans. R. Soc. B 356:299 §2; Bressloff et al. (2002) Neural Comput. 14:473 Eq. 1.1 (α, β values from upstream params.rs, not the papers)",
-                "code_locus": "2001-bressloff-v1-form-constants.py#L129-L173,L982-L1013,L1097-L1118",
+                "code_locus": "2001-bressloff-v1-form-constants.py#L199-L223,L1527-L1706,L1709-L1788,L1791-L1880",
             },
             {
                 "law_name": "Bressloff et al. (2001) Cubic Amplitude-Equation Roll/Lattice Stability Boundary",
-                "formula": "dA₁/dt = A₁ (λ − γ₀ A₁ − 2 γ₃(θ) A₂);  roll fixed point λ = γ₀ A₁;  transverse growth (γ₀ − 2γ₃(θ)) A₁;  roll stable ⇔ γ₀ < 2 γ₃(θ)",
+                "formula": "dA₁/dt = A₁ (λ − γ₀ A₁ − 2 γ(θ) A₂);  γ(θ) = [3 s₃ Γ₃(θ) − 2 s₂² Q(θ)]/N (full cubic, Eq. 5.15; s₂ = 0 at σ₀ = ½ reduces to the bare overlap Γ₃);  roll fixed point λ = γ₀ A₁;  transverse growth (γ₀ − 2γ(θ)) A₁;  roll stable ⇔ γ₀ < 2 γ(θ) for every θ",
                 "lean_decl": "MathOfBiology.amplitude_rhs",
                 "lean_theorem": "MathOfBiology.bressloff_roll_stable_iff",
                 "lean_locus": "morphoeval/lean/MathOfBiology.lean#L533-L561",
@@ -590,10 +590,10 @@ MATH_LAWS_REGISTRY: dict[str, dict[str, Any]] = {
                     "theorem bressloff_fig38_roll_unstable :\n"
                     "    amplitude_rhs (3768 * 1) 3768 1869 0 1 = 30 := by decide"
                 ),
-                "variables": "A_i: squared mode amplitudes; λ: bifurcation parameter (distance past marginal stability); γ₀ = γ₃(0): self-coupling; γ₃(θ): cross-mode cubic coupling at wavevector angle θ (Eq. 5.15)",
+                "variables": "A_i: squared mode amplitudes; λ: bifurcation parameter (distance past marginal stability); γ₀ = γ(0): self-coupling; γ(θ): cross-mode cubic coupling at wavevector angle θ (Eq. 5.15) incl. firing-rate derivative weights s₂, s₃ and quadratic feedback Q through the resolvent (λ_c − W_K)⁻¹W_K",
                 "role": "Selects rolls vs rhombic, square or hexagonal lattices (Figs. 37–40); decides whether a hallucination is a single-family tunnel/spiral or a cobweb/honeycomb",
-                "source_citation": "Bressloff et al. (2001) Phil. Trans. R. Soc. B 356:299 §5 Eqs. 5.12–5.15, Figs. 37–40",
-                "code_locus": "2001-bressloff-v1-form-constants.py#L672-L697,L765-L916",
+                "source_citation": "Bressloff et al. (2001) Phil. Trans. R. Soc. B 356:299 §5 Eqs. 5.9–5.15, Figs. 37–40",
+                "code_locus": "2001-bressloff-v1-form-constants.py#L825-L945,L947-L1080,L1082-L1216,L1219-L1398",
             },
             {
                 "law_name": "Rule, Stoffregen & Ermentrout (2011) Floquet Resonance Tongues (1:1 Harmonic vs 2:1 Period-Doubling)",
@@ -612,7 +612,7 @@ MATH_LAWS_REGISTRY: dict[str, dict[str, Any]] = {
                 "variables": "μ: Floquet multiplier of the homogeneous flicker orbit; T: forcing period (ms); β: normalised wave number; n: number of elapsed forcing periods",
                 "role": "Separates flicker-induced stripe phosphenes (harmonic tongue) from period-doubled hexagonal phosphenes (subharmonic tongue) across (T, β)",
                 "source_citation": "Rule, Stoffregen & Ermentrout (2011) PLoS Comput. Biol. 7(9):e1002158 Fig. 8",
-                "code_locus": "2001-bressloff-v1-form-constants.py#L1708-L1724,L2091-L2137",
+                "code_locus": "2001-bressloff-v1-form-constants.py#L2512-L2528,L3007-L3053",
             },
         ],
     },
