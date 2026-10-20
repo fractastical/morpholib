@@ -109,11 +109,10 @@ jobs:
 
       - name: Verify Self-Tests & Lean 4 Kernel Proofs (0 sorry)
         run: |
-          python3 -c '
+          python3 - << 'EOF'
           import json, subprocess, time
           t0 = time.time()
           summary = json.load(open("morphoeval/runs/campaign_1000_expansion_summary.json"))
-          # Verify representative sample across all 10 cohorts + Lean 4 modules
           sample = summary[::25] + [summary[-1]]
           passed_py = 0
           passed_lean = 0
@@ -122,21 +121,25 @@ jobs:
               passed_py += 1
               subprocess.run(["lean", item["lean_file"]], check=True)
               passed_lean += 1
+          p1_mean = sum(x["pass1"] for x in summary) / len(summary)
+          p2_mean = sum(x["pass2"] for x in summary) / len(summary)
+          dl_mean = sum(x["delta"] for x in summary) / len(summary)
           report = [
               "# Cloud 1,000-Loop Autonomous Execution & Verification Report",
               "",
               f"- **Total Expansion Slots Executed in Cloud**: `{len(summary)}` (`#0101`–`#1100`)",
               f"- **Sampled Self-Test & Lean 4 Kernel Verifications**: `{passed_py}` Python `--self-test` passed, `{passed_lean}` Lean 4 modules kernel-checked (`0 sorry`)",
-              f"- **Mean Pass 1 -> Pass 2 Score**: `{sum(x[\"pass1\"] for x in summary)/len(summary):.2f}` -> `{sum(x[\"pass2\"] for x in summary)/len(summary):.2f}` (`+{sum(x[\"delta\"] for x in summary)/len(summary):.2f}` pts)",
+              f"- **Mean Pass 1 -> Pass 2 Score**: `{p1_mean:.2f}` -> `{p2_mean:.2f}` (`+{dl_mean:.2f}` pts)",
               f"- **Verification Elapsed**: `{time.time() - t0:.1f}s` on GitHub Cloud `ubuntu-latest`",
           ]
           open("morphoeval/runs/CLOUD_1000_VERIFICATION_REPORT.md", "w").write("\n".join(report) + "\n")
           print("\n".join(report))
-          '
+          EOF
 
-      - name: Rebuild Aristotelian Categories Atlas & Species Gallery Index
+      - name: Rebuild Aristotelian Categories Atlas, Animated Tile Grids & Species Gallery Index
         run: |
           python3 morphoeval/visualize_aristotelian_categories.py
+          python3 morphoeval/render_aristotelian_animated_tiles.py
           python3 morphoeval/math_kg.py --build
 
       - name: Commit & Push Cloud-Generated Artifacts to main
