@@ -1,11 +1,11 @@
 # Unconditional Period-Doubling to Infinity, Parity-Split Binary Barrier Trees, and Exact Carry-Run Lock-In Dynamics on the Left Light-Cone of Rule 30 (with Exact Resolution of the $P = 16 \to 32$ Horizon at $k_5 = 87,867$)
 
 **Target Venues:** Wolfram Rule 30 Prize Committee (Partial Progress & Off-Center Periodicity / Boundary Track) $\cdot$ *Complex Systems* $\cdot$ arXiv (`nlin.CG` / `math.DS`)  
-**Repository & Verification Code:** [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py)  
+**Repository & Verification Code:** [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py)  
 **Audit of Unconditional Proofs vs. Open Single-Seed Gaps:** [`docs/RULE30_PRIZE_STATUS_AND_GAPS.md`](./RULE30_PRIZE_STATUS_AND_GAPS.md)  
 **Date:** October 20, 2026
 
-![Animated 45-Milestone Progress Dashboard: Theorems 1–46 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
+![Animated 46-Milestone Progress Dashboard: Theorems 1–47 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
 
 ---
 
@@ -964,10 +964,10 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 
 ## 7. One-Command Verification
 
-All forty-seven theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
+All forty-seven theorems and the causal 64-bit Kogge–Stone solver are verified in [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py):
 
 ```bash
-./venv/bin/python 1984-wolfram-conus-textile-rule30.py --self-test-only
+./venv/bin/python models/1984-wolfram-conus-textile-rule30.py --self-test-only
 ```
 
 ---

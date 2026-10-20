@@ -12071,7 +12071,7 @@ def render_prize_progress_gif_and_poster(
         },
         {
             "step": 46,
-            "commit": "b311d46a -> HEAD",
+            "commit": "a69596cc",
             "time_str": "Oct 20, 4:25 PM",
             "dt_min": 25,
             "cum_min": 1075,
@@ -12507,9 +12507,9 @@ def render_prize_progress_gif_and_poster(
                 "PROVED (Thms 17, 19: S_max <= 5, 14)",
             ),
             (
-                "5. Twin SWAR, 2-Sheet PDE, EF Law & Prize #1-#3",
+                "5. Twin SWAR, 2-Sheet PDE, Left Cone & Prize #1-#3",
                 idx >= 37,
-                "PROVED (Thms 31-39: B_p, EF, 8-Node Trap, deg=2T-1)",
+                "PROVED (Thms 31-47: B_p, 9-Row k_r, Wavefront, 500x500)",
             ),
             (
                 "6. Primitive Necklaces Extinguished (Pi=2..30)",

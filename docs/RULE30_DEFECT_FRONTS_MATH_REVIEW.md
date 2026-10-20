@@ -1,8 +1,9 @@
 # Mathematical Review Brief: Left-Cone Diagonal Carry-Lookahead Algebra, All-Zero Barrier Trees & 1D Space-Time Defect Fronts in Rule 30
 
-**Executable Verification Script:** [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py) (`python3 1984-wolfram-conus-textile-rule30.py --self-test-only`)  
+**Executable Verification Script:** [`models/1984-wolfram-conus-textile-rule30.py`](../models/1984-wolfram-conus-textile-rule30.py) (`python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only`)  
+**Companion 47-Theorem Proof Suite & Audit:** [`docs/RULE30_PRIZE_SUBMISSION.md`](./RULE30_PRIZE_SUBMISSION.md) · [`docs/RULE30_PRIZE_STATUS_AND_GAPS.md`](./RULE30_PRIZE_STATUS_AND_GAPS.md)  
 **Exported Data Table:** [`conus_rule30_defect_fronts.csv`](../conus_rule30_defect_fronts.csv) · [`datasets/conus/conus_textile_reference.json`](../datasets/conus/conus_textile_reference.json)  
-**Primary Figures:** [`docs/media/conus_rule30_kymograph_defect_fronts.png`](media/conus_rule30_kymograph_defect_fronts.png) · [`docs/media/conus_textile_rule30.gif`](media/conus_textile_rule30.gif)
+**Primary Figures:** [`docs/media/conus_rule30_kymograph_defect_fronts.png`](media/conus_rule30_kymograph_defect_fronts.png) · [`docs/media/conus_textile_rule30.gif`](media/conus_textile_rule30.gif) · [`docs/media/rule30_prize_progress.gif`](media/rule30_prize_progress.gif)
 
 ![1D Space-Time Kymograph & Defect-Front Tooling](media/conus_rule30_kymograph_defect_fronts.png)
 
@@ -267,6 +268,6 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-# Run all algebraic, Kogge-Stone barrier-tree, and morphometric self-tests (~2.5 s)
-MPLCONFIGDIR="$PWD/.mplcache" python3 1984-wolfram-conus-textile-rule30.py --self-test-only
+# Run all 47 algebraic, Kogge-Stone barrier-tree, Pure Left-Cone, and morphometric self-tests
+MPLCONFIGDIR="$PWD/.mplcache" python3 models/1984-wolfram-conus-textile-rule30.py --self-test-only
 ```
