@@ -4,7 +4,7 @@
 **Repository & Verification Code:** [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py)  
 **Date:** October 19, 2026
 
-![Animated 21-Milestone Progress Dashboard: Theorems 1–22 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
+![Animated 22-Milestone Progress Dashboard: Theorems 1–23 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
 
 ---
 
@@ -455,9 +455,34 @@ Then:
 
 ---
 
+### Theorem 23 (2-Adic Lucas–Mahler Binomial Expansion, Bitwise-OR Convolution Recurrence, Exact Half-Period Mahler Degree Law $\deg_2(A_S) = P_S/2$ at Every Doubling, Lucas Submask Center-Column Formula $c_S = \bigoplus_{(m \land \lfloor S/2 \rfloor) = m} \alpha_{S, m}$, and Complete Zero-Branching Extinction Through $\Pi = 22$ [$401,426$ Necklaces, $56,477,807$ Prefixes])
+For every characteristic crystal $A_S(j)$ ($S \ge 0$) of dyadic period $P_S = 2^{n_S}$ from Theorem 22, let
+$$A_S(j) \;=\; \bigoplus_{m=0}^{P_S - 1} \alpha_{S, m}\, \binom{j}{m} \bmod 2, \qquad \alpha_{S, m} \;=\; \bigoplus_{(j \land m) = j} A_S(j) \;\in\; \mathbb{F}_2 \qquad (0 \le m < P_S)$$
+be its unique **2-adic Mahler–Lucas binomial expansion** over $\mathbb{F}_2$ (where $\binom{j}{m} \equiv 1 \pmod 2 \iff (j \ \&\ m) = m$ by Lucas' Theorem, so the forward and inverse Sierpinski / Zeta transforms are identical involutions over $\mathbb{F}_2$). Then:
+1. **Exact $+1$ Mahler Shift of the Difference Operator & Exact Bitwise-OR Convolution Recurrence:** Because Pascal's identity gives $\binom{j+1}{m} \oplus \binom{j}{m} = \binom{j}{m-1} \pmod 2$, the forward difference $\Delta A_S(j) := A_S(j+1) \oplus A_S(j) = g_S(j) = \bigoplus_{m=0}^{P_S-1} \beta_{S, m} \binom{j}{m} \bmod 2$ acts on the Mahler basis as an **exact $+1$ index shift**:
+   $$\alpha_{S, 0} \;=\; A_S(0) \;\equiv\; 1, \qquad \alpha_{S, m+1} \;=\; \beta_{S, m} \qquad (\forall\, m \ge 0).$$
+   Moreover, by Lucas' Theorem, the pointwise product of two binomial basis functions is a single basis function indexed by their **bitwise OR**:
+   $$\binom{j}{a}\,\binom{j}{b} \;\equiv\; \binom{j}{a \;\mid\; b} \pmod 2 \qquad (\forall\, a, b, j \ge 0).$$
+   Consequently, the nonlinear OR-gate recurrence of Rule 30 transforms in the 2-adic Mahler basis into the **exact Bitwise-OR Convolution Recurrence** (`0` errors across all $S = 2 \dots 35$):
+   $$\begin{aligned}
+   S = 2k\text{ (even)}:\quad &\alpha_{2k,\, m+1} \;=\; \mu_m \;\oplus\; \nu^+_m \;\oplus\; \bigoplus_{a \mid b = m} \bigl(\mu_a \land \nu^+_b\bigr), \\
+   S = 2k + 1\text{ (odd)}:\quad &\alpha_{2k+1,\, m+1} \;=\; \mu^+_m \;\oplus\; \nu^+_m \;\oplus\; \bigoplus_{a \mid b = m} \bigl(\mu^+_a \land \nu^+_b\bigr),
+   \end{aligned}$$
+   where $\mu_a := \alpha_{S-1, a}$, $\nu_b := \alpha_{S-2, b}$, and $f^+_a := f_a \oplus f_{a+1}$ represents the $+1$ spatial shift $A(j+1)$ in the Mahler basis.
+2. **Top-Coefficient Period-Doubling Criterion & Exact Half-Period Mahler Degree Law ($\deg_2(A_S) = P_S/2$):** Over any period $P = 2^n = \max(P_{S-1}, P_{S-2})$, Vandermonde summation $\sum_{j=0}^{P-1} \binom{j}{m} \equiv \delta_{m, P-1} \pmod 2$ implies that the total 1-period parity of the OR-gate source is identically the top Mahler coefficient $\beta_{S, P-1}$:
+   $$\bigoplus_{j=0}^{P-1} g_S(j) \;=\; \beta_{S, P-1} \;=\; \alpha_{S, P}.$$
+   Because $\beta_{S, m} = 0$ for all $m \ge P$, whenever $P_S$ doubles from $P$ to $2P$ ($\beta_{S, P-1} = 1$), the top non-vanishing Mahler coefficient of $A_S$ is $\alpha_{S, P} = 1$ with $\alpha_{S, m} = 0$ for all $P < m < 2P$. Thus **at every period-doubling step $S$, the 2-adic Mahler degree of $A_S$ is identically half the period**:
+   $$\deg_2(A_S) \;:=\; \max\bigl\{m \ge 0 : \alpha_{S, m} = 1\bigr\} \;=\; \frac{P_S}{2} \;=\; 2^{n_S - 1} \qquad (\text{at every doubling } P_S = 2P),$$
+   verified with **`0` errors across all doublings up to $S = 35$** ($S \in \{1, 2, 4, 8, 9, 11, 13, 15, 20, 22, 23, 25, 27, 29, 32\}$).
+3. **Exact Lucas Submask Sum Formula for the Rule 30 Center Column $c_S$:** Combining $c_S = A_S(\lfloor S/2 \rfloor)$ (Theorem 22(2)) with Lucas' Theorem $\binom{\lfloor S/2 \rfloor}{m} \equiv 1 \pmod 2 \iff (m \ \&\ \lfloor S/2 \rfloor) = m$ expresses the Rule 30 center column $c_S = a_{S, 0}$ as the **exact submask parity sum of the Mahler coefficients $\alpha_{S, m}$ over all submasks $m \subseteq \lfloor S/2 \rfloor$** (`0` errors across all $S = 0 \dots 35$):
+   $$c_S \;=\; \bigoplus_{(m \;\land\; \lfloor S/2 \rfloor) = m} \alpha_{S, m} \qquad (\forall\, S \ge 0).$$
+4. **Complete Zero-Branching Anti-Diagonal Extinction Through Period $\Pi = 22$ ($401,426$ Primitive Necklaces, $56,477,807$ Admissible Prefixes):** Because every non-constant Lyndon word of length $\Pi \ge 2$ satisfies the universal boundary invariant $w[0] = 0$ and $w[\Pi - 1] = 1$, step $N = \Pi$ of the prefix solver reduces to an in-place $O(1)$ bit-operation without array concatenation. Our vectorized Lyndon + Kogge–Stone Suffix-XOR solver (`9.9 s` total runtime across $\Pi = 21, 22$) proves that $100\%$ of the **$13,705,340$ admissible 1-period prefixes across all $99,858$ primitive necklaces of $\Pi = 21$** extinguish in $\le 35$ exterior steps, and $100\%$ of the **$32,966,640$ admissible 1-period prefixes across all $190,557$ primitive necklaces of $\Pi = 22$** extinguish in $\le 38$ exterior steps — bringing the cumulative total across **$\Pi \in \{2, \dots, 22\}$** to **$401,426$ primitive necklaces and $56,477,807$ admissible prefixes with `0` survivors** ($S_{\max}(\Pi) \le 38$). $\square$
+
+---
+
 ## 7. One-Command Verification
 
-All twenty-two theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
+All twenty-three theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python 1984-wolfram-conus-textile-rule30.py --self-test-only
