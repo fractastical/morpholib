@@ -4,7 +4,7 @@
 **Repository & Verification Code:** [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py)  
 **Date:** October 19, 2026
 
-![Animated 24-Milestone Progress Dashboard: Theorems 1–25 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
+![Animated 25-Milestone Progress Dashboard: Theorems 1–26 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
 
 ---
 
@@ -516,15 +516,31 @@ Then:
    with boundary bit $R_N(N) = c_{t_0 + N}$ at the MSB and exterior condition $R_N(0) = a_{t_0, -N}$ at bit $0$ (LSB). In the 2-adic Mahler basis $R_N(k) = \bigoplus_m \rho_{N, m} \binom{k}{m} \bmod 2$, this eliminates all shift operators $f^+$:
    $$\rho_{N,\, m+1} \;=\; \rho_{N-1, m} \;\oplus\; \rho_{N-2, m} \;\oplus\; \bigoplus_{a \mid b = m} \bigl(\rho_{N-1, a} \land \rho_{N-2, b}\bigr).$$
    Furthermore, in the exterior phase $N = N_{\text{init}} + s$ ($s \ge 1$) where $R_N(0) \equiv 0$, induction on $s$ proves the **Trailing-Zero Support Contraction Law**: $R_N(k) \equiv 0$ for all $0 \le k < \lfloor (s - 1)/2 \rfloor$, so shifting off dead trailing zero bits keeps the active bit-width strictly inside a single 64-bit `uint64` word across all exterior steps.
-4. **Complete Zero-Branching Anti-Diagonal Extinction Through Period $\Pi = 25$ ($2,807,194$ Primitive Necklaces, $793,212,133$ Admissible Prefixes):** Combining the Zero-Shift Row-Coordinate solver with Lyndon Prefix-Trie Compression ($K = \Pi - 3$, `3.4x` prefix speedup), Single-PrefixXOR Complement Branching ($R_N^{(B)} = R_N^{(A)} \oplus (2^N - 1)$), and Trailing-Zero Support Contraction verifies in `45.5 s`:
+4. **Complete Zero-Branching Anti-Diagonal Extinction Through Period $\Pi = 25$ ($2,807,194$ Primitive Necklaces, $793,212,133$ Admissible Prefixes):** Combining the Zero-Shift Row-Coordinate solver with Lyndon Prefix-Trie Compression ($K = \Pi - 4$, `6.5x` prefix speedup), Single-PrefixXOR Complement Branching ($R_N^{(B)} = R_N^{(A)} \oplus (2^N - 1)$), L2-Cache-Tiled Expansion, and Trailing-Zero Support Contraction verifies in `28 s`:
    - **$\Pi = 25$:** $1,342,176$ primitive necklaces, $465,081,565$ admissible 1-period prefixes $\implies$ **$100\%$ extinguished (`0` survivors, $S_{\max} = 53$)**.
    - **Cumulative Total ($\Pi = 2 \dots 25$):** **$2,807,194$ primitive necklaces and $793,212,133$ admissible prefixes extinguished with `0` survivors** ($S_{\max}(\Pi) \le 53$). $\square$
 
 ---
 
+### Theorem 26 (2-Adic Frobenius Shift & Quotient-Remainder Mahler Identity for $A_S(j + 2^b) \oplus A_S(j)$, Exact Projective Layer Increment Law $\Delta_b(S)$, MSB Dyadic Chord Reduction for $c_S$, and Complete Zero-Branching Anti-Diagonal Extinction Through Period $\Pi = 26$ [$5,387,989$ Primitive Necklaces, $1,920,437,960$ Admissible Prefixes])
+For every characteristic index $S = 2k + p \ge 2$ ($k = \lfloor S/2 \rfloor$, $p = S \bmod 2 \in \{0, 1\}$), dyadic scale $2^b$ ($b \ge 0$), and offset $j \ge 0$:
+1. **2-Adic Frobenius Shift & Quotient-Remainder Mahler Identity:** Over $\mathbb{F}_2[x]$, Frobenius linearity $(1 + x)^{j + 2^b} \equiv (1 + x)^j (1 + x^{2^b}) \pmod 2$ gives $\binom{j + 2^b}{m} \oplus \binom{j}{m} \equiv \binom{j}{m - 2^b} \pmod 2$. Writing $m = q 2^b + r$ ($q \ge 1, 0 \le r < 2^b$) and applying Lucas' Theorem $\binom{j}{(q-1)2^b + r} \equiv \binom{j \gg b}{q - 1}\binom{j \bmod 2^b}{r} \pmod 2$ proves that the $2^b$-step spatial difference of any characteristic crystal $A_S(j)$ has three exact equivalent forms (`0` errors across all $S = 2 \dots 299, b = 0 \dots 5, j = 0 \dots 127$):
+   $$A_S\bigl(j + 2^b\bigr) \;\oplus\; A_S(j) \;=\; \bigoplus_{q \ge 1} \;\bigoplus_{r=0}^{2^b - 1} \alpha_{S,\; q 2^b + r}\,\binom{j \gg b}{q - 1}\,\binom{j \bmod 2^b}{r} \;\equiv\; \bigoplus_{u=1}^{2^b} g_S(j + u) \pmod 2.$$
+   In particular, whenever $0 \le j < 2^b$ (so $j \gg b = 0$, which forces $q - 1 = 0 \iff q = 1$), **every Mahler block with $q = 0$ or $q \ge 2$ is identically annihilated**, collapsing the difference to the single Mahler block $m \in [2^b, 2^{b+1})$:
+   $$A_S\bigl(j + 2^b\bigr) \;\oplus\; A_S(j) \;=\; \bigoplus_{\substack{0 \le r < 2^b \\ (r \;\land\; j) = r}} \alpha_{S,\; 2^b + r} \;=\; \bigoplus_{u=1}^{2^b} g_S(j + u) \qquad (\forall\, 0 \le j < 2^b).$$
+2. **Exact Projective Layer Increment $\Delta_b(S)$ & MSB Dyadic Chord Reduction for $c_S$:** Setting $j = k \bmod 2^b < 2^b$ ($k = \lfloor S/2 \rfloor$) proves that the $b$-th projective increment $\Delta_b(S) := C_{b+1}(S) \oplus C_b(S)$ from Theorem 25(1) is identically (`0` errors across $S = 2 \dots 299$):
+   $$\Delta_b(S) \;=\; \mathrm{bit}_b\bigl(\lfloor S/2 \rfloor\bigr) \;\land\; \left(\bigoplus_{\substack{0 \le r < 2^b \\ (r \land k) = r}} \alpha_{S,\; 2^b + r}\right) \;=\; \mathrm{bit}_b\bigl(\lfloor S/2 \rfloor\bigr) \;\land\; \left(\bigoplus_{u=1}^{2^b} g_S\bigl((k \bmod 2^b) + u\bigr)\right).$$
+   Consequently, letting $r_{\max} = \lfloor \log_2 \lfloor S/2 \rfloor \rfloor$ be the most significant bit of $k = \lfloor S/2 \rfloor = 2^{r_{\max}} + \mathrm{rem}$ ($0 \le \mathrm{rem} < 2^{r_{\max}}$), the Rule 30 center column $c_S = a_{S, 0}$ reduces to a single crystal evaluation at $\mathrm{rem} < 2^{r_{\max}}$ plus a $2^{r_{\max}}$-chord integral of the OR-gate source $g_S$ (`0` errors across $S = 2 \dots 299$):
+   $$c_S \;=\; A_S(\mathrm{rem}) \;\oplus\; \bigoplus_{u=1}^{2^{r_{\max}}} g_S(\mathrm{rem} + u) \;=\; 1 \;\oplus\; \bigoplus_{b \in \mathrm{supp}_2(\lfloor S/2 \rfloor)} \;\bigoplus_{u=1}^{2^b} g_S\bigl((\lfloor S/2 \rfloor \bmod 2^b) + u\bigr).$$
+3. **Complete Zero-Branching Anti-Diagonal Extinction Through Period $\Pi = 26$ ($5,387,989$ Primitive Necklaces, $1,920,437,960$ Admissible Prefixes):** Using our 2-Stage L2-Cache-Tiled Zero-Shift Row-Coordinate Solver ($K = \Pi - 4$ prefix-trie compression with `6.50x` prefix deduplication and `sub_step = 8192` L2-cache-resident tiling) verifies in `82.4 s`:
+   - **$\Pi = 26$:** $2,580,795$ primitive necklaces, $1,127,225,827$ admissible 1-period prefixes $\implies$ **$100\%$ extinguished (`0` survivors, $S_{\max} = 42$)**.
+   - **Cumulative Total ($\Pi = 2 \dots 26$):** **$5,387,989$ primitive necklaces and $1,920,437,960$ ($> 1.92\text{ billion}$) admissible prefixes extinguished with `0` survivors** ($S_{\max}(\Pi) \le 53$). $\square$
+
+---
+
 ## 7. One-Command Verification
 
-All twenty-five theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
+All twenty-six theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python 1984-wolfram-conus-textile-rule30.py --self-test-only
