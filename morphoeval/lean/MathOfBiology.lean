@@ -235,6 +235,30 @@ theorem rule30_even2_entry1_step2_exit1 (r2 r3 : Bool) :
     rule30 false (rule30 true (rule30 true true r2) (rule30 true r2 r3)) true = true := by
   cases r2 <;> cases r3 <;> rfl
 
+/-- Law 2r (`wolfram-conus-textile-rule30-2r`, Theorem 43 — Depth-d Boundary Determinism,
+    2D Boolean Mobius Shell-to-Diagonal Collapse & First-Mismatch 1-Bit Gate Contradiction):
+    1. (`rule30_depth_d_boundary_deterministic_when_mid1`): At the right boundary `x = d` of the
+       Depth-`d` spatial cylinder automaton, whenever `a_{t, d} = true`, the next state `rule30 l true r`
+       is independent of the unknown exterior bit `r = a_{t, d+1}` and equals `!l` (`1 ⊕ a_{t, d-1}`).
+    2. (`rule30_mobius_shell_to_diagonal_collapse_1bit`): Over the 1-bit Boolean shell `(n ∨ m) = 1`
+       (`(n, m) ∈ {(0, 1), (1, 0), (1, 1)}`), summing `B_X(n, m) = ⊕_{q ⊆ n, j ⊆ m} X(q, j)` cancels
+       both off-diagonal entries `X(0, 1)` and `X(1, 0)` (each appearing twice) and collapses identically
+       to the main-diagonal sum `X(0, 0) ⊕ X(1, 1)`.
+    3. (`rule30_first_mismatch_one_gate_contradiction`): At the first mismatch `S_0` of any hypothetical
+       periodic center trajectory (`c_per ≠ c_true`), if `c_{S_0 - 1} = true`, then both `c_per` and
+       `c_true` equal `rule30 l1 true r_any = !l1`, contradicting `c_per ≠ c_true` at step 0. -/
+theorem rule30_depth_d_boundary_deterministic_when_mid1 (l r : Bool) :
+    rule30 l true r = !l := by
+  cases l <;> cases r <;> rfl
+
+theorem rule30_mobius_shell_to_diagonal_collapse_1bit (x00 x01 x10 x11 : Bool) :
+    bne (bne (bne x00 x01) (bne x00 x10)) (bne (bne (bne x00 x01) x10) x11) = bne x00 x11 := by
+  cases x00 <;> cases x01 <;> cases x10 <;> cases x11 <;> rfl
+
+theorem rule30_first_mismatch_one_gate_contradiction (l1 r_true r_per : Bool) :
+    rule30 l1 true r_true = rule30 l1 true r_per := by
+  cases l1 <;> cases r_true <;> cases r_per <;> rfl
+
 /-- Law 3 (`wolfram-conus-textile-rule30-3`):
     Meinhardt & Klingler (1987) 3-species activator-substrate-hormone reaction kinetics. -/
 structure MeinhardtKlinglerParams where
@@ -255,6 +279,51 @@ def meinhardt_activator_reaction (rho kappa rho0 mu_a : Nat) (a s : Nat) : Int :
 theorem meinhardt_basal_quiescence (rho kappa mu_a s : Nat) :
     meinhardt_activator_reaction rho kappa 0 mu_a 0 s = 0 := by
   simp [meinhardt_activator_reaction]
+
+/-- Law 4 (`wolfram-conus-textile-rule30-4`):
+    Ermentrout, Campbell & Oster (1986, The Veliger 28:369-388) / Boettiger, Ermentrout & Oster
+    (2009, PNAS 106:6837-6842) 3-cell discrete neurosecretory mantle-edge threshold gate:
+    with left synaptic excitation `w_L = 2`, center/right excitation `w_C = w_R = 1`, and local
+    lateral coinhibition `-1` when both `c` and `r` fire (`E(l,c,r) = 2*l + c + r - c*r ∈ {0,1,2,3}`),
+    firing inside the excitatory window `1 ≤ E(l,c,r) ≤ 2` and quenching at the refractory
+    upper threshold `E = 3` is algebraically identical to Wolfram Rule 30 across all 8 states. -/
+def ermentrout_oster_net_excitation (l c r : Bool) : Nat :=
+  2 * (if l then 1 else 0) + (if c then 1 else 0) + (if r then 1 else 0) -
+    (if c && r then 1 else 0)
+
+def ermentrout_oster_neural_gate (l c r : Bool) : Bool :=
+  let e := ermentrout_oster_net_excitation l c r
+  decide (1 ≤ e ∧ e ≤ 2)
+
+theorem ermentrout_oster_neural_gate_eq_rule30 (l c r : Bool) :
+    ermentrout_oster_neural_gate l c r = rule30 l c r := by
+  cases l <;> cases c <;> cases r <;> rfl
+
+/-- Law 5 (`wolfram-conus-textile-rule30-5`):
+    Molluscan clade Wolfram Class II (`rule90`, *Oliva porphyria*) vs. Class III (`rule30`,
+    *Conus textile*) vs. Class IV (`rule110`, *Cymbiola innexa*) Boolean Jacobian & quadratic
+    ANF carry dichotomy:
+    - Additive Class II `rule90(l,c,r) = bne l r` has zero quadratic ANF carry (`bne (rule90 l c r) (bne l r) = false`)
+      and symmetric left/right Boolean derivatives (`∂f/∂l = ∂f/∂r = true`).
+    - Chiral Class III `rule30(l,c,r) = bne l (c || r)` has exact left derivative `∂f/∂l = true`
+      but center-gated right derivative `∂f/∂r = !c`, breaking reflection symmetry whenever `l = true, c = true, r = false`. -/
+def rule90 (l _c r : Bool) : Bool :=
+  bne l r
+
+def rule110 (l c r : Bool) : Bool :=
+  bne (c || r) (l && c && r)
+
+theorem rule90_reflection_symmetric (l c r : Bool) :
+    rule90 l c r = rule90 r c l := by
+  cases l <;> cases r <;> rfl
+
+theorem rule30_chiral_reflection_asymmetry :
+    rule30 true true false ≠ rule30 false true true := by
+  decide
+
+theorem rule30_right_jacobian_center_gated (l c r : Bool) :
+    bne (rule30 l c r) (rule30 l c (!r)) = !c := by
+  cases l <;> cases c <;> cases r <;> rfl
 
 
 -- ============================================================================
