@@ -871,6 +871,23 @@ def add_math_triples_for_simulation(
     math_family = reg.get("math_family", "Mathematical Morphogenesis Model")
     g.add((claim_uri, PK.hypothesisType, Literal(math_family)))
 
+    # Attach Aristotelian taxonomic & ontological category triples (Ousia, Poion, Poson, Poiein)
+    aristo_idx_path = HERE / "runs" / "aristotelian_categories_index.json"
+    if aristo_idx_path.exists():
+        import json as _json
+        if not hasattr(add_math_triples_for_simulation, "_aristo_cache"):
+            add_math_triples_for_simulation._aristo_cache = _json.loads(aristo_idx_path.read_text())
+        for ae in add_math_triples_for_simulation._aristo_cache:
+            slug = ae.get("slug", "")
+            if slug and (slug == sim_id or sim_id.endswith("-" + slug)):
+                g.add((claim_uri, PK.biologicalGenus, Literal(ae["genus"])))
+                g.add((claim_uri, PK.aristotelianMegistonGenos, Literal(ae["megiston_genos"])))
+                g.add((claim_uri, PK.aristotelianSubalternClass, Literal(ae["subaltern_genos"])))
+                g.add((claim_uri, PK.aristotelianPoionForm, Literal(ae["poion_form"])))
+                g.add((claim_uri, PK.aristotelianPosonLaw, Literal(ae["poson_law"])))
+                g.add((claim_uri, PK.aristotelianEfficientCause, Literal(ae["efficient_cause"])))
+                break
+
     # 1. Governing Mathematical Equations / Laws (Human Notation + Lean 4 Formalization)
     eq_list = list(reg.get("equations", []))
     cb = sim.get("claim_boundary") or {}
@@ -1329,6 +1346,25 @@ WHERE {
   OPTIONAL { ?ev schema:targetValue ?ref }
 }
 ORDER BY ?pValue
+""",
+    ),
+    "aristotelian": (
+        "Aristotelian taxonomic & ontological coverage (Megiston Genos, Subaltern Class, Genus, Poion Form, Poson Law, Efficient Cause)",
+        """
+PREFIX pk: <https://w3id.org/probknow/ontology/>
+
+SELECT ?megistonGenos ?subalternClass ?genus ?poionForm ?posonLaw ?efficientCause ?woe
+WHERE {
+  ?claim a pk:Claim ;
+         pk:aristotelianMegistonGenos ?megistonGenos ;
+         pk:aristotelianSubalternClass ?subalternClass ;
+         pk:biologicalGenus ?genus ;
+         pk:aristotelianPoionForm ?poionForm ;
+         pk:aristotelianPosonLaw ?posonLaw ;
+         pk:aristotelianEfficientCause ?efficientCause ;
+         pk:weightOfEvidence ?woe .
+}
+ORDER BY ?megistonGenos ?subalternClass ?genus DESC(?woe)
 """,
     ),
 }

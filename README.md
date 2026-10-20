@@ -32,6 +32,12 @@ Across **100 autonomous 12-step closed remediation loops** (`slot-001` through `
 
 ![100-Loop Quantitative Performance & Formal Verification Dashboard](./docs/media/morphospace_100_loops_dashboard.png)
 
+![Aristotelian Categories & Porphyrian Taxonomic Atlas (55 Genera × 10 Biophysical Causes)](./docs/media/morphospace_aristotelian_atlas.png)
+
+![Porphyrian Specimen Gallery Across Aristotle's 10 Taxonomic Classes](./docs/media/morphospace_porphyrian_specimens.png)
+
+*Aristotelian ontological & taxonomic coverage across **55 biological genera**, **4 Megista Genē** (Enaima, Anaima, Phyta, Protista/Monera), **10 Subaltern Taxonomic Classes**, and **10 biophysical mechanisms** — see the complete genus-by-genus index in [`morphoeval/runs/ARISTOTELIAN_MORPHOSPACE_CATEGORIES.md`](./morphoeval/runs/ARISTOTELIAN_MORPHOSPACE_CATEGORIES.md).*
+
 ![100-Loop Animated Morphospace Tour (Slots #001–#100 across 10 Cohorts)](./docs/media/morphospace_100_loops_tour.gif)
 
 ---
