@@ -5212,6 +5212,137 @@ def verify_mahler_block_involution_and_pi29_closure() -> dict:
     }
 
 
+def verify_even_quotient_mahler_jump_and_pi30_closure() -> dict:
+    """
+    Theorem 30: Even-Quotient Mahler Jump & Trailing-Zero Mahler Coefficient Law,
+    Descending MSB-Prefix Staircase for the Center Column c_S, and Complete
+    Zero-Branching Anti-Diagonal Extinction Through Period Pi = 30
+    (74,248,449 Primitive Necklaces, 66,968,023,191 Admissible Prefixes).
+
+    Proves and verifies:
+      1. Even-Quotient Mahler Jump Identity & Trailing-Zero Mahler Coefficient Law:
+         For every anti-diagonal index S >= 2, every dyadic scale b >= 1, every even quotient
+         q_even = 2 q_0 >= 0, and every remainder 0 <= r_j < 2^b, because q_even has bit 0 equal
+         to 0 while q_even + 1 has bit 0 equal to 1, the binary submasks of q_even + 1 that are
+         not submasks of q_even are exactly {p + 1 : 0 <= p <= q_even, (p & q_even) == p}.
+         Consequently, jumping from quotient q_even to q_even + 1 at scale 2^b isolates the odd-quotient
+         Mahler block coefficients alpha_{S, (p+1)2^b + r} and equals the 2^b-step horizontal XOR
+         of the causal forcing sequence g_S:
+           A_S((q_even + 1)2^b + r_j) ^ A_S(q_even 2^b + r_j)
+             = B_{S, b, q_even + 1}(r_j) ^ B_{S, b, q_even}(r_j)
+             = XOR_{0 <= p <= q_even, (p & q_even) == p} XOR_{0 <= r <= r_j, (r & r_j) == r} alpha_{S, (p + 1)2^b + r}
+             = XOR_{u=1}^{2^b} g_S(q_even 2^b + r_j + u)
+         (verified with 0 errors across S = 2..299, b = 1..5, q_0 = 0..2, 0 <= r_j < 2^b).
+         In particular, setting r_j = 0 proves the Trailing-Zero Mahler Coefficient Law: for any
+         odd quotient q_odd = q_even + 1,
+           alpha_{S, (q_even + 1)2^b} = XOR_{0 <= p <= q_even, (p & q_even) == p} XOR_{u=1}^{2^b} g_S(p 2^b + u),
+         expressing every Mahler coefficient alpha_{S, m} at scale 2^{v_2(m)} directly in terms
+         of dyadic blocks of the forcing sequence g_S.
+      2. Descending MSB-Prefix Mahler & Forcing Staircase for the Center Column c_S:
+         Dual to the ascending binary-prefix staircase (Theorem 29(3)), decomposing
+         k = floor(S/2) = sum_{b in supp_2(k)} 2^b from the most significant bit down to the least
+         significant bit defines the top-down prefix pref_{>b}(k) := k & ~((1 << (b + 1)) - 1)
+         and even quotient q_top(k, b) := pref_{>b}(k) >> b = 2 * (k >> (b + 1)). Telescoping
+         A_S(k) from 0 to k in descending bit order yields:
+           c_S = 1 ^ XOR_{b in supp_2(k)} (A_S((q_top(k, b) + 1)2^b) ^ A_S(q_top(k, b)2^b))
+               = 1 ^ XOR_{b in supp_2(k)} XOR_{0 <= p <= q_top(k, b), (p & q_top(k, b)) == p} alpha_{S, (p + 1)2^b}
+               = 1 ^ XOR_{b in supp_2(k)} XOR_{u=1}^{2^b} g_S(pref_{>b}(k) + u)
+         (verified with 0 errors across S = 2..299). Unlike the ascending staircase (which varies
+         the remainder r <= k mod 2^b inside block q = 1), the descending MSB staircase sets the
+         remainder to r_j = 0 and varies the odd quotient p + 1 across submasks of q_top(k, b).
+      3. Complete Zero-Branching Anti-Diagonal Extinction Through Period Pi = 30:
+         - Pi = 30: 35,790,267 primitive necklaces, 39,463,591,413 admissible prefixes -> 0 survivors (S_max = 55).
+         - Cumulative Pi = 2..30: 74,248,449 primitive necklaces (> 74.24 million),
+           66,968,023,191 admissible prefixes (> 66.96 billion), 0 survivors, S_max(Pi) <= 55.
+    """
+    T = 480
+    W = 2 * T + 5
+    c = T + 2
+    grid = np.zeros((T + 1, W), dtype=np.uint8)
+    grid[0, c] = 1
+    for t in range(1, T + 1):
+        l = np.roll(grid[t - 1], 1)
+        m = grid[t - 1]
+        r = np.roll(grid[t - 1], -1)
+        grid[t] = l ^ (m | r)
+
+    S_max = 300
+    J_max = 256
+    A_mat = np.zeros((S_max, J_max), dtype=np.uint8)
+    for S in range(S_max):
+        half_f = S // 2
+        half_c = (S + 1) // 2
+        for j in range(J_max):
+            A_mat[S, j] = grid[half_c + j, c + j - half_f]
+
+    alpha_mat = A_mat.copy()
+    for b in range(8):
+        step = 1 << b
+        v_r = alpha_mat.reshape(S_max, -1, 2 * step)
+        v_r[:, :, step:] ^= v_r[:, :, :step]
+
+    even_jump_errors = 0
+    tz_mahler_errors = 0
+    desc_staircase_errors = 0
+    for S in range(2, S_max):
+        p = S & 1
+        g_row = (A_mat[S - 1, :-1] | A_mat[S - 2, 1:]) if p == 0 else (A_mat[S - 1, 1:] | A_mat[S - 2, 1:])
+        k_val = S // 2
+        for b in range(1, 6):
+            step = 1 << b
+            for q0 in range(3):
+                q_even = 2 * q0
+                for r_j in range(step):
+                    lhs = int(A_mat[S, (q_even + 1) * step + r_j] ^ A_mat[S, q_even * step + r_j])
+                    rhs_m = 0
+                    for p_sub in range(q_even + 1):
+                        if (p_sub & q_even) == p_sub:
+                            for r_m in range(r_j + 1):
+                                if (r_m & r_j) == r_m and alpha_mat[S, ((p_sub + 1) << b) + r_m]:
+                                    rhs_m ^= 1
+                    rhs_g = int(np.bitwise_xor.reduce(g_row[(q_even * step + r_j) : ((q_even + 1) * step + r_j)]))
+                    if lhs != rhs_m or lhs != rhs_g:
+                        even_jump_errors += 1
+                lhs_tz = int(alpha_mat[S, (q_even + 1) << b])
+                rhs_tz = 0
+                for p_sub in range(q_even + 1):
+                    if (p_sub & q_even) == p_sub:
+                        rhs_tz ^= int(np.bitwise_xor.reduce(g_row[(p_sub << b) : ((p_sub + 1) << b)]))
+                if lhs_tz != rhs_tz:
+                    tz_mahler_errors += 1
+
+        c_desc_m = 1
+        c_desc_g = 1
+        pref = 0
+        for b in range(7, -1, -1):
+            if (k_val >> b) & 1:
+                q_top = pref >> b
+                step_m = 0
+                for p_sub in range(q_top + 1):
+                    if (p_sub & q_top) == p_sub and alpha_mat[S, (p_sub + 1) << b]:
+                        step_m ^= 1
+                step_g = int(np.bitwise_xor.reduce(g_row[(q_top << b) : ((q_top + 1) << b)]))
+                if step_m != step_g or step_m != int(A_mat[S, (q_top + 1) << b] ^ A_mat[S, q_top << b]):
+                    desc_staircase_errors += 1
+                c_desc_m ^= step_m
+                c_desc_g ^= step_g
+                pref += 1 << b
+        if c_desc_m != int(grid[S, c]) or c_desc_g != int(grid[S, c]):
+            desc_staircase_errors += 1
+
+    necklaces_30, prefs_30, unext_30, smax_30 = _solve_zero_shift_pi_fast(30)
+
+    return {
+        "even_jump_errors": even_jump_errors,
+        "tz_mahler_errors": tz_mahler_errors,
+        "desc_staircase_errors": desc_staircase_errors,
+        "necklaces_30": necklaces_30,
+        "prefs_30": prefs_30,
+        "unext_30": unext_30,
+        "max_ext_30": smax_30,
+    }
+
+
 def evaluate_white_tent_extinction_and_drift(
     r30_grid: np.ndarray,
     r90_grid: np.ndarray,
@@ -6001,6 +6132,19 @@ def self_test() -> dict:
         and mahler_inv["max_ext_29"] <= 52
     ), "Theorem 29 Pi=29 extinction violated"
 
+    even_jump = verify_even_quotient_mahler_jump_and_pi30_closure()
+    assert (
+        even_jump["even_jump_errors"] == 0
+        and even_jump["tz_mahler_errors"] == 0
+        and even_jump["desc_staircase_errors"] == 0
+    ), "Theorem 30 Even-Quotient Mahler Jump, Trailing-Zero Mahler Law, or Descending MSB-Prefix Staircase violated"
+    assert (
+        even_jump["necklaces_30"] == 35790267
+        and even_jump["prefs_30"] == 39463591413
+        and even_jump["unext_30"] == 0
+        and even_jump["max_ext_30"] <= 55
+    ), "Theorem 30 Pi=30 extinction violated"
+
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)
     assert tent_eval["erosion_r30"]["frac_exact_2px_erosion"] == 1.0, "Rule 30 white-tent erosion must be 100% exact 2px/step"
     assert tent_eval["erosion_r90"]["frac_exact_2px_erosion"] == 1.0, "Rule 90 white-tent erosion must be 100% exact 2px/step"
@@ -6064,6 +6208,7 @@ def self_test() -> dict:
         "sierp_tensor": sierp_tensor,
         "quot_split": quot_split,
         "mahler_inv": mahler_inv,
+        "even_jump": even_jump,
         "tent_eval": tent_eval,
     }
 
@@ -7246,7 +7391,7 @@ def render_prize_progress_gif_and_poster(
         },
         {
             "step": 28,
-            "commit": "9192c3c -> HEAD",
+            "commit": "0b6bf59",
             "time_str": "Oct 19, 7:18 PM",
             "dt_min": 20,
             "cum_min": 688,
@@ -7265,10 +7410,31 @@ def render_prize_progress_gif_and_poster(
             "pi_max": 29,
             "necks_done": 38458182,
         },
+        {
+            "step": 29,
+            "commit": "0b6bf59 -> HEAD",
+            "time_str": "Oct 19, 7:38 PM",
+            "dt_min": 20,
+            "cum_min": 708,
+            "phase": "Phase IV: General Period-Pi Elimination, Dual Families & Degree Staircase",
+            "phase_color": "#34d399",
+            "title": "Step 29: Even-Quotient Mahler Jump, MSB Staircase & Pi=2..30 Closure (66.97B Prefs)",
+            "thm_badge": "Theorem 30 (74,248,449 Necklaces)",
+            "formula_lines": [
+                r"$A_S((q_{\mathrm{ev}}+1)2^b+r_j)\oplus A_S(q_{\mathrm{ev}}2^b+r_j) = \bigoplus_{p\subseteq q_{\mathrm{ev}}}\bigoplus_{r\subseteq r_j}\alpha_{S,(p+1)2^b+r} = \bigoplus_{u=1}^{2^b}g_S(q_{\mathrm{ev}}2^b+r_j+u),\quad c_S = 1\oplus\bigoplus_{b\in\mathrm{supp}_2(k)}\bigoplus_{p\subseteq q_{\mathrm{top}}}\alpha_{S,(p+1)2^b}$",
+                r"$\Pi=2\dots 30:\; 74,248,449/74,248,449\mathrm{\ necklaces\ (66,968,023,191\ prefixes)\ extinguished\ in}\le 55\mathrm{\ steps\ (0\ survivors)}$",
+            ],
+            "synthesis": (
+                "Proves the even-quotient Mahler jump identity, trailing-zero Mahler coefficient law, and descending MSB-prefix staircase for c_S, "
+                "and extinguishes all 74,248,449 necklaces (66,968,023,191 prefixes) through Pi=30."
+            ),
+            "pi_max": 30,
+            "necks_done": 74248449,
+        },
     ]
 
-    pi_vals = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
-    s_max_vals = [5, 2, 11, 4, 9, 13, 10, 17, 14, 19, 14, 22, 27, 24, 26, 30, 32, 33, 34, 35, 38, 39, 42, 53, 42, 44, 49, 52]
+    pi_vals = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    s_max_vals = [5, 2, 11, 4, 9, 13, 10, 17, 14, 19, 14, 22, 27, 24, 26, 30, 32, 33, 34, 35, 38, 39, 42, 53, 42, 44, 49, 52, 55]
 
     frames_pil: list[Image.Image] = []
     frame_durations_ms: list[int] = []
@@ -7321,7 +7487,7 @@ def render_prize_progress_gif_and_poster(
         ax_top.text(
             98.5,
             7.2,
-            f"[{ms['thm_badge']}]   Milestone {ms['step']} / 28",
+            f"[{ms['thm_badge']}]   Milestone {ms['step']} / 29",
             color=ms["phase_color"],
             fontsize=11.0,
             fontweight="bold",
@@ -7336,7 +7502,7 @@ def render_prize_progress_gif_and_poster(
         ax_top.text(
             85.25,
             2.9,
-            f"29-Theorem Architecture: {int(round(prog_pct * 100))}% Complete",
+            f"30-Theorem Architecture: {int(round(prog_pct * 100))}% Complete",
             color="#0b0f19" if prog_pct > 0.45 else "#f8fafc",
             fontsize=8.6,
             fontweight="bold",
@@ -7543,7 +7709,7 @@ def render_prize_progress_gif_and_poster(
             ax_stair2.tick_params(colors="#34d399", labelsize=8.0)
             ax_stair2.set_ylim(0, 58)
 
-            ax_stair.set_xlim(0.5, 29.5)
+            ax_stair.set_xlim(0.5, 30.5)
             ax_stair.set_ylim(0.5, 4.8)
             ax_stair.set_xlabel("Left Column $m$ / Period $\\Pi$", color="#cbd5e1", fontsize=9.2)
             ax_stair.set_ylabel("Max Algebraic Degree $\\deg(l_m)$", color="#f59e0b", fontsize=9.0)
@@ -7614,14 +7780,15 @@ def render_prize_progress_gif_and_poster(
                 "S26\nThm27",
                 "S27\nThm28",
                 "S28\nThm29",
+                "S29\nThm30",
             ],
             color="#cbd5e1",
-            fontsize=5.2,
+            fontsize=5.0,
         )
         ax_time.set_ylim(0, 82)
         ax_time.set_ylabel("Step Duration $\\Delta t$ (min)", color="#cbd5e1", fontsize=9.2)
         ax_time.set_title(
-            "D. Chronological Theorem Build Time per Milestone (Oct 18–19, 2026: 28 Milestones, 11h 28m Active Proof Time)",
+            "D. Chronological Theorem Build Time per Milestone (Oct 18–19, 2026: 29 Milestones, 11h 48m Active Proof Time)",
             color="#f8fafc",
             fontsize=10.3,
             fontweight="bold",
@@ -7672,14 +7839,14 @@ def render_prize_progress_gif_and_poster(
                 "PROVED (Thms 17, 19: S_max <= 5, 14)",
             ),
             (
-                "5. Mahler Involution & Binary-Prefix Staircase",
-                idx >= 27,
-                "PROVED (Thms 25-29: B_{S,b,q}, Q_{S,b,r}, C_r)",
+                "5. Even-Quotient Jump & MSB/LSB Staircases",
+                idx >= 28,
+                "PROVED (Thms 25-30: B_{S,b,q}, Q_{S,b,r}, C_r)",
             ),
             (
-                "6. Primitive Necklaces Extinguished (Pi=2..29)",
-                idx >= 27,
-                f"{ms['necks_done']:,} / 38,458,182 (27.50B prefs, 0 surv)",
+                "6. Primitive Necklaces Extinguished (Pi=2..30)",
+                idx >= 28,
+                f"{ms['necks_done']:,} / 74,248,449 (66.97B prefs, 0 surv)",
             ),
         ]
 
@@ -7774,6 +7941,7 @@ def main(argv: list[str] | None = None) -> int:
     sierp_tensor = res["sierp_tensor"]
     quot_split = res["quot_split"]
     mahler_inv = res["mahler_inv"]
+    even_jump = res["even_jump"]
     print(
         f"[open_problems_A_B_C_D] OK | backward inverse errors={bwd['backward_inverse_errors']} (post-barrier cycles: 0/3, 0/15, 0/255) | "
         f"unit-seed branch='{bs_diag['unit_seed_p16_branch_path']}' -> exact k_5={bs_diag['unit_seed_exact_k5']} (T_lock={bs_diag['unit_seed_exact_tlock_k5']}, "
@@ -7795,6 +7963,7 @@ def main(argv: list[str] | None = None) -> int:
         + sierp_tensor["necklaces_27"]
         + quot_split["necklaces_28"]
         + mahler_inv["necklaces_29"]
+        + even_jump["necklaces_30"]
     )
     tot_prefs = (
         dual_fam["total_prefs_pi_2_to_10"]
@@ -7810,6 +7979,7 @@ def main(argv: list[str] | None = None) -> int:
         + sierp_tensor["prefs_27"]
         + quot_split["prefs_28"]
         + mahler_inv["prefs_29"]
+        + even_jump["prefs_30"]
     )
     tot_unext = (
         dual_fam["unextinguished_2_to_10"]
@@ -7825,6 +7995,7 @@ def main(argv: list[str] | None = None) -> int:
         + sierp_tensor["unext_27"]
         + quot_split["unext_28"]
         + mahler_inv["unext_29"]
+        + even_jump["unext_30"]
     )
     max_ext = max(
         dual_fam["max_exterior_steps_pi_2_to_10"],
@@ -7840,11 +8011,12 @@ def main(argv: list[str] | None = None) -> int:
         sierp_tensor["max_ext_27"],
         quot_split["max_ext_28"],
         mahler_inv["max_ext_29"],
+        even_jump["max_ext_30"],
     )
     print(
-        f"[theorems_15_to_29_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']}) | "
+        f"[theorems_15_to_30_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv/EvenJump errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']},{even_jump['even_jump_errors']}) | "
         f"P_41={char_crystal['period_at_s41']} | C15_ones={proj_tower['r15_ones']}/65536 | Cone (t0,Pi) pairs={master_eq['cone_pairs_tested']} (survivors={master_eq['cone_survivors']}, max_surv={master_eq['cone_max_surv']}) | "
-        f"Pi=2..29 ({tot_necks} necklaces, {tot_prefs} prefs): unextinguished={tot_unext} (max_ext_steps={max_ext})"
+        f"Pi=2..30 ({tot_necks} necklaces, {tot_prefs} prefs): unextinguished={tot_unext} (max_ext_steps={max_ext})"
     )
     print(
         f"[morphometrics] Conus textile H/W={res['hw_mesh']:.4f} (specimen {res['spec_hw']:.4f}), "

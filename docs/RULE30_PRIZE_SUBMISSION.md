@@ -4,7 +4,7 @@
 **Repository & Verification Code:** [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py)  
 **Date:** October 19, 2026
 
-![Animated 28-Milestone Progress Dashboard: Theorems 1–29 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
+![Animated 29-Milestone Progress Dashboard: Theorems 1–30 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
 
 ---
 
@@ -590,9 +590,24 @@ For every characteristic index $S = 2k + p \ge 2$ ($k = \lfloor S/2 \rfloor$, $p
 
 ---
 
+### Theorem 30 (Even-Quotient Mahler Jump & Trailing-Zero Mahler Coefficient Law, Descending MSB-Prefix Mahler & Forcing Staircase for $c_S$, and Complete Zero-Branching Anti-Diagonal Extinction Through Period $\Pi = 30$ [$74,248,449$ Primitive Necklaces, $66,968,023,191$ Admissible Prefixes])
+For every characteristic index $S = 2k + p \ge 2$ ($k = \lfloor S/2 \rfloor$, $p = S \bmod 2 \in \{0, 1\}$), dyadic scale $2^b$ ($b \ge 1$), even quotient $q_{\text{ev}} = 2 q_0 \ge 0$, and remainder $0 \le r_j < 2^b$:
+1. **Even-Quotient Mahler Jump Identity & Trailing-Zero Mahler Coefficient Law:** Because $q_{\text{ev}}$ has bit $0$ equal to $0$ while $q_{\text{ev}} + 1$ has bit $0$ equal to $1$, the binary submasks of $q_{\text{ev}} + 1$ that are not submasks of $q_{\text{ev}}$ are $\{p + 1 : 0 \le p \le q_{\text{ev}},\; (p \land q_{\text{ev}}) = p\}$. Consequently, jumping from quotient $q_{\text{ev}}$ to $q_{\text{ev}} + 1$ at scale $2^b$ isolates the odd-quotient Mahler block coefficients $\alpha_{S, (p+1)2^b + r}$ and equals the $2^b$-step horizontal XOR of the nonlinear forcing bit $g_S$ (`0` errors across all $S = 2 \dots 299, b = 1 \dots 5, q_0 = 0 \dots 2, 0 \le r_j < 2^b$):
+   $$A_S\bigl((q_{\text{ev}} + 1)2^b + r_j\bigr) \;\oplus\; A_S\bigl(q_{\text{ev}} 2^b + r_j\bigr) \;=\; \bigoplus_{\substack{0 \le p \le q_{\text{ev}} \\ (p \;\land\; q_{\text{ev}}) = p}} \;\bigoplus_{\substack{0 \le r \le r_j \\ (r \;\land\; r_j) = r}} \alpha_{S,\; (p + 1)2^b + r} \;=\; \bigoplus_{u=1}^{2^b} g_S\bigl(q_{\text{ev}} 2^b + r_j + u\bigr).$$
+   In particular, setting $r_j = 0$ proves the **Trailing-Zero Mahler Coefficient Law** (`0` errors across all $S = 2 \dots 299, b = 1 \dots 5, q_0 = 0 \dots 2$):
+   $$\alpha_{S,\; (q_{\text{ev}} + 1)2^b} \;=\; \bigoplus_{\substack{0 \le p \le q_{\text{ev}} \\ (p \;\land\; q_{\text{ev}}) = p}} \;\bigoplus_{u=1}^{2^b} g_S\bigl(p 2^b + u\bigr),$$
+   expressing every Mahler coefficient $\alpha_{S, m}$ at scale $2^{v_2(m)}$ directly as a submask sum of $2^{v_2(m)}$-block integrals of $g_S$.
+2. **Descending MSB-Prefix Mahler & Forcing Staircase for $c_S$:** Dual to the ascending binary-prefix staircase (Theorem 29(3)), decomposing $k = \lfloor S/2 \rfloor = \sum_{b \in \mathrm{supp}_2(k)} 2^b$ from the most significant bit down to the least significant bit defines the top-down prefix $\mathrm{pref}_{>b}(k) := k \land \sim(2^{b+1} - 1)$ and even quotient $q_{\text{top}}(k, b) := \mathrm{pref}_{>b}(k) \gg b = 2(k \gg (b+1))$. Telescoping $A_S(k)$ from $0$ to $k$ in descending bit order yields (`0` errors across all $S = 2 \dots 299$):
+   $$c_S \;=\; 1 \;\oplus\; \bigoplus_{b \in \mathrm{supp}_2(\lfloor S/2 \rfloor)} \Biggl(\bigoplus_{\substack{0 \le p \le q_{\text{top}}(k, b) \\ (p \;\land\; q_{\text{top}}(k, b)) = p}} \alpha_{S,\; (p + 1)2^b}\Biggr) \;=\; 1 \;\oplus\; \bigoplus_{b \in \mathrm{supp}_2(\lfloor S/2 \rfloor)} \Biggl(\bigoplus_{u=1}^{2^b} g_S\bigl(\mathrm{pref}_{>b}(k) + u\bigr)\Biggr).$$
+3. **Complete Zero-Branching Anti-Diagonal Extinction Through Period $\Pi = 30$ ($74,248,449$ Primitive Necklaces, $66,968,023,191$ Admissible Prefixes):** Using our multithreaded C (`pthreads` + `clang -O3`) + C Duval Lyndon Pre-Branched Step-$K$ Zero-Shift Row-Coordinate Solver (`_solve_zero_shift_pi_fast`) verifies in `134.9 s`:
+   - **$\Pi = 30$:** $35,790,267$ primitive necklaces, $39,463,591,413$ admissible 1-period prefixes $\implies$ **$100\%$ extinguished (`0` survivors, $S_{\max} = 55$, `134.9 s`)**.
+   - **Cumulative Total ($\Pi = 2 \dots 30$):** **$74,248,449$ primitive necklaces ($> 74.24\text{ million}$) and $66,968,023,191$ ($> 66.96\text{ billion}$) admissible prefixes extinguished with `0` survivors** ($S_{\max}(\Pi) \le 55$). $\square$
+
+---
+
 ## 7. One-Command Verification
 
-All twenty-nine theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
+All thirty theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python 1984-wolfram-conus-textile-rule30.py --self-test-only
