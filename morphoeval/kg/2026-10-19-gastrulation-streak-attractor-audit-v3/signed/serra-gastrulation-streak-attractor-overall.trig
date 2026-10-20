@@ -1,0 +1,112 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAxoch0gayk__E8V022YRdEIHNE-DeJV6fEJsAka3rZvo/> .
+@prefix this: <https://w3id.org/np/RAxoch0gayk__E8V022YRdEIHNE-DeJV6fEJsAka3rZvo> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1038/nature08391> dcterms:date "2009"^^xsd:gYear ;
+        dcterms:title "Fgf8 morphogen gradient forms by a source-sink mechanism with freely diffusing molecules" .
+
+    <https://doi.org/10.1038/ncb1739> dcterms:date "2008"^^xsd:gYear ;
+        dcterms:title "RhoA and microtubule dynamics control cell-basement membrane interaction in EMT during gastrulation" .
+
+    <https://doi.org/10.1038/ncb3138> dcterms:date "2015"^^xsd:gYear ;
+        dcterms:title "Myosin-II-mediated cell shape changes and cell intercalation contribute to primitive streak formation" .
+
+    <https://doi.org/10.1038/s41592-023-02009-y> dcterms:date "2023"^^xsd:gYear ;
+        dcterms:title "A mechanochemical model recapitulates distinct vertebrate gastrulation modes" .
+
+    <https://doi.org/10.1126/science.1221920> dcterms:date "2012"^^xsd:gYear ;
+        dcterms:title "Differential diffusivity of Nodal and Lefty underlies a reaction-diffusion patterning system" .
+
+    <https://doi.org/10.1126/science.aaw1965> dcterms:date "2020"^^xsd:gYear ;
+        dcterms:title "A tensile ring drives tissue flows to shape the gastrulating amniote embryo" .
+
+    <https://doi.org/10.1371/journal.pone.0010571> dcterms:date "2010"^^xsd:gYear ;
+        dcterms:title "Modeling gastrulation in the chick embryo: formation of the primitive streak" .
+
+    <https://doi.org/10.7554/eLife.01817> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "Local cell interactions and self-amplifying individual cell ingression drive amniote gastrulation" .
+
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/nature08391>,
+            <https://doi.org/10.1038/ncb1739>,
+            <https://doi.org/10.1038/ncb3138>,
+            <https://doi.org/10.1038/s41592-023-02009-y>,
+            <https://doi.org/10.1126/science.1221920>,
+            <https://doi.org/10.1126/science.aaw1965>,
+            <https://doi.org/10.1371/journal.pone.0010571>,
+            <https://doi.org/10.7554/eLife.01817> .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-serra-gastrulation-streak-attractor> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-serra-gastrulation-streak-attractor-overall> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-serra-gastrulation-streak-attractor-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Saadaoui et al. (2020), Serra et al. (2023) & Rozbicki et al. (2015) avian gastrulation tensile ring, Polonaise twin-vortex flow & primitive streak attractor — MorphoEval overall 67.3/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "Pass 3 re-score of `2022-serra-gastrulation-streak-attractor.py` (67.3/100, down from 92.6 in Pass 2). Both Pass 2 remediation items were closed in code: an explicit Wnt8c -> Nodal -> FGF8 reaction-diffusion cascade with implicit spectral diffusion-decay and semi-Lagrangian advection now sources ring myosin through a pMLC activation field (`step_ligand_fields`, `myosin_phosphorylation_field`), with decay lengths verified against $\\lambda = \\sqrt{D/k}$ (FGF8 0.8 %, Nodal 1.4 %), and a reduced 2.5D apical-basal column model (`step_apical_basal_column`: apical constriction, basal expansion, constant-volume thickening $h = 2h_0/(a+b)$, basement-membrane decay, ingression rate $I$) feeds an irrotational sink $\\nabla\\cdot\\mathbf{v} = -I$ into the planar flow (`solve_ingression_sink_velocity`). Perturbations are now receptor-level: SU5402 gives a uniform ring (asymmetry 0.00), SB431542 and Y-27632 give zero ingression, ectopic Vg1 gives a bipolar ring, and the emergent 5-regime peak speeds rank-correlate with Saadaoui/Serra at $\\rho = 0.90$ under one WT-fixed calibration constant. Five Lean 4 theorems compile with 0 sorrys. The remediation, however, exposed that the v2 headline numbers (AP/ML 4.25, 2.40 um/min, $r = 1.0000$, SU5402 1.00) are prescribed lookups of the regime parameters, that about 82 % of the Polonaise flow is a hand-written streamfunction rather than the Stokes solution, and that the honest field-derived EMT zone is a posterior crescent (WT AP/ML 0.59 vs 4.25; 5-regime aspect $\\rho = -0.20$) because mediolateral intercalation is absent. The code now discloses all of this (NOTE flags, `measured_*` keys, Panel I), which is credited; the scores reflect what the coupled model actually produces. Overall 67.3/100 (faithfulness 64.0, reproducibility 75.1); rubric morphoeval 0.1.0; checkpoint commit 028758bc; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 68, Morphological realism / specimen match 58, Parameter expressivity 74, Morphometric validation 62, Source and data traceability 70, Code-to-model traceability 74, Reproducibility package 80. Output judged: docs/media/gastrulation_streak_attractor_comparison.png: rendered output of 2022-serra-gastrulation-streak-attractor.py at 028758bc, image/png, 1754542 B, 2700×2400 px, artifact_sha256 74525e85617b6b2617c2da95d44896606c255ec050d0b3628822429a2641d5b2 (sha256 74525e85617b6b2617c2da95d44896606c255ec050d0b3628822429a2641d5b2), spec_fingerprint 394d38439dd8f3b351ba32f3eef22da12f99bfa222be7659901a95855eb8a1e1. Dual provenance: spec_fingerprint: 394d38439dd8f3b351ba32f3eef22da12f99bfa222be7659901a95855eb8a1e1; artifact_sha256: 74525e85617b6b2617c2da95d44896606c255ec050d0b3628822429a2641d5b2. Supersedes audit: 2026-10-19-gastrulation-streak-attractor-audit-v2. Claim boundary: reported_in_source: Saadaoui, Rocancourt, Roussel, Corson & Gros (2020) Science 367:453-458 viscous epiblast Stokes model eta*nabla^2 v + eta_b*nabla(nabla.v) = -nabla.(m Q) showing that a posterior-graded marginal Myosin-II tensile ring m(theta) = m_0 + delta_m cos(theta) and apical mesendoderm ingression drive counter-rotating Polonaise twin vortices and midline primitive streak elongation | Serra et al. (2023) mechanochemical active nematic feedback (Dm/Dt and DQ_{ij}/Dt) and Finite-Time Lyapunov Exponent (FTLE) Dynamic Morphogenetic Skeleton demonstrating transition from a wild-type linear streak to a circular ring under FGF receptor inhibition (SU5402) or twin streaks under ectopic Vg1/Wnt induction | Yu et al. (2009) Fgf8 source-sink gradient with D = 53 um^2/s; Muller et al. (2012) Nodal D = 3.2 um^2/s, t1/2 = 95 min; Nakaya et al. (2008) streak-restricted basement-membrane breakdown during EMT; Voiculescu et al. (2014) SB431542 Nodal/ALK block abolishes ingression; reconstructed_in_script: 64x64 coupled 2D spectral viscous epiblast Stokes solver (Green's function L2 error = 5.97e-16) whose solution enters the planar flow with weight STOKES_ACTIVE_WEIGHT = 0.18 on top of a prescribed dipole + quadrupole Polonaise streamfunction and isotropic ring contraction, plus an irrotational sink driven by the EMT column ingression rate; active nematic Myosin-II cable advection-alignment PDE; Cauchy-Green FTLE ridge integration; semi-Lagrangian transport in physical units | Explicit Wnt8c (posterior marginal source) -> committed streak-cell density -> Nodal (autoactivating) -> FGF8 reaction-diffusion cascade with implicit spectral diffusion-decay and Hill-type pMLC activation P = rho_ROCK H(a_ALK N)(0.35 + 0.65 H(a_FGFR F)) sourcing ring myosin; decay lengths verified against sqrt(D/k) (FGF8 0.8 %, Nodal 1.4 %); receptor-level SU5402 (a_FGFR = 0), SB431542 (a_ALK = 0), Y-27632 (rho_ROCK), ectopic Vg1/Wnt (anterior source) regimes | Reduced 2.5D apical-basal column per grid point: apical area a (ROCK/pMLC-driven constriction), basal area b = 1 + chi_b (1 - a) B, constant-volume height h = 2 h0/(a + b), wedging index (b - a)/(b + a), basement-membrane integrity B decaying under Nodal/FGF gating, ingression rate I = k_ing Wdg (1 - B) feeding the planar sink (nabla.v = -I); field-derived readouts: streak thickening 1.26x, BM-broken area fraction 0.17, ingressed fraction 0.20, EMT-zone AP/ML 0.59, emergent ring asymmetry 0.63, peak speed 2.14 um/min (WT) | 15x15 (delta_m x beta_m) morphospace from 225 coupled 40x40 simulations; automated CV segmentation of HH1 Koller's sickle, HH2 condensation, HH3+ streak, area pellucida/opaca ratio (0.6250) and PIV bilateral symmetry (0.9705) on chick_primitive_streak_specimen.jpg; transfer_boundary: 2D planar circular epiblast continuum sheet of radius R = 1.15 mm with a single global velocity calibration constant U_CAL_MM_PER_H = 0.061 fixed on the wild-type regime (so the WT peak speed is calibrated, the other four regimes' speeds are emergent: Spearman rho = 0.90, Pearson r = 0.927 vs the Saadaoui/Serra table) | The coupled model forms a thickened, ingressing posterior crescent and does NOT elongate it into a midline streak within 8 h (WT EMT-zone AP/ML 0.59 vs reference 4.25; 5-regime aspect Spearman rho = -0.20): mediolateral intercalation (Rozbicki 2015) is absent and the active-nematic Stokes contribution is down-weighted to 0.18 to keep speeds physical | The four Pass 2 readouts streak_ap_ml_aspect_ratio / streak_length_mm / peak_polonaise_speed_um_min / ftle_ridge_anisotropy are retained as prescribed piecewise-analytic lookups of the regime parameters and reproduce the reference table by construction (r = 1); they are flagged in the code and are NOT evidence of model performance | Ligand kinetics for Wnt8c (D, half-life), FGF8 half-life, the column parameters (k_con, m_c, k_rel, chi_b, k_bm, k_ing, a_min, h0 = 25 um), source amplitudes and Hill constants are ASSUMED or DERIVED (marked as such in ligand_emt_reference.json); reference values 1.33 (thickening) and 0.08 (BM-broken fraction) are derived, not measured; does_not_claim: 3D finite-element epithelial mechanics, out-of-plane bending, bottle-cell mechanics or individual mesenchymal migration after ingression (the column model is a per-point 2.5D reduction) | Mediolateral cell intercalation or any mechanism that converts the posterior crescent into a 4:1 midline streak | Independent verification of the Serra et al. (2023) venue/DOI or of the four new ligand/EMT DOIs (all recorded as unverified offline)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: 2022-serra-gastrulation-streak-attractor.py:1064-1067, 1117-1120, 1406 and 1547-1558 — print the measured bounding boxes and ratios in Panel E instead of the hard-coded '61x183 px' / '135x81 px' / '5.00x', segment r_AO instead of fixing r_ao_px = 128, fix the docstring's 0.6406, and replace the self-referential PIV symmetry reference 0.9705 with a published bilateral-symmetry value or drop the measurement.",
+            "remediation needed: 2022-serra-gastrulation-streak-attractor.py:11-14, datasets/gastrulation_streak_attractor/paper_citations.bib:12-21, gastrulation_streak_attractor_reference.json and README.md — verify and correct the Serra et al. (2023) venue/DOI ('Nature Methods / Science Advances 20:1739-1748, 10.1038/s41592-023-02009-y' is inconsistent; likely Science Advances 9(49):eadh8152, 10.1126/sciadv.adh8152) and the four new DOIs (yu2009, muller2012, nakaya2008, voiculescu2014) against the publishers.",
+            "remediation needed: 2022-serra-gastrulation-streak-attractor.py:114-125 and datasets/gastrulation_streak_attractor/ligand_emt_reference.json:53-61,117-130 — source or replace the ASSUMED constants (Wnt8c D and half-life, FGF8 half-life, h0 = 25 um, k_con, m_c, k_rel, chi_b, k_bm, k_ing, a_min, s_W/s_N/s_F, k_ind, c_max, Hill K's) and the DERIVED reference values 1.33 and 0.08 with measured chick values (e.g. Rozbicki 2015 cell-shape data, Nakaya 2008 laminin breakdown extent); reconcile ALPHA_M_HR = 0.10 with the vendored alpha_m = 0.45 (update the JSON or the code, with a stated reason).",
+            "remediation needed: 2022-serra-gastrulation-streak-attractor.py:1727-1731, 105-107 and 1837-1851 — update the run_self_test docstring ('Pass 2 ... 3 Lean 4 theorem invariants' -> 5 theorems), remove or render OUTPUT_LIGAND_PNG, and add --out / --gif / --no-morphospace / --regime CLI flags so individual regimes and the 225-simulation morphospace can be run selectively; track the comparison PNG (gitignore exception) or render to a tracked path.",
+            "remediation needed: 2022-serra-gastrulation-streak-attractor.py:359-407 — replace the per-substep soft_wall clipping of the diffusible ligands with a proper absorbing / no-flux boundary at the disc edge and refine the grid (or subcycle the Wnt8c field) so that the 72 um Wnt8c decay length is resolved by more than two cells.",
+            "remediation needed: 2022-serra-gastrulation-streak-attractor.py:649-667 and 119 — the planar flow is a prescribed dipole + quadrupole streamfunction plus isotropic ring contraction with the Stokes solution down-weighted to STOKES_ACTIVE_WEIGHT = 0.18; solve the flow from the active stress alone (weight 1) with a viscosity/friction chosen so the WT speed is physical, and retire psi_dip / psi_quad / iso_ring_v* (Theorem 1 should then be stated about the solved field).",
+            "remediation needed: 2022-serra-gastrulation-streak-attractor.py:775-785 and 468-505 — the coupled model forms a posterior crescent (WT EMT-zone AP/ML 0.59 vs 4.25; 5-regime aspect Spearman rho = -0.20) because mediolateral intercalation (Rozbicki 2015) is absent; add a planar convergent-extension term (anisotropic active stress along the nematic director or an intercalation flux in the committed-cell density) and show the EMT zone elongating to AP/ML > 2 within 8 h at speeds < 3 um/min.",
+            "remediation needed: 2022-serra-gastrulation-streak-attractor.py:812-843, 1296-1366 and 972-981 — remove (or stop exporting as measurements) the prescribed piecewise-analytic lookups streak_ap_ml_aspect_ratio / streak_length_mm / peak_polonaise_speed_um_min / ftle_ridge_anisotropy and the circular pearson_r_aspect / pearson_r_speed; make the four retained Pass 2 measurements and Panel C read the field-derived `measured_*` values so that the measurement set can fail." ;
+        pk:hasScore "0.673"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary, Pass 3 Phase B assessor) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dcterms:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "i+jVdwvPcaYbzbshC8V2JvqYHNUNhfHEx/Ci25mH4EWCqcMw0sK6QnpPVo4LsJlR90g2Ky2L4vHBTsBvSXEsgN/rbAjW8/b/Eo1/E8lr+5jnvC1MroOirX1EMJQzeOr2f5vzmzAWtf18rfFzQpc6T4FY0f0qSMEIx8q4kYUsJR79h5UqE8JovVe3Du90r+BvJ0vRpOnFRAvry3gqQbpv+51rVuOFAVti41SpTf/8rgwo3ysIFfOzpPm/3aArcsJrzAZGg1DdymaaBvjlMSv985vVZ83pojFTYsO3TjxwZKwFt28Bq04FWb3uyEMXpNx0SeH3LAg1G5MGCraA4M9iJA==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Saadaoui et al. (2020), Serra et al. (2023) & Rozbicki et al. (2015) avian gastrulation tensile ring, Polonaise twin-vortex flow & primitive streak attractor — MorphoEval overall 67.3/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T16:33:14Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-serra-gastrulation-streak-attractor-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-serra-gastrulation-streak-attractor> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

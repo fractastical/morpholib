@@ -120,4 +120,98 @@ theorem farhadifar_2007_wing_vs_pupal_distribution_identities :
     (2 * mu2_1000_pupal < mu2_1000_wing) := by
   decide
 
+/-! ## Pass 3: planar-cell-polarity (Frizzled/Strabismus) bond-asymmetry tensor -/
+
+/-- Quadratic form `n . Q . n` of a traceless symmetric 2x2 PCP bond tensor
+    `Q = [[a, b], [b, -a]]` contracted with a bond normal `n = (c, s)` (integer-scaled
+    components), i.e. `a * c^2 - a * s^2 + 2 * b * c * s`.  For uniform PD-aligned
+    polarity `(a, b) = (1, 0)` this is `c^2 - s^2 = cos 2 theta_n`, the Fz/Stbm bond
+    asymmetry `a_ab = 2 c_ab - 1` used in `pcp_bond_asymmetry` of
+    `2007-farhadifar-drosophila-wing-vertex-model.py`. -/
+def pcp_bond_quadratic_form (a b c s : Int) : Int :=
+  a * (c * c) - a * (s * s) + 2 * b * (c * s)
+
+/-- Trace of the PCP bond tensor `Q = [[a, b], [b, -a]]`. -/
+def pcp_bond_tensor_trace (a : Int) : Int :=
+  a + (-a)
+
+/-- Per-mille bond line tension `1000 * Lambda_ab / Lambda_bar = 1000 + eps1000 * a_ab`
+    for asymmetry `a_ab in {-1, 0, +1}` scaled as `a1000 in {-1000, 0, 1000}` (divided by 1000). -/
+def pcp_bond_tension_permille (eps1000 a1000 : Int) : Int :=
+  1000 + eps1000 * a1000 / 1000
+
+/-- Theorem 5 (`pcp_bond_tensor_traceless_and_perpendicular_cancellation`):
+    (1) the PCP bond tensor is traceless (`tr Q = 0`), so the Fz/Stbm asymmetry has zero
+        isotropic part and cannot change the mean line tension of an isotropic network;
+    (2) rotating the bond normal by 90 degrees, `(c, s) -> (-s, c)`, flips the sign of the
+        contraction: `n . Q . n + n_perp . Q . n_perp = 0`.  PCP therefore stiffens
+        AP-oriented junctions by exactly as much as it softens PD-oriented ones
+        (`eps_pcp > 0`), which is the mechanism behind the oriented T1 bias in Section 2b;
+    (3) for the uniform-polarity tensor `(a, b) = (1, 0)` and a unit normal with integer
+        components the contraction reduces to `c^2 - s^2` (`cos 2 theta_n`);
+    (4) with `0 < eps < 1000` per mille the AP bond tension `1000 + eps` strictly exceeds the
+        PD bond tension `1000 - eps`, and both stay positive (no negative-tension Case II
+        bond is created by PCP alone). -/
+theorem pcp_bond_tensor_traceless_and_perpendicular_cancellation
+    (a b c s eps1000 : Int) (h0 : 0 < eps1000) (h1 : eps1000 < 1000) :
+    pcp_bond_tensor_trace a = 0 ∧
+    pcp_bond_quadratic_form a b c s + pcp_bond_quadratic_form a b (-s) c = 0 ∧
+    pcp_bond_quadratic_form 1 0 c s = c * c - s * s ∧
+    pcp_bond_tension_permille eps1000 1000 = 1000 + eps1000 ∧
+    pcp_bond_tension_permille eps1000 (-1000) = 1000 - eps1000 ∧
+    pcp_bond_tension_permille eps1000 (-1000) < pcp_bond_tension_permille eps1000 1000 ∧
+    0 < pcp_bond_tension_permille eps1000 (-1000) := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · dsimp [pcp_bond_tensor_trace]
+    omega
+  · dsimp [pcp_bond_quadratic_form]
+    have hsc : s * c = c * s := Int.mul_comm s c
+    simp only [Int.neg_mul, Int.mul_neg, Int.neg_neg, hsc]
+    omega
+  · dsimp [pcp_bond_quadratic_form]
+    omega
+  · dsimp [pcp_bond_tension_permille]
+    rw [Int.mul_ediv_cancel _ (by decide)]
+  · dsimp [pcp_bond_tension_permille]
+    have h : eps1000 * (-1000) = (-eps1000) * 1000 := by
+      rw [Int.mul_neg, Int.neg_mul]
+    rw [h, Int.mul_ediv_cancel _ (by decide)]
+    omega
+  · dsimp [pcp_bond_tension_permille]
+    have h : eps1000 * (-1000) = (-eps1000) * 1000 := by
+      rw [Int.mul_neg, Int.neg_mul]
+    rw [h, Int.mul_ediv_cancel _ (by decide), Int.mul_ediv_cancel _ (by decide)]
+    omega
+  · dsimp [pcp_bond_tension_permille]
+    have h : eps1000 * (-1000) = (-eps1000) * 1000 := by
+      rw [Int.mul_neg, Int.neg_mul]
+    rw [h, Int.mul_ediv_cancel _ (by decide)]
+    omega
+
+/-- Etournay et al. (2015) eLife shear-decomposition bookkeeping used in Section 2b:
+    the imposed PD tissue shear `total` equals the change in mean cell elongation
+    `elong` plus the rearrangement (T1) residual `rearr` (per-mille integers). -/
+def shear_rearrangement_residual (total elong : Int) : Int :=
+  total - elong
+
+/-- Theorem 6 (`hinge_contraction_shear_decomposition_balance`):
+    Under a fixed imposed hinge-contraction shear `total`, (1) the decomposition closes
+    exactly (`elong + rearr = total`); (2) if PCP coupling lowers the residual cell
+    elongation (`elong_pcp < elong_ctrl`, as measured for `eps_pcp = 0.5` vs the `eps_pcp = 0`
+    control) then the rearrangement share strictly increases; (3) if the boundary strain is
+    area-preserving pure shear with integer-scaled stretch `p/q` along PD and `q/p` along AP,
+    the box area `Lx * Ly` is conserved: `(p * Lx) * (q * Ly) = (p * q) * (Lx * Ly)`
+    (the `1/λ` compression exactly undoes the `λ` extension). -/
+theorem hinge_contraction_shear_decomposition_balance
+    (total elong_pcp elong_ctrl p q Lx Ly : Int) (h : elong_pcp < elong_ctrl) :
+    elong_pcp + shear_rearrangement_residual total elong_pcp = total ∧
+    shear_rearrangement_residual total elong_ctrl < shear_rearrangement_residual total elong_pcp ∧
+    (p * Lx) * (q * Ly) = (p * q) * (Lx * Ly) := by
+  refine ⟨?_, ?_, ?_⟩
+  · dsimp [shear_rearrangement_residual]
+    omega
+  · dsimp [shear_rearrangement_residual]
+    omega
+  · rw [Int.mul_assoc, Int.mul_assoc, ← Int.mul_assoc Lx q Ly, Int.mul_comm Lx q, Int.mul_assoc]
+
 end MathOfBiology.Loop_043

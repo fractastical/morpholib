@@ -1,0 +1,56 @@
+{
+  "dataset_id": "dichotomous_tree_branching_solar_tier_spacing_v3",
+  "title": "Pass 3 reference table — solar-geometry constants, clear-sky beam transmittance, Beer-Lambert tier transmittance and latitude/tier-spacing benchmarks for ray-traced Honda tiered crowns",
+  "added_in": "2026-10-19-dichotomous-tree-branching-audit-v3 (Pass 3 remediation of the Pass 2 item 'couple 3D Honda tiered crowns to solar-elevation radiative transfer ray-tracing across diurnal sun paths; compare equatorial vs temperate optimal tier spacing')",
+  "solar_geometry_sources": [
+    {
+      "citation": "Campbell GS & Norman JM (1998) An Introduction to Environmental Biophysics, 2nd ed., Springer, Ch. 11 (Radiation fluxes in natural environments)",
+      "doi": "10.1007/978-1-4612-1626-1",
+      "role": "Spherical solar geometry sin h = sin phi sin delta + cos phi cos delta cos H (Eq. 11.1), solar azimuth (Eq. 11.2), day length cos H_0 = -tan phi tan delta (Eq. 11.6), clear-sky beam irradiance S_p = S_p0 * tau_atm^m with air mass m = 1/sin h and tau_atm ~ 0.75 for clear sky (Eq. 11.11)"
+    },
+    {
+      "citation": "Cooper PI (1969) The absorption of radiation in solar stills. Solar Energy 12(3):333-346",
+      "doi": "10.1016/0038-092X(69)90047-4",
+      "role": "Seasonal solar declination delta(n) = 23.45 deg * sin(360 deg * (284 + n) / 365) used for the 12 mid-month declinations of the annual sun-path integration"
+    },
+    {
+      "citation": "Monsi M & Saeki T (1953) Ueber den Lichtfaktor in den Pflanzengesellschaften und seine Bedeutung fuer die Stoffproduktion. Japanese Journal of Botany 14:22-52 (English translation: Annals of Botany 95(3):549-567, 2005)",
+      "doi": "10.1093/aob/mci052",
+      "role": "Beer-Lambert canopy extinction I/I_0 = exp(-K * LAI); for horizontal leaves K = 1 so per-tier beam transmittance tau_c = exp(-LAI_c) is independent of solar elevation"
+    }
+  ],
+  "model_constants": {
+    "solar_axial_tilt_deg": 23.45,
+    "clear_sky_beam_transmittance_tau_atm": 0.75,
+    "cooper_mid_month_days_of_year": [17, 47, 75, 105, 135, 162, 198, 228, 258, 288, 318, 344],
+    "hour_angle_step_hours": 1.0,
+    "tier_cluster_transmittance_tau_c": 0.135,
+    "tier_cluster_transmittance_note": "tau_c = exp(-LAI_c) with LAI_c = 2.0 per leaf-cluster disk (Monsi & Saeki 1953, horizontal leaves K = 1); swept 0.0 (opaque) .. 1.0 (transparent ablation) in the script",
+    "n_tiers": 7,
+    "tier_orders_bottom_to_top": [5, 5, 4, 4, 3, 3, 2],
+    "tier_radius_R_tier_L0_units": 4.3746,
+    "saturation_level_E90": 0.90,
+    "stem_cost_kappa_sweep": [0.05, 0.10, 0.20],
+    "stem_cost_note": "kappa is a free relative trunk-investment cost per unit s/R (pipe-model trunk volume is proportional to crown height (n-1)*s under Leonardo area conservation); it is NOT sourced from the literature and is reported only as a sensitivity sweep"
+  },
+  "latitude_benchmarks": [
+    {"site": "equator", "latitude_deg": 0.0, "analytic_noon_equinox_elevation_deg": 90.0, "analytic_equinox_day_length_h": 12.0},
+    {"site": "temperate_45N", "latitude_deg": 45.0, "analytic_noon_equinox_elevation_deg": 45.0, "analytic_equinox_day_length_h": 12.0},
+    {"site": "Botanic Garden Meise (specimen provenance)", "latitude_deg": 50.93, "analytic_noon_equinox_elevation_deg": 39.07, "analytic_june_solstice_day_length_h": 16.31, "analytic_note": "cos H_0 = -tan(50.93 deg) tan(23.45 deg) -> H_0 = 122.3 deg -> 16.31 h (geometric, no refraction)"}
+  ],
+  "specimen_tier_spacing": {
+    "filename": "cornus_controversa_tiered_crown_specimen.jpg",
+    "method": "inter-tier row spacing between consecutive detected foliage shelves / half-width of the lower shelf (foliage-mask column extent in a +-12 px band); projected, no perspective correction",
+    "tier_spacings_px_top_to_bottom": [148, 75, 150, 132, 197, 95],
+    "tier_half_widths_px_top_to_bottom": [207.0, 317.0, 366.5, 356.0, 397.5, 331.5, 397.5],
+    "mean_spacing_to_radius_ratio": 0.3764,
+    "std_spacing_to_radius_ratio": 0.1342,
+    "provenance_note": "Computed by measure_specimen_tier_spacing() in 1976-honda-dichotomous-tree-branching.py on the SHA-256-pinned specimen; stored here for regression only (NOT an independent literature value)"
+  },
+  "model_predictions_pass3": {
+    "note": "Ray-traced outputs of evaluate_latitude_tier_spacing_tradeoff() at defaults; stored for regression only (NOT independent references)",
+    "saturation_spacing_ratio_E90": {"0.0": 1.832, "15.0": 1.781, "30.0": 1.370, "45.0": 0.969, "50.93": 0.850, "60.0": 0.710},
+    "beam_weighted_mean_solar_elevation_deg": {"0.0": 55.83, "45.0": 42.49, "50.93": 39.71},
+    "equatorial_to_temperate45_saturation_spacing_ratio": 1.89
+  }
+}

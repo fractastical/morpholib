@@ -28,6 +28,27 @@
         "id": "lewis1928",
         "citation": "Lewis FT (1928). The correlation between cell division and the shapes and sizes of prismatic cells in the epidermis of Cucumis. The Anatomical Record 38(3):341-376.",
         "doi": "10.1002/ar.1090380305"
+      },
+      {
+        "id": "aigouy2010",
+        "citation": "Aigouy B, Farhadifar R, Staple DB, Sagner A, Röper JC, Jülicher F, Eaton S (2010). Cell flow reorients the axis of planar polarity in the wing epithelium of Drosophila. Cell 142(5):773-786.",
+        "doi": "10.1016/j.cell.2010.07.042",
+        "added_in": "pass3",
+        "doi_verification": "recorded offline from memory in Pass 3; not resolved online (network tools disabled)"
+      },
+      {
+        "id": "etournay2015",
+        "citation": "Etournay R, Popović M, Merkel M, Nandi A, Blasse C, Aigouy B, Brandl H, Myers G, Salbreux G, Jülicher F, Eaton S (2015). Interplay of cell dynamics and epithelial tension during morphogenesis of the Drosophila pupal wing. eLife 4:e07090.",
+        "doi": "10.7554/eLife.07090",
+        "added_in": "pass3",
+        "doi_verification": "recorded offline from memory in Pass 3; not resolved online (network tools disabled)"
+      },
+      {
+        "id": "sugimura2013",
+        "citation": "Sugimura K, Ishihara S (2013). The mechanical anisotropy in a tissue promotes ordering in hexagonal cell packing. Development 140(19):4091-4101.",
+        "doi": "10.1242/dev.094060",
+        "added_in": "pass3",
+        "doi_verification": "recorded offline from memory in Pass 3; not resolved online (network tools disabled)"
       }
     ],
     "specimens": {
@@ -166,6 +187,67 @@
       "7": 1.34,
       "8": 1.72,
       "9": 2.12
+    }
+  },
+  "pcp_hinge_contraction_reference": {
+    "section": "Pass 3 (v3) planar-cell-polarity / hinge-contraction reference values. All numeric values in this block are APPROXIMATE figure reads recorded offline; none was re-verified online in Pass 3 and they must be treated as provisional until a Pass 4 digitisation.",
+    "model_statement": {
+      "fz_stbm_bridge_density": "c_ab = relu(p_a.n) relu(p_b.n) + relu(-p_a.n) relu(-p_b.n), n = outward bond normal of cell a, p = Frizzled (distal) polarity unit vector",
+      "bond_asymmetry_tensor": "Q_ab = 2 c_ab (n (x) n - I/2) (traceless symmetric); a_ab = n.Q_ab.n = 2 c_ab - 1 = cos(2 theta_n) for uniform polarity",
+      "bond_tension": "Lambda_ab = Lambda_bar (1 + eps_pcp a_ab); eps_pcp = 0 is the fz / stbm loss-of-function (isotropic) control",
+      "polarity_dynamics": "dphi_a/dt = k_fb <sin(phi_b - phi_a)>_b + k_flow min(|Q_a|/0.15, 1) sin(2(psi_a - phi_a)) + noise",
+      "hinge_contraction": "boundary vertices follow F(t) = diag(lambda(t), 1/lambda(t)), ln lambda ramped (smoothstep) to hinge_log_strain over the first half of the run",
+      "shear_decomposition": "ln lambda(t) = d<Q_xx>(t) + residual(t); residual attributed to T1 rearrangements (post-mitotic patch: no division / extrusion / correlation terms)"
+    },
+    "defaults": {
+      "eps_pcp": 0.5,
+      "hinge_log_strain": 0.35,
+      "n_steps": 900,
+      "dt": 0.08,
+      "l_T1": 0.08,
+      "l_T1_new": 0.12,
+      "k_feedback": 0.6,
+      "k_flow": 0.4,
+      "init_polarity_sigma_rad": 0.6
+    },
+    "cell_elongation_peak_Q": {
+      "value": 0.25,
+      "unit": "half_log_aspect_ratio",
+      "source": "etournay2015",
+      "locus": "Fig. 3 (blade cell-elongation nematic Q, peak near 22 hAPF)",
+      "provenance": "approximate figure read, offline, unverified"
+    },
+    "rearrangement_shear_fraction_end": {
+      "value": 0.5,
+      "unit": "fraction",
+      "source": "etournay2015",
+      "locus": "Fig. 3 shear decomposition at ~32 hAPF (cell rearrangements carry roughly half of the cumulative PD blade shear)",
+      "provenance": "approximate figure read, offline, unverified"
+    },
+    "hinge_contraction_window_hAPF": {
+      "value": [15, 32],
+      "unit": "hours_after_puparium_formation",
+      "source": "aigouy2010",
+      "provenance": "text statement, offline, unverified"
+    },
+    "classen_2005_pupal_P6": {
+      "wild_type": 0.78,
+      "pcp_mutant": 0.60,
+      "unit": "fraction",
+      "source": "classen2005",
+      "locus": "Fig. 1 / Fig. 7 polygon distributions of wild-type vs fz / stbm pupal wings (~30 hAPF)",
+      "provenance": "approximate figure read, offline, unverified"
+    },
+    "pcp_axis_alignment_final": {
+      "value": "uniform PD alignment by ~32 hAPF",
+      "numeric_stand_in_nematic_order": 0.9,
+      "source": "aigouy2010",
+      "provenance": "qualitative, offline"
+    },
+    "tension_anisotropy_note": {
+      "statement": "Sugimura & Ishihara (2013) infer anisotropic junction tension in the pupal wing under hinge contraction and show that anisotropic tension promotes hexagonal ordering; no numeric anisotropy value is vendored here.",
+      "source": "sugimura2013",
+      "provenance": "qualitative, offline"
     }
   }
 }

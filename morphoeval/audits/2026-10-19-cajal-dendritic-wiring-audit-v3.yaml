@@ -1,0 +1,395 @@
+# MorphoEval Pass 3 (v3) Audit — Cuntz, Forstner, Borst & Häusser (2010) PLoS Comput. Biol. 6(8):e1000877, Cuntz et al. (2007) PNAS 104:13319-13324,
+# Rall (1959) Exp. Neurol. 1:491-527, Roth & Häusser (2001) J. Physiol. 535:445-472 & Morris & Lecar (1981) Biophys. J. 35:193-213
+# Ramón y Cajal Minimum-Wiring-Length & Conduction-Delay Greedy Steiner Dendritic Trees, Rall's 3/2 Power Law, Wen-Chklovskii Volume Scaling,
+# and (Pass 3) Rall passive-cable electrotonics coupled to an active Morris-Lecar dendritic Ca2+ spike hotspot, 2026-10-20 (v3)
+#
+# Pass 3 re-score of `2007-caleo-cajal-dendritic-wiring.py` (Slot 058) after the remediation of the single open v2 item
+# in the instrumented loop `morphoeval/runs/2026-10-19-cajal-dendritic-wiring-loop-pass3`, superseding
+# `2026-10-19-cajal-dendritic-wiring-audit-v2` (93.8).
+#   - Primary assessor: Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 058 Pass 3, Phase B subagent)
+#
+# What Pass 3 changed (the one v2 remediation item, closed with a deliberately reduced model — Section 2b, L315-L712):
+#   1. Rall DC length constant lambda_DC = sqrt(R_m d / 4 R_i) and the Koch (1999) Eq. 2.37 AC reduction lambda_f with
+#      Roth & Häusser (2001) Purkinje passive constants; every Rall-3/2 edge of every Cuntz tree gets an electrotonic
+#      length X_e = l_e / lambda_f(d_e) (lambda_f / lambda_DC = 0.2487 at f_syn = 53.05 Hz).
+#   2. Polsky-Mel-Schiller style protocol: the 24 Euclidean-nearest terminal-tip pairs, hotspot = LCA branch node; the two
+#      alpha-synapse inputs are attenuated by exp(-X) to the hotspot and drive a vectorised forward-Euler Morris-Lecar
+#      (1981) Ca2+/K+ membrane with ablation switches (g_Ca = 0; frozen K+ gate = strictly linear RC).
+#   3. Inter-input delay sweep dt in [0, 30] ms (13 points) over all 8 Cuntz bf trees: coincidence window dt_c, supralinear
+#      gain (4.28x at bf = 0.20 vs exact linear 2.000000), same-branch fraction (1.00 at bf <= 0.2 -> 0.00 at bf = 1),
+#      Pearson r(window, bf) = -0.698 (p = 0.054).
+#   4. New 4-panel figure `docs/media/cajal_dendritic_wiring_ca_spike_coincidence.png`; 6 new measurements (15 total);
+#      self-test suites 9-10 (10/10 PASS, 8.9 s); Lean 4 Theorems 4-5 (`rall_passive_membrane_linear_superposition`,
+#      `koch_ac_length_constant_bound`; 0 sorrys); SHA-256-pinned `electrotonic_ca_spike_reference.json`; 5 new BibTeX entries.
+#
+# Scores below: overall 92.2, DOWN from 93.8. The remediation itself is credited (model-fidelity, code-traceability and
+# repro-package hold or rise), but auditing the new layer exposed defects the v2 audit had not penalised: the specimen
+# "reference" values (D_f = 1.7817, Sholl peak = 73, hubs = 62) are the script's own outputs copied into the reference JSON
+# (match by construction), the Cuntz Pareto benchmark arrays carry no digitisation provenance, and all five Pass 3 sources
+# plus the Purkinje passive constants were transcribed offline and not re-verified (stated honestly in the JSON note).
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated probabilities).
+# Line numbers refer to the files in the working tree at checkpoint 45670cb8 (+ uncommitted Pass 3 edits, 1483-line script).
+
+audit:
+  id: 2026-10-19-cajal-dendritic-wiring-audit-v3
+  supersedes: 2026-10-19-cajal-dendritic-wiring-audit-v2
+  supersedes_audit_id: 2026-10-19-cajal-dendritic-wiring-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 058 Pass 3 Assessor, Phase B)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 2 primary assessor; v2 scores retained as the comparison baseline)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/58
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 45670cb8
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) evaluation of `2007-caleo-cajal-dendritic-wiring.py` (1483 lines, 10 self-test suites,
+      15 measurements) after closing the single v2 remediation item in
+      `2026-10-19-cajal-dendritic-wiring-loop-pass3` (Phase A). The Pass 3 edits are uncommitted
+      in the working tree on top of 45670cb8 (strict file isolation: no git add/commit by the loop).
+      Verified in Phase B: `--self-test` PASS 10/10 (11.2 s wall), `lean` exit 0 on the 216-line
+      Lean module (5 theorems, 0 sorrys).
+
+references:
+  cuntz2010:
+    title: "One Rule to Grow Them All: A General Theory of Neuronal Dendritic Trees"
+    authors: "Cuntz H, Forstner F, Borst A, Häusser M"
+    venue: "PLoS Computational Biology 6(8):e1000877 (2010)"
+    doi: 10.1371/journal.pcbi.1000877
+  cuntz2007:
+    title: "Optimization principles of dendritic structure"
+    authors: "Cuntz H, Borst A, Segev I"
+    venue: "Proceedings of the National Academy of Sciences 104(33):13319-13324 (2007)"
+    doi: 10.1073/pnas.0704731104
+  cuntz2008:
+    title: "A Quantitative Description of Sensory Neuron Organization in Drosophila: From Individual Dendritic Trees to the Population"
+    authors: "Cuntz H, Forstner F, Haag J, Borst A"
+    venue: "PLoS Computational Biology 4(12):e1000251 (2008)"
+    doi: 10.1371/journal.pcbi.1000251
+  rall1959:
+    title: "Branching dendritic trees and motoneuron membrane resistivity"
+    authors: "Rall W"
+    venue: "Experimental Neurology 1(5):491-527 (1959)"
+    doi: 10.1016/0014-4886(59)90046-9
+  wen2008:
+    title: "A Cost-Benefit Analysis of Neuronal Morphology"
+    authors: "Wen Q, Chklovskii DB"
+    venue: "Journal of Neurophysiology 99(5):2320-2328 (2008)"
+    doi: 10.1152/jn.00280.2007
+  cajal1899:
+    title: "Textura del Sistema Nervioso del Hombre y de los Vertebrados"
+    authors: "Ramón y Cajal S"
+    venue: "Nicolás Moya, Madrid (1899)"
+    doi: 10.5962/bhl.title.48637
+  roth2001:
+    title: "Compartmental models of rat cerebellar Purkinje cells based on simultaneous somatic and dendritic patch-clamp recordings"
+    authors: "Roth A, Häusser M"
+    venue: "Journal of Physiology 535(2):445-472 (2001) — DOI transcribed offline in Pass 3, not re-verified online"
+    doi: 10.1111/j.1469-7793.2001.00445.x
+  morris1981:
+    title: "Voltage oscillations in the barnacle giant muscle fiber"
+    authors: "Morris C, Lecar H"
+    venue: "Biophysical Journal 35(1):193-213 (1981) — DOI transcribed offline in Pass 3, not re-verified online"
+    doi: 10.1016/S0006-3495(81)84782-0
+  llinas1980:
+    title: "Electrophysiological properties of in vitro Purkinje cell dendrites in mammalian cerebellar slices"
+    authors: "Llinás R, Sugimori M"
+    venue: "Journal of Physiology 305:197-213 (1980) — DOI transcribed offline in Pass 3, not re-verified online"
+    doi: 10.1113/jphysiol.1980.sp013358
+  polsky2004:
+    title: "Computational subunits in thin dendrites of pyramidal cells"
+    authors: "Polsky A, Mel BW, Schiller J"
+    venue: "Nature Neuroscience 7(6):621-627 (2004) — DOI transcribed offline in Pass 3, not re-verified online"
+    doi: 10.1038/nn1253
+  koch1999:
+    title: "Biophysics of Computation: Information Processing in Single Neurons"
+    authors: "Koch C"
+    venue: "Oxford University Press, New York (1999), ISBN 0-19-510491-9 (no DOI)"
+    url: https://global.oup.com/academic/product/biophysics-of-computation-9780195181999
+
+simulations:
+  - id: caleo-cajal-dendritic-wiring
+    name: "Cuntz et al. (2010) PLoS Comput. Biol. & Cuntz et al. (2007) PNAS Ramón y Cajal minimum-wiring and conduction-delay greedy Steiner dendritic trees + Rall's 3/2 diameter power law + (Pass 3) Rall passive-cable electrotonics coupled to a Morris-Lecar dendritic Ca2+ spike hotspot"
+    organism: "Drosophila melanogaster (Class I-IV da sensory neurons), Homo sapiens, Mus musculus & Rattus norvegicus (cerebellar Purkinje cells and cortical pyramidal cells)"
+    script: 2007-caleo-cajal-dendritic-wiring.py
+    output: docs/media/cajal_dendritic_wiring_comparison.png
+    extra_outputs:
+      - docs/media/cajal_dendritic_wiring_growth.gif
+      - docs/media/cajal_dendritic_wiring_ca_spike_coincidence.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-cajal-dendritic-wiring-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Cuntz, Forstner, Borst & Häusser (2010) PLoS Comput. Biol. 6(8):e1000877 & Cuntz et al. (2007) PNAS 104:13319-13324 greedy Minimum Spanning Tree dendritic growth rule minimizing C(u, v) = ||u - v|| + bf * path(u, root) across balancing factor bf in [0, 1] to balance Ramón y Cajal's (1899) conservation of cytoplasmic wiring length W and conduction time P"
+        - "Wen & Chklovskii (2008) J. Neurophysiol. 99:2320-2328 & Cuntz et al. (2010) dimensional wiring scaling laws W propto N^(1/2) A^(1/2) in 2D planar arbors and W propto N^(2/3) V^(1/3) in 3D volumetric arbors"
+        - "Rall (1959) Exp. Neurol. 1:491-527 electrotonic input-conductance impedance-matching power law d_parent^(3/2) = sum_k d_daughter_k^(3/2) and the passive cable length constant lambda_DC = sqrt(R_m d / 4 R_i); Koch (1999) Eq. 2.37 sinusoidal steady-state reduction lambda_f = lambda_DC sqrt(2 / (1 + sqrt(1 + (omega tau_m)^2)))"
+        - "Roth & Häusser (2001) J. Physiol. 535:445-472 Purkinje passive constants (R_m ~ 122 kOhm cm2, R_i ~ 115 Ohm cm, C_m ~ 0.77 uF/cm2); Llinás & Sugimori (1980) J. Physiol. 305:197-213 all-or-none Purkinje dendritic Ca2+ spikes; Polsky, Mel & Schiller (2004) Nat. Neurosci. 7:621-627 within-branch supralinear vs between-branch linear synaptic summation; Morris & Lecar (1981) Biophys. J. 35:193-213 two-variable Ca2+/K+ membrane"
+      reconstructed_in_script:
+        - "Full Cuntz et al. (2010) greedy MST solver (`grow_cuntz_dendritic_tree`) across 8 balancing factors bf in [0.0, 1.0] on N = 160 synaptic carriers, reproducing normalized wiring cost W(bf)/W(0) (Pearson r = 1.0000, RMSE = 0.0042) and normalized conduction path P(bf)/P(1) (Pearson r = 0.99969, RMSE = 0.0067), plus a random spanning tree negative control (10.43x wiring inflation)"
+        - "Log-log OLS scaling law verification across N in [25, 320] at bf = 0.15: alpha_2D = 0.4797 +- 0.0168 (vs 0.5000), alpha_3D = 0.6495 +- 0.0456 (vs 0.6667), bf = 1.0 star limit alpha_star = 0.9996"
+        - "Bottom-up Rall 3/2 electrotonic diameter assignment verifying (sum d_daughter^(3/2))/d_parent^(3/2) = 1.0000 (RMSE = 1.27e-16 across 40 bifurcations)"
+        - "Computer-vision segmentation of Santiago Ramón y Cajal's (1899) human cerebellar Purkinje neuron drawing (`cajal_purkinje_dendritic_arbor_specimen.jpg`, Museo Cajal 328 Madrid): box-counting fractal dimension D_f = 1.7817 +- 0.0248, peak Sholl intersection count = 73 at r/R_max = 0.6176, 62 primary/secondary bifurcation hubs"
+        - "(Pass 3) Rall/Koch passive-cable electrotonics on every Rall-3/2 edge of every Cuntz tree (X_e = l_e / lambda_f(d_e), lambda_f / lambda_DC = 0.2487 at f_syn = 53.05 Hz), exp(-X) attenuation of two alpha-synapse inputs from the 24 nearest-neighbour terminal-tip pairs to their lowest-common-ancestor hotspot, a vectorised forward-Euler Morris-Lecar Ca2+/K+ hotspot with g_Ca = 0 and frozen-K+ (strictly linear RC) ablations, an inter-input delay sweep dt in [0, 30] ms, and the resulting coincidence window dt_c (5.24 ms at bf = 0.20 -> 0.73 ms at bf = 1), supralinear gain (4.28x vs exact linear 2.000000), same-branch fraction (1.00 -> 0.00) and Pearson r(window, bf) = -0.698 (p = 0.054)"
+      transfer_boundary:
+        - "2D planar fan and 3D cubic Euclidean carrier-point greedy MST arbors with Rall 3/2 passive electrotonic diameter tapering mapped to Cajal's Golgi-stained Purkinje neuron drawing; the specimen reference values in `cajal_dendritic_wiring_reference.json` (D_f = 1.7817, Sholl peak = 73, hubs = 62) are the script's own Pass 2 outputs recorded as regression anchors, not independent literature morphometrics"
+        - "(Pass 3) The dendritic Ca2+ hotspot is a single isopotential Morris-Lecar compartment with the canonical barnacle Hopf parameter set (C = 20 uF/cm2, Rinzel & Ermentrout 1998), not a Purkinje P-type Ca2+ channel fit; passive attenuation to the hotspot uses the semi-infinite-cylinder factor exp(-X), exact for Rall-matched equivalent cylinders viewed from the soma and approximate centripetally; the synaptic peak current I_peak = 110 uA/cm2 is a protocol choice tuned so single inputs stay sub-threshold"
+        - "(Pass 3) Roth & Häusser (2001) passive constants and all five new DOIs were transcribed offline and are flagged as not re-verified in `electrotonic_ca_spike_reference.json`, the dataset README and the BibTeX file"
+      does_not_claim:
+        - "Purkinje P-type Ca2+ channel kinetics fitted to Llinás & Sugimori (1980) recordings, a multi-compartment active cable (NEURON-style) hotspot, Na+ dendritic spikes, activity-dependent filopodial synaptotropic retraction, or an empirical coincidence-window value from the literature (the 3 ms reference is tau_syn and the -1 reference is the predicted sign)"
+    source_refs:
+      - cuntz2010
+      - cuntz2007
+      - cuntz2008
+      - rall1959
+      - wen2008
+      - cajal1899
+      - roth2001
+      - morris1981
+      - llinas1980
+      - polsky2004
+      - koch1999
+    summary: >-
+      Pass 3 (v3) evaluation of `2007-caleo-cajal-dendritic-wiring.py` (overall weighted score 92.2/100,
+      down from 93.8/100 in v2). The single v2 remediation item is closed: Section 2b (L315-L712) couples
+      Rall/Koch passive-cable electrotonics on every Rall-3/2 edge of every Cuntz tree to an active
+      Morris-Lecar Ca2+ hotspot at the lowest common ancestor of nearest-neighbour terminal-tip pairs, and
+      evaluates synaptic coincidence detection across all 8 Cuntz balancing factors (window 5.24 ms at
+      bf = 0.20 -> 0.73 ms at bf = 1; supralinear gain 4.28x vs the exactly-linear null 2.000000 of the
+      frozen-K+ ablation; same-branch fraction 1.00 -> 0.00; r(window, bf) = -0.698). The exact linear
+      superposition null and the lambda_f <= lambda_DC bound are machine-checked in Lean 4 (Theorems 4-5,
+      0 sorrys), the new reference table is SHA-256-pinned, 6 new measurements bring the total to 15 and
+      the self-test to 10 suites. The score nevertheless falls because the audit of the new layer exposed
+      deeper defects the v2 audit did not penalise: the Cajal specimen "reference" values are the script's
+      own outputs (match by construction), the Cuntz Pareto benchmark arrays carry no digitisation
+      provenance, the five Pass 3 sources and the Purkinje passive constants were transcribed offline and
+      not re-verified, the hotspot is a canonical barnacle Morris-Lecar compartment rather than a Purkinje
+      P-type fit, and the coincidence-window metric is quantised to a 2.5 ms grid with a Pearson r over 8
+      points that does not reach significance (p = 0.054).
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          The Cuntz (2007, 2010) greedy MST solver with bottom-up Rall (1959) 3/2 diameter accumulation
+          (`grow_cuntz_dendritic_tree`, L165-281), the random spanning-tree ablation (L282-313), the 8-point
+          bf Pareto sweep (L716-769) and the 2D/3D Wen-Chklovskii scaling regressions (L770-828) are
+          unchanged from v2 and remain faithful. Pass 3 adds a genuinely coupled passive/active model: the
+          Rall DC length constant and Koch (1999) Eq. 2.37 AC reduction (`rall_length_constant_um`, L352-368)
+          are the textbook formulas, every edge receives X_e = l_e / lambda_f(d_e) from the Rall diameters
+          (`compute_tree_electrotonics`, L371-388), and the Morris-Lecar equations (L425-461) are correctly
+          transcribed with the two ablation switches that isolate the regenerative g_Ca term. Deductions:
+          the hotspot is a single isopotential compartment with the canonical barnacle Hopf parameter set
+          (C = 20 uF/cm2, V1-V4, phi) rather than Purkinje P-type Ca2+ kinetics, so the 4.28x gain and the
+          5.24 ms window are properties of a generic excitable membrane placed at the LCA, not of a Purkinje
+          dendrite (-3); attenuation uses the semi-infinite exp(-X) factor (L483-484), which is only exact
+          for Rall-matched cylinders seen from the soma, whereas here it is applied centripetally from tips
+          toward a branch node (-2); the scaling-law sweep runs at bf = 0.15 (L791, L801) while every other
+          panel uses the Purkinje regime bf = 0.20 (-1). Five Lean 4 theorems (0 sorrys) back the greedy
+          cost trade-off, the 3/2 law, tree topology, exact passive superposition and lambda_f <= lambda_DC.
+        evidence:
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [165, 313], note: "Greedy MST C(u,v) = d(u,v) + bf*path(u,root) solver with Rall 3/2 diameter accumulation and the random spanning tree ablation control (unchanged from v2)", supports: true}
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [352, 388], note: "Rall DC length constant sqrt(R_m d / 4 R_i), Koch (1999) Eq. 2.37 AC reduction, and per-edge electrotonic length X_e = l_e / lambda_f(d_e) on every Rall-3/2 edge", supports: true}
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [425, 461], note: "Vectorised forward-Euler Morris-Lecar Ca2+/K+ hotspot with g_ca_scale = 0 and freeze_w ablations; parameters are the canonical barnacle Hopf set, not a Purkinje P-type fit", supports: false}
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [464, 576], note: "Coincidence protocol: exp(-X) attenuation of two alpha inputs to the LCA hotspot (L483-484), 13-point delay sweep, spike matrix, window, supralinear gain and passive superposition ratio", supports: true}
+          - {file: morphoeval/lean/loops/Loop_058_cajal_dendritic_wiring.lean, lines: [38, 214], note: "5 machine-checked theorems (0 sorrys): Cuntz cost trade-off, Rall 3/2 identity, binary-tree topology, exact linear-RC superposition (L170-182) and lambda_f^2 <= lambda_DC^2 (L200-214)", supports: true}
+      specimen-match:
+        value: 90
+        rationale: >-
+          The vendored, SHA-256-verified Cajal (1899) Purkinje drawing is segmented as in v2
+          (`segment_cajal_purkinje_specimen`, L833-934: arbor mask, EDT soma, 26-ring Sholl curve with
+          peak 73 at r/R_max = 0.6176, 62 bifurcation hubs, D_f = 1.7817 +- 0.0248) and the 6-panel
+          comparison figure aligns the bf = 0.20 and bf = 0.70 model arbors with the specimen. Pass 3 adds
+          the 4-panel coincidence figure whose Panel A renders the electrotonic tree with tip pairs and LCA
+          hotspots. Deductions, larger than in v2 because the Pass 3 audit looked at where the specimen
+          numbers come from: the specimen reference values the figure and measurements are "matched" against
+          (`specimen_metadata.sholl_peak_intersections_ref` = 73, `skeleton_branch_points_ref` = 62,
+          `box_counting_fractal_dimension_ref` = 1.7817; reference JSON L98-102) are the script's own Pass 2
+          outputs written back into the dataset, so value == reference by construction and the self-test
+          (L1388-1389) merely pins a regression (-5); the new Ca2+ hotspot layer is compared with no specimen
+          at all — no Llinás & Sugimori (1980) dendritic spike trace, no Polsky (2004) summation curve — so
+          the coincidence figure is model-only (-3); the model-arbor-vs-specimen comparison still rests on
+          Sholl shape and D_f alone, with no branch-angle or segment-length histogram against the drawing (-2).
+        evidence:
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [833, 934], note: "Golgi arbor segmentation, EDT soma localization, 26-ring Sholl analysis, Laplacian ridge bifurcation hub extraction and 7-scale box-counting fractal dimension on the SHA-256-pinned specimen", supports: true}
+          - {file: datasets/cajal_dendritic_wiring/cajal_dendritic_wiring_reference.json, lines: [88, 102], note: "specimen_metadata *_ref values (73, 420.0, 0.6176, 62, 1.7817) are the script's own Pass 2 outputs recorded as references — match by construction, not an independent morphometric", supports: false}
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [1386, 1390], note: "Self-test suite 7 hard-codes sholl_peak_count == 73 and n_branch_points == 62 (regression pin, not an empirical check)", supports: false}
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [607, 711], note: "Pass 3 4-panel coincidence figure: electrotonic tree + tip pairs + LCA hotspots, hotspot traces with ablations, tuning curves per bf, window/same-branch/gain vs bf — model-only, no empirical dendritic-spike specimen", supports: true}
+          - {file: docs/media/cajal_dendritic_wiring_comparison.png, lines: [0, 0], note: "6-panel comparison figure aligning Purkinje (bf=0.20) and motoneuron (bf=0.70) arbors, Pareto curves, 2D/3D scaling laws, Sholl profile and Cajal (1899) Purkinje CV segmentation (regenerated in Pass 3)", supports: true}
+      parameter-expressivity:
+        value: 93
+        rationale: >-
+          Sweeps 8 balancing factors bf in [0.0, 1.0] (L716-769) and N in [25, 320] in 2D, 3D and star
+          regimes (L770-828) as in v2; Pass 3 adds the inter-input delay sweep dt in [0, 30] ms (13 points)
+          and runs the whole coincidence protocol across all 8 bf trees (`evaluate_coincidence_across_bf`,
+          L579-604), so the new mechanism is parameter-controlled by bf and its tuning curves are rendered
+          per bf (figure Panel C). The `--bf` CLI flag, dead in v2, is now honoured for Panel A, Panel E and
+          the GIF (L962-965) together with `--n-carriers`, `--radius` and `--seed` (L1459-1464). Deductions:
+          `measure_morphoeval()` (L1163-1174) takes no arguments and always uses the default N/seed/radius,
+          so the measurements reported after a CLI override describe the default run, not the rendered one
+          (-3); the Pareto-panel star marker (L1141) and the coincidence figure (L615-616) still fix bf = 0.20
+          / sweep index 2 regardless of `--bf` (-2); none of the Pass 3 physiological parameters (I_peak,
+          tau_syn, g_Ca, R_m) is exposed on the CLI or swept — only bf is (-2).
+        evidence:
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [579, 604], note: "Coincidence protocol evaluated across all 8 Cuntz bf trees; Pearson r of window vs bf", supports: true}
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [957, 965], note: "render_outputs wires the coincidence figure and honours the --bf override for Panel A / E / GIF (dead flag in v2)", supports: true}
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [1459, 1464], note: "CLI parameter overrides for --bf, --n-carriers, --radius and --seed", supports: true}
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [1163, 1174], note: "measure_morphoeval() ignores CLI parameters: always default carriers/seed/radius", supports: false}
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [1141, 1141], note: "Pareto star marker hard-coded to sweep index 2 (bf = 0.20) regardless of --bf; same for the coincidence figure at L615-616", supports: false}
+      morphometric-validation:
+        value: 91
+        rationale: >-
+          `measure_morphoeval()` (L1163-1342) now returns 15 reference-anchored measurements: the 9 v2
+          metrics (Pareto W/W0 r = 1.0000, P/P1 r = 0.99969, bf = 0.20 W/W0 = 1.0189 vs 1.0220 with a
+          10.43x random ablation, alpha_2D = 0.4797 +- 0.0168, alpha_3D = 0.6495 +- 0.0456, Rall ratio
+          1.0000, D_f, Sholl peak, hubs) plus 6 Pass 3 metrics with explicit nulls and ablations:
+          lambda_f / lambda_DC = 0.2487 against a hand-computed analytic check, passive superposition ratio
+          1.000000 against the Lean-proved null, active gain 4.28x against the linear 2.0 with the g_Ca = 0
+          ablation (2.05x) reported alongside, window 5.24 ms, same-branch fraction 0.0 in the star limit,
+          and r(window, bf) = -0.698. Each `source`/`note` says honestly whether the reference is empirical,
+          analytic or a model prediction. Deductions: three of the nine v2 references (D_f = 1.7817, 73, 62)
+          are the script's own outputs (L1256, L1266, L1276), so those three "matches" are tautological (-3);
+          of the six new metrics only the analytic ratio and the two exact nulls have a defensible reference —
+          the window reference (3 ms = tau_syn) and the sign reference (-1) are model predictions and the gain
+          reference is the linear null, so no Pass 3 number is compared with a measured dendritic spike or
+          summation curve (-3); the coincidence window is defined as the largest grid offset still firing
+          (L523-527), which quantises it to the 2.5 ms grid and assigns 0.0 to a pair that fires only at dt = 0
+          (indistinguishable from a non-firing pair) (-1); Pearson r over 8 bf points has p = 0.054 and is
+          reported as a sign test (-1); I_peak = 110 uA/cm2 is tuned so singles never fire and pairs fire at
+          bf = 0.20 (JSON L51), which makes the single-input fraction 0 an outcome of the protocol (-1).
+        evidence:
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [1163, 1342], note: "15 reference-anchored measurements with Pearson r, p-values, OLS SE, RMSE, random-tree ablation and the passive g_Ca = 0 / frozen-K+ ablations; Pass 3 block L1281-1342", supports: true}
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [1251, 1280], note: "Specimen D_f / Sholl peak / hubs measurements whose reference_value (1.7817, 73, 62) equals the script's own output by construction", supports: false}
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [1312, 1341], note: "Window and Pearson-sign measurements whose reference_value is tau_syn = 3 ms and the predicted sign -1 (model predictions, labelled as such in source/note)", supports: false}
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [523, 527], note: "Coincidence window = largest swept offset still firing; a pair firing only at dt = 0 gets 0.0 and the 2.5 ms grid quantises the result", supports: false}
+          - {file: datasets/cajal_dendritic_wiring/electrotonic_ca_spike_reference.json, lines: [48, 68], note: "synaptic_input_protocol.I_peak_note states I_peak is tuned so single inputs stay sub-threshold; coincidence_detection_predictions registers the exact nulls (gain 2.0, same-branch 0.0) and the predicted sign -1", supports: true}
+      source-traceability:
+        value: 91
+        rationale: >-
+          The six v2 sources keep their verified DOIs in the docstring, README and BibTeX; the reference JSON,
+          the specimen JPEG and the new `electrotonic_ca_spike_reference.json` are all SHA-256-pinned and
+          verified fail-closed at runtime (`verify_dataset_integrity` L117-142, `load_electrotonic_reference`
+          L340-349, constants L99-100 and L337). Pass 3 adds five BibTeX entries (bib L66-120) and a README
+          addendum (README L22-38) with the model-reduction and the offline-transcription caveat stated
+          plainly. Deductions: the five new DOIs and the Roth & Häusser (2001) passive constants were
+          transcribed from memory and are flagged "NOT re-verified online" (JSON L8; README L32), so the
+          Purkinje R_m / R_i / C_m that set every electrotonic length rest on assertion (-4); the Cuntz Pareto
+          benchmark arrays (`balancing_factor_pareto_benchmarks`, reference JSON L45-49: W/W0 1.0 ... 11.50,
+          P/P1 1.68 ... 1.0, angles) carry no figure/panel/digitisation provenance although the headline
+          Pearson r = 1.0000 is computed against them (L740-749) (-3); the specimen *_ref values are
+          self-generated (see specimen-match) and are not labelled as such in the JSON (-1); Koch (1999)
+          Eq. 2.37 and the Rinzel & Ermentrout (1998) Hopf set are cited without page pinpoints (-1).
+        evidence:
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [117, 142], note: "Runtime SHA-256 checksum verification of the reference JSON and the Cajal Purkinje specimen JPEG (fail-closed)", supports: true}
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [337, 349], note: "EXPECTED_ELECTROTONIC_SHA256 pin and load_electrotonic_reference() fail-closed check of the Pass 3 table", supports: true}
+          - {file: datasets/cajal_dendritic_wiring/electrotonic_ca_spike_reference.json, lines: [6, 8], note: "passive_cable_constants.note: Roth & Häusser (2001) R_m/R_i/C_m transcribed from memory and NOT re-verified online", supports: false}
+          - {file: datasets/cajal_dendritic_wiring/cajal_dendritic_wiring_reference.json, lines: [45, 49], note: "balancing_factor_pareto_benchmarks arrays with no figure/panel/digitisation provenance; W/W0 ref ends in the 11.50 outlier that dominates r = 1.0000", supports: false}
+          - {file: datasets/cajal_dendritic_wiring/paper_citations.bib, lines: [66, 120], note: "5 Pass 3 BibTeX entries (roth2001, morris1981, llinas1980, polsky2004, koch1999) with DOIs transcribed offline", supports: true}
+          - {file: datasets/cajal_dendritic_wiring/README.md, lines: [20, 38], note: "Pass 3 addendum: new table SHA-256, model reduction stated, 'DOIs not re-verified online in this offline pass' caveat; specimen SHA-256 typo from Pass 2 corrected", supports: true}
+      code-traceability:
+        value: 95
+        rationale: >-
+          The module docstring (L1-73) maps every governing equation — greedy cost, 2D/3D scaling, Rall 3/2,
+          lambda_DC and the Koch AC reduction, the Morris-Lecar ODEs — to its paper and to the five Lean 4
+          theorems by name, and each Pass 3 function carries a docstring naming the equation it implements
+          and the ablation it exposes (L352-368, L425-461). The math-KG YAML registers equations 1-5 with
+          single-range `code_locus` pins re-pointed to the shifted lines, and every measurement `source`
+          names the theorem it leans on. Deductions: the JSON `linear_superposition_note` (L62) attributes
+          exact superposition to "Lean 4 Theorem 5" whereas the script and the Lean file number it Theorem 4
+          (`rall_passive_membrane_linear_superposition`) and Theorem 5 is the length-constant bound (-2);
+          the docstring Lean line pins for Theorems 1-3 (L36-67, L85-113, L127-147) are approximate against
+          the 216-line module (theorem heads at L38, L90, L136) and Theorems 4-5 carry no line pin (-2);
+          `evaluate_cuntz_pareto_sweep` cites no figure for the benchmark arrays it compares against (-1).
+        evidence:
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [1, 73], note: "Module docstring: equation-to-paper traceability for Cuntz, Wen-Chklovskii, Rall DC/AC cable, Roth & Häusser constants, Morris-Lecar ODEs and the 5 Lean 4 theorems", supports: true}
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [315, 337], note: "Section 2b banner explaining the reduced coupled model, the exp(-X) attenuation and the linear-null design before the code", supports: true}
+          - {file: morphoeval/math_kg_loops/caleo-cajal-dendritic-wiring.yaml, lines: [50, 130], note: "Five equations with single-range code_locus pins (#L165-L207, #L208-L237, #L238-L280, #L425-L463, #L352-L390) and Lean theorem names", supports: true}
+          - {file: datasets/cajal_dendritic_wiring/electrotonic_ca_spike_reference.json, lines: [62, 62], note: "linear_superposition_note cites 'Lean 4 Theorem 5' for the superposition result that the script and Lean module number Theorem 4", supports: false}
+      repro-package:
+        value: 94
+        rationale: >-
+          `self_test()` (L1349-1453) now runs 10 deterministic suites in 8.9-11 s: SHA-256 integrity of all
+          three pinned inputs, Betti_1 = 0 topology, Pareto monotonicity/correlation, random-tree control,
+          2D/3D scaling, Rall 3/2, specimen CV, the 15-metric bitwise-determinism contract (L1392-1396), and
+          the Pass 3 suites 9-10 (L1398-1445: lambda_DC analytic check, lambda_f < lambda_DC, exact
+          superposition < 1e-9, active gain > 2, single-input fraction 0 for every bf, star-limit same-branch
+          0, window shrinks and tip->hotspot X grows at bf = 1, r(window, bf) < 0). The default render
+          regenerates the PNG, the GIF (byte-identical) and the new coincidence PNG in 7.7 s; the Lean module
+          verifies in 0.3 s with 0 sorrys. Deductions: `docs/media/*.png` are gitignored (`.gitignore` rule
+          `*.png`), so neither the comparison PNG nor the new coincidence PNG is versioned and the
+          reproducibility of the figures the audit judged rests on re-running the script (-3); the README /
+          self-test description in v2 ("passing in < 1 s") is no longer accurate — the 10-suite run takes
+          ~9 s because it executes `measure_morphoeval()` twice (-1); there is no lock file pinning the exact
+          numpy/scipy/matplotlib versions used (-2).
+        evidence:
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [1349, 1453], note: "10-suite deterministic self-test (suites 9-10 new: SHA pin, lambda analytic checks, exact superposition, active gain > 2, per-bf single-input fraction 0, star-limit assertions, r < 0)", supports: true}
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [1392, 1396], note: "Suite 8: 15-metric contract and bitwise determinism across repeated measure_morphoeval() runs", supports: true}
+          - {file: 2007-caleo-cajal-dendritic-wiring.py, lines: [1455, 1479], note: "CLI entrypoint: --self-test, --skip-gif, --bf, --n-carriers, --radius, --seed", supports: true}
+          - {file: docs/media/cajal_dendritic_wiring_ca_spike_coincidence.png, lines: [0, 0], note: "New 4-panel Pass 3 figure regenerated by the default invocation; not versioned because docs/media/*.png is gitignored", supports: true}
+    remediation:
+      - >-
+        2007-caleo-cajal-dendritic-wiring.py:425-461 and datasets/cajal_dendritic_wiring/electrotonic_ca_spike_reference.json:29-47 —
+        the Ca2+ hotspot is a single isopotential Morris-Lecar compartment with the canonical barnacle Hopf set
+        (C = 20 uF/cm2), so the 4.28x gain and 5.24 ms window are generic excitable-membrane properties. Fit g_Ca / g_K
+        kinetics and C_m to Llinás & Sugimori (1980) Purkinje P-type dendritic Ca2+ spikes (amplitude, width, threshold)
+        and resolve the hotspot as a multi-compartment active cable (NEURON-style) instead of the semi-infinite exp(-X)
+        attenuation at L483-484.
+      - >-
+        datasets/cajal_dendritic_wiring/cajal_dendritic_wiring_reference.json:88-102 with 2007-caleo-cajal-dendritic-wiring.py:1251-1280
+        and 1386-1390 — the specimen references D_f = 1.7817, Sholl peak = 73, hubs = 62 are the script's own Pass 2
+        outputs written back into the dataset, so three of the 15 "matches" are tautological. Replace them with an
+        independent morphometric (e.g. published Purkinje Sholl peak / fractal dimension from a NeuroMorpho.org
+        reconstruction or a second, independently segmented Cajal drawing) and relabel the current values as regression
+        anchors in the JSON and in `measure_morphoeval()` `source`.
+      - >-
+        datasets/cajal_dendritic_wiring/cajal_dendritic_wiring_reference.json:45-49 and 2007-caleo-cajal-dendritic-wiring.py:740-749 —
+        the Cuntz Pareto benchmark arrays (W/W0 ending in the 11.50 outlier, P/P1, bifurcation angles) have no
+        figure/panel/digitisation provenance, and the headline r = 1.0000 is dominated by the bf = 1 outlier. Record the
+        source figure, panel, digitisation method and per-point uncertainty; report r on bf in [0, 0.7] excluding the star
+        limit, and report the 4-dp r = 1.0000 as 0.99998.
+      - >-
+        datasets/cajal_dendritic_wiring/electrotonic_ca_spike_reference.json:6-8 and datasets/cajal_dendritic_wiring/README.md:32-38 —
+        Roth & Häusser (2001) R_m / R_i / C_m and the five Pass 3 DOIs were transcribed offline and flagged "NOT
+        re-verified"; verify them against the papers (Roth & Häusser Table 2 / text values; DOIs via Crossref) and update
+        the JSON note, README, BibTeX and this audit's `references` block.
+      - >-
+        2007-caleo-cajal-dendritic-wiring.py:523-527 and 579-604 — the coincidence window is the largest 2.5 ms grid
+        offset still firing (a pair firing only at dt = 0 gets 0.0, same as a non-firing pair), and r(window, bf) uses
+        8 points (p = 0.054). Interpolate the firing boundary between grid points (or bisect dt per pair), separate
+        "fires at dt = 0 only" from "never fires", and extend the bf sweep (e.g. 16-21 values) so the sign test reaches
+        significance or is reported as not significant.
+      - >-
+        2007-caleo-cajal-dendritic-wiring.py:1163-1174, 1141 and 615-616 — `measure_morphoeval()` ignores the CLI
+        parameters and the Pareto star marker / coincidence figure hard-code bf = 0.20 (index 2), so `--bf`,
+        `--n-carriers`, `--radius`, `--seed` overrides are not reflected in the measurements or in those panels.
+        Thread the CLI namespace through `measure_morphoeval(n_carriers, radius, seed, bf)` and the figure helpers.
+      - >-
+        datasets/cajal_dendritic_wiring/electrotonic_ca_spike_reference.json:62 and 2007-caleo-cajal-dendritic-wiring.py:53-72 —
+        the JSON note cites "Lean 4 Theorem 5" for exact superposition (Theorem 4 in the script and Lean module), and the
+        docstring Lean line pins for Theorems 1-3 (L36-67, L85-113, L127-147) are approximate while Theorems 4-5 have none.
+        Correct the theorem number (requires re-pinning the JSON SHA-256 at L337) and pin all five theorems to the current
+        216-line module (heads at L38, L90, L136, L170, L200).
+      - >-
+        2007-caleo-cajal-dendritic-wiring.py:403-422 — `nearest_neighbour_tip_pairs()` requests 24 pairs but the bf = 0 /
+        0.2 trees have fewer than 48 leaves (19 / 21 pairs used), so per-bf means are over different pair sets. Fix the
+        pair count to min over bf (or report n_pairs per bf in the figure and the measurement `method`).

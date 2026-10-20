@@ -44,6 +44,31 @@ Governing Mathematical Laws (verified in `morphoeval/lean/loops/Loop_046_drosoph
    (`conte_2012_synergistic_ventral_furrow_invagination`):
        D_WT_synergy (41.0 um) > D_ap_plus_ba (29.5 um) > D_ap_only (16.5 um)
        > D_cta (14.0 um) > D_unratcheted (3.8 um) > D_null (0.0 um)
+
+4. [Pass 3] Reduced 3D Shell Coupling — Anteroposterior Curvature & Germband-Extension Stress
+   (`ap_tension_and_curvature_stiffening_reduce_furrow_depth`):
+       B_AP D''''(z) - N_GB(t) D''(z) + k(z) D(z) = k_eq * D_2D(t) * chi_meso(z)
+       k(z) = k_eq * [kappa_z(z)^2 + kappa_theta(z)^2] / [kappa_z(0)^2 + kappa_theta(0)^2]
+   The 2D transverse ring depth D_2D(t) is the transverse driving load of a Donnell/Winkler-type
+   shell line equation along the AP axis z of the prolate-ellipsoidal blastoderm
+   (a = 250 um, b = R_vit = 83.2 um). The meridional (kappa_z) and hoop (kappa_theta)
+   curvatures stiffen the shell toward the poles (k_pole / k_eq ~ 13x), germband-extension
+   AP tension N_GB flattens the profile, and both strictly reduce the modal furrow depth
+   D_m = q / (B m^4 + N m^2 + k). The resulting D(z) is swept into a 3D (theta x z) shell
+   mesh. This is an honest reduced 3D model (1D elastic line + kinematic sweep), NOT a full
+   3D finite-element shell; see `solve_ap_coupled_furrow_profile`.
+
+5. [Pass 3] Intracellular Stokes Flow Around a Passive Nucleus During Phase-I Lengthening
+   (`affine_lengthening_flow_divergence_free_and_basalward`):
+       4 d_xy[mu psi_xy] + (d_xx - d_yy)[mu (psi_xx - psi_yy)] = 0,   u = psi_y, v = -psi_x
+   Variable-viscosity creeping flow (He et al. 2014 Nature 508:392-396) inside a mesoderm cell
+   cross-section whose apical cortex constricts (w_ap' < 0), basal width follows exact area
+   conservation (w_ba' of either sign), and basal end translates at
+   h' = -(w_ap' + w_ba') h / (w_ap + w_ba), with the nucleus resolved as a 50x-viscosity
+   inclusion carried by the flow. For uniform viscosity and affine boundary data the exact
+   solution psi = eps x (h - y) is recovered to 1e-12, and the nucleus translates basally at
+   ~0.98x the local cytoplasmic velocity
+   (passive tracer; He et al. 2014 Fig. 2). See `solve_intracellular_stokes_flow`.
 """
 
 from __future__ import annotations
@@ -61,11 +86,14 @@ from matplotlib.patches import Polygon
 import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
+from scipy import sparse as sp
 from scipy import stats
+from scipy.sparse.linalg import spsolve
 
 ROOT = Path(__file__).resolve().parent
 DATASET_DIR = ROOT / "datasets" / "drosophila_ventral_furrow"
 REFERENCE_JSON = DATASET_DIR / "drosophila_ventral_furrow_reference.json"
+AP_SHELL_STOKES_JSON = DATASET_DIR / "ap_shell_stokes_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "drosophila_ventral_furrow_specimen.jpg"
 SCOUT_MANIFEST_JSON = DATASET_DIR / "scout_manifest.json"
 OUTPUT_PNG = ROOT / "docs" / "media" / "drosophila_ventral_furrow_comparison.png"
@@ -80,6 +108,10 @@ EXPECTED_SHA256 = {
     ),
     "datasets/drosophila_ventral_furrow/drosophila_ventral_furrow_reference.json": (
         "5c6f1960cef1be196732c27119f92f56413f2f2951282125687dff8203fed4e5"
+    ),
+    # Pass 3: AP shell / Stokes parameter table (pinned; regenerate the digest if the table changes)
+    "datasets/drosophila_ventral_furrow/ap_shell_stokes_reference.json": (
+        "8f196893e04e645768937dc73095a86af08014f8ec207b5ffc7d718b137fbf9d"
     ),
 }
 
@@ -106,6 +138,13 @@ def verify_dataset_integrity() -> dict[str, str]:
 def load_reference_data() -> dict[str, Any]:
     """Load `datasets/drosophila_ventral_furrow/drosophila_ventral_furrow_reference.json`."""
     return json.loads(REFERENCE_JSON.read_text(encoding="utf-8"))
+
+
+def load_ap_shell_stokes_reference() -> dict[str, Any]:
+    """Load the Pass 3 parameter table `datasets/drosophila_ventral_furrow/ap_shell_stokes_reference.json`
+    (egg geometry, mesoderm AP extent, germband-extension tension ramp, nucleus geometry, Stokes grid).
+    """
+    return json.loads(AP_SHELL_STOKES_JSON.read_text(encoding="utf-8"))
 
 
 # ============================================================================
@@ -568,6 +607,480 @@ def compute_parameter_morphospace(
 
 
 # ============================================================================
+# Section 4b (Pass 3): Reduced 3D Shell — AP Curvature & Germband-Extension Stress Coupling
+# ============================================================================
+# Pass 2 remediation item 1 asked for the 2D transverse ring to be coupled to longitudinal
+# anteroposterior curvature and germband-extension stresses in a 3D shell mesh. What is
+# implemented here is an honest REDUCED version (not a 3D finite-element shell):
+#   * the blastoderm is a prolate ellipsoidal shell of revolution r = R(z) = b sqrt(1 - (z/a)^2)
+#     with exact meridional (kappa_z) and hoop (kappa_theta) principal curvatures;
+#   * the ventral-midline inward displacement D(z) along the AP axis obeys a Donnell/Winkler-type
+#     elastic line equation  B D'''' - N_GB D'' + k(z) D = q(z), where the Winkler stiffness
+#     k(z) carries the curvature-induced membrane stiffness ~ E h (kappa_z^2 + kappa_theta^2)
+#     (stiffer toward the doubly curved poles), N_GB is the germband-extension AP tension, and
+#     the load q(z) = k_eq D_2D(t) chi_meso(z) is the 2D ring depth over the mesoderm primordium;
+#   * the profile D(z) is swept circumferentially with the ring's ventral pocket shape into a
+#     (theta x z) 3D shell mesh for rendering and for the depth-at-50%-EL coupling.
+# Everything is non-dimensionalised by k_eq: B/k_eq = ell_B^4 (bending length), N_GB/k_eq = ell_N^2
+# (tension length). Neither ell_B nor ell_N is measured in the source papers; ell_N is swept as a
+# parameter-expressivity axis and the WT default ramp is a model assumption (see the audit).
+def ellipsoidal_shell_curvatures(
+    z_um: np.ndarray | float,
+    a_um: float = 250.0,
+    b_um: float = 83.2,
+) -> dict[str, np.ndarray]:
+    """Principal curvatures of the prolate ellipsoidal blastoderm shell of revolution
+    (AP semi-axis a, transverse radius b): meridional kappa_z = a b / (a^2 sin^2 phi + b^2 cos^2 phi)^{3/2}
+    with z = a cos(phi), and hoop kappa_theta = 1 / (R sqrt(1 + R'^2)); both equal a / b^2 at the
+    poles (umbilic) and (b / a^2, 1 / b) at the equator.
+    """
+    zeta = np.clip(np.asarray(z_um, dtype=float) / a_um, -0.9995, 0.9995)
+    sin2 = 1.0 - zeta ** 2
+    R = b_um * np.sqrt(sin2)
+    kappa_z = (a_um * b_um) / (a_um ** 2 * sin2 + b_um ** 2 * zeta ** 2) ** 1.5
+    dR = -b_um * zeta / (a_um * np.sqrt(sin2))
+    kappa_theta = 1.0 / (R * np.sqrt(1.0 + dR ** 2))
+    return {"R_um": R, "kappa_z_inv_um": kappa_z, "kappa_theta_inv_um": kappa_theta}
+
+
+def solve_ap_coupled_furrow_profile(
+    D_2d_um: float,
+    ell_N_um: float = 0.0,
+    ell_B_um: float = 22.0,
+    n_z: int = 201,
+    a_um: float = 250.0,
+    b_um: float = 83.2,
+    meso_el: tuple[float, float] = (0.15, 0.80),
+    edge_el: float = 0.02,
+) -> dict[str, Any]:
+    """Solve the reduced Donnell/Winkler shell line equation for the ventral furrow depth D(z)
+    along the AP axis (Theorem 4, `ap_tension_and_curvature_stiffening_reduce_furrow_depth`):
+        ell_B^4 D'''' - ell_N^2 D'' + k_rel(z) D = D_2D * chi_meso(z),
+        k_rel(z) = [kappa_z^2 + kappa_theta^2](z) / [kappa_z^2 + kappa_theta^2](0),
+    simply supported at the poles (D = D'' = 0 at z = +-a), by second-order finite differences
+    (5-point fourth difference, 3-point second difference, ghost nodes D_{-1} = -D_1).
+    `el` is the egg-length coordinate (0 = posterior pole, 1 = anterior pole).
+    """
+    z = np.linspace(-a_um, a_um, n_z)
+    dz = float(z[1] - z[0])
+    el = (z + a_um) / (2.0 * a_um)
+    chi = 0.25 * (1.0 + np.tanh((el - meso_el[0]) / edge_el)) * (1.0 - np.tanh((el - meso_el[1]) / edge_el))
+    curv = ellipsoidal_shell_curvatures(z, a_um, b_um)
+    c0 = ellipsoidal_shell_curvatures(0.0, a_um, b_um)
+    k_rel = (curv["kappa_z_inv_um"] ** 2 + curv["kappa_theta_inv_um"] ** 2) / (
+        float(c0["kappa_z_inv_um"]) ** 2 + float(c0["kappa_theta_inv_um"]) ** 2
+    )
+
+    n_int = n_z - 2
+    A = np.zeros((n_int, n_int))
+    cB = ell_B_um ** 4 / dz ** 4
+    cN = ell_N_um ** 2 / dz ** 2
+
+    def add(i: int, j: int, val: float) -> None:
+        if j == -1 or j == n_int:
+            return  # simply supported pole: D = 0
+        if j == -2:
+            A[i, 0] -= val  # ghost D_{-1} = -D_1 (D'' = 0 at the pole)
+            return
+        if j == n_int + 1:
+            A[i, n_int - 1] -= val
+            return
+        A[i, j] += val
+
+    for i in range(n_int):
+        for off, coef in ((-2, 1.0), (-1, -4.0), (0, 6.0), (1, -4.0), (2, 1.0)):
+            add(i, i + off, cB * coef)
+        for off, coef in ((-1, 1.0), (0, -2.0), (1, 1.0)):
+            add(i, i + off, -cN * coef)
+        A[i, i] += k_rel[i + 1]
+
+    D = np.zeros(n_z)
+    D[1:-1] = np.linalg.solve(A, D_2d_um * chi[1:-1])
+    d_el = float(el[1] - el[0])
+    D_max = float(np.max(D)) if np.max(D) > 0 else 0.0
+    half_mask = D >= 0.5 * D_max if D_max > 0 else np.zeros_like(D, dtype=bool)
+    return {
+        "z_um": z,
+        "el": el,
+        "D_um": D,
+        "chi_meso": chi,
+        "k_rel": k_rel,
+        "R_um": curv["R_um"],
+        "kappa_z_inv_um": curv["kappa_z_inv_um"],
+        "kappa_theta_inv_um": curv["kappa_theta_inv_um"],
+        "ell_N_um": float(ell_N_um),
+        "ell_B_um": float(ell_B_um),
+        "D_at_50EL_um": float(np.interp(0.5, el, D)),
+        "D_max_um": D_max,
+        "half_depth_extent_el": float(np.sum(half_mask) * d_el),
+        "pole_stiffening_ratio": float(np.max(k_rel[1:-1])),
+        "k_rel_at_meso_edges": (float(np.interp(meso_el[0], el, k_rel)), float(np.interp(meso_el[1], el, k_rel))),
+    }
+
+
+def couple_ring_to_ap_shell(
+    sim: dict[str, Any],
+    params: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Drive the AP shell line equation with the 2D ring depth D_2D(t) of a regime simulation at
+    every snapshot, ramping the germband-extension tension length ell_N(t) linearly from
+    `gbe_onset_s` to the end of the run (GBE starts as the furrow closes; Sweeton et al. 1991),
+    and return the D(50% EL) trace, the final AP profile, and a (theta x z) 3D shell mesh.
+    """
+    p = params if params is not None else load_ap_shell_stokes_reference()
+    geo = p["egg_geometry"]
+    shell = p["ap_shell_line_model"]
+    a_um = float(geo["ap_semi_axis_a_um"])
+    b_um = float(geo["transverse_radius_b_um"])
+    meso_el = (float(geo["mesoderm_ap_extent_el"][0]), float(geo["mesoderm_ap_extent_el"][1]))
+    ell_B = float(shell["bending_length_ell_B_um"])
+    ell_N_wt = float(shell["germband_tension_length_ell_N_wt_um"])
+    t_on = float(shell["gbe_onset_s"])
+    snaps = sim["snapshots"]
+    T = float(snaps[-1]["t_s"]) if snaps else 1.0
+
+    t_trace: list[float] = []
+    d2d_trace: list[float] = []
+    d3d_trace: list[float] = []
+    ellN_trace: list[float] = []
+    prof = None
+    for s in snaps:
+        t = float(s["t_s"])
+        ell_N = ell_N_wt * float(np.clip((t - t_on) / max(T - t_on, 1e-6), 0.0, 1.0))
+        prof = solve_ap_coupled_furrow_profile(
+            float(s["depth_um"]), ell_N_um=ell_N, ell_B_um=ell_B, a_um=a_um, b_um=b_um, meso_el=meso_el
+        )
+        t_trace.append(t)
+        d2d_trace.append(float(s["depth_um"]))
+        d3d_trace.append(prof["D_at_50EL_um"])
+        ellN_trace.append(ell_N)
+    assert prof is not None
+
+    # Sweep the ventral pocket shape of the ring around the circumference (theta x z mesh)
+    n_theta = int(shell["mesh_n_theta"])
+    n_zp = int(shell["mesh_n_z"])
+    z_plot = np.linspace(-0.995 * a_um, 0.995 * a_um, n_zp)
+    D_plot = np.interp(z_plot, prof["z_um"], prof["D_um"])
+    R_plot = ellipsoidal_shell_curvatures(z_plot, a_um, b_um)["R_um"]
+    theta = np.linspace(-np.pi, np.pi, n_theta + 1)
+    pocket = np.exp(-0.5 * ((np.angle(np.exp(1j * (theta + 0.5 * np.pi)))) / 0.35) ** 2) ** 1.32
+    W = D_plot[None, :] * pocket[:, None]
+    r = R_plot[None, :] - W
+    mesh = {
+        "X_um": r * np.cos(theta)[:, None],
+        "Y_um": r * np.sin(theta)[:, None],
+        "Z_um": np.broadcast_to(z_plot[None, :], r.shape).copy(),
+        "W_um": W,
+        "n_nodes": int(W.size),
+    }
+    return {
+        "t_s": np.asarray(t_trace),
+        "D_2d_trace_um": np.asarray(d2d_trace),
+        "D_3d_50EL_trace_um": np.asarray(d3d_trace),
+        "ell_N_trace_um": np.asarray(ellN_trace),
+        "final_profile": prof,
+        "final_D_3d_50EL_um": float(d3d_trace[-1]),
+        "final_D_2d_um": float(d2d_trace[-1]),
+        "coupling_ratio_3d_over_2d": float(d3d_trace[-1] / max(d2d_trace[-1], 1e-9)),
+        "mesh": mesh,
+        "a_um": a_um,
+        "b_um": b_um,
+        "meso_el": meso_el,
+        "ell_B_um": ell_B,
+        "ell_N_wt_um": ell_N_wt,
+        "gbe_onset_s": t_on,
+    }
+
+
+def sweep_ap_shell_parameters(
+    D_2d_um: float = 41.0,
+    params: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Parameter-expressivity sweeps for the AP shell coupling: (i) germband-extension tension
+    length ell_N (0 -> 150 um) and (ii) egg aspect ratio a/b (AP-curvature axis), reporting the
+    midline depth D(50% EL), the maximum depth, and the half-depth AP extent.
+    """
+    p = params if params is not None else load_ap_shell_stokes_reference()
+    geo = p["egg_geometry"]
+    shell = p["ap_shell_line_model"]
+    a_um = float(geo["ap_semi_axis_a_um"])
+    b_um = float(geo["transverse_radius_b_um"])
+    meso_el = (float(geo["mesoderm_ap_extent_el"][0]), float(geo["mesoderm_ap_extent_el"][1]))
+    ell_B = float(shell["bending_length_ell_B_um"])
+
+    ellN_grid = np.asarray(shell["sweep_ell_N_um"], dtype=float)
+    tension_rows = []
+    for ellN in ellN_grid:
+        pr = solve_ap_coupled_furrow_profile(D_2d_um, ell_N_um=float(ellN), ell_B_um=ell_B, a_um=a_um, b_um=b_um, meso_el=meso_el)
+        tension_rows.append(pr)
+    ab_grid = np.asarray(shell["sweep_aspect_ratio_a_over_b"], dtype=float)
+    aspect_rows = []
+    for ab in ab_grid:
+        pr = solve_ap_coupled_furrow_profile(D_2d_um, ell_N_um=0.0, ell_B_um=ell_B, a_um=b_um * float(ab), b_um=b_um, meso_el=meso_el)
+        aspect_rows.append(pr)
+    d_tension = np.asarray([r["D_at_50EL_um"] for r in tension_rows])
+    return {
+        "ell_N_grid_um": ellN_grid,
+        "tension_profiles": tension_rows,
+        "tension_D_50EL_um": d_tension,
+        "tension_half_extent_el": np.asarray([r["half_depth_extent_el"] for r in tension_rows]),
+        "tension_ablation_ratio": float(d_tension[-1] / max(d_tension[0], 1e-9)),
+        "tension_monotone_decreasing": bool(np.all(np.diff(d_tension) < 0.0)),
+        "aspect_grid": ab_grid,
+        "aspect_profiles": aspect_rows,
+        "aspect_D_50EL_um": np.asarray([r["D_at_50EL_um"] for r in aspect_rows]),
+        "aspect_pole_stiffening": np.asarray([r["pole_stiffening_ratio"] for r in aspect_rows]),
+        "aspect_half_extent_el": np.asarray([r["half_depth_extent_el"] for r in aspect_rows]),
+    }
+
+
+# ============================================================================
+# Section 4c (Pass 3): Intracellular Stokes Flow Around a Passive Nucleus (Phase-I Lengthening)
+# ============================================================================
+# Pass 2 remediation item 2 asked for explicitly resolved intracellular Stokes flow fields around
+# moving nuclei during the early (He et al. 2014) lengthening phase. Implemented as a 2D
+# variable-viscosity creeping-flow solve in stream-function form on the cell cross-section:
+#     4 d_xy[mu psi_xy] + (d_xx - d_yy)[mu (psi_xx - psi_yy)] = 0,   u = psi_y,  v = -psi_x,
+# obtained by taking the curl of div(sigma) = 0 with sigma = -p I + mu (grad u + grad u^T).
+# The domain is the fixed rectangle [-w/2, w/2] x [0, h] with w = (w_ap + w_ba) / 2 (apex at y = h,
+# pinned under the vitelline membrane). Boundary velocities are the kinematics of the
+# incompressible trapezoid: apical cortex constricts tangentially at w_ap', the basal cortex moves
+# tangentially at the area-conserving rate w_ba' (either sign), lateral membranes are passively carried, and the basal end translates at
+# h' = -(w_ap' + w_ba') h / (w_ap + w_ba) so that the net boundary flux is exactly zero.
+# psi on the boundary is the line integral of the normal velocity (exact for piecewise-linear data)
+# and the second node layer encodes the tangential velocity (d psi / dn). The nucleus is an
+# elliptical inclusion of 50x cytoplasmic viscosity (nearly rigid, force-free, carried by the flow).
+# Limitations carried to Pass 4: fixed (non-moving) rectangular domain, no cortical actomyosin
+# stress boundary condition, no neighbour-cell coupling, 2D rather than axisymmetric/3D.
+def solve_intracellular_stokes_flow(
+    w_ap_um: float,
+    w_ba_um: float,
+    h_um: float,
+    dw_ap_dt_um_s: float,
+    dw_ba_dt_um_s: float,
+    dx_um: float = 0.2,
+    nucleus: bool = True,
+    nucleus_center_from_apex_um: float = 9.0,
+    nucleus_semi_axes_um: tuple[float, float] = (1.9, 2.8),
+    viscosity_ratio: float = 50.0,
+    affine_boundary: bool = False,
+) -> dict[str, Any]:
+    """Resolve the 2D variable-viscosity Stokes flow inside a lengthening mesoderm cell
+    (Theorem 5, `affine_lengthening_flow_divergence_free_and_basalward`). With
+    `affine_boundary=True` the apical/basal rates are replaced by the single affine rate
+    w' = -w h' / h so that psi = eps x (h - y), eps = h'/h, is the exact solution (verification).
+    """
+    w = 0.5 * (w_ap_um + w_ba_um)
+    dh_dt = -(dw_ap_dt_um_s + dw_ba_dt_um_s) * h_um / (w_ap_um + w_ba_um)  # exact area conservation
+    if affine_boundary:
+        dw_ap_dt_um_s = dw_ba_dt_um_s = -w * dh_dt / h_um
+    nx = int(round(w / dx_um)) + 1
+    ny = int(round(h_um / dx_um)) + 1
+    x = np.linspace(-w / 2.0, w / 2.0, nx)
+    y = np.linspace(0.0, h_um, ny)
+    dx = float(x[1] - x[0])
+    dy = float(y[1] - y[0])
+    X, Y = np.meshgrid(x, y)
+
+    def u_b(xx: Any, yy: Any) -> np.ndarray:
+        xx = np.asarray(xx, dtype=float)
+        yy = np.asarray(yy, dtype=float)
+        dw_y = dw_ap_dt_um_s * (yy / h_um) + dw_ba_dt_um_s * (1.0 - yy / h_um)
+        return np.broadcast_to((dw_y / w) * xx, np.broadcast(xx, yy).shape).copy()
+
+    def v_b(xx: Any, yy: Any) -> np.ndarray:
+        xx = np.asarray(xx, dtype=float)
+        yy = np.asarray(yy, dtype=float)
+        return np.broadcast_to(-dh_dt * (1.0 - yy / h_um), np.broadcast(xx, yy).shape).copy()
+
+    # Boundary stream function: d psi = -v dx along x-edges, d psi = u dy along y-edges
+    psi = np.zeros((ny, nx))
+    vb = v_b(x, 0.0)
+    psi[0, :] = np.concatenate([[0.0], np.cumsum(-0.5 * (vb[1:] + vb[:-1]) * dx)])
+    ur = u_b(w / 2.0, y)
+    psi[:, -1] = psi[0, -1] + np.concatenate([[0.0], np.cumsum(0.5 * (ur[1:] + ur[:-1]) * dy)])
+    vt = v_b(x, h_um)
+    inc = -0.5 * (vt[1:] + vt[:-1]) * (-dx)
+    psi_top = psi[-1, -1] + np.concatenate([[0.0], np.cumsum(inc[::-1])])
+    psi[-1, :] = psi_top[::-1]
+    ul = u_b(-w / 2.0, y)
+    inc = 0.5 * (ul[1:] + ul[:-1]) * (-dy)
+    psi_left = psi[-1, 0] + np.concatenate([[0.0], np.cumsum(inc[::-1])])
+    flux_closure_error = float(abs(psi_left[-1] - psi[0, 0]))
+    psi[:, 0] = psi_left[::-1]
+    psi[0, 0] = 0.0
+    # Second layer: d psi / dn_out = u . t with t = (n_y, -n_x)
+    psi[1, :] = psi[0, :] + dy * u_b(x, 0.0)
+    psi[-2, :] = psi[-1, :] - dy * u_b(x, h_um)
+    psi[:, -2] = psi[:, -1] + dx * v_b(w / 2.0, y)
+    psi[:, 1] = psi[:, 0] - dx * v_b(-w / 2.0, y)
+
+    mu = np.ones((ny, nx))
+    y_c = h_um - nucleus_center_from_apex_um
+    nuc_mask = (X / nucleus_semi_axes_um[0]) ** 2 + ((Y - y_c) / nucleus_semi_axes_um[1]) ** 2 <= 1.0
+    if nucleus:
+        mu[nuc_mask] = viscosity_ratio
+
+    N = nx * ny
+    J, K = np.meshgrid(np.arange(1, ny - 1), np.arange(1, nx - 1), indexing="ij")
+    rows_base = (J * nx + K).ravel()
+
+    def fd_operator(stencil: list[tuple[int, int, float]]) -> sp.csr_matrix:
+        r_l, c_l, v_l = [], [], []
+        for dj, dk, val in stencil:
+            r_l.append(rows_base)
+            c_l.append(((J + dj) * nx + (K + dk)).ravel())
+            v_l.append(np.full(rows_base.size, val))
+        return sp.csr_matrix((np.concatenate(v_l), (np.concatenate(r_l), np.concatenate(c_l))), shape=(N, N))
+
+    Dxx = fd_operator([(0, -1, 1.0 / dx ** 2), (0, 0, -2.0 / dx ** 2), (0, 1, 1.0 / dx ** 2)])
+    Dyy = fd_operator([(-1, 0, 1.0 / dy ** 2), (0, 0, -2.0 / dy ** 2), (1, 0, 1.0 / dy ** 2)])
+    cxy = 1.0 / (4.0 * dx * dy)
+    Dxy = fd_operator([(1, 1, cxy), (1, -1, -cxy), (-1, 1, -cxy), (-1, -1, cxy)])
+    M = sp.diags(mu.ravel())
+    Dm = Dxx - Dyy
+    A = (4.0 * Dxy @ M @ Dxy + Dm @ M @ Dm).tocsr()
+
+    fixed = np.zeros((ny, nx), dtype=bool)
+    fixed[:2, :] = True
+    fixed[-2:, :] = True
+    fixed[:, :2] = True
+    fixed[:, -2:] = True
+    F = fixed.ravel()
+    I = ~F
+    psi_flat = psi.ravel().copy()
+    rhs = -A[I][:, F] @ psi_flat[F]
+    psi_flat[I] = spsolve(A[I][:, I].tocsc(), rhs)
+    psi = psi_flat.reshape(ny, nx)
+
+    u = np.gradient(psi, dy, axis=0)
+    v = -np.gradient(psi, dx, axis=1)
+    div = np.gradient(u, dx, axis=1) + np.gradient(v, dy, axis=0)
+    interior = np.zeros_like(fixed)
+    interior[3:-3, 3:-3] = True
+    div_rel = float(np.max(np.abs(div[interior])) / max(abs(dh_dt) / h_um, 1e-12))
+
+    eps_affine = dh_dt / h_um
+    psi_affine = eps_affine * X * (h_um - Y)
+    d_psi = (psi - psi[0, 0]) - (psi_affine - psi_affine[0, 0])
+    affine_l2_rel_error = float(np.linalg.norm(d_psi) / max(np.linalg.norm(psi_affine - psi_affine[0, 0]), 1e-12))
+
+    j_c = int(np.argmin(np.abs(y - y_c)))
+    k_c = int(np.argmin(np.abs(x)))
+    return {
+        "x_um": x,
+        "y_um": y,
+        "X_um": X,
+        "Y_um": Y,
+        "psi": psi,
+        "u_um_s": u,
+        "v_um_s": v,
+        "speed_um_s": np.hypot(u, v),
+        "mu_rel": mu,
+        "nucleus_mask": nuc_mask,
+        "nucleus_center_um": (0.0, float(y_c)),
+        "nucleus_semi_axes_um": nucleus_semi_axes_um,
+        "w_um": w,
+        "h_um": h_um,
+        "dh_dt_um_s": float(dh_dt),
+        "dw_ap_dt_um_s": float(dw_ap_dt_um_s),
+        "dw_ba_dt_um_s": float(dw_ba_dt_um_s),
+        "eps_affine_per_s": float(eps_affine),
+        "nx": nx,
+        "ny": ny,
+        "n_unknowns": int(I.sum()),
+        "flux_closure_error": flux_closure_error,
+        "affine_l2_rel_error": affine_l2_rel_error,
+        "interior_divergence_rel": div_rel,
+        "centerline_v_um_s": v[:, k_c].copy(),
+        "v_at_nucleus_center_um_s": float(v[j_c, k_c]),
+        "nucleus_mean_v_um_s": float(np.mean(v[nuc_mask])) if nuc_mask.any() else float("nan"),
+        "nucleus_mean_u_um_s": float(np.mean(u[nuc_mask])) if nuc_mask.any() else float("nan"),
+        "nucleus_rigid_body_cv": (
+            float(np.std(v[nuc_mask]) / max(abs(np.mean(v[nuc_mask])), 1e-12)) if nuc_mask.any() else float("nan")
+        ),
+    }
+
+
+def analyze_phase1_nuclear_hydrodynamics(
+    sim_wt: dict[str, Any] | None = None,
+    params: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Resolve the Phase-I (He et al. 2014) intracellular Stokes field at the instant of maximal
+    mesoderm cell lengthening rate of the WT ring simulation, with and without the nucleus, and
+    integrate the nuclear basal trajectory through the resolved centerline velocity profile
+    over the whole lengthening phase.
+    """
+    p = params if params is not None else load_ap_shell_stokes_reference()
+    st = p["intracellular_stokes_model"]
+    sim = sim_wt if sim_wt is not None else simulate_ventral_furrow_regime("wildtype_synergistic_invagination")
+    t = sim["t_s"]
+    h = sim["h_trace_um"]
+    w_ap = sim["w_ap_trace_um"]
+    w_ba = sim["w_ba_trace_um"]
+    dh = np.gradient(h, t)
+    dw_ap = np.gradient(w_ap, t)
+    dw_ba = np.gradient(w_ba, t)
+    i_peak_h = int(np.argmax(h))  # end of Phase I lengthening
+    i_star = int(np.argmax(dh[: max(i_peak_h, 2)]))  # instant of maximal lengthening rate
+
+    common = dict(
+        dx_um=float(st["grid_spacing_um"]),
+        nucleus_center_from_apex_um=float(st["nucleus_center_from_apex_um"]),
+        nucleus_semi_axes_um=(float(st["nucleus_semi_axes_um"][0]), float(st["nucleus_semi_axes_um"][1])),
+        viscosity_ratio=float(st["nucleus_to_cytoplasm_viscosity_ratio"]),
+    )
+    args = (float(w_ap[i_star]), float(w_ba[i_star]), float(h[i_star]), float(dw_ap[i_star]), float(dw_ba[i_star]))
+    verification = solve_intracellular_stokes_flow(*args, nucleus=False, affine_boundary=True, **common)
+    free = solve_intracellular_stokes_flow(*args, nucleus=False, **common)
+    with_nuc = solve_intracellular_stokes_flow(*args, nucleus=True, **common)
+    tracer_ratio = with_nuc["nucleus_mean_v_um_s"] / free["v_at_nucleus_center_um_s"]
+
+    # Perturbation of the cytoplasmic field by the nucleus (outside the inclusion)
+    dv = np.abs(with_nuc["v_um_s"] - free["v_um_s"])
+    dv[with_nuc["nucleus_mask"]] = 0.0
+    perturbation_rel = float(np.max(dv) / max(abs(free["dh_dt_um_s"]), 1e-12))
+
+    # Nuclear trajectory through Phase I using the resolved centerline profile v(y)/h' (shape) scaled
+    # by the instantaneous lengthening rate; d = distance of the nucleus centre from the apex.
+    y_frac = free["y_um"] / free["h_um"]
+    shape = free["centerline_v_um_s"] / (-free["dh_dt_um_s"])  # normalised basal-ward speed vs y/h
+    d0 = float(st["nucleus_center_from_apex_um"])
+    d_nuc = d0
+    traj_t: list[float] = []
+    traj_d: list[float] = []
+    for i in range(i_peak_h):
+        dt = float(t[i + 1] - t[i])
+        frac = 1.0 - d_nuc / float(h[i])
+        v_loc = float(np.interp(frac, y_frac, shape)) * max(float(dh[i]), 0.0) * tracer_ratio
+        d_nuc += v_loc * dt
+        traj_t.append(float(t[i + 1]))
+        traj_d.append(d_nuc)
+    delta_h = float(h[i_peak_h] - h[0])
+    nuclear_disp = float(d_nuc - d0)
+    return {
+        "i_star": i_star,
+        "t_star_s": float(t[i_star]),
+        "t_phase1_end_s": float(t[i_peak_h]),
+        "state_star": {"w_ap_um": args[0], "w_ba_um": args[1], "h_um": args[2], "dw_ap_dt_um_s": args[3], "dw_ba_dt_um_s": args[4]},
+        "verification": verification,
+        "free": free,
+        "with_nucleus": with_nuc,
+        "tracer_velocity_ratio": float(tracer_ratio),
+        "nucleus_rigid_body_cv": float(with_nuc["nucleus_rigid_body_cv"]),
+        "perturbation_rel_to_basal_speed": perturbation_rel,
+        "affine_l2_rel_error": float(verification["affine_l2_rel_error"]),
+        "flux_closure_error": float(free["flux_closure_error"]),
+        "interior_divergence_rel": float(free["interior_divergence_rel"]),
+        "nuclear_trajectory_t_s": np.asarray(traj_t),
+        "nuclear_trajectory_d_from_apex_um": np.asarray(traj_d),
+        "nuclear_basal_displacement_um": nuclear_disp,
+        "phase1_cell_lengthening_um": delta_h,
+        "nuclear_disp_over_lengthening": float(nuclear_disp / max(delta_h, 1e-9)),
+    }
+
+
+# ============================================================================
 # Section 5: Real Confocal Specimen Segmentation (`drosophila_ventral_furrow_specimen.jpg`)
 # ============================================================================
 def segment_drosophila_ventral_furrow_specimen(
@@ -689,6 +1202,12 @@ def measure_morphoeval() -> list[dict[str, Any]]:
     recoil = eval_res["regimes"]["unratcheted_twist_recoil_mutant"]
     null_ctrl = eval_res["regimes"]["snail_twist_double_null_control"]
     spec = segment_drosophila_ventral_furrow_specimen()
+    shell_params = load_ap_shell_stokes_reference()
+    shell = couple_ring_to_ap_shell(wt, params=shell_params)
+    sweep = sweep_ap_shell_parameters(wt["final_invagination_depth_um"], params=shell_params)
+    hydro = analyze_phase1_nuclear_hydrodynamics(wt, params=shell_params)
+    prof = shell["final_profile"]
+    ref_extent = float(shell_params["egg_geometry"]["reference_furrow_half_depth_extent_el"])
 
     return [
         {
@@ -800,6 +1319,99 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             ),
             "derived_from": "output",
         },
+        # ---- Pass 3: reduced 3D AP shell coupling ----
+        {
+            "name": "3D-shell-coupled WT furrow depth at 50% egg length D_3D(0.5 EL)",
+            "value": round(shell["final_D_3d_50EL_um"], 4),
+            "unit": "um",
+            "method": (
+                "Donnell/Winkler shell line equation ell_B^4 D'''' - ell_N^2 D'' + k_rel(z) D = D_2D chi_meso(z) "
+                "along the AP axis of the prolate ellipsoid (a = 250 um, b = 83.2 um), driven by the 2D ring depth "
+                "at every snapshot with the germband-extension tension ramp (ell_N 0 -> "
+                f"{shell['ell_N_wt_um']:.0f} um from t = {shell['gbe_onset_s'] / 60:.0f} min)"
+            ),
+            "reference_value": 41.0,
+            "reference_source": "Conte, Munoz, Baum & Miodownik (2012) PLoS ONE 7(11):e49973 Fig. 5 (2D transverse section at mid-furrow)",
+            "note": (
+                f"D_3D/D_2D coupling ratio = {shell['coupling_ratio_3d_over_2d']:.4f}; AP-curvature pole stiffening "
+                f"k_pole/k_eq = {prof['pole_stiffening_ratio']:.1f}x, k_rel at mesoderm edges = "
+                f"{prof['k_rel_at_meso_edges'][0]:.2f}/{prof['k_rel_at_meso_edges'][1]:.2f}; reduced 1D-line + kinematic sweep "
+                f"({shell['mesh']['n_nodes']} shell nodes), not a 3D FEM"
+            ),
+            "derived_from": "script",
+        },
+        {
+            "name": "ventral furrow AP half-depth extent (fraction of egg length)",
+            "value": round(prof["half_depth_extent_el"], 4),
+            "unit": "egg_length_fraction",
+            "method": (
+                "Fraction of the AP axis where the 3D-shell furrow profile D(z) >= 0.5 D_max at the end of the WT run "
+                f"(mesoderm primordium load chi_meso over EL {shell['meso_el'][0]:.2f}-{shell['meso_el'][1]:.2f})"
+            ),
+            "reference_value": ref_extent,
+            "reference_source": "Approximate mesoderm primordium / furrow span, Leptin & Grunewald (1990) Development 110:73-84; Sweeton et al. (1991) Development 112:775-789 (not digitised; DOIs unverified offline)",
+            "note": (
+                f"D_max = {prof['D_max_um']:.2f} um; furrow tapers toward the doubly curved poles because k_rel rises "
+                f"from 1.0 at 50% EL to {prof['k_rel_at_meso_edges'][0]:.2f} at the posterior mesoderm edge"
+            ),
+            "derived_from": "script",
+        },
+        {
+            "name": "germband-extension tension ablation ratio D_3D(ell_N = 150 um) / D_3D(ell_N = 0)",
+            "value": round(sweep["tension_ablation_ratio"], 4),
+            "unit": "dimensionless",
+            "method": (
+                "AP shell line equation at the final WT 2D depth swept over the germband-extension tension length "
+                f"ell_N in {list(np.round(sweep['ell_N_grid_um'], 0))} um; ratio of midline depth at max vs zero tension"
+            ),
+            "note": (
+                f"D(0.5 EL) over the sweep = {np.round(sweep['tension_D_50EL_um'], 2).tolist()} um "
+                f"(monotone decreasing: {sweep['tension_monotone_decreasing']}); no empirical reference recorded: "
+                "the N_GB magnitude is not calibrated to Lye et al. (2015) ablation recoil (open Pass 4 item); "
+                f"aspect-ratio sweep a/b = {sweep['aspect_grid'].tolist()} gives pole stiffening "
+                f"{np.round(sweep['aspect_pole_stiffening'], 1).tolist()}x"
+            ),
+            "derived_from": "script",
+        },
+        # ---- Pass 3: intracellular Stokes flow around the nucleus ----
+        {
+            "name": "Stokes-resolved nucleus / cytoplasm basal velocity ratio (passive tracer)",
+            "value": round(hydro["tracer_velocity_ratio"], 4),
+            "unit": "dimensionless",
+            "method": (
+                "2D variable-viscosity Stokes solve (stream-function form, "
+                f"{hydro['with_nucleus']['nx']}x{hydro['with_nucleus']['ny']} grid, {hydro['with_nucleus']['n_unknowns']} unknowns) "
+                "inside the WT mesoderm cell at the instant of maximal Phase-I lengthening rate "
+                f"(t = {hydro['t_star_s'] / 60:.2f} min; w_ap = {hydro['state_star']['w_ap_um']:.2f} um, "
+                f"h = {hydro['state_star']['h_um']:.2f} um, h' = {hydro['free']['dh_dt_um_s']:.4f} um/s); "
+                "mean basal velocity of a 50x-viscosity elliptical nucleus divided by the nucleus-free flow at its centre"
+            ),
+            "reference_value": float(shell_params["intracellular_stokes_model"]["reference_passive_tracer_velocity_ratio"]),
+            "reference_source": "He, Doubrovinski, Polyakov & Wieschaus (2014) Nature 508:392-396 Fig. 2 (nuclei move with the cytoplasm)",
+            "note": (
+                f"nucleus rigid-body CV = {hydro['nucleus_rigid_body_cv']:.4f}; max cytoplasmic perturbation by the nucleus = "
+                f"{hydro['perturbation_rel_to_basal_speed']:.3f} x basal speed; Phase-I nuclear basal displacement = "
+                f"{hydro['nuclear_basal_displacement_um']:.2f} um vs cell lengthening {hydro['phase1_cell_lengthening_um']:.2f} um "
+                f"(ratio {hydro['nuclear_disp_over_lengthening']:.3f}); fixed rectangular domain, no cortical stress BC"
+            ),
+            "derived_from": "script",
+        },
+        {
+            "name": "Stokes solver verification: affine-lengthening exact-solution L2 error",
+            "value": float(f"{hydro['affine_l2_rel_error']:.3e}"),
+            "unit": "relative_L2",
+            "method": (
+                "Uniform-viscosity solve with affine boundary data (w' = -w h'/h) compared with the exact stream function "
+                "psi = eps x (h - y), eps = h'/h (Theorem 5, affine_lengthening_flow_divergence_free_and_basalward)"
+            ),
+            "reference_value": 0.0,
+            "reference_source": "Exact Stokes solution (polynomial of degree 2 is reproduced exactly by central differences)",
+            "note": (
+                f"boundary flux closure error = {hydro['flux_closure_error']:.2e} um^2/s; interior discrete divergence of the "
+                f"trapezoid-driven field = {hydro['interior_divergence_rel']:.3e} x (h'/h)"
+            ),
+            "derived_from": "script",
+        },
     ]
 
 
@@ -868,6 +1480,10 @@ def render_comparison_figure(out_png: Path = OUTPUT_PNG) -> Path:
     null_ctrl = regimes["snail_twist_double_null_control"]
     morpho = compute_parameter_morphospace()
     spec = segment_drosophila_ventral_furrow_specimen()
+    shell_params = load_ap_shell_stokes_reference()
+    shell = couple_ring_to_ap_shell(wt, params=shell_params)
+    sweep = sweep_ap_shell_parameters(wt["final_invagination_depth_um"], params=shell_params)
+    hydro = analyze_phase1_nuclear_hydrodynamics(wt, params=shell_params)
 
     n_cells = 64
     idx = np.arange(n_cells)
@@ -886,14 +1502,19 @@ def render_comparison_figure(out_png: Path = OUTPUT_PNG) -> Path:
             "font.size": 9.1,
         }
     )
-    fig, axes = plt.subplots(2, 3, figsize=(17.4, 10.4), dpi=140)
+    fig = plt.figure(figsize=(17.4, 15.4), dpi=140)
+    gs = fig.add_gridspec(3, 3)
+    axes = [[fig.add_subplot(gs[r, c]) for c in range(3)] for r in range(2)]
+    axes.append([fig.add_subplot(gs[2, 0], projection="3d"), fig.add_subplot(gs[2, 1]), fig.add_subplot(gs[2, 2])])
+    axes = np.asarray(axes, dtype=object)
     fig.suptitle(
         "Conte et al. (2012), Martin et al. (2009) & He et al. (2014) Drosophila Ventral Furrow Invagination: "
-        "Ratcheted Actomyosin Pulses, Incompressible Wedge Lengthening & Biomechanical Synergy",
-        fontsize=12.2,
+        "Ratcheted Actomyosin Pulses, Incompressible Wedge Lengthening & Biomechanical Synergy\n"
+        "Pass 3: reduced 3D AP-shell coupling (curvature + germband-extension tension) and intracellular Stokes flow around the nucleus",
+        fontsize=11.6,
         fontweight="bold",
         color="#38bdf8",
-        y=0.978,
+        y=0.985,
     )
 
     # Panel A: 2D Incompressible Viscous-Shell Ring (Wild-Type Synergy vs Apical-Only Outline)
@@ -1027,7 +1648,117 @@ def render_comparison_figure(out_png: Path = OUTPUT_PNG) -> Path:
     ax.set_xlabel("Transverse Confocal Time-Series (Blue: DAPI, Green: Neurotactin, Red: Myosin II)")
     ax.set_yticks([])
 
-    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.955])
+    # Panel G (Pass 3): Reduced 3D blastoderm shell mesh (theta x z) with the AP-coupled furrow displacement
+    ax = axes[2, 0]
+    mesh = shell["mesh"]
+    W = mesh["W_um"]
+    w_norm = W / max(float(W.max()), 1e-9)
+    face_colors = plt.cm.magma(0.12 + 0.88 * w_norm)
+    ax.plot_surface(
+        mesh["Z_um"], mesh["X_um"], mesh["Y_um"],
+        facecolors=face_colors, rstride=1, cstride=1, linewidth=0.08, edgecolor=(1, 1, 1, 0.10),
+        antialiased=False, shade=False,
+    )
+    ax.set_facecolor("#131b2e")
+    ax.set_box_aspect((2.0 * shell["a_um"], 2.0 * shell["b_um"], 2.0 * shell["b_um"]), zoom=1.22)
+    ax.view_init(elev=-30, azim=-66)
+    ax.grid(False)
+    ax3d = ax
+    ax.set_xlabel("AP axis $z$ ($\\mu$m)", labelpad=2)
+    ax.set_ylabel("$x$ ($\\mu$m)", labelpad=2)
+    ax.set_zlabel("$y$ ($\\mu$m)", labelpad=2)
+    ax.tick_params(labelsize=6.5, pad=0)
+    for pane in (ax.xaxis.pane, ax.yaxis.pane, ax.zaxis.pane):
+        pane.set_facecolor("#131b2e")
+        pane.set_edgecolor("#3b4c6b")
+    ax.set_title(
+        f"G. Reduced 3D Shell ({mesh['n_nodes']} nodes): $D_{{3D}}(0.5EL)={shell['final_D_3d_50EL_um']:.1f}$ vs "
+        f"$D_{{2D}}={shell['final_D_2d_um']:.1f}\\,\\mu$m, $k_{{pole}}/k_{{eq}}={shell['final_profile']['pole_stiffening_ratio']:.0f}\\times$",
+        fontweight="bold", fontsize=8.2, x=0.58,
+    )
+
+    # Panel H (Pass 3): AP furrow depth profile D(EL) vs germband-extension tension and AP curvature
+    ax = axes[2, 1]
+    prof = shell["final_profile"]
+    cmap_t = plt.cm.cool(np.linspace(0.0, 1.0, len(sweep["ell_N_grid_um"])))
+    for pr, c_t, ellN in zip(sweep["tension_profiles"], cmap_t, sweep["ell_N_grid_um"]):
+        ax.plot(pr["el"], pr["D_um"], color=c_t, lw=1.4, label=f"$\\ell_N={ellN:.0f}\\,\\mu$m ($D_{{0.5}}={pr['D_at_50EL_um']:.1f}$)")
+    ax.plot(prof["el"], prof["D_um"], color="#f8fafc", lw=2.3, ls="--", label=f"WT coupled run ($\\ell_N\\to{shell['ell_N_wt_um']:.0f}$, $L_{{1/2}}={prof['half_depth_extent_el']:.2f}$ EL)")
+    ax.fill_between(prof["el"], 0.0, 41.0 * prof["chi_meso"], color="#38bdf8", alpha=0.10, label="Mesoderm load $\\chi_{\\mathrm{meso}}(z)$")
+    ax.axvline(0.5, color="#facc15", lw=0.9, ls=":")
+    ax.set_xlim(0.0, 1.0)
+    ax.set_ylim(0.0, 46.0)
+    ax.set_xlabel("Egg length EL (0 = posterior pole, 1 = anterior pole)")
+    ax.set_ylabel("Furrow depth $D(z)$ ($\\mu$m)")
+    axk = ax.twinx()
+    axk.plot(prof["el"], prof["k_rel"], color="#f43f5e", lw=1.2, ls="-.", label="$k_{\\mathrm{rel}}(z)$ (AP curvature stiffening)")
+    axk.set_yscale("log")
+    axk.set_ylabel("$k_{\\mathrm{rel}} = (\\kappa_z^2+\\kappa_\\theta^2)/(\\cdot)_{eq}$", color="#f43f5e")
+    axk.tick_params(axis="y", colors="#f43f5e")
+    ax.set_title(
+        f"H. AP Profile: $\\ell_B^4 D'''' - \\ell_N^2 D'' + k_{{rel}} D = D_{{2D}}\\chi$ "
+        f"(ablation ratio {sweep['tension_ablation_ratio']:.2f}, monotone {sweep['tension_monotone_decreasing']})",
+        fontweight="bold", fontsize=8.8,
+    )
+    h1, l1 = ax.get_legend_handles_labels()
+    h2, l2 = axk.get_legend_handles_labels()
+    ax.legend(h1 + h2, l1 + l2, loc="lower center", fontsize=6.3, framealpha=0.88, facecolor="#0f172a", ncol=2)
+
+    # Panel I (Pass 3): Intracellular Stokes flow around the nucleus at peak Phase-I lengthening rate
+    ax = axes[2, 2]
+    fl = hydro["with_nucleus"]
+    speed = fl["speed_um_s"]
+    im_s = ax.pcolormesh(fl["X_um"], fl["Y_um"], speed, cmap="viridis", shading="auto")
+    ax.streamplot(
+        fl["x_um"], fl["y_um"], fl["u_um_s"], fl["v_um_s"],
+        color="#f8fafc", density=(0.55, 1.4), linewidth=0.55, arrowsize=0.7,
+    )
+    th = np.linspace(0, 2 * np.pi, 120)
+    ax.plot(
+        fl["nucleus_semi_axes_um"][0] * np.cos(th), fl["nucleus_center_um"][1] + fl["nucleus_semi_axes_um"][1] * np.sin(th),
+        color="#facc15", lw=1.6, label="Nucleus (50$\\times\\mu$)",
+    )
+    ax.annotate(
+        f"$v_{{nuc}}={fl['nucleus_mean_v_um_s']:.4f}\\,\\mu$m/s",
+        xy=(0.0, fl["nucleus_center_um"][1] + 9.0 * fl["nucleus_mean_v_um_s"] / max(abs(fl["dh_dt_um_s"]), 1e-9)),
+        xytext=(0.0, fl["nucleus_center_um"][1]), ha="center", va="top", color="#facc15", fontsize=6.8,
+        arrowprops=dict(arrowstyle="-|>", color="#facc15", lw=2.0, mutation_scale=14),
+    )
+    ax.axhline(fl["h_um"], color="#38bdf8", lw=1.4)
+    sgn_ba = ">" if fl["dw_ba_dt_um_s"] > 0 else "<"
+    ax.text(
+        -0.48 * fl["w_um"], fl["h_um"] - 1.4,
+        f"apex (vitelline-pinned), $w_{{ap}}'={fl['dw_ap_dt_um_s']:.4f}\\,\\mu$m/s $<0$",
+        color="#38bdf8", fontsize=6.8, va="top",
+        bbox=dict(boxstyle="round,pad=0.15", facecolor="#0f172a", alpha=0.75, edgecolor="none"),
+    )
+    ax.text(
+        -0.48 * fl["w_um"], 1.0,
+        f"basal end $h'={fl['dh_dt_um_s']:.3f}\\,\\mu$m/s, $w_{{ba}}'={fl['dw_ba_dt_um_s']:.4f}$ ${sgn_ba}0$",
+        color="#f8fafc", fontsize=6.8, va="bottom",
+        bbox=dict(boxstyle="round,pad=0.15", facecolor="#0f172a", alpha=0.75, edgecolor="none"),
+    )
+    cb2 = fig.colorbar(im_s, ax=ax, fraction=0.046, pad=0.04)
+    cb2.set_label("Cytoplasmic speed ($\\mu$m/s)", color="#e2e8f0")
+    cb2.ax.yaxis.set_tick_params(color="#cbd5e1")
+    plt.setp(plt.getp(cb2.ax.axes, "yticklabels"), color="#cbd5e1")
+    ax.set_xlim(-0.5 * fl["w_um"], 0.5 * fl["w_um"])
+    ax.set_ylim(0.0, fl["h_um"])
+    ax.set_aspect("auto")
+    ax.set_xlabel("Cell width $x$ ($\\mu$m)")
+    ax.set_ylabel("Apicobasal $y$ ($\\mu$m)")
+    ax.set_title(
+        f"I. Stokes Flow @ $t={hydro['t_star_s'] / 60:.1f}$ min: $v_{{nuc}}/v_{{cyto}}={hydro['tracer_velocity_ratio']:.3f}$, "
+        f"affine check $L_2={hydro['affine_l2_rel_error']:.1e}$",
+        fontweight="bold", fontsize=8.8,
+    )
+    ax.legend(loc="lower right", fontsize=6.8, framealpha=0.88, facecolor="#0f172a")
+
+    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.962])
+    pos_h = axes[2, 1].get_position()
+    ax3d.set_position([0.005, pos_h.y0 - 0.02, pos_h.x0 - 0.062, pos_h.height + 0.03])
+    ax3d.set_yticks([-80, 0, 80])
+    ax3d.set_zticks([-80, 0, 80])
     fig.savefig(out_png, dpi=140)
     plt.close(fig)
     return out_png
@@ -1112,10 +1843,10 @@ def render_growth_gif(out_gif: Path = OUTPUT_GIF) -> Path:
 # Section 8: Deterministic Self-Test Suite (`--self-test`)
 # ============================================================================
 def run_self_test() -> int:
-    """Run deterministic 8-check mathematical, biomechanical, and CV self-test suite."""
+    """Run the deterministic mathematical, biomechanical, 3D-shell, Stokes, and CV self-test suite."""
     print("[2012-he-drosophila-ventral-furrow] Running --self-test suite...")
     digests = verify_dataset_integrity()
-    assert len(digests) == 3, "Expected 3 SHA-256-verified dataset files"
+    assert len(digests) == 4, "Expected 4 SHA-256-verified dataset files"
 
     # 1. Theorem 1 check: Incompressible trapezoidal cell lengthening & basal expansion
     w0 = np.array([8.2])
@@ -1154,15 +1885,54 @@ def run_self_test() -> int:
     assert spec["dv_ml_ratios"][0] > spec["dv_ml_ratios"][1] > spec["dv_ml_ratios"][2] > spec["dv_ml_ratios"][3]
     assert spec["dv_compression_px"] >= 35.0
     assert spec["mean_myosin_red_enrichment"] > 1.25
+
+    # 5. (Pass 3) Theorem 4 check: reduced 3D AP shell — curvature stiffening & germband tension
+    shell_params = load_ap_shell_stokes_reference()
+    c_eq = ellipsoidal_shell_curvatures(0.0)
+    c_pole = ellipsoidal_shell_curvatures(0.9995 * 250.0)
+    assert abs(float(c_eq["kappa_theta_inv_um"]) - 1.0 / 83.2) < 1e-9, "Equatorial hoop curvature must equal 1/b"
+    assert abs(float(c_eq["kappa_z_inv_um"]) - 83.2 / 250.0 ** 2) < 1e-9, "Equatorial meridional curvature must equal b/a^2"
+    assert abs(float(c_pole["kappa_z_inv_um"]) / float(c_pole["kappa_theta_inv_um"]) - 1.0) < 0.02, "Poles must be umbilic (kappa_z ~ kappa_theta)"
+    p0 = solve_ap_coupled_furrow_profile(41.0, ell_N_um=0.0)
+    assert abs(p0["D_at_50EL_um"] - 41.0) / 41.0 < 0.05, f"Uncoupled AP shell must recover the 2D depth at 50% EL, got {p0['D_at_50EL_um']}"
+    assert p0["D_um"][0] == 0.0 and p0["D_um"][-1] == 0.0, "Simply supported poles must have D = 0"
+    assert 0.45 < p0["half_depth_extent_el"] < 0.75, f"Furrow half-depth extent out of range: {p0['half_depth_extent_el']}"
+    assert p0["pole_stiffening_ratio"] > 5.0, "AP curvature must stiffen the shell toward the poles"
+    sweep = sweep_ap_shell_parameters(41.0, params=shell_params)
+    assert sweep["tension_monotone_decreasing"], f"D(0.5 EL) must decrease monotonically with ell_N: {sweep['tension_D_50EL_um']}"
+    assert sweep["tension_ablation_ratio"] < 0.8, "Germband tension ablation must reduce the midline depth by > 20% at ell_N = 150 um"
+    assert np.all(np.diff(sweep["aspect_pole_stiffening"]) > 0.0), "Pole stiffening must increase with egg aspect ratio a/b"
+    shell = couple_ring_to_ap_shell(wt1, params=shell_params)
+    assert 0.9 < shell["coupling_ratio_3d_over_2d"] <= 1.05, f"WT 3D/2D coupling ratio out of range: {shell['coupling_ratio_3d_over_2d']}"
+    assert shell["mesh"]["n_nodes"] == 65 * 81
+    assert np.all(np.diff(shell["D_3d_50EL_trace_um"]) >= -1e-9), "Coupled D_3D(0.5 EL) trace must be non-decreasing in the WT run"
+
+    # 6. (Pass 3) Theorem 5 check: intracellular Stokes flow, exact affine verification & passive nucleus
+    hydro = analyze_phase1_nuclear_hydrodynamics(wt1, params=shell_params)
+    assert hydro["affine_l2_rel_error"] < 1e-8, f"Stokes affine verification failed: {hydro['affine_l2_rel_error']}"
+    assert hydro["flux_closure_error"] < 1e-9, f"Boundary flux must close exactly: {hydro['flux_closure_error']}"
+    assert hydro["interior_divergence_rel"] < 1e-6, f"Resolved field must be divergence-free: {hydro['interior_divergence_rel']}"
+    assert hydro["free"]["dh_dt_um_s"] > 0.0 and hydro["state_star"]["dw_ap_dt_um_s"] < 0.0, "Phase I must have apical constriction + lengthening"
+    assert hydro["with_nucleus"]["nucleus_mean_v_um_s"] < 0.0, "Nucleus must move basal-ward (toward y = 0)"
+    assert 0.75 < hydro["tracer_velocity_ratio"] < 1.05, f"Nucleus must be a near-passive tracer, got {hydro['tracer_velocity_ratio']}"
+    assert hydro["nucleus_rigid_body_cv"] < 0.05, f"50x-viscosity nucleus must translate nearly rigidly, got CV {hydro['nucleus_rigid_body_cv']}"
+    assert hydro["nuclear_basal_displacement_um"] > 0.0 and hydro["nuclear_disp_over_lengthening"] < 1.0
+    hydro2 = analyze_phase1_nuclear_hydrodynamics(wt2, params=shell_params)
+    assert hydro2["tracer_velocity_ratio"] == hydro["tracer_velocity_ratio"], "Stokes solve must be deterministic"
+
     meas = measure_morphoeval()
-    assert len(meas) == 7, f"Expected 7 MorphoEval measurements, got {len(meas)}"
+    assert len(meas) == 12, f"Expected 12 MorphoEval measurements, got {len(meas)}"
 
     print(
         f"[2012-he-drosophila-ventral-furrow] SELF-TEST PASSED: "
         f"D_WT={wt1['final_invagination_depth_um']:.1f} um (h={wt1['final_cell_height_um']:.1f} um, w_ba={wt1['final_basal_width_um']:.2f} um), "
         f"D_ap_only={d[2]:.1f} um (h={eval_res['sim_heights_um'][2]:.1f} um), "
         f"6-regime r={eval_res['pearson_r_depth']:.4f} (RMSE={eval_res['rmse_depth_um']:.3f} um), "
-        f"specimen DV/ML={spec['dv_ml_ratios'][-1]:.4f} (MyoII={spec['mean_myosin_red_enrichment']:.2f}x, r={spec['stage_progression_pearson_r']:.4f})."
+        f"specimen DV/ML={spec['dv_ml_ratios'][-1]:.4f} (MyoII={spec['mean_myosin_red_enrichment']:.2f}x, r={spec['stage_progression_pearson_r']:.4f}); "
+        f"3D shell D_3D(0.5EL)={shell['final_D_3d_50EL_um']:.2f} um (ratio {shell['coupling_ratio_3d_over_2d']:.4f}, "
+        f"L_1/2={shell['final_profile']['half_depth_extent_el']:.3f} EL, GBE ablation {sweep['tension_ablation_ratio']:.3f}); "
+        f"Stokes v_nuc/v_cyto={hydro['tracer_velocity_ratio']:.4f} (affine L2={hydro['affine_l2_rel_error']:.1e}, "
+        f"nuclear disp={hydro['nuclear_basal_displacement_um']:.2f} um)."
     )
     return 0
 

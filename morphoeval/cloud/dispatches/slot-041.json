@@ -23,5 +23,73 @@
   "slot_index": 41,
   "slug": "differential-adhesion-sorting",
   "target_script": "1964-steinberg-differential-adhesion-sorting.py",
-  "delta": 33.2
+  "delta": 33.2,
+  "pass3_run_id": "2026-10-19-differential-adhesion-sorting-loop-pass3",
+  "pass3_audit_id": "2026-10-19-differential-adhesion-sorting-audit-v3",
+  "pass3_audit": "morphoeval/audits/2026-10-19-differential-adhesion-sorting-audit-v3.yaml",
+  "pass3_score": 89.9,
+  "pass3_dims": {
+    "model-fidelity": 90,
+    "specimen-match": 87,
+    "parameter-expressivity": 91,
+    "morphometric-validation": 90,
+    "source-traceability": 91,
+    "code-traceability": 91,
+    "repro-package": 93
+  },
+  "pass3_dims_v2": {
+    "model-fidelity": 93,
+    "specimen-match": 88,
+    "parameter-expressivity": 89,
+    "morphometric-validation": 89,
+    "source-traceability": 94,
+    "code-traceability": 92,
+    "repro-package": 92
+  },
+  "pass3_score_delta_vs_pass2": -0.6,
+  "pass3_completed_at": "2026-10-20T16:00:00Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_kg_dir": "morphoeval/kg/2026-10-19-differential-adhesion-sorting-audit-v3",
+  "pass3_self_test": "13/13 checks pass (~31 s)",
+  "pass3_remediation_closed": [
+    "Extend the 2D Cellular Potts lattice to a 3D spherical lattice (N = 64^3) to compare 2D cross-sectional vs. full 3D power-law/logarithmic sorting exponents -> simulate_potts_regime_3d() L646-854 (64^3 lattice, 840 cells, 26-neighbour adhesion, 8-colour sublattice-parallel Metropolis), fit_sorting_kinetics() L486-525 (log vs power law), compare_2d_vs_3d_sorting_kinetics() L857-904 (alpha_2D=0.189, alpha_3D=0.215, alpha_section=0.207, no-swap 0.228, control 0.001); figure Row C L1255-1357"
+  ],
+  "pass3_remediation_open": [
+    "L390-394: ad hoc symmetry-breaking field dE += 1.8*(...) in the partial-engulfment regime imposes the Panel A3 lens; remove/move to initial condition and self-test centroid_offset with and without it",
+    "L361-397 and L747-771: 'Kawasaki' type swaps between random non-adjacent cells at uncited 2.5 T; restrict to contacting pairs, cite or remove 2.5, add the 2D ablation",
+    "L652-654 / potts_3d_mean_cell_volume_fraction = 0.771: 3D volume constraint not maintained (lambda_V=2, T=30); sweep lambda_V/T3d and tighten the L1616 self-test bound to (0.9, 1.1)",
+    "L486-525 and reference JSON L244-247: exponent fits include the transient and do not discriminate log vs power law; fit a late-time window over >=3 seeds and transcribe the Nakajima & Ishihara (2011) exponent",
+    "L64-72 and paper_citations.bib L55-91: Mombach 1995 / Nakajima & Ishihara 2011 / Chen 2007 DOIs entered from memory, unverified offline",
+    "L1536-1538 and L1317-1332: 3D-section vs specimen profile r=0.758 weaker than 2D native 0.925; average several equatorial z-planes/seeds and state the primary comparator",
+    "L1462-1473: reference values 0.14 and 0.72 for L_AB/L have no traced provenance; digitise from Graner & Glazier 1992 Fig. 3 or relabel as self-consistency targets"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_041.parity_sublattice_sites_not_moore_adjacent",
+    "MathOfBiology.Loop_041.potts_volume_energy_single_voxel_increment",
+    "MathOfBiology.Loop_041.potts_volume_increment_sign"
+  ],
+  "pass3_lean_theorems_total": 7,
+  "pass3_lean_verified": true,
+  "pass3_artifacts": [
+    "1964-steinberg-differential-adhesion-sorting.py",
+    "morphoeval/lean/loops/Loop_041_differential_adhesion_sorting.lean",
+    "morphoeval/math_kg_loops/steinberg-differential-adhesion-sorting.yaml",
+    "datasets/differential_adhesion_sorting/README.md",
+    "datasets/differential_adhesion_sorting/differential_adhesion_sorting_reference.json",
+    "datasets/differential_adhesion_sorting/paper_citations.bib",
+    "docs/media/differential_adhesion_sorting_comparison.png",
+    "docs/media/differential_adhesion_sorting_growth.gif",
+    "docs/media/differential_adhesion_sorting_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-differential-adhesion-sorting-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-differential-adhesion-sorting-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-differential-adhesion-sorting-audit-v3/",
+    "morphoeval/runs/2026-10-19-differential-adhesion-sorting-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-differential-adhesion-sorting-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-differential-adhesion-sorting-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-differential-adhesion-sorting-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-differential-adhesion-sorting-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-differential-adhesion-sorting-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-041.json"
+  ]
 }

@@ -37,6 +37,26 @@ Mathematical Formalism & Lean 4 Traceability
    at empirical angles $(\theta_1 \approx 26\text{--}30^\circ, \theta_2 \approx 56\text{--}60^\circ)$,
    avoiding both the collinear $\theta_1 = \theta_2 = 0^\circ$ self-shading collapse and
    over-wide inter-whorl sector collision.
+
+4. **Pass 3 — Solar-Elevation Ray Tracing of Tiered Crowns vs Latitude**
+   (`MathOfBiology.Loop_051.solar_tier_shadow_offset_monotone`,
+   `morphoeval/lean/loops/Loop_051_dichotomous_tree_branching.lean#L130-L166`):
+   Honda & Fisher tiers stacked at spacing $s$ on an excurrent leader
+   (`build_honda_tiered_crown_3d`) are ray-traced tier-to-tier
+   (`ray_trace_tiered_crown_interception`): the shadow of a tier $\Delta z$ above is its
+   foliage mask displaced by $\Delta z \cot h$ toward the anti-solar azimuth, with solar
+   elevation $h$ from Campbell & Norman (1998) $\sin h = \sin\phi\sin\delta + \cos\phi\cos\delta\cos H$
+   and Cooper (1969) declination $\delta(n)$.  Lower sun ⇒ larger displacement ⇒ less
+   tier-on-tier self-shading, so the saturation spacing $s_{90}/R$ decreases with latitude
+   (equator 1.83 vs 45° 0.97; `evaluate_latitude_tier_spacing_tradeoff`).
+
+5. **Pass 3 — Monsi & Saeki (1953) Beer–Lambert Stacked-Tier Attenuation**
+   (`MathOfBiology.Loop_051.beer_lambert_stacked_tier_optical_depth`,
+   `morphoeval/lean/loops/Loop_051_dichotomous_tree_branching.lean#L169-L198`):
+   a lower-tier cell overlapped by $n$ upper tiers receives beam irradiance
+   $\tau_c^{\,n} = e^{-n K\,\mathrm{LAI}_c}$ ($K = 1$ for horizontal leaves, $\tau_c = 0.135$
+   for $\mathrm{LAI}_c = 2$); the transparent ablation $\tau_c = 1$ must give $E = 1$.
+   Diffuse sky light and leaf scattering are NOT modelled (residual).
 """
 
 from __future__ import annotations
@@ -60,21 +80,28 @@ DATASET_DIR = ROOT / "datasets" / "dichotomous_tree_branching"
 REF_JSON_PATH = DATASET_DIR / "dichotomous_tree_branching_reference.json"
 BIB_PATH = DATASET_DIR / "paper_citations.bib"
 SPECIMEN_IMG_PATH = DATASET_DIR / "cornus_controversa_tiered_crown_specimen.jpg"
+SOLAR_REF_JSON_PATH = DATASET_DIR / "solar_tier_spacing_reference.json"
 
 MEDIA_DIR = ROOT / "docs" / "media"
 OUT_PNG = MEDIA_DIR / "dichotomous_tree_branching_comparison.png"
 OUT_GIF = MEDIA_DIR / "dichotomous_tree_branching_growth.gif"
+OUT_SOLAR_PNG = MEDIA_DIR / "dichotomous_tree_branching_solar_tier_spacing.png"
+OUT_SOLAR_GIF = MEDIA_DIR / "dichotomous_tree_branching_solar_shadows.gif"
 
 EXPECTED_SHA256 = {
     REF_JSON_PATH: "9b8cd89b9fa19fbf89acaf9e5dc891c6f7ada36cb5a97d9a9a1e0007925d3c5e",
     BIB_PATH: "722524d3620bdc0ee05acf112e400cbc2c5bd373f27cbca6aa1d7378d553b2c0",
     SPECIMEN_IMG_PATH: "47cbd7225997789e45e248672847ff97ef9d9411b66e335df91d17c943e7566e",
 }
+# Pass 3 reference table (solar geometry constants, latitude benchmarks, specimen tier spacing).
+# Pinned separately so the Pass 1/2 checksums above stay untouched.
+EXPECTED_SHA256_PASS3 = {
+    SOLAR_REF_JSON_PATH: "640596fc8c3df302608366676688dbebd8b51fcc2613ffde7aa4c5cec3688886",
+}
 
 
-def verify_dataset_integrity() -> dict[str, Any]:
-    """Verify SHA-256 checksums of reference JSON, BibTeX, and Cornus controversa specimen."""
-    for path, expected_hash in EXPECTED_SHA256.items():
+def _check_sha256(table: dict[Path, str]) -> None:
+    for path, expected_hash in table.items():
         if not path.exists():
             raise FileNotFoundError(f"Missing required dataset file: {path}")
         actual_hash = hashlib.sha256(path.read_bytes()).hexdigest()
@@ -82,7 +109,18 @@ def verify_dataset_integrity() -> dict[str, Any]:
             raise ValueError(
                 f"SHA-256 mismatch for {path.name}: expected {expected_hash}, got {actual_hash}"
             )
+
+
+def verify_dataset_integrity() -> dict[str, Any]:
+    """Verify SHA-256 checksums of reference JSON, BibTeX, and Cornus controversa specimen."""
+    _check_sha256(EXPECTED_SHA256)
     return json.loads(REF_JSON_PATH.read_text(encoding="utf-8"))
+
+
+def load_solar_reference() -> dict[str, Any]:
+    """Verify and load the Pass 3 solar/tier-spacing reference table."""
+    _check_sha256(EXPECTED_SHA256_PASS3)
+    return json.loads(SOLAR_REF_JSON_PATH.read_text(encoding="utf-8"))
 
 
 # ============================================================================
@@ -432,6 +470,360 @@ def evaluate_honda_fisher_optimization_surface(
 
 
 # ============================================================================
+# 2b. Pass 3 — Solar-Elevation Radiative-Transfer Ray-Tracing of 3D Honda Tiered
+#     Crowns Across Diurnal/Seasonal Sun Paths (Equatorial vs Temperate Latitude)
+# ============================================================================
+# Reduced model (stated honestly): each pagoda tier is a horizontal layer of
+# Honda & Fisher (1978) 5-whorl leaf-cluster disks built by
+# `grow_honda_fisher_planar_tier`; tiers are stacked at vertical spacing `s` on
+# an excurrent Honda leader (`build_honda_tiered_crown_3d`).  Direct-beam light
+# from solar direction (elevation h, azimuth A) is ray-traced tier-to-tier by
+# projecting every upper tier's foliage mask along the beam onto every lower tier
+# plane (horizontal shadow displacement Δz·cot h), and attenuating the beam with a
+# Monsi & Saeki (1953) Beer-Lambert cluster transmittance τ_c = exp(-K·LAI_c) per
+# intercepted tier (K = 1 for horizontal leaves, independent of h).  Sun paths follow
+# the standard spherical solar-geometry relations (Campbell & Norman 1998, Ch. 11):
+#   sin h = sin φ sin δ + cos φ cos δ cos H,
+#   cos A = (sin δ cos φ - cos δ sin φ cos H) / cos h,
+# with the Cooper (1969) seasonal declination δ(n) = 23.45° sin(360°(284+n)/365)
+# and clear-sky beam transmittance S = S_0 τ_atm^(1/sin h) (τ_atm = 0.75,
+# Campbell & Norman 1998 Eq. 11.11).  Diffuse sky light and leaf-level
+# scattering/reflectance are NOT modelled (carried as a residual).
+SOLAR_AXIAL_TILT_DEG = 23.45          # Cooper (1969) Solar Energy 12:333-346
+CLEAR_SKY_BEAM_TRANSMITTANCE = 0.75   # Campbell & Norman (1998) Eq. 11.11 (clear sky)
+MEISE_LATITUDE_DEG = 50.93            # Botanic Garden Meise (specimen provenance), °N
+COOPER_MID_MONTH_DOY = [17, 47, 75, 105, 135, 162, 198, 228, 258, 288, 318, 344]
+
+
+def cooper_1969_declination_deg(day_of_year: int) -> float:
+    """Cooper (1969) Solar Energy 12:333-346 solar declination δ(n) = 23.45° sin(360°(284+n)/365)."""
+    return SOLAR_AXIAL_TILT_DEG * float(np.sin(np.radians(360.0 * (284 + day_of_year) / 365.0)))
+
+
+def solar_elevation_azimuth(
+    latitude_deg: float, declination_deg: float, hour_angle_deg: float
+) -> tuple[float, float]:
+    """
+    Campbell & Norman (1998) Ch. 11 spherical solar geometry: returns (elevation h, azimuth A)
+    in degrees (A measured clockwise from north; hour angle H = 15° per hour from solar noon).
+    """
+    phi = np.radians(latitude_deg)
+    dec = np.radians(declination_deg)
+    ha = np.radians(hour_angle_deg)
+    sin_h = np.sin(phi) * np.sin(dec) + np.cos(phi) * np.cos(dec) * np.cos(ha)
+    sin_h = float(np.clip(sin_h, -1.0, 1.0))
+    h = float(np.degrees(np.arcsin(sin_h)))
+    cos_h = max(float(np.sqrt(max(1.0 - sin_h * sin_h, 0.0))), 1e-12)
+    cos_a = (np.sin(dec) * np.cos(phi) - np.cos(dec) * np.sin(phi) * np.cos(ha)) / cos_h
+    az = float(np.degrees(np.arccos(float(np.clip(cos_a, -1.0, 1.0)))))
+    if hour_angle_deg > 0.0:  # afternoon: sun in the western half of the sky
+        az = 360.0 - az
+    return h, az
+
+
+def analytic_day_length_hours(latitude_deg: float, declination_deg: float) -> float:
+    """Day length 2·H_0/15° with cos H_0 = -tan φ tan δ (Campbell & Norman 1998 Eq. 11.6)."""
+    cos_h0 = -np.tan(np.radians(latitude_deg)) * np.tan(np.radians(declination_deg))
+    cos_h0 = float(np.clip(cos_h0, -1.0, 1.0))
+    return 2.0 * float(np.degrees(np.arccos(cos_h0))) / 15.0
+
+
+def diurnal_sun_path_samples(
+    latitude_deg: float,
+    declinations_deg: list[float] | None = None,
+    dt_hours: float = 1.0,
+    tau_atm: float = CLEAR_SKY_BEAM_TRANSMITTANCE,
+) -> dict[str, np.ndarray]:
+    """
+    Sample the diurnal sun path (hour angles at `dt_hours` steps) for each seasonal
+    declination.  Each above-horizon sample carries a beam-on-horizontal weight
+    w = τ_atm^(1/sin h) · sin h · Δt (relative clear-sky insolation, Campbell & Norman 1998).
+    """
+    if declinations_deg is None:
+        declinations_deg = [cooper_1969_declination_deg(d) for d in COOPER_MID_MONTH_DOY]
+    hour_angles = np.arange(-180.0 + 7.5 * dt_hours, 180.0, 15.0 * dt_hours)
+    elev, azim, weight = [], [], []
+    for dec in declinations_deg:
+        for ha in hour_angles:
+            h, az = solar_elevation_azimuth(latitude_deg, dec, float(ha))
+            if h <= 0.5:
+                continue
+            sin_h = np.sin(np.radians(h))
+            elev.append(h)
+            azim.append(az)
+            weight.append((tau_atm ** (1.0 / sin_h)) * sin_h * dt_hours)
+    elev_arr = np.asarray(elev, dtype=float)
+    w_arr = np.asarray(weight, dtype=float)
+    return {
+        "elevation_deg": elev_arr,
+        "azimuth_deg": np.asarray(azim, dtype=float),
+        "weight": w_arr,
+        "beam_weighted_mean_elevation_deg": float(np.sum(elev_arr * w_arr) / max(np.sum(w_arr), 1e-12)),
+        "n_samples": len(elev_arr),
+    }
+
+
+def build_honda_tiered_crown_3d(
+    n_tiers: int = 7,
+    tier_spacing: float = 1.0,
+    theta1_deg: float = 26.0,
+    theta2_deg: float = 56.0,
+    r1: float = 0.90,
+    r2: float = 0.70,
+    n_whorl: int = 5,
+    r_cluster: float = 0.38,
+    max_tier_orders: int = 5,
+) -> dict[str, Any]:
+    """
+    Stack `n_tiers` Honda & Fisher (1978) 5-whorl horizontal tiers on an excurrent Honda
+    (1971) leader at vertical spacing `tier_spacing` (L₀ units).  Younger (upper) tiers carry
+    fewer planar branching orders (5,5,4,4,3,3,2 for 7 tiers), giving the conical pagoda
+    crown of *Cornus controversa*.  Returns per-tier leaf-cluster centres (x, y), height z,
+    radius and the crown-wide maximum tier radius R_tier.
+    """
+    tiers = []
+    for t in range(n_tiers):
+        n_ord = max(2, max_tier_orders - (t * 4) // max(n_tiers, 1))
+        whorl = compute_effective_leaf_area_ratio(
+            theta1_deg, theta2_deg, r1=r1, r2=r2, n_orders=n_ord, n_whorl=n_whorl,
+            r_cluster=r_cluster, grid_res=40,
+        )
+        cx, cy = whorl["whorl_tips_x"], whorl["whorl_tips_y"]
+        tiers.append(
+            {
+                "index": t,
+                "z": float(t * tier_spacing),
+                "n_orders": n_ord,
+                "cx": cx,
+                "cy": cy,
+                "tier_radius": float(np.max(np.hypot(cx, cy)) + r_cluster),
+                "n_clusters": int(len(cx)),
+            }
+        )
+    return {
+        "tiers": tiers,
+        "n_tiers": n_tiers,
+        "tier_spacing": float(tier_spacing),
+        "r_cluster": float(r_cluster),
+        "tier_radius_max": float(max(tr["tier_radius"] for tr in tiers)),
+        "crown_height": float((n_tiers - 1) * tier_spacing),
+    }
+
+
+def _rasterize_tier_masks(crown: dict[str, Any], grid_res: int) -> tuple[list[np.ndarray], float]:
+    """Rasterize every tier's union-of-leaf-cluster-disks mask on a shared horizontal grid."""
+    lim = crown["tier_radius_max"] + 0.15
+    grid_1d = np.linspace(-lim, lim, grid_res)
+    cell = float(grid_1d[1] - grid_1d[0])
+    gx, gy = np.meshgrid(grid_1d, grid_1d)
+    r2c = crown["r_cluster"] ** 2
+    masks = []
+    for tr in crown["tiers"]:
+        m = np.zeros_like(gx, dtype=bool)
+        for cx, cy in zip(tr["cx"], tr["cy"]):
+            m |= ((gx - cx) ** 2 + (gy - cy) ** 2) <= r2c
+        masks.append(m)
+    return masks, cell
+
+
+def _shift_mask(mask: np.ndarray, dx_px: int, dy_px: int) -> np.ndarray:
+    """Integer pixel shift with zero fill (shadow cast outside the grid falls off the crown)."""
+    h, w = mask.shape
+    if abs(dx_px) >= w or abs(dy_px) >= h:
+        return np.zeros_like(mask)
+    out = np.zeros_like(mask)
+    ys = slice(max(dy_px, 0), h + min(dy_px, 0))
+    yd = slice(max(-dy_px, 0), h + min(-dy_px, 0))
+    xs = slice(max(dx_px, 0), w + min(dx_px, 0))
+    xd = slice(max(-dx_px, 0), w + min(-dx_px, 0))
+    out[ys, xs] = mask[yd, xd]
+    return out
+
+
+def ray_trace_tiered_crown_interception(
+    crown: dict[str, Any],
+    sun: dict[str, np.ndarray],
+    tau_cluster: float = 0.135,
+    grid_res: int = 112,
+    masks: list[np.ndarray] | None = None,
+    cell: float | None = None,
+) -> dict[str, Any]:
+    """
+    Direct-beam ray tracing of a tiered crown across the sampled sun path.  For sun
+    sample k (elevation h_k, azimuth A_k) the shadow of upper tier i on lower tier j is
+    tier i's foliage mask displaced horizontally by (z_i - z_j)·cot h_k toward the
+    anti-solar azimuth.  A tier-j cell overlapped by n upper tiers receives beam
+    irradiance attenuated by τ_c^n (Monsi & Saeki 1953 Beer-Lambert per tier).
+    Crown light-capture efficiency E = Σ_k w_k Σ_j Σ_cells mask_j τ_c^n / Σ_k w_k Σ_j |mask_j|
+    (E = 1 means no tier-on-tier self-shading at any sun position).
+    """
+    if masks is None or cell is None:
+        masks, cell = _rasterize_tier_masks(crown, grid_res)
+    tiers = crown["tiers"]
+    n_t = len(tiers)
+    areas = np.asarray([float(m.sum()) for m in masks], dtype=float)
+    per_tier_captured = np.zeros(n_t, dtype=float)
+    total_weight = 0.0
+    for h_deg, az_deg, w in zip(sun["elevation_deg"], sun["azimuth_deg"], sun["weight"]):
+        cot_h = 1.0 / max(np.tan(np.radians(h_deg)), 1e-9)
+        # Shadow is cast away from the sun: azimuth A is clockwise from north (+y), east = +x.
+        ux = -np.sin(np.radians(az_deg))
+        uy = -np.cos(np.radians(az_deg))
+        for j in range(n_t - 1):  # topmost tier is never shaded
+            count = np.zeros(masks[j].shape, dtype=np.int16)
+            for i in range(j + 1, n_t):
+                dz = tiers[i]["z"] - tiers[j]["z"]
+                off = dz * cot_h
+                dx_px = int(round(off * ux / cell))
+                dy_px = int(round(off * uy / cell))
+                count += _shift_mask(masks[i], dx_px, dy_px).astype(np.int16)
+            lit = np.power(tau_cluster, count[masks[j]].astype(float))
+            per_tier_captured[j] += w * float(lit.sum())
+        per_tier_captured[n_t - 1] += w * areas[n_t - 1]
+        total_weight += w
+    per_tier_eff = per_tier_captured / np.maximum(areas * max(total_weight, 1e-12), 1e-12)
+    efficiency = float(per_tier_captured.sum() / max(total_weight * areas.sum(), 1e-12))
+    return {
+        "efficiency": efficiency,
+        "self_shading_loss": 1.0 - efficiency,
+        "per_tier_efficiency": per_tier_eff,
+        "tier_areas_cells": areas,
+        "n_sun_samples": int(len(sun["elevation_deg"])),
+    }
+
+
+def evaluate_latitude_tier_spacing_tradeoff(
+    latitudes_deg: tuple[float, ...] = (0.0, 15.0, 30.0, 45.0, MEISE_LATITUDE_DEG, 60.0),
+    spacing_ratios: tuple[float, ...] = (0.05, 0.1, 0.2, 0.3, 0.4, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0),
+    n_tiers: int = 7,
+    tau_cluster: float = 0.135,
+    stem_cost_kappas: tuple[float, ...] = (0.05, 0.10, 0.20),
+    saturation_level: float = 0.90,
+    grid_res: int = 112,
+    theta1_deg: float = 26.0,
+    theta2_deg: float = 56.0,
+) -> dict[str, Any]:
+    """
+    Sweep normalized tier spacing s/R_tier at each latitude and ray-trace annual
+    (12 Cooper mid-month declinations x hourly) beam light capture E(s, φ).
+    Reports per latitude: (i) parameter-free saturation spacing s_90/R (linearly
+    interpolated spacing at which E first reaches 0.90 of the no-self-shading asymptote
+    E = 1), (ii) stem-cost optimum argmax_s [E(s) - κ·s/R] for a sweep of relative
+    trunk-investment costs κ (pipe-model trunk volume ∝ crown height (n-1)·s under Leonardo
+    area conservation), and (iii) beam-weighted mean solar elevation.
+    """
+    base = build_honda_tiered_crown_3d(n_tiers=n_tiers, tier_spacing=1.0, theta1_deg=theta1_deg, theta2_deg=theta2_deg)
+    r_tier = base["tier_radius_max"]
+    masks, cell = _rasterize_tier_masks(base, grid_res)
+    suns = {lat: diurnal_sun_path_samples(lat) for lat in latitudes_deg}
+    eff = np.zeros((len(latitudes_deg), len(spacing_ratios)), dtype=float)
+    for jj, sr in enumerate(spacing_ratios):
+        crown = dict(base)
+        crown["tiers"] = [dict(tr, z=tr["index"] * sr * r_tier) for tr in base["tiers"]]
+        crown["tier_spacing"] = sr * r_tier
+        for ii, lat in enumerate(latitudes_deg):
+            eff[ii, jj] = ray_trace_tiered_crown_interception(
+                crown, suns[lat], tau_cluster=tau_cluster, masks=masks, cell=cell
+            )["efficiency"]
+    sr_arr = np.asarray(spacing_ratios, dtype=float)
+    records = []
+    for ii, lat in enumerate(latitudes_deg):
+        e_row = eff[ii]
+        e_max = float(np.max(e_row))
+        if e_max >= saturation_level:
+            sat_spacing = float(np.interp(saturation_level, e_row, sr_arr))
+        else:
+            sat_spacing = float("nan")
+        kappa_opt = {}
+        for kap in stem_cost_kappas:
+            net = e_row - kap * sr_arr
+            kappa_opt[kap] = float(sr_arr[int(np.argmax(net))])
+        records.append(
+            {
+                "latitude_deg": float(lat),
+                "efficiency_curve": e_row,
+                "e_at_zero_like_spacing": float(e_row[0]),
+                "e_max": e_max,
+                "saturation_spacing_ratio": sat_spacing,
+                "kappa_optimum_spacing_ratio": kappa_opt,
+                "beam_weighted_mean_elevation_deg": suns[lat]["beam_weighted_mean_elevation_deg"],
+            }
+        )
+    by_lat = {rec["latitude_deg"]: rec for rec in records}
+    return {
+        "latitudes_deg": np.asarray(latitudes_deg, dtype=float),
+        "spacing_ratios": sr_arr,
+        "efficiency": eff,
+        "tier_radius": r_tier,
+        "records": records,
+        "by_latitude": by_lat,
+        "tau_cluster": tau_cluster,
+        "n_tiers": n_tiers,
+        "stem_cost_kappas": stem_cost_kappas,
+        "saturation_level": saturation_level,
+    }
+
+
+def efficiency_at_spacing(tradeoff: dict[str, Any], latitude_deg: float, spacing_ratio: float) -> float:
+    """Linear interpolation of the ray-traced E(s/R) curve at a given latitude."""
+    rec = tradeoff["by_latitude"][float(latitude_deg)]
+    return float(np.interp(spacing_ratio, tradeoff["spacing_ratios"], rec["efficiency_curve"]))
+
+
+def marginal_light_gain_at_spacing(tradeoff: dict[str, Any], latitude_deg: float, spacing_ratio: float) -> float:
+    """
+    Finite-difference slope dE/d(s/R) of the ray-traced capture curve at a spacing ratio.
+    Under the stem-cost objective E(s) - κ·s/R this slope is the implied marginal stem
+    cost κ* at which the given spacing would be optimal.
+    """
+    ds = 0.05
+    return (
+        efficiency_at_spacing(tradeoff, latitude_deg, spacing_ratio + ds)
+        - efficiency_at_spacing(tradeoff, latitude_deg, max(spacing_ratio - ds, 0.0))
+    ) / (spacing_ratio + ds - max(spacing_ratio - ds, 0.0))
+
+
+def measure_specimen_tier_spacing(seg: dict[str, Any], half_band_px: int = 12) -> dict[str, Any]:
+    """
+    Empirical tier spacing / tier radius ratio from the Cornus controversa specimen:
+    inter-tier vertical spacing Δy between consecutive detected foliage shelves divided
+    by the half-width of the lower shelf (column extent of the foliage mask in a
+    ±`half_band_px` row band around the tier peak).  Photographic perspective is not
+    corrected, so this is an approximate projected ratio.
+    """
+    fol = seg["foliage_mask"]
+    peaks = list(seg["tier_peaks_roi"])
+    h_r, w_r = fol.shape
+    radii_px, centers_px = [], []
+    for py in peaks:
+        band = fol[max(py - half_band_px, 0): min(py + half_band_px + 1, h_r), :]
+        col_density = band.mean(axis=0)
+        cols = np.nonzero(col_density > 0.15)[0]
+        if len(cols) < 2:
+            radii_px.append(float("nan"))
+            centers_px.append(float("nan"))
+            continue
+        radii_px.append(0.5 * float(cols[-1] - cols[0]))
+        centers_px.append(0.5 * float(cols[-1] + cols[0]))
+    radii = np.asarray(radii_px, dtype=float)
+    spacings = np.diff(np.asarray(peaks, dtype=float))  # top -> bottom in image rows
+    # ratio uses the lower (wider) tier of each adjacent pair as R, mirroring the model's R_tier
+    ratios = spacings / radii[1:]
+    valid = np.isfinite(ratios)
+    return {
+        "tier_radii_px": radii,
+        "tier_spacings_px": spacings,
+        "spacing_to_radius_ratios": ratios[valid],
+        "mean_spacing_px": float(np.mean(spacings)),
+        "mean_radius_px": float(np.nanmean(radii)),
+        "mean_spacing_to_radius_ratio": float(np.mean(ratios[valid])),
+        "std_spacing_to_radius_ratio": float(np.std(ratios[valid])),
+        "max_tier_radius_px": float(np.nanmax(radii)),
+        "crown_spacing_to_max_radius_ratio": float(np.mean(spacings) / np.nanmax(radii)),
+    }
+
+
+# ============================================================================
 # 3. Empirical Cornus controversa Pagoda Crown Specimen CV Segmentation
 # ============================================================================
 def segment_cornus_controversa_specimen(
@@ -578,10 +970,12 @@ def segment_cornus_controversa_specimen(
 # ============================================================================
 def measure_morphoeval() -> list[dict[str, Any]]:
     """
-    Compute 9 reference-anchored morphometric measurements with uncertainty/dispersion
-    metrics, Pearson correlations, p-values, RMSE, and collinear ablation controls.
+    Compute 16 reference-anchored morphometric measurements with uncertainty/dispersion
+    metrics, Pearson correlations, p-values, RMSE, and collinear ablation controls
+    (9 from Pass 2 + 7 Pass 3 solar ray-tracing / tier-spacing measurements).
     """
     ref_data = verify_dataset_integrity()
+    solar_ref = load_solar_reference()
     tree_pagoda = grow_honda_1971_3d_tree(
         theta1_deg=26.0, theta2_deg=56.0, r1=0.90, r2=0.70, n_orders=6, delta_pipe=2.0
     )
@@ -593,6 +987,24 @@ def measure_morphoeval() -> list[dict[str, Any]]:
 
     pipe_ratios = tree_pagoda["bifurcation_area_ratios"]
     pipe_rmse = float(np.sqrt(np.mean((pipe_ratios - 1.0) ** 2)))
+
+    # Pass 3: solar-elevation ray tracing of tiered crowns across latitudes
+    tradeoff = evaluate_latitude_tier_spacing_tradeoff()
+    rec_eq = tradeoff["by_latitude"][0.0]
+    rec_45 = tradeoff["by_latitude"][45.0]
+    rec_meise = tradeoff["by_latitude"][MEISE_LATITUDE_DEG]
+    spacing_spec = measure_specimen_tier_spacing(seg)
+    spec_ratio = spacing_spec["mean_spacing_to_radius_ratio"]
+    e_spec_meise = efficiency_at_spacing(tradeoff, MEISE_LATITUDE_DEG, spec_ratio)
+    e_spec_eq = efficiency_at_spacing(tradeoff, 0.0, spec_ratio)
+    implied_kappa = marginal_light_gain_at_spacing(tradeoff, MEISE_LATITUDE_DEG, spec_ratio)
+    sun_meise_fine = diurnal_sun_path_samples(
+        MEISE_LATITUDE_DEG, declinations_deg=[cooper_1969_declination_deg(172)], dt_hours=0.05
+    )
+    sampled_day_length = sun_meise_fine["n_samples"] * 0.05
+    analytic_day_length = analytic_day_length_hours(MEISE_LATITUDE_DEG, cooper_1969_declination_deg(172))
+    meise_bench = [b for b in solar_ref["latitude_benchmarks"] if abs(b["latitude_deg"] - MEISE_LATITUDE_DEG) < 1e-6][0]
+    spec_ref_ratio = float(solar_ref["specimen_tier_spacing"]["mean_spacing_to_radius_ratio"])
 
     return [
         {
@@ -696,6 +1108,112 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "reference_source": "Shinozaki et al. (1964) Jpn. J. Ecol. 14:97-105; Eloy (2011) Phys. Rev. Lett. 107:258101",
             "note": f"mean = {seg['leonardo_ratio_mean']:.4f} ± {seg['leonardo_ratio_std']:.4f} (within 4.7% of Leonardo pipe-model invariance 1.0)",
             "derived_from": "output",
+        },
+        # ------------------------------------------------------------------
+        # Pass 3 — solar-elevation ray tracing of 3D Honda tiered crowns
+        # ------------------------------------------------------------------
+        {
+            "name": "equatorial (0°) saturation tier spacing s_90 / R_tier for 90% annual beam light capture",
+            "value": round(rec_eq["saturation_spacing_ratio"], 4),
+            "unit": "s/R_tier",
+            "method": (
+                "Tier-to-tier shadow ray tracing (Δz·cot h displacement, Beer-Lambert τ_c = 0.135 per tier) of a 7-tier "
+                "Honda & Fisher pagoda crown over 12 Cooper mid-month declinations x hourly sun positions; linear "
+                "interpolation of E(s/R) at E = 0.90"
+            ),
+            "reference_value": None,
+            "reference_source": "Model prediction (no literature value for optimal tier spacing vs latitude exists); solar geometry per Campbell & Norman (1998) Ch. 11, declination per Cooper (1969)",
+            "note": (
+                f"E(s/R) curve: {np.array2string(rec_eq['efficiency_curve'], precision=3, separator=', ')} at s/R = "
+                f"{np.array2string(tradeoff['spacing_ratios'], precision=2, separator=', ')}; beam-weighted mean solar elevation "
+                f"{rec_eq['beam_weighted_mean_elevation_deg']:.2f}°"
+            ),
+            "derived_from": "script",
+        },
+        {
+            "name": "temperate (45°) saturation tier spacing s_90 / R_tier for 90% annual beam light capture",
+            "value": round(rec_45["saturation_spacing_ratio"], 4),
+            "unit": "s/R_tier",
+            "method": "Same ray-tracing protocol at latitude 45°; Meise 50.93°N gives s_90/R = %.4f, 60° gives %.4f" % (
+                rec_meise["saturation_spacing_ratio"], tradeoff["by_latitude"][60.0]["saturation_spacing_ratio"]
+            ),
+            "reference_value": None,
+            "reference_source": "Model prediction; Campbell & Norman (1998) solar geometry, Monsi & Saeki (1953) Beer-Lambert extinction",
+            "note": (
+                f"beam-weighted mean solar elevation {rec_45['beam_weighted_mean_elevation_deg']:.2f}° (vs "
+                f"{rec_eq['beam_weighted_mean_elevation_deg']:.2f}° at the equator); lower sun displaces upper-tier shadows "
+                "off lower tiers so temperate crowns saturate at tighter spacing"
+            ),
+            "derived_from": "script",
+        },
+        {
+            "name": "equatorial / temperate (0° / 45°) optimal tier spacing ratio s_90(0°) / s_90(45°)",
+            "value": round(rec_eq["saturation_spacing_ratio"] / rec_45["saturation_spacing_ratio"], 4),
+            "unit": "ratio",
+            "method": (
+                "Ratio of interpolated E = 0.90 saturation spacings; stem-cost optima argmax_s [E(s) - κ s/R] for κ = 0.05/0.10/0.20: "
+                f"equator {[rec_eq['kappa_optimum_spacing_ratio'][k] for k in tradeoff['stem_cost_kappas']]}, "
+                f"45° {[rec_45['kappa_optimum_spacing_ratio'][k] for k in tradeoff['stem_cost_kappas']]} (s/R)"
+            ),
+            "reference_value": 1.0,
+            "reference_source": "Null hypothesis of latitude-independent optimal tier spacing (ratio = 1.0); any value > 1 is the model's falsifiable prediction (Lean 4 theorem solar_tier_shadow_offset_monotone)",
+            "note": "Prediction: equatorial pagoda crowns require ~%.2fx wider tier spacing than temperate crowns for equal self-shading avoidance" % (
+                rec_eq["saturation_spacing_ratio"] / rec_45["saturation_spacing_ratio"]
+            ),
+            "derived_from": "script",
+        },
+        {
+            "name": "specimen Cornus controversa inter-tier spacing / tier radius ratio s/R (projected)",
+            "value": round(spec_ratio, 4),
+            "unit": "s/R_tier",
+            "method": f"Row spacing between consecutive detected foliage shelves / lower-shelf half-width (foliage-mask column extent, ±12 px band), N={len(spacing_spec['spacing_to_radius_ratios'])} tier pairs; no perspective correction",
+            "reference_value": spec_ref_ratio,
+            "reference_source": "datasets/dichotomous_tree_branching/solar_tier_spacing_reference.json specimen_tier_spacing (regression value computed by this script; not an independent literature value)",
+            "note": f"mean = {spec_ratio:.4f} ± {spacing_spec['std_spacing_to_radius_ratio']:.4f}; tier spacings (px) = {spacing_spec['tier_spacings_px'].astype(int).tolist()}, half-widths (px) = {spacing_spec['tier_radii_px'].tolist()}",
+            "derived_from": "output",
+        },
+        {
+            "name": "ray-traced annual beam light capture E of the specimen's tier spacing at Meise (50.93°N) vs at the equator",
+            "value": round(e_spec_meise, 4),
+            "unit": "ratio",
+            "method": f"E(s/R = {spec_ratio:.3f}) interpolated from the ray-traced capture curve at latitude 50.93° (Botanic Garden Meise, specimen provenance)",
+            "reference_value": round(e_spec_eq, 4),
+            "reference_source": "Same crown transplanted to the equator (0°) — model contrast, not a literature value",
+            "note": (
+                f"Meise E = {e_spec_meise:.4f} vs equator E = {e_spec_eq:.4f} (Δ = {100.0 * (e_spec_meise - e_spec_eq):.1f} percentage points); "
+                f"implied marginal stem cost at the specimen's spacing κ* = dE/d(s/R) = {implied_kappa:.3f}"
+            ),
+            "derived_from": "output",
+        },
+        {
+            "name": "solar geometry check: geometric June-solstice day length at Meise (50.93°N) from sampled sun path",
+            "value": round(sampled_day_length, 2),
+            "unit": "h",
+            "method": "Count of 3-min hour-angle samples with solar elevation > 0.5° at Cooper declination δ(DOY 172) = +23.45°",
+            "reference_value": float(meise_bench["analytic_june_solstice_day_length_h"]),
+            "reference_source": "Campbell & Norman (1998) Eq. 11.6 cos H_0 = -tan φ tan δ (analytic %.2f h; geometric, no atmospheric refraction)" % analytic_day_length,
+            "note": f"noon equinox elevation at 45° = {solar_elevation_azimuth(45.0, 0.0, 0.0)[0]:.2f}° (analytic 90° - φ = 45°)",
+            "derived_from": "script",
+        },
+        {
+            "name": "tier transmittance ablation: E(τ_c = 1, transparent tiers) - E(τ_c = 0, opaque tiers) at the specimen spacing, Meise",
+            "value": round(
+                ray_trace_tiered_crown_interception(
+                    build_honda_tiered_crown_3d(n_tiers=7, tier_spacing=spec_ratio * tradeoff["tier_radius"]),
+                    diurnal_sun_path_samples(MEISE_LATITUDE_DEG), tau_cluster=1.0,
+                )["efficiency"]
+                - ray_trace_tiered_crown_interception(
+                    build_honda_tiered_crown_3d(n_tiers=7, tier_spacing=spec_ratio * tradeoff["tier_radius"]),
+                    diurnal_sun_path_samples(MEISE_LATITUDE_DEG), tau_cluster=0.0,
+                )["efficiency"],
+                4,
+            ),
+            "unit": "ratio",
+            "method": "Beer-Lambert per-tier transmittance τ_c swept from opaque (0) to fully transparent (1); transparent tiers must give E = 1 exactly (Lean 4 theorem beer_lambert_stacked_tier_optical_depth)",
+            "reference_value": None,
+            "reference_source": "Monsi & Saeki (1953) Beer-Lambert canopy extinction (ablation bound; no literature value)",
+            "note": "Default τ_c = exp(-LAI_c) = 0.135 for LAI_c = 2.0 per leaf-cluster disk",
+            "derived_from": "script",
         },
     ]
 
@@ -1016,11 +1534,213 @@ def render_artifacts(
     plt.close(fig_g)
 
 
+def _tier_shadow_count_map(
+    crown: dict[str, Any], masks: list[np.ndarray], cell: float, j: int, h_deg: float, az_deg: float
+) -> np.ndarray:
+    """Number of upper tiers shading each grid cell of tier j for one sun position (visualization helper)."""
+    tiers = crown["tiers"]
+    cot_h = 1.0 / max(np.tan(np.radians(h_deg)), 1e-9)
+    ux = -np.sin(np.radians(az_deg))
+    uy = -np.cos(np.radians(az_deg))
+    count = np.zeros(masks[j].shape, dtype=np.int16)
+    for i in range(j + 1, len(tiers)):
+        off = (tiers[i]["z"] - tiers[j]["z"]) * cot_h
+        count += _shift_mask(masks[i], int(round(off * ux / cell)), int(round(off * uy / cell))).astype(np.int16)
+    return count
+
+
+def render_solar_artifacts(
+    theta1_deg: float = 26.0,
+    theta2_deg: float = 56.0,
+    n_tiers: int = 7,
+    tau_cluster: float = 0.135,
+    latitudes_deg: tuple[float, ...] = (0.0, 15.0, 30.0, 45.0, MEISE_LATITUDE_DEG, 60.0),
+    out_png: Path = OUT_SOLAR_PNG,
+    out_gif: Path = OUT_SOLAR_GIF,
+) -> None:
+    """
+    Render the Pass 3 6-panel solar ray-tracing figure
+    (`dichotomous_tree_branching_solar_tier_spacing.png`) and the diurnal tier-shadow
+    animation (`dichotomous_tree_branching_solar_shadows.gif`, equator vs Meise at equinox).
+    """
+    tradeoff = evaluate_latitude_tier_spacing_tradeoff(
+        latitudes_deg=latitudes_deg, n_tiers=n_tiers, tau_cluster=tau_cluster,
+        theta1_deg=theta1_deg, theta2_deg=theta2_deg,
+    )
+    seg = segment_cornus_controversa_specimen(SPECIMEN_IMG_PATH)
+    sp = measure_specimen_tier_spacing(seg)
+    spec_ratio = sp["mean_spacing_to_radius_ratio"]
+    r_tier = tradeoff["tier_radius"]
+    crown_spec = build_honda_tiered_crown_3d(
+        n_tiers=n_tiers, tier_spacing=spec_ratio * r_tier, theta1_deg=theta1_deg, theta2_deg=theta2_deg
+    )
+    masks, cell = _rasterize_tier_masks(crown_spec, 112)
+    lat_colors = plt.cm.viridis(np.linspace(0.0, 0.92, len(latitudes_deg)))
+
+    out_png.parent.mkdir(parents=True, exist_ok=True)
+    fig, axes = plt.subplots(2, 3, figsize=(17.0, 10.5), dpi=150)
+    fig.patch.set_facecolor("white")
+
+    # Panel A: Side elevation of the tiered crown with noon-equinox beams at 0° and Meise
+    ax_a = axes[0, 0]
+    for tr in crown_spec["tiers"]:
+        ax_a.plot([-tr["tier_radius"], tr["tier_radius"]], [tr["z"], tr["z"]], color="#15803d", lw=4.5, alpha=0.75, solid_capstyle="round")
+    ax_a.plot([0.0, 0.0], [-0.3 * r_tier, crown_spec["crown_height"] + 0.2], color="#4a3525", lw=4.0, zorder=1)
+    h_eq = solar_elevation_azimuth(0.0, 0.0, 0.0)[0]
+    h_me = solar_elevation_azimuth(MEISE_LATITUDE_DEG, 0.0, 0.0)[0]
+    top = crown_spec["tiers"][-1]
+    for h_sun, col, lab in ((h_eq, "#f59e0b", f"Equator noon equinox h = {h_eq:.0f}°"), (h_me, "#2563eb", f"Meise 50.93°N noon equinox h = {h_me:.1f}°")):
+        cot = 1.0 / max(np.tan(np.radians(h_sun)), 1e-9)
+        for x_edge in (-top["tier_radius"], top["tier_radius"]):
+            x_hit = x_edge + top["z"] * cot
+            ax_a.plot([x_edge, x_hit], [top["z"], 0.0], color=col, lw=1.4, ls="--", alpha=0.95, label=lab if x_edge < 0 else None)
+        ax_a.annotate("", xy=(top["tier_radius"] + top["z"] * cot, -0.12 * r_tier), xytext=(top["tier_radius"], -0.12 * r_tier),
+                      arrowprops={"arrowstyle": "->", "color": col, "lw": 1.3})
+    ax_a.text(0.02, 0.97, f"shadow displacement Δz·cot h\n(top tier on trunk base: {top['z'] / max(np.tan(np.radians(h_me)), 1e-9):.2f} L₀ at Meise, 0 at equator)",
+              transform=ax_a.transAxes, va="top", fontsize=7.6, bbox={"facecolor": "white", "alpha": 0.85, "edgecolor": "none"})
+    ax_a.set_xlim(-1.4 * r_tier, 3.2 * r_tier)
+    ax_a.set_ylim(-0.35 * r_tier, crown_spec["crown_height"] + 0.6 * r_tier)
+    ax_a.set_aspect("equal")
+    ax_a.set_title(f"A. 7-Tier Honda Crown (s/R = {spec_ratio:.3f}) & Noon Beams", fontsize=10.0, fontweight="bold", loc="left")
+    ax_a.set_xlabel("Crown X (L₀ units)", fontsize=9)
+    ax_a.set_ylabel("Height Z (L₀ units)", fontsize=9)
+    ax_a.legend(loc="upper right", fontsize=7.4, framealpha=0.92)
+    ax_a.grid(True, linestyle="--", alpha=0.25)
+
+    # Panel B: E(s/R) ray-traced capture curves per latitude
+    ax_b = axes[0, 1]
+    for rec, col in zip(tradeoff["records"], lat_colors):
+        ax_b.plot(tradeoff["spacing_ratios"], rec["efficiency_curve"], "o-", color=col, lw=1.9, ms=3.6,
+                  label=f"φ = {rec['latitude_deg']:.0f}°: s₉₀/R = {rec['saturation_spacing_ratio']:.2f}" if abs(rec["latitude_deg"] - MEISE_LATITUDE_DEG) > 1e-6
+                  else f"φ = 50.93° (Meise): s₉₀/R = {rec['saturation_spacing_ratio']:.2f}")
+        ax_b.plot([rec["saturation_spacing_ratio"]], [tradeoff["saturation_level"]], marker="v", color=col, ms=8, mec="black", zorder=5)
+    ax_b.axhline(tradeoff["saturation_level"], color="gray", ls=":", lw=1.2)
+    ax_b.axvline(spec_ratio, color="#ec4899", ls="-.", lw=1.6, label=f"Specimen s/R = {spec_ratio:.3f} ± {sp['std_spacing_to_radius_ratio']:.3f}")
+    ax_b.axvspan(max(spec_ratio - sp["std_spacing_to_radius_ratio"], 0.0), spec_ratio + sp["std_spacing_to_radius_ratio"], color="#ec4899", alpha=0.08)
+    ax_b.set_xscale("log")
+    ax_b.set_ylim(0.3, 1.02)
+    ax_b.set_title("B. Ray-Traced Annual Beam Capture E(s/R) by Latitude (τ_c = %.3f)" % tau_cluster, fontsize=10.0, fontweight="bold", loc="left")
+    ax_b.set_xlabel("Normalized tier spacing s / R_tier (log)", fontsize=9)
+    ax_b.set_ylabel("Crown light-capture efficiency E (1 = no self-shading)", fontsize=9)
+    ax_b.legend(loc="lower right", fontsize=7.0, framealpha=0.92)
+    ax_b.grid(True, which="both", linestyle="--", alpha=0.25)
+
+    # Panel C: Diurnal sun paths (elevation vs solar time) at equator vs Meise
+    ax_c = axes[0, 2]
+    hours = np.linspace(-12.0, 12.0, 241)
+    for lat, col in ((0.0, "#f59e0b"), (MEISE_LATITUDE_DEG, "#2563eb")):
+        for doy, ls, lab in ((172, "-", "Jun solstice"), (80, "--", "equinox"), (355, ":", "Dec solstice")):
+            dec = cooper_1969_declination_deg(doy)
+            elev = np.array([solar_elevation_azimuth(lat, dec, 15.0 * hr)[0] for hr in hours])
+            elev_plot = np.where(elev > 0, elev, np.nan)
+            ax_c.plot(12.0 + hours, elev_plot, color=col, ls=ls, lw=1.7, label=f"φ={lat:.0f}° {lab}" if lat == 0.0 else f"φ=50.93° {lab}")
+    sun_eq = diurnal_sun_path_samples(0.0)
+    sun_me = diurnal_sun_path_samples(MEISE_LATITUDE_DEG)
+    ax_c.axhline(sun_eq["beam_weighted_mean_elevation_deg"], color="#f59e0b", lw=0.9, alpha=0.6)
+    ax_c.axhline(sun_me["beam_weighted_mean_elevation_deg"], color="#2563eb", lw=0.9, alpha=0.6)
+    ax_c.text(0.3, sun_eq["beam_weighted_mean_elevation_deg"] + 1.2, f"beam-weighted mean h = {sun_eq['beam_weighted_mean_elevation_deg']:.1f}°", color="#b45309", fontsize=7.2)
+    ax_c.text(0.3, sun_me["beam_weighted_mean_elevation_deg"] - 4.2, f"beam-weighted mean h = {sun_me['beam_weighted_mean_elevation_deg']:.1f}°", color="#1d4ed8", fontsize=7.2)
+    ax_c.set_xlim(0, 24)
+    ax_c.set_ylim(0, 92)
+    ax_c.set_title("C. Diurnal Sun Paths (Campbell & Norman 1998; Cooper 1969 δ)", fontsize=10.0, fontweight="bold", loc="left")
+    ax_c.set_xlabel("Local solar time (h)", fontsize=9)
+    ax_c.set_ylabel("Solar elevation h (deg)", fontsize=9)
+    ax_c.legend(loc="upper right", fontsize=6.8, ncol=2, framealpha=0.92)
+    ax_c.grid(True, linestyle="--", alpha=0.25)
+
+    # Panel D: Saturation spacing and stem-cost optima vs latitude
+    ax_d = axes[1, 0]
+    lats = tradeoff["latitudes_deg"]
+    sat = np.array([rec["saturation_spacing_ratio"] for rec in tradeoff["records"]])
+    ax_d.plot(lats, sat, "o-", color="#0f766e", lw=2.4, ms=6, label="s₉₀/R (E = 0.90 saturation, parameter-free)")
+    for kap, ls in zip(tradeoff["stem_cost_kappas"], ("--", "-.", ":")):
+        ax_d.plot(lats, [rec["kappa_optimum_spacing_ratio"][kap] for rec in tradeoff["records"]], ls=ls, marker="s", ms=4, color="#b45309", lw=1.5,
+                  label=f"argmax E - κ·s/R, κ = {kap:.2f}")
+    ax_d.axhline(spec_ratio, color="#ec4899", ls="-.", lw=1.6, label=f"Specimen (Meise) s/R = {spec_ratio:.3f}")
+    ax_d.axvline(MEISE_LATITUDE_DEG, color="#ec4899", lw=0.9, alpha=0.6)
+    ax_d.set_title(f"D. Optimal Tier Spacing vs Latitude (s₉₀ equator / 45° = {sat[0] / tradeoff['by_latitude'][45.0]['saturation_spacing_ratio']:.2f}x)" if 45.0 in tradeoff["by_latitude"] else "D. Optimal Tier Spacing vs Latitude",
+                   fontsize=10.0, fontweight="bold", loc="left")
+    ax_d.set_xlabel("Latitude φ (deg)", fontsize=9)
+    ax_d.set_ylabel("Tier spacing s / R_tier", fontsize=9)
+    ax_d.legend(loc="upper right", fontsize=7.2, framealpha=0.92)
+    ax_d.grid(True, linestyle="--", alpha=0.25)
+
+    # Panel E: Shadow-count map on the bottom tier, Meise equinox 09:00 solar time
+    ax_e = axes[1, 1]
+    h9, az9 = solar_elevation_azimuth(MEISE_LATITUDE_DEG, 0.0, -45.0)
+    cnt = _tier_shadow_count_map(crown_spec, masks, cell, 0, h9, az9)
+    lim = crown_spec["tier_radius_max"] + 0.15
+    im_e = ax_e.imshow(np.where(masks[0], cnt, np.nan), origin="lower", extent=(-lim, lim, -lim, lim), cmap="magma_r", vmin=0, vmax=n_tiers - 1)
+    ax_e.contour(np.linspace(-lim, lim, masks[0].shape[1]), np.linspace(-lim, lim, masks[0].shape[0]), masks[0].astype(float), levels=[0.5], colors="#15803d", linewidths=0.8)
+    plt.colorbar(im_e, ax=ax_e, fraction=0.046, pad=0.04, label="# upper tiers shading bottom-tier cell")
+    lit_frac = float(np.power(tau_cluster, cnt[masks[0]].astype(float)).mean())
+    ax_e.set_title(f"E. Bottom-Tier Shadow Trace, Meise equinox 09:00\n(h={h9:.1f}°, A={az9:.0f}°; tier lit fraction E = {lit_frac:.3f})", fontsize=9.6, fontweight="bold", loc="left")
+    ax_e.set_xlabel("Tier plane X (east, L₀)", fontsize=9)
+    ax_e.set_ylabel("Tier plane Y (north, L₀)", fontsize=9)
+    ax_e.set_aspect("equal")
+
+    # Panel F: Specimen tier spacing / half-width measurement overlay
+    ax_f = axes[1, 2]
+    ax_f.imshow(seg["roi_rgb"])
+    peaks = seg["tier_peaks_roi"]
+    for idx_t, (py, rad) in enumerate(zip(peaks, sp["tier_radii_px"])):
+        if not np.isfinite(rad):
+            continue
+        fol = seg["foliage_mask"]
+        band = fol[max(py - 12, 0): py + 13, :]
+        cols = np.nonzero(band.mean(axis=0) > 0.15)[0]
+        ax_f.plot([cols[0], cols[-1]], [py, py], color="#facc15", lw=1.6)
+        ax_f.plot([cols[0], cols[0]], [py - 10, py + 10], color="#facc15", lw=1.2)
+        ax_f.plot([cols[-1], cols[-1]], [py - 10, py + 10], color="#facc15", lw=1.2)
+        ax_f.text(cols[-1] + 6, py + 4, f"R={rad:.0f}px", color="#fef08a", fontsize=6.8, fontweight="bold",
+                  bbox={"facecolor": "#0f172a", "alpha": 0.6, "pad": 1.0, "edgecolor": "none"})
+        if idx_t < len(peaks) - 1:
+            py_next = peaks[idx_t + 1]
+            ax_f.annotate("", xy=(40, py_next), xytext=(40, py), arrowprops={"arrowstyle": "<->", "color": "#38bdf8", "lw": 1.3})
+            ax_f.text(48, 0.5 * (py + py_next) + 4, f"s/R={sp['spacing_to_radius_ratios'][idx_t]:.2f}", color="#bae6fd", fontsize=6.8, fontweight="bold",
+                      bbox={"facecolor": "#0f172a", "alpha": 0.6, "pad": 1.0, "edgecolor": "none"})
+    ax_f.set_title(f"F. Specimen Tier Spacing s/R = {spec_ratio:.3f} ± {sp['std_spacing_to_radius_ratio']:.3f} (N=6 pairs)\n"
+                   f"model E at Meise = {efficiency_at_spacing(tradeoff, MEISE_LATITUDE_DEG, spec_ratio):.3f} vs equator = {efficiency_at_spacing(tradeoff, 0.0, spec_ratio):.3f}",
+                   fontsize=9.6, fontweight="bold", loc="left")
+    ax_f.set_xlabel("Crown ROI X (px)", fontsize=9)
+    ax_f.set_ylabel("Crown ROI Y (px)", fontsize=9)
+
+    fig.suptitle(
+        "Pass 3 — Solar-Elevation Ray Tracing of 3D Honda Tiered Crowns: Equatorial vs Temperate Optimal Tier Spacing (Cornus controversa)",
+        fontsize=12.4, fontweight="bold", y=0.99,
+    )
+    fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.965))
+    fig.savefig(out_png, dpi=150, facecolor="white")
+    plt.close(fig)
+
+    # Diurnal shadow GIF: bottom-tier shade count across equinox day at equator vs Meise
+    fig_g, (ax_g1, ax_g2) = plt.subplots(1, 2, figsize=(9.6, 4.8), dpi=100)
+    fig_g.patch.set_facecolor("white")
+    hour_angles = np.arange(-90.0, 90.1, 15.0)
+
+    def _update(frame: int) -> list[Any]:
+        ha = float(hour_angles[frame])
+        for ax, lat, lab in ((ax_g1, 0.0, "Equator 0°"), (ax_g2, MEISE_LATITUDE_DEG, "Meise 50.93°N")):
+            ax.clear()
+            h, az = solar_elevation_azimuth(lat, 0.0, ha)
+            c = _tier_shadow_count_map(crown_spec, masks, cell, 0, h, az)
+            ax.imshow(np.where(masks[0], c, np.nan), origin="lower", extent=(-lim, lim, -lim, lim), cmap="magma_r", vmin=0, vmax=n_tiers - 1)
+            e_t = float(np.power(tau_cluster, c[masks[0]].astype(float)).mean())
+            ax.set_title(f"{lab} equinox {12.0 + ha / 15.0:04.1f} h  h={h:.0f}° A={az:.0f}°\nbottom-tier lit fraction E = {e_t:.3f}", fontsize=8.6, fontweight="bold")
+            ax.set_xlabel("X east (L₀)")
+            ax.set_ylabel("Y north (L₀)")
+        return []
+
+    anim = FuncAnimation(fig_g, _update, frames=len(hour_angles), interval=400, blit=False)
+    anim.save(out_gif, writer=PillowWriter(fps=2.5))
+    plt.close(fig_g)
+
+
 # ============================================================================
-# 6. 8-Suite Deterministic Self-Test
+# 6. 10-Suite Deterministic Self-Test
 # ============================================================================
 def self_test() -> None:
-    """Run 8-suite deterministic verification covering all mathematical and CV invariants."""
+    """Run 10-suite deterministic verification covering all mathematical, solar and CV invariants."""
     # Suite 1: SHA-256 dataset integrity
     ref_data = verify_dataset_integrity()
     assert ref_data["dataset_id"] == "dichotomous_tree_branching_v1"
@@ -1067,15 +1787,53 @@ def self_test() -> None:
     assert 44.0 <= seg["theta2_mean_deg"] <= 62.0
     assert 0.85 <= seg["leonardo_ratio_mean"] <= 1.15
 
-    # Suite 8: Bitwise determinism of measure_morphoeval()
+    # Suite 8: Pass 3 solar geometry & ray-tracing invariants
+    load_solar_reference()
+    h_noon, az_noon = solar_elevation_azimuth(45.0, 0.0, 0.0)
+    assert abs(h_noon - 45.0) < 1e-9 and abs(az_noon - 180.0) < 1e-9          # 90° - φ at equinox noon, sun due south
+    assert abs(solar_elevation_azimuth(0.0, 0.0, 0.0)[0] - 90.0) < 1e-9        # zenith sun at the equator
+    assert abs(cooper_1969_declination_deg(172) - SOLAR_AXIAL_TILT_DEG) < 1e-3  # June solstice
+    assert abs(analytic_day_length_hours(0.0, 23.45) - 12.0) < 1e-9             # 12 h all year at the equator
+    assert abs(analytic_day_length_hours(MEISE_LATITUDE_DEG, 23.45) - 16.31) < 0.02
+    sun_meise = diurnal_sun_path_samples(MEISE_LATITUDE_DEG)
+    sun_eq = diurnal_sun_path_samples(0.0)
+    assert sun_eq["beam_weighted_mean_elevation_deg"] > sun_meise["beam_weighted_mean_elevation_deg"]
+    crown = build_honda_tiered_crown_3d(n_tiers=7, tier_spacing=1.5)
+    assert crown["n_tiers"] == 7 and [t["n_orders"] for t in crown["tiers"]] == [5, 5, 4, 4, 3, 3, 2]
+    e_default = ray_trace_tiered_crown_interception(crown, sun_meise)["efficiency"]
+    e_opaque = ray_trace_tiered_crown_interception(crown, sun_meise, tau_cluster=0.0)["efficiency"]
+    e_clear = ray_trace_tiered_crown_interception(crown, sun_meise, tau_cluster=1.0)["efficiency"]
+    assert abs(e_clear - 1.0) < 1e-9                                            # transparent tiers: no shading
+    assert e_opaque < e_default < e_clear
+    e_far = ray_trace_tiered_crown_interception(build_honda_tiered_crown_3d(n_tiers=7, tier_spacing=60.0), sun_meise)["efficiency"]
+    assert abs(e_far - 1.0) < 1e-9                                              # shadows fall off the crown
+    assert ray_trace_tiered_crown_interception(crown, sun_eq)["efficiency"] < e_default  # high sun shades more
+
+    # Suite 9: Pass 3 latitude / tier-spacing trade-off & specimen tier spacing
+    tradeoff = evaluate_latitude_tier_spacing_tradeoff()
+    sat = [rec["saturation_spacing_ratio"] for rec in tradeoff["records"]]
+    assert all(np.isfinite(sat))
+    assert all(np.diff(sat) <= 1e-9)                                            # s_90 decreases monotonically with latitude
+    assert np.all(np.diff(tradeoff["efficiency"], axis=1) >= -1e-9)             # E increases with spacing at every latitude
+    assert tradeoff["by_latitude"][0.0]["saturation_spacing_ratio"] > 1.5 * tradeoff["by_latitude"][45.0]["saturation_spacing_ratio"]
+    sp = measure_specimen_tier_spacing(seg)
+    assert len(sp["spacing_to_radius_ratios"]) == 6
+    assert 0.2 <= sp["mean_spacing_to_radius_ratio"] <= 0.6
+    assert efficiency_at_spacing(tradeoff, MEISE_LATITUDE_DEG, sp["mean_spacing_to_radius_ratio"]) > efficiency_at_spacing(
+        tradeoff, 0.0, sp["mean_spacing_to_radius_ratio"]
+    )
+
+    # Suite 10: Bitwise determinism of measure_morphoeval()
     m1 = measure_morphoeval()
     m2 = measure_morphoeval()
-    assert len(m1) == 9
+    assert len(m1) == 16
     assert m1 == m2
     print(
-        f"[self-test] All 8 verification suites PASSED "
+        f"[self-test] All 10 verification suites PASSED "
         f"(Pearson r={surf['pearson_r']:.5f}, A_eff_opt={w_opt['effective_leaf_area_ratio']:.4f}, "
-        f"tiers={seg['n_detected_tiers']}, specimen_beta={seg['leonardo_ratio_mean']:.4f})."
+        f"tiers={seg['n_detected_tiers']}, specimen_beta={seg['leonardo_ratio_mean']:.4f}, "
+        f"s90/R eq={sat[0]:.3f} vs 45N={tradeoff['by_latitude'][45.0]['saturation_spacing_ratio']:.3f}, "
+        f"specimen s/R={sp['mean_spacing_to_radius_ratio']:.3f})."
     )
 
 
@@ -1083,12 +1841,15 @@ def main() -> int:
     ap = argparse.ArgumentParser(
         description="Honda (1971) & Honda & Fisher (1978) 3D Dichotomous Tree Branching & Canopy Optimization"
     )
-    ap.add_argument("--self-test", action="store_true", help="Run 8-suite verification and exit")
+    ap.add_argument("--self-test", action="store_true", help="Run 10-suite verification and exit")
     ap.add_argument("--theta1", type=float, default=26.0, help="Primary daughter divergence angle (deg)")
     ap.add_argument("--theta2", type=float, default=56.0, help="Secondary daughter divergence angle (deg)")
     ap.add_argument("--r1", type=float, default=0.90, help="Primary daughter contraction ratio r1")
     ap.add_argument("--r2", type=float, default=0.70, help="Secondary daughter contraction ratio r2")
     ap.add_argument("--orders", type=int, default=6, help="Number of dichotomous branching orders")
+    ap.add_argument("--tiers", type=int, default=7, help="Number of pagoda tiers in the ray-traced crown (Pass 3)")
+    ap.add_argument("--tau-cluster", type=float, default=0.135, help="Beer-Lambert per-tier beam transmittance τ_c = exp(-LAI_c) (Pass 3)")
+    ap.add_argument("--latitudes", type=str, default="0,15,30,45,50.93,60", help="Comma-separated latitudes (deg) for the tier-spacing sweep (Pass 3)")
     args = ap.parse_args()
 
     if args.self_test:
@@ -1101,6 +1862,18 @@ def main() -> int:
         r1=args.r1,
         r2=args.r2,
         n_orders=args.orders,
+    )
+    lats = tuple(float(v) for v in args.latitudes.split(",") if v.strip())
+    if MEISE_LATITUDE_DEG not in lats:
+        lats = tuple(sorted(lats + (MEISE_LATITUDE_DEG,)))
+    if 0.0 not in lats:
+        lats = tuple(sorted(lats + (0.0,)))
+    render_solar_artifacts(
+        theta1_deg=args.theta1,
+        theta2_deg=args.theta2,
+        n_tiers=args.tiers,
+        tau_cluster=args.tau_cluster,
+        latitudes_deg=lats,
     )
     return 0
 

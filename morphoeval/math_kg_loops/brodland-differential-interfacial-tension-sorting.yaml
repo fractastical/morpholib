@@ -48,3 +48,54 @@ equations:
     role: "Determines the equilibrium geometry of adhering zebrafish progenitor doublets from the ratio of cell-cell interfacial tension to cell-medium cortical tension"
     source_citation: "Maître et al. (2012) Science 338(6104):253-256 Eq. (1) & Figs. 1-3"
     code_locus: "2002-brodland-differential-interfacial-tension-sorting.py#L148-L190"
+  - law_name: "Pass 3 — Nodal/TGF-β Dose → Cortical Tension Target (monotone, bounded, Nodal-null ⇒ ectoderm)"
+    formula: "β*(C) = β_E + (β_M − β_E) H(C;K_M) + (β_N − β_M) H(C;K_N),  H(C;K) = C^n/(K^n + C^n);  sharp-threshold limit: β* = 50 (C<K_M), 95 (K_M≤C<K_N), 130 (C≥K_N)"
+    lean_decl: MathOfBiology.Loop_044.nodal_tension_target
+    lean_theorem: MathOfBiology.Loop_044.nodal_dose_cortical_tension_monotone_bounded
+    lean_locus: morphoeval/lean/loops/Loop_044_differential_interfacial_tension_sorting.lean#L90-L116
+    lean_code: |-
+      def nodal_tension_target (C K_M K_N : Int) : Int :=
+        if C < K_M then 50 else if C < K_N then 95 else 130
+      theorem nodal_dose_cortical_tension_monotone_bounded (C₁ C₂ K_M K_N : Int)
+          (hC : C₁ ≤ C₂) (h0 : 0 < K_M) :
+          nodal_tension_target C₁ K_M K_N ≤ nodal_tension_target C₂ K_M K_N ∧
+          (50 ≤ nodal_tension_target C₁ K_M K_N ∧ nodal_tension_target C₁ K_M K_N ≤ 130) ∧
+          dith_spreading_diff (nodal_tension_target 0 K_M K_N) (nodal_tension_target 0 K_M K_N) = 0 ∧
+          nodal_tension_target 0 K_M K_N = 50
+    variables: "C: marginal Nodal (Squint/Cyclops) signal relative to the saturating dose C0; K_M, K_N: mesoderm / endoderm dose thresholds; β_E, β_M, β_N: Krieg et al. (2008) AFM cortical tensions (pN/μm)"
+    role: "Couples time-dependent Nodal/TGF-β morphogen signalling to DITH cortical tension: Nodal-blocked (lefty1 / MZoep) cells stay at ectoderm tension and cannot sort, graded Nodal dose sets mesoderm and endoderm tensions"
+    source_citation: "Krieg et al. (2008) Nature Cell Biology 10(4):429-436 Fig. 1 (progenitors induced by lefty1 / cyclops / cyclops+casanova); Gritsman et al. (1999) Cell 97(1):121-132; Chen & Schier (2001) Nature 411:607-610; Dubrulle et al. (2015) eLife 4:e05042; van Boxtel et al. (2015) Dev. Cell 35(2):175-185; Hagos & Dougan (2007) BMC Dev. Biol. 7:22"
+    code_locus: "2002-brodland-differential-interfacial-tension-sorting.py#L232-L282"
+  - law_name: "Pass 3 — Continuous-Cortex DITH Closure Satisfies the Krieg (2008) Engulfment Inequality"
+    formula: "γ_{i0} = β_i,  γ_{ij} = γ_hom + κ|β_i − β_j| (κ = 2/3, γ_hom = 0)  ⇒  β_i ≠ β_j → 0 < γ_{ij} < |γ_{i0} − γ_{j0}|;  β_i = β_j → γ_{ij} = 0;  γ_{EM}(50, 95) = 30"
+    lean_decl: MathOfBiology.Loop_044.cortex_mismatch_gamma3
+    lean_theorem: MathOfBiology.Loop_044.cortex_mismatch_closure_satisfies_engulfment
+    lean_locus: morphoeval/lean/loops/Loop_044_differential_interfacial_tension_sorting.lean#L117-L144
+    lean_code: |-
+      def cortex_mismatch_gamma3 (beta_i beta_j : Int) : Int :=
+        2 * (if beta_i ≥ beta_j then beta_i - beta_j else beta_j - beta_i)
+      theorem cortex_mismatch_closure_satisfies_engulfment (beta_i beta_j : Int) :
+          (beta_i ≠ beta_j →
+            0 < cortex_mismatch_gamma3 beta_i beta_j ∧
+            cortex_mismatch_gamma3 beta_i beta_j < 3 * (if beta_i ≥ beta_j then beta_i - beta_j else beta_j - beta_i)) ∧
+          cortex_mismatch_gamma3 beta_i beta_i = 0 ∧
+          cortex_mismatch_gamma3 50 95 = 90
+    variables: "β_i, β_j: per-cell time-dependent cortical tensions set by Nodal dose; κ: closure slope (0 ≤ κ < 1); γ_{ij}: heterotypic interfacial tension (3γ_{ij} = 2|β_i − β_j| in the integer-scaled Lean form)"
+    role: "Guarantees that as Nodal differentiates two cortices the resulting DITH tensions always fall in Krieg et al. (2008) regime I (higher-tension mesendoderm engulfed by lower-tension ectoderm), reproducing γ_EM = 30 pN/μm at the wild-type anchor and the Blebbistatin-like null at equal tensions"
+    source_citation: "Brodland (2002) J. Biomech. Eng. 124(2):188-197 Eq. (1); Krieg et al. (2008) Nature Cell Biology 10(4):429-436 Figs. 2-4; Maître et al. (2012) Science 338(6104):253-256 (cortex coupling rationale)"
+    code_locus: "2002-brodland-differential-interfacial-tension-sorting.py#L776-L1001"
+  - law_name: "Pass 3 — Cortical Tension Relaxation Toward the Nodal-Set Target Never Overshoots"
+    formula: "dβ/dt = (β*(C(x,t)) − β)/τ_β;  Euler step β' = β + (β* − β)·dt/τ_β (dt/τ_β = 1/4):  β ≤ β* → β ≤ β' ≤ β*  and  β* ≤ β → β* ≤ β' ≤ β"
+    lean_decl: MathOfBiology.Loop_044.cortex_relax_step
+    lean_theorem: MathOfBiology.Loop_044.cortical_tension_relaxation_contracts
+    lean_locus: morphoeval/lean/loops/Loop_044_differential_interfacial_tension_sorting.lean#L146-L163
+    lean_code: |-
+      def cortex_relax_step (beta target : Int) : Int :=
+        beta + (target - beta) / 4
+      theorem cortical_tension_relaxation_contracts (beta target : Int) :
+          (beta ≤ target → beta ≤ cortex_relax_step beta target ∧ cortex_relax_step beta target ≤ target) ∧
+          (target ≤ beta → target ≤ cortex_relax_step beta target ∧ cortex_relax_step beta target ≤ beta)
+    variables: "β: current cortical tension; β*: Nodal-set target tension; τ_β: actomyosin cortex relaxation time (0.5 h); dt: MCS → hpf step"
+    role: "Shows the time-dependent cortical tension dynamics stay inside [β_E, β_N] whenever the Nodal-set target does, so the DITH hierarchy emerges monotonically between sphere (4 hpf) and shield (6 hpf)"
+    source_citation: "Krieg et al. (2008) Nature Cell Biology 10(4):429-436 (AFM hierarchy present at shield stage); Hagos & Dougan (2007) BMC Dev. Biol. 7:22 (time-dependent specification); Kimmel et al. (1995) Dev. Dyn. 203(3):253-310 (staging)"
+    code_locus: "2002-brodland-differential-interfacial-tension-sorting.py#L303-L334"

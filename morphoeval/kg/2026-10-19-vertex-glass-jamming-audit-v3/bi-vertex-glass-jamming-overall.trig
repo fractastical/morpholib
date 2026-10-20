@@ -1,0 +1,86 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-bi-vertex-glass-jamming> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-bi-vertex-glass-jamming-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-bi-vertex-glass-jamming-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Bi et al. (2015), Park et al. (2015) & Bi et al. (2016) zero-temperature shape-index unjamming, asthmatic bronchial epithelial rigidity transition and self-propelled Voronoi motility-driven glass transition — MorphoEval overall 90.1/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Pass 3 (v3) evaluation of `2015-bi-vertex-glass-jamming.py` (90.1/100, down from 91.0 in Pass 2). The single open v2 item is closed: the script now implements the Bi et al. (2016) Self-Propelled Voronoi model with exact analytic forces on Voronoi centres (verified against finite differences to a relative error of 9e-9, momentum-conserving, margin-tiling identical to the full 3x3 tiling), an active Brownian integrator, FIRE quench, and finite-time dynamical (D_eff, T1 rate) and structural (<q>) order parameters. It maps the (p_0, v_0) glass boundary at D_r = 1, which is monotonically lowered by motility (alpha = 0.575) and extrapolates to p_0^c(0) = 3.850 against Bi's 3.81; the boundary shape index is q_c = 3.818 +/- 0.013 against the Bi (2016) Fig. 4 value 3.81; the D_r slice shows the solid region growing with D_r (p_0^c 3.677 -> 3.748) and D_s falling; and the energy-minimised v_0 = 0 <q>(p_0) reproduces the Bi (2015) pinning curve with r = 0.9966. The overall score nonetheless falls because the force-based module exposes that the original regime simulator, p_0 sweep and bronchial trajectories are phenomenological (phase-tabulated stretch, noise, migration speed; curve-fit q(t)), the T1-barrier/shear law is hard-coded, the boundary criterion is script-defined and finite-time with one seed, and one new reference number is an unverified figure reading. Backed by 6 machine-checked Lean 4 theorems (0 sorrys) and 13 self-test checks. Overall 90.1/100 (faithfulness 89.5, reproducibility 91.6); rubric morphoeval 0.1.0; checkpoint commit 7e4f207; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 89, Morphological realism / specimen match 88, Parameter expressivity 92, Morphometric validation 91, Source and data traceability 92, Code-to-model traceability 92, Reproducibility package 91. Output judged: docs/media/vertex_glass_jamming_comparison.png: rendered output of 2015-bi-vertex-glass-jamming.py at 7e4f207, image/png, 1732129 B, 3075×1950 px, artifact_sha256 6a5f0e91d8d909aeb16fa43c8d4fdc90f3abcf274beabe497959c412b909893b (sha256 6a5f0e91d8d909aeb16fa43c8d4fdc90f3abcf274beabe497959c412b909893b), spec_fingerprint 52abc2dcaa2857a7c9b54a7d8ac8d7ebb1e0481dc0dc957ca72fa6bc9190d466. Dual provenance: spec_fingerprint: 52abc2dcaa2857a7c9b54a7d8ac8d7ebb1e0481dc0dc957ca72fa6bc9190d466; artifact_sha256: 6a5f0e91d8d909aeb16fa43c8d4fdc90f3abcf274beabe497959c412b909893b. Supersedes audit: 2026-10-19-vertex-glass-jamming-audit-v2. Claim boundary: reported_in_source: Bi, Lopez, Schwarz & Manning (2015) Nature Physics Eqs. 1-2 & Figs. 1-4: dimensionless vertex energy e = (1/2) sum [(a_i - 1)^2 + r(p_i - p_0)^2] exhibits a density-independent rigidity transition at critical target shape index p_0^* approx 3.813 (> p_5 approx 3.8119 > p_hex approx 3.7224), where T1 energy barrier Delta e_T1(p_0) and static shear modulus G(p_0) vanish identically for p_0 >= p_0^*. | Park et al. (2015) Nature Materials Figs. 1-4 & Atia et al. (2018) Nature Physics Figs. 1-2: primary human bronchial epithelial cells (HBECs) from non-asthmatic donors jam into a solid monolayer by Day 14 (q = 3.792 < 3.813), whereas asthmatic donor HBECs (q = 3.955 > 3.813) and mechanically compressed HBECs (30 cm H2O, q = 3.945 > 3.813) remain unjammed, with standardized cell shapes obeying a universal k-Gamma distribution. | Bi, Yang, Marchetti & Manning (2016) Physical Review X Eqs. 1-3 & Figs. 1, 3-4: in the Self-Propelled Voronoi model dr_i/dt = mu F_i + v_0 n_i with rotational diffusion D_r, the glass transition line p_0^c(v_0, D_r) meets p_0 = 3.81 at v_0 -> 0, is lowered by motility v_0, rises toward 3.81 as persistence shortens (larger D_r), and the observed shape index at the boundary is q_c approx 3.81 for all (v_0, D_r); solids have D_eff = D_s/D_0 < 1e-3 at long times.; reconstructed_in_script: 2D periodic confluent monolayer phenomenological vertex-Voronoi relaxation across 4 regimes (Non-Asthmatic Solid p_0=3.70, Critical Point p_0^*=3.813, Asthmatic Fluid p_0=3.955, and Zero-Perimeter-Modulus Ablation r=0.0), 8-point p_0 phase sweep in [3.55, 4.00], and Park et al. (2015) Days 3-18 bronchial maturation trajectories (curve fits to the vendored Park values). | Junction-guided Voronoi segmentation of the human in situ monolayer micrograph (`human_epithelial_monolayer_specimen.jpg`, N=101 interior cells, <q>=3.7961, k-Gamma correlation r = 0.9334). | Pass 3: Bi et al. (2016) SPV model with exact analytic Voronoi forces (circumcenter Jacobians, FD-verified), FIRE inherent-structure quench, overdamped active-Brownian integration (dt = min(0.1, 0.2/D_r)), time-origin-averaged MSD -> D_s and D_eff = D_s/D_0, per-cell T1 rate; a 6x4 (p_0, v_0) glass map at D_r = 1 (boundary p_0^c(v_0) = 3.828, 3.755, 3.678, 3.594 for v_0 = 0.05, 0.15, 0.30, 0.45; linear intercept p_0^c(0) = 3.850, slope alpha = 0.575; q_c = 3.818 +/- 0.013), a D_r sweep at v_0 = 0.30 (p_0^c = 3.677, 3.678, 3.748 for D_r = 0.25, 1, 4; D_s at p_0 = 3.70 decreasing in D_r), and an energy-minimised v_0 = 0 <q>(p_0) sweep (Pearson r = 0.9966 vs the Bi 2015 reference, solid-branch <q> = 3.829).; transfer_boundary: 2D apical polygonal projection of pseudostratified bronchial and simple monolayer epithelia; the vendored specimen is a human corneal endothelium micrograph used as a generic human polygonal monolayer, not an HBEC culture. | The SPV glass boundary is a finite-time (T = 150 in units of 1/(mu K_A A_0)), finite-size (N = 100), single-seed estimate classified by a script-defined per-free-path T1 criterion (Gamma_T1 / v_0 > 0.02); Bi (2016)'s long-time D_eff < 1e-3 criterion is not resolvable in this window (solid floor ~5e-3) and D_eff is reported alongside only.; does_not_claim: Does not model 3D mucociliary beating hydrodynamics or sub-epithelial airway smooth muscle contraction. | Does not compute the T1 energy barrier or shear modulus from the energy landscape (Panel B1 uses the hard-coded linear law Delta e_T1 = 0.40 r (p_0^* - p_0), G = 1.00 r (p_0^* - p_0)); does not reproduce the full curved Bi (2016) Fig. 1(a) boundary or a (v_0, D_r) surface beyond two orthogonal slices; does not include cell division, apoptosis or alignment interactions.." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: 2015-bi-vertex-glass-jamming.py:103, 823, 865-876 — the glass boundary rests on a single seed, a T = 150 window and a script-defined criterion Gamma_T1 / v_0 > 0.02; Bi (2016)'s D_eff < 1e-3 is not resolvable (solid floor ~5e-3, visible in Panel C3). Add a >= 3-seed ensemble with error bars on p_0^c(v_0) and q_c, a longer-window or N = 400 variant behind a CLI flag, and report sensitivity of p_0^c to the 0.02 threshold (e.g. 0.01 / 0.04).",
+            "remediation needed: 2015-bi-vertex-glass-jamming.py:180-233 — Delta e_T1 = 0.40 r (p_0^* - p_0) and G = 1.00 r (p_0^* - p_0) are hard-coded linear laws. Compute the T1 barrier by a constrained minimisation along a four-fold-vertex path and G by affine shear + FIRE relaxation of the inherent structures (both are available from `spv_voronoi_forces` at 635-724) and compare with the `delta_e_T1` / `shear_modulus_G` columns already vendored in `vertex_glass_jamming_reference.json` (59-66); Panel B1 should then plot computed values.",
+            "remediation needed: 2015-bi-vertex-glass-jamming.py:304-458 (tables at 336-352 and 403-428) — `simulate_vertex_unjamming_regime` is phenomenological: initial disorder, pure-shear stretch, drift noise and migration speed are indexed by phase, not derived from the energy. Replace Panels A1-A4, the GIF's first three panels, `run_p0_phase_sweep` (460-504) and measurements 1-2/4 with the force-based SPV relaxation (FIRE at v_0 = 0 plus small v_0), as the FIRE sweep at 1049-1086 already does for <q>(p_0).",
+            "remediation needed: 2015-bi-vertex-glass-jamming.py:532-536 — `ctrl_q_sim`, `asth_q_sim` and `speed_from_q` are closed-form fits to the vendored Park (2015) values, so the r = 0.996 maturation \"validation\" is a fit, not a model prediction. Map a maturation trajectory p_0(t) (or v_0(t)) through the SPV model and compare the resulting <q>(t) and D_s(t) with the Park Days 3-18 values.",
+            "remediation needed: 2015-bi-vertex-glass-jamming.py:731-782 — FIRE hits the 600-step cap without converging for p_0 >= 3.80 (max|F| ~6e-4 to 1e-3 in the floppy fluid branch) and this is not surfaced in the output or self-test; report `converged` per point in the figure/measurements and either raise the cap for the fluid branch or document that the fluid inherent structure is a flat floppy manifold.",
+            "remediation needed: 2015-bi-vertex-glass-jamming.py:990-1047 — the D_r axis is one slice (v_0 = 0.30, D_r in {0.25, 1, 4}) and p_0^c(0.25) = 3.677 is indistinguishable from p_0^c(1) = 3.678 at this grid, so the (p_0, v_0, D_r) \"surface\" is two orthogonal lines. Run v_0 columns at each D_r (or a 3x3 (v_0, D_r) grid at two p_0) and render p_0^c(v_0) for each D_r in Panel C5.",
+            "remediation needed: datasets/vertex_glass_jamming/bi_2016_spv_motility_reference.json:24-26 and 2015-bi-vertex-glass-jamming.py:90-94 — `approximate_boundary_slope_alpha_dr1 = 0.6 +/- 0.3` is a from-memory figure reading and two of the new measurement references (1762-1775) are author expectations; digitise the Bi (2016) Fig. 1(a) boundary and Fig. 3 D_r lines when network access is available, replace the expectation-based references, and pin both reference JSONs in `EXPECTED_SHA256`.",
+            "remediation needed: datasets/vertex_glass_jamming/vertex_glass_jamming_reference.json:33-42 and 2015-bi-vertex-glass-jamming.py:1092-1215 — the specimen is a human corneal endothelium micrograph while the biological claim concerns bronchial epithelium (Park 2015); either vendor a CC-licensed HBEC/airway epithelium micrograph or relabel the organism and claim boundary, and add a sensitivity analysis for the hand-set segmentation thresholds (margins 45/65 px, area 180-9500 px^2, edge 3.2 px)." ;
+        pk:hasScore "0.901"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary assessor, Pass 3 remediation round)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/nmat4357>,
+            <https://doi.org/10.1038/nphys3471>,
+            <https://doi.org/10.1038/s41567-018-0089-9>,
+            <https://doi.org/10.1103/PhysRevLett.97.170201>,
+            <https://doi.org/10.1103/PhysRevX.6.021011>,
+            <https://doi.org/10.1140/epje/i2010-10677-0> .
+    <https://doi.org/10.1038/nmat4357> dct:date "2015"^^xsd:gYear ;
+        dct:title "Unjamming and cell shape in the asthmatic airway epithelium" .
+    <https://doi.org/10.1038/nphys3471> dct:date "2015"^^xsd:gYear ;
+        dct:title "A density-independent rigidity transition in biological tissues" .
+    <https://doi.org/10.1038/s41567-018-0089-9> dct:date "2018"^^xsd:gYear ;
+        dct:title "Geometric constraints during epithelial jamming" .
+    <https://doi.org/10.1103/PhysRevLett.97.170201> dct:date "2006"^^xsd:gYear ;
+        dct:title "Structural relaxation made simple" .
+    <https://doi.org/10.1103/PhysRevX.6.021011> dct:date "2016"^^xsd:gYear ;
+        dct:title "Motility-driven glass and jamming transitions in biological tissues" .
+    <https://doi.org/10.1140/epje/i2010-10677-0> dct:date "2010"^^xsd:gYear ;
+        dct:title "Mechanics and remodelling of cell packings in epithelia" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Bi et al. (2015), Park et al. (2015) & Bi et al. (2016) zero-temperature shape-index unjamming, asthmatic bronchial epithelial rigidity transition and self-propelled Voronoi motility-driven glass transition — MorphoEval overall 90.1/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:12:15Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-bi-vertex-glass-jamming-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-bi-vertex-glass-jamming> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

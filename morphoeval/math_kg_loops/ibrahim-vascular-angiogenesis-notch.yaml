@@ -11,18 +11,26 @@ model_spec:
   dll4_induction_hill_exponent_q: 2
   notch_trans_activation_gain_k_t: 1.0
   seed: 2021
+  hemodynamics_pass3:
+    blood_viscosity_pa_s: 0.0035
+    arteriolar_pressure_mmhg: 40.0
+    venular_pressure_mmhg: 25.0
+    capillary_min_radius_um: 1.3
+    remodel_steps: 240
+    wss_set_point: "Pries 1995/1998: tau_e(P) = 100 - 86 exp(-5000 (log10 log10 P)^5.4) dyn/cm^2"
   inputs:
     - datasets/vascular_angiogenesis_notch/vascular_angiogenesis_notch_reference.json
     - datasets/vascular_angiogenesis_notch/huvec_angiogenic_sprouting_plexus_specimen.jpg
     - datasets/vascular_angiogenesis_notch/scout_manifest.json
     - datasets/vascular_angiogenesis_notch/paper_citations.bib
+    - datasets/vascular_angiogenesis_notch/hemodynamic_pruning_av_specification_reference.json
 equations:
   - id: ibrahim-vascular-angiogenesis-notch-1
     law_name: "Bentley, Gerhardt & Bates (2008) & Collier et al. (1996) Two-Cell Trans-Notch Mutual Inhibition Symmetry Breaking (Brillouin k = π Mode)"
     formula: "dD_i/dt = g(V_i^*) - γ_D D_i,  dN_i/dt = h(D_⟨j⟩) - γ_N N_i,  Δ_antisym = g_D g_N - γ_D γ_N > 0 (k = π unstable),  Δ_sym = -g_D g_N - γ_D γ_N < 0 (k = 0 damped)"
     lean_decl: "MathOfBiology.Loop_060.trans_notch_antisym_margin"
     lean_theorem: "MathOfBiology.Loop_060.bentley_trans_notch_symmetry_breaking_instability"
-    lean_locus: "morphoeval/lean/loops/Loop_060_vascular_angiogenesis_notch.lean#L43-L76"
+    lean_locus: "morphoeval/lean/loops/Loop_060_vascular_angiogenesis_notch.lean#L51-L86"
     lean_code: |
       def antisymmetric_tip_stalk_mode (D1 D2 : Int) : Int := D1 - D2
       def trans_notch_antisym_margin (g_D g_N gamma_D gamma_N : Int) : Int := g_D * g_N - gamma_D * gamma_N
@@ -37,14 +45,14 @@ equations:
     variables: "D_i: endothelial Dll4 ligand level; N_i: active Notch1 intracellular domain level; g_D, g_N: linearized trans-inhibition feedback gains; γ_D, γ_N: degradation rates"
     role: "Proves that when cross-cellular Dll4-Notch1 gain g_D g_N exceeds intrinsic decay γ_D γ_N, the alternating Brillouin-zone k = π mode grows exponentially while the uniform k = 0 mode is damped, generating salt-and-pepper Tip-Stalk alternation"
     source_citation: "Bentley, Gerhardt & Bates (2008) PLoS Comput. Biol. 4(3):e1000052; Collier et al. (1996) J. Theor. Biol. 183(4):429-446"
-    code_locus: "2021-ibrahim-vascular-angiogenesis-notch.py#L135-L255"
+    code_locus: "2021-ibrahim-vascular-angiogenesis-notch.py#L182-L224"
 
   - id: ibrahim-vascular-angiogenesis-notch-2
     law_name: "Hellström et al. (2007) DAPT / Dll4-Null Notch Blockade All-Tip Hypersprouting Collapse Law"
     formula: "V_i = V_max M_tot^p / (M_tot^p + N_i^p),  N_i = 0  =>  V_i = V_max ∀ i  =>  V_1 - V_2 = 0  =>  M_stalk = M - M_tip = 0 (100% tip hypersprouting)"
     lean_decl: "MathOfBiology.Loop_060.vegfr2_notch_hill_residual"
     lean_theorem: "MathOfBiology.Loop_060.hellstrom_dapt_notch_blockade_all_tip_hypersprouting"
-    lean_locus: "morphoeval/lean/loops/Loop_060_vascular_angiogenesis_notch.lean#L83-L110"
+    lean_locus: "morphoeval/lean/loops/Loop_060_vascular_angiogenesis_notch.lean#L90-L116"
     lean_code: |
       def vegfr2_notch_hill_residual (V_i V_max M_p N_p : Int) : Int := V_i * (M_p + N_p) - V_max * M_p
       def vessel_stalk_cell_count (M M_tip : Int) : Int := M - M_tip
@@ -56,14 +64,14 @@ equations:
     variables: "V_i: VEGFR2 receptor expression; V_max: unrepressed maximal VEGFR2 transcription; M_tot: Notch1 half-repression threshold; N_i: active Notch1 signaling; M: vessel endothelial cell count"
     role: "Proves that pharmacological γ-secretase Notch blockade (DAPT, k_t = 0 => N_i = 0) or Dll4 loss abolishes VEGFR2 repression across all endothelial cells, eliminating tip-stalk contrast and collapsing stalk cells to zero (100% all-tip hypersprouting)"
     source_citation: "Hellström et al. (2007) Nature 445(7129):776-780; Bentley, Gerhardt & Bates (2008) PLoS Comput. Biol. 4(3):e1000052"
-    code_locus: "2021-ibrahim-vascular-angiogenesis-notch.py#L260-L390"
+    code_locus: "2021-ibrahim-vascular-angiogenesis-notch.py#L245-L483"
 
   - id: ibrahim-vascular-angiogenesis-notch-3
     law_name: "Chappell et al. (2009) & Jakobsson et al. (2010) VEGFR1 (sFlt1) Decoy-Receptor Sequestration Window Shift Law"
     formula: "VEGF_eff = VEGF_raw - α_F F_flt1 < V_osc  when  VEGF_raw - V_osc < α_F F_flt1"
     lean_decl: "MathOfBiology.Loop_060.flt1_sequestered_vegf"
     lean_theorem: "MathOfBiology.Loop_060.chappell_flt1_decoy_sequestration_window_rescue"
-    lean_locus: "morphoeval/lean/loops/Loop_060_vascular_angiogenesis_notch.lean#L117-L143"
+    lean_locus: "morphoeval/lean/loops/Loop_060_vascular_angiogenesis_notch.lean#L120-L148"
     lean_code: |
       def flt1_sequestered_vegf (VEGF_raw alpha_F F_flt1 : Int) : Int := VEGF_raw - alpha_F * F_flt1
       def salt_and_pepper_window_margin (V_osc VEGF_eff : Int) : Int := V_osc - VEGF_eff
@@ -76,4 +84,42 @@ equations:
     variables: "VEGF_raw: extracellular unsequestered VEGF-A concentration; VEGF_eff: bioavailable pericellular VEGF-A; F_flt1: soluble VEGFR1 (sFlt1) decoy concentration; α_F: decoy binding affinity; V_osc: synchronous oscillation threshold"
     role: "Proves that pericellular soluble VEGFR1 (sFlt1) decoy sequestration lowers effective VEGF below the synchronous-oscillation ceiling V_osc, rescuing stable salt-and-pepper Tip-Stalk selection under high VEGF overload"
     source_citation: "Chappell et al. (2009) Dev. Cell 17(3):377-386; Jakobsson et al. (2010) Nat. Cell Biol. 12(10):943-953"
-    code_locus: "2021-ibrahim-vascular-angiogenesis-notch.py#L395-L505"
+    code_locus: "2021-ibrahim-vascular-angiogenesis-notch.py#L182-L224"
+
+  - id: ibrahim-vascular-angiogenesis-notch-4
+    law_name: "Pries, Secomb & Gaehtgens (1998) Lumenized Poiseuille/Kirchhoff Plexus with Pressure-Dependent Wall-Shear Set Point and Emergent Murray (1926) Cube Law (Pass 3)"
+    formula: "G_e = π r_e^4 / (8 μ L_e),  Σ_e G_e (P_u - P_v) = 0 ∀ internal nodes,  τ_e = 4 μ |Q_e| / (π r_e^3),  dr_e/dt = k_a r_e [log10((τ_e+τ_0)/(τ*(P_e)+τ_0)) + k_m log10(1 + Q_ref/|Q_e|) - k_s],  τ*(P) = 0.1(100 - 86 e^{-5000 (log10 log10 P)^5.4}) Pa;  uniform τ* + Kirchhoff  =>  r_p^3 = r_1^3 + r_2^3"
+    lean_decl: "MathOfBiology.Loop_060.murray_cube_law_residual"
+    lean_theorem: "MathOfBiology.Loop_060.murray_cube_law_from_uniform_wall_shear"
+    lean_locus: "morphoeval/lean/loops/Loop_060_vascular_angiogenesis_notch.lean#L152-L189"
+    lean_code: |
+      def poiseuille_flow_at_uniform_shear (c r : Int) : Int := c * (r * r * r)
+      def murray_cube_law_residual (r_p r_1 r_2 : Int) : Int := r_p * r_p * r_p - r_1 * r_1 * r_1 - r_2 * r_2 * r_2
+      theorem murray_cube_law_from_uniform_wall_shear
+          (c r_p r_1 r_2 : Int)
+          (h_shear_pos : c ≠ 0)
+          (h_kirchhoff : poiseuille_flow_at_uniform_shear c r_p =
+            poiseuille_flow_at_uniform_shear c r_1 + poiseuille_flow_at_uniform_shear c r_2) :
+          murray_cube_law_residual r_p r_1 r_2 = 0
+    variables: "r_e, L_e: lumen radius and length of segment e; μ: blood apparent viscosity (3.5 mPa s); G_e: Hagen-Poiseuille conductance; P_u: nodal pressure; Q_e: volumetric flow; τ_e: wall shear stress; τ*(P): Pries pressure-dependent set point; k_a, k_m, k_s: adaptation, metabolic and shrinkage gains; c = π τ*/(4 μ)"
+    role: "Proves that when every perfused segment at a bifurcation has adapted to the same wall-shear set point (Q_e = c r_e^3) and Kirchhoff mass conservation holds, the lumen radii obey Murray's cube law exactly; the script therefore reports the fitted bifurcation exponent k as an EMERGENT diagnostic of the remodelled plexus (WT k ≈ 3.5, reference 3) rather than as a parameter"
+    source_citation: "Pries AR, Secomb TW, Gaehtgens P (1998) Am. J. Physiol. 275(2):H349-H360; Pries, Secomb & Gaehtgens (1995) Circ. Res. 77(5):1017-1023; Murray CD (1926) PNAS 12(3):207-214"
+    code_locus: "2021-ibrahim-vascular-angiogenesis-notch.py#L641-L909"
+
+  - id: ibrahim-vascular-angiogenesis-notch-5
+    law_name: "Chen et al. (2012) / Franco et al. (2015) Flow-Stealing Pruning Cascade and Lawson et al. (2001) Notch-Gated Arteriovenous Specification (Pass 3)"
+    formula: "Q_1 = G_1 ΔP / (1 + R_s (G_1 + G_2))  <  G_1 ΔP / (1 + R_s G_1) = Q_1^pruned  (cross-multiplied: G_1 ΔP (1 + R_s G_1) < G_1 ΔP (1 + R_s (G_1 + G_2)));  prune e when r_e < r_min = 1.3 μm;  AV_e = σ(ν_Notch [g_P p̂_e + g_τ log10((τ_e+τ_0)/(τ_ref+τ_0))]),  ν_Notch = k_t / k_t,WT"
+    lean_decl: "MathOfBiology.Loop_060.survivor_flow_cross_term"
+    lean_theorem: "MathOfBiology.Loop_060.franco_pruning_flow_stealing_cascade"
+    lean_locus: "morphoeval/lean/loops/Loop_060_vascular_angiogenesis_notch.lean#L193-L231"
+    lean_code: |
+      def survivor_flow_cross_term (G_1 dP R_s G_other : Int) : Int := G_1 * dP * (1 + R_s * (G_1 + G_other))
+      theorem franco_pruning_flow_stealing_cascade
+          (G_1 G_2 R_s dP : Int)
+          (h_G1 : 0 < G_1) (h_G2 : 0 < G_2) (h_Rs : 0 < R_s) (h_dP : 0 < dP) :
+          survivor_flow_cross_term G_1 dP R_s 0 < survivor_flow_cross_term G_1 dP R_s G_2 ∧
+          survivor_flow_cross_term G_1 dP R_s 0 = G_1 * dP * (1 + R_s * G_1)
+    variables: "G_1, G_2: conductances of two parallel capillary rungs; R_s: series feeding-arteriole/draining-venule resistance; ΔP: arteriolar-venular pressure drop; r_min: minimum red-cell-perfusable lumen radius; AV_e: arterial (ephrinB2, →1) vs venous (EphB4, →0) identity; p̂_e: local pressure rank relative to the rung midpoint; ν_Notch: Dll4/Notch1 transduction gain"
+    role: "Proves that pruning a neighbouring rung strictly increases the surviving rung's flow (and hence Poiseuille wall shear), making shear-driven regression a self-reinforcing cascade; the script couples this to a Notch-gated hemodynamic readout so that DAPT (ν_Notch = 0) leaves the pressure/shear field intact but abolishes arteriovenous marker segregation (index 0.5, AV shunting), while perfusion arrest removes both"
+    source_citation: "Chen Q, et al. (2012) PLoS Biol. 10(8):e1001374; Franco CA, et al. (2015) PLoS Biol. 13(4):e1002125; Lawson ND, et al. (2001) Development 128(19):3675-3683; le Noble F, et al. (2004) Development 131(2):361-375; Wang HU, Chen ZF, Anderson DJ (1998) Cell 93(5):741-753"
+    code_locus: "2021-ibrahim-vascular-angiogenesis-notch.py#L912-L1198"

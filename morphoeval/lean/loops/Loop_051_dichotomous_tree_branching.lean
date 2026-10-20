@@ -125,4 +125,75 @@ theorem honda_fisher_1978_divergence_avoids_self_shading
     have h_gain : 0 < c_sep * (L1 * sin_theta1 + L2 * sin_theta2) := Int.mul_pos hc h_sep
     omega
 
+
+-- ============================================================================
+-- Law 4 (`honda-dichotomous-tree-branching-4`, Pass 3):
+-- Solar-Elevation Tier Shadow Displacement & Latitude-Dependent Spacing Threshold
+-- ============================================================================
+/-- Pass 3 solar ray-tracing of tiered Honda crowns (Campbell & Norman 1998 solar
+    geometry).  An upper tier at vertical offset `dz > 0` above a lower tier casts its
+    shadow displaced horizontally by `offset = dz * cot h` (`cot_h` = cot of the solar
+    elevation, scaled to an integer).  Two tiers of radius `R` are completely clear of each
+    other's shadow when `offset ≥ 2R`.
+    1. The displacement scales linearly with tier spacing: `offset (k * dz) = k * offset dz`.
+    2. A lower sun (larger `cot_h`) displaces the shadow further for the same spacing:
+       `cot_lo ≤ cot_hi → offset dz cot_lo ≤ offset dz cot_hi` (`0 ≤ dz`).
+    3. Hence a spacing `dz` that clears the shadow under a high (equatorial) sun also
+       clears it under any lower (temperate) sun: equatorial crowns need spacing at least
+       as large as temperate crowns for the same self-shading avoidance. -/
+def tier_shadow_offset (dz cot_h : Int) : Int :=
+  dz * cot_h
+
+def tiers_shadow_clear (dz cot_h R : Int) : Prop :=
+  2 * R ≤ tier_shadow_offset dz cot_h
+
+theorem solar_tier_shadow_offset_monotone
+    (dz k cot_lo cot_hi R : Int)
+    (hdz : 0 ≤ dz)
+    (hcot : cot_lo ≤ cot_hi) :
+    tier_shadow_offset (k * dz) cot_lo = k * tier_shadow_offset dz cot_lo ∧
+    tier_shadow_offset dz cot_lo ≤ tier_shadow_offset dz cot_hi ∧
+    (tiers_shadow_clear dz cot_lo R → tiers_shadow_clear dz cot_hi R) := by
+  refine ⟨?_, ?_, ?_⟩
+  · dsimp [tier_shadow_offset]
+    exact Int.mul_assoc k dz cot_lo
+  · dsimp [tier_shadow_offset]
+    exact Int.mul_le_mul_of_nonneg_left hcot hdz
+  · intro hclear
+    dsimp [tiers_shadow_clear, tier_shadow_offset] at hclear ⊢
+    have hmono : dz * cot_lo ≤ dz * cot_hi := Int.mul_le_mul_of_nonneg_left hcot hdz
+    omega
+
+
+-- ============================================================================
+-- Law 5 (`honda-dichotomous-tree-branching-5`, Pass 3):
+-- Monsi & Saeki (1953) Beer-Lambert Optical Depth Through Stacked Tiers
+-- ============================================================================
+/-- Beam light reaching a lower-tier cell overlapped by `n` upper tiers is attenuated by
+    `τ_c^n = exp(-n * K * LAI_c)` (Monsi & Saeki 1953, horizontal leaves `K = 1`).  In
+    optical-depth form the attenuation is additive: `depth n = n * d` with per-tier depth
+    `d = K * LAI_c`.
+    1. Each additional shading tier adds exactly one tier depth: `depth (n+1) = depth n + d`.
+    2. With a strictly absorbing tier (`0 < d`) more shading tiers strictly reduce the
+       transmitted light (`depth n < depth (n+1)`).
+    3. A transparent tier (`d = 0`, the τ_c = 1 ablation) contributes zero optical depth
+       for any number of overlaps — the ray tracer must return `E = 1` exactly. -/
+def stacked_tier_optical_depth (d : Nat) : Nat → Nat
+  | 0 => 0
+  | n + 1 => stacked_tier_optical_depth d n + d
+
+theorem beer_lambert_stacked_tier_optical_depth (d n : Nat) :
+    stacked_tier_optical_depth d (n + 1) = stacked_tier_optical_depth d n + d ∧
+    (0 < d → stacked_tier_optical_depth d n < stacked_tier_optical_depth d (n + 1)) ∧
+    stacked_tier_optical_depth 0 n = 0 := by
+  refine ⟨rfl, ?_, ?_⟩
+  · intro hd
+    dsimp [stacked_tier_optical_depth]
+    omega
+  · induction n with
+    | zero => rfl
+    | succ m ih =>
+      dsimp [stacked_tier_optical_depth]
+      omega
+
 end MathOfBiology.Loop_051

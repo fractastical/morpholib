@@ -1,0 +1,137 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAjdBmQOPOKT7Ivdzk0re9ZUfjU-tcF5CPWfsJgFOyhuE/> .
+@prefix this: <https://w3id.org/np/RAjdBmQOPOKT7Ivdzk0re9ZUfjU-tcF5CPWfsJgFOyhuE> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-metzger-lung-stereotyped-branching> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-model-fidelity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Metzger et al. (2008) & Menshykau et al. (2012, 2014) mouse lung stereotyped branching modes (Domain D, Planar P, Orthogonal O), FGF10-SHH-Ptch1 Turing mode selection, pleura-confined diffuse-domain FGF10 cavity and stochastic postnatal septation — Model fidelity to source: 92/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "The Metzger (2008) 3D D/P/O grammar with the 4m + 1 tip law and the Menshykau (2012, 2014) FGF10-SHH-Ptch1 dispersion relation are implemented as in Pass 2 (L183-442, L448-611). Pass 3 adds a genuine mechanism for the margin/interior mode switch: the ligand equation is solved in a diffuse-domain cavity (Li et al. 2009 formulation, Dirichlet F = 0 beyond the pleura via the (1 - psi) F / tau penalty, L656-702), the tip acts as a Ptch1 sink (R^2 = 1 + 3 exp(-r^2/0.25^2)), and the P/O decision is the sign of the supply anisotropy (`decide`, L806-839); the solver is checked against the exact slab closed form with monotone first-order convergence (L704-747). The septation module is an exact-increment Yule process with the Mund (2008) phase structure (L1106-1172) and its mean law is proved in Lean (Law 5). Deductions: the cavity is a quasi-2D cross-section with a prescribed 15 %/generation dilation (L780-782) rather than a 3D moving boundary, tips are not advected by grad F and the pleura does not respond to the tree (-2); the switch depends on the tuned pair h_mid = 1.0 / A_c = 0.05 (L117, L123) and on three further unsourced constants (L119-121) (-2); `simulate_fgf10_shh_mode_switch` clips R and F to [0.1, 3.2] every step (L578-579), uses an unjustified `diff_scale = 0.25` for the domain case (L568), and its seed profiles hard-code the final peak spacing, so the apical-vs-lateral outcome is largely prescribed by the initial condition (-2, pre-existing, not scored in Pass 2)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "2008-metzger-lung-stereotyped-branching.py L116–L123: PLEURA_* and RECEPTOR_* constants: h_mid = 1.0 and A_c = 0.05 are tuned (comment on L117); growth 0.15, gamma 4.0, tip gain 2.0 unsourced <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L116-L123>",
+            "2008-metzger-lung-stereotyped-branching.py L568–L579: diff_scale = 0.25 for the domain case and per-step clipping of R, F to [0.1, 3.2] in the spectral Turing solver <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L568-L579>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-4>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-5>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-6> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2008-metzger-lung-stereotyped-branching.py L183–L248" ;
+        dcterms:description "build_subroutine_tree_3d with the Pass 3 dihedral_policy hook (L192, L245-246) replacing the fixed custom_dihedral_deg" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L183-L248> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2008-metzger-lung-stereotyped-branching.py L638–L702" ;
+        dcterms:description "Lens/slab phase fields and solve_diffuse_domain_fgf10: diffuse-domain FGF10 steady state with tip Ptch1 sink and Dirichlet penalty beyond the pleura" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L638-L702> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "2008-metzger-lung-stereotyped-branching.py L704–L747" ;
+        dcterms:description "validate_diffuse_domain_against_slab: convergence 0.107 -> 0.056 -> 0.026 vs the exact 1D slab profile" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L704-L747> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "2008-metzger-lung-stereotyped-branching.py L749–L848" ;
+        dcterms:description "PleuraConfinedFgf10Policy: cavity_dims dilation (L780-782), decide() anisotropy test (L806-839), single_tip_dihedral (L841-844)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L749-L848> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-5> a pk:EvidenceItem ;
+        rdfs:label "2008-metzger-lung-stereotyped-branching.py L1106–L1172" ;
+        dcterms:description "septation_hazard with Mund (2008) bulk/continued phases and exact-increment Yule ensemble" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L1106-L1172> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-model-fidelity-6> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean L131–L188" ;
+        dcterms:description "Laws 4-5: pleura_mode_select / pleura_anisotropy_mode_selection and septation_mean / septation_mean_closed_form; file has 5 theorems and 0 sorrys (lean exit 0)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean#L131-L188> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Loop 053 Pass 3 Assessor)" ;
+        dcterms:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1002/ar.20747> dcterms:date "2009"^^xsd:gYear ;
+        dcterms:title "Stereological estimates of alveolar number and size and capillary length and surface area in mice lungs" .
+
+    <https://doi.org/10.1002/dvdy.21633> dcterms:date "2008"^^xsd:gYear ;
+        dcterms:title "Developmental alveolarization of the mouse lung" .
+
+    <https://doi.org/10.1038/nature07005> dcterms:date "2008"^^xsd:gYear ;
+        dcterms:title "The branching programme of mouse lung development" .
+
+    <https://doi.org/10.1242/dev.081679> dcterms:date "2012"^^xsd:gYear ;
+        dcterms:title "Branch mode selection during early lung development" .
+
+    <https://doi.org/10.1371/journal.pcbi.1003421> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "An interplay of geometry and signaling enables directional lung branching morphogenesis" .
+
+    <https://doi.org/10.1371/journal.pone.0041643> dcterms:date "2012"^^xsd:gYear ;
+        dcterms:title "A role for canonical Wnt signaling in epithelial branching during embryonic mouse lung development" .
+
+    <https://doi.org/10.4310/CMS.2009.v7.n1.a4> dcterms:date "2009"^^xsd:gYear ;
+        dcterms:title "Solving PDEs in complex geometries: a diffuse domain approach" .
+
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/ar.20747>,
+            <https://doi.org/10.1002/dvdy.21633>,
+            <https://doi.org/10.1038/nature07005>,
+            <https://doi.org/10.1242/dev.081679>,
+            <https://doi.org/10.1371/journal.pcbi.1003421>,
+            <https://doi.org/10.1371/journal.pone.0041643>,
+            <https://doi.org/10.4310/CMS.2009.v7.n1.a4> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "DTMjZFSacmJIvGDnEHB2vXYltM34bqSgP36MA43KSHVHFXOdOUKHZNFCfSI2gwrOTQRWy1A7fWQGQMVn4jc9+Wtoj1IFN8f/cXmTqy6shpMxTo2bDF9AMcSjMsW0cxl9sVy/tZZF7XotGzqQxkqbJ3JqDVltoEzAWyIpmQlcTonUITLt0cRoVp+90Hfuc5xkvdexDqGgAYagVdCl7ZcCcYrbXH9HypYOLZo3Dt5VPjJ30QtHdZ9mBvDWKeLZHIQDgg0c3boaLNHw1BnCDEyyUuJcaSFvpgXnCU5KVwVebfsSi0OF0kDpBpxTa0mR1QNrt++aEztt/MxHdJeNk1s42g==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Metzger et al. (2008) & Menshykau et al. (2012, 2014) mouse lung stereotyped branching modes (Domain D, Planar P, Orthogonal O), FGF10-SHH-Ptch1 Turing mode selection, pleura-confined diffuse-domain FGF10 cavity and stochastic postnatal septation — Model fidelity to source 92/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T16:28:07Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

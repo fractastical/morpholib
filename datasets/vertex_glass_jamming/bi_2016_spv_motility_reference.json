@@ -1,0 +1,42 @@
+{
+  "metadata": {
+    "dataset_id": "bi-2016-spv-motility-glass-transition-v1",
+    "title": "Bi, Yang, Marchetti & Manning (2016) Physical Review X 6(2):021011 — Motility-driven glass and jamming transitions in biological tissues: Self-Propelled Voronoi (SPV) reference claims",
+    "citation": "Bi D, Yang X, Marchetti MC, Manning ML (2016). Motility-driven glass and jamming transitions in biological tissues. Physical Review X 6(2):021011.",
+    "doi": "10.1103/PhysRevX.6.021011",
+    "added_in": "Pass 3 (2026-10-19-vertex-glass-jamming-audit-v3)",
+    "provenance_note": "Equations, parameter conventions and the four headline claims below are taken from the published text/abstract of Bi et al. (2016) as recalled offline (no network access during Pass 3); the single figure-derived number (approximate_boundary_slope_alpha_dr1) is an approximate reading of Fig. 1(a) and is flagged as such with an explicit uncertainty. Any field marked approximate must not be treated as digitised data."
+  },
+  "spv_model_definition": {
+    "energy": "E = sum_i [ K_A (A_i - A_0)^2 + K_P (P_i - P_0)^2 ]  (Eq. 1; cells are Voronoi polygons of the cell centers r_i; no 1/2 prefactor)",
+    "dynamics": "dr_i/dt = mu F_i + v_0 n_i,  F_i = -grad_i E,  n_i = (cos theta_i, sin theta_i);  dtheta_i/dt = eta_i(t),  <eta_i(t) eta_j(t')> = 2 D_r delta_ij delta(t - t')  (Eqs. 2-3)",
+    "units": "K_A = K_P = 1, A_0 = 1, mu = 1: lengths in sqrt(A_0), time in 1/(mu K_A A_0); dimensionless target shape index p_0 = P_0 / sqrt(A_0); r = K_P/(K_A A_0) = 1",
+    "effective_diffusivity": "D_eff = D_s / D_0,  D_s = lim_{t->inf} <|Delta r(t)|^2> / (4 t),  D_0 = v_0^2 / (2 D_r) (free active-Brownian diffusivity)",
+    "solid_criterion_long_time": "D_eff < 1e-3 (Bi et al. 2016 Fig. 1; requires long-time steady-state MSD)"
+  },
+  "bi_2016_spv_glass_transition": {
+    "zero_motility_glass_point_p0c": 3.81,
+    "zero_motility_glass_point_note": "At v_0 -> 0 the SPV glass transition line meets the Bi et al. (2015) zero-temperature rigidity transition at p_0 ~= 3.81 (Fig. 1a).",
+    "structural_order_parameter_q_c": 3.81,
+    "structural_order_parameter_note": "The observed cell shape index q = <P_i/sqrt(A_i)> at the glass transition is q_c ~= 3.81 for all (v_0, D_r) studied (Fig. 4): solid for q < 3.81, fluid for q > 3.81.",
+    "motility_direction": "Increasing self-propulsion speed v_0 lowers p_0^c (the solid region shrinks; motility fluidises the tissue at fixed p_0) (Fig. 1a).",
+    "persistence_direction": "Decreasing the rotational diffusion D_r (longer persistence time 1/D_r) enlarges the fluid region, i.e. p_0^c decreases as D_r decreases (Fig. 3); equivalently p_0^c increases toward 3.81 as D_r grows.",
+    "approximate_boundary_slope_alpha_dr1": 0.6,
+    "approximate_boundary_slope_alpha_dr1_uncertainty": 0.3,
+    "approximate_boundary_slope_alpha_dr1_note": "APPROXIMATE: effective initial slope -dp_0^c/dv_0 of the D_r = 1 boundary in Fig. 1(a), read from the figure from memory; the published boundary is curved and this value is only an order-of-magnitude anchor. Treat as a qualitative check that the simulated slope is positive and O(0.3-1).",
+    "minimum_fluid_to_solid_t1_rate_contrast": 10.0,
+    "minimum_fluid_to_solid_t1_rate_contrast_note": "Expectation (not a published number): across the glass boundary the neighbour-exchange (T1) rate must change by at least an order of magnitude; used as the reference for the fixed-p_0 motility ablation ratio.",
+    "minimum_p0c_shift_dr_0p25_to_4": 0.0,
+    "minimum_p0c_shift_dr_0p25_to_4_note": "Sign-only reference (not a published number): p_0^c(D_r = 4) - p_0^c(D_r = 0.25) must be >= 0 per the persistence_direction claim."
+  },
+  "finite_time_estimators_used_by_script": {
+    "window_T": 150.0,
+    "n_cells": 100,
+    "dt_rule": "dt = min(0.1, 0.2 / D_r) (overdamped Euler; dt = 0.25 diverges at K_A = 1)",
+    "initial_state": "uniform random seeds FIRE-minimised at v_0 = 0 to |F|_max < 1e-7 (max 600 steps)",
+    "D_s_estimator": "slope/4 of the time-origin-averaged MSD over lags tau in [T/8, T/2]",
+    "T1_rate_estimator": "Delaunay-edge losses per cell per unit time over the second half of the window, sampled every 0.5 time units",
+    "fluid_criterion_finite_time": "Gamma_T1 / v_0 > 0.02 T1 events per cell per unit free-path length v_0 t (log-interpolated boundary in p_0); the motility normalisation puts slow (small v_0) and fast fluids on the same scale, analogous to D_eff = D_s / D_0. D_eff is reported alongside but its finite-window solid floor (~5e-3) prevents applying Bi's 1e-3 criterion",
+    "grids": {"p0": [3.5, 3.6, 3.7, 3.8, 3.85, 3.9], "v0_at_dr1": [0.05, 0.15, 0.3, 0.45], "dr_at_v0_0p3": [0.25, 1.0, 4.0]}
+  }
+}

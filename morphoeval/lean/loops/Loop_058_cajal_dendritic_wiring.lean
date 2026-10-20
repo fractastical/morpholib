@@ -145,4 +145,72 @@ theorem dendritic_binary_tree_topology_identity (B : Int) :
   · dsimp [tree_betti_1, binary_arbor_nodes, binary_arbor_edges, binary_arbor_leaves]
     omega
 
+
+-- ============================================================================
+-- Law 4 (`caleo-cajal-dendritic-wiring-4`, Pass 3):
+-- Rall (1959) Passive Membrane Exact Linear Superposition (Coincidence-Detection Null Model)
+-- ============================================================================
+/-- The Pass 3 remediation couples Rall's (1959) passive 3/2 cable to an active
+    Morris-Lecar (1981) Ca2+ hotspot. The passive ablation (`g_Ca = 0`, K+ gate frozen) of
+    that hotspot is a linear RC membrane whose forward-Euler trajectory is
+      `V_{k+1} = a * V_k + b * I_k`,  `V_0 = 0`
+    (with `a = 1 - dt g/C` and `b = dt/C` as scaled integers, `V` measured from rest).
+    For any two synaptic current trains `I_a, I_b : ℕ → ℤ` and every time step `k`:
+    1. `V[I_a + I_b](k) = V[I_a](k) + V[I_b](k)` (exact superposition), and
+    2. `V[2 I](k) = 2 V[I](k)`, so the coincident identical-pair / single peak gain of a
+       passive dendrite is exactly 2 — the null against which the regenerative Ca2+
+       hotspot's supralinear gain (> 2) is measured in `evaluate_ca_spike_coincidence`. -/
+def lin_rc_step (a b V I : Int) : Int :=
+  a * V + b * I
+
+def lin_rc_traj (a b : Int) (I : Nat → Int) : Nat → Int
+  | 0 => 0
+  | k + 1 => lin_rc_step a b (lin_rc_traj a b I k) (I k)
+
+theorem rall_passive_membrane_linear_superposition
+    (a b : Int) (Ia Ib : Nat → Int) (k : Nat) :
+    lin_rc_traj a b (fun n => Ia n + Ib n) k =
+      lin_rc_traj a b Ia k + lin_rc_traj a b Ib k ∧
+    lin_rc_traj a b (fun n => 2 * Ia n) k = 2 * lin_rc_traj a b Ia k := by
+  induction k with
+  | zero => exact ⟨rfl, rfl⟩
+  | succ k ih =>
+    obtain ⟨ih1, ih2⟩ := ih
+    refine ⟨?_, ?_⟩
+    · simp only [lin_rc_traj, lin_rc_step, ih1, Int.mul_add]
+      omega
+    · simp only [lin_rc_traj, lin_rc_step, ih2, Int.mul_add, Int.mul_left_comm]
+
+
+-- ============================================================================
+-- Law 5 (`caleo-cajal-dendritic-wiring-5`, Pass 3):
+-- Koch (1999) / Rall (1959) Sinusoidal Steady-State Length-Constant Bound
+-- ============================================================================
+/-- The DC Rall length constant `lambda_DC = sqrt(R_m d / (4 R_i))` is reduced at synaptic
+    frequency `f` to `lambda_f = lambda_DC * sqrt(2 / (1 + s))` with
+    `s = sqrt(1 + (2 pi f tau_m)^2) >= 1` (Koch 1999 Eq. 2.37). In squared-integer form
+    `(1 + s) * lambda_f^2 = 2 * lambda_DC^2`. Then:
+    1. `lambda_f^2 <= lambda_DC^2` (attenuation is never weaker at AC than at DC), and
+    2. at `s = 1` (`f = 0`) the two coincide exactly, `lambda_f^2 = lambda_DC^2`.
+    Consequently every electrotonic edge length `X_e = l_e / lambda_f(d_e)` used in
+    `compute_tree_electrotonics` is at least its DC value. -/
+def koch_ac_length_relation (s lf2 ld2 : Int) : Prop :=
+  (1 + s) * lf2 = 2 * ld2
+
+theorem koch_ac_length_constant_bound
+    (s lf2 ld2 : Int)
+    (hs : 1 ≤ s)
+    (hlf : 0 ≤ lf2)
+    (hrel : koch_ac_length_relation s lf2 ld2) :
+    lf2 ≤ ld2 ∧ (s = 1 → lf2 = ld2) := by
+  unfold koch_ac_length_relation at hrel
+  have h_mono : 1 * lf2 ≤ s * lf2 := Int.mul_le_mul_of_nonneg_right hs hlf
+  refine ⟨?_, ?_⟩
+  · have h_expand : (1 + s) * lf2 = lf2 + s * lf2 := by
+      simp [Int.add_mul]
+    omega
+  · intro hs1
+    subst hs1
+    omega
+
 end MathOfBiology.Loop_058

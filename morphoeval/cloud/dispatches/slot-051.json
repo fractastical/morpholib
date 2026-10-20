@@ -9,5 +9,77 @@
   "pass1_score": 53.6,
   "pass2_score": 94.1,
   "quick_gate": 100,
-  "delta": 40.5
+  "delta": 40.5,
+  "pass3_status": "completed",
+  "pass3_run_id": "2026-10-19-dichotomous-tree-branching-loop-pass3",
+  "pass3_audit_id": "2026-10-19-dichotomous-tree-branching-audit-v3",
+  "pass3_supersedes": "2026-10-19-dichotomous-tree-branching-audit-v2",
+  "pass3_remediation_items_closed": [
+    "solar-elevation ray tracing of 3D Honda tiered crowns across diurnal/seasonal sun paths; equatorial vs temperate optimal tier spacing (s_90/R = 1.83 at 0 deg vs 0.97 at 45 deg)"
+  ],
+  "pass3_residuals": [
+    "direct beam only: diffuse sky radiance and leaf scattering not modelled",
+    "stem-cost kappa in the trade-off objective is a free sensitivity parameter (no literature value)",
+    "specimen tier spacing s/R = 0.376 is a projected photographic ratio without perspective correction"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_051.solar_tier_shadow_offset_monotone",
+    "MathOfBiology.Loop_051.beer_lambert_stacked_tier_optical_depth"
+  ],
+  "pass3_new_files": [
+    "datasets/dichotomous_tree_branching/solar_tier_spacing_reference.json",
+    "datasets/dichotomous_tree_branching/solar_citations_pass3.bib",
+    "docs/media/dichotomous_tree_branching_solar_tier_spacing.png",
+    "docs/media/dichotomous_tree_branching_solar_shadows.gif"
+  ],
+  "pass3_handoff_note": "/tmp/pass3/handoff/slot-051.md",
+  "pass3_self_test": "10 suites PASSED (12.6 s); default render 7.3 s",
+  "pass3_score": 91.2,
+  "pass3_dims": {
+    "model-fidelity": 92,
+    "specimen-match": 90,
+    "parameter-expressivity": 91,
+    "morphometric-validation": 88,
+    "source-traceability": 93,
+    "code-traceability": 94,
+    "repro-package": 93
+  },
+  "pass3_completed_at": "2026-10-20T16:24:44Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_remediation_closed": [
+    "Couple 3D Honda tiered crowns to solar-elevation radiative transfer ray-tracing across diurnal sun paths to compare equatorial vs temperate latitude optimal tier spacing — closed (reduced direct-beam, stacked-planar-tier model): section 2b L473-825, evaluate_latitude_tier_spacing_tradeoff L695-764; s_90/R = 1.832 (0 deg) vs 0.969 (45 deg), ratio 1.89"
+  ],
+  "pass3_remediation_open": [
+    "datasets/dichotomous_tree_branching/dichotomous_tree_branching_reference.json:46-103 with 1976-honda-dichotomous-tree-branching.py:404-470 and 1011-1047 — the `honda_fisher_1978_angle_sweep_benchmarks` values (0.2001, 0.7591, 0.7739, ...) are the script's own outputs, so Pearson r = 0.9978, the 0.7739 Terminalia reference and the 74.14% penalty reference are self-referential. Digitise the Honda & Fisher (1978) Fig. 2 / Fisher & Honda (1979) Table 1 effective-leaf-area values into a separately provenanced block and compute r against those; relabel the current block as a regression fixture.",
+    "1976-honda-dichotomous-tree-branching.py:1113-1149 and 1198-1218 — measurements 10, 11 and 16 carry `reference_value: None` and measurement 14 (1174-1186) uses the equator transplant as its reference. Add at least one external anchor for tier spacing (e.g. digitised internode/tier spacing of Terminalia catappa from Fisher & Honda 1979 or Cornus controversa herbarium/forestry measurements) or a published canopy light- interception value for a pagoda crown, and move the anchor-less items to a `predictions` list.",
+    "1976-honda-dichotomous-tree-branching.py:643-692 and 566-610 — the ray tracer consumes stacked planar Honda & Fisher disk-union tiers with a uniform tau_c, not the 3D Honda internode skeleton of `grow_honda_1971_3d_tree` (150-261). Rasterise the 3D skeleton's terminal leaf clusters per height band so the ray-traced crown is the Honda (1971) tree, and add a diffuse-sky (UOC or SOC) term beside the direct beam.",
+    "1976-honda-dichotomous-tree-branching.py:933-935, 843, 850, 871 — junction acceptance windows 12-50 / 30-82 deg and beta in [0.65, 1.45], the ROI box and the 72nd / 78th percentile thresholds pre-select Y-forks inside the expected Honda & Fisher range. Report the unfiltered fork-angle distribution alongside the filtered one and run a threshold-sensitivity sweep so theta_1/theta_2/beta are measured, not prescribed.",
+    "1976-honda-dichotomous-tree-branching.py:221-222, 239, 586, 1215 — pitch factors 0.25*t1 / -0.18*t2, the daughter-2 pi/2 roll, the tier-order schedule max(2, 5 - 4t//n) and LAI_c = 2 are uncited. Either cite a source (Honda 1971 Fig. 4 for pitch; Fisher & Honda 1979 for tier order; a Cornus LAI measurement) or expose them as documented free parameters in the docstring and the math-KG YAML.",
+    "1976-honda-dichotomous-tree-branching.py:1845-1852 and 1864-1868 — `--theta1/--theta2/--r1/--r2/--orders/ --tiers/--tau-cluster/--latitudes` affect only rendering; `measure_morphoeval()` (971) hard-codes the defaults and `--latitudes` silently appends Meise. Thread the parsed arguments into `measure_morphoeval()` and make the Meise append explicit (warn or require).",
+    "1976-honda-dichotomous-tree-branching.py:1507 and 1742-1838 — the growth GIF is unchanged Pass 2 content and the self-test runs the full latitude sweep twice (13 s). Add the tier-spacing / shadow mechanism to the primary GIF (or cross-link the solar GIF from the comparison figure) and cache the sweep between the two determinism calls.",
+    "datasets/dichotomous_tree_branching/solar_citations_pass3.bib and 1976-honda-dichotomous-tree-branching.py:91-100 — the Pass 3 BibTeX file is not SHA-256-pinned and the pinning is split across `EXPECTED_SHA256` and `EXPECTED_SHA256_PASS3`. Merge the bib entries into a single pinned citations file (re-pin) and collapse the two checksum tables; verify the three new DOIs online when network is available."
+  ],
+  "pass3_artifacts": {
+    "modified": [
+      "1976-honda-dichotomous-tree-branching.py",
+      "morphoeval/lean/loops/Loop_051_dichotomous_tree_branching.lean",
+      "morphoeval/math_kg_loops/honda-dichotomous-tree-branching.yaml",
+      "datasets/dichotomous_tree_branching/README.md",
+      "morphoeval/cloud/dispatches/slot-051.json",
+      "docs/media/dichotomous_tree_branching_comparison.png",
+      "docs/media/dichotomous_tree_branching_growth.gif"
+    ],
+    "created": [
+      "datasets/dichotomous_tree_branching/solar_tier_spacing_reference.json",
+      "datasets/dichotomous_tree_branching/solar_citations_pass3.bib",
+      "docs/media/dichotomous_tree_branching_solar_tier_spacing.png",
+      "docs/media/dichotomous_tree_branching_solar_shadows.gif",
+      "docs/media/dichotomous_tree_branching_telemetry_pass3.png",
+      "morphoeval/audits/2026-10-19-dichotomous-tree-branching-audit-v3.yaml",
+      "morphoeval/audits/2026-10-19-dichotomous-tree-branching-audit-v3.measurements.yaml",
+      "morphoeval/kg/2026-10-19-dichotomous-tree-branching-audit-v3/ (10 nanopubs + signed/ + REPORT.md + .ttl + published.json)",
+      "morphoeval/runs/2026-10-19-dichotomous-tree-branching-loop-pass3.{yaml,csv,md,trig,events.jsonl,ledger.jsonl}"
+    ]
+  },
+  "pass3_delta_vs_pass2": -2.9
 }

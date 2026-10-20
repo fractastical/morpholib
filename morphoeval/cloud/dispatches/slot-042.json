@@ -25,5 +25,74 @@
   "slot_index": 42,
   "slug": "glazier-graner-potts",
   "target_script": "1992-graner-cellular-potts-cell-sorting.py",
-  "delta": 34.3
+  "delta": 34.3,
+  "pass3_run_id": "2026-10-19-cellular-potts-cell-sorting-loop-pass3",
+  "pass3_audit_id": "2026-10-19-cellular-potts-cell-sorting-audit-v3",
+  "audit_v3": "morphoeval/audits/2026-10-19-cellular-potts-cell-sorting-audit-v3.yaml",
+  "pass3_score": 84.5,
+  "pass3_score_delta_vs_pass2": -6.6,
+  "pass3_dims": {
+    "model-fidelity": 76,
+    "specimen-match": 84,
+    "parameter-expressivity": 91,
+    "morphometric-validation": 85,
+    "source-traceability": 87,
+    "code-traceability": 83,
+    "repro-package": 93
+  },
+  "pass2_dims": {
+    "model-fidelity": 94,
+    "specimen-match": 89,
+    "parameter-expressivity": 90,
+    "morphometric-validation": 90,
+    "source-traceability": 93,
+    "code-traceability": 92,
+    "repro-package": 92
+  },
+  "pass3_completed_at": "2026-10-20T16:02:30Z",
+  "pass3_checkpoint_commit": "654cd6fc",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_quick_gate_score": 100,
+  "pass3_self_test": "12/12 checks pass (radial_sep 0.332, T0 pin 0.016, fig3_r 0.972, RMS(p-P_t) 14.05 -> 1.73 at lam_P=2, frag 0.217 -> 0.083, P_t tracking r 0.9999)",
+  "pass3_remediation_closed": [
+    "Extend the 2D Cellular Potts Hamiltonian to include a perimeter elasticity constraint lambda_P * (p_sigma - P_t)^2 for explicit cortical tension modeling. -> Ouchi et al. (2003) Eq. 2 term in simulate_cpm_regime (perimeter_energy_delta L199-206; dp_old/dp_new parity bookkeeping + acceptance L560-588), compute_cell_perimeters L181-196, default_target_perimeter L175-178; lambda_P/P_t sweeps L698-777; Panels C1-C5; lambda_P = 0 reproduces the Pass 2 lattice bit-for-bit, bookkeeping drift 0."
+  ],
+  "pass3_remediation_open": [
+    "L467-500: remove or flag-gate the whole-cell cell_type identity-swap move (8/MCS, Metropolis at 2.5 T) — not part of the Graner-Glazier single-site formalism; assert swap-free sorting in the self-test.",
+    "L469, 494-497, 932-936: delete the uncited 1.8 * x lateral bias that manufactures the 'partial sorting lens'; A2 is a concentric core-shell (Delta_r +0.352 > A1), not a lens doublet; seed the lens regime as apposed half-aggregates and add a lens morphometric.",
+    "L369, 530-531: cells at 75.6 % of V_t (mean v 12.1/16, 3 cells on the hard vols <= 6 floor) — raise lambda or rescale J, remove the extra-Hamiltonian floor, add a lambda sweep and a mean_vol/V_t measurement with reference 1.0.",
+    "L451-454: delete or use the dead depinning_prob and rewrite the §III.B pinning comment to match the acceptance rule at L575-579.",
+    "reference.json L169-180 + script L868-878: PRL Fig. 3 empirical_mcs_checkpoints (0-150 MCS) have no digitisation provenance (the figure spans ~1e4 MCS); digitise properly or relabel as a synthetic target and drop the 'Fig. 3 checkpoint concordance' claim.",
+    "L807-831: cite or derive the specimen segmentation constants (0.35 bleed, 82nd/42nd percentiles, r_roi = 88 px, crop boxes) and add a threshold-sensitivity self-test for the r = 0.961 profile match.",
+    "L926-961: canonical A/B panels still rendered at lambda_P = 0 with 21.7 % fragmented cells; after fixing the volume constraint, run the lambda_P sweep across all four regimes and report its effect on the B2 regime boundaries."
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_042.cpm_square_block_target_perimeter",
+    "MathOfBiology.Loop_042.cpm_perimeter_elasticity_restoring_identity",
+    "MathOfBiology.Loop_042.cpm_cortical_tension_monotone_above_target"
+  ],
+  "pass3_lean_theorems_total": 6,
+  "pass3_lean_verified": true,
+  "pass3_artifacts": [
+    "1992-graner-cellular-potts-cell-sorting.py",
+    "morphoeval/lean/loops/Loop_042_cellular_potts_cell_sorting.lean",
+    "morphoeval/math_kg_loops/graner-cellular-potts-cell-sorting.yaml",
+    "datasets/cellular_potts_cell_sorting/cellular_potts_cell_sorting_reference.json",
+    "datasets/cellular_potts_cell_sorting/paper_citations.bib",
+    "datasets/cellular_potts_cell_sorting/README.md",
+    "docs/media/cellular_potts_cell_sorting_comparison.png",
+    "docs/media/cellular_potts_cell_sorting_growth.gif",
+    "docs/media/cellular_potts_cell_sorting_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-cellular-potts-cell-sorting-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-cellular-potts-cell-sorting-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-cellular-potts-cell-sorting-audit-v3/",
+    "morphoeval/runs/2026-10-19-cellular-potts-cell-sorting-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-cellular-potts-cell-sorting-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-cellular-potts-cell-sorting-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-cellular-potts-cell-sorting-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-cellular-potts-cell-sorting-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-cellular-potts-cell-sorting-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-042.json"
+  ]
 }

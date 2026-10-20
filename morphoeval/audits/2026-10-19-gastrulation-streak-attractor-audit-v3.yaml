@@ -1,0 +1,375 @@
+# MorphoEval audit — Saadaoui et al. (2020), Serra et al. (2023) & Rozbicki et al. (2015) Avian Gastrulation Tensile Ring, Polonaise Twin-Vortex Flow & Primitive Streak Attractor, 2026-10-20 (v3)
+#
+# Pass 3 (remediation round) re-score of `2022-serra-gastrulation-streak-attractor.py` (Slot 050) after Phase A of
+# `2026-10-19-gastrulation-streak-attractor-loop-pass3` closed both Pass 2 remediation items, superseding
+# `2026-10-19-gastrulation-streak-attractor-audit-v2` (92.6).
+#
+# What Pass 3 changed:
+#   1. Explicit Wnt8c / Nodal / FGF8 reaction-diffusion cascade (implicit spectral diffusion-decay, semi-Lagrangian
+#      advection by the physical flow) upstream of a pMLC activation field P = rho_ROCK H(a_ALK N)(0.35 + 0.65 H(a_FGFR F))
+#      that sources ring myosin; SU5402 / SB431542 / Y-27632 / ectopic Vg1 are now receptor-level perturbations.
+#   2. Reduced 2.5D apical-basal column model per grid point (apical area a, basal area b, constant-volume height
+#      h = 2h0/(a+b), wedging index, basement-membrane integrity B, ingression rate I) whose I feeds an irrotational
+#      planar sink (nabla.v = -I) that replaces the Pass 2 prescribed Gaussian midline sink. Not a 3D FEM.
+#   3. Transport switched from CFL-violating forward Euler to semi-Lagrangian in physical units; exported velocities
+#      are the emergent flow in um/min under ONE global calibration constant fixed on wild type; the 15x15 morphospace
+#      now runs 225 coupled simulations; the GIF shows recorded simulated states.
+#   4. Two new Lean 4 theorems (ligand_cascade_posterior_myosin_asymmetry, apical_basal_wedging_ingression_sink),
+#      a SHA-256-pinned ligand_emt_reference.json, 7 new field-derived measurements (14 total), 4 new bib entries.
+#
+# Why the score goes DOWN (92.6 -> 67.3): the remediation exposed that the Pass 2 headline numbers were circular.
+# The four readouts the v2 audit scored (AP/ML 4.25, peak speed 2.40 um/min, 5-regime r = 1.0000, SU5402 AP/ML 1.00)
+# are piecewise-analytic lookup functions of the regime parameters (lines 812-843) and reproduce the reference table
+# by construction; the Polonaise flow is ~82 % prescribed streamfunction (lines 649-667, STOKES_ACTIVE_WEIGHT = 0.18);
+# and the honest field-derived EMT zone is a posterior crescent (WT AP/ML 0.59 vs 4.25) whose 5-regime aspect rank
+# correlation with the reference is -0.20. The Pass 3 code reports all of this honestly (`measured_*` keys, NOTE
+# flags, Panel I), which is credited; the scores below are for what the model actually does, not for what the
+# retained lookups print. Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale.
+# Line numbers refer to the working-tree files at checkpoint 028758bc plus the uncommitted Pass 3 edits
+# (script 1855 lines, Lean file 325 lines).
+
+audit:
+  id: 2026-10-19-gastrulation-streak-attractor-audit-v3
+  supersedes_audit_id: 2026-10-19-gastrulation-streak-attractor-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (primary, Pass 3 Phase B assessor) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 028758bc
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) re-score of `2022-serra-gastrulation-streak-attractor.py` after Phase A of the instrumented
+      remediation loop `2026-10-19-gastrulation-streak-attractor-loop-pass3` (steps 5-6: remediation + output),
+      evaluated against the uncommitted working tree on top of 028758bc. `--self-test` passes in 1.8 s with 14
+      measurements; `lean morphoeval/lean/loops/Loop_050_gastrulation_streak_attractor.lean` exits 0 with 0 sorrys
+      (5 theorems); default render 19.4 s produces the 9-panel PNG and 24-frame GIF.
+
+references:
+  saadaoui2020:
+    title: "A tensile ring drives tissue flows to shape the gastrulating amniote embryo"
+    authors: "Saadaoui M, Rocancourt D, Roussel J, Corson F, Gros J"
+    venue: "Science 367(6476):453-458 (2020)"
+    doi: 10.1126/science.aaw1965
+  serra2023:
+    title: "A mechanochemical model recapitulates distinct vertebrate gastrulation modes"
+    authors: "Serra M, Serrano Nájera G, Chuai M, Plum AM, Santhosh S, Spurlin JW, Saadaoui M, Gros J, Weijer CJ, Mahadevan L"
+    venue: "Nature Methods / Science Advances 20:1739-1748 (2023) — venue/DOI inherited from v2 and NOT verified offline; the assessor believes this paper is Science Advances 9(49):eadh8152, 10.1126/sciadv.adh8152, and the loop prompt lists 10.1038/s41592-023-01850-5; flagged as a Pass 4 item"
+    doi: 10.1038/s41592-023-02009-y
+  rozbicki2015:
+    title: "Myosin-II-mediated cell shape changes and cell intercalation contribute to primitive streak formation"
+    authors: "Rozbicki E, Chuai M, Karjalainen AI, Song F, Sang HM, Martin R, Knölker HJ, MacDonald MP, Weijer CJ"
+    venue: "Nature Cell Biology 17(4):397-408 (2015)"
+    doi: 10.1038/ncb3138
+  vasiev2010:
+    title: "Modeling gastrulation in the chick embryo: formation of the primitive streak"
+    authors: "Vasiev B, Balter A, Chaplain M, Glazier JA, Weijer CJ"
+    venue: "PLoS ONE 5:e10571 (2010)"
+    doi: 10.1371/journal.pone.0010571
+  yu2009:
+    title: "Fgf8 morphogen gradient forms by a source-sink mechanism with freely diffusing molecules"
+    authors: "Yu SR, Burkhardt M, Nowak M, Ries J, Petrášek Z, Scholpp S, Schwille P, Brand M"
+    venue: "Nature 461:533-536 (2009) — DOI recalled from memory, not verified offline"
+    doi: 10.1038/nature08391
+  muller2012:
+    title: "Differential diffusivity of Nodal and Lefty underlies a reaction-diffusion patterning system"
+    authors: "Müller P, Rogers KW, Jordan BM, Lee JS, Robson D, Ramanathan S, Schier AF"
+    venue: "Science 336:721-724 (2012) — DOI recalled from memory, not verified offline"
+    doi: 10.1126/science.1221920
+  nakaya2008:
+    title: "RhoA and microtubule dynamics control cell-basement membrane interaction in EMT during gastrulation"
+    authors: "Nakaya Y, Sukowati EW, Wu Y, Sheng G"
+    venue: "Nature Cell Biology 10:765-775 (2008) — DOI recalled from memory, not verified offline"
+    doi: 10.1038/ncb1739
+  voiculescu2014:
+    title: "Local cell interactions and self-amplifying individual cell ingression drive amniote gastrulation"
+    authors: "Voiculescu O, Bodenstein L, Lau IJ, Stern CD"
+    venue: "eLife 3:e01817 (2014) — DOI recalled from memory, not verified offline"
+    doi: 10.7554/eLife.01817
+
+simulations:
+  - id: serra-gastrulation-streak-attractor
+    name: "Saadaoui et al. (2020), Serra et al. (2023) & Rozbicki et al. (2015) avian gastrulation tensile ring, Polonaise twin-vortex flow & primitive streak attractor"
+    organism: "Gallus gallus (chick epiblast disc Stage EGK XII to HH3+ primitive streak formation)"
+    script: 2022-serra-gastrulation-streak-attractor.py
+    output: docs/media/gastrulation_streak_attractor_comparison.png
+    extra_outputs:
+      - docs/media/gastrulation_streak_attractor_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-gastrulation-streak-attractor-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Saadaoui, Rocancourt, Roussel, Corson & Gros (2020) Science 367:453-458 viscous epiblast Stokes model eta*nabla^2 v + eta_b*nabla(nabla.v) = -nabla.(m Q) showing that a posterior-graded marginal Myosin-II tensile ring m(theta) = m_0 + delta_m cos(theta) and apical mesendoderm ingression drive counter-rotating Polonaise twin vortices and midline primitive streak elongation"
+        - "Serra et al. (2023) mechanochemical active nematic feedback (Dm/Dt and DQ_{ij}/Dt) and Finite-Time Lyapunov Exponent (FTLE) Dynamic Morphogenetic Skeleton demonstrating transition from a wild-type linear streak to a circular ring under FGF receptor inhibition (SU5402) or twin streaks under ectopic Vg1/Wnt induction"
+        - "Yu et al. (2009) Fgf8 source-sink gradient with D = 53 um^2/s; Muller et al. (2012) Nodal D = 3.2 um^2/s, t1/2 = 95 min; Nakaya et al. (2008) streak-restricted basement-membrane breakdown during EMT; Voiculescu et al. (2014) SB431542 Nodal/ALK block abolishes ingression"
+      reconstructed_in_script:
+        - "64x64 coupled 2D spectral viscous epiblast Stokes solver (Green's function L2 error = 5.97e-16) whose solution enters the planar flow with weight STOKES_ACTIVE_WEIGHT = 0.18 on top of a prescribed dipole + quadrupole Polonaise streamfunction and isotropic ring contraction, plus an irrotational sink driven by the EMT column ingression rate; active nematic Myosin-II cable advection-alignment PDE; Cauchy-Green FTLE ridge integration; semi-Lagrangian transport in physical units"
+        - "Explicit Wnt8c (posterior marginal source) -> committed streak-cell density -> Nodal (autoactivating) -> FGF8 reaction-diffusion cascade with implicit spectral diffusion-decay and Hill-type pMLC activation P = rho_ROCK H(a_ALK N)(0.35 + 0.65 H(a_FGFR F)) sourcing ring myosin; decay lengths verified against sqrt(D/k) (FGF8 0.8 %, Nodal 1.4 %); receptor-level SU5402 (a_FGFR = 0), SB431542 (a_ALK = 0), Y-27632 (rho_ROCK), ectopic Vg1/Wnt (anterior source) regimes"
+        - "Reduced 2.5D apical-basal column per grid point: apical area a (ROCK/pMLC-driven constriction), basal area b = 1 + chi_b (1 - a) B, constant-volume height h = 2 h0/(a + b), wedging index (b - a)/(b + a), basement-membrane integrity B decaying under Nodal/FGF gating, ingression rate I = k_ing Wdg (1 - B) feeding the planar sink (nabla.v = -I); field-derived readouts: streak thickening 1.26x, BM-broken area fraction 0.17, ingressed fraction 0.20, EMT-zone AP/ML 0.59, emergent ring asymmetry 0.63, peak speed 2.14 um/min (WT)"
+        - "15x15 (delta_m x beta_m) morphospace from 225 coupled 40x40 simulations; automated CV segmentation of HH1 Koller's sickle, HH2 condensation, HH3+ streak, area pellucida/opaca ratio (0.6250) and PIV bilateral symmetry (0.9705) on chick_primitive_streak_specimen.jpg"
+      transfer_boundary:
+        - "2D planar circular epiblast continuum sheet of radius R = 1.15 mm with a single global velocity calibration constant U_CAL_MM_PER_H = 0.061 fixed on the wild-type regime (so the WT peak speed is calibrated, the other four regimes' speeds are emergent: Spearman rho = 0.90, Pearson r = 0.927 vs the Saadaoui/Serra table)"
+        - "The coupled model forms a thickened, ingressing posterior crescent and does NOT elongate it into a midline streak within 8 h (WT EMT-zone AP/ML 0.59 vs reference 4.25; 5-regime aspect Spearman rho = -0.20): mediolateral intercalation (Rozbicki 2015) is absent and the active-nematic Stokes contribution is down-weighted to 0.18 to keep speeds physical"
+        - "The four Pass 2 readouts streak_ap_ml_aspect_ratio / streak_length_mm / peak_polonaise_speed_um_min / ftle_ridge_anisotropy are retained as prescribed piecewise-analytic lookups of the regime parameters and reproduce the reference table by construction (r = 1); they are flagged in the code and are NOT evidence of model performance"
+        - "Ligand kinetics for Wnt8c (D, half-life), FGF8 half-life, the column parameters (k_con, m_c, k_rel, chi_b, k_bm, k_ing, a_min, h0 = 25 um), source amplitudes and Hill constants are ASSUMED or DERIVED (marked as such in ligand_emt_reference.json); reference values 1.33 (thickening) and 0.08 (BM-broken fraction) are derived, not measured"
+      does_not_claim:
+        - "3D finite-element epithelial mechanics, out-of-plane bending, bottle-cell mechanics or individual mesenchymal migration after ingression (the column model is a per-point 2.5D reduction)"
+        - "Mediolateral cell intercalation or any mechanism that converts the posterior crescent into a 4:1 midline streak"
+        - "Independent verification of the Serra et al. (2023) venue/DOI or of the four new ligand/EMT DOIs (all recorded as unverified offline)"
+    source_refs:
+      - saadaoui2020
+      - serra2023
+      - rozbicki2015
+      - vasiev2010
+      - yu2009
+      - muller2012
+      - nakaya2008
+      - voiculescu2014
+    summary: >-
+      Pass 3 re-score of `2022-serra-gastrulation-streak-attractor.py` (67.3/100, down from 92.6 in Pass 2). Both
+      Pass 2 remediation items were closed in code: an explicit Wnt8c -> Nodal -> FGF8 reaction-diffusion cascade with
+      implicit spectral diffusion-decay and semi-Lagrangian advection now sources ring myosin through a pMLC activation
+      field (`step_ligand_fields`, `myosin_phosphorylation_field`), with decay lengths verified against
+      $\lambda = \sqrt{D/k}$ (FGF8 0.8 %, Nodal 1.4 %), and a reduced 2.5D apical-basal column model
+      (`step_apical_basal_column`: apical constriction, basal expansion, constant-volume thickening
+      $h = 2h_0/(a+b)$, basement-membrane decay, ingression rate $I$) feeds an irrotational sink
+      $\nabla\cdot\mathbf{v} = -I$ into the planar flow (`solve_ingression_sink_velocity`). Perturbations are now
+      receptor-level: SU5402 gives a uniform ring (asymmetry 0.00), SB431542 and Y-27632 give zero ingression, ectopic
+      Vg1 gives a bipolar ring, and the emergent 5-regime peak speeds rank-correlate with Saadaoui/Serra at
+      $\rho = 0.90$ under one WT-fixed calibration constant. Five Lean 4 theorems compile with 0 sorrys. The
+      remediation, however, exposed that the v2 headline numbers (AP/ML 4.25, 2.40 um/min, $r = 1.0000$, SU5402 1.00)
+      are prescribed lookups of the regime parameters, that about 82 % of the Polonaise flow is a hand-written
+      streamfunction rather than the Stokes solution, and that the honest field-derived EMT zone is a posterior
+      crescent (WT AP/ML 0.59 vs 4.25; 5-regime aspect $\rho = -0.20$) because mediolateral intercalation is absent.
+      The code now discloses all of this (NOTE flags, `measured_*` keys, Panel I), which is credited; the scores
+      reflect what the coupled model actually produces.
+    scores:
+      model-fidelity:
+        value: 68
+        rationale: >-
+          Credited: the spectral Stokes operator eta lap v + eta_b grad(div v) = -div(m Q) is correct (Green's function
+          error 5.97e-16); the active nematic Dm/Dt, DQ/Dt equations with strain-rate alignment and corotation are
+          implemented; transport is now unconditionally stable semi-Lagrangian in mm/h (+); the new Wnt8c/Nodal/FGF8
+          cascade uses implicit spectral diffusion-decay with sourced diffusivities and verified decay lengths (+); the
+          column model gives a constant-volume wedging/thickening law with ROCK-, Nodal- and FGF-gated BM breakdown
+          whose ingression rate closes the loop into the planar divergence (+); the ligand->pMLC->ring asymmetry
+          chain and the wedging->sink chain are each backed by a Lean theorem. Deductions: the planar flow is dominated
+          by a prescribed dipole + quadrupole streamfunction and an isotropic ring-contraction term, with the Stokes
+          solution entering at weight 0.18 (-12) — the Green's-function test validates the solver, not the model flow,
+          and Theorem 1's circulation conservation is a symmetry of the prescribed psi; the coupled model does not form
+          a streak (WT EMT-zone AP/ML 0.59 vs 4.25) because mediolateral intercalation is absent and the nematic
+          feedback is too weak to elongate the crescent at physical speeds (-10); the four prescribed lookup readouts
+          are still computed and exported alongside the honest ones (-4); ALPHA_M_HR is set to 0.10 against the
+          vendored 0.45 without changing the JSON (-3); the column model is a per-point 2.5D reduction, not the
+          requested 3D coupling, and the ligand fields are clipped by soft_wall each substep as a crude absorbing
+          boundary while Wnt8c's 72 um decay length is below the 40 um grid's resolving power (-3).
+        evidence:
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [170, 247], note: "Spectral viscous Stokes solver and manufactured Green's function verification (L2 rel. error 5.97e-16) — validates the solver", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [288, 318], note: "ligand_kinetic_parameters: D and half-lives from the vendored JSON converted to mm^2/h and h^-1; source amplitudes s_W/s_N/s_F, k_ind, c_max chosen in code (unsourced)", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [326, 356], note: "Semi-Lagrangian advection (replaces CFL-violating forward Euler) and implicit spectral diffusion-decay step", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [359, 422], note: "step_ligand_fields (W -> c_ind -> N -> F cascade, advected by the physical flow) and myosin_phosphorylation_field P = rho_ROCK H(a_ALK N)(0.35 + 0.65 H(a_FGFR F))", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [425, 447], note: "verify_ligand_decay_length: numerical vs analytic sqrt(D/k) (FGF8 0.8 %, Nodal 1.4 %)", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [468, 522], note: "step_apical_basal_column (a, b, h = 2h0/(a+b), wedging, B decay, ingression rate I) and solve_ingression_sink_velocity (lap phi = I, v = -grad phi)", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [649, 667], note: "Prescribed psi_dip / psi_quad streamfunction and iso_ring_v* dominate the planar velocity; Stokes solution enters with STOKES_ACTIVE_WEIGHT = 0.18; EMT sink added in physical units", supports: false}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [697, 712], note: "pMLC source phos_m into Dm/Dt and per-step column update coupling N, F, m, receptor activities", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [812, 843], note: "Retained piecewise-analytic lookup for streak_ap_ml / streak_len / peak_speed / ftle_aniso — reproduces the reference table by construction (flagged in NOTE)", supports: false}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [114, 125], note: "U_CAL_MM_PER_H fixed on WT; ALPHA_M_HR = 0.10 deviates from the vendored 0.45; STOKES_ACTIVE_WEIGHT, GAMMA_Q_HR, D_M, D_Q unsourced", supports: false}
+          - {file: morphoeval/lean/loops/Loop_050_gastrulation_streak_attractor.lean, lines: [225, 320], note: "Theorems ligand_cascade_posterior_myosin_asymmetry and apical_basal_wedging_ingression_sink (0 sorrys, lean exits 0)", supports: true}
+      specimen-match:
+        value: 58
+        rationale: >-
+          Credited: the vendored CC BY Vasiev et al. (2010) whole-blastoderm montage is SHA-256-pinned, segmented
+          automatically (HH1 sickle, HH2 condensation, HH3+ streak, area pellucida/opaca ratio 0.6250 vs 0.6389,
+          PIV bilateral symmetry 0.9705) and shown in Panels E/F of the 9-panel PNG; the new GIF shows recorded
+          simulated states (myosin + flow + EMT contour, Nodal/FGF8, SU5402 ring) instead of interpolating a
+          hand-drawn HH1 crescent into a prescribed HH3 ridge (+). Deductions: the simulated wild-type EMT zone
+          is a posterior crescent, not the elongated midline streak visible in the specimen's HH3+ panel, so the
+          side-by-side does not match on the one feature the loop is about (-18); the specimen is an in-situ
+          hybridisation micrograph montage from Vasiev et al. (2010), not a Saadaoui/Serra light-sheet or PIV
+          image, so the PIV-symmetry 'measurement' is made on a drawn schematic panel and its reference value
+          0.9705 is the script's own output (-8); r_ao_px = 128 is hard-coded, the docstring claims r_AP/r_AO =
+          0.6406 while the code measures 0.6250, and Panel E text hard-codes '61x183 px', '135x81 px', '5.00x'
+          rather than printing the measured bounding boxes (-6); the PNG is gitignored so the judged figure is
+          not tracked (-2).
+        evidence:
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [1058, 1153], note: "segment_chick_gastrulation_specimen: automated CV segmentation of the vendored Vasiev 2010 montage", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [1064, 1067], note: "Docstring claims r_AP/r_AO = 0.6406; the code measures 0.6250", supports: false}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [1117, 1120], note: "r_ao_px = 128 hard-coded rather than segmented", supports: false}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [1547, 1558], note: "Panel E annotations hard-code '61x183 px', '135x81 px', '5.00x AP/ML Elongation' instead of the measured bboxes", supports: false}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [775, 785], note: "Field-derived EMT-zone geometry: WT AP/ML 0.59 (posterior crescent) vs reference 4.25 — the simulated morphology does not match the HH3+ specimen panel", supports: false}
+          - {file: docs/media/gastrulation_streak_attractor_comparison.png, lines: [0, 0], note: "9-panel synthesis figure: Panels E/F show the segmented specimen; Panels B/H show the simulated posterior crescent EMT zone; Panel I shows measured vs reference statistics", supports: true}
+          - {file: docs/media/gastrulation_streak_attractor_growth.gif, lines: [0, 0], note: "24 frames of recorded simulated states (m + flow + EMT contour, Nodal/FGF8, SU5402 ring); no longer a hand-drawn interpolation", supports: true}
+      parameter-expressivity:
+        value: 74
+        rationale: >-
+          Credited: all 5 Saadaoui/Serra regimes are evaluated and the perturbations are now mechanistic at the
+          receptor level (SU5402 -> a_FGFR = 0, SB431542 -> a_ALK = 0, Y-27632 -> rho_ROCK, ectopic Vg1/Wnt ->
+          anterior Wnt source) read from the vendored JSON, with qualitatively correct emergent responses (SU5402
+          uniform ring asymmetry 0.00 vs WT 0.63; Vg1 bipolar ring ~ -0.05; SB431542 and Y-27632 ingression 0;
+          emergent speed rank order rho = 0.90) (+); the 15x15 (delta_m x beta_m) morphospace now runs 225 coupled
+          simulations instead of evaluating the analytic lookup (+). Deductions: the field-derived EMT-zone aspect
+          ratio does not order the regimes as the reference does (Spearman rho = -0.20), so the parameter axis that
+          the morphospace claims to span (streak elongation) is not actually expressed by the model (-14); the
+          regime table still carries the prescribed lookup values and the circular pearson_r_aspect/speed statistics
+          next to the honest ones (-6); only one CLI flag (--self-test) exists, so no regime, grid or parameter can
+          be selected from the command line (-6).
+        evidence:
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [906, 1007], note: "evaluate_all_regimes: 5 regimes with receptor activities from the JSON; measured_* and circular pearson_r_* statistics side by side", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [972, 983], note: "NOTE: pearson_r_aspect / pearson_r_speed are circular (r = 1 by construction); Spearman rho on measured readouts is the honest statistic", supports: false}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [1010, 1053], note: "compute_parameter_morphospace: 225 coupled 40x40 simulations over delta_m x beta_m", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [1837, 1851], note: "CLI exposes only --self-test; no regime/parameter selection", supports: false}
+      morphometric-validation:
+        value: 62
+        rationale: >-
+          Credited: measure_morphoeval() now returns 14 measurements, of which the 7 new Pass 3 ones are
+          field-derived and honest — FGF8 decay length 373.9 vs 371.0 um analytic, WT emergent ring asymmetry
+          0.63 vs 0.74 HH1 initial, 5-regime emergent speed Spearman rho 0.90, 5-regime EMT-zone aspect Spearman
+          rho -0.20 (reported as a failure), WT thickening 1.26 vs 1.33, SB431542 ingressed fraction 0.0 vs 0.0,
+          WT BM-broken area fraction 0.17 vs 0.08 — and the figure's Panel I prints them (+). Deductions: four of the
+          seven retained Pass 2 measurements ('wild-type HH3 primitive streak AP/ML 4.25', 'peak speed 2.40', '5-regime
+          r = 1.0000', 'SU5402 AP/ML 1.00') are lookups that reproduce their own reference values and are still
+          emitted as if they were model outputs (-14); the thickening (1.33) and BM-fraction (0.08) reference values
+          are DERIVED in the JSON, not measured chick values, and the BM-fraction measurement misses its target by
+          2x (-6); the PIV symmetry reference 0.9705 is the script's own output and the 5.00x specimen fold change
+          is partly hard-coded in the figure (-6); the WT peak speed (2.14 um/min) is calibrated by construction via
+          U_CAL_MM_PER_H and so is not an independent validation (-4); only n = 5 regimes enter the rank
+          correlations, so rho = 0.90 carries little statistical weight (-3).
+        evidence:
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [1155, 1160], note: "measure_morphoeval docstring: 14 measurements = 7 Pass 2 + 7 Pass 3 field-derived", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [1161, 1294], note: "7 Pass 3 field-derived measurements incl. the honest negative result (EMT-zone aspect Spearman rho = -0.20 vs 1)", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [1296, 1365], note: "Retained Pass 2 measurements 1-4 built on the prescribed lookup readouts (AP/ML 4.25, speed 2.40, r = 1.0000, SU5402 1.00) — circular, non-evidence", supports: false}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [1399, 1411], note: "Specimen PIV symmetry measurement with reference_value 0.9705 equal to the script's own output", supports: false}
+          - {file: datasets/gastrulation_streak_attractor/ligand_emt_reference.json, lines: [117, 139], note: "h0 ASSUMED; thickening ratio 1.33 and BM-broken fraction 0.08 DERIVED, not measured", supports: false}
+      source-traceability:
+        value: 70
+        rationale: >-
+          Credited: datasets/gastrulation_streak_attractor/ now carries 4 SHA-256-pinned files (the new
+          ligand_emt_reference.json included) verified fail-closed at every run; the README gained a Pass 3 section
+          that lists every ASSUMED/DERIVED constant; paper_citations.bib grew to 8 entries; the ligand diffusivities
+          D_FGF8 = 53 um^2/s (Yu 2009) and D_Nodal = 3.2 um^2/s, t1/2 = 95 min (Muller 2012) are the published
+          values. Deductions: the seed-paper citation 'Serra et al. (2023) Nature Methods / Science Advances
+          20:1739-1748, DOI 10.1038/s41592-023-02009-y' (docstring, bib, JSON, README, this audit) is internally
+          inconsistent and almost certainly wrong — the assessor believes the paper is Science Advances
+          9(49):eadh8152 — and could not be verified offline (-10); the four new DOIs were recalled from memory and
+          are marked unverified (-5); Wnt8c D and half-life, FGF8 half-life, h0, all column kinetics, the source
+          amplitudes and Hill constants are ASSUMED, and ALPHA_M_HR = 0.10 in code contradicts the vendored
+          alpha_m = 0.45 without a JSON change (-10); U_CAL_MM_PER_H, STOKES_ACTIVE_WEIGHT, GAMMA_Q_HR, D_M, D_Q
+          have no citation (-5).
+        evidence:
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [127, 159], note: "EXPECTED_SHA256 for 4 dataset files incl. ligand_emt_reference.json; verify_dataset_integrity fail-closed", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [11, 14], note: "Serra et al. (2023) cited as 'Nature Methods / Science Advances 20:1739-1748, DOI 10.1038/s41592-023-02009-y' — inconsistent venue, DOI unverified and likely wrong", supports: false}
+          - {file: datasets/gastrulation_streak_attractor/ligand_emt_reference.json, lines: [1, 139], note: "Pass 3 ligand/EMT reference table with per-parameter source fields; ASSUMED at lines 53, 59, 61, 117 and DERIVED at line 130", supports: true}
+          - {file: datasets/gastrulation_streak_attractor/paper_citations.bib, lines: [46, 89], note: "4 new entries (yu2009, muller2012, nakaya2008, voiculescu2014); DOIs recalled from memory, unverified", supports: true}
+          - {file: datasets/gastrulation_streak_attractor/README.md, lines: [32, 42], note: "Pass 3 section documenting the new table, its sources and the ASSUMED/DERIVED flags", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [116, 118], note: "Comment says the vendored alpha_m = 0.45 is used; code sets ALPHA_M_HR = 0.10", supports: false}
+      code-traceability:
+        value: 74
+        rationale: >-
+          Credited: each new modelling function carries a docstring stating its equation and biological reading
+          (ligand cascade, pMLC activation, column wedging, sink), the circular lookups and circular correlations
+          are flagged with NOTE comments at the point of computation, the math KG YAML registers the two new laws
+          with Lean declarations and current code loci and carries an audit_note on law 3, and 5 Lean theorems
+          compile with 0 sorrys. Deductions: run_self_test's docstring still says 'Pass 2 verification suite ...
+          all 3 Lean 4 theorem invariants' while the suite tests five (-4); the retained Pass 2 measurement names
+          ('wild-type HH3 primitive streak AP/ML aspect ratio', '5-regime ... Pearson correlation r') describe
+          lookups as if they were model outputs (-6); the segmentation docstring's 0.6406 contradicts the code
+          (-3); OUTPUT_LIGAND_PNG is declared but never rendered (-2); the module header still cites the
+          unverified Serra venue/DOI and the Lean theorem 1 (circulation conservation) is traced to a prescribed
+          psi rather than to a solved field, which the YAML audit_note only partly says (-3); Pass 2's Lean
+          theorem 3 constants aspect100_*/v100_* are the reference table itself (-4, flagged in the YAML).
+        evidence:
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [1, 56], note: "Module docstring mapping equations to Saadaoui 2020, Serra 2023, Rozbicki 2015 and the Lean theorems; Serra venue/DOI unverified", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [812, 816], note: "NOTE flag at the lookup readouts stating they are prescribed and circular", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [1727, 1731], note: "run_self_test docstring stale: 'Pass 2 verification suite ... all 3 Lean 4 theorem invariants' (5 theorems exist)", supports: false}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [105, 107], note: "OUTPUT_LIGAND_PNG declared but never rendered (dead constant)", supports: false}
+          - {file: morphoeval/math_kg_loops/serra-gastrulation-streak-attractor.yaml, lines: [1, 107], note: "5 laws with Lean declarations and code loci; audit_note on law 3 flags the circular aspect100_*/v100_* constants", supports: true}
+          - {file: morphoeval/lean/loops/Loop_050_gastrulation_streak_attractor.lean, lines: [165, 198], note: "Theorem 3's aspect100_*/v100_* constants are the reference table itself", supports: false}
+      repro-package:
+        value: 80
+        rationale: >-
+          Credited: `--self-test` passes in 1.8 s and checks SHA-256 locks (4 files), Stokes Green's function error,
+          ligand decay lengths, emergent WT speed, measured speed/aspect rank statistics (including the negative
+          -0.20), ring asymmetry, thickening, ingression, SB431542/Y-27632 zero ingression, bitwise two-run
+          determinism (atol = 0) and specimen CV, and reports 14 measurements; the default run regenerates the
+          9-panel PNG and the 24-frame GIF in 19.4 s from recorded simulated states; no RNG is used; the pinned
+          environment (python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0) is the venv.
+          Deductions: the judged PNG is gitignored (`*.png`), so the rendered output is not tracked and the GIF is
+          the only versioned artefact (-6); the self-test asserts the circular r = 1 statistics alongside the honest
+          ones and so cannot fail on the model's real performance (-5); the CLI has a single flag and no --out/--gif/
+          --no-show options, and the 225-simulation morphospace runs unconditionally in the default render (-5);
+          the self-test docstring and the Pass 2 measurement names are stale (-4).
+        evidence:
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [1727, 1834], note: "run_self_test: SHA-256 locks, Green's function, decay lengths, emergent readouts, determinism atol = 0, specimen CV; status pass, 14 measurements", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [1837, 1855], note: "main: --self-test only; default run verifies digests, renders PNG + GIF and prints measurements", supports: true}
+          - {file: 2022-serra-gastrulation-streak-attractor.py, lines: [1650, 1721], note: "render_growth_gif: 24 frames from recorded simulated states", supports: true}
+          - {file: docs/media/gastrulation_streak_attractor_growth.gif, lines: [0, 0], note: "24-frame GIF (1350x430) of simulated WT myosin/flow/EMT, ligands and SU5402 ring; tracked in git", supports: true}
+          - {file: .gitignore, lines: [48, 48], note: "`*.png` ignored, so docs/media/gastrulation_streak_attractor_comparison.png is untracked", supports: false}
+    remediation:
+      - >-
+        2022-serra-gastrulation-streak-attractor.py:812-843, 1296-1366 and 972-981 — remove (or stop exporting as
+        measurements) the prescribed piecewise-analytic lookups streak_ap_ml_aspect_ratio / streak_length_mm /
+        peak_polonaise_speed_um_min / ftle_ridge_anisotropy and the circular pearson_r_aspect / pearson_r_speed; make
+        the four retained Pass 2 measurements and Panel C read the field-derived `measured_*` values so that the
+        measurement set can fail.
+      - >-
+        2022-serra-gastrulation-streak-attractor.py:649-667 and 119 — the planar flow is a prescribed dipole +
+        quadrupole streamfunction plus isotropic ring contraction with the Stokes solution down-weighted to
+        STOKES_ACTIVE_WEIGHT = 0.18; solve the flow from the active stress alone (weight 1) with a viscosity/friction
+        chosen so the WT speed is physical, and retire psi_dip / psi_quad / iso_ring_v* (Theorem 1 should then be
+        stated about the solved field).
+      - >-
+        2022-serra-gastrulation-streak-attractor.py:775-785 and 468-505 — the coupled model forms a posterior
+        crescent (WT EMT-zone AP/ML 0.59 vs 4.25; 5-regime aspect Spearman rho = -0.20) because mediolateral
+        intercalation (Rozbicki 2015) is absent; add a planar convergent-extension term (anisotropic active stress
+        along the nematic director or an intercalation flux in the committed-cell density) and show the EMT zone
+        elongating to AP/ML > 2 within 8 h at speeds < 3 um/min.
+      - >-
+        2022-serra-gastrulation-streak-attractor.py:11-14, datasets/gastrulation_streak_attractor/paper_citations.bib:12-21,
+        gastrulation_streak_attractor_reference.json and README.md — verify and correct the Serra et al. (2023)
+        venue/DOI ('Nature Methods / Science Advances 20:1739-1748, 10.1038/s41592-023-02009-y' is inconsistent;
+        likely Science Advances 9(49):eadh8152, 10.1126/sciadv.adh8152) and the four new DOIs (yu2009, muller2012,
+        nakaya2008, voiculescu2014) against the publishers.
+      - >-
+        2022-serra-gastrulation-streak-attractor.py:114-125 and datasets/gastrulation_streak_attractor/ligand_emt_reference.json:53-61,117-130
+        — source or replace the ASSUMED constants (Wnt8c D and half-life, FGF8 half-life, h0 = 25 um, k_con, m_c,
+        k_rel, chi_b, k_bm, k_ing, a_min, s_W/s_N/s_F, k_ind, c_max, Hill K's) and the DERIVED reference values 1.33
+        and 0.08 with measured chick values (e.g. Rozbicki 2015 cell-shape data, Nakaya 2008 laminin breakdown
+        extent); reconcile ALPHA_M_HR = 0.10 with the vendored alpha_m = 0.45 (update the JSON or the code, with a
+        stated reason).
+      - >-
+        2022-serra-gastrulation-streak-attractor.py:1064-1067, 1117-1120, 1406 and 1547-1558 — print the measured
+        bounding boxes and ratios in Panel E instead of the hard-coded '61x183 px' / '135x81 px' / '5.00x', segment
+        r_AO instead of fixing r_ao_px = 128, fix the docstring's 0.6406, and replace the self-referential PIV
+        symmetry reference 0.9705 with a published bilateral-symmetry value or drop the measurement.
+      - >-
+        2022-serra-gastrulation-streak-attractor.py:1727-1731, 105-107 and 1837-1851 — update the run_self_test
+        docstring ('Pass 2 ... 3 Lean 4 theorem invariants' -> 5 theorems), remove or render OUTPUT_LIGAND_PNG, and
+        add --out / --gif / --no-morphospace / --regime CLI flags so individual regimes and the 225-simulation
+        morphospace can be run selectively; track the comparison PNG (gitignore exception) or render to a tracked
+        path.
+      - >-
+        2022-serra-gastrulation-streak-attractor.py:359-407 — replace the per-substep soft_wall clipping of the
+        diffusible ligands with a proper absorbing / no-flux boundary at the disc edge and refine the grid (or
+        subcycle the Wnt8c field) so that the 72 um Wnt8c decay length is resolved by more than two cells.

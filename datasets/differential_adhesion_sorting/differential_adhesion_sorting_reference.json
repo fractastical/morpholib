@@ -28,6 +28,27 @@
         "id": "foty1996",
         "citation": "Foty RA, Pfleger CM, Forgacs G, Steinberg MS (1996). Surface tensions of embryonic tissues predict their mutual envelopment behavior. Development 122(5):1611-1620.",
         "doi": "10.1242/dev.122.5.1611"
+      },
+      {
+        "id": "mombach1995",
+        "citation": "Mombach JCM, Glazier JA, Raphael RC, Zajac M (1995). Quantitative comparison between differential adhesion models and cell sorting in the presence and absence of fluctuations. Physical Review Letters 75(11):2244-2247.",
+        "doi": "10.1103/PhysRevLett.75.2244",
+        "doi_verified_offline": false,
+        "added_in": "pass3"
+      },
+      {
+        "id": "nakajima2011",
+        "citation": "Nakajima A, Ishihara S (2011). Kinetics of the cellular Potts model revisited. New Journal of Physics 13:033035.",
+        "doi": "10.1088/1367-2630/13/3/033035",
+        "doi_verified_offline": false,
+        "added_in": "pass3"
+      },
+      {
+        "id": "chen2007",
+        "citation": "Chen N, Glazier JA, Izaguirre JA, Alber MS (2007). A parallel implementation of the Cellular Potts Model for simulation of cell-based morphogenesis. Computer Physics Communications 176(11-12):670-681.",
+        "doi": "10.1016/j.cpc.2007.03.007",
+        "doi_verified_offline": false,
+        "added_in": "pass3"
       }
     ],
     "specimens": {
@@ -211,5 +232,34 @@
       {"inner_B": "limb_bud_precartilage", "outer_A": "heart_ventricle", "sigma_B": 20.1, "sigma_A": 8.5, "delta_sigma": 11.6},
       {"inner_B": "heart_ventricle", "outer_A": "neural_retina", "sigma_B": 8.5, "sigma_A": 1.6, "delta_sigma": 6.9}
     ]
+  },
+  "sorting_kinetics_2d_vs_3d": {
+    "section": "Pass 3 remediation: 3D Cellular Potts spheroid (64^3) vs 2D lattice vs 2D equatorial cross-section",
+    "observable": "heterotypic boundary fraction f(t) = L_AB(t) / L_total(t), t in Monte Carlo Steps",
+    "fitted_laws": {
+      "logarithmic": "f = a + b ln(t + 1)  (Graner & Glazier 1992 PRL Fig. 3)",
+      "power_law": "f = c (t + 1)^(-alpha)  (log-log linear regression)"
+    },
+    "reference_exponents": {
+      "lifshitz_slyozov_wagner_diffusive_coarsening": {"alpha": 0.3333, "basis": "conserved order parameter: domain size R ~ t^(1/3) so L_AB/L ~ 1/R ~ t^(-1/3); dimension-independent upper bound used as reference"},
+      "logarithmic_frozen_limit": {"alpha": 0.0, "basis": "Graner & Glazier (1992) report logarithmically slow 2D sorting; alpha -> 0"},
+      "nakajima_ishihara_2011": {"alpha": null, "basis": "Re-examination of CPM sorting kinetics (power-law vs logarithmic); numerical exponent NOT transcribed here because the paper could not be consulted offline in Pass 3 — carried as a remediation item"}
+    },
+    "lattice_3d": {
+      "grid": [64, 64, 64],
+      "voxels": 262144,
+      "aggregate_initial_radius_voxels": 23.5,
+      "cell_block_voxels": [4, 4, 4],
+      "target_volume_V0": 64,
+      "lambda_volume": 2.0,
+      "temperature_T": 30.0,
+      "adhesion_neighbourhood": "26 (Moore)",
+      "boundary_counting_neighbourhood": "6 (faces)",
+      "update_scheme": "8-colour parity sublattice-parallel Metropolis (adhesion dH exact; volume dH at sub-sweep start), plus optional cell-level Kawasaki type swaps via inter-cell face-contact matrix",
+      "n_mcs_default": 200,
+      "lean_theorems": ["parity_sublattice_sites_not_moore_adjacent", "potts_volume_energy_single_voxel_increment", "potts_volume_increment_sign"]
+    },
+    "comparison_series": ["2D native (60^2, 68 cells, T=10, lambda=1.2, 150 MCS)", "3D full boundary (64^3)", "3D equatorial z-section (2D metrics on sigma[z=32])", "3D Kawasaki-swap ablation", "3D equal-adhesion control (J_AA=J_BB=J_AB=10)"],
+    "specimen_mapping": "cell_sorting_specimen.jpg is a confocal optical section of a 3D spheroid; the like-for-like simulated comparator is the 3D equatorial z-section, not the native 2D lattice"
   }
 }

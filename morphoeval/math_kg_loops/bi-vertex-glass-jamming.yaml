@@ -17,7 +17,7 @@ equations:
     variables: "a_i: normalized cell area A_i/A_0; p_i: normalized cell perimeter P_i/sqrt(A_0); p_0: target cell shape index P_0/sqrt(A_0); r: dimensionless perimeter-to-area elasticity ratio K_P/(K_A A_0)"
     role: "Governs mechanical force balance in confluent epithelial monolayers where competition between cortical contractility and cell-cell adhesion sets the target shape index p_0"
     source_citation: "Bi, Lopez, Schwarz & Manning (2015) Nature Physics 11(12):1074-1079 Eqs. (1)-(2)"
-    code_locus: "2015-bi-vertex-glass-jamming.py#L95-L170"
+    code_locus: "2015-bi-vertex-glass-jamming.py#L143-L233"
   - law_name: Regular Hexagon, Pentagon & Critical Unjamming Shape-Index Bounds (p_hex < p_5 < p_0^*)
     formula: "p_{\\text{hex}} = \\sqrt{8\\sqrt{3}} \\approx 3.7224 < p_5 = \\sqrt{20\\tan(\\pi/5)} \\approx 3.8119 < p_0^* \\approx 3.813;\\quad p_{\\text{hex}}^2 \\approx 13.856 < (p_0^*)^2 \\approx 14.539"
     lean_decl: MathOfBiology.Loop_045.p0_star_milli
@@ -34,7 +34,7 @@ equations:
     variables: "p_hex: regular hexagon shape index (2*sqrt(2*sqrt(3)) ≈ 3.7224); p_5: regular pentagon shape index (≈ 3.8119); p_0^*: disordered confluent rigidity transition point (≈ 3.813)"
     role: "Establishes the geometric bounds separating ordered hexagonal crystals (p_hex ≈ 3.722) from the disordered pentagonal/polygonal jamming threshold (p_0^* ≈ 3.813)"
     source_citation: "Bi, Lopez, Schwarz & Manning (2015) Nature Physics 11(12):1074-1079 pp. 1074-1076 & Fig. 2"
-    code_locus: "2015-bi-vertex-glass-jamming.py#L65-L185"
+    code_locus: "2015-bi-vertex-glass-jamming.py#L96-L233"
   - law_name: Zero-Temperature T1 Energy Barrier & Shear Modulus Vanishing Above Critical Shape Index p_0^*
     formula: "\\Delta e_{\\text{T1}}(p_0),\\ G(p_0) \\propto r(p_0^* - p_0)_+^\\beta = \\begin{cases} > 0 & p_0 < p_0^* \\approx 3.813 \\text{ (solid jammed)} \\\\ 0 & p_0 \\ge p_0^* \\approx 3.813 \\text{ (fluid unjammed)} \\end{cases}"
     lean_decl: MathOfBiology.Loop_045.t1_barrier_scaled
@@ -53,4 +53,40 @@ equations:
     variables: "Δe_T1(p_0): dimensionless T1 topological neighbor-exchange energy barrier; G(p_0): macroscopic static shear modulus; q = <P_i/sqrt(A_i)>: observed cell shape index in human bronchial epithelium"
     role: "Proves that tissue rigidity and T1 rearrangement barriers vanish identically for p_0 >= p_0^* = 3.813 and separates jammed non-asthmatic bronchial epithelium (q_14 = 3.792 < 3.813) from unjammed asthmatic epithelium (q_14 = 3.955 > 3.813)"
     source_citation: "Bi et al. (2015) Nature Physics 11:1074-1079 Figs. 2-3; Park et al. (2015) Nature Materials 14:1040-1048 Figs. 1-4"
-    code_locus: "2015-bi-vertex-glass-jamming.py#L140-L435"
+    code_locus: "2015-bi-vertex-glass-jamming.py#L180-L458"
+  - law_name: Bi et al. (2016) Self-Propelled Voronoi Motility-Driven Glass Transition — Motility Lowers the Critical Shape Index (Pass 3)
+    formula: "\\dot{\\mathbf r}_i = \\mu \\mathbf F_i + v_0 \\hat{\\mathbf n}_i,\\ \\mathbf F_i = -\\nabla_i E,\\ \\dot\\theta_i = \\eta_i,\\ \\langle\\eta_i(t)\\eta_j(t')\\rangle = 2D_r\\delta_{ij}\\delta(t-t');\\quad p_0^c(v_0) = p_0^* - \\alpha v_0,\\ \\alpha > 0,\\ p_0^c(0) = p_0^* \\approx 3.81"
+    lean_decl: MathOfBiology.Loop_045.motility_shifted_p0c
+    lean_theorem: MathOfBiology.Loop_045.spv_motility_lowers_critical_shape_index
+    lean_locus: morphoeval/lean/loops/Loop_045_vertex_glass_jamming.lean#L155-L192
+    lean_code: |-
+      def motility_shifted_p0c (p0_star alpha v0 : Int) : Int :=
+        p0_star - alpha * v0
+      theorem spv_motility_lowers_critical_shape_index
+          (p0_star alpha v0 v1 v2 p0 : Int)
+          (h_alpha : 0 < alpha) (h_v0 : 0 < v0) (h_order : v1 < v2)
+          (h_fluid_v1 : motility_shifted_p0c p0_star alpha v1 <= p0) :
+          motility_shifted_p0c p0_star alpha 0 = p0_star ∧
+          motility_shifted_p0c p0_star alpha v0 < p0_star ∧
+          motility_shifted_p0c p0_star alpha v2 < motility_shifted_p0c p0_star alpha v1 ∧
+          motility_shifted_p0c p0_star alpha v2 <= p0
+    variables: "v_0: self-propulsion speed; D_r: rotational diffusion (persistence time 1/D_r); n_i: polarity unit vector; F_i = -grad_i E: exact Voronoi energy gradient (circumcenter Jacobians); p_0^c(v_0): glass-transition target shape index; alpha: motility susceptibility of the boundary (simulated 0.58 at D_r = 1)"
+    role: "Closes the Pass 2 remediation item: couples the Bi (2015) vertex energy to active Brownian motility, maps the (p_0, v_0, D_r) glass transition surface, and proves that the boundary meets the zero-motility rigidity point and is monotonically lowered by motility with fluidity inherited upward in v_0"
+    source_citation: "Bi, Yang, Marchetti & Manning (2016) Physical Review X 6(2):021011 Eqs. (1)-(3), Figs. 1, 3-4"
+    code_locus: "2015-bi-vertex-glass-jamming.py#L569-L1087"
+  - law_name: Free Active-Brownian Diffusivity Normalisation D_0 = v_0^2 / (2 D_r) of the SPV Effective Diffusivity D_eff = D_s / D_0 (Pass 3)
+    formula: "D_0 = \\frac{v_0^2}{2 D_r},\\quad D_{\\text{eff}} = \\frac{D_s}{D_0},\\ D_s = \\lim_{t\\to\\infty}\\frac{\\langle|\\Delta\\mathbf r(t)|^2\\rangle}{4t};\\quad 0 \\le v_1 < v_2 \\Rightarrow v_1^2 < v_2^2"
+    lean_decl: MathOfBiology.Loop_045.free_active_diffusivity_numer
+    lean_theorem: MathOfBiology.Loop_045.spv_free_active_diffusivity_monotone_in_motility
+    lean_locus: morphoeval/lean/loops/Loop_045_vertex_glass_jamming.lean#L193-L214
+    lean_code: |-
+      def free_active_diffusivity_numer (v0 : Int) : Int := v0 * v0
+      theorem spv_free_active_diffusivity_monotone_in_motility
+          (v0 v1 v2 : Int) (h_v0 : 0 < v0) (h_nonneg : 0 <= v1) (h_order : v1 < v2) :
+          free_active_diffusivity_numer 0 = 0 ∧
+          0 < free_active_diffusivity_numer v0 ∧
+          free_active_diffusivity_numer v1 < free_active_diffusivity_numer v2
+    variables: "D_0: free active-Brownian diffusivity; D_s: long-time self-diffusivity from the time-origin-averaged MSD; D_eff: Bi (2016) dynamical order parameter (solid if D_eff < 1e-3 at long times; finite-window floor ~5e-3 here)"
+    role: "Guarantees the motility normalisation of the SPV order parameter is well defined and strictly increasing in v_0 for every v_0 > 0, so D_eff and the analogous per-free-path T1 rate Gamma_T1 / v_0 compare slow and fast active fluids on one scale"
+    source_citation: "Bi, Yang, Marchetti & Manning (2016) Physical Review X 6(2):021011 Fig. 1 and Sec. II (D_eff definition)"
+    code_locus: "2015-bi-vertex-glass-jamming.py#L784-L905"

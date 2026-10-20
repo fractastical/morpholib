@@ -1,0 +1,120 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAEg69DOEjktYzoQa4CC2n9hQ18pZ6ms6gynm-VuR0_DU/> .
+@prefix this: <https://w3id.org/np/RAEg69DOEjktYzoQa4CC2n9hQ18pZ6ms6gynm-VuR0_DU> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-streichan-global-morphogenetic-flow> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-streichan-global-morphogenetic-flow-model-fidelity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-streichan-global-morphogenetic-flow-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Streichan et al. (2018), Mayer et al. (2010), Lefebvre et al. (2023) & Brauns et al. (2024) Drosophila global morphogenetic flow, curved-surface active nematic myosin mechanics & cell intercalation — Model fidelity to source: 92/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "Gains: the Pass 3 curved-surface solver implements the actual covariant force balance on the prolate spheroid with exact metric and curvature (L523-L697), passes a second-order sphere-limit analytic check (L699-L739; residual 5.8e-3, order 2.04, energy ratio 0.9957), and shows the closed surface producing the return flow that the Pass 2 model injected by hand; strain-rate positive feedback (L757-L838) and the T1 ledger (L883-L995) add the Lefebvre-2023 and Brauns-2024 mechanisms, all backed by 6 machine-checked Lean theorems. Losses: the 6-regime benchmark still runs on the flat pipeline with the ad hoc pole-return term (L404-L416) and a phenomenological target-velocity formula (L422-L431) that the curved solver only reproduces at r = 0.833; the surface solver uses one-sided finite differences at 20 um pole caps held at v = 0 rather than a closed-surface FEM. Net -1." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "2018-streichan-global-morphogenetic-flow.py L404–L431: Flat 6-regime pipeline still adds an ad hoc pole-return circulation and rescales to a phenomenological target v_AP; curved solver not used for the regimes <https://github.com/fractastical/morpholib/blob/f18e3533/2018-streichan-global-morphogenetic-flow.py#L404-L431>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-streichan-global-morphogenetic-flow-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-streichan-global-morphogenetic-flow-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-streichan-global-morphogenetic-flow-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-streichan-global-morphogenetic-flow-model-fidelity-4> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-streichan-global-morphogenetic-flow-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2018-streichan-global-morphogenetic-flow.py L523–L697" ;
+        dcterms:description "Prolate-spheroid metric, Gaussian curvature, embedded covariant strain operator B, SPD assembly 2 B^T W Q B + xi M, Dirichlet pole caps, sparse solve" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f18e3533/2018-streichan-global-morphogenetic-flow.py#L523-L697> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-streichan-global-morphogenetic-flow-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2018-streichan-global-morphogenetic-flow.py L699–L739" ;
+        dcterms:description "Sphere-limit analytic check against (eta+eta_b) l(l+1)/R^2 - 2 eta/R^2 + xi (residual 5.8e-3, order 2.04)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f18e3533/2018-streichan-global-morphogenetic-flow.py#L699-L739> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-streichan-global-morphogenetic-flow-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "2018-streichan-global-morphogenetic-flow.py L757–L838" ;
+        dcterms:description "Curved-surface WT solve with DV director Q_pp=+1/2 and iterated strain-rate positive-feedback myosin recruitment (g = 0.358, m*/m0 = 1.70)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f18e3533/2018-streichan-global-morphogenetic-flow.py#L757-L838> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-streichan-global-morphogenetic-flow-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_048_global_morphogenetic_flow.lean L180–L254" ;
+        dcterms:description "Theorems 4-6 (surface gradient-mode eigenvalue >= xi, feedback fixed point iff g < 1, rosette junction balance), 0 sorrys, verified with lean" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/f18e3533/morphoeval/lean/loops/Loop_048_global_morphogenetic_flow.lean#L180-L254> .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1016/j.devcel.2006.09.007> dcterms:date "2006"^^xsd:gYear ;
+        dcterms:title "Multicellular rosette formation links planar cell polarity to tissue morphogenesis" .
+
+    <https://doi.org/10.1038/nature02590> dcterms:date "2004"^^xsd:gYear ;
+        dcterms:title "Myosin-dependent junction remodelling controls planar cell intercalation and axis elongation" .
+
+    <https://doi.org/10.1038/nature09376> dcterms:date "2010"^^xsd:gYear ;
+        dcterms:title "Anisotropies in cortical tension reveal the physical basis of polarizing cortical flows" .
+
+    <https://doi.org/10.7554/eLife.27454> dcterms:date "2018"^^xsd:gYear ;
+        dcterms:title "Global morphogenetic flow is accurately predicted by the spatial distribution of myosin" .
+
+    <https://doi.org/10.7554/eLife.78787> dcterms:date "2023"^^xsd:gYear ;
+        dcterms:title "Geometric control of myosin II orientation during axis elongation" .
+
+    <https://doi.org/10.7554/eLife.95521> dcterms:date "2024"^^xsd:gYear ;
+        dcterms:title "The geometric basis of epithelial convergent extension" .
+
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.devcel.2006.09.007>,
+            <https://doi.org/10.1038/nature02590>,
+            <https://doi.org/10.1038/nature09376>,
+            <https://doi.org/10.7554/eLife.27454>,
+            <https://doi.org/10.7554/eLife.78787>,
+            <https://doi.org/10.7554/eLife.95521> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "HqYN2P8UahbRoOQBgZ3XIaDZ35Ggmi1HOHP7Dsnm2kvZic2on40PYvYufT1HZbabUQkOdaOEgndSjqcLqOFHmoSbdSL1Hux8kH80Ba3MTVAmsEOyMF7SqOSIXrG2BVNw72A5ssd4lIDiH/pVR2rzQh8FqseMB7IoyKPPLzImV19pX0oHHNNuvvZess57JNjEyES4kEIwjiuE3nA3fx/Z4XCCKvBnY5J4QssEK4dyA2XVIlJto6L2k2l55Yp1WFmm+rSralcEGgXYOvdD3Jh4h3Dfn4WeIhb72LDmaqrJHyJ5oU55/ZFo2sL/IuoZkp75YpvAqbCkV08BxlPWdGKASw==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Streichan et al. (2018), Mayer et al. (2010), Lefebvre et al. (2023) & Brauns et al. (2024) Drosophila global morphogenetic flow, curved-surface active nematic myosin mechanics & cell intercalation — Model fidelity to source 92/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T16:10:23Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-streichan-global-morphogenetic-flow-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

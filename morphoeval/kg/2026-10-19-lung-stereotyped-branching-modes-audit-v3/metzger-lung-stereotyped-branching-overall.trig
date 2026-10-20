@@ -1,0 +1,90 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-metzger-lung-stereotyped-branching> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Metzger et al. (2008) & Menshykau et al. (2012, 2014) mouse lung stereotyped branching modes (Domain D, Planar P, Orthogonal O), FGF10-SHH-Ptch1 Turing mode selection, pleura-confined diffuse-domain FGF10 cavity and stochastic postnatal septation — MorphoEval overall 88.5/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Pass 3 (v3 remediated) evaluation of `2008-metzger-lung-stereotyped-branching.py` (overall down slightly from 91.1 in Pass 2 despite both v2 remediation items being closed, because the round exposed defects that Pass 2 had not scored). The script now couples the Metzger (2008) D/P/O grammar to a diffuse-domain FGF10 cavity bounded by a dilating pleura (L612-963) so that the margin -> Planar / interior -> Orthogonal switch is emergent (position sweep x*/L_x = 0.54, critical half-thickness h* = 0.944 l0, slab-check error 0.026 with first-order convergence), replaces the circular Pass 2 lineage dihedral comparison with an emergent one (RMSE 3.13 deg, 8/8 mode accuracy, emergent isotropy vs hull flatness r = 0.996), and extends the grammar beyond E16.5 with an exact-increment Yule septation ensemble (632 units x 12 seeds, P36 = 2.32e6 vs the 2.3e6 calibration target, unit CV 0.998 vs Yule 0.9999, deterministic no-septation control frozen at 632). Five Lean 4 theorems (0 `sorry`s) are machine-checked, 13 morphometrics are measured, and the 8-block self-test passes in ~4.4 s with two-run bitwise determinism. Against that: the pleura half-thickness and anisotropy threshold are tuned so the transition sits mid-lobe; each lineage's lobe position is assigned from its class label; the E11-E14.5 benchmark table has no per-row provenance and its r = 1.0000 tip-count fit is self-referential; two Pass 2 reference values are the model's own outputs; the Turing PDE clips R and F to [0.1, 3.2] every step and its seed profiles prescribe the final peak spacing; `--seed` is parsed but never used; and the three new DOIs are unverified. Overall 88.5/100 (faithfulness 87.1, reproducibility 91.7); rubric morphoeval 0.1.0; checkpoint commit 028758bc; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 92, Morphological realism / specimen match 82, Parameter expressivity 90, Morphometric validation 87, Source and data traceability 89, Code-to-model traceability 93, Reproducibility package 93. Output judged: docs/media/lung_stereotyped_branching_modes_comparison.png: rendered output of 2008-metzger-lung-stereotyped-branching.py at 028758bc, image/png, 760057 B, 2950×1350 px, artifact_sha256 39a638e50c464718f55cb5a04c00c6dbe57169032a3a3896d1e76a6400bec3d4 (sha256 39a638e50c464718f55cb5a04c00c6dbe57169032a3a3896d1e76a6400bec3d4), spec_fingerprint d02b0c3844bcaa108ea9ec4bb8fce374a8da22fe6801db1a8256bba00a9e901f. Dual provenance: spec_fingerprint: d02b0c3844bcaa108ea9ec4bb8fce374a8da22fe6801db1a8256bba00a9e901f; artifact_sha256: 39a638e50c464718f55cb5a04c00c6dbe57169032a3a3896d1e76a6400bec3d4; input_dataset_sha256: {datasets/lung_stereotyped_branching_modes/bronchial_tree_specimen.jpg=3247bc8c35eddcad..., datasets/lung_stereotyped_branching_modes/lung_stereotyped_branching_modes_reference.json=860ab1e53046d2e7...}. Supersedes audit: 2026-10-19-lung-stereotyped-branching-modes-audit-v2. Claim boundary: reported_in_source: Metzger et al. (2008): the E11-E15 mouse bronchial tree is built from three stereotyped subroutines — Domain Branching, Planar Bifurcation (confined to lobe edges/margins) and Orthogonal Bifurcation (lobe interiors) — composed in a genetically encoded sequence | Menshykau et al. (2012, 2014): an FGF10 / SHH-Ptch1 receptor-ligand Turing system on a growing epithelial domain selects between apical (bifurcation) and lateral (domain) budding, and mesenchymal geometry biases the direction of outgrowth | Mund, Stampanoni & Schittny (2008): mouse alveolarisation proceeds in a bulk phase P4-P21 and a continued phase P14-P36; Knust et al. (2009): the adult C57BL/6 mouse lung holds ~2.3e6 alveoli; reconstructed_in_script: 3D Bishop-frame D/P/O grammar with the 4m + 1 tip law and a 181-point dihedral sweep; the Menshykau dispersion relation and a 1D spectral PDE mode switch; a quasi-2D diffuse-domain FGF10 cavity bounded by a dilating lens-shaped pleura with the tip as Ptch1 sink, whose supply anisotropy chooses P (0 deg) vs O (90 deg) at each bifurcation; an exact-increment Yule septation ensemble seeded by the grammar's extrapolated E16.5 terminal-unit count; chromatic segmentation and skeletonisation of a bronchial-tree image; transfer_boundary: The pleura model is a transverse cross-section (z-invariant) with a prescribed, tree-independent dilation; tips choose P/O from the field but are not advected by grad F, and the pleura does not deform in response to the tree — the v2 item asked for a 3D moving-boundary phase-field/BEM, which this is not | lambda_bulk is fitted to the adult alveolar count, so the P36 total is a calibration, not a prediction; the 632 terminal units at E16.5 are a log-linear extrapolation of the vendored E11-E14.5 timecourse table; lambda_cont / lambda_bulk = 0.12 and birth at E19.5 are assumptions | The 'specimen' is a Wikimedia medical illustration of human bronchioles/alveoli, not a mouse E11-E15 lung; its junction angles are compared with the model's reference angles but cannot validate the mouse grammar; does_not_claim: A 3D moving-boundary mesenchyme, tip chemotaxis, per-age alveolar counts from Mund (2008), digitised Metzger (2008) lineage coordinates, or an independent prediction of the adult alveolar number." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: 2008-metzger-lung-stereotyped-branching.py:1-26, 1806 and lung_stereotyped_branching_modes_reference.json:29-42 — the Li (2009), Mund (2008) and Knust (2009) DOIs are cited from memory and flagged unverified; Yule (1925) has no DOI. Verify the three DOIs against the publishers' records when network access is available, add the Yule (1925) DOI (Phil. Trans. R. Soc. B 213:21-87), and clear the `verification` flags.",
+            "remediation needed: 2008-metzger-lung-stereotyped-branching.py:1004-1011 and 1834-1852 — the E11-E14.5 tip-count r = 1.0000 is self-referential (benchmark event counts reproduce 2 + sum(D+P+O) exactly) and reference_value 0.481834 / 1.4172 are the model's own outputs recorded as references. Digitise the observed tip counts from Metzger (2008) Fig. 1 with per-stage provenance and replace the two self-referential reference_values with literature values or mark them `reference_source: model` so the measurement is not read as a validation.",
+            "remediation needed: 2008-metzger-lung-stereotyped-branching.py:1116-1191 — lambda_bulk is fitted (1 dof) to the Knust (2009) adult count, so the P36 total is a calibration; lambda_cont / lambda_bulk = 0.12 and birth at E19.5 are assumed; no per-age alveolar count is compared. Transcribe the Mund (2008) per-age alveolar numbers (P4, P7, P10, P14, P21, P36) into the dataset JSON with figure provenance, fit lambda_bulk on the early points only and hold out the later ones as a prediction.",
+            "remediation needed: 2008-metzger-lung-stereotyped-branching.py:116-123 and 780-782 — h_mid = 1.0 and A_c = 0.05 are tuned so the single-tip P/O transition lands at x*/L_x = 0.54 (h_mid = 0.9 makes the whole lobe planar, 1.1 flips only the outer 10 %); the cavity dilation 0.15/generation, gamma = 4.0 and tip gain 2.0 are unsourced. Add a 2D sweep of (h_mid, A_c) reporting x* and the lineage mode accuracy as a function of both, source h_mid from a measured E12.5 lobe section aspect ratio, and state the sensitivity in the code rather than in an external note.",
+            "remediation needed: 2008-metzger-lung-stereotyped-branching.py:2024 and 2033-2047 — `--seed` is parsed but never passed to render_outputs, so RANDOM-RANDOM control trees always use seed 2008. Forward the seed (also to run_dihedral_angle_sweep and simulate_postnatal_septation) and add a self-test asserting that two different seeds change the random control but not the deterministic metrics.",
+            "remediation needed: 2008-metzger-lung-stereotyped-branching.py:553-579 — the spectral Turing solver clips R and F to [0.1, 3.2] every step, the seed profiles hard-code the final peak spacing (1.42 / 0.80), and diff_scale = 0.25 is applied only to the domain case; Panel C (ax_c, L1483) shows the traces saturating at the clip bounds. Remove the clipping (or justify it as a positivity projection and report how often it binds), seed from small random noise with a fixed RNG, and derive the domain/apical diffusion contrast from the Menshykau (2014) geometry rather than a constant.",
+            "remediation needed: 2008-metzger-lung-stereotyped-branching.py:841-844 and 969-1044 — the per-lineage emergent dihedral uses a single isolated tip at generation 1 while the flatness comparison uses the full policy tree; the two can disagree at mid-lobe positions (tree mean 45 deg). Report both predictors per lineage, flag disagreements, and add Panel G legend/inset placement that does not occlude the lens or the upper-right cavity.",
+            "remediation needed: 2008-metzger-lung-stereotyped-branching.py:989 with lung_stereotyped_branching_modes_reference.json:123-221 — `lobe_cross_section_position_norm` (0.90 margin / 0.15 interior) is assigned from the Metzger lineage class, so the 8/8 emergent mode accuracy tests 'margin -> planar, interior -> orthogonal' given the label. Replace the assigned positions with coordinates digitised from Metzger (2008) Fig. 3 lineage maps (or an independent lobe atlas) with per-row figure provenance, and report accuracy on positions that were not used to build the model.",
+            "remediation needed: datasets/lung_stereotyped_branching_modes/bronchial_tree_specimen.jpg with 2008-metzger-lung-stereotyped-branching.py:1237-1346 and 1874-1891 — the SHA-256-pinned 'specimen' is a human medical illustration (Lynch/Jaffe), not a mouse E11-E15 lung, so the junction-angle and caliber comparisons are drawing-vs-model. Add a CC-licensed mouse embryonic lung image (e.g. an E12.5-E14.5 whole-mount or lobe section) as a second pinned specimen, segment it, and compare the emergent P/O trees and the lens cross-section aspect ratio against it; keep the current image but relabel it as an illustration." ;
+        pk:hasScore "0.885"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Loop 053 Pass 3 Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/ar.20747>,
+            <https://doi.org/10.1002/dvdy.21633>,
+            <https://doi.org/10.1038/nature07005>,
+            <https://doi.org/10.1242/dev.081679>,
+            <https://doi.org/10.1371/journal.pcbi.1003421>,
+            <https://doi.org/10.1371/journal.pone.0041643>,
+            <https://doi.org/10.4310/CMS.2009.v7.n1.a4> .
+    <https://doi.org/10.1002/ar.20747> dct:date "2009"^^xsd:gYear ;
+        dct:title "Stereological estimates of alveolar number and size and capillary length and surface area in mice lungs" .
+    <https://doi.org/10.1002/dvdy.21633> dct:date "2008"^^xsd:gYear ;
+        dct:title "Developmental alveolarization of the mouse lung" .
+    <https://doi.org/10.1038/nature07005> dct:date "2008"^^xsd:gYear ;
+        dct:title "The branching programme of mouse lung development" .
+    <https://doi.org/10.1242/dev.081679> dct:date "2012"^^xsd:gYear ;
+        dct:title "Branch mode selection during early lung development" .
+    <https://doi.org/10.1371/journal.pcbi.1003421> dct:date "2014"^^xsd:gYear ;
+        dct:title "An interplay of geometry and signaling enables directional lung branching morphogenesis" .
+    <https://doi.org/10.1371/journal.pone.0041643> dct:date "2012"^^xsd:gYear ;
+        dct:title "A role for canonical Wnt signaling in epithelial branching during embryonic mouse lung development" .
+    <https://doi.org/10.4310/CMS.2009.v7.n1.a4> dct:date "2009"^^xsd:gYear ;
+        dct:title "Solving PDEs in complex geometries: a diffuse domain approach" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Metzger et al. (2008) & Menshykau et al. (2012, 2014) mouse lung stereotyped branching modes (Domain D, Planar P, Orthogonal O), FGF10-SHH-Ptch1 Turing mode selection, pleura-confined diffuse-domain FGF10 cavity and stochastic postnatal septation — MorphoEval overall 88.5/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:28:07Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-metzger-lung-stereotyped-branching> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

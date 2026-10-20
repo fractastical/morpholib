@@ -1,0 +1,105 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-steinberg-differential-adhesion-sorting> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-steinberg-differential-adhesion-sorting-model-fidelity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-steinberg-differential-adhesion-sorting-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Steinberg (1963, 1970) & Graner-Glazier (1992) differential adhesion cell sorting — Model fidelity to source: 90/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Interfacial tensions and the 5-regime classifier (`compute_interfacial_tensions`, L137-181) match Graner & Glazier (1992) Eqs. 2-3 exactly and are mirrored by Lean theorems 1-2; the 2D Metropolis copy attempts (L399-457) and the new 3D solver (L646-854) implement Eq. 1 with the correct adhesion and quadratic area/volume terms, the single-voxel volume increment is proved (`potts_volume_energy_single_voxel_increment`), and the 3D sublattice-parallel update is exact for the adhesion term (theorem 5) with the volume-term approximation disclosed (L676). The 3D run reproduces complete engulfment (Delta_r = +0.198, control +0.004) and the Pass 3 item is genuinely closed (+2 vs v2 for the 3D Hamiltonian). Deductions: the partial-engulfment regime adds an external position-dependent field `dE += 1.8 * (x1 ... x2)` (L390-394) that is not in the Hamiltonian, so Panel A3's doublet lens is imposed rather than selected (-3); the \"Kawasaki\" moves at L361-397 and L747-771 exchange the types of two randomly drawn, generally non-adjacent cells at an uncited temperature 2.5 T — a non-local accelerator with no counterpart in the 1992/1993 papers, and the 2D kinetics are reported without the ablation that the 3D run has (-2); the 3D volume constraint is too weak against the 26-neighbour adhesion scale, leaving <v>/V_0 = 0.771 (L652-654, measurement `potts_3d_mean_cell_volume_fraction`), i.e. the cells are not at the target volume the Hamiltonian prescribes (-2); the 2D MCS is 1.5 attempts per boundary site (L409) rather than one attempt per lattice site, an uncited convention (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "1964-steinberg-differential-adhesion-sorting.py L361–L397: 2D 'Kawasaki' type-swap accelerator between random (non-adjacent) cell pairs at temperature 2.5 T; no 2D ablation reported <https://github.com/fractastical/morpholib/blob/654cd6fc/1964-steinberg-differential-adhesion-sorting.py#L361-L397>",
+            "1964-steinberg-differential-adhesion-sorting.py L390–L394: Ad hoc symmetry-breaking field added to dE only in the partial-engulfment regime; not part of the Graner-Glazier Hamiltonian, imposes the Panel A3 lens <https://github.com/fractastical/morpholib/blob/654cd6fc/1964-steinberg-differential-adhesion-sorting.py#L390-L394>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-steinberg-differential-adhesion-sorting-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-steinberg-differential-adhesion-sorting-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-steinberg-differential-adhesion-sorting-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-steinberg-differential-adhesion-sorting-model-fidelity-4> ;
+        pk:hasScore "0.9"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-steinberg-differential-adhesion-sorting-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "1964-steinberg-differential-adhesion-sorting.py L137–L181" ;
+        dct:description "Exact Steinberg/Graner-Glazier interfacial tension definitions and 5-regime classifier (parity with Lean theorems 1-2)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/654cd6fc/1964-steinberg-differential-adhesion-sorting.py#L137-L181> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-steinberg-differential-adhesion-sorting-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "1964-steinberg-differential-adhesion-sorting.py L646–L854" ;
+        dct:description "Pass 3 3D Cellular Potts spheroid: 64^3 lattice, 840 cells, 26-neighbour adhesion, volume constraint, 8-colour sublattice-parallel Metropolis with exact adhesion dH" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/654cd6fc/1964-steinberg-differential-adhesion-sorting.py#L646-L854> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-steinberg-differential-adhesion-sorting-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "1964-steinberg-differential-adhesion-sorting.py L747–L771" ;
+        dct:description "3D type-swap accelerator via face-contact matrix (exact dE) with the same 2.5 T acceptance; ablated in compare_2d_vs_3d_sorting_kinetics (delta alpha = -0.013)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/654cd6fc/1964-steinberg-differential-adhesion-sorting.py#L747-L771> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-steinberg-differential-adhesion-sorting-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_041_differential_adhesion_sorting.lean L110–L156" ;
+        dct:description "Theorems 5-7: parity sublattice non-adjacency, single-voxel volume increment identity and its sign; 7 theorems total, 0 sorry, verified with lean" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/654cd6fc/morphoeval/lean/loops/Loop_041_differential_adhesion_sorting.lean#L110-L156> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/jez.1401730406>,
+            <https://doi.org/10.1016/j.cpc.2007.03.007>,
+            <https://doi.org/10.1088/1367-2630/13/3/033035>,
+            <https://doi.org/10.1103/PhysRevE.47.2128>,
+            <https://doi.org/10.1103/PhysRevLett.69.2013>,
+            <https://doi.org/10.1103/PhysRevLett.75.2244>,
+            <https://doi.org/10.1126/science.141.3579.401>,
+            <https://doi.org/10.1242/dev.122.5.1611> .
+    <https://doi.org/10.1002/jez.1401730406> dct:date "1970"^^xsd:gYear ;
+        dct:title "Does differential adhesion govern self-assembly processes in histogenesis? Equilibrium configurations and the emergence of a hierarchy among populations of embryonic cells" .
+    <https://doi.org/10.1016/j.cpc.2007.03.007> dct:date "2007"^^xsd:gYear ;
+        dct:title "A parallel implementation of the Cellular Potts Model for simulation of cell-based morphogenesis" .
+    <https://doi.org/10.1088/1367-2630/13/3/033035> dct:date "2011"^^xsd:gYear ;
+        dct:title "Kinetics of the cellular Potts model revisited" .
+    <https://doi.org/10.1103/PhysRevE.47.2128> dct:date "1993"^^xsd:gYear ;
+        dct:title "Simulation of the differential adhesion driven rearrangement of biological cells" .
+    <https://doi.org/10.1103/PhysRevLett.69.2013> dct:date "1992"^^xsd:gYear ;
+        dct:title "Simulation of biological cell sorting using a two-dimensional extended Potts model" .
+    <https://doi.org/10.1103/PhysRevLett.75.2244> dct:date "1995"^^xsd:gYear ;
+        dct:title "Quantitative comparison between differential adhesion models and cell sorting in the presence and absence of fluctuations" .
+    <https://doi.org/10.1126/science.141.3579.401> dct:date "1963"^^xsd:gYear ;
+        dct:title "Reconstruction of tissues by dissociated cells" .
+    <https://doi.org/10.1242/dev.122.5.1611> dct:date "1996"^^xsd:gYear ;
+        dct:title "Surface tensions of embryonic tissues predict their mutual envelopment behavior" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Steinberg (1963, 1970) & Graner-Glazier (1992) differential adhesion cell sorting — Model fidelity to source 90/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T15:59:27Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-steinberg-differential-adhesion-sorting-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

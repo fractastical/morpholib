@@ -1,0 +1,99 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-sugimura-tracheal-viscous-fingering> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-sugimura-tracheal-viscous-fingering-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-sugimura-tracheal-viscous-fingering-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Nelson et al. (2017) Development & Kim et al. (2015) Dev. Cell microfluidic transmural pressure, Laplace epithelial wall stress, ASM peristalsis, 3D ellipsoidal pleural cavity tree, Poiseuille/CFTR luminal pressure network and laryngeal valve cycles driving embryonic lung branching — Source and data traceability: 89/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`datasets/tracheal_viscous_fingering/` now carries 9 BibTeX entries (`paper_citations.bib` L1-104), the SHA-256-pinned specimen and reference JSON verified at runtime (`verify_dataset_integrity`, L115-147), and the new `pleural_cavity_valve_reference.json` (85 lines) which flags every Pass 3 constant as `provenance: literature` or `provenance: model` and records `doi_verified_offline: false` for the four new citations. Deductions: the four new DOIs (Olver & Strang 1974, Harding et al. 1986, Harding & Hooper 1996, Metzger et al. 2008) were recorded from memory and could not be verified offline in this pass (bib `note` fields L56, L68, L80, L92) (-4); McCray et al. 1992 is cited in a code comment (L381) with no bib entry (-1); the cavity geometry (`CAVITY_SEMI_AXES`, `CAVITY_CENTER`, `CHEST_LENGTH_SCALE_UM`, L389-391) and the secretion magnitudes (`J_CL_*`, L393-394) are unsourced model choices, and `P_CLOSED_GLOTTIS_PLATEAU_PA` = 250 Pa was chosen inside the Harding & Hooper 1-2 mmHg range to coincide with the Pass 2 JSON's 250 Pa occlusion regime (-3); the `*_obs` sweep columns carry no figure/table digitisation provenance (Pass 2 carry-over) (-2); the campaign-level seed paper (Nelson 2015, 10.1242/dev.119123, Gallus gallus) does not match the modelled sources (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:evidenceAgainst "2015-sugimura-tracheal-viscous-fingering.py L378–L381: McCray et al. 1992 cited in a comment without a corresponding bib entry <https://github.com/fractastical/morpholib/blob/171769b9/2015-sugimura-tracheal-viscous-fingering.py#L378-L381>",
+            "2015-sugimura-tracheal-viscous-fingering.py L389–L399: Cavity semi-axes, chest scale, J_Cl magnitudes, closed-glottis plateau, R_open/R_closed, FBM period and tau_closed: model choices, only partially literature-ranged <https://github.com/fractastical/morpholib/blob/171769b9/2015-sugimura-tracheal-viscous-fingering.py#L389-L399>",
+            "datasets/tracheal_viscous_fingering/paper_citations.bib L47–L92: olver1974, harding1986, harding1996, metzger2008 entries, each with note 'DOI not verified offline (Pass 3)' <https://github.com/fractastical/morpholib/blob/171769b9/datasets/tracheal_viscous_fingering/paper_citations.bib#L47-L92>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-sugimura-tracheal-viscous-fingering-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sugimura-tracheal-viscous-fingering-source-traceability-2> ;
+        pk:hasScore "0.89"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sugimura-tracheal-viscous-fingering-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2015-sugimura-tracheal-viscous-fingering.py L115–L147" ;
+        dct:description "Runtime SHA-256 verification of the reference JSON and the specimen micrograph" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/171769b9/2015-sugimura-tracheal-viscous-fingering.py#L115-L147> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sugimura-tracheal-viscous-fingering-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/tracheal_viscous_fingering/pleural_cavity_valve_reference.json L1–L85" ;
+        dct:description "Pass 3 reference table with per-constant provenance flags (literature vs model) and doi_verified_offline: false on the 4 new citations" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/171769b9/datasets/tracheal_viscous_fingering/pleural_cavity_valve_reference.json#L1-L85> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 059 Pass 3 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/59> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.devcel.2009.12.010>,
+            <https://doi.org/10.1016/j.devcel.2015.08.012>,
+            <https://doi.org/10.1016/j.mod.2007.11.007>,
+            <https://doi.org/10.1038/nature07005>,
+            <https://doi.org/10.1113/jphysiol.1974.sp010659>,
+            <https://doi.org/10.1152/jappl.1986.60.1.160>,
+            <https://doi.org/10.1152/jappl.1996.81.1.209>,
+            <https://doi.org/10.1242/dev.154823>,
+            <https://doi.org/10.1242/dev.167395> .
+    <https://doi.org/10.1016/j.devcel.2009.12.010> dct:date "2010"^^xsd:gYear ;
+        dct:title "Preparing for the first breath: genetic and cellular mechanisms in lung development" .
+    <https://doi.org/10.1016/j.devcel.2015.08.012> dct:date "2015"^^xsd:gYear ;
+        dct:title "Localized smooth muscle differentiation is essential for epithelial bifurcation during branching morphogenesis of the mammalian lung" .
+    <https://doi.org/10.1016/j.mod.2007.11.007> dct:date "2008"^^xsd:gYear ;
+        dct:title "Tracheal occlusion increases the rate of epithelial branching of embryonic mouse lung via the FGF10-FGFR2b-Sprouty2 pathway" .
+    <https://doi.org/10.1038/nature07005> dct:date "2008"^^xsd:gYear ;
+        dct:title "The branching programme of mouse lung development" .
+    <https://doi.org/10.1113/jphysiol.1974.sp010659> dct:date "1974"^^xsd:gYear ;
+        dct:title "Ion fluxes across the pulmonary epithelium and the secretion of lung liquid in the foetal lamb" .
+    <https://doi.org/10.1152/jappl.1986.60.1.160> dct:date "1986"^^xsd:gYear ;
+        dct:title "Upper airway resistances in fetal sheep: the influence of breathing activity" .
+    <https://doi.org/10.1152/jappl.1996.81.1.209> dct:date "1996"^^xsd:gYear ;
+        dct:title "Regulation of lung expansion and lung growth before birth" .
+    <https://doi.org/10.1242/dev.154823> dct:date "2017"^^xsd:gYear ;
+        dct:title "Microfluidic chest cavities reveal that transmural pressure controls the rate of lung development" .
+    <https://doi.org/10.1242/dev.167395> dct:date "2018"^^xsd:gYear ;
+        dct:title "Smooth muscle: a stiff sculptor of epithelial shapes" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Nelson et al. (2017) Development & Kim et al. (2015) Dev. Cell microfluidic transmural pressure, Laplace epithelial wall stress, ASM peristalsis, 3D ellipsoidal pleural cavity tree, Poiseuille/CFTR luminal pressure network and laryngeal valve cycles driving embryonic lung branching — Source and data traceability 89/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T17:26:30Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-sugimura-tracheal-viscous-fingering-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/59> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

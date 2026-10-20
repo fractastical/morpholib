@@ -1,0 +1,69 @@
+{
+  "dataset_id": "cajal_dendritic_wiring_electrotonic_ca_spike_v1",
+  "title": "Rall (1959) passive 3/2 cable electrotonics coupled to a Morris-Lecar (1981) active dendritic Ca2+ spike hotspot for synaptic coincidence detection across Cuntz (2010) balancing factors (Pass 3 remediation table, Slot 058)",
+  "pass": 3,
+  "remediation_item": "Couple passive Rall 3/2 electrotonic cable segments to active dendritic Ca2+ spike conductance equations to evaluate synaptic coincidence detection across varying Cuntz balancing factors.",
+  "passive_cable_constants": {
+    "source": "Roth & Häusser (2001) J. Physiol. 535(2):445-472, Table 2 (rat cerebellar Purkinje cell passive parameters from simultaneous somatic + dendritic patch-clamp fits); DOI 10.1111/j.1469-7793.2001.00445.x",
+    "note": "Values transcribed from memory of the published passive fits (Rm ~ 122 kOhm cm2, Ri ~ 115 Ohm cm, Cm ~ 0.77 uF/cm2) and NOT re-verified online in this offline pass; treat as order-of-magnitude Purkinje passive constants.",
+    "R_m_ohm_cm2": 122000.0,
+    "R_i_ohm_cm": 115.0,
+    "C_m_uF_cm2": 0.77,
+    "tau_m_ms_derived": 93.94,
+    "terminal_diameter_um": 0.5
+  },
+  "rall_cable_equations": {
+    "dc_length_constant": "lambda_DC(d) = sqrt( R_m * d / (4 * R_i) )  [Rall 1959 Exp. Neurol. 1:491-527, Eq. 2]",
+    "ac_length_constant": "lambda_f = lambda_DC * sqrt( 2 / (1 + sqrt(1 + (2*pi*f*tau_m)^2)) )  [Rall 1959; Koch 1999 Biophysics of Computation Ch. 2, Eq. 2.37]",
+    "electrotonic_edge_length": "X_e = l_e / lambda_f(d_e), with d_e the Rall 3/2 diameter of edge e",
+    "path_attenuation_semi_infinite": "A(tip -> hotspot) = exp( - sum_{e in path} X_e )  (semi-infinite equivalent-cylinder approximation; exact for Rall 3/2-matched trees seen from the soma, approximate centripetally)",
+    "synaptic_frequency_hz": 53.05,
+    "synaptic_frequency_note": "f_syn = 1 / (2*pi*tau_syn) with alpha-function synaptic time constant tau_syn = 3.0 ms"
+  },
+  "analytic_checks": {
+    "lambda_dc_terminal_0p5um_um": 1151.6,
+    "lambda_f_terminal_0p5um_at_f_syn_um": 286.42,
+    "lambda_f_over_lambda_dc_at_f_syn": 0.2487,
+    "note": "lambda_DC = sqrt(122000 * 0.5e-4 / (4*115)) cm = 0.11516 cm; omega*tau = 2*pi*53.05*0.09394 = 31.31; factor = sqrt(2/(1+sqrt(1+31.31^2))) = 0.2487"
+  },
+  "active_ca_spike_hotspot": {
+    "model": "Morris-Lecar (1981) two-variable Ca2+ / K+ membrane: C dV/dt = -g_L (V-E_L) - g_Ca m_inf(V) (V-E_Ca) - g_K w (V-E_K) + I_syn(t);  dw/dt = phi (w_inf(V) - w) cosh((V-V3)/(2 V4));  m_inf = 0.5 (1 + tanh((V-V1)/V2));  w_inf = 0.5 (1 + tanh((V-V3)/V4))",
+    "source": "Morris & Lecar (1981) Biophys. J. 35(1):193-213, DOI 10.1016/S0006-3495(81)84782-0; Hopf (class II) parameter set as tabulated in Rinzel & Ermentrout (1998) 'Analysis of neural excitability and oscillations', in Methods in Neuronal Modeling (MIT Press) 2nd ed.",
+    "biological_motivation": "Llinás & Sugimori (1980) J. Physiol. 305:197-213 (DOI 10.1113/jphysiol.1980.sp013358): all-or-none dendritic Ca2+ spikes in Purkinje cell dendrites in vitro; Polsky, Mel & Schiller (2004) Nat. Neurosci. 7(6):621-627 (DOI 10.1038/nn1253): synaptic inputs on the same thin dendritic branch sum supralinearly (within-branch coincidence detection) while inputs on different branches sum linearly.",
+    "note": "Canonical Morris-Lecar barnacle-fibre parameterization (not a Purkinje P-type Ca2+ channel fit); the hotspot is treated as a single isopotential compartment at the lowest common ancestor (LCA) branch node of a synaptic tip pair. Residual: fit g_Ca/g_K kinetics to Llinás & Sugimori P-type spikes and resolve the hotspot as a multi-compartment active cable.",
+    "C_uF_cm2": 20.0,
+    "g_L_mS_cm2": 2.0,
+    "g_Ca_mS_cm2": 4.4,
+    "g_K_mS_cm2": 8.0,
+    "E_L_mV": -60.0,
+    "E_Ca_mV": 120.0,
+    "E_K_mV": -84.0,
+    "V1_mV": -1.2,
+    "V2_mV": 18.0,
+    "V3_mV": 2.0,
+    "V4_mV": 30.0,
+    "phi_per_ms": 0.04,
+    "ca_spike_detection_threshold_mV": 0.0
+  },
+  "synaptic_input_protocol": {
+    "waveform": "I_i(t) = A_i * I_peak * ((t - t_i)/tau_syn) * exp(1 - (t - t_i)/tau_syn) for t >= t_i (alpha function)",
+    "I_peak_uA_cm2": 110.0,
+    "I_peak_note": "Chosen so that a single attenuated alpha-input at the hotspot stays sub-threshold for every tip pair and every bf (single-input spike fraction = 0) while a coincident pair crosses the Ca2+ spike threshold for most pairs at bf = 0.2; this is a protocol choice, not an empirical value.",
+    "tau_syn_ms": 3.0,
+    "t_first_input_ms": 10.0,
+    "delta_t_offsets_ms": [0.0, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0],
+    "T_sim_ms": 90.0,
+    "dt_ms": 0.02,
+    "n_tip_pairs": 24,
+    "pairing_rule": "the 24 Euclidean nearest-neighbour terminal-tip pairs of the arbor (Polsky-Mel-Schiller within-branch vs between-branch protocol); hotspot compartment = lowest common ancestor branch node of the pair"
+  },
+  "coincidence_detection_predictions": {
+    "linear_superposition_gain": 2.0,
+    "linear_superposition_note": "For a strictly linear passive membrane (g_Ca = 0 AND the K+ gate frozen at its resting value w_inf(E_L)) the coincident paired-input peak depolarization is exactly the sum of the two single-input peaks (superposition ratio = 1.0; gain = 2.0 for identical inputs; Lean 4 Theorem 5). The g_Ca = 0 ablation with a still voltage-dependent K+ gate is NOT linear and is reported separately. An active Ca2+ hotspot yields gain > 2 (supralinear) when the single input is sub-threshold and the pair crosses threshold.",
+    "linear_superposition_tolerance": 1e-9,
+    "same_branch_fraction_star_limit": 0.0,
+    "same_branch_fraction_note": "At bf = 1 (radial star) every tip attaches directly to the soma so the LCA of every tip pair is the root: same-branch fraction = 0 exactly.",
+    "predicted_sign_window_vs_bf": -1,
+    "predicted_sign_note": "Higher bf shortens tip-to-soma paths but destroys shared sub-branches, pushing the LCA hotspot toward the soma and lengthening the tip-to-hotspot electrotonic distance; the predicted Pearson sign of coincidence window vs bf is negative (model prediction, not an empirical literature value)."
+  }
+}

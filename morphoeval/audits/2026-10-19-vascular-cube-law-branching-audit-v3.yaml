@@ -1,0 +1,348 @@
+# MorphoEval audit — Murray (1926a, 1926b) / Zamir (1976) / Sherman (1981) Minimum-Work Vascular Cube Law & Bifurcation Angles, 2026-10-19 (v3)
+#
+# Pass 3 superseding assessment of `1959-murray-vascular-cube-law-branching.py` (v3, 1,819 lines; was 1,090)
+# after the remediation round `2026-10-19-vascular-cube-law-branching-loop-pass3` closed both Pass 2
+# remediation items:
+#   1. Section 4c (L639-890): 3D hemispherical retinal-cup geometry (globe radius 12 mm) with geodesic
+#      Murray trees, tangent-plane bifurcation rotations, AVR-coupled venous root, a repulsive
+#      arteriovenous growth coupling plus an uncoupled ablation control, fundus-projection
+#      foreshortening and projected A/V crossing counts (Panel H, new 3D GIF).  Reduced geometric model:
+#      the terminal-tip interdigitation index stays at random-mixing level (0.504 vs 0.41 uncoupled),
+#      so the "coupled interdigitation" half of the item is only PARTIALLY closed.
+#   2. Section 4b (L445-636): Fahraeus-Lindqvist eta(r) (Pries, Neuhaus & Gaehtgens 1992 in-vitro fit,
+#      H_D = 0.45) in the Poiseuille term with generalised stationarity 2 P_met = (4 - eps) P_visc;
+#      the 7-generation tree optimum shifts gamma* = 3.000 -> 2.773 (Panels G, I).  The symmetric
+#      junction exponent at r0 = 25 um is 2.859, so "~2.7" holds for the tree optimum only.
+#   Lean 4 Laws 4-5 (`fahraeus_lindqvist_stationarity_shift`, `arteriovenous_coupled_cube_balance`)
+#   verified, 0 `sorry`s; 15 measurements (7 new); 9 self-test suites.
+#
+# Overall 89.2 (v2 90.9, -1.7): model-fidelity, parameter-expressivity, code-traceability and
+# repro-package improve, but the round exposed deeper defects that the v2 audit had credited at face
+# value — the J01-J08 "Zamir 1979" junction table is prescribed/circular (RMSE 0.134 deg is not an
+# independent validation), the Sherman (1981) hierarchy is generated rather than digitised, three new
+# DOIs are unverified, and the specimen pipeline is unchanged while its reference angle is still an
+# uncorrected planar projection.  Scores are uncalibrated criterion-referenced scores on the rubric's
+# 0-100 scale.  Line numbers refer to the working-tree files at commit 028758bc (uncommitted Pass 3
+# remediation applied on top).
+
+audit:
+  id: 2026-10-19-vascular-cube-law-branching-audit-v3
+  supersedes_audit_id: 2026-10-19-vascular-cube-law-branching-audit-v2
+  supersedes: 2026-10-19-vascular-cube-law-branching-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Loop 052 Pass 3 Assessor; supersedes the Gemini 4 Argon v2 assessment)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 028758bc
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3 remediated) evaluation of `1959-murray-vascular-cube-law-branching.py`
+      after the Phase A remediation of loop `2026-10-19-vascular-cube-law-branching-loop-pass3`
+      (Fahraeus-Lindqvist eta(r) Section 4b, 3D hemispherical retinal cup Section 4c, Lean Laws 4-5,
+      7 new measurements, self-test suites 8-9, new `fahraeus_lindqvist_retinal_cup_reference.json`
+      and `vascular_cube_law_branching_retinal_cup_3d.gif`). Line pins were verified against the
+      working tree on top of 028758bc.
+
+references:
+  murray1926a:
+    title: "The physiological principle of minimum work. I. The vascular system and the cost of blood volume"
+    authors: "Murray CD"
+    venue: "Proceedings of the National Academy of Sciences of the USA 12(3):207-214 (1926)"
+    doi: 10.1073/pnas.12.3.207
+  murray1926b:
+    title: "The physiological principle of minimum work applied to the angle of branching of arteries"
+    authors: "Murray CD"
+    venue: "Journal of General Physiology 9(6):835-841 (1926)"
+    doi: 10.1085/jgp.9.6.835
+  zamir1976:
+    title: "Optimality principles in arterial branching"
+    authors: "Zamir M"
+    venue: "Journal of Theoretical Biology 62(1):227-251 (1976)"
+    doi: 10.1016/0022-5193(76)90058-8
+  sherman1981:
+    title: "On connecting large vessels to small. The meaning of Murray's law"
+    authors: "Sherman TF"
+    venue: "Journal of General Physiology 78(4):431-453 (1981)"
+    doi: 10.1085/jgp.78.4.431
+  pries1992:
+    title: "Blood viscosity in tube flow: dependence on diameter and hematocrit"
+    authors: "Pries AR, Neuhaus D, Gaehtgens P"
+    venue: "American Journal of Physiology - Heart and Circulatory Physiology 263(6):H1770-H1778 (1992)"
+    doi: 10.1152/ajpheart.1992.263.6.H1770
+  fahraeus1931:
+    title: "The viscosity of the blood in narrow capillary tubes"
+    authors: "Fåhraeus R, Lindqvist T"
+    venue: "American Journal of Physiology 96(3):562-568 (1931)"
+    doi: 10.1152/ajplegacy.1931.96.3.562
+  hubbard1999:
+    title: "Methods for evaluation of retinal microvascular abnormalities associated with hypertension/sclerosis in the Atherosclerosis Risk in Communities Study"
+    authors: "Hubbard LD, Brothers RJ, King WN, Clegg LX, Klein R, Cooper LS, Sharrett AR, Davis MD, Cai J"
+    venue: "Ophthalmology 106(12):2269-2280 (1999)"
+    doi: 10.1016/S0161-6420(99)90525-0
+
+simulations:
+  - id: murray-vascular-cube-law-branching
+    name: "Murray (1926a, 1926b), Zamir (1976) & Sherman (1981) minimum-work vascular cube law & arterial branching angles"
+    organism: "Homo sapiens (human retinal arterial and microvascular bifurcation network)"
+    script: 1959-murray-vascular-cube-law-branching.py
+    output: docs/media/vascular_cube_law_branching_comparison.png
+    extra_outputs:
+      - docs/media/vascular_cube_law_branching_growth.gif
+      - docs/media/vascular_cube_law_branching_retinal_cup_3d.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-vascular-cube-law-branching-audit-v2
+    source_refs:
+      - murray1926a
+      - murray1926b
+      - zamir1976
+      - sherman1981
+      - pries1992
+      - fahraeus1931
+      - hubbard1999
+    claim_boundary:
+      reported_in_source:
+        - "Murray (1926a): minimising Poiseuille pumping power plus a metabolic cost proportional to blood volume gives Q proportional to r^3 and a scale-invariant wall shear stress sqrt(eta b); at the optimum the metabolic term is twice the viscous term"
+        - "Murray (1926b): the same functional fixes the bifurcation angles via cos(theta_1) = (r_0^4 + r_1^4 - r_2^4)/(2 r_0^2 r_1^2) and its mirror; symmetric total angle 74.93 deg"
+        - "Zamir (1976): alternative optimality principles (surface, volume, drag, power) give different angle laws; Sherman (1981): the cube law holds across generations of a tree"
+        - "Fåhraeus & Lindqvist (1931) / Pries et al. (1992): the apparent viscosity of blood falls in tubes narrower than ~300 um, fitted by eta_rel(D) = 220 e^{-1.3D} + 3.2 - 2.44 e^{-0.06 D^0.645} at H_D = 0.45"
+        - "Hubbard et al. (1999): the clinical retinal arteriole-to-venule caliber ratio is about 2/3"
+      reconstructed_in_script:
+        - "Power functional, stationarity radius, wall shear invariance, asymmetric cosine laws, Zamir/Steiner/Da Vinci ablation controls, 7-generation Sherman hierarchy and the gamma power sweep (Newtonian)"
+        - "Fahraeus-Lindqvist eta(r) in the Poiseuille term, generalised stationarity 2 P_met = (4 - eps) P_visc, local gamma_eff(r), symmetric junction exponent gamma_j(r_0) and a Newtonian-vs-F-L tree exponent sweep (gamma* 3.000 -> 2.773)"
+        - "Geodesic arterial and venous Murray trees on a 12 mm sphere with tangent-plane Murray angles, AVR-coupled venous root, repulsive A/V coupling with an uncoupled control, orthographic fundus-projection foreshortening and projected A/V crossings"
+        - "Green-channel top-hat / Zhang-Suen skeleton / EDT segmentation of the vendored human fundus specimen (N = 19 Y-junctions)"
+      transfer_boundary:
+        - "The 3D retinal cup is a reduced geometric model: no haemodynamic network solve, no capillary bed connecting arterial and venous tips, no oxygen/VEGF-guided angiogenesis, optic disc at the posterior pole; the venous root radius is an input (AVR = 0.67), not emergent"
+        - "The F-L fit is the in-vitro glass-tube relation at fixed H_D = 0.45 (no in-vivo endothelial surface layer correction, no phase separation at bifurcations), applied per generation to a symmetric tree; the '~2.7' target is reached by the tree optimum (2.773) but not by the local junction exponent (2.859 at 25 um)"
+        - "The J01-J08 'Zamir 1979' junction table carries a Murray-prediction column and agrees with Murray to <= 0.3 deg without page/figure provenance, so the RMSE = 0.134 deg / r = 0.9999 figures are a parity check, not independent validation; the Sherman (1981) hierarchy table is generated from r_g = 82 um * 2^(-g/3), not digitised"
+      does_not_claim:
+        - "Independent human morphometric confirmation of the F-L exponent shift, of the AVR (an input), or of arteriovenous interdigitation (index 0.504 ~ random mixing, reference 1.0 is an idealisation); verification of the three Pass 3 DOIs (recalled offline, flagged in bib, JSON and script header)"
+    summary: >-
+      Pass 3 (v3 remediated) evaluation of `1959-murray-vascular-cube-law-branching.py`
+      (89.2/100, down 1.7 from 90.9/100 in Pass 2). Both Pass 2 remediation items landed:
+      Section 4b implements Pries et al. (1992) Fahraeus-Lindqvist apparent viscosity in the
+      Poiseuille term with the generalised stationarity 2 P_met = (4 - eps) P_visc (Lean 4
+      `fahraeus_lindqvist_stationarity_shift`), shifting the 7-generation power-minimising
+      exponent from 3.000 to 2.773 (junction exponent at 25 um 2.859); Section 4c grows coupled
+      arterial and venous Murray trees by exact geodesic steps on a 12 mm hemispherical retinal
+      cup (sphericity residual 7e-15 mm) with AVR-coupled venous root (Lean 4
+      `arteriovenous_coupled_cube_balance`), a repulsive A/V coupling versus an uncoupled control,
+      fundus-projection foreshortening (3.3 deg central, 32.4 deg peripheral) and a new 3D GIF.
+      The figure now has 9 panels, `measure_morphoeval()` 15 entries and `self_test()` 9 suites
+      (all pass, 2.6 s; render 4.9 s). The score nonetheless falls because the round exposed
+      defects v2 had credited: the J01-J08 junction table is prescribed/circular and its source
+      (Zamir, Medeiros & Cunningham 1979) is uncited in the bib, the Sherman hierarchy table is
+      synthetic, three new DOIs are unverified, the F-L "2.7" reference is the audit's own target,
+      the interdigitation item is only partially closed (index 0.504 vs 0.41 control, random
+      level), and the specimen measurement still uses an uncorrected planar reference angle.
+    scores:
+      model-fidelity:
+        value: 93
+        rationale: >-
+          Murray's (1926a) power functional, stationarity radius and exact tau_w = sqrt(eta b)
+          invariance (L121-166, L305-359), Murray's (1926b) asymmetric cosine laws with Zamir,
+          Steiner and Da Vinci controls (L175-240, L361-443) are unchanged and correct. Pass 3
+          adds the Fahraeus-Lindqvist mechanism correctly: eta(r) normalised so the large-vessel
+          limit equals Murray's eta (L467-483), generalised stationarity Q*(r) = (pi/2) r^3
+          sqrt(b/(eta(r)(4 - eps))) with eps = d ln eta / d ln r (L486-521) and a bisection
+          junction exponent (L524-551); the 3D cup uses exact geodesic stepping and Rodrigues
+          tangent-plane rotations with cube-law radii (L655-745) and a flow-balance venous
+          coupling k_v/k_a = sum r^3 / sum R^3 (L761-890). Five machine-checked Lean 4 theorems
+          (0 `sorry`s). Deductions: the retinal cup is a kinematic growth rule with no
+          haemodynamic solve or capillary closure, and its A/V "coupling" is a heuristic
+          handedness choice (L714-727) that segregates territories rather than producing paired
+          arcades (-4); the F-L fit is in-vitro at fixed H_D = 0.45 with no phase separation, and
+          eta(r) is applied generation-wise to a symmetric tree (-2); the empirical junction
+          evaluator (L242-300) still scores a table that is itself Murray-generated (-1).
+        evidence:
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [121, 166], note: "Poiseuille + metabolic power functional, conductance constant k_M, optimal radius and wall shear stress", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [455, 551], note: "Pries 1992 eta_rel(D), apparent viscosity normalised to Murray's eta at large D, log-slope eps, generalised stationarity Q*(r), local gamma_eff and bisection junction exponent", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [655, 745], note: "Geodesic Murray tree on a sphere: exact great-circle stepping, Rodrigues rotation about the surface normal, cube-law radii, repulsive A/V handedness rule (L714-727)", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [761, 890], note: "Arterial then venous trees, AVR-coupled venous root, k_v/k_a flow balance, interdigitation/pairing/crossing metrics, fundus-projection foreshortening", supports: true}
+          - {file: morphoeval/lean/loops/Loop_052_vascular_cube_law_branching.lean, lines: [129, 170], note: "Laws 4-5: fl_stationarity_residual + fahraeus_lindqvist_stationarity_shift (Newtonian limit, vanishing residual, strict metabolic-share drop) and arteriovenous_coupled_cube_balance", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [714, 727], note: "A/V coupling is a geometric handedness rule (keep the side farther from the nearest rival node); no haemodynamic or angiogenic mechanism", supports: false}
+      specimen-match:
+        value: 85
+        rationale: >-
+          The SHA-256-locked human retinal fundus specimen is still segmented by green-channel
+          top-hat enhancement, Zhang-Suen thinning and EDT caliber mapping (L896-1086), giving
+          N = 19 Y-junctions (mean 79.28 deg) shown with skeleton/EDT overlays in Panel E
+          (L1261-1293) and the angle histogram in Panel F (L1294-1323); Panel H and the new 3D
+          GIF (L1351-1376, L1418-1444) render an eye-shaped vascular cup with four arterial and
+          four venous arcades, which is a qualitatively closer match to a fundus than the 2D tree.
+          Deductions: the specimen pipeline is byte-for-byte unchanged from Pass 2 and the 3D cup
+          is never compared against the specimen beyond the projection-bias argument (-5); the
+          specimen measurement keeps 74.93 deg as its reference although Pass 3 itself quantifies
+          a 3.3-32.4 deg orthographic foreshortening bias (L1656-1665) and applies no correction
+          (-4); the tortuosity fallback is a hard-coded 1.01 when no branches are found (L1064)
+          (-2); the rendered cup has its optic disc at the posterior pole with no fovea/disc offset
+          and uniformly alternating arcades that look more regular than any real fundus (-4).
+        evidence:
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [936, 1086], note: "Fundus specimen segmentation: top-hat, Zhang-Suen skeleton, EDT lumen radius, Y-junction angle/caliber extraction (unchanged from Pass 2)", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1351, 1376], note: "Panel H: 3D hemispherical retinal cup with coupled arterial (red) and venous (blue) Murray trees", supports: true}
+          - {file: docs/media/vascular_cube_law_branching_comparison.png, lines: [0, 0], note: "9-panel figure: Panel E specimen skeleton/EDT overlays, Panel F angle histogram, Panel H 3D cup", supports: true}
+          - {file: docs/media/vascular_cube_law_branching_retinal_cup_3d.gif, lines: [0, 0], note: "7-frame A/V growth animation on the retinal cup", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1064, 1064], note: "tortuosity_mean falls back to a hard-coded 1.01 when no branches are traced", supports: false}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1656, 1665], note: "Projection foreshortening quantified (central 3.3 deg, peripheral 32.4 deg) but the specimen angle measurement is not projection-corrected", supports: false}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Alpha, gamma, r_0 and generations remain swept/overridable; Pass 3 adds the F-L sweep
+          over gamma in [2.2, 3.6] with Newtonian control (L596-636), three new CLI flags
+          `--eye-radius-mm`, `--avr`, `--coupling {none,repulsive}` (L1788-1790) that reach
+          `evaluate_hemispherical_av_coupling` (L1115-1120), and `--eta`/`--b`, dead in Pass 2,
+          now drive Panel A, the F-L sweep and the A/V coupling (L1114-1120, L1147-1150).
+          Deductions: `--seed` is still effectively dead — it is passed as `seed_cli` (L1104,
+          L1812) but no default render path consumes it; heading jitter is exercised only in the
+          self-test determinism check (-4); `--eta`/`--b` are still not wired into
+          `run_gamma_power_sweep` (L1113), Panel D or the empirical junction evaluator, so the
+          Newtonian sweep ignores them (-3); the F-L hematocrit H_D = 0.45 is a constant with no
+          CLI or sweep (-3).
+        evidence:
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [596, 636], note: "Newtonian vs Fahraeus-Lindqvist 7-generation exponent sweep over gamma in [2.2, 3.6] with parabolic refinement", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1777, 1819], note: "CLI: --alpha, --gamma, --eta, --b, --r0-um, --generations, --seed, --eye-radius-mm, --avr, --coupling", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1111, 1120], note: "render_outputs wires eta/b into the F-L sweep and both A/V coupling runs but run_gamma_power_sweep (L1113) takes only generations and r0", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1787, 1787], note: "--seed documented as 'reserved'; seed_cli is accepted by render_outputs (L1104) but unused in any default path", supports: false}
+      morphometric-validation:
+        value: 86
+        rationale: >-
+          `measure_morphoeval()` (L1497-1666) now reports 15 metrics with reference values,
+          methods, dispersion statistics and ablation controls; the 7 new entries include a
+          parity check of the implemented F-L fit (eta_rel(10 um) = 1.328 vs 1.33), the tree
+          optimum gamma*_FL = 2.773 with Newtonian control 3.000, the junction exponent 2.859 at
+          25 um, the sphericity residual 7e-15 mm, the AVR propagation with derived venous
+          shear/b_v, the interdigitation index with uncoupled control, and the projection bias by
+          eccentricity. Deductions: the headline Pass 2 claims (RMSE 0.134 deg, r = 0.9999 for
+          J01-J08, L1545-1554) rest on a table that contains its own Murray prediction and has no
+          page/figure provenance, so they are circular rather than validating (-6); the F-L
+          reference value 2.7 (L1605-1614) is the Pass 2 audit's target, not a literature datum,
+          and the stated reference_source says so (-3); the AVR metric (L1636-1645) equals its
+          reference by construction (-2); the interdigitation reference 1.0 (L1646-1655) is an
+          idealisation and the result 0.504 shows the coupling fails its purpose (-3).
+        evidence:
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1497, 1666], note: "15-metric MorphoEval suite with reference values, methods, dispersion statistics and ablation controls", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1596, 1625], note: "F-L parity check, tree exponent gamma*_FL = 2.773 vs Newtonian 3.000, junction exponent gamma_j(25 um) = 2.859 with eps and P_met/P_visc", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1626, 1665], note: "Sphericity residual, AVR propagation with k_v/k_a and venous shear, interdigitation index with uncoupled control, projection bias by eccentricity", supports: true}
+          - {file: datasets/vascular_cube_law_branching/vascular_cube_law_branching_reference.json, lines: [81, 90], note: "J01-J08 rows carry murray_predicted_total_deg and agree with it to <= 0.3 deg; no page/figure provenance — the RMSE/r metrics are circular", supports: false}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1605, 1614], note: "gamma*_FL reference_value 2.7 is the Pass 2 audit remediation target, not a literature datum", supports: false}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1636, 1655], note: "AVR = 0.67 is an input (--avr) so value == reference by construction; interdigitation reference 1.0 is an idealisation, measured 0.504 ~ random", supports: false}
+      source-traceability:
+        value: 88
+        rationale: >-
+          `datasets/vascular_cube_law_branching/` vendors the reference JSON, the CC BY 4.0
+          specimen, `paper_citations.bib` (now 7 entries, L1-77), `scout_manifest.json`, the new
+          `fahraeus_lindqvist_retinal_cup_reference.json` (Pries 1992 coefficients, parity table,
+          generalised stationarity formulas, cup geometry, DOI-verification flags) and a README
+          with an explicit "Caveats carried for audit" section (L30-33); runtime SHA-256
+          verification of the specimen (`verify_dataset_integrity`, L93-114). Deductions: the
+          three Pass 3 DOIs (Pries 1992, Fåhraeus & Lindqvist 1931, Hubbard 1999) were recalled
+          offline and are flagged as unverified in the bib, JSON and script header (L17-20) (-4);
+          Zamir, Medeiros & Cunningham (1979), the stated source of J01-J08, has no bib entry and
+          no DOI, and the table has no page/figure pin (-4); the Sherman (1981) hierarchy (JSON
+          L72-80) is generated from r_g = 82 um * 2^(-g/3) and the 82 um root radius is not
+          pinned to a page (-2); `EXPECTED_SHA256` (L78-80) pins only the specimen JPG — neither
+          reference JSON is hash-pinned (-2).
+        evidence:
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [78, 114], note: "EXPECTED_SHA256 pins the specimen JPG only; verify_dataset_integrity loads both reference JSONs without hash checks", supports: true}
+          - {file: datasets/vascular_cube_law_branching/paper_citations.bib, lines: [1, 77], note: "7 bib entries incl. pries1992viscosity, fahraeus1931viscosity, hubbard1999retinal (DOIs flagged unverified); no Zamir 1979 entry", supports: true}
+          - {file: datasets/vascular_cube_law_branching/fahraeus_lindqvist_retinal_cup_reference.json, lines: [1, 69], note: "Pries 1992 fit coefficients and parity table, generalised stationarity formulas, cup geometry and coupling rule, DOI-verification flags", supports: true}
+          - {file: datasets/vascular_cube_law_branching/README.md, lines: [30, 33], note: "'Caveats carried for audit' discloses the prescribed J01-J08 table and the synthetic Sherman hierarchy", supports: true}
+          - {file: datasets/vascular_cube_law_branching/vascular_cube_law_branching_reference.json, lines: [72, 90], note: "Sherman hierarchy generated (not digitised); J01-J08 'Zamir 1979' rows without page/figure provenance and with a Murray-prediction column", supports: false}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [17, 20], note: "Header states the three Pass 3 DOIs were recalled, not verified online", supports: false}
+      code-traceability:
+        value: 93
+        rationale: >-
+          The module header (L1-22) maps the Pass 3 additions to Sections 4b/4c, the three new
+          sources and Lean Laws 4-5; every F-L function cites Pries (1992) Eq. 1 and states the
+          normalisation; the cup section states its reduced-model boundary; the math KG loop file
+          registers all five laws with Lean theorem names and refreshed code loci (L22-113,
+          Law 4 L77-97, Law 5 L98-113) and new `model_spec` keys; measurement entries name the
+          Lean theorem they rest on (L1605-1614, L1636-1645). Deductions: the `--self-test` help
+          string and the `self_test()` docstring still say "Pass 2" (L1670, L1779) (-2); the
+          handedness rule for A/V coupling (L714-727) and the 95 deg polar limit / 4 deg disc
+          radius constants (L644-646) have no source beyond a comment (-3); the 82 um root radius
+          attribution to Sherman (1981) is unsourced (-2).
+        evidence:
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1, 22], note: "Module header mapping Sections 4b/4c, three new sources and Lean Laws 4-5 to code", supports: true}
+          - {file: morphoeval/math_kg_loops/murray-vascular-cube-law-branching.yaml, lines: [22, 113], note: "Five laws registered with lean_theorem names and code_locus pins; Laws 4-5 added in Pass 3", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [644, 646], note: "EYE_RADIUS_MM_DEFAULT, RETINA_POLAR_LIMIT_DEG and AVR_DEFAULT documented inline; AVR cites Hubbard 1999", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1779, 1779], note: "--self-test help text still reads 'Pass 2 self-test suite' after the Pass 3 extension", supports: false}
+      repro-package:
+        value: 93
+        rationale: >-
+          `self_test()` (L1669-1774) runs 9 suites — the 7 Pass 2 suites plus suite 8 (F-L
+          shape, Newtonian limit, exponent shift; L1729-1746) and suite 9 (cup sphericity,
+          reach, coupling effect, two-run determinism; L1747-1765) — and passes in 2.6 s; the
+          default render completes in 4.9 s producing the PNG and both GIFs (L1418-1444,
+          L1481-1486); the model is closed-form/deterministic with the only RNG path (heading
+          jitter) seeded. Deductions: the new reference JSON is not SHA-256 pinned so a silent
+          edit to the F-L coefficients would not be caught (-3); the `--self-test` help and
+          docstring are stale ("Pass 2") (-1); no requirements lock is vendored for this script
+          (versions recorded only in this audit's checkpoint) (-3).
+        evidence:
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1669, 1774], note: "9-suite self_test(): JSON parity, stationarity, asymmetric table, gamma* minimum, empirical fit, specimen segmentation, determinism, F-L suite 8, retinal-cup suite 9", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1729, 1765], note: "Suites 8-9 (Pass 3): F-L Newtonian limit and exponent shift; cup sphericity, polar reach, coupling effect and bitwise determinism", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [1418, 1444], note: "3D retinal-cup GIF rendered by the default invocation (7 frames)", supports: true}
+          - {file: docs/media/vascular_cube_law_branching_growth.gif, lines: [0, 0], note: "2D multi-regime growth GIF regenerated by the default invocation (unchanged content from Pass 2)", supports: true}
+          - {file: 1959-murray-vascular-cube-law-branching.py, lines: [78, 80], note: "Only the specimen JPG is hash-pinned; fahraeus_lindqvist_retinal_cup_reference.json is loaded unpinned", supports: false}
+    remediation:
+      - >-
+        datasets/vascular_cube_law_branching/vascular_cube_law_branching_reference.json:81-90 with
+        1959-murray-vascular-cube-law-branching.py:242-300 and 1545-1554 — the J01-J08 "Zamir 1979" table is
+        prescribed/circular (carries murray_predicted_total_deg, agrees to <= 0.3 deg, no page/figure, Zamir,
+        Medeiros & Cunningham 1979 absent from paper_citations.bib). Replace with page-pinned digitised
+        junctions (or the N = 19 segmented specimen junctions) and relabel the RMSE/r metrics as a parity check
+        until then.
+      - >-
+        1959-murray-vascular-cube-law-branching.py:714-727 and 1646-1655 — the repulsive A/V handedness rule
+        yields an interdigitation index of 0.504 (uncoupled 0.41), i.e. random mixing; the Pass 2 item
+        "coupled arteriovenous interdigitation" is only partially closed. Implement a venous tree grown toward
+        arterial terminal territories (e.g. tip-attraction to arterial tips with a capillary closure) and
+        replace the idealised reference 1.0 with a fundus-derived A/V alternation datum.
+      - >-
+        1959-murray-vascular-cube-law-branching.py:1605-1614 — gamma*_FL reference_value 2.7 is the Pass 2
+        audit's own target. Cite a literature value for the F-L-modified Murray exponent (e.g. Alarcón, Byrne
+        & Maini 2005 Microvasc. Res. 69:156, DOI to be verified) and report both the tree optimum (2.773) and
+        the junction exponent (2.859) against it.
+      - >-
+        1959-murray-vascular-cube-law-branching.py:1064 and 1575-1584 with 1656-1665 — the specimen Y-junction
+        reference 74.93 deg is a tangent-plane quantity while the segmented angles are planar projections;
+        apply the computed eccentricity-dependent foreshortening correction to the specimen junctions (or
+        compare against the projected Murray angle) and remove the hard-coded tortuosity fallback 1.01.
+      - >-
+        1959-murray-vascular-cube-law-branching.py:1787, 1104, 1812 and 1113 — `--seed` is accepted but unused
+        in every default path, and `--eta`/`--b` still do not reach run_gamma_power_sweep / Panel D / the
+        empirical junction evaluator. Either consume the seed (e.g. heading jitter in the cup) or drop the
+        flag; thread eta/b through the Newtonian sweep.
+      - >-
+        1959-murray-vascular-cube-law-branching.py:78-80 and datasets/vascular_cube_law_branching/
+        fahraeus_lindqvist_retinal_cup_reference.json — hash-pin both reference JSONs in EXPECTED_SHA256 and
+        verify them fail-closed; verify the three Pass 3 DOIs (Pries 1992, Fåhraeus & Lindqvist 1931, Hubbard
+        1999) and add a Zamir, Medeiros & Cunningham (1979) bib entry with DOI.
+      - >-
+        datasets/vascular_cube_law_branching/vascular_cube_law_branching_reference.json:72-80 and
+        1959-murray-vascular-cube-law-branching.py:84 — the Sherman (1981) generational hierarchy is generated
+        from r_g = 82 um * 2^(-g/3) and the 82 um root radius has no page pin; digitise Sherman's Table I (or
+        another page-pinned human retinal hierarchy) and compare the synthetic hierarchy against it.
+      - >-
+        1959-murray-vascular-cube-law-branching.py:1670 and 1779 — the self_test() docstring and the --self-test
+        help string still read "Pass 2"; update to the 9-suite Pass 3 description.

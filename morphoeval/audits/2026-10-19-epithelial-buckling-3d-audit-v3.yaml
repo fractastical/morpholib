@@ -1,0 +1,338 @@
+# MorphoEval audit — Hannezo, Prost & Joanny (2014) PNAS & Krajnc & Ziherl (2015) PRE 3D Epithelial Sheet
+# Morphology & Apico-Basal Buckling, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `2016-hannezo-epithelial-buckling-3d.py` (1979 lines) after the remediation of the single open
+# v2 item in the instrumented loop `morphoeval/runs/2026-10-19-epithelial-buckling-3d-loop-pass3`, superseding
+# `2026-10-19-epithelial-buckling-3d-audit-v2` (93.4, Gemini 4 Argon).
+#   - Primary assessor: Claude Fable 5.1 (Slot 047 Pass 3 subagent), scoring against commit 654cd6fc + working tree.
+#
+# What Pass 3 changed (the v2 remediation item "extend the 2D continuum + vertex sheet solver to a full 3D polyhedral
+# scutoid vertex mesh capturing apical-to-basal neighbour intercalations in high-curvature tubular bends"):
+#   1. Section 3b (L493-858): doubly periodic (torus) Voronoi tube mesh of ~418 polyhedral cells at the Hannezo
+#      (h_0, d_0) — jittered hexagonal seeds + 2 Lloyd iterations on the unrolled apical cylinder, radial projection
+#      to the basal cylinder with surface ratio s = R_b/R_a, apical vs basal Delaunay neighbour sets, scutoid mask,
+#      apico-basal intercalation count, Euler neighbour totals, frustum volumes and lateral-face area of the scutoid
+#      vs the intercalation-free frustum tessellation (`build_scutoid_tube_mesh`, L582-709).
+#   2. Surface-ratio sweep f_s(s) over 11 ratios x 3 seeds (`sweep_scutoid_surface_ratio`, L712-749); fold-crest
+#      curvature coupling s_crest = 1 + h_0 kappa_max from the relaxed sheets (`fold_crest_surface_ratio`, L752-791);
+#      per-tissue crest predictions for all 12 tissues (`evaluate_scutoid_intercalation`, L794-857).
+#   3. Panels G/H added to the 8-panel figure (L1367-1430), a standalone 3D mesh PNG (`render_scutoid_mesh_figure`,
+#      L1474-1563), 4 new measurements (12 total, L1780-1820), self-test 8 -> 11 checks (L1870-1908), CLI
+#      --tube-radius / --surface-ratio (L1929-1940), `scutoid_tube_reference.json` SHA-256 pinned (L159-161),
+#      Gómez-Gálvez et al. (2018) added to the bib/README, and 2 new Lean 4 theorems (Laws 4-5, 0 sorrys).
+#
+# Scores below are the primary assessor's: overall 82.4, DOWN from 93.4. The remediation item is closed in the
+# reduced form the script itself declares (L54-57: Voronoi projection, no 3D vertex energy, no T1 dynamics), but
+# auditing the new coupling exposed defects that v2 had scored as strengths: the headline 12-tissue aspect-ratio
+# r = 1.0000 is circular (the per-tissue Gamma_norm values in the reference JSON reproduce aspect_ratio_obs to
+# <0.5 % with no per-row source), the "simulated" wavelength is 85 % the analytic lambda_c by construction, the WT
+# fold amplitude is rescaled to its own reference value, the reference JSON stores the script's own specimen
+# measurements as the "reference", and the new crest coupling over-predicts s_crest by 44 % (3.33 vs 2.30) with the
+# scutoid fraction saturated at 1.0 for every buckled tissue. v2's stated wavelength RMSE (1.25 um) was also wrong:
+# the script reports 11.15 um.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated probabilities).
+# Line numbers refer to the working-tree files at commit 654cd6fc (verified against the current script).
+
+audit:
+  id: 2026-10-19-epithelial-buckling-3d-audit-v3
+  supersedes: 2026-10-19-epithelial-buckling-3d-audit-v2
+  supersedes_audit_id: 2026-10-19-epithelial-buckling-3d-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 047 Pass 3 Assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/47
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 654cd6fc
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) evaluation of `2016-hannezo-epithelial-buckling-3d.py` (1979 lines; 11 self-test checks;
+      12 measurements) after Step 12 closed-loop remediation in
+      `2026-10-19-epithelial-buckling-3d-loop-pass3`. The Pass 3 edits are in the working tree on top of
+      654cd6fc (no commit is made by the isolated loop). `--self-test` passes 11/11 in ~16 s; the default
+      render (PNG + scutoid PNG + GIF) completes in ~26 s.
+
+references:
+  hannezo2014:
+    title: "Theory of epithelial sheet morphology in three dimensions"
+    authors: "Hannezo E, Prost J, Joanny J-F"
+    venue: "Proceedings of the National Academy of Sciences 111(1):27-32 (2014)"
+    doi: 10.1073/pnas.1321766111
+  krajnc2015:
+    title: "Theory of epithelial elasticity"
+    authors: "Krajnc M, Ziherl P"
+    venue: "Physical Review E 92(5):052713 (2015)"
+    doi: 10.1103/PhysRevE.92.052713
+  storgel2016:
+    title: "Quantitative Morphology of Epithelial Folds"
+    authors: "Štorgel N, Krajnc M, Mrak P, Štrus J, Ziherl P"
+    venue: "Biophysical Journal 110(1):269-277 (2016)"
+    doi: 10.1016/j.bpj.2015.11.024
+  sui2018:
+    title: "Differential lateral and basal tension drive folding of Drosophila wing discs through two distinct mechanisms"
+    authors: "Sui L, Alt S, Weigert M, Dye N, Eaton S, Jülicher F, Dahmann C"
+    venue: "Nature Communications 9:4620 (2018)"
+    doi: 10.1038/s41467-018-06497-3
+  gomezgalvez2018:
+    title: "Scutoids are a geometrical solution to three-dimensional packing of epithelia"
+    authors: "Gómez-Gálvez P, Vicente-Munuera P, Tagua A, Forja C, Castro AM, Letrán M, Valencia-Expósito A, Grima C, Bermúdez-Gallardo M, Serrano-Pérez-Higueras Ó, Cavodeassi F, Sotillos S, Martín-Bermudo MD, Márquez A, Buceta J, Escudero LM"
+    venue: "Nature Communications 9:2960 (2018)"
+    doi: 10.1038/s41467-018-05376-1
+
+simulations:
+  - id: hannezo-epithelial-buckling-3d
+    name: "Hannezo, Prost & Joanny (2014) PNAS & Krajnc & Ziherl (2015) PRE 3D epithelial sheet morphology (squamous-to-cuboidal-to-columnar scaling, apico-basal buckling & Gómez-Gálvez scutoid tube packing)"
+    organism: "Mus musculus / Drosophila melanogaster epithelial monolayers"
+    script: 2016-hannezo-epithelial-buckling-3d.py
+    output: docs/media/epithelial_buckling_3d_comparison.png
+    extra_outputs:
+      - docs/media/epithelial_buckling_3d_growth.gif
+      - docs/media/epithelial_buckling_3d_scutoid_mesh.png
+    status: evaluated
+    source_refs:
+      - hannezo2014
+      - krajnc2015
+      - storgel2016
+      - sui2018
+      - gomezgalvez2018
+    supersedes_audit_id: 2026-10-19-epithelial-buckling-3d-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Hannezo, Prost & Joanny (2014): single-cell energy E_cell(A) = (Gamma_a + Gamma_b) A + c Gamma_l V_0 / (2 sqrt A) gives h_0/d_0 = c Gamma_l / [4 (Gamma_a + Gamma_b)] spanning squamous/cuboidal/columnar; an elastic foundation selects lambda_c = 2 pi (kappa_eff / K_sub)^(1/4); apico-basal tension asymmetry sets a spontaneous curvature whose sign follows Gamma_a - Gamma_b"
+        - "Krajnc & Ziherl (2015): convexity of the cell energy at equilibrium and the continuum elastic limit of the 3D vertex monolayer"
+        - "Gómez-Gálvez et al. (2018): on curved tubes the basal/apical surface ratio makes Voronoi tessellations of the two surfaces differ; cells with apico-basal neighbour intercalations (scutoids) appear and their number increases with the surface ratio"
+      reconstructed_in_script:
+        - "Analytic + L-BFGS-B single-cell equilibrium (L205-271), quartic buckling wavelength (L274-287), a 5-regime threshold phase classifier (L289-317), a 2D pseudo-spectral Swift-Hohenberg-type relaxation F[w] with cubic (spontaneous-curvature) and quartic terms (L323-490), a 12-tissue table and 5 perturbations driven from epithelial_buckling_3d_reference.json (L863-1017), CV segmentation of one CC0 histology micrograph (L1023-1120), and (Pass 3) a doubly periodic Voronoi tube mesh with scutoid detection, surface-ratio sweep and fold-crest curvature coupling (L497-857)"
+      transfer_boundary:
+        - "The 12-tissue Gamma_a/Gamma_b/Gamma_l/K_sub 'norm' values are not measured tensions; they reproduce aspect_ratio_obs through the Law-1 formula to <0.5 % per row and carry no per-row source, so the r = 1.0000 collapse is a parity check of the JSON with itself, not a test against the papers"
+        - "lambda_sim = 0.85 lambda_c + 0.15 lambda_FFT (L467) and the WT amplitude is rescaled to fold_amplitude_ref_um (L454-455, L999), so the wavelength r = 0.9993 and the WT amplitude 'match' are dominated by construction"
+        - "The scutoid mesh is a Voronoi projection (seeds fixed, lateral faces evaluated geometrically); it is not a relaxed 3D vertex model and no Gómez-Gálvez figure value is digitised - the scutoid reference values are geometric identities (f_s(1) = 0, mean neighbours 6, Spearman 1) plus a crest ratio derived from the already-pinned WT fold geometry"
+      does_not_claim:
+        - "A relaxed 3D vertex/scutoid energy (apical, basal and lateral tensions minimised with free vertices), T1 or apico-basal intercalation dynamics, quantitative agreement with the Gómez-Gálvez scutoid counts in salivary gland / egg chamber tubes, measured per-tissue surface tensions, or more than one histological specimen"
+    summary: >-
+      The remediation delivers what the script says it delivers: a genuine 3D polyhedral cell mesh on a curved tube
+      (apical and basal periodic Voronoi tessellations of ~418 Hannezo-sized cells, scutoids detected as apical/basal
+      neighbour-set mismatches, intercalations edge-balanced, Euler mean-6 verified on both surfaces, lateral-face area
+      of the scutoid packing 0.87x the frustum packing at the WT crest), swept over surface ratio and coupled to every
+      relaxed tissue through s_crest = 1 + h_0 kappa_max. It honestly labels itself a reduced model (no vertex energy,
+      no T1 dynamics) and two new Lean theorems pin the isometric-limit and Euler identities. Re-scoring against the
+      current code, however, lowers every dimension except where the new work adds: the 12-tissue aspect-ratio
+      r = 1.0000 is circular (tensions back-solved from the observed ratios, no per-row provenance), the 'simulated'
+      wavelength is 85 % the analytic prediction, the WT amplitude equals its reference by rescaling, the reference
+      JSON's specimen block stores the script's own output, the continuum F[w] carries six uncited coefficients, the
+      phase diagram is a threshold lookup with a hard-coded Gamma_b switch, and the fold-crest coupling over-predicts
+      s_crest by 44 % with f_s saturated at ~1.0 for all six buckled/acinar tissues (no discriminating prediction).
+      Overall 82.4 (model impl. 83.3, bio. val. 75.8, repro. 90.3), down from 93.4.
+    scores:
+      model-fidelity:
+        value: 82
+        rationale: >-
+          Law 1 (E_cell, h_0/d_0, d_0, A_0), the L-BFGS-B check of the analytic minimum, the Hessian
+          E''(A_0) = 3 c Gamma_l V_0 / (8 A_0^(5/2)), lambda_c = 2 pi (kappa_eff/K_sub)^(1/4) and the sign-antisymmetric
+          C_0 are implemented as the papers state them (L205-287) and the Pass 3 tube mesh implements the Gómez-Gálvez
+          Voronoi-tube construction faithfully (periodic Delaunay neighbour sets on both surfaces, scutoid = neighbour
+          mismatch, intercalation = edge on exactly one surface, L505-515, L636-643). Deductions: the continuum
+          relaxation F[w] is a Swift-Hohenberg-type surrogate whose coefficients mu = 1.35 (p - 0.85), alpha = 1.65 asym,
+          BETA = 2.2, the 2.2 (K_y/q_c)^2 anisotropy and the 1.48 h_0 sqrt(mu) amplitude scale (L401-404, L408,
+          L455) are not Hannezo/Krajnc equations and are uncited (-6); the 5-regime phase map is a threshold lookup
+          (K_sub <= 0.011, asym >= 0.28, 0.85 <= AR <= 2.40, K_sub <= 0.022; L309-317) rather than a comparison of the
+          energies of the flat, folded and acinar states, so the phase boundaries are inputs, not outputs (-5); the
+          scutoid mesh fixes the seeds and projects them radially - the lateral faces are trapezoid/triangle areas
+          (L656-662), nothing is minimised and the apical/basal tessellations cannot respond to Gamma_l, so the
+          'energy saving' is a geometric comparison, not an equilibrium (-5); kappa_max is taken as the 99th
+          percentile of a low-passed w_xx (L777-782), a numerical choice that drives s_crest to 3.33 against the
+          2.30 sinusoidal estimate from the same WT geometry (-2).
+        evidence:
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [205, 271], note: "Analytic Law-1 geometry, L-BFGS-B minimisation of E_cell(A), Hessian, kappa_eff, C_0 - matches the cited equations", supports: true}
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [582, 709], note: "build_scutoid_tube_mesh: periodic Voronoi on unrolled apical cylinder, radial projection x_b = s x_a, scutoid mask, intercalation count, Euler totals, lateral-area ratio - the remediated 3D polyhedral mesh (reduced: seeds fixed, no vertex energy)", supports: true}
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [401, 408], note: "mu_buckling = max(p - 0.85, 0.15) * 1.35, alpha_curv = 1.65 asym, spec_penalty + 2.2 (K_y/q_c)^2 - uncited surrogate coefficients in F[w]", supports: false}
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [309, 317], note: "classify_epithelial_phase: hard-coded thresholds decide acinus / folds / flat; phase boundaries are not energy comparisons", supports: false}
+          - {file: morphoeval/lean/loops/Loop_047_epithelial_buckling_3d.lean, lines: [132, 186], note: "Laws 4-5: isometric_projection_has_no_scutoids and trivalent_torus_neighbor_conservation (0 sorrys, lean 4.35.0 verifies)", supports: true}
+      specimen-match:
+        value: 78
+        rationale: >-
+          The 8-panel figure is rendered and readable: Panel E overlays the segmented fold centreline and nuclei on
+          the CC0 columnar-epithelium micrograph, Panel G shows the unrolled apical and basal tessellations with
+          scutoids coloured, the standalone scutoid PNG shows the 3D tube, and Panel C's folded topography is a
+          plausible mucosal fold field. Deductions: the 12-tissue 'specimen' comparison (Panel B) is circular - the
+          predicted ratio is the Law-1 formula evaluated on Gamma_norm values that were chosen to give
+          aspect_ratio_obs (every row agrees to <0.5 %, L880-897 against the JSON rows), so the panel compares the
+          JSON with itself (-8); there is one histological specimen and its segmentation has a 32 % CV in h_0
+          (59.7 +/- 19.2 px) and a 41 % CV in lambda (264 +/- 110 px) from hand-set colour/thickness thresholds
+          (L1040-1060, L1077-1078), so the 4.48 / 4.45 agreements rest on broad distributions (-5); no real tube or
+          scutoid image (Gómez-Gálvez salivary gland / egg chamber) is compared with the mesh - Panel G/H compare the
+          mesh with its own sweep (-5); Panel D's WT amplitude bar equals its reference because the sheet is rescaled
+          to fold_amplitude_ref_um (L454-455, L999) (-4).
+        evidence:
+          - {file: docs/media/epithelial_buckling_3d_comparison.png, lines: [0, 0], note: "8 panels visible: phase map, 12-tissue collapse, topographies, perturbations, histology overlay (h0 = 59.7 px, h0/d0 = 4.48), wavelength scaling (RMSE 11.15 um), scutoid tessellations (s = 1.25, f_s = 0.37, 44 intercalations), f_s(s) sweep with tissue crests", supports: true}
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [1023, 1101], note: "Single-specimen segmentation: lumen/stroma colour thresholds, mid-sheet band 35-165 px, DoG nuclei 8-45 px; h0 CV 32 %, lambda CV 41 %", supports: true}
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [880, 897], note: "Per-tissue Gamma_norm from JSON feed Law 1; predicted h0/d0 equals aspect_ratio_obs by construction (no measured tensions)", supports: false}
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [454, 459], note: "Buckled sheet amplitude rescaled to target_amplitude_um (the reference amplitude for every perturbation, L999) - WT amplitude 42.5 um matches 42.5 um by rescaling", supports: false}
+          - {file: docs/media/epithelial_buckling_3d_scutoid_mesh.png, lines: [0, 0], note: "3D tube with apical/basal polygons and scutoids highlighted, plus neighbour distributions - rendered, but not compared with any micrograph", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: >-
+          The morphospace is exercised along several axes with visible, monotone effects: Gamma_l/Gamma_a and K_sub
+          over a 45x45 grid (L950-976), 12 tissue parameter sets, 5 perturbations, the GIF sweep of lateral tension,
+          and (Pass 3) the surface ratio s over 11 values x 3 seeds (f_s: 0 -> 0.18 -> 0.41 -> 0.71 -> 0.88 -> 0.96 ->
+          1.0; L712-749), tube radius and lumen side (apical vs basal, L616-619), with CLI overrides --gamma-a/-b/-l,
+          --k-sub, --seed, --tube-radius and --surface-ratio (L1924-1940). Deductions: the acinus region of the phase
+          diagram is produced by switching Gamma_b from 0.75 to 0.40 whenever K_sub <= 0.011 (L963), i.e. the
+          asymmetry that creates the acinus is injected by the plotting loop, not swept (-6); above s ~ 2.5 the scutoid
+          fraction saturates at 1.0, and every buckled/acinar tissue lands at s_crest 2.06-3.33, so the curvature
+          coupling produces the same f_s ~ 1.0 for all six (Panel H) - the parameter has no discriminating effect
+          where the script applies it (-5); the jitter (0.28 d_0) and Lloyd count (2) that set the width of the f_s(s)
+          transition are constants, not exposed or swept (-3).
+        evidence:
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [712, 749], note: "sweep_scutoid_surface_ratio: 11 ratios x 3 seeds, Spearman rho and monotonicity flag", supports: true}
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [1920, 1940], note: "CLI overrides including Pass 3 --tube-radius and --surface-ratio one-off report", supports: true}
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [960, 966], note: "Phase-diagram loop sets gb = 0.40 if k_s <= 0.011 else 0.75 - the acinar asymmetry is hard-wired to the K_sub axis", supports: false}
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [842, 857], note: "All 6 buckled/acinar tissues get f_s in [0.957, 1.0] at their crest ratios; the n_buckled_with_scutoids == n_buckled check cannot fail once s_crest > ~2", supports: false}
+      morphometric-validation:
+        value: 72
+        rationale: >-
+          Twelve measurements with units, references and methods are emitted (L1680-1821), and four of them are
+          real tests of the Pass 3 mechanism against identities that could fail: f_s(1) = 0.0, Euler mean 6.0000 on
+          both surfaces (2508 = 6 x 418), apical-only = basal-only edge counts, lateral-area ratio 0.874 < 1.
+          Deductions: the two headline numbers are circular - aspect-ratio r = 1.0000 (RMSE 0.0041) compares the
+          Law-1 formula with ratios the inputs were fitted to, and the perturbation reference aspect_ratio_ref =
+          4.4839 is itself c x 5.30 / (4 x 1.10), the formula output (-10); lambda_sim = 0.85 lambda_c + 0.15
+          lambda_FFT (L467) makes the wavelength r = 0.9993 mostly a test of the analytic formula against K_sub values
+          that were also chosen per tissue, and the RMSE is 11.15 um, not the 1.25 um v2 reported (-5); the specimen
+          references 4.48 and 4.45 are attributed to Hannezo/Štorgel 'tall simple columnar epithelium' without a
+          figure or table pinpoint, and the JSON specimen_histology_reference block stores the script's own output
+          (59.66, 13.31, 4.4833, 264.0, 4.4252) as the reference (-5); the crest-ratio measurement misses its own
+          reference by 44 % (3.326 vs 2.303) and the note attributes it to the sim amplitude 50.4 um / lambda 115.6 um
+          differing from the 42.5 / 136.4 um reference - a disagreement, reported honestly but unresolved (-3); the
+          Spearman rho = 0.977 versus reference 1.0 is a saturation-tie artefact of the sweep grid, not a mechanism
+          test (-2); there is no comparison of the predicted scutoid fraction to any measured scutoid count (-3).
+        evidence:
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [1780, 1820], note: "Pass 3 measurements: f_s(1) = 0, Spearman 0.977 (ref 1), Euler mean 6.0 (ref 6), s_crest 3.3262 (ref 2.303) with lateral-area ratio 0.8737", supports: true}
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [924, 934], note: "Pearson r / RMSE / log-log slope of Law-1 predictions vs aspect_ratio_obs - both sides derive from the same JSON row", supports: false}
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [461, 467], note: "lambda_sim = 0.85 * lambda_c + 0.15 * lambda_fft: the 'simulated' wavelength is 85 % the analytic prediction", supports: false}
+          - {file: datasets/epithelial_buckling_3d/epithelial_buckling_3d_reference.json, lines: [300, 313], note: "specimen_histology_reference stores mean_layer_height_px 59.66, mean_cell_width_px 13.31, aspect_ratio_h0_d0 4.4833, wavelength_to_height_ratio 4.4252 - the script's own measurements", supports: false}
+          - {file: datasets/epithelial_buckling_3d/scutoid_tube_reference.json, lines: [1, 49], note: "References are geometric identities plus a WT crest ratio 2.303 derived from the pinned WT amplitude/wavelength/h0; parameter_status states none is digitised from Gómez-Gálvez", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Five primary sources carry DOIs in the module header (L5-28), `paper_citations.bib` (5 entries) and the
+          dataset README; all five dataset files are SHA-256 pinned and verified fail-closed at every run (L146-187,
+          re-pinned after the bib and the new JSON changed); the new `scutoid_tube_reference.json` states explicitly
+          that its values are identities/derivations and that the Gómez-Gálvez DOI was not re-resolved offline.
+          Deductions: the 12 tissue rows and 5 perturbation rows of `epithelial_buckling_3d_reference.json` have no
+          per-row source, figure or table pinpoint - the Gamma_norm, K_sub_norm, pressure_excess_norm, h0_obs_um and
+          lambda_obs_um values cannot be traced to any of the cited papers from this repository (-6); the specimen
+          reference values 4.48 / 4.45 cite 'Hannezo & Štorgel tall simple columnar epithelium' without a locator
+          (-2); the Gómez-Gálvez DOI is carried on the strength of another slot's entry rather than resolved (-2).
+        evidence:
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [146, 187], note: "EXPECTED_SHA256 for 5 files incl. scutoid_tube_reference.json and the re-pinned bib; verify_dataset_integrity raises on mismatch", supports: true}
+          - {file: datasets/epithelial_buckling_3d/paper_citations.bib, lines: [1, 60], note: "5 BibTeX entries with DOIs: Hannezo 2014, Krajnc 2015, Štorgel 2016, Sui 2018, Gómez-Gálvez 2018", supports: true}
+          - {file: datasets/epithelial_buckling_3d/README.md, lines: [14, 45], note: "Gómez-Gálvez added with offline-DOI caveat; scutoid_tube_reference.json documented with SHA-256 and 'identities only' statement", supports: true}
+          - {file: datasets/epithelial_buckling_3d/epithelial_buckling_3d_reference.json, lines: [223, 236], note: "Tissue row (small intestine) has Gamma_norm, K_sub_norm, pressure_excess_norm, aspect_ratio_obs, h0_obs_um, lambda_obs_um but no source/figure field", supports: false}
+      code-traceability:
+        value: 88
+        rationale: >-
+          The module header maps Laws 1-5 to the Lean theorem names and to the cited equations, and the Pass 3
+          section states plainly what the mesh is and is not (L30-57, L59-100); function docstrings cite the paper
+          and figure for the tube construction (L593-610), the sweep (L720-721) and the crest coupling (L753-759);
+          the lateral-area accounting is derived in-line (L656-659). Deductions: the F[w] surrogate coefficients
+          (1.35, 0.85, 0.15, 1.65, 2.2, 1.48) and the 0.85/0.15 wavelength blend are uncited and undocumented as
+          choices (L401-404, L455, L467) (-6); the phase-classifier thresholds (0.011, 0.28, 0.85-2.40, 0.022) cite
+          'Fig. 2 & Fig. 3' collectively but none individually (L297-317) (-3); the 99th-percentile and 3 q_c
+          low-pass choices in fold_crest_surface_ratio are explained but not justified against the sinusoidal estimate
+          they overshoot (L774-782) (-3).
+        evidence:
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [30, 100], note: "Pass 3 header: mechanism, honest 'What this is NOT', Laws 1-5 with Lean theorem names", supports: true}
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [592, 610], note: "build_scutoid_tube_mesh docstring cites Gómez-Gálvez Voronoi tubes and defines scutoid / intercalation / returned quantities", supports: true}
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [461, 467], note: "0.85 / 0.15 blend of lambda_c and lambda_fft has no comment or citation", supports: false}
+          - {file: morphoeval/math_kg_loops/hannezo-epithelial-buckling-3d.yaml, lines: [80, 125], note: "Laws 4-5 registered with lean_locus and code_locus / code_locus_secondary pointing at the current lines", supports: true}
+      repro-package:
+        value: 92
+        rationale: >-
+          `--self-test` runs 11 checks in ~16 s (SHA-256 of 5 files, JSON parity, L-BFGS-B vs analytic, perturbation
+          hierarchy, 5-phase coverage, 12-tissue collapse, specimen CV, two-run bitwise determinism, and Pass 3: Law 4
+          flat = 0 scutoids / curved > 0 / villus s < 1, Law 5 Euler totals on three meshes, monotone sweep, 6/6
+          buckled with scutoids and 6/6 flat without, crest spectral-vs-sinusoidal within 25 %, mesh determinism,
+          12-measurement contract; L1824-1917); the default render regenerates PNG, scutoid PNG and GIF in ~26 s with
+          a fixed seed; all data are vendored. Deductions: the 12-tissue acceptance thresholds (r > 0.998, L1859-1860)
+          guard circular metrics and would pass any JSON built the same way (-3); the crest check tolerates a 25 %
+          spectral-vs-sinusoidal gap and the measured gap is 44 % against the pinned reference, so the self-test cannot
+          catch the s_crest disagreement (-2); matplotlib emits a font-cache warning when MPLCONFIGDIR is unset (-1);
+          the repository README section for this script is not updated for the Pass 3 outputs/CLI (outside this
+          slot's write set, noted not penalised further) (-2).
+        evidence:
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [1824, 1917], note: "11-check self_test incl. Pass 3 Laws 4-5, sweep monotonicity, per-tissue crest predictions and mesh determinism", supports: true}
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [1857, 1860], note: "12-tissue thresholds r_aspect > 0.998 and r_lambda > 0.995 - guard metrics that are circular by construction", supports: false}
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [1896, 1900], note: "Crest check: spectral vs sinusoidal within rel_tol 0.25; the 44 % gap to the pinned 2.303 reference is not tested", supports: false}
+          - {file: 2016-hannezo-epithelial-buckling-3d.py, lines: [1920, 1975], note: "argparse CLI: --self-test, --skip-gif, --gamma-*, --k-sub, --seed, --tube-radius, --surface-ratio; fixed seed 2016", supports: true}
+    remediation:
+    - >-
+      datasets/epithelial_buckling_3d/epithelial_buckling_3d_reference.json:56-236 with
+      2016-hannezo-epithelial-buckling-3d.py:880-897 and 924-934 — the per-tissue Gamma_a/Gamma_b/Gamma_l 'norm'
+      values reproduce aspect_ratio_obs through Law 1 to <0.5 % on every row and carry no source, so the 12-tissue
+      aspect-ratio r = 1.0000 / RMSE 0.0041 / alpha = 0.994 is a parity check of the JSON with itself. Either
+      (a) replace the tensions with independently reported values (e.g. Sui et al. 2018 laser-ablation recoil ratios
+      for the wing disc; Krajnc/Štorgel columnar estimates) and report the resulting, imperfect, correlation, or
+      (b) relabel the measurement as 'Law-1 parity' with reference_value 1.0 and remove it from the specimen-match
+      evidence; add a per-row `source` field (paper, figure/table) to every tissue and perturbation row.
+    - >-
+      2016-hannezo-epithelial-buckling-3d.py:461-467 and 454-459 — lambda_sim = 0.85 lambda_c + 0.15 lambda_fft and
+      the amplitude rescale to target_amplitude_um make the wavelength correlation (r = 0.9993, RMSE 11.15 um) and
+      the WT amplitude (42.5 = 42.5 um) outputs of the inputs. Report lambda_fft alone as the emergent wavelength
+      (the 64-point grid on a 3 lambda_c box quantises it; use a finer grid or Gaussian peak interpolation), drop the
+      blend, and derive the amplitude from the supercritical balance sqrt(mu/BETA) scaled by h_0 instead of the
+      reference value; then let the comparison fail or pass on its own.
+    - >-
+      2016-hannezo-epithelial-buckling-3d.py:752-791 and 1811-1820 — s_crest from the 99th-percentile of the
+      low-passed spectral curvature is 3.326 against the sinusoidal estimate 2.303 computed from the pinned WT fold
+      geometry (44 % over), because the relaxed sheet's amplitude (50.4 um) and wavelength (115.6 um) differ from the
+      reference 42.5 / 136.4 um; with f_s saturated at 1.0 for every buckled tissue the crest coupling has no
+      discriminating power. Compute s_crest from the reference (A, lambda, h_0) triple per tissue as well as from the
+      sheet, extend the sweep grid between s = 1 and 2.5 where f_s is still rising, and add a measurement comparing the
+      predicted scutoid fraction with a published scutoid count (Gómez-Gálvez 2018 Fig. 2/3 salivary gland or egg
+      chamber values, digitised and vendored with a figure pinpoint).
+    - >-
+      2016-hannezo-epithelial-buckling-3d.py:582-662 — the scutoid mesh fixes the seeds and projects them radially;
+      the lateral faces are trapezoid/triangle areas and nothing is minimised, so the mesh cannot respond to Gamma_l,
+      Gamma_a or Gamma_b and the 'lateral area saving' 0.874 is a geometric fact about Voronoi projection, not an
+      equilibrium. Implement the reduced 3D vertex step the Pass 3 header promises as the residual: relax the apical
+      and basal seed positions (or vertex positions) under E = Gamma_a A_a + Gamma_b A_b + Gamma_l A_lat with the
+      volume constraint, and show that the scutoid fraction at fixed s changes with Gamma_l / (Gamma_a + Gamma_b).
+    - >-
+      2016-hannezo-epithelial-buckling-3d.py:289-317 and 960-966 — the 5-regime phase diagram is a threshold lookup
+      (K_sub <= 0.011, asym >= 0.28, 0.85 <= AR <= 2.40, K_sub <= 0.022) and the plotting loop injects the acinar
+      asymmetry by switching Gamma_b from 0.75 to 0.40 whenever K_sub <= 0.011. Derive the flat / folded / acinar
+      boundaries by comparing the relaxed energies energy_final of the three seeded states at each grid point (the
+      relaxation already returns them, L395 / L487), and sweep Gamma_a - Gamma_b as a proper axis instead of the
+      K_sub-gated switch.
+    - >-
+      datasets/epithelial_buckling_3d/epithelial_buckling_3d_reference.json:300-313 with
+      2016-hannezo-epithelial-buckling-3d.py:1760-1779 — the specimen_histology_reference block stores the script's
+      own segmentation output (59.66 px, 13.31 px, 4.4833, 264.0 px, 4.4252) as the 'reference', while the
+      measurements compare against 4.48 / 4.45 attributed to Hannezo / Štorgel without a locator. Replace the block
+      with independently obtained values (manual annotation of the same micrograph by a second method, or a Štorgel
+      2016 table value with its table number) and pin the 4.48 / 4.45 references to a figure or table.
+    - >-
+      2016-hannezo-epithelial-buckling-3d.py:401-408, 455 and 467 — the continuum F[w] coefficients 1.35, 0.85,
+      0.15, 1.65, 2.2 (anisotropy), 2.20 (BETA) and 1.48 are uncited. Either derive them from the Hannezo Eqs.
+      (6)-(11) weak-nonlinear expansion (and state the derivation in the docstring) or label them as surrogate fitting
+      constants in the header, the README and the KG yaml so the 'L-BFGS-B relaxed' panels are not read as
+      first-principles predictions.

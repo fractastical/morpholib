@@ -105,4 +105,54 @@ theorem potts_area_energy_equilibrium_zero (lam A0 : Int) :
   dsimp [potts_area_energy]
   rw [Int.sub_self, Int.mul_zero]
 
+/-! ### Pass 3 — 3D Cellular Potts spheroid (64^3 lattice, sublattice-parallel Metropolis) -/
+
+/-- Theorem 5 (`parity_sublattice_sites_not_moore_adjacent`):
+    Two distinct lattice sites of the same parity class `(x mod 2, y mod 2, z mod 2)` are never
+    Moore-adjacent (Chebyshev distance `≤ 1`). Hence, in the 8-colour sublattice-parallel sweep of
+    `simulate_potts_regime_3d`, simultaneously updated voxels never share a 26-neighbourhood bond,
+    so the adhesion-energy change `ΔH_adh` of every simultaneous copy attempt is exact
+    (cf. Chen, Glazier, Izaguirre & Alber 2007 Comput. Phys. Commun. 176:670). -/
+theorem parity_sublattice_sites_not_moore_adjacent
+    (x1 y1 z1 x2 y2 z2 : Int)
+    (hx : x1 % 2 = x2 % 2) (hy : y1 % 2 = y2 % 2) (hz : z1 % 2 = z2 % 2)
+    (hdist : x1 ≠ x2 ∨ y1 ≠ y2 ∨ z1 ≠ z2) :
+    ¬ (x1 - x2 ≤ 1 ∧ x2 - x1 ≤ 1 ∧ y1 - y2 ≤ 1 ∧ y2 - y1 ≤ 1 ∧ z1 - z2 ≤ 1 ∧ z2 - z1 ≤ 1) := by
+  omega
+
+/-- Cellular Potts quadratic volume (3D) / area (2D) constraint `E_vol(v, V_0) = λ (v - V_0)^2`
+    (Graner & Glazier 1992 Eq. 1, second term). -/
+def potts_volume_energy (lam v V0 : Int) : Int :=
+  lam * ((v - V0) * (v - V0))
+
+/-- Theorem 6 (`potts_volume_energy_single_voxel_increment`):
+    The energy change of growing one cell by a single voxel is
+    `E_vol(v + 1) - E_vol(v) = λ (2 (v - V_0) + 1)`, the exact increment used by both the 2D
+    (`simulate_potts_regime`) and 3D (`simulate_potts_regime_3d`) Metropolis solvers; it is
+    negative below the target volume and positive above it. -/
+theorem potts_volume_energy_single_voxel_increment (lam v V0 : Int) :
+    potts_volume_energy lam (v + 1) V0 - potts_volume_energy lam v V0 = lam * (2 * (v - V0) + 1) := by
+  dsimp [potts_volume_energy]
+  have h : (v + 1 - V0) * (v + 1 - V0) - (v - V0) * (v - V0) = 2 * (v - V0) + 1 := by
+    have e : v + 1 - V0 = (v - V0) + 1 := by omega
+    rw [e]
+    generalize v - V0 = d
+    rw [Int.add_mul, Int.mul_add, Int.mul_add, Int.mul_one, Int.one_mul]
+    omega
+  rw [← Int.mul_sub, h]
+
+/-- Theorem 7 (`potts_volume_increment_sign`):
+    The single-voxel growth increment is strictly negative when the cell is below its target
+    volume (`v < V_0`, growth favoured) and strictly positive at or above it (`v ≥ V_0`), for
+    any positive elasticity `λ > 0` — the restoring force of the volume constraint. -/
+theorem potts_volume_increment_sign (lam v V0 : Int) (hlam : 0 < lam) :
+    (v < V0 → lam * (2 * (v - V0) + 1) < 0) ∧ (V0 ≤ v → 0 < lam * (2 * (v - V0) + 1)) := by
+  constructor
+  · intro hv
+    have hneg : 2 * (v - V0) + 1 < 0 := by omega
+    exact Int.mul_neg_of_pos_of_neg hlam hneg
+  · intro hv
+    have hpos : 0 < 2 * (v - V0) + 1 := by omega
+    exact Int.mul_pos hlam hpos
+
 end MathOfBiology.Loop_041

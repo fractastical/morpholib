@@ -1,7 +1,7 @@
 sim_id: tero-physarum-transport-network
 slot: 57
 slot_id: slot-057-physarum-transport-network
-math_family: "Hagen-Poiseuille Kirchhoff Flow Coupled to Nonlinear Tube Conductivity Adaptation & Murray/Steiner Phase Transition"
+math_family: "Hagen-Poiseuille Kirchhoff Flow Coupled to Nonlinear Tube Conductivity Adaptation, Murray/Steiner Phase Transition & Peristaltic Shuttle-Streaming Wave Coupling"
 model_spec:
   model: "Tero et al. (2010) Science 327:439-442 & Tero, Kobayashi & Nakagaki (2007) J. Theor. Biol. 244:553-564 Biologically Inspired Adaptive Physarum Transport Network"
   I0_source_flux: 2.0
@@ -11,8 +11,16 @@ model_spec:
   gamma_tokyo_pareto_optimum: 1.8
   dt_integration_step: 0.08
   seed: 2010
+  peristalsis_eps_default: 0.0025
+  peristalsis_eps_sweep: [0.0, 0.00125, 0.0025, 0.005, 0.0075, 0.01]
+  contraction_period_s: 100.0
+  adaptation_time_s_per_model_unit: 1800.0
+  wavelength_over_organism_length_default: 1.0
+  wavelength_ratio_sweep: [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 8.0]
+  pruning_threshold_fraction_of_max_D: 0.10
   inputs:
     - datasets/physarum_transport_network/physarum_transport_network_reference.json
+    - datasets/physarum_transport_network/peristaltic_shuttle_streaming_reference.json
     - datasets/physarum_transport_network/physarum_polycephalum_specimen.jpg
     - datasets/physarum_transport_network/scout_manifest.json
     - datasets/physarum_transport_network/paper_citations.bib
@@ -35,7 +43,7 @@ equations:
     variables: "D_ij: hydraulic tube conductivity (∝ r_ij^4); L_ij: tube length; p_i, p_j: hydrostatic nodal pressures; Q_ij: protoplasmic shuttle streaming flux; f(|Q_ij|): shear-stress reinforcement rate; μ: tube decay rate"
     role: "Proves that Poiseuille flux is strictly antisymmetric across directed edges, conserves protoplasmic current at every branching node, and equilibrates at D_ij^* = f(|Q_ij^*|) / μ"
     source_citation: "Tero et al. (2010) Science 327(5964):439-442 Eqs. (1)-(3); Tero, Kobayashi & Nakagaki (2007) J. Theor. Biol. 244(4):553-564 Eqs. (1)-(4)"
-    code_locus: "2010-tero-physarum-transport-network.py#L120-L240"
+    code_locus: "2010-tero-physarum-transport-network.py#L238-L295"
 
   - id: tero-physarum-transport-network-2
     law_name: "Tero, Kobayashi & Nakagaki (2007) Two-Path Parallel Competition & Winner-Takes-All Shortest-Path Selection Law"
@@ -56,7 +64,7 @@ equations:
     variables: "L_1, L_2: lengths of short and long parallel tubes (L_1 < L_2); Q_1, Q_2: branch fluxes; γ: flux feedback nonlinearity exponent; I_0: total source-sink current"
     role: "Proves that for γ > 1, shorter parallel paths experience strictly stronger flux reinforcement than longer paths, destabilizing symmetric flow and driving winner-takes-all convergence to the shortest path / Steiner minimum tree"
     source_citation: "Tero, Kobayashi & Nakagaki (2007) J. Theor. Biol. 244(4):553-564 Section 2.2 & Fig. 2; Bonifaci, Mehlhorn & Varma (2012) J. Theor. Biol. 309:121-133"
-    code_locus: "2010-tero-physarum-transport-network.py#L245-L345"
+    code_locus: "2010-tero-physarum-transport-network.py#L786-L858"
 
   - id: tero-physarum-transport-network-3
     law_name: "Murray (1926) & Tero et al. (2010) Vascular Cube-Law Radius Relation at Critical Shear Exponent γ = 4/3"
@@ -75,4 +83,39 @@ equations:
     variables: "r_0: parent vein radius; r_1, r_2: daughter branch radii; D(r): Hagen-Poiseuille fourth-power conductivity; Q(r): steady-state protoplasmic volume flux"
     role: "Establishes the exact algebraic equivalence between Hagen-Poiseuille tube adaptation at γ = 4/3 and Murray's minimum-work cube law r_0^3 = r_1^3 + r_2^3 across plasmodial Y-junctions"
     source_citation: "Murray (1926) Proc. Natl. Acad. Sci. USA 12(3):207-214; Tero et al. (2010) Science 327(5964):439-442"
-    code_locus: "2010-tero-physarum-transport-network.py#L350-L465"
+    code_locus: "2010-tero-physarum-transport-network.py#L866-L911"
+
+  - id: tero-physarum-transport-network-4
+    law_name: "Peristaltic Volume-Source Closure & Half-Period Shuttle-Streaming Reversal (Pass 3)"
+    formula: "r_e(t) = r_e [1 - ε cos(ωt - 2π x_e·n/λ)],  S_i^peri(t) = -(1/2) Σ_{e∋i} dV_e/dt - mean_i(·),  Σ_i S_i^peri = 0;  S(t + T_c/2) = -S(t)  =>  Q_e(t + T_c/2) ≈ -Q_e(t);  f(|Q|) invariant under Q -> -Q"
+    lean_decl: "MathOfBiology.Loop_057.peristaltic_source"
+    lean_theorem: "MathOfBiology.Loop_057.peristaltic_closed_source_zero_sum"
+    lean_locus: "morphoeval/lean/loops/Loop_057_physarum_transport_network.lean#L155-L190"
+    lean_code: |
+      def peristaltic_source (A s : Int) : Int := -(A * s)
+      def closed_source (s m : Int) : Int := s - m
+      theorem peristaltic_closed_source_zero_sum (A s q s1 s2 s3 m : Int) (hsum : s1 + s2 + s3 = 3 * m) :
+          peristaltic_source A s + peristaltic_source A (-s) = 0 ∧
+          Int.natAbs (-q) = Int.natAbs q ∧
+          closed_source s1 m + closed_source s2 m + closed_source s3 m = 0
+    variables: "ε: relative radius contraction amplitude; ω = 2π/T_c: contraction angular frequency (T_c ≈ 100 s); λ: peristaltic wavelength (≈ organism length); n: wave direction; V_e = A_e L_e ρ_e^2: instantaneous tube volume; S_i^peri: nodal volume source; m: network-mean correction"
+    role: "Couples the traveling actomyosin contraction wave to the Kirchhoff network as a zero-sum oscillating volume source (solvability of the grounded Laplacian), proves the half-period flux reversal that constitutes shuttle streaming, and shows the slow Tero adaptation (which sees |Q|) is blind to the reversal so it must act on the cycle-averaged <|Q|>"
+    source_citation: "Alim, Amselem, Peaudecerf, Brenner & Pringle (2013) Proc. Natl. Acad. Sci. USA 110(33):13306-13311; Kamiya (1981) Annu. Rev. Plant Physiol. 32:205-236; Tero, Kobayashi & Nakagaki (2007) J. Theor. Biol. 244(4):553-564"
+    code_locus: "2010-tero-physarum-transport-network.py#L371-L447"
+
+  - id: tero-physarum-transport-network-5
+    law_name: "Net Peristaltic Transport Requires Joint Conductance & Pressure Modulation (Pass 3)"
+    formula: "Q(t) + Q(t + T_c/2) = (g + d) Δp + (g - d)(-Δp) = 2 d Δp;  d = 0 (frozen D_ij)  =>  <Q>_Tc = 0;  d ≠ 0 ∧ Δp ≠ 0  =>  <Q>_Tc ≠ 0 (second order in ε)"
+    lean_decl: "MathOfBiology.Loop_057.two_sample_net_flux"
+    lean_theorem: "MathOfBiology.Loop_057.peristaltic_net_transport_requires_conductance_modulation"
+    lean_locus: "morphoeval/lean/loops/Loop_057_physarum_transport_network.lean#L192-L227"
+    lean_code: |
+      def two_sample_net_flux (g d dp : Int) : Int := (g + d) * dp + (g - d) * (-dp)
+      theorem peristaltic_net_transport_requires_conductance_modulation (g d dp : Int) :
+          two_sample_net_flux g 0 dp = 0 ∧
+          two_sample_net_flux g d dp = 2 * (d * dp) ∧
+          (d ≠ 0 → dp ≠ 0 → two_sample_net_flux g d dp ≠ 0)
+    variables: "g = D_e/L_e: rest edge conductance; d: in-phase conductance modulation amplitude (∝ 4 ε g); Δp: pressure-drop oscillation amplitude; <Q>_Tc: cycle-averaged net flux"
+    role: "Explains why the linear Kirchhoff network with frozen conductivities cannot pump (Suite 9 null) and why the simulated net peristaltic transport is second order in ε and wavelength-dependent (Panel H), matching the Alim et al. (2013) picture of peristalsis-organized net flow"
+    source_citation: "Alim, Amselem, Peaudecerf, Brenner & Pringle (2013) Proc. Natl. Acad. Sci. USA 110(33):13306-13311"
+    code_locus: "2010-tero-physarum-transport-network.py#L681-L778"

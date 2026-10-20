@@ -1,0 +1,93 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-tozluoglu-wing-disc-dome-folding> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-tozluoglu-wing-disc-dome-folding-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-tozluoglu-wing-disc-dome-folding-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Tozluoglu et al. (2019) Dev. Cell & Sui et al. (2018) Nat. Commun. Drosophila wing imaginal disc planar differential growth, basal ECM dome & H/N, H/H, H/P hinge folding (Pass 3: + reduced disc-proper / peripodial / lumen sac) — Source and data traceability: 88/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credited: 5 dataset files are SHA-256 pinned (`EXPECTED_SHA256`, L118-141) and verified at runtime; the new `peripodial_lumen_reference.json` tags every value `literature` / `derived` / `assumption` / `prediction` and states the residual (`residual_remediation`, L37); `paper_citations.bib` gained McClure & Schubiger 2005 (L38) and Mosaliganti et al. 2019 (L51) and the corrupted `villafombuena2021live` entry (L25) was repaired; the dataset README documents Law 4 and the new file (L34-44). Deductions: the main reference table `wing_disc_dome_folding_reference.json` (timecourse dome 4.2-54.0 um, d_HH 0.8-19.4 um, 7-zone g(s)/curvature, perturbation domes 46.5/51.8/56.4 um, SD 0.142) is not traced to specific figure panels or tables and may be synthesised (-6); the two new DOIs and 10.1242/dev.199728 could not be verified offline (-3); the repaired bib entry still lacks the full author list (-1); the reference curvature 0.0128 um^-1 that `c_finite` is fitted to has no panel citation (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:evidenceAgainst "datasets/wing_disc_dome_folding/wing_disc_dome_folding_reference.json L1–L298: Timecourse, 7-zone and perturbation reference values not traced to figure panels/tables <https://github.com/fractastical/morpholib/blob/028758bc/datasets/wing_disc_dome_folding/wing_disc_dome_folding_reference.json#L1-L298>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-tozluoglu-wing-disc-dome-folding-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-tozluoglu-wing-disc-dome-folding-source-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-tozluoglu-wing-disc-dome-folding-source-traceability-3> ;
+        pk:hasScore "0.88"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-tozluoglu-wing-disc-dome-folding-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2020-tozluoglu-wing-disc-dome-folding.py L118–L141" ;
+        dct:description "EXPECTED_SHA256 for 5 dataset files incl. peripodial_lumen_reference.json (972d43d7...) and re-pinned paper_citations.bib" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2020-tozluoglu-wing-disc-dome-folding.py#L118-L141> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-tozluoglu-wing-disc-dome-folding-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/wing_disc_dome_folding/peripodial_lumen_reference.json L1–L38" ;
+        dct:description "Provenance-tagged Pass 3 parameter table; T_PE, h_lumen, h_margin, T_cell tagged 'assumption'; residual stated" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/datasets/wing_disc_dome_folding/peripodial_lumen_reference.json#L1-L38> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-tozluoglu-wing-disc-dome-folding-source-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "datasets/wing_disc_dome_folding/paper_citations.bib L25–L72" ;
+        dct:description "Repaired villafombuena2021live; new mcclure2005peripodial and mosaliganti2019hydraulic (DOIs unverified offline)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/datasets/wing_disc_dome_folding/paper_citations.bib#L25-L72> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 049 Pass 3 Phase B Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/49> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.devcel.2019.09.009>,
+            <https://doi.org/10.1038/s41467-018-06497-3>,
+            <https://doi.org/10.1115/1.4032128>,
+            <https://doi.org/10.1242/dev.02092>,
+            <https://doi.org/10.1242/dev.199728>,
+            <https://doi.org/10.7554/eLife.39596> .
+    <https://doi.org/10.1016/j.devcel.2019.09.009> dct:date "2019"^^xsd:gYear ;
+        dct:title "Planar Differential Growth Rates Initiate Precise Fold Positions in Complex Epithelia" .
+    <https://doi.org/10.1038/s41467-018-06497-3> dct:date "2018"^^xsd:gYear ;
+        dct:title "Differential lateral and basal tension drive folding of Drosophila wing discs through two distinct mechanisms" .
+    <https://doi.org/10.1115/1.4032128> dct:date "2016"^^xsd:gYear ;
+        dct:title "On buckling morphogenesis" .
+    <https://doi.org/10.1242/dev.02092> dct:date "2005"^^xsd:gYear ;
+        dct:title "Developmental analysis and squamous morphogenesis of the peripodial epithelium in Drosophila imaginal discs" .
+    <https://doi.org/10.1242/dev.199728> dct:date "2021"^^xsd:gYear ;
+        dct:title "Live imaging of the Drosophila wing disc reveals the dynamics of fold formation and the role of the extracellular matrix" .
+    <https://doi.org/10.7554/eLife.39596> dct:date "2019"^^xsd:gYear ;
+        dct:title "Size control of the inner ear via hydraulic feedback" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Tozluoglu et al. (2019) Dev. Cell & Sui et al. (2018) Nat. Commun. Drosophila wing imaginal disc planar differential growth, basal ECM dome & H/N, H/H, H/P hinge folding (Pass 3: + reduced disc-proper / peripodial / lumen sac) — Source and data traceability 88/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:26:54Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-tozluoglu-wing-disc-dome-folding-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/49> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

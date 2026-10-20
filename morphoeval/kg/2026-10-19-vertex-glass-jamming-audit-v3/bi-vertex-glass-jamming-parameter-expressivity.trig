@@ -1,0 +1,93 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-bi-vertex-glass-jamming> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-bi-vertex-glass-jamming-parameter-expressivity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-bi-vertex-glass-jamming-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Bi et al. (2015), Park et al. (2015) & Bi et al. (2016) zero-temperature shape-index unjamming, asthmatic bronchial epithelial rigidity transition and self-propelled Voronoi motility-driven glass transition — Parameter expressivity: 92/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credits: two new independent axes (v_0, D_r) added to (p_0, r); the (p_0, v_0) map (6x4 = 24 runs, L927-988) yields a boundary that is monotonically decreasing in v_0 (3.828 -> 3.594) and a fixed-p_0 motility ablation (p_0 = 3.70: T1 rate 0.0008 -> 0.0360 per cell per time from v_0 = 0.15 to 0.45); the D_r sweep (L990-1047) shows p_0^c non-decreasing in D_r and D_s decreasing in D_r at p_0 = 3.70; CLI exposes `--spv-time`, `--spv-cells`, `--spv-seed` and a `--spv-point P0 V0 DR` probe (L2014-2040, L2051-2063). Deductions: the D_r axis is a single v_0 = 0.30 slice with 3 values, and p_0^c(0.25) = 3.677 vs p_0^c(1) = 3.678 is indistinguishable at this resolution, so the \"surface\" is two orthogonal lines rather than a 3D map (-4); grids are coarse (4 v_0, 3 D_r) and the p_0 grid gap 0.05-0.10 sets the boundary interpolation error (-2); the r axis is not swept in the SPV module (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:evidenceAgainst "2015-bi-vertex-glass-jamming.py L101–L107: Grid constants: 4 v0 values, 3 D_r values, D_r sweep only at v0 = 0.30 (deduction: two slices, not a surface) <https://github.com/fractastical/morpholib/blob/7e4f207/2015-bi-vertex-glass-jamming.py#L101-L107>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-bi-vertex-glass-jamming-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bi-vertex-glass-jamming-parameter-expressivity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bi-vertex-glass-jamming-parameter-expressivity-3> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bi-vertex-glass-jamming-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2015-bi-vertex-glass-jamming.py L927–L988" ;
+        dct:description "(p0, v0) glass map at D_r = 1: per-column log-interpolated boundary, q_c, linear fit intercept/slope, monotonicity flag" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/7e4f207/2015-bi-vertex-glass-jamming.py#L927-L988> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bi-vertex-glass-jamming-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2015-bi-vertex-glass-jamming.py L990–L1047" ;
+        dct:description "D_r sweep at fixed v0 with reuse of the D_r = 1 column; p0c(D_r), D_s(p0 = 3.70) and monotonicity flags" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/7e4f207/2015-bi-vertex-glass-jamming.py#L990-L1047> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bi-vertex-glass-jamming-parameter-expressivity-3> a pk:EvidenceItem ;
+        rdfs:label "2015-bi-vertex-glass-jamming.py L2014–L2062" ;
+        dct:description "CLI: --spv-time, --spv-cells, --spv-seed, --spv-point single-point probe" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/7e4f207/2015-bi-vertex-glass-jamming.py#L2014-L2062> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary assessor, Pass 3 remediation round)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/nmat4357>,
+            <https://doi.org/10.1038/nphys3471>,
+            <https://doi.org/10.1038/s41567-018-0089-9>,
+            <https://doi.org/10.1103/PhysRevLett.97.170201>,
+            <https://doi.org/10.1103/PhysRevX.6.021011>,
+            <https://doi.org/10.1140/epje/i2010-10677-0> .
+    <https://doi.org/10.1038/nmat4357> dct:date "2015"^^xsd:gYear ;
+        dct:title "Unjamming and cell shape in the asthmatic airway epithelium" .
+    <https://doi.org/10.1038/nphys3471> dct:date "2015"^^xsd:gYear ;
+        dct:title "A density-independent rigidity transition in biological tissues" .
+    <https://doi.org/10.1038/s41567-018-0089-9> dct:date "2018"^^xsd:gYear ;
+        dct:title "Geometric constraints during epithelial jamming" .
+    <https://doi.org/10.1103/PhysRevLett.97.170201> dct:date "2006"^^xsd:gYear ;
+        dct:title "Structural relaxation made simple" .
+    <https://doi.org/10.1103/PhysRevX.6.021011> dct:date "2016"^^xsd:gYear ;
+        dct:title "Motility-driven glass and jamming transitions in biological tissues" .
+    <https://doi.org/10.1140/epje/i2010-10677-0> dct:date "2010"^^xsd:gYear ;
+        dct:title "Mechanics and remodelling of cell packings in epithelia" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Bi et al. (2015), Park et al. (2015) & Bi et al. (2016) zero-temperature shape-index unjamming, asthmatic bronchial epithelial rigidity transition and self-propelled Voronoi motility-driven glass transition — Parameter expressivity 92/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:12:15Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-bi-vertex-glass-jamming-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,113 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-ibrahim-vascular-angiogenesis-notch> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-ibrahim-vascular-angiogenesis-notch-parameter-expressivity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-ibrahim-vascular-angiogenesis-notch-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Bentley, Gerhardt & Bates (2008) PLoS Comput. Biol., Hellström et al. (2007) Nature & Jakobsson et al. (2010) Nat. Cell Biol. VEGF-VEGFR2-Dll4-Notch1 tip/stalk salt-and-pepper lateral inhibition and angiogenic sprouting, coupled to lumenized Poiseuille flow, wall-shear pruning and arteriovenous specification (Pass 3) — Parameter expressivity: 89/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Six hemodynamic conditions including three ablations/controls (`evaluate_hemodynamic_regimes`, L1210-1240), a k_t sweep propagated end-to-end through sprouting -> lumenization -> perfusion -> pruning -> AV identity (`evaluate_hemodynamic_notch_sweep`, L1243-1270) and a perfusion-pressure sweep 0-30 mmHg (`evaluate_pressure_drop_sweep`, L1273-1302) are added to the five Pass 2 regimes, and the CLI gains `--perfusion-drop-mmhg` beside `--vegf`, `--kt`, `--dll4-dosage`, `--flt1-decoy`, `--seed` (L2345-2376). Deductions: the Section 4 k_t sweep is templated for k_t > 0 (L1337-1349), so the headline gain sweep does not actually exercise the model (-5); the AV segregation index is saturated — 1.0 for every k_t >= 0.25 and 0.5 only at k_t = 0 — so Panel I shows a step, not a dose-response (-3); `--perfusion-drop-mmhg` only affects Panel G and the pruning GIF, not `measure_morphoeval()` (L2355-2358) (-2); HEMO_PARAMS entries tagged `assumption` (adaptation_gain, shrinkage_bias, metabolic_gain, av_identity_* gains, L633-637) are not exposed on the CLI (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:evidenceAgainst "2021-ibrahim-vascular-angiogenesis-notch.py L1053–L1120: Notch-gated AV readout saturates: av_segregation_index = 1.0 for every k_t >= 0.25, 0.5 at k_t = 0 (gains L633-637 are untagged assumptions in code) <https://github.com/fractastical/morpholib/blob/45670cb8/2021-ibrahim-vascular-angiogenesis-notch.py#L1053-L1120>",
+            "2021-ibrahim-vascular-angiogenesis-notch.py L1337–L1349: k_t > 0 points of the Section 4 sweep are closed-form Hill templates, not simulations <https://github.com/fractastical/morpholib/blob/45670cb8/2021-ibrahim-vascular-angiogenesis-notch.py#L1337-L1349>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-parameter-expressivity-2> ;
+        pk:hasScore "0.89"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2021-ibrahim-vascular-angiogenesis-notch.py L1210–L1302" ;
+        dct:description "6 hemodynamic conditions (wt, dapt, dll4_het, uniform_shear, shear_only_shunt, no_flow), k_t -> hemodynamics sweep, perfusion-pressure sweep" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/2021-ibrahim-vascular-angiogenesis-notch.py#L1210-L1302> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2021-ibrahim-vascular-angiogenesis-notch.py L2345–L2376" ;
+        dct:description "CLI: --self-test, --skip-gif, --vegf, --kt, --dll4-dosage, --flt1-decoy, --perfusion-drop-mmhg (Panel G / GIF only), --seed" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/2021-ibrahim-vascular-angiogenesis-notch.py#L2345-L2376> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 060 Pass 3 Assessor, Phase B subagent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/60> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1006/jtbi.1996.0233>,
+            <https://doi.org/10.1016/S0092-8674(00)81436-1>,
+            <https://doi.org/10.1016/j.devcel.2009.06.004>,
+            <https://doi.org/10.1038/nature05571>,
+            <https://doi.org/10.1038/ncb2103>,
+            <https://doi.org/10.1073/pnas.0611206104>,
+            <https://doi.org/10.1073/pnas.12.3.207>,
+            <https://doi.org/10.1152/ajpheart.1998.275.2.H349>,
+            <https://doi.org/10.1161/01.RES.77.5.1017>,
+            <https://doi.org/10.1242/dev.00929>,
+            <https://doi.org/10.1242/dev.128.19.3675>,
+            <https://doi.org/10.1371/journal.pbio.1001374>,
+            <https://doi.org/10.1371/journal.pbio.1002125>,
+            <https://doi.org/10.1371/journal.pcbi.1000052> .
+    <https://doi.org/10.1006/jtbi.1996.0233> dct:date "1996"^^xsd:gYear ;
+        dct:title "Pattern formation by lateral inhibition with feedback: a mathematical model of delta-notch intercellular signalling" .
+    <https://doi.org/10.1016/S0092-8674(00)81436-1> dct:date "1998"^^xsd:gYear ;
+        dct:title "Molecular distinction and angiogenic interaction between embryonic arteries and veins revealed by ephrin-B2 and its receptor Eph-B4" .
+    <https://doi.org/10.1016/j.devcel.2009.06.004> dct:date "2009"^^xsd:gYear ;
+        dct:title "Local guidance of emerging vessel sprouts requires soluble Flt-1" .
+    <https://doi.org/10.1038/nature05571> dct:date "2007"^^xsd:gYear ;
+        dct:title "Dll4 signalling through Notch1 regulates formation of tip cells during angiogenesis" .
+    <https://doi.org/10.1038/ncb2103> dct:date "2010"^^xsd:gYear ;
+        dct:title "Endothelial cells dynamically compete for the tip cell position during angiogenic sprouting" .
+    <https://doi.org/10.1073/pnas.0611206104> dct:date "2007"^^xsd:gYear ;
+        dct:title "Delta-like ligand 4 (Dll4) is induced by VEGF as a negative regulator of angiogenic sprouting" .
+    <https://doi.org/10.1073/pnas.12.3.207> dct:date "1926"^^xsd:gYear ;
+        dct:title "The physiological principle of minimum work. I. The vascular system and the cost of blood volume" .
+    <https://doi.org/10.1152/ajpheart.1998.275.2.H349> dct:date "1998"^^xsd:gYear ;
+        dct:title "Structural adaptation and stability of microvascular networks: theory and simulations" .
+    <https://doi.org/10.1161/01.RES.77.5.1017> dct:date "1995"^^xsd:gYear ;
+        dct:title "Design principles of vascular beds" .
+    <https://doi.org/10.1242/dev.00929> dct:date "2004"^^xsd:gYear ;
+        dct:title "Flow regulates arterial-venous differentiation in the chick embryo yolk sac" .
+    <https://doi.org/10.1242/dev.128.19.3675> dct:date "2001"^^xsd:gYear ;
+        dct:title "Notch signaling is required for arterial-venous differentiation during embryonic vascular development" .
+    <https://doi.org/10.1371/journal.pbio.1001374> dct:date "2012"^^xsd:gYear ;
+        dct:title "Haemodynamics-driven developmental pruning of brain vasculature in zebrafish" .
+    <https://doi.org/10.1371/journal.pbio.1002125> dct:date "2015"^^xsd:gYear ;
+        dct:title "Dynamic endothelial cell rearrangements drive developmental vessel regression" .
+    <https://doi.org/10.1371/journal.pcbi.1000052> dct:date "2008"^^xsd:gYear ;
+        dct:title "Agent-based simulation of notch-mediated tip cell selection in angiogenic sprout initialisation" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Bentley, Gerhardt & Bates (2008) PLoS Comput. Biol., Hellström et al. (2007) Nature & Jakobsson et al. (2010) Nat. Cell Biol. VEGF-VEGFR2-Dll4-Notch1 tip/stalk salt-and-pepper lateral inhibition and angiogenic sprouting, coupled to lumenized Poiseuille flow, wall-shear pruning and arteriovenous specification (Pass 3) — Parameter expressivity 89/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T18:18:15Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-ibrahim-vascular-angiogenesis-notch-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/60> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

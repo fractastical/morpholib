@@ -5,7 +5,7 @@ equations:
     formula: "γ_{AB} = J_{AB} - (J_{AA} + J_{BB})/2,  γ_{τM} = J_{τM} - J_{ττ}/2;  J_{AA} = J_{BB} = J_{AB} ⇒ γ_{AB} = 0"
     lean_decl: MathOfBiology.Loop_041.two_gamma_AB
     lean_theorem: MathOfBiology.Loop_041.steinberg_equal_adhesion_zero_tension
-    lean_locus: morphoeval/lean/loops/Loop_041_differential_adhesion_sorting.lean#L18-L45
+    lean_locus: morphoeval/lean/loops/Loop_041_differential_adhesion_sorting.lean#L17-L43
     lean_code: |-
       def two_gamma_AB (J_AA J_BB J_AB : Int) : Int :=
         2 * J_AB - (J_AA + J_BB)
@@ -14,12 +14,12 @@ equations:
     variables: "J_{AA}, J_{BB}, J_{AB}: homotypic and heterotypic Potts bond energies; J_{AM}, J_{BM}: cell-medium bond energies; γ_{AB}: heterotypic interfacial tension"
     role: "Defines effective tissue interfacial tensions from microscopic Potts bond energies and proves that equal adhesion eliminates the sorting driving force"
     source_citation: "Steinberg (1963) Science 141(3579):401-408; Graner & Glazier (1992) Phys. Rev. Lett. 69(13):2013-2016 Eqs. (2)-(3)"
-    code_locus: "1964-steinberg-differential-adhesion-sorting.py#L97-L143"
+    code_locus: "1964-steinberg-differential-adhesion-sorting.py#L137-L183"
   - law_name: Graner & Glazier (1992) Four Thermodynamic Phase Inequalities (Checkerboard, Complete Engulfment, Partial Engulfment, Dissociation)
     formula: "Checkerboard: γ_{AB} < 0;  Complete engulfment: 0 < γ_{AB} < γ_{BM} - γ_{AM};  Partial engulfment: γ_{AB} > γ_{BM} - γ_{AM} > 0;  Dissociation: γ_{AM} < 0"
     lean_decl: MathOfBiology.Loop_041.two_spreading_diff
     lean_theorem: MathOfBiology.Loop_041.graner_glazier_1992_complete_engulfment_inequalities
-    lean_locus: morphoeval/lean/loops/Loop_041_differential_adhesion_sorting.lean#L47-L71
+    lean_locus: morphoeval/lean/loops/Loop_041_differential_adhesion_sorting.lean#L45-L65
     lean_code: |-
       theorem graner_glazier_1992_complete_engulfment_inequalities :
           two_gamma_AB 14 2 11 = 6 ∧
@@ -31,12 +31,12 @@ equations:
     variables: "γ_{AB}: heterotypic interfacial tension; γ_{AM}, γ_{BM}: tissue-medium surface tensions for outer shell A and inner core B"
     role: "Partitions adhesion parameter space into checkerboard mixing, concentric complete engulfment sorting, partial engulfment lens doublets, and cell dissociation"
     source_citation: "Graner & Glazier (1992) Phys. Rev. Lett. 69(13):2013-2016 p. 2014; Glazier & Graner (1993) Phys. Rev. E 47(3):2128-2154 Table I"
-    code_locus: "1964-steinberg-differential-adhesion-sorting.py#L244-L482"
+    code_locus: "1964-steinberg-differential-adhesion-sorting.py#L284-L560"
   - law_name: Foty & Steinberg (1996) Chick Embryo Surface Tension Transitive Envelopment Hierarchy & Potts Hamiltonian
     formula: "H = ∑ J(τ(σ), τ(σ'))(1 - δ_{σ,σ'}) + λ ∑_{σ>0}(a_σ - A_0)^2;  σ_limb (20.1) > σ_pigment (12.6) > σ_heart (8.5) > σ_liver (4.6) > σ_retina (1.6) dyn/cm"
     lean_decl: MathOfBiology.Loop_041.potts_area_energy
     lean_theorem: MathOfBiology.Loop_041.foty_1996_transitive_envelopment_hierarchy
-    lean_locus: morphoeval/lean/loops/Loop_041_differential_adhesion_sorting.lean#L73-L115
+    lean_locus: morphoeval/lean/loops/Loop_041_differential_adhesion_sorting.lean#L67-L106
     lean_code: |-
       theorem foty_1996_transitive_envelopment_hierarchy (sA sB sC : Int)
           (hAB : sB > sA) (hBC : sC > sB) :
@@ -46,4 +46,45 @@ equations:
     variables: "H: Cellular Potts Hamiltonian; σ_{i,j}: cell spin ID; a_σ: cell area; A_0: target area; σ_tissue: equilibrium tissue surface tension (dyn/cm)"
     role: "Governs stochastic Metropolis Monte Carlo cell sorting and proves transitive mutual envelopment across all 5 embryonic Gallus gallus tissues"
     source_citation: "Foty, Pfleger, Forgacs & Steinberg (1996) Development 122(5):1611-1620 Table 1 & Fig. 4"
-    code_locus: "1964-steinberg-differential-adhesion-sorting.py#L589-L627"
+    code_locus: "1964-steinberg-differential-adhesion-sorting.py#L1013-L1051"
+  - law_name: (Pass 3) Parity-Sublattice Exactness of the 3D Sublattice-Parallel Cellular Potts Metropolis Sweep
+    formula: "x₁ ≡ x₂, y₁ ≡ y₂, z₁ ≡ z₂ (mod 2) ∧ (x₁,y₁,z₁) ≠ (x₂,y₂,z₂)  ⇒  max(|Δx|,|Δy|,|Δz|) ≥ 2  (same-parity voxels are never Moore-adjacent, so simultaneous copy attempts have exact ΔH_adh)"
+    lean_decl: MathOfBiology.Loop_041.parity_sublattice_sites_not_moore_adjacent
+    lean_theorem: MathOfBiology.Loop_041.parity_sublattice_sites_not_moore_adjacent
+    lean_locus: morphoeval/lean/loops/Loop_041_differential_adhesion_sorting.lean#L110-L123
+    lean_code: |-
+      theorem parity_sublattice_sites_not_moore_adjacent
+          (x1 y1 z1 x2 y2 z2 : Int)
+          (hx : x1 % 2 = x2 % 2) (hy : y1 % 2 = y2 % 2) (hz : z1 % 2 = z2 % 2)
+          (hdist : x1 ≠ x2 ∨ y1 ≠ y2 ∨ z1 ≠ z2) :
+          ¬ (x1 - x2 ≤ 1 ∧ x2 - x1 ≤ 1 ∧ y1 - y2 ≤ 1 ∧ y2 - y1 ≤ 1 ∧ z1 - z2 ≤ 1 ∧ z2 - z1 ≤ 1)
+    variables: "(x, y, z): integer voxel coordinates on the 64³ lattice; parity class = (x mod 2, y mod 2, z mod 2) — the 8 colours of the sublattice sweep"
+    role: "Justifies the vectorised 8-colour sublattice-parallel Metropolis update of simulate_potts_regime_3d: the 26-neighbour adhesion energy change of every simultaneously evaluated voxel is exact; only the volume term uses sub-sweep-start volumes (domain-parallel CPM approximation)"
+    source_citation: "Graner & Glazier (1992) Phys. Rev. Lett. 69(13):2013-2016 Eq. (1); Chen, Glazier, Izaguirre & Alber (2007) Comput. Phys. Commun. 176(11-12):670-681 (DOI not verified offline)"
+    code_locus: "1964-steinberg-differential-adhesion-sorting.py#L646-L854"
+  - law_name: (Pass 3) Cellular Potts Volume-Constraint Single-Voxel Increment & Restoring Sign
+    formula: "E_vol(v) = λ (v − V₀)²;  E_vol(v+1) − E_vol(v) = λ (2 (v − V₀) + 1);  v < V₀ ⇒ ΔE < 0,  v ≥ V₀ ⇒ ΔE > 0  (λ > 0)"
+    lean_decl: MathOfBiology.Loop_041.potts_volume_energy
+    lean_theorem: MathOfBiology.Loop_041.potts_volume_energy_single_voxel_increment
+    lean_locus: morphoeval/lean/loops/Loop_041_differential_adhesion_sorting.lean#L125-L156
+    lean_code: |-
+      def potts_volume_energy (lam v V0 : Int) : Int :=
+        lam * ((v - V0) * (v - V0))
+      theorem potts_volume_energy_single_voxel_increment (lam v V0 : Int) :
+          potts_volume_energy lam (v + 1) V0 - potts_volume_energy lam v V0 = lam * (2 * (v - V0) + 1)
+      theorem potts_volume_increment_sign (lam v V0 : Int) (hlam : 0 < lam) :
+          (v < V0 → lam * (2 * (v - V0) + 1) < 0) ∧ (V0 ≤ v → 0 < lam * (2 * (v - V0) + 1))
+    variables: "v: current cell volume (3D) or area (2D) in lattice sites; V₀: target volume; λ: volume elasticity"
+    role: "The exact per-move volume/area energy increment evaluated by both the 2D (simulate_potts_regime) and 3D (simulate_potts_regime_3d) Metropolis solvers; its sign is the restoring force that keeps ⟨v⟩ near V₀ against the compressive cell–medium surface tension"
+    source_citation: "Graner & Glazier (1992) Phys. Rev. Lett. 69(13):2013-2016 Eq. (1), second (area) term; Glazier & Graner (1993) Phys. Rev. E 47(3):2128-2154"
+    code_locus: "1964-steinberg-differential-adhesion-sorting.py#L800-L811"
+  - law_name: (Pass 3) Sorting Kinetics — Logarithmic vs Power-Law Heterotypic Boundary Decay, 2D vs 3D
+    formula: "f(t) = L_AB/L_tot;  logarithmic: f = a + b ln(t+1);  power law: f = c (t+1)^(−α);  LSW diffusive bound α = 1/3 (R ~ t^{1/3} ⇒ L_AB/L ~ t^{−1/3}); logarithmic limit α → 0"
+    lean_decl: null
+    lean_theorem: null
+    lean_locus: null
+    lean_code: null
+    variables: "t: Monte Carlo Steps; α: power-law sorting exponent; R²_pow, R²_log: fit quality of the two descriptions on identical points"
+    role: "Empirical kinetic comparison requested by the Pass 2 audit: exponent α measured on the native 2D model, the full 3D (64³) boundary, the 2D equatorial section of the 3D spheroid, a Kawasaki-swap ablation and a 3D equal-adhesion control (compare_2d_vs_3d_sorting_kinetics); no Lean statement because the fits are statistical, not algebraic"
+    source_citation: "Graner & Glazier (1992) PRL Fig. 3 (logarithmic 2D decay); Mombach, Glazier, Raphael & Zajac (1995) PRL 75(11):2244; Nakajima & Ishihara (2011) New J. Phys. 13:033035 (DOIs not verified offline); Lifshitz–Slyozov–Wagner coarsening theory"
+    code_locus: "1964-steinberg-differential-adhesion-sorting.py#L486-L525"

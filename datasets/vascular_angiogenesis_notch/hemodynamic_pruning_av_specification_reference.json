@@ -1,0 +1,89 @@
+{
+  "metadata": {
+    "dataset_id": "vascular-angiogenesis-notch-hemodynamics-v1",
+    "title": "Pass 3 hemodynamic coupling reference: lumenized Poiseuille plexus perfusion, Pries wall-shear structural adaptation, flow-stealing pruning and Notch-gated arteriovenous specification",
+    "consumer_script": "2021-ibrahim-vascular-angiogenesis-notch.py",
+    "section": "Section 3b (build_perfused_plexus / solve_poiseuille_network / simulate_perfused_plexus_remodeling)",
+    "provenance_legend": {
+      "measured": "numerical value taken from the cited publication (figure/table/equation)",
+      "derived": "value computed from a cited closed-form law (e.g. Murray 1926, Pries 1995 set-point formula)",
+      "approximate": "order-of-magnitude or qualitative-direction value from the cited publication; the DIRECTION of the effect is the validated claim, the number is a band, not a point",
+      "assumption": "modelling choice of this script with no direct literature value; listed so the audit can see every free parameter"
+    },
+    "sources": [
+      {
+        "id": "pries1998",
+        "citation": "Pries AR, Secomb TW, Gaehtgens P (1998). Structural adaptation and stability of microvascular networks: theory and simulations. American Journal of Physiology - Heart and Circulatory Physiology 275(2):H349-H360.",
+        "doi": "10.1152/ajpheart.1998.275.2.H349"
+      },
+      {
+        "id": "pries1995",
+        "citation": "Pries AR, Secomb TW, Gaehtgens P (1995). Design principles of vascular beds. Circulation Research 77(5):1017-1023.",
+        "doi": "10.1161/01.RES.77.5.1017"
+      },
+      {
+        "id": "murray1926",
+        "citation": "Murray CD (1926). The physiological principle of minimum work. I. The vascular system and the cost of blood volume. Proceedings of the National Academy of Sciences USA 12(3):207-214.",
+        "doi": "10.1073/pnas.12.3.207"
+      },
+      {
+        "id": "chen2012",
+        "citation": "Chen Q, Jiang L, Li C, Hu D, Bu JW, Cai D, Du JL (2012). Haemodynamics-driven developmental pruning of brain vasculature in zebrafish. PLoS Biology 10(8):e1001374.",
+        "doi": "10.1371/journal.pbio.1001374"
+      },
+      {
+        "id": "franco2015",
+        "citation": "Franco CA, Jones ML, Bernabeu MO, Geudens I, Mathivet T, Rosa A, Lopes FM, Lima AP, Ragab A, Collins RT, Phng LK, Coveney PV, Gerhardt H (2015). Dynamic endothelial cell rearrangements drive developmental vessel regression. PLoS Biology 13(4):e1002125.",
+        "doi": "10.1371/journal.pbio.1002125"
+      },
+      {
+        "id": "lawson2001",
+        "citation": "Lawson ND, Scheer N, Pham VN, Kim CH, Chitnis AB, Campos-Ortega JA, Weinstein BM (2001). Notch signaling is required for arterial-venous differentiation during embryonic vascular development. Development 128(19):3675-3683.",
+        "doi": "10.1242/dev.128.19.3675"
+      },
+      {
+        "id": "lenoble2004",
+        "citation": "le Noble F, Moyon D, Pardanaud L, Yuan L, Djonov V, Matthijsen R, Breant C, Fleury V, Eichmann A (2004). Flow regulates arterial-venous differentiation in the chick embryo yolk sac. Development 131(2):361-375.",
+        "doi": "10.1242/dev.00929"
+      },
+      {
+        "id": "wang1998",
+        "citation": "Wang HU, Chen ZF, Anderson DJ (1998). Molecular distinction and angiogenic interaction between embryonic arteries and veins revealed by ephrin-B2 and its receptor Eph-B4. Cell 93(5):741-753.",
+        "doi": "10.1016/S0092-8674(00)81436-1"
+      },
+      {
+        "id": "lobov2007",
+        "citation": "Lobov IB, Renard RA, Papadopoulos N, Gale NW, Thurston G, Yancopoulos GD, Wiegand SJ (2007). Delta-like ligand 4 (Dll4) is induced by VEGF as a negative regulator of angiogenic sprouting. Proceedings of the National Academy of Sciences USA 104(9):3219-3224.",
+        "doi": "10.1073/pnas.0611206104"
+      },
+      {
+        "id": "hellstrom2007",
+        "citation": "Hellstrom M, Phng LK, Hofmann JJ, et al., Gerhardt H, Betsholtz C (2007). Dll4 signalling through Notch1 regulates formation of tip cells during angiogenesis. Nature 445(7129):776-780.",
+        "doi": "10.1038/nature05571"
+      }
+    ]
+  },
+  "hemodynamic_parameters": {
+    "blood_viscosity_pa_s": {"value": 3.5e-3, "unit": "Pa s", "provenance": "measured", "source": "pries1998", "note": "apparent in-vivo viscosity scale used for the microvascular network simulations (Fahraeus-Lindqvist / hematocrit dependence NOT modelled: residual)"},
+    "arteriolar_pressure_mmhg": {"value": 40.0, "unit": "mmHg", "provenance": "approximate", "source": "pries1995", "note": "terminal arteriole pressure in the rat mesentery network data (30-45 mmHg band)"},
+    "venular_pressure_mmhg": {"value": 25.0, "unit": "mmHg", "provenance": "approximate", "source": "pries1995", "note": "post-capillary venule pressure (20-30 mmHg band); the 15 mmHg arteriole->venule drop sets the capillary perfusion pressure"},
+    "wss_set_point_formula": {"value": "tau_e(P) = 100 - 86 exp(-5000 (log10(log10 P))^5.4) dyn/cm^2, P in mmHg", "unit": "dyn cm^-2", "provenance": "measured", "source": "pries1995", "note": "pressure-dependent wall-shear set point, Pries, Secomb & Gaehtgens 1995 Eq. 2 / Pries et al. 1998 Eq. 3; 1 dyn/cm^2 = 0.1 Pa"},
+    "metabolic_stimulus_form": {"value": "S_m = k_m log10(1 + Q_ref / Q)", "unit": "dimensionless", "provenance": "measured", "source": "pries1998", "note": "Pries et al. 1998 Eq. 4; the negative feedback that stabilises a parallel bed against shear-only shunt collapse"},
+    "capillary_min_radius_um": {"value": 1.30, "unit": "um", "provenance": "approximate", "source": "pries1995", "note": "minimum luminal radius that still passes a deformed red cell (~2.6 um lumen diameter); segments below this are pruned"},
+    "adaptation_gain": {"value": 0.075, "unit": "per remodelling step", "provenance": "assumption", "source": null, "note": "log-sensing structural adaptation rate; sets the time scale only"},
+    "shrinkage_bias": {"value": 0.025, "unit": "dimensionless", "provenance": "assumption", "source": "pries1998", "note": "constant shrinking tendency k_s of Pries et al. 1998 Eq. 6; numerical value is a calibration"},
+    "metabolic_gain": {"value": 0.90, "unit": "dimensionless", "provenance": "assumption", "source": "pries1998", "note": "k_m; calibrated so WT bed neither collapses to a single shunt nor fails to prune"},
+    "remodel_steps": {"value": 240, "unit": "steps", "provenance": "assumption", "source": null, "note": "quasi-static remodelling horizon"},
+    "av_identity_gains": {"value": [4.0, 0.5], "unit": "dimensionless", "provenance": "assumption", "source": "lawson2001", "note": "logistic gains on local pressure rank and log shear ratio for the ephrinB2/EphB4 readout; gated by Notch transduction"}
+  },
+  "reference_values": {
+    "capillary_wall_shear_stress_pa": {"value": 1.50, "band": [1.0, 2.0], "unit": "Pa", "provenance": "approximate", "source": "pries1995", "note": "capillary / post-capillary wall shear stress band of in-vivo microvascular beds (10-20 dyn/cm^2); Pries 1995 Fig. 3 shows tau falling from arterioles (~4-6 Pa) through capillaries to venules (~1 Pa)"},
+    "murray_bifurcation_exponent": {"value": 3.0, "band": [2.7, 3.3], "unit": "dimensionless", "provenance": "derived", "source": "murray1926", "note": "cube law r_p^3 = sum r_d^3 at uniform wall shear (Lean Theorem 4); measured microvascular exponents cluster at 2.7-3.0"},
+    "kirchhoff_node_residual_m3_s": {"value": 0.0, "unit": "m^3 s^-1", "provenance": "derived", "source": "pries1998", "note": "exact mass conservation at every internal node of the resistor network (solver correctness check)"},
+    "arteriovenous_marker_segregation_index": {"value": 1.0, "unit": "dimensionless", "provenance": "measured", "source": "wang1998", "note": "ephrinB2 (arterial) and EphB4 (venous) are mutually exclusive in the wild-type embryonic vasculature; index 1.0 = every arteriolar segment reads arterial and every venular segment reads venous"},
+    "arteriovenous_segregation_notch_loss": {"value": 0.5, "unit": "dimensionless", "provenance": "approximate", "source": "lawson2001", "note": "Notch-deficient (mindbomb / dominant-negative Su(H)) zebrafish lose arterial ephrinB2 and gain venous markers in the dorsal aorta, with arteriovenous shunts: no segregation (chance level 0.5)"},
+    "notch_blockade_perfused_density_ratio": {"value": 1.5, "band": [1.3, 2.0], "unit": "DAPT / WT perfused segment count", "provenance": "approximate", "source": "lobov2007", "note": "Dll4 blockade (Dll4-Fc / DAPT) increases vascular density and branch-point count by roughly 1.3-2x in the neonatal retina while perfusion per vessel falls (Lobov 2007 Fig. 2-3; Hellstrom 2007 Fig. 1); the model reproduces hyperdensity as under-pruning of a uniform-calibre bed"},
+    "flow_arrest_regression": {"value": "regression", "unit": "qualitative", "provenance": "measured", "source": "chen2012", "note": "segments with little or no flow regress and are pruned (zebrafish midbrain; chick yolk sac le Noble 2004); the no_flow control must prune at least as much as WT"},
+    "shear_only_shunt_instability": {"value": "collapse to single shunt", "unit": "qualitative", "provenance": "measured", "source": "pries1998", "note": "shear-stress adaptation alone is unstable and collapses a parallel bed into one arteriovenous shunt; the metabolic stimulus restores stability (Pries 1998 Fig. 2-3)"}
+  }
+}

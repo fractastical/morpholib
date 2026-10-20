@@ -1,11 +1,39 @@
 #!/usr/bin/env python3
 """
-2002-brodland-differential-interfacial-tension-sorting.py — Pass 2 (v2 Remediated)
+2002-brodland-differential-interfacial-tension-sorting.py — Pass 3 (v3 Remediated)
 ==================================================================================
 Brodland (2002) J. Biomech. Eng., Krieg et al. (2008) Nature Cell Biology, and
 Maître et al. (2012) Science Differential Interfacial Tension Hypothesis (DITH),
 Actomyosin Cortical Tension vs. Cadherin Adhesion, Young–Dupré Cell-Doublet
 Contact Angle Mechanics, and Zebrafish Germ-Layer Progenitor Sorting.
+
+Pass 3 adds the time-dependent Nodal/TGF-beta morphogen coupling that the Pass 2
+audit asked for (Section 1b + `simulate_nodal_coupled_internalization`):
+  4. Nodal/TGF-beta -> cortical tension coupling (reduced 1D-gradient + relaxation ODE):
+     - Marginal Nodal (Squint/Cyclops) signal rising from sphere stage (t_on = 4.0 hpf)
+       with range lambda (cell tiers) animal-ward from the blastoderm margin:
+         C(x, t) = C0 * (1 - exp(-(t - t_on)/tau_N)) * exp(-x / lambda),   t >= t_on
+       (Chen & Schier 2001 Nature 411:607 morphogen range; Dubrulle et al. 2015 eLife 4:e05042
+        and van Boxtel et al. 2015 Dev. Cell 35:175 temporal window / gradient kinetics;
+        Hagos & Dougan 2007 BMC Dev. Biol. 7:22 time-dependent mesendoderm specification).
+     - Dose-dependent fate -> cortical tension target (two-threshold Hill; Krieg et al. 2008
+       themselves obtained ectoderm / mesoderm / endoderm progenitors by lefty1 / low cyclops /
+       cyclops + casanova mRNA, i.e. by Nodal dose):
+         beta*(C) = beta_E + (beta_M - beta_E) H(C; K_M) + (beta_N - beta_M) H(C; K_N),
+         H(C; K) = C^n / (K^n + C^n)
+     - First-order actomyosin cortex relaxation toward the Nodal-set target:
+         d beta_i / dt = (beta*(C(x_i, t)) - beta_i) / tau_beta
+     - Continuous-cortex DITH closure used in the coupled lattice energy (per cell, not per type):
+         gamma_{i0} = beta_i,   gamma_{ij} = gamma_hom + kappa |beta_i - beta_j|,  0 <= kappa < 1
+       which is Brodland's law with omega_{ij} = beta_i + beta_j - gamma_hom - kappa |beta_i - beta_j|
+       and guarantees 0 < gamma_{ij} < |gamma_{i0} - gamma_{j0}| (engulfment of the higher-tension
+       cell) whenever Nodal has differentiated the two cortices (Lean theorem
+       `cortex_mismatch_closure_satisfies_engulfment`).
+     This is an honest REDUCED version of the request: the gradient is 1D in tier distance from
+     the margin, the specification memory is the cell's tier of origin (Nodal exposure is not
+     re-evaluated after a cell moves), and there is no epiboly / yolk-syncytial-layer motion.
+     The residual (2D advected Nodal field, Lefty feedback, digitised pSmad2 profile) is carried
+     as a Pass 4 remediation item.
 
 Primary Literature & Equations Implemented:
   1. Brodland GW (2002) J. Biomech. Eng. 124(2):188-197 (doi:10.1115/1.1449491):
@@ -53,6 +81,17 @@ SPECIMEN_JPG = DATASET_DIR / "germ_layer_doublet_specimen.jpg"
 MEDIA_DIR = ROOT / "docs" / "media"
 COMPARISON_PNG = MEDIA_DIR / "differential_interfacial_tension_sorting_comparison.png"
 GROWTH_GIF = MEDIA_DIR / "differential_interfacial_tension_sorting_growth.gif"
+NODAL_GIF = MEDIA_DIR / "differential_interfacial_tension_sorting_nodal_internalization.gif"
+
+# Krieg et al. (2008) AFM cortical tensions (pN/um) reused by the Nodal coupling
+BETA_ECTODERM = 50.0
+BETA_MESODERM = 95.0
+BETA_ENDODERM = 130.0
+# Zebrafish staging anchors (Kimmel et al. 1995): sphere ~4.0 hpf (zygotic sqt/cyc at the
+# margin), shield 6.0 hpf (onset of mesendoderm internalization), ~65% epiboly 7.0 hpf
+NODAL_T_ON_HPF = 4.0
+NODAL_T_SHIELD_HPF = 6.0
+NODAL_T_END_HPF = 7.0
 
 EXPECTED_SHA256 = {
     "datasets/differential_interfacial_tension_sorting/germ_layer_doublet_specimen.jpg": (
@@ -184,6 +223,123 @@ def run_young_dupre_doublet_curve(
     """
     ratios = [0.15, 0.30, 0.50, 0.70, 0.85, 1.00]
     return [compute_young_dupre_doublet(gamma_cm, 2.0 * gamma_cm * r) for r in ratios]
+
+
+# =============================================================================
+# Section 1b: Time-Dependent Nodal/TGF-beta Morphogen -> Cortical Tension Coupling
+# =============================================================================
+
+def nodal_signal(
+    tier_distance: np.ndarray | float,
+    t_hpf: float,
+    C0: float = 1.0,
+    t_on: float = NODAL_T_ON_HPF,
+    tau_nodal: float = 0.6,
+    lam_tiers: float = 3.0,
+) -> np.ndarray:
+    """
+    Reduced marginal Nodal (Squint/Cyclops) signalling field in units of the saturating
+    marginal dose C0, as a function of distance x from the blastoderm margin (in cell tiers)
+    and time t (hours post fertilisation):
+        C(x, t) = C0 * (1 - exp(-(t - t_on) / tau_N)) * exp(-x / lambda),   t >= t_on
+        C(x, t) = 0,                                                       t <  t_on
+    - exponential range lambda (cell tiers) after Chen & Schier (2001) Nature 411:607 and the
+      pSmad2 gradient kinetics of Dubrulle et al. (2015) eLife 4:e05042;
+    - first-order temporal rise after the signalling window of van Boxtel et al. (2015)
+      Dev. Cell 35:175 and Hagos & Dougan (2007) BMC Dev. Biol. 7:22.
+    """
+    x = np.asarray(tier_distance, dtype=np.float64)
+    rise = 0.0 if t_hpf <= t_on else float(1.0 - np.exp(-(t_hpf - t_on) / tau_nodal))
+    return C0 * rise * np.exp(-x / lam_tiers)
+
+
+def nodal_to_cortical_tension_target(
+    C: np.ndarray | float,
+    beta_E: float = BETA_ECTODERM,
+    beta_M: float = BETA_MESODERM,
+    beta_N: float = BETA_ENDODERM,
+    K_M: float = 0.2,
+    K_N: float = 0.6,
+    n_hill: float = 4.0,
+) -> np.ndarray:
+    """
+    Dose-dependent Nodal fate -> actomyosin cortical tension target (pN/um):
+        beta*(C) = beta_E + (beta_M - beta_E) H(C; K_M) + (beta_N - beta_M) H(C; K_N),
+        H(C; K)  = C^n / (K^n + C^n)
+    Nodal-blocked (lefty1 / MZoep, C -> 0) cells take the ectoderm tension beta_E = 50,
+    intermediate dose the mesoderm tension beta_M = 95, saturating dose the endoderm
+    tension beta_N = 130 (Krieg et al. 2008 Nat. Cell Biol. Fig. 1, whose progenitors were
+    themselves induced by lefty1 / cyclops / cyclops+casanova mRNA, i.e. by Nodal dose).
+    Monotone and bounded in [beta_E, beta_N] (Lean `nodal_dose_cortical_tension_monotone_bounded`
+    proves the sharp-threshold n -> infinity limit).
+    """
+    c = np.clip(np.asarray(C, dtype=np.float64), 0.0, None)
+    cn = c**n_hill
+    h_M = cn / (K_M**n_hill + cn)
+    h_N = cn / (K_N**n_hill + cn)
+    return beta_E + (beta_M - beta_E) * h_M + (beta_N - beta_M) * h_N
+
+
+def cortical_tension_mismatch_gamma(
+    beta_i: np.ndarray | float,
+    beta_j: np.ndarray | float,
+    kappa: float = 2.0 / 3.0,
+    gamma_hom: float = 0.0,
+) -> np.ndarray:
+    """
+    Continuous-cortex DITH closure for the heterotypic interfacial tension between two cells
+    whose cortical tensions have been set independently by Nodal dose:
+        gamma_ij = gamma_hom + kappa * |beta_i - beta_j|,   0 <= kappa < 1
+    i.e. Brodland (2002) Eq. (1) with adhesion omega_ij = beta_i + beta_j - gamma_ij.
+    kappa = 2/3 reproduces the wild-type anchor gamma_EM = (2/3) * |95 - 50| = 30 pN/um and,
+    because kappa < 1, guarantees 0 < gamma_ij < |gamma_i0 - gamma_j0| = |beta_i - beta_j|
+    (Krieg 2008 regime I engulfment) for every pair of differentiated cortices.
+    This is a phenomenological closure (adhesion drops with cortex mismatch, in the spirit of
+    Maître et al. 2012 cortex coupling), not a measured omega_ij; stated as such in the audit.
+    """
+    return gamma_hom + kappa * np.abs(np.asarray(beta_i, dtype=np.float64) - np.asarray(beta_j, dtype=np.float64))
+
+
+def integrate_nodal_cortical_tension_dynamics(
+    tier_distances: np.ndarray,
+    t0: float = NODAL_T_ON_HPF,
+    t1: float = NODAL_T_END_HPF,
+    n_steps: int = 135,
+    tau_beta: float = 0.5,
+    C0: float = 1.0,
+    lam_tiers: float = 3.0,
+    tau_nodal: float = 0.6,
+    beta_init: float = BETA_ECTODERM,
+) -> dict[str, np.ndarray]:
+    """
+    Explicit-Euler integration of the per-tier cortical tension relaxation ODE
+        d beta_i / dt = (beta*(C(x_i, t)) - beta_i) / tau_beta
+    from t0 to t1 hpf (n_steps uniform steps). Returns times (hpf), the Nodal field C(x_i, t)
+    and the tension trajectories beta_i(t) (shape (n_steps + 1, n_tiers)).
+    """
+    x = np.asarray(tier_distances, dtype=np.float64)
+    times = np.linspace(t0, t1, n_steps + 1)
+    dt = float(times[1] - times[0]) if n_steps > 0 else 0.0
+    beta = np.full(x.shape, float(beta_init), dtype=np.float64)
+    beta_traj = np.zeros((n_steps + 1, x.size), dtype=np.float64)
+    c_traj = np.zeros((n_steps + 1, x.size), dtype=np.float64)
+    for k, t in enumerate(times):
+        c_now = nodal_signal(x, float(t), C0=C0, tau_nodal=tau_nodal, lam_tiers=lam_tiers)
+        c_traj[k] = c_now
+        beta_traj[k] = beta
+        if k < n_steps:
+            target = nodal_to_cortical_tension_target(c_now)
+            beta = beta + (dt / tau_beta) * (target - beta)
+    return {"times_hpf": times, "nodal_C": c_traj, "beta": beta_traj}
+
+
+def classify_cortical_tension(beta: np.ndarray) -> np.ndarray:
+    """Map continuous cortical tension to germ-layer class 1=E (<72.5), 2=M (<112.5), 3=N (pN/um)."""
+    b = np.asarray(beta, dtype=np.float64)
+    cls = np.ones(b.shape, dtype=np.int32)
+    cls[b >= 0.5 * (BETA_ECTODERM + BETA_MESODERM)] = 2
+    cls[b >= 0.5 * (BETA_MESODERM + BETA_ENDODERM)] = 3
+    return cls
 
 
 # =============================================================================
@@ -614,6 +770,266 @@ def run_beta_ectoderm_sweep(
 
 
 # =============================================================================
+# Section 2b: Nodal-Coupled DITH Internalization (time-dependent cortical tensions)
+# =============================================================================
+
+def simulate_nodal_coupled_internalization(
+    C0: float = 1.0,
+    lam_tiers: float = 3.0,
+    tau_nodal: float = 0.6,
+    tau_beta: float = 0.5,
+    kappa: float = 2.0 / 3.0,
+    gamma_hom: float = 0.0,
+    Vt: int = 16,
+    lam_vol: float = 1.2,
+    T: float = 10.0,
+    grid_size: int = 60,
+    n_mcs: int = 135,
+    seed: int = 2008,
+    t0: float = NODAL_T_ON_HPF,
+    t1: float = NODAL_T_END_HPF,
+    record_frames: bool = False,
+) -> dict[str, Any]:
+    """
+    2D deformable DITH sorting in which every cell carries its own time-dependent cortical
+    tension beta_i(t), driven by the marginal Nodal field C(x_i, t) through
+        d beta_i / dt = (beta*(C(x_i, t)) - beta_i) / tau_beta,
+    with the continuous-cortex DITH energy
+        gamma_{i0} = beta_i,   gamma_{ij} = gamma_hom + kappa |beta_i - beta_j|
+    (Brodland 2002 Eq. 1 with omega_ij = beta_i + beta_j - gamma_ij) re-evaluated every MCS.
+    The lattice is the same 68-cell disc as `simulate_dith_regime`; the blastoderm margin is
+    the bottom of the disc and x_i is the cell's tier-of-origin distance from it (specification
+    memory: Nodal exposure is not re-evaluated after a cell moves). All cells start as
+    Nodal-naive ectoderm-like progenitors (beta = beta_E) at t0 = 4.0 hpf (sphere) and are
+    followed to t1 = 7.0 hpf through shield stage (6.0 hpf). MCS -> hpf is linear.
+    C0 = 0 is the lefty1 / MZoep Nodal-null control (Gritsman et al. 1999: no mesendoderm).
+    """
+    rng = np.random.default_rng(seed)
+    sigma = np.zeros((grid_size, grid_size), dtype=np.int32)
+    cx, cy = grid_size // 2, grid_size // 2
+
+    cell_coords: list[tuple[int, int]] = []
+    for by in range(-5, 5):
+        for bx in range(-5, 5):
+            y_c = cy + by * 4 + 2
+            x_c = cx + bx * 4 + 2
+            if np.hypot(y_c - cy, x_c - cx) <= 17.8:
+                cell_coords.append((by, bx))
+    n_cells = len(cell_coords)
+    for cid, (by, bx) in enumerate(cell_coords, start=1):
+        sigma[cy + by * 4 : cy + by * 4 + 4, cx + bx * 4 : cx + bx * 4 + 4] = cid
+
+    # Tier-of-origin distance from the margin (bottom row of the disc), in cell diameters
+    y_centers = np.array([cy + by * 4 + 2 for (by, bx) in cell_coords], dtype=np.float64)
+    y_margin = float(np.max(y_centers))
+    tier = np.zeros(n_cells + 1, dtype=np.float64)
+    tier[1:] = (y_margin - y_centers) / 4.0
+    tier_ids = np.rint(tier).astype(np.int32)
+    n_tiers = int(np.max(tier_ids[1:])) + 1
+
+    beta = np.zeros(n_cells + 1, dtype=np.float64)
+    beta[1:] = BETA_ECTODERM
+    vols = np.bincount(sigma.ravel(), minlength=n_cells + 1).astype(np.int32)
+
+    g_scale = 5.0
+    j_hom = 4.0
+    nbr_offsets = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
+    times = np.linspace(t0, t1, n_mcs + 1)
+    dt = float(times[1] - times[0]) if n_mcs > 0 else 0.0
+
+    def _cell_pair_J(b: np.ndarray) -> np.ndarray:
+        """Per-cell-pair lattice bond energies from the continuous-cortex DITH closure."""
+        gam = cortical_tension_mismatch_gamma(b[:, None], b[None, :], kappa=kappa, gamma_hom=gamma_hom)
+        J = j_hom + gam / g_scale
+        J[0, :] = j_hom / 2.0 + b / g_scale
+        J[:, 0] = j_hom / 2.0 + b / g_scale
+        J[0, 0] = 0.0
+        return J
+
+    t_hist: list[float] = []
+    rad_sep_hist: list[float] = []
+    het_hist: list[float] = []
+    frac_mesendo_hist: list[float] = []
+    frac_endo_hist: list[float] = []
+    beta_tier_hist: list[np.ndarray] = []
+    hierarchy_t: float | None = None
+    tiers_mesendo_at_shield = 0
+    tiers_endo_at_shield = 0
+    shield_recorded = False
+    frames: list[tuple[np.ndarray, np.ndarray, float]] = []
+
+    for mcs in range(n_mcs + 1):
+        t_now = float(times[mcs])
+        cls = classify_cortical_tension(beta)
+        cls[0] = 0
+        two_class = np.where(cls >= 2, 2, cls).astype(np.int32)
+        m_now = _compute_dith_morphometrics(sigma, two_class, Vt=Vt)
+        frac_me = float(np.mean(cls[1:] >= 2))
+        t_hist.append(t_now)
+        # Delta_r is undefined (set to 0 = no sorting) while only one class is present
+        rad_sep_hist.append(m_now["radial_sep"] if 0.0 < frac_me < 1.0 else 0.0)
+        het_hist.append(m_now["het_frac"])
+        frac_mesendo_hist.append(frac_me)
+        frac_endo_hist.append(float(np.mean(cls[1:] == 3)))
+        beta_tier = np.array(
+            [float(np.mean(beta[1:][tier_ids[1:] == k])) if np.any(tier_ids[1:] == k) else np.nan for k in range(n_tiers)]
+        )
+        beta_tier_hist.append(beta_tier)
+        # Krieg 2008 hierarchy (margin > mid > animal tiers by >= 10 pN/um) establishment time
+        if hierarchy_t is None and n_tiers >= 3:
+            b_marg, b_mid, b_anim = beta_tier[0], beta_tier[n_tiers // 2], beta_tier[n_tiers - 1]
+            if (b_marg - b_mid) >= 10.0 and (b_mid - b_anim) >= 10.0:
+                hierarchy_t = t_now
+        if (not shield_recorded) and t_now >= NODAL_T_SHIELD_HPF - 1e-9:
+            tiers_mesendo_at_shield = int(np.sum(beta_tier >= 0.5 * (BETA_ECTODERM + BETA_MESODERM)))
+            tiers_endo_at_shield = int(np.sum(beta_tier >= 0.5 * (BETA_MESODERM + BETA_ENDODERM)))
+            shield_recorded = True
+        if record_frames and (mcs % max(1, n_mcs // 15) == 0 or mcs == n_mcs):
+            frames.append((beta[sigma].copy(), cls[sigma].copy(), t_now))
+        if mcs == n_mcs:
+            break
+
+        # (a) Nodal -> cortical tension relaxation step (tier-of-origin exposure)
+        c_now = nodal_signal(tier[1:], t_now, C0=C0, tau_nodal=tau_nodal, lam_tiers=lam_tiers)
+        target = nodal_to_cortical_tension_target(c_now)
+        beta[1:] = beta[1:] + (dt / tau_beta) * (target - beta[1:])
+        J_cells = _cell_pair_J(beta)
+
+        # (b) Cortical-tension-driven whole-cell position exchange (T1-like) moves
+        for _ in range(8):
+            c1 = int(rng.integers(1, n_cells + 1))
+            c2 = int(rng.integers(1, n_cells + 1))
+            if c1 == c2 or abs(beta[c1] - beta[c2]) < 1e-6:
+                continue
+            m1, m2 = (sigma == c1), (sigma == c2)
+            if not np.any(m1) or not np.any(m2):
+                continue
+            dE = 0.0
+            for dy, dx in nbr_offsets:
+                rolled = np.roll(np.roll(sigma, -dy, axis=0), -dx, axis=1)
+                nb1 = rolled[m1]
+                nb1 = nb1[(nb1 != c1) & (nb1 != c2)]
+                dE += float(np.sum(J_cells[c2, nb1] - J_cells[c1, nb1]))
+                nb2 = rolled[m2]
+                nb2 = nb2[(nb2 != c2) & (nb2 != c1)]
+                dE += float(np.sum(J_cells[c1, nb2] - J_cells[c2, nb2]))
+            if dE < -1e-9 or (T > 0.0 and dE > 1e-9 and rng.random() < np.exp(-dE / (2.2 * T))):
+                sigma[m1] = c2
+                sigma[m2] = c1
+                vols[c1], vols[c2] = vols[c2], vols[c1]
+
+        # (c) Single-site Metropolis membrane fluctuations with per-cell DITH bond energies
+        by_idx, bx_idx = np.where(
+            (sigma != np.roll(sigma, 1, axis=0))
+            | (sigma != np.roll(sigma, -1, axis=0))
+            | (sigma != np.roll(sigma, 1, axis=1))
+            | (sigma != np.roll(sigma, -1, axis=1))
+        )
+        n_sites = len(by_idx)
+        if n_sites == 0:
+            break
+        n_trials = int(n_sites * 1.4)
+        order = rng.integers(0, n_sites, size=n_trials)
+        dirs = rng.integers(0, 8, size=n_trials)
+        rand_u = rng.random(size=n_trials)
+        for k_idx in range(n_trials):
+            idx = int(order[k_idx])
+            y, x = int(by_idx[idx]), int(bx_idx[idx])
+            dy, dx = nbr_offsets[int(dirs[k_idx])]
+            ny, nx = y + dy, x + dx
+            if ny < 1 or ny >= grid_size - 1 or nx < 1 or nx >= grid_size - 1:
+                continue
+            s_old, s_new = int(sigma[y, x]), int(sigma[ny, nx])
+            if s_old == s_new:
+                continue
+            if s_old > 0 and vols[s_old] <= 6:
+                continue
+            dH_int = 0.0
+            for ndy, ndx in nbr_offsets:
+                s_nb = int(sigma[y + ndy, x + ndx])
+                if s_nb != s_old:
+                    dH_int -= J_cells[s_old, s_nb]
+                if s_nb != s_new:
+                    dH_int += J_cells[s_new, s_nb]
+            dH_vol = 0.0
+            if s_old > 0:
+                v_o = int(vols[s_old])
+                dH_vol += lam_vol * ((v_o - 1 - Vt) ** 2 - (v_o - Vt) ** 2)
+            if s_new > 0:
+                v_n = int(vols[s_new])
+                dH_vol += lam_vol * ((v_n + 1 - Vt) ** 2 - (v_n - Vt) ** 2)
+            dH = dH_int + dH_vol
+            if (dH <= 0.0) or (T > 0.0 and rand_u[k_idx] < np.exp(-dH / T)):
+                sigma[y, x] = s_new
+                if s_old > 0:
+                    vols[s_old] -= 1
+                if s_new > 0:
+                    vols[s_new] += 1
+
+    cls_final = classify_cortical_tension(beta)
+    cls_final[0] = 0
+    two_final = np.where(cls_final >= 2, 2, cls_final).astype(np.int32)
+    final_metrics = _compute_dith_morphometrics(sigma, two_final, Vt=Vt)
+    if not (0.0 < frac_mesendo_hist[-1] < 1.0):
+        final_metrics["radial_sep"] = 0.0
+    beta_tier_arr = np.vstack(beta_tier_hist)
+    return {
+        "sigma": sigma,
+        "beta": beta,
+        "beta_grid": beta[sigma],
+        "class_grid": cls_final[sigma],
+        "tier": tier,
+        "tier_ids": tier_ids,
+        "n_tiers": n_tiers,
+        "times_hpf": np.array(t_hist),
+        "rad_sep_history": np.array(rad_sep_hist),
+        "het_history": np.array(het_hist),
+        "frac_mesendo_history": np.array(frac_mesendo_hist),
+        "frac_endo_history": np.array(frac_endo_hist),
+        "beta_tier_history": beta_tier_arr,
+        "hierarchy_established_hpf": float(hierarchy_t) if hierarchy_t is not None else float("nan"),
+        "tiers_mesendo_at_shield": tiers_mesendo_at_shield,
+        "tiers_endo_at_shield": tiers_endo_at_shield,
+        "frac_mesendo_final": float(frac_mesendo_hist[-1]),
+        "frac_endo_final": float(frac_endo_hist[-1]),
+        "frames": frames,
+        "params": {
+            "C0": C0, "lam_tiers": lam_tiers, "tau_nodal": tau_nodal, "tau_beta": tau_beta,
+            "kappa": kappa, "gamma_hom": gamma_hom, "t0_hpf": t0, "t1_hpf": t1,
+        },
+        **final_metrics,
+    }
+
+
+def run_nodal_dose_sweep(
+    C0_values: tuple[float, ...] = (0.0, 0.25, 0.5, 1.0, 2.0),
+    n_mcs: int = 100,
+    seed: int = 2008,
+    **kwargs: Any,
+) -> list[dict[str, Any]]:
+    """
+    5-point sweep of the marginal Nodal dose C0 (0 = lefty1 / MZoep null, 1 = wild-type,
+    2 = cyclops-overexpression-like) reporting final mesendoderm / endoderm fractions,
+    shield-stage mesendoderm tier count and the DITH radial separation Delta_r at 7 hpf.
+    """
+    out = []
+    for c0 in C0_values:
+        r = simulate_nodal_coupled_internalization(C0=c0, n_mcs=n_mcs, seed=seed, **kwargs)
+        out.append(
+            {
+                "C0": float(c0),
+                "radial_sep": r["radial_sep"],
+                "het_final": float(r["het_history"][-1]),
+                "frac_mesendo_final": r["frac_mesendo_final"],
+                "frac_endo_final": r["frac_endo_final"],
+                "tiers_mesendo_at_shield": r["tiers_mesendo_at_shield"],
+                "hierarchy_established_hpf": r["hierarchy_established_hpf"],
+            }
+        )
+    return out
+
+
+# =============================================================================
 # Section 3: Zebrafish Blastoderm & Mushroom Doublet Specimen Segmentation
 # =============================================================================
 
@@ -698,10 +1114,13 @@ def segment_zebrafish_doublet_specimen(
 
     profile_r = 0.0
     profile_rmse = 0.0
+    profile_p = 1.0
     if sim_wt is not None:
         sim_diff = sim_wt["rho_M_radial"] - sim_wt["rho_E_radial"]
         spec_diff = rho_M_spec - rho_E_spec
-        profile_r = float(stats.pearsonr(sim_diff, spec_diff).statistic)
+        pr = stats.pearsonr(sim_diff, spec_diff)
+        profile_r = float(pr.statistic)
+        profile_p = float(pr.pvalue)
         s_norm = (sim_wt["rho_M_radial"] - np.min(sim_wt["rho_M_radial"])) / max(
             np.ptp(sim_wt["rho_M_radial"]), 1e-8
         )
@@ -731,12 +1150,13 @@ def segment_zebrafish_doublet_specimen(
         "rho_M_spec": rho_M_spec,
         "rho_E_spec": rho_E_spec,
         "profile_pearson_r": profile_r,
+        "profile_pearson_p": profile_p,
         "profile_rmse": profile_rmse,
     }
 
 
 # =============================================================================
-# Section 4: 10-Panel Synthesis Figure & 3-Regime Animation Rendering
+# Section 4: 15-Panel Synthesis Figure (3x5; Row C = Nodal coupling) & Animation Rendering
 # =============================================================================
 
 def run_all_regimes_and_render(
@@ -749,8 +1169,12 @@ def run_all_regimes_and_render(
     T: float = 10.0,
     n_mcs: int = 135,
     seed: int = 2008,
+    nodal_C0: float = 1.0,
+    nodal_lambda: float = 3.0,
+    tau_beta: float = 0.5,
+    kappa: float = 2.0 / 3.0,
 ) -> dict[str, Any]:
-    """Run all 4 DITH perturbation regimes + 3-germ-layer sorting, sweeps, and render outputs."""
+    """Run all 4 DITH perturbation regimes + 3-germ-layer sorting, Nodal coupling, sweeps, and render outputs."""
     ref_data = verify_reference_dataset()
     MEDIA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -785,9 +1209,21 @@ def run_all_regimes_and_render(
         sim_wt=regimes["wildtype_germ_layer_engulfment"],
         ref_data=ref_data,
     )
+    nodal = simulate_nodal_coupled_internalization(
+        C0=nodal_C0, lam_tiers=nodal_lambda, tau_beta=tau_beta, kappa=kappa,
+        Vt=Vt, lam_vol=lam_vol, T=T, n_mcs=n_mcs, seed=seed, record_frames=True,
+    )
+    nodal_null = simulate_nodal_coupled_internalization(
+        C0=0.0, lam_tiers=nodal_lambda, tau_beta=tau_beta, kappa=kappa,
+        Vt=Vt, lam_vol=lam_vol, T=T, n_mcs=n_mcs, seed=seed, record_frames=True,
+    )
+    sweep_nodal = run_nodal_dose_sweep(
+        n_mcs=100, seed=seed, lam_tiers=nodal_lambda, tau_beta=tau_beta, kappa=kappa,
+        Vt=Vt, lam_vol=lam_vol, T=T,
+    )
 
-    # Render 10-panel comparison figure (2x5 grid)
-    fig, axes = plt.subplots(2, 5, figsize=(20, 8.4), dpi=150)
+    # Render 15-panel comparison figure (3x5 grid)
+    fig, axes = plt.subplots(3, 5, figsize=(20, 12.6), dpi=150)
     cmap_2 = mcolors.ListedColormap(["#0f172a", "#22c55e", "#f43f5e"])
     cmap_3 = mcolors.ListedColormap(["#0f172a", "#22c55e", "#f43f5e", "#facc15"])
 
@@ -966,15 +1402,139 @@ def run_all_regimes_and_render(
     ax_b5.legend(fontsize=6.8, loc="center right")
     ax_b5.grid(alpha=0.25)
 
-    fig.suptitle(
-        "Brodland (2002) J. Biomech. Eng. / Krieg et al. (2008) Nat. Cell Biol. / Maître et al. (2012) Science DITH Germ-Layer Sorting",
-        fontsize=13.2,
-        fontweight="bold",
-        y=0.98,
+    # ---- Row C: time-dependent Nodal/TGF-beta -> cortical tension coupling (Pass 3) ----
+    n_tiers = nodal["n_tiers"]
+    tier_axis = np.linspace(0.0, n_tiers - 1 + 0.5, 120)
+    tier_colors = plt.cm.viridis(np.linspace(0.0, 1.0, n_tiers))
+
+    # C1: Nodal field C(x, t) vs tier distance at four stages, with the fate thresholds
+    ax_c1 = axes[2, 0]
+    for t_s, col, lbl in [
+        (4.5, "#c7d2fe", "4.5 hpf (dome)"),
+        (5.0, "#818cf8", "5.0 hpf (~40% epiboly)"),
+        (6.0, "#4338ca", "6.0 hpf (shield)"),
+        (7.0, "#1e1b4b", "7.0 hpf (~65% epiboly)"),
+    ]:
+        ax_c1.plot(tier_axis, nodal_signal(tier_axis, t_s, C0=nodal_C0, lam_tiers=nodal_lambda), color=col, lw=2.0, label=lbl)
+    ax_c1.axhline(0.2, color="#f43f5e", ls="--", lw=1.1, label="K_M (mesoderm)")
+    ax_c1.axhline(0.6, color="#facc15", ls="--", lw=1.1, label="K_N (endoderm)")
+    ax_c1.set_title(
+        f"C1. Marginal Nodal Field C(x,t)\n(λ={nodal_lambda:.1f} tiers, τ_N=0.6 h, t_on=4 hpf)",
+        fontsize=9.2, fontweight="bold",
     )
-    fig.tight_layout(rect=(0, 0, 1, 0.94))
+    ax_c1.set_xlabel("Tier distance from margin x (cell diameters)", fontsize=8.5)
+    ax_c1.set_ylabel("Nodal signal C / C0", fontsize=8.5)
+    ax_c1.legend(fontsize=6.4, loc="upper right")
+    ax_c1.grid(alpha=0.25)
+
+    # C2: cortical tension relaxation beta_i(t) per tier of origin
+    ax_c2 = axes[2, 1]
+    for k in range(n_tiers):
+        ax_c2.plot(nodal["times_hpf"], nodal["beta_tier_history"][:, k], color=tier_colors[k], lw=1.8, label=f"tier {k}")
+    for b_ref, col, lbl in [(BETA_ECTODERM, "#22c55e", "β_E=50"), (BETA_MESODERM, "#f43f5e", "β_M=95"), (BETA_ENDODERM, "#facc15", "β_N=130")]:
+        ax_c2.axhline(b_ref, color=col, ls=":", lw=1.1)
+        ax_c2.text(NODAL_T_ON_HPF + 0.03, b_ref + 1.5, lbl, fontsize=6.6, color=col)
+    ax_c2.axvline(NODAL_T_SHIELD_HPF, color="#b91c1c", ls="--", lw=1.1)
+    ax_c2.text(NODAL_T_SHIELD_HPF + 0.03, 52.0, "shield", fontsize=6.8, color="#b91c1c")
+    hier_t = nodal["hierarchy_established_hpf"]
+    ax_c2.set_title(
+        f"C2. Cortical Tension β_i(t) per Tier\n(dβ/dt=(β*(C)−β)/τ_β, τ_β={tau_beta:.1f} h; hierarchy by {hier_t:.2f} hpf)",
+        fontsize=9.0, fontweight="bold",
+    )
+    ax_c2.set_xlabel("Time (hpf)", fontsize=8.5)
+    ax_c2.set_ylabel("Cortical tension β (pN/μm)", fontsize=8.5)
+    ax_c2.legend(fontsize=5.8, loc="center left", ncol=2)
+    ax_c2.grid(alpha=0.25)
+
+    # C3: Nodal-coupled lattice at 7 hpf, coloured by continuous beta_i
+    ax_c3 = axes[2, 2]
+    beta_show = np.where(nodal["beta_grid"] > 0, nodal["beta_grid"], np.nan)
+    cmap_beta = plt.cm.plasma.copy()
+    cmap_beta.set_bad("#0f172a")
+    im_c3 = ax_c3.imshow(beta_show, cmap=cmap_beta, vmin=BETA_ECTODERM, vmax=BETA_ENDODERM, interpolation="nearest")
+    sig_n = nodal["sigma"]
+    edges_n = ((sig_n != np.roll(sig_n, 1, axis=0)) | (sig_n != np.roll(sig_n, 1, axis=1))) & (sig_n > 0)
+    edge_rgba_n = np.zeros((*sig_n.shape, 4), dtype=np.float32)
+    edge_rgba_n[edges_n] = [1.0, 1.0, 1.0, 0.30]
+    ax_c3.imshow(edge_rgba_n, interpolation="nearest")
+    ax_c3.axhline(sig_n.shape[0] // 2 + 17.5, color="#38bdf8", lw=1.4, ls="-")
+    ax_c3.text(1.5, sig_n.shape[0] // 2 + 20.5, "margin (Nodal source)", fontsize=6.6, color="#38bdf8")
+    cb = fig.colorbar(im_c3, ax=ax_c3, fraction=0.046, pad=0.02)
+    cb.set_label("β_i (pN/μm)", fontsize=7.5)
+    cb.ax.tick_params(labelsize=6.5)
+    ax_c3.set_title(
+        f"C3. Nodal-Coupled DITH Internalization at 7 hpf\n(Δr={nodal['radial_sep']:+.3f}; shield mesendo tiers={nodal['tiers_mesendo_at_shield']}, endo={nodal['tiers_endo_at_shield']})",
+        fontsize=8.8, fontweight="bold",
+    )
+    ax_c3.set_xticks([])
+    ax_c3.set_yticks([])
+
+    # C4: sorting trajectory Delta_r(t) and mesendoderm fraction vs hpf (wild-type vs Nodal null)
+    ax_c4 = axes[2, 3]
+    ax_c4.plot(nodal["times_hpf"], nodal["rad_sep_history"], color="#15803d", lw=2.1, label="Δr (Nodal C0=%.1f)" % nodal_C0)
+    ax_c4.plot(nodal_null["times_hpf"], nodal_null["rad_sep_history"], color="#64748b", lw=1.7, ls="--", label="Δr (Nodal null, C0=0)")
+    ax_c4.plot(nodal["times_hpf"], nodal["frac_mesendo_history"], color="#f43f5e", lw=1.7, label="mesendoderm fraction")
+    ax_c4.plot(nodal["times_hpf"], nodal["frac_endo_history"], color="#ca8a04", lw=1.5, label="endoderm fraction")
+    ax_c4.axhline(regimes["wildtype_germ_layer_engulfment"]["radial_sep"], color="#16a34a", ls=":", lw=1.2, label="static WT Δr (A1)")
+    ax_c4.axvline(NODAL_T_SHIELD_HPF, color="#b91c1c", ls="--", lw=1.1)
+    ax_c4.text(NODAL_T_SHIELD_HPF + 0.03, 0.02, "shield 6 hpf", fontsize=6.8, color="#b91c1c")
+    ax_c4.set_title("C4. Internalization Trajectory vs. Developmental Time", fontsize=9.2, fontweight="bold")
+    ax_c4.set_xlabel("Time (hpf)", fontsize=8.5)
+    ax_c4.set_ylabel("Δr = (r_E − r_ME)/R  |  fraction", fontsize=8.5)
+    ax_c4.legend(fontsize=6.3, loc="center right")
+    ax_c4.grid(alpha=0.25)
+
+    # C5: 5-point Nodal dose sweep (lefty1 / MZoep null -> cyclops overexpression)
+    ax_c5 = axes[2, 4]
+    c0_vals = [s["C0"] for s in sweep_nodal]
+    xpos = np.arange(len(c0_vals))
+    ax_c5.plot(xpos, [s["radial_sep"] for s in sweep_nodal], "o-", color="#15803d", lw=2.0, label="Δr at 7 hpf")
+    ax_c5.plot(xpos, [s["frac_mesendo_final"] for s in sweep_nodal], "s--", color="#f43f5e", lw=1.7, label="mesendoderm fraction")
+    ax_c5.plot(xpos, [s["frac_endo_final"] for s in sweep_nodal], "^--", color="#ca8a04", lw=1.5, label="endoderm fraction")
+    ax_c5.plot(xpos, [s["tiers_mesendo_at_shield"] / max(n_tiers, 1) for s in sweep_nodal], "d:", color="#4338ca", lw=1.4, label=f"shield mesendo tiers / {n_tiers}")
+    ax_c5.axhline(0.0, color="#334155", ls=":", lw=1.0)
+    ax_c5.set_xticks(xpos)
+    ax_c5.set_xticklabels([("0\n(lefty1 / MZoep)" if c == 0 else ("1\n(wild-type)" if c == 1 else f"{c:g}")) for c in c0_vals], fontsize=7.2)
+    ax_c5.set_title("C5. 5-Point Nodal Dose Sweep C0", fontsize=9.2, fontweight="bold")
+    ax_c5.set_xlabel("Marginal Nodal dose C0 (× wild-type)", fontsize=8.5)
+    ax_c5.set_ylabel("Order parameter / fraction", fontsize=8.5)
+    ax_c5.legend(fontsize=6.3, loc="upper left")
+    ax_c5.grid(alpha=0.25)
+
+    fig.suptitle(
+        "Brodland (2002) J. Biomech. Eng. / Krieg et al. (2008) Nat. Cell Biol. / Maître et al. (2012) Science DITH Germ-Layer Sorting"
+        " — Pass 3: time-dependent Nodal/TGF-β → cortical tension coupling (Row C)",
+        fontsize=12.6,
+        fontweight="bold",
+        y=0.985,
+    )
+    fig.tight_layout(rect=(0, 0, 1, 0.96))
     fig.savefig(COMPARISON_PNG, dpi=150, facecolor="white")
     plt.close(fig)
+
+    # Render the Nodal-coupled internalization GIF (beta_i(t) map, wild-type vs Nodal null)
+    nodal_frames: list[Image.Image] = []
+    f_nod = nodal["frames"]
+    f_nul = nodal_null["frames"]
+    for idx in range(min(len(f_nod), len(f_nul))):
+        bg_wt, _, t_val = f_nod[idx]
+        bg_nl, _, _ = f_nul[idx]
+        fig_n, axes_n = plt.subplots(1, 2, figsize=(7.2, 3.6), dpi=100)
+        for ax_i, bg, lbl in [
+            (axes_n[0], bg_wt, f"Nodal C0={nodal_C0:.1f} (t={t_val:.2f} hpf)"),
+            (axes_n[1], bg_nl, f"Nodal null C0=0 (t={t_val:.2f} hpf)"),
+        ]:
+            ax_i.imshow(np.where(bg > 0, bg, np.nan), cmap=cmap_beta, vmin=BETA_ECTODERM, vmax=BETA_ENDODERM, interpolation="nearest")
+            ax_i.set_title(lbl, fontsize=8.4, fontweight="bold")
+            ax_i.set_xticks([])
+            ax_i.set_yticks([])
+        fig_n.suptitle("Nodal/TGF-β → DITH cortical tension β_i(t): shield-stage internalization (4 → 7 hpf)", fontsize=8.8, fontweight="bold")
+        fig_n.tight_layout(rect=(0, 0, 1, 0.9))
+        fig_n.canvas.draw()
+        nodal_frames.append(Image.fromarray(np.asarray(fig_n.canvas.buffer_rgba())[..., :3]))
+        plt.close(fig_n)
+    if nodal_frames:
+        nodal_frames[0].save(NODAL_GIF, save_all=True, append_images=nodal_frames[1:], duration=160, loop=0)
 
     # Render side-by-side 3-regime animated GIF (Wild-Type vs caMLCK Reversal vs Blebbistatin)
     pil_frames: list[Image.Image] = []
@@ -1022,6 +1582,9 @@ def run_all_regimes_and_render(
         "sweep_beta": sweep_beta,
         "yd_curve": yd_curve,
         "specimen": specimen,
+        "nodal": nodal,
+        "nodal_null": nodal_null,
+        "sweep_nodal": sweep_nodal,
     }
 
 
@@ -1030,7 +1593,7 @@ def run_all_regimes_and_render(
 # =============================================================================
 
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Return 8 quantitative morphometric measurements for morphoeval/measure_outputs.py."""
+    """Return 13 quantitative morphometric measurements for morphoeval/measure_outputs.py."""
     ref_data = verify_reference_dataset()
     t_wt = compute_dith_tensions(50.0, 95.0, omega_EM_eff=115.0)
     r_wt = simulate_dith_regime(beta_E=50.0, beta_M=95.0, gamma_EM_target=30.0, n_mcs=135, seed=2008)
@@ -1039,6 +1602,9 @@ def measure_morphoeval() -> list[dict[str, Any]]:
     three_l = simulate_three_germ_layer_sorting(50.0, 95.0, 130.0, n_mcs=140, seed=2008)
     yd_half = compute_young_dupre_doublet(gamma_cm=95.0, gamma_cc=95.0)
     specimen = segment_zebrafish_doublet_specimen(sim_wt=r_wt, ref_data=ref_data)
+    nodal = simulate_nodal_coupled_internalization(C0=1.0, n_mcs=135, seed=2008)
+    nodal_null = simulate_nodal_coupled_internalization(C0=0.0, n_mcs=135, seed=2008)
+    gamma_em_closure = float(cortical_tension_mismatch_gamma(BETA_ECTODERM, BETA_MESODERM))
 
     return [
         {
@@ -1060,7 +1626,7 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "value": round(r_wt["radial_sep"], 4),
             "unit": "normalized_radius",
             "reference_value": 0.34,
-            "method": f"Normalized radial separation (r_E - r_M)/R_agg in wild-type zebrafish germ-layer sorting (outer E envelopment={r_wt['outer_E_envelopment']:.4f}, p=0.0001)",
+            "method": f"Normalized radial separation (r_E - r_M)/R_agg in wild-type zebrafish germ-layer sorting (outer E envelopment={r_wt['outer_E_envelopment']:.4f}; single deterministic seed, no replicate statistics)",
         },
         {
             "name": "camlc_cortex_reversal_radial_separation",
@@ -1095,16 +1661,52 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "value": round(specimen["profile_pearson_r"], 4),
             "unit": "r",
             "reference_value": 0.92,
-            "method": f"Pearson correlation between DITH radial core-shell profile and zebrafish blastoderm GFP/RFP fluorescence profile across 12 radial annuli (RMSE={specimen['profile_rmse']:.4f}, p=0.0001)",
+            "method": f"Pearson correlation between DITH radial core-shell profile and zebrafish blastoderm GFP/RFP fluorescence profile across 12 radial annuli (RMSE={specimen['profile_rmse']:.4f}, computed two-sided p={specimen['profile_pearson_p']:.2e}, n=12 annuli)",
+        },
+        {
+            "name": "nodal_mesendoderm_tier_count_at_shield_6hpf",
+            "value": int(nodal["tiers_mesendo_at_shield"]),
+            "unit": "cell_tiers",
+            "reference_value": 5,
+            "method": f"Number of tiers of origin whose mean Nodal-driven cortical tension exceeds (beta_E+beta_M)/2 at shield stage 6.0 hpf (lambda={nodal['params']['lam_tiers']:.1f} tiers, K_M=0.2); reference ~5 marginal tiers in the Nodal signalling / mesendoderm domain (van Boxtel et al. 2015 Dev. Cell; Dubrulle et al. 2015 eLife; approximate, recalled value not digitised here)",
+        },
+        {
+            "name": "nodal_endoderm_tier_count_at_shield_6hpf",
+            "value": int(nodal["tiers_endo_at_shield"]),
+            "unit": "cell_tiers",
+            "reference_value": 2,
+            "method": "Number of marginal tiers whose mean cortical tension exceeds (beta_M+beta_N)/2 at 6.0 hpf (K_N=0.6); reference: endoderm arises from the marginal-most tiers, predominantly tiers 1-2 (Warga & Nusslein-Volhard 1999 Development 126:827; approximate)",
+        },
+        {
+            "name": "nodal_cortical_tension_hierarchy_established_hpf",
+            "value": round(float(nodal["hierarchy_established_hpf"]), 4),
+            "unit": "hpf",
+            "reference_value": 6.0,
+            "method": "Earliest developmental time at which margin > mid > animal tier mean cortical tensions differ by >= 10 pN/um each; reference: Krieg et al. (2008) measured the ectoderm < mesoderm < endoderm AFM hierarchy in shield-stage (6 hpf) progenitors, so the hierarchy must exist by 6.0 hpf (upper bound)",
+        },
+        {
+            "name": "nodal_coupled_internalization_radial_sep_7hpf",
+            "value": round(float(nodal["radial_sep"]), 4),
+            "unit": "normalized_radius",
+            "reference_value": 0.34,
+            "method": f"Radial separation (r_E - r_ME)/R_agg at 7.0 hpf when cortical tensions are set dynamically by the marginal Nodal field (C0=1, tau_beta=0.5 h, kappa=2/3; mesendoderm fraction={nodal['frac_mesendo_final']:.3f}); same wild-type anchor as the static regime (Krieg et al. 2008 Fig. 2)",
+        },
+        {
+            "name": "nodal_null_mzoep_radial_sep",
+            "value": round(abs(float(nodal_null["radial_sep"])), 4),
+            "unit": "normalized_radius",
+            "reference_value": 0.0,
+            "method": f"Null radial separation under Nodal loss of function (C0=0: lefty1 / MZoep; mesendoderm fraction={nodal_null['frac_mesendo_final']:.3f}); reference: MZoep embryos lack all mesoderm and endoderm (Gritsman et al. 1999 Cell 97:121), hence no germ-layer sorting (closure gamma_EM={gamma_em_closure:.1f} pN/um at beta_E=50, beta_M=95)",
         },
     ]
 
 
 def self_test() -> None:
-    """Run comprehensive 8-check Pass 2 verification suite for Slot 044."""
+    """Run comprehensive 13-check Pass 3 verification suite for Slot 044."""
     # 1. Verify SHA-256 of dataset and zebrafish blastoderm specimen image
     ref = verify_reference_dataset()
-    assert len(ref["metadata"]["sources"]) == 5
+    assert len(ref["metadata"]["sources"]) == 12  # 5 DITH/doublet sources + 7 Nodal/staging sources (Pass 3)
+    assert "nodal_tgfb_cortical_tension_coupling_pass3" in ref["dith_interfacial_tension_mechanics"]
 
     # 2. Verify exact DITH tensions against Lean 4 theorem values
     t_wt = compute_dith_tensions(50.0, 95.0, omega_EM_eff=115.0)
@@ -1155,14 +1757,56 @@ def self_test() -> None:
     r_2 = simulate_dith_regime(beta_E=50.0, beta_M=95.0, gamma_EM_target=30.0, n_mcs=60, seed=2008)
     assert np.array_equal(r_1["sigma"], r_2["sigma"])
 
-    # 8. Verify measure_morphoeval contract
+    # 8. Verify Nodal dose -> cortical tension mapping (Lean `nodal_dose_cortical_tension_monotone_bounded`)
+    c_grid = np.linspace(0.0, 3.0, 301)
+    b_grid = nodal_to_cortical_tension_target(c_grid)
+    assert abs(float(nodal_to_cortical_tension_target(0.0)) - BETA_ECTODERM) < 1e-9
+    assert abs(float(nodal_to_cortical_tension_target(1e6)) - BETA_ENDODERM) < 1e-6
+    assert np.all(np.diff(b_grid) >= -1e-12) and np.all(b_grid >= BETA_ECTODERM - 1e-9) and np.all(b_grid <= BETA_ENDODERM + 1e-9)
+    assert abs(float(nodal_to_cortical_tension_target(0.2)) - 0.5 * (BETA_ECTODERM + BETA_MESODERM)) < 0.5  # H(K_M; K_M) = 1/2
+    assert float(nodal_signal(0.0, NODAL_T_ON_HPF)) == 0.0 and float(nodal_signal(0.0, NODAL_T_ON_HPF + 50.0)) > 0.999
+
+    # 9. Verify continuous-cortex closure obeys 0 < gamma_ij < |beta_i - beta_j| (Lean `cortex_mismatch_closure_satisfies_engulfment`)
+    rng_t = np.random.default_rng(44)
+    b_i = rng_t.uniform(BETA_ECTODERM, BETA_ENDODERM, 200)
+    b_j = rng_t.uniform(BETA_ECTODERM, BETA_ENDODERM, 200)
+    g_ij = cortical_tension_mismatch_gamma(b_i, b_j)
+    assert np.all(g_ij > 0.0) and np.all(g_ij < np.abs(b_i - b_j) + 1e-12)
+    assert abs(float(cortical_tension_mismatch_gamma(BETA_ECTODERM, BETA_MESODERM)) - 30.0) < 1e-9
+    assert float(cortical_tension_mismatch_gamma(25.0, 25.0)) == 0.0
+
+    # 10. Verify the tension relaxation ODE contracts toward the Nodal-set target (Lean `cortical_tension_relaxation_contracts`)
+    dyn = integrate_nodal_cortical_tension_dynamics(np.array([0.0, 3.0, 7.0]), n_steps=135)
+    assert np.all(np.diff(dyn["beta"][:, 0]) >= -1e-9) and dyn["beta"][-1, 0] > 120.0
+    assert dyn["beta"][-1, 0] > dyn["beta"][-1, 1] > dyn["beta"][-1, 2] >= BETA_ECTODERM - 1e-9
+    assert np.all(dyn["beta"] <= BETA_ENDODERM + 1e-9)
+
+    # 11. Verify Nodal-coupled internalization: hierarchy before shield, mesendoderm tiers, sorting by 7 hpf
+    r_nod = simulate_nodal_coupled_internalization(C0=1.0, n_mcs=135, seed=2008)
+    assert r_nod["frac_mesendo_history"][0] == 0.0, "all progenitors must be Nodal-naive at 4 hpf"
+    assert r_nod["hierarchy_established_hpf"] <= NODAL_T_SHIELD_HPF, f"hierarchy at {r_nod['hierarchy_established_hpf']} hpf > 6 hpf"
+    assert 3 <= r_nod["tiers_mesendo_at_shield"] <= 6, f"shield mesendoderm tiers {r_nod['tiers_mesendo_at_shield']}"
+    assert 1 <= r_nod["tiers_endo_at_shield"] <= 3, f"shield endoderm tiers {r_nod['tiers_endo_at_shield']}"
+    assert r_nod["radial_sep"] > 0.25, f"Expected Nodal-coupled radial_sep > 0.25, got {r_nod['radial_sep']}"
+    assert np.all(r_nod["beta"][1:] >= BETA_ECTODERM - 1e-9) and np.all(r_nod["beta"][1:] <= BETA_ENDODERM + 1e-9)
+
+    # 12. Verify Nodal null (lefty1 / MZoep) control: no mesendoderm, no sorting; two-run determinism
+    r_nul = simulate_nodal_coupled_internalization(C0=0.0, n_mcs=135, seed=2008)
+    assert r_nul["frac_mesendo_final"] == 0.0 and abs(r_nul["radial_sep"]) < 1e-12
+    n_1 = simulate_nodal_coupled_internalization(C0=1.0, n_mcs=60, seed=2008)
+    n_2 = simulate_nodal_coupled_internalization(C0=1.0, n_mcs=60, seed=2008)
+    assert np.array_equal(n_1["sigma"], n_2["sigma"]) and np.array_equal(n_1["beta"], n_2["beta"])
+
+    # 13. Verify measure_morphoeval contract
     meas = measure_morphoeval()
-    assert len(meas) == 8 and all(m["value"] is not None for m in meas)
+    assert len(meas) == 13 and all(m["value"] is not None for m in meas)
+    assert all(m["reference_value"] is not None for m in meas)
     print(
-        f"[self-test] All 8 Pass 2 checks passed "
+        f"[self-test] All 13 Pass 3 checks passed "
         f"(wt_sep={r_wt['radial_sep']:+.3f}, camlc_rev_sep={r_rev['radial_sep']:+.3f}, "
         f"blebb_sep={r_blb['radial_sep']:+.3f}, 3layer={three_l['r_E_norm']:.2f}>{three_l['r_M_norm']:.2f}>{three_l['r_N_norm']:.2f}, "
-        f"spec_r={spec['profile_pearson_r']:.3f})."
+        f"spec_r={spec['profile_pearson_r']:.3f}, nodal_sep={r_nod['radial_sep']:+.3f}, "
+        f"nodal_hierarchy_hpf={r_nod['hierarchy_established_hpf']:.2f}, shield_tiers={r_nod['tiers_mesendo_at_shield']}/{r_nod['tiers_endo_at_shield']})."
     )
 
 
@@ -1177,7 +1821,11 @@ def main() -> int:
     ap.add_argument("--T", type=float, default=10.0, help="Effective fluctuation temperature T")
     ap.add_argument("--mcs", type=int, default=135, help="Number of Monte Carlo Steps (MCS)")
     ap.add_argument("--seed", type=int, default=2008, help="Deterministic RNG seed")
-    ap.add_argument("--self-test", action="store_true", help="Run 8-check verification suite and exit")
+    ap.add_argument("--nodal-C0", type=float, default=1.0, help="Marginal Nodal dose C0 (x wild-type; 0 = lefty1/MZoep null)")
+    ap.add_argument("--nodal-lambda", type=float, default=3.0, help="Nodal gradient range lambda (cell tiers from the margin)")
+    ap.add_argument("--tau-beta", type=float, default=0.5, help="Cortical tension relaxation time tau_beta (h)")
+    ap.add_argument("--kappa", type=float, default=2.0 / 3.0, help="Continuous-cortex closure slope gamma_ij = kappa*|beta_i-beta_j| (0 <= kappa < 1)")
+    ap.add_argument("--self-test", action="store_true", help="Run 13-check verification suite and exit")
     args = ap.parse_args()
 
     if args.self_test:
@@ -1194,18 +1842,27 @@ def main() -> int:
         T=args.T,
         n_mcs=args.mcs,
         seed=args.seed,
+        nodal_C0=args.nodal_C0,
+        nodal_lambda=args.nodal_lambda,
+        tau_beta=args.tau_beta,
+        kappa=args.kappa,
     )
     r_wt = out["regimes"]["wildtype_germ_layer_engulfment"]
     r_rv = out["regimes"]["camlc_ectoderm_cortex_reversal"]
     r_bl = out["regimes"]["blebbistatin_myosin_inhibition"]
     tl = out["three_layer"]
     sp = out["specimen"]
+    nd = out["nodal"]
+    nn = out["nodal_null"]
     print(
-        f"[2002-brodland-differential-interfacial-tension-sorting] Rendered Pass 2 outputs:\n"
+        f"[2002-brodland-differential-interfacial-tension-sorting] Rendered Pass 3 outputs:\n"
         f"  - Comparison PNG : {COMPARISON_PNG}\n"
         f"  - Growth GIF     : {GROWTH_GIF}\n"
+        f"  - Nodal GIF      : {NODAL_GIF}\n"
         f"  - Wild-type Δr   : {r_wt['radial_sep']:+.4f} (caMLCK reversal Δr={r_rv['radial_sep']:+.4f}, Blebbistatin Δr={r_bl['radial_sep']:+.4f})\n"
         f"  - 3-Germ-Layer   : r_E={tl['r_E_norm']:.3f} > r_M={tl['r_M_norm']:.3f} > r_N={tl['r_N_norm']:.3f}\n"
+        f"  - Nodal coupling : Δr(7 hpf)={nd['radial_sep']:+.4f}, hierarchy by {nd['hierarchy_established_hpf']:.2f} hpf, "
+        f"shield mesendo/endo tiers={nd['tiers_mesendo_at_shield']}/{nd['tiers_endo_at_shield']}, Nodal-null Δr={nn['radial_sep']:+.4f}\n"
         f"  - Specimen Match : profile r={sp['profile_pearson_r']:.4f} (RMSE={sp['profile_rmse']:.4f}, Row C doublet r_c/R={sp['contact_radius_emp']:.4f})"
     )
     return 0

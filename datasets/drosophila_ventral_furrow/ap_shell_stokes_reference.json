@@ -1,0 +1,80 @@
+{
+  "metadata": {
+    "dataset_id": "drosophila-ventral-furrow-ap-shell-stokes-v1",
+    "title": "Pass 3 parameter table for the reduced 3D anteroposterior shell coupling and the intracellular Stokes nucleus model of Drosophila ventral furrow formation",
+    "added_in": "2026-10-19-drosophila-ventral-furrow-audit-v3 (Pass 3 remediation of 2026-10-19-drosophila-ventral-furrow-audit-v2 items 1-2)",
+    "note": "Values marked approximate are order-of-magnitude literature values used as model inputs, not digitised measurements; DOIs marked doi_verified_offline=false could not be re-checked without network access and are given as recorded in the cited reference lists.",
+    "sources": [
+      {
+        "id": "he2014",
+        "citation": "He B, Doubrovinski K, Polyakov O, Wieschaus E (2014). Apical constriction drives tissue-scale hydrodynamic flow to mediate cell elongation. Nature 508(7496):392-396.",
+        "doi": "10.1038/nature13070",
+        "doi_verified_offline": true,
+        "used_for": "Passive-tracer behaviour of nuclei in the apically driven cytoplasmic flow; viscous (Stokes) regime of the cytoplasm"
+      },
+      {
+        "id": "conte2012",
+        "citation": "Conte V, Munoz JJ, Baum B, Miodownik M (2012). Biomechanical analysis of ventral furrow formation in Drosophila melanogaster. PLoS ONE 7(11):e49973.",
+        "doi": "10.1371/journal.pone.0049973",
+        "doi_verified_offline": true,
+        "used_for": "2D cross-sectional driving depth D_2D(t) and ectodermal pushing"
+      },
+      {
+        "id": "sweeton1991",
+        "citation": "Sweeton D, Parks S, Costa M, Wieschaus E (1991). Gastrulation in Drosophila: the formation of the ventral furrow and posterior midgut invaginations. Development 112(3):775-789.",
+        "doi": "10.1242/dev.112.3.775",
+        "doi_verified_offline": false,
+        "used_for": "Ventral furrow AP extent along the egg length and the timing of germband extension relative to furrow closure (approximate)"
+      },
+      {
+        "id": "leptin1990",
+        "citation": "Leptin M, Grunewald B (1990). Cell shape changes during gastrulation in Drosophila. Development 110(1):73-84.",
+        "doi": "10.1242/dev.110.1.73",
+        "doi_verified_offline": false,
+        "used_for": "Mesoderm primordium AP extent and the ~500 um egg length (approximate)"
+      },
+      {
+        "id": "lye2015",
+        "citation": "Lye CM, Blanchard GB, Naylor HW, Muresan L, Huisken J, Adams RJ, Sanson B (2015). Mechanical coupling between endoderm invagination and axis extension in Drosophila. PLoS Biology 13(11):e1002292.",
+        "doi": "10.1371/journal.pbio.1002292",
+        "doi_verified_offline": false,
+        "used_for": "Existence of tissue-scale AP tension during germband extension (magnitude NOT calibrated here; ell_N is a swept model parameter)"
+      }
+    ]
+  },
+  "egg_geometry": {
+    "ap_semi_axis_a_um": 250.0,
+    "transverse_radius_b_um": 83.2,
+    "aspect_ratio_a_over_b": 3.005,
+    "mesoderm_ap_extent_el": [0.15, 0.80],
+    "mesoderm_ap_extent_note": "approximate twist/snail mesoderm primordium span in egg-length units (0 = posterior pole, 1 = anterior pole); Leptin & Grunewald 1990, Sweeton et al. 1991",
+    "reference_furrow_half_depth_extent_el": 0.65,
+    "reference_furrow_half_depth_extent_note": "approximate: the furrow spans essentially the whole mesoderm primordium (~0.65 EL); not a digitised measurement"
+  },
+  "ap_shell_line_model": {
+    "equation": "ell_B^4 D'''' - ell_N^2 D'' + k_rel(z) D = D_2D(t) chi_meso(z);  k_rel = (kappa_z^2 + kappa_theta^2)(z) / (kappa_z^2 + kappa_theta^2)(0)",
+    "boundary_conditions": "simply supported poles: D(+-a) = D''(+-a) = 0",
+    "bending_length_ell_B_um": 22.0,
+    "bending_length_note": "model assumption (Winkler bending boundary-layer length of the blastoderm epithelium); not measured in the source papers",
+    "germband_tension_length_ell_N_wt_um": 30.0,
+    "germband_tension_note": "model assumption for the WT run; ell_N = sqrt(N_GB / k_eq) is swept 0-150 um as the parameter-expressivity axis and is NOT calibrated to Lye et al. 2015 ablation recoil (open Pass 4 item)",
+    "gbe_onset_s": 540.0,
+    "gbe_onset_note": "germband extension begins as the ventral furrow closes (~9 min after furrow onset in a 12 min run); Sweeton et al. 1991 (approximate)",
+    "n_z_stations": 201,
+    "mesh_n_theta": 64,
+    "mesh_n_z": 81,
+    "sweep_ell_N_um": [0.0, 25.0, 50.0, 75.0, 100.0, 125.0, 150.0],
+    "sweep_aspect_ratio_a_over_b": [1.5, 2.0, 2.5, 3.0, 3.5, 4.0]
+  },
+  "intracellular_stokes_model": {
+    "equation": "4 d_xy[mu psi_xy] + (d_xx - d_yy)[mu (psi_xx - psi_yy)] = 0 on [-w/2, w/2] x [0, h], u = psi_y, v = -psi_x",
+    "grid_spacing_um": 0.2,
+    "nucleus_center_from_apex_um": 9.0,
+    "nucleus_semi_axes_um": [1.9, 2.8],
+    "nucleus_geometry_note": "approximate cellular-blastoderm nuclear size and apical position; order-of-magnitude values, not digitised from He et al. 2014",
+    "nucleus_to_cytoplasm_viscosity_ratio": 50.0,
+    "viscosity_ratio_note": "nearly rigid inclusion limit; He et al. 2014 treat the nucleus as a passive body carried by the cytoplasm",
+    "reference_passive_tracer_velocity_ratio": 1.0,
+    "reference_passive_tracer_note": "He et al. 2014 Fig. 2: nuclei and cytoplasmic markers move together, i.e. v_nucleus / v_cytoplasm ~ 1"
+  }
+}

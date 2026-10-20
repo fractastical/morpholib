@@ -21,3 +21,13 @@ Formal SHA-256-locked reference dataset and mouse metanephric ureteric bud whole
 - `kidney_ureteric_tree_specimen.jpg` — E12.5 mouse metanephros GFP ureteric bud branching (Panel A wild-type 12 tips vs Panel B $PRR^{UB-/-}$ hypoplastic mutant 6 tips) and pErk1/2 immunofluorescence (Panels D–I), Wikimedia Commons CC BY 4.0 (`sha256: 3264f509ba3a668690c5900ddd7dc47ae028cc26c7c3f3c6f308b7de67ec76bc`).
 - `paper_citations.bib` — BibTeX references with DOIs.
 - `scout_manifest.json` — Step 1 (`01_scout`) literature and specimen manifest.
+
+## Pass 3 (2026-10-19) additions
+
+The reference JSON (`dataset_id` → `menshykau-kidney-ureteric-bud-gdnf-ret-v2`) gained two sections consumed by the Pass 3 script:
+
+- `stromal_feedback_module_pass3` — reduced stromal **BMP4/7 – Gremlin1 – FGF7** feedback gain law $\gamma_{\text{eff}} = \gamma\,(1 + k_{F7}\,\text{FGF7}) / (1 + k_B\,\text{BMP}/(1 + k_G\,\text{GREM1}))$ with model-scale constants (not measured rate constants) and three perturbation benchmarks: $Grem1^{-/-}$ outgrowth failure (Michos et al. 2004), $Fgf7^{-/-}$ reduced growth (Qiao et al. 1999), $Bmp4^{+/-}$ ectopic budding (Miyazaki et al. 2000). The `e12_5_tip_ratio_vs_wt_obs` values are *approximate encodings of qualitative phenotypes* (see each `obs_note`), not published means.
+- `reduced_3d_geometry_pass3` — 1D Lagrangian moving-boundary ampulla necking (growth law $v_n = v_0 \max(0, R^2 G - S_{\text{thr}})$) and anisotropic-dome dihedral rotation (short-axis two-lobe mode selection; $\rho_{\text{flip}} = k_c / k_{\text{fastest}}$; ~90° orthogonal expectation from Metzger et al. 2008 / Menshykau et al. 2012 / Short et al. 2014). Kidney dihedral-angle distributions were **not** vendored offline.
+- The hypoplasia benchmark `Gdnf_het_or_PRR_ko` now uses `gamma_scale = 25.0` (halved GDNF production only); the Pass 2 value 11.25 was unsourced.
+- Five new sources were added to `metadata.sources` and `paper_citations.bib` (Michos 2004, Qiao 1999, Miyazaki 2000, Metzger 2008, Short 2014); their DOIs are flagged `doi_verified_offline: false`.
+- The SHA-256-pinned specimen `kidney_ureteric_tree_specimen.jpg` is unchanged.

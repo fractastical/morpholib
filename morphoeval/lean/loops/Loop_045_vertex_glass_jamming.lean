@@ -150,4 +150,67 @@ theorem park_2015_asthma_vs_control_bronchial_unjamming_separation :
     (t1_barrier_scaled 1 q_compressed_day14 p0_star_milli = 0) := by
   decide
 
+/-! ## Pass 3 — Bi, Yang, Marchetti & Manning (2016) Physical Review X 6:021011
+    Self-Propelled Voronoi (SPV) active motility coupling:
+      dr_i/dt = mu * F_i + v_0 * n_i,   dtheta_i/dt = eta_i,  <eta_i eta_j> = 2 D_r delta_ij delta(t-t')
+    The glass transition surface p_0^c(v_0, D_r) meets the zero-motility Bi (2015) point
+    p_0^c(0, D_r) = p_0^* ≈ 3.81 and is lowered by motility.  The reduced (linearised)
+    boundary used by the script's finite-time estimator is p_0^c(v_0) = p_0^* - alpha * v_0
+    with alpha > 0 (Bi et al. 2016 Fig. 1: the solid region shrinks as v_0 grows). -/
+
+/-- Linearised motility-shifted critical target shape index
+    `p_0^c(v_0) = p_0^* - alpha * v_0` (integer-scaled; `alpha > 0`). -/
+def motility_shifted_p0c (p0_star alpha v0 : Int) : Int :=
+  p0_star - alpha * v0
+
+/-- Theorem 5 (`spv_motility_lowers_critical_shape_index`):
+    For any positive motility susceptibility `alpha`:
+    (1) the zero-motility limit recovers the Bi (2015) rigidity point, `p_0^c(0) = p_0^*`;
+    (2) any positive self-propulsion speed `v_0 > 0` strictly lowers the critical shape index;
+    (3) the boundary is strictly decreasing in `v_0` (`v1 < v2 → p_0^c(v2) < p_0^c(v1)`);
+    (4) fluidity is inherited upward in motility: if the tissue is fluid at `v1`
+        (`p_0^c(v1) <= p_0`) and `v1 <= v2`, it is fluid at `v2` (`p_0^c(v2) <= p_0`). -/
+theorem spv_motility_lowers_critical_shape_index
+    (p0_star alpha v0 v1 v2 p0 : Int)
+    (h_alpha : 0 < alpha) (h_v0 : 0 < v0) (h_order : v1 < v2)
+    (h_fluid_v1 : motility_shifted_p0c p0_star alpha v1 <= p0) :
+    motility_shifted_p0c p0_star alpha 0 = p0_star ∧
+    motility_shifted_p0c p0_star alpha v0 < p0_star ∧
+    motility_shifted_p0c p0_star alpha v2 < motility_shifted_p0c p0_star alpha v1 ∧
+    motility_shifted_p0c p0_star alpha v2 <= p0 := by
+  have h_pos : 0 < alpha * v0 := Int.mul_pos h_alpha h_v0
+  have h_mono : alpha * v1 < alpha * v2 := Int.mul_lt_mul_of_pos_left h_order h_alpha
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · dsimp [motility_shifted_p0c]
+    omega
+  · dsimp [motility_shifted_p0c]
+    omega
+  · dsimp [motility_shifted_p0c]
+    omega
+  · dsimp [motility_shifted_p0c] at h_fluid_v1 ⊢
+    omega
+
+/-- Numerator of the free active-Brownian diffusivity `D_0 = v_0^2 / (2 D_r)`
+    (Bi et al. 2016 Eq. for the self-diffusivity normalisation `D_eff = D_s / D_0`). -/
+def free_active_diffusivity_numer (v0 : Int) : Int := v0 * v0
+
+/-- Theorem 6 (`spv_free_active_diffusivity_monotone_in_motility`):
+    The free active-Brownian diffusivity scale `D_0 ∝ v_0^2` that normalises the SPV
+    effective diffusivity is (1) zero at zero motility, (2) strictly positive for any
+    `v_0 > 0`, and (3) strictly increasing in the self-propulsion speed on `v_0 >= 0`
+    (`0 <= v1 < v2 → v1^2 < v2^2`), so `D_eff = D_s / D_0` is a well-defined,
+    motility-normalised order parameter for every `v_0 > 0`. -/
+theorem spv_free_active_diffusivity_monotone_in_motility
+    (v0 v1 v2 : Int) (h_v0 : 0 < v0) (h_nonneg : 0 <= v1) (h_order : v1 < v2) :
+    free_active_diffusivity_numer 0 = 0 ∧
+    0 < free_active_diffusivity_numer v0 ∧
+    free_active_diffusivity_numer v1 < free_active_diffusivity_numer v2 := by
+  have h_v2 : 0 < v2 := Int.lt_of_le_of_lt h_nonneg h_order
+  refine ⟨rfl, Int.mul_pos h_v0 h_v0, ?_⟩
+  dsimp [free_active_diffusivity_numer]
+  have h1 : v1 * v1 <= v1 * v2 :=
+    Int.mul_le_mul_of_nonneg_left (Int.le_of_lt h_order) h_nonneg
+  have h2 : v1 * v2 < v2 * v2 := Int.mul_lt_mul_of_pos_right h_order h_v2
+  exact Int.lt_of_le_of_lt h1 h2
+
 end MathOfBiology.Loop_045

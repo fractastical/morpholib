@@ -19,10 +19,72 @@
   "signed_nanopubs_v1": 10,
   "signed_nanopubs_v2": 10,
   "overall_trusty_uri_v2": "https://w3id.org/np/RAfIzrJp689w6q58N3DnymhcG6v7RIJCgwWG8fOk4qUKg",
-  "status": "completed",
+  "status": "pass3_completed",
   "completed_at": "2026-10-20T01:48:30Z",
   "slot_index": 47,
   "slug": "epithelial-buckling-3d",
   "target_script": "2016-hannezo-epithelial-buckling-3d.py",
-  "delta": 37.0
+  "delta": 37.0,
+  "pass3_run_id": "2026-10-19-epithelial-buckling-3d-loop-pass3",
+  "pass3_audit_id": "2026-10-19-epithelial-buckling-3d-audit-v3",
+  "pass3_score": 82.4,
+  "pass3_dims": {
+    "model-fidelity": 82,
+    "specimen-match": 78,
+    "parameter-expressivity": 86,
+    "morphometric-validation": 72,
+    "source-traceability": 90,
+    "code-traceability": 88,
+    "repro-package": 92
+  },
+  "pass3_dims_v2": {
+    "model-fidelity": 94,
+    "specimen-match": 92,
+    "parameter-expressivity": 93,
+    "morphometric-validation": 94,
+    "source-traceability": 95,
+    "code-traceability": 92,
+    "repro-package": 94
+  },
+  "pass3_delta": -11.0,
+  "pass3_completed_at": "2026-10-20T16:01:43Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "overall_trusty_uri_v3": "https://w3id.org/np/RAzPgsL6lL2ituFWCDQrBU8jQ2Fis7buuLIGmzEQiw8SI",
+  "pass3_remediation_closed": [
+    "Extend the 2D continuum + vertex sheet solver to a full 3D polyhedral scutoid vertex mesh capturing apical-to-basal neighbor intercalations in high-curvature tubular bends -> closed in reduced form: Section 3b doubly periodic Voronoi tube mesh (build_scutoid_tube_mesh L582-709), surface-ratio sweep (L712-749), fold-crest curvature coupling s_crest = 1 + h0*kappa_max (L752-791), per-tissue crest predictions (L794-857); residual (no relaxed 3D vertex energy / T1 dynamics) carried as Pass 4 item 4"
+  ],
+  "pass3_remediation_open": [
+    "12-tissue aspect-ratio r = 1.0000 is circular: Gamma_norm values in epithelial_buckling_3d_reference.json:56-236 reproduce aspect_ratio_obs via Law 1 with no per-row source (script L880-897, 924-934)",
+    "lambda_sim = 0.85*lambda_c + 0.15*lambda_fft (L461-467) and amplitude rescale to target_amplitude_um (L454-459, L999) make wavelength r and WT amplitude outputs of the inputs",
+    "s_crest 3.326 vs pinned reference 2.303 (44 % over; L752-791, L1811-1820); f_s saturated at ~1.0 for all 6 buckled tissues; no comparison to a published scutoid count",
+    "Scutoid mesh is a fixed-seed Voronoi projection with geometric lateral faces (L582-662): implement the reduced 3D vertex relaxation under Gamma_a/Gamma_b/Gamma_l",
+    "Phase diagram is a threshold lookup (L289-317) with Gamma_b switched by K_sub in the plotting loop (L960-966): derive boundaries from relaxed energies",
+    "specimen_histology_reference block (JSON 300-313) stores the script's own output as reference; 4.48 / 4.45 references lack a figure/table pinpoint (L1760-1779)",
+    "Continuum F[w] coefficients 1.35, 0.85, 0.15, 1.65, 2.2, 2.20, 1.48 uncited (L401-408, 455, 467)"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_047.scutoid_count_isometric",
+    "MathOfBiology.Loop_047.isometric_projection_has_no_scutoids",
+    "MathOfBiology.Loop_047.trivalent_torus_neighbor_conservation"
+  ],
+  "lean_theorems_verified_v3": 6,
+  "pass3_self_test": "11/11 checks pass",
+  "pass3_artifacts": [
+    "2016-hannezo-epithelial-buckling-3d.py",
+    "morphoeval/lean/loops/Loop_047_epithelial_buckling_3d.lean",
+    "morphoeval/math_kg_loops/hannezo-epithelial-buckling-3d.yaml",
+    "datasets/epithelial_buckling_3d/README.md",
+    "datasets/epithelial_buckling_3d/paper_citations.bib",
+    "datasets/epithelial_buckling_3d/scutoid_tube_reference.json",
+    "docs/media/epithelial_buckling_3d_comparison.png",
+    "docs/media/epithelial_buckling_3d_growth.gif",
+    "docs/media/epithelial_buckling_3d_scutoid_mesh.png",
+    "docs/media/epithelial_buckling_3d_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-epithelial-buckling-3d-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-epithelial-buckling-3d-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-epithelial-buckling-3d-audit-v3/",
+    "morphoeval/runs/2026-10-19-epithelial-buckling-3d-loop-pass3.{yaml,csv,md,trig,events.jsonl,ledger.jsonl}",
+    "morphoeval/cloud/dispatches/slot-047.json"
+  ]
 }

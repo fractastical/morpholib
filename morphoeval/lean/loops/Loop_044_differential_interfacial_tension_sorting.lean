@@ -85,4 +85,81 @@ theorem maitre_2012_young_dupre_contact_bounds (gamma_cm gamma_cc dgamma : Int) 
   · dsimp [young_dupre_num]
     omega
 
+/-! ### Pass 3 — time-dependent Nodal/TGF-β → cortical tension coupling -/
+
+/-- Sharp-threshold (`n → ∞`) limit of the Nodal dose → cortical tension target used in
+    `nodal_to_cortical_tension_target`: Nodal-blocked cells (`C < K_M`, lefty1 / MZoep) take the
+    ectoderm tension 50, intermediate dose (`K_M ≤ C < K_N`, low cyclops) the mesoderm tension 95,
+    saturating dose (`C ≥ K_N`, cyclops + casanova) the endoderm tension 130 pN/μm
+    (Krieg et al. 2008 Nat. Cell Biol. Fig. 1; Gritsman et al. 1999 Cell 97:121). -/
+def nodal_tension_target (C K_M K_N : Int) : Int :=
+  if C < K_M then 50 else if C < K_N then 95 else 130
+
+/-- Theorem 4 (`nodal_dose_cortical_tension_monotone_bounded`):
+    for any thresholds `K_M, K_N` with `0 < K_M`, the Nodal dose → cortical tension map is
+    (a) monotone in the dose (`C₁ ≤ C₂ → β*(C₁) ≤ β*(C₂)`),
+    (b) bounded by the ectoderm and endoderm AFM tensions `50 ≤ β* ≤ 130`, and
+    (c) returns the ectoderm value in the Nodal-null limit (`C = 0 < K_M`), so two Nodal-null
+        cells have zero DITH spreading difference (no germ-layer sorting, MZoep phenotype). -/
+theorem nodal_dose_cortical_tension_monotone_bounded (C₁ C₂ K_M K_N : Int)
+    (hC : C₁ ≤ C₂) (h0 : 0 < K_M) :
+    nodal_tension_target C₁ K_M K_N ≤ nodal_tension_target C₂ K_M K_N ∧
+    (50 ≤ nodal_tension_target C₁ K_M K_N ∧ nodal_tension_target C₁ K_M K_N ≤ 130) ∧
+    dith_spreading_diff (nodal_tension_target 0 K_M K_N) (nodal_tension_target 0 K_M K_N) = 0 ∧
+    nodal_tension_target 0 K_M K_N = 50 := by
+  unfold nodal_tension_target dith_spreading_diff
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · split <;> (try split) <;> (try split) <;> (try split) <;> omega
+  · split <;> (try split) <;> omega
+  · split <;> (try split) <;> omega
+  · split <;> (try split) <;> omega
+
+/-- Continuous-cortex DITH closure used by `simulate_nodal_coupled_internalization`, scaled by 3
+    so that `κ = 2/3` is exact over the integers: `3 γ_{ij} = 2 |β_i − β_j|`
+    (i.e. Brodland's `γ_{ij} = β_i + β_j − ω_{ij}` with `ω_{ij} = β_i + β_j − γ_{ij}`). -/
+def cortex_mismatch_gamma3 (beta_i beta_j : Int) : Int :=
+  2 * (if beta_i ≥ beta_j then beta_i - beta_j else beta_j - beta_i)
+
+/-- Theorem 5 (`cortex_mismatch_closure_satisfies_engulfment`):
+    whenever Nodal has differentiated two cortices (`β_i ≠ β_j`), the closure gives a strictly
+    positive heterotypic tension that is strictly smaller than the cell–medium spreading
+    difference `|γ_{i0} − γ_{j0}| = |β_i − β_j|` — Krieg et al. (2008) regime I
+    (`0 < γ_{EM} < γ_{M0} − γ_{E0}`): the higher-tension (mesendoderm) cell is engulfed by the
+    lower-tension (ectoderm) cell. At equal tensions the heterotypic tension vanishes
+    (Blebbistatin-like null), and the wild-type anchor `β_E = 50, β_M = 95` returns
+    `3 γ_{EM} = 90`, i.e. `γ_{EM} = 30` pN/μm. -/
+theorem cortex_mismatch_closure_satisfies_engulfment (beta_i beta_j : Int) :
+    (beta_i ≠ beta_j →
+      0 < cortex_mismatch_gamma3 beta_i beta_j ∧
+      cortex_mismatch_gamma3 beta_i beta_j < 3 * (if beta_i ≥ beta_j then beta_i - beta_j else beta_j - beta_i)) ∧
+    cortex_mismatch_gamma3 beta_i beta_i = 0 ∧
+    cortex_mismatch_gamma3 50 95 = 90 := by
+  unfold cortex_mismatch_gamma3
+  refine ⟨?_, ?_, ?_⟩
+  · intro hne
+    constructor
+    · split <;> omega
+    · split <;> omega
+  · split <;> omega
+  · decide
+
+/-- One explicit-Euler step of the cortical tension relaxation ODE
+    `dβ/dt = (β* − β)/τ_β` with `dt/τ_β = 1/4` (integer-scaled). -/
+def cortex_relax_step (beta target : Int) : Int :=
+  beta + (target - beta) / 4
+
+/-- Theorem 6 (`cortical_tension_relaxation_contracts`):
+    the relaxation step never overshoots: the updated tension lies between the current tension
+    and the Nodal-set target (both orderings), so tensions stay inside `[β_E, β_N]` whenever the
+    target does — the invariant checked numerically in `self_test` check 10. -/
+theorem cortical_tension_relaxation_contracts (beta target : Int) :
+    (beta ≤ target → beta ≤ cortex_relax_step beta target ∧ cortex_relax_step beta target ≤ target) ∧
+    (target ≤ beta → target ≤ cortex_relax_step beta target ∧ cortex_relax_step beta target ≤ beta) := by
+  unfold cortex_relax_step
+  constructor
+  · intro h
+    omega
+  · intro h
+    omega
+
 end MathOfBiology.Loop_044

@@ -121,4 +121,94 @@ theorem tracheal_drainage_and_nifedipine_hypoplasia_arrest
     have h_sq : 0 < (dP_sup - dP_c) * (dP_sup - dP_c) := Int.mul_pos h_diff h_diff
     exact Int.mul_pos h_alpha h_sq
 
+
+-- ============================================================================
+-- Law 4 (`sugimura-tracheal-viscous-fingering-4`, Pass 3):
+-- Poiseuille Airway-Tree Luminal Pressure Accumulation Law
+-- ============================================================================
+/-- With distributed CFTR/NKCC1 chloride secretion sources and Hagen–Poiseuille
+    segment resistances, luminal fluid drains from the distal tips toward the larynx,
+    so the pressure drop across every segment `R_i * Q_i` is non-negative and the
+    luminal pressure at any node equals the sub-laryngeal pressure plus the sum of the
+    resistive drops along the path from the trachea:
+      `P_node = P_trachea + Σ_path R_i Q_i`.
+    Consequently the distal-tip transmural pressure is never below the tracheal one,
+    `ΔP(trachea) ≤ ΔP(tip)`, and secretion into a sealed (occluded) lumen can only
+    raise, never lower, the local distending pressure. -/
+def pressure_along_path : Int → List Int → Int
+  | P, [] => P
+  | P, d :: ds => pressure_along_path (P + d) ds
+
+theorem poiseuille_tree_pressure_accumulation
+    (P_trachea P_pleura : Int) (drops : List Int)
+    (h_nonneg : ∀ d, d ∈ drops → 0 ≤ d) :
+    P_trachea ≤ pressure_along_path P_trachea drops ∧
+    P_trachea - P_pleura ≤ pressure_along_path P_trachea drops - P_pleura := by
+  have key : ∀ (P : Int) (ds : List Int), (∀ d, d ∈ ds → 0 ≤ d) →
+      P ≤ pressure_along_path P ds := by
+    intro P ds
+    induction ds generalizing P with
+    | nil =>
+      intro _
+      simp [pressure_along_path]
+    | cons d ds ih =>
+      intro h
+      have hd : 0 ≤ d := h d (by simp)
+      have hrest : ∀ e, e ∈ ds → 0 ≤ e := fun e he => h e (by simp [he])
+      have h_tail := ih (P + d) hrest
+      simp only [pressure_along_path]
+      omega
+  have h_main := key P_trachea drops h_nonneg
+  exact ⟨h_main, by omega⟩
+
+
+-- ============================================================================
+-- Law 5 (`sugimura-tracheal-viscous-fingering-5`, Pass 3):
+-- Laryngeal Valve Duty-Cycle Monotonicity Law
+-- ============================================================================
+/-- The fetal larynx acts as a valve: with the glottis adducted the outflow resistance
+    is `R_closed`, and during fetal breathing-movement episodes it falls to
+    `R_open < R_closed` (Harding et al. 1986; Harding & Hooper 1996).  For a constant
+    secretion rate `Q > 0` the steady luminal pressures are
+      `P_closed = P_amn + Q R_closed`,  `P_open = P_amn + Q R_open`,
+    so `P_open < P_closed`.  If the glottis is open for `d` out of `D` time units, the
+    time-integrated luminal pressure is `d P_open + (D - d) P_closed`, which decreases
+    strictly with the open duty `d`: tracheal occlusion (`d = 0`) maximises, and a
+    permanently open larynx / drainage (`d = D`) minimises, the mean distending
+    pressure and hence the time-integrated branching drive. -/
+def valve_steady_pressure (P_amn Q R : Int) : Int :=
+  P_amn + Q * R
+
+def valve_cycle_integrated_pressure (P_open P_closed d D : Int) : Int :=
+  d * P_open + (D - d) * P_closed
+
+theorem laryngeal_valve_duty_cycle_monotonicity
+    (P_amn Q R_open R_closed d1 d2 D : Int)
+    (hQ : 0 < Q)
+    (hR : R_open < R_closed)
+    (hd : d1 < d2) :
+    valve_steady_pressure P_amn Q R_open < valve_steady_pressure P_amn Q R_closed ∧
+    valve_cycle_integrated_pressure (valve_steady_pressure P_amn Q R_open)
+        (valve_steady_pressure P_amn Q R_closed) d2 D <
+      valve_cycle_integrated_pressure (valve_steady_pressure P_amn Q R_open)
+        (valve_steady_pressure P_amn Q R_closed) d1 D := by
+  have h_open_lt : P_amn + Q * R_open < P_amn + Q * R_closed := by
+    have := Int.mul_lt_mul_of_pos_left hR hQ
+    omega
+  refine ⟨by dsimp [valve_steady_pressure]; exact h_open_lt, ?_⟩
+  -- Generalise the two steady pressures to atoms Po < Pc
+  generalize hPo : valve_steady_pressure P_amn Q R_open = Po at *
+  generalize hPc : valve_steady_pressure P_amn Q R_closed = Pc at *
+  have hPoPc : Po < Pc := by
+    rw [← hPo, ← hPc]
+    dsimp [valve_steady_pressure]
+    exact h_open_lt
+  dsimp [valve_cycle_integrated_pressure]
+  have h_gap : 0 < (d2 - d1) * (Pc - Po) := Int.mul_pos (by omega) (by omega)
+  have h_expand : (d2 - d1) * (Pc - Po) = d2 * Pc - d2 * Po - (d1 * Pc - d1 * Po) := by
+    rw [Int.sub_mul, Int.mul_sub, Int.mul_sub]
+  have h_l1 : (D - d1) * Pc = D * Pc - d1 * Pc := Int.sub_mul D d1 Pc
+  have h_l2 : (D - d2) * Pc = D * Pc - d2 * Pc := Int.sub_mul D d2 Pc
+  omega
+
 end MathOfBiology.Loop_059

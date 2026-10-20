@@ -13,6 +13,16 @@ model_spec:
   a_F: 0.9
   mu_R: 1.0
   seed: 2008
+  pleura_lens_half_width_l0: 2.4
+  pleura_lens_half_thickness_l0: 1.0
+  pleura_interface_width_eps: 0.10
+  pleura_growth_per_generation: 0.15
+  gamma_mesenchyme_2d: 4.0
+  planar_anisotropy_threshold_A_c: 0.05
+  septation_bulk_window_p_days: [4.0, 21.0]
+  septation_continued_window_p_days: [14.0, 36.0]
+  septation_cont_rate_fraction: 0.12
+  adult_alveoli_calibration_target: 2300000
   inputs:
     - datasets/lung_stereotyped_branching_modes/lung_stereotyped_branching_modes_reference.json
     - datasets/lung_stereotyped_branching_modes/bronchial_tree_specimen.jpg
@@ -21,7 +31,7 @@ equations:
     formula: "T_D(m) = m + 1,   T_P(n) = T_O(n) = 2 n,   (T_{P/O} ∘ T_{P/O})(n) = 4 n,   T_{D_m → (P/O)^2} = 4 m + 1"
     lean_decl: "MathOfBiology.Loop_053.domain_composite_tips"
     lean_theorem: "MathOfBiology.Loop_053.metzger_subroutine_tip_multiplicity"
-    lean_locus: "morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean#L36-L54"
+    lean_locus: "morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean#L47-L69"
     lean_code: |
       def bifurcate_tips (n : Nat) : Nat := 2 * n
       def domain_composite_tips (m : Nat) : Nat := bifurcate_tips (bifurcate_tips m) + 1
@@ -32,12 +42,12 @@ equations:
     variables: "m: number of lateral domain buds along a parent airway trunk; n: number of active distal airway tips entering a planar or orthogonal bifurcation subroutine"
     role: "Determines exact distal bronchial tip counts across compound Domain (D) -> Planar (P) / Orthogonal (O) lineage trees in E11-E15 mouse lung lobes"
     source_citation: "Metzger, Klein, Martin & Krasnow (2008) Nature 453(7196):745-750 Figs. 2-4"
-    code_locus: "2008-metzger-lung-stereotyped-branching.py#L105-L215"
+    code_locus: "2008-metzger-lung-stereotyped-branching.py#L174-L383"
   - law_name: "Metzger (2008) Planar (Δφ = 0°) Invariance vs Orthogonal (Δφ = 90°) Dihedral Rotation Law"
     formula: "φ_{g+1}^{(P)} = φ_g + 0°,   φ_{g+1}^{(O)} = φ_g + 90°  ⟹  φ_{g+2}^{(O)} - φ_g = 180° (mod 180° ≡ 0°)"
     lean_decl: "MathOfBiology.Loop_053.orthogonal_step_deg"
     lean_theorem: "MathOfBiology.Loop_053.metzger_planar_orthogonal_dihedral_periodicity"
-    lean_locus: "morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean#L61-L79"
+    lean_locus: "morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean#L72-L94"
     lean_code: |
       def planar_step_deg (phi : Int) : Int := phi + 0
       def orthogonal_step_deg (phi : Int) : Int := phi + 90
@@ -48,12 +58,12 @@ equations:
     variables: "φ_g: cleavage-plane dihedral azimuth at branching generation g; Δφ ∈ {0°, 90°}: dihedral rotation between parent and daughter bifurcation planes"
     role: "Partitions flat lobar margin sheets (Planar P, Δφ = 0°, coplanar hull flatness → 0) from 3D space-filling lobar interiors (Orthogonal O, Δφ = 90°, isotropic 3D rosette)"
     source_citation: "Metzger, Klein, Martin & Krasnow (2008) Nature 453(7196):745-750 Fig. 3"
-    code_locus: "2008-metzger-lung-stereotyped-branching.py#L220-L335"
+    code_locus: "2008-metzger-lung-stereotyped-branching.py#L385-L441"
   - law_name: "Menshykau et al. (2012, 2014) FGF10-SHH-Ptch1 Receptor-Ligand Turing Switch"
     formula: "∂_t R = D_R ∇^2 R + γ(a_R - μ_R R + R^2 F),   ∂_t F = D_F ∇^2 F + γ(a_F - R^2 F),   (R^*, F^*) = ((a_R+a_F)/μ_R, a_F/(R^*)^2)"
     lean_decl: "MathOfBiology.Loop_053.receptor_reaction"
     lean_theorem: "MathOfBiology.Loop_053.menshykau_fgf10_shh_receptor_ligand_steady_state"
-    lean_locus: "morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean#L86-L106"
+    lean_locus: "morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean#L97-L120"
     lean_code: |
       def receptor_reaction (a_R mu_R_R r2_F : Int) : Int := a_R - mu_R_R + r2_F
       def ligand_reaction (a_F r2_F : Int) : Int := a_F - r2_F
@@ -65,4 +75,41 @@ equations:
     variables: "R: epithelial Ptch1/SHH receptor complex concentration; F: mesenchymal FGF10 ligand concentration; D_R, D_F: diffusion coefficients (D_F/D_R = 50); a_R, a_F: basal production rates; μ_R: receptor removal rate"
     role: "Biochemical Turing instability that selects between apical tip splitting (Planar/Orthogonal bifurcation at low elongation speed v_g < v_crit) and periodic lateral budding (Domain branching at high elongation speed v_g > v_crit)"
     source_citation: "Menshykau, Kraemer & Iber (2012) Development 139:4506-4514; Menshykau et al. (2014) PLoS Comput. Biol. 10(2):e1003421 Eqs. (1)-(5)"
-    code_locus: "2008-metzger-lung-stereotyped-branching.py#L340-L470"
+    code_locus: "2008-metzger-lung-stereotyped-branching.py#L448-L610"
+  - law_name: "Pleura-Confined Diffuse-Domain FGF10 Supply Anisotropy Mode Selection (Pass 3)"
+    formula: "∂_t F = D_F ∇·(ψ ∇F) + ψ γ_m (a_F − R(x)^2 F) − (1 − ψ) F / τ,  τ = ε^2 / D_F,  ψ = ½(1 − tanh((ρ − 1)/ε)),  ρ^2 = (x/L_x)^2 + (y/h)^2;   A = (F_P − F_O)/(F_P + F_O);   Δφ = 0° if A > A_c else 90°"
+    lean_decl: "MathOfBiology.Loop_053.pleura_mode_select"
+    lean_theorem: "MathOfBiology.Loop_053.pleura_anisotropy_mode_selection"
+    lean_locus: "morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean#L121-L155"
+    lean_code: |
+      def pleura_mode_select (fP fO c : Int) : Int := if fP > fO + c then 0 else 90
+      theorem pleura_anisotropy_mode_selection (fP fO c : Int) :
+          (pleura_mode_select fP fO c = 0 ∨ pleura_mode_select fP fO c = 90) ∧
+          (0 ≤ c → pleura_mode_select fP fP c = 90) ∧
+          (fP > c → pleura_mode_select fP 0 c = 0) := by
+        refine ⟨?_, ?_, ?_⟩ <;> (unfold pleura_mode_select; first | (split <;> simp) | (intro _; split <;> first | rfl | omega))
+    variables: "ψ: mesenchymal phase field (1 inside the pleura, 0 outside); F: FGF10 ligand; R(x): Ptch1 receptor density (background 1, Gaussian tip sink gain 2); L_x, h: lobe cross-section half-width / half-thickness; ε: interface width; F_P, F_O: mean ψF supply at the planar / orthogonal candidate daughter tips; A_c = 0.05: anisotropy threshold (orthogonal prior)"
+    role: "Couples the Menshykau FGF10 ligand equation to a pleura-bounded mesenchymal cavity so that the Metzger P/O choice is emergent: tips near the thin lobe margin see FGF10 depletion out of plane and flatten to Planar, interior tips remain Orthogonal (margin-interior transition x*/L_x = 0.54, critical half-thickness h* = 0.94 l0); reduced 2D cross-section model with a dilating cavity (no full 3D moving-boundary FEM); solver verified against the exact 1D slab profile with first-order convergence in ε"
+    source_citation: "Li, Lowengrub, Rätz & Voigt (2009) Commun. Math. Sci. 7(1):81-107 (diffuse-domain method); Menshykau et al. (2014) PLoS Comput. Biol. 10(2):e1003421 (geometry-signalling interplay); Metzger et al. (2008) Nature 453:745-750 Fig. 3 (planar margins vs orthogonal interiors)"
+    code_locus: "2008-metzger-lung-stereotyped-branching.py#L612-L963"
+  - law_name: "Mean-Field Saccular-to-Alveolar Septation Closed Form & Stochastic Yule Septation (Pass 3)"
+    formula: "N_{k+1} = μ N_k, N_0 = n_0  ⟹  N_k = n_0 μ^k;   continuous form N(t) = N_units exp(∫ λ(s) ds),  λ(t) = λ_b 1[P4 ≤ t < P21] + λ_c 1[P14 ≤ t < P36];   Yule jump law: n → n + NegBin(n, e^{−λΔt});   per-unit CV → sqrt(1 − 1/m), whole-lung CV ≈ 1/sqrt(N_units)"
+    lean_decl: "MathOfBiology.Loop_053.septation_mean"
+    lean_theorem: "MathOfBiology.Loop_053.septation_mean_closed_form"
+    lean_locus: "morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean#L158-L188"
+    lean_code: |
+      def septation_mean (n0 mu : Nat) : Nat → Nat
+        | 0 => n0
+        | k + 1 => mu * septation_mean n0 mu k
+      theorem septation_mean_closed_form (n0 mu k m : Nat) :
+          septation_mean n0 mu k = n0 * mu ^ k ∧
+          septation_mean (domain_composite_tips m) 2 k = (4 * m + 1) * 2 ^ k := by
+        have h : ∀ (a b j : Nat), septation_mean a b j = a * b ^ j := by
+          intro a b j; induction j with
+          | zero => simp [septation_mean]
+          | succ j ih => simp [septation_mean, ih, Nat.pow_succ]; rw [Nat.mul_comm b, Nat.mul_assoc]
+        refine ⟨h n0 mu k, ?_⟩; rw [h, (metzger_subroutine_tip_multiplicity 0 m).2]
+    variables: "n_0 / N_units: terminal units at the end of branching (E16.5, grammar extrapolated: 632); μ: mean offspring per septation round (2); k: septation rounds (11.8 fitted); λ_b, λ_c: bulk (P4-P21) and continued (P14-P36) septation hazards (λ_b = 0.417/d fitted in closed form to the Knust 2009 adult count, λ_c = 0.12 λ_b); m: alveoli per terminal unit at P36"
+    role: "Extends the deterministic E11-E16.5 D/P/O grammar with stochastic postnatal secondary septation; the deterministic grammar alone freezes at 632 units (control), the Yule ensemble reaches 2.3e6 alveoli at P36 with per-unit CV ≈ 1 and whole-lung CV ≈ 0.03-0.04"
+    source_citation: "Mund, Stampanoni & Schittny (2008) Dev. Dyn. 237(8):2108-2116 (bulk/continued alveolarisation phases); Knust, Ochs, Gundersen & Nyengaard (2009) Anat. Rec. 292(1):113-122 (adult mouse alveolar number); Yule (1925) Phil. Trans. R. Soc. B 213:21-87 (pure-birth process)"
+    code_locus: "2008-metzger-lung-stereotyped-branching.py#L1046-L1191"

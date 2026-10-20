@@ -1,0 +1,92 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-tozluoglu-wing-disc-dome-folding> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-tozluoglu-wing-disc-dome-folding-parameter-expressivity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-tozluoglu-wing-disc-dome-folding-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Tozluoglu et al. (2019) Dev. Cell & Sui et al. (2018) Nat. Commun. Drosophila wing imaginal disc planar differential growth, basal ECM dome & H/N, H/H, H/P hinge folding (Pass 3: + reduced disc-proper / peripodial / lumen sac) — Parameter expressivity: 90/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credited: 5 stages x 7 zones (L809-903), 6 perturbation conditions including the new `peripodial_ablation` (L906-999), the imposed-pressure sweep over 9 values 0-800 Pa reporting p_half, maximal fold-locus shift and monotonicity (L745-791), and 11 CLI overrides: `--mu-bm`, `--g-pouch`, `--jak-stat-boost`, `--remodeling`, `--seed` plus the new `--lumen-mode`, `--p-lumen`, `--h-lumen`, `--t-pe`, `--ablate-peripodial`, `--skip-sweep` (L1853-1866) wired through `_lumen_kwargs_from_overrides` (L797-806) into timecourse, figure and GIF. Deductions: because the fold family is tethered to a prescribed target (L354-414), the swept growth parameters change amplitudes but cannot move or create folds (-6); `--p-lumen` is silent unless `--lumen-mode pressure` is also passed (L1862) (-2); no sweep over T_PE or h_lumen, the two most uncertain Pass 3 inputs (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-tozluoglu-wing-disc-dome-folding-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-tozluoglu-wing-disc-dome-folding-parameter-expressivity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-tozluoglu-wing-disc-dome-folding-parameter-expressivity-3> ;
+        pk:hasScore "0.9"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-tozluoglu-wing-disc-dome-folding-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2020-tozluoglu-wing-disc-dome-folding.py L745–L806" ;
+        dct:description "evaluate_lumen_pressure_sweep (0-800 Pa, p_half, locus shift, monotonicity) and _lumen_kwargs_from_overrides" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2020-tozluoglu-wing-disc-dome-folding.py#L745-L806> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-tozluoglu-wing-disc-dome-folding-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2020-tozluoglu-wing-disc-dome-folding.py L906–L999" ;
+        dct:description "6 perturbation conditions incl. peripodial_ablation (L921-936) flagged is_prediction_only (L996)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2020-tozluoglu-wing-disc-dome-folding.py#L906-L999> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-tozluoglu-wing-disc-dome-folding-parameter-expressivity-3> a pk:EvidenceItem ;
+        rdfs:label "2020-tozluoglu-wing-disc-dome-folding.py L1853–L1866" ;
+        dct:description "11 CLI flags incl. --lumen-mode, --p-lumen, --h-lumen, --t-pe, --ablate-peripodial, --skip-sweep; --p-lumen only active with --lumen-mode pressure" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2020-tozluoglu-wing-disc-dome-folding.py#L1853-L1866> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 049 Pass 3 Phase B Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/49> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.devcel.2019.09.009>,
+            <https://doi.org/10.1038/s41467-018-06497-3>,
+            <https://doi.org/10.1115/1.4032128>,
+            <https://doi.org/10.1242/dev.02092>,
+            <https://doi.org/10.1242/dev.199728>,
+            <https://doi.org/10.7554/eLife.39596> .
+    <https://doi.org/10.1016/j.devcel.2019.09.009> dct:date "2019"^^xsd:gYear ;
+        dct:title "Planar Differential Growth Rates Initiate Precise Fold Positions in Complex Epithelia" .
+    <https://doi.org/10.1038/s41467-018-06497-3> dct:date "2018"^^xsd:gYear ;
+        dct:title "Differential lateral and basal tension drive folding of Drosophila wing discs through two distinct mechanisms" .
+    <https://doi.org/10.1115/1.4032128> dct:date "2016"^^xsd:gYear ;
+        dct:title "On buckling morphogenesis" .
+    <https://doi.org/10.1242/dev.02092> dct:date "2005"^^xsd:gYear ;
+        dct:title "Developmental analysis and squamous morphogenesis of the peripodial epithelium in Drosophila imaginal discs" .
+    <https://doi.org/10.1242/dev.199728> dct:date "2021"^^xsd:gYear ;
+        dct:title "Live imaging of the Drosophila wing disc reveals the dynamics of fold formation and the role of the extracellular matrix" .
+    <https://doi.org/10.7554/eLife.39596> dct:date "2019"^^xsd:gYear ;
+        dct:title "Size control of the inner ear via hydraulic feedback" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Tozluoglu et al. (2019) Dev. Cell & Sui et al. (2018) Nat. Commun. Drosophila wing imaginal disc planar differential growth, basal ECM dome & H/N, H/H, H/P hinge folding (Pass 3: + reduced disc-proper / peripodial / lumen sac) — Parameter expressivity 90/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:26:54Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-tozluoglu-wing-disc-dome-folding-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/49> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

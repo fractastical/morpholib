@@ -177,4 +177,80 @@ theorem streichan_2018_global_flow_and_mutant_collapse :
     r1000_iso_only > r1000_bcd_nos_tsl := by
   decide
 
+/-! ## Pass 3 additions (audit v3): curved-surface operator, myosin feedback, T1/rosette ledger -/
+
+/-- Eigenvalue of the curved-surface Stokes–Brinkman operator
+    `-eta Delta_B v - eta_b grad(div v) - eta K v + xi v` on a gradient mode `v = grad P_l`
+    of a sphere of radius `R` (Weitzenböck identity `Delta_B grad psi = grad Delta psi + K grad psi`,
+    `K = 1/R^2`), scaled by `R^2`:
+    `R^2 lambda_l = (eta + eta_b) l(l+1) - 2 eta + xi R^2`. -/
+def surface_gradient_mode_symbol (eta eta_b xiR2 l : Int) : Int :=
+  (eta + eta_b) * (l * (l + 1)) - 2 * eta + xiR2
+
+/-- Theorem 4 (`surface_stokes_brinkman_gradient_mode_pos`):
+    the Gaussian-curvature correction `-2 eta K` produced by the covariant strain tensor on the
+    closed blastoderm surface can never destabilise the Stokes–Brinkman operator: for every
+    non-trivial gradient mode `l ≥ 1`, `(eta + eta_b) l(l+1) ≥ 2 eta`, so the eigenvalue stays
+    `≥ xi R^2 > 0` (used as the sphere-limit analytic check of the Pass 3 surface solver). -/
+theorem surface_stokes_brinkman_gradient_mode_pos
+    (eta eta_b xiR2 l : Int)
+    (hEta : eta > 0) (hEtaB : eta_b ≥ 0) (hXi : xiR2 > 0) (hL : l ≥ 1) :
+    surface_gradient_mode_symbol eta eta_b xiR2 l ≥ xiR2 ∧
+    surface_gradient_mode_symbol eta eta_b xiR2 l > 0 := by
+  dsimp [surface_gradient_mode_symbol]
+  have hL1 : l + 1 ≥ 2 := by omega
+  have hLL : l * (l + 1) ≥ 1 * 2 := Int.mul_le_mul hL hL1 (by omega) (by omega)
+  have hSum : eta + eta_b ≥ 0 := by omega
+  have hProd : (eta + eta_b) * (l * (l + 1)) ≥ (eta + eta_b) * (1 * 2) :=
+    Int.mul_le_mul_of_nonneg_left hLL hSum
+  have hTwo : (eta + eta_b) * (1 * 2) = 2 * eta + 2 * eta_b := by
+    rw [Int.add_mul]; omega
+  constructor <;> omega
+
+/-- Theorem 5 (`myosin_feedback_fixed_point`): Lefebvre et al. (2023)-type strain-rate
+    dependent Myosin-II recruitment iterated as `m_{n+1} = m_0 + g m_n` with rational loop gain
+    `g = p / q` has, for `0 ≤ p < q`, a bounded fixed point `M` with `(q - p) M = q m_0`
+    (`M = m_0 / (1 - g)`) that amplifies the basal level (`M ≥ m_0`); for `p ≥ q` (gain `≥ 1`)
+    no non-negative fixed point exists (run-away recruitment). -/
+theorem myosin_feedback_fixed_point
+    (m0 p q M : Int)
+    (hM0 : m0 > 0) (hP : p ≥ 0) (hQ : q > 0) :
+    (p < q → q * M = q * m0 + p * M → (q - p) * M = q * m0 ∧ M ≥ m0) ∧
+    (p ≥ q → M ≥ 0 → q * M ≠ q * m0 + p * M) := by
+  constructor
+  · intro hPQ hFix
+    have hEq : (q - p) * M = q * m0 := by
+      rw [Int.sub_mul]; omega
+    refine ⟨hEq, ?_⟩
+    have hQP : q - p > 0 := by omega
+    have hPm0 : p * m0 ≥ 0 := Int.mul_nonneg hP (by omega)
+    have hLow : (q - p) * m0 ≤ (q - p) * M := by
+      rw [hEq, Int.sub_mul]; omega
+    exact Int.le_of_mul_le_mul_left hLow hQP
+  · intro hPQ hMnn hFix
+    have hPQ' : p - q ≥ 0 := by omega
+    have hProd : p * M - q * M ≥ 0 := by
+      have h := Int.mul_nonneg hPQ' hMnn
+      rw [Int.sub_mul] at h
+      exact h
+    have hQm0 : q * m0 > 0 := Int.mul_pos (by omega) hM0
+    omega
+
+/-- Theorem 6 (`rosette_resolution_junction_balance`): in the cell-level intercalation ledger,
+    `k ≥ 1` consecutive dorsoventral junctions of one Myosin-II cable collapsing into a single
+    vertex form a rosette of `r = k + 3` cells (`k = 1` is a T1 four-cell vertex; Blankenship et
+    al. 2006 rosettes `r ≥ 5` need `k ≥ 2`); its resolution produces `r - 2 = k + 1` trivalent
+    vertices joined by `r - 3 = k` new anteroposterior junctions (a tree on `r - 2` nodes).
+    Hence the junction count is conserved while the AP-minus-DV junction anisotropy rises by
+    `2k` per event, which is the discrete source of convergent extension. -/
+theorem rosette_resolution_junction_balance
+    (k j_ap j_dv : Int) (hK : k ≥ 1) :
+    (k + 3) ≥ 4 ∧
+    ((k + 3) - 3) = k ∧
+    ((k + 3) - 2) = k + 1 ∧
+    ((k ≥ 2) ↔ (k + 3) ≥ 5) ∧
+    (j_ap + k) + (j_dv - k) = j_ap + j_dv ∧
+    (j_ap + k) - (j_dv - k) = (j_ap - j_dv) + 2 * k := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩ <;> omega
+
 end MathOfBiology.Loop_048

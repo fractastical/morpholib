@@ -1,0 +1,139 @@
+{
+  "metadata": {
+    "dataset_id": "gastrulation-streak-attractor-ligand-emt-reference-v3",
+    "title": "Pass 3 reference table: FGF8 / Nodal / Wnt8c ligand reaction-diffusion kinetics upstream of marginal-ring myosin phosphorylation, and reduced trans-epithelial apical-basal wedging + basement-membrane remodeling column model for mesendoderm EMT",
+    "added_in": "Pass 3 remediation (2026-10-19-gastrulation-streak-attractor-audit-v3)",
+    "sources": [
+      {
+        "id": "yu2009",
+        "citation": "Yu SR, Burkhardt M, Nowak M, Ries J, Petrasek Z, Scholpp S, Schwille P, Brand M (2009). Fgf8 morphogen gradient forms by a source-sink mechanism with freely diffusing molecules. Nature 461:533-536.",
+        "doi": "10.1038/nature08391",
+        "offline_verification": "DOI recalled from memory; could not be verified online during the isolated Pass 3 run"
+      },
+      {
+        "id": "muller2012",
+        "citation": "Müller P, Rogers KW, Jordan BM, Lee JS, Robson D, Ramanathan S, Schier AF (2012). Differential diffusivity of Nodal and Lefty underlies a reaction-diffusion patterning system. Science 336:721-724.",
+        "doi": "10.1126/science.1221920",
+        "offline_verification": "DOI recalled from memory; could not be verified online during the isolated Pass 3 run"
+      },
+      {
+        "id": "nakaya2008",
+        "citation": "Nakaya Y, Sukowati EW, Wu Y, Sheng G (2008). RhoA and microtubule dynamics control cell-basement membrane interaction in EMT during gastrulation. Nature Cell Biology 10:765-775.",
+        "doi": "10.1038/ncb1739",
+        "offline_verification": "DOI recalled from memory; could not be verified online during the isolated Pass 3 run"
+      },
+      {
+        "id": "voiculescu2014",
+        "citation": "Voiculescu O, Bodenstein L, Lau IJ, Stern CD (2014). Local cell interactions and self-amplifying individual cell ingression drive amniote gastrulation. eLife 3:e01817.",
+        "doi": "10.7554/eLife.01817",
+        "offline_verification": "DOI recalled from memory; could not be verified online during the isolated Pass 3 run"
+      },
+      {
+        "id": "rozbicki2015",
+        "citation": "Rozbicki E, Chuai M, Karjalainen AI, Song F, Sang HM, Martin R, Knölker HJ, MacDonald MP, Weijer CJ (2015). Myosin-II-mediated cell shape changes and cell intercalation contribute to primitive streak formation. Nature Cell Biology 17(4):397-408.",
+        "doi": "10.1038/ncb3138"
+      }
+    ]
+  },
+  "ligand_reaction_diffusion": {
+    "section": "Explicit reaction-diffusion kinetics for the three diffusible ligands acting upstream of posterior marginal-ring Myosin-II phosphorylation (Pass 2 remediation item 2)",
+    "equations": {
+      "wnt8c": "dW/dt = D_W nabla^2 W + s_W S_post(x) - k_W W",
+      "nodal": "dN/dt = D_N nabla^2 N + s_N H(W; K_W) (1 + f_N H(N; K_N)) - k_N N",
+      "fgf8": "dF/dt = D_F nabla^2 F + s_F H(N; K_N) - k_F F",
+      "hill": "H(c; K) = c^2 / (K^2 + c^2)",
+      "myosin_phosphorylation": "P(x,t) = rho_ROCK * H(N_eff; K_N) * (0.35 + 0.65 H(F_eff; K_F)),  N_eff = a_ALK * N (SB431542 -> a_ALK = 0),  F_eff = a_FGFR * F (SU5402 -> a_FGFR = 0)",
+      "cable_source": "Dm/Dt gains the term + alpha_P * P(x,t) * ring(r) * (1 - m / m_sat)",
+      "steady_decay_length": "lambda = sqrt(D / k) for a localized source with linear clearance (Yu et al. 2009 source-sink mechanism)"
+    },
+    "parameters": {
+      "D_fgf8_um2_per_s": 53.0,
+      "D_fgf8_source": "yu2009 (free FGF8-EGFP diffusion coefficient in zebrafish blastula extracellular space, FCS)",
+      "fgf8_half_life_min": 30.0,
+      "fgf8_half_life_source": "ASSUMED order-of-magnitude clearance (Yu et al. 2009 report rapid endocytic clearance; the exact chick value is not sourced) — flagged for Pass 4",
+      "D_nodal_um2_per_s": 3.2,
+      "D_nodal_source": "muller2012 (zebrafish Squint/Nodal FRAP D = 3.2 um^2/s)",
+      "nodal_half_life_min": 95.0,
+      "nodal_half_life_source": "muller2012 (Squint clearance half-life ~95 min)",
+      "D_wnt8c_um2_per_s": 1.0,
+      "D_wnt8c_source": "ASSUMED short-range lipid-modified Wnt diffusivity (order 1 um^2/s); not sourced for Wnt8c — flagged for Pass 4",
+      "wnt8c_half_life_min": 60.0,
+      "wnt8c_half_life_source": "ASSUMED — flagged for Pass 4",
+      "hill_K_wnt": 0.35,
+      "hill_K_nodal": 0.3,
+      "hill_K_fgf": 0.25,
+      "nodal_autoactivation_f_N": 1.2,
+      "alpha_P_myosin_phosphorylation_hr_inv": 0.55,
+      "units_note": "D converted to mm^2/h (x 3.6e-3); half-lives converted to first-order rates k = ln2 / t_half in h^-1"
+    },
+    "derived_decay_lengths_um": {
+      "fgf8": 371.0,
+      "nodal": 162.0,
+      "wnt8c": 72.0,
+      "note": "lambda = sqrt(D/k); values rounded. FGF8 is the only ligand whose decay length is resolvable on the 40 um grid (>= 9 cells)."
+    },
+    "regime_receptor_activity": {
+      "wildtype_hh1_to_hh3_polonaise_streak": {
+        "fgfr_activity": 1.0,
+        "alk_nodal_receptor_activity": 1.0,
+        "anterior_wnt_source": 0.0
+      },
+      "fgf_inhibited_su5402_circular_ring": {
+        "fgfr_activity": 0.0,
+        "alk_nodal_receptor_activity": 1.0,
+        "anterior_wnt_source": 0.0
+      },
+      "ectopic_vg1_wnt_twin_streaks": {
+        "fgfr_activity": 1.0,
+        "alk_nodal_receptor_activity": 1.0,
+        "anterior_wnt_source": 1.0
+      },
+      "ingression_blocked_nodal_sb431542": {
+        "fgfr_activity": 1.0,
+        "alk_nodal_receptor_activity": 0.0,
+        "anterior_wnt_source": 0.0
+      },
+      "rock_inhibited_y27632_flow_arrest": {
+        "fgfr_activity": 1.0,
+        "alk_nodal_receptor_activity": 1.0,
+        "anterior_wnt_source": 0.0
+      },
+      "note": "SU5402 blocks FGFR tyrosine kinase; SB431542 blocks ALK4/5/7 (Nodal/Activin/TGF-beta type I receptors); Y-27632 blocks ROCK (rho_ROCK = rock_activity); ectopic Vg1/Wnt adds a second anterior marginal Wnt source."
+    }
+  },
+  "apical_basal_wedging_emt": {
+    "section": "Reduced trans-epithelial column model coupling 3D apical-basal cell wedging and basement-membrane remodeling to the 2D planar Stokes sink (Pass 2 remediation item 1). This is NOT a 3D FEM: each planar grid point carries one columnar cell (apical area a, basal area b, height h, basement-membrane integrity B).",
+    "equations": {
+      "apical_constriction": "da/dt = -k_con * rho_ROCK * max(m - m_c, 0) * a + k_rel * (1 - a)   (supra-threshold Myosin-II cables constrict the apex)",
+      "basal_area": "b = 1 + chi_b * (1 - a) * B   (basal expansion while the basement membrane is intact)",
+      "volume_conservation": "h = 2 V0 / (a + b),  V0 = h0 (a0 + b0) / 2 with a0 = b0 = 1 so h = 2 h0 / (a + b)",
+      "wedging_index": "Wdg = (b - a) / (b + a)  in [0, 1)",
+      "basement_membrane": "dB/dt = -k_bm * H(N_eff; K_N) * (0.5 + 0.5 H(F_eff; K_F)) * Wdg * B   (RhoA/microtubule loss + MMP-mediated breakdown, Nakaya et al. 2008)",
+      "ingression_rate": "I = k_ing * Wdg * (1 - B)   [h^-1]  (self-amplifying individual cell ingression, Voiculescu et al. 2014)",
+      "planar_sink_coupling": "nabla . v_sink = -I,  v_sink = -nabla phi,  nabla^2 phi = I  (solved spectrally); replaces the Pass 2 prescribed Gaussian midline sink"
+    },
+    "parameters": {
+      "h0_epiblast_height_um": 25.0,
+      "h0_source": "ASSUMED lateral epiblast columnar height at HH1-HH2 (order 20-30 um); flagged for Pass 4",
+      "k_con_hr_inv": 0.6,
+      "m_c_apical_threshold": 0.7,
+      "k_rel_hr_inv": 0.08,
+      "chi_b_basal_expansion": 0.8,
+      "k_bm_hr_inv": 0.9,
+      "k_ing_hr_inv": 1.4,
+      "a_min_apical_fraction": 0.5
+    },
+    "reference_values": {
+      "streak_apical_area_reduction_fold": 2.0,
+      "streak_apical_area_reduction_source": "rozbicki2015 (streak-forming cells apically constrict to roughly half the apical area of lateral epiblast cells; approximate reading of Fig. 2-3) — flagged approximate",
+      "streak_to_lateral_epiblast_thickening_ratio": 1.33,
+      "streak_thickening_source": "DERIVED from the constant-volume column with the Rozbicki et al. (2015) ~2x apical constriction (a -> 0.5) and basal area relaxing to 1 after basement-membrane loss: h/h0 = 2/(0.5 + 1) = 1.33. Not an independently measured chick value — flagged for Pass 4",
+      "sb431542_ingression_fraction": 0.0,
+      "sb431542_source": "voiculescu2014 (SB-431542 Nodal/ALK block abolishes mesendoderm ingression)",
+      "basement_membrane_breakdown_confined_to_streak": true,
+      "bm_source": "nakaya2008 (basement membrane breakdown is restricted to the primitive streak midline)",
+      "streak_bm_breakdown_area_fraction": 0.08,
+      "streak_bm_breakdown_area_fraction_source": "Footprint of a 1.18 mm x 0.28 mm HH3 streak over the pi R^2 (R = 1.15 mm) area pellucida = 0.08 (Saadaoui et al. 2020 streak dimensions; Nakaya et al. 2008 BM breakdown restricted to the streak) — approximate, flagged"
+    }
+  }
+}

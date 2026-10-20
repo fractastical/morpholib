@@ -7,8 +7,8 @@
   FGF10-SHH-Ptch1 Receptor-Ligand Turing Mode Selection
   (`metzger-lung-stereotyped-branching`).
 
-  Covers 3 governing mathematical laws in pure core Lean 4 (zero external imports,
-  zero `sorry`s):
+  Covers 5 governing mathematical laws in pure core Lean 4 (zero external imports,
+  zero `sorry`s; Laws 4-5 added in Pass 3):
     1. Metzger (2008) Domain & Bifurcation Tip-Multiplicity Composition Law:
        Domain branching `D_m` sprouts `m` lateral daughter branches from a continuing
        parent trunk (`m + 1` active tips), and each subsequent Planar (`P`) or
@@ -28,6 +28,14 @@
        `mu_R_R = μ_R R`), the cubic signaling term `R^2 F` cancels in the sum
        `f + g = a_R + a_F - mu_R_R`, and at the steady state `mu_R_R = a_R + a_F`,
        `r2_F = a_F`, both reaction residuals vanish (`f = 0 ∧ g = 0`).
+    4. (Pass 3) Pleura-Confined FGF10 Supply Anisotropy Mode Selection:
+       the selector `if fP > fO + c then 0 else 90` only returns the Metzger dihedrals
+       `{0°, 90°}`, yields Orthogonal for an isotropic supply (`fP = fO`, `c ≥ 0`) and
+       Planar when the orthogonal candidates lie beyond the pleura (`fO = 0`, `fP > c`).
+    5. (Pass 3) Mean-Field Septation Closed Form:
+       `N_{k+1} = mu * N_k`, `N_0 = n0` has `N_k = n0 * mu ^ k` (induction), and a
+       `D_m -> (P/O)^2` scaffold followed by `k` binary septation rounds carries
+       `(4 m + 1) * 2 ^ k` alveoli.
 
   Verify with the Lean 4 kernel:
     lean morphoeval/lean/loops/Loop_053_lung_stereotyped_branching_modes.lean
@@ -109,5 +117,73 @@ theorem menshykau_fgf10_shh_receptor_ligand_steady_state (a_R a_F mu_R_R r2_F : 
     ligand_reaction a_F a_F = 0 := by
   simp [receptor_reaction, ligand_reaction]
   omega
+
+
+-- ============================================================================
+-- Law 4 (`metzger-lung-stereotyped-branching-4`, Pass 3):
+-- Pleura-Confined FGF10 Supply Anisotropy Mode Selection
+-- ============================================================================
+
+/-- Pass 3 pleura-confined mode selector (Section 3b of the script): given the FGF10
+    supply `fP` at the planar candidate daughter tips, the supply `fO` at the orthogonal
+    candidates and the anisotropy threshold `c` (all scaled to integers), Planar
+    (`Δφ = 0°`) is selected iff `fP > fO + c`, otherwise Orthogonal (`Δφ = 90°`). -/
+def pleura_mode_select (fP fO c : Int) : Int :=
+  if fP > fO + c then 0 else 90
+
+/-- Theorem 4 (`pleura_anisotropy_mode_selection`):
+    (1) The selector only ever returns the two Metzger dihedral values `0°` or `90°`;
+    (2) an isotropic FGF10 supply (deep lobe interior, `fP = fO`) with a non-negative
+        threshold always yields Orthogonal bifurcation (`90°`);
+    (3) if the orthogonal candidates lie beyond the pleura (`fO = 0`) and the planar
+        supply exceeds the threshold (`fP > c`), the selector flattens the lineage to
+        Planar (`0°`) — pleura-constrained lobe flattening. -/
+theorem pleura_anisotropy_mode_selection (fP fO c : Int) :
+    (pleura_mode_select fP fO c = 0 ∨ pleura_mode_select fP fO c = 90) ∧
+    (0 ≤ c → pleura_mode_select fP fP c = 90) ∧
+    (fP > c → pleura_mode_select fP 0 c = 0) := by
+  refine ⟨?_, ?_, ?_⟩
+  · unfold pleura_mode_select
+    split <;> simp
+  · intro hc
+    unfold pleura_mode_select
+    split
+    · omega
+    · rfl
+  · intro h
+    unfold pleura_mode_select
+    split
+    · rfl
+    · omega
+
+
+-- ============================================================================
+-- Law 5 (`metzger-lung-stereotyped-branching-5`, Pass 3):
+-- Mean-Field Saccular-to-Alveolar Septation Closed Form
+-- ============================================================================
+
+/-- Mean-field septation recursion (Section 4b): starting from `n0` terminal units at the
+    end of branching, each septation round multiplies the expected alveolar count by the
+    mean offspring number `mu` (`mu = 2` for a binary secondary septum). -/
+def septation_mean (n0 mu : Nat) : Nat → Nat
+  | 0 => n0
+  | k + 1 => mu * septation_mean n0 mu k
+
+/-- Theorem 5 (`septation_mean_closed_form`):
+    (1) `N_k = n0 * mu ^ k` for every number of septation rounds `k` (proved by induction);
+    (2) composed with Law 1, a `D_m -> (P/O)^2` lobar scaffold followed by `k` binary
+        septation rounds carries exactly `(4 m + 1) * 2 ^ k` alveoli. -/
+theorem septation_mean_closed_form (n0 mu k m : Nat) :
+    septation_mean n0 mu k = n0 * mu ^ k ∧
+    septation_mean (domain_composite_tips m) 2 k = (4 * m + 1) * 2 ^ k := by
+  have h : ∀ (a b j : Nat), septation_mean a b j = a * b ^ j := by
+    intro a b j
+    induction j with
+    | zero => simp [septation_mean]
+    | succ j ih =>
+      simp [septation_mean, ih, Nat.pow_succ]
+      rw [Nat.mul_comm b, Nat.mul_assoc]
+  refine ⟨h n0 mu k, ?_⟩
+  rw [h, (metzger_subroutine_tip_multiplicity 0 m).2]
 
 end MathOfBiology.Loop_053

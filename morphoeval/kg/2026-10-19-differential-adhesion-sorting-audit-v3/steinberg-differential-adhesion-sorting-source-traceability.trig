@@ -1,0 +1,99 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-steinberg-differential-adhesion-sorting> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-steinberg-differential-adhesion-sorting-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-steinberg-differential-adhesion-sorting-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Steinberg (1963, 1970) & Graner-Glazier (1992) differential adhesion cell sorting — Source and data traceability: 91/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`datasets/differential_adhesion_sorting/` carries the reference JSON (265 lines, 8 sources with DOIs), the SHA-256-pinned specimen verified fail-closed at runtime (`verify_reference_dataset`, L115-130; self-test check 1), `paper_citations.bib` (8 entries), `scout_manifest.json` and a README updated for Pass 3. Deductions: the three Pass 3 sources (Mombach 1995, Nakajima & Ishihara 2011, Chen 2007) have DOIs entered from memory and flagged `doi_verified_offline: false` in the JSON (L32-51), in the bib (L55-91) and in the module docstring (L72) — honest, but unverified (-5); the specimen's source page is a Wikimedia Commons upload with no species or staining metadata (README L25-27) (-2); the empirical reference values 0.14 / 0.72 used in two measurements are not traced to any table (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:evidenceAgainst "datasets/differential_adhesion_sorting/paper_citations.bib L55–L91: Pass 3 BibTeX entries for Mombach 1995, Nakajima & Ishihara 2011, Chen 2007 with 'DOI not verified offline' notes <https://github.com/fractastical/morpholib/blob/654cd6fc/datasets/differential_adhesion_sorting/paper_citations.bib#L55-L91>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-steinberg-differential-adhesion-sorting-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-steinberg-differential-adhesion-sorting-source-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-steinberg-differential-adhesion-sorting-source-traceability-3> ;
+        pk:hasScore "0.91"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-steinberg-differential-adhesion-sorting-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "1964-steinberg-differential-adhesion-sorting.py L115–L130" ;
+        dct:description "Runtime SHA-256 verification of the specimen against both the hard-coded digest and the JSON digest" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/654cd6fc/1964-steinberg-differential-adhesion-sorting.py#L115-L130> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-steinberg-differential-adhesion-sorting-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/differential_adhesion_sorting/differential_adhesion_sorting_reference.json L6–L52" ;
+        dct:description "8 sources with DOIs; 3 Pass 3 entries flagged doi_verified_offline: false" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/654cd6fc/datasets/differential_adhesion_sorting/differential_adhesion_sorting_reference.json#L6-L52> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-steinberg-differential-adhesion-sorting-source-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "datasets/differential_adhesion_sorting/README.md L28–L37" ;
+        dct:description "Pass 3 section documenting the 3D lattice parameters, kinetic laws and the optical-section mapping of the specimen" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/654cd6fc/datasets/differential_adhesion_sorting/README.md#L28-L37> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/jez.1401730406>,
+            <https://doi.org/10.1016/j.cpc.2007.03.007>,
+            <https://doi.org/10.1088/1367-2630/13/3/033035>,
+            <https://doi.org/10.1103/PhysRevE.47.2128>,
+            <https://doi.org/10.1103/PhysRevLett.69.2013>,
+            <https://doi.org/10.1103/PhysRevLett.75.2244>,
+            <https://doi.org/10.1126/science.141.3579.401>,
+            <https://doi.org/10.1242/dev.122.5.1611> .
+    <https://doi.org/10.1002/jez.1401730406> dct:date "1970"^^xsd:gYear ;
+        dct:title "Does differential adhesion govern self-assembly processes in histogenesis? Equilibrium configurations and the emergence of a hierarchy among populations of embryonic cells" .
+    <https://doi.org/10.1016/j.cpc.2007.03.007> dct:date "2007"^^xsd:gYear ;
+        dct:title "A parallel implementation of the Cellular Potts Model for simulation of cell-based morphogenesis" .
+    <https://doi.org/10.1088/1367-2630/13/3/033035> dct:date "2011"^^xsd:gYear ;
+        dct:title "Kinetics of the cellular Potts model revisited" .
+    <https://doi.org/10.1103/PhysRevE.47.2128> dct:date "1993"^^xsd:gYear ;
+        dct:title "Simulation of the differential adhesion driven rearrangement of biological cells" .
+    <https://doi.org/10.1103/PhysRevLett.69.2013> dct:date "1992"^^xsd:gYear ;
+        dct:title "Simulation of biological cell sorting using a two-dimensional extended Potts model" .
+    <https://doi.org/10.1103/PhysRevLett.75.2244> dct:date "1995"^^xsd:gYear ;
+        dct:title "Quantitative comparison between differential adhesion models and cell sorting in the presence and absence of fluctuations" .
+    <https://doi.org/10.1126/science.141.3579.401> dct:date "1963"^^xsd:gYear ;
+        dct:title "Reconstruction of tissues by dissociated cells" .
+    <https://doi.org/10.1242/dev.122.5.1611> dct:date "1996"^^xsd:gYear ;
+        dct:title "Surface tensions of embryonic tissues predict their mutual envelopment behavior" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Steinberg (1963, 1970) & Graner-Glazier (1992) differential adhesion cell sorting — Source and data traceability 91/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T15:59:27Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-steinberg-differential-adhesion-sorting-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

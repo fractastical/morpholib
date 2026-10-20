@@ -28,6 +28,20 @@
         "id": "foty1996",
         "citation": "Foty RA, Pfleger CM, Forgacs G, Steinberg MS (1996). Surface tensions of embryonic tissues predict their mutual envelopment behavior. Development 122(5):1611-1620.",
         "doi": "10.1242/dev.122.5.1611"
+      },
+      {
+        "id": "ouchi2003",
+        "citation": "Ouchi NB, Glazier JA, Rieu JP, Upadhyaya A, Sawada Y (2003). Improving the realism of the cellular Potts model in simulations of biological cells. Physica A 329(3-4):451-458.",
+        "doi": "10.1016/S0378-4371(03)00574-0",
+        "doi_verification": "recorded from memory during the offline Pass 3 loop; not re-resolved online",
+        "added_in_pass": 3
+      },
+      {
+        "id": "farhadifar2007",
+        "citation": "Farhadifar R, Roper JC, Aigouy B, Eaton S, Julicher F (2007). The influence of cell mechanics, cell-cell interactions, and proliferation on epithelial packing. Current Biology 17(24):2095-2104.",
+        "doi": "10.1016/j.cub.2007.11.049",
+        "doi_verification": "recorded from memory during the offline Pass 3 loop; not re-resolved online",
+        "added_in_pass": 3
       }
     ],
     "specimens": {
@@ -162,6 +176,39 @@
         {"mcs": 60, "het_boundary_fraction": 0.20},
         {"mcs": 100, "het_boundary_fraction": 0.17},
         {"mcs": 150, "het_boundary_fraction": 0.15}
+      ]
+    },
+    "perimeter_constraint_extension_ouchi_2003": {
+      "added_in_pass": 3,
+      "section": "Ouchi NB, Glazier JA, Rieu JP, Upadhyaya A, Sawada Y (2003) Physica A 329(3-4):451-458 Eq. (2); cf. Farhadifar et al. (2007) Curr. Biol. 17:2095 Eq. (1)",
+      "hamiltonian_term": "H_P = lambda_P * sum_{sigma > 0} (p_sigma - P_t)^2",
+      "perimeter_definition": "p_sigma = number of (site in sigma, 8-neighbour site not in sigma) ordered pairs (8-neighbour bond-count perimeter; off-lattice neighbours count as medium)",
+      "square_block_perimeter_formula": "p(s x s) = 12 s - 4 for s >= 2 (4 corners x 5 exterior bonds + 4 (s - 2) edge sites x 3 exterior bonds)",
+      "square_block_perimeters": {"3x3": 32, "4x4": 44, "5x5": 56},
+      "default_target_perimeter_Pt": 44,
+      "default_target_perimeter_rule": "P_t = 12 * sqrt(V_t) - 4 for the compact square of area V_t (44 for V_t = 16)",
+      "compact_square_shape_index": 11.0,
+      "shape_index_definition": "q = p_sigma / sqrt(v_sigma) in 8-neighbour bond units (4 x 4 square: 44 / 4 = 11.0)",
+      "canonical_cortical_tension_parameters": {"lambda_P": 2.0, "P_t": 44, "T": 10.0, "J_LL": 14.0, "J_DD": 2.0, "J_LD": 11.0, "J_LM": 16.0, "J_DM": 16.0},
+      "lambda_P_sweep": [0.0, 0.25, 0.5, 1.0, 2.0, 4.0],
+      "Pt_sweep": [32.0, 38.0, 44.0, 50.0, 56.0],
+      "single_copy_perimeter_change_laws": {
+        "leaving_cell": "Delta_p_old = 2 n_same_old - 8",
+        "joining_cell": "Delta_p_new = 8 - 2 n_same_new",
+        "energy_change": "Delta_E_P = lambda_P * Delta_p * (2 (p - P_t) + Delta_p)",
+        "isolated_pixel_detachment_cost_at_target": "64 lambda_P"
+      },
+      "expected_behaviour": {
+        "lambda_P_zero_recovers_1992_hamiltonian": true,
+        "rms_perimeter_deviation_monotone_decreasing_in_lambda_P": true,
+        "mean_perimeter_tracks_Pt_monotonically": true,
+        "sorting_radial_separation_survives_cortical_tension": "radial_sep > 0.25 for every lambda_P in the sweep",
+        "high_T_melting_not_rescued": "at T = 80 the term reduces RMS(p - P_t) but neither restores radial sorting nor eliminates fragmentation within lambda_P <= 4"
+      },
+      "lean_theorems": [
+        "MathOfBiology.Loop_042.cpm_square_block_target_perimeter",
+        "MathOfBiology.Loop_042.cpm_perimeter_elasticity_restoring_identity",
+        "MathOfBiology.Loop_042.cpm_cortical_tension_monotone_above_target"
       ]
     }
   }

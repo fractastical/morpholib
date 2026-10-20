@@ -1,0 +1,105 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-farhadifar-drosophila-wing-vertex-model> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-farhadifar-drosophila-wing-vertex-model-model-fidelity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-farhadifar-drosophila-wing-vertex-model-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Farhadifar et al. (2007) Drosophila wing disc apical vertex model, Lewis's law packing & PCP (Fz/Stbm) hinge-contraction vertex dynamics — Model fidelity to source: 85/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credited: Farhadifar Eq. 1-2 single-cell energy and the Case I/II/III ground-state classifier (L120-202), the ablation recoil model (L205-234), and in Pass 3 a true vertex model — mesh built from the Voronoi tessellation with CCW rings and 3-valent interior vertices (L533-567), per-bond Fz/Stbm asymmetry tensor c_ab/a_ab = n.Q_ab.n (L617-647), analytic forces dA/dr, dL/dr, dl/dr with half-shared bond tension (L650-692) that pass a central-difference check to 1e-5 (self-test 10, L1912-1927), T1 exchange with 4-cell re-wiring (L723-771), hinge-contraction pure shear and polarity dynamics (L846-935). Deductions: panels A1-A4 and measurements 1-7 still come from the Section 2 Voronoi-seed Lloyd relaxation, whose Lewis's-law agreement is produced by an explicit post-hoc reweighting `adjusted_areas = areas * (1 + 0.14 * gamma_slope_boost * (n - 6))` (L401-405) and whose pupal regime is pulled toward the perfect lattice by `0.042 * hex_disp` (L378-379) — neither is in Farhadifar et al. (2007) (-8); the explicit vertex model is a clamped non-periodic patch, so boundary cells are prescribed rather than mechanically coupled, and the PCP coupling sign, k_fb, k_flow and the |Q|/0.15 saturation (L931) are uncited modelling choices (-5); polarity is polar but the tension law is nematic, so Fz-distal vs Stbm-proximal identity does not enter the mechanics beyond the bridge density (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "2007-farhadifar-drosophila-wing-vertex-model.py L378–L379: Pupal regime adds 0.042 * displacement toward the perfect hexagonal lattice (seeds_hex) — hexagonal order is partly imposed <https://github.com/fractastical/morpholib/blob/7e4f207/2007-farhadifar-drosophila-wing-vertex-model.py#L378-L379>",
+            "2007-farhadifar-drosophila-wing-vertex-model.py L401–L405: Post-hoc area reweighting by (n - 6) in the Section 2 regimes imposes Lewis's law rather than deriving it from the energy <https://github.com/fractastical/morpholib/blob/7e4f207/2007-farhadifar-drosophila-wing-vertex-model.py#L401-L405>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-farhadifar-drosophila-wing-vertex-model-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-farhadifar-drosophila-wing-vertex-model-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-farhadifar-drosophila-wing-vertex-model-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-farhadifar-drosophila-wing-vertex-model-model-fidelity-4> ;
+        pk:hasScore "0.85"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-farhadifar-drosophila-wing-vertex-model-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2007-farhadifar-drosophila-wing-vertex-model.py L617–L692" ;
+        dct:description "pcp_bond_asymmetry (c_ab, a_ab = 2c_ab - 1, outward normals) and vertex_forces_and_energy with analytic dA/dr, dL/dr, dl/dr of Farhadifar Eq. 1 and half-shared per-bond tension" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/7e4f207/2007-farhadifar-drosophila-wing-vertex-model.py#L617-L692> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-farhadifar-drosophila-wing-vertex-model-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2007-farhadifar-drosophila-wing-vertex-model.py L723–L771" ;
+        dct:description "_attempt_t1: interior-bond T1 with A/B losing and C/D gaining the bond, 3-valence preserved, CCW re-sort of the four affected rings" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/7e4f207/2007-farhadifar-drosophila-wing-vertex-model.py#L723-L771> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-farhadifar-drosophila-wing-vertex-model-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "2007-farhadifar-drosophila-wing-vertex-model.py L774–L1023" ;
+        dct:description "simulate_pcp_hinge_contraction: pre-relaxation, smoothstep hinge ramp diag(lambda,1/lambda) on boundary vertices, overdamped vertex update, T1 pass, Fz-Stbm feedback + flow alignment polarity ODE, shear decomposition" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/7e4f207/2007-farhadifar-drosophila-wing-vertex-model.py#L774-L1023> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-farhadifar-drosophila-wing-vertex-model-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_043_drosophila_wing_vertex_model.lean L126–L215" ;
+        dct:description "Theorems 5-6: PCP bond tensor traceless + perpendicular cancellation + tension ordering; shear-decomposition closure and area-preserving pure shear (lean exit 0, 0 sorrys)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/7e4f207/morphoeval/lean/loops/Loop_043_drosophila_wing_vertex_model.lean#L126-L215> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 builder + primary re-assessor, autonomous loop slot-043)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/ar.1090380305>,
+            <https://doi.org/10.1016/j.cell.2010.07.042>,
+            <https://doi.org/10.1016/j.cub.2007.11.049>,
+            <https://doi.org/10.1016/j.devcel.2005.10.016>,
+            <https://doi.org/10.1038/nature05014>,
+            <https://doi.org/10.1080/13642810108205772>,
+            <https://doi.org/10.1242/dev.094060>,
+            <https://doi.org/10.7554/eLife.07090> .
+    <https://doi.org/10.1002/ar.1090380305> dct:date "1928"^^xsd:gYear ;
+        dct:title "The correlation between cell division and the shapes and sizes of prismatic cells in the epidermis of Cucumis" .
+    <https://doi.org/10.1016/j.cell.2010.07.042> dct:date "2010"^^xsd:gYear ;
+        dct:title "Cell flow reorients the axis of planar polarity in the wing epithelium of Drosophila" .
+    <https://doi.org/10.1016/j.cub.2007.11.049> dct:date "2007"^^xsd:gYear ;
+        dct:title "The influence of cell mechanics, cell-cell interactions, and proliferation on epithelial packing" .
+    <https://doi.org/10.1016/j.devcel.2005.10.016> dct:date "2005"^^xsd:gYear ;
+        dct:title "Hexagonal packing of Drosophila wing epithelial cells by the planar cell polarity pathway" .
+    <https://doi.org/10.1038/nature05014> dct:date "2006"^^xsd:gYear ;
+        dct:title "The emergence of geometric order in proliferating metazoan epithelia" .
+    <https://doi.org/10.1080/13642810108205772> dct:date "2001"^^xsd:gYear ;
+        dct:title "A dynamic cell model for the formation of epithelial tissues" .
+    <https://doi.org/10.1242/dev.094060> dct:date "2013"^^xsd:gYear ;
+        dct:title "The mechanical anisotropy in a tissue promotes ordering in hexagonal cell packing" .
+    <https://doi.org/10.7554/eLife.07090> dct:date "2015"^^xsd:gYear ;
+        dct:title "Interplay of cell dynamics and epithelial tension during morphogenesis of the Drosophila pupal wing" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Farhadifar et al. (2007) Drosophila wing disc apical vertex model, Lewis's law packing & PCP (Fz/Stbm) hinge-contraction vertex dynamics — Model fidelity to source 85/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T15:57:41Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-farhadifar-drosophila-wing-vertex-model-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,101 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-serra-gastrulation-streak-attractor> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-serra-gastrulation-streak-attractor-code-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-serra-gastrulation-streak-attractor-code-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Saadaoui et al. (2020), Serra et al. (2023) & Rozbicki et al. (2015) avian gastrulation tensile ring, Polonaise twin-vortex flow & primitive streak attractor — Code-to-model traceability: 74/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credited: each new modelling function carries a docstring stating its equation and biological reading (ligand cascade, pMLC activation, column wedging, sink), the circular lookups and circular correlations are flagged with NOTE comments at the point of computation, the math KG YAML registers the two new laws with Lean declarations and current code loci and carries an audit_note on law 3, and 5 Lean theorems compile with 0 sorrys. Deductions: run_self_test's docstring still says 'Pass 2 verification suite ... all 3 Lean 4 theorem invariants' while the suite tests five (-4); the retained Pass 2 measurement names ('wild-type HH3 primitive streak AP/ML aspect ratio', '5-regime ... Pearson correlation r') describe lookups as if they were model outputs (-6); the segmentation docstring's 0.6406 contradicts the code (-3); OUTPUT_LIGAND_PNG is declared but never rendered (-2); the module header still cites the unverified Serra venue/DOI and the Lean theorem 1 (circulation conservation) is traced to a prescribed psi rather than to a solved field, which the YAML audit_note only partly says (-3); Pass 2's Lean theorem 3 constants aspect100_*/v100_* are the reference table itself (-4, flagged in the YAML)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:evidenceAgainst "2022-serra-gastrulation-streak-attractor.py L105–L107: OUTPUT_LIGAND_PNG declared but never rendered (dead constant) <https://github.com/fractastical/morpholib/blob/028758bc/2022-serra-gastrulation-streak-attractor.py#L105-L107>",
+            "2022-serra-gastrulation-streak-attractor.py L1727–L1731: run_self_test docstring stale: 'Pass 2 verification suite ... all 3 Lean 4 theorem invariants' (5 theorems exist) <https://github.com/fractastical/morpholib/blob/028758bc/2022-serra-gastrulation-streak-attractor.py#L1727-L1731>",
+            "morphoeval/lean/loops/Loop_050_gastrulation_streak_attractor.lean L165–L198: Theorem 3's aspect100_*/v100_* constants are the reference table itself <https://github.com/fractastical/morpholib/blob/028758bc/morphoeval/lean/loops/Loop_050_gastrulation_streak_attractor.lean#L165-L198>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-code-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-code-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-code-traceability-3> ;
+        pk:hasScore "0.74"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-code-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2022-serra-gastrulation-streak-attractor.py L1–L56" ;
+        dct:description "Module docstring mapping equations to Saadaoui 2020, Serra 2023, Rozbicki 2015 and the Lean theorems; Serra venue/DOI unverified" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2022-serra-gastrulation-streak-attractor.py#L1-L56> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-code-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "2022-serra-gastrulation-streak-attractor.py L812–L816" ;
+        dct:description "NOTE flag at the lookup readouts stating they are prescribed and circular" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2022-serra-gastrulation-streak-attractor.py#L812-L816> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-code-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/math_kg_loops/serra-gastrulation-streak-attractor.yaml L1–L107" ;
+        dct:description "5 laws with Lean declarations and code loci; audit_note on law 3 flags the circular aspect100_*/v100_* constants" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/morphoeval/math_kg_loops/serra-gastrulation-streak-attractor.yaml#L1-L107> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary, Pass 3 Phase B assessor) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/nature08391>,
+            <https://doi.org/10.1038/ncb1739>,
+            <https://doi.org/10.1038/ncb3138>,
+            <https://doi.org/10.1038/s41592-023-02009-y>,
+            <https://doi.org/10.1126/science.1221920>,
+            <https://doi.org/10.1126/science.aaw1965>,
+            <https://doi.org/10.1371/journal.pone.0010571>,
+            <https://doi.org/10.7554/eLife.01817> .
+    <https://doi.org/10.1038/nature08391> dct:date "2009"^^xsd:gYear ;
+        dct:title "Fgf8 morphogen gradient forms by a source-sink mechanism with freely diffusing molecules" .
+    <https://doi.org/10.1038/ncb1739> dct:date "2008"^^xsd:gYear ;
+        dct:title "RhoA and microtubule dynamics control cell-basement membrane interaction in EMT during gastrulation" .
+    <https://doi.org/10.1038/ncb3138> dct:date "2015"^^xsd:gYear ;
+        dct:title "Myosin-II-mediated cell shape changes and cell intercalation contribute to primitive streak formation" .
+    <https://doi.org/10.1038/s41592-023-02009-y> dct:date "2023"^^xsd:gYear ;
+        dct:title "A mechanochemical model recapitulates distinct vertebrate gastrulation modes" .
+    <https://doi.org/10.1126/science.1221920> dct:date "2012"^^xsd:gYear ;
+        dct:title "Differential diffusivity of Nodal and Lefty underlies a reaction-diffusion patterning system" .
+    <https://doi.org/10.1126/science.aaw1965> dct:date "2020"^^xsd:gYear ;
+        dct:title "A tensile ring drives tissue flows to shape the gastrulating amniote embryo" .
+    <https://doi.org/10.1371/journal.pone.0010571> dct:date "2010"^^xsd:gYear ;
+        dct:title "Modeling gastrulation in the chick embryo: formation of the primitive streak" .
+    <https://doi.org/10.7554/eLife.01817> dct:date "2014"^^xsd:gYear ;
+        dct:title "Local cell interactions and self-amplifying individual cell ingression drive amniote gastrulation" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Saadaoui et al. (2020), Serra et al. (2023) & Rozbicki et al. (2015) avian gastrulation tensile ring, Polonaise twin-vortex flow & primitive streak attractor — Code-to-model traceability 74/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:33:14Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-serra-gastrulation-streak-attractor-code-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,88 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-hannezo-branching-random-walk-annihilation> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-hannezo-branching-random-walk-annihilation-parameter-expressivity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-hannezo-branching-random-walk-annihilation-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Hannezo et al. (2017) Cell & Scheele et al. (2017) Nature unifying theory of branching morphogenesis via branching and annihilating random walks (BARW) — Parameter expressivity: 90/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The 3-organ R_a / l_b sweep and 4-regime R_a perturbation/ablation suite (L583-705) are retained; Pass 3 adds the geometry switch (cylinder / sphere), a paired-seed ECM alignment sweep over five lambda values with a true-isotropic control (L1036-1051), an inflation-rate sweep, and the CLI flags `--ecm-lambda`, `--n-cells-teb`, `--label-fraction` (L2105-2107) alongside `--v0/--kb/--ra/--ka/ --sigma-theta/--seed` (L2099-2104); the lambda sweep produces a genuine regime change (lambda >= 0.4 collapses the sphere tree from N_b = 322 to 1 by alignment-induced sibling annihilation). Deductions: `--ra/--kb/--v0/--sigma-theta` do not propagate to the 3D sweep (defaults read from the JSON) nor to the organ/perturbation suite (-5); the three new flags affect only Panels G/I and the clonal metrics, not the sweep figures (-3); the 3D lambda sweep uses a single paired seed per lambda, so the N_b collapse is one realisation (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:evidenceAgainst "2017-hannezo-branching-random-walk-annihilation.py L2097–L2107: CLI: 9 numeric flags; the 3D sweep and organ suite ignore --ra/--kb/--v0/--sigma-theta <https://github.com/fractastical/morpholib/blob/74d06a5c/2017-hannezo-branching-random-walk-annihilation.py#L2097-L2107>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-hannezo-branching-random-walk-annihilation-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-hannezo-branching-random-walk-annihilation-parameter-expressivity-2> ;
+        pk:hasScore "0.9"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-hannezo-branching-random-walk-annihilation-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2017-hannezo-branching-random-walk-annihilation.py L583–L705" ;
+        dct:description "3-organ BARW universality sweep and 4-regime R_a perturbation + ablation evaluation" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/74d06a5c/2017-hannezo-branching-random-walk-annihilation.py#L583-L705> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-hannezo-branching-random-walk-annihilation-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2017-hannezo-branching-random-walk-annihilation.py L1031–L1072" ;
+        dct:description "Paired-seed lambda sweep in cylinder and sphere, true-isotropic control, inflation sweep" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/74d06a5c/2017-hannezo-branching-random-walk-annihilation.py#L1031-L1072> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Loop 056 Pass 3 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/56> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.cell.2017.08.026>,
+            <https://doi.org/10.1017/S0305004100033193>,
+            <https://doi.org/10.1038/nature21060>,
+            <https://doi.org/10.1038/s41467-023-39124-x>,
+            <https://doi.org/10.1242/dev.060103>,
+            <https://doi.org/10.1242/dev.147645> .
+    <https://doi.org/10.1016/j.cell.2017.08.026> dct:date "2017"^^xsd:gYear ;
+        dct:title "A Unifying Theory of Branching Morphogenesis" .
+    <https://doi.org/10.1017/S0305004100033193> dct:date "1958"^^xsd:gYear ;
+        dct:title "Random processes in genetics" .
+    <https://doi.org/10.1038/nature21060> dct:date "2017"^^xsd:gYear ;
+        dct:title "Identity and dynamics of mammary stem cells during branching morphogenesis" .
+    <https://doi.org/10.1038/s41467-023-39124-x> dct:date "2023"^^xsd:gYear ;
+        dct:title "Inflationary theory of branching morphogenesis in the mouse salivary gland" .
+    <https://doi.org/10.1242/dev.060103> dct:date "2011"^^xsd:gYear ;
+        dct:title "Universal patterns of stem cell fate in cycling adult tissues" .
+    <https://doi.org/10.1242/dev.147645> dct:date "2017"^^xsd:gYear ;
+        dct:title "Tracing the dynamics of pancreatic progenitors during branching morphogenesis" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Hannezo et al. (2017) Cell & Scheele et al. (2017) Nature unifying theory of branching morphogenesis via branching and annihilating random walks (BARW) — Parameter expressivity 90/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:43:56Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-hannezo-branching-random-walk-annihilation-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/56> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

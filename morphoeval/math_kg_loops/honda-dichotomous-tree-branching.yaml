@@ -13,10 +13,17 @@ model_spec:
   phyllotactic_roll_alpha_deg: 137.5
   leonardo_pipe_exponent_Delta: 2.0
   tree_branching_orders: 6
+  pass3_n_tiers: 7
+  pass3_tier_cluster_transmittance_tau_c: 0.135
+  pass3_clear_sky_beam_transmittance_tau_atm: 0.75
+  pass3_solar_axial_tilt_deg: 23.45
+  pass3_specimen_latitude_meise_deg: 50.93
+  pass3_saturation_level_E90: 0.90
   seed: 1978
   inputs:
     - datasets/dichotomous_tree_branching/dichotomous_tree_branching_reference.json
     - datasets/dichotomous_tree_branching/cornus_controversa_tiered_crown_specimen.jpg
+    - datasets/dichotomous_tree_branching/solar_tier_spacing_reference.json
 equations:
   - law_name: "Honda (1971) Binary Dichotomous Tip Doubling & Total Internode Geometric Sum"
     formula: "N_tips(k+1) = 2 N_tips(k) = 2^{k+1},   N_total(k) = ∑_{j=0}^k 2^j = 2^{k+1} - 1"
@@ -40,7 +47,7 @@ equations:
     variables: "k: branching generation order (0 = trunk); N_tips(k): number of terminal leaf-bearing twigs at order k; N_total(k): cumulative woody internodes across orders 0..k"
     role: "Governs exponential expansion of terminal leaf-cluster tips and total woody internode count across recursive dichotomous branching generations"
     source_citation: "Honda (1971) J. Theor. Biol. 31(2):331-338"
-    code_locus: "1976-honda-dichotomous-tree-branching.py#L91-L250"
+    code_locus: "1976-honda-dichotomous-tree-branching.py#L129-L291"
   - law_name: "Leonardo da Vinci / Shinozaki (1964) / Eloy (2011) Pipe-Model Cross-Sectional Area Invariance"
     formula: "d_parent^Δ = d_1^Δ + d_2^Δ  (Δ = 2) ⟹ ∑_{i=1}^{2^k} d_{k,i}^2 = d_trunk^2"
     lean_decl: "MathOfBiology.Loop_051.pipe_area_sq"
@@ -59,7 +66,7 @@ equations:
     variables: "d_parent: mother internode diameter; d_1, d_2: daughter branch diameters; Δ ≈ 2.0: Leonardo/Shinozaki sapwood area exponent"
     role: "Conserves total vascular sapwood cross-sectional area across every dichotomous fork and insures uniform wind-induced bending stress across self-similar tree crowns"
     source_citation: "Shinozaki et al. (1964) Jpn. J. Ecol. 14(3):97-105; Eloy (2011) Phys. Rev. Lett. 107(25):258101"
-    code_locus: "1976-honda-dichotomous-tree-branching.py#L112-L222"
+    code_locus: "1976-honda-dichotomous-tree-branching.py#L150-L261"
   - law_name: "Honda & Fisher (1978) Daughter Divergence Angle Separation & Self-Shading Avoidance Law"
     formula: "(θ_1, θ_2)^* = argmax_{(θ_1, θ_2)} A_eff(θ_1, θ_2) / A_total,   A_eff(0, 0) ≪ A_eff(θ_1^*, θ_2^*)"
     lean_decl: "MathOfBiology.Loop_051.sister_tip_transverse_sep"
@@ -84,4 +91,50 @@ equations:
     variables: "θ_1, θ_2: sister branch divergence angles from parent internode axis; L_1 = r_1 L_0, L_2 = r_2 L_0: sister internode lengths; A_eff / A_total: projected non-overlapping effective leaf area ratio"
     role: "Proves that non-zero asymmetric daughter divergence angles (θ_1 ≈ 26-30°, θ_2 ≈ 56-60° in Cornus controversa and Terminalia catappa) prevent terminal leaf-cluster superposition and maximize light interception"
     source_citation: "Honda & Fisher (1978) Science 199(4331):888-890; Fisher & Honda (1979) Am. J. Bot. 66(6):633-644"
-    code_locus: "1976-honda-dichotomous-tree-branching.py#L256-L430"
+    code_locus: "1976-honda-dichotomous-tree-branching.py#L294-L470"
+  - law_name: "Pass 3 — Solar-Elevation Tier Shadow Displacement & Latitude-Dependent Tier Spacing Threshold"
+    formula: "offset(Δz, h) = Δz·cot h;  tiers clear ⟺ 2R ≤ Δz·cot h;  sin h = sin φ sin δ + cos φ cos δ cos H;  cot_lo ≤ cot_hi ⟹ clear(Δz, cot_lo) → clear(Δz, cot_hi)"
+    lean_decl: "MathOfBiology.Loop_051.tier_shadow_offset"
+    lean_theorem: "MathOfBiology.Loop_051.solar_tier_shadow_offset_monotone"
+    lean_locus: "morphoeval/lean/loops/Loop_051_dichotomous_tree_branching.lean#L130-L166"
+    lean_code: |
+      def tier_shadow_offset (dz cot_h : Int) : Int := dz * cot_h
+      def tiers_shadow_clear (dz cot_h R : Int) : Prop := 2 * R ≤ tier_shadow_offset dz cot_h
+      theorem solar_tier_shadow_offset_monotone
+          (dz k cot_lo cot_hi R : Int) (hdz : 0 ≤ dz) (hcot : cot_lo ≤ cot_hi) :
+          tier_shadow_offset (k * dz) cot_lo = k * tier_shadow_offset dz cot_lo ∧
+          tier_shadow_offset dz cot_lo ≤ tier_shadow_offset dz cot_hi ∧
+          (tiers_shadow_clear dz cot_lo R → tiers_shadow_clear dz cot_hi R) := by
+        refine ⟨?_, ?_, ?_⟩
+        · dsimp [tier_shadow_offset]; exact Int.mul_assoc k dz cot_lo
+        · dsimp [tier_shadow_offset]; exact Int.mul_le_mul_of_nonneg_left hcot hdz
+        · intro hclear
+          dsimp [tiers_shadow_clear, tier_shadow_offset] at hclear ⊢
+          have hmono : dz * cot_lo ≤ dz * cot_hi := Int.mul_le_mul_of_nonneg_left hcot hdz
+          omega
+    variables: "Δz = s: vertical tier spacing; h: solar elevation (φ latitude, δ Cooper (1969) declination, H hour angle); R: tier radius; offset: horizontal displacement of the upper tier's shadow on the lower tier plane"
+    role: "Governs tier-on-tier self-shading in the Pass 3 ray tracer: lower (temperate) sun displaces upper-tier shadows further, so the spacing needed to clear self-shading is largest under a high equatorial sun (ray-traced s_90/R = 1.83 at 0° vs 0.97 at 45°)"
+    source_citation: "Campbell & Norman (1998) An Introduction to Environmental Biophysics, Ch. 11 (DOI 10.1007/978-1-4612-1626-1); Cooper (1969) Solar Energy 12(3):333-346"
+    code_locus: "1976-honda-dichotomous-tree-branching.py#L473-L785"
+  - law_name: "Pass 3 — Monsi & Saeki (1953) Beer-Lambert Optical Depth Through Stacked Tiers"
+    formula: "I_n / I_0 = τ_c^n = exp(-n K LAI_c),  K = 1 (horizontal leaves);  depth(n+1) = depth(n) + K·LAI_c;  depth(n) = 0 when τ_c = 1"
+    lean_decl: "MathOfBiology.Loop_051.stacked_tier_optical_depth"
+    lean_theorem: "MathOfBiology.Loop_051.beer_lambert_stacked_tier_optical_depth"
+    lean_locus: "morphoeval/lean/loops/Loop_051_dichotomous_tree_branching.lean#L169-L198"
+    lean_code: |
+      def stacked_tier_optical_depth (d : Nat) : Nat → Nat
+        | 0 => 0
+        | n + 1 => stacked_tier_optical_depth d n + d
+      theorem beer_lambert_stacked_tier_optical_depth (d n : Nat) :
+          stacked_tier_optical_depth d (n + 1) = stacked_tier_optical_depth d n + d ∧
+          (0 < d → stacked_tier_optical_depth d n < stacked_tier_optical_depth d (n + 1)) ∧
+          stacked_tier_optical_depth 0 n = 0 := by
+        refine ⟨rfl, ?_, ?_⟩
+        · intro hd; dsimp [stacked_tier_optical_depth]; omega
+        · induction n with
+          | zero => rfl
+          | succ m ih => dsimp [stacked_tier_optical_depth]; omega
+    variables: "n: number of upper tiers overlapping a lower-tier cell along the beam; τ_c = exp(-LAI_c) = 0.135 per-tier beam transmittance (LAI_c = 2); K = 1 extinction coefficient for horizontal leaves"
+    role: "Attenuates the direct beam through every intercepted tier in ray_trace_tiered_crown_interception; the τ_c = 1 transparent ablation must return crown capture efficiency E = 1 exactly (self-test suite 8)"
+    source_citation: "Monsi & Saeki (1953) Jpn. J. Bot. 14:22-52 (English translation Ann. Bot. 95(3):549-567, 2005, DOI 10.1093/aob/mci052)"
+    code_locus: "1976-honda-dichotomous-tree-branching.py#L643-L693"

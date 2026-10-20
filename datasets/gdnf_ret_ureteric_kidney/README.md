@@ -23,4 +23,8 @@ Formal SHA-256-locked dataset and biological specimen image for `2014-menshykau-
 
 4. **`paper_citations.bib`**
    - BibTeX entries for Menshykau & Iber (2013), Short et al. (2014), Watanabe & Costantini (2004), Basson et al. (2005), and Miyazaki et al. (2000).
-   - SHA-256: `62f203a6f4125269a5011605147c8cb1f9f4c47fa6bc99c4edbe4ca7c45db331`.
+   - SHA-256: `3eb2da09bd233938ed2680a5d121650833ea7748b2b77464de0a1908e55c1484` (Pass 3: typo in the Miyazaki et al. 2000 title fixed, "ofoka" → "of"; previous digest `62f203a6…db331`).
+
+5. **`renal_capsule_phase_field_reference.json`** (Pass 3)
+   - Parameter table for the reduced 3D phase-field renal capsule / nephrogenic-zone model (Section 3b of the script) that closes the Pass 2 remediation item in reduced form: capsule surface-area expansion law anchored on the Short et al. (2014) observed tip number, diffuse-domain GDNF equation, and every constant with an explicit provenance status (`approximate anatomical anchor`, `modelling assumption`, `numerical`).
+   - Qualitative references used by the three new `measure_morphoeval()` entries (tips-in-nephrogenic-zone fraction, nephrogenic-zone/core GDNF enrichment, capsule-crowding tip suppression) and the residual remediation statement (a true moving-mesh FEM is not implemented).

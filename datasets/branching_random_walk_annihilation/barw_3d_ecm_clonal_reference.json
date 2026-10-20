@@ -1,0 +1,86 @@
+{
+  "dataset_id": "hannezo-branching-random-walk-annihilation-3d-ecm-clonal-v3",
+  "title": "Pass 3 reference table: 3D cylindrical fat-pad / spherical mesenchymal BARW with anisotropic ECM fiber alignment and inflationary domain growth (Bordeu et al. 2023), plus clonal neutral-drift dynamics inside terminal end buds (Scheele et al. 2017) coupled to the BARW tree",
+  "created": "2026-10-19",
+  "sources": [
+    {
+      "id": "hannezo2017",
+      "citation": "Hannezo E, Scheele CLGJ, Moad M, Drogo N, Heer R, Sampogna RV, van Rheenen J, Simons BD (2017). A Unifying Theory of Branching Morphogenesis. Cell 171(1):242-255.e27.",
+      "doi": "10.1016/j.cell.2017.08.026",
+      "used_for": "BARW rules (A -> 2A, A -> A + I, A + I -> I); quasi-2D mammary fat pad vs 3D kidney/pancreas mesenchyme; critical Galton-Watson subtree statistics P(S) ~ S^(-3/2); q_branch -> 1/2."
+    },
+    {
+      "id": "scheele2017",
+      "citation": "Scheele CLGJ, Hannezo E, Muraro MJ, Zomer A, Langedijk NSM, van Oudenaarden A, Simons BD, van Rheenen J (2017). Identity and dynamics of mammary stem cells during branching morphogenesis. Nature 542(7641):313-317.",
+      "doi": "10.1038/nature21060",
+      "used_for": "Equipotent mammary stem cells in terminal end buds (TEBs) undergo neutral drift; clone fate (loss vs expansion) is dictated by TEB bifurcation / termination; labelled clones become confined to subtrees of the ductal network."
+    },
+    {
+      "id": "bordeu2023",
+      "citation": "Bordeu I, Chatzeli L, Simons BD (2023). Inflationary theory of branching morphogenesis in the mouse salivary gland. Nature Communications 14:3422.",
+      "doi": "10.1038/s41467-023-39124-x",
+      "used_for": "3D BARW in a growing (inflating) mesenchymal domain; tips and ducts embedded in an anisotropic ECM / mesenchyme; motivation for the inflation_rate parameter and the ECM fiber-alignment torque."
+    },
+    {
+      "id": "moran1958",
+      "citation": "Moran PAP (1958). Random processes in genetics. Mathematical Proceedings of the Cambridge Philosophical Society 54(1):60-71.",
+      "doi": "10.1017/S0305004100033193",
+      "used_for": "Moran birth-death process used for neutral drift of labelled cells inside a fixed-size TEB stem-cell pool.",
+      "doi_verified_offline": false
+    },
+    {
+      "id": "klein2011",
+      "citation": "Klein AM, Simons BD (2011). Universal patterns of stem cell fate in cycling adult tissues. Development 138(15):3103-3111.",
+      "doi": "10.1242/dev.060103",
+      "used_for": "Neutral-drift clone-size scaling and the martingale (conserved mean labelled fraction) property of neutral competition.",
+      "doi_verified_offline": false
+    }
+  ],
+  "geometry_3d": {
+    "cylinder_fat_pad": {
+      "description": "Reduced model of the pubertal mouse mammary fat pad: a cylinder of radius R_c and length L_c (in units where the tip speed v_0 = 1 and the branch length l_b = v_0/k_b = 8.33); the primary duct enters at one end and grows along +z.",
+      "cylinder_radius": 14.0,
+      "cylinder_length": 110.0,
+      "ecm_fiber_axis": [0.0, 0.0, 1.0],
+      "note": "Hannezo et al. (2017) treat the mammary fat pad as quasi-2D and elongated; the 3D cylinder here is the simplest honest 3D fat-pad reduction. Ducts outside the cylinder annihilate at the capsule."
+    },
+    "sphere_mesenchyme": {
+      "description": "Reduced model of embryonic mesenchyme (metanephric kidney / salivary gland): a sphere of radius R_s(t) that may inflate in time, R_s(t) = R_s(0) * (1 + inflation_rate * t) (Bordeu et al. 2023 inflationary BARW).",
+      "sphere_radius": 40.0,
+      "inflation_rate_values": [0.0, 0.004, 0.008],
+      "note": "Bordeu et al. (2023) also advect already-deposited ducts with the inflating domain; here only the capsule boundary inflates (residual carried to Pass 4)."
+    },
+    "ecm_anisotropy": {
+      "description": "Nematic ECM fiber-alignment torque on the tip direction u: du = lambda * (f . u) * (f - (f . u) u) dt, which rotates u toward +/- f (the fiber axis). lambda = 0 is isotropic matrix.",
+      "lambda_sweep": [0.0, 0.05, 0.1, 0.2, 0.4],
+      "polar_distal_bias_chi": {"cylinder_fat_pad": 0.14, "sphere_mesenchyme": 0.0, "true_isotropic_control": 0.0},
+      "sweep_design": "paired: identical PRNG seed for every lambda within a geometry so that the S(lambda) comparison is paired; chi = 0.14 in the cylinder is the same polar distal bias used by the 2D simulator, so the S = 0 isotropic reference applies to the chi = 0, lambda = 0 control",
+      "expected_qualitative_result": "S increases monotonically with lambda; at lambda >= 0.4 (alignment time 1/lambda << l_b) sibling tips realign to the fiber axis within R_a of each other and annihilate, collapsing the tree (alignment-induced sibling annihilation)",
+      "nematic_order_parameter": "S = < (3 cos^2 theta - 1) / 2 > over ductal segments, theta = angle between segment direction and fiber axis f (length-weighted)",
+      "reference_values": {
+        "S_isotropic_theory": 0.0,
+        "S_perfect_alignment_theory": 1.0,
+        "monotonic_in_lambda": true,
+        "topological_identity_all_geometries": "N_term = N_branch + 1 (geometry-independent; Lean Theorem 1)"
+      }
+    }
+  },
+  "clonal_neutral_drift": {
+    "description": "Each active tip (TEB) carries a pool of N_teb equipotent stem cells of which k are labelled (Scheele et al. 2017). Along a ductal segment the pool undergoes Moran birth-death steps at rate rho per unit duct length: k -> k + 1 or k -> k - 1 each with probability k (N - k) / N^2, otherwise k unchanged. At a bifurcation (A -> 2A) the N cells are split hypergeometrically into two halves of N/2 and each daughter TEB doubles back to N (labelled count 2 k_1 and 2 (k - k_1)). At annihilation (A + I -> I) the pool differentiates into duct; the deposited duct inherits the TEB labelled fraction k/N.",
+    "n_cells_per_teb": 64,
+    "moran_rate_per_unit_length": 1.0,
+    "initial_label_fraction": 0.125,
+    "n_single_cell_clones": 240,
+    "reference_values": {
+      "martingale_mean_label_fraction": 0.125,
+      "martingale_note": "E[k_{t+1} | k_t] = k_t for Moran steps and E[2 k_1] = k for the hypergeometric split (Lean Theorems 4-5); therefore the duct-length-weighted labelled fraction of the whole tree is an unbiased estimator of the initial fraction 0.125.",
+      "single_cell_clone_fixation_probability_theory": "1 / N_teb = 0.015625 for a clone that stays in one TEB long enough to fix (Moran); in a finite BARW tree most clones are lost or diluted by splitting before fixation.",
+      "clone_size_tail_exponent_theory": 1.5,
+      "clone_size_tail_note": "Scheele et al. (2017): mammary clone sizes are set by the branching-tree statistics; a labelled lineage that survives spans a critical Galton-Watson subtree, so the number of labelled ductal segments per clone inherits the P(S) ~ S^(-3/2) tail."
+    },
+    "unsourced_constants": [
+      "n_cells_per_teb = 64 is a reduced free parameter (real TEBs contain of order 10^2 cells; no value is taken from a figure/table)",
+      "moran_rate_per_unit_length = 1.0 is a free parameter in simulation units"
+    ]
+  }
+}

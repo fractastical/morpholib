@@ -1,0 +1,354 @@
+# MorphoEval Pass 3 (v3) Audit — Honda (1971) J. Theor. Biol. 31:331-338, Honda & Fisher (1978) Science 199:888-890,
+# Shinozaki et al. (1964), Eloy (2011) Phys. Rev. Lett. 107:258101 + Campbell & Norman (1998), Cooper (1969), Monsi & Saeki (1953)
+# 3D Recursive Dichotomous Tree Morphogenesis, Effective Canopy Leaf Area Optimization, Leonardo Pipe-Model Area Conservation
+# & Solar-Elevation Ray Tracing of Tiered Crowns vs Latitude, 2026-10-20 (v3)
+#
+# Pass 3 post-remediation evaluation of `1976-honda-dichotomous-tree-branching.py` (Slot 051) in the instrumented loop
+# `morphoeval/runs/2026-10-19-dichotomous-tree-branching-loop-pass3`, superseding
+# `2026-10-19-dichotomous-tree-branching-audit-v2` (94.1 / 100).
+#   - Primary assessor: Claude Fable 5.1 (Phase B subagent; Phase A remediation by a separate subagent, handoff note read)
+#
+# What Pass 3 changed (the single open v2 remediation item):
+#   1. New section 2b (L473-825): Cooper (1969) declination, Campbell & Norman (1998) solar elevation/azimuth, 12 mid-month
+#      x hourly diurnal sun-path samples weighted by atmospheric transmittance tau_atm^(1/sin h) * sin h, a stacked
+#      Honda & Fisher 5-whorl tiered crown on an excurrent leader (`build_honda_tiered_crown_3d`), tier-to-tier shadow
+#      ray tracing with Beer-Lambert tau_c^n attenuation (`ray_trace_tiered_crown_interception`), and a latitude x
+#      spacing trade-off sweep (`evaluate_latitude_tier_spacing_tradeoff`) giving the parameter-free saturation spacing
+#      s_90/R = 1.832 (0 deg) vs 0.969 (45 deg) vs 0.850 (Meise 50.93 deg) — ratio 0/45 = 1.89 against the null 1.0.
+#   2. Specimen inter-tier spacing / tier radius s/R = 0.376 +- 0.134 (N = 6 pairs, projected) measured from the detected
+#      foliage shelves (`measure_specimen_tier_spacing`); E(specimen spacing) = 0.747 at Meise vs 0.621 at the equator.
+#   3. New 6-panel `docs/media/dichotomous_tree_branching_solar_tier_spacing.png` and 13-frame
+#      `docs/media/dichotomous_tree_branching_solar_shadows.gif`; `measure_morphoeval()` 9 -> 16 measurements; self-test
+#      8 -> 10 suites; 2 new Lean 4 theorems (5 total, 0 sorrys); `solar_tier_spacing_reference.json` SHA-256-pinned;
+#      `solar_citations_pass3.bib` (+ Campbell & Norman 1998, Cooper 1969, Monsi & Saeki 1953).
+#
+# Scores below: overall 91.2 (down from 94.1). The v2 remediation item is closed in a reduced (direct-beam, planar-tier)
+# form, but this round deliberately looked for the next layer of defects and found structural ones that v2 did not
+# penalise: the Honda & Fisher "benchmark" curve and the specimen reference values in the reference JSON are the
+# script's own outputs (self-referential r = 0.9978 and regression-only specimen comparisons), three Pass 3
+# measurements carry no external reference, the CV junction filter pre-selects the Honda & Fisher angle window, and the
+# 3D Honda builder uses uncited pitch/roll constants. These are listed under `remediation` for Pass 4.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale. Line numbers refer to the files at
+# commit 028758bc with the uncommitted Pass 3 working-tree changes (script 1882 lines, Lean file 200 lines).
+# DOIs for the three new references were NOT re-verified online (offline run); they are carried from the handoff note.
+
+audit:
+  id: 2026-10-19-dichotomous-tree-branching-audit-v3
+  supersedes: 2026-10-19-dichotomous-tree-branching-audit-v2
+  supersedes_audit_id: 2026-10-19-dichotomous-tree-branching-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 051 Pass 3 Assessor)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/51
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 028758bc
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) evaluation of `1976-honda-dichotomous-tree-branching.py` (1882 lines; 10 self-test suites,
+      16 measurements) after closing the single Pass 2 remediation item in
+      `2026-10-19-dichotomous-tree-branching-loop-pass3`. Working tree at 028758bc with the uncommitted
+      Pass 3 edits to the script, Lean file, math-KG YAML, dataset README, new reference JSON/BibTeX, and
+      the four rendered media files.
+
+references:
+  honda1971:
+    title: "Description of the form of trees by the parameters of the tree-like body: Effects of the branching angle and the branch length on the shape of the tree-like body"
+    authors: "Honda H"
+    venue: "Journal of Theoretical Biology 31(2):331-338 (1971)"
+    doi: 10.1016/0022-5193(71)90031-2
+  honda1978:
+    title: "Tree branch angle: maximizing effective leaf area"
+    authors: "Honda H, Fisher JB"
+    venue: "Science 199(4331):888-890 (1978)"
+    doi: 10.1126/science.199.4331.888
+  fisher1979:
+    title: "Branch geometry and effective leaf area: a study of Terminalia-branching pattern. 1. Theoretical trees"
+    authors: "Fisher JB, Honda H"
+    venue: "American Journal of Botany 66(6):633-644 (1979)"
+    doi: 10.1002/j.1537-2197.1979.tb06267.x
+  shinozaki1964:
+    title: "A quantitative analysis of plant form—the pipe model theory: I. Basic analyses"
+    authors: "Shinozaki K, Yoda K, Hozumi K, Kira T"
+    venue: "Japanese Journal of Ecology 14(3):97-105 (1964)"
+    doi: 10.18960/seitai.14.3_97
+  eloy2011:
+    title: "Leonardo's rule, self-similarity, and wind-induced stresses in trees"
+    authors: "Eloy C"
+    venue: "Physical Review Letters 107(25):258101 (2011)"
+    doi: 10.1103/PhysRevLett.107.258101
+  campbell1998:
+    title: "An Introduction to Environmental Biophysics (2nd ed.), Ch. 11 Radiation Basics: solar elevation, azimuth and day length"
+    authors: "Campbell GS, Norman JM"
+    venue: "Springer, New York (1998)"
+    doi: 10.1007/978-1-4612-1626-1
+  cooper1969:
+    title: "The absorption of radiation in solar stills"
+    authors: "Cooper PI"
+    venue: "Solar Energy 12(3):333-346 (1969)"
+    doi: 10.1016/0038-092X(69)90047-4
+  monsi1953:
+    title: "On the factor light in plant communities and its importance for matter production (English translation of Über den Lichtfaktor in den Pflanzengesellschaften und seine Bedeutung für die Stoffproduktion, Jpn. J. Bot. 14:22-52, 1953)"
+    authors: "Monsi M, Saeki T"
+    venue: "Annals of Botany 95(3):549-567 (2005)"
+    doi: 10.1093/aob/mci052
+
+simulations:
+  - id: honda-dichotomous-tree-branching
+    name: "Honda (1971) J. Theor. Biol. & Honda & Fisher (1978) Science 3D recursive dichotomous tree branching, effective leaf area optimization, Leonardo da Vinci pipe-model area conservation, and solar-elevation ray tracing of tiered crowns vs latitude"
+    organism: "Cornus controversa (Pagoda dogwood / wedding cake tree) & Terminalia catappa (Tropical almond pagoda tree)"
+    script: 1976-honda-dichotomous-tree-branching.py
+    output: docs/media/dichotomous_tree_branching_comparison.png
+    extra_outputs:
+      - docs/media/dichotomous_tree_branching_growth.gif
+      - docs/media/dichotomous_tree_branching_solar_tier_spacing.png
+      - docs/media/dichotomous_tree_branching_solar_shadows.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-dichotomous-tree-branching-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Honda (1971) J. Theor. Biol. 31(2):331-338 3D recursive vector-rotation tree architecture parameterized by daughter divergence angles (theta_1, theta_2), length contraction ratios (r_1, r_2), and vertical phyllotactic roll angle alpha = 137.5 deg in the local horizontal plane spanned by v and v x z_hat"
+        - "Honda & Fisher (1978) Science 199(4331):888-890 & Fisher & Honda (1979) Am. J. Bot. 66:633-644 demonstration that empirical branching angles (theta_1 approx 24-32 deg, theta_2 approx 52-62 deg) and contraction ratios (r_1 = 0.90, r_2 = 0.70) in Terminalia catappa and Cornus controversa maximize non-overlapping effective leaf area A_eff / A_total across 5-branch horizontal whorls"
+        - "Shinozaki et al. (1964) Jpn. J. Ecol. 14:97-105 pipe-model theory and Eloy (2011) Phys. Rev. Lett. 107:258101 wind-stress derivation of Leonardo da Vinci's cross-sectional area conservation d_parent^Delta = d_1^Delta + d_2^Delta (Delta = 2.0)"
+        - "Campbell & Norman (1998) Ch. 11 solar geometry sin h = sin(phi) sin(delta) + cos(phi) cos(delta) cos(H) with Cooper (1969) declination delta = 23.45 sin(2 pi (284 + n)/365) and the Monsi & Saeki (1953) Beer-Lambert canopy extinction tau = exp(-LAI)"
+      reconstructed_in_script:
+        - "Full Honda (1971) 3D rotation-matrix tree builder (`grow_honda_1971_3d_tree`) across 4 botanical crown archetypes (excurrent conifer, pagoda tiered Cornus, decurrent deliquescent Quercus, weeping pendulous Salix) over k = 6 orders (127 internodes, 64 terminal leaf clusters)"
+        - "Honda & Fisher (1978) 5-whorl horizontal tier disk-union integration (`compute_effective_leaf_area_ratio`) and 2D (theta_1, theta_2) optimization surface (`evaluate_honda_fisher_optimization_surface`), Pearson r = 0.99782 against the vendored 8-regime benchmark curve, Terminalia (0.7739) and Cornus (0.7591) vs the collinear theta_1 = theta_2 = 0 ablation control (0.2001, 74.14% self-shading penalty)"
+        - "Exact Leonardo da Vinci / Shinozaki pipe-model sapwood area conservation (sum d_{k,i}^2 / d_0^2 = 1.0000 across all 6 orders and 63 bifurcations) contrasted against Murray's cube law (Delta = 3.0) and untapered cylinder controls"
+        - "Pass 3: diurnal/seasonal direct-beam sun paths at 6 latitudes (0, 15, 30, 45, 50.93 Meise, 60 deg N), a 7-tier stacked Honda & Fisher crown ray-traced tier-to-tier with Beer-Lambert tau_c^n attenuation (tau_c = exp(-2) = 0.135), annual beam light capture E(s/R) over 14 tier spacings, parameter-free 90% saturation spacing s_90/R = 1.832 (0 deg), 0.969 (45 deg), 0.850 (Meise), 0.710 (60 deg), ratio s_90(0)/s_90(45) = 1.89, and the specimen's projected tier spacing s/R = 0.376 +- 0.134 giving E = 0.747 at Meise vs 0.621 if transplanted to the equator"
+        - "Computer-vision segmentation of the Pagoda Dogwood (Cornus controversa 'Variegata') specimen (`cornus_controversa_tiered_crown_specimen.jpg`, Botanic Garden Meise, 960x1280 px) detecting 7 horizontal pagoda foliage tiers, 25 Y-bifurcations with theta_1 = 22.40 +- 8.18 deg, theta_2 = 50.93 +- 14.23 deg, Leonardo area ratio 0.9533 +- 0.1705, and 6 inter-tier spacing pairs"
+      transfer_boundary:
+        - "3D recursive vector-rotation internode skeletons and 2D horizontal whorl leaf-cluster disk unions mapped to optical crown stratigraphy and woody bifurcation geometry of Cornus controversa"
+        - "The ray-traced 'tiered crown' is a stack of planar Honda & Fisher 5-whorl disk-union tiers with a uniform per-tier transmittance, not the 3D Honda (1971) internode skeleton of `grow_honda_1971_3d_tree`; light capture is direct beam only (no diffuse sky radiance, no leaf scattering, no penumbra), and the latitude prediction is validated against the null ratio 1.0 and self-consistency, not against measured tier spacings across latitudes"
+        - "The Honda & Fisher benchmark curve, the specimen theta_1/theta_2/beta/tier references and the specimen s/R reference in the vendored JSON files are values previously produced by this script (regression anchors), not digitised figure values or independent measurements"
+      does_not_claim:
+        - "Cambial auxin-cytokinin molecular transport kinetics, turbulent eddy-resolvable wind-tunnel aeroelasticity at individual leaf blades, diffuse-sky or scattered-light radiative transfer, photosynthetic light-response curves, or a literature-anchored optimal tier spacing vs latitude"
+    source_refs:
+      - honda1971
+      - honda1978
+      - fisher1979
+      - shinozaki1964
+      - eloy2011
+      - campbell1998
+      - cooper1969
+      - monsi1953
+    summary: >-
+      Pass 3 (v3) evaluation of `1976-honda-dichotomous-tree-branching.py` (overall weighted score 91.2/100,
+      down from 94.1/100 in v2). The single Pass 2 remediation item is closed in a reduced but honest form:
+      a new section couples stacked Honda & Fisher tiers to Campbell & Norman (1998) solar geometry with Cooper
+      (1969) declinations over 12 months x hourly hour angles, ray-traces tier-to-tier shadows with Monsi & Saeki
+      Beer-Lambert attenuation, and sweeps 6 latitudes x 14 tier spacings to give a parameter-free 90% saturation
+      spacing s_90/R = 1.832 at the equator vs 0.969 at 45 deg N and 0.850 at Meise (ratio 1.89 vs null 1.0),
+      with the specimen's projected tier spacing s/R = 0.376 +- 0.134 capturing E = 0.747 at Meise vs 0.621 at
+      the equator. Two new Lean 4 theorems (shadow-offset monotonicity, stacked Beer-Lambert optical depth)
+      bring the total to 5 with 0 sorrys; measurements grew from 9 to 16 and self-test suites from 8 to 10 (all
+      pass, 13 s). The score falls because this round examined the reference anchors v2 accepted: the Honda &
+      Fisher "benchmark" curve (r = 0.9978) and the specimen references in the reference JSON are the script's own
+      earlier outputs, three new measurements have no external reference, the CV junction filter pre-selects the
+      Honda & Fisher angle window, and the 3D builder and the solar section use uncited constants.
+    scores:
+      model-fidelity:
+        value: 92
+        rationale: >-
+          Honda (1971) 3D local orthonormal frame rotation recursion (`_honda_local_frame`,
+          `grow_honda_1971_3d_tree`, L129-261), 4-archetype 3D crown morphospace (L263-292), Honda & Fisher (1978)
+          5-whorl disk-union effective leaf area functional and 2D (theta_1, theta_2) optimization surface
+          (L294-470) and Leonardo/Shinozaki pipe-model tapering are unchanged from v2 and correct. Pass 3 adds the
+          Campbell & Norman (1998) solar geometry (`solar_elevation_azimuth`, L503-521; day length L524-528),
+          Cooper (1969) declination (L498-500), transmittance-weighted diurnal sun paths (L531-563), a stacked
+          tiered crown (L566-610), tier-to-tier shadow ray tracing with Beer-Lambert tau_c^n (L643-692) and the
+          latitude x spacing sweep (L695-764), backed by 5 Lean 4 theorems (0 sorrys). Deductions: the ray-traced
+          crown is a stack of planar disk-union tiers with uniform tau_c, not the 3D Honda internode skeleton
+          (`grow_honda_1971_3d_tree` is never passed to the ray tracer) (-3); direct beam only, no diffuse sky
+          radiance, leaf scattering or penumbra (-2); the 3D builder's pitch factors 0.25*t1 / -0.18*t2 (L221-222)
+          and the daughter-2 extra pi/2 roll (L239) are not in Honda (1971) and are uncited (-2); the tier-order
+          schedule max(2, 5 - 4t//n) (L586) is a modelling choice (-1).
+        evidence:
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [129, 292], note: "Honda (1971) 3D local orthonormal basis rotation, Leonardo pipe-model diameter conservation, and 4 crown archetypes", supports: true}
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [294, 470], note: "Honda & Fisher (1978) 5-whorl planar tier builder, 2D disk-union effective leaf area integral, and (theta_1, theta_2) optimization surface", supports: true}
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [498, 563], note: "Pass 3: Cooper (1969) declination, Campbell & Norman (1998) solar elevation/azimuth and day length, 12 x hourly diurnal sun-path samples weighted by tau_atm^(1/sin h) sin h", supports: true}
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [566, 692], note: "Pass 3: stacked Honda & Fisher tiered crown, tier mask rasterisation, integer-pixel shadow shift by dz cot h toward the anti-solar azimuth, Beer-Lambert tau_c^n per overlap count", supports: true}
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [695, 764], note: "Pass 3: latitude x spacing trade-off sweep with parameter-free s_90 saturation spacing and kappa stem-cost optima", supports: true}
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [221, 239], note: "Uncited pitch factors 0.25*t1 / -0.18*t2 and extra pi/2 roll on daughter 2 in the Honda (1971) 3D builder", supports: false}
+          - {file: morphoeval/lean/loops/Loop_051_dichotomous_tree_branching.lean, lines: [26, 198], note: "5 machine-checked Lean 4 theorems: tip doubling, Leonardo area invariance, divergence self-shading avoidance, solar shadow-offset monotonicity (L144-166), stacked Beer-Lambert optical depth (L181-198); 0 sorrys", supports: true}
+      specimen-match:
+        value: 90
+        rationale: >-
+          Vendors and SHA-256-verifies the Botanic Garden Meise Pagoda Dogwood specimen (960x1280 px), segments
+          variegated foliage shelves and detects 7 horizontal pagoda tiers and 25 Y-bifurcations
+          (`segment_cornus_controversa_specimen`, L829-969), and Pass 3 adds the specimen's inter-tier spacing /
+          tier half-width s/R = 0.376 +- 0.134 over 6 tier pairs (`measure_specimen_tier_spacing`, L786-824) which
+          is overlaid as a band on the E(s/R) curves and as a tier-spacing overlay panel in the new solar figure.
+          The specimen is compared with the model in both PNGs. Deductions: the junction acceptance windows
+          12-50 deg / 30-82 deg and beta in [0.65, 1.45] (L933-935) pre-filter the Y-fork statistics toward the
+          Honda & Fisher range, so theta_1 = 22.40, theta_2 = 50.93 and beta = 0.9533 are partially prescribed
+          (-4); ROI box, foliage percentile 72 and wood percentile 78 (L843, L850, L871) are hand-tuned to this one
+          image (-2); the s/R ratio is a projected photographic quantity without perspective or tilt correction,
+          and the foliage column-density threshold 0.15 and +-12 px band (L786-801) are unsourced (-2); the
+          specimen reference values the measurements are compared against are regressions of this script's own
+          earlier output (-2).
+        evidence:
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [829, 969], note: "Variegated foliage tier peak detection (7 tiers), dark-bark ridge EDT skeletonization, and 25-junction bifurcation angle and Leonardo ratio extraction", supports: true}
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [786, 824], note: "Pass 3: specimen inter-tier spacing / lower-tier half-width from detected foliage shelves (6 pairs, projected, no perspective correction)", supports: true}
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [933, 935], note: "Junction acceptance windows 12-50 / 30-82 deg and beta in [0.65, 1.45] pre-select forks inside the expected Honda & Fisher range", supports: false}
+          - {file: docs/media/dichotomous_tree_branching_comparison.png, lines: [0, 0], note: "6-panel figure comparing 3D archetypes, 5-whorl tier canopy + collinear ablation, 2D (theta_1, theta_2) heatmap, pipe-model conservation, and Cornus controversa CV segmentation", supports: true}
+          - {file: docs/media/dichotomous_tree_branching_solar_tier_spacing.png, lines: [0, 0], note: "Pass 3 6-panel figure: crown elevation with noon beams, E(s/R) by latitude with specimen band, diurnal sun paths, s_90 and kappa optima vs latitude, bottom-tier shadow-count map, specimen tier-spacing overlay", supports: true}
+      parameter-expressivity:
+        value: 91
+        rationale: >-
+          Sweeps the 14x14 (theta_1, theta_2) space plus 8 benchmark regimes (L404-470), 4 crown archetypes and
+          3 tapering laws as in v2, and Pass 3 adds a 6-latitude x 14-spacing sweep with 3 stem-cost kappa values
+          (L695-764), a tau_c ablation (transparent vs opaque tiers), and new CLI flags `--tiers`, `--tau-cluster`,
+          `--latitudes` (L1850-1852) beside `--theta1/--theta2/--r1/--r2/--orders` (L1845-1849). Deductions: all
+          CLI flags affect only rendering — `measure_morphoeval()` hard-codes the default sweep, so the
+          measurements cannot be re-run under a user-chosen parameterisation (-4); `--latitudes` silently appends
+          Meise (L1866-1868) (-1); the kappa optima are the argmax on the 14-point spacing grid, so Panel D's
+          kappa curves are coarse (-2); kappa itself is a free sensitivity parameter with no literature value (-2).
+        evidence:
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [263, 470], note: "4-archetype 3D morphospace and 14x14 2D (theta_1, theta_2) effective leaf area optimization grid", supports: true}
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [695, 783], note: "Pass 3: latitude x spacing x kappa trade-off sweep with interpolated efficiency and marginal light gain helpers", supports: true}
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [1845, 1852], note: "CLI overrides for theta1, theta2, r1, r2, orders, tiers, tau-cluster, latitudes", supports: true}
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [1864, 1868], note: "CLI flags feed only render_solar_artifacts; measure_morphoeval() uses hard-coded defaults; --latitudes silently appends Meise", supports: false}
+      morphometric-validation:
+        value: 88
+        rationale: >-
+          `measure_morphoeval()` (L971-1222) now returns 16 measurements with SDs, Pearson r, p-value, RMSE and
+          ablation controls: the 9 v2 measurements plus Pass 3 equatorial and temperate s_90/R (1.8318, 0.9694),
+          their ratio 1.8895 vs null 1.0, specimen s/R = 0.3764 +- 0.1342, E(specimen spacing) at Meise 0.7474 vs
+          equator transplant 0.6214, a solar-geometry check (sampled June-solstice day length at Meise 16.2 h vs
+          analytic 16.31 h) and the tau_c ablation 0.2822. Deductions, which drive the drop from 94: the Honda &
+          Fisher benchmark values in `dichotomous_tree_branching_reference.json` (L46-103) are this script's own
+          earlier outputs, so Pearson r = 0.9978 (measurement 1, L1011-1019), the Terminalia reference 0.7739
+          (L1025) and the 74.14% penalty reference (L1047) are self-referential rather than digitised from Honda &
+          Fisher (1978) (-5); specimen tiers/theta_1/theta_2/beta references (L1073-1110) and the s/R reference
+          (L1163-1172) are regressions of the script's CV output, flagged in-file but not independent (-3);
+          measurements 10, 11 and 16 have `reference_value: None` (L1124, L1140, L1213), measurement 12 uses the
+          null ratio and measurement 14 is model-vs-model (-3); archetype H/W references in the JSON (1.62, 0.74,
+          0.96, 0.68) are never compared against the rendered H/W (1.12, 0.45, 0.44, 0.53) (-1). The solar-geometry
+          check against the analytic day length is the one genuinely external anchor added this round.
+        evidence:
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [971, 1110], note: "9 v2 morphometrics with Pearson r, p-value, RMSE, SD dispersion and collinear zero-angle ablation control", supports: true}
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [1113, 1222], note: "Pass 3: 7 new measurements — s_90/R at 0 and 45 deg, their ratio vs null, specimen s/R, E(specimen) Meise vs equator, sampled vs analytic day length, tau_c ablation", supports: true}
+          - {file: datasets/dichotomous_tree_branching/dichotomous_tree_branching_reference.json, lines: [46, 103], note: "honda_fisher_1978_angle_sweep_benchmarks values (0.2001, 0.7591, 0.7739, ...) are the script's own outputs, not digitised Honda & Fisher (1978) figure values; r = 0.9978 is self-referential", supports: false}
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [1124, 1213], note: "Measurements 10, 11, 16 carry reference_value None; measurement 13 reference is a regression value computed by this script (L1171)", supports: false}
+      source-traceability:
+        value: 93
+        rationale: >-
+          Vendors `datasets/dichotomous_tree_branching/` with 5 BibTeX entries and DOIs in `paper_citations.bib`,
+          `scout_manifest.json`, the reference JSON and the specimen JPEG, all SHA-256-verified at runtime
+          (`verify_dataset_integrity`, L103-118), and Pass 3 adds `solar_tier_spacing_reference.json` pinned via
+          `EXPECTED_SHA256_PASS3` / `load_solar_reference` (L98-100, L120-123), `solar_citations_pass3.bib` with
+          Campbell & Norman (1998), Cooper (1969) and Monsi & Saeki (1953), and a "Pass 3 additions" README
+          section with the SHA-256 and the headline numbers. Deductions: `solar_citations_pass3.bib` is a
+          separate file and is not SHA-256-pinned (the original bib is pinned, hence untouched) (-2); the three new
+          DOIs were not verified online in this offline round (-1); the reference JSON labels the script's own
+          outputs as "Honda & Fisher 1978 benchmarks", so the provenance of the central benchmark curve is
+          mis-stated at source (-3); no literature value exists for tier spacing vs latitude, stated honestly (-1).
+        evidence:
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [91, 123], note: "Runtime SHA-256 checksum tables for the v2 dataset and the Pass 3 solar reference JSON; fail-closed loaders", supports: true}
+          - {file: datasets/dichotomous_tree_branching/solar_tier_spacing_reference.json, lines: [1, 56], note: "Pass 3 SHA-256-pinned solar/tier-spacing reference table with latitude benchmarks and specimen tier spacing (provenance note marks it as computed by this script)", supports: true}
+          - {file: datasets/dichotomous_tree_branching/solar_citations_pass3.bib, lines: [1, 37], note: "Campbell & Norman 1998, Cooper 1969, Monsi & Saeki 1953 BibTeX entries with DOIs (not SHA-pinned; DOIs not re-verified online)", supports: true}
+          - {file: datasets/dichotomous_tree_branching/README.md, lines: [20, 27], note: "Pass 3 additions section: file SHA-256, citations, headline s_90/R results", supports: true}
+          - {file: datasets/dichotomous_tree_branching/dichotomous_tree_branching_reference.json, lines: [46, 103], note: "Benchmark block named after Honda & Fisher (1978) but holding script-generated values", supports: false}
+      code-traceability:
+        value: 94
+        rationale: >-
+          Module docstring (L1-60) maps every governing equation to Honda (1971), Honda & Fisher (1978), Fisher &
+          Honda (1979), Shinozaki (1964), Eloy (2011) and, for Pass 3, Campbell & Norman (1998), Cooper (1969) and
+          Monsi & Saeki (1953), and names the 5 Lean theorems with line ranges; each solar function docstring
+          cites its equation (L498-692). The math-KG YAML registers laws 1-5 with refreshed code loci.
+          Deductions: the 3D builder's pitch/roll constants (L221-222, L239) and `gravity_droop_k`, the tier-order
+          schedule (L586), LAI_c = 2 (L1215), the CV percentiles (L850, L871) and the foliage threshold (L801) are
+          stated but not sourced (-4); `_shift_mask` integer-pixel quantisation of the shadow displacement
+          (L629-640) is not documented as a <= 1-cell error (-1); the docstring's Lean pin "L130-L166" refers to
+          the comment block, the theorem itself starts at L150 (-1).
+        evidence:
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [1, 60], note: "Explicit equation-to-paper and Lean 4 theorem traceability in module docstring, including the Pass 3 solar section", supports: true}
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [498, 528], note: "Solar function docstrings cite Cooper (1969) and Campbell & Norman (1998) equations", supports: true}
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [586, 586], note: "Tier-order schedule max(2, 5 - 4t//n) is an unsourced modelling choice", supports: false}
+          - {file: morphoeval/math_kg_loops/honda-dichotomous-tree-branching.yaml, lines: [28, 140], note: "Laws 1-5 registered with code loci and Lean theorem names (Pass 3 laws 4-5 at L95-140)", supports: true}
+      repro-package:
+        value: 93
+        rationale: >-
+          10-suite `self_test()` (L1742-1838) verifies SHA-256 dataset integrity, Honda tip doubling and internode
+          sum, Leonardo conservation, Honda & Fisher optimization vs ablation, benchmark Pearson r > 0.995,
+          archetype aspect ordering, specimen CV invariants, and Pass 3 solar geometry (90 - phi zenith, Cooper
+          delta(172) = 23.45, day lengths 12 h / 16.31 h), ray-tracer limits (E(tau_c = 1) = 1, E(opaque) < E <
+          1, E(s -> inf) = 1), s_90 monotonicity in latitude, specimen s/R in [0.2, 0.6], and bitwise determinism
+          over 16 measurements; it passes in 13 s. Default render produces all four media files in ~7 s with no
+          RNG. Deductions: self-test runtime grew from ~3 s to 13 s because two `measure_morphoeval()` calls each
+          run the full latitude sweep (-2); the growth GIF (`k_tier = min(frame, 4)`, L1507) is unchanged Pass 2
+          content and the Pass 3 mechanism appears only in the new PNG/GIF (-2); hash pinning is split across two
+          tables and the new bib is unpinned (-1); `*.png` is gitignored so the primary output is not tracked (-1);
+          panel titles in the comparison figure still overlap (pre-existing cosmetics) (-1).
+        evidence:
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [1742, 1838], note: "10-suite deterministic self-test (8 v2 suites + 2 Pass 3 solar/ray-tracing suites) passing in ~13 s", supports: true}
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [1840, 1882], note: "CLI entrypoint rendering comparison PNG, growth GIF, solar tier-spacing PNG and solar shadows GIF deterministically", supports: true}
+          - {file: 1976-honda-dichotomous-tree-branching.py, lines: [1507, 1507], note: "Growth GIF tier schedule unchanged from Pass 2; Pass 3 mechanism not in the primary GIF", supports: false}
+          - {file: docs/media/dichotomous_tree_branching_solar_shadows.gif, lines: [0, 0], note: "13-frame equinox-day shadow animation, equator vs Meise", supports: true}
+          - {file: docs/media/dichotomous_tree_branching_growth.gif, lines: [0, 0], note: "Regenerated growth GIF; content unchanged from Pass 2 (tier schedule capped at 4), Pass 3 mechanism absent", supports: false}
+    remediation:
+      - >-
+        datasets/dichotomous_tree_branching/dichotomous_tree_branching_reference.json:46-103 with
+        1976-honda-dichotomous-tree-branching.py:404-470 and 1011-1047 — the `honda_fisher_1978_angle_sweep_benchmarks`
+        values (0.2001, 0.7591, 0.7739, ...) are the script's own outputs, so Pearson r = 0.9978, the 0.7739 Terminalia
+        reference and the 74.14% penalty reference are self-referential. Digitise the Honda & Fisher (1978) Fig. 2 /
+        Fisher & Honda (1979) Table 1 effective-leaf-area values into a separately provenanced block and compute r against
+        those; relabel the current block as a regression fixture.
+      - >-
+        1976-honda-dichotomous-tree-branching.py:1113-1149 and 1198-1218 — measurements 10, 11 and 16 carry
+        `reference_value: None` and measurement 14 (1174-1186) uses the equator transplant as its reference. Add at
+        least one external anchor for tier spacing (e.g. digitised internode/tier spacing of Terminalia catappa from
+        Fisher & Honda 1979 or Cornus controversa herbarium/forestry measurements) or a published canopy light-
+        interception value for a pagoda crown, and move the anchor-less items to a `predictions` list.
+      - >-
+        1976-honda-dichotomous-tree-branching.py:643-692 and 566-610 — the ray tracer consumes stacked planar
+        Honda & Fisher disk-union tiers with a uniform tau_c, not the 3D Honda internode skeleton of
+        `grow_honda_1971_3d_tree` (150-261). Rasterise the 3D skeleton's terminal leaf clusters per height band so
+        the ray-traced crown is the Honda (1971) tree, and add a diffuse-sky (UOC or SOC) term beside the direct beam.
+      - >-
+        1976-honda-dichotomous-tree-branching.py:933-935, 843, 850, 871 — junction acceptance windows 12-50 / 30-82 deg
+        and beta in [0.65, 1.45], the ROI box and the 72nd / 78th percentile thresholds pre-select Y-forks inside the
+        expected Honda & Fisher range. Report the unfiltered fork-angle distribution alongside the filtered one and
+        run a threshold-sensitivity sweep so theta_1/theta_2/beta are measured, not prescribed.
+      - >-
+        1976-honda-dichotomous-tree-branching.py:221-222, 239, 586, 1215 — pitch factors 0.25*t1 / -0.18*t2, the
+        daughter-2 pi/2 roll, the tier-order schedule max(2, 5 - 4t//n) and LAI_c = 2 are uncited. Either cite a
+        source (Honda 1971 Fig. 4 for pitch; Fisher & Honda 1979 for tier order; a Cornus LAI measurement) or expose
+        them as documented free parameters in the docstring and the math-KG YAML.
+      - >-
+        1976-honda-dichotomous-tree-branching.py:1845-1852 and 1864-1868 — `--theta1/--theta2/--r1/--r2/--orders/
+        --tiers/--tau-cluster/--latitudes` affect only rendering; `measure_morphoeval()` (971) hard-codes the defaults
+        and `--latitudes` silently appends Meise. Thread the parsed arguments into `measure_morphoeval()` and make the
+        Meise append explicit (warn or require).
+      - >-
+        1976-honda-dichotomous-tree-branching.py:1507 and 1742-1838 — the growth GIF is unchanged Pass 2 content and the
+        self-test runs the full latitude sweep twice (13 s). Add the tier-spacing / shadow mechanism to the primary GIF
+        (or cross-link the solar GIF from the comparison figure) and cache the sweep between the two determinism calls.
+      - >-
+        datasets/dichotomous_tree_branching/solar_citations_pass3.bib and 1976-honda-dichotomous-tree-branching.py:91-100 —
+        the Pass 3 BibTeX file is not SHA-256-pinned and the pinning is split across `EXPECTED_SHA256` and
+        `EXPECTED_SHA256_PASS3`. Merge the bib entries into a single pinned citations file (re-pin) and collapse the two
+        checksum tables; verify the three new DOIs online when network is available.

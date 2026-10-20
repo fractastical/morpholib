@@ -1,0 +1,103 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-serra-gastrulation-streak-attractor> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-serra-gastrulation-streak-attractor-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-serra-gastrulation-streak-attractor-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Saadaoui et al. (2020), Serra et al. (2023) & Rozbicki et al. (2015) avian gastrulation tensile ring, Polonaise twin-vortex flow & primitive streak attractor — Reproducibility package: 80/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credited: `--self-test` passes in 1.8 s and checks SHA-256 locks (4 files), Stokes Green's function error, ligand decay lengths, emergent WT speed, measured speed/aspect rank statistics (including the negative -0.20), ring asymmetry, thickening, ingression, SB431542/Y-27632 zero ingression, bitwise two-run determinism (atol = 0) and specimen CV, and reports 14 measurements; the default run regenerates the 9-panel PNG and the 24-frame GIF in 19.4 s from recorded simulated states; no RNG is used; the pinned environment (python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0) is the venv. Deductions: the judged PNG is gitignored (`*.png`), so the rendered output is not tracked and the GIF is the only versioned artefact (-6); the self-test asserts the circular r = 1 statistics alongside the honest ones and so cannot fail on the model's real performance (-5); the CLI has a single flag and no --out/--gif/ --no-show options, and the 225-simulation morphospace runs unconditionally in the default render (-5); the self-test docstring and the Pass 2 measurement names are stale (-4)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:evidenceAgainst ".gitignore L48–L48: `*.png` ignored, so docs/media/gastrulation_streak_attractor_comparison.png is untracked <https://github.com/fractastical/morpholib/blob/028758bc/.gitignore#L48-L48>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-repro-package-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-repro-package-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-repro-package-4> ;
+        pk:hasScore "0.8"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "2022-serra-gastrulation-streak-attractor.py L1727–L1834" ;
+        dct:description "run_self_test: SHA-256 locks, Green's function, decay lengths, emergent readouts, determinism atol = 0, specimen CV; status pass, 14 measurements" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2022-serra-gastrulation-streak-attractor.py#L1727-L1834> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "2022-serra-gastrulation-streak-attractor.py L1837–L1855" ;
+        dct:description "main: --self-test only; default run verifies digests, renders PNG + GIF and prints measurements" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2022-serra-gastrulation-streak-attractor.py#L1837-L1855> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-repro-package-3> a pk:EvidenceItem ;
+        rdfs:label "2022-serra-gastrulation-streak-attractor.py L1650–L1721" ;
+        dct:description "render_growth_gif: 24 frames from recorded simulated states" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2022-serra-gastrulation-streak-attractor.py#L1650-L1721> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-repro-package-4> a pk:EvidenceItem ;
+        rdfs:label "docs/media/gastrulation_streak_attractor_growth.gif (generated output)" ;
+        dct:description "24-frame GIF (1350x430) of simulated WT myosin/flow/EMT, ligands and SU5402 ring; tracked in git — docs/media/gastrulation_streak_attractor_growth.gif: rendered output of 2022-serra-gastrulation-streak-attractor.py at 028758bc, image/gif, 1340066 B, 1350×430 px, 24 frames, artifact_sha256 8f14b8854a86263a9951ed61b88ccaec0312be14acf9a1f28f5cc025e23caaab (sha256 8f14b8854a86263a9951ed61b88ccaec0312be14acf9a1f28f5cc025e23caaab), spec_fingerprint 394d38439dd8f3b351ba32f3eef22da12f99bfa222be7659901a95855eb8a1e1" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary, Pass 3 Phase B assessor) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/nature08391>,
+            <https://doi.org/10.1038/ncb1739>,
+            <https://doi.org/10.1038/ncb3138>,
+            <https://doi.org/10.1038/s41592-023-02009-y>,
+            <https://doi.org/10.1126/science.1221920>,
+            <https://doi.org/10.1126/science.aaw1965>,
+            <https://doi.org/10.1371/journal.pone.0010571>,
+            <https://doi.org/10.7554/eLife.01817> .
+    <https://doi.org/10.1038/nature08391> dct:date "2009"^^xsd:gYear ;
+        dct:title "Fgf8 morphogen gradient forms by a source-sink mechanism with freely diffusing molecules" .
+    <https://doi.org/10.1038/ncb1739> dct:date "2008"^^xsd:gYear ;
+        dct:title "RhoA and microtubule dynamics control cell-basement membrane interaction in EMT during gastrulation" .
+    <https://doi.org/10.1038/ncb3138> dct:date "2015"^^xsd:gYear ;
+        dct:title "Myosin-II-mediated cell shape changes and cell intercalation contribute to primitive streak formation" .
+    <https://doi.org/10.1038/s41592-023-02009-y> dct:date "2023"^^xsd:gYear ;
+        dct:title "A mechanochemical model recapitulates distinct vertebrate gastrulation modes" .
+    <https://doi.org/10.1126/science.1221920> dct:date "2012"^^xsd:gYear ;
+        dct:title "Differential diffusivity of Nodal and Lefty underlies a reaction-diffusion patterning system" .
+    <https://doi.org/10.1126/science.aaw1965> dct:date "2020"^^xsd:gYear ;
+        dct:title "A tensile ring drives tissue flows to shape the gastrulating amniote embryo" .
+    <https://doi.org/10.1371/journal.pone.0010571> dct:date "2010"^^xsd:gYear ;
+        dct:title "Modeling gastrulation in the chick embryo: formation of the primitive streak" .
+    <https://doi.org/10.7554/eLife.01817> dct:date "2014"^^xsd:gYear ;
+        dct:title "Local cell interactions and self-amplifying individual cell ingression drive amniote gastrulation" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Saadaoui et al. (2020), Serra et al. (2023) & Rozbicki et al. (2015) avian gastrulation tensile ring, Polonaise twin-vortex flow & primitive streak attractor — Reproducibility package 80/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:33:14Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-serra-gastrulation-streak-attractor-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

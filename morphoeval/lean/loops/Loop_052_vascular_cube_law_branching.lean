@@ -5,8 +5,14 @@
   Murray (1926a, 1926b) Minimum-Work Vascular Cube Law & Optimal Bifurcation Angles
   (`murray-vascular-cube-law-branching`).
 
-  Covers 3 governing mathematical laws in pure core Lean 4 (zero external imports,
-  zero `sorry`s):
+  Covers 5 governing mathematical laws in pure core Lean 4 (zero external imports,
+  zero `sorry`s) -- Laws 4 and 5 were added in the Pass 3 remediation round:
+    4. Fahraeus-Lindqvist Stationarity Shift: with radius-dependent viscosity
+       `eta(r)` and `eps = d ln eta / d ln r`, the optimum satisfies
+       `2 P_met = (4 - eps) P_visc`; `eps = 0` recovers Law 1 and `eps > 0` strictly lowers
+       the metabolic share below Murray's `2 P_visc` (exponent drops below 3).
+    5. Coupled Arteriovenous Cube Balance: `k_a C_a = k_v C_v` with `k_v < k_a` forces
+       `C_a < C_v` (venous cubic radius sum exceeds arterial; AVR < 1).
     1. Murray (1926a) Poiseuille + Metabolic Stationarity Partition Law:
        `P(r) = A * r^{-4} + B * r^2` has stationarity residual `r^5 P'(r) = 2 B r^6 - 4 A = 0`,
        where metabolic blood-volume cost `B r^6 = 2 A` is strictly twice viscous Poiseuille
@@ -110,5 +116,57 @@ theorem murray_bifurcation_cosine_symmetry (r0 r1 r2 r : Int) :
     murray_cos_num2 r0 r r = pow4 r0 := by
   simp [murray_cos_num1, murray_cos_num2]
   omega
+
+
+-- ============================================================================
+-- Law 4 (`murray-vascular-cube-law-branching-4`, Pass 3):
+-- Fahraeus-Lindqvist Radius-Dependent Viscosity Shifts the Stationarity Partition
+-- ============================================================================
+
+/-- Scaled stationarity residual `r^5 * dP/dr = 2 * p_met - (4 - eps) * p_visc` of the
+    generalised Murray functional `P(r) = p_visc(r) + p_met(r)` with `p_visc ∝ eta(r) r^{-4}`
+    and logarithmic viscosity sensitivity `eps = d ln eta / d ln r` (`eps = 0` is Newtonian blood). -/
+def fl_stationarity_residual (p_visc p_met eps : Int) : Int :=
+  2 * p_met - (4 - eps) * p_visc
+
+/-- Theorem 4 (`fahraeus_lindqvist_stationarity_shift`):
+    (1) The Newtonian limit `eps = 0` recovers Murray's residual exactly;
+    (2) the generalised optimum sits where `2 * p_met = (4 - eps) * p_visc`
+        (residual vanishes identically there); and
+    (3) whenever viscosity falls toward smaller vessels (`0 < eps`, the Fahraeus-Lindqvist
+        regime) and `0 < p_visc`, the metabolic share at the optimum is *strictly below*
+        Murray's `2 * p_visc`, i.e. the optimum is pushed toward narrower vessels and the
+        effective exponent drops below 3. -/
+theorem fahraeus_lindqvist_stationarity_shift (p_visc p_met eps : Int)
+    (h_fl : 0 < eps) (h_pos : 0 < p_visc) :
+    fl_stationarity_residual p_visc p_met 0 = murray_stationarity_residual p_visc p_met ∧
+    fl_stationarity_residual (2 * p_visc) ((4 - eps) * p_visc) eps = 0 ∧
+    (4 - eps) * p_visc < 4 * p_visc := by
+  refine ⟨?_, ?_, ?_⟩
+  · simp [fl_stationarity_residual, murray_stationarity_residual]
+  · show 2 * ((4 - eps) * p_visc) - (4 - eps) * (2 * p_visc) = 0
+    rw [Int.mul_left_comm]
+    exact Int.sub_self _
+  · exact Int.mul_lt_mul_of_pos_right (by omega) h_pos
+
+
+-- ============================================================================
+-- Law 5 (`murray-vascular-cube-law-branching-5`, Pass 3):
+-- Coupled Arteriovenous Cube Balance on the Retinal Cup
+-- ============================================================================
+
+/-- Theorem 5 (`arteriovenous_coupled_cube_balance`):
+    Closed retinal circulation forces arterial and venous Murray trees to carry equal flow,
+    `k_a * C_a = k_v * C_v` where `C_a = ∑ r_tip^3` and `C_v = ∑ R_tip^3` are the terminal
+    cubic radius sums.  If the venous conductance constant is smaller (`k_v < k_a`, i.e. lower
+    venous wall shear `tau_v = sqrt(eta b_v) < tau_a`) and the arterial tree is non-trivial
+    (`0 < C_a`), then the venous cubic sum strictly exceeds the arterial one, `C_a < C_v`:
+    veins are necessarily wider than their paired arteries (clinical AVR < 1). -/
+theorem arteriovenous_coupled_cube_balance (k_a k_v C_a C_v : Nat)
+    (h_flow : k_a * C_a = k_v * C_v) (h_k : k_v < k_a) (h_pos : 0 < C_a) :
+    C_a < C_v := by
+  have h1 : k_v * C_a < k_a * C_a := Nat.mul_lt_mul_of_pos_right h_k h_pos
+  rw [h_flow] at h1
+  exact Nat.lt_of_mul_lt_mul_left h1
 
 end MathOfBiology.Loop_052

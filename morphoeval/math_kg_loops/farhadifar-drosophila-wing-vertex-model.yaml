@@ -47,3 +47,40 @@ equations:
     role: "Quantifies how stochastic mitotic cleavage drives topological disorder (P(6) ≈ 0.45) in the larval wing disc whereas post-mitotic T1 annealing restores hexagonal order (P(6) ≈ 0.78) in the pupal wing"
     source_citation: "Farhadifar et al. (2007) Current Biology 17(24):2095-2104 Fig. 3B & Fig. 4B; Gibson et al. (2006) Nature 442:1038-1041; Classen et al. (2005) Dev. Cell 9:805-817"
     code_locus: "2007-farhadifar-drosophila-wing-vertex-model.py#L535-L645"
+  - law_name: "[Pass 3] Planar-Cell-Polarity Frizzled/Strabismus Bond-Asymmetry Tensor & PCP-Modulated Junction Tension"
+    formula: "c_{ab} = \\mathrm{relu}(\\mathbf{p}_a\\cdot\\mathbf{n})\\,\\mathrm{relu}(\\mathbf{p}_b\\cdot\\mathbf{n}) + \\mathrm{relu}(-\\mathbf{p}_a\\cdot\\mathbf{n})\\,\\mathrm{relu}(-\\mathbf{p}_b\\cdot\\mathbf{n});\\quad Q_{ab} = 2c_{ab}\\,(\\mathbf{n}\\otimes\\mathbf{n} - \\tfrac{1}{2}I),\\ \\mathrm{tr}\\,Q_{ab}=0;\\quad a_{ab} = \\mathbf{n}\\cdot Q_{ab}\\cdot\\mathbf{n} = 2c_{ab}-1 \\to \\cos 2\\theta_n;\\quad \\Lambda_{ab} = \\bar{\\Lambda}\\,(1 + \\varepsilon_{\\mathrm{PCP}}\\, a_{ab});\\quad a(\\theta) + a(\\theta + \\pi/2) = 0"
+    lean_decl: MathOfBiology.Loop_043.pcp_bond_quadratic_form
+    lean_theorem: MathOfBiology.Loop_043.pcp_bond_tensor_traceless_and_perpendicular_cancellation
+    lean_locus: morphoeval/lean/loops/Loop_043_drosophila_wing_vertex_model.lean#L126-L191
+    lean_code: |-
+      def pcp_bond_quadratic_form (a b c s : Int) : Int :=
+        a * (c * c) - a * (s * s) + 2 * b * (c * s)
+      def pcp_bond_tension_permille (eps1000 a1000 : Int) : Int :=
+        1000 + eps1000 * a1000 / 1000
+      theorem pcp_bond_tensor_traceless_and_perpendicular_cancellation
+          (a b c s eps1000 : Int) (h0 : 0 < eps1000) (h1 : eps1000 < 1000) :
+          pcp_bond_tensor_trace a = 0 ∧
+          pcp_bond_quadratic_form a b c s + pcp_bond_quadratic_form a b (-s) c = 0 ∧
+          pcp_bond_quadratic_form 1 0 c s = c * c - s * s ∧
+          pcp_bond_tension_permille eps1000 (-1000) < pcp_bond_tension_permille eps1000 1000 ∧
+          0 < pcp_bond_tension_permille eps1000 (-1000)
+    variables: "p_a, p_b: Frizzled (distal) polarity unit vectors of the two cells sharing a bond; n: outward bond normal (angle theta_n to the proximal-distal axis); c_ab: intercellular Fz-Stbm bridge density in [0, 1]; Q_ab: traceless symmetric bond tensor; a_ab: asymmetry in [-1, 1]; eps_PCP: PCP coupling (0 = fz / stbm mutant); Lambda_ab: per-bond adherens-junction line tension"
+    role: "Couples the explicit tri-cellular vertex network to a per-bond PCP tensor so AP-oriented (PCP-complex-bearing) junctions are stiffened exactly as much as PD-oriented junctions are softened (zero-trace), producing oriented T1 rearrangements and anisotropic blade elongation under pupal hinge contraction"
+    source_citation: "Classen et al. (2005) Dev. Cell 9:805-817; Aigouy et al. (2010) Cell 142:773-786 (doi:10.1016/j.cell.2010.07.042, recorded offline); Farhadifar et al. (2007) Eq. 1 with bond-resolved Lambda_ij"
+    code_locus: "2007-farhadifar-drosophila-wing-vertex-model.py#L617-L1023"
+  - law_name: "[Pass 3] Hinge-Contraction Pure-Shear Boundary Strain & Etournay (2015) Tissue-Shear Decomposition"
+    formula: "F(t) = \\mathrm{diag}(\\lambda(t), 1/\\lambda(t)),\\ \\det F = 1;\\quad \\ln\\lambda(t) = \\Delta\\langle Q_{xx}\\rangle(t) + R_{\\mathrm{T1}}(t);\\quad |Q| = \\tfrac{1}{2}\\ln(a/b);\\quad \\mathbf{F}_i = -\\partial E/\\partial\\mathbf{r}_i,\\ \\partial A_\\alpha/\\partial\\mathbf{r}_k = \\tfrac{1}{2}(y_{k+1}-y_{k-1},\\ x_{k-1}-x_{k+1})"
+    lean_decl: MathOfBiology.Loop_043.shear_rearrangement_residual
+    lean_theorem: MathOfBiology.Loop_043.hinge_contraction_shear_decomposition_balance
+    lean_locus: morphoeval/lean/loops/Loop_043_drosophila_wing_vertex_model.lean#L193-L215
+    lean_code: |-
+      def shear_rearrangement_residual (total elong : Int) : Int := total - elong
+      theorem hinge_contraction_shear_decomposition_balance
+          (total elong_pcp elong_ctrl p q Lx Ly : Int) (h : elong_pcp < elong_ctrl) :
+          elong_pcp + shear_rearrangement_residual total elong_pcp = total ∧
+          shear_rearrangement_residual total elong_ctrl < shear_rearrangement_residual total elong_pcp ∧
+          (p * Lx) * (q * Ly) = (p * q) * (Lx * Ly)
+    variables: "lambda(t): proximal-distal stretch of the blade margin (smoothstep ramp to exp(gamma_PD)); Q_xx: tissue-mean cell-elongation nematic along PD; R_T1: rearrangement residual of the shear decomposition; a/b: long/short cell axes; r_i: vertex positions; A_alpha: cell area"
+    role: "States the area-preserving hinge-contraction strain, the closure of the Etournay et al. (2015) shear bookkeeping (imposed shear = cell-elongation change + rearrangement residual) and that lowering residual cell elongation strictly raises the rearrangement share, as measured for eps_PCP = 0.5 vs the eps_PCP = 0 control"
+    source_citation: "Aigouy et al. (2010) Cell 142:773-786; Etournay et al. (2015) eLife 4:e07090 (doi:10.7554/eLife.07090, recorded offline); Sugimura & Ishihara (2013) Development 140:4091-4101 (doi:10.1242/dev.094060, recorded offline)"
+    code_locus: "2007-farhadifar-drosophila-wing-vertex-model.py#L846-L1023"

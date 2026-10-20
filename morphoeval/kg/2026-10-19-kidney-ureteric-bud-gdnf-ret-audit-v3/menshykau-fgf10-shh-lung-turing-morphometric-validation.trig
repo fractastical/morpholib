@@ -1,0 +1,268 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-menshykau-fgf10-shh-lung-turing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-menshykau-fgf10-shh-lung-turing-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-menshykau-fgf10-shh-lung-turing-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Menshykau & Iber (2013), Zubkov et al. (2015) & Watanabe & Costantini (2004) kidney ureteric bud GDNF-RET-Wnt11 Turing branching morphogenesis with stromal BMP4/7-Gremlin1-FGF7 feedback and reduced-3D ampulla necking — Morphometric validation: 76/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`measure_morphoeval()` (L1413-1589) now reports 14 metrics with references and dispersion statistics: lambda_c = 0.4726 (exact), WT tip Pearson r = 0.9903 (p ~ 1e-5) and Horton-Strahler R_b, generational angle RMSE 2.92 deg, Spry1-/- and bead ratios, hypoplasia ratio 0.3125 (ref 0.4), specimen 12/6 tips, plus six Pass 3 metrics (noise-seeded staircase agreement 0/4, necking index 0.2025, dihedral 90.0 deg (ref 90), Grem1-/- 0.4375 (ref 0.08), Fgf7-/- 1.00 (ref 0.70), Bmp4+/- 1.8125 (ref 1.20)), all bitwise deterministic across two runs. The honesty control is credited for being reported rather than hidden. Deductions: the band-seeded \"4/4 exact mode matches\" metric is circular and the honest control scores 0/4 (-6); angle RMSE is self-referential because half-angles are prescribed from the same table (L856) (-4); the Watanabe & Costantini generation table and the perturbation means (28.5, 5.2, 21.0 tips; 0.88/0.12 fractions) and the Pearson reference 0.9985 are not traceable to a figure or table (-5); three new stromal ratios miss their qualitative references by 2-5x and Spry1-/- overshoots 3.875 vs 2.19 after removing hand-placed buds (-5); the necking index has no reference value; conditions use different RNG streams (SHA-256 of the condition name, L719) so WT vs mutant are not seed-matched (-2); the 90 deg dihedral match is guaranteed by the orientation assumption (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:evidenceAgainst "2012-menshykau-fgf10-shh-lung-turing.py L1438–L1450: Noise-seeded staircase gives [2, 3, 5, 5] vs band map [1, 2, 3, 4]: the Pass 2 4/4 metric was conditioned on its seed <https://github.com/fractastical/morpholib/blob/028758bc/2012-menshykau-fgf10-shh-lung-turing.py#L1438-L1450>",
+            "2012-menshykau-fgf10-shh-lung-turing.py L719–L719: Per-condition RNG seed = SHA-256 digest of the condition name; WT vs perturbation comparisons are not seed-matched <https://github.com/fractastical/morpholib/blob/028758bc/2012-menshykau-fgf10-shh-lung-turing.py#L719-L719>",
+            "2012-menshykau-fgf10-shh-lung-turing.py L856–L859: Prescribed generational half-angles make the angle-RMSE metric self-referential <https://github.com/fractastical/morpholib/blob/028758bc/2012-menshykau-fgf10-shh-lung-turing.py#L856-L859>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-bmp4-reduced-stromal-inhibition-e12-5-tip-ratio-vs-wt-ectopic-supernumerary-budding>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-e11-0-e13-5-wild-type-ureteric-bud-tip-count-correlation-pearson-r-vs-watanabe-costantini-2004>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-fgf7-stromal-growth-factor-loss-e12-5-tip-ratio-vs-wt>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-gdnf-and-prr-ub-hypoplastic-e12-5-ureteric-tip-reduction-ratio-vs-wt-control>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-generational-ureteric-bifurcation-angle-rmse-across-e11-5-e13-5-vs-no-sink-ablation-control>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-grem1-stromal-bmp-de-repression-failure-e12-5-tip-ratio-vs-wt>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-mean-dihedral-rotation-angle-between-successive-splitting-planes-anisotropic-dome-cascade-4-generations>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-moving-boundary-ampulla-necking-index-of-the-wt-dichotomous-cap-1-r-cleft-r-lobe>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-noise-seeded-ampulla-tip-splitting-peak-count-agreement-with-the-band-map-1-2-3-4-honesty-control>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-segmented-e12-5-mouse-metanephros-gfp-ureteric-bud-tip-count-panel-a-wild-type-control>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-segmented-e12-5-mouse-metanephros-wt-to-mutant-ureteric-tip-multiplicity-ratio-panel-a-vs-panel-b>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-spry1-hyper-branching-exogenous-gdnf-bead-supernumerary-e12-5-tip-count-ratio-vs-wt-control>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-ureteric-ampulla-tip-splitting-mode-transition-accuracy-across-rho-tip-pi-r-tip-lambda-c>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-wild-type-gdnf-ret-homogeneous-steady-state-signaling-r-2-g-critical-turing-wavelength-lambda-c>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-morphometric-validation-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-morphometric-validation-2> ;
+        pk:hasScore "0.76"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-bmp4-reduced-stromal-inhibition-e12-5-tip-ratio-vs-wt-ectopic-supernumerary-budding> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Bmp4+/- reduced stromal inhibition: E12.5 tip ratio vs WT (ectopic/supernumerary budding) = 1.8125 Bmp4+/- to WT E12.5 tip ratio" ;
+        dct:description "Observed 1.20 encodes supernumerary budding qualitatively (incomplete penetrance; see JSON obs_note)." ;
+        schema:measurementTechnique "simulate_coupled_ureteric_tree(stromal={bmp_scale: 0.5}) / WT at generation 4; stromal-ablation control (all scales 0) gives 1.125" ;
+        schema:name "Bmp4+/- reduced stromal inhibition: E12.5 tip ratio vs WT (ectopic/supernumerary budding)" ;
+        schema:unitText "Bmp4+/- to WT E12.5 tip ratio" ;
+        schema:value "1.8125" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-bmp4-reduced-stromal-inhibition-e12-5-tip-ratio-vs-wt-ectopic-supernumerary-budding-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-bmp4-reduced-stromal-inhibition-e12-5-tip-ratio-vs-wt-ectopic-supernumerary-budding-reference> a schema:PropertyValue ;
+        schema:value "1.2" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-e11-0-e13-5-wild-type-ureteric-bud-tip-count-correlation-pearson-r-vs-watanabe-costantini-2004> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "E11.0-E13.5 wild-type ureteric bud tip count correlation (Pearson r vs Watanabe & Costantini 2004) = 0.99028 Pearson r across 7 embryonic stages (E11.0-E13.5)" ;
+        dct:description "Horton-Strahler bifurcation ratio R_b = 1.932 vs reference 2.04 ± 0.08" ;
+        schema:measurementTechnique "simulate_coupled_ureteric_tree(WT_control, g=0..6) vs Watanabe & Costantini (2004) tip progression (p=1.78e-05, RMSE=4.44 tips)" ;
+        schema:name "E11.0-E13.5 wild-type ureteric bud tip count correlation (Pearson r vs Watanabe & Costantini 2004)" ;
+        schema:unitText "Pearson r across 7 embryonic stages (E11.0-E13.5)" ;
+        schema:value "0.99028" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-e11-0-e13-5-wild-type-ureteric-bud-tip-count-correlation-pearson-r-vs-watanabe-costantini-2004-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-e11-0-e13-5-wild-type-ureteric-bud-tip-count-correlation-pearson-r-vs-watanabe-costantini-2004-reference> a schema:PropertyValue ;
+        schema:value "0.9985" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-fgf7-stromal-growth-factor-loss-e12-5-tip-ratio-vs-wt> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Fgf7-/- stromal growth-factor loss: E12.5 tip ratio vs WT = 1.0 Fgf7-/- to WT E12.5 tip ratio" ;
+        dct:description "Reference is the approximate late deficit (nephron number), not an E12.5 tip count." ;
+        schema:measurementTechnique "simulate_coupled_ureteric_tree(stromal={fgf7_scale: 0}) / WT at generation 4; mean gamma_eff/gamma = 0.639; generation-6 tips 41 vs WT 51" ;
+        schema:name "Fgf7-/- stromal growth-factor loss: E12.5 tip ratio vs WT" ;
+        schema:unitText "Fgf7-/- to WT E12.5 tip ratio" ;
+        schema:value "1.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-fgf7-stromal-growth-factor-loss-e12-5-tip-ratio-vs-wt-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-fgf7-stromal-growth-factor-loss-e12-5-tip-ratio-vs-wt-reference> a schema:PropertyValue ;
+        schema:value "0.7" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-gdnf-and-prr-ub-hypoplastic-e12-5-ureteric-tip-reduction-ratio-vs-wt-control> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Gdnf+/- and PRR^(UB-/-) hypoplastic E12.5 ureteric tip reduction ratio vs WT control = 0.3125 Hypoplastic mutant to WT E12.5 tip ratio" ;
+        dct:description "Hypoplastic tree produces 5 E12.5 tips vs 16 WT tips (-62.5% reduction)" ;
+        schema:measurementTechnique "simulate_coupled_ureteric_tree(Gdnf_het_or_PRR_ko, b=0.45, gamma=11.25) / WT_control at E12.5" ;
+        schema:name "Gdnf+/- and PRR^(UB-/-) hypoplastic E12.5 ureteric tip reduction ratio vs WT control" ;
+        schema:unitText "Hypoplastic mutant to WT E12.5 tip ratio" ;
+        schema:value "0.3125" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-gdnf-and-prr-ub-hypoplastic-e12-5-ureteric-tip-reduction-ratio-vs-wt-control-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-gdnf-and-prr-ub-hypoplastic-e12-5-ureteric-tip-reduction-ratio-vs-wt-control-reference> a schema:PropertyValue ;
+        schema:value "0.4" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-generational-ureteric-bifurcation-angle-rmse-across-e11-5-e13-5-vs-no-sink-ablation-control> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Generational ureteric bifurcation angle RMSE across E11.5-E13.5 vs no-sink ablation control = 2.9236 deg (RMSE across generations 1..6)" ;
+        dct:description "Self-avoiding RMSE = 2.92 deg (mean inter-tip spacing 0.101) vs no-sink ablation angle collapse" ;
+        schema:measurementTechnique "Self-avoiding GDNF sink tree angle progression vs Watanabe & Costantini (2004) (Pearson r=0.9906, p=1.33e-04)" ;
+        schema:name "Generational ureteric bifurcation angle RMSE across E11.5-E13.5 vs no-sink ablation control" ;
+        schema:unitText "deg (RMSE across generations 1..6)" ;
+        schema:value "2.9236" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-generational-ureteric-bifurcation-angle-rmse-across-e11-5-e13-5-vs-no-sink-ablation-control-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-generational-ureteric-bifurcation-angle-rmse-across-e11-5-e13-5-vs-no-sink-ablation-control-reference> a schema:PropertyValue ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-grem1-stromal-bmp-de-repression-failure-e12-5-tip-ratio-vs-wt> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Grem1-/- stromal BMP de-repression failure: E12.5 tip ratio vs WT = 0.4375 Grem1-/- to WT E12.5 tip ratio" ;
+        dct:description "Observed ratio encodes 'arrested branching' qualitatively (see JSON obs_note); the model shows arrest after generation 3 rather than complete outgrowth failure." ;
+        schema:measurementTechnique "simulate_coupled_ureteric_tree(stromal={grem_scale: 0}) / WT at generation 4; mean gamma_eff/gamma = 0.397, mean rho_tip = 1.366" ;
+        schema:name "Grem1-/- stromal BMP de-repression failure: E12.5 tip ratio vs WT" ;
+        schema:unitText "Grem1-/- to WT E12.5 tip ratio" ;
+        schema:value "0.4375" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-grem1-stromal-bmp-de-repression-failure-e12-5-tip-ratio-vs-wt-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-grem1-stromal-bmp-de-repression-failure-e12-5-tip-ratio-vs-wt-reference> a schema:PropertyValue ;
+        schema:value "0.08" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-mean-dihedral-rotation-angle-between-successive-splitting-planes-anisotropic-dome-cascade-4-generations> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Mean dihedral rotation angle between successive splitting planes (anisotropic-dome cascade, 4 generations) = 90.0 deg" ;
+        dct:description "Outcome depends on the stated daughter-orientation assumption; the linear short-axis selection itself is the model result. Kidney dihedral distributions were not vendored offline." ;
+        schema:measurementTechnique "dihedral_rotation_cascade(R_tip=0.255, e=1.30, daughters elongated along parent T-bar): per-generation [90.0, 90.0, 90.0, 90.0]; orthogonal-daughter ablation gives 0 deg; rho_flip = k_c/k_fastest = 0.938" ;
+        schema:name "Mean dihedral rotation angle between successive splitting planes (anisotropic-dome cascade, 4 generations)" ;
+        schema:unitText "deg" ;
+        schema:value "90.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-mean-dihedral-rotation-angle-between-successive-splitting-planes-anisotropic-dome-cascade-4-generations-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-mean-dihedral-rotation-angle-between-successive-splitting-planes-anisotropic-dome-cascade-4-generations-reference> a schema:PropertyValue ;
+        schema:value "90.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-moving-boundary-ampulla-necking-index-of-the-wt-dichotomous-cap-1-r-cleft-r-lobe> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Moving-boundary ampulla necking index of the WT dichotomous cap (1 - r_cleft / r_lobe) = 0.2025 dimensionless necking index (0 = no cleft)" ;
+        dct:description "Reduced 1D Lagrangian interface (no 3D surface, no surface tension); conditioned on the band-seeded two-lobe mode. Positive index = cleft/neck forms." ;
+        schema:measurementTechnique "simulate_moving_boundary_ampulla_necking(R_tip=0.30, 14 growth steps, v_n = v0 max(0, R^2G - b)); elongation cap 0.162, trichotomous cap 0.259; lobe asymmetry 2.50e-12" ;
+        schema:name "Moving-boundary ampulla necking index of the WT dichotomous cap (1 - r_cleft / r_lobe)" ;
+        schema:unitText "dimensionless necking index (0 = no cleft)" ;
+        schema:value "0.2025" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-noise-seeded-ampulla-tip-splitting-peak-count-agreement-with-the-band-map-1-2-3-4-honesty-control> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Noise-seeded ampulla tip-splitting peak-count agreement with the band map [1, 2, 3, 4] (honesty control) = 0.0 regimes (of 4) whose noise-seeded peak count equals the band-map prediction" ;
+        dct:description "The band-seeded staircase is conditioned on its own initial condition; noise seeding selects ~L/lambda_fastest + 1 maxima. Open item carried to Pass 4." ;
+        schema:measurementTechnique "solve_ampulla_cap_imex(seed_mode='noise') across the 4 reference tip radii -> peaks [2, 3, 5, 5] vs band map [1, 2, 3, 4] (band-seeded run: 4/4)" ;
+        schema:name "Noise-seeded ampulla tip-splitting peak-count agreement with the band map [1, 2, 3, 4] (honesty control)" ;
+        schema:unitText "regimes (of 4) whose noise-seeded peak count equals the band-map prediction" ;
+        schema:value "0.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-noise-seeded-ampulla-tip-splitting-peak-count-agreement-with-the-band-map-1-2-3-4-honesty-control-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-noise-seeded-ampulla-tip-splitting-peak-count-agreement-with-the-band-map-1-2-3-4-honesty-control-reference> a schema:PropertyValue ;
+        schema:value "4.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-segmented-e12-5-mouse-metanephros-gfp-ureteric-bud-tip-count-panel-a-wild-type-control> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Segmented E12.5 mouse metanephros GFP ureteric bud tip count (Panel A wild-type control) = 12.0 ureteric bud tips (GFP local maxima)" ;
+        dct:description "Detected 12 WT tips vs published count 12 (cohort mean 13.0 ± 1.4)" ;
+        schema:measurementTechnique "segment_specimen_ureteric_bud on Panel A (mean branch caliber = 7.75 ± 4.92 px, CV = 0.634)" ;
+        schema:name "Segmented E12.5 mouse metanephros GFP ureteric bud tip count (Panel A wild-type control)" ;
+        schema:unitText "ureteric bud tips (GFP local maxima)" ;
+        schema:value "12.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-segmented-e12-5-mouse-metanephros-gfp-ureteric-bud-tip-count-panel-a-wild-type-control-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-segmented-e12-5-mouse-metanephros-gfp-ureteric-bud-tip-count-panel-a-wild-type-control-reference> a schema:PropertyValue ;
+        schema:value "12.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-segmented-e12-5-mouse-metanephros-wt-to-mutant-ureteric-tip-multiplicity-ratio-panel-a-vs-panel-b> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Segmented E12.5 mouse metanephros WT-to-mutant ureteric tip multiplicity ratio (Panel A vs Panel B) = 2.0 WT / PRR^(UB-/-) tip count ratio" ;
+        dct:description "Panel B mutant tips = 6 (ref 6; swollen mean caliber = 10.75 ± 8.14 px)" ;
+        schema:measurementTechnique "segment_specimen_ureteric_bud Panel A (12 tips) / Panel B (6 tips)" ;
+        schema:name "Segmented E12.5 mouse metanephros WT-to-mutant ureteric tip multiplicity ratio (Panel A vs Panel B)" ;
+        schema:unitText "WT / PRR^(UB-/-) tip count ratio" ;
+        schema:value "2.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-segmented-e12-5-mouse-metanephros-wt-to-mutant-ureteric-tip-multiplicity-ratio-panel-a-vs-panel-b-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-segmented-e12-5-mouse-metanephros-wt-to-mutant-ureteric-tip-multiplicity-ratio-panel-a-vs-panel-b-reference> a schema:PropertyValue ;
+        schema:value "2.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-spry1-hyper-branching-exogenous-gdnf-bead-supernumerary-e12-5-tip-count-ratio-vs-wt-control> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Spry1-/- hyper-branching & exogenous GDNF bead supernumerary E12.5 tip count ratio vs WT control = 3.875 Spry1-/- to WT E12.5 tip ratio" ;
+        dct:description "Spry1-/- E12.5 tips = 62, GDNF bead tips = 39, WT tips = 16, Gdnf+/- hypoplasia tips = 5" ;
+        schema:measurementTechnique "simulate_coupled_ureteric_tree(Spry1_ko_hyperbranch, gamma=46.25) / WT_control at generation 4 (E12.5)" ;
+        schema:name "Spry1-/- hyper-branching & exogenous GDNF bead supernumerary E12.5 tip count ratio vs WT control" ;
+        schema:unitText "Spry1-/- to WT E12.5 tip ratio" ;
+        schema:value "3.875" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-spry1-hyper-branching-exogenous-gdnf-bead-supernumerary-e12-5-tip-count-ratio-vs-wt-control-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-spry1-hyper-branching-exogenous-gdnf-bead-supernumerary-e12-5-tip-count-ratio-vs-wt-control-reference> a schema:PropertyValue ;
+        schema:value "2.1923" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-ureteric-ampulla-tip-splitting-mode-transition-accuracy-across-rho-tip-pi-r-tip-lambda-c> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Ureteric ampulla tip-splitting mode transition accuracy across rho_tip = pi*R_tip/lambda_c = 2.0 R^2*G signaling peaks on WT ampulla (m = 2 dichotomous)" ;
+        dct:description "Mode peaks detected: [1, 2, 3, 4] vs reference [1, 2, 3, 4] (RMSE = 0.0 peaks)" ;
+        schema:measurementTechnique "solve_ampulla_cap_imex across 4 tip radii (4/4 exact mode matches: m=1, 2, 3, 4; apical cleft contrast=0.378)" ;
+        schema:name "Ureteric ampulla tip-splitting mode transition accuracy across rho_tip = pi*R_tip/lambda_c" ;
+        schema:unitText "R^2*G signaling peaks on WT ampulla (m = 2 dichotomous)" ;
+        schema:value "2.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-ureteric-ampulla-tip-splitting-mode-transition-accuracy-across-rho-tip-pi-r-tip-lambda-c-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-ureteric-ampulla-tip-splitting-mode-transition-accuracy-across-rho-tip-pi-r-tip-lambda-c-reference> a schema:PropertyValue ;
+        schema:value "2.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-wild-type-gdnf-ret-homogeneous-steady-state-signaling-r-2-g-critical-turing-wavelength-lambda-c> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Wild-type GDNF-RET homogeneous steady-state signaling R^2*G* & critical Turing wavelength lambda_c = 0.472571 dimensionless wavelength (lambda_c = 2*pi/k_c)" ;
+        dct:description "R*=1.00, G*=0.90, det(J_0)=1.00, Tr(J_0)=-0.20 vs equal-diffusion control Re(sigma)<0" ;
+        schema:measurementTechnique "gdnf_ret_steady_state(a=0.10, b=0.90, D_R=0.02, D_G=1.0, gamma=25.0) -> lambda_c = 0.472569, R*=1.0, G*=0.9, flux_residual=0.0" ;
+        schema:name "Wild-type GDNF-RET homogeneous steady-state signaling R^2*G* & critical Turing wavelength lambda_c" ;
+        schema:unitText "dimensionless wavelength (lambda_c = 2*pi/k_c)" ;
+        schema:value "0.472571" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-wild-type-gdnf-ret-homogeneous-steady-state-signaling-r-2-g-critical-turing-wavelength-lambda-c-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-measurement-wild-type-gdnf-ret-homogeneous-steady-state-signaling-r-2-g-critical-turing-wavelength-lambda-c-reference> a schema:PropertyValue ;
+        schema:value "0.472569" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-morphometric-validation-1> a pk:EvidenceItem ;
+        rdfs:label "2012-menshykau-fgf10-shh-lung-turing.py L1413–L1589" ;
+        dct:description "14-metric MorphoEval suite (8 Pass 2 + 6 Pass 3) with reference values, methods and ablation notes" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2012-menshykau-fgf10-shh-lung-turing.py#L1413-L1589> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-morphometric-validation-2> a pk:EvidenceItem ;
+        rdfs:label "2012-menshykau-fgf10-shh-lung-turing.py L1445–L1518" ;
+        dct:description "pass3_measurements: noise-seeded honesty control (0/4), necking index, dihedral angle, Grem1-/-, Fgf7-/-, Bmp4+/- ratios versus qualitative references" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2012-menshykau-fgf10-shh-lung-turing.py#L1445-L1518> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Loop 054 Pass 3 Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/54> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/s11538-015-0073-9>,
+            <https://doi.org/10.1016/j.devcel.2004.12.004>,
+            <https://doi.org/10.1016/j.devcel.2014.02.017>,
+            <https://doi.org/10.1016/j.ydbio.2004.03.025>,
+            <https://doi.org/10.1038/nature07005>,
+            <https://doi.org/10.1088/1478-3975/10/4/046003>,
+            <https://doi.org/10.1172/JCI8256>,
+            <https://doi.org/10.1242/dev.01251>,
+            <https://doi.org/10.1242/dev.086207>,
+            <https://doi.org/10.1242/dev.126.3.547> .
+    <https://doi.org/10.1007/s11538-015-0073-9> dct:date "2015"^^xsd:gYear ;
+        dct:title "A spatially-averaged mathematical model of kidney branching morphogenesis" .
+    <https://doi.org/10.1016/j.devcel.2004.12.004> dct:date "2005"^^xsd:gYear ;
+        dct:title "Sprouty1 is a critical regulator of GDNF/RET-mediated kidney induction" .
+    <https://doi.org/10.1016/j.devcel.2014.02.017> dct:date "2014"^^xsd:gYear ;
+        dct:title "Global quantification of tissue dynamics in the developing mouse kidney" .
+    <https://doi.org/10.1016/j.ydbio.2004.03.025> dct:date "2004"^^xsd:gYear ;
+        dct:title "Real-time analysis of ureteric bud branching morphogenesis in vitro" .
+    <https://doi.org/10.1038/nature07005> dct:date "2008"^^xsd:gYear ;
+        dct:title "The branching programme of mouse lung development" .
+    <https://doi.org/10.1088/1478-3975/10/4/046003> dct:date "2013"^^xsd:gYear ;
+        dct:title "Kidney branching morphogenesis under the control of a ligand-receptor-based Turing mechanism" .
+    <https://doi.org/10.1172/JCI8256> dct:date "2000"^^xsd:gYear ;
+        dct:title "Bone morphogenetic protein 4 regulates the budding site and elongation of the mouse ureter" .
+    <https://doi.org/10.1242/dev.01251> dct:date "2004"^^xsd:gYear ;
+        dct:title "Gremlin-mediated BMP antagonism induces the epithelial-mesenchymal feedback signaling controlling metanephric kidney and limb organogenesis" .
+    <https://doi.org/10.1242/dev.086207> dct:date "2012"^^xsd:gYear ;
+        dct:title "Branch mode selection during early lung development" .
+    <https://doi.org/10.1242/dev.126.3.547> dct:date "1999"^^xsd:gYear ;
+        dct:title "FGF-7 modulates ureteric bud growth and nephron number in the developing kidney" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Menshykau & Iber (2013), Zubkov et al. (2015) & Watanabe & Costantini (2004) kidney ureteric bud GDNF-RET-Wnt11 Turing branching morphogenesis with stromal BMP4/7-Gremlin1-FGF7 feedback and reduced-3D ampulla necking — Morphometric validation 76/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:28:24Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-menshykau-fgf10-shh-lung-turing-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/54> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -28,3 +28,17 @@ Formal SHA-256-locked reference dataset and *Physarum polycephalum* acellular pl
 - `physarum_polycephalum_specimen.jpg` — *Physarum polycephalum* yellow plasmodial transport network on decaying wood (`1024x768` px, CC BY 2.5, Frank Fox / Wikimedia Commons, `sha256: 86a37f7c73c8527b41b24519e8f141a8e9df8e4ed5600fc60d5263160dfc67e5`).
 - `paper_citations.bib` — BibTeX references with DOIs.
 - `scout_manifest.json` — Step 1 (`01_scout`) literature and specimen manifest.
+
+## Pass 3 (2026-10-19, audit v3) — Peristaltic contraction wave & shuttle streaming
+
+4. **Traveling actomyosin peristaltic wave coupled to the Kirchhoff network** (`doi:10.1073/pnas.1305049110`, Kamiya 1981):
+   - Tube radius $r_e(t) = r_e\,[1 - \varepsilon \cos(\omega t - 2\pi\, \mathbf{x}_e\!\cdot\!\mathbf{n}/\lambda)]$ with $\omega = 2\pi/T_c$, $T_c \approx 100$ s and $\lambda \approx L_{\text{organism}}$; instantaneous conductivity $D_e \rho_e^4$; wall motion injects the mean-corrected nodal volume source $S_i^{\text{peri}}(t) = -\tfrac12 \sum_{e \ni i} \dot V_e$ (closed plasmodium, $\sum_i S_i^{\text{peri}} = 0$).
+   - Fast timescale: the Kirchhoff system is re-solved over one cycle; signed fluxes $Q_e(t)$ reverse twice per cycle (shuttle streaming); the cycle average $\langle Q_e \rangle$ is a second-order net transport that vanishes for frozen conductance.
+   - Slow timescale ($1/\mu \gg T_c$): the Tero reinforcement acts on $\langle |Q_e| \rangle_{T_c}$, so the wave feeds back on long-timescale pruning (larger $\varepsilon$ → more loops, higher FT, higher TL$_{\text{MST}}$).
+   - Honesty change: TL$_{\text{MST}}$, MD$_{\text{MST}}$, FT and Betti-1 are now computed from the pruned graph (fixed threshold $D \ge 0.1\,D_{\max}$); the Pass 2 closed-form curves fitted to the reference table were removed.
+
+### Additional files (Pass 3)
+
+- `peristaltic_shuttle_streaming_reference.json` — contraction period (100 s, range 60–120 s), 2 flow reversals per cycle, optimal wavelength $\lambda/L \approx 1$, qualitative shuttle-flow dominance, model-scale parameters and the $\varepsilon$ calibration disclosure. SHA-256 pinned in the script (`EXPECTED_PERI_REF_SHA256`). **DOIs and recalled values are flagged `doi_verified_offline: false` / `value_provenance: recalled` — no network access was available in Pass 3.**
+- `paper_citations.bib` gained `kamiya1981physical` (DOI unverified offline).
+- New media: `docs/media/physarum_transport_network_shuttle_streaming.gif` (network coloured by signed flux over one contraction cycle).

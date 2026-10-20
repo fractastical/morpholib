@@ -14,6 +14,7 @@ model_spec:
     - datasets/gdnf_ret_ureteric_kidney/kidney_ureteric_tree_specimen.jpg
     - datasets/gdnf_ret_ureteric_kidney/scout_manifest.json
     - datasets/gdnf_ret_ureteric_kidney/paper_citations.bib
+    - datasets/gdnf_ret_ureteric_kidney/renal_capsule_phase_field_reference.json
 equations:
   - law_name: "Menshykau & Iber (2013) Schnakenberg-Type GDNF-RET Cooperative Binding Turing Instability Law"
     formula: "∂R/∂t = D_R ∇²R + γ(a - R + R²G),  ∂G/∂t = D_G ∇²G + γ(ρ_G - R²G);  d·f_R + g_L > 2√(d·det J) > 0 for d = D_G/D_R = 50 ≫ 1, m = 2 > 1"
@@ -30,7 +31,7 @@ equations:
     variables: "R: epithelial RET receptor density; G: mesenchymal GDNF ligand concentration; d = D_G/D_R: ligand-to-receptor diffusion ratio; f_R, g_L: Jacobian self-activation and ligand-depletion derivatives"
     role: "Establishes that cooperative binding of fast-diffusing GDNF to slow-diffusing RET dimers (L + 2R -> R^2L) generates self-organizing R^2G signaling caps at ureteric bud tips"
     source_citation: "Menshykau & Iber (2013) Phys. Biol. 10(4):046003 Eqs. (1)-(5) & Table 1"
-    code_locus: "2014-menshykau-gdnf-ret-ureteric-kidney.py#L103-L180"
+    code_locus: "2014-menshykau-gdnf-ret-ureteric-kidney.py#L133-L210"
 
   - law_name: "Menshykau & Iber (2013) & Short et al. (2014) Ureteric Ampulla Dichotomous vs Trichotomous Mode Selection Law"
     formula: "m* = argmax_m Re(λ(k_m)),  k_m = m / R_tip:  2 ℓ_c ≤ k_2 R_tip < 3 ℓ_c ⇒ m* = 2 (lateral bifurcation);  k_2 R_tip ≥ 3 ℓ_c ⇒ m* = 3 (planar/tetrahedral trifurcation)"
@@ -50,7 +51,7 @@ equations:
     variables: "R_tip: ureteric ampulla tip radius; ℓ_c = λ_c / (2π): critical Turing length scale; m*: dominant circumferential splitting harmonic (m=2 bifurcation vs m=3 trifurcation)"
     role: "Predicts the transition from canonical dichotomous bifurcation (88% of wild-type E11.5-E15.5 events) to trichotomous ampulla splitting when tip swelling exceeds the m=3 harmonic threshold"
     source_citation: "Menshykau & Iber (2013) Phys. Biol. 10:046003 Figs. 3-5; Short et al. (2014) Dev. Cell 29:188-202 Figs. 2-4"
-    code_locus: "2014-menshykau-gdnf-ret-ureteric-kidney.py#L182-L328"
+    code_locus: "2014-menshykau-gdnf-ret-ureteric-kidney.py#L212-L361"
 
   - law_name: "Watanabe & Costantini (2004) & Basson et al. (2005) Gdnf-/-/Ret-/- Renal Agenesis & Spry1-/- Ectopic Budding Law"
     formula: "v_tip ∝ ρ_G γ_R max(0, R²G - C_th):  ρ_G = 0 ⇒ v_tip = 0 (renal agenesis);  γ_R(Spry1-/-) = γ_wt + Δγ > γ_wt ⇒ N_tips(Spry1-/-) > N_tips(WT)"
@@ -67,4 +68,37 @@ equations:
     variables: "ρ_G: mesenchymal GDNF synthesis rate; γ_R: effective RET receptor gain modulated by Sprouty1 antagonism; v_tip: normal tip outgrowth velocity; N_tips: terminal ureteric bud tip count"
     role: "Accounts for complete renal agenesis in Gdnf-/- or Ret-/- null kidneys and supernumerary ectopic budding upon Sprouty1 deletion"
     source_citation: "Watanabe & Costantini (2004) Dev. Biol. 271:98-106; Basson et al. (2005) Dev. Cell 8:229-239"
-    code_locus: "2014-menshykau-gdnf-ret-ureteric-kidney.py#L426-L715"
+    code_locus: "2014-menshykau-gdnf-ret-ureteric-kidney.py#L655-L1101"
+
+  - law_name: "Pass 3 Reduced Phase-Field Renal Capsule Moving-Boundary Tip Confinement Law"
+    formula: "phi_cap(x,g) = ½(1 + tanh((R_cap(g) − |x − c(g)|)/ε));  4π R_cap(g)² = A_0 + s·(N_obs(g) − 2);  tip radial position r ↦ r if r + margin ≤ R_cap else R_cap − margin  ⇒  r_tip + margin ≤ R_cap for all tips"
+    lean_decl: "MathOfBiology.Loop_055.capsule_confine"
+    lean_theorem: "MathOfBiology.Loop_055.menshykau_capsule_confinement_bound"
+    lean_locus: "morphoeval/lean/loops/Loop_055_gdnf_ret_ureteric_kidney.lean#L107-L118"
+    lean_code: |
+      def capsule_confine (r R_cap margin : Nat) : Nat :=
+        if r + margin ≤ R_cap then r else R_cap - margin
+      theorem menshykau_capsule_confinement_bound (r R_cap margin : Nat) (h : margin ≤ R_cap) :
+          capsule_confine r R_cap margin + margin ≤ R_cap ∧
+          (r + margin ≤ R_cap → capsule_confine r R_cap margin = r)
+    variables: "R_cap(g): expanding renal capsule radius (surface area linear in Short et al. 2014 observed tip number); c(g): capsule centre distal to the ureteric stalk tip; ε: phase-field interface width; margin: minimal tip-to-capsule distance; r: tip radial coordinate"
+    role: "Moving-boundary coupling of the 3D ureteric tree to the expanding phase-field capsule: tips are advected with the interstitial dilation of the mesenchyme and can never leave the capsule, so terminal tips accumulate in the peripheral nephrogenic zone (coupled 0.67 vs decoupled v2 tree 0.11 in zone / 80% outside the capsule)"
+    source_citation: "Short et al. (2014) Dev. Cell 29:188-202 Figs. 1 & 4 (tips confined to the nephrogenic zone); Menshykau & Iber (2013) Phys. Biol. 10:046003 (mesenchymal GDNF domain); diffuse-domain phase-field reduction of the Pass 2 FEM remediation item"
+    code_locus: "2014-menshykau-gdnf-ret-ureteric-kidney.py#L459-L652"
+
+  - law_name: "Pass 3 Nephrogenic-Zone GDNF-Gated Branching Crowding-Arrest Law"
+    formula: "0 = D ∇·(φ_cap ∇G) + ρ_G φ_nz − δ φ_cap G − κ_tip T(x) G;  G_tip ≈ ρ/(1 + κ n);  tip branches iff G_th (1 + κ n) ≤ ρ  (monotone: branching with n+1 neighbours ⇒ branching with n)"
+    lean_decl: "MathOfBiology.Loop_055.nz_tip_branches"
+    lean_theorem: "MathOfBiology.Loop_055.menshykau_capsule_crowding_arrest_monotone"
+    lean_locus: "morphoeval/lean/loops/Loop_055_gdnf_ret_ureteric_kidney.lean#L130-L151"
+    lean_code: |
+      def nz_tip_branches (rho kappa n G_th : Nat) : Bool :=
+        decide (G_th * (1 + kappa * n) ≤ rho)
+      theorem menshykau_capsule_crowding_arrest_monotone (rho kappa n G_th : Nat) :
+          (nz_tip_branches rho kappa (n + 1) G_th = true → nz_tip_branches rho kappa n G_th = true) ∧
+          nz_tip_branches rho kappa n 0 = true ∧
+          (rho < G_th * (1 + kappa * n) → nz_tip_branches rho kappa n G_th = false)
+    variables: "G: diffuse-domain mesenchymal GDNF; φ_nz: nephrogenic-zone (cap mesenchyme) production shell; T(x): smoothed indicator of RET-expressing tips; κ_tip: ligand uptake per tip; n: local crowding number; G_th: branching gate (fraction of tip-free NZ level)"
+    role: "Couples tip number to capsule expansion: a slowly expanding capsule crowds the nephrogenic zone, depletes GDNF at the tips and arrests branching (E15.5 tips 198 at ×0.5 capsule vs 293 at WT capsule), while un-gated tips reproduce the Pass 2 geometric tree"
+    source_citation: "Menshykau & Iber (2013) Phys. Biol. 10:046003 (ligand depletion by receptor binding); Short et al. (2014) Dev. Cell 29:188-202 (nephrogenic-zone tip packing); Pass 3 diffuse-domain reduction"
+    code_locus: "2014-menshykau-gdnf-ret-ureteric-kidney.py#L526-L604"

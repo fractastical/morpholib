@@ -9,11 +9,15 @@ model_spec:
   K_sub_reference_mN_m3: 0.018
   grid_size_N: 64
   seed: 2016
+  tube_apical_radius_um: 20.0
+  scutoid_seed_jitter_d0: 0.28
+  scutoid_lloyd_iterations: 2
   inputs:
     - datasets/epithelial_buckling_3d/epithelial_buckling_3d_reference.json
     - datasets/epithelial_buckling_3d/epithelial_sheet_buckling_specimen.jpg
     - datasets/epithelial_buckling_3d/scout_manifest.json
     - datasets/epithelial_buckling_3d/paper_citations.bib
+    - datasets/epithelial_buckling_3d/scutoid_tube_reference.json
 equations:
   - law_name: "Hannezo–Prost–Joanny 3D Epithelial Equilibrium Aspect-Ratio & Squamous-Cuboidal-Columnar Scaling Law"
     formula: "E_cell(A) = (Γ_a + Γ_b) A + c Γ_l V_0 / (2√A)  ⇒  ∂E_cell/∂A = 0  ⇔  h_0 = (c Γ_l √V_0 / [4(Γ_a + Γ_b)])^(2/3),  h_0 / d_0 = c Γ_l / [4(Γ_a + Γ_b)]"
@@ -35,7 +39,7 @@ equations:
     variables: "Γ_a, Γ_b: apical and basal actomyosin surface tensions; Γ_l: lateral cell-cell tension; V_0 = A_0 h_0: conserved 3D cell volume; c = 2√(2√3) ≈ 3.7224: hexagonal perimeter factor; h_0/d_0: equilibrium cell aspect ratio"
     role: "Determines the universal equilibrium cell height h_0 and aspect ratio h_0/d_0 continuously spanning squamous (h_0/d_0 < 1), cuboidal (h_0/d_0 ≈ 1), and tall columnar (h_0/d_0 > 1) epithelia"
     source_citation: "Hannezo, Prost & Joanny (2014) PNAS 111(1):27-32 Eqs. (1)-(4); Krajnc & Ziherl (2015) Phys. Rev. E 92:052713 Eqs. (5)-(9)"
-    code_locus: "2016-hannezo-epithelial-buckling-3d.py#L145-L215"
+    code_locus: "2016-hannezo-epithelial-buckling-3d.py#L205-L272"
 
   - law_name: "Single-Cell Energy Convexity (E''(A^*) > 0) & Elastic Substrate Buckling Wavenumber Stationarity"
     formula: "E''_cell(A^*) = 3 c Γ_l V_0 / (8 (A^*)^(5/2)) > 0,  N_c(q) = κ_eff q^2 + K_sub / q^2  ⇒  κ_eff q_c^4 = K_sub,  λ_c = 2π (κ_eff / K_sub)^(1/4)"
@@ -53,7 +57,8 @@ equations:
     variables: "E''_cell(A^*): second derivative of single-cell energy at equilibrium area A^*; κ_eff: effective monolayer bending modulus; K_sub: stromal elastic foundation stiffness; λ_c: critical buckling wavelength"
     role: "Guarantees mechanical stability of flat epithelial sheets below the critical homeostatic buckling pressure and selects the characteristic folding wavelength λ_c = 2π(κ_eff / K_sub)^(1/4) above threshold"
     source_citation: "Hannezo, Prost & Joanny (2014) PNAS 111(1):27-32 Eqs. (6)-(11)"
-    code_locus: "2016-hannezo-epithelial-buckling-3d.py#L218-L295"
+    code_locus: "2016-hannezo-epithelial-buckling-3d.py#L248-L287"
+    code_locus_secondary: "2016-hannezo-epithelial-buckling-3d.py#L323-L491 (relax_epithelial_monolayer_3d, quartic spectral operator)"
 
   - law_name: "Apico-Basal Differential Tension & Spontaneous Curvature Sign Reversal Law"
     formula: "C_0 ∝ (Γ_a - Γ_b) / (Γ_l h_0),  C_0(Γ_b, Γ_a) = -C_0(Γ_a, Γ_b),  Γ_a > Γ_b ⇒ C_0 > 0 (apical constriction),  Γ_b > Γ_a ⇒ C_0 < 0 (basal constriction)"
@@ -71,4 +76,51 @@ equations:
     variables: "ΔΓ = Γ_a - Γ_b: apico-basal differential surface tension; C_0: spontaneous monolayer curvature; h_0: equilibrium cell height"
     role: "Explains how apical actomyosin enrichment (Γ_a > Γ_b) vs basal tension enrichment (Γ_b > Γ_a) reverses the polarity of epithelial folds and drives acinar closure when |C_0| exceeds substrate confinement"
     source_citation: "Hannezo, Prost & Joanny (2014) PNAS 111(1):27-32 Eq. (5) & Fig. 2; Krajnc & Ziherl (2015) Phys. Rev. E 92:052713 Eq. (14); Sui et al. (2018) Nat. Commun. 9:4620"
-    code_locus: "2016-hannezo-epithelial-buckling-3d.py#L225-L340"
+    code_locus: "2016-hannezo-epithelial-buckling-3d.py#L256-L257"
+    code_locus_secondary: "2016-hannezo-epithelial-buckling-3d.py#L400-L404 (curv_sign / alpha_curv in relax_epithelial_monolayer_3d)"
+
+  - law_name: "Curved-Tube Surface Ratio & Isometric No-Scutoid Law (Pass 3, 3D polyhedral scutoid mesh)"
+    formula: "s = R_b / R_a = (R_a + h_0) / R_a > 1 for h_0 > 0;  scutoid(cell) ⇔ N_apical(cell) ≠ N_basal(cell);  s = 1 ⇒ N_apical = N_basal ∀ cells ⇒ Σ scutoid = 0;  s_crest = 1 + h_0 κ_max"
+    lean_decl: "MathOfBiology.Loop_047.scutoid_count"
+    lean_theorem: "MathOfBiology.Loop_047.isometric_projection_has_no_scutoids"
+    lean_locus: "morphoeval/lean/loops/Loop_047_epithelial_buckling_3d.lean#L132-L162"
+    lean_code: |
+      def surface_ratio_numerator (R_a h_0 : Nat) : Nat :=
+        R_a + h_0
+      def scutoid_indicator (apical basal : List Nat) : Nat :=
+        if apical == basal then 0 else 1
+      def scutoid_count (cells : List (List Nat × List Nat)) : Nat :=
+        cells.foldr (fun c acc => scutoid_indicator c.1 c.2 + acc) 0
+      theorem scutoid_count_isometric (nbrs : List (List Nat)) :
+          scutoid_count (nbrs.map (fun n => (n, n))) = 0
+      theorem isometric_projection_has_no_scutoids (nbrs : List (List Nat)) (R_a h_0 : Nat) :
+          scutoid_count (nbrs.map (fun n => (n, n))) = 0 ∧
+          surface_ratio_numerator R_a (h_0 + 1) > R_a ∧
+          surface_ratio_numerator R_a 0 = R_a ∧
+          scutoid_indicator [1, 2, 3, 4, 5, 6] [1, 2, 3, 4, 5, 6] = 0 ∧
+          scutoid_indicator [1, 2, 3, 4, 5, 6] [1, 2, 3, 4, 5, 7] = 1
+    variables: "R_a, R_b: apical and basal tube radii; h_0: Hannezo equilibrium cell height (Law 1); s: surface ratio; N_apical, N_basal: Voronoi neighbour sets of a cell on the two surfaces; κ_max: maximal apico-basal curvature of the buckled sheet"
+    role: "Couples the Hannezo cell height to the Gómez-Gálvez scutoid mechanism: curvature (tube or fold crest) makes s ≠ 1, the radially projected basal tessellation is anisotropically stretched and apico-basal neighbour intercalations (scutoids) appear; flat sheets (s = 1) have none"
+    source_citation: "Gómez-Gálvez et al. (2018) Nat. Commun. 9:2960 Figs. 1-2 (Voronoi tubes, scutoid number vs surface ratio); Hannezo, Prost & Joanny (2014) PNAS 111:27-32 Eq. (4) for h_0"
+    code_locus: "2016-hannezo-epithelial-buckling-3d.py#L582-L858"
+
+  - law_name: "Trivalent Torus Neighbour Conservation Law (Pass 3, Euler 2E = 6F on apical and basal surfaces)"
+    formula: "3 V = 2 E (trivalent) ∧ V − E + F = 0 (torus) ⇒ 2 E = 6 F ⇒ ⟨n⟩_apical = ⟨n⟩_basal = 6;  Σ_cells n_apical = Σ_cells n_basal"
+    lean_decl: "MathOfBiology.Loop_047.total_neighbor_count"
+    lean_theorem: "MathOfBiology.Loop_047.trivalent_torus_neighbor_conservation"
+    lean_locus: "morphoeval/lean/loops/Loop_047_epithelial_buckling_3d.lean#L174-L186"
+    lean_code: |
+      def total_neighbor_count (E : Nat) : Nat :=
+        2 * E
+      theorem trivalent_torus_neighbor_conservation
+          (V_a E_a V_b E_b F : Nat)
+          (h_triv_a : 3 * V_a = 2 * E_a) (h_euler_a : V_a + F = E_a)
+          (h_triv_b : 3 * V_b = 2 * E_b) (h_euler_b : V_b + F = E_b) :
+          total_neighbor_count E_a = 6 * F ∧
+          total_neighbor_count E_b = 6 * F ∧
+          total_neighbor_count E_a = total_neighbor_count E_b
+    variables: "V, E, F: vertices, edges, faces (cells) of the doubly periodic Voronoi tessellation on the apical (a) or basal (b) surface; n: neighbour number per cell"
+    role: "Guarantees that apico-basal intercalations redistribute but conserve the neighbour budget (mean 6 on both surfaces); checked numerically on every periodic mesh in `self_test` (checks 9) and reported as a MorphoEval measurement"
+    source_citation: "Euler characteristic of the torus; Gómez-Gálvez et al. (2018) Nat. Commun. 9:2960 Fig. 3 (apical vs basal neighbour distributions)"
+    code_locus: "2016-hannezo-epithelial-buckling-3d.py#L505-L529"
+    code_locus_secondary: "2016-hannezo-epithelial-buckling-3d.py#L667-L698 (neighbour totals returned by build_scutoid_tube_mesh)"

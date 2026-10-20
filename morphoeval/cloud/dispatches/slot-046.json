@@ -10,5 +10,71 @@
   "target_script": "2012-he-drosophila-ventral-furrow.py",
   "pass1_score": 58.2,
   "pass2_score": 92.0,
-  "delta": 33.8
+  "delta": 33.8,
+  "pass3_run_id": "2026-10-19-drosophila-ventral-furrow-loop-pass3",
+  "pass3_audit_id": "2026-10-19-drosophila-ventral-furrow-audit-v3",
+  "pass3_score": 89.9,
+  "pass3_dims": {
+    "model-fidelity": 87,
+    "specimen-match": 91,
+    "parameter-expressivity": 93,
+    "morphometric-validation": 86,
+    "source-traceability": 90,
+    "code-traceability": 92,
+    "repro-package": 93
+  },
+  "pass2_dims": {
+    "model-fidelity": 93,
+    "specimen-match": 91,
+    "parameter-expressivity": 92,
+    "morphometric-validation": 92,
+    "source-traceability": 93,
+    "code-traceability": 91,
+    "repro-package": 92
+  },
+  "pass3_delta": -2.1,
+  "pass3_delta_note": "Score decreased because Pass 3 exposed that the 2D ring depth/height are target-pinned interpolants (L332-369, L443-445, L455-458), making the v2 6-regime r = 1.0000 circular; both v2 remediation items were nonetheless closed with reduced models.",
+  "pass3_completed_at": "2026-10-20T16:00:12Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_remediation_closed": [
+    "v2 item 1 \u2014 Couple the 2D transverse ring to longitudinal AP curvature and germband-extension stresses in a 3D shell mesh: CLOSED AS REDUCED MODEL via ellipsoidal_shell_curvatures / solve_ap_coupled_furrow_profile / couple_ring_to_ap_shell / sweep_ap_shell_parameters (2012-he-drosophila-ventral-furrow.py L627-852): Donnell/Winkler AP line equation with exact ellipsoid curvatures, GBE tension ramp, 65x81 theta x z shell mesh; Theorem 4; Panels G-H; 3 new measurements",
+    "v2 item 2 \u2014 Explicitly resolve intracellular Stokes flow around moving nuclei during early lengthening: CLOSED WITH LIMITATIONS via solve_intracellular_stokes_flow / analyze_phase1_nuclear_hydrodynamics (L855-1083): variable-viscosity Stokes stream-function solve, 50x-viscosity nucleus (v_nuc/v_cyto = 0.983), affine verification 8.1e-13, Phase-I nuclear trajectory; Theorem 5; Panel I; 2 new measurements"
+  ],
+  "pass3_remediation_open": [
+    "2012-he-drosophila-ventral-furrow.py:332-369, 443-445, 455-458 \u2014 ring depth and cell height are target-pinned interpolants; replace with a real force balance on the 64-cell ring so D_furrow and h emerge, and re-score the 6-regime comparison as a prediction",
+    "2012-he-drosophila-ventral-furrow.py:646-719, 721-793 \u2014 AP coupling is one-way and kinematic in theta; upgrade to a two-way coupled thin-shell (Koiter/Donnell) solve on the theta x z mesh",
+    "datasets/drosophila_ventral_furrow/ap_shell_stokes_reference.json:54-62 \u2014 ell_B and WT ell_N ramp are uncalibrated; calibrate N_GB/k_eq from ablation recoil (Lye 2015; Collinet 2015) and digitise the furrow AP extent from a ventral-view micrograph",
+    "2012-he-drosophila-ventral-furrow.py:855-1003 \u2014 Stokes domain is a fixed rectangle at one instant with velocity BCs; move to a moving-boundary trapezoid with apical stress BC and force-free rigid nucleus, compare to digitised He 2014 nuclear positions",
+    "2012-he-drosophila-ventral-furrow.py:578-624 \u2014 15x15 morphospace is an analytic surrogate; regenerate by ring re-simulation once un-pinned",
+    "datasets/drosophila_ventral_furrow/paper_citations.bib:45-83 \u2014 Sweeton 1991, Leptin & Grunewald 1990, Lye 2015 DOIs added offline and flagged unverified; verify when online"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_046.modal_depth_decreases_with_stiffness",
+    "MathOfBiology.Loop_046.ap_tension_and_curvature_stiffening_reduce_furrow_depth",
+    "MathOfBiology.Loop_046.affine_lengthening_flow_divergence_free_and_basalward"
+  ],
+  "pass3_lean_verified": true,
+  "pass3_self_test": "PASSED (6 blocks, 12 measurements, ~11 s)",
+  "pass3_artifacts": {
+    "modified": [
+      "2012-he-drosophila-ventral-furrow.py",
+      "morphoeval/lean/loops/Loop_046_drosophila_ventral_furrow.lean",
+      "morphoeval/math_kg_loops/he-drosophila-ventral-furrow.yaml",
+      "datasets/drosophila_ventral_furrow/README.md",
+      "datasets/drosophila_ventral_furrow/paper_citations.bib",
+      "docs/media/drosophila_ventral_furrow_comparison.png",
+      "docs/media/drosophila_ventral_furrow_growth.gif (regenerated, byte-identical to v2)",
+      "morphoeval/cloud/dispatches/slot-046.json"
+    ],
+    "created": [
+      "datasets/drosophila_ventral_furrow/ap_shell_stokes_reference.json",
+      "morphoeval/audits/2026-10-19-drosophila-ventral-furrow-audit-v3.yaml",
+      "morphoeval/audits/2026-10-19-drosophila-ventral-furrow-audit-v3.measurements.yaml",
+      "morphoeval/kg/2026-10-19-drosophila-ventral-furrow-audit-v3/ (10 trig + ttl + REPORT.md + signed/ + published.json)",
+      "morphoeval/runs/2026-10-19-drosophila-ventral-furrow-loop-pass3.{yaml,csv,md,trig,events.jsonl,ledger.jsonl}",
+      "docs/media/drosophila_ventral_furrow_telemetry_pass3.png"
+    ]
+  }
 }

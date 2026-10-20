@@ -1,0 +1,395 @@
+# MorphoEval audit — Menshykau & Iber (2013) Phys. Biol., Zubkov et al. (2015) Bull. Math. Biol. & Watanabe & Costantini (2004) Dev. Biol.
+# Kidney Ureteric Bud GDNF-RET-Wnt11 Turing Branching Morphogenesis, 2026-10-19 (v3)
+#
+# Pass 3 (remediation round) re-score of `2012-menshykau-fgf10-shh-lung-turing.py` (1709 lines) after the
+# instrumented loop `morphoeval/runs/2026-10-19-kidney-ureteric-bud-gdnf-ret-loop-pass3`, superseding
+# `2026-10-19-kidney-ureteric-bud-gdnf-ret-audit-v2` (92.1).
+#
+# What Pass 3 changed (both v2 remediation items, each closed as an honestly-labelled reduced model):
+#   1. Reduced-3D ampulla geometry (Section 3b, L475-667): 1D Lagrangian moving boundary r(phi,t) with the
+#      reference-JSON growth law v_n = v0 max(0, R^2 G - S_thr) (`simulate_moving_boundary_ampulla_necking`),
+#      linear two-lobe mode selection on an anisotropic dome (`select_splitting_axis`, rho_flip = k_c/k_fastest =
+#      0.938, SHORT axis wins in the dichotomous band) and a 90 deg period-2 dihedral cascade under an explicit
+#      daughter-orientation assumption (`dihedral_rotation_cascade`); Panels H and I; Lean 4 Law 5.
+#   2. Explicit stromal BMP4/7-Gremlin1-FGF7 feedback (`stromal_signaling_gain`, L649-667; spatial fields L774-789;
+#      per-tip gain -> R_tip -> rho_tip -> m, L835-852) replacing the Pass 2 per-condition prescribed multiplicities
+#      and hand-placed side buds; new Grem1-/-, Fgf7-/-, Bmp4+/- and stromal-ablation conditions; CLI --k-bmp
+#      --k-grem --k-fgf7 --no-stroma; Panel G; Lean 4 Law 4.
+#   3. Honesty controls: noise-seeded cap solver (`seed_mode="noise"`) exposes that the Pass 2 "4/4 exact mode
+#      matches" were conditioned on the band-seeded initial condition (noise run scores 0/4); Panel A now labels the
+#      hypoplasia parameter set (a = 0.10, b = 0.45) as Tr J_0 > 0, outside the Turing regime; the unsourced Pass 2
+#      hypoplasia gamma = 11.25 was reset to 25.0.
+#   4. Self-test 7 -> 9 suites (14 metrics, bitwise determinism); SHA-256 per-condition RNG seeding; +5 bib entries
+#      and 2 new JSON sections; Lean 3 -> 5 theorems (0 sorrys).
+#
+# The score goes DOWN from 92.1 because the remediation exposed a deeper layer of defects that Pass 2 scored over:
+# the band-seeded staircase is circular, the generational bifurcation angles are prescribed, the Watanabe &
+# Costantini table and the perturbation benchmark means are not traceable to a figure/table, the new stromal
+# reference ratios are qualitative encodings the model misses by 2-5x, and the specimen tip counts are the Pass 1
+# agent's own counts. Remaining findings are under `remediation`.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale. Line numbers refer to the
+# working-tree files at checkpoint 028758bc (Phase A edits uncommitted at audit time; verified with grep).
+
+audit:
+  id: 2026-10-19-kidney-ureteric-bud-gdnf-ret-audit-v3
+  supersedes_audit_id: 2026-10-19-kidney-ureteric-bud-gdnf-ret-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Loop 054 Pass 3 Assessor)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Loop 054 Pass 3 Phase A builder; rubric cross-check)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/54
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 028758bc
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3 remediated) evaluation of `2012-menshykau-fgf10-shh-lung-turing.py`
+      (1709 lines; 9 self-test suites; 14 measurements; 5 Lean 4 theorems) after the
+      instrumented loop `2026-10-19-kidney-ureteric-bud-gdnf-ret-loop-pass3`. The slot naming
+      mismatch is noted: the dispatch slot_id and script filename say "fgf10-shh-lung-turing"
+      but the script is a kidney GDNF-RET model (Menshykau & Iber 2013); Menshykau et al. (2012)
+      is cited only for geometry-dependent branch-mode selection (Law 5).
+
+references:
+  menshykau2013:
+    title: "Kidney branching morphogenesis under the control of a ligand-receptor-based Turing mechanism"
+    authors: "Menshykau D, Iber D"
+    venue: "Physical Biology 10(4):046003 (2013)"
+    doi: 10.1088/1478-3975/10/4/046003
+  zubkov2015:
+    title: "A spatially-averaged mathematical model of kidney branching morphogenesis"
+    authors: "Zubkov VS, Combes AN, Little MH, Byrne HM"
+    venue: "Bulletin of Mathematical Biology 77(4):565-595 (2015)"
+    doi: 10.1007/s11538-015-0073-9
+  watanabe2004:
+    title: "Real-time analysis of ureteric bud branching morphogenesis in vitro"
+    authors: "Watanabe T, Costantini F"
+    venue: "Developmental Biology 271(1):98-106 (2004)"
+    doi: 10.1016/j.ydbio.2004.03.025
+  basson2005:
+    title: "Sprouty1 is a critical regulator of GDNF/RET-mediated kidney induction"
+    authors: "Basson MA, Akbulut S, Watson-Karsten J, Licht JD, Martin GR, Costantini F"
+    venue: "Developmental Cell 8(2):229-239 (2005)"
+    doi: 10.1016/j.devcel.2004.12.004
+  menshykau2012:
+    title: "Branch mode selection during early lung development"
+    authors: "Menshykau D, Kraemer C, Iber D"
+    venue: "Development 139(24):4506-4514 (2012)"
+    doi: 10.1242/dev.086207
+  michos2004:
+    title: "Gremlin-mediated BMP antagonism induces the epithelial-mesenchymal feedback signaling controlling metanephric kidney and limb organogenesis"
+    authors: "Michos O, Panman L, Vintersten K, Beier K, Zeller R, Zuniga A"
+    venue: "Development 131(14):3401-3410 (2004); DOI not verified offline"
+    doi: 10.1242/dev.01251
+  qiao1999:
+    title: "FGF-7 modulates ureteric bud growth and nephron number in the developing kidney"
+    authors: "Qiao J, Uzzo R, Obara-Ishihara T, Degenstein L, Fuchs E, Herzlinger D"
+    venue: "Development 126(3):547-554 (1999); DOI not verified offline"
+    doi: 10.1242/dev.126.3.547
+  miyazaki2000:
+    title: "Bone morphogenetic protein 4 regulates the budding site and elongation of the mouse ureter"
+    authors: "Miyazaki Y, Oshima K, Fogo A, Hogan BLM, Ichikawa I"
+    venue: "Journal of Clinical Investigation 105(7):863-873 (2000); DOI not verified offline"
+    doi: 10.1172/JCI8256
+  metzger2008:
+    title: "The branching programme of mouse lung development"
+    authors: "Metzger RJ, Klein OD, Martin GR, Krasnow MA"
+    venue: "Nature 453:745-750 (2008); DOI not verified offline"
+    doi: 10.1038/nature07005
+  short2014:
+    title: "Global quantification of tissue dynamics in the developing mouse kidney"
+    authors: "Short KM, Combes AN, Lefevre J, Ju AL, Georgas KM, Lamberton T, Cairncross O, Rumballe BA, McMahon AP, Hamilton NA, Smyth IM, Little MH"
+    venue: "Developmental Cell 29(2):188-202 (2014); DOI not verified offline"
+    doi: 10.1016/j.devcel.2014.02.017
+
+simulations:
+  - id: menshykau-fgf10-shh-lung-turing
+    name: "Menshykau & Iber (2013), Zubkov et al. (2015) & Watanabe & Costantini (2004) kidney ureteric bud GDNF-RET-Wnt11 Turing branching morphogenesis with stromal BMP4/7-Gremlin1-FGF7 feedback and reduced-3D ampulla necking"
+    organism: "Mus musculus (embryonic E11.5-E13.5 mouse metanephric kidney ureteric bud tree, cap and stromal mesenchyme)"
+    script: 2012-menshykau-fgf10-shh-lung-turing.py
+    output: docs/media/kidney_ureteric_bud_gdnf_ret_comparison.png
+    extra_outputs:
+      - docs/media/kidney_ureteric_bud_gdnf_ret_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-kidney-ureteric-bud-gdnf-ret-audit-v2
+    source_refs:
+      - menshykau2013
+      - zubkov2015
+      - watanabe2004
+      - basson2005
+      - menshykau2012
+      - michos2004
+      - qiao1999
+      - miyazaki2000
+      - metzger2008
+      - short2014
+    claim_boundary:
+      reported_in_source:
+        - "Menshykau & Iber (2013): a Schnakenberg-type GDNF-RET receptor-ligand reaction-diffusion system on the ureteric epithelium has a homogeneous steady state R* = a + b, G* = b/(a + b)^2 and a Turing instability whose fastest mode on the ampulla selects elongation, bifurcation or trifurcation as the tip radius grows"
+        - "Watanabe & Costantini (2004): time-lapse of cultured E11.5 kidneys shows predominantly dichotomous (with some trichotomous) ampulla splitting and generation-dependent tip counts and branch angles"
+        - "Basson et al. (2005): Spry1-/- kidneys hyper-branch with supernumerary buds; exogenous GDNF beads induce ectopic budding"
+        - "Michos et al. (2004), Qiao et al. (1999), Miyazaki et al. (2000): Grem1-/- fails ureteric outgrowth, Fgf7-/- reduces ureteric growth and nephron number, Bmp4+/- shows ectopic budding (qualitative)"
+        - "Menshykau et al. (2012), Metzger et al. (2008): branch-mode selection depends on the local geometry of the growing tip; successive lung bifurcation planes rotate ~90 deg (orthogonal bifurcation)"
+      reconstructed_in_script:
+        - "Steady state, dispersion relation, lambda_c and (a, b) phase space; 1D Neumann ampulla-cap IMEX solver with band-seeded and noise-seeded initial conditions; 1D Lagrangian moving-boundary necking of the dome; linear two-lobe axis selection on an anisotropic dome and a dihedral cascade; 2D self-avoiding ureteric tree coupled to GDNF sink, BMP, Gremlin1 and FGF7 Gaussian fields with per-tip stromal gain feeding R_tip -> rho_tip -> splitting multiplicity; 7 genetic/bead conditions plus no-sink, equal-diffusion and stromal-ablation controls; GFP specimen segmentation and tip counting"
+      transfer_boundary:
+        - "The 3D phase-field/ALE item is closed only as a 1D moving boundary on the dome plus a linear axis-selection argument; no surface tension, curvature, re-meshing or E13.5-E16.5 calyx stage; the 90 deg dihedral follows from an explicit daughter-orientation assumption (daughter_long_axis_parallel=True), not from the dynamics"
+        - "Stromal constants k_B = 3.0, k_G = 4.0, k_F7 = 0.8, BMP baseline 0.5 and the Gaussian field amplitudes/widths are model-scale calibrations, not measured rate constants; BMP4 and BMP7 share a single field; ligand fields are quasi-static per generation"
+        - "The band-seeded mode staircase [1, 2, 3, 4] is conditioned on its own cosine initial condition; the noise-seeded honesty control gives [2, 3, 5, 5]"
+      does_not_claim:
+        - "Quantitative reproduction of Grem1-/-, Fgf7-/- or Bmp4+/- tip counts (the reference ratios 0.08/0.70/1.20 are qualitative encodings); 3D ampulla shape; derivation of bifurcation angles from the PDE (half-angles are prescribed per generation); a kidney-specific dihedral distribution; verification offline of the 5 new DOIs"
+    summary: >-
+      Pass 3 (v3 remediated) evaluation of `2012-menshykau-fgf10-shh-lung-turing.py`
+      (down from 92.1/100 in Pass 2). Both Pass 2 remediation items were closed as honestly
+      labelled reduced models: a 1D Lagrangian moving-boundary necking solver on the ampulla
+      dome with linear short-axis selection and a 90 deg period-2 dihedral cascade
+      (`simulate_moving_boundary_ampulla_necking`, `select_splitting_axis`,
+      `dihedral_rotation_cascade`, Panels H-I, Lean Law 5), and an explicit stromal
+      BMP4/7-Gremlin1-FGF7 gain law gamma_eff = gamma (1 + k_F7 FGF7)/(1 + k_B BMP/(1 + k_G GREM1))
+      with spatial stromal fields that now drive per-tip ampulla radius and splitting
+      multiplicity (`stromal_signaling_gain`, Panel G, Lean Law 4), replacing the Pass 2
+      prescribed multiplicities and hand-placed side buds. The remediation exposed defects
+      Pass 2 scored over: the band-seeded cap solver seeds the cosine mode it then detects
+      (noise-seeded control 0/4), the hypoplasia set (b = 0.45) has Tr J_0 > 0 and is outside
+      the Turing regime, generational bifurcation half-angles are hard-coded to the reference
+      table (angle RMSE 2.92 deg is self-referential), the Watanabe & Costantini generation
+      table and the perturbation means are not traceable to a figure, the new stromal
+      benchmarks are qualitative encodings the model misses (Grem1-/- 0.44 vs 0.08, Fgf7-/-
+      1.00 vs 0.70, Bmp4+/- 1.81 vs 1.20) and Spry1-/- overshoots (3.875 vs 2.19). The
+      specimen (SHA-256 locked, 12 WT vs 6 mutant tips) is unchanged; its ground truth is the
+      Pass 1 agent's own count. 5 Lean 4 theorems (0 sorrys), 9 self-test suites, 14 bitwise
+      deterministic measurements.
+    scores:
+      model-fidelity:
+        value: 84
+        rationale: >-
+          The core Menshykau & Iber (2013) receptor-ligand system (steady state, flux
+          cancellation, dispersion relation, lambda_c = 0.4726) is implemented correctly
+          (L163-270) and the three Pass 3 additions are genuine mechanisms rather than
+          relabelled prescriptions: the stromal gain law is a monotone BMP/Gremlin1/FGF7
+          function (L649-667) whose spatial fields (L774-789) set the per-tip ampulla radius
+          and hence rho_tip and the splitting multiplicity (L835-852), the moving boundary
+          advances the dome with the JSON growth law v_n = v0 max(0, R^2 G - S_thr) and
+          re-solves the cap PDE on the current arc (L587-647), and the axis-selection argument
+          compares Re sigma(2 pi/L) along the two principal arcs (L491-537). Deductions: the
+          band-seeded cap solver seeds the cosine mode of the band-predicted m (L367-378), so the
+          m = 1..4 staircase is an initial-condition artefact, and the noise-seeded control
+          (L380-383) selects [2, 3, 5, 5] because the two-lobe mode sits on the rising flank of
+          sigma(k) (-6); the hypoplasia parameter set b = 0.45 has Tr J_0 > 0 and is outside the
+          Turing regime, now labelled (L1204) but still used for the hypoplasia tree (-3); the
+          moving boundary is 1D on the dome with no curvature/surface-tension term, no
+          re-meshing and no 3D, and the 90 deg dihedral rests on `daughter_long_axis_parallel`
+          (L544, L569) rather than dynamics (-3); the cap kinetics use a saturating cubic
+          R^2 G/(1 + 0.18 (R - R*)^2) (L403) that is not in the paper (-2); BMP4/BMP7 share one
+          quasi-static field and `compute_turing_phase_space` (L272-310) is dead code with a
+          term multiplied by 0.0 (L299) (-2).
+        evidence:
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [163, 270], note: "GDNF-RET steady state, Jacobian, dispersion relation and lambda_c (Menshykau & Iber 2013 Eqs. 3-6)", supports: true}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [649, 667], note: "stromal_signaling_gain: gamma_eff = gamma (1 + k_F7 FGF7)/(1 + k_B BMP/(1 + k_G GREM1)); constants stated as model-scale calibrations", supports: true}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [774, 852], note: "Spatial BMP/Gremlin1/FGF7 fields and per-tip eff_signal -> R_tip -> rho_tip -> splitting multiplicity (replaces Pass 2 prescribed multiplicities)", supports: true}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [491, 647], note: "select_splitting_axis (rho_flip = k_c/k_fastest), dihedral_rotation_cascade (explicit daughter-orientation assumption) and 1D Lagrangian moving-boundary necking", supports: true}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [367, 383], note: "Band-seeded cosine initial condition for the predicted m versus the noise-seeded honesty control; the staircase is conditioned on its own seed", supports: false}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [1204, 1204], note: "Panel A labels the hypoplasia set b = 0.45 as Tr J_0 > 0, outside the Turing regime; the hypoplasia tree still uses it", supports: false}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [272, 310], note: "compute_turing_phase_space is never called and sigma_proxy multiplies a term by 0.0", supports: false}
+          - {file: morphoeval/lean/loops/Loop_054_kidney_ureteric_bud_gdnf_ret.lean, lines: [46, 235], note: "5 machine-checked Lean 4 theorems (0 sorrys): Laws 1-3 from Pass 2 plus stromal gain monotonicity (L183) and orthogonal dihedral cascade (L223)", supports: true}
+      specimen-match:
+        value: 80
+        rationale: >-
+          The SHA-256-locked E12.5 metanephros GFP specimen is segmented as before
+          (`segment_specimen_ureteric_bud`, L1063-1160): green-channel threshold, morphological
+          cleanup, EDT caliber and radial-weighted local maxima recover 12 WT tips in Panel A
+          and 6 mutant tips in Panel B (ratio 2.00), overlaid in the comparison figure, and the
+          nine-panel figure now shows the stromal perturbation bars (G), the necked dome
+          outlines (H) and the axis-selection sweep (I) beside the specimen. Deductions: the
+          "published" counts 12 and 6 are the Pass 1 agent's own counts of the image, not
+          numbers from Song et al. (2013), and that attribution (L1575, L1585) is unverified
+          offline (-6); the two new morphologies (necking index 0.20, 90 deg dihedral) have no
+          kidney specimen or vendored distribution to compare against; the 90 deg reference is
+          lung/qualitative (-5); the 2D tree remains a schematic with no shape metric (caliber,
+          ampulla width, inter-tip spacing) compared with the specimen beyond the tip count
+          (-4); the specimen comparison itself is unchanged from Pass 2 so no credit is added
+          for the new geometry (0).
+        evidence:
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [1063, 1160], note: "GFP ureteric bud epithelium segmentation, EDT caliber extraction and ampulla tip counting on Panels A & B", supports: true}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [1575, 1585], note: "Specimen measurement sources attribute the Wikimedia image to Song et al. (2013) PLoS ONE 8(5):e63835 Fig. 2A-C; unverified offline and the 12/6 ground truth is an agent count", supports: false}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [1311, 1362], note: "Panels G, H, I: stromal perturbation ratios, moving-boundary necked dome outlines and anisotropic-dome axis selection", supports: true}
+          - {file: docs/media/kidney_ureteric_bud_gdnf_ret_comparison.png, lines: [0, 0], note: "9-panel synthesis figure with WT vs mutant GFP ureteric tree segmentation overlay; no kidney necking/dihedral specimen to compare Panels H-I against", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          The parameter space is substantially richer: rho_tip sweeps across four regimes with
+          two seeding modes (`evaluate_tip_splitting_regimes`, L445-472), 7 genetic/bead
+          conditions (WT, Gdnf+/-, Spry1-/-, GDNF bead, Grem1-/-, Fgf7-/-, Bmp4+/-) plus
+          no-sink, equal-diffusion and stromal-ablation controls (`evaluate_all_conditions_and_generations`,
+          L945-1057), a daughter-dome aspect-ratio sweep for axis selection (Panel I, L1349-1362)
+          and a dihedral ablation (L1023), and the CLI exposes `--a-ret --b-gdnf --gamma
+          --d-ratio --generations --seed --k-bmp --k-grem --k-fgf7 --no-stroma` (L1676-1685),
+          all wired through `render_outputs(stromal_overrides=...)` into every tree call and the
+          GIF (L1687-1702). Deductions: the generational bifurcation half-angles are hard-coded
+          (L856) so the branch-angle axis of the morphospace is not parameter-controlled (-5);
+          `gain_wt_ref`, `g_ref = 0.60`, `size_jitter_sd = 0.08` (L726-728), `R_TIP_WT_DEFAULT`
+          and `TIP_RADIUS_SIGNAL_EXPONENT` (L102-103) and the `r_tip *= 0.92` cascade decay (L577)
+          are fixed calibrations not exposed or swept (-4); the Bmp4+/- `bmp_scale = 0.75` is an
+          assumption (-2); no sweep shows the staircase flipping under `--k-*` (-1).
+        evidence:
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [945, 1057], note: "7 conditions + stromal_ablation / no-sink / dihedral-ablation controls evaluated across generations", supports: true}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [1676, 1702], note: "CLI --a-ret --b-gdnf --gamma --d-ratio --generations --seed --k-bmp --k-grem --k-fgf7 --no-stroma wired via stromal_overrides into render_outputs", supports: true}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [856, 862], note: "base_half_deg hard-codes 51/42.5/41-1.4g half-angles; no-sink ablation only scales by 0.62", supports: false}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [726, 728], note: "gain_wt_ref, g_ref, size_jitter_sd fixed model-scale calibrations placed to hit rho_WT ~ 2", supports: false}
+      morphometric-validation:
+        value: 76
+        rationale: >-
+          `measure_morphoeval()` (L1413-1589) now reports 14 metrics with references and
+          dispersion statistics: lambda_c = 0.4726 (exact), WT tip Pearson r = 0.9903
+          (p ~ 1e-5) and Horton-Strahler R_b, generational angle RMSE 2.92 deg, Spry1-/- and
+          bead ratios, hypoplasia ratio 0.3125 (ref 0.4), specimen 12/6 tips, plus six Pass 3
+          metrics (noise-seeded staircase agreement 0/4, necking index 0.2025, dihedral 90.0
+          deg (ref 90), Grem1-/- 0.4375 (ref 0.08), Fgf7-/- 1.00 (ref 0.70), Bmp4+/- 1.8125
+          (ref 1.20)), all bitwise deterministic across two runs. The honesty control is
+          credited for being reported rather than hidden. Deductions: the band-seeded "4/4
+          exact mode matches" metric is circular and the honest control scores 0/4 (-6); angle
+          RMSE is self-referential because half-angles are prescribed from the same table
+          (L856) (-4); the Watanabe & Costantini generation table and the perturbation means
+          (28.5, 5.2, 21.0 tips; 0.88/0.12 fractions) and the Pearson reference 0.9985 are not
+          traceable to a figure or table (-5); three new stromal ratios miss their qualitative
+          references by 2-5x and Spry1-/- overshoots 3.875 vs 2.19 after removing hand-placed
+          buds (-5); the necking index has no reference value; conditions use different RNG
+          streams (SHA-256 of the condition name, L719) so WT vs mutant are not seed-matched (-2);
+          the 90 deg dihedral match is guaranteed by the orientation assumption (-2).
+        evidence:
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [1413, 1589], note: "14-metric MorphoEval suite (8 Pass 2 + 6 Pass 3) with reference values, methods and ablation notes", supports: true}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [1445, 1518], note: "pass3_measurements: noise-seeded honesty control (0/4), necking index, dihedral angle, Grem1-/-, Fgf7-/-, Bmp4+/- ratios versus qualitative references", supports: true}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [1438, 1450], note: "Noise-seeded staircase gives [2, 3, 5, 5] vs band map [1, 2, 3, 4]: the Pass 2 4/4 metric was conditioned on its seed", supports: false}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [856, 859], note: "Prescribed generational half-angles make the angle-RMSE metric self-referential", supports: false}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [719, 719], note: "Per-condition RNG seed = SHA-256 digest of the condition name; WT vs perturbation comparisons are not seed-matched", supports: false}
+      source-traceability:
+        value: 86
+        rationale: >-
+          `datasets/kidney_ureteric_bud_gdnf_ret/` vendors the SHA-256-locked specimen and
+          reference JSON (verified at runtime, `verify_dataset_integrity`, L123-156), the JSON
+          gained `stromal_feedback_module_pass3` (L308-355) and `reduced_3d_geometry_pass3`
+          (L356-375) with per-benchmark `obs_note`s stating that the stromal ratios are
+          qualitative encodings and `doi_verified_offline: false` flags, `paper_citations.bib`
+          grew from 6 to 11 entries (Menshykau 2012, Michos 2004, Qiao 1999, Miyazaki 2000,
+          Metzger 2008, Short 2014; L56-121), and the README documents the Pass 3 additions
+          (L25-33). Deductions: the five new DOIs could not be verified offline (-3); the
+          Watanabe & Costantini generation table (JSON L175-260) and the perturbation benchmark
+          means (L261-307) were created in Pass 1/2 and cite no figure/table/page (-5); the
+          specimen's Song et al. (2013) attribution is plausible (PRR UB knockout file title)
+          but unverified (-2); the stromal reference ratios 0.08/0.70/1.20 are the agents'
+          encodings of qualitative phenotypes, not published means (-3); the 90 deg dihedral
+          reference is lung literature applied to kidney without a vendored kidney
+          distribution (-1).
+        evidence:
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [123, 156], note: "Runtime SHA-256 verification of the vendored E12.5 kidney specimen and reference JSON", supports: true}
+          - {file: datasets/kidney_ureteric_bud_gdnf_ret/kidney_ureteric_bud_gdnf_ret_reference.json, lines: [308, 375], note: "New stromal_feedback_module_pass3 and reduced_3d_geometry_pass3 sections with obs_notes flagging qualitative encodings and unverified DOIs", supports: true}
+          - {file: datasets/kidney_ureteric_bud_gdnf_ret/paper_citations.bib, lines: [56, 121], note: "Six added BibTeX entries (menshykau2012, michos2004, qiao1999, miyazaki2000, metzger2008, short2014)", supports: true}
+          - {file: datasets/kidney_ureteric_bud_gdnf_ret/kidney_ureteric_bud_gdnf_ret_reference.json, lines: [175, 307], note: "Watanabe & Costantini generation table and perturbation benchmark means with no figure/table pinpoints", supports: false}
+          - {file: datasets/kidney_ureteric_bud_gdnf_ret/README.md, lines: [25, 33], note: "Pass 3 README section describing the stromal module, reduced-3D geometry and the honesty controls", supports: true}
+      code-traceability:
+        value: 89
+        rationale: >-
+          The module docstring (L1-67) maps every section to its source equations and the
+          Pass 3 additions name their functions, the Lean laws and the honesty control; the
+          math-KG loop file registers Laws 4 and 5 with Lean declarations, variables, roles and
+          `code_locus` line ranges (`menshykau-fgf10-shh-lung-turing.yaml`, L93-129); the
+          Lean file's Law 4/5 headers state the Python function each theorem formalises
+          (L159-205); `solve_ampulla_cap_imex` carries an explicit HONESTY NOTE about the seeded
+          staircase (L342-346) and the removed hand-placed buds are documented in place (L756).
+          Deductions: the calibration constants `gain_wt_ref`, `g_ref`, `size_jitter_sd`
+          (L726-728), `R_TIP_WT_DEFAULT`, `TIP_RADIUS_SIGNAL_EXPONENT` (L102-103), the Gaussian
+          amplitudes/widths (L774-789) and the saturating cubic (L403) are flagged as model
+          choices but cite no derivation (-5); `compute_turing_phase_space` is dead code with a
+          nonsensical `sigma_proxy` (L297-301) (-3); Lean Law 3 `tip_splitting_peaks` (L122)
+          caps at m = 3 while the Python band map has a 4th polydomain band (-2); the math-KG
+          `code_locus` ranges will drift as the script is edited (-1).
+        evidence:
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [1, 67], note: "Module docstring mapping equations, papers, Pass 3 functions, Lean laws and the honesty control to code sections", supports: true}
+          - {file: morphoeval/math_kg_loops/menshykau-fgf10-shh-lung-turing.yaml, lines: [93, 129], note: "Equations -4 and -5 registered with Lean declarations and code_locus line ranges", supports: true}
+          - {file: morphoeval/lean/loops/Loop_054_kidney_ureteric_bud_gdnf_ret.lean, lines: [159, 205], note: "Law 4 and Law 5 headers name the Python functions they formalise", supports: true}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [297, 301], note: "Dead sigma_proxy expression multiplies a term by 0.0; compute_turing_phase_space never called", supports: false}
+          - {file: morphoeval/lean/loops/Loop_054_kidney_ureteric_bud_gdnf_ret.lean, lines: [122, 126], note: "tip_splitting_peaks caps at 3 peaks; the m = 4 polydomain band has no Lean coverage", supports: false}
+      repro-package:
+        value: 92
+        rationale: >-
+          `self_test()` (L1596-1668) runs 9 suites in ~1.5 s: SHA-256 integrity, Lean Laws 1-2
+          identities, equal-diffusion ablation, IMEX modes, tree perturbation ordering
+          (hypo < WT < bead < Spry1), specimen 12 vs 6, stromal law and ordering (Suite 7),
+          necking/dihedral/axis selection/rho_flip (Suite 8) and two-run bitwise determinism of
+          all 14 metrics (Suite 9); per-condition seeding is a SHA-256 digest of the condition
+          name (L719), replacing Pass 2's process-salted `hash()`; the default render takes
+          1.74 s and regenerates the PNG and 6-frame GIF; `requirements.lock.txt` pins the venv
+          (Python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0).
+          Deductions: the comparison PNG is gitignored (`*.png`) so the committed artifact is
+          the GIF only (-3); Suite 4 still asserts the band-seeded staircase rather than the
+          noise-seeded result, so the self-test encodes the circular check (-3); no byte-level
+          SHA of the rendered PNG/GIF is asserted (-2).
+        evidence:
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [1596, 1668], note: "9-suite automated self_test() including stromal law (Suite 7), necking & dihedral (Suite 8) and 14-metric bitwise determinism (Suite 9)", supports: true}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [1614, 1617], note: "Suite 4 asserts the band-seeded staircase [1, 2, 3, 4], not the noise-seeded honesty control", supports: false}
+          - {file: 2012-menshykau-fgf10-shh-lung-turing.py, lines: [1670, 1709], note: "CLI entry point with --self-test, --skip-gif and parameter/stromal overrides", supports: true}
+          - {file: requirements.lock.txt, lines: [1, 10], note: "Exact pip freeze matching the venv used for the audit runs", supports: true}
+    remediation:
+    - >-
+      2012-menshykau-fgf10-shh-lung-turing.py:367-383 and 1614-1617 — the band-seeded cap solver seeds the cosine
+      mode of the band-predicted m and Suite 4 / measurement 2 then "detect" it (noise-seeded control gives
+      [2, 3, 5, 5], 0/4). Re-derive the band map from the fastest Neumann mode on the dome (or a 2D/3D cap) so the
+      two-lobe mode is the selected mode, and make the self-test assert the noise-seeded result.
+    - >-
+      2012-menshykau-fgf10-shh-lung-turing.py:856-862 — generational bifurcation half-angles 51/42.5/41-1.4g deg
+      are hard-coded to the Watanabe & Costantini table, so measurement 4 (angle RMSE 2.92 deg) and Panel F are
+      self-referential. Derive the daughter directions from the cap peak positions or the local GDNF gradient.
+    - >-
+      datasets/kidney_ureteric_bud_gdnf_ret/kidney_ureteric_bud_gdnf_ret_reference.json:175-307 — the Watanabe &
+      Costantini generation table, the perturbation means (28.5, 5.2, 21.0 tips; 0.88/0.12 fractions) and the
+      Pearson reference 0.9985 cite no figure/table; pin each value to a figure/table/page or mark them as
+      agent-constructed and drop them from scored metrics.
+    - >-
+      2012-menshykau-fgf10-shh-lung-turing.py:1204 and datasets JSON genetic_and_bead_perturbation_benchmarks —
+      the hypoplasia set (a = 0.10, b = 0.45) has Tr J_0 > 0 and is outside the Turing regime yet still drives the
+      Gdnf+/- tree; choose a hypoplasia parameterisation inside the Turing band (e.g. reduce gamma or b to a value
+      with Tr J_0 < 0, det J_0 > 0) and re-source it.
+    - >-
+      2012-menshykau-fgf10-shh-lung-turing.py:774-789 and 1478-1501 — the stromal benchmarks are qualitative
+      encodings (Grem1-/- 0.08, Fgf7-/- 0.70, Bmp4+/- 1.20) that the model misses by 2-5x (0.4375 / 1.00 / 1.8125);
+      separate BMP7 from BMP4, add ligand turnover ODEs instead of quasi-static Gaussians, and replace the encoded
+      ratios with digitised counts from Michos 2004 / Qiao 1999 / Miyazaki 2000 or mark the metrics unscored.
+    - >-
+      2012-menshykau-fgf10-shh-lung-turing.py:544-585 — the 90 deg dihedral follows from `daughter_long_axis_parallel
+      = True`; make the daughter dome orientation an output of the moving-boundary solver (orientation of the necked
+      lobes) and vendor a kidney dihedral distribution (Short et al. 2014) rather than the lung 90 deg reference.
+    - >-
+      2012-menshykau-fgf10-shh-lung-turing.py:272-310 — remove or repair `compute_turing_phase_space` (sigma_proxy
+      multiplies a term by 0.0 at L299 and the function is never called).
+    - >-
+      2012-menshykau-fgf10-shh-lung-turing.py:719 and 726-728 — seed-match WT and perturbation trees (shared RNG
+      stream) and expose/sweep `gain_wt_ref`, `g_ref`, `size_jitter_sd`, `R_TIP_WT_DEFAULT`,
+      `TIP_RADIUS_SIGNAL_EXPONENT` or document their derivation.
+    - >-
+      morphoeval/lean/loops/Loop_054_kidney_ureteric_bud_gdnf_ret.lean:122-126 — extend `tip_splitting_peaks` to
+      the m = 4 polydomain band so Law 3 covers the full Python band map.
+    - >-
+      2012-menshykau-fgf10-shh-lung-turing.py:1575-1585 — verify the Song et al. (2013) PLoS ONE attribution of the
+      Wikimedia specimen and replace the agent-counted 12/6 ground truth with a published count or state that the
+      reference is an annotator count.

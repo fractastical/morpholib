@@ -1,0 +1,116 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-brodland-differential-interfacial-tension-sorting> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-brodland-differential-interfacial-tension-sorting-model-fidelity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-brodland-differential-interfacial-tension-sorting-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Brodland (2002) / Krieg et al. (2008) / Maître et al. (2012) Differential Interfacial Tension Hypothesis (DITH) and zebrafish germ-layer cortical tension sorting, with time-dependent Nodal/TGF-beta coupling (Pass 3) — Model fidelity to source: 92/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Brodland (2002) Eq. (1) is implemented exactly in `compute_dith_tensions` (L136-L184) and now also in continuous per-cell form in the Nodal-coupled sorter: `_cell_pair_J` (L840-L847) rebuilds the bond matrix every MCS from gamma_i0 = beta_i and gamma_ij = kappa|beta_i - beta_j|, which is Brodland's law with omega_ij = beta_i + beta_j - gamma_ij, and Lean theorem 5 proves the closure always satisfies the Krieg regime-I inequality 0 < gamma_ij < |gamma_i0 - gamma_j0|. The Nodal coupling (L232-L334) is a recognisable reduced morphogen model: exponential range, first-order temporal rise from sphere stage, two-threshold Hill dose response mirroring Krieg's own lefty1 / cyclops / cyclops+casanova induction, first-order cortex relaxation; Lean theorems 4 and 6 prove monotonicity/bounds of the dose map and non-overshoot of the relaxation step. Deductions: the static regimes (L496-L508) use j_hom = 4.0 for both E-E and M-M contacts, discarding the gamma_EE = 70 / gamma_MM = 150 that `compute_dith_tensions` returns, so the static lattice energy is a Steinberg-type J matrix and not Brodland's full DITH energy (-4); the Nodal field is 1D and exposure is frozen to the tier of origin (L826, L893), with no Lefty feedback or epiboly (-3); kappa = 2/3 is a phenomenological closure tuned to gamma_EM = 30 (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "2002-brodland-differential-interfacial-tension-sorting.py L496–L508: Static regimes: j_hom = 4.0 shared by E-E and M-M bonds; gamma_EE / gamma_MM from compute_dith_tensions are not used in the energy <https://github.com/fractastical/morpholib/blob/8beed34/2002-brodland-differential-interfacial-tension-sorting.py#L496-L508>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-brodland-differential-interfacial-tension-sorting-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-brodland-differential-interfacial-tension-sorting-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-brodland-differential-interfacial-tension-sorting-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-brodland-differential-interfacial-tension-sorting-model-fidelity-4> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-brodland-differential-interfacial-tension-sorting-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2002-brodland-differential-interfacial-tension-sorting.py L136–L184" ;
+        dct:description "Exact Brodland (2002) Eq. 1 DITH tension decomposition and regime classifier" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8beed34/2002-brodland-differential-interfacial-tension-sorting.py#L136-L184> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-brodland-differential-interfacial-tension-sorting-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2002-brodland-differential-interfacial-tension-sorting.py L232–L334" ;
+        dct:description "Pass 3 Nodal field C(x,t), two-threshold Hill dose -> cortical tension target, continuous-cortex closure, explicit-Euler relaxation ODE" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8beed34/2002-brodland-differential-interfacial-tension-sorting.py#L232-L334> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-brodland-differential-interfacial-tension-sorting-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "2002-brodland-differential-interfacial-tension-sorting.py L776–L1001" ;
+        dct:description "Nodal-coupled sorter: per-cell beta_i(t) relaxed each MCS (L892-L896), per-cell-pair J rebuilt from the DITH closure (L840-L847, L896), swap + Metropolis moves using cell-indexed J (L898-L959)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8beed34/2002-brodland-differential-interfacial-tension-sorting.py#L776-L1001> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-brodland-differential-interfacial-tension-sorting-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_044_differential_interfacial_tension_sorting.lean L88–L163" ;
+        dct:description "3 new machine-checked theorems: Nodal dose map monotone/bounded with Nodal-null = ectoderm, closure satisfies engulfment inequality with gamma_EM = 30 anchor, relaxation step never overshoots (6 theorems total, 0 sorrys)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8beed34/morphoeval/lean/loops/Loop_044_differential_interfacial_tension_sorting.lean#L88-L163> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/aja.1002030302>,
+            <https://doi.org/10.1016/S0092-8674(00)80720-5>,
+            <https://doi.org/10.1016/j.devcel.2015.09.014>,
+            <https://doi.org/10.1038/35079121>,
+            <https://doi.org/10.1038/ncb1705>,
+            <https://doi.org/10.1038/s41467-017-00146-x>,
+            <https://doi.org/10.1073/pnas.0704252104>,
+            <https://doi.org/10.1115/1.1449491>,
+            <https://doi.org/10.1126/science.1225399>,
+            <https://doi.org/10.1186/1471-213X-7-22>,
+            <https://doi.org/10.1242/dev.126.4.827>,
+            <https://doi.org/10.7554/eLife.05042> .
+    <https://doi.org/10.1002/aja.1002030302> dct:date "1995"^^xsd:gYear ;
+        dct:title "Stages of embryonic development of the zebrafish" .
+    <https://doi.org/10.1016/S0092-8674(00)80720-5> dct:date "1999"^^xsd:gYear ;
+        dct:title "The EGF-CFC protein one-eyed pinhead is essential for Nodal signaling" .
+    <https://doi.org/10.1016/j.devcel.2015.09.014> dct:date "2015"^^xsd:gYear ;
+        dct:title "A temporal window for signal activation dictates the dimensions of a Nodal signaling domain" .
+    <https://doi.org/10.1038/35079121> dct:date "2001"^^xsd:gYear ;
+        dct:title "The zebrafish Nodal signal Squint functions as a morphogen" .
+    <https://doi.org/10.1038/ncb1705> dct:date "2008"^^xsd:gYear ;
+        dct:title "Tensile forces govern germ-layer organization in zebrafish" .
+    <https://doi.org/10.1038/s41467-017-00146-x> dct:date "2017"^^xsd:gYear ;
+        dct:title "Sorting at embryonic boundaries requires high heterotypic interfacial tension" .
+    <https://doi.org/10.1073/pnas.0704252104> dct:date "2007"^^xsd:gYear ;
+        dct:title "Cell adhesion and cortex contractility determine cell patterning in the Drosophila retina" .
+    <https://doi.org/10.1115/1.1449491> dct:date "2002"^^xsd:gYear ;
+        dct:title "The Differential Interfacial Tension Hypothesis (DITH): A comprehensive theory for the self-rearrangement of embryonic cells and tissues" .
+    <https://doi.org/10.1126/science.1225399> dct:date "2012"^^xsd:gYear ;
+        dct:title "Adhesion functions in cell sorting by mechanically coupling the cortices of adhering cells" .
+    <https://doi.org/10.1186/1471-213X-7-22> dct:date "2007"^^xsd:gYear ;
+        dct:title "Time-dependent patterning of the mesoderm and endoderm by Nodal signals in zebrafish" .
+    <https://doi.org/10.1242/dev.126.4.827> dct:date "1999"^^xsd:gYear ;
+        dct:title "Origin and development of the zebrafish endoderm" .
+    <https://doi.org/10.7554/eLife.05042> dct:date "2015"^^xsd:gYear ;
+        dct:title "Response to Nodal morphogen gradient is determined by the kinetics of target gene induction" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Brodland (2002) / Krieg et al. (2008) / Maître et al. (2012) Differential Interfacial Tension Hypothesis (DITH) and zebrafish germ-layer cortical tension sorting, with time-dependent Nodal/TGF-beta coupling (Pass 3) — Model fidelity to source 92/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T15:56:33Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-brodland-differential-interfacial-tension-sorting-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -20,7 +20,7 @@ equations:
     variables: "psi(r, theta): 2D epiblast Polonaise streamfunction on disc of radius R = 1.15 mm; delta_m: posterior-to-anterior marginal tensile ring asymmetry; omega(x, y): vorticity; Gamma_L, Gamma_R: left and right counter-rotating vortex circulations"
     role: "Proves that posterior-graded marginal Myosin-II ring contractility (delta_m > 0) generates antisymmetric counter-rotating Polonaise twin vortices across the AP midline y = 0 with identically zero net circulation (Gamma_L + Gamma_R = 0), collapsing to zero dipolar flow when delta_m = 0"
     source_citation: "Saadaoui et al. (2020) Science 367(6476):453-458 Figs. 1-3, Eqs. S4-S8; Serra et al. (2023) Nat. Methods 20:1739-1748"
-    code_locus: "2022-serra-gastrulation-streak-attractor.py#L105-L235"
+    code_locus: "2022-serra-gastrulation-streak-attractor.py#L170-L275"
   - law_name: Strain-Rate Myosin Cable Alignment & Ingression-Amplified Midline Streak Extension Law
     formula: "\\frac{Dm}{Dt} = \\alpha_m m\\left(1 - \\frac{m}{m_{\\text{sat}}}\\right) - \\beta_m (\\nabla \\cdot \\mathbf{v}) m,\\qquad \\frac{D\\mathbf{Q}}{Dt} = \\lambda_E m \\mathbf{E}^{\\text{dev}} + [\\boldsymbol{\\omega}, \\mathbf{Q}] - \\gamma_Q \\mathbf{Q} + D_Q \\nabla^2 \\mathbf{Q}"
     lean_decl: MathOfBiology.Loop_050.myosin_ingression_feedback
@@ -41,7 +41,7 @@ equations:
     variables: "m(x, t): supracellular Myosin-II cable density; Q_{ij}: active nematic orientation tensor; E_xx = d_x v_x > 0: midline AP extension rate; E_yy = d_y v_y < 0: midline ML convergence rate; div_v = E_xx + E_yy < 0: apical mesendoderm ingression sink"
     role: "Proves that simultaneous mediolateral convergence (E_yy < 0), AP extension (E_xx > 0), and apical cell ingression (div_v < 0) rotate transverse Koller's sickle fibers into an elongated AP midline primitive streak while amplifying myosin cable density"
     source_citation: "Serra et al. (2023) Nat. Methods 20:1739-1748 Eqs. 1-6; Rozbicki et al. (2015) Nat. Cell Biol. 17:397-408 Figs. 3-6"
-    code_locus: "2022-serra-gastrulation-streak-attractor.py#L238-L370"
+    code_locus: "2022-serra-gastrulation-streak-attractor.py#L551-L900"
   - law_name: Saadaoui-Serra 5-Regime Perturbation Hierarchy & HH1-to-HH3 5-Fold Streak Elongation Law
     formula: "\\text{AP/ML}_{\\text{WT}} (4.25) > \\text{AP/ML}_{\\text{Vg1}} (3.45) > \\text{AP/ML}_{\\text{SB431542}} (2.15) > \\text{AP/ML}_{\\text{SU5402}} (1.00) > \\text{AP/ML}_{\\text{Y27632}} (0.42),\\qquad \\frac{(\\text{AP/ML})_{\\text{HH3}}}{(\\text{AP/ML})_{\\text{HH1}}} = \\frac{135/81}{61/183} = 5"
     lean_decl: MathOfBiology.Loop_050.aspect100_wt_streak
@@ -59,4 +59,49 @@ equations:
     variables: "aspect100_*: 100 x primitive streak AP/ML aspect ratio across WT, Vg1/Wnt twin streaks, SB431542 ingression block, SU5402 FGF-inhibited circular ring, and Y-27632 ROCK arrest; hh1_sickle_*, hh3_streak_*: specimen pixel dimensions"
     role: "Establishes the strict ordering of primitive streak elongation and Polonaise vortex speed across all 5 experimental regimes and proves the 5-fold empirical AP/ML transformation from HH1 Koller's sickle (61x183 px) to HH3+ primitive streak (135x81 px)"
     source_citation: "Saadaoui et al. (2020) Science 367:453-458 Figs. 3-4; Serra et al. (2023) Nat. Methods Figs. 2-5; Vasiev et al. (2010) PLoS ONE 5:e10571 Fig. 1"
-    code_locus: "2022-serra-gastrulation-streak-attractor.py#L375-L545"
+    code_locus: "2022-serra-gastrulation-streak-attractor.py#L906-L1053"
+    audit_note: "Pass 3: the aspect100_*/v100_* constants are the reference table itself; the script's matching `streak_ap_ml_aspect_ratio` / `peak_polonaise_speed_um_min` readouts are calibrated lookups (circular). Field-derived counterparts (`measured_*`) are reported separately."
+  - law_name: Wnt8c -> Nodal -> FGF8 Ligand Reaction-Diffusion Cascade Upstream of Marginal-Ring Myosin Phosphorylation (Pass 3)
+    formula: "\\partial_t W = D_W \\nabla^2 W + s_W S_{\\text{post}}(\\mathbf{x}) - k_W W,\\quad \\partial_t N = D_N \\nabla^2 N + s_N c_{\\text{ind}}\\,(1 + f_N H(N)) - k_N N,\\quad \\partial_t F = D_F \\nabla^2 F + s_F H(N) - k_F F,\\quad H(c) = \\frac{c^2}{K^2 + c^2},\\quad P = \\rho_{\\text{ROCK}} H(a_{\\text{ALK}} N)\\,(0.35 + 0.65\\, H(a_{\\text{FGFR}} F)),\\quad \\frac{Dm}{Dt} \\mathrel{+}= \\alpha_P P \\left(1 - \\frac{m}{m_{\\text{sat}}}\\right),\\quad \\lambda = \\sqrt{D/k}"
+    lean_decl: MathOfBiology.Loop_050.pmlc_activation
+    lean_theorem: MathOfBiology.Loop_050.ligand_cascade_posterior_myosin_asymmetry
+    lean_locus: morphoeval/lean/loops/Loop_050_gastrulation_streak_attractor.lean#L225-L272
+    lean_code: |-
+      def nodal_response (g_N W : Int) : Int := g_N * W
+      def fgf8_response (g_F N : Int) : Int := g_F * N
+      def pmlc_activation (k_p rho N F : Int) : Int := k_p * rho * (N + F)
+      theorem ligand_cascade_posterior_myosin_asymmetry
+          (k_p g_N g_F rho W_post W_ant : Int)
+          (hk : k_p > 0) (hgN : g_N > 0) (hgF : g_F ≥ 0) (hrho : rho > 0)
+          (hW : W_post > W_ant) (hWa : W_ant ≥ 0) :
+          nodal_response g_N W_post > nodal_response g_N W_ant ∧
+          pmlc_activation k_p rho (nodal_response g_N W_post) (fgf8_response g_F (nodal_response g_N W_post)) >
+            pmlc_activation k_p rho (nodal_response g_N W_ant) (fgf8_response g_F (nodal_response g_N W_ant)) ∧
+          pmlc_activation k_p 0 (nodal_response g_N W_post) (fgf8_response g_F (nodal_response g_N W_post)) = 0
+    variables: "W, N, F: Wnt8c, Nodal, FGF8 ligand concentrations (D_F = 53 um^2/s, Yu et al. 2009; D_N = 3.2 um^2/s, t_1/2 = 95 min, Müller et al. 2012; D_W = 1 um^2/s assumed); c_ind: Wnt-induced streak-cell density (conservatively advected); P: pMLC activation; a_FGFR (SU5402), a_ALK (SB431542), rho_ROCK (Y-27632): receptor/kinase activities; lambda: steady-state decay length (FGF8 371 um, Nodal 162 um)"
+    role: "Makes the posterior-to-anterior tensile-ring asymmetry delta_m an output of a posterior-restricted marginal Wnt8c source acting through monotone Nodal and FGF8 responses on myosin phosphorylation, with the three pharmacological regimes acting at their molecular targets; the Lean theorem proves the posterior pMLC bias is produced (and preserved under FGFR block, abolished under ROCK block) for any monotone cascade"
+    source_citation: "Yu et al. (2009) Nature 461:533-536 (FGF8 source-sink gradient, D = 53 um^2/s); Müller et al. (2012) Science 336:721-724 (Nodal diffusivity/half-life); Serra et al. (2023) mechanochemical coupling; Saadaoui et al. (2020) posterior-graded ring"
+    code_locus: "2022-serra-gastrulation-streak-attractor.py#L288-L447"
+  - law_name: Reduced Trans-Epithelial Apical-Basal Wedging, Basement-Membrane Remodeling & Ingression Sink Law (Pass 3)
+    formula: "\\dot a = -k_{\\text{con}} \\rho_{\\text{ROCK}} \\max(m - m_c, 0)\\, a + k_{\\text{rel}}(1 - a),\\quad b = 1 + \\chi_b (1 - a) B,\\quad h = \\frac{2 h_0}{a + b},\\quad \\mathrm{Wdg} = \\frac{b - a}{b + a},\\quad \\dot B = -k_{\\text{bm}} H(a_{\\text{ALK}} N)\\left(\\tfrac12 + \\tfrac12 H(a_{\\text{FGFR}} F)\\right) \\mathrm{Wdg}\\, B,\\quad I = k_{\\text{ing}} \\mathrm{Wdg}\\,(1 - B),\\quad \\nabla \\cdot \\mathbf{v}_{\\text{sink}} = -I,\\; \\mathbf{v}_{\\text{sink}} = -\\nabla \\phi,\\; \\nabla^2 \\phi = I"
+    lean_decl: MathOfBiology.Loop_050.ingression_rate
+    lean_theorem: MathOfBiology.Loop_050.apical_basal_wedging_ingression_sink
+    lean_locus: morphoeval/lean/loops/Loop_050_gastrulation_streak_attractor.lean#L275-L320
+    lean_code: |-
+      def wedging_numer (a b : Int) : Int := b - a
+      def ingression_rate (k_ing wdg bm_loss : Int) : Int := k_ing * wdg * bm_loss
+      def sink_divergence (I : Int) : Int := -I
+      def bm_decay_step (k_bm wdg B : Int) : Int := B - k_bm * wdg * B
+      theorem apical_basal_wedging_ingression_sink
+          (k_ing k_bm a a' b h h' B B_max : Int)
+          (hab : a < b) (hk : k_ing > 0) (hkb : k_bm > 0) (hB : B < B_max) (hBpos : B > 0)
+          (hvol : h' * (a' + b) = h * (a + b)) (ha' : a' < a) (ha'pos : a' > 0) (hh : h > 0) :
+          wedging_numer a b > 0 ∧
+          ingression_rate k_ing (wedging_numer a b) (B_max - B) > 0 ∧
+          sink_divergence (ingression_rate k_ing (wedging_numer a b) (B_max - B)) < 0 ∧
+          bm_decay_step k_bm (wedging_numer a b) B < B ∧
+          h' > h
+    variables: "a, b: apical / basal area fractions of one epiblast column; h: column height (h_0 = 25 um assumed); Wdg: wedging index; B: basement-membrane integrity in [0, 1]; I: ingression rate (h^-1); v_sink: irrotational planar sink velocity solved spectrally from the Poisson equation"
+    role: "Couples 3D trans-epithelial cell shape (apical constriction, basal expansion, constant-volume thickening) and Nodal/FGF-licensed basement-membrane breakdown to the 2D planar Stokes flow through an emergent ingression sink, replacing the Pass 2 prescribed Gaussian midline sink; the Lean theorem proves wedging + BM loss give a strictly negative sink divergence and strictly increasing column height. Honest reduced (2.5D column) model, not a 3D FEM"
+    source_citation: "Rozbicki et al. (2015) Nat. Cell Biol. 17:397-408 (apical constriction / cell shape change in the streak); Nakaya et al. (2008) Nat. Cell Biol. 10:765-775 (basement-membrane breakdown in gastrulation EMT); Voiculescu et al. (2014) eLife 3:e01817 (self-amplifying individual cell ingression; SB431542 block)"
+    code_locus: "2022-serra-gastrulation-streak-attractor.py#L453-L545"

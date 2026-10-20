@@ -1,0 +1,69 @@
+{
+  "metadata": {
+    "dataset_id": "murray-vascular-cube-law-branching-pass3-fl-retinal-cup-v1",
+    "title": "Pass 3 reference constants: Fahraeus-Lindqvist apparent blood viscosity fit and hemispherical retinal-cup / arteriovenous geometry for 1959-murray-vascular-cube-law-branching.py",
+    "added_in": "Pass 3 remediation (2026-10-19-vascular-cube-law-branching-loop-pass3)",
+    "sources": [
+      {
+        "id": "pries1992",
+        "citation": "Pries AR, Neuhaus D, Gaehtgens P (1992). Blood viscosity in tube flow: dependence on diameter and hematocrit. American Journal of Physiology - Heart and Circulatory Physiology 263(6):H1770-H1778.",
+        "doi": "10.1152/ajpheart.1992.263.6.H1770",
+        "doi_verification": "not verified offline during Pass 3 (no network access permitted); recalled from the standard citation"
+      },
+      {
+        "id": "fahraeus1931",
+        "citation": "Fahraeus R, Lindqvist T (1931). The viscosity of the blood in narrow capillary tubes. American Journal of Physiology 96(3):562-568.",
+        "doi": "10.1152/ajplegacy.1931.96.3.562",
+        "doi_verification": "not verified offline during Pass 3"
+      },
+      {
+        "id": "hubbard1999",
+        "citation": "Hubbard LD, Brothers RJ, King WN, Clegg LX, Klein R, Cooper LS, Sharrett AR, Davis MD, Cai J (1999). Methods for evaluation of retinal microvascular abnormalities associated with hypertension/sclerosis in the Atherosclerosis Risk in Communities Study. Ophthalmology 106(12):2269-2280.",
+        "doi": "10.1016/S0161-6420(99)90525-0",
+        "doi_verification": "not verified offline during Pass 3",
+        "used_for": "clinical retinal arteriole-to-venule caliber ratio AVR ~ 2/3 (central retinal artery/vein equivalents)"
+      }
+    ]
+  },
+  "fahraeus_lindqvist_pries_1992_in_vitro_fit": {
+    "formula": "eta_rel(D) = 220 * exp(-1.3 * D) + 3.2 - 2.44 * exp(-0.06 * D^0.645)",
+    "variables": "D = tube (lumen) diameter in micrometres; eta_rel = apparent viscosity / plasma viscosity at discharge hematocrit H_D = 0.45",
+    "coefficients": {"a": 220.0, "k1": 1.3, "eta_bulk_rel": 3.2, "c": 2.44, "k2": 0.06, "p": 0.645},
+    "discharge_hematocrit": 0.45,
+    "validity_um": [3.3, 1978.0],
+    "script_normalisation": "eta(r) = eta_murray * eta_rel(2r) / 3.2 with eta_murray = 0.035 P so that the large-vessel limit reproduces Murray (1926a) exactly; only the shape of the curve enters the exponent analysis",
+    "table_from_formula": [
+      {"diameter_um": 10.0, "eta_rel": 1.3284},
+      {"diameter_um": 20.0, "eta_rel": 1.6133},
+      {"diameter_um": 50.0, "eta_rel": 2.0453},
+      {"diameter_um": 100.0, "eta_rel": 2.4186},
+      {"diameter_um": 164.0, "eta_rel": 2.7121},
+      {"diameter_um": 1000.0, "eta_rel": 3.1861}
+    ],
+    "table_note": "values are evaluated from the fit above (parity table for the script's self-test), not independently digitised measurements"
+  },
+  "generalised_murray_stationarity": {
+    "power_functional": "P(r) = 8 L Q^2 eta(r) / (pi r^4) + b pi r^2 L",
+    "log_sensitivity": "epsilon(r) = d ln eta / d ln r",
+    "stationarity": "2 P_met(r*) = (4 - epsilon(r*)) P_visc(r*)",
+    "optimal_flow": "Q*(r) = (pi/2) r^3 sqrt( b / ( eta(r) (4 - epsilon(r)) ) )",
+    "local_exponent": "gamma_eff(r) = d ln Q* / d ln r  (= 3 for epsilon = 0)",
+    "lean_theorem": "MathOfBiology.Loop_052.fahraeus_lindqvist_stationarity_shift",
+    "pass2_target": "gamma ~ 2.7 in pre-capillary arterioles (r < 25 um)"
+  },
+  "hemispherical_retinal_cup_geometry": {
+    "eye_inner_radius_mm": 12.0,
+    "eye_radius_note": "schematic emmetropic human globe, axial length ~24 mm",
+    "optic_disc_polar_deg": 4.0,
+    "growth_polar_limit_deg": 95.0,
+    "polar_limit_note": "ora serrata lies ~100-110 deg from the posterior pole; growth is clipped at 95 deg",
+    "arterial_arcade_azimuths_deg": [45, 135, 225, 315],
+    "venous_arcade_azimuths_deg": [0, 90, 180, 270],
+    "arcade_root_radius_um": {"artery": 82.0, "vein": 122.39},
+    "avr_artery_over_vein": 0.67,
+    "geodesic_step": "p' = p cos(s/R) + R t sin(s/R);  t' = -(p/R) sin(s/R) + t cos(s/R)",
+    "tangent_plane_rotation": "t_rot = t cos(theta) + (n x t) sin(theta),  n = p/R",
+    "coupling_rule": "veins grow after arteries; at each venous bifurcation the side-branch handedness whose geodesic end-point is farther from the nearest arterial node is kept (repulsive A/V territory exclusion); Murray radii and angles unchanged",
+    "lean_theorem": "MathOfBiology.Loop_052.arteriovenous_coupled_cube_balance"
+  }
+}

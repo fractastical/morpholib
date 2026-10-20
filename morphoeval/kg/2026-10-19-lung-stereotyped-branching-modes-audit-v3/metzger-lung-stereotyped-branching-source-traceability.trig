@@ -1,0 +1,102 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-metzger-lung-stereotyped-branching> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Metzger et al. (2008) & Menshykau et al. (2012, 2014) mouse lung stereotyped branching modes (Domain D, Planar P, Orthogonal O), FGF10-SHH-Ptch1 Turing mode selection, pleura-confined diffuse-domain FGF10 cavity and stochastic postnatal septation — Source and data traceability: 89/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The dataset directory keeps the SHA-256-pinned specimen and JSON (runtime check `verify_dataset_integrity`, L145-167), and the JSON (307 lines, dataset_id -v2) now carries three additional sources, a `lobe_cross_section_position_norm` per lineage row, a `pleura_confinement_reference` block that states plainly that the position is ASSIGNED from the Metzger lineage class and that the paper gives no quantitative pleural distance (L274-287), and a `postnatal_alveolarization_reference` block (L288-307); `paper_citations.bib` gains three entries (L47-81) and the README is updated. The header docstring lists all 7 sources with DOIs (L1-26). Deductions: the three new DOIs (Li 2009, Mund 2008, Knust 2009) were cited offline from memory and are flagged `unverified` in the JSON (L29-42), bib and docstring (L26) — they could not be checked in this audit either (-4); the `empirical_mouse_lung_lineage_benchmarks` and `developmental_timecourse_e11_to_e15` tables (L110-273) still have no per-row figure/table provenance and their hull-flatness values look synthetic (-4); Yule (1925) is cited in a measurement source without DOI (L1806) and `margin_position_norm_min = 0.5` (L277) is a convention presented alongside paper-derived values (-2); the specimen's Wikimedia provenance is correct but the image is not of the organism studied (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:evidenceAgainst "datasets/lung_stereotyped_branching_modes/lung_stereotyped_branching_modes_reference.json L110–L273: Lineage benchmark and E11-E15 timecourse tables without per-row figure/table provenance <https://github.com/fractastical/morpholib/blob/028758bc/datasets/lung_stereotyped_branching_modes/lung_stereotyped_branching_modes_reference.json#L110-L273>",
+            "datasets/lung_stereotyped_branching_modes/lung_stereotyped_branching_modes_reference.json L27–L42: Three new sources each carrying `verification: cited offline from memory in Pass 3; DOI unverified` <https://github.com/fractastical/morpholib/blob/028758bc/datasets/lung_stereotyped_branching_modes/lung_stereotyped_branching_modes_reference.json#L27-L42>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-source-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-source-traceability-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-source-traceability-4> ;
+        pk:hasScore "0.89"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2008-metzger-lung-stereotyped-branching.py L145–L167" ;
+        dct:description "verify_dataset_integrity: runtime SHA-256 verification of the specimen (pinned at L93-95) and JSON load" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L145-L167> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "2008-metzger-lung-stereotyped-branching.py L1–L26" ;
+        dct:description "Header docstring listing all 7 sources with DOIs; L26 states DOIs 5-7 were cited from memory and must be verified" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L1-L26> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-source-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "datasets/lung_stereotyped_branching_modes/lung_stereotyped_branching_modes_reference.json L274–L307" ;
+        dct:description "pleura_confinement_reference (position assigned from lineage class, convention 0.5) and postnatal_alveolarization_reference blocks" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/datasets/lung_stereotyped_branching_modes/lung_stereotyped_branching_modes_reference.json#L274-L307> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-source-traceability-4> a pk:EvidenceItem ;
+        rdfs:label "datasets/lung_stereotyped_branching_modes/paper_citations.bib L47–L81" ;
+        dct:description "li2009diffuse, mund2008developmental, knust2009stereological entries with `DOI cited from memory, unverified offline` notes" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/datasets/lung_stereotyped_branching_modes/paper_citations.bib#L47-L81> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Loop 053 Pass 3 Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/ar.20747>,
+            <https://doi.org/10.1002/dvdy.21633>,
+            <https://doi.org/10.1038/nature07005>,
+            <https://doi.org/10.1242/dev.081679>,
+            <https://doi.org/10.1371/journal.pcbi.1003421>,
+            <https://doi.org/10.1371/journal.pone.0041643>,
+            <https://doi.org/10.4310/CMS.2009.v7.n1.a4> .
+    <https://doi.org/10.1002/ar.20747> dct:date "2009"^^xsd:gYear ;
+        dct:title "Stereological estimates of alveolar number and size and capillary length and surface area in mice lungs" .
+    <https://doi.org/10.1002/dvdy.21633> dct:date "2008"^^xsd:gYear ;
+        dct:title "Developmental alveolarization of the mouse lung" .
+    <https://doi.org/10.1038/nature07005> dct:date "2008"^^xsd:gYear ;
+        dct:title "The branching programme of mouse lung development" .
+    <https://doi.org/10.1242/dev.081679> dct:date "2012"^^xsd:gYear ;
+        dct:title "Branch mode selection during early lung development" .
+    <https://doi.org/10.1371/journal.pcbi.1003421> dct:date "2014"^^xsd:gYear ;
+        dct:title "An interplay of geometry and signaling enables directional lung branching morphogenesis" .
+    <https://doi.org/10.1371/journal.pone.0041643> dct:date "2012"^^xsd:gYear ;
+        dct:title "A role for canonical Wnt signaling in epithelial branching during embryonic mouse lung development" .
+    <https://doi.org/10.4310/CMS.2009.v7.n1.a4> dct:date "2009"^^xsd:gYear ;
+        dct:title "Solving PDEs in complex geometries: a diffuse domain approach" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Metzger et al. (2008) & Menshykau et al. (2012, 2014) mouse lung stereotyped branching modes (Domain D, Planar P, Orthogonal O), FGF10-SHH-Ptch1 Turing mode selection, pleura-confined diffuse-domain FGF10 cavity and stochastic postnatal septation — Source and data traceability 89/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:28:07Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -23,6 +23,15 @@ Formal SHA-256-locked dataset and biological specimen photograph for `1964-stein
    - Source: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Constru%E2%80%A1%C3%86o_de_Uma_Imagem_com_Microscopia_Confocal_-_Embryoid_Bodies_(C%E2%80%9Alulas_Estaminais).jpg) (CC BY 3.0).
    - SHA-256: `9b31f7b855d90faa4c561311702d1dfe81c552ece7d3cc8215a0ff82ddd6412c`.
 
-3. **`paper_citations.bib`** — BibTeX entries for Steinberg (1963, 1970), Graner & Glazier (1992), Glazier & Graner (1993), and Foty et al. (1996).
+3. **`paper_citations.bib`** — BibTeX entries for Steinberg (1963, 1970), Graner & Glazier (1992), Glazier & Graner (1993), and Foty et al. (1996); Pass 3 adds Mombach et al. (1995), Nakajima & Ishihara (2011) and Chen et al. (2007) (sorting kinetics / parallel CPM — DOIs entered from memory, **not verified offline**).
 
 4. **`scout_manifest.json`** — Step 1 literature and Wikimedia Commons specimen scout dossier.
+
+## Pass 3 addition — `sorting_kinetics_2d_vs_3d` block in the reference JSON
+
+`differential_adhesion_sorting_reference.json` now carries the parameters of the 3D Cellular Potts spheroid used by `simulate_potts_regime_3d()` (64³ lattice, ~840 cubic 4³ cells, $V_0 = 64$, $\lambda_V = 2$, $T = 30$, 26-neighbour adhesion, 8-colour parity sublattice-parallel Metropolis) and the two kinetic laws fitted to the heterotypic boundary fraction $f(t) = L_{AB}/L$:
+
+- logarithmic (Graner & Glazier 1992 Fig. 3): $f = a + b\,\ln(t+1)$
+- power law: $f = c\,(t+1)^{-\alpha}$, compared with the Lifshitz–Slyozov–Wagner diffusive-coarsening bound $\alpha = 1/3$ and the logarithmic limit $\alpha \to 0$.
+
+The confocal specimen is an optical **section** of a 3D spheroid, so the like-for-like simulated comparator is the equatorial $z$-section of the 3D run (panel C4 of the comparison figure), not the native 2D lattice. The numerical exponent reported by Nakajima & Ishihara (2011) is deliberately left `null` because the paper could not be consulted offline in Pass 3.

@@ -1,0 +1,267 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-metzger-lung-stereotyped-branching> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Metzger et al. (2008) & Menshykau et al. (2012, 2014) mouse lung stereotyped branching modes (Domain D, Planar P, Orthogonal O), FGF10-SHH-Ptch1 Turing mode selection, pleura-confined diffuse-domain FGF10 cavity and stochastic postnatal septation — Morphometric validation: 87/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`measure_morphoeval()` reports 13 entries (L1739-1893): the 8 Pass 2 metrics plus the slab-check relative error 0.0261 (ref 0), the P/O transition position 0.54 (ref 0.5 convention), the emergent dihedral RMSE 3.13 deg (ref 0; 8/8 mode accuracy; non-circular, the observed dihedral is never fed back), the ensemble P36 alveolar count 2.32e6 (ref 2.3e6, explicitly labelled a calibration target) and the per-unit CV 0.9978 (ref 0.9999, Yule law). The lineage validation now grows each tree with the pleura policy instead of the observed dihedral (L969-1044), which closes the Pass 2 circularity. Deductions: the E11-E14.5 tip-count r = 1.0000 is self-referential because the benchmark event counts reproduce 2 + sum(D + P + O) exactly (`pred_tips`, L1004-1011) (-4); the `reference_value`s 0.481834 (isotropy contrast, L1838) and 1.4172 (lambda_T, L1848) are the model's own outputs recorded as references, unchanged since Pass 2 (-3); the adult alveolar count is fitted with 1 dof, so only the CVs, control, plateau and bulk/continued partition are tests and no per-age Mund (2008) count is compared (-3); the lung-level CV (0.028 vs 0.040 law) rests on 12 seeds and the self-test only bounds it below 0.1 (-1); the transition position reference 0.5 is a convention written into the dataset JSON, not a measured value (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:evidenceAgainst "2008-metzger-lung-stereotyped-branching.py L1004–L1011: pred_tips = 2 + cumulative D+P+O events from the benchmark table whose event counts were back-filled to match, giving r = 1.0000 <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L1004-L1011>",
+            "2008-metzger-lung-stereotyped-branching.py L1834–L1852: reference_value 0.481834 (L1838) and 1.4172 (L1848) are the script's own outputs, not literature values <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L1834-L1852>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-compound-lobar-scaffold-d-4-o-o-active-distal-tip-count-4m-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-diffuse-domain-fgf10-solver-relative-error-vs-closed-form-slab-profile-eps-0-025>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-emergent-pleura-confined-dihedral-rmse-vs-8-e12-5-e14-5-lineages>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-empirical-e11-0-e14-5-developmental-distal-tip-count-pearson-r>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-empirical-e12-5-e14-5-mouse-lung-dihedral-angle-rmse-8-lineages>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-fgf10-shh-ptch1-turing-critical-wavelength-lambda-t>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-optimal-dihedral-rotation-angle-delta-phi-maximizing-3d-inter-tip-clearance>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-planar-vs-orthogonal-transverse-3d-tip-isotropy-contrast-sigma-y-sigma-x>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-pleura-confined-margin-to-interior-p-o-transition-position-x-l-x>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-segmented-bronchial-daughter-to-parent-lumen-caliber-ratio-r-d-r-0>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-segmented-mammalian-bronchial-tree-specimen-junction-angle-mean>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-septation-per-terminal-unit-alveolar-count-coefficient-of-variation-at-p36>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-stochastic-septation-adult-alveolar-count-at-p36-ensemble-mean>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-morphometric-validation-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-morphometric-validation-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-morphometric-validation-3> ;
+        pk:hasScore "0.87"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-compound-lobar-scaffold-d-4-o-o-active-distal-tip-count-4m-1> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "compound lobar scaffold D_4 -> O -> O active distal tip count (4m + 1) = 17.0 tips" ;
+        dct:description "bifurcated lateral tips = 16 (4*m = 16) plus 1 trunk apex = 17" ;
+        schema:measurementTechnique "m=4 lateral domain branches x 2^2 orthogonal bifurcations + 1 continuing main trunk tip (Lean 4 theorem metzger_subroutine_tip_multiplicity)" ;
+        schema:name "compound lobar scaffold D_4 -> O -> O active distal tip count (4m + 1)" ;
+        schema:unitText "tips" ;
+        schema:value "17.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-compound-lobar-scaffold-d-4-o-o-active-distal-tip-count-4m-1-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-compound-lobar-scaffold-d-4-o-o-active-distal-tip-count-4m-1-reference> a schema:PropertyValue ;
+        dct:source "Metzger, Klein, Martin & Krasnow (2008) Nature 453:745-750 Figs. 2-4" ;
+        schema:value "17.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-diffuse-domain-fgf10-solver-relative-error-vs-closed-form-slab-profile-eps-0-025> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "diffuse-domain FGF10 solver relative error vs closed-form slab profile (eps = 0.025) = 0.0261 ratio" ;
+        dct:description "relative error 0.1065 (eps=0.1) -> 0.0561 (eps=0.05) -> 0.0261 (eps=0.025); monotone convergence = True; decay length l = 0.500" ;
+        schema:measurementTechnique "RMSE / max of the pleura-confined diffuse-domain steady state against F(y) = a_F (1 - cosh(y/l)/cosh(h/l)) with Dirichlet F = 0 at the pleura; interface width eps halved 0.1 -> 0.05 -> 0.025" ;
+        schema:name "diffuse-domain FGF10 solver relative error vs closed-form slab profile (eps = 0.025)" ;
+        schema:unitText "ratio" ;
+        schema:value "0.0261" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-diffuse-domain-fgf10-solver-relative-error-vs-closed-form-slab-profile-eps-0-025-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-diffuse-domain-fgf10-solver-relative-error-vs-closed-form-slab-profile-eps-0-025-reference> a schema:PropertyValue ;
+        dct:source "Li, Lowengrub, Raetz & Voigt (2009) Commun. Math. Sci. 7:81-107 (first-order convergence of the diffuse-domain method); closed form derived from Menshykau et al. (2012) ligand equation" ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-emergent-pleura-confined-dihedral-rmse-vs-8-e12-5-e14-5-lineages> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "emergent (pleura-confined) dihedral RMSE vs 8 E12.5-E14.5 lineages = 3.1313 deg" ;
+        dct:description "mode accuracy 1.000; emergent-tree transverse isotropy vs observed hull flatness: Pearson r = 0.9964, RMSE = 0.1945 (Pass 2 value was circular: it used dihedral_obs_deg as input)" ;
+        schema:measurementTechnique "single-tip pleura-confined FGF10 decision at each lineage's lobe cross-section position (margin 0.90 / interior 0.15, assigned by Metzger lineage class) vs observed dihedral; no observed dihedral is fed back into the model" ;
+        schema:name "emergent (pleura-confined) dihedral RMSE vs 8 E12.5-E14.5 lineages" ;
+        schema:unitText "deg" ;
+        schema:value "3.1313" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-emergent-pleura-confined-dihedral-rmse-vs-8-e12-5-e14-5-lineages-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-emergent-pleura-confined-dihedral-rmse-vs-8-e12-5-e14-5-lineages-reference> a schema:PropertyValue ;
+        dct:source "Metzger, Klein, Martin & Krasnow (2008) Nature 453:745-750 Fig. 3" ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-empirical-e11-0-e14-5-developmental-distal-tip-count-pearson-r> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "empirical E11.0-E14.5 developmental distal tip count Pearson r = 1.0 r" ;
+        dct:description "tip count RMSE = 0.000 tips across E11.0..E14.5 (p=2.96e-31)" ;
+        schema:measurementTechnique "Pearson correlation between observed E11.0-E14.5 mouse lung distal tips and cumulative D+P+O subroutine grammar" ;
+        schema:name "empirical E11.0-E14.5 developmental distal tip count Pearson r" ;
+        schema:unitText "r" ;
+        schema:value "1.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-empirical-e11-0-e14-5-developmental-distal-tip-count-pearson-r-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-empirical-e11-0-e14-5-developmental-distal-tip-count-pearson-r-reference> a schema:PropertyValue ;
+        dct:source "Metzger, Klein, Martin & Krasnow (2008) Nature 453:745-750 Fig. 1" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-empirical-e12-5-e14-5-mouse-lung-dihedral-angle-rmse-8-lineages> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "empirical E12.5-E14.5 mouse lung dihedral angle RMSE (8 lineages) = 3.1313 deg" ;
+        dct:description "Pearson r = 0.9994 (p=4.26e-10), bifurcation angle RMSE = 0.839 deg" ;
+        schema:measurementTechnique "RMSE and Pearson r across N=8 E12.5-E14.5 mouse lung margin (D-P-P) and interior (D-O-O / D-P-O) lineages" ;
+        schema:name "empirical E12.5-E14.5 mouse lung dihedral angle RMSE (8 lineages)" ;
+        schema:unitText "deg" ;
+        schema:value "3.1313" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-empirical-e12-5-e14-5-mouse-lung-dihedral-angle-rmse-8-lineages-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-empirical-e12-5-e14-5-mouse-lung-dihedral-angle-rmse-8-lineages-reference> a schema:PropertyValue ;
+        dct:source "Metzger, Klein, Martin & Krasnow (2008) Nature 453:745-750 Fig. 3" ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-fgf10-shh-ptch1-turing-critical-wavelength-lambda-t> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "FGF10-SHH-Ptch1 Turing critical wavelength lambda_T = 1.4229 nondim" ;
+        dct:description "k_c^2 = 19.500, max growth rate sigma_max = 53.94; equal-diffusion ablation (D_F=D_R) collapses pattern amplitude to 0.00034" ;
+        schema:measurementTechnique "2*pi / k_c from dispersion relation Re(sigma(k^2)) of Menshykau et al. (2012, 2014) receptor-ligand PDE (Lean 4 theorem menshykau_fgf10_shh_receptor_ligand_steady_state)" ;
+        schema:name "FGF10-SHH-Ptch1 Turing critical wavelength lambda_T" ;
+        schema:unitText "nondim" ;
+        schema:value "1.4229" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-fgf10-shh-ptch1-turing-critical-wavelength-lambda-t-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-fgf10-shh-ptch1-turing-critical-wavelength-lambda-t-reference> a schema:PropertyValue ;
+        dct:source "Menshykau, Kraemer & Iber (2012) Development 139:4506-4514; Menshykau et al. (2014) PLoS Comput. Biol. 10:e1003421" ;
+        schema:value "1.4172" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-optimal-dihedral-rotation-angle-delta-phi-maximizing-3d-inter-tip-clearance> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "optimal dihedral rotation angle Delta_phi* maximizing 3D inter-tip clearance = 90.0 deg" ;
+        dct:description "Orthogonal (90 deg) increases min 3D tip clearance by +61.88% over Planar (0 deg) and +26.19% over randomized dihedral ablation" ;
+        schema:measurementTechnique "181-point dihedral sweep Delta_phi in [0, 180] deg maximizing minimum 3D pairwise tip distance (Lean 4 theorem metzger_planar_orthogonal_dihedral_periodicity)" ;
+        schema:name "optimal dihedral rotation angle Delta_phi* maximizing 3D inter-tip clearance" ;
+        schema:unitText "deg" ;
+        schema:value "90.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-optimal-dihedral-rotation-angle-delta-phi-maximizing-3d-inter-tip-clearance-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-optimal-dihedral-rotation-angle-delta-phi-maximizing-3d-inter-tip-clearance-reference> a schema:PropertyValue ;
+        dct:source "Metzger et al. (2008) Nature 453:745-750 Fig. 3c" ;
+        schema:value "90.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-planar-vs-orthogonal-transverse-3d-tip-isotropy-contrast-sigma-y-sigma-x> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "planar vs orthogonal transverse 3D tip isotropy contrast (sigma_y / sigma_x) = 0.481834 ratio" ;
+        dct:description "Planar P-P transverse isotropy = 0.000000 (strictly coplanar) vs Orthogonal O-O = 0.481834" ;
+        schema:measurementTechnique "transverse tip spread ratio min(sigma_x, sigma_y)/max(sigma_x, sigma_y) for O-O (90 deg) minus P-P (0 deg)" ;
+        schema:name "planar vs orthogonal transverse 3D tip isotropy contrast (sigma_y / sigma_x)" ;
+        schema:unitText "ratio" ;
+        schema:value "0.481834" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-planar-vs-orthogonal-transverse-3d-tip-isotropy-contrast-sigma-y-sigma-x-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-planar-vs-orthogonal-transverse-3d-tip-isotropy-contrast-sigma-y-sigma-x-reference> a schema:PropertyValue ;
+        dct:source "Metzger et al. (2008) Nature 453:745-750 Fig. 3" ;
+        schema:value "0.481834" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-pleura-confined-margin-to-interior-p-o-transition-position-x-l-x> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "pleura-confined margin-to-interior P/O transition position x*/L_x = 0.54 ratio" ;
+        dct:description "interior tree isotropy 0.4818 vs margin tree isotropy 0.3289; critical lobe half-thickness h* = 0.944 l0 (anisotropy monotone in h: True)" ;
+        schema:measurementTechnique "11-point sweep of the subtree root across the lobe cross-section with the emergent dihedral chosen by FGF10 supply anisotropy A > A_c = 0.05 (Lean 4 theorem pleura_anisotropy_mode_selection)" ;
+        schema:name "pleura-confined margin-to-interior P/O transition position x*/L_x" ;
+        schema:unitText "ratio" ;
+        schema:value "0.54" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-pleura-confined-margin-to-interior-p-o-transition-position-x-l-x-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-pleura-confined-margin-to-interior-p-o-transition-position-x-l-x-reference> a schema:PropertyValue ;
+        dct:source "Metzger et al. (2008) Nature 453:745-750 Fig. 3 (Planar lineages confined to lobe margins/edges, Orthogonal lineages in the interior); position bound assigned in lung_stereotyped_branching_modes_reference.json" ;
+        schema:value "0.5" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-segmented-bronchial-daughter-to-parent-lumen-caliber-ratio-r-d-r-0> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "segmented bronchial daughter-to-parent lumen caliber ratio r_d / r_0 = 0.8826 ratio" ;
+        dct:description "std = 0.1020" ;
+        schema:measurementTechnique "Euclidean distance transform (EDT) local caliber ratio across N=32 segmented bronchial junctions" ;
+        schema:name "segmented bronchial daughter-to-parent lumen caliber ratio r_d / r_0" ;
+        schema:unitText "ratio" ;
+        schema:value "0.8826" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-segmented-bronchial-daughter-to-parent-lumen-caliber-ratio-r-d-r-0-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-segmented-bronchial-daughter-to-parent-lumen-caliber-ratio-r-d-r-0-reference> a schema:PropertyValue ;
+        dct:source "Metzger et al. (2008) Nature 453:745-750; Murray (1926a) PNAS 12:207" ;
+        schema:value "0.7937" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-segmented-mammalian-bronchial-tree-specimen-junction-angle-mean> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "segmented mammalian bronchial tree specimen junction angle (mean) = 76.49 deg" ;
+        dct:description "std = 14.61 deg, CV = 0.191, alveoli area fraction = 0.121, airway/vascular fraction = 0.476" ;
+        schema:measurementTechnique "chromatic tissue segmentation + Zhang-Suen 1-pixel skeletonization across N=32 3-arm junctions in bronchial_tree_specimen.jpg" ;
+        schema:name "segmented mammalian bronchial tree specimen junction angle (mean)" ;
+        schema:unitText "deg" ;
+        schema:value "76.49" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-segmented-mammalian-bronchial-tree-specimen-junction-angle-mean-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-segmented-mammalian-bronchial-tree-specimen-junction-angle-mean-reference> a schema:PropertyValue ;
+        dct:source "Metzger et al. (2008) Nature 453:745-750; Wikimedia Commons File:Bronchial_anatomy.jpg" ;
+        schema:value "75.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-septation-per-terminal-unit-alveolar-count-coefficient-of-variation-at-p36> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "septation per-terminal-unit alveolar count coefficient of variation at P36 = 0.9978 ratio" ;
+        dct:description "whole-lung CV 0.0276 vs 1/sqrt(N_units) law 0.0398; bulk-phase (P4-P21) share of postnatal gain 0.471; alveoli per unit 3671" ;
+        schema:measurementTechnique "SD/mean of alveoli per terminal unit across units at P36 (stochastic Yule septation ensemble)" ;
+        schema:name "septation per-terminal-unit alveolar count coefficient of variation at P36" ;
+        schema:unitText "ratio" ;
+        schema:value "0.9978" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-septation-per-terminal-unit-alveolar-count-coefficient-of-variation-at-p36-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-septation-per-terminal-unit-alveolar-count-coefficient-of-variation-at-p36-reference> a schema:PropertyValue ;
+        dct:source "Yule (1925) pure-birth process: descendants of one founder are Geometric, CV = sqrt(1 - 1/m) (Lean 4 theorem septation_mean_closed_form covers the mean law)" ;
+        schema:value "0.9999" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-stochastic-septation-adult-alveolar-count-at-p36-ensemble-mean> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "stochastic septation adult alveolar count at P36 (ensemble mean) = 2319832.6 alveoli" ;
+        dct:description "lambda_bulk = 0.4175/d, lambda_cont = 0.0501/d, 11.83 septation doublings; stochastic vs mean-field deviation 0.86%; deterministic-grammar control stays at 632" ;
+        schema:measurementTechnique "632 terminal units (grammar extrapolated to E16.5, doubling time 0.93 d) x exact-increment Yule septation with lambda_bulk fitted in closed form (1 dof), 12 seeds" ;
+        schema:name "stochastic septation adult alveolar count at P36 (ensemble mean)" ;
+        schema:unitText "alveoli" ;
+        schema:value "2319832.6" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-stochastic-septation-adult-alveolar-count-at-p36-ensemble-mean-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-measurement-stochastic-septation-adult-alveolar-count-at-p36-ensemble-mean-reference> a schema:PropertyValue ;
+        dct:source "Knust, Ochs, Gundersen & Nyengaard (2009) Anat. Rec. 292:113-122 (stereological alveolar number, adult C57BL/6 mouse; calibration target, NOT an independent validation)" ;
+        schema:value "2300000.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-morphometric-validation-1> a pk:EvidenceItem ;
+        rdfs:label "2008-metzger-lung-stereotyped-branching.py L1759–L1810" ;
+        dct:description "Five Pass 3 measurements: slab error, transition position, emergent dihedral RMSE, P36 count (labelled calibration), per-unit CV vs Yule law" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L1759-L1810> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-morphometric-validation-2> a pk:EvidenceItem ;
+        rdfs:label "2008-metzger-lung-stereotyped-branching.py L969–L1044" ;
+        dct:description "evaluate_empirical_lung_lineages grows each lineage with the pleura policy at its lobe position; emergent_mode_accuracy at L999, no dihedral_obs_deg input to the model" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L969-L1044> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-morphometric-validation-3> a pk:EvidenceItem ;
+        rdfs:label "2008-metzger-lung-stereotyped-branching.py L1116–L1172" ;
+        dct:description "simulate_postnatal_septation reports unit CV, lung CV vs 1/sqrt(N) law (L1170), bulk share of gain and plateau" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L1116-L1172> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Loop 053 Pass 3 Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/ar.20747>,
+            <https://doi.org/10.1002/dvdy.21633>,
+            <https://doi.org/10.1038/nature07005>,
+            <https://doi.org/10.1242/dev.081679>,
+            <https://doi.org/10.1371/journal.pcbi.1003421>,
+            <https://doi.org/10.1371/journal.pone.0041643>,
+            <https://doi.org/10.4310/CMS.2009.v7.n1.a4> .
+    <https://doi.org/10.1002/ar.20747> dct:date "2009"^^xsd:gYear ;
+        dct:title "Stereological estimates of alveolar number and size and capillary length and surface area in mice lungs" .
+    <https://doi.org/10.1002/dvdy.21633> dct:date "2008"^^xsd:gYear ;
+        dct:title "Developmental alveolarization of the mouse lung" .
+    <https://doi.org/10.1038/nature07005> dct:date "2008"^^xsd:gYear ;
+        dct:title "The branching programme of mouse lung development" .
+    <https://doi.org/10.1242/dev.081679> dct:date "2012"^^xsd:gYear ;
+        dct:title "Branch mode selection during early lung development" .
+    <https://doi.org/10.1371/journal.pcbi.1003421> dct:date "2014"^^xsd:gYear ;
+        dct:title "An interplay of geometry and signaling enables directional lung branching morphogenesis" .
+    <https://doi.org/10.1371/journal.pone.0041643> dct:date "2012"^^xsd:gYear ;
+        dct:title "A role for canonical Wnt signaling in epithelial branching during embryonic mouse lung development" .
+    <https://doi.org/10.4310/CMS.2009.v7.n1.a4> dct:date "2009"^^xsd:gYear ;
+        dct:title "Solving PDEs in complex geometries: a diffuse domain approach" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Metzger et al. (2008) & Menshykau et al. (2012, 2014) mouse lung stereotyped branching modes (Domain D, Planar P, Orthogonal O), FGF10-SHH-Ptch1 Turing mode selection, pleura-confined diffuse-domain FGF10 cavity and stochastic postnatal septation — Morphometric validation 87/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:28:07Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

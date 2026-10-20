@@ -1,0 +1,108 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RARwlFAzrhcAN7RZCpRVCLNfhYg2Te0mXx9T124sTuOXA/> .
+@prefix this: <https://w3id.org/np/RARwlFAzrhcAN7RZCpRVCLNfhYg2Te0mXx9T124sTuOXA> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/nmat4357>,
+            <https://doi.org/10.1038/nphys3471>,
+            <https://doi.org/10.1038/s41567-018-0089-9>,
+            <https://doi.org/10.1103/PhysRevLett.97.170201>,
+            <https://doi.org/10.1103/PhysRevX.6.021011>,
+            <https://doi.org/10.1140/epje/i2010-10677-0> .
+
+    <https://doi.org/10.1038/nmat4357> dcterms:date "2015"^^xsd:gYear ;
+        dcterms:title "Unjamming and cell shape in the asthmatic airway epithelium" .
+
+    <https://doi.org/10.1038/nphys3471> dcterms:date "2015"^^xsd:gYear ;
+        dcterms:title "A density-independent rigidity transition in biological tissues" .
+
+    <https://doi.org/10.1038/s41567-018-0089-9> dcterms:date "2018"^^xsd:gYear ;
+        dcterms:title "Geometric constraints during epithelial jamming" .
+
+    <https://doi.org/10.1103/PhysRevLett.97.170201> dcterms:date "2006"^^xsd:gYear ;
+        dcterms:title "Structural relaxation made simple" .
+
+    <https://doi.org/10.1103/PhysRevX.6.021011> dcterms:date "2016"^^xsd:gYear ;
+        dcterms:title "Motility-driven glass and jamming transitions in biological tissues" .
+
+    <https://doi.org/10.1140/epje/i2010-10677-0> dcterms:date "2010"^^xsd:gYear ;
+        dcterms:title "Mechanics and remodelling of cell packings in epithelia" .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-bi-vertex-glass-jamming> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-bi-vertex-glass-jamming-repro-package> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-bi-vertex-glass-jamming-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Bi et al. (2015), Park et al. (2015) & Bi et al. (2016) zero-temperature shape-index unjamming, asthmatic bronchial epithelial rigidity transition and self-propelled Voronoi motility-driven glass transition — Reproducibility package: 91/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "Credits: deterministic seeds for both the regime simulator (2015) and the SPV integrator (2016) with a bitwise two-run determinism check for each (L1897-1901, L1947-1950); 13-check `self_test()` including an analytic-vs-finite-difference force check (9e-9), full-vs-margin tiling equality, momentum conservation, FIRE pinning/identity, motility ablation, dt rule, boundary extractor and Lean parity; all 15 measurements carry reference values; the default render and the self-test each complete in ~61 s with the documented CLI. Deductions: runtime grew from <7 s to ~61 s and `measure_outputs.py` re-runs the full SPV sweep (~60 s) (-3); no requirements lock file pins numpy/scipy/matplotlib versions (environment recorded only in this audit) (-3); the FIRE quench in the fluid branch stops at the 600-step cap without converging (max|F| ~1e-3), which is tolerated silently (-2); single seed for the glass map (-1)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:evidenceAgainst "2015-bi-vertex-glass-jamming.py L731–L782: FIRE minimiser: max_steps = 600 cap; non-convergence in the fluid branch is returned as converged=False but not surfaced (deduction) <https://github.com/fractastical/morpholib/blob/7e4f207/2015-bi-vertex-glass-jamming.py#L731-L782>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-bi-vertex-glass-jamming-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bi-vertex-glass-jamming-repro-package-2> ;
+        pk:hasScore "0.91"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bi-vertex-glass-jamming-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "2015-bi-vertex-glass-jamming.py L1903–L1960" ;
+        dcterms:description "Self-test checks 9-13: FD force check, tiling equality, momentum conservation, FIRE pinning, motility ablation, dt rule, SPV determinism, boundary extractor" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/7e4f207/2015-bi-vertex-glass-jamming.py#L1903-L1960> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bi-vertex-glass-jamming-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "2015-bi-vertex-glass-jamming.py L1961–L1978" ;
+        dcterms:description "Check 8: 15 measurements each with value, unit and reference_value; q_c / p0c(0) / FIRE r tolerances" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/7e4f207/2015-bi-vertex-glass-jamming.py#L1961-L1978> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary assessor, Pass 3 remediation round)" ;
+        dcterms:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "E2fpw48LPZtkWQwBl7UKSHMP4XzSa1kvDc1zKkurY7BKiQkgPwcvPPjyf1dM4OKnWmd01rNQQxTqSTPC87rE6BdkENai8lOF7+mEqDBbjb/vvZp2Z3gTtk9O8lOpIB4qQ3UdWpBG4TctHlT0UPvUKNN0GWwOEiwnlAUPT4C1zvPmWRpS2W50VT61r/adUhalblRu3E6S8/mhTjPi3s3jnWNg+/mQVo0tpOfBuMWA+ERH0USCNlNZ27yn3G0YfOxXuel1YC01s36zPdRT8NDLZp7F99Tn4BMjCtGYSrlXsl2Mig5Vp774puv9IBObUfKJ8ZRcqASQ/01rBrijOciczw==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    this: rdfs:label "Bi et al. (2015), Park et al. (2015) & Bi et al. (2016) zero-temperature shape-index unjamming, asthmatic bronchial epithelial rigidity transition and self-propelled Voronoi motility-driven glass transition — Reproducibility package 91/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T16:12:15Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-bi-vertex-glass-jamming-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+

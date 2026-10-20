@@ -1,0 +1,111 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-caleo-cajal-dendritic-wiring> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-caleo-cajal-dendritic-wiring-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-caleo-cajal-dendritic-wiring-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Cuntz et al. (2010) PLoS Comput. Biol. & Cuntz et al. (2007) PNAS Ramón y Cajal minimum-wiring and conduction-delay greedy Steiner dendritic trees + Rall's 3/2 diameter power law + (Pass 3) Rall passive-cable electrotonics coupled to a Morris-Lecar dendritic Ca2+ spike hotspot — Reproducibility package: 94/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`self_test()` (L1349-1453) now runs 10 deterministic suites in 8.9-11 s: SHA-256 integrity of all three pinned inputs, Betti_1 = 0 topology, Pareto monotonicity/correlation, random-tree control, 2D/3D scaling, Rall 3/2, specimen CV, the 15-metric bitwise-determinism contract (L1392-1396), and the Pass 3 suites 9-10 (L1398-1445: lambda_DC analytic check, lambda_f < lambda_DC, exact superposition < 1e-9, active gain > 2, single-input fraction 0 for every bf, star-limit same-branch 0, window shrinks and tip->hotspot X grows at bf = 1, r(window, bf) < 0). The default render regenerates the PNG, the GIF (byte-identical) and the new coincidence PNG in 7.7 s; the Lean module verifies in 0.3 s with 0 sorrys. Deductions: `docs/media/*.png` are gitignored (`.gitignore` rule `*.png`), so neither the comparison PNG nor the new coincidence PNG is versioned and the reproducibility of the figures the audit judged rests on re-running the script (-3); the README / self-test description in v2 (\"passing in < 1 s\") is no longer accurate — the 10-suite run takes ~9 s because it executes `measure_morphoeval()` twice (-1); there is no lock file pinning the exact numpy/scipy/matplotlib versions used (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-repro-package-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-repro-package-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-repro-package-4> ;
+        pk:hasScore "0.94"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "2007-caleo-cajal-dendritic-wiring.py L1349–L1453" ;
+        dct:description "10-suite deterministic self-test (suites 9-10 new: SHA pin, lambda analytic checks, exact superposition, active gain > 2, per-bf single-input fraction 0, star-limit assertions, r < 0)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/2007-caleo-cajal-dendritic-wiring.py#L1349-L1453> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "2007-caleo-cajal-dendritic-wiring.py L1392–L1396" ;
+        dct:description "Suite 8: 15-metric contract and bitwise determinism across repeated measure_morphoeval() runs" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/2007-caleo-cajal-dendritic-wiring.py#L1392-L1396> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-repro-package-3> a pk:EvidenceItem ;
+        rdfs:label "2007-caleo-cajal-dendritic-wiring.py L1455–L1479" ;
+        dct:description "CLI entrypoint: --self-test, --skip-gif, --bf, --n-carriers, --radius, --seed" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/2007-caleo-cajal-dendritic-wiring.py#L1455-L1479> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-repro-package-4> a pk:EvidenceItem ;
+        rdfs:label "docs/media/cajal_dendritic_wiring_ca_spike_coincidence.png (generated output)" ;
+        dct:description "New 4-panel Pass 3 figure regenerated by the default invocation; not versioned because docs/media/*.png is gitignored — docs/media/cajal_dendritic_wiring_ca_spike_coincidence.png: rendered output of 2007-caleo-cajal-dendritic-wiring.py at 45670cb8, image/png, 475130 B, 2100×1500 px, artifact_sha256 d321b27b4f2cfaafeefab261c5650f7604e920dd8ecbc1a08bd46d9ed42616c0 (sha256 d321b27b4f2cfaafeefab261c5650f7604e920dd8ecbc1a08bd46d9ed42616c0), spec_fingerprint a6977d117c117453a3da70243bb87c40c9868192a748b42afa7ab4730c025791" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 058 Pass 3 Assessor, Phase B)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/58> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0014-4886(59)90046-9>,
+            <https://doi.org/10.1016/S0006-3495(81)84782-0>,
+            <https://doi.org/10.1038/nn1253>,
+            <https://doi.org/10.1073/pnas.0704731104>,
+            <https://doi.org/10.1111/j.1469-7793.2001.00445.x>,
+            <https://doi.org/10.1113/jphysiol.1980.sp013358>,
+            <https://doi.org/10.1152/jn.00280.2007>,
+            <https://doi.org/10.1371/journal.pcbi.1000251>,
+            <https://doi.org/10.1371/journal.pcbi.1000877>,
+            <https://doi.org/10.5962/bhl.title.48637>,
+            <https://global.oup.com/academic/product/biophysics-of-computation-9780195181999> .
+    <https://doi.org/10.1016/0014-4886(59)90046-9> dct:date "1959"^^xsd:gYear ;
+        dct:title "Branching dendritic trees and motoneuron membrane resistivity" .
+    <https://doi.org/10.1016/S0006-3495(81)84782-0> dct:date "1981"^^xsd:gYear ;
+        dct:title "Voltage oscillations in the barnacle giant muscle fiber" .
+    <https://doi.org/10.1038/nn1253> dct:date "2004"^^xsd:gYear ;
+        dct:title "Computational subunits in thin dendrites of pyramidal cells" .
+    <https://doi.org/10.1073/pnas.0704731104> dct:date "2007"^^xsd:gYear ;
+        dct:title "Optimization principles of dendritic structure" .
+    <https://doi.org/10.1111/j.1469-7793.2001.00445.x> dct:date "2001"^^xsd:gYear ;
+        dct:title "Compartmental models of rat cerebellar Purkinje cells based on simultaneous somatic and dendritic patch-clamp recordings" .
+    <https://doi.org/10.1113/jphysiol.1980.sp013358> dct:date "1980"^^xsd:gYear ;
+        dct:title "Electrophysiological properties of in vitro Purkinje cell dendrites in mammalian cerebellar slices" .
+    <https://doi.org/10.1152/jn.00280.2007> dct:date "2008"^^xsd:gYear ;
+        dct:title "A Cost-Benefit Analysis of Neuronal Morphology" .
+    <https://doi.org/10.1371/journal.pcbi.1000251> dct:date "2008"^^xsd:gYear ;
+        dct:title "A Quantitative Description of Sensory Neuron Organization in Drosophila: From Individual Dendritic Trees to the Population" .
+    <https://doi.org/10.1371/journal.pcbi.1000877> dct:date "2010"^^xsd:gYear ;
+        dct:title "One Rule to Grow Them All: A General Theory of Neuronal Dendritic Trees" .
+    <https://doi.org/10.5962/bhl.title.48637> dct:date "1899"^^xsd:gYear ;
+        dct:title "Textura del Sistema Nervioso del Hombre y de los Vertebrados" .
+    <https://global.oup.com/academic/product/biophysics-of-computation-9780195181999> dct:date "1999"^^xsd:gYear ;
+        dct:title "Biophysics of Computation: Information Processing in Single Neurons" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Cuntz et al. (2010) PLoS Comput. Biol. & Cuntz et al. (2007) PNAS Ramón y Cajal minimum-wiring and conduction-delay greedy Steiner dendritic trees + Rall's 3/2 diameter power law + (Pass 3) Rall passive-cable electrotonics coupled to a Morris-Lecar dendritic Ca2+ spike hotspot — Reproducibility package 94/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T17:50:06Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-caleo-cajal-dendritic-wiring-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/58> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

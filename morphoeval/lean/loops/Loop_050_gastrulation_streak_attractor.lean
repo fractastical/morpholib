@@ -211,4 +211,115 @@ theorem saadaoui_serra_five_regime_streak_hierarchy :
     hh3_streak_ap_px * hh1_sickle_ml_px = 5 * (hh1_sickle_ap_px * hh3_streak_ml_px) := by
   decide
 
+/-! ## Pass 3 additions (2026-10-19-gastrulation-streak-attractor-audit-v3)
+
+Linearised (integer-scaled) forms of the two mechanisms added in Pass 3 of
+`2022-serra-gastrulation-streak-attractor.py`:
+the Wnt8c -> Nodal -> FGF8 -> pMLC ligand cascade (`step_ligand_fields`,
+`myosin_phosphorylation_field`) and the apical-basal wedging / basement-membrane /
+ingression-sink column model (`step_apical_basal_column`, `solve_ingression_sink_velocity`). -/
+
+/-- Linearised Nodal response to the marginal Wnt8c/Vg1 level: `N = g_N * W`
+    (the script uses the saturating Hill form `H(W) = W^2/(K^2+W^2)`; monotonicity is what
+    the theorem needs). -/
+def nodal_response (g_N W : Int) : Int := g_N * W
+
+/-- Linearised FGF8 response downstream of Nodal: `F = g_F * N` (`g_F = 0` under SU5402 FGFR
+    inhibition). -/
+def fgf8_response (g_F N : Int) : Int := g_F * N
+
+/-- Phospho-myosin (pMLC) activation `P = k_p * rho_ROCK * (N + F)` driving the marginal-ring
+    myosin source `Dm/Dt += alpha_P P (1 - m/m_sat)`; `rho_ROCK = 0` under Y-27632. -/
+def pmlc_activation (k_p rho N F : Int) : Int := k_p * rho * (N + F)
+
+/-- Theorem 4 (`ligand_cascade_posterior_myosin_asymmetry`):
+    A posterior-restricted marginal Wnt8c source (`W_post > W_ant ≥ 0`) propagates through the
+    monotone Nodal (`g_N > 0`) and FGF8 (`g_F ≥ 0`) responses to a strictly posterior-biased
+    pMLC activation (`P_post > P_ant`) whenever ROCK is active (`rho > 0`), so the
+    posterior-to-anterior ring asymmetry `delta_m` is *produced* by the ligand cascade rather
+    than prescribed; the bias survives FGFR inhibition (`g_F = 0`, SU5402 reduces but does not
+    invert it) and is abolished by ROCK inhibition (`rho = 0` gives `P = 0` everywhere). -/
+theorem ligand_cascade_posterior_myosin_asymmetry
+    (k_p g_N g_F rho W_post W_ant : Int)
+    (hk : k_p > 0) (hgN : g_N > 0) (hgF : g_F ≥ 0) (hrho : rho > 0)
+    (hW : W_post > W_ant) (hWa : W_ant ≥ 0) :
+    nodal_response g_N W_post > nodal_response g_N W_ant ∧
+    fgf8_response g_F (nodal_response g_N W_post) ≥ fgf8_response g_F (nodal_response g_N W_ant) ∧
+    pmlc_activation k_p rho (nodal_response g_N W_post) (fgf8_response g_F (nodal_response g_N W_post)) >
+      pmlc_activation k_p rho (nodal_response g_N W_ant) (fgf8_response g_F (nodal_response g_N W_ant)) ∧
+    pmlc_activation k_p rho (nodal_response g_N W_post) 0 >
+      pmlc_activation k_p rho (nodal_response g_N W_ant) 0 ∧
+    pmlc_activation k_p 0 (nodal_response g_N W_post) (fgf8_response g_F (nodal_response g_N W_post)) = 0 ∧
+    pmlc_activation k_p rho (nodal_response g_N W_ant) (fgf8_response g_F (nodal_response g_N W_ant)) ≥ 0 := by
+  dsimp [nodal_response, fgf8_response, pmlc_activation]
+  have hN : g_N * W_ant < g_N * W_post := Int.mul_lt_mul_of_pos_left hW hgN
+  have hNa : g_N * W_ant ≥ 0 := Int.mul_nonneg (Int.le_of_lt hgN) hWa
+  have hF : g_F * (g_N * W_ant) ≤ g_F * (g_N * W_post) :=
+    Int.mul_le_mul_of_nonneg_left (Int.le_of_lt hN) hgF
+  have hFa : g_F * (g_N * W_ant) ≥ 0 := Int.mul_nonneg hgF hNa
+  have hkr : k_p * rho > 0 := Int.mul_pos hk hrho
+  have hSum : g_N * W_ant + g_F * (g_N * W_ant) < g_N * W_post + g_F * (g_N * W_post) := by omega
+  have hP : k_p * rho * (g_N * W_ant + g_F * (g_N * W_ant)) <
+      k_p * rho * (g_N * W_post + g_F * (g_N * W_post)) :=
+    Int.mul_lt_mul_of_pos_left hSum hkr
+  have hSum0 : g_N * W_ant + 0 < g_N * W_post + 0 := by omega
+  have hP0 : k_p * rho * (g_N * W_ant + 0) < k_p * rho * (g_N * W_post + 0) :=
+    Int.mul_lt_mul_of_pos_left hSum0 hkr
+  have hAnt : k_p * rho * (g_N * W_ant + g_F * (g_N * W_ant)) ≥ 0 :=
+    Int.mul_nonneg (Int.le_of_lt hkr) (by omega)
+  refine ⟨hN, hF, hP, hP0, ?_, hAnt⟩
+  simp [Int.mul_zero, Int.zero_mul]
+
+/-- Apical-basal wedging numerator `b - a` (basal area minus apical area of one epiblast
+    column; the script's index is `(b - a)/(b + a)`). -/
+def wedging_numer (a b : Int) : Int := b - a
+
+/-- Ingression rate `I = k_ing * (b - a) * (B_max - B)`: wedged columns whose basement
+    membrane has been degraded (`B < B_max`) ingress (Voiculescu et al. 2014). -/
+def ingression_rate (k_ing wdg bm_loss : Int) : Int := k_ing * wdg * bm_loss
+
+/-- Planar sink divergence `nabla . v_sink = -I` imposed on the 2D Stokes flow. -/
+def sink_divergence (I : Int) : Int := -I
+
+/-- One explicit basement-membrane remodeling step `B' = B - k_bm * (b - a) * B`
+    (Nodal/FGF-licensed, wedging-gated BM breakdown; Nakaya et al. 2008). -/
+def bm_decay_step (k_bm wdg B : Int) : Int := B - k_bm * wdg * B
+
+/-- Theorem 5 (`apical_basal_wedging_ingression_sink`):
+    For a wedged epiblast column (`a < b`) with partially degraded basement membrane
+    (`B < B_max`, `B > 0`) and positive rate constants:
+    (1) the wedging numerator is positive;
+    (2) the ingression rate is strictly positive, so (3) the coupled planar sink has strictly
+        negative divergence (`nabla . v = -I < 0`, the mesendoderm sink of Theorem 2);
+    (4) basement-membrane integrity strictly decreases over the step;
+    (5) constant cell volume `h' (a' + b) = h (a + b)` with apical constriction `a' < a`
+        forces the column to thicken (`h' > h`) — the 3D trans-epithelial correlate of
+        streak formation (Rozbicki et al. 2015). -/
+theorem apical_basal_wedging_ingression_sink
+    (k_ing k_bm a a' b h h' B B_max : Int)
+    (hab : a < b) (hk : k_ing > 0) (hkb : k_bm > 0)
+    (hB : B < B_max) (hBpos : B > 0)
+    (hvol : h' * (a' + b) = h * (a + b)) (ha' : a' < a) (ha'pos : a' > 0) (hh : h > 0) :
+    wedging_numer a b > 0 ∧
+    ingression_rate k_ing (wedging_numer a b) (B_max - B) > 0 ∧
+    sink_divergence (ingression_rate k_ing (wedging_numer a b) (B_max - B)) < 0 ∧
+    bm_decay_step k_bm (wedging_numer a b) B < B ∧
+    h' > h := by
+  dsimp [wedging_numer, ingression_rate, sink_divergence, bm_decay_step]
+  have hW : b - a > 0 := by omega
+  have hLoss : B_max - B > 0 := by omega
+  have hI : k_ing * (b - a) * (B_max - B) > 0 := Int.mul_pos (Int.mul_pos hk hW) hLoss
+  have hBm : k_bm * (b - a) * B > 0 := Int.mul_pos (Int.mul_pos hkb hW) hBpos
+  have hThick : h' > h := by
+    rcases Int.lt_or_le h h' with hlt | hle
+    · exact hlt
+    · have h1 : h' * (a' + b) ≤ h * (a' + b) :=
+        Int.mul_le_mul_of_nonneg_right hle (by omega)
+      have h2 : h * (a' + b) < h * (a + b) :=
+        Int.mul_lt_mul_of_pos_left (by omega) hh
+      omega
+  refine ⟨hW, hI, ?_, ?_, hThick⟩
+  · omega
+  · omega
+
 end MathOfBiology.Loop_050

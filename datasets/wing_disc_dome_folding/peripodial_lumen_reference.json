@@ -1,0 +1,38 @@
+{
+  "schema_version": "morphoeval-reference-1.0",
+  "dataset_id": "wing_disc_dome_folding/peripodial_lumen",
+  "title": "Pass 3 reduced sac model: squamous peripodial epithelium (PE) + lumenal hydrostatic pressure coupled to the columnar disc proper (DP) of the Drosophila third-instar wing imaginal disc",
+  "scope_note": "Pass 3 remediation of the Pass 2 audit item 'extend the 2D sagittal bilayer solver to a full 3D FEM coupling the disc proper to the peripodial epithelium and lumenal pressure'. A full 3D FEM was NOT implemented. This file parameterises the closest honest reduced version: a quasi-1D (plane-strain sagittal) three-compartment sac in which (i) the DP apical surface comes from the Pass 2 bilayer solver, (ii) the PE is a tensioned squamous membrane in unilateral contact with the DP, (iii) the lumen is an incompressible fluid whose hydrostatic pressure p is set by a prescribed fluid volume (volume mode) or imposed directly (pressure mode), and (iv) p deflects the DP dome through a Laplace-law shell response. Every number below carries a provenance tag; values tagged 'assumption' have no direct wing-disc measurement and must be treated as model inputs, not data.",
+  "provenance_tags": {
+    "literature": "value taken from a cited paper (approximate, read from text/figures; could not be re-verified offline in Pass 3)",
+    "derived": "value computed from the SHA-256-pinned Pass 2 reference table wing_disc_dome_folding_reference.json",
+    "assumption": "order-of-magnitude modelling assumption with no direct Drosophila wing-disc measurement"
+  },
+  "peripodial_epithelium": {
+    "h_PE_squamous_um": {"value": 3.0, "unit": "um", "tag": "literature", "source": "McClure & Schubiger (2005) Development 132:5033-5042 describe late-L3 PE cells as squamous (a few um thick) versus ~30 um columnar DP cells; 3 um is an approximate reading"},
+    "h_margin_cuboidal_um": {"value": 8.0, "unit": "um", "tag": "assumption", "source": "cuboidal margin cells joining PE to DP at the disc edge; sets the PE clamping offset above the DP edge"},
+    "T_PE_mN_per_m": {"value": 1.0, "unit": "mN/m (= 1000 Pa*um)", "tag": "assumption", "source": "order-of-magnitude epithelial tissue tension; no PE-specific measurement exists"},
+    "T_PE_ablation_mN_per_m": {"value": 0.0, "unit": "mN/m", "tag": "derived", "source": "PE ablation control: membrane tension and lumen pressure set to zero"}
+  },
+  "lumen": {
+    "mode_default": "volume",
+    "h_lumen_mean_ref_um": {"value": 12.0, "unit": "um", "tag": "assumption", "source": "mean lumen height used to set the prescribed fluid volume V_target(t) = h_lumen_mean * L(t) per unit dorsoventral width"},
+    "h_lumen_min_contact_um": {"value": 1.0, "unit": "um", "tag": "assumption", "source": "minimum PE-DP gap enforced as a unilateral contact bound"},
+    "p_lumen_default_Pa": {"value": 20.0, "unit": "Pa", "tag": "assumption", "source": "default imposed pressure in pressure mode; below the ~100-300 Pa measured in the zebrafish otic vesicle (Mosaliganti et al. 2019 eLife 8:e39596), no wing-disc measurement exists"},
+    "p_sweep_Pa": [0.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 400.0, 800.0],
+    "p_bisection_max_Pa": 2000.0
+  },
+  "disc_proper_shell_response": {
+    "law": "Delta_z(s) = -(p / (16 * T_DP)) * [L_pouch^2 * w_dome(s) + w_fold^2 * w_fold_shape(s)]  (shallow-cap Laplace response of a tensioned shell to a transverse pressure; chord L_pouch = (1 - s_HP) * L(t))",
+    "T_DP_law": "T_DP = mu_BM * h_BM * (gamma_pouch^2 - gamma_pouch^-4) + T_cell  (neo-Hookean membrane tension of the equibiaxially stretched basal Collagen IV lamina plus a cortical floor)",
+    "T_cell_floor_mN_per_m": {"value": 0.5, "unit": "mN/m", "tag": "assumption", "source": "cortical/junctional tension floor so the shell response stays finite at 64 h AEL when gamma_pouch = 1"},
+    "gamma_pouch_by_stage": {"tag": "derived", "source": "cumulative_pouch_stretch in wing_disc_dome_folding_reference.json (1.0, 1.29, 1.66, 2.13, 2.74)"}
+  },
+  "comparison_targets_96h_AEL": {
+    "pouch_dome_height_um": {"value": 54.0, "tag": "derived", "source": "wing_disc_dome_folding_reference.json L3_mature_96h_AEL (Tozluoglu et al. 2019 Fig. 1)"},
+    "d_HH_um": {"value": 19.4, "tag": "derived", "source": "wing_disc_dome_folding_reference.json L3_mature_96h_AEL"},
+    "fold_position_shift_norm": {"value": 0.0, "tag": "literature", "source": "Tozluoglu et al. (2019) Dev. Cell: fold positions are set by planar differential growth within the disc proper; PE/lumen coupling is predicted not to move them"},
+    "lumen_pressure_at_half_dome_Pa": {"value": null, "tag": "prediction", "source": "model prediction only; no published wing-disc lumen pressure"}
+  },
+  "residual_remediation": "Quasi-1D plane-strain sac only: no dorsoventral curvature, no 3D finite-element mesh, PE modelled as a membrane without growth or its own fold mechanics, lumen fluid treated as incompressible with an assumed mean height. Carry 'full 3D FEM of DP + PE + lumen' forward as a Pass 4 item."
+}

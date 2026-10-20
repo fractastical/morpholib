@@ -10,10 +10,19 @@ model_spec:
   A_0_um2: 262.4
   R_vitelline_um: 83.2
   seed: 2012
+  # Pass 3 (2026-10-19-drosophila-ventral-furrow-audit-v3) reduced 3D AP shell + Stokes parameters
+  egg_ap_semi_axis_a_um: 250.0
+  mesoderm_ap_extent_el: [0.15, 0.80]
+  ap_bending_length_ell_B_um: 22.0
+  germband_tension_length_ell_N_wt_um: 30.0
+  gbe_onset_s: 540.0
+  stokes_grid_spacing_um: 0.2
+  nucleus_to_cytoplasm_viscosity_ratio: 50.0
   inputs:
     - datasets/drosophila_ventral_furrow/drosophila_ventral_furrow_reference.json
     - datasets/drosophila_ventral_furrow/drosophila_ventral_furrow_specimen.jpg
     - datasets/drosophila_ventral_furrow/scout_manifest.json
+    - datasets/drosophila_ventral_furrow/ap_shell_stokes_reference.json
 equations:
   - law_name: Incompressible Trapezoidal Wedge Cell Lengthening & Basal Expansion Law
     formula: "A_i = 0.5 * (w_{ap,i} + w_{ba,i}) * h_i = A_0;  w_{ap,i} < w_0 & w_{ba,i} = w_0 => h_i > h_0;  w_{ap,i} < w_0 & h_i <= h_0 => w_{ba,i} > w_0"
@@ -75,4 +84,54 @@ equations:
     variables: "phi_ap, phi_ba, phi_lat, phi_ecto: binary/continuous activation indicators for mesodermal apical constriction, basal relaxation, lateral shortening, and ectodermal pushing; D_furrow: ventral furrow invagination depth (um)"
     role: "Proves that apical constriction alone yields only a shallow groove (16.5 um), while synergistic combination with basal relaxation (29.5 um) and lateral shortening + ectodermal pushing (41.0 um) is required for full ventral furrow invagination"
     source_citation: "Conte, Munoz, Baum & Miodownik (2012) PLoS ONE 7(11):e49973 Figs. 3-6"
-    code_locus: "2012-he-drosophila-ventral-furrow.py#L255-L490"
+    code_locus: "2012-he-drosophila-ventral-furrow.py#L310-L575"
+  # ---------------------------------------------------------------------------------------------
+  # Pass 3 additions (audit 2026-10-19-drosophila-ventral-furrow-audit-v3)
+  # ---------------------------------------------------------------------------------------------
+  - law_name: "[Pass 3] Reduced 3D Shell Coupling: AP Curvature & Germband-Extension Tension Reduce Furrow Depth"
+    formula: "ell_B^4 D'''' - ell_N^2 D'' + k_rel(z) D = D_2D(t) chi_meso(z);  k_rel = (kappa_z^2 + kappa_theta^2)(z)/(.)(0);  modal: D_m = q / (B m^4 + N m^2 + k) strictly decreasing in N and in k"
+    lean_decl: MathOfBiology.Loop_046.modal_shell_stiffness
+    lean_theorem: MathOfBiology.Loop_046.ap_tension_and_curvature_stiffening_reduce_furrow_depth
+    lean_locus: morphoeval/lean/loops/Loop_046_drosophila_ventral_furrow.lean#L145-L197
+    lean_code: |-
+      def modal_shell_stiffness (B N k m2 : Int) : Int :=
+        B * m2 * m2 + N * m2 + k
+      theorem modal_depth_decreases_with_stiffness
+          (D1 D2 S1 S2 q : Int) (hS1 : S1 > 0) (hS : S1 < S2) (hD2 : D2 > 0)
+          (e1 : D1 * S1 = q) (e2 : D2 * S2 = q) : D2 < D1
+      theorem ap_tension_and_curvature_stiffening_reduce_furrow_depth
+          (B N1 N2 k1 k2 m2 q D0 DN Dk : Int)
+          (hB : B ≥ 0) (hm : m2 > 0) (hN1 : N1 ≥ 0) (hN : N1 < N2) (hk1 : k1 > 0) (hkk : k1 < k2)
+          (hDN : DN > 0) (hDk : Dk > 0)
+          (e0 : D0 * modal_shell_stiffness B N1 k1 m2 = q)
+          (eN : DN * modal_shell_stiffness B N2 k1 m2 = q)
+          (ek : Dk * modal_shell_stiffness B N1 k2 m2 = q) :
+          DN < D0 ∧ Dk < D0
+    variables: "D(z): ventral-midline inward furrow depth along the AP axis z; ell_B = (B/k_eq)^(1/4): bending length; ell_N = sqrt(N_GB/k_eq): germband-extension tension length; k_rel(z): curvature-induced Winkler stiffness normalised at the equator; kappa_z, kappa_theta: meridional and hoop curvatures of the prolate ellipsoid (a = 250 um, b = 83.2 um); chi_meso(z): mesoderm primordium indicator over 0.15-0.80 EL; m2 = m^2: squared modal wavenumber"
+    role: "Proves that both germband-extension AP tension and the polar curvature stiffening of the blastoderm shell strictly reduce the modal furrow depth, which is the mechanism behind the monotone ell_N sweep (ablation ratio 0.53 at ell_N = 150 um) and the anteroposterior taper of the 3D shell profile (k_rel = 1.8 at the mesoderm edges, 13x at the poles). Reduced 1D elastic-line + kinematic (theta x z) sweep, not a 3D finite-element shell."
+    source_citation: "Conte, Munoz, Baum & Miodownik (2012) PLoS ONE 7(11):e49973 (2D driving depth); Sweeton, Parks, Costa & Wieschaus (1991) Development 112:775-789 and Leptin & Grunewald (1990) Development 110:73-84 (furrow AP extent, GBE timing; approximate); Lye et al. (2015) PLoS Biol 13:e1002292 (tissue-scale AP tension during GBE; magnitude not calibrated)"
+    code_locus: "2012-he-drosophila-ventral-furrow.py#L627-L852"
+  - law_name: "[Pass 3] Intracellular Stokes Flow: Affine Lengthening Field is Divergence-Free and Carries the Nucleus Basal-ward"
+    formula: "4 d_xy[mu psi_xy] + (d_xx - d_yy)[mu (psi_xx - psi_yy)] = 0, u = psi_y, v = -psi_x;  uniform mu & affine data => psi = eps x (h - y), div u = 0, v(x,h) = 0, v(x,0) = -eps h = -h', v(x,y) < 0 for y < h"
+    lean_decl: MathOfBiology.Loop_046.affine_stream_function
+    lean_theorem: MathOfBiology.Loop_046.affine_lengthening_flow_divergence_free_and_basalward
+    lean_locus: morphoeval/lean/loops/Loop_046_drosophila_ventral_furrow.lean#L199-L242
+    lean_code: |-
+      def affine_stream_function (eps h x y : Int) : Int := eps * x * (h - y)
+      def affine_u (eps h x y : Int) : Int :=
+        affine_stream_function eps h x (y + 1) - affine_stream_function eps h x y
+      def affine_v (eps h x y : Int) : Int :=
+        -(affine_stream_function eps h (x + 1) y - affine_stream_function eps h x y)
+      def discrete_divergence (eps h x y : Int) : Int :=
+        (affine_u eps h (x + 1) y - affine_u eps h x y) + (affine_v eps h x (y + 1) - affine_v eps h x y)
+      theorem affine_lengthening_flow_divergence_free_and_basalward
+          (eps h x y y' : Int) (heps : eps > 0) (_hy : 0 ≤ y) (hyy : y < y') (hy' : y' < h) :
+          discrete_divergence eps h x y = 0 ∧
+          affine_v eps h x h = 0 ∧
+          affine_v eps h x 0 = -(eps * h) ∧
+          affine_v eps h x y < 0 ∧
+          affine_v eps h x y < affine_v eps h x y'
+    variables: "psi: stream function on the cell cross-section [-w/2, w/2] x [0, h] (apex pinned at y = h); mu: cytoplasmic viscosity (nucleus = 50x inclusion); eps = h'/h: incompressible lengthening strain rate; u, v: horizontal and apicobasal velocities; affine_u/affine_v: forward-difference lattice velocities"
+    role: "Pins the exact uniform-viscosity solution that the variable-viscosity Stokes solver must reproduce (verification L2 error 8e-13 in --self-test) and the sign structure (divergence-free, apex pinned, basal end at -h', strictly basal-ward interior velocity) that makes the resolved nucleus a passive tracer carried toward the basal end (v_nuc / v_cyto = 0.98 vs He et al. 2014 ~ 1)"
+    source_citation: "He, Doubrovinski, Polyakov & Wieschaus (2014) Nature 508(7496):392-396 Figs. 1-3"
+    code_locus: "2012-he-drosophila-ventral-furrow.py#L855-L1083"

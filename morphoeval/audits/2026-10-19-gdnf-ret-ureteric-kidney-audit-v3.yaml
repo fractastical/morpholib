@@ -1,0 +1,366 @@
+# MorphoEval audit — Menshykau & Iber (2013) Phys. Biol. & Short et al. (2014) Dev. Cell GDNF-RET Kidney Ureteric Bud Branching, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `2014-menshykau-gdnf-ret-ureteric-kidney.py` (1958 lines) after the remediation of the single open
+# v2 item in the instrumented loop `morphoeval/runs/2026-10-19-gdnf-ret-ureteric-kidney-loop-pass3`, superseding
+# `2026-10-19-gdnf-ret-ureteric-kidney-audit-v2` (92.8, Gemini 4 Argon).
+#   - Primary assessor: Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 055 Pass 3 Phase B assessor), scoring
+#     from the current file at commit 028758bc, the Phase A diff and the regenerated outputs.
+#
+# What Pass 3 changed (v2 remediation item 1, closed in REDUCED form — stated in the module header L8-L16):
+#   1. New Section 3b (L460-L653): a diffuse-domain (phase-field) steady mesenchymal GDNF field
+#      0 = D div(phi_cap grad G) + rho_G phi_nz - delta phi_cap G - kappa_tip T(x) G on a fixed 36x36x39 Eulerian grid
+#      (`solve_renal_capsule_gdnf_field_3d`, L526-L604) inside a spherical renal capsule whose radius grows with the
+#      Short (2014) observed tip number (`renal_capsule_radius_um`, L509-L519), a tanh nephrogenic-zone shell, RET tip
+#      sinks, and a moving-boundary contact map (`_confine_to_capsule`, L623-L652).
+#   2. Four couplings inside `grow_ureteric_tree_3d` (L655-L914): interstitial dilation of the existing tree about the
+#      previous capsule centre with the hilum as fixed point (L752-L761), GDNF-gated branching arrest (L794-L797),
+#      chemotaxis up grad G (L802, L854) and confinement (L806, L861); the Pass 2 hard-coded WT `branch_prob = 1.0`
+#      override is gone (L778).
+#   3. Six-condition coupling sweep / ablation (`CAPSULE_COUPLING_CONDITIONS`, `evaluate_capsule_coupling_sweep`,
+#      L990-L1051): coupled 293 tips / NZ fraction 0.67; no-chemotaxis 289 / 0.51; decoupled v2 tree 307 / 0.11 (80 % of
+#      its tips outside the nominal capsule); capsule x0.6 268 / 0.90; x0.5 198 / 0.95; x1.3 289 / 0.58.
+#   4. Panels G-H added to the 8-panel figure (L1485-L1494, L1508-L1586), new `docs/media/gdnf_ret_ureteric_kidney_capsule_coupling.png`
+#      (L1589-L1619), CLI `--capsule-growth`, `--chemotaxis`, `--no-capsule` and the previously dead `--D-ratio` wired
+#      (L331-L361, L1920-L1926); 3 new `measure_morphoeval()` entries (12 total, L1684-L1822); self-test 8 -> 9 checks
+#      (L1825-L1912); 2 new Lean theorems (`menshykau_capsule_confinement_bound`, `menshykau_capsule_crowding_arrest_monotone`,
+#      Loop_055 L107-L151; 5 theorems, 0 sorrys); `renal_capsule_phase_field_reference.json` with per-constant status tags.
+#
+# Scores below: overall 88.1 (down from 92.8). The decrease is deliberate: the Pass 3 remediation exposed defects that
+# the v2 audit did not penalise — the E15.5 tip count is now 293 vs the observed 354 (v2's "r = 1.0000 / 354" came from
+# the removed WT `branch_prob = 1.0` override), the capsule constants are order-of-magnitude anchors rather than table
+# values, the moving boundary is driven by the observed tip numbers it is later compared against, the per-generation
+# segment lengths and angles are read from the reference table (so the segment-length r is circular), the specimen
+# micrograph is from a prorenin-receptor study rather than a GDNF/RET study, and the pErk1/2 fold (38.65) is compared
+# with an unsourced reference of 2.40. These are listed under `remediation` as the Pass 4 work list.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated probabilities).
+# Line numbers refer to the files in the working tree at commit 028758bc (Phase A remediation applied, uncommitted).
+
+audit:
+  id: 2026-10-19-gdnf-ret-ureteric-kidney-audit-v3
+  supersedes: 2026-10-19-gdnf-ret-ureteric-kidney-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 055 Pass 3 Phase B Assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/55
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 028758bc
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) evaluation of `2014-menshykau-gdnf-ret-ureteric-kidney.py` after the
+      Phase A remediation of `2026-10-19-gdnf-ret-ureteric-kidney-loop-pass3` (Section 3b
+      phase-field capsule coupling, 1958 lines, 9 self-test checks in 6.9 s, 12 measurements,
+      5 Lean theorems with 0 sorrys). The script changes are in the working tree on top of
+      028758bc and had not been committed when this audit was written.
+
+references:
+  menshykau2013:
+    title: "Kidney branching morphogenesis under the control of a ligand-receptor-based Turing mechanism"
+    authors: "Menshykau D, Iber D"
+    venue: "Physical Biology 10(4):046003 (2013)"
+    doi: 10.1088/1478-3975/10/4/046003
+  short2014:
+    title: "Global spatiotemporal control of branching morphogenesis in the developing mouse kidney"
+    authors: "Short KM, Combes AN, Lefevre J, Ju AL, Georgas KM, Lamberton T, Cairncross O, Rumballe BA, Taylor HS, Teasdale RD, Hamilton NA, Little MH, Smyth IM"
+    venue: "Developmental Cell 29(2):188-202 (2014)"
+    doi: 10.1016/j.devcel.2014.02.017
+  watanabe2004:
+    title: "Real-time analysis of ureteric bud branching morphogenesis in vitro"
+    authors: "Watanabe T, Costantini F"
+    venue: "Developmental Biology 271(1):98-106 (2004)"
+    doi: 10.1016/j.ydbio.2004.09.019
+  basson2005:
+    title: "Sprouty1 is a critical regulator of GDNF/RET-mediated kidney induction"
+    authors: "Basson MA, Akbulut S, Watson-Karsten J, Licht JD, Martin GR, Costantini F"
+    venue: "Developmental Cell 8(2):229-239 (2005)"
+    doi: 10.1016/j.devcel.2004.12.004
+  miyazaki2000:
+    title: "Bone morphogenetic protein 4 inhibits the initial inductive events of metanephric mesenchyme and ureteric bud branching"
+    authors: "Miyazaki Y, Oshima K, Fogo A, Hogan BLM, Ichikawa I"
+    venue: "Journal of Clinical Investigation 105(7):863-873 (2000)"
+    doi: 10.1172/JCI8256
+  shakya2005:
+    title: "The role of GDNF/Ret signaling in ureteric bud cell fate and branching morphogenesis"
+    authors: "Shakya R, Watanabe T, Costantini F"
+    venue: "Developmental Cell 8(1):65-74 (2005)"
+    doi: 10.1016/j.devcel.2004.11.008
+    note: "Cited in the script's agenesis measurement source string (L1798) since Pass 2 but absent from paper_citations.bib and the v2 references; DOI taken from the citation as written and NOT verified offline."
+
+simulations:
+  - id: menshykau-gdnf-ret-ureteric-kidney
+    name: "Menshykau & Iber (2013) & Short et al. (2014) GDNF-RET-Wnt11-Sprouty1 kidney ureteric bud Turing branching morphogenesis"
+    organism: "Mouse embryonic metanephric kidney ureteric bud & cap mesenchyme (Mus musculus, E11.5-E15.5)"
+    script: 2014-menshykau-gdnf-ret-ureteric-kidney.py
+    output: docs/media/gdnf_ret_ureteric_kidney_comparison.png
+    extra_outputs:
+      - docs/media/gdnf_ret_ureteric_kidney_capsule_coupling.png
+      - docs/media/gdnf_ret_ureteric_kidney_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-gdnf-ret-ureteric-kidney-audit-v2
+    source_refs:
+      - menshykau2013
+      - short2014
+      - watanabe2004
+      - basson2005
+      - miyazaki2000
+      - shakya2005
+    claim_boundary:
+      reported_in_source:
+        - "Menshykau & Iber (2013): a ligand-receptor (GDNF-RET) Schnakenberg-type Turing mechanism on the ureteric bud epithelium selects elongation, bifurcation or trifurcation according to the ampulla geometry; GDNF is produced by the cap mesenchyme and bound by epithelial RET"
+        - "Short et al. (2014): OPT tip counts across E11.5-E15.5 (2 to 354 tips), Horton-Strahler R_b 2.08 and R_L 1.38, stereotyped early branching followed by a spatially regulated nephrogenic-zone programme in which all tips reside beneath the renal capsule"
+        - "Watanabe & Costantini (2004), Basson et al. (2005), Miyazaki et al. (2000), Shakya et al. (2005): GDNF-bead attraction, Spry1-/- supernumerary budding, BMP4 stalk inhibition and Gdnf-/-/Ret-/- renal agenesis"
+      reconstructed_in_script:
+        - "4-species GDNF-RET-Wnt11-Sprouty1 reaction-diffusion solver on a 1D periodic ampulla ring with m = 1..4 mode selection (L212-L361); a 3D stochastic ureteric tree across g = 1..8 with Horton-Strahler ordering (L366-L457, L655-L914); a steady diffuse-domain GDNF field inside an expanding spherical renal capsule with nephrogenic-zone production shell and RET tip sinks (L526-L604) coupled to the tree by chemotaxis, confinement, interstitial dilation and GDNF-gated arrest; a 6-condition capsule coupling sweep (L990-L1051); a 5-condition perturbation suite at g = 5 (L1057-L1101); colour-threshold segmentation of a vendored E12.5 micrograph (L1107-L1215)"
+      transfer_boundary:
+        - "The capsule is a sphere on a fixed Eulerian grid with isotropic dilation, not a moving-mesh finite-element model of the kidney; its radius R_cap(g) is prescribed from the Short (2014) observed tip numbers (L509-L519, L750), so the moving boundary is partly data-driven rather than emergent"
+        - "Per-generation segment lengths and branch angles are read from the reference table (L743-L747); the tree reproduces the ordering of tip counts, not an independent prediction of the generation-wise geometry"
+        - "The capsule constants (300/550 um anchors, 110 um nephrogenic zone, 150 um GDNF decay length, kappa_tip 2.0, gate 0.15, chi 0.35) are modelling assumptions tagged as such in renal_capsule_phase_field_reference.json, not literature table values"
+      does_not_claim:
+        - "A deforming tetrahedral/FEM mesh of capsule and nephrogenic zone, anisotropic tissue growth, an ellipsoidal kidney, epithelial mechanics, cell-level nephron induction, or quantitative reproduction of the specimen micrograph's pErk1/2 fold (the 2.40 reference is unsourced)"
+    summary: >-
+      Pass 3 (v3) evaluation of `2014-menshykau-gdnf-ret-ureteric-kidney.py` (overall weighted
+      score 88.1/100, down from 92.8 in v2). The single v2 remediation item — couple the 3D tree to
+      a phase-field / moving-boundary model of the expanding renal capsule and nephrogenic zone — is
+      closed in a reduced, honestly labelled form: a steady diffuse-domain GDNF field on a fixed
+      36x36x39 grid inside an expanding spherical capsule with a nephrogenic-zone production shell
+      and RET tip sinks, coupled to the tree by chemotaxis, moving-boundary confinement, interstitial
+      dilation and GDNF-gated arrest. The coupling demonstrably matters: 67 % of E15.5 tips lie in
+      the nephrogenic zone (decoupled v2 tree 11 %, with 80 % outside the capsule), a half-rate
+      capsule suppresses the tip count to 198/293 through 103 vs 7 gated arrests, and the field is
+      2.15x enriched in the nephrogenic zone. Two Lean theorems (confinement bound, crowding-arrest
+      monotonicity) are machine-checked, the self-test grows to 9 checks and 12 measurements, and
+      three CLI flags plus the previously dead --D-ratio are wired. The lower score reflects what the
+      remediation exposed rather than regressions: E15.5 tips 293 vs 354 observed (RMSE 23.3; v2's
+      perfect fit came from a hard-coded WT branch_prob = 1.0 that is now removed), capsule constants
+      that are order-of-magnitude anchors, a capsule radius prescribed from the observed tip counts,
+      self-referential generation lengths/angles, a fragile Horton-Strahler R_b (2.18 at gate 0.15,
+      2.35 at 0.18), a specimen micrograph from a prorenin-receptor study with an unsourced pErk fold
+      reference, and CLI overrides that do not reach the perturbation suite, sweep or capsule figure.
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          The 4-species Schnakenberg GDNF-RET-Wnt11-Sprouty1 PDE (L212-L328), m = 1..4 ampulla mode
+          selection (L331-L361), 3D tree with exact Strahler ordering (L366-L457, L655-L914) and the
+          agenesis / Spry1 controls are unchanged and sound. Pass 3 adds a physically reasonable
+          diffuse-domain GDNF field: production confined to the nephrogenic shell phi_nz, decay and
+          RET tip sinks inside phi_cap, zero GDNF outside the capsule (verified by self-test 9), and
+          four couplings — chemotaxis, confinement, interstitial dilation with the hilum fixed, and
+          GDNF-gated arrest — each of which produces the qualitatively expected effect in the sweep
+          (+3 net vs v2 for the mechanism, backed by 2 new Lean theorems). Deductions, all exposed by
+          the remediation: the capsule radius is prescribed from the Short (2014) observed tip number
+          it is later compared against, so the moving boundary is not an emergent part of the model
+          (-3); R_cap anchors, nephrogenic-zone thickness, GDNF decay length, kappa_tip, the 0.15 gate
+          and chi = 0.35 are order-of-magnitude assumptions, not Menshykau/Short values (-2); the
+          capsule is a sphere with isotropic dilation whereas the kidney is ellipsoidal with
+          anisotropic growth (-1); per-generation segment lengths and angles come from the reference
+          table rather than from the PDE or capsule (-1); the ampulla PDE is a periodic 1D ring of
+          length pi R_tip described as a dome, with m = 1..4 seeded explicitly in the initial bias
+          (-1). Net: 94 -> 90.
+        evidence:
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [212, 361], note: "Coupled 4-species GDNF-RET-Wnt11-Sprouty1 ampulla PDE and m=1..4 mode selection; `--D-ratio` now reaches `evaluate_ampulla_mode_selection(D_ratio=...)` (L331)", supports: true}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [526, 604], note: "Steady diffuse-domain GDNF field 0 = D div(phi_cap grad G) + rho_G phi_nz - delta phi_cap G - kappa_tip T G on a fixed 36x36x39 grid with tanh phase fields and RET tip sinks", supports: true}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [750, 806], note: "Per-generation capsule radius and field solve, interstitial dilation about the previous capsule centre (hilum fixed), GDNF-gated arrest (L794-L797), chemotaxis (L802) and confinement (L806)", supports: true}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [509, 519], note: "Capsule radius R_cap(g) interpolated from the OBSERVED Short (2014) tip number of the same generation — the moving boundary is data-prescribed, not emergent", supports: false}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [479, 489], note: "CAPSULE_PARAMS: 300/550 um anchors, 110 um NZ, 150 um decay length, kappa_tip 2.0, margin 22 um, hilum offset 0.62 are approximate anchors / modelling assumptions", supports: false}
+          - {file: morphoeval/lean/loops/Loop_055_gdnf_ret_ureteric_kidney.lean, lines: [107, 151], note: "`menshykau_capsule_confinement_bound` and `menshykau_capsule_crowding_arrest_monotone`: 2 new machine-checked theorems (5 total, 0 sorrys, lean exit 0)", supports: true}
+      specimen-match:
+        value: 84
+        rationale: >-
+          The 8-panel figure now shows the coupled 3D tree, the ampulla modes, the g = 1..8 scaling,
+          the perturbation suite, the specimen segmentation, a mid-plane capsule GDNF slice with
+          capsule / nephrogenic-zone contours and confined tips (Panel G), and the ablation bars
+          (Panel H); the dedicated capsule-coupling figure contrasts the E13.0 and E15.5 coupled trees
+          with the decoupled v2 tree, 80 % of whose tips lie outside the nominal capsule — a visually
+          convincing demonstration that the coupling is what keeps tips in the nephrogenic zone.
+          Specimen segmentation still finds 13 WT vs 6 mutant tips. Deductions, which the v2 audit
+          did not apply: the vendored Wikimedia micrograph is from a prorenin-receptor (PRR UB-/-)
+          study, not a GDNF/RET or Short (2014) specimen, so the "mutant" panel is not the Gdnf/Ret
+          perturbation the model simulates (-4); the measured pErk1/2 fold of 38.65 is compared with
+          a reference of 2.40 whose source string is unsourced, a 16x discrepancy left unexplained
+          (-3); the pErk ROIs are hard-coded pixel boxes that ignore the ROI stored in the reference
+          JSON (-1); the GIF draws every generation frame with the final dilated node positions, so
+          early frames show already-stretched segments (-1); the E15.5 coupled tree has 293 tips vs
+          the 354 the figure's own Panel C reports as observed (-2). Net: 91 -> 84.
+        evidence:
+          - {file: docs/media/gdnf_ret_ureteric_kidney_comparison.png, lines: [0, 0], note: "8-panel (2x4) synthesis: 3D coupled tree, ampulla modes, g=1..8 scaling, perturbations, specimen panels, Panel G capsule GDNF slice with NZ contours, Panel H coupling sweep bars", supports: true}
+          - {file: docs/media/gdnf_ret_ureteric_kidney_capsule_coupling.png, lines: [0, 0], note: "E13.0 and E15.5 coupled slices vs decoupled v2 tree against the nominal capsule (80 % of tips outside) and sweep panel", supports: true}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [1508, 1586], note: "`_draw_capsule_slice` / `_draw_capsule_sweep` render the phase-field slice, capsule/NZ contours, confined tips and the ablation bars", supports: true}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [1107, 1215], note: "Specimen segmentation: 13 WT vs 6 mutant tips detected; pErk ROIs hard-coded at L1193-L1198 ignoring the reference JSON ROI", supports: true}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [1812, 1821], note: "pErk1/2 fold 38.65 vs `reference_value: 2.40` whose source is an unsourced description string; specimen is from a PRR study, not GDNF/RET", supports: false}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [1622, 1678], note: "GIF uses final (dilated) node positions for every generation frame", supports: false}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Pass 3 adds a 6-condition capsule coupling sweep (coupled, no-chemotaxis, decoupled,
+          capsule x0.6 / x0.5 / x1.3) whose outputs move monotonically with capsule growth (198 <
+          268 < 293 tips; NZ fraction 0.95 > 0.90 > 0.67 > 0.58), the `grow_ureteric_tree_3d`
+          signature exposes `capsule_growth`, `chemotaxis_weight`, `capsule_confinement`, `gdnf_gate`
+          (L663-L666), `evaluate_short_2014_generations` forwards them, and the CLI gains
+          `--capsule-growth`, `--chemotaxis`, `--no-capsule` while `--D-ratio` (dead in v2) is now wired.
+          The 4 ampulla regimes, 8 generations and 5 perturbation conditions are retained. Deductions:
+          CLI overrides affect only the g = 1..8 tree (Panels A, C, F, G); the perturbation suite,
+          Panel H sweep and the capsule figure take `seed` only and ignore them (-4); the `no_capsule`
+          ablation changes chi, confinement, gate and dilation simultaneously, so only `no_chemotaxis`
+          isolates a single coupling (-3); the gate value 0.15 is not sweepable from the CLI although
+          R_b is sensitive to it (-1). Net: 92 -> 90.
+        evidence:
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [990, 1051], note: "`CAPSULE_COUPLING_CONDITIONS` + `evaluate_capsule_coupling_sweep`: 6 conditions over capsule growth, chemotaxis, confinement and gate", supports: true}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [1917, 1927], note: "CLI: --rho-G, --gamma, --D-ratio (now wired), --bmp4, --capsule-growth, --chemotaxis, --no-capsule, --seed", supports: true}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [1230, 1234], note: "`render_comparison_figure` passes overrides only to the ampulla modes and the g=1..8 tree; `evaluate_perturbation_suite(seed)` and `evaluate_capsule_coupling_sweep(seed)` ignore them", supports: false}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [993, 993], note: "`no_capsule` condition sets chemotaxis 0, capsule False and gate 0 at once — a conflated ablation", supports: false}
+      morphometric-validation:
+        value: 86
+        rationale: >-
+          `measure_morphoeval()` returns 12 reference-anchored measurements (9 carried from v2 plus
+          E15.5 tips-in-nephrogenic-zone fraction 0.666 vs ref 1.0 with the decoupled 0.114 stated,
+          capsule-crowding suppression ratio 0.676 vs decoupled null 1.0, and NZ/core GDNF enrichment
+          2.15 vs uniform null 1.0), each with method, reference source and a note. Short (2014) tip
+          correlation r = 0.9997 (RMSE 23.3 vs 2^g RMSE 38.7), R_b 2.177 (ref 2.08), R_L 1.371 (ref
+          1.38), Delta m = 1, Spry1/WT and BMP4/WT ratios, agenesis 0 tips, specimen 13/6 tips.
+          Deductions: the E15.5 count is 293 vs 354 observed and the g = 5 WT count 36 vs 40.2 — the
+          Pearson r is dominated by exponential growth and is weak evidence of fit (-3); the segment-
+          length r is circular because the generation lengths are read from the same reference table
+          (-3); R_b passes the 1.90-2.30 self-test window only at gate 0.15 (2.35 at gate 0.18 or chi
+          = 0) and `compute_horton_strahler_metrics` drops the last ratio and falls back to 2.0 (-2);
+          two of the three new measurements are compared with null hypotheses (1.0) rather than
+          measured values (-2); the pErk fold 38.65 vs unsourced 2.40 is reported as a measurement
+          without comment on the 16x gap (-2); spry1 and bead trees differ only via `seed + 10*idx`
+          (-1). Net: 93 -> 86.
+        evidence:
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [1684, 1822], note: "12 measurements with method/reference/note; 3 new Pass 3 entries at L1702-L1731 (NZ fraction, crowding suppression, NZ/core enrichment)", supports: true}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [1846, 1850], note: "Self-test 4: r > 0.995, RMSE < 2^g RMSE, 1.90 <= R_b <= 2.30, 1.20 <= R_L <= 1.55 — R_b passes only at the chosen gate", supports: true}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [743, 747], note: "Per-generation `segment_length_um` and `branch_angle_deg` read from the reference table, making the segment-length Pearson r (L956-L957) circular", supports: false}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [427, 436], note: "`compute_horton_strahler_metrics` drops the last ratio ('interior') and falls back to R_b = 2.0 when fewer than 2 valid orders", supports: false}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [1062, 1074], note: "Perturbation suite trees differ only through `seed + 10*idx`; WT g=5 36 vs obs 40.2", supports: false}
+      source-traceability:
+        value: 88
+        rationale: >-
+          `datasets/gdnf_ret_ureteric_kidney/` carries 5 primary DOIs in `paper_citations.bib`, the
+          scout manifest, the reference JSON, the specimen image and now
+          `renal_capsule_phase_field_reference.json`, all 5 SHA-256-pinned and verified fail-closed
+          at every run (`verify_dataset_integrity`, L87-L104; `load_capsule_reference` cross-checks the
+          JSON against `CAPSULE_PARAMS`, L107-L119). The new JSON tags every capsule constant with a
+          status string (approximate anchor / modelling assumption / numerical), which is the right
+          way to disclose unsourced values. Deductions: Shakya et al. (2005) is cited in a measurement
+          source string (L1798) but is absent from `paper_citations.bib` (-2); the specimen "published
+          12 tips, cohort mean 13.2 +/- 0.5" (L1808) and the pErk reference 2.40 (L1817-L1818) have no
+          verifiable citation (-3); none of the capsule constants is traced to a table or figure (-2).
+          Net: 95 -> 88.
+        evidence:
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [77, 119], note: "EXPECTED_SHA256 for 5 dataset files, `verify_dataset_integrity` and `load_capsule_reference` consistency check against CAPSULE_PARAMS", supports: true}
+          - {file: datasets/gdnf_ret_ureteric_kidney/renal_capsule_phase_field_reference.json, lines: [1, 45], note: "Capsule parameter table with per-constant status tags and `residual_remediation`", supports: true}
+          - {file: datasets/gdnf_ret_ureteric_kidney/gdnf_ret_ureteric_kidney_reference.json, lines: [1, 188], note: "SHA-256-locked Short (2014) g=1..8 and 5-condition perturbation tables", supports: true}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [1798, 1818], note: "Shakya 2005 cited but not in the bib; specimen 'cohort mean 13.2 +/- 0.5' and pErk reference 2.40 unsourced", supports: false}
+      code-traceability:
+        value: 90
+        rationale: >-
+          The module header (L1-L16) states the Pass 3 remediation, names the reduced model and the
+          residual FEM item, and maps each law to its Lean theorem; Section 3b has a banner and the
+          four couplings are numbered (i)-(iv) in comments at the lines where they act; the new JSON's
+          status tags and the `measure_morphoeval` docstring (9 + 3) make the provenance of each
+          number legible. Deductions: the trifurcation / branch-probability constants 0.08 / 0.24 /
+          0.22, the 1.28 / 0.72 stage factors and 0.99 * gain^0.42 (L705-L709, L772-L778) have no
+          cited source (-4); the `self_test` docstring still reads "8-check ... Pass 2 (v2)" although
+          the suite has 9 checks and prints "Pass 3 v3" (-2); the GIF's use of dilated positions is
+          not documented (-1); the ampulla ring geometry is called a dome (-1). Net: 92 -> 90.
+        evidence:
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [1, 16], note: "Header states the reduced phase-field remediation, the residual moving-mesh FEM item and the two new Lean theorem names", supports: true}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [460, 461], note: "Section 3b banner; couplings (i)-(iv) labelled in-line at L753, L793, L853, L859", supports: true}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [705, 709], note: "Untraced trifurcation constants 0.08 / 0.24 / 0.22 and BMP4 0.04", supports: false}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [1825, 1826], note: "Stale `self_test` docstring: '8-check ... Pass 2 (v2)' vs 9 checks / Pass 3", supports: false}
+      repro-package:
+        value: 93
+        rationale: >-
+          `--self-test` passes 9 checks in 6.9 s (SHA-256 integrity of 5 files + capsule JSON
+          consistency, Turing criterion, harmonics [1,2,3,4], Short scaling and Strahler windows,
+          agenesis control, perturbation ordering, specimen segmentation, two-run bitwise determinism
+          of PDE, tree and field, and the new 10-assertion capsule-coupling check including the hilum
+          fixed point and zero GDNF outside the capsule); `measure_morphoeval()` length is asserted
+          (12); the full default render writes the PNG, the capsule PNG and the GIF in 7.3 s; all
+          outputs are seeded and deterministic. Deductions: the self_test docstring is stale (-1); the
+          R_b window 1.90-2.30 is satisfied only at the default gate so the determinism guarantee is
+          narrower than it looks (-1); the capsule figure and sweep cannot be regenerated under the
+          CLI overrides (-1); no pinned requirements lock file for this script (-1). Net: 93 -> 93.
+        evidence:
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [1825, 1912], note: "9-check self_test(): integrity, Turing, modes, Short/Strahler, agenesis, ordering, specimen, bitwise determinism (PDE/tree/field), capsule coupling (10 assertions) and 12 measurements", supports: true}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [1875, 1882], note: "Self-test 8: two-run bitwise determinism on `R2G`, generation tips and the capsule field `G`", supports: true}
+          - {file: 2014-menshykau-gdnf-ret-ureteric-kidney.py, lines: [1915, 1954], note: "CLI entrypoint renders PNG + capsule PNG + GIF (--skip-gif) with a fixed default seed 2014", supports: true}
+    remediation:
+    - >-
+      2014-menshykau-gdnf-ret-ureteric-kidney.py:509-519 and 750 — `renal_capsule_radius_um` interpolates R_cap(g)
+      from the OBSERVED Short (2014) tip number of the same generation, so the moving boundary is data-prescribed and
+      the Panel C tip-count comparison is not independent of the reference. Drive the capsule radius from simulated
+      state (e.g. cumulative tip count or an interstitial growth law R_cap(t) with its own anchor) and report the
+      comparison as a prediction.
+    - >-
+      2014-menshykau-gdnf-ret-ureteric-kidney.py:479-489 and datasets/gdnf_ret_ureteric_kidney/renal_capsule_phase_field_reference.json:15-28 —
+      the capsule anchors (300 / 550 um), nephrogenic-zone thickness 110 um, GDNF decay length 150 um, kappa_tip 2.0,
+      gate 0.15, chi 0.35, hilum offset 0.62 and margin 22 um are tagged as assumptions. Trace at least the capsule
+      radii and nephrogenic-zone thickness to a measured source (Short 2014 OPT volumes or a histology table) and add
+      a sensitivity sweep over gate and chi showing how R_b and the tip count respond.
+    - >-
+      2014-menshykau-gdnf-ret-ureteric-kidney.py:743-747 and 956-957 — per-generation `segment_length_um` and
+      `branch_angle_deg` are read from the reference table, so the segment-length Pearson r is circular; recorded
+      generation lengths are at formation while Strahler lengths include later dilation (752-761). Derive segment
+      length from the ampulla PDE / capsule geometry or drop the length correlation from the measurement list.
+    - >-
+      2014-menshykau-gdnf-ret-ureteric-kidney.py:705-709 and 772-778 — trifurcation constants 0.08 / 0.24 / 0.22,
+      stage factors 1.28 / 0.72 and branch probability 0.99 * gain^0.42 have no cited source; the E15.5 tip count is
+      293 vs 354 observed (RMSE 23.3) and g=5 WT is 36 vs 40.2. Either calibrate these against the Short (2014) table
+      with the calibration stated, or expose them as documented parameters.
+    - >-
+      2014-menshykau-gdnf-ret-ureteric-kidney.py:427-436 and 1849 — `compute_horton_strahler_metrics` drops the last
+      ratio and falls back to R_b = 2.0, and the 1.90-2.30 self-test window passes only at gate 0.15 (R_b = 2.35 at
+      gate 0.18 or chi = 0). Compute R_b by log-linear regression over all orders with >= 2 streams and report its
+      sensitivity to the gate.
+    - >-
+      2014-menshykau-gdnf-ret-ureteric-kidney.py:1193-1198 and 1812-1821 — the pErk1/2 ROIs are hard-coded pixel
+      boxes that ignore `panel_d_f_wt_if_roi_xyxy` in the reference JSON, and the measured fold 38.65 is compared with
+      an unsourced `reference_value: 2.40`. Read the ROIs from the JSON, state a sourced reference or mark the
+      measurement as uncalibrated.
+    - >-
+      2014-menshykau-gdnf-ret-ureteric-kidney.py:1807-1808 and datasets/gdnf_ret_ureteric_kidney/gdnf_ret_ureteric_kidney_reference.json —
+      the vendored Wikimedia micrograph is from a prorenin-receptor (PRR UB-/-) study, not a GDNF/RET or Short (2014)
+      specimen, and the "published 12 tips, cohort mean 13.2 +/- 0.5" has no verifiable citation. Either vendor a
+      CC-licensed GDNF/RET-perturbation specimen or relabel the panel as a generic E12.5 ureteric tree.
+    - >-
+      2014-menshykau-gdnf-ret-ureteric-kidney.py:1798 and datasets/gdnf_ret_ureteric_kidney/paper_citations.bib —
+      Shakya et al. (2005) Dev. Cell 8:65-74 is cited in a measurement source string but absent from the bib; add it
+      (and update the SHA-256 pin) and verify the DOI 10.1016/j.devcel.2004.11.008.
+    - >-
+      2014-menshykau-gdnf-ret-ureteric-kidney.py:1230-1234, 1589-1597 and 990-997 — CLI overrides reach only the
+      g=1..8 tree; the perturbation suite, Panel H sweep and the capsule figure take `seed` only, and the `no_capsule`
+      ablation changes chemotaxis, confinement, gate and dilation at once. Propagate overrides and add single-factor
+      ablations (confinement-only, gate-only, dilation-only).
+    - >-
+      2014-menshykau-gdnf-ret-ureteric-kidney.py:1622-1678 — `render_growth_gif` draws every generation frame with
+      the final (dilated) node positions, so early frames show already-stretched segments. Record per-generation node
+      snapshots during growth and animate those.
+    - >-
+      2014-menshykau-gdnf-ret-ureteric-kidney.py:752-761 and 526-604 — the capsule is a sphere on a fixed Eulerian
+      grid with isotropic dilation; the kidney is ellipsoidal with anisotropic growth and the ureteric epithelium is
+      not a separate phase. Residual of the v2 item: implement a deforming (moving-mesh) capsule / nephrogenic-zone
+      domain or at least an ellipsoidal capsule with anisotropic dilation.
+    - >-
+      2014-menshykau-gdnf-ret-ureteric-kidney.py:1826 — `self_test` docstring says "8-check ... Pass 2 (v2)" while the
+      suite has 9 checks and prints "Pass 3 v3"; the ampulla PDE geometry at 232-260 is a periodic 1D ring described
+      as a "semicircular dome". Update both docstrings.

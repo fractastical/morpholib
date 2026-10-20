@@ -1,0 +1,86 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-hannezo-epithelial-buckling-3d> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-hannezo-epithelial-buckling-3d-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-hannezo-epithelial-buckling-3d-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Hannezo, Prost & Joanny (2014) PNAS & Krajnc & Ziherl (2015) PRE 3D epithelial sheet morphology (squamous-to-cuboidal-to-columnar scaling, apico-basal buckling & Gómez-Gálvez scutoid tube packing) — Reproducibility package: 92/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`--self-test` runs 11 checks in ~16 s (SHA-256 of 5 files, JSON parity, L-BFGS-B vs analytic, perturbation hierarchy, 5-phase coverage, 12-tissue collapse, specimen CV, two-run bitwise determinism, and Pass 3: Law 4 flat = 0 scutoids / curved > 0 / villus s < 1, Law 5 Euler totals on three meshes, monotone sweep, 6/6 buckled with scutoids and 6/6 flat without, crest spectral-vs-sinusoidal within 25 %, mesh determinism, 12-measurement contract; L1824-1917); the default render regenerates PNG, scutoid PNG and GIF in ~26 s with a fixed seed; all data are vendored. Deductions: the 12-tissue acceptance thresholds (r > 0.998, L1859-1860) guard circular metrics and would pass any JSON built the same way (-3); the crest check tolerates a 25 % spectral-vs-sinusoidal gap and the measured gap is 44 % against the pinned reference, so the self-test cannot catch the s_crest disagreement (-2); matplotlib emits a font-cache warning when MPLCONFIGDIR is unset (-1); the repository README section for this script is not updated for the Pass 3 outputs/CLI (outside this slot's write set, noted not penalised further) (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:evidenceAgainst "2016-hannezo-epithelial-buckling-3d.py L1857–L1860: 12-tissue thresholds r_aspect > 0.998 and r_lambda > 0.995 - guard metrics that are circular by construction <https://github.com/fractastical/morpholib/blob/654cd6fc/2016-hannezo-epithelial-buckling-3d.py#L1857-L1860>",
+            "2016-hannezo-epithelial-buckling-3d.py L1896–L1900: Crest check: spectral vs sinusoidal within rel_tol 0.25; the 44 % gap to the pinned 2.303 reference is not tested <https://github.com/fractastical/morpholib/blob/654cd6fc/2016-hannezo-epithelial-buckling-3d.py#L1896-L1900>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-hannezo-epithelial-buckling-3d-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-hannezo-epithelial-buckling-3d-repro-package-2> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-hannezo-epithelial-buckling-3d-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "2016-hannezo-epithelial-buckling-3d.py L1824–L1917" ;
+        dct:description "11-check self_test incl. Pass 3 Laws 4-5, sweep monotonicity, per-tissue crest predictions and mesh determinism" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/654cd6fc/2016-hannezo-epithelial-buckling-3d.py#L1824-L1917> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-hannezo-epithelial-buckling-3d-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "2016-hannezo-epithelial-buckling-3d.py L1920–L1975" ;
+        dct:description "argparse CLI: --self-test, --skip-gif, --gamma-*, --k-sub, --seed, --tube-radius, --surface-ratio; fixed seed 2016" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/654cd6fc/2016-hannezo-epithelial-buckling-3d.py#L1920-L1975> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 047 Pass 3 Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/47> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.bpj.2015.11.024>,
+            <https://doi.org/10.1038/s41467-018-05376-1>,
+            <https://doi.org/10.1038/s41467-018-06497-3>,
+            <https://doi.org/10.1073/pnas.1321766111>,
+            <https://doi.org/10.1103/PhysRevE.92.052713> .
+    <https://doi.org/10.1016/j.bpj.2015.11.024> dct:date "2016"^^xsd:gYear ;
+        dct:title "Quantitative Morphology of Epithelial Folds" .
+    <https://doi.org/10.1038/s41467-018-05376-1> dct:date "2018"^^xsd:gYear ;
+        dct:title "Scutoids are a geometrical solution to three-dimensional packing of epithelia" .
+    <https://doi.org/10.1038/s41467-018-06497-3> dct:date "2018"^^xsd:gYear ;
+        dct:title "Differential lateral and basal tension drive folding of Drosophila wing discs through two distinct mechanisms" .
+    <https://doi.org/10.1073/pnas.1321766111> dct:date "2014"^^xsd:gYear ;
+        dct:title "Theory of epithelial sheet morphology in three dimensions" .
+    <https://doi.org/10.1103/PhysRevE.92.052713> dct:date "2015"^^xsd:gYear ;
+        dct:title "Theory of epithelial elasticity" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Hannezo, Prost & Joanny (2014) PNAS & Krajnc & Ziherl (2015) PRE 3D epithelial sheet morphology (squamous-to-cuboidal-to-columnar scaling, apico-basal buckling & Gómez-Gálvez scutoid tube packing) — Reproducibility package 92/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:00:56Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-hannezo-epithelial-buckling-3d-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/47> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

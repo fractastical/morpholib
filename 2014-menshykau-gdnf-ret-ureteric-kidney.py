@@ -1,9 +1,19 @@
 #!/usr/bin/env python3
 """
-2014-menshykau-gdnf-ret-ureteric-kidney.py — Pass 2 (v2) Remediated Reproduction of
+2014-menshykau-gdnf-ret-ureteric-kidney.py — Pass 3 (v3) Remediated Reproduction of
 Menshykau & Iber (2013) Phys. Biol. 10(4):046003, Short et al. (2014) Dev. Cell 29(2):188-202,
 Watanabe & Costantini (2004) Dev. Biol. 271(1):98-106 & Basson et al. (2005) Dev. Cell 8(2):229-239
 Kidney Ureteric Bud GDNF-RET-Wnt11-Sprouty1 Turing Branching Morphogenesis.
+
+Pass 3 remediation (closes the single Pass 2 item "couple the 3D ureteric tree solver to a full
+3D phase-field or moving-boundary FE mesh of the expanding renal capsule and nephrogenic zone"):
+Section 3b implements the HONEST REDUCED VERSION — a diffuse-domain (phase-field) steady GDNF
+field on a fixed 36x36x39 Eulerian grid inside an expanding spherical capsule phi_cap(x, g) with a
+nephrogenic-zone production shell phi_nz, RET-mediated uptake at the tips, and four couplings to
+the growing tree: chemotaxis up grad G, moving-boundary confinement, interstitial dilation of the
+existing tree with the capsule, and GDNF-gated (crowding) branching arrest
+(Lean 4 `MathOfBiology.Loop_055.menshykau_capsule_confinement_bound` &
+`menshykau_capsule_crowding_arrest_monotone`). A true moving-mesh FEM remains a residual item.
 
 Mathematical & Biological Formulation
 -------------------------------------
@@ -57,15 +67,17 @@ DATASET_DIR = HERE / "datasets" / "gdnf_ret_ureteric_kidney"
 REF_JSON = DATASET_DIR / "gdnf_ret_ureteric_kidney_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "kidney_ureteric_tree_specimen.jpg"
 SCOUT_JSON = DATASET_DIR / "scout_manifest.json"
+CAPSULE_REF_JSON = DATASET_DIR / "renal_capsule_phase_field_reference.json"
 BIB_FILE = DATASET_DIR / "paper_citations.bib"
 
 OUT_PNG = HERE / "docs" / "media" / "gdnf_ret_ureteric_kidney_comparison.png"
 OUT_GIF = HERE / "docs" / "media" / "gdnf_ret_ureteric_kidney_growth.gif"
+OUT_CAPSULE_PNG = HERE / "docs" / "media" / "gdnf_ret_ureteric_kidney_capsule_coupling.png"
 
 EXPECTED_SHA256: dict[str, str] = {
     "kidney_ureteric_tree_specimen.jpg": "dceaf5044c7014e44bf8a9ab0e728a670255e68952454f1e65c3d7a3412feff7",
     "scout_manifest.json": "60b78a1876b45c42eb1aeffb592003c16e5df5dc486573211856568945f616fe",
-    "paper_citations.bib": "62f203a6f4125269a5011605147c8cb1f9f4c47fa6bc99c4edbe4ca7c45db331",
+    "paper_citations.bib": "3eb2da09bd233938ed2680a5d121650833ea7748b2b77464de0a1908e55c1484",
 }
 
 
@@ -86,7 +98,25 @@ def verify_dataset_integrity() -> dict[str, str]:
     if not REF_JSON.exists():
         raise FileNotFoundError(f"Missing reference JSON: {REF_JSON}")
     digests[REF_JSON.name] = hashlib.sha256(REF_JSON.read_bytes()).hexdigest()
+    if not CAPSULE_REF_JSON.exists():
+        raise FileNotFoundError(f"Missing capsule reference JSON: {CAPSULE_REF_JSON}")
+    digests[CAPSULE_REF_JSON.name] = hashlib.sha256(CAPSULE_REF_JSON.read_bytes()).hexdigest()
     return digests
+
+
+def load_capsule_reference() -> dict[str, Any]:
+    """Load the Pass 3 capsule parameter table and check it matches `CAPSULE_PARAMS`."""
+    doc = json.loads(CAPSULE_REF_JSON.read_text(encoding="utf-8"))
+    tbl = doc["diffuse_domain_gdnf_field"]["parameters"]
+    anchors = doc["capsule_expansion_law"]["anchors"]
+    for key in ("nz_thickness_um", "eps_um", "gdnf_decay_length_um", "kappa_tip",
+                "tip_sink_sigma_cells", "confine_margin_um", "hilum_offset", "stalk_length_um"):
+        if not math.isclose(float(tbl[key]["value"]), CAPSULE_PARAMS[key], rel_tol=1e-9):
+            raise ValueError(f"Capsule parameter {key} differs between script and reference table")
+    for key in ("R_cap_E11_5_um", "R_cap_E15_5_um"):
+        if not math.isclose(float(anchors[key]["value"]), CAPSULE_PARAMS[key], rel_tol=1e-9):
+            raise ValueError(f"Capsule anchor {key} differs between script and reference table")
+    return doc
 
 
 def load_reference_data() -> dict[str, Any]:
@@ -298,11 +328,13 @@ def solve_gdnf_ret_wnt11_spry1_ampulla_pde(
     }
 
 
-def evaluate_ampulla_mode_selection(seed: int = 2014) -> list[dict[str, Any]]:
+def evaluate_ampulla_mode_selection(seed: int = 2014, D_ratio: float | None = None) -> list[dict[str, Any]]:
     """Evaluate circumferential mode selection across the 4 ampulla tip-radius regimes
     (`M1_stalk_elongation` -> `M2_dichotomous_splitting` -> `M3_trichotomous_ampulla` ->
-    `M4_supernumerary_ectopic`; Menshykau & Iber 2013 Figs. 3-5 & Lean 4 Law 2)."""
+    `M4_supernumerary_ectopic`; Menshykau & Iber 2013 Figs. 3-5 & Lean 4 Law 2).
+    `D_ratio` overrides d = D_G / D_R (CLI `--D-ratio`; D_G is held at 1.0)."""
     ref = load_reference_data()
+    d_r = 1.0 / float(D_ratio) if D_ratio else 0.02
     results: list[dict[str, Any]] = []
     for idx, reg in enumerate(ref["ampulla_circumferential_mode_regimes"]):
         r_tip = float(reg["R_tip_norm"])
@@ -310,6 +342,7 @@ def evaluate_ampulla_mode_selection(seed: int = 2014) -> list[dict[str, Any]]:
             R_tip_norm=r_tip,
             rho_G=0.90,
             gamma=25.0,
+            D_R=d_r,
             seed=seed + idx,
         )
         results.append(
@@ -423,6 +456,202 @@ def compute_horton_strahler_metrics(nodes: list[dict[str, Any]]) -> dict[str, An
     }
 
 
+# =============================================================================
+# 3b. Reduced 3D Phase-Field Renal Capsule & Nephrogenic Zone (Pass 3 remediation)
+# =============================================================================
+# Pass 2 remediation item: "couple the 3D ureteric tree solver to a full 3D phase-field or
+# moving-boundary finite-element mesh of the expanding renal capsule and nephrogenic zone".
+# A full moving-mesh FEM is out of scope for a <3 min script; the HONEST REDUCED VERSION
+# implemented here is a diffuse-domain (phase-field) GDNF field on a fixed Eulerian grid:
+#   phi_cap(x, g) = 1/2 (1 + tanh((R_cap(g) - |x - c(g)|) / eps))         (expanding capsule)
+#   phi_nz(x, g)  = phi_cap * 1/2 (1 + tanh((|x - c(g)| - (R_cap - h_nz)) / eps))  (cap mesenchyme shell)
+#   0 = D div(phi_cap grad G) + rho_G phi_nz - delta phi_cap G - kappa_tip T(x) G    (steady diffuse-domain)
+# where T(x) is the smoothed indicator of RET-expressing ureteric tips (ligand uptake sinks).
+# The tree is coupled to this field in four ways (`grow_ureteric_tree_3d`):
+#   (i)   chemotaxis of daughter branches up grad G (toward the nephrogenic zone),
+#   (ii)  moving-boundary confinement: tips cannot leave the capsule R_cap(g) - margin,
+#   (iii) GDNF-gated branching: a tip whose local G/G_ref falls below `gdnf_gate` (crowding
+#         depletion) arrests into monopodial elongation instead of splitting,
+#   (iv)  interstitial dilation: the existing tree is advected with the expanding capsule.
+# R_cap(g) expands so that capsule surface area grows linearly with the Short et al. (2014)
+# observed tip number between anchors R_cap(E11.5) and R_cap(E15.5) (approximate anatomical
+# anchors, see `CAPSULE_PARAMS`; both flagged as order-of-magnitude constants in the audit).
+CAPSULE_PARAMS: dict[str, float] = {
+    "R_cap_E11_5_um": 300.0,       # metanephric blastema radius at T-stage (approximate anchor)
+    "R_cap_E15_5_um": 550.0,       # E15.5 kidney capsule radius (approximate anchor, ~1.1 mm kidney)
+    "nz_thickness_um": 110.0,      # cap-mesenchyme / nephrogenic zone thickness under the capsule
+    "eps_um": 28.0,                # phase-field interface width
+    "gdnf_decay_length_um": 150.0, # mesenchymal GDNF decay length  ell_G = sqrt(D / delta)
+    "kappa_tip": 2.0,              # RET-mediated ligand uptake per tip, in units of delta
+    "tip_sink_sigma_cells": 1.0,   # Gaussian spread of each tip sink on the grid (cells)
+    "confine_margin_um": 22.0,     # tips stay at least this far inside the capsule
+    "hilum_offset": 0.62,          # capsule centre sits 0.62 R_cap distal to the ureteric stalk tip
+    "stalk_length_um": 260.0,      # root ureteric stalk length from the Wolffian duct
+}
+CAPSULE_GRID: dict[str, Any] = {
+    "x_half_um": 792.0,
+    "z_min_um": -88.0,
+    "z_max_um": 1628.0,
+    "n_xy": 36,
+    "n_z": 39,
+}
+
+
+def _capsule_grid_axes() -> tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+    n_xy = int(CAPSULE_GRID["n_xy"])
+    n_z = int(CAPSULE_GRID["n_z"])
+    xs = np.linspace(-CAPSULE_GRID["x_half_um"], CAPSULE_GRID["x_half_um"], n_xy)
+    zs = np.linspace(CAPSULE_GRID["z_min_um"], CAPSULE_GRID["z_max_um"], n_z)
+    h = float(xs[1] - xs[0])
+    return xs, xs.copy(), zs, h
+
+
+def renal_capsule_radius_um(n_tips_obs: float, capsule_growth: float = 1.0) -> float:
+    """Expanding-capsule law: capsule surface area 4 pi R_cap^2 grows linearly with the
+    Short et al. (2014) observed tip number between the E11.5 and E15.5 anchors, i.e. the
+    cortical tip surface density stays of order one tip per (2 L_8)^2. `capsule_growth`
+    rescales the E15.5 anchor (used by the capsule-expansion sweep / ablation)."""
+    r0 = CAPSULE_PARAMS["R_cap_E11_5_um"]
+    r1 = CAPSULE_PARAMS["R_cap_E15_5_um"] * capsule_growth
+    r1 = max(r1, r0 * 0.5)
+    frac = float(np.clip((n_tips_obs - 2.0) / (354.0 - 2.0), 0.0, 2.0))
+    return float(math.sqrt(max(r0 * r0 + (r1 * r1 - r0 * r0) * frac, 1.0)))
+
+
+def capsule_center_xyz(R_cap_um: float) -> np.ndarray:
+    """Capsule centre: the kidney hangs off the ureteric stalk tip (hilum) along +z."""
+    return np.array([0.0, 0.0, CAPSULE_PARAMS["stalk_length_um"] + CAPSULE_PARAMS["hilum_offset"] * R_cap_um])
+
+
+def solve_renal_capsule_gdnf_field_3d(
+    tip_xyz: np.ndarray,
+    R_cap_um: float,
+    rho_G: float = 0.90,
+    n_iter: int = 140,
+) -> dict[str, Any]:
+    """Steady diffuse-domain GDNF field inside the phase-field renal capsule of radius
+    `R_cap_um` with mesenchymal production confined to the nephrogenic-zone shell and
+    RET-mediated uptake at the current ureteric tips `tip_xyz` (shape (n_tips, 3), um).
+
+    Returns the field `G`, phase fields `phi_cap`, `phi_nz`, grid axes, and the
+    nephrogenic-zone / medullary-core GDNF enrichment ratio."""
+    xs, ys, zs, h = _capsule_grid_axes()
+    X, Y, Z = np.meshgrid(xs, ys, zs, indexing="ij")
+    c = capsule_center_xyz(R_cap_um)
+    r = np.sqrt((X - c[0]) ** 2 + (Y - c[1]) ** 2 + (Z - c[2]) ** 2)
+    eps = CAPSULE_PARAMS["eps_um"]
+    h_nz = CAPSULE_PARAMS["nz_thickness_um"]
+    phi_cap = 0.5 * (1.0 + np.tanh((R_cap_um - r) / eps))
+    phi_nz = phi_cap * 0.5 * (1.0 + np.tanh((r - (R_cap_um - h_nz)) / eps))
+
+    D = 1.0
+    delta = D / (CAPSULE_PARAMS["gdnf_decay_length_um"] ** 2)
+
+    # RET-expressing tip sinks deposited on the grid (nearest cell) and Gaussian-smoothed
+    sink = np.zeros_like(phi_cap)
+    if tip_xyz is not None and len(tip_xyz) > 0:
+        ix = np.clip(np.rint((tip_xyz[:, 0] - xs[0]) / h).astype(int), 0, len(xs) - 1)
+        iy = np.clip(np.rint((tip_xyz[:, 1] - ys[0]) / h).astype(int), 0, len(ys) - 1)
+        iz = np.clip(np.rint((tip_xyz[:, 2] - zs[0]) / h).astype(int), 0, len(zs) - 1)
+        np.add.at(sink, (ix, iy, iz), 1.0)
+        sigma_c = CAPSULE_PARAMS["tip_sink_sigma_cells"]
+        sink = ndi.gaussian_filter(sink, sigma=sigma_c, mode="constant")
+        # Normalise so a single isolated tip has unit peak uptake indicator
+        impulse = np.zeros((9, 9, 9))
+        impulse[4, 4, 4] = 1.0
+        sink /= max(float(ndi.gaussian_filter(impulse, sigma=sigma_c, mode="constant").max()), 1e-9)
+    uptake = CAPSULE_PARAMS["kappa_tip"] * delta * sink
+
+    # Face-centred diffuse-domain conductances D (phi_i + phi_j) / (2 h^2) along each axis
+    def _face(axis: int, shift: int) -> np.ndarray:
+        return D * 0.5 * (phi_cap + np.roll(phi_cap, shift, axis=axis)) / (h * h)
+
+    w_xp, w_xm = _face(0, -1), _face(0, 1)
+    w_yp, w_ym = _face(1, -1), _face(1, 1)
+    w_zp, w_zm = _face(2, -1), _face(2, 1)
+    w_sum = w_xp + w_xm + w_yp + w_ym + w_zp + w_zm
+    diag = w_sum + delta * phi_cap + uptake + 1e-12
+    source = rho_G * phi_nz
+
+    G = (source / np.maximum(delta * phi_cap + uptake, 1e-9)) * (phi_cap > 0.5)
+    for _ in range(n_iter):
+        nb = (
+            w_xp * np.roll(G, -1, axis=0) + w_xm * np.roll(G, 1, axis=0)
+            + w_yp * np.roll(G, -1, axis=1) + w_ym * np.roll(G, 1, axis=1)
+            + w_zp * np.roll(G, -1, axis=2) + w_zm * np.roll(G, 1, axis=2)
+        )
+        G = (nb + source) / diag
+    G = G * (phi_cap > 0.02)
+
+    nz_mask = phi_nz > 0.5
+    core_mask = (phi_cap > 0.5) & (phi_nz < 0.1)
+    g_nz = float(np.mean(G[nz_mask])) if np.any(nz_mask) else 0.0
+    g_core = float(np.mean(G[core_mask])) if np.any(core_mask) else 0.0
+    gx, gy, gz = np.gradient(G, h)
+    return {
+        "G": G,
+        "grad": (gx, gy, gz),
+        "phi_cap": phi_cap,
+        "phi_nz": phi_nz,
+        "axes": (xs, ys, zs),
+        "h_um": h,
+        "center_xyz": c,
+        "R_cap_um": R_cap_um,
+        "nz_mean_G": g_nz,
+        "core_mean_G": g_core,
+        "nz_core_ratio": g_nz / max(g_core, 1e-9),
+        "max_G": float(np.max(G)),
+    }
+
+
+def sample_capsule_field(field: dict[str, Any], pts_xyz: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Trilinear sample of the GDNF field and its gradient at points `pts_xyz` (n, 3)."""
+    xs, ys, zs = field["axes"]
+    h = field["h_um"]
+    coords = np.vstack([
+        (pts_xyz[:, 0] - xs[0]) / h,
+        (pts_xyz[:, 1] - ys[0]) / h,
+        (pts_xyz[:, 2] - zs[0]) / h,
+    ])
+    g_val = ndi.map_coordinates(field["G"], coords, order=1, mode="nearest")
+    grad = np.column_stack([
+        ndi.map_coordinates(field["grad"][k], coords, order=1, mode="nearest") for k in range(3)
+    ])
+    return g_val, grad
+
+
+def _confine_to_capsule(start: np.ndarray, direction: np.ndarray, seg_len: float,
+                        center: np.ndarray, r_max: float) -> tuple[np.ndarray, np.ndarray, bool]:
+    """Moving-boundary contact: if the proposed segment end leaves the sphere of radius
+    `r_max`, rotate the direction into the tangent plane (and slightly inward) while keeping
+    the segment length, mirroring a tip sliding under the renal capsule."""
+    end = start + seg_len * direction
+    if np.linalg.norm(end - center) <= r_max:
+        return direction, end, False
+    n_hat = start - center
+    n_norm = np.linalg.norm(n_hat)
+    n_hat = n_hat / n_norm if n_norm > 1e-9 else np.array([0.0, 0.0, 1.0])
+    tangent = direction - np.dot(direction, n_hat) * n_hat
+    t_norm = np.linalg.norm(tangent)
+    if t_norm < 1e-6:
+        # Pick any tangent direction deterministically
+        trial = np.array([1.0, 0.0, 0.0]) if abs(n_hat[0]) < 0.85 else np.array([0.0, 1.0, 0.0])
+        tangent = trial - np.dot(trial, n_hat) * n_hat
+        t_norm = np.linalg.norm(tangent)
+    tangent /= t_norm
+    # Inward tilt proportional to how far outside the proposed end was
+    overshoot = (np.linalg.norm(end - center) - r_max) / max(seg_len, 1e-9)
+    new_dir = tangent - min(0.9, 0.35 + overshoot) * n_hat
+    new_dir /= np.linalg.norm(new_dir)
+    new_end = start + seg_len * new_dir
+    rad = np.linalg.norm(new_end - center)
+    if rad > r_max:
+        new_end = center + (new_end - center) * (r_max / rad)
+        new_dir = (new_end - start)
+        new_dir /= max(np.linalg.norm(new_dir), 1e-9)
+    return new_dir, new_end, True
+
+
 def grow_ureteric_tree_3d(
     max_generations: int = 8,
     rho_G: float = 0.90,
@@ -431,10 +660,20 @@ def grow_ureteric_tree_3d(
     bmp4_stalk_inhibition: float = 0.0,
     gdnf_bead_strength: float = 0.0,
     seed: int = 2014,
+    capsule_growth: float = 1.0,
+    chemotaxis_weight: float = 0.35,
+    capsule_confinement: bool = True,
+    gdnf_gate: float = 0.15,
 ) -> dict[str, Any]:
     """Grow a 3D metanephric ureteric bud tree driven by local GDNF-RET-Wnt11-Sprouty1
     ampulla mode selection across generations `g = 1..max_generations` (E11.5 to E15.5;
-    Short et al. 2014 Dev. Cell 29:188-202 & Menshykau & Iber 2013).
+    Short et al. 2014 Dev. Cell 29:188-202 & Menshykau & Iber 2013), coupled (Pass 3) to
+    the reduced 3D phase-field renal capsule / nephrogenic-zone GDNF field
+    (`solve_renal_capsule_gdnf_field_3d`) through chemotaxis (`chemotaxis_weight`),
+    moving-boundary confinement (`capsule_confinement`) and GDNF-gated branching
+    (`gdnf_gate`, fraction of the tip-free nephrogenic-zone GDNF level below which a
+    crowded tip arrests into monopodial elongation). `capsule_growth` rescales the
+    E15.5 capsule anchor (sweep / ablation axis).
     """
     if rho_G <= 0.0:
         return {
@@ -448,6 +687,14 @@ def grow_ureteric_tree_3d(
             "trichotomous_fraction": 0.0,
             "terminal_tips": 0,
             "strahler": compute_horton_strahler_metrics([]),
+            "capsule_radius_um": [renal_capsule_radius_um(2.0, capsule_growth)] * max_generations,
+            "tips_in_nz_fraction": [0.0] * max_generations,
+            "final_tips_in_nz_fraction": 0.0,
+            "mean_tip_gdnf_norm": [0.0] * max_generations,
+            "gdnf_gated_arrests": 0,
+            "capsule_contacts": 0,
+            "nz_core_gdnf_ratio": 0.0,
+            "field": None,
         }
 
     rng = np.random.default_rng(seed)
@@ -462,14 +709,15 @@ def grow_ureteric_tree_3d(
         base_trifurc = 0.04
 
     # Root ureteric stalk emerging from the Wolffian duct at E11.0 (generation 0)
+    stalk_len = CAPSULE_PARAMS["stalk_length_um"]
     root_node = {
         "id": 0,
         "parent_id": None,
         "generation": 0,
         "start_xyz": np.array([0.0, 0.0, 0.0], dtype=float),
-        "end_xyz": np.array([0.0, 0.0, 260.0], dtype=float),
+        "end_xyz": np.array([0.0, 0.0, stalk_len], dtype=float),
         "dir_xyz": np.array([0.0, 0.0, 1.0], dtype=float),
-        "length_um": 260.0,
+        "length_um": stalk_len,
         "angle_deg": 0.0,
         "is_tip": False,
     }
@@ -479,8 +727,17 @@ def grow_ureteric_tree_3d(
     gen_tip_counts: list[int] = []
     gen_lengths: list[float] = []
     gen_angles: list[float] = []
+    gen_r_cap: list[float] = []
+    gen_nz_frac: list[float] = []
+    gen_tip_g: list[float] = []
     n_dichot = 0
     n_trifurc = 0
+    n_gated = 0
+    n_contacts = 0
+    field: dict[str, Any] | None = None
+    g_ref_level = 1.0
+    margin = CAPSULE_PARAMS["confine_margin_um"]
+    h_nz = CAPSULE_PARAMS["nz_thickness_um"]
 
     for g in range(1, max_generations + 1):
         g_ref = gen_table[min(g - 1, len(gen_table) - 1)]
@@ -488,6 +745,28 @@ def grow_ureteric_tree_3d(
             1.0 + 0.14 * max(0.0, 1.0 - spry1_inhibition) + 0.10 * gdnf_bead_strength
         )
         base_angle_deg = float(g_ref["branch_angle_deg"])
+
+        # Expanding capsule (moving boundary) and the diffuse-domain GDNF field for this stage
+        R_cap = renal_capsule_radius_um(float(g_ref["observed_tips_mean"]), capsule_growth)
+        center = capsule_center_xyz(R_cap)
+        if g > 1 and capsule_confinement:
+            # (iv) Interstitial tissue growth: the existing tree is advected with the expanding
+            # mesenchyme by a uniform dilation about the previous capsule centre (the root stalk
+            # end / hilum is a fixed point of this map), so older segments elongate in situ.
+            s_dil = R_cap / max(gen_r_cap[-1], 1e-9)
+            c_prev = capsule_center_xyz(gen_r_cap[-1])
+            for n in nodes[1:]:
+                n["start_xyz"] = center + (n["start_xyz"] - c_prev) * s_dil
+                n["end_xyz"] = center + (n["end_xyz"] - c_prev) * s_dil
+                n["length_um"] = float(n["length_um"]) * s_dil
+        tip_pts = np.array([nodes[t]["end_xyz"] for t in active_tips], dtype=float)
+        if g == 1:
+            g_ref_level = max(solve_renal_capsule_gdnf_field_3d(np.zeros((0, 3)), R_cap, rho_G=rho_G)["max_G"], 1e-9)
+        field = solve_renal_capsule_gdnf_field_3d(tip_pts, R_cap, rho_G=rho_G)
+        g_at_tips, grad_at_tips = sample_capsule_field(field, tip_pts)
+        g_norm_tips = g_at_tips / g_ref_level
+        gen_r_cap.append(R_cap)
+        gen_tip_g.append(float(np.mean(g_norm_tips)) if len(g_norm_tips) else 0.0)
 
         # Early generations (g=2..4) have slightly larger ampullae and higher trifurcation propensity
         stage_trifurc_prob = float(np.clip(
@@ -497,24 +776,35 @@ def grow_ureteric_tree_3d(
         ))
         # Under BMP4 stalk inhibition or low GDNF, a fraction of tips arrest without splitting
         branch_prob = float(np.clip(0.99 * min(1.0, signaling_gain ** 0.42), 0.35, 1.0))
-        if abs(rho_G - 0.90) < 1e-6 and abs(gamma_scale - 25.0) < 1e-6 and bmp4_stalk_inhibition == 0.0:
-            branch_prob = 1.0
 
         next_tips: list[int] = []
         lengths_this_gen: list[float] = []
         angles_this_gen: list[float] = []
 
-        for tid in active_tips:
+        for t_idx, tid in enumerate(active_tips):
             parent = nodes[tid]
             parent["is_tip"] = False
             p_end = parent["end_xyz"]
             p_dir = parent["dir_xyz"]
+            grad_vec = grad_at_tips[t_idx]
+            grad_norm = float(np.linalg.norm(grad_vec))
+            grad_hat = grad_vec / grad_norm if grad_norm > 1e-12 else np.zeros(3)
 
-            if g > 1 and rng.random() > branch_prob:
-                # Tip arrests or elongates monopodially (m=1)
+            # (iii) GDNF-gated branching: crowded / ligand-depleted tips arrest into elongation
+            gated_arrest = (g > 1) and (gdnf_gate > 0.0) and (g_norm_tips[t_idx] < gdnf_gate)
+            if gated_arrest:
+                n_gated += 1
+
+            if g > 1 and (gated_arrest or rng.random() > branch_prob):
+                # Tip arrests or elongates monopodially (m=1), still chemotactic & confined
                 new_id = len(nodes)
                 seg_l = base_len_um * float(rng.uniform(0.92, 1.08))
-                new_end = p_end + seg_l * p_dir
+                e_dir = p_dir + chemotaxis_weight * grad_hat
+                e_dir /= max(np.linalg.norm(e_dir), 1e-9)
+                new_end = p_end + seg_l * e_dir
+                if capsule_confinement:
+                    e_dir, new_end, hit = _confine_to_capsule(p_end, e_dir, seg_l, center, R_cap - margin)
+                    n_contacts += int(hit)
                 nodes.append(
                     {
                         "id": new_id,
@@ -522,10 +812,11 @@ def grow_ureteric_tree_3d(
                         "generation": g,
                         "start_xyz": p_end.copy(),
                         "end_xyz": new_end,
-                        "dir_xyz": p_dir.copy(),
+                        "dir_xyz": e_dir,
                         "length_um": seg_l,
                         "angle_deg": 0.0,
                         "is_tip": True,
+                        "gated_arrest": bool(gated_arrest),
                     }
                 )
                 next_tips.append(new_id)
@@ -559,10 +850,16 @@ def grow_ureteric_tree_3d(
                 if gdnf_bead_strength > 0.0:
                     bead_dir = np.array([0.65, 0.25, 0.70], dtype=float)
                     c_dir = c_dir + 0.18 * gdnf_bead_strength * bead_dir
+                # (i) Chemotaxis of the daughter up the mesenchymal GDNF gradient
+                c_dir = c_dir + chemotaxis_weight * grad_hat
                 c_dir /= np.linalg.norm(c_dir)
 
                 seg_l = base_len_um * float(rng.uniform(0.94, 1.06))
                 new_end = p_end + seg_l * c_dir
+                # (ii) Moving-boundary confinement under the expanding renal capsule
+                if capsule_confinement:
+                    c_dir, new_end, hit = _confine_to_capsule(p_end, c_dir, seg_l, center, R_cap - margin)
+                    n_contacts += int(hit)
                 new_id = len(nodes)
                 nodes.append(
                     {
@@ -575,6 +872,7 @@ def grow_ureteric_tree_3d(
                         "length_um": seg_l,
                         "angle_deg": base_angle_deg * float(rng.uniform(0.95, 1.05)),
                         "is_tip": True,
+                        "gated_arrest": False,
                     }
                 )
                 next_tips.append(new_id)
@@ -585,6 +883,11 @@ def grow_ureteric_tree_3d(
         gen_tip_counts.append(len(active_tips))
         gen_lengths.append(float(np.mean(lengths_this_gen)) if lengths_this_gen else 0.0)
         gen_angles.append(float(np.mean(angles_this_gen)) if angles_this_gen else 0.0)
+        # Fraction of the new tips lying inside the nephrogenic-zone shell of this stage's capsule
+        new_pts = np.array([nodes[t]["end_xyz"] for t in active_tips], dtype=float)
+        rad_new = np.linalg.norm(new_pts - center, axis=1)
+        in_nz = (rad_new <= R_cap) & (rad_new >= R_cap - h_nz)
+        gen_nz_frac.append(float(np.mean(in_nz)) if len(in_nz) else 0.0)
 
     total_events = max(1, n_dichot + n_trifurc)
     strahler = compute_horton_strahler_metrics(nodes)
@@ -600,6 +903,14 @@ def grow_ureteric_tree_3d(
         "trichotomous_fraction": n_trifurc / float(total_events),
         "terminal_tips": len(active_tips),
         "strahler": strahler,
+        "capsule_radius_um": gen_r_cap,
+        "tips_in_nz_fraction": gen_nz_frac,
+        "final_tips_in_nz_fraction": gen_nz_frac[-1] if gen_nz_frac else 0.0,
+        "mean_tip_gdnf_norm": gen_tip_g,
+        "gdnf_gated_arrests": n_gated,
+        "capsule_contacts": n_contacts,
+        "nz_core_gdnf_ratio": field["nz_core_ratio"] if field is not None else 0.0,
+        "field": field,
     }
 
 
@@ -614,6 +925,9 @@ def evaluate_short_2014_generations(
     rho_G = float(ov.get("rho_G", 0.90))
     gamma_scale = float(ov.get("gamma", 25.0))
     bmp4 = float(ov.get("bmp4", 0.0))
+    capsule_growth = float(ov.get("capsule_growth", 1.0))
+    chemotaxis = float(ov.get("chemotaxis", 0.35))
+    capsule_on = bool(ov.get("capsule", 1.0) > 0.0)
 
     ref = load_reference_data()
     gen_table = ref["short_2014_ureteric_generations"]
@@ -625,6 +939,9 @@ def evaluate_short_2014_generations(
         bmp4_stalk_inhibition=bmp4,
         gdnf_bead_strength=0.0,
         seed=seed,
+        capsule_growth=capsule_growth,
+        chemotaxis_weight=chemotaxis,
+        capsule_confinement=capsule_on,
     )
 
     g_idx = np.array([g["generation"] for g in gen_table], dtype=float)
@@ -663,7 +980,75 @@ def evaluate_short_2014_generations(
         "tree": tree,
         "strahler_Rb": tree["strahler"]["R_b"],
         "strahler_RL": tree["strahler"]["R_L"],
+        "final_tips_in_nz_fraction": tree["final_tips_in_nz_fraction"],
+        "capsule_radius_um": tree["capsule_radius_um"],
+        "gdnf_gated_arrests": tree["gdnf_gated_arrests"],
+        "nz_core_gdnf_ratio": tree["nz_core_gdnf_ratio"],
     }
+
+
+CAPSULE_COUPLING_CONDITIONS: list[dict[str, Any]] = [
+    {"id": "coupled_wt", "label": "Coupled (WT capsule)", "capsule_growth": 1.0, "chemotaxis": 0.35, "capsule": True, "gate": 0.15},
+    {"id": "no_chemotaxis", "label": "No chemotaxis (χ=0)", "capsule_growth": 1.0, "chemotaxis": 0.0, "capsule": True, "gate": 0.15},
+    {"id": "no_capsule", "label": "Decoupled (v2 geometric tree)", "capsule_growth": 1.0, "chemotaxis": 0.0, "capsule": False, "gate": 0.0},
+    {"id": "slow_capsule_0p6", "label": "Slow capsule (×0.6)", "capsule_growth": 0.6, "chemotaxis": 0.35, "capsule": True, "gate": 0.15},
+    {"id": "slow_capsule_0p5", "label": "Slow capsule (×0.5)", "capsule_growth": 0.5, "chemotaxis": 0.35, "capsule": True, "gate": 0.15},
+    {"id": "fast_capsule_1p3", "label": "Fast capsule (×1.3)", "capsule_growth": 1.3, "chemotaxis": 0.35, "capsule": True, "gate": 0.15},
+]
+
+
+def evaluate_capsule_coupling_sweep(seed: int = 2014) -> list[dict[str, Any]]:
+    """Pass 3 ablation / sweep of the tree <-> phase-field capsule coupling: chemotaxis
+    off, capsule decoupled (v2 behaviour), and capsule expansion rate x0.5 / x0.6 / x1.3.
+    Reports E15.5 tip number, fraction of tips inside the nephrogenic zone, GDNF-gated
+    arrests (crowding) and Horton-Strahler ratios for each condition (same RNG seed)."""
+    ref = load_reference_data()
+    obs_tips = np.array([g["observed_tips_mean"] for g in ref["short_2014_ureteric_generations"]], dtype=float)
+    out: list[dict[str, Any]] = []
+    for cond in CAPSULE_COUPLING_CONDITIONS:
+        tree = grow_ureteric_tree_3d(
+            max_generations=8,
+            seed=seed,
+            capsule_growth=float(cond["capsule_growth"]),
+            chemotaxis_weight=float(cond["chemotaxis"]),
+            capsule_confinement=bool(cond["capsule"]),
+            gdnf_gate=float(cond["gate"]),
+        )
+        sim_tips = np.array(tree["generation_tips"], dtype=float)
+        # Fraction of final tips inside the *nominal* WT nephrogenic zone (for the decoupled case
+        # the nominal capsule is the WT one, so the metric measures where the free tree ended up)
+        if not cond["capsule"]:
+            R_nom = renal_capsule_radius_um(obs_tips[-1], 1.0)
+            c_nom = capsule_center_xyz(R_nom)
+            pts = np.array([n["end_xyz"] for n in tree["nodes"] if n["is_tip"]], dtype=float)
+            rad = np.linalg.norm(pts - c_nom, axis=1)
+            nz_frac = float(np.mean((rad <= R_nom) & (rad >= R_nom - CAPSULE_PARAMS["nz_thickness_um"])))
+            outside_frac = float(np.mean(rad > R_nom))
+        else:
+            nz_frac = tree["final_tips_in_nz_fraction"]
+            outside_frac = 0.0
+        out.append(
+            {
+                "condition_id": cond["id"],
+                "label": cond["label"],
+                "capsule_growth": float(cond["capsule_growth"]),
+                "chemotaxis": float(cond["chemotaxis"]),
+                "capsule": bool(cond["capsule"]),
+                "generation_tips": tree["generation_tips"],
+                "e15_5_tips": int(tree["terminal_tips"]),
+                "rmse_tips": float(np.sqrt(np.mean((sim_tips - obs_tips) ** 2))),
+                "tips_in_nz_fraction": nz_frac,
+                "tips_outside_capsule_fraction": outside_frac,
+                "gdnf_gated_arrests": int(tree["gdnf_gated_arrests"]),
+                "capsule_contacts": int(tree["capsule_contacts"]),
+                "mean_tip_gdnf_norm_e15_5": float(tree["mean_tip_gdnf_norm"][-1]),
+                "strahler_Rb": float(tree["strahler"]["R_b"]),
+                "strahler_RL": float(tree["strahler"]["R_L"]),
+                "R_cap_e15_5_um": float(tree["capsule_radius_um"][-1]),
+                "tree": tree,
+            }
+        )
+    return out
 
 
 # =============================================================================
@@ -708,6 +1093,8 @@ def evaluate_perturbation_suite(seed: int = 2014) -> dict[str, dict[str, Any]]:
             "trifurcation_frac_obs": float(cond["trifurcation_frac_obs"]),
             "trifurcation_frac_sim": float(tree["trichotomous_fraction"]),
             "mean_v_tip": pde["mean_v_tip"],
+            "tips_in_nz_fraction": float(tree["final_tips_in_nz_fraction"]),
+            "gdnf_gated_arrests": int(tree["gdnf_gated_arrests"]),
             "tree": tree,
             "pde": pde,
         }
@@ -836,15 +1223,18 @@ def render_comparison_figure(
     overrides: dict[str, float] | None = None,
     seed: int = 2014,
 ) -> Path:
-    """Render 6-panel dark-mode synthesis figure to `docs/media/gdnf_ret_ureteric_kidney_comparison.png`."""
+    """Render 8-panel dark-mode synthesis figure to `docs/media/gdnf_ret_ureteric_kidney_comparison.png`
+    (Pass 3: panels G-H add the phase-field capsule / nephrogenic-zone coupling)."""
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    modes = evaluate_ampulla_mode_selection(seed=seed)
+    ov = overrides or {}
+    modes = evaluate_ampulla_mode_selection(seed=seed, D_ratio=ov.get("D_ratio"))
     short_res = evaluate_short_2014_generations(overrides=overrides, seed=seed)
     pert = evaluate_perturbation_suite(seed=seed)
     spec = segment_kidney_ureteric_specimen()
+    sweep = evaluate_capsule_coupling_sweep(seed=seed)
 
-    fig = plt.figure(figsize=(16.5, 10.2), dpi=150, facecolor="#0b0f17")
-    gs = fig.add_gridspec(2, 3, hspace=0.32, wspace=0.26)
+    fig = plt.figure(figsize=(22.0, 10.2), dpi=150, facecolor="#0b0f17")
+    gs = fig.add_gridspec(2, 4, hspace=0.32, wspace=0.28)
 
     # -------------------------------------------------------------------------
     # Panel A: 3D Growing Ureteric Tree (Short et al. 2014 E11.5-E14.0 Calyces)
@@ -1091,14 +1481,140 @@ def render_comparison_figure(
     ax_f.grid(True, alpha=0.22, color="#374151")
     ax_f.legend(loc="upper right", fontsize=7.2, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
 
+    # -------------------------------------------------------------------------
+    # Panel G (Pass 3): Phase-field capsule GDNF field mid-plane slice + confined tips
+    # -------------------------------------------------------------------------
+    ax_g = fig.add_subplot(gs[0, 3], facecolor="#111827")
+    _draw_capsule_slice(ax_g, short_res["tree"], title="G. Phase-Field Capsule GDNF Field (E15.5, y=0 slice)")
+
+    # -------------------------------------------------------------------------
+    # Panel H (Pass 3): Capsule coupling ablation / expansion sweep
+    # -------------------------------------------------------------------------
+    ax_h = fig.add_subplot(gs[1, 3], facecolor="#111827")
+    _draw_capsule_sweep(ax_h, sweep, obs_e15_5=float(short_res["observed_tips"][-1]))
+
     fig.suptitle(
-        "Menshykau & Iber (2013) Phys. Biol. & Short et al. (2014) Dev. Cell — GDNF-RET Kidney Ureteric Tree Morphospace (v2)",
+        "Menshykau & Iber (2013) Phys. Biol. & Short et al. (2014) Dev. Cell — GDNF-RET Kidney Ureteric Tree Morphospace (v3: phase-field capsule coupling)",
         color="white",
         fontsize=12.8,
         fontweight="bold",
         y=0.975,
     )
     fig.savefig(out_path, dpi=150, bbox_inches="tight", facecolor=fig.get_facecolor())
+    plt.close(fig)
+    return out_path
+
+
+def _draw_capsule_slice(ax: Any, tree: dict[str, Any], title: str, show_colorbar: bool = True) -> None:
+    """Mid-plane (y=0) slice of the diffuse-domain GDNF field with capsule / nephrogenic-zone
+    contours, the projected tree segments and terminal tips."""
+    field = tree["field"]
+    xs, ys, zs = field["axes"]
+    iy = int(np.argmin(np.abs(ys)))
+    G_slice = field["G"][:, iy, :].T  # (z, x)
+    phi_slice = field["phi_cap"][:, iy, :].T
+    nz_slice = field["phi_nz"][:, iy, :].T
+    im = ax.imshow(
+        G_slice / max(field["max_G"], 1e-9),
+        origin="lower",
+        extent=[xs[0], xs[-1], zs[0], zs[-1]],
+        cmap="magma",
+        vmin=0.0,
+        vmax=1.0,
+        aspect="equal",
+        interpolation="bilinear",
+    )
+    ax.contour(xs, zs, phi_slice, levels=[0.5], colors=["#38bdf8"], linewidths=1.4)
+    ax.contour(xs, zs, nz_slice, levels=[0.5], colors=["#34d399"], linewidths=0.9, linestyles="--")
+    for n in tree["nodes"]:
+        if abs(n["start_xyz"][1]) > 140.0 and abs(n["end_xyz"][1]) > 140.0:
+            continue
+        ax.plot([n["start_xyz"][0], n["end_xyz"][0]], [n["start_xyz"][2], n["end_xyz"][2]], color="#e5e7eb", lw=0.55, alpha=0.75)
+    tips = np.array([n["end_xyz"] for n in tree["nodes"] if n["is_tip"]], dtype=float)
+    if len(tips):
+        near = np.abs(tips[:, 1]) <= 140.0
+        ax.scatter(tips[near, 0], tips[near, 2], s=7, color="#facc15", edgecolors="black", linewidths=0.3, zorder=5)
+    ax.set_xlim(xs[0], xs[-1])
+    ax.set_ylim(zs[0], zs[-1])
+    ax.set_title(title, color="white", fontsize=10.5, fontweight="bold")
+    ax.set_xlabel("X (μm)", color="white", fontsize=8.5)
+    ax.set_ylabel("Z (μm, ureteric stalk at z=0)", color="white", fontsize=8.5)
+    ax.tick_params(colors="#9ca3af", labelsize=7.5)
+    ax.text(
+        xs[0] + 25, zs[-1] - 60,
+        f"R_cap={field['R_cap_um']:.0f} μm · NZ/core GDNF={field['nz_core_ratio']:.2f}\n"
+        f"tips in NZ={tree['final_tips_in_nz_fraction']:.2f} · gated arrests={tree['gdnf_gated_arrests']}\n"
+        "cyan: capsule φ=0.5 · green dashed: nephrogenic zone",
+        color="white", fontsize=6.8, va="top",
+        bbox=dict(facecolor="#0b0f17", edgecolor="#374151", alpha=0.85),
+    )
+    if show_colorbar:
+        cb = plt.colorbar(im, ax=ax, fraction=0.046, pad=0.02)
+        cb.set_label("GDNF / G_ref", color="white", fontsize=7.5)
+        cb.ax.tick_params(colors="#9ca3af", labelsize=7)
+
+
+def _draw_capsule_sweep(ax: Any, sweep: list[dict[str, Any]], obs_e15_5: float) -> None:
+    """Bar chart of the capsule-coupling ablation / expansion sweep: E15.5 tips and
+    fraction of tips inside the nephrogenic zone per condition."""
+    labels = [c["label"].replace(" (", "\n(") for c in sweep]
+    tips = [c["e15_5_tips"] for c in sweep]
+    nz = [c["tips_in_nz_fraction"] for c in sweep]
+    x = np.arange(len(sweep))
+    w = 0.42
+    ax.bar(x - 0.5 * w, tips, width=w, color="#38bdf8", alpha=0.9, label="E15.5 tips N_8 (sim)")
+    ax.axhline(obs_e15_5, color="#f43f5e", lw=1.4, ls="--", label=f"Short et al. (2014) E15.5 obs = {obs_e15_5:.0f}")
+    ax2 = ax.twinx()
+    ax2.bar(x + 0.5 * w, nz, width=w, color="#34d399", alpha=0.9, label="Fraction of tips in nephrogenic zone")
+    ax2.set_ylim(0, 1.15)
+    ax2.set_ylabel("Tips in nephrogenic zone (fraction)", color="#34d399", fontsize=8.5)
+    ax2.tick_params(colors="#9ca3af", labelsize=7.5)
+    for i, c in enumerate(sweep):
+        ax.text(i - 0.5 * w, tips[i] + 6, f"{tips[i]}", ha="center", color="white", fontsize=7)
+        ax2.text(i + 0.5 * w, nz[i] + 0.02, f"{nz[i]:.2f}", ha="center", color="#34d399", fontsize=7)
+        if c["gdnf_gated_arrests"] > 0:
+            ax.text(i, 8, f"{c['gdnf_gated_arrests']} arrests", ha="center", color="#facc15", fontsize=6.5, rotation=90, va="bottom")
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, color="white", fontsize=6.3, rotation=18, ha="right")
+    ax.set_ylim(0, max(tips) * 1.25)
+    ax.set_ylabel("E15.5 ureteric tip count N_8", color="white", fontsize=8.5)
+    ax.set_title("H. Capsule Coupling Ablation & Expansion Sweep", color="white", fontsize=10.5, fontweight="bold")
+    ax.tick_params(colors="#9ca3af", labelsize=7.5)
+    ax.grid(True, axis="y", alpha=0.22, color="#374151")
+    h1, l1 = ax.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    ax.legend(h1 + h2, l1 + l2, loc="upper right", fontsize=6.8, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
+
+def render_capsule_coupling_figure(out_path: Path = OUT_CAPSULE_PNG, seed: int = 2014) -> Path:
+    """Dedicated Pass 3 figure: GDNF field slices at E13.0 (g=4) and E15.5 (g=8) for the
+    coupled WT tree, the decoupled v2 tree against the nominal capsule, and the sweep."""
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    sweep = evaluate_capsule_coupling_sweep(seed=seed)
+    by_id = {c["condition_id"]: c for c in sweep}
+    tree_g4 = grow_ureteric_tree_3d(max_generations=4, seed=seed)
+    ref = load_reference_data()
+    obs = float(ref["short_2014_ureteric_generations"][-1]["observed_tips_mean"])
+
+    fig, axes = plt.subplots(1, 4, figsize=(24.0, 6.4), dpi=130, facecolor="#0b0f17")
+    for ax in axes:
+        ax.set_facecolor("#111827")
+    _draw_capsule_slice(axes[0], tree_g4, title="A. Coupled tree, E13.0 (g=4)", show_colorbar=False)
+    _draw_capsule_slice(axes[1], by_id["coupled_wt"]["tree"], title="B. Coupled tree, E15.5 (g=8)", show_colorbar=False)
+    # Decoupled v2 tree drawn over the nominal WT field for visual comparison
+    dec_tree = dict(by_id["no_capsule"]["tree"])
+    dec_tree["field"] = by_id["coupled_wt"]["tree"]["field"]
+    dec_tree["final_tips_in_nz_fraction"] = by_id["no_capsule"]["tips_in_nz_fraction"]
+    _draw_capsule_slice(axes[2], dec_tree, title=f"C. Decoupled v2 tree vs nominal capsule ({by_id['no_capsule']['tips_outside_capsule_fraction']:.0%} tips outside)", show_colorbar=True)
+    _draw_capsule_sweep(axes[3], sweep, obs_e15_5=obs)
+    axes[3].set_title("D. Ablation & capsule expansion sweep", color="white", fontsize=10.5, fontweight="bold")
+    fig.suptitle(
+        "Pass 3 — Reduced 3D phase-field renal capsule & nephrogenic zone coupled to the GDNF-RET ureteric tree "
+        "(diffuse-domain GDNF, chemotaxis, moving-boundary confinement, interstitial dilation, GDNF-gated branching)",
+        color="white", fontsize=11.5, fontweight="bold", y=0.99,
+    )
+    fig.tight_layout(rect=(0, 0, 1, 0.95))
+    fig.savefig(out_path, dpi=130, facecolor=fig.get_facecolor())
     plt.close(fig)
     return out_path
 
@@ -1166,18 +1682,53 @@ def render_growth_gif(out_path: Path = OUT_GIF, seed: int = 2014) -> Path:
 # 7. MorphoEval Quantitative Measurement Suite & 8-Check Self-Test
 # =============================================================================
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Compute 9 reference-anchored morphometric measurements for `morphoeval/measure_outputs.py`."""
+    """Compute 12 reference-anchored morphometric measurements for `morphoeval/measure_outputs.py`
+    (9 carried from Pass 2 + 3 Pass 3 capsule-coupling measurements)."""
     short_res = evaluate_short_2014_generations()
     modes = evaluate_ampulla_mode_selection()
     pert = evaluate_perturbation_suite()
     spec = segment_kidney_ureteric_specimen()
+    sweep = {c["condition_id"]: c for c in evaluate_capsule_coupling_sweep()}
 
     wt_p = pert["wild_type"]
     spry_p = pert["spry1_knockout"]
     bmp_p = pert["bmp4_stalk_inhibition"]
     null_p = pert["gdnf_ret_null_agenesis"]
+    coupled = sweep["coupled_wt"]
+    decoupled = sweep["no_capsule"]
+    slow = sweep["slow_capsule_0p5"]
 
     return [
+        {
+            "name": "E15.5 fraction of ureteric tips inside the nephrogenic zone (phase-field capsule coupling, Pass 3)",
+            "value": round(coupled["tips_in_nz_fraction"], 4),
+            "unit": "fraction of terminal tips",
+            "method": f"Terminal tips of the coupled 3D tree whose radial distance from the capsule centre lies within h_nz={CAPSULE_PARAMS['nz_thickness_um']:.0f} um of the phase-field capsule R_cap(E15.5)={coupled['R_cap_e15_5_um']:.0f} um; decoupled v2 geometric tree: {decoupled['tips_in_nz_fraction']:.3f} in zone, {decoupled['tips_outside_capsule_fraction']:.3f} outside the capsule",
+            "reference_value": 1.0,
+            "reference_source": "Short et al. (2014) Dev. Cell 29:188-202 Figs. 1 & 4 (all ureteric tips reside in the peripheral nephrogenic zone beneath the renal capsule)",
+            "note": f"coupled={coupled['tips_in_nz_fraction']:.3f}, no-chemotaxis={sweep['no_chemotaxis']['tips_in_nz_fraction']:.3f}, decoupled={decoupled['tips_in_nz_fraction']:.3f}; capsule contacts={coupled['capsule_contacts']}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Capsule-crowding tip suppression ratio N_tips(E15.5, capsule x0.5) / N_tips(E15.5, WT capsule) (Pass 3)",
+            "value": round(slow["e15_5_tips"] / max(float(coupled["e15_5_tips"]), 1.0), 4),
+            "unit": "ratio (dimensionless)",
+            "method": f"GDNF-gated branching under a capsule expanding at half the WT rate: tips crowd the nephrogenic zone, deplete mesenchymal GDNF (mean G/G_ref at tips {slow['mean_tip_gdnf_norm_e15_5']:.3f} vs {coupled['mean_tip_gdnf_norm_e15_5']:.3f}) and arrest ({slow['gdnf_gated_arrests']} vs {coupled['gdnf_gated_arrests']} gated arrests)",
+            "reference_value": 1.0,
+            "reference_source": "Decoupled null hypothesis (tree insensitive to capsule expansion); value < 1 quantifies the tree-capsule coupling strength of the reduced phase-field model",
+            "note": f"x0.5: {slow['e15_5_tips']} tips, x0.6: {sweep['slow_capsule_0p6']['e15_5_tips']}, x1.0: {coupled['e15_5_tips']}, x1.3: {sweep['fast_capsule_1p3']['e15_5_tips']} (Short et al. 2014 E15.5 obs 354)",
+            "derived_from": "script",
+        },
+        {
+            "name": "Nephrogenic-zone to medullary-core mesenchymal GDNF enrichment ratio at E15.5 (diffuse-domain field, Pass 3)",
+            "value": round(short_res["nz_core_gdnf_ratio"], 4),
+            "unit": "ratio of mean GDNF (dimensionless)",
+            "method": f"Mean steady diffuse-domain GDNF in the nephrogenic shell (phi_nz > 0.5) divided by the mean in the medullary core (phi_cap > 0.5, phi_nz < 0.1), with RET uptake at {int(short_res['simulated_tips'][-1])} E15.5 tips; decay length {CAPSULE_PARAMS['gdnf_decay_length_um']:.0f} um",
+            "reference_value": 1.0,
+            "reference_source": "Spatially uniform null; GDNF is produced only by the cap mesenchyme (Menshykau & Iber 2013 Phys. Biol. 10:046003 model assumption; Short et al. 2014), so the ratio must exceed 1",
+            "note": f"nz/core = {short_res['nz_core_gdnf_ratio']:.3f}; gated arrests in WT = {short_res['gdnf_gated_arrests']}",
+            "derived_from": "script",
+        },
         {
             "name": "Ureteric tip count generational correlation across E11.5-E15.5 (Short et al. 2014 g=1..8)",
             "value": round(short_res["pearson_r_tips"], 4),
@@ -1273,9 +1824,11 @@ def measure_morphoeval() -> list[dict[str, Any]]:
 
 def self_test() -> bool:
     """Run 8-check deterministic verification suite for Pass 2 (v2)."""
-    # 1. Verify SHA-256 integrity of all 4 dataset files
+    # 1. Verify SHA-256 integrity of the dataset files and the Pass 3 capsule parameter table
     digests = verify_dataset_integrity()
-    assert len(digests) == 4, "Expected 4 SHA-256-verified dataset files"
+    assert len(digests) == 5, "Expected 5 SHA-256-digested dataset files"
+    cap_doc = load_capsule_reference()
+    assert math.isclose(float(cap_doc["diffuse_domain_gdnf_field"]["parameters"]["gdnf_gate"]["value"]), 0.15)
 
     # 2. Verify Law 1: Schnakenberg GDNF-RET Turing instability criterion
     ss_wt = compute_gdnf_ret_steady_state(a=0.10, rho_G=0.90, D_R=0.02, D_G=1.00, gamma=25.0)
@@ -1326,27 +1879,51 @@ def self_test() -> bool:
     t1 = grow_ureteric_tree_3d(max_generations=6, seed=2014)
     t2 = grow_ureteric_tree_3d(max_generations=6, seed=2014)
     assert t1["generation_tips"] == t2["generation_tips"]
+    assert np.allclose(t1["field"]["G"], t2["field"]["G"], atol=0.0)
+
+    # 9. (Pass 3) Phase-field capsule / nephrogenic-zone coupling behaves as a moving boundary
+    fld = solve_renal_capsule_gdnf_field_3d(np.zeros((0, 3)), renal_capsule_radius_um(354.0))
+    assert fld["nz_core_ratio"] > 1.2, "GDNF must be enriched in the nephrogenic zone"
+    assert np.all(fld["G"] >= 0.0) and fld["max_G"] > 0.0
+    outside = fld["phi_cap"] < 0.02
+    assert float(np.max(fld["G"][outside])) == 0.0, "No GDNF outside the capsule"
+    sweep = {c["condition_id"]: c for c in evaluate_capsule_coupling_sweep(seed=2014)}
+    assert sweep["coupled_wt"]["tips_outside_capsule_fraction"] == 0.0
+    assert sweep["coupled_wt"]["tips_in_nz_fraction"] > sweep["no_capsule"]["tips_in_nz_fraction"] + 0.3
+    assert sweep["no_capsule"]["tips_outside_capsule_fraction"] > 0.5
+    assert sweep["coupled_wt"]["tips_in_nz_fraction"] > sweep["no_chemotaxis"]["tips_in_nz_fraction"]
+    assert sweep["slow_capsule_0p5"]["e15_5_tips"] < sweep["slow_capsule_0p6"]["e15_5_tips"] < sweep["coupled_wt"]["e15_5_tips"]
+    assert sweep["slow_capsule_0p5"]["gdnf_gated_arrests"] > sweep["coupled_wt"]["gdnf_gated_arrests"]
+    assert sweep["coupled_wt"]["rmse_tips"] < short_res["rmse_ideal_2g"]
+    # Interstitial dilation keeps the hilum (root stalk end) fixed
+    root_end = sweep["coupled_wt"]["tree"]["nodes"][0]["end_xyz"]
+    assert np.allclose(root_end, [0.0, 0.0, CAPSULE_PARAMS["stalk_length_um"]])
 
     meas = measure_morphoeval()
-    assert len(meas) == 9
+    assert len(meas) == 12
     print(
-        f"[self_test] 2014-menshykau-gdnf-ret-ureteric-kidney.py (Pass 2 v2) PASSED all 8 checks "
+        f"[self_test] 2014-menshykau-gdnf-ret-ureteric-kidney.py (Pass 3 v3) PASSED all 9 checks "
         f"(Short 2014 r={short_res['pearson_r_tips']:.4f}, R_b={short_res['strahler_Rb']:.3f}, "
-        f"R_L={short_res['strahler_RL']:.3f}, specimen WT tips={spec['wt_tips_detected']}, "
-        f"mutant tips={spec['mutant_tips_detected']})."
+        f"R_L={short_res['strahler_RL']:.3f}, tips-in-NZ={short_res['final_tips_in_nz_fraction']:.3f} "
+        f"(decoupled {sweep['no_capsule']['tips_in_nz_fraction']:.3f}), x0.5-capsule tips="
+        f"{sweep['slow_capsule_0p5']['e15_5_tips']} vs {sweep['coupled_wt']['e15_5_tips']}, "
+        f"specimen WT tips={spec['wt_tips_detected']}, mutant tips={spec['mutant_tips_detected']})."
     )
     return True
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--self-test", action="store_true", help="Run 8-check verification suite")
+    ap.add_argument("--self-test", action="store_true", help="Run 9-check verification suite")
     ap.add_argument("--verify-only", action="store_true", help="Alias for --self-test")
     ap.add_argument("--skip-gif", action="store_true", help="Skip animated GIF rendering")
     ap.add_argument("--rho-G", type=float, default=None, help="Override mesenchymal GDNF production rate rho_G")
     ap.add_argument("--gamma", type=float, default=None, help="Override reaction rate scale gamma")
-    ap.add_argument("--D-ratio", type=float, default=None, help="Override diffusion ratio D_G / D_R")
+    ap.add_argument("--D-ratio", type=float, default=None, help="Override diffusion ratio D_G / D_R in the ampulla PDE (D_G fixed at 1.0)")
     ap.add_argument("--bmp4", type=float, default=None, help="Override BMP4 stalk inhibition coefficient")
+    ap.add_argument("--capsule-growth", type=float, default=None, help="Rescale the E15.5 renal capsule anchor radius (Pass 3 moving boundary; default 1.0)")
+    ap.add_argument("--chemotaxis", type=float, default=None, help="Daughter-branch chemotaxis weight up the mesenchymal GDNF gradient (default 0.35)")
+    ap.add_argument("--no-capsule", action="store_true", help="Decouple the tree from the phase-field capsule (v2 geometric behaviour)")
     ap.add_argument("--seed", type=int, default=2014, help="Deterministic RNG seed (default: 2014)")
     args = ap.parse_args()
 
@@ -1361,11 +1938,16 @@ def main() -> int:
             "gamma": args.gamma,
             "D_ratio": args.D_ratio,
             "bmp4": args.bmp4,
+            "capsule_growth": args.capsule_growth,
+            "chemotaxis": args.chemotaxis,
+            "capsule": 0.0 if args.no_capsule else None,
         }.items()
         if v is not None
     }
     png = render_comparison_figure(OUT_PNG, overrides=overrides, seed=args.seed)
     print(f"[render] Wrote {png}")
+    cap_png = render_capsule_coupling_figure(OUT_CAPSULE_PNG, seed=args.seed)
+    print(f"[render] Wrote {cap_png}")
     if not args.skip_gif:
         gif = render_growth_gif(OUT_GIF, seed=args.seed)
         print(f"[render] Wrote {gif}")

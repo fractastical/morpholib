@@ -20,8 +20,18 @@ Formal SHA-256-locked reference dataset and *Mus musculus* pseudoglandular embry
      $$f_{\text{ASM}}(\Delta P) = f_0 + f_{\max}\frac{\Delta P^2}{K_{\text{ASM}}^2 + \Delta P^2}, \qquad \Gamma_{\text{branch}}(\Delta P) = \Gamma_0 \, \alpha_{\text{ASM}} \frac{(\Delta P - \Delta P_c)_+^n}{K_P^n + (\Delta P - \Delta P_c)_+^n},$$
      where tracheal drainage ($\Delta P \le \Delta P_c$) or nifedipine L-type $\text{Ca}^{2+}$ channel blockade ($\alpha_{\text{ASM}} \to 0.05$) collapses terminal bud bifurcation.
 
+4. **(Pass 3) Spatially Resolved CFTR Secretion, Poiseuille Luminal Pressure Network & 3D Pleural Cavity (`Olver & Strang 1974` *J. Physiol.* 241:327–357; `Harding, Bocking & Sigger 1986` *J. Appl. Physiol.* 60:160–165; `Metzger et al. 2008` *Nature* 453:745–750)**:
+   - Chloride-driven secretion per unit epithelial area increases from trachea to distal tips, $j_{\text{Cl}}(g) = j_{\text{prox}} (j_{\text{dist}}/j_{\text{prox}})^{g/g_{\max}}$; segment flows $Q_i$ are subtree sums and luminal pressure accumulates along Hagen–Poiseuille resistances $R_i = 8\mu L_i/(\pi r_i^4)$:
+     $$P_{\text{lumen}}(\text{node}) = P_{\text{amn}} + R_{\text{larynx}} Q_{\text{tot}} + \sum_{\text{path}} R_i Q_i \;\Rightarrow\; \Delta P(\text{tip}) \ge \Delta P(\text{trachea})$$
+     (Lean 4 Law 4 `poiseuille_tree_pressure_accumulation`). Numerically the intra-tree drop is $<0.01\%$ of $\Delta P$: the larynx dominates, as in Harding et al. (1986).
+   - The tree is grown in 3D with 90° rotating bifurcation planes inside an **analytic ellipsoidal pleural cavity** (a reduced stand-in for a stereolithographic chest mesh); tips reaching the pleura are arrested, so hyperplastic pressures (≥ 300 Pa) saturate against the chest wall.
+
+5. **(Pass 3) Laryngeal Valve Opening/Closing Cycles (`Harding & Hooper 1996` *J. Appl. Physiol.* 81:209–224)**:
+   - $C_{\text{lung}}\,dP/dt = Q_{\text{sec}} - (P - P_{\text{amn}})/R_{\text{larynx}}(t)$ with $R_{\text{larynx}}$ switching between the adducted-glottis value (closed plateau 250 Pa ≈ 1–2 mmHg) and $0.25\times$ that during fetal breathing-movement episodes (open ≈ 40 % of a 40 min period). The time-integrated $\Delta P$ — and so branching $N(T)=N_0\exp\int\Gamma_{\text{branch}}(\Delta P(t))dt$ — decreases strictly with the open duty cycle (Lean 4 Law 5 `laryngeal_valve_duty_cycle_monotonicity`): occlusion ($d=0$) → hyperplasia, open larynx ($d=1$) → hypoplasia.
+
 ## Vendored Files
 
+- `pleural_cavity_valve_reference.json` — **(Pass 3)** ellipsoidal cavity geometry, CFTR secretion profile and Poiseuille network constants, laryngeal valve / FBM cycle parameters, each flagged `provenance: literature` or `provenance: model`. The four new DOIs (Olver & Strang 1974, Harding et al. 1986, Harding & Hooper 1996, Metzger et al. 2008) were recorded from memory and are flagged `doi_verified_offline: false`.
 - `tracheal_viscous_fingering_reference.json` — SHA-256-locked reference parameters, 8-point $\Delta P \in [0, 400]\text{ Pa}$ microfluidic chest sweep, 4 common-mode gauge invariance $(P_{\text{lumen}}, P_{\text{pleura}})$ pairs, nifedipine and tracheal drainage controls, and empirical specimen morphometrics.
 - `embryonic_lung_branching_specimen.jpg` — *Mus musculus* pseudoglandular (E11–E16.5) embryonic lung branching tree and H&E epithelial tubule cross-section (`File:Development of the respiratory system in mice..jpg`, Wikimedia Commons CC BY 3.0, `600x343` px, `sha256: 8086ebb8b44cbdff4002f62707afa7ec0732edf41f9c53bfef049bf09eef6bae`).
 - `paper_citations.bib` — BibTeX citations with verified DOIs.

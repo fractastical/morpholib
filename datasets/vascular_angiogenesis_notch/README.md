@@ -17,6 +17,11 @@ Formal SHA-256-locked reference dataset and fluorescence biological specimen mic
    - Source: [Wikimedia Commons (`File:Where vessels are born - HUVECs self-assemble into a living vascular network.png`)](https://commons.wikimedia.org/wiki/File:Where_vessels_are_born_-_HUVECs_self-assemble_into_a_living_vascular_network.png), CC BY 4.0.
    - SHA-256: `9bf4f3e2692bd2ac4ffc245ca2b8ac9c29762b90a89b3a9f4751e1b00e58132c`.
 
-3. **`paper_citations.bib`** — BibTeX citations for Bentley et al. (2008), Hellström et al. (2007), Jakobsson et al. (2010), Chappell et al. (2009), and Collier et al. (1996).
+3. **`paper_citations.bib`** — BibTeX citations for Bentley et al. (2008), Hellström et al. (2007), Jakobsson et al. (2010), Chappell et al. (2009), Collier et al. (1996), and (Pass 3) Pries et al. (1995, 1998), Murray (1926), Chen et al. (2012), Franco et al. (2015), Lawson et al. (2001), le Noble et al. (2004), Wang et al. (1998), Lobov et al. (2007).
 
 4. **`scout_manifest.json`** — Step 1 (`01_scout`) OpenAlex + Wikimedia Commons scouting dossier.
+
+5. **`hemodynamic_pruning_av_specification_reference.json`** (Pass 3 remediation, SHA-256 `8764658d501c4560fe73821cd8b22015d87d3707f484947ab5fba1d788c52a97`)
+   - Reference table for Section 3b of the script: the lumenized Hagen–Poiseuille / Kirchhoff ladder plexus built from the anastomosed sprouts, Pries–Secomb–Gaehtgens pressure-dependent wall-shear set point $\tau_e(P) = 100 - 86\,e^{-5000(\log_{10}\log_{10}P)^{5.4}}$ dyn cm$^{-2}$ with metabolic stimulus $k_m \log_{10}(1 + Q_\mathrm{ref}/Q)$, minimum red-cell-perfusable lumen radius (1.3 µm) used for topological pruning, and the Notch-gated ephrinB2/EphB4 arteriovenous readout.
+   - Every parameter carries a `provenance` tag (`measured` / `derived` / `approximate` / `assumption`) so the audit can separate literature values from calibrations. `reference_values` gives the targets used by `measure_morphoeval()`: capillary wall shear band 1–2 Pa (Pries 1995), Murray exponent 3 (Murray 1926; Lean Theorem 4), Kirchhoff residual 0, WT arteriovenous segregation 1.0 vs 0.5 under Notch loss (Wang 1998; Lawson 2001), and the approximate 1.3–2× Notch-blockade hyperdensity band (Lobov 2007; Hellström 2007).
+   - The script's `verify_hemodynamic_reference()` SHA-256-locks this file and cross-checks that `HEMO_PARAMS` equals the pinned values.

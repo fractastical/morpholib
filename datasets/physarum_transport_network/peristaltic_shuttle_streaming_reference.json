@@ -1,0 +1,75 @@
+{
+  "dataset_id": "physarum_peristaltic_shuttle_streaming_v1",
+  "title": "Pass 3 reference table: actomyosin peristaltic contraction waves and shuttle streaming in Physarum polycephalum coupled to the Tero et al. (2010) adaptive Kirchhoff-Poiseuille tube network",
+  "organism": "Physarum polycephalum (acellular plasmodial slime mold)",
+  "created_for": "2010-tero-physarum-transport-network.py (Slot 057, Pass 3 remediation of audit 2026-10-19-physarum-transport-network-audit-v2)",
+  "provenance_note": "DOIs below could not be re-verified offline during Pass 3 (no network access permitted). Alim et al. (2013) was already vendored with its DOI in paper_citations.bib. Numeric values marked value_provenance = 'recalled' are quoted from memory of the cited text and must be checked against the paper by the auditor.",
+  "primary_sources": [
+    {
+      "key": "alim2013random",
+      "citation": "Alim K, Amselem G, Peaudecerf F, Brenner MP, Pringle A (2013) Random network peristalsis in Physarum polycephalum organizes fluid flows across an individual. Proc. Natl. Acad. Sci. USA 110(33):13306-13311",
+      "doi": "10.1073/pnas.1305049110",
+      "doi_verified_offline": false,
+      "role": "Peristaltic contraction wave of the tube walls drives shuttle streaming; the wave spans the whole individual (wavelength ~ organism size), which maximizes net transport; flows across the network are modelled as Poiseuille flow in tubes with time-varying radius"
+    },
+    {
+      "key": "kamiya1981physical",
+      "citation": "Kamiya N (1981) Physical and chemical basis of cytoplasmic streaming. Annual Review of Plant Physiology 32:205-236",
+      "doi": "10.1146/annurev.pp.32.060181.001225",
+      "doi_verified_offline": false,
+      "role": "Classical description of rhythmic shuttle streaming in Physarum plasmodia: the endoplasm reverses direction periodically (period of the order of 1-2 min) in phase with rhythmic tube-wall contraction"
+    },
+    {
+      "key": "tero2007mathematical",
+      "citation": "Tero A, Kobayashi R, Nakagaki T (2007) J. Theor. Biol. 244(4):553-564",
+      "doi": "10.1016/j.jtbi.2006.07.015",
+      "doi_verified_offline": true,
+      "role": "Tube adaptation dD/dt = f(|Q|) - mu D where Q is interpreted as the flux through the tube; the slow-timescale coupling here feeds the cycle-averaged |Q| of the shuttle flow into f"
+    }
+  ],
+  "contraction_period_s": {
+    "value": 100.0,
+    "range_s": [60.0, 120.0],
+    "unit": "s",
+    "source": "alim2013random; kamiya1981physical",
+    "value_provenance": "recalled",
+    "note": "Period of the actomyosin contraction / shuttle-streaming cycle. Treated as an input T_c of the reduced model; the model time unit 1/mu is anchored to ADAPTATION_TIME_S = 1800 s (model-scale assumption, unsourced)."
+  },
+  "flow_reversals_per_contraction_cycle": {
+    "value": 2,
+    "unit": "sign changes per cycle",
+    "source": "kamiya1981physical (definitional for sinusoidal shuttle streaming)",
+    "value_provenance": "definitional",
+    "note": "Endoplasmic flow reverses twice per contraction period; the reduced model must reproduce 2 sign changes of Q_e(t) per cycle on tubes dominated by the shuttle component."
+  },
+  "fraction_of_tubes_with_reversing_flow": {
+    "value": 1.0,
+    "unit": "fraction",
+    "source": "alim2013random (qualitative: oscillatory flows observed throughout the network)",
+    "value_provenance": "qualitative",
+    "note": "Steady source-sink Kirchhoff flow (eps = 0 ablation) gives 0 reversals; the peristaltic model should drive reversal on essentially all tubes."
+  },
+  "optimal_wavelength_over_organism_length": {
+    "value": 1.0,
+    "unit": "lambda / L_organism",
+    "source": "alim2013random",
+    "value_provenance": "recalled",
+    "note": "Alim et al. report that the peristaltic wavelength matches the organism size and that this maximizes net transport. The reduced model scans lambda / L in [0.25, 8] and reports the argmax of the cycle-averaged net transport sum_e |<Q_e>| L_e (order-of-magnitude agreement expected, not a fitted value)."
+  },
+  "oscillatory_to_net_flow_dominance": {
+    "value": null,
+    "unit": "rms ratio",
+    "source": "kamiya1981physical; alim2013random (qualitative)",
+    "value_provenance": "qualitative",
+    "note": "Shuttle streaming velocities greatly exceed the net transport velocity; the reduced model reports the oscillatory/steady flux rms ratio at the calibrated eps without a numeric reference."
+  },
+  "model_scale_parameters": {
+    "peristalsis_eps_default": 0.0025,
+    "peristalsis_eps_sweep": [0.0, 0.00125, 0.0025, 0.005, 0.0075, 0.01],
+    "wavelength_ratio_sweep": [0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 8.0],
+    "wave_direction_deg": 20.0,
+    "adaptation_time_s_per_model_unit": 1800.0,
+    "pruning_threshold_fraction_of_max_D": 0.10,
+    "calibration_disclosure": "eps_default was chosen from the eps sweep as the amplitude at which the oscillatory shuttle-flux rms is ~0.6x the steady source-sink flux rms and the gamma = 1.8 Kanto network remains in the Physarum TL_MST band (1.78 +- 0.14). It is a calibration, not a measurement; the full eps sweep is reported so the dependence is visible."
+  }
+}

@@ -1,0 +1,101 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-menshykau-fgf10-shh-lung-turing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-menshykau-fgf10-shh-lung-turing-parameter-expressivity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-menshykau-fgf10-shh-lung-turing-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Menshykau & Iber (2013), Zubkov et al. (2015) & Watanabe & Costantini (2004) kidney ureteric bud GDNF-RET-Wnt11 Turing branching morphogenesis with stromal BMP4/7-Gremlin1-FGF7 feedback and reduced-3D ampulla necking — Parameter expressivity: 88/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The parameter space is substantially richer: rho_tip sweeps across four regimes with two seeding modes (`evaluate_tip_splitting_regimes`, L445-472), 7 genetic/bead conditions (WT, Gdnf+/-, Spry1-/-, GDNF bead, Grem1-/-, Fgf7-/-, Bmp4+/-) plus no-sink, equal-diffusion and stromal-ablation controls (`evaluate_all_conditions_and_generations`, L945-1057), a daughter-dome aspect-ratio sweep for axis selection (Panel I, L1349-1362) and a dihedral ablation (L1023), and the CLI exposes `--a-ret --b-gdnf --gamma --d-ratio --generations --seed --k-bmp --k-grem --k-fgf7 --no-stroma` (L1676-1685), all wired through `render_outputs(stromal_overrides=...)` into every tree call and the GIF (L1687-1702). Deductions: the generational bifurcation half-angles are hard-coded (L856) so the branch-angle axis of the morphospace is not parameter-controlled (-5); `gain_wt_ref`, `g_ref = 0.60`, `size_jitter_sd = 0.08` (L726-728), `R_TIP_WT_DEFAULT` and `TIP_RADIUS_SIGNAL_EXPONENT` (L102-103) and the `r_tip *= 0.92` cascade decay (L577) are fixed calibrations not exposed or swept (-4); the Bmp4+/- `bmp_scale = 0.75` is an assumption (-2); no sweep shows the staircase flipping under `--k-*` (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:evidenceAgainst "2012-menshykau-fgf10-shh-lung-turing.py L726–L728: gain_wt_ref, g_ref, size_jitter_sd fixed model-scale calibrations placed to hit rho_WT ~ 2 <https://github.com/fractastical/morpholib/blob/028758bc/2012-menshykau-fgf10-shh-lung-turing.py#L726-L728>",
+            "2012-menshykau-fgf10-shh-lung-turing.py L856–L862: base_half_deg hard-codes 51/42.5/41-1.4g half-angles; no-sink ablation only scales by 0.62 <https://github.com/fractastical/morpholib/blob/028758bc/2012-menshykau-fgf10-shh-lung-turing.py#L856-L862>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-parameter-expressivity-2> ;
+        pk:hasScore "0.88"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2012-menshykau-fgf10-shh-lung-turing.py L945–L1057" ;
+        dct:description "7 conditions + stromal_ablation / no-sink / dihedral-ablation controls evaluated across generations" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2012-menshykau-fgf10-shh-lung-turing.py#L945-L1057> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2012-menshykau-fgf10-shh-lung-turing.py L1676–L1702" ;
+        dct:description "CLI --a-ret --b-gdnf --gamma --d-ratio --generations --seed --k-bmp --k-grem --k-fgf7 --no-stroma wired via stromal_overrides into render_outputs" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2012-menshykau-fgf10-shh-lung-turing.py#L1676-L1702> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Loop 054 Pass 3 Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/54> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/s11538-015-0073-9>,
+            <https://doi.org/10.1016/j.devcel.2004.12.004>,
+            <https://doi.org/10.1016/j.devcel.2014.02.017>,
+            <https://doi.org/10.1016/j.ydbio.2004.03.025>,
+            <https://doi.org/10.1038/nature07005>,
+            <https://doi.org/10.1088/1478-3975/10/4/046003>,
+            <https://doi.org/10.1172/JCI8256>,
+            <https://doi.org/10.1242/dev.01251>,
+            <https://doi.org/10.1242/dev.086207>,
+            <https://doi.org/10.1242/dev.126.3.547> .
+    <https://doi.org/10.1007/s11538-015-0073-9> dct:date "2015"^^xsd:gYear ;
+        dct:title "A spatially-averaged mathematical model of kidney branching morphogenesis" .
+    <https://doi.org/10.1016/j.devcel.2004.12.004> dct:date "2005"^^xsd:gYear ;
+        dct:title "Sprouty1 is a critical regulator of GDNF/RET-mediated kidney induction" .
+    <https://doi.org/10.1016/j.devcel.2014.02.017> dct:date "2014"^^xsd:gYear ;
+        dct:title "Global quantification of tissue dynamics in the developing mouse kidney" .
+    <https://doi.org/10.1016/j.ydbio.2004.03.025> dct:date "2004"^^xsd:gYear ;
+        dct:title "Real-time analysis of ureteric bud branching morphogenesis in vitro" .
+    <https://doi.org/10.1038/nature07005> dct:date "2008"^^xsd:gYear ;
+        dct:title "The branching programme of mouse lung development" .
+    <https://doi.org/10.1088/1478-3975/10/4/046003> dct:date "2013"^^xsd:gYear ;
+        dct:title "Kidney branching morphogenesis under the control of a ligand-receptor-based Turing mechanism" .
+    <https://doi.org/10.1172/JCI8256> dct:date "2000"^^xsd:gYear ;
+        dct:title "Bone morphogenetic protein 4 regulates the budding site and elongation of the mouse ureter" .
+    <https://doi.org/10.1242/dev.01251> dct:date "2004"^^xsd:gYear ;
+        dct:title "Gremlin-mediated BMP antagonism induces the epithelial-mesenchymal feedback signaling controlling metanephric kidney and limb organogenesis" .
+    <https://doi.org/10.1242/dev.086207> dct:date "2012"^^xsd:gYear ;
+        dct:title "Branch mode selection during early lung development" .
+    <https://doi.org/10.1242/dev.126.3.547> dct:date "1999"^^xsd:gYear ;
+        dct:title "FGF-7 modulates ureteric bud growth and nephron number in the developing kidney" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Menshykau & Iber (2013), Zubkov et al. (2015) & Watanabe & Costantini (2004) kidney ureteric bud GDNF-RET-Wnt11 Turing branching morphogenesis with stromal BMP4/7-Gremlin1-FGF7 feedback and reduced-3D ampulla necking — Parameter expressivity 88/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:28:24Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-menshykau-fgf10-shh-lung-turing-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/54> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

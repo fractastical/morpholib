@@ -1,7 +1,15 @@
 sim_id: tozluoglu-wing-disc-dome-folding
 math_family: Multiplicative Finite-Strain Morphoelasticity F = F_e F_g Coupled to Apical-Basal Differential ECM Stiffness & Localized Hinge Fold Remodeling
 model_spec:
-  model: "Tozluoglu et al. (2019) Dev. Cell 51:299-312 & Sui et al. (2018) Nat. Commun. 9:4620 2D sagittal apico-basal bilayer morphoelastic wing imaginal disc dome & H/N, H/H, H/P fold model"
+  model: "Tozluoglu et al. (2019) Dev. Cell 51:299-312 & Sui et al. (2018) Nat. Commun. 9:4620 2D sagittal apico-basal bilayer morphoelastic wing imaginal disc dome & H/N, H/H, H/P fold model, coupled in Pass 3 to a reduced quasi-1D squamous peripodial epithelium + incompressible lumen sac (volume-closed hydrostatic pressure, Laplace dome deflection, unilateral PE-DP contact)"
+  pass3_lumen:
+    lumen_mode_default: volume
+    h_lumen_mean_um: 12.0
+    T_PE_mN_per_m: 1.0
+    T_cell_floor_mN_per_m: 0.5
+    h_PE_squamous_um: 3.0
+    h_margin_cuboidal_um: 8.0
+    p_sweep_Pa: [0, 5, 10, 20, 50, 100, 200, 400, 800]
   t_start_h_AEL: 64.0
   t_end_h_AEL: 96.0
   L0_sagittal_um: 165.0
@@ -16,6 +24,7 @@ model_spec:
     - datasets/wing_disc_dome_folding/wing_disc_dome_folding_reference.json
     - datasets/wing_disc_dome_folding/drosophila_wing_disc_specimen.jpg
     - datasets/wing_disc_dome_folding/scout_manifest.json
+    - datasets/wing_disc_dome_folding/peripodial_lumen_reference.json
 equations:
   - law_name: Apical-vs-Basal Differential Planar Growth & Basal ECM Stiffness Pouch Dome Curvature Law
     formula: "kappa_dome = 6 * mu_cell * mu_BM * h_BM * (g_apical - g_BM) * Delta_t / (h_cell * (mu_cell * h_cell + 4 * mu_BM * h_BM)) > 0 for g_apical > g_BM and mu_BM > 0"
@@ -86,3 +95,35 @@ equations:
     role: "Proves that Collagenase / vkg-RNAi ablation of the basal basement membrane (mu_BM = 0) collapses both the pouch dome and all three hinge folds, and establishes the strict fold-depth hierarchy across JAK/STAT overgrowth, wild type, dysf/omb mutants, uniform growth, and ECM ablation"
     source_citation: "Tozluoglu et al. (2019) Dev. Cell 51(3):299-312.e4 Figs. 4-6; Sui et al. (2018) Nat. Commun. 9:4620 Figs. 3-6"
     code_locus: "2020-tozluoglu-wing-disc-dome-folding.py#L360-L545"
+  - law_name: Lumen Hydrostatic Pressure Laplace Dome Deflection & Fold-Locus Invariance in the Coupled Disc-Proper + Peripodial Sac (Pass 3)
+    formula: "Delta_z_dome = p * L_pouch^2 / (16 * T_DP), T_DP = mu_BM * h_BM * (gamma_pouch^2 - gamma_pouch^-4) + T_cell;  T_PE * z_PE'' = -p with z_PE >= z_DP + h_min;  V_lumen = integral (z_PE - z_DP) dx = h_lumen * L(t) closes p;  z_dome(p=0) = z_dome_uncoupled, z_dome strictly decreasing in p;  growth_second_diff(g_l + c, g_t + c, g_r + c) = growth_second_diff(g_l, g_t, g_r) => fold loci invariant to p"
+    lean_decl: MathOfBiology.Loop_049.dome_height_num
+    lean_theorem: MathOfBiology.Loop_049.lumen_pressure_laplace_dome_deflection
+    lean_theorem_2: MathOfBiology.Loop_049.uniform_lumen_load_preserves_growth_trough_second_diff
+    lean_locus: morphoeval/lean/loops/Loop_049_wing_disc_dome_folding.lean#L152-L207
+    lean_code: |-
+      def dome_height_num (z0 p chord2 T16 : Int) : Int :=
+        z0 * T16 - p * chord2
+      def pe_sag_num (p span2 : Int) : Int :=
+        p * span2
+      theorem lumen_pressure_laplace_dome_deflection
+          (z0 p1 p2 chord2 T16 span2 : Int)
+          (hchord : chord2 > 0)
+          (_hT : T16 > 0)
+          (hspan : span2 > 0)
+          (hp1 : p1 > 0)
+          (hlt : p1 < p2) :
+          dome_height_num z0 0 chord2 T16 = z0 * T16 ∧
+          dome_height_num z0 p1 chord2 T16 < dome_height_num z0 0 chord2 T16 ∧
+          dome_height_num z0 p2 chord2 T16 < dome_height_num z0 p1 chord2 T16 ∧
+          pe_sag_num p1 span2 > 0
+      theorem uniform_lumen_load_preserves_growth_trough_second_diff
+          (g_left g_trough g_right c : Int) :
+          growth_second_diff (g_left + c) (g_trough + c) (g_right + c) =
+            growth_second_diff g_left g_trough g_right
+    variables: "p: lumen hydrostatic pressure (Pa); z0: growth-driven uncoupled pouch dome height (um); chord2 = L_pouch^2 with L_pouch = (1 - s_HP) L(t); T16 = 16 T_DP, T_DP: disc-proper shell tension (Pa*um) from basal Collagen IV stretch gamma_pouch plus cortical floor; span2 = L(t)^2; T_PE: peripodial membrane tension (1 mN/m, assumption); h_lumen: mean lumen height (12 um, assumption); c: uniform load shift"
+    role: "Proves that in the Pass 3 reduced sac the lumen pressure can only lower the pouch dome (monotonically, with no effect at p = 0 / PE ablation) while inflating the peripodial roof, and that a uniform transverse load leaves the growth-trough second difference—and hence the H/N, H/H, H/P fold loci—unchanged. Reduced quasi-1D plane-strain model; the full 3D DP + PE + lumen FEM remains a residual."
+    source_citation: "Tozluoglu et al. (2019) Dev. Cell 51(3):299-312.e4 (disc-proper differential growth sets fold loci); McClure & Schubiger (2005) Development 132:5033-5042 (squamous peripodial epithelium); Mosaliganti et al. (2019) eLife 8:e39596 (order of magnitude of epithelial lumen pressure, otic vesicle)"
+    code_locus: "2020-tozluoglu-wing-disc-dome-folding.py#L518-L792"
+    inputs_extra:
+      - datasets/wing_disc_dome_folding/peripodial_lumen_reference.json

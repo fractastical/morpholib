@@ -1,0 +1,125 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAM7Jg0u3ck119vNIu4MBSI9tmqJeWMlgiCok6mXmgKQE/> .
+@prefix this: <https://w3id.org/np/RAM7Jg0u3ck119vNIu4MBSI9tmqJeWMlgiCok6mXmgKQE> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-he-drosophila-ventral-furrow> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-he-drosophila-ventral-furrow-model-fidelity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-he-drosophila-ventral-furrow-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Conte et al. (2012), Martin et al. (2009) & He et al. (2014) Drosophila ventral furrow invagination biomechanics — Model fidelity to source: 87/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "Credited: exact incompressible wedge geometry and RK2 ratcheted-pulse ODE (L153-249), the new AP shell line equation with exact ellipsoid curvatures, simply supported poles and a verified second-order stencil (L627-719; uncoupled run recovers the 2D depth to 0.1% at 50% EL), the new variable-viscosity Stokes operator derived by taking the curl of div(sigma) = 0 with exact boundary-flux closure and an exact-solution check to 1e-12 (L855-1003), and 5 Lean theorems (0 sorrys) pinning Theorems 1-5. Deductions: the regime depth and cell height in the 2D ring are prescribed interpolants pinned to the reference values at the last step (L332-369, L443-445, L455-458) rather than solved from the viscous-vertex force balance, so the Conte (2012) decomposition is reproduced by construction (-7, newly exposed); the AP coupling is a 1D line + kinematic sweep, not a 3D FE shell, and ell_B / ell_N are free parameters (-3); the Stokes domain is a fixed rectangle with velocity BCs rather than a moving trapezoid with cortical stress BCs (-3)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "2012-he-drosophila-ventral-furrow.py L332–L369: Regime block hard-codes target_ap_um / target_h_um / target_depth_um equal to the empirical reference values <https://github.com/fractastical/morpholib/blob/7e4f207/2012-he-drosophila-ventral-furrow.py#L332-L369>",
+            "2012-he-drosophila-ventral-furrow.py L443–L458: h_mean = target_h_um and depth_um = target_depth_um forced at the last step; depth is an interpolant of constr_frac and prog, not a mechanical solve <https://github.com/fractastical/morpholib/blob/7e4f207/2012-he-drosophila-ventral-furrow.py#L443-L458>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-he-drosophila-ventral-furrow-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-he-drosophila-ventral-furrow-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-he-drosophila-ventral-furrow-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-he-drosophila-ventral-furrow-model-fidelity-4> ;
+        pk:hasScore "0.87"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-he-drosophila-ventral-furrow-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2012-he-drosophila-ventral-furrow.py L153–L249" ;
+        dcterms:description "Incompressible wedge geometry, basal width inversion, and RK2 ratcheted pulse ODE convergence (unchanged, verified)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/7e4f207/2012-he-drosophila-ventral-furrow.py#L153-L249> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-he-drosophila-ventral-furrow-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2012-he-drosophila-ventral-furrow.py L627–L719" ;
+        dcterms:description "Exact ellipsoid principal curvatures and the Donnell/Winkler AP line equation solver with ghost-node simply supported poles" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/7e4f207/2012-he-drosophila-ventral-furrow.py#L627-L719> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-he-drosophila-ventral-furrow-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "2012-he-drosophila-ventral-furrow.py L855–L1003" ;
+        dcterms:description "Variable-viscosity Stokes stream-function operator, boundary flux line integral, two-layer Dirichlet closure, sparse direct solve, divergence and affine checks" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/7e4f207/2012-he-drosophila-ventral-furrow.py#L855-L1003> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-he-drosophila-ventral-furrow-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_046_drosophila_ventral_furrow.lean L145–L242" ;
+        dcterms:description "Theorems 4-5 (modal stiffness monotonicity; discrete divergence-free basal-ward affine flow), 0 sorrys, verified with lean" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/7e4f207/morphoeval/lean/loops/Loop_046_drosophila_ventral_furrow.lean#L145-L242> .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "yHkyHgoqI59HKKYMxqfeAv/TeRu2/dho2a+YiUMAJUKRzLoUqc+kV4HSWtLVNvSVXeVsZLa9gjY1FcIbXTCZcFvvsbfPnQGSE69mVatHSTwsR1yblve4oNadUtXZQDWnlS109PnTb8NQsXd986ISnyuAzrtGzdcpb9b2E51dx9TVPZ94+y7/PkOuxYZw/r0IzT8jEkjth/Q+DJJgE9/6xo99axdedqHhYGdKuv3m8h5T9qr37sxAOV0pUvavZp2hdfaiJu9VA9khEbbMBNlyH6wh+Ly5xyhV9I7DccrOryfFw0OOGjaYuRsMVYn2G14cJIKmoNRHFHCTHp5kKnxBvQ==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Conte et al. (2012), Martin et al. (2009) & He et al. (2014) Drosophila ventral furrow invagination biomechanics — Model fidelity to source 87/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T15:59:09Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-he-drosophila-ventral-furrow-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1016/j.bpj.2014.07.013> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "Passive mechanical forces control cell-shape change during Drosophila ventral furrow formation" .
+
+    <https://doi.org/10.1038/nature07522> dcterms:date "2009"^^xsd:gYear ;
+        dcterms:title "Pulsed contractions of an actin-myosin network drive apical constriction" .
+
+    <https://doi.org/10.1038/nature13070> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "Apical constriction drives tissue-scale hydrodynamic flow to mediate cell elongation" .
+
+    <https://doi.org/10.1242/dev.110.1.73> dcterms:date "1990"^^xsd:gYear ;
+        dcterms:title "Cell shape changes during gastrulation in Drosophila" .
+
+    <https://doi.org/10.1242/dev.112.3.775> dcterms:date "1991"^^xsd:gYear ;
+        dcterms:title "Gastrulation in Drosophila: the formation of the ventral furrow and posterior midgut invaginations" .
+
+    <https://doi.org/10.1371/journal.pbio.1002292> dcterms:date "2015"^^xsd:gYear ;
+        dcterms:title "Mechanical coupling between endoderm invagination and axis extension in Drosophila" .
+
+    <https://doi.org/10.1371/journal.pone.0049973> dcterms:date "2012"^^xsd:gYear ;
+        dcterms:title "Biomechanical analysis of ventral furrow formation in Drosophila melanogaster" .
+
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.bpj.2014.07.013>,
+            <https://doi.org/10.1038/nature07522>,
+            <https://doi.org/10.1038/nature13070>,
+            <https://doi.org/10.1242/dev.110.1.73>,
+            <https://doi.org/10.1242/dev.112.3.775>,
+            <https://doi.org/10.1371/journal.pbio.1002292>,
+            <https://doi.org/10.1371/journal.pone.0049973> .
+}
+

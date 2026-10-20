@@ -12,7 +12,18 @@ model_spec:
   sigma_theta_angular_noise_rad: 0.18
   critical_galton_watson_q_branch: 0.50
   seed: 2017
+  # Pass 3 (3D ECM-anisotropic geometries + clonal drift)
+  cylinder_fat_pad_radius: 14.0
+  cylinder_fat_pad_length: 110.0
+  sphere_mesenchyme_radius: 40.0
+  ecm_alignment_lambda_default: 0.1
+  ecm_alignment_lambda_sweep: [0.0, 0.05, 0.1, 0.2, 0.4]
+  inflation_rate_sweep: [0.0, 0.004, 0.008]
+  n_cells_per_teb: 64
+  initial_label_fraction: 0.125
+  moran_rate_per_unit_length: 1.0
   inputs:
+    - datasets/branching_random_walk_annihilation/barw_3d_ecm_clonal_reference.json
     - datasets/branching_random_walk_annihilation/branching_random_walk_annihilation_reference.json
     - datasets/branching_random_walk_annihilation/mouse_branched_ductal_network_specimen.jpg
     - datasets/branching_random_walk_annihilation/scout_manifest.json
@@ -78,3 +89,59 @@ equations:
     role: "Proves that attenuating TGF-beta signaling (reducing R_a) produces hyper-dense ductal trees while exogenous TGF-beta (increasing R_a) yields sparse hypoplastic trees, whereas complete ablation of annihilation (R_a = 0) destroys self-termination and triggers exponential tip explosion"
     source_citation: "Hannezo et al. (2017) Cell 171(1):242-255 Fig. 4; Silberstein & Daniel (1987) Science 237:291-293"
     code_locus: "2017-hannezo-branching-random-walk-annihilation.py#L370-L535"
+
+  # ---------------------------------------------------------------- Pass 3 ----
+  - id: hannezo-branching-random-walk-annihilation-4
+    law_name: "Anisotropic ECM Nematic Alignment Order Law for 3D BARW in cylindrical fat-pad / spherical mesenchymal geometries (Bordeu et al. 2023)"
+    formula: "du/dt = sigma_theta xi_perp + lambda (f.u)(f - (f.u) u);  S = < (3 cos^2 theta - 1)/2 >_length,  S(iso) = 0,  S(parallel) = 1,  S(perp) = -1/2;  R_s(t) = R_s(0)(1 + gamma t) (inflation)"
+    lean_decl: "MathOfBiology.Loop_056.nematic_order_twice"
+    lean_theorem: "MathOfBiology.Loop_056.hannezo_nematic_ecm_alignment_order"
+    lean_locus: "morphoeval/lean/loops/Loop_056_branching_random_walk_annihilation.lean#L152-L202"
+    lean_code: |
+      def nematic_order_twice (c : Int) : Int := 3 * c * c - 1
+      def nematic_torque (lambda_ fu : Int) : Int := lambda_ * fu
+      theorem hannezo_nematic_ecm_alignment_order (c lambda_ fu : Int) :
+          nematic_order_twice 1 = 2 ∧ nematic_order_twice (-1) = 2 ∧ nematic_order_twice 0 = -1 ∧
+          -1 ≤ nematic_order_twice c ∧ nematic_order_twice c = nematic_order_twice (-c) ∧
+          nematic_order_twice 1 + nematic_order_twice 0 + nematic_order_twice 0 = 0 ∧
+          nematic_torque 0 fu = 0 ∧ nematic_torque lambda_ 0 = 0 ∧
+          nematic_torque lambda_ (-fu) = - nematic_torque lambda_ fu
+    variables: "u: unit tip direction; f: ECM fiber axis; lambda: nematic alignment strength (1/time); theta: angle between a ductal segment and f; S: length-weighted nematic order parameter; gamma: capsule inflation rate"
+    role: "Specifies the anisotropic-ECM torque of the 3D BARW simulator (nematic, not polar: symmetric under u -> -u, zero for isotropic matrix or perpendicular tips) and the order parameter used to quantify fiber alignment of the ductal network; S rises monotonically with lambda and over-alignment (lambda >= 0.4) collapses the tree by alignment-induced sibling annihilation"
+    source_citation: "Bordeu I, Chatzeli L, Simons BD (2023) Nat. Commun. 14:3422 (doi:10.1038/s41467-023-39124-x); Hannezo et al. (2017) Cell STAR Methods"
+    code_locus: "2017-hannezo-branching-random-walk-annihilation.py#L801-L1066"
+
+  - id: hannezo-branching-random-walk-annihilation-5
+    law_name: "Scheele et al. (2017) Moran Neutral-Drift Martingale for labelled stem cells inside a terminal end bud"
+    formula: "P(k -> k+1) = P(k -> k-1) = k (N-k) / N^2;  E[k' | k] = k;  N^2 Var[k' - k | k] = 2 k (N-k) >= 0 (= 0 at k = 0, N)"
+    lean_decl: "MathOfBiology.Loop_056.moran_expected_numerator"
+    lean_theorem: "MathOfBiology.Loop_056.scheele_moran_neutral_drift_martingale"
+    lean_locus: "morphoeval/lean/loops/Loop_056_branching_random_walk_annihilation.lean#L206-L243"
+    lean_code: |
+      def moran_expected_numerator (n k : Int) : Int :=
+        (k + 1) * (k * (n - k)) + (k - 1) * (k * (n - k)) + k * (n * n - 2 * (k * (n - k)))
+      def moran_variance_numerator (n k : Int) : Int := 2 * (k * (n - k))
+      theorem scheele_moran_neutral_drift_martingale (n k : Int) :
+          moran_expected_numerator n k = k * (n * n) ∧
+          moran_variance_numerator n 0 = 0 ∧ moran_variance_numerator n n = 0 ∧
+          (0 ≤ k → k ≤ n → 0 ≤ moran_variance_numerator n k)
+    variables: "N: equipotent stem cells per TEB; k: labelled cells; k': labelled cells after one Moran birth-death step"
+    role: "Proves that neutral drift of a labelled clone inside a TEB conserves the expected labelled fraction while generating clonal variance only in mosaic TEBs; this is the reference (f_bar = f_0) against which the duct-length-weighted labelled fraction of the simulated tree is measured"
+    source_citation: "Scheele CLGJ et al. (2017) Nature 542:313-317 (doi:10.1038/nature21060); Moran PAP (1958) Math. Proc. Camb. Phil. Soc. 54:60-71; Klein AM, Simons BD (2011) Development 138:3103-3111"
+    code_locus: "2017-hannezo-branching-random-walk-annihilation.py#L1068-L1225"
+
+  - id: hannezo-branching-random-walk-annihilation-6
+    law_name: "Label Conservation at a TEB Bifurcation (hypergeometric half-split + doubling)"
+    formula: "k -> (2 k_1, 2 (k - k_1)),  k_1 ~ Hypergeom(N, k, N/2);  2 k_1 + 2 (k - k_1) = 2 k;  E[2 k_1] = k"
+    lean_decl: "MathOfBiology.Loop_056.daughter_labels"
+    lean_theorem: "MathOfBiology.Loop_056.scheele_teb_split_label_conservation"
+    lean_locus: "morphoeval/lean/loops/Loop_056_branching_random_walk_annihilation.lean#L247-L272"
+    lean_code: |
+      def daughter_labels (k k1 : Int) : Int × Int := (2 * k1, 2 * (k - k1))
+      theorem scheele_teb_split_label_conservation (k k1 h : Int) :
+          (daughter_labels k k1).1 + (daughter_labels k k1).2 = 2 * k ∧
+          2 * (h * k) = (2 * h) * k
+    variables: "k: labelled cells in the parent TEB; k_1: labelled cells in the first half of the split; h = N/2"
+    role: "Shows that the A -> 2A bifurcation is label-neutral: the total labelled count doubles with cell number and each daughter is an unbiased copy of the parent, so the martingale of Law 5 extends to the whole BARW tree (clone fate is dictated by the tree's bifurcation/termination statistics, Scheele et al. 2017)"
+    source_citation: "Scheele CLGJ et al. (2017) Nature 542:313-317 (doi:10.1038/nature21060)"
+    code_locus: "2017-hannezo-branching-random-walk-annihilation.py#L1088-L1157"

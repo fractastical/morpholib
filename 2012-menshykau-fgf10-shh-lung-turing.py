@@ -1,6 +1,20 @@
 #!/usr/bin/env python3
 r"""
-2012-menshykau-fgf10-shh-lung-turing.py — Pass 2 (v2 remediated)
+2012-menshykau-fgf10-shh-lung-turing.py — Pass 3 (v3 remediated)
+=============================================================================
+Pass 3 additions (2026-10-19, superseding audit v2 remediation items):
+  * Section 3b — reduced 3D ampulla geometry: `simulate_moving_boundary_ampulla_necking`
+    (1D Lagrangian moving boundary, v_n = v0 max(0, R^2 G - S_thr)) and
+    `select_splitting_axis` / `dihedral_rotation_cascade` (anisotropic-dome linear
+    mode selection -> orthogonal dihedral rotation; Lean 4 Law 5). A full 3D
+    phase-field / ALE surface is NOT implemented (residual carried).
+  * Section 3b/4 — explicit stromal BMP4/7 - Gremlin1 - FGF7 feedback
+    (`stromal_signaling_gain`, Lean 4 Law 4) feeding gamma_eff into a mechanistic
+    rho_tip -> m branching-mode selection inside `simulate_coupled_ureteric_tree`
+    (replaces the Pass 2 per-condition prescribed multiplicities and hand-placed
+    ectopic side buds). New conditions: Grem1-/-, Fgf7-/-, Bmp4+/-, stromal ablation.
+  * `solve_ampulla_cap_imex(seed_mode="noise")` honesty control; `measure_morphoeval()`
+    now returns 14 metrics; `self_test()` runs 9 suites; 9-panel figure (G, H, I new).
 =============================================================================
 Menshykau & Iber (2013) Phys. Biol. 10(4):046003, Zubkov et al. (2015) Bull.
 Math. Biol. 77:565-595, Watanabe & Costantini (2004) Dev. Biol. 271:98-106 &
@@ -82,6 +96,24 @@ D_G_DEFAULT = 1.00
 A_RET_DEFAULT = 0.10
 B_GDNF_DEFAULT = 0.90
 GAMMA_WT_DEFAULT = 25.0
+
+# Pass 3: wild-type ampulla radius (model units) and tip-radius signalling exponent.
+# rho_tip = pi * R_TIP_WT / lambda_c = 1.99 places the WT ampulla in the dichotomous band.
+R_TIP_WT_DEFAULT = 0.30
+TIP_RADIUS_SIGNAL_EXPONENT = 0.5
+
+# Pass 3: stromal BMP4/7 - Gremlin1 - FGF7 feedback parameters (reduced, spatially
+# explicit Zubkov-type module; see `stromal_signaling_gain`). Values are model-scale
+# calibrations (NOT measured rate constants) — see handoff/audit remediation notes.
+STROMAL_DEFAULTS: dict[str, float] = {
+    "bmp_scale": 1.0,      # peristalk stromal BMP4/BMP7 production (relative)
+    "grem_scale": 1.0,     # cap-mesenchyme Gremlin1 production (relative)
+    "fgf7_scale": 1.0,     # cortical stromal FGF7 production (relative)
+    "k_bmp": 3.0,          # BMP inhibition constant on RET/ERK gain
+    "bmp_baseline": 0.5,   # Wolffian-duct / stromal baseline BMP4 (Grem1-/- outgrowth failure, Michos 2004)
+    "k_grem": 4.0,         # Gremlin1 sequestration constant of BMP
+    "k_fgf7": 0.8,         # FGF7 potentiation of ampulla growth / RET gain
+}
 
 
 # =============================================================================
@@ -292,6 +324,8 @@ def solve_ampulla_cap_imex(
     D_R: float = D_R_DEFAULT,
     D_G: float = D_G_DEFAULT,
     gamma: float = GAMMA_WT_DEFAULT,
+    seed_mode: str = "band",
+    noise_seed: int = 54,
 ) -> dict[str, Any]:
     """
     Solve the 1D Schnakenberg GDNF-RET reaction-diffusion system on the curved
@@ -304,6 +338,14 @@ def solve_ampulla_cap_imex(
       - 1.50 <= rho_tip < 2.50             -> m = 2 lateral R^2*G peaks + apical cleft (dichotomous)
       - 2.50 <= rho_tip < 3.60             -> m = 3 R^2*G peaks (trichotomous trifurcation)
       - rho_tip >= 3.60                    -> m = 4 ectopic supernumerary peaks
+
+    HONESTY NOTE (Pass 3): with `seed_mode="band"` (Pass 2 behaviour) the initial
+    perturbation is the cosine mode of the band-predicted m, so the detected peak
+    count is *conditioned on* the band map rather than selected by the dynamics.
+    `seed_mode="noise"` seeds deterministic white noise instead; the nonlinear
+    dynamics then select ~ L_tip / lambda_fastest + 1 maxima (shoulders count),
+    which does NOT reproduce the [1, 2, 3, 4] staircase. Both are reported in
+    `measure_morphoeval()`; the discrepancy is carried as an open item.
     """
     ss = gdnf_ret_steady_state(a=a, b=b, D_R=D_R, D_G=D_G, gamma=gamma)
     arc_length = float(np.pi * tip_radius)
@@ -335,8 +377,13 @@ def solve_ampulla_cap_imex(
         # Four interior maxima on [-L/2, L/2]
         profile_seed = -np.cos(6.0 * np.pi * s / arc_length)
 
-    R = np.full(n_pts, ss["R_star"], dtype=float) + 0.045 * profile_seed
-    G = np.full(n_pts, ss["G_star"], dtype=float) - 0.030 * profile_seed
+    if seed_mode == "noise":
+        rng_seed = np.random.default_rng(noise_seed)
+        R = np.full(n_pts, ss["R_star"], dtype=float) + 0.02 * rng_seed.standard_normal(n_pts)
+        G = np.full(n_pts, ss["G_star"], dtype=float) + 0.02 * rng_seed.standard_normal(n_pts)
+    else:
+        R = np.full(n_pts, ss["R_star"], dtype=float) + 0.045 * profile_seed
+        G = np.full(n_pts, ss["G_star"], dtype=float) - 0.030 * profile_seed
 
     # Precompute discrete cosine transform (DCT-II / Neumann Laplacian eigenvalues)
     modes = np.arange(n_pts, dtype=float)
@@ -397,6 +444,7 @@ def solve_ampulla_cap_imex(
 
 def evaluate_tip_splitting_regimes(
     ref_doc: dict[str, Any] | None = None,
+    seed_mode: str = "band",
 ) -> list[dict[str, Any]]:
     """Evaluate all 4 ureteric ampulla tip-splitting regimes (elongation, dichotomous, trichotomous, ectopic)."""
     if ref_doc is None:
@@ -404,7 +452,7 @@ def evaluate_tip_splitting_regimes(
     regimes = ref_doc["tip_splitting_mode_regimes"]
     results: list[dict[str, Any]] = []
     for reg in regimes:
-        sim = solve_ampulla_cap_imex(tip_radius=float(reg["tip_radius_norm"]))
+        sim = solve_ampulla_cap_imex(tip_radius=float(reg["tip_radius_norm"]), seed_mode=seed_mode)
         results.append(
             {
                 "mode_id": reg["mode_id"],
@@ -424,6 +472,201 @@ def evaluate_tip_splitting_regimes(
 
 
 # =============================================================================
+# Section 3b (Pass 3): Reduced 3D Ampulla Geometry — Moving-Boundary Necking &
+# Orthogonal Dihedral Rotation (closest honest reduction of the Pass 2 "3D
+# phase-field / ALE" remediation item; see docstrings for what is NOT resolved)
+# =============================================================================
+
+def tip_splitting_mode_from_rho(rho_tip: float) -> int:
+    """Lean 4 Law 3 band map rho_tip -> m (1 elongation, 2 dichotomous, 3 trichotomous, 4 polydomain)."""
+    if rho_tip < 1.50:
+        return 1
+    if rho_tip < 2.50:
+        return 2
+    if rho_tip < 3.60:
+        return 3
+    return 4
+
+
+def select_splitting_axis(
+    tip_radius: float,
+    aspect_ratio: float,
+    a: float = A_RET_DEFAULT,
+    b: float = B_GDNF_DEFAULT,
+    D_R: float = D_R_DEFAULT,
+    D_G: float = D_G_DEFAULT,
+    gamma: float = GAMMA_WT_DEFAULT,
+) -> dict[str, float]:
+    """
+    Linear Turing mode selection on an *anisotropic* ampulla dome (reduced 3D
+    geometry). The dome cross-section is an ellipse with principal arc lengths
+    L_long = pi R_tip sqrt(e) and L_short = pi R_tip / sqrt(e) (area-preserving,
+    e = aspect ratio >= 1). The dichotomous "two lateral lobes + apical cleft"
+    pattern along a principal axis of arc L is the Neumann mode k = 2*pi/L. The
+    splitting axis is the principal axis whose dichotomous mode has the larger
+    linear growth rate Re(sigma(k)) (Menshykau & Iber 2013 Eq. 5; Menshykau et
+    al. 2012 Development geometry-dependent mode selection).
+
+    Returns which axis is selected, the two growth rates and the dimensionless
+    flip point rho_flip = k_c / k_fastest (the dome arc at which the dichotomous
+    mode k = 2 pi / L equals k_fastest): for rho_tip > rho_flip the two-lobe mode
+    lies on the rising flank of sigma(k), so the SHORT axis (larger k) grows
+    faster; the long axis wins only for rho_tip < rho_flip (~0.94, i.e. below
+    the dichotomous band).
+    """
+    ss = gdnf_ret_steady_state(a=a, b=b, D_R=D_R, D_G=D_G, gamma=gamma)
+    e = max(1.0, float(aspect_ratio))
+    L = float(np.pi * tip_radius)
+    L_long = L * np.sqrt(e)
+    L_short = L / np.sqrt(e)
+    k_long = 2.0 * np.pi / L_long
+    k_short = 2.0 * np.pi / L_short
+    sig = turing_dispersion_curve(np.array([k_long, k_short]), a=a, b=b, D_R=D_R, D_G=D_G, gamma=gamma)
+    sigma_long, sigma_short = float(sig[0]), float(sig[1])
+    rho_flip = float(ss["kc"] / ss["k_fastest"])
+    return {
+        "tip_radius": float(tip_radius),
+        "aspect_ratio": e,
+        "rho_tip": float(L / ss["lambda_c"]),
+        "sigma_long": sigma_long,
+        "sigma_short": sigma_short,
+        "axis_is_long": float(1.0 if (e > 1.0 and sigma_long > sigma_short) else 0.0),
+        "selection_margin": float(sigma_long - sigma_short),
+        "rho_flip": rho_flip,
+    }
+
+
+def dihedral_rotation_cascade(
+    tip_radius: float = R_TIP_WT_DEFAULT * 0.85,
+    aspect_ratio: float = 1.30,
+    generations: int = 4,
+    gamma: float = GAMMA_WT_DEFAULT,
+    daughter_long_axis_parallel: bool = True,
+) -> dict[str, Any]:
+    """
+    Reduced-3D dihedral-rotation cascade. After a dichotomous (T-stage) split
+    along axis A, each daughter ampulla grows out along the T-bar, so its dome
+    cross-section is elongated PARALLEL to A (default assumption
+    `daughter_long_axis_parallel=True`; the alternative — daughters flattened
+    against each other, long axis orthogonal to A — is exposed for ablation).
+    The daughter's splitting axis is selected by `select_splitting_axis`: in the
+    dichotomous band the SHORT axis wins, so under the default assumption each
+    generation rotates its splitting plane by 90 deg (orthogonal dihedral
+    rotation); under the alternative assumption the model predicts 0 deg.
+
+    This is the closest honest reduction of the Pass 2 item "3D phase-field/ALE
+    orthogonal dihedral rotation": no 3D interface is tracked; only the
+    cross-sectional anisotropy and the linear mode-selection rule are evolved.
+    """
+    axis_deg = 0.0  # splitting-axis angle of generation 0 in the transverse plane
+    axes = [axis_deg]
+    dihedrals: list[float] = []
+    per_gen: list[dict[str, float]] = []
+    r_tip = float(tip_radius)
+    for g in range(1, generations + 1):
+        sel = select_splitting_axis(r_tip, aspect_ratio, gamma=gamma)
+        parent_axis = axes[-1]
+        long_axis_deg = parent_axis if daughter_long_axis_parallel else (parent_axis + 90.0) % 180.0
+        short_axis_deg = (long_axis_deg + 90.0) % 180.0
+        new_axis = long_axis_deg if sel["axis_is_long"] > 0.5 else short_axis_deg
+        d = abs(new_axis - axes[-1]) % 180.0
+        d = min(d, 180.0 - d)
+        dihedrals.append(float(d))
+        axes.append(float(new_axis))
+        per_gen.append({"generation": float(g), "rho_tip": sel["rho_tip"], "dihedral_deg": float(d), **sel})
+        r_tip *= 0.92  # ampulla radius shrinks slowly with generation (Watanabe & Costantini 2004 calibre decline)
+    return {
+        "axes_deg": axes,
+        "dihedral_deg": dihedrals,
+        "mean_dihedral_deg": float(np.mean(dihedrals)) if dihedrals else 0.0,
+        "per_generation": per_gen,
+        "rho_flip": per_gen[0]["rho_flip"] if per_gen else float("nan"),
+    }
+
+
+def simulate_moving_boundary_ampulla_necking(
+    tip_radius: float = R_TIP_WT_DEFAULT,
+    n_growth_steps: int = 14,
+    v0: float = 0.055,
+    s_thresh: float | None = None,
+    n_pts: int = 96,
+    gamma: float = GAMMA_WT_DEFAULT,
+) -> dict[str, Any]:
+    """
+    1D Lagrangian moving-boundary model of ampulla necking (reduced ALE).
+
+    The dome outline is parametrised by the polar angle phi in [-pi/2, pi/2]
+    about the ampulla centre with radius r(phi, t). At each growth step the
+    GDNF-RET field is re-solved on the current outline arc (`solve_ampulla_cap_imex`
+    with the current arc length) and the interface advances along its normal with
+    the reference-JSON growth law  v_n = v0 * max(0, R^2 G - S_thresh)
+    (`tip_normal_growth_velocity`). Lateral R^2 G lobes outgrow the apical cleft,
+    producing a neck. Necking index = 1 - r_cleft / r_lobe (0 = no neck).
+
+    Not resolved (carried residual): true 3D surface, curvature-dependent
+    surface tension, re-meshing, and stalk/lumen mechanics.
+    """
+    phi = np.linspace(-0.5 * np.pi, 0.5 * np.pi, n_pts)
+    r = np.full(n_pts, float(tip_radius))
+    history: list[np.ndarray] = [r.copy()]
+    necking_trace: list[float] = []
+    ss = gdnf_ret_steady_state(gamma=gamma)
+    if s_thresh is None:
+        s_thresh = float(ss["R2G_star"])  # homogeneous steady state does not grow
+    for _ in range(n_growth_steps):
+        # current arc length of the outline (trapezoid on ds = sqrt(r^2 + r'^2) dphi)
+        dr_dphi = np.gradient(r, phi)
+        arc = float(np.trapezoid(np.sqrt(r ** 2 + dr_dphi ** 2), phi))
+        cap = solve_ampulla_cap_imex(tip_radius=arc / np.pi, n_pts=n_pts, gamma=gamma)
+        r2g = np.interp(np.linspace(0.0, 1.0, n_pts), cap["u_norm"], cap["R2G"])
+        v_n = v0 * np.maximum(0.0, r2g - s_thresh)
+        # outward normal advance (radial to leading order for a near-circular dome)
+        r = r + v_n
+        r = ndimage.gaussian_filter1d(r, sigma=1.0, mode="nearest")  # curvature regularisation
+        history.append(r.copy())
+        i_c = n_pts // 2
+        r_lobe = float(np.max(r))
+        necking_trace.append(float(1.0 - r[i_c] / r_lobe))
+    r_final = history[-1]
+    i_c = n_pts // 2
+    # lobe maxima on each side of the apex
+    left_max = float(np.max(r_final[: i_c]))
+    right_max = float(np.max(r_final[i_c + 1 :]))
+    r_lobe = 0.5 * (left_max + right_max)
+    necking_index = float(1.0 - r_final[i_c] / r_lobe)
+    return {
+        "phi": phi,
+        "r_history": history,
+        "r_final": r_final,
+        "necking_index": necking_index,
+        "necking_trace": necking_trace,
+        "lobe_asymmetry": float(abs(left_max - right_max) / r_lobe),
+        "final_arc_over_initial": float(np.trapezoid(np.sqrt(r_final ** 2 + np.gradient(r_final, phi) ** 2), phi) / (np.pi * tip_radius)),
+        "s_thresh": float(s_thresh),
+    }
+
+
+def stromal_signaling_gain(
+    bmp: float,
+    grem: float,
+    fgf7: float,
+    params: dict[str, float] | None = None,
+) -> float:
+    """
+    Pass 3 stromal feedback (reduced Zubkov-type module; Lean 4 Law 4):
+        gain = (1 + k_F7 * FGF7) / (1 + k_B * BMP / (1 + k_G * GREM1))
+    - Stromal BMP4/BMP7 inhibits RET/ERK-driven ampulla growth (Miyazaki et al. 2000;
+      Dudley et al. 1995).
+    - Cap-mesenchyme Gremlin1 sequesters BMP, de-repressing outgrowth (Michos et al. 2004).
+    - Stromal FGF7 potentiates ureteric growth (Qiao et al. 1999).
+    Monotone: non-increasing in BMP, non-decreasing in GREM1 and FGF7.
+    """
+    p = STROMAL_DEFAULTS if params is None else {**STROMAL_DEFAULTS, **params}
+    bmp_free = bmp / (1.0 + p["k_grem"] * grem)
+    return float((1.0 + p["k_fgf7"] * fgf7) / (1.0 + p["k_bmp"] * bmp_free))
+
+
+# =============================================================================
 # Section 4: 2D Mesenchymal GDNF PDE + Self-Avoiding Ureteric Tree Simulator
 # (Menshykau & Iber 2013 Figs. 6-8; Watanabe & Costantini 2004; Basson et al. 2005)
 # =============================================================================
@@ -436,10 +679,23 @@ def simulate_coupled_ureteric_tree(
     bead_strength: float = 0.0,
     self_avoiding: bool = True,
     seed: int = 2013,
+    stromal: dict[str, float] | None = None,
+    tip_radius_wt: float = R_TIP_WT_DEFAULT,
 ) -> dict[str, Any]:
     """
     Simulate 2D ureteric bud branching morphogenesis coupled to a 2D mesenchymal
     GDNF reaction-diffusion-consumption field on [-1.2, 1.2] x [-1.0, 1.2].
+
+    Pass 3 changes:
+      - Branching multiplicity m is no longer prescribed per condition; it is
+        selected mechanistically from the local ampulla radius
+        R_tip = R_TIP_WT * S_eff^0.5 and rho_tip = pi R_tip / lambda_c through
+        the Lean 4 Law 3 band map (`tip_splitting_mode_from_rho`), where
+        S_eff = (gamma_eff / gamma_WT_eff) * (G_local / G_ref).
+      - gamma_eff = gamma * stromal_signaling_gain(BMP, GREM1, FGF7) couples an
+        explicit stromal BMP4/7 (peristalk) - Gremlin1 (cap mesenchyme) - FGF7
+        (cortical stroma) feedback module (`stromal` overrides STROMAL_DEFAULTS;
+        set scales to 0 for Grem1-/-, Fgf7-/-; 0.5 bmp_scale for Bmp4+/-).
 
     - Mesenchymal cells produce GDNF at rate `gamma * b_gdnf`, while ureteric
       epithelium consumes GDNF at rate `-gamma * R^2 * G` (strongest at active
@@ -459,7 +715,17 @@ def simulate_coupled_ureteric_tree(
         * In `GDNF_bead_ectopic`, an implanted exogenous GDNF bead at `(0.58, 0.15)`
           chemotactically attracts nearby tips and induces supernumerary branching.
     """
-    rng = np.random.default_rng(seed + abs(hash(condition)) % 997)
+    # Deterministic per-condition seed (hash() of str is salted per process; use a stable digest)
+    cond_digest = int(hashlib.sha256(condition.encode("utf-8")).hexdigest()[:8], 16) % 997
+    rng = np.random.default_rng(seed + cond_digest)
+    strom = {**STROMAL_DEFAULTS, **(stromal or {})}
+    lambda_c = gdnf_ret_steady_state(gamma=GAMMA_WT_DEFAULT)["lambda_c"]
+    # Reference WT stromal gain at a tip (BMP ~1.0 baseline+peristalk, GREM1 ~1 cap, FGF7 ~0.8 cortex)
+    # and reference tip GDNF level; both are model-scale calibrations that place the
+    # WT ampulla at rho_tip ~ 2.0-2.1 (dichotomous band). Flagged in the Pass 3 handoff.
+    gain_wt_ref = stromal_signaling_gain(1.0, 1.0, 0.8, STROMAL_DEFAULTS)
+    g_ref = 0.60
+    size_jitter_sd = 0.08
 
     # 2D mesenchymal grid
     nx, ny = 72, 72
@@ -487,28 +753,40 @@ def simulate_coupled_ureteric_tree(
         {"x": 0.0, "y": -0.56, "theta": np.pi / 2.0, "length": 0.30, "gen": 1}
     ]
 
-    # Ectopic Wolffian-duct side buds in Spry1-/- or GDNF bead conditions
-    if condition == "Spry1_ko_hyperbranch":
-        active_tips.append({"x": -0.14, "y": -0.68, "theta": np.deg2rad(125.0), "length": 0.24, "gen": 1})
-        segments.append({"x0": 0.0, "y0": -0.74, "x1": -0.14, "y1": -0.68, "gen": 0, "order": 1, "radius": 0.036})
-    elif condition == "GDNF_bead_ectopic":
-        active_tips.append({"x": 0.16, "y": -0.66, "theta": np.deg2rad(42.0), "length": 0.25, "gen": 1})
-        segments.append({"x0": 0.0, "y0": -0.74, "x1": 0.16, "y1": -0.66, "gen": 0, "order": 1, "radius": 0.036})
+    # Pass 3: the Pass 2 hand-placed ectopic Wolffian-duct side buds for Spry1-/- and
+    # GDNF-bead conditions were removed; supernumerary tips must now emerge from the
+    # rho_tip mode selection (m = 3) driven by gamma_eff and the local GDNF field.
 
     gen_tip_counts: list[int] = [len(active_tips)]
     gen_branch_angles: list[float] = []
+    gen_rho_tip: list[float] = []
+    gen_gain: list[float] = []
     n_dichotomous = 0
     n_trichotomous = 0
+    n_elongation = 0
+    BMP_field = np.zeros_like(G_field)
+    GREM_field = np.zeros_like(G_field)
+    F7_field = np.zeros_like(G_field)
 
     for gen in range(1, generations + 1):
         # Update mesenchymal GDNF field with local consumption sinks at existing stalks & tips
         sink = np.zeros_like(G_field)
+        # Pass 3 stromal fields: peristalk BMP4/7 (around stalk midpoints), cap-mesenchyme
+        # Gremlin1 (around active tips) and cortical stromal FGF7 (outer rim of the envelope)
+        BMP_field = np.zeros_like(G_field)
+        GREM_field = np.zeros_like(G_field)
         for seg in segments:
             mx = 0.5 * (seg["x0"] + seg["x1"])
             my = 0.5 * (seg["y0"] + seg["y1"])
             sink += 0.10 * np.exp(-((XX - mx) ** 2 + (YY - my) ** 2) / (2.0 * (0.11 ** 2)))
+            BMP_field += 0.25 * np.exp(-((XX - mx) ** 2 + (YY - my) ** 2) / (2.0 * (0.16 ** 2)))
         for tip in active_tips:
             sink += 0.26 * np.exp(-((XX - tip["x"]) ** 2 + (YY - tip["y"]) ** 2) / (2.0 * (0.10 ** 2)))
+            GREM_field += 1.0 * np.exp(-((XX - tip["x"]) ** 2 + (YY - tip["y"]) ** 2) / (2.0 * (0.12 ** 2)))
+        BMP_field = strom["bmp_scale"] * (strom["bmp_baseline"] + np.clip(ndimage.gaussian_filter(BMP_field, sigma=1.2), 0.0, 1.2))
+        GREM_field = strom["grem_scale"] * np.clip(GREM_field, 0.0, 1.5)
+        # FGF7 stroma: cortical rim (envelope shell 0.25 < env < 0.85) — Qiao et al. 1999
+        F7_field = strom["fgf7_scale"] * np.exp(-((kidney_env - 0.55) ** 2) / (2.0 * 0.22 ** 2))
 
         G_field = np.clip(
             ndimage.gaussian_filter(b_gdnf * (0.52 + 0.58 * kidney_env) + bead_source - 0.38 * sink, sigma=1.6),
@@ -557,33 +835,22 @@ def simulate_coupled_ureteric_tree(
             dir_y = np.sin(theta) + 0.22 * gy_local + rep_y
             theta_steered = float(np.arctan2(dir_y, dir_x))
 
-            # Determine branching multiplicity m in {1, 2, 3} from effective signaling gamma * g_local
-            eff_signal = (gamma / GAMMA_WT_DEFAULT) * (g_local / 0.72)
-
-            if condition == "Gdnf_het_or_PRR_ko":
-                # Hypoplasia: reduced GDNF/RET/ERK signaling causes ~55% of tips to elongate without splitting
-                if (tip_idx + gen) % 2 == 1 and gen >= 2:
-                    m_split = 1
-                else:
-                    m_split = 2
-            elif condition == "Spry1_ko_hyperbranch":
-                # Spry1-/- hyper-branching: swollen ampullae undergo frequent trichotomous splitting
-                if eff_signal > 1.15 and ((tip_idx + gen) % 3 == 0):
-                    m_split = 3
-                else:
-                    m_split = 2
-            elif condition == "GDNF_bead_ectopic":
-                dist_to_bead = np.hypot(tx - bead_xy[0], ty - bead_xy[1])
-                if dist_to_bead < 0.55 and ((tip_idx + gen) % 3 == 0):
-                    m_split = 3
-                else:
-                    m_split = 2
-            else:
-                # Wild-type control: predominantly dichotomous (~88%), occasional early trifurcation
-                if gen == 2 and tip_idx == 0 and eff_signal > 1.02:
-                    m_split = 2
-                else:
-                    m_split = 2
+            # Pass 3: mechanistic branching multiplicity. Local stromal gain modulates the
+            # RET/ERK signalling gain; the ampulla radius scales with effective signalling
+            # (R_tip ~ S_eff^0.5, larger ampullae under Spry1-/-/GDNF bead, slender tips
+            # under hypoplasia) and rho_tip selects m via Lean 4 Law 3.
+            bmp_local = float(BMP_field[iy, ix])
+            grem_local = float(GREM_field[iy, ix])
+            f7_local = float(F7_field[iy, ix])
+            gain_local = stromal_signaling_gain(bmp_local, grem_local, f7_local, strom)
+            gamma_eff = gamma * gain_local
+            eff_signal = (gamma_eff / (GAMMA_WT_DEFAULT * gain_wt_ref)) * (g_local / g_ref)
+            size_jitter = float(np.exp(rng.normal(0.0, size_jitter_sd)))
+            r_tip_local = tip_radius_wt * (max(eff_signal, 1e-6) ** TIP_RADIUS_SIGNAL_EXPONENT) * size_jitter
+            rho_local = float(np.pi * r_tip_local / lambda_c)
+            m_split = min(3, tip_splitting_mode_from_rho(rho_local))
+            gen_rho_tip.append(rho_local)
+            gen_gain.append(gain_local)
 
             # Base half-angle decreases from ~51 deg at T-stage (gen 1) toward ~37 deg at cortical arcades
             base_half_deg = 51.0 if gen == 1 else (42.5 if gen == 2 else max(35.5, 41.0 - 1.4 * gen))
@@ -597,6 +864,7 @@ def simulate_coupled_ureteric_tree(
             seg_radius = max(0.010, 0.044 * (0.79 ** gen))
 
             if m_split == 1:
+                n_elongation += 1
                 nx1 = tx + seg_len * float(np.cos(theta_steered))
                 ny1 = ty + seg_len * float(np.sin(theta_steered))
                 segments.append({"x0": tx, "y0": ty, "x1": nx1, "y1": ny1, "gen": gen, "order": 1, "radius": seg_radius})
@@ -658,6 +926,12 @@ def simulate_coupled_ureteric_tree(
         "final_tips": int(gen_tip_counts[-1]),
         "dichotomous_fraction": dichotomous_fraction,
         "trichotomous_fraction": float(n_trichotomous / total_splits),
+        "elongation_fraction": float(n_elongation / max(1, n_elongation + n_dichotomous + n_trichotomous)),
+        "mean_rho_tip": float(np.mean(gen_rho_tip)) if gen_rho_tip else 0.0,
+        "mean_stromal_gain": float(np.mean(gen_gain)) if gen_gain else 0.0,
+        "BMP_field": BMP_field,
+        "GREM_field": GREM_field,
+        "F7_field": F7_field,
         "strahler_rb": strahler_rb,
         "mean_nn_tip_dist": mean_nn_tip_dist,
         "min_nn_tip_dist": min_nn_tip_dist,
@@ -671,6 +945,7 @@ def simulate_coupled_ureteric_tree(
 def evaluate_all_conditions_and_generations(
     ref_doc: dict[str, Any] | None = None,
     seed: int = 2013,
+    stromal_base: dict[str, float] | None = None,
 ) -> dict[str, Any]:
     """
     Evaluate all 4 genetic/bead perturbation conditions and compare generational
@@ -690,6 +965,7 @@ def evaluate_all_conditions_and_generations(
             bead_strength=float(bench["bead_strength"]),
             self_avoiding=True,
             seed=seed,
+            stromal=stromal_base,
         )
 
     # Also run negative ablation control: no GDNF sink self-avoidance
@@ -701,7 +977,51 @@ def evaluate_all_conditions_and_generations(
         bead_strength=0.0,
         self_avoiding=False,
         seed=seed,
+        stromal=stromal_base,
     )
+
+    # Pass 3: stromal BMP4/7 - Gremlin1 - FGF7 perturbations (Grem1-/-, Fgf7-/-, Bmp4+/-)
+    stromal_bench = ref_doc.get("stromal_feedback_module_pass3", {}).get("benchmarks", [])
+    stromal_results: list[dict[str, Any]] = []
+    wt_e125 = max(1, trees["WT_control"]["e12_5_tips_gen4"])
+    for bench in stromal_bench:
+        cid = bench["condition_id"]
+        trees[cid] = simulate_coupled_ureteric_tree(
+            condition=cid,
+            generations=6,
+            b_gdnf=B_GDNF_DEFAULT,
+            gamma=GAMMA_WT_DEFAULT,
+            bead_strength=0.0,
+            self_avoiding=True,
+            seed=seed,
+            stromal={**(stromal_base or {}), **{k: float(v) for k, v in bench["stromal"].items()}},
+        )
+        stromal_results.append(
+            {
+                "condition_id": cid,
+                "genotype": bench["genotype"],
+                "e12_5_tip_ratio_sim": float(trees[cid]["e12_5_tips_gen4"] / wt_e125),
+                "e12_5_tip_ratio_obs": float(bench["e12_5_tip_ratio_vs_wt_obs"]),
+                "mean_stromal_gain": float(trees[cid]["mean_stromal_gain"]),
+                "mean_rho_tip": float(trees[cid]["mean_rho_tip"]),
+            }
+        )
+    # Stromal ablation (all three scales = 0 -> gain law collapses to 1/(1 + k_B*BMP) with BMP = 0): pure GDNF-RET
+    trees["stromal_ablation"] = simulate_coupled_ureteric_tree(
+        condition="WT_control",
+        generations=6,
+        seed=seed,
+        stromal={"bmp_scale": 0.0, "grem_scale": 0.0, "fgf7_scale": 0.0},
+    )
+
+    # Pass 3: reduced-3D geometry — moving-boundary necking & dihedral rotation
+    necking = {
+        cid: simulate_moving_boundary_ampulla_necking(tip_radius=r_tip)
+        for cid, r_tip in [("elongation_cap", 0.18), ("dichotomous_cap", R_TIP_WT_DEFAULT), ("trichotomous_cap", 0.45)]
+    }
+    dihedral = dihedral_rotation_cascade()
+    dihedral_alt = dihedral_rotation_cascade(daughter_long_axis_parallel=False)
+    axis_sweep = [select_splitting_axis(R_TIP_WT_DEFAULT, e) for e in np.linspace(1.0, 2.0, 11)]
 
     # Compare WT generational tip progression against Watanabe & Costantini (2004)
     gen_rows = ref_doc["watanabe_costantini_2004_branching_generations"]
@@ -728,6 +1048,11 @@ def evaluate_all_conditions_and_generations(
         "rmse_angles_deg": rmse_angles,
         "pearson_r_angles": float(r_angles),
         "pearson_p_angles": float(p_angles),
+        "stromal_results": stromal_results,
+        "necking": necking,
+        "dihedral": dihedral,
+        "dihedral_alt": dihedral_alt,
+        "axis_sweep": axis_sweep,
     }
 
 
@@ -835,7 +1160,7 @@ def segment_specimen_ureteric_bud(
 
 
 # =============================================================================
-# Section 6: 6-Panel Synthesis Figure & Animated Growth GIF
+# Section 6: 9-Panel Synthesis Figure & Animated Growth GIF
 # =============================================================================
 
 def render_outputs(
@@ -846,9 +1171,10 @@ def render_outputs(
     generations: int = 6,
     seed: int = 2013,
     skip_gif: bool = False,
+    stromal_overrides: dict[str, float] | None = None,
 ) -> dict[str, Any]:
     """
-    Render the 6-panel Pass 2 comparison figure (`docs/media/kidney_ureteric_bud_gdnf_ret_comparison.png`)
+    Render the 9-panel Pass 3 comparison figure (`docs/media/kidney_ureteric_bud_gdnf_ret_comparison.png`)
     and 6-generation ureteric bud growth animation (`docs/media/kidney_ureteric_bud_gdnf_ret_growth.gif`).
     """
     OUT_PNG.parent.mkdir(parents=True, exist_ok=True)
@@ -859,23 +1185,23 @@ def render_outputs(
     ref_doc = integrity["ref_doc"]
     ss = gdnf_ret_steady_state(a=a, b=b, D_R=D_R, D_G=D_G, gamma=gamma)
     regimes = evaluate_tip_splitting_regimes(ref_doc=ref_doc)
-    eval_res = evaluate_all_conditions_and_generations(ref_doc=ref_doc, seed=seed)
+    eval_res = evaluate_all_conditions_and_generations(ref_doc=ref_doc, seed=seed, stromal_base=stromal_overrides)
     spec_seg = segment_specimen_ureteric_bud(ref_doc=ref_doc)
 
-    fig = plt.figure(figsize=(16.5, 10.2), dpi=140)
-    gs = fig.add_gridspec(2, 3, hspace=0.32, wspace=0.26)
+    fig = plt.figure(figsize=(16.5, 15.0), dpi=140)
+    gs = fig.add_gridspec(3, 3, hspace=0.34, wspace=0.26)
 
     # Panel A: Linear Turing Dispersion & Homogeneous vs Diffusion-Driven Instability
     ax_a = fig.add_subplot(gs[0, 0])
     k_vals = np.linspace(0.2, 28.0, 260)
     disp_wt = turing_dispersion_curve(k_vals, a=a, b=b, D_R=D_R, D_G=D_G, gamma=gamma)
     disp_spry = turing_dispersion_curve(k_vals, a=a, b=0.95, D_R=D_R, D_G=D_G, gamma=46.25)
-    disp_hypo = turing_dispersion_curve(k_vals, a=a, b=0.45, D_R=D_R, D_G=D_G, gamma=11.25)
+    disp_hypo = turing_dispersion_curve(k_vals, a=a, b=0.45, D_R=D_R, D_G=D_G, gamma=gamma)
     disp_equal_d = turing_dispersion_curve(k_vals, a=a, b=b, D_R=1.0, D_G=1.0, gamma=gamma)
 
     ax_a.plot(k_vals, disp_wt, color="#1b6ca8", lw=2.3, label=f"WT ($D_G/D_R=50, \\lambda_c={ss['lambda_c']:.3f}$)")
     ax_a.plot(k_vals, disp_spry, color="#d95f02", lw=2.0, ls="--", label="$Spry1^{-/-}$ ($\\gamma=46.25$, hyper-branch)")
-    ax_a.plot(k_vals, disp_hypo, color="#7570b3", lw=2.0, ls="-.", label="$Gdnf^{+/-} / PRR^{UB-/-}$ (hypoplasia)")
+    ax_a.plot(k_vals, disp_hypo, color="#7570b3", lw=2.0, ls="-.", label="$Gdnf^{+/-}$ ($b=0.45$): Tr$J_0>0$, outside Turing regime")
     ax_a.plot(k_vals, disp_equal_d, color="#666666", lw=1.5, ls=":", label="Equal-diffusion ablation ($D_G=D_R$)")
     ax_a.axhline(0.0, color="#222222", lw=0.9, ls="--")
     ax_a.axvline(ss["kc"], color="#1b6ca8", lw=1.2, ls=":")
@@ -981,6 +1307,60 @@ def render_outputs(
     ax_f.set_ylim(40.0, 112.0)
     ax_f.legend(frameon=False, fontsize=7.8, loc="upper right")
 
+    # Panel G (Pass 3): Stromal BMP4/7 - Gremlin1 - FGF7 feedback perturbations
+    ax_g = fig.add_subplot(gs[2, 0])
+    strom_res = eval_res["stromal_results"]
+    labels_g = ["WT"] + [r["genotype"] for r in strom_res] + ["Gdnf+/-"]
+    sim_g = [1.0] + [r["e12_5_tip_ratio_sim"] for r in strom_res] + [
+        eval_res["trees"]["Gdnf_het_or_PRR_ko"]["e12_5_tips_gen4"] / max(1, wt_tree["e12_5_tips_gen4"])
+    ]
+    obs_g = [1.0] + [r["e12_5_tip_ratio_obs"] for r in strom_res] + [5.2 / 13.0]
+    xg = np.arange(len(labels_g))
+    ax_g.bar(xg - 0.18, obs_g, width=0.36, color="#bbbbbb", edgecolor="#333333", label="Observed / literature ratio")
+    ax_g.bar(xg + 0.18, sim_g, width=0.36, color="#1b9e77", edgecolor="#083018", label="Model E12.5 tip ratio vs WT")
+    ax_g.axhline(1.0, color="#222222", lw=0.8, ls="--")
+    ax_g.set_xticks(xg)
+    ax_g.set_xticklabels(labels_g, rotation=20, ha="right", fontsize=8)
+    gains = ", ".join(f"{r['genotype']}: {r['mean_stromal_gain']:.2f}" for r in strom_res)
+    ax_g.set_ylabel("E12.5 tip count ratio vs WT")
+    ax_g.set_xlabel(f"mean $\\gamma_{{eff}}/\\gamma$ at tips — WT: {wt_tree['mean_stromal_gain']:.2f}; {gains}", fontsize=7.2)
+    ax_g.set_title("G. Stromal BMP4/7–Gremlin1–FGF7 Feedback Perturbations", fontweight="bold", fontsize=10.5)
+    ax_g.set_ylim(0.0, max(2.2, 1.15 * max(sim_g)))
+    ax_g.legend(frameon=False, fontsize=7.6, loc="upper left")
+
+    # Panel H (Pass 3): 1D Lagrangian moving-boundary ampulla necking
+    ax_h = fig.add_subplot(gs[2, 1])
+    neck_colors = {"elongation_cap": "#7570b3", "dichotomous_cap": "#1b9e77", "trichotomous_cap": "#d95f02"}
+    for cid, nk in eval_res["necking"].items():
+        phi = nk["phi"]
+        r0 = nk["r_history"][0]
+        rf = nk["r_final"]
+        scale = 1.0 / r0[0]
+        ax_h.plot(scale * r0 * np.cos(phi + 0.5 * np.pi), scale * r0 * np.sin(phi + 0.5 * np.pi), color=neck_colors[cid], lw=0.9, ls=":")
+        ax_h.plot(scale * rf * np.cos(phi + 0.5 * np.pi), scale * rf * np.sin(phi + 0.5 * np.pi), color=neck_colors[cid], lw=2.2,
+                  label=f"{cid.replace('_', ' ')}: necking index {nk['necking_index']:.2f}")
+    ax_h.set_aspect("equal")
+    ax_h.set_title("H. Moving-Boundary Ampulla Necking $v_n = v_0\\,\\max(0, R^2G - S_{thr})$", fontweight="bold", fontsize=10.2)
+    ax_h.set_xlabel("Transverse coordinate (initial $R_{tip}$ = 1)")
+    ax_h.set_ylabel("Outgrowth coordinate")
+    ax_h.legend(frameon=False, fontsize=7.4, loc="lower center")
+
+    # Panel I (Pass 3): Anisotropic-dome axis selection & dihedral rotation cascade
+    ax_i = fig.add_subplot(gs[2, 2])
+    sweep = eval_res["axis_sweep"]
+    ax_i.plot([s_["aspect_ratio"] for s_ in sweep], [s_["sigma_short"] for s_ in sweep], "o-", color="#1b6ca8", lw=2.0, label="$\\mathrm{Re}\\,\\sigma$ two-lobe mode, short axis")
+    ax_i.plot([s_["aspect_ratio"] for s_ in sweep], [s_["sigma_long"] for s_ in sweep], "s--", color="#d95f02", lw=2.0, label="$\\mathrm{Re}\\,\\sigma$ two-lobe mode, long axis")
+    ax_i.set_xlabel("Daughter dome aspect ratio $e$ ($\\rho_{tip}=1.99$)")
+    ax_i.set_ylabel("Linear growth rate $\\mathrm{Re}\\,\\sigma(2\\pi/L_{axis})$")
+    dih = eval_res["dihedral"]
+    dih_alt = eval_res["dihedral_alt"]
+    ax_i.text(0.03, 0.05,
+              f"Cascade dihedral (parallel daughters): {dih['mean_dihedral_deg']:.0f}$^\\circ$ (obs ~90$^\\circ$)\n"
+              f"Ablation (orthogonal daughters): {dih_alt['mean_dihedral_deg']:.0f}$^\\circ$;  $\\rho_{{flip}} = k_c/k_{{fast}} = {dih['rho_flip']:.3f}$",
+              transform=ax_i.transAxes, fontsize=7.6, va="bottom", bbox=dict(facecolor="white", alpha=0.85, edgecolor="none"))
+    ax_i.set_title("I. Anisotropic Dome Axis Selection & Dihedral Rotation", fontweight="bold", fontsize=10.5)
+    ax_i.legend(frameon=False, fontsize=7.6, loc="center right")
+
     fig.suptitle(
         "Menshykau & Iber (2013) & Watanabe & Costantini (2004) — Kidney Ureteric Bud GDNF-RET-Wnt11 Turing Branching Morphogenesis",
         fontsize=12.5,
@@ -993,8 +1373,8 @@ def render_outputs(
     if not skip_gif:
         frames: list[Image.Image] = []
         for g_step in range(1, generations + 1):
-            sub_wt = simulate_coupled_ureteric_tree("WT_control", generations=g_step, b_gdnf=b, gamma=gamma, seed=seed)
-            sub_hypo = simulate_coupled_ureteric_tree("Gdnf_het_or_PRR_ko", generations=g_step, b_gdnf=0.45, gamma=11.25, seed=seed)
+            sub_wt = simulate_coupled_ureteric_tree("WT_control", generations=g_step, b_gdnf=b, gamma=gamma, seed=seed, stromal=stromal_overrides)
+            sub_hypo = simulate_coupled_ureteric_tree("Gdnf_het_or_PRR_ko", generations=g_step, b_gdnf=0.45, gamma=gamma, seed=seed, stromal=stromal_overrides)
             fig_g, axes_g = plt.subplots(1, 2, figsize=(8.2, 4.2), dpi=95)
             for ax_idx, (title_g, tree_g) in enumerate([
                 (f"WT GDNF-RET Tree (Gen {g_step}, {sub_wt['final_tips']} tips)", sub_wt),
@@ -1053,6 +1433,77 @@ def measure_morphoeval() -> list[dict[str, Any]]:
     # Mode peak accuracy across all 4 tip-radius regimes
     mode_matches = sum(1 for r in regimes if r["detected_peaks"] == r["expected_peaks"])
     dich_reg = regimes[1]
+
+    # Pass 3: honest noise-seeded replicate of the mode staircase
+    regimes_noise = evaluate_tip_splitting_regimes(ref_doc=ref_doc, seed_mode="noise")
+    noise_matches = sum(1 for r in regimes_noise if r["detected_peaks"] == r["expected_peaks"])
+    strom = {r["condition_id"]: r for r in eval_res["stromal_results"]}
+    neck = eval_res["necking"]
+    dih = eval_res["dihedral"]
+    stromal_abl = eval_res["trees"]["stromal_ablation"]
+
+    pass3_measurements = [
+        {
+            "name": "Noise-seeded ampulla tip-splitting peak-count agreement with the band map [1, 2, 3, 4] (honesty control)",
+            "value": float(noise_matches),
+            "unit": "regimes (of 4) whose noise-seeded peak count equals the band-map prediction",
+            "method": f"solve_ampulla_cap_imex(seed_mode='noise') across the 4 reference tip radii -> peaks {[r['detected_peaks'] for r in regimes_noise]} vs band map [1, 2, 3, 4] (band-seeded run: {mode_matches}/4)",
+            "reference_value": 4.0,
+            "source": "Menshykau & Iber (2013) Phys. Biol. 10:046003 Eq. (5) linear selection vs Figs. 3-5",
+            "note": "The band-seeded staircase is conditioned on its own initial condition; noise seeding selects ~L/lambda_fastest + 1 maxima. Open item carried to Pass 4.",
+            "derived_from": "script",
+        },
+        {
+            "name": "Moving-boundary ampulla necking index of the WT dichotomous cap (1 - r_cleft / r_lobe)",
+            "value": round(neck["dichotomous_cap"]["necking_index"], 4),
+            "unit": "dimensionless necking index (0 = no cleft)",
+            "method": f"simulate_moving_boundary_ampulla_necking(R_tip=0.30, 14 growth steps, v_n = v0 max(0, R^2G - b)); elongation cap {neck['elongation_cap']['necking_index']:.3f}, trichotomous cap {neck['trichotomous_cap']['necking_index']:.3f}; lobe asymmetry {neck['dichotomous_cap']['lobe_asymmetry']:.2e}",
+            "reference_value": None,
+            "source": "Watanabe & Costantini (2004) Dev. Biol. 271:98-106 Fig. 1 (apical cleft before T-stage; qualitative); reference JSON `reduced_3d_geometry_pass3.necking`",
+            "note": "Reduced 1D Lagrangian interface (no 3D surface, no surface tension); conditioned on the band-seeded two-lobe mode. Positive index = cleft/neck forms.",
+            "derived_from": "script",
+        },
+        {
+            "name": "Mean dihedral rotation angle between successive splitting planes (anisotropic-dome cascade, 4 generations)",
+            "value": round(dih["mean_dihedral_deg"], 2),
+            "unit": "deg",
+            "method": f"dihedral_rotation_cascade(R_tip=0.255, e=1.30, daughters elongated along parent T-bar): per-generation {dih['dihedral_deg']}; orthogonal-daughter ablation gives {eval_res['dihedral_alt']['mean_dihedral_deg']:.0f} deg; rho_flip = k_c/k_fastest = {dih['rho_flip']:.3f}",
+            "reference_value": 90.0,
+            "source": "Metzger et al. (2008) Nature 453:745-750 (orthogonal bifurcation, lung); Menshykau et al. (2012) Development 139:4506-4514; Short et al. (2014) Dev. Cell 29:188-202 (kidney, qualitative)",
+            "note": "Outcome depends on the stated daughter-orientation assumption; the linear short-axis selection itself is the model result. Kidney dihedral distributions were not vendored offline.",
+            "derived_from": "script",
+        },
+        {
+            "name": "Grem1-/- stromal BMP de-repression failure: E12.5 tip ratio vs WT",
+            "value": round(strom["Grem1_ko_outgrowth_failure"]["e12_5_tip_ratio_sim"], 4),
+            "unit": "Grem1-/- to WT E12.5 tip ratio",
+            "method": f"simulate_coupled_ureteric_tree(stromal={{grem_scale: 0}}) / WT at generation 4; mean gamma_eff/gamma = {strom['Grem1_ko_outgrowth_failure']['mean_stromal_gain']:.3f}, mean rho_tip = {strom['Grem1_ko_outgrowth_failure']['mean_rho_tip']:.3f}",
+            "reference_value": strom["Grem1_ko_outgrowth_failure"]["e12_5_tip_ratio_obs"],
+            "source": "Michos et al. (2004) Development 131:3401-3410 (ureteric bud outgrowth/branching failure in Grem1-/-)",
+            "note": "Observed ratio encodes 'arrested branching' qualitatively (see JSON obs_note); the model shows arrest after generation 3 rather than complete outgrowth failure.",
+            "derived_from": "script",
+        },
+        {
+            "name": "Fgf7-/- stromal growth-factor loss: E12.5 tip ratio vs WT",
+            "value": round(strom["Fgf7_ko_reduced_growth"]["e12_5_tip_ratio_sim"], 4),
+            "unit": "Fgf7-/- to WT E12.5 tip ratio",
+            "method": f"simulate_coupled_ureteric_tree(stromal={{fgf7_scale: 0}}) / WT at generation 4; mean gamma_eff/gamma = {strom['Fgf7_ko_reduced_growth']['mean_stromal_gain']:.3f}; generation-6 tips {eval_res['trees']['Fgf7_ko_reduced_growth']['final_tips']} vs WT {wt_tree['final_tips']}",
+            "reference_value": strom["Fgf7_ko_reduced_growth"]["e12_5_tip_ratio_obs"],
+            "source": "Qiao et al. (1999) Development 126:547-554 (smaller ureteric tree, ~30% fewer nephrons)",
+            "note": "Reference is the approximate late deficit (nephron number), not an E12.5 tip count.",
+            "derived_from": "script",
+        },
+        {
+            "name": "Bmp4+/- reduced stromal inhibition: E12.5 tip ratio vs WT (ectopic/supernumerary budding)",
+            "value": round(strom["Bmp4_het_ectopic_budding"]["e12_5_tip_ratio_sim"], 4),
+            "unit": "Bmp4+/- to WT E12.5 tip ratio",
+            "method": f"simulate_coupled_ureteric_tree(stromal={{bmp_scale: 0.5}}) / WT at generation 4; stromal-ablation control (all scales 0) gives {stromal_abl['e12_5_tips_gen4'] / max(1, wt_tree['e12_5_tips_gen4']):.3f}",
+            "reference_value": strom["Bmp4_het_ectopic_budding"]["e12_5_tip_ratio_obs"],
+            "source": "Miyazaki et al. (2000) J. Clin. Invest. 105:863-873 (ectopic ureteric budding in Bmp4+/-)",
+            "note": "Observed 1.20 encodes supernumerary budding qualitatively (incomplete penetrance; see JSON obs_note).",
+            "derived_from": "script",
+        },
+    ]
 
     return [
         {
@@ -1135,11 +1586,11 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"Panel B mutant tips = {spec_seg['mutant_detected_tips']} (ref 6; swollen mean caliber = {spec_seg['mutant_panel_b']['mean_caliber_px']:.2f} ± {spec_seg['mutant_panel_b']['sd_caliber_px']:.2f} px)",
             "derived_from": "specimen_image",
         },
-    ]
+    ] + pass3_measurements
 
 
 # =============================================================================
-# Section 8: Automated 7-Suite Self-Test & CLI Entrypoint
+# Section 8: Automated 9-Suite Self-Test & CLI Entrypoint
 # =============================================================================
 
 def self_test() -> int:
@@ -1182,12 +1633,37 @@ def self_test() -> int:
     assert spec_seg["mutant_detected_tips"] == 6, f"Expected 6 mutant tips in Panel B, got {spec_seg['mutant_detected_tips']}"
     assert abs(spec_seg["tip_ratio_wt_over_mut"] - 2.0) < 1e-6, "Expected 2.0x WT/mutant tip ratio"
 
-    # Suite 7: Two-run bitwise determinism of `measure_morphoeval()`
+    # Suite 7 (Pass 3): stromal BMP4/7 - Gremlin1 - FGF7 feedback law (Lean 4 Law 4) & perturbation ordering
+    g_wt = stromal_signaling_gain(1.0, 1.0, 0.8)
+    assert stromal_signaling_gain(1.0, 0.0, 0.8) < g_wt, "Gremlin1 loss must lower the stromal gain"
+    assert stromal_signaling_gain(1.0, 1.0, 0.0) < g_wt, "FGF7 loss must lower the stromal gain"
+    assert stromal_signaling_gain(0.5, 1.0, 0.8) > g_wt, "BMP reduction must raise the stromal gain"
+    assert abs(stromal_signaling_gain(0.0, 0.0, 0.0) - 1.0) < 1e-12, "Stromal ablation must give unit gain"
+    t_grem = eval_res["trees"]["Grem1_ko_outgrowth_failure"]["e12_5_tips_gen4"]
+    t_f7 = eval_res["trees"]["Fgf7_ko_reduced_growth"]["e12_5_tips_gen4"]
+    t_bmp4 = eval_res["trees"]["Bmp4_het_ectopic_budding"]["e12_5_tips_gen4"]
+    assert t_grem < t_wt and t_f7 <= t_wt <= t_bmp4, (
+        f"Expected stromal ordering Grem1-/- ({t_grem}) < WT ({t_wt}), Fgf7-/- ({t_f7}) <= WT <= Bmp4+/- ({t_bmp4})"
+    )
+    assert eval_res["trees"]["Grem1_ko_outgrowth_failure"]["mean_stromal_gain"] < eval_res["trees"]["WT_control"]["mean_stromal_gain"]
+
+    # Suite 8 (Pass 3): reduced-3D geometry — necking & dihedral rotation (Lean 4 Law 5)
+    nk = eval_res["necking"]
+    assert nk["dichotomous_cap"]["necking_index"] > 0.05, f"WT cap should neck: {nk['dichotomous_cap']['necking_index']}"
+    assert nk["dichotomous_cap"]["lobe_asymmetry"] < 1e-6, "Symmetric cap must produce symmetric lobes"
+    assert nk["elongation_cap"]["necking_index"] < nk["dichotomous_cap"]["necking_index"], "Elongation cap should neck less than the dichotomous cap"
+    dih = eval_res["dihedral"]
+    assert all(abs(d - 90.0) < 1e-9 for d in dih["dihedral_deg"]), f"Expected 90 deg dihedral cascade, got {dih['dihedral_deg']}"
+    assert all(abs(d) < 1e-9 for d in eval_res["dihedral_alt"]["dihedral_deg"]), "Orthogonal-daughter ablation must give 0 deg"
+    assert all(s_["axis_is_long"] == 0.0 for s_ in eval_res["axis_sweep"] if s_["aspect_ratio"] > 1.0), "Short axis must win in the dichotomous band"
+    assert abs(dih["rho_flip"] - 0.9375) < 0.01, f"rho_flip = k_c/k_fastest expected ~0.9375, got {dih['rho_flip']}"
+
+    # Suite 9: Two-run bitwise determinism of `measure_morphoeval()` (8 Pass 2 + 6 Pass 3 metrics)
     m1 = json.dumps(measure_morphoeval(), sort_keys=True)
     m2 = json.dumps(measure_morphoeval(), sort_keys=True)
-    assert m1 == m2 and len(measure_morphoeval()) == 8, "Bitwise determinism or metric count check failed"
+    assert m1 == m2 and len(measure_morphoeval()) == 14, "Bitwise determinism or metric count check failed"
 
-    print("[self-test] All 7 verification suites passed (SHA-256, Lean 4 laws, IMEX modes [1,2,3,4], tree perturbations, specimen 12 vs 6 tips, determinism).")
+    print("[self-test] All 9 verification suites passed (SHA-256, Lean 4 laws, IMEX modes [1,2,3,4], tree perturbations, specimen 12 vs 6 tips, stromal BMP/GREM1/FGF7 law, necking & dihedral rotation, determinism).")
     return 0
 
 
@@ -1195,7 +1671,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Menshykau & Iber (2013) & Watanabe & Costantini (2004) GDNF-RET kidney ureteric bud Turing branching model"
     )
-    parser.add_argument("--self-test", action="store_true", help="Run 7-suite automated verification")
+    parser.add_argument("--self-test", action="store_true", help="Run 9-suite automated verification")
     parser.add_argument("--skip-gif", action="store_true", help="Skip animated GIF rendering")
     parser.add_argument("--a-ret", type=float, default=A_RET_DEFAULT, help="Basal epithelial RET expression rate a")
     parser.add_argument("--b-gdnf", type=float, default=B_GDNF_DEFAULT, help="Mesenchymal GDNF production rate b")
@@ -1203,7 +1679,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--d-ratio", type=float, default=50.0, help="Diffusion coefficient ratio D_G / D_R")
     parser.add_argument("--generations", type=int, default=6, help="Number of branching generations to simulate")
     parser.add_argument("--seed", type=int, default=2013, help="Deterministic RNG seed")
+    parser.add_argument("--k-bmp", type=float, default=STROMAL_DEFAULTS["k_bmp"], help="Pass 3: BMP4/7 inhibition constant k_B in the stromal gain law")
+    parser.add_argument("--k-grem", type=float, default=STROMAL_DEFAULTS["k_grem"], help="Pass 3: Gremlin1 BMP-sequestration constant k_G")
+    parser.add_argument("--k-fgf7", type=float, default=STROMAL_DEFAULTS["k_fgf7"], help="Pass 3: FGF7 potentiation constant k_F7")
+    parser.add_argument("--no-stroma", action="store_true", help="Pass 3: ablate the stromal module (bmp/grem/fgf7 scales = 0) for all conditions")
     args = parser.parse_args(argv)
+    stromal_overrides: dict[str, float] = {"k_bmp": args.k_bmp, "k_grem": args.k_grem, "k_fgf7": args.k_fgf7}
+    if args.no_stroma:
+        stromal_overrides.update({"bmp_scale": 0.0, "grem_scale": 0.0, "fgf7_scale": 0.0})
 
     if args.self_test:
         return self_test()
@@ -1216,6 +1699,7 @@ def main(argv: list[str] | None = None) -> int:
         generations=args.generations,
         seed=args.seed,
         skip_gif=args.skip_gif,
+        stromal_overrides=stromal_overrides,
     )
     print(f"[2012-menshykau-fgf10-shh-lung-turing] Rendered {OUT_PNG} and {OUT_GIF}")
     return 0

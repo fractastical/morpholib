@@ -28,6 +28,48 @@
         "id": "canty2017",
         "citation": "Canty L, Zarour E, Kashkooli L, François P, Fagotto F (2017). Sorting at embryonic boundaries requires high heterotypic interfacial tension. Nature Communications 8:157.",
         "doi": "10.1038/s41467-017-00146-x"
+      },
+      {
+        "id": "chen2001",
+        "citation": "Chen Y, Schier AF (2001). The zebrafish Nodal signal Squint functions as a morphogen. Nature 411(6837):607-610.",
+        "doi": "10.1038/35079121",
+        "doi_verification": "recorded offline in Pass 3; not resolved against the registry"
+      },
+      {
+        "id": "dubrulle2015",
+        "citation": "Dubrulle J, Jordan BM, Akhmetova L, Farrell JA, Kim S-H, Solnica-Krezel L, Schier AF (2015). Response to Nodal morphogen gradient is determined by the kinetics of target gene induction. eLife 4:e05042.",
+        "doi": "10.7554/eLife.05042",
+        "doi_verification": "recorded offline in Pass 3; not resolved against the registry"
+      },
+      {
+        "id": "vanboxtel2015",
+        "citation": "van Boxtel AL, Chesebro JE, Heliot C, Ramel M-C, Stone RK, Hill CS (2015). A temporal window for signal activation dictates the dimensions of a Nodal signaling domain. Developmental Cell 35(2):175-185.",
+        "doi": "10.1016/j.devcel.2015.09.014",
+        "doi_verification": "recorded offline in Pass 3; not resolved against the registry"
+      },
+      {
+        "id": "hagos2007",
+        "citation": "Hagos EG, Dougan ST (2007). Time-dependent patterning of the mesoderm and endoderm by Nodal signals in zebrafish. BMC Developmental Biology 7:22.",
+        "doi": "10.1186/1471-213X-7-22",
+        "doi_verification": "recorded offline in Pass 3; not resolved against the registry"
+      },
+      {
+        "id": "gritsman1999",
+        "citation": "Gritsman K, Zhang J, Cheng S, Heckscher E, Talbot WS, Schier AF (1999). The EGF-CFC protein one-eyed pinhead is essential for Nodal signaling. Cell 97(1):121-132.",
+        "doi": "10.1016/S0092-8674(00)80720-5",
+        "doi_verification": "recorded offline in Pass 3; not resolved against the registry"
+      },
+      {
+        "id": "warga1999",
+        "citation": "Warga RM, Nüsslein-Volhard C (1999). Origin and development of the zebrafish endoderm. Development 126(4):827-838.",
+        "doi": "10.1242/dev.126.4.827",
+        "doi_verification": "recorded offline in Pass 3; not resolved against the registry"
+      },
+      {
+        "id": "kimmel1995",
+        "citation": "Kimmel CB, Ballard WW, Kimmel SR, Ullmann B, Schilling TF (1995). Stages of embryonic development of the zebrafish. Developmental Dynamics 203(3):253-310.",
+        "doi": "10.1002/aja.1002030302",
+        "doi_verification": "recorded offline in Pass 3; not resolved against the registry"
       }
     ],
     "specimens": {
@@ -60,9 +102,10 @@
       "omega_EE_adh": 30.0,
       "omega_MM_adh": 40.0,
       "omega_NN_adh": 50.0,
-      "omega_EM_adh": 35.0,
-      "omega_MN_adh": 45.0,
-      "omega_EN_adh": 35.0,
+      "omega_EM_adh": 115.0,
+      "omega_MN_adh": 195.0,
+      "omega_EN_adh": 150.0,
+      "omega_heterotypic_note": "Pass 3 correction: the Pass 2 file listed omega_EM=35, omega_MN=45, omega_EN=35, which contradict the gamma_het = 30 pN/um anchor under gamma = beta_a + beta_b - omega (50+95-35 = 110, not 30). The values above are the effective closure values implied by gamma_EM = gamma_MN = gamma_EN = 30 pN/um; they are model closures, not measured adhesion energies.",
       "gamma_EE": 70.0,
       "gamma_MM": 150.0,
       "gamma_NN": 210.0,
@@ -122,6 +165,36 @@
         "description": "Maître et al. (2012) & Canty et al. (2017): when heterotypic interfacial tension gamma_EM = 70 exceeds |gamma_M0 - gamma_E0| = 45, complete engulfment gives way to a partially sorted asymmetric mushroom doublet."
       }
     ],
+    "nodal_tgfb_cortical_tension_coupling_pass3": {
+      "section": "Pass 3 reduced model: time-dependent marginal Nodal/TGF-beta field -> dose-dependent germ-layer cortical tension (Section 1b / 2b of the script)",
+      "nodal_field_formula": "C(x, t) = C0 * (1 - exp(-(t - t_on)/tau_N)) * exp(-x / lambda)  for t >= t_on, else 0",
+      "tension_target_formula": "beta*(C) = beta_E + (beta_M - beta_E) * H(C; K_M) + (beta_N - beta_M) * H(C; K_N),  H(C; K) = C^n / (K^n + C^n)",
+      "tension_relaxation_formula": "d beta_i / dt = (beta*(C(x_i, t)) - beta_i) / tau_beta",
+      "continuous_cortex_closure_formula": "gamma_i0 = beta_i,  gamma_ij = gamma_hom + kappa * |beta_i - beta_j|  (omega_ij = beta_i + beta_j - gamma_ij), 0 <= kappa < 1",
+      "parameters": {
+        "t_on_hpf": 4.0,
+        "t_shield_hpf": 6.0,
+        "t_end_hpf": 7.0,
+        "tau_nodal_h": 0.6,
+        "lambda_tiers": 3.0,
+        "C0_wildtype": 1.0,
+        "K_M": 0.2,
+        "K_N": 0.6,
+        "n_hill": 4.0,
+        "tau_beta_h": 0.5,
+        "kappa": 0.6667,
+        "gamma_hom": 0.0
+      },
+      "literature_anchors": {
+        "staging_sphere_shield_hpf": {"value": [4.0, 6.0], "source": "kimmel1995", "status": "standard staging"},
+        "nodal_progenitor_induction_by_dose": {"value": "lefty1 -> ectoderm; cyclops -> mesoderm; cyclops + casanova -> endoderm", "source": "krieg2008", "status": "experimental design of the AFM measurements"},
+        "mesendoderm_signalling_domain_tiers_at_shield": {"value": 5, "source": "vanboxtel2015 / dubrulle2015", "status": "approximate, recalled, not digitised in this pass"},
+        "endoderm_origin_marginal_tiers": {"value": 2, "range": [1, 4], "source": "warga1999", "status": "approximate, recalled"},
+        "nodal_null_no_mesendoderm": {"value": "MZoep / lefty1: no mesoderm or endoderm, hence no germ-layer sorting", "source": "gritsman1999", "status": "qualitative"},
+        "time_dependent_specification_window": {"value": "Nodal required between sphere and shield; later signalling cannot rescue", "source": "hagos2007 / vanboxtel2015", "status": "qualitative"}
+      },
+      "reduction_disclosure": "1D gradient in tier distance from the margin; Nodal exposure fixed to the tier of origin (specification memory); no epiboly / YSL motion; no Lefty feedback; kappa closure phenomenological."
+    },
     "maitre_2012_doublet_contact_angle_checkpoints": [
       {"gamma_cc_over_2gamma_cm": 0.15, "cos_theta": 0.85, "theta_deg": 31.79, "contact_radius_r_over_R": 0.5268},
       {"gamma_cc_over_2gamma_cm": 0.30, "cos_theta": 0.70, "theta_deg": 45.57, "contact_radius_r_over_R": 0.7141},

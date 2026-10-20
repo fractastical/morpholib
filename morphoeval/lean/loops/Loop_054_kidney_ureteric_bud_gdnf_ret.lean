@@ -27,9 +27,17 @@
        Selection & Dichotomous vs Hypoplastic Generation Scaling Law:
        The dimensionless tip arc-to-wavelength ratio `rho_10 = 10 * L_tip / lambda_c`
        selects elongation (`m = 1` for `rho_10 < 15`), dichotomous bifurcation
-       (`m = 2` for `15 ≤ rho_10 < 25`), or trichotomous trifurcation (`m = 3` for
+       (       `m = 2` for `15 ≤ rho_10 < 25`), or trichotomous trifurcation (`m = 3` for
        `rho_10 ≥ 25`), and 4 generations of dichotomous branching yield `2^4 = 16`
        ureteric tips vs `4` tips under 2-generation hypoplastic arrest (`4 < 16`).
+    4. (Pass 3) Stromal BMP4/7 - Gremlin1 - FGF7 Feedback Gain Monotonicity Law:
+       integer-scaled gain num/den with `num = (1 + F)(1 + G)`, `den = (1 + G) + B`
+       is non-increasing in BMP, non-decreasing in FGF7, strictly < 1 under Gremlin1
+       loss with BMP present, and exactly 1 under full stromal ablation.
+    5. (Pass 3) Orthogonal Dihedral Rotation Cascade Law: with short-axis mode
+       selection and daughters elongated along the parent T-bar, the daughter
+       splitting axis is `(θ + 90) % 180`, the dihedral angle is exactly 90 deg,
+       the cascade has period 2, and the orthogonal-daughter ablation gives 0 deg.
 
   Verify with the Lean 4 kernel:
     lean morphoeval/lean/loops/Loop_054_kidney_ureteric_bud_gdnf_ret.lean
@@ -146,5 +154,82 @@ theorem ureteric_tip_splitting_modes_and_generation_scaling (n : Nat) :
   refine ⟨by decide, by decide, by decide, ?_, by decide, by decide⟩
   simp [dichotomous_gen4, dichotomous_step]
   omega
+
+
+-- ============================================================================
+-- Law 4 (`menshykau-fgf10-shh-lung-turing-4`, Pass 3):
+-- Stromal BMP4/7 - Gremlin1 - FGF7 Feedback Gain Monotonicity Law
+-- gain = (1 + k_F7 FGF7) / (1 + k_B BMP / (1 + k_G GREM1)).
+-- In integer-scaled form the gain is the ratio num/den with
+--   num = (1 + F) * (1 + G)     (FGF7 potentiation, Gremlin1 sequestration)
+--   den = (1 + G) + B           (free BMP inhibition after Gremlin1 binding)
+-- so gain ≥ 1 iff num ≥ den. (Python: `stromal_signaling_gain`.)
+-- ============================================================================
+
+/-- Numerator of the integer-scaled stromal gain `(1 + F) * (1 + G)`. -/
+def stromal_gain_num (F G : Nat) : Nat :=
+  (1 + F) * (1 + G)
+
+/-- Denominator of the integer-scaled stromal gain `(1 + G) + B`. -/
+def stromal_gain_den (B G : Nat) : Nat :=
+  (1 + G) + B
+
+/-- Theorem 4 (`stromal_bmp_gremlin_fgf7_gain_monotonicity`):
+    (1) BMP never raises the gain: the denominator is non-decreasing in `B`.
+    (2) FGF7 never lowers the gain: the numerator is non-decreasing in `F`.
+    (3) Gremlin1 loss (`G = 0`) with any BMP `B > 0` and no FGF7 (`F = 0`) gives
+        `num < den` — the gain drops strictly below 1 (Grem1 null outgrowth failure).
+    (4) Full stromal ablation (`B = G = F = 0`) gives `num = den` (unit gain). -/
+theorem stromal_bmp_gremlin_fgf7_gain_monotonicity (B G F : Nat) :
+    stromal_gain_den B G ≤ stromal_gain_den (B + 1) G ∧
+    stromal_gain_num F G ≤ stromal_gain_num (F + 1) G ∧
+    stromal_gain_num 0 0 < stromal_gain_den (B + 1) 0 ∧
+    stromal_gain_num 0 0 = stromal_gain_den 0 0 := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · simp [stromal_gain_den]
+  · simp [stromal_gain_num]
+    exact Nat.mul_le_mul_right _ (by omega)
+  · simp [stromal_gain_num, stromal_gain_den]
+  · simp [stromal_gain_num, stromal_gain_den]
+
+
+-- ============================================================================
+-- Law 5 (`menshykau-fgf10-shh-lung-turing-5`, Pass 3):
+-- Orthogonal Dihedral Rotation Cascade Law (reduced 3D ampulla geometry)
+-- On an anisotropic dome in the dichotomous band the two-lobe mode along the
+-- SHORT cross-section axis grows fastest; if daughters are elongated along the
+-- parent T-bar (long axis ∥ parent splitting axis), each generation's splitting
+-- axis is the parent's axis rotated by 90 deg (mod 180), so the dihedral angle
+-- between successive splitting planes is exactly 90 deg.
+-- (Python: `select_splitting_axis`, `dihedral_rotation_cascade`.)
+-- ============================================================================
+
+/-- Splitting-axis angle (deg, mod 180) of the daughter when the short axis wins
+    and the daughter long axis is parallel to the parent splitting axis `θ`. -/
+def daughter_axis_short_wins (θ : Nat) : Nat :=
+  (θ + 90) % 180
+
+/-- Dihedral angle (deg, in [0, 90]) between two axes given mod 180:
+    the smaller of the two cyclic differences. -/
+def dihedral_deg (α β : Nat) : Nat :=
+  min ((α + 180 - β % 180) % 180) ((β + 180 - α % 180) % 180)
+
+/-- Theorem 5 (`orthogonal_dihedral_rotation_cascade`):
+    For any parent splitting axis `θ < 180`,
+    (1) the daughter axis is orthogonal to the parent (dihedral = 90),
+    (2) the granddaughter axis returns to the parent axis (period-2 cascade),
+    (3) the orthogonal-daughter ablation (long axis ⊥ parent, short axis = parent
+        axis) yields zero dihedral rotation. -/
+theorem orthogonal_dihedral_rotation_cascade (θ : Nat) (h : θ < 180) :
+    dihedral_deg θ (daughter_axis_short_wins θ) = 90 ∧
+    daughter_axis_short_wins (daughter_axis_short_wins θ) = θ ∧
+    dihedral_deg θ θ = 0 := by
+  refine ⟨?_, ?_, ?_⟩
+  · simp only [dihedral_deg, daughter_axis_short_wins]
+    omega
+  · simp only [daughter_axis_short_wins]
+    omega
+  · simp only [dihedral_deg]
+    omega
 
 end MathOfBiology.Loop_054

@@ -26,3 +26,12 @@ Formal SHA-256-locked reference dataset and biological specimen micrograph for `
 3. **`paper_citations.bib`** — BibTeX citations for Bi et al. (2015), Park et al. (2015), Bi et al. (2016), Atia et al. (2018), and Staple et al. (2010).
 
 4. **`scout_manifest.json`** — Step 1 literature and Wikimedia Commons specimen scout dossier.
+
+5. **`bi_2016_spv_motility_reference.json`** (added in Pass 3, audit `2026-10-19-vertex-glass-jamming-audit-v3`)
+   - **Bi, Yang, Marchetti & Manning (2016) *Physical Review X* 6(2):021011 (`doi:10.1103/PhysRevX.6.021011`)** — Self-Propelled Voronoi (SPV) model:
+     - Energy $E = \sum_i [K_A (A_i - A_0)^2 + K_P (P_i - P_0)^2]$ (no $1/2$; $K_A = K_P = A_0 = \mu = 1$).
+     - Dynamics $\dot{\mathbf r}_i = \mu \mathbf F_i + v_0 \hat{\mathbf n}_i$, $\dot\theta_i = \eta_i$, $\langle\eta_i\eta_j\rangle = 2 D_r \delta_{ij}\delta(t-t')$.
+     - Dynamical order parameter $D_{\text{eff}} = D_s / D_0$, $D_0 = v_0^2/(2D_r)$, long-time solid criterion $D_{\text{eff}} < 10^{-3}$.
+     - Headline claims used as reference values: zero-motility glass point $p_0^c(0) = 3.81$; structural order parameter $q_c \approx 3.81$ at the boundary for all $(v_0, D_r)$; motility lowers $p_0^c$; shorter persistence (larger $D_r$) raises $p_0^c$.
+   - **Provenance caveat:** written offline from the published text; the single figure-derived number (`approximate_boundary_slope_alpha_dr1 = 0.6 ± 0.3`) is an approximate reading of Fig. 1(a) and is flagged as such. It is not digitised data and is used only as an order-of-magnitude check.
+   - Also records the finite-time estimators the script uses (window $T = 150$, $N = 100$, $dt = \min(0.1, 0.2/D_r)$, FIRE quench, time-origin-averaged MSD slope, per-free-path T1 rate $\Gamma_{T1}/v_0 > 0.02$ as the fluid criterion).

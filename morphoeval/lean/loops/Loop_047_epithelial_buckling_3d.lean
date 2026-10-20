@@ -117,4 +117,71 @@ theorem apicobasal_spontaneous_curvature_sign_reversal (Ga Gb : Int) (base dG : 
   · simp [spontaneous_curvature_num]
     omega
 
+
+-- ============================================================================
+-- Law 4 (`hannezo-epithelial-buckling-3d-4`, Pass 3):
+-- Curved-Tube Surface Ratio & the Isometric (Flat) Limit Has No Scutoids
+-- ============================================================================
+/-- Gómez-Gálvez et al. (2018) Nat. Commun. 9:2960: on a tube of apical radius `R_a` and
+    cell height `h_0` the basal surface ratio is `s = R_b / R_a = (R_a + h_0) / R_a`; it is
+    strictly greater than 1 whenever `h_0 > 0`, so the radially projected basal tessellation is
+    an anisotropically stretched copy of the apical one and neighbour sets can differ.  A cell
+    is a SCUTOID iff its apical and basal neighbour lists differ (`scutoid_indicator = 1`).
+    In the isometric limit `s = 1` (flat sheet / `h_0 = 0`) both lists coincide cell by cell,
+    so the total scutoid count over the whole mesh is identically `0`. -/
+def surface_ratio_numerator (R_a h_0 : Nat) : Nat :=
+  R_a + h_0
+
+def scutoid_indicator (apical basal : List Nat) : Nat :=
+  if apical == basal then 0 else 1
+
+def scutoid_count (cells : List (List Nat × List Nat)) : Nat :=
+  cells.foldr (fun c acc => scutoid_indicator c.1 c.2 + acc) 0
+
+theorem scutoid_count_isometric (nbrs : List (List Nat)) :
+    scutoid_count (nbrs.map (fun n => (n, n))) = 0 := by
+  induction nbrs with
+  | nil => rfl
+  | cons x xs ih =>
+    have hstep : scutoid_count ((x :: xs).map (fun n => (n, n)))
+        = scutoid_indicator x x + scutoid_count (xs.map (fun n => (n, n))) := rfl
+    rw [hstep, ih]
+    simp [scutoid_indicator]
+
+theorem isometric_projection_has_no_scutoids (nbrs : List (List Nat)) (R_a h_0 : Nat) :
+    scutoid_count (nbrs.map (fun n => (n, n))) = 0 ∧
+    surface_ratio_numerator R_a (h_0 + 1) > R_a ∧
+    surface_ratio_numerator R_a 0 = R_a ∧
+    scutoid_indicator [1, 2, 3, 4, 5, 6] [1, 2, 3, 4, 5, 6] = 0 ∧
+    scutoid_indicator [1, 2, 3, 4, 5, 6] [1, 2, 3, 4, 5, 7] = 1 := by
+  refine ⟨scutoid_count_isometric nbrs, ?_, ?_, ?_, ?_⟩
+  · simp [surface_ratio_numerator]
+  · simp [surface_ratio_numerator]
+  · decide
+  · decide
+
+
+-- ============================================================================
+-- Law 5 (`hannezo-epithelial-buckling-3d-5`, Pass 3):
+-- Trivalent Torus Tessellation: Total Neighbour Count 2E = 6F on Apical AND Basal Surfaces
+-- ============================================================================
+/-- The periodic (doubly periodic = torus, Euler characteristic `V - E + F = 0`) Voronoi
+    tessellation of the tube is trivalent (`3 V = 2 E`).  Hence the total neighbour count
+    `2 E` equals `6 F`, i.e. the mean neighbour number is exactly 6.  Because this holds on
+    the apical and on the basal surface separately, apico-basal intercalations (scutoids)
+    redistribute neighbours between cells but conserve the total: the apical and basal
+    neighbour sums coincide. -/
+def total_neighbor_count (E : Nat) : Nat :=
+  2 * E
+
+theorem trivalent_torus_neighbor_conservation
+    (V_a E_a V_b E_b F : Nat)
+    (h_triv_a : 3 * V_a = 2 * E_a) (h_euler_a : V_a + F = E_a)
+    (h_triv_b : 3 * V_b = 2 * E_b) (h_euler_b : V_b + F = E_b) :
+    total_neighbor_count E_a = 6 * F ∧
+    total_neighbor_count E_b = 6 * F ∧
+    total_neighbor_count E_a = total_neighbor_count E_b := by
+  simp only [total_neighbor_count]
+  omega
+
 end MathOfBiology.Loop_047

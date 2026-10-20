@@ -1,0 +1,94 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-graner-cellular-potts-cell-sorting> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-graner-cellular-potts-cell-sorting-specimen-match> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-graner-cellular-potts-cell-sorting-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Graner & Glazier (1992) / Glazier & Graner (1993) extended large-Q Cellular Potts Model cell sorting + Ouchi et al. (2003) cortical tension — Morphological realism / specimen match: 84/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credited: the SHA-256-locked confocal embryoid-body specimen is segmented into a GFP core (r_D/R = 0.49) and RFP shell (r_L/R = 0.77, Delta_r = +0.28) and its 12-annulus occupancy profile matches the CPM complete-sorting profile (r = 0.961, RMSE = 0.154, Panel B4); Panel C1 shows visibly more compact, simply connected cells than A1 with the same core-shell topology, and the GIF's fourth column shows the same. Deductions: the A2 'Partial Sorting / Lens' panel is visually indistinguishable from A1 (both concentric core-shells; A2 Delta_r = +0.352 exceeds A1's +0.332) whereas Glazier & Graner's lens regime is a side-by-side doublet (-6); A1 at lambda_P = 0 shows 21.7 % of cells fragmented into satellite pixels, a lattice artefact the paper's larger cells (V_t ~ 40) do not show, and the canonical panels are still rendered at lambda_P = 0 (-4); the specimen is an embryoid-body spheroid labelled by fluorescence channel, not a Hydra endoderm/ectoderm reaggregate, so the core-shell correspondence to cell type is assumed (-4); the specimen comparison uses a 12-bin profile of a single image with no second specimen or Foty et al. (1996) envelopment measurement (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:evidenceAgainst "1992-graner-cellular-potts-cell-sorting.py L932–L936: partial_sorting_lens regime rendered as Panel A2; realised Delta_r = +0.352 > A1, not a lens doublet <https://github.com/fractastical/morpholib/blob/654cd6fc/1992-graner-cellular-potts-cell-sorting.py#L932-L936>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-specimen-match-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-specimen-match-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-specimen-match-3> ;
+        pk:hasScore "0.84"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "1992-graner-cellular-potts-cell-sorting.py L791–L896" ;
+        dct:description "Specimen segmentation (GFP core, RFP shell), 12-annulus profiles, Pearson r / RMSE and Fig. 3 checkpoint correlation" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/654cd6fc/1992-graner-cellular-potts-cell-sorting.py#L791-L896> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "docs/media/cellular_potts_cell_sorting_comparison.png (generated output)" ;
+        dct:description "15-panel figure: A1-A5 regimes, B3 specimen overlay, B4 profile match r = 0.961, C1 compact cortical-tension cells; A2 'lens' is a concentric core-shell indistinguishable from A1 — docs/media/cellular_potts_cell_sorting_comparison.png: rendered output of 1992-graner-cellular-potts-cell-sorting.py at 654cd6fc, image/png, 844973 B, 3000×1890 px, artifact_sha256 a2f5372c202e946ae397351314585b49d1db212e3088826bfc3b642308249496 (sha256 a2f5372c202e946ae397351314585b49d1db212e3088826bfc3b642308249496), spec_fingerprint 7cdd3f38f0e6192e614f25f3f47d81cb4d09870705b0e0dca1d1d4dbca9f4cc0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-specimen-match-3> a pk:EvidenceItem ;
+        rdfs:label "docs/media/cellular_potts_cell_sorting_growth.gif (generated output)" ;
+        dct:description "4-column GIF: complete sorting, T = 0 pinning, checkerboard, cortical tension lambda_P = 2 (compact cells, sorted core-shell) — docs/media/cellular_potts_cell_sorting_growth.gif: rendered output of 1992-graner-cellular-potts-cell-sorting.py at 654cd6fc, image/gif, 371603 B, 1280×350 px, 18 frames, artifact_sha256 fef992eabc97bd8fea7083e3868ae788590c2d501ed755e39a74144a41d23519 (sha256 fef992eabc97bd8fea7083e3868ae788590c2d501ed755e39a74144a41d23519), spec_fingerprint 7cdd3f38f0e6192e614f25f3f47d81cb4d09870705b0e0dca1d1d4dbca9f4cc0" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0378-4371(03)00574-0>,
+            <https://doi.org/10.1016/j.cub.2007.11.049>,
+            <https://doi.org/10.1038/newbio239098a0>,
+            <https://doi.org/10.1103/PhysRevE.47.2128>,
+            <https://doi.org/10.1103/PhysRevLett.69.2013>,
+            <https://doi.org/10.1126/science.141.3579.401>,
+            <https://doi.org/10.1242/dev.122.5.1611> .
+    <https://doi.org/10.1016/S0378-4371(03)00574-0> dct:date "2003"^^xsd:gYear ;
+        dct:title "Improving the realism of the cellular Potts model in simulations of biological cells" .
+    <https://doi.org/10.1016/j.cub.2007.11.049> dct:date "2007"^^xsd:gYear ;
+        dct:title "The influence of cell mechanics, cell-cell interactions, and proliferation on epithelial packing" .
+    <https://doi.org/10.1038/newbio239098a0> dct:date "1972"^^xsd:gYear ;
+        dct:title "Regeneration of Hydra from reaggregated cells" .
+    <https://doi.org/10.1103/PhysRevE.47.2128> dct:date "1993"^^xsd:gYear ;
+        dct:title "Simulation of the differential adhesion driven rearrangement of biological cells" .
+    <https://doi.org/10.1103/PhysRevLett.69.2013> dct:date "1992"^^xsd:gYear ;
+        dct:title "Simulation of biological cell sorting using a two-dimensional extended Potts model" .
+    <https://doi.org/10.1126/science.141.3579.401> dct:date "1963"^^xsd:gYear ;
+        dct:title "Reconstruction of tissues by dissociated cells" .
+    <https://doi.org/10.1242/dev.122.5.1611> dct:date "1996"^^xsd:gYear ;
+        dct:title "Surface tensions of embryonic tissues predict their mutual envelopment behavior" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Graner & Glazier (1992) / Glazier & Graner (1993) extended large-Q Cellular Potts Model cell sorting + Ouchi et al. (2003) cortical tension — Morphological realism / specimen match 84/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:01:39Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-graner-cellular-potts-cell-sorting-specimen-match> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

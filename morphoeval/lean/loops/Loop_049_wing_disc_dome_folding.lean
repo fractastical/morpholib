@@ -148,4 +148,61 @@ theorem collagenase_ecm_ablation_collapse_and_remodeling_hierarchy (g_ap g_bm g_
   · decide
   · decide
 
+
+-- ============================================================================
+-- Law 4 (Pass 3, `tozluoglu-wing-disc-dome-folding-4`):
+-- Lumen Hydrostatic Pressure Acting on the Disc Proper Through the Peripodial Sac
+-- ============================================================================
+/-- Pass 3 reduced disc-proper (DP) + peripodial epithelium (PE) + lumen sac
+    (`solve_coupled_disc_peripodial_lumen`). The lumen pressure `p` acts on the lumen-facing
+    convex apical DP surface; in the shallow-cap Laplace response the apex is lowered by
+    `p * chord^2 / (16 * T_DP)`. Working with the common denominator `16 * T_DP` (positive),
+    the scaled dome height is
+      `dome_height_num(z0, p, chord2, T16) = z0 * T16 - p * chord2`
+    where `z0` is the growth-driven (uncoupled) dome height, `chord2 = L_pouch^2 > 0`, and
+    `T16 = 16 * T_DP > 0`. We prove:
+      1. at `p = 0` (PE ablation / no lumen fluid) the coupled dome equals the uncoupled one,
+      2. for `p > 0` the dome is strictly lower than the uncoupled dome,
+      3. the dome height is strictly decreasing in `p` (`p1 < p2 -> height(p2) < height(p1)`),
+      4. the PE (tension `T_PE > 0`) sags upward under `p > 0`: sag numerator `p * span2 > 0`. -/
+def dome_height_num (z0 p chord2 T16 : Int) : Int :=
+  z0 * T16 - p * chord2
+
+def pe_sag_num (p span2 : Int) : Int :=
+  p * span2
+
+theorem lumen_pressure_laplace_dome_deflection
+    (z0 p1 p2 chord2 T16 span2 : Int)
+    (hchord : chord2 > 0)
+    (_hT : T16 > 0)  -- positivity of the common denominator 16 * T_DP (scaling only)
+    (hspan : span2 > 0)
+    (hp1 : p1 > 0)
+    (hlt : p1 < p2) :
+    dome_height_num z0 0 chord2 T16 = z0 * T16 ∧
+    dome_height_num z0 p1 chord2 T16 < dome_height_num z0 0 chord2 T16 ∧
+    dome_height_num z0 p2 chord2 T16 < dome_height_num z0 p1 chord2 T16 ∧
+    pe_sag_num p1 span2 > 0 := by
+  dsimp [dome_height_num, pe_sag_num]
+  have hpos1 : p1 * chord2 > 0 := Int.mul_pos hp1 hchord
+  have hd : p2 - p1 > 0 := by omega
+  have hpos2 : (p2 - p1) * chord2 > 0 := Int.mul_pos hd hchord
+  have hdist : (p2 - p1) * chord2 = p2 * chord2 - p1 * chord2 := Int.sub_mul p2 p1 chord2
+  have hsag : p1 * span2 > 0 := Int.mul_pos hp1 hspan
+  refine ⟨?_, ?_, ?_, hsag⟩
+  · simp
+  · simp; omega
+  · omega
+
+/-- Lumen pressure enters the DP as a *uniform* transverse load. A uniform shift `c` of the
+    local growth/load profile across a hinge boundary leaves the trough second difference
+    of Law 2 unchanged, so the H/N, H/H and H/P pinning condition (`growth_second_diff > 0`)
+    and hence the fold loci are invariant to the lumen pressure (matches the sweep result
+    `max_fold_shift_norm = 0` in `evaluate_lumen_pressure_sweep`). -/
+theorem uniform_lumen_load_preserves_growth_trough_second_diff
+    (g_left g_trough g_right c : Int) :
+    growth_second_diff (g_left + c) (g_trough + c) (g_right + c) =
+      growth_second_diff g_left g_trough g_right := by
+  dsimp [growth_second_diff]
+  omega
+
 end MathOfBiology.Loop_049

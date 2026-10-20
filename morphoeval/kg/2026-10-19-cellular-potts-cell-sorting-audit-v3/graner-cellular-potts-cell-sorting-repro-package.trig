@@ -1,0 +1,95 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-graner-cellular-potts-cell-sorting> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-graner-cellular-potts-cell-sorting-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-graner-cellular-potts-cell-sorting-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Graner & Glazier (1992) / Glazier & Graner (1993) extended large-Q Cellular Potts Model cell sorting + Ouchi et al. (2003) cortical tension — Reproducibility package: 93/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credited: deterministic RNG (seed 1992) with a two-run bitwise determinism check (self-test 7) and a bit-for-bit lambda_P = 0 regression against the Pass 2 kernel (check 9); the 12-check `self_test()` (L1394-1501) covers SHA-256, exact tension parity across 5 regimes, sorting vs controls, T = 0 arrest, log decay, specimen correlation, the 15-measurement contract, perimeter definition (4 x 4 = 44, 3 x 3 = 32), zero bookkeeping drift, shape regularisation, lambda_P monotonicity and P_t tracking; `--self-test` runs in ~23 s and the default render in ~20 s, producing the PNG and GIF; `--lam-P` and `--Pt` are documented in argparse and the main() summary prints every headline number. Deductions: no requirements lock file pins numpy/scipy/matplotlib versions (-3); matplotlib emits a font-cache warning when MPLCONFIGDIR is unset, which the invocation notes do not mention (-1); the v2 audit's '<2 s self-test' claim is now 23 s and the README section for this script was not updated in this loop (out of scope for the slot) (-3)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-repro-package-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-repro-package-3> ;
+        pk:hasScore "0.93"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "1992-graner-cellular-potts-cell-sorting.py L1394–L1501" ;
+        dct:description "12-check self_test(): SHA-256, tension parity, controls, T = 0 arrest, log decay, specimen, determinism, 15-measurement contract, perimeter definition, bookkeeping drift, lambda_P monotonicity, P_t tracking" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/654cd6fc/1992-graner-cellular-potts-cell-sorting.py#L1394-L1501> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "1992-graner-cellular-potts-cell-sorting.py L1462–L1466" ;
+        dct:description "lambda_P = 0 reproduces the Pass 2 lattice bit-for-bit; perimeter bookkeeping max |error| = 0" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/654cd6fc/1992-graner-cellular-potts-cell-sorting.py#L1462-L1466> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-graner-cellular-potts-cell-sorting-repro-package-3> a pk:EvidenceItem ;
+        rdfs:label "1992-graner-cellular-potts-cell-sorting.py L1504–L1560" ;
+        dct:description "CLI with --lam-P / --Pt and a main() summary printing Delta_r, RMS(p - P_t), fragmentation, shape index and P_t tracking" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/654cd6fc/1992-graner-cellular-potts-cell-sorting.py#L1504-L1560> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0378-4371(03)00574-0>,
+            <https://doi.org/10.1016/j.cub.2007.11.049>,
+            <https://doi.org/10.1038/newbio239098a0>,
+            <https://doi.org/10.1103/PhysRevE.47.2128>,
+            <https://doi.org/10.1103/PhysRevLett.69.2013>,
+            <https://doi.org/10.1126/science.141.3579.401>,
+            <https://doi.org/10.1242/dev.122.5.1611> .
+    <https://doi.org/10.1016/S0378-4371(03)00574-0> dct:date "2003"^^xsd:gYear ;
+        dct:title "Improving the realism of the cellular Potts model in simulations of biological cells" .
+    <https://doi.org/10.1016/j.cub.2007.11.049> dct:date "2007"^^xsd:gYear ;
+        dct:title "The influence of cell mechanics, cell-cell interactions, and proliferation on epithelial packing" .
+    <https://doi.org/10.1038/newbio239098a0> dct:date "1972"^^xsd:gYear ;
+        dct:title "Regeneration of Hydra from reaggregated cells" .
+    <https://doi.org/10.1103/PhysRevE.47.2128> dct:date "1993"^^xsd:gYear ;
+        dct:title "Simulation of the differential adhesion driven rearrangement of biological cells" .
+    <https://doi.org/10.1103/PhysRevLett.69.2013> dct:date "1992"^^xsd:gYear ;
+        dct:title "Simulation of biological cell sorting using a two-dimensional extended Potts model" .
+    <https://doi.org/10.1126/science.141.3579.401> dct:date "1963"^^xsd:gYear ;
+        dct:title "Reconstruction of tissues by dissociated cells" .
+    <https://doi.org/10.1242/dev.122.5.1611> dct:date "1996"^^xsd:gYear ;
+        dct:title "Surface tensions of embryonic tissues predict their mutual envelopment behavior" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Graner & Glazier (1992) / Glazier & Graner (1993) extended large-Q Cellular Potts Model cell sorting + Ouchi et al. (2003) cortical tension — Reproducibility package 93/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:01:39Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-graner-cellular-potts-cell-sorting-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

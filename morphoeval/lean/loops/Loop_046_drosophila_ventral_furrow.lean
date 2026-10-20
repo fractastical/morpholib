@@ -134,4 +134,110 @@ theorem conte_2012_synergistic_ventral_furrow_invagination :
     depth10_unratcheted_recoil > depth10_null_control := by
   decide
 
+/-! ### Pass 3 additions (2026-10-19-drosophila-ventral-furrow-audit-v3)
+
+Two new mechanisms were added to `2012-he-drosophila-ventral-furrow.py`:
+(a) a reduced 3D anteroposterior shell coupling (`solve_ap_coupled_furrow_profile`) and
+(b) an explicitly resolved intracellular Stokes flow around a passive nucleus
+(`solve_intracellular_stokes_flow`). Theorems 4 and 5 below pin the two governing facts
+that the numerics rely on. -/
+
+/-- Lumped modal stiffness of the Donnell/Winkler shell line equation
+    `B D'''' - N D'' + k D = q` for a sinusoidal mode with squared wavenumber `m2 = m^2`:
+    `S = B m^4 + N m^2 + k`, so that the modal furrow depth is `D = q / S`
+    (`solve_ap_coupled_furrow_profile`; `B` = AP bending stiffness, `N` = germband-extension
+    AP tension, `k` = curvature-induced Winkler stiffness `~ E h (kappa_z^2 + kappa_theta^2)`). -/
+def modal_shell_stiffness (B N k m2 : Int) : Int :=
+  B * m2 * m2 + N * m2 + k
+
+/-- A positive load shared by two positive stiffnesses `S1 < S2` gives a strictly smaller
+    deflection at the stiffer one: `D1 * S1 = q = D2 * S2 ⇒ D2 < D1`. -/
+theorem modal_depth_decreases_with_stiffness
+    (D1 D2 S1 S2 q : Int)
+    (hS1 : S1 > 0) (hS : S1 < S2) (hD2 : D2 > 0)
+    (e1 : D1 * S1 = q) (e2 : D2 * S2 = q) : D2 < D1 := by
+  have h1 : D2 * S1 < D2 * S2 := Int.mul_lt_mul_of_pos_left hS hD2
+  have h2 : D2 * S1 < D1 * S1 := by omega
+  exact Int.lt_of_mul_lt_mul_right h2 (Int.le_of_lt hS1)
+
+/-- Theorem 4 (`ap_tension_and_curvature_stiffening_reduce_furrow_depth`):
+    For the modal shell line equation with non-negative bending stiffness `B ≥ 0`, positive
+    squared wavenumber `m2 > 0`, baseline Winkler stiffness `k1 > 0`, baseline tension `N1 ≥ 0`
+    and a common positive transverse load `q`:
+    (1) raising the germband-extension AP tension (`N1 < N2`) strictly reduces the modal
+        furrow depth (`DN < D0`), and
+    (2) raising the curvature-induced Winkler stiffness toward the doubly curved poles
+        (`k1 < k2`) strictly reduces the modal furrow depth (`Dk < D0`).
+    This is the mechanism behind the monotone `ell_N` sweep and the polar taper of `D(z)`
+    in `sweep_ap_shell_parameters`. -/
+theorem ap_tension_and_curvature_stiffening_reduce_furrow_depth
+    (B N1 N2 k1 k2 m2 q D0 DN Dk : Int)
+    (hB : B ≥ 0) (hm : m2 > 0)
+    (hN1 : N1 ≥ 0) (hN : N1 < N2) (hk1 : k1 > 0) (hkk : k1 < k2)
+    (hDN : DN > 0) (hDk : Dk > 0)
+    (e0 : D0 * modal_shell_stiffness B N1 k1 m2 = q)
+    (eN : DN * modal_shell_stiffness B N2 k1 m2 = q)
+    (ek : Dk * modal_shell_stiffness B N1 k2 m2 = q) :
+    DN < D0 ∧ Dk < D0 := by
+  have hBm : B * m2 * m2 ≥ 0 :=
+    Int.mul_nonneg (Int.mul_nonneg hB (Int.le_of_lt hm)) (Int.le_of_lt hm)
+  have hN1m : N1 * m2 ≥ 0 := Int.mul_nonneg hN1 (Int.le_of_lt hm)
+  have hNm : N1 * m2 < N2 * m2 := Int.mul_lt_mul_of_pos_right hN hm
+  have hS0 : modal_shell_stiffness B N1 k1 m2 > 0 := by
+    unfold modal_shell_stiffness; omega
+  refine ⟨?_, ?_⟩
+  · have hlt : modal_shell_stiffness B N1 k1 m2 < modal_shell_stiffness B N2 k1 m2 := by
+      unfold modal_shell_stiffness; omega
+    exact modal_depth_decreases_with_stiffness D0 DN _ _ q hS0 hlt hDN e0 eN
+  · have hlt : modal_shell_stiffness B N1 k1 m2 < modal_shell_stiffness B N1 k2 m2 := by
+      unfold modal_shell_stiffness; omega
+    exact modal_depth_decreases_with_stiffness D0 Dk _ _ q hS0 hlt hDk e0 ek
+
+/-- Stream function of the affine incompressible lengthening flow on the integer lattice,
+    `psi(x, y) = eps * x * (h - y)` (apex pinned at `y = h`, basal end at `y = 0`), the exact
+    uniform-viscosity solution that `solve_intracellular_stokes_flow` reproduces to 1e-12
+    (`verification` branch of `analyze_phase1_nuclear_hydrodynamics`). -/
+def affine_stream_function (eps h x y : Int) : Int := eps * x * (h - y)
+
+/-- Discrete horizontal velocity `u = psi(x, y+1) - psi(x, y)` (forward difference of `psi_y`). -/
+def affine_u (eps h x y : Int) : Int :=
+  affine_stream_function eps h x (y + 1) - affine_stream_function eps h x y
+
+/-- Discrete vertical velocity `v = -(psi(x+1, y) - psi(x, y))` (forward difference of `-psi_x`). -/
+def affine_v (eps h x y : Int) : Int :=
+  -(affine_stream_function eps h (x + 1) y - affine_stream_function eps h x y)
+
+/-- Discrete divergence `(u(x+1,y) - u(x,y)) + (v(x,y+1) - v(x,y))`. -/
+def discrete_divergence (eps h x y : Int) : Int :=
+  (affine_u eps h (x + 1) y - affine_u eps h x y) + (affine_v eps h x (y + 1) - affine_v eps h x y)
+
+/-- Theorem 5 (`affine_lengthening_flow_divergence_free_and_basalward`):
+    For a positive lengthening strain rate `eps = h'/h > 0` the affine stream function gives
+    (1) an exactly divergence-free discrete velocity field (cytoplasmic incompressibility),
+    (2) zero vertical velocity at the vitelline-pinned apex `y = h`,
+    (3) basal-end velocity `v(x, 0) = -(eps * h) = -h'` (the incompressible lengthening rate),
+    (4) a strictly basal-ward (negative) vertical velocity at every interior height
+        `0 ≤ y < h` — the passive nucleus is carried toward the basal end, and
+    (5) a speed that increases with distance from the apex (`y < y' < h ⇒ v(y) < v(y')`),
+        i.e. the flow is a pure extension, not a plug. These are the properties checked by
+        `interior_divergence_rel`, `flux_closure_error`, and the sign tests in `--self-test`. -/
+theorem affine_lengthening_flow_divergence_free_and_basalward
+    (eps h x y y' : Int) (heps : eps > 0) (_hy : 0 ≤ y) (hyy : y < y') (hy' : y' < h) :
+    discrete_divergence eps h x y = 0 ∧
+    affine_v eps h x h = 0 ∧
+    affine_v eps h x 0 = -(eps * h) ∧
+    affine_v eps h x y < 0 ∧
+    affine_v eps h x y < affine_v eps h x y' := by
+  unfold discrete_divergence affine_u affine_v affine_stream_function
+  refine ⟨by grind, by grind, by grind, ?_, ?_⟩
+  · have h1 : -(eps * (x + 1) * (h - y) - eps * x * (h - y)) = -(eps * (h - y)) := by grind
+    rw [h1]
+    have : eps * (h - y) > 0 := Int.mul_pos heps (by omega)
+    omega
+  · have h1 : -(eps * (x + 1) * (h - y) - eps * x * (h - y)) = -(eps * (h - y)) := by grind
+    have h2 : -(eps * (x + 1) * (h - y') - eps * x * (h - y')) = -(eps * (h - y')) := by grind
+    rw [h1, h2]
+    have : eps * (h - y') < eps * (h - y) := Int.mul_lt_mul_of_pos_left (by omega) heps
+    omega
+
 end MathOfBiology.Loop_046

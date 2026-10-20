@@ -11,7 +11,13 @@ model_spec:
   b_mesenchymal_gdnf: 0.90
   gamma_scale_wt: 25.0
   gamma_scale_spry1_ko: 46.25
-  gamma_scale_hypoplasia: 11.25
+  gamma_scale_hypoplasia: 25.0   # Pass 3: hypoplasia = halved b only (Pass 2's 11.25 was unsourced)
+  stromal_k_bmp: 3.0
+  stromal_k_grem: 4.0
+  stromal_k_fgf7: 0.8
+  stromal_bmp_baseline: 0.5
+  R_tip_wt: 0.30
+  daughter_dome_aspect_ratio: 1.30
   seed: 2013
   inputs:
     - datasets/kidney_ureteric_bud_gdnf_ret/kidney_ureteric_bud_gdnf_ret_reference.json
@@ -83,3 +89,41 @@ equations:
     role: "Determines transitions between single-tip elongation, canonical dichotomous bifurcation (88% of WT events), and Spry1-/- trichotomous hyper-branching, as well as tip-count collapse under Gdnf+/- or PRR^(UB-/-) hypoplasia"
     source_citation: "Zubkov et al. (2015) Bull. Math. Biol. 77:565-595; Watanabe & Costantini (2004) Dev. Biol. 271:98-106; Basson et al. (2005) Dev. Cell 8:229-239"
     code_locus: "2012-menshykau-fgf10-shh-lung-turing.py#L345-L520"
+
+  - id: menshykau-fgf10-shh-lung-turing-4
+    law_name: "Pass 3 — Stromal BMP4/7 - Gremlin1 - FGF7 Feedback Gain Monotonicity Law (Zubkov et al. 2015 spatially-averaged module; Michos et al. 2004; Qiao et al. 1999; Miyazaki et al. 2000)"
+    formula: "γ_eff = γ (1 + k_F7 FGF7) / (1 + k_B BMP / (1 + k_G GREM1));  integer-scaled: num = (1 + F)(1 + G), den = (1 + G) + B;  ∂gain/∂BMP ≤ 0, ∂gain/∂FGF7 ≥ 0, gain(G=0, B>0, F=0) < 1, gain(0,0,0) = 1"
+    lean_decl: "MathOfBiology.Loop_054.stromal_gain_num"
+    lean_theorem: "MathOfBiology.Loop_054.stromal_bmp_gremlin_fgf7_gain_monotonicity"
+    lean_locus: "morphoeval/lean/loops/Loop_054_kidney_ureteric_bud_gdnf_ret.lean#L159-L194"
+    lean_code: |
+      def stromal_gain_num (F G : Nat) : Nat := (1 + F) * (1 + G)
+      def stromal_gain_den (B G : Nat) : Nat := (1 + G) + B
+      theorem stromal_bmp_gremlin_fgf7_gain_monotonicity (B G F : Nat) :
+          stromal_gain_den B G ≤ stromal_gain_den (B + 1) G ∧
+          stromal_gain_num F G ≤ stromal_gain_num (F + 1) G ∧
+          stromal_gain_num 0 0 < stromal_gain_den (B + 1) 0 ∧
+          stromal_gain_num 0 0 = stromal_gain_den 0 0
+    variables: "BMP: peristalk + baseline stromal BMP4/BMP7; GREM1: cap-mesenchyme Gremlin1 (BMP antagonist); FGF7: cortical stromal FGF7; k_B, k_G, k_F7: model-scale constants (3.0, 4.0, 0.8); γ_eff: effective RET/ERK signalling gain entering R_tip ~ S_eff^0.5 and rho_tip"
+    role: "Couples the stromal mesenchymal feedback loops (Grem1-/- outgrowth failure, Fgf7-/- reduced growth, Bmp4+/- ectopic budding) to the GDNF-RET Turing mode selection via the ampulla radius; replaces the Pass 2 per-condition prescribed branching multiplicity"
+    source_citation: "Zubkov et al. (2015) Bull. Math. Biol. 77:565-595; Michos et al. (2004) Development 131:3401-3410; Qiao et al. (1999) Development 126:547-554; Miyazaki et al. (2000) J. Clin. Invest. 105:863-873"
+    code_locus: "2012-menshykau-fgf10-shh-lung-turing.py#L649-L943"  # stromal_signaling_gain (L649-L667) + simulate_coupled_ureteric_tree stromal fields & rho_tip mode selection (L674-L943)
+
+  - id: menshykau-fgf10-shh-lung-turing-5
+    law_name: "Pass 3 — Orthogonal Dihedral Rotation Cascade Law (reduced 3D anisotropic-dome mode selection; Menshykau et al. 2012; Metzger et al. 2008)"
+    formula: "two-lobe mode along axis of arc L: k = 2π/L;  rho_flip = k_c/k_fastest ≈ 0.938;  for rho_tip > rho_flip, σ(2π/L_short) > σ(2π/L_long) (short axis splits);  daughter long axis ∥ parent axis ⇒ θ_{g+1} = (θ_g + 90) mod 180, dihedral = 90°, period 2"
+    lean_decl: "MathOfBiology.Loop_054.daughter_axis_short_wins"
+    lean_theorem: "MathOfBiology.Loop_054.orthogonal_dihedral_rotation_cascade"
+    lean_locus: "morphoeval/lean/loops/Loop_054_kidney_ureteric_bud_gdnf_ret.lean#L196-L234"
+    lean_code: |
+      def daughter_axis_short_wins (θ : Nat) : Nat := (θ + 90) % 180
+      def dihedral_deg (α β : Nat) : Nat :=
+        min ((α + 180 - β % 180) % 180) ((β + 180 - α % 180) % 180)
+      theorem orthogonal_dihedral_rotation_cascade (θ : Nat) (h : θ < 180) :
+          dihedral_deg θ (daughter_axis_short_wins θ) = 90 ∧
+          daughter_axis_short_wins (daughter_axis_short_wins θ) = θ ∧
+          dihedral_deg θ θ = 0
+    variables: "θ_g: splitting-axis angle (deg mod 180) of generation g in the transverse plane; L_long = π R_tip √e, L_short = π R_tip / √e: principal arcs of the anisotropic dome (e = 1.30); σ(k): Menshykau & Iber (2013) Eq. 5 linear growth rate"
+    role: "Closest honest reduction of the Pass 2 '3D phase-field / ALE dihedral rotation' item: the linear selection of the short cross-section axis in the dichotomous band plus an explicit daughter-orientation assumption yields the ~90° orthogonal rotation of successive bifurcation planes (ablation with orthogonal daughters yields 0°)"
+    source_citation: "Menshykau et al. (2012) Development 139:4506-4514; Metzger et al. (2008) Nature 453:745-750; Short et al. (2014) Dev. Cell 29:188-202"
+    code_locus: "2012-menshykau-fgf10-shh-lung-turing.py#L491-L647"  # select_splitting_axis, dihedral_rotation_cascade (L491-L585) + simulate_moving_boundary_ampulla_necking (L587-L647)

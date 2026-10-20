@@ -31,6 +31,13 @@
        yields `(r_k^4)^3 = (r_k^3)^4`, so flux scales as `Q_k = r_k^3`. Kirchhoff
        conservation `Q_0 = Q_1 + Q_2` at a bifurcation therefore enforces Murray's
        cube law `r_0^3 = r_1^3 + r_2^3` with `r_0^3 > r_1^3` for positive daughter radii.
+    4. (Pass 3) Peristaltic Volume-Source Closure & Half-Period Shuttle-Streaming
+       Reversal: the actomyosin wave's nodal volume source `S = -(A * s)` reverses when
+       the phase sample flips (`s -> -s`), the Tero adaptation sees only `|Q|` which is
+       reversal-invariant, and mean-corrected sources sum to zero (Kirchhoff solvability).
+    5. (Pass 3) Net Peristaltic Transport Requires Joint Conductance & Pressure
+       Modulation: `(g + d) dp + (g - d)(-dp) = 2 d dp`, zero for frozen conductance
+       (`d = 0`) and non-zero whenever both modulations are non-zero (second-order pumping).
 
   Verify with the Lean 4 kernel:
     lean morphoeval/lean/loops/Loop_057_physarum_transport_network.lean
@@ -143,5 +150,78 @@ theorem tero_murray_cube_law_at_gamma_four_thirds (r1 r2 : Nat) (hr2 : 0 < r2) :
   simp [radius_cube]
   have hpos : 0 < r2 * r2 * r2 := Nat.mul_pos (Nat.mul_pos hr2 hr2) hr2
   omega
+
+
+-- ============================================================================
+-- Law 4 (`tero-physarum-transport-network-4`, Pass 3):
+-- Peristaltic Volume-Source Closure & Half-Period Shuttle-Streaming Reversal
+-- ============================================================================
+
+/-- Nodal volume source injected by a contracting tube wall: `S = -(A * s)` where `A`
+    is the tube volume-rate amplitude `2 A_e L_e eps omega` and `s` the phase sample
+    `sin(omega t - psi_e)` of the traveling actomyosin wave. -/
+def peristaltic_source (A s : Int) : Int :=
+  -(A * s)
+
+/-- Closed-plasmodium correction: subtract the network mean `m` from each raw nodal
+    source so that the Kirchhoff right-hand side sums to zero (uniform compliance). -/
+def closed_source (s m : Int) : Int :=
+  s - m
+
+/-- Theorem 4 (`peristaltic_closed_source_zero_sum`):
+    (1) Half a period later the wave phase sample flips sign (`s -> -s`), so every
+        peristaltic volume source reverses: `S(t) + S(t + T/2) = 0` — the fluxes it drives
+        reverse with it (shuttle streaming reverses twice per cycle),
+    (2) The slow Tero adaptation sees only `|Q|`, which is invariant under that reversal
+        (`natAbs (-q) = natAbs q`), so pruning is driven by the cycle-averaged `|Q|`,
+    (3) For any three nodes whose raw sources sum to `3 m`, the mean-corrected sources sum
+        to zero — the solvability condition of the grounded Kirchhoff Laplacian. -/
+theorem peristaltic_closed_source_zero_sum (A s q s1 s2 s3 m : Int)
+    (hsum : s1 + s2 + s3 = 3 * m) :
+    peristaltic_source A s + peristaltic_source A (-s) = 0 ∧
+    Int.natAbs (-q) = Int.natAbs q ∧
+    closed_source s1 m + closed_source s2 m + closed_source s3 m = 0 := by
+  refine ⟨?_, ?_, ?_⟩
+  · simp only [peristaltic_source, Int.mul_neg, Int.neg_neg]
+    omega
+  · exact Int.natAbs_neg q
+  · simp [closed_source]
+    omega
+
+
+-- ============================================================================
+-- Law 5 (`tero-physarum-transport-network-5`, Pass 3):
+-- Net Peristaltic Transport Requires Joint Conductance & Pressure Modulation
+-- ============================================================================
+
+/-- Two-sample (half-period) cycle sum of the Poiseuille flux `Q = g(t) * dp(t)` when the
+    conductance is modulated by `±d` in phase with a pressure drop that reverses `±dp`:
+    `Q(t) + Q(t + T/2) = (g + d) * dp + (g - d) * (-dp)`. -/
+def two_sample_net_flux (g d dp : Int) : Int :=
+  (g + d) * dp + (g - d) * (-dp)
+
+/-- Theorem 5 (`peristaltic_net_transport_requires_conductance_modulation`):
+    (1) With constant conductance (`d = 0`) the reversing pressure drop averages to zero
+        net flux — a linear Kirchhoff network with frozen `D_ij` cannot pump,
+    (2) With conductance modulation the cycle sum equals `2 * (d * dp)`: net transport is
+        second order (product of the two oscillation amplitudes),
+    (3) It is non-zero whenever both modulations are non-zero (`d ≠ 0`, `dp ≠ 0`). -/
+theorem peristaltic_net_transport_requires_conductance_modulation (g d dp : Int) :
+    two_sample_net_flux g 0 dp = 0 ∧
+    two_sample_net_flux g d dp = 2 * (d * dp) ∧
+    (d ≠ 0 → dp ≠ 0 → two_sample_net_flux g d dp ≠ 0) := by
+  have hexp : two_sample_net_flux g d dp = 2 * (d * dp) := by
+    simp only [two_sample_net_flux, Int.mul_neg, Int.add_mul, Int.sub_mul, Int.neg_sub]
+    omega
+  refine ⟨?_, hexp, ?_⟩
+  · simp only [two_sample_net_flux, Int.add_zero, Int.sub_zero, Int.mul_neg]
+    omega
+  · intro hd hp h
+    rw [hexp] at h
+    rcases Int.mul_eq_zero.mp h with h2 | hdd
+    · omega
+    · rcases Int.mul_eq_zero.mp hdd with h3 | h4
+      · exact hd h3
+      · exact hp h4
 
 end MathOfBiology.Loop_057

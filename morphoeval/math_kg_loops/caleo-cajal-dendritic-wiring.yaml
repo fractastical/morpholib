@@ -9,9 +9,19 @@ model_spec:
   balancing_factor_motoneuron: 0.70
   rall_exponent: 1.50
   seed: 2010
+  # Pass 3 (v3): Rall passive cable + Morris-Lecar active Ca2+ hotspot coincidence detection
+  passive_R_m_ohm_cm2: 122000.0
+  passive_R_i_ohm_cm: 115.0
+  passive_C_m_uF_cm2: 0.77
+  synaptic_tau_syn_ms: 3.0
+  synaptic_frequency_hz: 53.05
+  morris_lecar_g_Ca_mS_cm2: 4.4
+  morris_lecar_g_K_mS_cm2: 8.0
+  n_tip_pairs: 24
   inputs:
     - datasets/cajal_dendritic_wiring/cajal_dendritic_wiring_reference.json
     - datasets/cajal_dendritic_wiring/cajal_purkinje_dendritic_arbor_specimen.jpg
+    - datasets/cajal_dendritic_wiring/electrotonic_ca_spike_reference.json
     - datasets/cajal_dendritic_wiring/scout_manifest.json
     - datasets/cajal_dendritic_wiring/paper_citations.bib
 equations:
@@ -37,7 +47,7 @@ equations:
     variables: "d_uv = ||u - v||: Euclidean distance from tree node u to carrier target v; d_ru = path(u, root): path length along tree from soma root to u; bf in [0, 1]: Cuntz balancing factor weighting conduction time vs cytoplasmic cable length"
     role: "Proves Ramón y Cajal's (1899) trade-off between minimum wiring length at bf = 0 (Prim/Steiner MST) and minimum soma-to-synapse path length at bf = 1 (radial star graph), with exact critical transition threshold bf_c = (d_rv - d_uv) / d_ru"
     source_citation: "Cuntz, Forstner, Borst & Häusser (2010) PLoS Comput. Biol. 6(8):e1000877 Results & Fig. 1; Cuntz, Borst & Segev (2007) PNAS 104:13319-13324"
-    code_locus: "2007-caleo-cajal-dendritic-wiring.py#L120-L240"
+    code_locus: "2007-caleo-cajal-dendritic-wiring.py#L165-L207"
 
   - id: caleo-cajal-dendritic-wiring-2
     law_name: "Rall's (1959) 3/2 Electrotonic Impedance-Matching Diameter Power Law"
@@ -59,7 +69,7 @@ equations:
     variables: "d_parent, d_1, d_2: parent and daughter dendritic cylinder diameters; g_k = d_k^(3/2): electrotonic input conductance scaling variable"
     role: "Proves that Rall's 3/2 power law matches input conductance across dendritic bifurcations so the branched arbor collapses to an equivalent electrotonic cylinder, with symmetric parent diameter d_p = 2^(2/3) d strictly steeper than Murray's vascular cube law (d_p = 2^(1/3) d)"
     source_citation: "Rall (1959) Exp. Neurol. 1(5):491-527 Eqs. 9-16; Cuntz et al. (2010) PLoS Comput. Biol. 6(8):e1000877 Fig. 2"
-    code_locus: "2007-caleo-cajal-dendritic-wiring.py#L245-L315"
+    code_locus: "2007-caleo-cajal-dendritic-wiring.py#L208-L237"
 
   - id: caleo-cajal-dendritic-wiring-3
     law_name: "Acyclic Dendritic Spanning Tree & Binary Bifurcation Topological Identity"
@@ -79,4 +89,42 @@ equations:
     variables: "B: internal dendritic bifurcation points; L: terminal synaptic carrier tips; N: total nodes including soma root; E: total dendritic cable segments; beta_1: first Betti cycle number"
     role: "Guarantees zero cycle formation (beta_1 = 0, unique soma-to-synapse electrotonic path) and exact conservation of leaves vs bifurcations (L = B + 1) in binary dendritic arbors"
     source_citation: "Cuntz et al. (2010) PLoS Comput. Biol. 6(8):e1000877 Methods"
-    code_locus: "2007-caleo-cajal-dendritic-wiring.py#L320-L390"
+    code_locus: "2007-caleo-cajal-dendritic-wiring.py#L238-L280"
+
+  - id: caleo-cajal-dendritic-wiring-4
+    law_name: "Rall (1959) Passive Membrane Exact Linear Superposition (Coincidence-Detection Null Model)"
+    formula: "V_{k+1} = a V_k + b I_k, V_0 = 0  =>  V[I_a + I_b](k) = V[I_a](k) + V[I_b](k)  and  V[2 I](k) = 2 V[I](k)  (passive paired/single peak gain = 2 exactly)"
+    lean_decl: "MathOfBiology.Loop_058.lin_rc_traj"
+    lean_theorem: "MathOfBiology.Loop_058.rall_passive_membrane_linear_superposition"
+    lean_locus: "morphoeval/lean/loops/Loop_058_cajal_dendritic_wiring.lean#L163-L182"
+    lean_code: |
+      def lin_rc_step (a b V I : Int) : Int := a * V + b * I
+      def lin_rc_traj (a b : Int) (I : Nat → Int) : Nat → Int
+        | 0 => 0
+        | k + 1 => lin_rc_step a b (lin_rc_traj a b I k) (I k)
+      theorem rall_passive_membrane_linear_superposition
+          (a b : Int) (Ia Ib : Nat → Int) (k : Nat) :
+          lin_rc_traj a b (fun n => Ia n + Ib n) k =
+            lin_rc_traj a b Ia k + lin_rc_traj a b Ib k ∧
+          lin_rc_traj a b (fun n => 2 * Ia n) k = 2 * lin_rc_traj a b Ia k
+    variables: "V_k: hotspot membrane potential from rest at forward-Euler step k; I_k: attenuated alpha-function synaptic current; a = 1 - dt (g_L + g_K w_rest)/C, b = dt/C: discrete passive RC coefficients (scaled integers); I_a, I_b: the two tip-pair synaptic current trains"
+    role: "Establishes the exact linear null model (superposition ratio 1, identical-input gain 2) for the passive Rall cable ablation (g_Ca = 0, K+ gate frozen) of the Morris-Lecar Ca2+ hotspot; the measured active supralinear gain (> 2) and coincidence window are deviations from this theorem, so coincidence detection is attributable to the regenerative g_Ca term alone"
+    source_citation: "Rall (1959) Exp. Neurol. 1(5):491-527 (passive cable linearity); Morris & Lecar (1981) Biophys. J. 35:193-213 (active hotspot); Polsky, Mel & Schiller (2004) Nat. Neurosci. 7:621-627 (within-branch supralinear vs between-branch linear summation)"
+    code_locus: "2007-caleo-cajal-dendritic-wiring.py#L425-L463"
+
+  - id: caleo-cajal-dendritic-wiring-5
+    law_name: "Koch (1999) / Rall (1959) Sinusoidal Steady-State Length-Constant Bound"
+    formula: "lambda_DC(d) = sqrt(R_m d / (4 R_i));  lambda_f = lambda_DC sqrt(2 / (1 + s)), s = sqrt(1 + (2 pi f tau_m)^2) >= 1;  (1 + s) lambda_f^2 = 2 lambda_DC^2  =>  lambda_f^2 <= lambda_DC^2 (equality iff s = 1);  X_e = l_e / lambda_f(d_e)"
+    lean_decl: "MathOfBiology.Loop_058.koch_ac_length_relation"
+    lean_theorem: "MathOfBiology.Loop_058.koch_ac_length_constant_bound"
+    lean_locus: "morphoeval/lean/loops/Loop_058_cajal_dendritic_wiring.lean#L197-L214"
+    lean_code: |
+      def koch_ac_length_relation (s lf2 ld2 : Int) : Prop := (1 + s) * lf2 = 2 * ld2
+      theorem koch_ac_length_constant_bound
+          (s lf2 ld2 : Int) (hs : 1 ≤ s) (hlf : 0 ≤ lf2)
+          (hrel : koch_ac_length_relation s lf2 ld2) :
+          lf2 ≤ ld2 ∧ (s = 1 → lf2 = ld2)
+    variables: "lambda_DC: Rall DC length constant of a cylinder of diameter d (R_m membrane resistivity, R_i axial resistivity); lambda_f: sinusoidal steady-state length constant at synaptic frequency f; tau_m = R_m C_m; s = sqrt(1 + (omega tau_m)^2); lf2 = lambda_f^2, ld2 = lambda_DC^2 (scaled integers); X_e: electrotonic edge length of Rall-3/2 segment e"
+    role: "Guarantees that the electrotonic distances X_e = l_e / lambda_f(d_e) accumulated along the Cuntz tree (tip -> LCA hotspot -> soma) are never shorter than their DC values, so passive synaptic attenuation exp(-X) at the alpha-synapse frequency is at least as strong as at DC and the AC/DC ratio lambda_f/lambda_DC = 0.2487 reported by the script is bounded by 1"
+    source_citation: "Rall (1959) Exp. Neurol. 1(5):491-527 Eq. 2; Koch (1999) Biophysics of Computation, Oxford Univ. Press, Ch. 2 Eq. 2.37; Roth & Häusser (2001) J. Physiol. 535(2):445-472 Table 2 (Purkinje R_m, R_i, C_m)"
+    code_locus: "2007-caleo-cajal-dendritic-wiring.py#L352-L390"

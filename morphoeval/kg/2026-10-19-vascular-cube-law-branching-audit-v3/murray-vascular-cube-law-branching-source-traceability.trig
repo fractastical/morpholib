@@ -1,0 +1,102 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-murray-vascular-cube-law-branching> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-murray-vascular-cube-law-branching-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-murray-vascular-cube-law-branching-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Murray (1926a, 1926b), Zamir (1976) & Sherman (1981) minimum-work vascular cube law & arterial branching angles — Source and data traceability: 88/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`datasets/vascular_cube_law_branching/` vendors the reference JSON, the CC BY 4.0 specimen, `paper_citations.bib` (now 7 entries, L1-77), `scout_manifest.json`, the new `fahraeus_lindqvist_retinal_cup_reference.json` (Pries 1992 coefficients, parity table, generalised stationarity formulas, cup geometry, DOI-verification flags) and a README with an explicit \"Caveats carried for audit\" section (L30-33); runtime SHA-256 verification of the specimen (`verify_dataset_integrity`, L93-114). Deductions: the three Pass 3 DOIs (Pries 1992, Fåhraeus & Lindqvist 1931, Hubbard 1999) were recalled offline and are flagged as unverified in the bib, JSON and script header (L17-20) (-4); Zamir, Medeiros & Cunningham (1979), the stated source of J01-J08, has no bib entry and no DOI, and the table has no page/figure pin (-4); the Sherman (1981) hierarchy (JSON L72-80) is generated from r_g = 82 um * 2^(-g/3) and the 82 um root radius is not pinned to a page (-2); `EXPECTED_SHA256` (L78-80) pins only the specimen JPG — neither reference JSON is hash-pinned (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:evidenceAgainst "1959-murray-vascular-cube-law-branching.py L17–L20: Header states the three Pass 3 DOIs were recalled, not verified online <https://github.com/fractastical/morpholib/blob/028758bc/1959-murray-vascular-cube-law-branching.py#L17-L20>",
+            "datasets/vascular_cube_law_branching/vascular_cube_law_branching_reference.json L72–L90: Sherman hierarchy generated (not digitised); J01-J08 'Zamir 1979' rows without page/figure provenance and with a Murray-prediction column <https://github.com/fractastical/morpholib/blob/028758bc/datasets/vascular_cube_law_branching/vascular_cube_law_branching_reference.json#L72-L90>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-murray-vascular-cube-law-branching-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-murray-vascular-cube-law-branching-source-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-murray-vascular-cube-law-branching-source-traceability-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-murray-vascular-cube-law-branching-source-traceability-4> ;
+        pk:hasScore "0.88"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-murray-vascular-cube-law-branching-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "1959-murray-vascular-cube-law-branching.py L78–L114" ;
+        dct:description "EXPECTED_SHA256 pins the specimen JPG only; verify_dataset_integrity loads both reference JSONs without hash checks" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/1959-murray-vascular-cube-law-branching.py#L78-L114> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-murray-vascular-cube-law-branching-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/vascular_cube_law_branching/paper_citations.bib L1–L77" ;
+        dct:description "7 bib entries incl. pries1992viscosity, fahraeus1931viscosity, hubbard1999retinal (DOIs flagged unverified); no Zamir 1979 entry" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/datasets/vascular_cube_law_branching/paper_citations.bib#L1-L77> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-murray-vascular-cube-law-branching-source-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "datasets/vascular_cube_law_branching/fahraeus_lindqvist_retinal_cup_reference.json L1–L69" ;
+        dct:description "Pries 1992 fit coefficients and parity table, generalised stationarity formulas, cup geometry and coupling rule, DOI-verification flags" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/datasets/vascular_cube_law_branching/fahraeus_lindqvist_retinal_cup_reference.json#L1-L69> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-murray-vascular-cube-law-branching-source-traceability-4> a pk:EvidenceItem ;
+        rdfs:label "datasets/vascular_cube_law_branching/README.md L30–L33" ;
+        dct:description "'Caveats carried for audit' discloses the prescribed J01-J08 table and the synthetic Sherman hierarchy" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/datasets/vascular_cube_law_branching/README.md#L30-L33> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Loop 052 Pass 3 Assessor; supersedes the Gemini 4 Argon v2 assessment)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0022-5193(76)90058-8>,
+            <https://doi.org/10.1016/S0161-6420(99)90525-0>,
+            <https://doi.org/10.1073/pnas.12.3.207>,
+            <https://doi.org/10.1085/jgp.78.4.431>,
+            <https://doi.org/10.1085/jgp.9.6.835>,
+            <https://doi.org/10.1152/ajpheart.1992.263.6.H1770>,
+            <https://doi.org/10.1152/ajplegacy.1931.96.3.562> .
+    <https://doi.org/10.1016/0022-5193(76)90058-8> dct:date "1976"^^xsd:gYear ;
+        dct:title "Optimality principles in arterial branching" .
+    <https://doi.org/10.1016/S0161-6420(99)90525-0> dct:date "1999"^^xsd:gYear ;
+        dct:title "Methods for evaluation of retinal microvascular abnormalities associated with hypertension/sclerosis in the Atherosclerosis Risk in Communities Study" .
+    <https://doi.org/10.1073/pnas.12.3.207> dct:date "1926"^^xsd:gYear ;
+        dct:title "The physiological principle of minimum work. I. The vascular system and the cost of blood volume" .
+    <https://doi.org/10.1085/jgp.78.4.431> dct:date "1981"^^xsd:gYear ;
+        dct:title "On connecting large vessels to small. The meaning of Murray's law" .
+    <https://doi.org/10.1085/jgp.9.6.835> dct:date "1926"^^xsd:gYear ;
+        dct:title "The physiological principle of minimum work applied to the angle of branching of arteries" .
+    <https://doi.org/10.1152/ajpheart.1992.263.6.H1770> dct:date "1992"^^xsd:gYear ;
+        dct:title "Blood viscosity in tube flow: dependence on diameter and hematocrit" .
+    <https://doi.org/10.1152/ajplegacy.1931.96.3.562> dct:date "1931"^^xsd:gYear ;
+        dct:title "The viscosity of the blood in narrow capillary tubes" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Murray (1926a, 1926b), Zamir (1976) & Sherman (1981) minimum-work vascular cube law & arterial branching angles — Source and data traceability 88/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:24:02Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-murray-vascular-cube-law-branching-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

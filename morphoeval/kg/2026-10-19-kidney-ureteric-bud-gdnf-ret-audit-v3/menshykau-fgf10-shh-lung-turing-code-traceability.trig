@@ -1,0 +1,106 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-menshykau-fgf10-shh-lung-turing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-menshykau-fgf10-shh-lung-turing-code-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-menshykau-fgf10-shh-lung-turing-code-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Menshykau & Iber (2013), Zubkov et al. (2015) & Watanabe & Costantini (2004) kidney ureteric bud GDNF-RET-Wnt11 Turing branching morphogenesis with stromal BMP4/7-Gremlin1-FGF7 feedback and reduced-3D ampulla necking — Code-to-model traceability: 89/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The module docstring (L1-67) maps every section to its source equations and the Pass 3 additions name their functions, the Lean laws and the honesty control; the math-KG loop file registers Laws 4 and 5 with Lean declarations, variables, roles and `code_locus` line ranges (`menshykau-fgf10-shh-lung-turing.yaml`, L93-129); the Lean file's Law 4/5 headers state the Python function each theorem formalises (L159-205); `solve_ampulla_cap_imex` carries an explicit HONESTY NOTE about the seeded staircase (L342-346) and the removed hand-placed buds are documented in place (L756). Deductions: the calibration constants `gain_wt_ref`, `g_ref`, `size_jitter_sd` (L726-728), `R_TIP_WT_DEFAULT`, `TIP_RADIUS_SIGNAL_EXPONENT` (L102-103), the Gaussian amplitudes/widths (L774-789) and the saturating cubic (L403) are flagged as model choices but cite no derivation (-5); `compute_turing_phase_space` is dead code with a nonsensical `sigma_proxy` (L297-301) (-3); Lean Law 3 `tip_splitting_peaks` (L122) caps at m = 3 while the Python band map has a 4th polydomain band (-2); the math-KG `code_locus` ranges will drift as the script is edited (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:evidenceAgainst "2012-menshykau-fgf10-shh-lung-turing.py L297–L301: Dead sigma_proxy expression multiplies a term by 0.0; compute_turing_phase_space never called <https://github.com/fractastical/morpholib/blob/028758bc/2012-menshykau-fgf10-shh-lung-turing.py#L297-L301>",
+            "morphoeval/lean/loops/Loop_054_kidney_ureteric_bud_gdnf_ret.lean L122–L126: tip_splitting_peaks caps at 3 peaks; the m = 4 polydomain band has no Lean coverage <https://github.com/fractastical/morpholib/blob/028758bc/morphoeval/lean/loops/Loop_054_kidney_ureteric_bud_gdnf_ret.lean#L122-L126>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-code-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-code-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-code-traceability-3> ;
+        pk:hasScore "0.89"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-code-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2012-menshykau-fgf10-shh-lung-turing.py L1–L67" ;
+        dct:description "Module docstring mapping equations, papers, Pass 3 functions, Lean laws and the honesty control to code sections" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2012-menshykau-fgf10-shh-lung-turing.py#L1-L67> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-code-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/math_kg_loops/menshykau-fgf10-shh-lung-turing.yaml L93–L129" ;
+        dct:description "Equations -4 and -5 registered with Lean declarations and code_locus line ranges" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/morphoeval/math_kg_loops/menshykau-fgf10-shh-lung-turing.yaml#L93-L129> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-menshykau-fgf10-shh-lung-turing-code-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_054_kidney_ureteric_bud_gdnf_ret.lean L159–L205" ;
+        dct:description "Law 4 and Law 5 headers name the Python functions they formalise" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/morphoeval/lean/loops/Loop_054_kidney_ureteric_bud_gdnf_ret.lean#L159-L205> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Loop 054 Pass 3 Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/54> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/s11538-015-0073-9>,
+            <https://doi.org/10.1016/j.devcel.2004.12.004>,
+            <https://doi.org/10.1016/j.devcel.2014.02.017>,
+            <https://doi.org/10.1016/j.ydbio.2004.03.025>,
+            <https://doi.org/10.1038/nature07005>,
+            <https://doi.org/10.1088/1478-3975/10/4/046003>,
+            <https://doi.org/10.1172/JCI8256>,
+            <https://doi.org/10.1242/dev.01251>,
+            <https://doi.org/10.1242/dev.086207>,
+            <https://doi.org/10.1242/dev.126.3.547> .
+    <https://doi.org/10.1007/s11538-015-0073-9> dct:date "2015"^^xsd:gYear ;
+        dct:title "A spatially-averaged mathematical model of kidney branching morphogenesis" .
+    <https://doi.org/10.1016/j.devcel.2004.12.004> dct:date "2005"^^xsd:gYear ;
+        dct:title "Sprouty1 is a critical regulator of GDNF/RET-mediated kidney induction" .
+    <https://doi.org/10.1016/j.devcel.2014.02.017> dct:date "2014"^^xsd:gYear ;
+        dct:title "Global quantification of tissue dynamics in the developing mouse kidney" .
+    <https://doi.org/10.1016/j.ydbio.2004.03.025> dct:date "2004"^^xsd:gYear ;
+        dct:title "Real-time analysis of ureteric bud branching morphogenesis in vitro" .
+    <https://doi.org/10.1038/nature07005> dct:date "2008"^^xsd:gYear ;
+        dct:title "The branching programme of mouse lung development" .
+    <https://doi.org/10.1088/1478-3975/10/4/046003> dct:date "2013"^^xsd:gYear ;
+        dct:title "Kidney branching morphogenesis under the control of a ligand-receptor-based Turing mechanism" .
+    <https://doi.org/10.1172/JCI8256> dct:date "2000"^^xsd:gYear ;
+        dct:title "Bone morphogenetic protein 4 regulates the budding site and elongation of the mouse ureter" .
+    <https://doi.org/10.1242/dev.01251> dct:date "2004"^^xsd:gYear ;
+        dct:title "Gremlin-mediated BMP antagonism induces the epithelial-mesenchymal feedback signaling controlling metanephric kidney and limb organogenesis" .
+    <https://doi.org/10.1242/dev.086207> dct:date "2012"^^xsd:gYear ;
+        dct:title "Branch mode selection during early lung development" .
+    <https://doi.org/10.1242/dev.126.3.547> dct:date "1999"^^xsd:gYear ;
+        dct:title "FGF-7 modulates ureteric bud growth and nephron number in the developing kidney" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Menshykau & Iber (2013), Zubkov et al. (2015) & Watanabe & Costantini (2004) kidney ureteric bud GDNF-RET-Wnt11 Turing branching morphogenesis with stromal BMP4/7-Gremlin1-FGF7 feedback and reduced-3D ampulla necking — Code-to-model traceability 89/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:28:24Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-menshykau-fgf10-shh-lung-turing-code-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/54> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

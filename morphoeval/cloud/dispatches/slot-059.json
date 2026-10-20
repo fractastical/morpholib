@@ -13,5 +13,86 @@
   "pass2_score": 94.0,
   "lean_module": "morphoeval/lean/loops/Loop_059_tracheal_viscous_fingering.lean",
   "math_kg": "morphoeval/math_kg_loops/sugimura-tracheal-viscous-fingering.yaml",
-  "delta": 40.0
+  "delta": 40.0,
+  "pass3_run_id": "2026-10-19-tracheal-viscous-fingering-loop-pass3",
+  "pass3_phase_a_status": "remediated",
+  "pass3_phase_a_completed_at": "2026-10-20T16:45:00Z",
+  "pass3_audit": "morphoeval/audits/2026-10-19-tracheal-viscous-fingering-audit-v3.yaml",
+  "pass3_remediation_items_closed": [
+    "3D ellipsoidal pleural cavity tree with orthogonal bifurcations and pleura-contact arrest (simulate_3d_pleural_cavity_lung_tree)",
+    "Spatially resolved CFTR chloride secretion + Hagen-Poiseuille luminal pressure network (solve_tree_luminal_pressure)",
+    "Laryngeal valve opening/closing (FBM) cycles with duty-cycle sweep (simulate_laryngeal_valve_cycles, evaluate_laryngeal_duty_cycle_sweep)"
+  ],
+  "pass3_residuals": [
+    "Pleural cavity is an analytic ellipsoid, not a stereolithographic STL chest mesh",
+    "CFTR secretion profile is a prescribed proximal-to-distal geometric gradient, not a transcript-map-derived field"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_059.poiseuille_tree_pressure_accumulation",
+    "MathOfBiology.Loop_059.laryngeal_valve_duty_cycle_monotonicity"
+  ],
+  "pass3_new_media": [
+    "docs/media/tracheal_viscous_fingering_pleural_cavity_3d.png"
+  ],
+  "pass3_new_datasets": [
+    "datasets/tracheal_viscous_fingering/pleural_cavity_valve_reference.json"
+  ],
+  "pass3_handoff_note": "/tmp/pass3/handoff/slot-059.md",
+  "pass3_audit_id": "2026-10-19-tracheal-viscous-fingering-audit-v3",
+  "pass3_score": 90.9,
+  "pass3_dims": {
+    "model-fidelity": 91,
+    "specimen-match": 90,
+    "parameter-expressivity": 94,
+    "morphometric-validation": 88,
+    "source-traceability": 89,
+    "code-traceability": 91,
+    "repro-package": 95
+  },
+  "pass3_completed_at": "2026-10-20T17:39:22Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_published": false,
+  "pass3_kg_dir": "morphoeval/kg/2026-10-19-tracheal-viscous-fingering-audit-v3",
+  "pass3_measurements": "morphoeval/audits/2026-10-19-tracheal-viscous-fingering-audit-v3.measurements.yaml",
+  "pass3_telemetry_png": "docs/media/tracheal_viscous_fingering_telemetry_pass3.png",
+  "pass3_remediation_closed": [
+    "v2 item 1 (3D stereolithographic pleural cavity + spatially resolved CFTR secretion + laryngeal valve cycles) closed as an honest reduced model: simulate_3d_pleural_cavity_lung_tree (L480-620, analytic ellipsoid + orthogonal bifurcations + pleura-contact arrest) with evaluate_pleural_cavity_ablation (L715-736); cftr_secretion_flux_per_area (L412-417) + solve_tree_luminal_pressure (L428-477) Poiseuille network; simulate_laryngeal_valve_cycles (L635-691) + evaluate_laryngeal_duty_cycle_sweep (L694-712)"
+  ],
+  "pass3_remediation_open": [
+    "2015-sugimura-tracheal-viscous-fingering.py:389-391 and 480-621 — the pleural cavity is an analytic ellipsoid (`CAVITY_SEMI_AXES`, `CAVITY_CENTER`) with no lobation or left-right asymmetry. Replace it with a lobated chest / pleural mesh (vendored STL or segmented microCT of an E12.5-E14.5 mouse thorax, SHA-256 pinned, with provenance) and grow left (1 lobe) / right (4 lobes) trees so that pleura-contact arrest is compared against a real geometry rather than against the solver's own unconfined ablation.",
+    "2015-sugimura-tracheal-viscous-fingering.py:495-499 and 600 — the 3D generation depth is inherited from the 0-D `simulate_buds_48h` and the per-tip Gamma(Delta P_tip) at L600 never feeds back into growth, so measurement 15 (3D tips = 2D tips) is a consistency check. Make tip-level branching emergent: advance each tip with its own Gamma(Delta P_tip) and let pleural contact / secretion gradient alter the tip count.",
+    "2015-sugimura-tracheal-viscous-fingering.py:393-394 and 412-417 — `J_CL_PROX/DIST` magnitudes and the geometric 6x gradient are order-of-magnitude model choices. Derive the CFTR/NKCC1 secretion field from a published proximal-distal expression map (digitised, with figure coordinates) and sweep the gradient ratio so that the \"intra-tree drop is negligible\" conclusion (measurement 14) is tested rather than assumed.",
+    "datasets/tracheal_viscous_fingering/tracheal_viscous_fingering_reference.json:46-55 and 2015-sugimura-tracheal-viscous-fingering.py:1082-1111, 1718-1722 — `empirical_morphometrics` (17 buds, 0.6885, 3.8470 px) are the script's own outputs, so specimen measurements 7-9 and self-test suite 7 compare the segmentation against itself. Replace with an independent manual count / annotation of the specimen (or a published bud count for the stage) with provenance, and drop the `*_pred` columns from the reference file.",
+    "datasets/tracheal_viscous_fingering/tracheal_viscous_fingering_reference.json and 2015-sugimura-tracheal-viscous-fingering.py:98-108 — the 8-point `*_obs` sweep columns have no figure/table digitisation provenance and the Hill constants were fitted to them, so measurements 1-3 (r ~ 0.9999) are self-referential. Digitise Nelson 2017 Figs. 1-3 (and Unbekandt 2008 occlusion data) with coordinates and error bars, record the digitisation in the JSON, and refit / report held-out error.",
+    "2015-sugimura-tracheal-viscous-fingering.py:573-580 — the comment cites a non-existent `calibrate_laryngeal_resistance` and `R_larynx` is back-solved so the tracheal inlet equals `p_lumen_pa`. Either implement the calibration (R_larynx fixed from the closed-glottis plateau and let Delta P_trachea emerge from Q_total / R_larynx) or correct the comment and state the boundary-condition nature in the docstring and math-KG.",
+    "2015-sugimura-tracheal-viscous-fingering.py:635-691 and 1763 — the FBM valve model transfers fetal-sheep in-utero physiology to a larynx-free explant claim, its time-averaged Delta P (154.3 Pa) misses the 200 Pa reference by 23 %, and the self-test accepts 100-280 Pa. Source a mouse / in-utero pressure trace or explicitly reclassify the measurement as a transfer prediction, tighten the tolerance, and expose the valve constants (`R_OPEN_OVER_R_CLOSED`, `FBM_PERIOD_MIN_DEFAULT`, `TAU_CLOSED_MIN`) to the CLI / a sweep.",
+    "datasets/tracheal_viscous_fingering/paper_citations.bib:47-92 and 2015-sugimura-tracheal-viscous-fingering.py:381 — verify the four new DOIs (olver1974, harding1986, harding1996, metzger2008) online and clear the `doi_verified_offline: false` flags; add a bib entry for McCray et al. 1992 or remove the comment citation.",
+    "2015-sugimura-tracheal-viscous-fingering.py:1219 and 1335-1342 — replace the hard-coded \"(4.71x)\" literal and the 1.18 / 1.00 `obs_vals_e` entries with values formatted from `controls` and read from `perturbation_controls` in the reference JSON; fix the Panel E legend overlap and give Panels G / GIF 3D pane an ellipsoid wireframe and lobe shading so the cavity is legible.",
+    "2015-sugimura-tracheal-viscous-fingering.py:1-11, morphoeval/cloud/dispatches/slot-059.json — the file name / slug (\"sugimura\", \"viscous fingering\"), the dispatch organism (Gallus gallus) and the campaign seed paper (Nelson 2015, 10.1242/dev.119123) do not describe the script (Mus musculus; Nelson 2017 / Kim 2015 / Unbekandt 2008; no Saffman-Taylor mathematics). Either add a genuine Hele-Shaw / Saffman-Taylor luminal fingering sub-model with a chick (Gallus gallus) specimen, or record the identity correction in the dispatch, README and math-KG so the claim boundary and the campaign metadata agree.",
+    "morphoeval/math_kg_loops/sugimura-tracheal-viscous-fingering.yaml:50, 72, 95 — the `code_locus` ranges for laws 1-3 (L120-L195, L140-L215, L150-L320) are stale against the current 1834-line script (equations at L153-225, 2D solver at L232-362); re-pin them, and strengthen the Lean module beyond Int-linear statements (e.g. prove the Jensen inequality direction for the convex-below-K_P Hill rate or the exact-exponential update's monotonicity) so the theorems speak to the ODE and the nonlinearity actually simulated."
+  ],
+  "pass3_lean_verified": true,
+  "pass3_self_test": "12/12 suites PASSED",
+  "pass3_artifacts": [
+    "2015-sugimura-tracheal-viscous-fingering.py",
+    "morphoeval/lean/loops/Loop_059_tracheal_viscous_fingering.lean",
+    "morphoeval/math_kg_loops/sugimura-tracheal-viscous-fingering.yaml",
+    "datasets/tracheal_viscous_fingering/pleural_cavity_valve_reference.json",
+    "datasets/tracheal_viscous_fingering/README.md",
+    "datasets/tracheal_viscous_fingering/paper_citations.bib",
+    "docs/media/tracheal_viscous_fingering_comparison.png",
+    "docs/media/tracheal_viscous_fingering_growth.gif",
+    "docs/media/tracheal_viscous_fingering_pleural_cavity_3d.png",
+    "docs/media/tracheal_viscous_fingering_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-tracheal-viscous-fingering-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-tracheal-viscous-fingering-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-tracheal-viscous-fingering-audit-v3/",
+    "morphoeval/runs/2026-10-19-tracheal-viscous-fingering-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-tracheal-viscous-fingering-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-tracheal-viscous-fingering-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-tracheal-viscous-fingering-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-tracheal-viscous-fingering-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-tracheal-viscous-fingering-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-059.json"
+  ]
 }

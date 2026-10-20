@@ -12,8 +12,20 @@ model_spec:
   f_ASM_max_per_min: 0.62
   K_ASM_Pa: 150.0
   seed: 2015
+  # Pass 3 additions
+  cavity_semi_axes_normalized_xyz: [0.50, 0.56, 0.34]
+  chest_length_scale_um: 1600.0
+  j_Cl_proximal_nL_min_um2: 2.0e-7
+  j_Cl_distal_nL_min_um2: 1.2e-6
+  lung_liquid_viscosity_Pa_s: 1.0e-3
+  closed_glottis_plateau_Pa: 250.0
+  R_open_over_R_closed: 0.25
+  fbm_open_duty_cycle: 0.40
+  fbm_period_min: 40.0
+  tau_closed_min: 6.0
   inputs:
     - datasets/tracheal_viscous_fingering/tracheal_viscous_fingering_reference.json
+    - datasets/tracheal_viscous_fingering/pleural_cavity_valve_reference.json
     - datasets/tracheal_viscous_fingering/embryonic_lung_branching_specimen.jpg
     - datasets/tracheal_viscous_fingering/scout_manifest.json
     - datasets/tracheal_viscous_fingering/paper_citations.bib
@@ -81,3 +93,45 @@ equations:
     role: "Explains why either tracheal intubation drainage (ΔP ≤ ΔP_c) or nifedipine Ca2+ channel blockade (α_ASM → 0) arrests embryonic lung branching into hypoplasia"
     source_citation: "Nelson et al. (2017) Development 144:4328-4335 Figs. 3-4; Kim et al. (2015) Dev. Cell 34:668-681; Unbekandt et al. (2008) Mech. Dev. 125:314-324"
     code_locus: "2015-sugimura-tracheal-viscous-fingering.py#L150-L320"
+
+  - law_name: "Poiseuille Airway-Tree Luminal Pressure Accumulation Law (Pass 3)"
+    formula: "Q_i = Σ_{j∈subtree(i)} j_Cl(g_j)·2πr_jL_j,  R_i = 8μL_i/(πr_i⁴),  P_node = P_amn + R_larynx Q_tot + Σ_path R_i Q_i  ⇒  (∀ i: R_i Q_i ≥ 0) ⟹ ΔP(tip) ≥ ΔP(trachea)"
+    lean_decl: "MathOfBiology.Loop_059.pressure_along_path"
+    lean_theorem: "MathOfBiology.Loop_059.poiseuille_tree_pressure_accumulation"
+    lean_locus: "morphoeval/lean/loops/Loop_059_tracheal_viscous_fingering.lean#L138-L164"
+    lean_code: |
+      def pressure_along_path : Int → List Int → Int
+        | P, [] => P
+        | P, d :: ds => pressure_along_path (P + d) ds
+      theorem poiseuille_tree_pressure_accumulation
+          (P_trachea P_pleura : Int) (drops : List Int)
+          (h_nonneg : ∀ d, d ∈ drops → 0 ≤ d) :
+          P_trachea ≤ pressure_along_path P_trachea drops ∧
+          P_trachea - P_pleura ≤ pressure_along_path P_trachea drops - P_pleura
+    variables: "j_Cl(g): CFTR/NKCC1 chloride-driven secretion per unit epithelial area at generation g (nL/min/μm²); r_i, L_i: segment radius and length (μm); μ: lung-liquid viscosity (Pa·s); R_larynx: laryngeal outflow resistance; P_amn: amniotic pressure"
+    role: "Spatially resolves luminal pressure on the 3D bronchial tree with distributed secretion sources; proves the distal tip transmural pressure is never below the tracheal one and that intra-tree drops are non-negative (numerically < 0.01% of ΔP, validating the uniform-ΔP assumption of the 2D solver)"
+    source_citation: "Olver & Strang (1974) J. Physiol. 241:327-357 (chloride-driven lung-liquid secretion); Harding, Bocking & Sigger (1986) J. Appl. Physiol. 60:160-165 (upper-airway resistance dominates); Metzger et al. (2008) Nature 453:745-750 (orthogonal bifurcation)"
+    code_locus: "2015-sugimura-tracheal-viscous-fingering.py#L365-L628"
+
+  - law_name: "Laryngeal Valve Duty-Cycle Monotonicity Law (Pass 3)"
+    formula: "C dP/dt = Q − (P − P_amn)/R_larynx(t),  R_larynx ∈ {R_closed, R_open},  P_open = P_amn + Q R_open < P_closed = P_amn + Q R_closed  ⇒  d₁ < d₂ ⟹ d₂P_open + (D−d₂)P_closed < d₁P_open + (D−d₁)P_closed"
+    lean_decl: "MathOfBiology.Loop_059.valve_cycle_integrated_pressure"
+    lean_theorem: "MathOfBiology.Loop_059.laryngeal_valve_duty_cycle_monotonicity"
+    lean_locus: "morphoeval/lean/loops/Loop_059_tracheal_viscous_fingering.lean#L179-L216"
+    lean_code: |
+      def valve_steady_pressure (P_amn Q R : Int) : Int :=
+        P_amn + Q * R
+      def valve_cycle_integrated_pressure (P_open P_closed d D : Int) : Int :=
+        d * P_open + (D - d) * P_closed
+      theorem laryngeal_valve_duty_cycle_monotonicity
+          (P_amn Q R_open R_closed d1 d2 D : Int)
+          (hQ : 0 < Q) (hR : R_open < R_closed) (hd : d1 < d2) :
+          valve_steady_pressure P_amn Q R_open < valve_steady_pressure P_amn Q R_closed ∧
+          valve_cycle_integrated_pressure (valve_steady_pressure P_amn Q R_open)
+              (valve_steady_pressure P_amn Q R_closed) d2 D <
+            valve_cycle_integrated_pressure (valve_steady_pressure P_amn Q R_open)
+              (valve_steady_pressure P_amn Q R_closed) d1 D
+    variables: "Q: luminal secretion rate; R_closed / R_open: laryngeal resistance with glottis adducted / during fetal breathing-movement episodes; d: open duty (out of D); P_amn: amniotic pressure; C: lung compliance"
+    role: "Explains tracheal occlusion hyperplasia (d = 0 maximises time-integrated ΔP) versus drainage / permanently open larynx hypoplasia (d = 1 minimises it); the Hill nonlinearity of Γ_branch yields a Jensen gap between time-averaged and mean-pressure branching"
+    source_citation: "Harding & Hooper (1996) J. Appl. Physiol. 81:209-224; Harding, Bocking & Sigger (1986) J. Appl. Physiol. 60:160-165; Unbekandt et al. (2008) Mech. Dev. 125:314-324; Nelson et al. (2017) Development 144:4328-4335"
+    code_locus: "2015-sugimura-tracheal-viscous-fingering.py#L630-L720"

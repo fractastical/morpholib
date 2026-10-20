@@ -1,0 +1,49 @@
+{
+  "schema_version": "morphoeval-reference-1.0",
+  "dataset_id": "epithelial_buckling_3d",
+  "table_id": "scutoid_tube_reference",
+  "added_in": "Pass 3 (2026-10-19-epithelial-buckling-3d-audit-v3)",
+  "title": "Gómez-Gálvez et al. (2018) scutoid packing on curved epithelial tubes — reference identities and Hannezo-coupled fold-crest geometry",
+  "primary_paper": {
+    "citation_key": "gomezgalvez2018scutoids",
+    "authors": "Gómez-Gálvez P, Vicente-Munuera P, Tagua A, Forja C, Castro AM, Letrán M, Valencia-Expósito A, Grima C, Bermúdez-Gallardo M, Serrano-Pérez-Higueras Ó, Cavodeassi F, Sotillos S, Martín-Bermudo MD, Márquez A, Buceta J, Escudero LM",
+    "year": 2018,
+    "title": "Scutoids are a geometrical solution to three-dimensional packing of epithelia",
+    "venue": "Nature Communications 9:2960",
+    "doi": "10.1038/s41467-018-05376-1",
+    "doi_verification": "Not re-resolved online in Pass 3 (offline round); DOI matches the entry already vendored by Slot 029 (morphoeval/kg/2026-10-19-somitoid-chirality-buckling-audit-v3)."
+  },
+  "model_description": {
+    "voronoi_tube": "Cell seeds on the unrolled apical cylinder (circumference 2*pi*R_a, doubly periodic) are tessellated by a periodic Voronoi diagram; the same seeds are projected radially to the basal cylinder R_b, where the circumferential coordinate scales by the surface ratio s = R_b / R_a, and tessellated again. A cell whose apical and basal neighbour sets differ is a scutoid (its lateral face carries an apico-basal vertex / neighbour intercalation).",
+    "coupling_to_hannezo": "h_0 and d_0 of the tube cells come from Hannezo, Prost & Joanny (2014) Law 1 (h_0/d_0 = c*Gamma_l/[4(Gamma_a+Gamma_b)], V_0 conserved); for a tube with apical lumen R_b = R_a + h_0, for a villus-like basal lumen R_b = R_a - h_0. For buckled sheets the local surface ratio at a fold crest is s_crest = 1 + h_0 * kappa_max with kappa_max the maximal apico-basal curvature of the relaxed sheet w(x, y).",
+    "seed_generation": "Hexagonal lattice of spacing ~d_0 jittered by 0.28 d_0 (Gaussian), followed by 2 Lloyd (centroidal) iterations on the periodic domain; three RNG replicates per sweep point.",
+    "parameter_status": "All numerical values below are either exact geometric identities or quantities derived from the already-pinned epithelial_buckling_3d_reference.json (WT amplitude, wavelength, h_0). None is a digitised value from the Gómez-Gálvez figures; the paper is used for the mechanism (scutoid number increases monotonically with surface ratio, none at s = 1, scutoids reduce the lateral-energy of the packing relative to frusta)."
+  },
+  "geometric_identities": {
+    "scutoid_fraction_at_unity": 0.0,
+    "scutoid_fraction_at_unity_note": "s = 1 is an isometry of the seed set, so apical and basal Voronoi diagrams coincide (Lean Law 4 `isometric_projection_has_no_scutoids`).",
+    "scutoid_fraction_monotone_spearman_ref": 1.0,
+    "scutoid_fraction_monotone_note": "Gómez-Gálvez et al. (2018) Fig. 2: the number of scutoids in Voronoi tubes increases with the surface ratio; the reference is perfect rank monotonicity.",
+    "euler_mean_neighbors": 6.0,
+    "euler_mean_neighbors_note": "Trivalent tessellation of a torus: 3V = 2E and V - E + F = 0 imply 2E = 6F on both the apical and the basal surface (Lean Law 5 `trivalent_torus_neighbor_conservation`).",
+    "lateral_area_ratio_bound": 1.0,
+    "lateral_area_ratio_note": "Ratio of total lateral face area of the scutoid tessellation to the intercalation-free frustum tessellation (projected apical polygons); values < 1 mean the intercalation lowers the Gamma_l-weighted lateral energy, consistent with the energy argument of Gómez-Gálvez et al. (2018) Fig. 5."
+  },
+  "surface_ratio_sweep": [1.0, 1.1, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 4.0, 6.0, 10.0],
+  "tube_defaults": {
+    "R_apical_um": 20.0,
+    "seed_jitter_d0": 0.28,
+    "lloyd_iterations": 2,
+    "replicates_per_sweep_point": 3
+  },
+  "wild_type_fold_crest": {
+    "source_rows": "epithelial_buckling_3d_reference.json: perturbation_experiments.wild_type_columnar_folds (fold_amplitude_ref_um = 42.5) and comparative_epithelial_tissues.mouse_small_intestine_columnar_villi (lambda_obs_um = 136.4, h0_obs_um = 28.9)",
+    "amplitude_peak_to_peak_um": 42.5,
+    "wavelength_um": 136.4,
+    "h0_um": 28.9,
+    "kappa_sinusoidal_inv_um": 0.045088,
+    "kappa_sinusoidal_formula": "kappa = (A/2) * (2*pi/lambda)^2",
+    "surface_ratio_sinusoidal_ref": 2.3030,
+    "surface_ratio_formula": "s_crest = 1 + h_0 * kappa"
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "dataset_id": "streichan-global-morphogenetic-flow-intercalation-geometry-v1",
+    "title": "Pass 3 reference table: prolate-spheroid blastoderm geometry, strain-rate-dependent Myosin-II recruitment, and cell-intercalation (T1 / rosette) topology for Drosophila germband extension",
+    "added_in": "2026-10-19-global-morphogenetic-flow-audit-v3 (Pass 3 remediation of Slot 048)",
+    "note": "Values marked verified_offline=false were entered from the assessor's recollection of the cited papers and could not be checked against the DOI landing pages during the offline Pass 3 loop; treat them as approximate anchors, not digitised data. Values under *_parameters are modelling choices of 2018-streichan-global-morphogenetic-flow.py, not measurements.",
+    "sources": [
+      {
+        "id": "lefebvre2023",
+        "citation": "Lefebvre MF, Claussen NH, Mitchell NP, Gustafson HJ, Streichan SJ (2023). Geometric control of myosin II orientation during axis elongation. eLife 12:e78787.",
+        "doi": "10.7554/eLife.78787"
+      },
+      {
+        "id": "brauns2024",
+        "citation": "Brauns F, Claussen NH, Lefebvre MF, Wieschaus EF, Shraiman BI (2024). The geometric basis of epithelial convergent extension. eLife 13:RP95521.",
+        "doi": "10.7554/eLife.95521"
+      },
+      {
+        "id": "bertet2004",
+        "citation": "Bertet C, Sulak L, Lecuit T (2004). Myosin-dependent junction remodelling controls planar cell intercalation and axis elongation. Nature 429(6992):667-671.",
+        "doi": "10.1038/nature02590"
+      },
+      {
+        "id": "blankenship2006",
+        "citation": "Blankenship JT, Backovic ST, Sanny JSP, Weitz O, Zallen JA (2006). Multicellular rosette formation links planar cell polarity to tissue morphogenesis. Developmental Cell 11(4):459-470.",
+        "doi": "10.1016/j.devcel.2006.09.007"
+      }
+    ]
+  },
+  "prolate_spheroid_surface_geometry": {
+    "semi_axis_ap_a_um": 250.0,
+    "semi_axis_dv_b_um": 105.0,
+    "embryo_length_um": 500.0,
+    "embryo_width_um": 210.0,
+    "equatorial_circumference_um": 659.73,
+    "embedding": "X(s, phi) = (a cos s, b sin s cos phi, b sin s sin phi), s in (0, pi) polar angle from the anterior pole, phi azimuth with phi = 0 on the ventral midline",
+    "metric": "g_ss = a^2 sin^2 s + b^2 cos^2 s,  g_phiphi = b^2 sin^2 s,  g_sphi = 0,  dA = sqrt(g_ss g_phiphi) ds dphi",
+    "gaussian_curvature": "K(s) = a^2 / g_ss(s)^2;  K_equator = 1/a^2 = 1.60e-5 um^-2,  K_pole = a^2/b^4 = 5.14e-4 um^-2,  K_pole/K_equator = (a/b)^4 = 32.14",
+    "vitelline_friction_xi_over_eta_um^-2": 3.086e-5,
+    "cartographic_lift": "the Pass 2 flat patterns are sampled on the surface with x = a(1 - cos s) (axial coordinate, 0..500 um) and y = b sin s * phi (geodesic DV arc from the ventral midline, wrapped into the flat model's periodic [-210, 210] um)",
+    "note": "The Pass 2 cartographic domain used L_DV = 420 um as 'circumference'; the geometric circumference of a 210 um wide circular cross-section is 2*pi*105 = 659.7 um. The Pass 3 curved solver uses the geometric metric and excludes 20 um radius pole caps (v = 0 there)."
+  },
+  "surface_stokes_brinkman": {
+    "operator": "-eta*Delta_B v^a - eta_b*nabla^a(nabla_b v^b) - eta*K*v^a + xi*v^a = nabla_b sigma_a^{ab}   (Bochner Laplacian Delta_B, Gaussian curvature K from the Ricci identity nabla_b nabla^a v^b = nabla^a nabla_b v^b + K v^a)",
+    "dissipation_functional": "J[v] = int dA [ eta e_ab e^ab + 1/2 (eta_b - eta) (e^a_a)^2 + 1/2 xi g_ab v^a v^b + sigma_a^{ab} e_ab ],  e_ab = 1/2 (e_a . d_b v + e_b . d_a v) with the embedded tangent basis e_a = d_a X (exact covariant strain of a tangent field; no Christoffel symbols needed)",
+    "kernel_without_friction": "Killing fields of the prolate spheroid: rigid rotation v^phi = const (zero viscous dissipation); friction xi > 0 removes it",
+    "analytic_check_on_sphere": "for v = grad(psi) with Delta psi = -l(l+1)/R^2 psi the operator acts as the scalar (eta + eta_b) l(l+1)/R^2 - 2*eta/R^2 + xi (Weitzenboeck identity Delta_B grad psi = grad Delta psi + K grad psi); Lean Theorem 4 surface_stokes_brinkman_gradient_mode_pos proves this eigenvalue is >= xi > 0 for l >= 1",
+    "sphere_check_parameters": {
+      "R_um": 105.0,
+      "l_mode": 2,
+      "grid_n_s": 56,
+      "grid_n_phi": 48,
+      "expected_order_of_convergence": 2,
+      "note": "pointwise relative L2 residual of the discrete operator on interior nodes; 2nd-order central differences => residual ~ h^2"
+    },
+    "solver_parameters": {
+      "grid_n_s": 56,
+      "grid_n_phi": 48,
+      "cap_radius_um": 20.0,
+      "eta": 1.0,
+      "eta_b_over_eta": 1.5,
+      "ell_H_um": 180.0,
+      "alpha_iso": 1.0,
+      "alpha_aniso": 1.85,
+      "director": "e_phi_hat (DV cables run along circles of latitude), Q_phiphi = +1/2, Q_ss = -1/2",
+      "velocity_calibration": "single scale factor fixing the WT peak |V_s| at m = m_0 to 6.40 um/min (Streichan et al. 2018 Figs. 2-3)"
+    }
+  },
+  "strain_rate_dependent_myosin_recruitment": {
+    "model": "m_{n+1}(x) = m_0(x) * (1 + beta_fb * max(0, -e_nn[m_n](x)) / e_ref),  e_nn = strain rate along the junctional director (e_phiphi for DV cables; negative = contraction), iterated to the fixed point",
+    "beta_fb": 0.35,
+    "e_ref_per_min": 0.06,
+    "feedback_iterations": 12,
+    "fixed_point": "linearised at one node: m* = m_0 / (1 - g) for loop gain g = beta_fb * |e_nn| / (e_ref) per unit m_0 < 1; g >= 1 has no bounded fixed point (run-away recruitment); Lean Theorem 5 myosin_feedback_fixed_point",
+    "source": "Lefebvre et al. (2023) eLife 12:e78787 (strain-rate / tension dependent recruitment and geometric control of the director); reduced linear-feedback form chosen here, coefficients are modelling assumptions",
+    "verified_offline": false
+  },
+  "cell_intercalation_topology": {
+    "t1_transition": "DV-oriented (vertical) junction shared by an anterior and a posterior cell shrinks to zero length; the dorsal and ventral cells gain a new AP-oriented junction (Bertet et al. 2004 Fig. 1)",
+    "rosette": "k >= 2 consecutive DV-oriented junctions of a multicellular myosin cable (k + 1 trivalent vertices) collapse into a single vertex of order r = k + 3 cells (5-11 cells observed, Blankenship et al. 2006); resolution creates r - 3 = k new AP-oriented junctions joining r - 2 = k + 1 trivalent vertices (a tree), so the junction count is conserved (Lean Theorem 6 rosette_resolution_junction_balance)",
+    "rosette_order_range_cells": [5, 11],
+    "rosette_order_range_source": "Blankenship et al. (2006) Dev Cell 11:459-470",
+    "junction_shrink_time_min_range": [5.0, 10.0],
+    "junction_shrink_time_source": "Bertet et al. (2004) Nature 429:667-671 (time-lapse of vertical junction shrinkage; approximate)",
+    "intercalation_share_of_fast_phase_extension": 0.65,
+    "intercalation_share_range": [0.5, 0.8],
+    "intercalation_share_source": "Brauns et al. (2024) eLife 13:RP95521 tension-isogonal decomposition: cell rearrangement (T1/rosette) carries the majority of wild-type germband extension, cell-shape (isogonal) deformation the remainder; midpoint of the approximate range, not a digitised value",
+    "verified_offline": false,
+    "ledger_parameters": {
+      "lattice_rows_dv": 10,
+      "lattice_cols_ap": 24,
+      "trunk_x_range_um": [145.0, 345.0],
+      "trunk_y_range_um": [-130.0, -25.0],
+      "ell_crit_over_ell0": 0.15,
+      "k_shrink_per_min_at_saturation": 0.42,
+      "myosin_hill_half_m_half": 0.7,
+      "myosin_hill_n": 8,
+      "k_grow_per_min": 0.35,
+      "tau_rosette_min": 2.0,
+      "feedback_beta": 0.35,
+      "feedback_e_ref_per_min": 0.06,
+      "dt_min": 0.25,
+      "duration_min": 30.0,
+      "seed": 2018,
+      "note": "k_shrink = 0.42/min gives ln(1/0.15)/0.42 = 4.5 min for a saturated junction; the Hill switch (m_half = 0.7, n = 8) restricts shrinkage to Myosin-II-enriched junctions so that the median shrink time falls inside the 5-10 min Bertet et al. (2004) window and the intercalation share inside the Brauns et al. (2024) 0.5-0.8 range; these two targets were used to pick (k_shrink, m_half, n) and are therefore calibrated, not predicted"
+    }
+  }
+}

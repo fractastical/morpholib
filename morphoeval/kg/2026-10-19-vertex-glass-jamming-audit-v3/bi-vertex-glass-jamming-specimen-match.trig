@@ -1,0 +1,87 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-bi-vertex-glass-jamming> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-bi-vertex-glass-jamming-specimen-match> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-bi-vertex-glass-jamming-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Bi et al. (2015), Park et al. (2015) & Bi et al. (2016) zero-temperature shape-index unjamming, asthmatic bronchial epithelial rigidity transition and self-propelled Voronoi motility-driven glass transition — Morphological realism / specimen match: 88/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credits: Panel A5 overlays N = 101 segmented polygons on the SHA-256-locked human monolayer micrograph with per-cell jammed/unjammed colouring (L1316-1330); Panel B5 matches the Atia (2018) k-Gamma shape distribution (r = 0.933); the new SPV snapshots C1/C2 (L1485-1522) show, at the same p_0 = 3.70, a caged glassy packing with short displacement trails versus a motility-unjammed fluid with long trails and elongated red cells, and Panel C4 reproduces the qualitative Bi (2016) Fig. 1(a) layout (solid lower-left, boundary meeting the p_0 axis near 3.81-3.85); the GIF's new fourth panel animates SPV polarity vectors. Deductions: the specimen is a human corneal endothelium (dataset JSON source_url), not the bronchial epithelium of the biological claim (-6); no side-by-side with a Bi (2016) figure crop or an HBEC micrograph from Park (2015) (-3); the SPV snapshot trails cross periodic boundaries and the polarity arrows are small at the 150 dpi panel size (-2); A1-A4 remain the phenomenological renders (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:evidenceAgainst "datasets/vertex_glass_jamming/vertex_glass_jamming_reference.json L33–L42: Specimen provenance: Wikimedia 'Morphology of human corneal endothelium in situ' — corneal endothelium, not bronchial epithelium (deduction) <https://github.com/fractastical/morpholib/blob/7e4f207/datasets/vertex_glass_jamming/vertex_glass_jamming_reference.json#L33-L42>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-bi-vertex-glass-jamming-specimen-match-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-bi-vertex-glass-jamming-specimen-match-2> ;
+        pk:hasScore "0.88"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bi-vertex-glass-jamming-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "docs/media/vertex_glass_jamming_comparison.png (generated output)" ;
+        dct:description "15-panel figure: A5 specimen overlay, B5 k-Gamma match, C1/C2 SPV glassy vs motility-unjammed snapshots at equal p0, C4 (p0, v0) glass map with boundary and Bi 2016 anchor star — docs/media/vertex_glass_jamming_comparison.png: rendered output of 2015-bi-vertex-glass-jamming.py at 7e4f207, image/png, 1732129 B, 3075×1950 px, artifact_sha256 6a5f0e91d8d909aeb16fa43c8d4fdc90f3abcf274beabe497959c412b909893b (sha256 6a5f0e91d8d909aeb16fa43c8d4fdc90f3abcf274beabe497959c412b909893b), spec_fingerprint 52abc2dcaa2857a7c9b54a7d8ac8d7ebb1e0481dc0dc957ca72fa6bc9190d466" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-bi-vertex-glass-jamming-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "2015-bi-vertex-glass-jamming.py L1485–L1522" ;
+        dct:description "SPV snapshot renderer: polygons coloured by q, unwrapped net-displacement trails and polarity quiver" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/7e4f207/2015-bi-vertex-glass-jamming.py#L1485-L1522> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary assessor, Pass 3 remediation round)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/nmat4357>,
+            <https://doi.org/10.1038/nphys3471>,
+            <https://doi.org/10.1038/s41567-018-0089-9>,
+            <https://doi.org/10.1103/PhysRevLett.97.170201>,
+            <https://doi.org/10.1103/PhysRevX.6.021011>,
+            <https://doi.org/10.1140/epje/i2010-10677-0> .
+    <https://doi.org/10.1038/nmat4357> dct:date "2015"^^xsd:gYear ;
+        dct:title "Unjamming and cell shape in the asthmatic airway epithelium" .
+    <https://doi.org/10.1038/nphys3471> dct:date "2015"^^xsd:gYear ;
+        dct:title "A density-independent rigidity transition in biological tissues" .
+    <https://doi.org/10.1038/s41567-018-0089-9> dct:date "2018"^^xsd:gYear ;
+        dct:title "Geometric constraints during epithelial jamming" .
+    <https://doi.org/10.1103/PhysRevLett.97.170201> dct:date "2006"^^xsd:gYear ;
+        dct:title "Structural relaxation made simple" .
+    <https://doi.org/10.1103/PhysRevX.6.021011> dct:date "2016"^^xsd:gYear ;
+        dct:title "Motility-driven glass and jamming transitions in biological tissues" .
+    <https://doi.org/10.1140/epje/i2010-10677-0> dct:date "2010"^^xsd:gYear ;
+        dct:title "Mechanics and remodelling of cell packings in epithelia" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Bi et al. (2015), Park et al. (2015) & Bi et al. (2016) zero-temperature shape-index unjamming, asthmatic bronchial epithelial rigidity transition and self-propelled Voronoi motility-driven glass transition — Morphological realism / specimen match 88/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:12:15Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-bi-vertex-glass-jamming-specimen-match> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

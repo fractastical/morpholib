@@ -1,0 +1,96 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-metzger-lung-stereotyped-branching> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Metzger et al. (2008) & Menshykau et al. (2012, 2014) mouse lung stereotyped branching modes (Domain D, Planar P, Orthogonal O), FGF10-SHH-Ptch1 Turing mode selection, pleura-confined diffuse-domain FGF10 cavity and stochastic postnatal septation — Reproducibility package: 93/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`--self-test` passes in ~4.4 s with 8 blocks (L1896-2004): SHA-256 integrity, 4m + 1 law, dihedral optimum, Turing dispersion and equal-diffusion ablation, lineage correlation, specimen segmentation, two-run bitwise determinism, and the new block 7 (slab convergence < 5 %, centre -> orthogonal / margin -> planar, anisotropy monotone, 0.3 <= x* <= 0.9, 8/8 mode accuracy, far-tip ablation, determinism; L1953-1976) and block 8 (mean-field agreement < 6 %, frozen control, no alveoli before P4, unit CV in [0.8, 1.2], lung CV < 0.1, P36 within 6 % of target, exact closed-form calibration, determinism; L1978-2003). The default render regenerates both media files in ~5.3 s; the pinned environment (Python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0) matches the venv. Deductions: the dead `--seed` flag means a documented reproducibility control does nothing (-3); the lung-CV bound (< 0.1) and the P36 tolerance (6 %) are loose relative to the reported values (-2); `docs/media` is git-ignored so the regenerated PNG/GIF are not pinned by hash in the repository (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:evidenceAgainst "2008-metzger-lung-stereotyped-branching.py L2024–L2024: --seed parsed with default 2008 but never forwarded to render_outputs <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L2024-L2024>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-repro-package-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-repro-package-3> ;
+        pk:hasScore "0.93"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "2008-metzger-lung-stereotyped-branching.py L1953–L1976" ;
+        dct:description "Self-test block 7: pleura-confined cavity assertions incl. slab convergence, mode accuracy 1.0 (L1967), RMSE < 5 deg (L1968)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L1953-L1976> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "2008-metzger-lung-stereotyped-branching.py L1978–L2004" ;
+        dct:description "Self-test block 8: septation assertions and final OK summary line" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L1978-L2004> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-metzger-lung-stereotyped-branching-repro-package-3> a pk:EvidenceItem ;
+        rdfs:label "2008-metzger-lung-stereotyped-branching.py L1948–L1952" ;
+        dct:description "Two-run bitwise determinism check of the 3D tree" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2008-metzger-lung-stereotyped-branching.py#L1948-L1952> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Loop 053 Pass 3 Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/ar.20747>,
+            <https://doi.org/10.1002/dvdy.21633>,
+            <https://doi.org/10.1038/nature07005>,
+            <https://doi.org/10.1242/dev.081679>,
+            <https://doi.org/10.1371/journal.pcbi.1003421>,
+            <https://doi.org/10.1371/journal.pone.0041643>,
+            <https://doi.org/10.4310/CMS.2009.v7.n1.a4> .
+    <https://doi.org/10.1002/ar.20747> dct:date "2009"^^xsd:gYear ;
+        dct:title "Stereological estimates of alveolar number and size and capillary length and surface area in mice lungs" .
+    <https://doi.org/10.1002/dvdy.21633> dct:date "2008"^^xsd:gYear ;
+        dct:title "Developmental alveolarization of the mouse lung" .
+    <https://doi.org/10.1038/nature07005> dct:date "2008"^^xsd:gYear ;
+        dct:title "The branching programme of mouse lung development" .
+    <https://doi.org/10.1242/dev.081679> dct:date "2012"^^xsd:gYear ;
+        dct:title "Branch mode selection during early lung development" .
+    <https://doi.org/10.1371/journal.pcbi.1003421> dct:date "2014"^^xsd:gYear ;
+        dct:title "An interplay of geometry and signaling enables directional lung branching morphogenesis" .
+    <https://doi.org/10.1371/journal.pone.0041643> dct:date "2012"^^xsd:gYear ;
+        dct:title "A role for canonical Wnt signaling in epithelial branching during embryonic mouse lung development" .
+    <https://doi.org/10.4310/CMS.2009.v7.n1.a4> dct:date "2009"^^xsd:gYear ;
+        dct:title "Solving PDEs in complex geometries: a diffuse domain approach" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Metzger et al. (2008) & Menshykau et al. (2012, 2014) mouse lung stereotyped branching modes (Domain D, Planar P, Orthogonal O), FGF10-SHH-Ptch1 Turing mode selection, pleura-confined diffuse-domain FGF10 cavity and stochastic postnatal septation — Reproducibility package 93/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:28:07Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-metzger-lung-stereotyped-branching-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

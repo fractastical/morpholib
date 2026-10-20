@@ -1,0 +1,325 @@
+# MorphoEval audit — Hannezo et al. (2017) Cell & Scheele et al. (2017) Nature
+# Unifying Theory of Branching Morphogenesis via Branching & Annihilating Random Walks (BARW), 2026-10-20 (v3)
+#
+# Pass 3 re-score of `2017-hannezo-branching-random-walk-annihilation.py` (now 2131 lines) after the remediation
+# of both open v2 items in the instrumented loop `morphoeval/runs/2026-10-19-branching-random-walk-annihilation-loop-pass3`,
+# superseding `2026-10-19-branching-random-walk-annihilation-audit-v2` (92.4).
+#
+# What Pass 3 changed (both v2 remediation items + two corrections):
+#   1. 3D off-lattice BARW in a cylindrical fat pad (R_c = 14, L_c = 110) and a spherical, optionally inflating
+#      mesenchymal capsule (R_s = 40, R_s(t) = R_s(0)(1 + gamma t)) with a nematic ECM fiber-alignment torque
+#      du = lambda (f.u)(f - (f.u)u) dt, a length-weighted nematic order parameter S, a paired-seed lambda sweep
+#      {0, 0.05, 0.1, 0.2, 0.4} in both geometries, a true-isotropic control (chi = 0, lambda = 0) and an inflation
+#      sweep gamma in {0, 0.004, 0.008} (Bordeu et al. 2023). Panels G/H + supplementary `..._3d_ecm_fatpad.png`.
+#   2. Clonal neutral drift inside TEBs (Scheele et al. 2017): every TEB carries k of N = 64 labelled stem cells,
+#      Poisson(rho * duct length) Moran steps, hypergeometric half-split + doubling at A -> 2A, label inheritance by the
+#      duct at A + I -> I; 64 mosaic replicates (f_0 = 0.125) and 600 single-cell clones. Panel I + `..._clonal_drift.png`.
+#   3. CORRECTION: the Pass 2 Panel D "BARW universal curve" was a hand-fitted analytic function
+#      0.455 + 0.435 exp(-0.36 (g - 0.25)), so the v2 metric r = 0.993 was circular. Panel D now compares the
+#      measured, pooled 9-tree ensemble q_branch(g); honest r = 0.924, RMSE = 0.117. Scored here as a correction.
+#   4. CORRECTION: the hard-coded p = 1.2e-18 in the tau metric note is now the computed log-log p-value.
+#   Lean: 3 new theorems (nematic order extremes/torque, Moran martingale, TEB split label conservation);
+#   6 theorems, 0 sorry, `lean` exit 0. Registered as equations 4-6 in the math KG loop file.
+#
+# Scores below are criterion-referenced on the rubric's 0-100 scale, not calibrated probabilities. Overall 88.9
+# (down from 92.4): the two remediation items landed and the measurement suite grew from 8 to 14, but the Pass 3
+# work exposed (i) that the v2 generational-correlation pass was circular, (ii) unsourced calibration constants in the
+# 1D PDE that make the i_inf = k_b/k_a agreement self-referential, (iii) a hyper-branching reference (2.0x) that the
+# simulation misses by 4.4x yet was scored as a pass, and (iv) that the SHA-pinned specimen is an embryonic branched
+# gland whose reference values (34 tips, r/R_max = 0.783) are the segmentation's own outputs. Line numbers refer to
+# the files at commit 74d06a5c.
+
+audit:
+  id: 2026-10-19-branching-random-walk-annihilation-audit-v3
+  supersedes_audit_id: 2026-10-19-branching-random-walk-annihilation-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Loop 056 Pass 3 Assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (MorphoEval Loop 056 Independent Rubric Verification)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/56
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 74d06a5c
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3 remediated) evaluation of `2017-hannezo-branching-random-walk-annihilation.py`
+      (2131 lines; 9 self-test suites; 14 measurements) after the remediation round
+      `2026-10-19-branching-random-walk-annihilation-loop-pass3`. 74d06a5c is the working-tree
+      base commit; the remediated script, Lean file, math KG loop file, dataset additions
+      (`barw_3d_ecm_clonal_reference.json`, SHA-256 c716e3a9...) and four media files are
+      uncommitted working-tree changes at audit time (parallel-loop isolation policy).
+
+references:
+  hannezo2017:
+    title: "A Unifying Theory of Branching Morphogenesis"
+    authors: "Hannezo E, Scheele CLGJ, Moad M, Drogo N, Heer R, Sampogna RV, van Rheenen J, Simons BD"
+    venue: "Cell 171(1):242-255.e27 (2017)"
+    doi: 10.1016/j.cell.2017.08.026
+  scheele2017:
+    title: "Identity and dynamics of mammary stem cells during branching morphogenesis"
+    authors: "Scheele CLGJ, Hannezo E, Muraro MJ, Zomer A, Langedijk NSM, van Oudenaarden A, Simons BD, van Rheenen J"
+    venue: "Nature 542(7641):313-317 (2017)"
+    doi: 10.1038/nature21060
+  bordeu2023:
+    title: "Inflationary theory of branching morphogenesis in the mouse salivary gland"
+    authors: "Bordeu I, Chatzeli L, Simons BD"
+    venue: "Nature Communications 14:3422 (2023)"
+    doi: 10.1038/s41467-023-39124-x
+  chatzeli2017:
+    title: "Tracing the dynamics of pancreatic progenitors during branching morphogenesis"
+    authors: "Chatzeli L, Simons BD, Tapon N"
+    venue: "Development 144(12):2175-2186 (2017)"
+    doi: 10.1242/dev.147645
+  moran1958:
+    title: "Random processes in genetics"
+    authors: "Moran PAP"
+    venue: "Mathematical Proceedings of the Cambridge Philosophical Society 54(1):60-71 (1958)"
+    doi: 10.1017/S0305004100033193
+  klein2011:
+    title: "Universal patterns of stem cell fate in cycling adult tissues"
+    authors: "Klein AM, Simons BD"
+    venue: "Development 138(15):3103-3111 (2011)"
+    doi: 10.1242/dev.060103
+
+simulations:
+  - id: hannezo-branching-random-walk-annihilation
+    name: "Hannezo et al. (2017) Cell & Scheele et al. (2017) Nature unifying theory of branching morphogenesis via branching and annihilating random walks (BARW)"
+    organism: "Mus musculus (mouse pubertal mammary gland, embryonic metanephric kidney, embryonic pancreas, and salivary gland ductal networks)"
+    script: 2017-hannezo-branching-random-walk-annihilation.py
+    output: docs/media/branching_random_walk_annihilation_comparison.png
+    extra_outputs:
+      - docs/media/branching_random_walk_annihilation_growth.gif
+      - docs/media/branching_random_walk_annihilation_3d_ecm_fatpad.png
+      - docs/media/branching_random_walk_annihilation_clonal_drift.png
+    status: evaluated
+    source_refs:
+      - hannezo2017
+      - scheele2017
+      - bordeu2023
+      - chatzeli2017
+      - moran1958
+      - klein2011
+    supersedes_audit_id: 2026-10-19-branching-random-walk-annihilation-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Hannezo et al. (2017): ductal trees of mammary gland, kidney and pancreas are self-organised by a branching-and-annihilating random walk of active tips (A -> 2A at rate k_b, A -> A + I trail deposition, A + I -> I annihilation within R_a), giving N_term = N_branch + 1, q_branch -> 1/2, a critical Galton-Watson subtree law P(S) ~ S^(-3/2), a universal generational q(g) relaxation and a travelling-wave mean-field with homeostatic duct density i_inf = k_b/k_a"
+        - "Scheele et al. (2017): mammary TEB stem cells follow neutral drift (equipotent, Moran-type) so clone fates are set by TEB bifurcation/termination; clone-size distributions inherit the tree statistics"
+        - "Bordeu et al. (2023): salivary-gland BARW in an inflating 3D domain; domain growth and local geometry, not tip-intrinsic rules, set branch density"
+        - "Moran (1958), Klein & Simons (2011): neutral birth-death drift is a martingale in the labelled fraction with variance 2k(N-k)/N^2 per step"
+      reconstructed_in_script:
+        - "2D off-lattice BARW tree, 1D Fisher-KPP mean-field wave, exact Catalan critical GW pmf, 3-organ universality collapse, R_a perturbation/ablation suite, specimen bud/junction segmentation (all Pass 2)"
+        - "Pass 3: 3D off-lattice BARW in a cylindrical fat pad and a spherical (optionally inflating) capsule with a nematic ECM alignment torque, a length-weighted nematic order parameter S, a paired-seed lambda sweep with a true-isotropic control, an inflation sweep, a birth-vertex annihilation-exemption rule, a Moran neutral-drift clonal model inside TEBs with hypergeometric splits at bifurcations and label inheritance by ducts, 64 mosaic replicates and 600 single-cell clones, 6 additional measurements with reference values, 2 new self-test suites and 3 new Lean theorems"
+      transfer_boundary:
+        - "The 3D fat pad is a cylinder, not Bordeu's flattened slab; only the spherical capsule inflates and already-deposited ducts are NOT advected with the domain; no Bordeu figure or table value is reproduced numerically — only the qualitative monotonic S(lambda) and inflation ordering of L_total; S reference values are the theoretical 0 / 1 extremes"
+        - "N_TEB = 64 and the Moran rate rho = 1 per unit duct length are free parameters (real TEBs have O(10^2) cells); no Scheele clone-size histogram is reproduced numerically — only the exact martingale f_bar = f_0 and the S^(-3/2) tail inherited from the tree"
+        - "The 1D PDE carries uncited calibration constants (1.82 k_a, 0.55 v_0, v_drift = 0.35 v_0) tuned so the wake plateau matches k_b/k_a; the i_inf agreement is therefore a self-calibration, not an independent test"
+        - "The SHA-pinned specimen is a Wikimedia whole-mount of an embryonic branched gland, not a pubertal mammary TEB network; its reference values (N_term = 34, r/R_max = 0.783) are the segmentation's own outputs"
+      does_not_claim:
+        - "Quantitative reproduction of any Hannezo/Scheele/Bordeu figure or table beyond the reference JSON tables; advected-duct inflation; a slab fat-pad geometry; multi-seed statistics for the 3D lambda sweep; Scheele clone-size histograms; a mammary-specific specimen"
+    summary: >-
+      Pass 3 (v3 remediated) evaluation of `2017-hannezo-branching-random-walk-annihilation.py`
+      (88.9/100, down from 92.4/100 in Pass 2). Both v2 remediation items are closed: the 2D BARW
+      is extended to a 3D off-lattice simulator in a cylindrical fat pad and a spherical, optionally
+      inflating mesenchymal capsule with a nematic ECM alignment torque (`simulate_3d_spatial_barw_tree`,
+      L823-1029) and a paired-seed lambda sweep with a true-isotropic control (`evaluate_3d_ecm_anisotropy_sweep`,
+      L1031-1072; S_iso = 0.054, S monotonic in lambda in both geometries, sphere q_b = 0.499 with N_b = 322,
+      inflation raises L_total 3331 -> 14229); and Scheele-type neutral drift inside TEBs is coupled to the tree
+      (`simulate_clonal_neutral_drift_in_tebs`, L1088-1157; `evaluate_clonal_drift_ensemble`, L1159-1228;
+      f_bar = 0.119 +/- 0.051 vs martingale 0.125, clone survival 0.88, tau_clone = 1.66). The measurement suite
+      grows from 8 to 14, self-test from 7 to 9 suites, Lean from 3 to 6 theorems (0 sorry). The score falls
+      because Pass 3 exposed that the Pass 2 Panel D universal curve was hand-fitted (metric 3 corrected from
+      r = 0.993 to the honest 0.924), that the 1D PDE's i_inf agreement rests on uncited tuning constants, that
+      the hyper-branching ratio misses its 2.0x reference by 4.4x, and that the specimen and its reference values
+      are circular; none of these were penalised in v2.
+    scores:
+      model-fidelity:
+        value: 92
+        rationale: >-
+          The core BARW rules (persistent migration, Poisson A -> 2A, trail deposition, R_a annihilation) are
+          implemented in 2D (L236-489) and now in 3D (L823-1029) with the nematic alignment torque
+          du = lambda (f.u)(f - (f.u)u) dt and a unit-sphere persistent random walk; the exact Catalan critical
+          GW pmf (L196-234), the 1D Fisher-KPP mean field (L491-582), neutral Moran drift with hypergeometric
+          splits (L1074-1157) and the inflating capsule (L891-903) are all recognisable reductions of the cited
+          papers, and 6 Lean theorems machine-check the algebraic identities (0 sorry). Deductions: the 1D PDE
+          uses uncited constants 1.82 k_a, 0.55 v_0 and v_drift = 0.35 v_0 (L510, L530-531) tuned to make the
+          plateau hit k_b/k_a (-3); the 3D model needed a birth-vertex exemption (L934-938) absent from the 2D
+          model, so the two simulators implement different annihilation rules (-2); the fat pad is a cylinder,
+          not Bordeu's slab, and deposited ducts are not advected with the inflating sphere (-2); the WT 2D
+          tree at seed 2017 has only N_b = 12 and other seeds give N_b from 1 to 70, so the 2D model sits at the
+          edge of extinction (-1).
+        evidence:
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [236, 489], note: "2D off-lattice spatial BARW ductal tree simulator with persistent migration, bifurcation, trail deposition and R_a annihilation (no birth-vertex rule)", supports: true}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [823, 1029], note: "Pass 3: 3D off-lattice BARW in cylinder / inflating sphere with nematic ECM torque, polar distal bias, +/-38 deg bifurcation about a random perpendicular axis, capsule annihilation", supports: true}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [934, 938], note: "Birth-vertex rule exempting duct points within R_a of the tip's own bifurcation vertex — needed in 3D, absent in 2D", supports: true}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [510, 531], note: "Uncited PDE calibration constants v_drift = 0.35 v0, 1.82 ka, 0.55 v0 that set the wake plateau", supports: false}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [1074, 1157], note: "Neutral Moran birth-death steps and TEB clonal model with hypergeometric half-split and duct label inheritance", supports: true}
+          - {file: morphoeval/lean/loops/Loop_056_branching_random_walk_annihilation.lean, lines: [178, 272], note: "3 new Lean 4 theorems: nematic order extremes/symmetry/torque, Moran martingale and variance, TEB split label conservation (6 total, 0 sorry)", supports: true}
+      specimen-match:
+        value: 84
+        rationale: >-
+          The SHA-256-verified specimen (`mouse_branched_ductal_network_specimen.jpg`) is segmented into
+          active buds and EDT medial-axis junctions (L706-806), recovering N_term = 34, N_branch = 33 and the
+          exact binary-tree identity, and Panel F shows the segmentation beside the simulated trees; the Pass 3
+          3D fat-pad and clonal panels (G, I) visibly resemble the cited ductal trees and lineage mosaics.
+          Deductions: the specimen is a Wikimedia whole-mount of an embryonic branched gland (salivary/lung-like
+          acinar buds), not the pubertal mammary TEB network or the kidney/pancreas organs the model targets,
+          and no figure from Hannezo, Scheele or Bordeu is placed beside the simulation (-8); the reference
+          values N_term = 34 and r/R_max = 0.783 (L1917, L1927) are the segmentation's own outputs from a tuned
+          size-14 maximum filter / edt > 4 threshold, so the specimen metrics are circular (-5); the WT 2D tree in
+          Panels A and I has only 13 terminals, far sparser than any specimen (-3). Not changed in Pass 3; the
+          v2 score of 90 did not account for the organ mismatch.
+        evidence:
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [706, 806], note: "Chromatic active-tip bud segmentation and EDT medial-axis junction extraction on the specimen (tuned filter sizes)", supports: true}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [1917, 1927], note: "Specimen reference values 34 and 0.783 are the segmentation's own outputs (circular)", supports: false}
+          - {file: datasets/branching_random_walk_annihilation/README.md, lines: [22, 22], note: "Specimen described as an embryonic branched glandular epithelial network from Wikimedia Commons, not a pubertal mammary gland", supports: false}
+          - {file: docs/media/branching_random_walk_annihilation_comparison.png, lines: [0, 0], note: "3x3 synthesis figure: Panel F specimen segmentation, Panel G 3D fat-pad tree, Panel I clonal mosaic on the 2D tree", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          The 3-organ R_a / l_b sweep and 4-regime R_a perturbation/ablation suite (L583-705) are retained;
+          Pass 3 adds the geometry switch (cylinder / sphere), a paired-seed ECM alignment sweep over five lambda
+          values with a true-isotropic control (L1036-1051), an inflation-rate sweep, and the CLI flags
+          `--ecm-lambda`, `--n-cells-teb`, `--label-fraction` (L2105-2107) alongside `--v0/--kb/--ra/--ka/
+          --sigma-theta/--seed` (L2099-2104); the lambda sweep produces a genuine regime change (lambda >= 0.4
+          collapses the sphere tree from N_b = 322 to 1 by alignment-induced sibling annihilation). Deductions:
+          `--ra/--kb/--v0/--sigma-theta` do not propagate to the 3D sweep (defaults read from the JSON) nor to the
+          organ/perturbation suite (-5); the three new flags affect only Panels G/I and the clonal metrics, not
+          the sweep figures (-3); the 3D lambda sweep uses a single paired seed per lambda, so the N_b collapse is
+          one realisation (-2).
+        evidence:
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [583, 705], note: "3-organ BARW universality sweep and 4-regime R_a perturbation + ablation evaluation", supports: true}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [1031, 1072], note: "Paired-seed lambda sweep in cylinder and sphere, true-isotropic control, inflation sweep", supports: true}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [2097, 2107], note: "CLI: 9 numeric flags; the 3D sweep and organ suite ignore --ra/--kb/--v0/--sigma-theta", supports: false}
+      morphometric-validation:
+        value: 86
+        rationale: >-
+          `measure_morphoeval()` (L1799-1998) reports 14 metrics with reference values, units and dispersion
+          statistics: q_branch 0.480 (ref 0.5), tau = 1.4418 (ref 1.5, computed p-value L227), honest generational
+          r = 0.924 against the measured pooled ensemble (L641-661; replaces the hand-fitted Pass 2 curve),
+          i_inf = 0.28695 (ref 0.28571), hyper-branching 8.82x, R_a = 0 explosion +49 tips, specimen N_term = 34
+          and r/R_max = 0.7833, and six Pass 3 metrics: 3D cylinder q_b = 0.4937 (ref 0.5), sphere tau = 1.438
+          (ref 1.49), S_iso = 0.054 (ref 0), S gain 0.576, clonal f_bar = 0.119 (ref 0.125), tau_clone = 1.66
+          (ref 1.5). Deductions: the hyper-branching reference 2.00 (L1897) is missed by 4.4x and the "hypo"
+          tree is a dead stalk (L_total = 28), yet the metric is presented as a pass (-4); i_inf vs k_b/k_a is a
+          self-calibration via L510/L530-531 (-3); the sphere tau regresses bins with count >= 2 over S in [3, 45]
+          of a single tree (L1824-1831) and the clone tail uses sizes 1..25 with r = -0.93 (L1198-1201) — both
+          small-sample exponents (-3); S(lambda) monotonicity rests on one seed per lambda and the cylinder trees
+          at lambda = 0.2, 0.4 have N_b = 4 and 2 (-2); g = 1 of the generational profile is q = 1 by construction
+          and the reference profile is labelled "obs" without digitisation provenance (-2).
+        evidence:
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [1799, 1998], note: "14-metric MorphoEval suite with reference values, units, dispersion statistics and ablation delta (6 new in Pass 3)", supports: true}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [641, 661], note: "Pass 3 correction: measured pooled 9-tree ensemble q_branch(g) replaces the hand-fitted analytic Pass 2 curve (r 0.993 -> 0.924)", supports: true}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [1897, 1897], note: "Hyper-branching reference 2.00 vs measured 8.82 — model/reference mismatch scored as a pass", supports: false}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [1824, 1831], note: "Sphere tau regression on count >= 2 bins over S in [3, 45] of one tree (small-sample exponent)", supports: false}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [1198, 1201], note: "Clone-size tail regression over sizes 1..25 with count >= 2; r = -0.93", supports: false}
+      source-traceability:
+        value: 92
+        rationale: >-
+          `datasets/branching_random_walk_annihilation/` vendors the Pass 2 reference JSON and specimen (both
+          SHA-256 locked) plus the new `barw_3d_ecm_clonal_reference.json` (SHA-256 c716e3a9..., pinned at L97
+          and verified fail-closed in `verify_dataset_integrity`, L127-172), with its free parameters (N_TEB,
+          Moran rate) listed explicitly; `paper_citations.bib` adds Moran 1958 and Klein & Simons 2011 (8 entries)
+          and the README documents the Pass 3 additions. Deductions: the Moran 1958 and Klein & Simons 2011 DOIs
+          could not be verified offline and are flagged as such (-2); the `generation_branch_probability_profile`
+          reference values are labelled "obs" without a figure-digitisation provenance (-3); the specimen's
+          organ/stage provenance is not resolved beyond "embryonic branched gland" (-2); the S reference values
+          are theoretical extremes rather than Bordeu measurements (-1).
+        evidence:
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [95, 97], note: "SHA-256 pins for reference JSON, specimen and the new Pass 3 reference JSON", supports: true}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [127, 172], note: "Runtime fail-closed SHA-256 verification of all three vendored files", supports: true}
+          - {file: datasets/branching_random_walk_annihilation/barw_3d_ecm_clonal_reference.json, lines: [1, 86], note: "Pass 3 reference table: 3D geometries, lambda / inflation sweeps, nematic S references, clonal parameters with free parameters declared", supports: true}
+          - {file: datasets/branching_random_walk_annihilation/paper_citations.bib, lines: [68, 90], note: "moran1958random and klein2011universal added; DOIs flagged as not verified offline", supports: true}
+          - {file: datasets/branching_random_walk_annihilation/README.md, lines: [23, 34], note: "README Pass 3 section documenting the new JSON, its SHA-256, free parameters and the unverified DOIs", supports: true}
+      code-traceability:
+        value: 92
+        rationale: >-
+          The module docstring (L1-66) lists the Pass 3 additions and maps the 3D ECM torque, inflation and
+          clonal Moran model to Bordeu et al. (2023), Scheele et al. (2017), Moran (1958) and Klein & Simons
+          (2011) alongside the Pass 2 mapping to Hannezo STAR Methods; every new function carries a docstring
+          naming its source; the math KG loop file registers equations 4-6 with `lean_locus` and `code_locus`
+          (L94-147), and Panels G/H/I are labelled by mechanism (L1559-1633). Deductions: the PDE constants
+          at L510 and L530-531 carry no citation or derivation comment (-4); the birth-vertex rule (L934-938) is
+          documented as a numerical necessity but not tied to any paper statement (-2); the specimen reference
+          values at L1917/L1927 are not marked as segmentation-derived (-2).
+        evidence:
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [1, 66], note: "Module docstring with Pass 3 additions mapped to Bordeu 2023, Scheele 2017, Moran 1958, Klein & Simons 2011 and the Lean theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/hannezo-branching-random-walk-annihilation.yaml, lines: [94, 147], note: "Equations 4-6 (nematic ECM order, Moran martingale, TEB split conservation) with lean_locus and code_locus", supports: true}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [1559, 1633], note: "Panels G/H/I labelled by mechanism and source", supports: true}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [510, 531], note: "PDE constants 0.35, 1.82, 0.55 have no citation or derivation comment", supports: false}
+      repro-package:
+        value: 92
+        rationale: >-
+          `self_test()` (L2000-2091) runs 9 suites (7 Pass 2 + suite 8: 3D fat-pad/mesenchyme BARW with ECM
+          anisotropy + inflation, L2048-2064; suite 9: clonal neutral drift, L2066-2088) and passed 9/9 in 21 s
+          at audit time; the default render completes in ~24 s and writes the 3x3 PNG, the GIF and two
+          supplementary PNGs; `measure_morphoeval(precomputed=...)` reuses the render results; two-run bitwise
+          determinism is asserted. Deductions: the suite-4 threshold `0.48 <= q <= 0.50` (L2021) holds only for
+          seed 2017 (other seeds give N_b from 1 to 70), so the self-test is seed-fragile rather than a property
+          test (-4); the GIF still shows only the 2D tree + 1D wave, no 3D or clonal animation (-2); the 3D
+          suite's monotonic S(lambda) assertion (L2054-2064) is on a single seed (-2).
+        evidence:
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [2000, 2091], note: "9-suite self_test() including SHA-256 integrity, bitwise determinism, 3D ECM anisotropy and clonal drift suites", supports: true}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [2048, 2088], note: "Pass 3 suites 8 and 9", supports: true}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [2021, 2021], note: "Seed-specific q_branch window on the WT tree (N_b = 12 at seed 2017)", supports: false}
+          - {file: 2017-hannezo-branching-random-walk-annihilation.py, lines: [2093, 2128], note: "CLI entrypoint with --self-test, --skip-gif and 9 numeric flags", supports: true}
+    remediation:
+      - >-
+        2017-hannezo-branching-random-walk-annihilation.py:236-489 and 2021 — the WT 2D tree at seed 2017 has only
+        N_b = 12 / N_t = 13 and other seeds give N_b from 1 to 70; the self-test window 0.48 <= q <= 0.50 holds for
+        this seed only. Port the 3D birth-vertex rule (L934-938) to the 2D simulator, run a multi-seed ensemble and
+        replace the seed-specific assertion with an ensemble-level property test (q_branch -> 1/2, N_t = N_b + 1).
+      - >-
+        2017-hannezo-branching-random-walk-annihilation.py:510 and 530-531 — the 1D PDE constants v_drift = 0.35 v_0,
+        1.82 k_a and 0.55 v_0 are uncited and tuned so that i_wake = 0.28695 matches k_b/k_a = 0.28571; metric 4 is
+        therefore a self-calibration. Derive the coefficients from the Hannezo STAR Methods mean-field equations (or
+        fit them on an independent observable such as the front speed) and cite the derivation inline.
+      - >-
+        2017-hannezo-branching-random-walk-annihilation.py:1897 — the hyper-branching reference 2.00 (1/R_a scaling
+        argument for halving R_a) is missed by 4.4x (measured 8.82) and the R_a = 7 "hypo" tree is a dead stalk
+        (L_total = 28); the metric is presented as a pass. Either derive the correct expected ratio for the 2D
+        off-lattice model or report the mismatch as a failing comparison.
+      - >-
+        2017-hannezo-branching-random-walk-annihilation.py:1036-1051 and 2054-2064 — the 3D lambda sweep uses one paired
+        seed per lambda and the cylinder trees at lambda = 0.2, 0.4 have N_b = 4 and 2, so S(lambda) monotonicity and
+        the N_b collapse rest on single near-dead realisations. Run >= 8 seeds per lambda and report mean +/- SE of S
+        and N_b; fail the monotonicity test on the ensemble, not on one seed.
+      - >-
+        2017-hannezo-branching-random-walk-annihilation.py:891-903 — only the spherical capsule inflates; deposited
+        duct points are not advected with the domain and the mammary fat pad is a cylinder rather than Bordeu et al.
+        (2023)'s flattened slab. Advect duct points with the growth field and add a slab geometry so at least one
+        Bordeu branch-density value can be compared numerically.
+      - >-
+        2017-hannezo-branching-random-walk-annihilation.py:706-806, 1917 and 1927 — the specimen is an embryonic
+        branched gland from Wikimedia, not a pubertal mammary TEB network, and its reference values (34 tips,
+        r/R_max = 0.783) are the segmentation's own outputs. Vendor a mammary whole-mount with independently reported
+        tip/branch counts (e.g. Scheele et al. 2017 Extended Data) and mark the current values as segmentation-derived.
+      - >-
+        2017-hannezo-branching-random-walk-annihilation.py:1198-1201 and 1824-1831 — the clone-size tail (sizes 1..25,
+        r = -0.93) and the sphere subtree tau (one tree, count >= 2 bins) are small-sample exponents; N_TEB = 64 and
+        rho = 1 are free. Pool clones across seeds, use a maximum-likelihood discrete power-law fit, and compare
+        against at least one Scheele et al. (2017) clone-size histogram value.
+      - >-
+        2017-hannezo-branching-random-walk-annihilation.py:2099-2107 — `--ra/--kb/--v0/--sigma-theta` do not propagate
+        to the 3D sweep (defaults read from the reference JSON) nor to the organ/perturbation suite; wire the CLI
+        overrides through `evaluate_3d_ecm_anisotropy_sweep` and `evaluate_organ_universality_and_perturbations`, and
+        extend the GIF with a 3D or clonal animation frame set.

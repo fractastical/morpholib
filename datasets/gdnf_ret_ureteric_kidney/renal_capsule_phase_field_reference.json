@@ -1,0 +1,45 @@
+{
+  "metadata": {
+    "dataset_id": "menshykau-2014-gdnf-ret-ureteric-kidney-capsule-v3",
+    "title": "Pass 3 reduced 3D phase-field renal capsule & nephrogenic zone parameters for the GDNF-RET ureteric tree (2014-menshykau-gdnf-ret-ureteric-kidney.py, Section 3b)",
+    "purpose": "Documents every constant of the diffuse-domain capsule model with its provenance status so the audit can distinguish literature-anchored values from order-of-magnitude modelling assumptions. No value in this file is simulation output.",
+    "sources": [
+      {"id": "short2014", "doi": "10.1016/j.devcel.2014.02.017", "used_for": "observed tip number N_obs(g) that drives the capsule surface-area expansion law; qualitative confinement of all ureteric tips to the peripheral nephrogenic zone (Figs. 1 & 4)"},
+      {"id": "menshykau2013", "doi": "10.1088/1478-3975/10/4/046003", "used_for": "mesenchymal GDNF production restricted to the cap mesenchyme and depletion by RET binding (model assumption)"}
+    ]
+  },
+  "capsule_expansion_law": {
+    "formula": "4*pi*R_cap(g)^2 = 4*pi*R0^2 + (4*pi*R1^2 - 4*pi*R0^2) * (N_obs(g) - 2) / (354 - 2)",
+    "description": "Capsule surface area grows linearly with the Short et al. (2014) observed tip number between the E11.5 and E15.5 anchors, i.e. the cortical tip surface density stays of order one tip per (2 L_8)^2 at E15.5.",
+    "anchors": {
+      "R_cap_E11_5_um": {"value": 300.0, "status": "approximate anatomical anchor (metanephric blastema radius at T-stage); not taken from a specific table"},
+      "R_cap_E15_5_um": {"value": 550.0, "status": "approximate anatomical anchor (E15.5 mouse kidney ~1.1 mm long axis); not taken from a specific table"}
+    },
+    "implied_E15_5_tip_surface_density_per_um2": 9.31e-05,
+    "implied_E15_5_inter_tip_spacing_um": 117.0
+  },
+  "diffuse_domain_gdnf_field": {
+    "equation": "0 = D div(phi_cap grad G) + rho_G phi_nz - delta phi_cap G - kappa_tip delta T(x) G",
+    "phi_cap": "0.5 * (1 + tanh((R_cap - |x - c|) / eps))",
+    "phi_nz": "phi_cap * 0.5 * (1 + tanh((|x - c| - (R_cap - h_nz)) / eps))",
+    "parameters": {
+      "nz_thickness_um": {"value": 110.0, "status": "modelling assumption (cap mesenchyme / nephrogenic zone thickness, order 100 um)"},
+      "eps_um": {"value": 28.0, "status": "numerical phase-field interface width (< grid spacing 45 um)"},
+      "gdnf_decay_length_um": {"value": 150.0, "status": "modelling assumption; sets delta = D / ell_G^2"},
+      "kappa_tip": {"value": 2.0, "status": "modelling assumption (RET-mediated uptake per tip in units of delta); tuned so an isolated tip depletes local GDNF by ~20-30%"},
+      "tip_sink_sigma_cells": {"value": 1.0, "status": "numerical (Gaussian spread of each tip sink, grid cells)"},
+      "confine_margin_um": {"value": 22.0, "status": "modelling assumption (ampulla radius ~ half an E15.5 segment length)"},
+      "hilum_offset": {"value": 0.62, "status": "geometric assumption (capsule centre sits 0.62 R_cap distal to the ureteric stalk tip)"},
+      "stalk_length_um": {"value": 260.0, "status": "carried from Pass 2 root stalk length"},
+      "gdnf_gate": {"value": 0.15, "status": "modelling assumption (fraction of the tip-free nephrogenic-zone GDNF level below which a tip arrests into monopodial elongation)"},
+      "chemotaxis_weight": {"value": 0.35, "status": "modelling assumption (unit-vector blend weight of grad G into the daughter direction)"}
+    },
+    "grid": {"n_xy": 36, "n_z": 39, "x_half_um": 792.0, "z_min_um": -88.0, "z_max_um": 1628.0, "spacing_um": 45.3, "jacobi_iterations": 140}
+  },
+  "qualitative_references": {
+    "tips_in_nephrogenic_zone_fraction": {"reference_value": 1.0, "source": "Short et al. (2014) Dev. Cell 29:188-202 Figs. 1 & 4: all ureteric tips reside in the peripheral nephrogenic zone beneath the renal capsule"},
+    "nz_core_gdnf_enrichment_ratio": {"reference_value": "> 1 (uniform null = 1.0)", "source": "GDNF is produced by the cap mesenchyme only (Menshykau & Iber 2013 model assumption)"},
+    "capsule_crowding_tip_suppression_ratio": {"reference_value": "1.0 = decoupled null (tree insensitive to capsule expansion)", "source": "ablation design of this script; no published quantitative counterpart"}
+  },
+  "residual_remediation": "A genuine moving-mesh finite-element capsule (e.g. deforming tetrahedral mesh with tissue growth and ureteric epithelium as a separate phase) is NOT implemented; the diffuse-domain fixed-grid reduction above is the closest honest version within the ~3 min runtime budget."
+}

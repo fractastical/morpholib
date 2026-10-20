@@ -1,0 +1,286 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-caleo-cajal-dendritic-wiring> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-caleo-cajal-dendritic-wiring-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-caleo-cajal-dendritic-wiring-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Cuntz et al. (2010) PLoS Comput. Biol. & Cuntz et al. (2007) PNAS Ramón y Cajal minimum-wiring and conduction-delay greedy Steiner dendritic trees + Rall's 3/2 diameter power law + (Pass 3) Rall passive-cable electrotonics coupled to a Morris-Lecar dendritic Ca2+ spike hotspot — Morphometric validation: 91/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`measure_morphoeval()` (L1163-1342) now returns 15 reference-anchored measurements: the 9 v2 metrics (Pareto W/W0 r = 1.0000, P/P1 r = 0.99969, bf = 0.20 W/W0 = 1.0189 vs 1.0220 with a 10.43x random ablation, alpha_2D = 0.4797 +- 0.0168, alpha_3D = 0.6495 +- 0.0456, Rall ratio 1.0000, D_f, Sholl peak, hubs) plus 6 Pass 3 metrics with explicit nulls and ablations: lambda_f / lambda_DC = 0.2487 against a hand-computed analytic check, passive superposition ratio 1.000000 against the Lean-proved null, active gain 4.28x against the linear 2.0 with the g_Ca = 0 ablation (2.05x) reported alongside, window 5.24 ms, same-branch fraction 0.0 in the star limit, and r(window, bf) = -0.698. Each `source`/`note` says honestly whether the reference is empirical, analytic or a model prediction. Deductions: three of the nine v2 references (D_f = 1.7817, 73, 62) are the script's own outputs (L1256, L1266, L1276), so those three \"matches\" are tautological (-3); of the six new metrics only the analytic ratio and the two exact nulls have a defensible reference — the window reference (3 ms = tau_syn) and the sign reference (-1) are model predictions and the gain reference is the linear null, so no Pass 3 number is compared with a measured dendritic spike or summation curve (-3); the coincidence window is defined as the largest grid offset still firing (L523-527), which quantises it to the 2.5 ms grid and assigns 0.0 to a pair that fires only at dt = 0 (indistinguishable from a non-firing pair) (-1); Pearson r over 8 bf points has p = 0.054 and is reported as a sign test (-1); I_peak = 110 uA/cm2 is tuned so singles never fire and pairs fire at bf = 0.20 (JSON L51), which makes the single-input fraction 0 an outcome of the protocol (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:evidenceAgainst "2007-caleo-cajal-dendritic-wiring.py L1251–L1280: Specimen D_f / Sholl peak / hubs measurements whose reference_value (1.7817, 73, 62) equals the script's own output by construction <https://github.com/fractastical/morpholib/blob/45670cb8/2007-caleo-cajal-dendritic-wiring.py#L1251-L1280>",
+            "2007-caleo-cajal-dendritic-wiring.py L1312–L1341: Window and Pearson-sign measurements whose reference_value is tau_syn = 3 ms and the predicted sign -1 (model predictions, labelled as such in source/note) <https://github.com/fractastical/morpholib/blob/45670cb8/2007-caleo-cajal-dendritic-wiring.py#L1312-L1341>",
+            "2007-caleo-cajal-dendritic-wiring.py L523–L527: Coincidence window = largest swept offset still firing; a pair firing only at dt = 0 gets 0.0 and the 2.5 ms grid quantises the result <https://github.com/fractastical/morpholib/blob/45670cb8/2007-caleo-cajal-dendritic-wiring.py#L523-L527>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-2d-planar-dendritic-wiring-scaling-exponent-alpha-2d-w-propto-n-alpha-2d>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-3d-volumetric-dendritic-wiring-scaling-exponent-alpha-3d-w-propto-n-alpha-3d>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-active-morris-lecar-ca2-hotspot-supralinear-paired-single-peak-gain-at-bf-0-20>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cajal-1899-purkinje-specimen-box-counting-fractal-dimension-d-f>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cajal-1899-purkinje-specimen-peak-sholl-intersection-count>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cajal-1899-purkinje-specimen-skeletonized-primary-secondary-bifurcation-hubs>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-coincidence-window-vs-cuntz-balancing-factor-pearson-correlation-across-bf-in-0-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cuntz-balancing-factor-sweep-normalized-conduction-path-p-bf-p-1-correlation>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cuntz-balancing-factor-sweep-normalized-wiring-cost-w-bf-w-0-correlation>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-dendritic-ca2-spike-coincidence-window-delta-t-c-at-bf-0-20-purkinje-regime>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-passive-linear-rc-g-ca-0-k-gate-frozen-hotspot-superposition-ratio-v-pair-v-a-v-b>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-purkinje-class-iv-regime-bf-0-20-normalized-wiring-cost-w-w-0>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-rall-passive-cable-ac-dc-length-constant-ratio-lambda-f-lambda-dc-at-the-synaptic-frequency>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-rall-s-3-2-electrotonic-impedance-matching-ratio-sum-d-daughter-3-2-d-parent-3-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-same-branch-shared-lca-hotspot-fraction-of-nearest-neighbour-tip-pairs-in-the-bf-1-radial-star-limit>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-morphometric-validation-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-morphometric-validation-2> ;
+        pk:hasScore "0.91"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-2d-planar-dendritic-wiring-scaling-exponent-alpha-2d-w-propto-n-alpha-2d> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "2D planar dendritic wiring scaling exponent alpha_2D (W propto N^alpha_2D) = 0.4797 log-log exponent" ;
+        dct:description "theoretical 2D planar scaling W propto N^(1/2) A^(1/2) (alpha_2D = 0.50 vs star limit alpha = 1.000)" ;
+        schema:measurementTechnique "OLS log-log regression of W vs N across N in [25, 320] in 2D square domain (SE = 0.0168, r = 0.99755, p = 8.96e-06)" ;
+        schema:name "2D planar dendritic wiring scaling exponent alpha_2D (W propto N^alpha_2D)" ;
+        schema:unitText "log-log exponent" ;
+        schema:value "0.4797" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-2d-planar-dendritic-wiring-scaling-exponent-alpha-2d-w-propto-n-alpha-2d-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-2d-planar-dendritic-wiring-scaling-exponent-alpha-2d-w-propto-n-alpha-2d-reference> a schema:PropertyValue ;
+        schema:value "0.5" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-3d-volumetric-dendritic-wiring-scaling-exponent-alpha-3d-w-propto-n-alpha-3d> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "3D volumetric dendritic wiring scaling exponent alpha_3D (W propto N^alpha_3D) = 0.6495 log-log exponent" ;
+        dct:description "theoretical 3D volumetric scaling W propto N^(2/3) V^(1/3) (alpha_3D = 2/3 = 0.6667, SE = 0.0456)" ;
+        schema:measurementTechnique "OLS log-log regression of W vs N across N in [25, 320] in 3D cubic domain (SE = 0.0456, r = 0.99028, p = 1.41e-04)" ;
+        schema:name "3D volumetric dendritic wiring scaling exponent alpha_3D (W propto N^alpha_3D)" ;
+        schema:unitText "log-log exponent" ;
+        schema:value "0.6495" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-3d-volumetric-dendritic-wiring-scaling-exponent-alpha-3d-w-propto-n-alpha-3d-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-3d-volumetric-dendritic-wiring-scaling-exponent-alpha-3d-w-propto-n-alpha-3d-reference> a schema:PropertyValue ;
+        schema:value "0.6667" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-active-morris-lecar-ca2-hotspot-supralinear-paired-single-peak-gain-at-bf-0-20> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Active Morris-Lecar Ca2+ hotspot supralinear paired/single peak gain at bf = 0.20 = 4.2783 peak-depolarization gain (linear = 2.0)" ;
+        dct:description "supralinear gain 4.28x > 2.0 (linear reference, Lean 4 Theorem 4) arises from the regenerative g_Ca term only: the g_Ca = 0 ablation collapses to 2.052x; the reference value is the linear null, not an empirical gain" ;
+        schema:measurementTechnique "Mean over 21 nearest-neighbour tip pairs of (V_pair,dt=0 - E_L)/(V_single - E_L) at the LCA hotspot; g_Ca = 0 (K+ still active) ablation gain = 2.0517; single-input spike fraction across all bf = 0.000" ;
+        schema:name "Active Morris-Lecar Ca2+ hotspot supralinear paired/single peak gain at bf = 0.20" ;
+        schema:unitText "peak-depolarization gain (linear = 2.0)" ;
+        schema:value "4.2783" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-active-morris-lecar-ca2-hotspot-supralinear-paired-single-peak-gain-at-bf-0-20-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-active-morris-lecar-ca2-hotspot-supralinear-paired-single-peak-gain-at-bf-0-20-reference> a schema:PropertyValue ;
+        schema:value "2.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cajal-1899-purkinje-specimen-box-counting-fractal-dimension-d-f> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Cajal (1899) Purkinje specimen box-counting fractal dimension D_f = 1.7817 fractal dimension D_f" ;
+        dct:description "planar space-filling Purkinje arbor D_f = 1.7817 ± 0.0248 (arbor area fraction = 0.2377)" ;
+        schema:measurementTechnique "7-scale dyadic box counting s in [2, 128] px on cajal_purkinje_dendritic_arbor_specimen.jpg (SE = 0.0248, r = 0.99952, p = 9.80e-09)" ;
+        schema:name "Cajal (1899) Purkinje specimen box-counting fractal dimension D_f" ;
+        schema:unitText "fractal dimension D_f" ;
+        schema:value "1.7817" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cajal-1899-purkinje-specimen-box-counting-fractal-dimension-d-f-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cajal-1899-purkinje-specimen-box-counting-fractal-dimension-d-f-reference> a schema:PropertyValue ;
+        schema:value "1.7817" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cajal-1899-purkinje-specimen-peak-sholl-intersection-count> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Cajal (1899) Purkinje specimen peak Sholl intersection count = 73 intersections" ;
+        dct:description "peaks at r = 420.0 px (normalized r/R_max = 0.6176)" ;
+        schema:measurementTechnique "26-ring concentric Sholl analysis from soma (331, 713) on cajal_purkinje_dendritic_arbor_specimen.jpg (peak at r = 420.0 px, r/R_max = 0.6176)" ;
+        schema:name "Cajal (1899) Purkinje specimen peak Sholl intersection count" ;
+        schema:unitText "intersections" ;
+        schema:value "73" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cajal-1899-purkinje-specimen-peak-sholl-intersection-count-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cajal-1899-purkinje-specimen-peak-sholl-intersection-count-reference> a schema:PropertyValue ;
+        schema:value "73" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cajal-1899-purkinje-specimen-skeletonized-primary-secondary-bifurcation-hubs> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Cajal (1899) Purkinje specimen skeletonized primary/secondary bifurcation hubs = 62 bifurcation clusters" ;
+        dct:description "detected 62 major bifurcation hubs above soma radius 16.03 px" ;
+        schema:measurementTechnique "EDT Laplacian ridge skeletonization + 8-neighbor degree >= 3 clustering on cajal_purkinje_dendritic_arbor_specimen.jpg (soma radius = 16.03 px)" ;
+        schema:name "Cajal (1899) Purkinje specimen skeletonized primary/secondary bifurcation hubs" ;
+        schema:unitText "bifurcation clusters" ;
+        schema:value "62" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cajal-1899-purkinje-specimen-skeletonized-primary-secondary-bifurcation-hubs-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cajal-1899-purkinje-specimen-skeletonized-primary-secondary-bifurcation-hubs-reference> a schema:PropertyValue ;
+        schema:value "62" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-coincidence-window-vs-cuntz-balancing-factor-pearson-correlation-across-bf-in-0-1> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Coincidence window vs Cuntz balancing factor Pearson correlation across bf in [0, 1] = -0.6983 Pearson r" ;
+        dct:description "negative sign: Cajal's minimum-wiring branched topologies (low bf) preserve shared sub-branch hotspots and widen the coincidence window; the minimum-delay star (bf = 1) destroys them. Reference is the predicted sign (-1), not an empirical r" ;
+        schema:measurementTechnique "8-point bf sweep of the mean coincidence window (p = 0.054); windows (ms): 5.13, 5.25, 5.24, 4.57, 4.58, 4.17, 5.00, 0.73; mean tip->hotspot electrotonic distance rises from 0.162 (bf = 0) to 0.403 (bf = 1)" ;
+        schema:name "Coincidence window vs Cuntz balancing factor Pearson correlation across bf in [0, 1]" ;
+        schema:unitText "Pearson r" ;
+        schema:value "-0.6983" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-coincidence-window-vs-cuntz-balancing-factor-pearson-correlation-across-bf-in-0-1-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-coincidence-window-vs-cuntz-balancing-factor-pearson-correlation-across-bf-in-0-1-reference> a schema:PropertyValue ;
+        schema:value "-1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cuntz-balancing-factor-sweep-normalized-conduction-path-p-bf-p-1-correlation> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Cuntz balancing factor sweep normalized conduction path P(bf)/P(1) correlation = 0.99969 Pearson r" ;
+        dct:description "P(bf)/P(1) decreases monotonically from 1.6852 (bf=0) to 1.0000 (bf=1); RMSE = 0.0067, p = 7.18e-11" ;
+        schema:measurementTechnique "8-point balancing factor sweep in [0.0, 1.0] on N=160 carriers vs Cuntz et al. (2010) reference (RMSE = 0.0067, p = 7.18e-11)" ;
+        schema:name "Cuntz balancing factor sweep normalized conduction path P(bf)/P(1) correlation" ;
+        schema:unitText "Pearson r" ;
+        schema:value "0.99969" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cuntz-balancing-factor-sweep-normalized-conduction-path-p-bf-p-1-correlation-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cuntz-balancing-factor-sweep-normalized-conduction-path-p-bf-p-1-correlation-reference> a schema:PropertyValue ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cuntz-balancing-factor-sweep-normalized-wiring-cost-w-bf-w-0-correlation> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Cuntz balancing factor sweep normalized wiring cost W(bf)/W(0) correlation = 1.0 Pearson r" ;
+        dct:description "W(bf)/W(0) increases monotonically from 1.0000 (bf=0) to 11.5038 (bf=1); RMSE = 0.0042, p = 1.81e-19" ;
+        schema:measurementTechnique "8-point balancing factor sweep in [0.0, 1.0] on N=160 carriers vs Cuntz et al. (2010) reference (RMSE = 0.0042, p = 1.81e-19)" ;
+        schema:name "Cuntz balancing factor sweep normalized wiring cost W(bf)/W(0) correlation" ;
+        schema:unitText "Pearson r" ;
+        schema:value "1.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cuntz-balancing-factor-sweep-normalized-wiring-cost-w-bf-w-0-correlation-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-cuntz-balancing-factor-sweep-normalized-wiring-cost-w-bf-w-0-correlation-reference> a schema:PropertyValue ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-dendritic-ca2-spike-coincidence-window-delta-t-c-at-bf-0-20-purkinje-regime> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Dendritic Ca2+ spike coincidence window Delta_t_c at bf = 0.20 (Purkinje regime) = 5.238 ms" ;
+        dct:description "window shrinks to 0.729 ms in the bf = 1 radial-star limit where no tip pair shares a sub-branch hotspot (same-branch fraction 0.000)" ;
+        schema:measurementTechnique "Largest inter-input delay in the 13-point sweep [0, 30] ms still firing the LCA hotspot (V > 0 mV), averaged over 21 tip pairs; pair spike fraction at dt = 0: 0.857" ;
+        schema:name "Dendritic Ca2+ spike coincidence window Delta_t_c at bf = 0.20 (Purkinje regime)" ;
+        schema:unitText "ms" ;
+        schema:value "5.238" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-dendritic-ca2-spike-coincidence-window-delta-t-c-at-bf-0-20-purkinje-regime-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-dendritic-ca2-spike-coincidence-window-delta-t-c-at-bf-0-20-purkinje-regime-reference> a schema:PropertyValue ;
+        schema:value "3.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-passive-linear-rc-g-ca-0-k-gate-frozen-hotspot-superposition-ratio-v-pair-v-a-v-b> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Passive (linear RC, g_Ca = 0, K+ gate frozen) hotspot superposition ratio V_pair / (V_a + V_b) = 1.0 peak-depolarization ratio" ;
+        dct:description "exact linear superposition (Lean 4 Theorem 4) is the null model for coincidence detection; identical-input gain = 2.000000 vs theorem value 2.0" ;
+        schema:measurementTechnique "Forward-Euler (dt = 0.02 ms) coincident paired alpha-input peak vs sum of single-input peaks at the LCA hotspot across 21 tip pairs (max |ratio - 1| over all 8 bf = 6.22e-15; identical-input linear gain = 2.000000)" ;
+        schema:name "Passive (linear RC, g_Ca = 0, K+ gate frozen) hotspot superposition ratio V_pair / (V_a + V_b)" ;
+        schema:unitText "peak-depolarization ratio" ;
+        schema:value "1.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-passive-linear-rc-g-ca-0-k-gate-frozen-hotspot-superposition-ratio-v-pair-v-a-v-b-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-passive-linear-rc-g-ca-0-k-gate-frozen-hotspot-superposition-ratio-v-pair-v-a-v-b-reference> a schema:PropertyValue ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-purkinje-class-iv-regime-bf-0-20-normalized-wiring-cost-w-w-0> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Purkinje / Class IV regime (bf = 0.20) normalized wiring cost W/W(0) = 1.0189 W(0.2) / W(0)" ;
+        dct:description "achieves 98.1% wiring optimality while cutting conduction delay from 1.685x to 1.407x; random ablation is 10.43x longer" ;
+        schema:measurementTechnique "Greedy MST at bf=0.20 vs random spanning tree ablation control (random W/W_0.2 = 10.4340x, Betti-1 = 0)" ;
+        schema:name "Purkinje / Class IV regime (bf = 0.20) normalized wiring cost W/W(0)" ;
+        schema:unitText "W(0.2) / W(0)" ;
+        schema:value "1.0189" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-purkinje-class-iv-regime-bf-0-20-normalized-wiring-cost-w-w-0-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-purkinje-class-iv-regime-bf-0-20-normalized-wiring-cost-w-w-0-reference> a schema:PropertyValue ;
+        schema:value "1.022" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-rall-passive-cable-ac-dc-length-constant-ratio-lambda-f-lambda-dc-at-the-synaptic-frequency> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Rall passive cable AC/DC length-constant ratio lambda_f / lambda_DC at the synaptic frequency = 0.2487 dimensionless ratio" ;
+        dct:description "lambda_f <= lambda_DC (Lean 4 Theorem 5); mean tip-to-soma electrotonic distance X = 0.3350 at bf = 0.20 (reference value is the hand-computed analytic check in electrotonic_ca_spike_reference.json)" ;
+        schema:measurementTechnique "lambda_DC = sqrt(R_m d / 4 R_i) = 1151.6 um for d = 0.5 um (R_m = 122000 Ohm cm2, R_i = 115 Ohm cm); lambda_f = 286.4 um at f_syn = 1/(2 pi tau_syn) = 53.1 Hz (tau_m = 93.9 ms)" ;
+        schema:name "Rall passive cable AC/DC length-constant ratio lambda_f / lambda_DC at the synaptic frequency" ;
+        schema:unitText "dimensionless ratio" ;
+        schema:value "0.2487" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-rall-passive-cable-ac-dc-length-constant-ratio-lambda-f-lambda-dc-at-the-synaptic-frequency-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-rall-passive-cable-ac-dc-length-constant-ratio-lambda-f-lambda-dc-at-the-synaptic-frequency-reference> a schema:PropertyValue ;
+        schema:value "0.2487" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-rall-s-3-2-electrotonic-impedance-matching-ratio-sum-d-daughter-3-2-d-parent-3-2> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Rall's 3/2 electrotonic impedance-matching ratio (sum d_daughter^(3/2)) / d_parent^(3/2) = 1.0 conductance ratio" ;
+        dct:description "exact electrotonic cylinder impedance matching across all 40 bifurcations (RMSE = 1.27e-16)" ;
+        schema:measurementTechnique "Bottom-up Rall 3/2 diameter accumulation across N_bif = 40 bifurcations (RMSE = 1.27e-16, symmetric d_p/d_d = 1.5874)" ;
+        schema:name "Rall's 3/2 electrotonic impedance-matching ratio (sum d_daughter^(3/2)) / d_parent^(3/2)" ;
+        schema:unitText "conductance ratio" ;
+        schema:value "1.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-rall-s-3-2-electrotonic-impedance-matching-ratio-sum-d-daughter-3-2-d-parent-3-2-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-rall-s-3-2-electrotonic-impedance-matching-ratio-sum-d-daughter-3-2-d-parent-3-2-reference> a schema:PropertyValue ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-same-branch-shared-lca-hotspot-fraction-of-nearest-neighbour-tip-pairs-in-the-bf-1-radial-star-limit> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Same-branch (shared LCA hotspot) fraction of nearest-neighbour tip pairs in the bf = 1 radial-star limit = 0.0 fraction" ;
+        dct:description "at bf = 1 every carrier attaches directly to the soma (Lean 4 Theorem 1, third clause) so every tip pair is a between-branch pair and the only coincidence site is the soma" ;
+        schema:measurementTechnique "Fraction of 24 nearest-neighbour tip pairs whose lowest common ancestor is not the soma root at bf = 1.0 (bf = 0.20 value: 1.000)" ;
+        schema:name "Same-branch (shared LCA hotspot) fraction of nearest-neighbour tip pairs in the bf = 1 radial-star limit" ;
+        schema:unitText "fraction" ;
+        schema:value "0.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-same-branch-shared-lca-hotspot-fraction-of-nearest-neighbour-tip-pairs-in-the-bf-1-radial-star-limit-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-measurement-same-branch-shared-lca-hotspot-fraction-of-nearest-neighbour-tip-pairs-in-the-bf-1-radial-star-limit-reference> a schema:PropertyValue ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-morphometric-validation-1> a pk:EvidenceItem ;
+        rdfs:label "2007-caleo-cajal-dendritic-wiring.py L1163–L1342" ;
+        dct:description "15 reference-anchored measurements with Pearson r, p-values, OLS SE, RMSE, random-tree ablation and the passive g_Ca = 0 / frozen-K+ ablations; Pass 3 block L1281-1342" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/2007-caleo-cajal-dendritic-wiring.py#L1163-L1342> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-caleo-cajal-dendritic-wiring-morphometric-validation-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/cajal_dendritic_wiring/electrotonic_ca_spike_reference.json L48–L68" ;
+        dct:description "synaptic_input_protocol.I_peak_note states I_peak is tuned so single inputs stay sub-threshold; coincidence_detection_predictions registers the exact nulls (gain 2.0, same-branch 0.0) and the predicted sign -1" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/datasets/cajal_dendritic_wiring/electrotonic_ca_spike_reference.json#L48-L68> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 058 Pass 3 Assessor, Phase B)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/58> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0014-4886(59)90046-9>,
+            <https://doi.org/10.1016/S0006-3495(81)84782-0>,
+            <https://doi.org/10.1038/nn1253>,
+            <https://doi.org/10.1073/pnas.0704731104>,
+            <https://doi.org/10.1111/j.1469-7793.2001.00445.x>,
+            <https://doi.org/10.1113/jphysiol.1980.sp013358>,
+            <https://doi.org/10.1152/jn.00280.2007>,
+            <https://doi.org/10.1371/journal.pcbi.1000251>,
+            <https://doi.org/10.1371/journal.pcbi.1000877>,
+            <https://doi.org/10.5962/bhl.title.48637>,
+            <https://global.oup.com/academic/product/biophysics-of-computation-9780195181999> .
+    <https://doi.org/10.1016/0014-4886(59)90046-9> dct:date "1959"^^xsd:gYear ;
+        dct:title "Branching dendritic trees and motoneuron membrane resistivity" .
+    <https://doi.org/10.1016/S0006-3495(81)84782-0> dct:date "1981"^^xsd:gYear ;
+        dct:title "Voltage oscillations in the barnacle giant muscle fiber" .
+    <https://doi.org/10.1038/nn1253> dct:date "2004"^^xsd:gYear ;
+        dct:title "Computational subunits in thin dendrites of pyramidal cells" .
+    <https://doi.org/10.1073/pnas.0704731104> dct:date "2007"^^xsd:gYear ;
+        dct:title "Optimization principles of dendritic structure" .
+    <https://doi.org/10.1111/j.1469-7793.2001.00445.x> dct:date "2001"^^xsd:gYear ;
+        dct:title "Compartmental models of rat cerebellar Purkinje cells based on simultaneous somatic and dendritic patch-clamp recordings" .
+    <https://doi.org/10.1113/jphysiol.1980.sp013358> dct:date "1980"^^xsd:gYear ;
+        dct:title "Electrophysiological properties of in vitro Purkinje cell dendrites in mammalian cerebellar slices" .
+    <https://doi.org/10.1152/jn.00280.2007> dct:date "2008"^^xsd:gYear ;
+        dct:title "A Cost-Benefit Analysis of Neuronal Morphology" .
+    <https://doi.org/10.1371/journal.pcbi.1000251> dct:date "2008"^^xsd:gYear ;
+        dct:title "A Quantitative Description of Sensory Neuron Organization in Drosophila: From Individual Dendritic Trees to the Population" .
+    <https://doi.org/10.1371/journal.pcbi.1000877> dct:date "2010"^^xsd:gYear ;
+        dct:title "One Rule to Grow Them All: A General Theory of Neuronal Dendritic Trees" .
+    <https://doi.org/10.5962/bhl.title.48637> dct:date "1899"^^xsd:gYear ;
+        dct:title "Textura del Sistema Nervioso del Hombre y de los Vertebrados" .
+    <https://global.oup.com/academic/product/biophysics-of-computation-9780195181999> dct:date "1999"^^xsd:gYear ;
+        dct:title "Biophysics of Computation: Information Processing in Single Neurons" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Cuntz et al. (2010) PLoS Comput. Biol. & Cuntz et al. (2007) PNAS Ramón y Cajal minimum-wiring and conduction-delay greedy Steiner dendritic trees + Rall's 3/2 diameter power law + (Pass 3) Rall passive-cable electrotonics coupled to a Morris-Lecar dendritic Ca2+ spike hotspot — Morphometric validation 91/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T17:50:06Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-caleo-cajal-dendritic-wiring-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/58> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

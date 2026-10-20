@@ -1,0 +1,351 @@
+# MorphoEval audit — Graner & Glazier (1992) PRL / Glazier & Graner (1993) PRE Cellular Potts Cell Sorting, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `1992-graner-cellular-potts-cell-sorting.py` (1564 lines) after the remediation of the single
+# open v2 item (perimeter / cortical tension constraint) in the instrumented loop
+# `morphoeval/runs/2026-10-19-cellular-potts-cell-sorting-loop-pass3`, superseding
+# `2026-10-19-cellular-potts-cell-sorting-audit-v2` (91.1).
+#
+# What Pass 3 changed:
+#   1. Ouchi et al. (2003) Physica A Eq. 2 perimeter elasticity H_P = lambda_P sum (p_sigma - P_t)^2 added to the
+#      Metropolis kernel with incremental 8-neighbour bond-count bookkeeping (Delta_p_old = 2 n - 8,
+#      Delta_p_new = 8 - 2 n) verified against a full recount (max |error| = 0 after 150 MCS); lambda_P = 0
+#      reproduces the Pass 2 lattice bit-for-bit.
+#   2. New regime `cortical_tension_sorting` (Panel C1, GIF column 4), a 6-point lambda_P ablation sweep (C2), a
+#      per-cell perimeter histogram (C3), a 5-point P_t sweep (C4) and a T = 80 melting ablation (C5).
+#   3. 3 new Lean 4 theorems (`cpm_square_block_target_perimeter`, `cpm_perimeter_elasticity_restoring_identity`,
+#      `cpm_cortical_tension_monotone_above_target`; 0 sorrys), registered in the math_kg loop file.
+#   4. Self-test 8 -> 12 checks; measure_morphoeval() 8 -> 15 measurements; dataset JSON/bib/README extended
+#      with Ouchi 2003 and Farhadifar 2007 (DOIs recorded from memory, flagged `doi_verification`).
+#
+# What the Pass 3 review found (all pre-date Pass 3 and were missed by the v1/v2 assessors):
+#   - A whole-cell `cell_type` identity-swap move (8 attempts per MCS) with its own Metropolis rule at an
+#     inconsistent temperature 2.5 T is not part of the Graner-Glazier formalism; it teleports cell identities and
+#     is the main driver of the sorting the panels show.
+#   - Inside that move, the "partial sorting lens" regime is manufactured by an uncited lateral bias field
+#     1.8 * x; the resulting A2 panel is a concentric core-shell (Delta_r = +0.352 > A1's +0.332), not a lens.
+#   - Cells sit at 75.6 % of V_t (mean v = 12.1 of 16, 3 cells at the hard floor v = 6) because lambda = 1.2 is weak
+#     against J ~ 14-16, and a hard `vols <= 6` floor outside the Hamiltonian hides the resulting cell loss.
+#   - `depinning_prob` is computed and never used; the PRL Fig. 3 "empirical_mcs_checkpoints" (0-150 MCS) have no
+#     digitisation provenance; the specimen thresholds (82nd / 42nd percentile, 0.35 channel bleed, r_roi = 88 px)
+#     are uncited.
+# Scores therefore go DOWN on model-fidelity, specimen-match, morphometric-validation, source- and
+# code-traceability even though the v2 remediation item is closed; see `remediation` for Pass 4.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated
+# probabilities). Line numbers refer to the files at commit 654cd6fc plus this loop's uncommitted edits.
+
+audit:
+  id: 2026-10-19-cellular-potts-cell-sorting-audit-v3
+  supersedes_audit_id: 2026-10-19-cellular-potts-cell-sorting-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric protocol)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 654cd6fc
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) evaluation of `1992-graner-cellular-potts-cell-sorting.py` after the remediation
+      loop `2026-10-19-cellular-potts-cell-sorting-loop-pass3` (Ouchi et al. 2003 perimeter / cortical
+      tension term, lambda_P and P_t sweeps, 3 new Lean theorems, 12-check self-test, 15 measurements).
+      Working-tree state at 654cd6fc with this slot's uncommitted Pass 3 edits.
+
+references:
+  graner1992:
+    title: "Simulation of biological cell sorting using a two-dimensional extended Potts model"
+    authors: "Graner F, Glazier JA"
+    venue: "Physical Review Letters 69(13):2013-2016 (1992)"
+    doi: 10.1103/PhysRevLett.69.2013
+  glazier1993:
+    title: "Simulation of the differential adhesion driven rearrangement of biological cells"
+    authors: "Glazier JA, Graner F"
+    venue: "Physical Review E 47(3):2128-2154 (1993)"
+    doi: 10.1103/PhysRevE.47.2128
+  steinberg1963:
+    title: "Reconstruction of tissues by dissociated cells"
+    authors: "Steinberg MS"
+    venue: "Science 141(3579):401-408 (1963)"
+    doi: 10.1126/science.141.3579.401
+  gierer1972:
+    title: "Regeneration of Hydra from reaggregated cells"
+    authors: "Gierer A, Berking S, Bode H, David CN, Flick K, Hansmann G, Schaller H, Trenkner E"
+    venue: "Nature New Biology 239(91):98-101 (1972)"
+    doi: 10.1038/newbio239098a0
+  foty1996:
+    title: "Surface tensions of embryonic tissues predict their mutual envelopment behavior"
+    authors: "Foty RA, Pfleger CM, Forgacs G, Steinberg MS"
+    venue: "Development 122(5):1611-1620 (1996)"
+    doi: 10.1242/dev.122.5.1611
+  ouchi2003:
+    title: "Improving the realism of the cellular Potts model in simulations of biological cells"
+    authors: "Ouchi NB, Glazier JA, Rieu JP, Upadhyaya A, Sawada Y"
+    venue: "Physica A 329(3-4):451-458 (2003); DOI recorded from memory during the offline Pass 3 loop, not re-resolved online"
+    doi: 10.1016/S0378-4371(03)00574-0
+  farhadifar2007:
+    title: "The influence of cell mechanics, cell-cell interactions, and proliferation on epithelial packing"
+    authors: "Farhadifar R, Röper JC, Aigouy B, Eaton S, Jülicher F"
+    venue: "Current Biology 17(24):2095-2104 (2007); DOI recorded from memory during the offline Pass 3 loop, not re-resolved online"
+    doi: 10.1016/j.cub.2007.11.049
+
+simulations:
+  - id: graner-cellular-potts-cell-sorting
+    name: "Graner & Glazier (1992) / Glazier & Graner (1993) extended large-Q Cellular Potts Model cell sorting + Ouchi et al. (2003) cortical tension"
+    organism: "Hydra attenuata (endoderm/ectoderm reaggregates) & Gallus gallus embryonic cell spheroids"
+    script: 1992-graner-cellular-potts-cell-sorting.py
+    output: docs/media/cellular_potts_cell_sorting_comparison.png
+    extra_outputs:
+      - docs/media/cellular_potts_cell_sorting_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-cellular-potts-cell-sorting-audit-v2
+    source_refs:
+      - graner1992
+      - glazier1993
+      - steinberg1963
+      - gierer1972
+      - foty1996
+      - ouchi2003
+      - farhadifar2007
+    claim_boundary:
+      reported_in_source:
+        - "Graner & Glazier (1992) PRL Eqs. 1-3 & Fig. 3: extended large-Q Cellular Potts Model Hamiltonian with bond-energy surface tensions gamma_LD = J_LD - (J_LL + J_DD)/2 and gamma_alphaM = J_alphaM - J_alphaalpha/2 driving logarithmic heterotypic boundary decay L_het(t) ~ A - B ln(t)."
+        - "Glazier & Graner (1993) PRE Table I & Section III.B: classification of 4 equilibrium phase regimes (complete engulfment, partial sorting lens, checkerboard mixing, and cell dissociation) and fluctuation temperature controls (T=0 lattice pinning arrest vs optimal thermal sorting vs high-T thermal melting)."
+        - "Ouchi et al. (2003) Physica A Eq. 2: a perimeter (cortical tension) elasticity term lambda_P (p_sigma - P_t)^2 added to the CPM Hamiltonian suppresses ragged, fragmented cell boundaries; Farhadifar et al. (2007) Eq. 1 is the vertex-model analogue."
+      reconstructed_in_script:
+        - "2D extended large-Q Cellular Potts Model (60 x 60 lattice, 60 cells of V_t = 16) across all 4 canonical phase regimes plus T=0 pinning and equal-adhesion negative controls, a 7-point continuous J_LD sweep, and a 6-point fluctuation temperature sweep (all at lambda_P = 0)."
+        - "Ouchi et al. (2003) perimeter / cortical tension term with incremental 8-neighbour bond-count bookkeeping (max drift 0 after 150 MCS), a cortical-tension sorting regime (lambda_P = 2, P_t = 44), a 6-point lambda_P ablation sweep at T = 10 and T = 80, and a 5-point P_t sweep (32-56) with realised-perimeter tracking r = 0.9999."
+        - "Computer-vision segmentation of a confocal fluorescence embryonic cell aggregate (`embryonic_cell_aggregate_specimen.jpg`) comparing empirical GFP/RFP radial occupancy against CPM core-shell profiles (r = 0.961, RMSE = 0.154)."
+      transfer_boundary:
+        - "2D lattice Cellular Potts representation of 3D multicellular spheroid cross-sections; the specimen is an embryoid-body spheroid, not a Hydra reaggregate, and its core/shell labels are assigned by fluorescence channel, not by cell type."
+        - "Sorting dynamics include a whole-cell identity-swap move (8 attempts/MCS, Metropolis at 2.5 T) that is not part of the Graner-Glazier single-site copy formalism; the 'partial sorting lens' regime adds an uncited lateral bias field inside that move. Both are disclosed here, not in the script."
+        - "Cells equilibrate at ~76 % of V_t under lambda = 1.2 and a hard v >= 6 floor; the PRL Fig. 3 comparison uses 0-150 MCS checkpoints whose digitisation from the 10^4-MCS figure is not documented."
+      does_not_claim:
+        - "Does not model subcellular cytoskeletal actin-myosin turnover, active chemotactic signaling, cell growth/division, or 3D aggregates; does not reproduce Glazier & Graner (1993) quantitative boundary-length curves at the paper's cell size (V_t ~ 40) or run length (10^4 MCS)."
+    summary: >-
+      Pass 3 (v3) evaluation of `1992-graner-cellular-potts-cell-sorting.py` (84.5/100, down from
+      91.1/100 in Pass 2). The single v2 remediation item is closed: the Ouchi et al. (2003) perimeter
+      elasticity term lambda_P (p_sigma - P_t)^2 is in the Metropolis kernel (`perimeter_energy_delta`,
+      L199-206; `dp_old`/`dp_new` parity bookkeeping and acceptance, L560-588) with zero drift against a
+      full recount, lambda_P = 0 reproduces the Pass 2 lattice bit-for-bit, and at lambda_P = 2 RMS(p - P_t)
+      falls 14.05 -> 1.73 bonds, fragmentation 0.217 -> 0.083 and shape index 13.27 -> 12.30 while sorting
+      survives (Delta_r = +0.355 vs +0.332). Three new Lean theorems (0 sorrys) pin the target perimeter
+      12 s - 4, the single-copy perimeter parity and cost identities, and the monotonicity of the term above
+      P_t. The re-read of the kernel, however, finds defects the v1/v2 assessors missed: a whole-cell
+      `cell_type` identity-swap move with its own Metropolis rule at 2.5 T (L467-500) that is not in the
+      Graner-Glazier formalism, an uncited 1.8 * x lateral bias that manufactures the 'lens' regime
+      (L494-497; A2 is a concentric core-shell, Delta_r = +0.352), cells at 75.6 % of V_t with 3 cells on a
+      hard v >= 6 floor (L530-531), dead `depinning_prob` code (L451-454), PRL Fig. 3 checkpoints without
+      digitisation provenance, and uncited specimen thresholds (L807-831). Model fidelity, specimen match,
+      morphometric validation and both traceability dimensions are therefore scored lower than in v2.
+    scores:
+      model-fidelity:
+        value: 76
+        rationale: >-
+          Credited: the surface tension relations (`compute_cpm_tensions`, L109-154) match PRL Eqs. 2-3; the
+          single-site Metropolis copy kernel (L502-588) carries the exact adhesion + quadratic volume Hamiltonian
+          of PRL Eq. 1 with the Glazier & Graner (1993) Eq. 2 acceptance rule (P = 1 for dH <= 0, exp(-dH/T)
+          otherwise, strictly negative only at T = 0); the Pass 3 Ouchi et al. (2003) term is correct in form
+          (8-neighbour bond-count perimeter, Delta_p parity laws L562-563, energy delta L199-206, bookkeeping
+          verified drift-free) and lambda_P = 0 recovers the v2 lattice bit-for-bit (self-test check 9). Deductions
+          (all pre-date Pass 3, missed in v2): a whole-cell identity-swap move exchanges `cell_type` between two
+          random cells 8 times per MCS under a separate Metropolis rule at temperature 2.5 T (L467-500); this
+          teleports cell identity without any lattice motion and is not part of the Graner-Glazier formalism in
+          which sorting arises from single-site copies alone (-10); the 'partial sorting lens' regime is not an
+          emergent consequence of gamma_LD > gamma_DM - gamma_LM but is manufactured by a 1.8 * x lateral bias
+          added inside that swap move (L494-497), and the realised A2 configuration is a concentric core-shell
+          (Delta_r = +0.352, centroid offset 0.21), not a lens (-5); cells equilibrate at mean v = 12.1 = 75.6 % of
+          V_t (RMS 5.16) because lambda = 1.2 is weak against J ~ 14-16, and a hard `vols <= 6` veto outside the
+          Hamiltonian (L530-531; 3 cells sit on it) prevents the cell loss this would otherwise cause (-4);
+          `depinning_prob` (L451-454) is computed from the §III.B pinning argument and never used, so the
+          T = 0 arrest is a property of the acceptance rule, not of the documented factor (-2); lattice edges are
+          excluded from copy attempts (L524-525) so medium contact at the boundary is never sampled (-1).
+        evidence:
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [109, 154], note: "Exact PRL Eqs. 2-3 surface tensions and four-regime classifier", supports: true}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [502, 588], note: "Single-site Metropolis copy kernel: adhesion + quadratic volume + Pass 3 perimeter term with Glazier & Graner (1993) Eq. 2 acceptance", supports: true}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [199, 206], note: "perimeter_energy_delta = lambda_P dp (2 (p - P_t) + dp), Ouchi et al. (2003) Eq. 2 single-copy form matching Lean cpm_delta_perim", supports: true}
+          - {file: morphoeval/lean/loops/Loop_042_cellular_potts_cell_sorting.lean, lines: [101, 193], note: "Pass 3 Theorems 4-6: target perimeter 12 s - 4, perimeter parity/cost identities, monotonicity above P_t (0 sorrys)", supports: true}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [467, 500], note: "Whole-cell cell_type identity swap, 8 attempts per MCS, own Metropolis rule at 2.5 T — not in the Graner-Glazier single-site formalism", supports: false}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [494, 497], note: "is_partial lateral bias 1.8 * x manufactures the 'lens' regime; A2 realised as concentric core-shell Delta_r = +0.352", supports: false}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [530, 531], note: "Hard vols <= 6 veto outside the Hamiltonian; cells at 75.6 % of V_t with 3 cells on the floor", supports: false}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [451, 454], note: "depinning_prob computed and never used (dead code)", supports: false}
+      specimen-match:
+        value: 84
+        rationale: >-
+          Credited: the SHA-256-locked confocal embryoid-body specimen is segmented into a GFP core (r_D/R = 0.49)
+          and RFP shell (r_L/R = 0.77, Delta_r = +0.28) and its 12-annulus occupancy profile matches the CPM
+          complete-sorting profile (r = 0.961, RMSE = 0.154, Panel B4); Panel C1 shows visibly more compact,
+          simply connected cells than A1 with the same core-shell topology, and the GIF's fourth column shows
+          the same. Deductions: the A2 'Partial Sorting / Lens' panel is visually indistinguishable from A1
+          (both concentric core-shells; A2 Delta_r = +0.352 exceeds A1's +0.332) whereas Glazier & Graner's
+          lens regime is a side-by-side doublet (-6); A1 at lambda_P = 0 shows 21.7 % of cells fragmented into
+          satellite pixels, a lattice artefact the paper's larger cells (V_t ~ 40) do not show, and the canonical
+          panels are still rendered at lambda_P = 0 (-4); the specimen is an embryoid-body spheroid labelled by
+          fluorescence channel, not a Hydra endoderm/ectoderm reaggregate, so the core-shell correspondence to
+          cell type is assumed (-4); the specimen comparison uses a 12-bin profile of a single image with no
+          second specimen or Foty et al. (1996) envelopment measurement (-2).
+        evidence:
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [791, 896], note: "Specimen segmentation (GFP core, RFP shell), 12-annulus profiles, Pearson r / RMSE and Fig. 3 checkpoint correlation", supports: true}
+          - {file: docs/media/cellular_potts_cell_sorting_comparison.png, lines: [0, 0], note: "15-panel figure: A1-A5 regimes, B3 specimen overlay, B4 profile match r = 0.961, C1 compact cortical-tension cells; A2 'lens' is a concentric core-shell indistinguishable from A1", supports: true}
+          - {file: docs/media/cellular_potts_cell_sorting_growth.gif, lines: [0, 0], note: "4-column GIF: complete sorting, T = 0 pinning, checkerboard, cortical tension lambda_P = 2 (compact cells, sorted core-shell)", supports: true}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [932, 936], note: "partial_sorting_lens regime rendered as Panel A2; realised Delta_r = +0.352 > A1, not a lens doublet", supports: false}
+      parameter-expressivity:
+        value: 91
+        rationale: >-
+          Credited: six regimes (A1-A5 + cortical tension C1), a 7-point J_LD sweep spanning gamma_LD in [-4, +9]
+          (L630-662, Panel B2), a 6-point temperature sweep T in {0, 1.5, 5, 10, 25, 80} (L665-695, Panel B5), and
+          the new Pass 3 sweeps: lambda_P in {0, 0.25, 0.5, 1, 2, 4} at T = 10 and T = 80 (L702-741, Panels C2/C5),
+          P_t in {32, 38, 44, 50, 56} at lambda_P = 2 (L744-777, Panel C4) with realised mean perimeter tracking
+          P_t to within 2 bonds (r = 0.9999) and the shape index rising monotonically; CLI exposes every J, V_t,
+          lambda, T, MCS, seed plus the new --lam-P and --Pt (L1505-1523). Deductions: lambda (volume multiplier)
+          is never swept although it is the parameter whose weakness produces the 76 % volume deficit (-4); the
+          lambda_P sweep is run only at the complete-sorting J set, so the term's effect on the checkerboard and
+          dissociation regimes is untested (-3); grid size and cell count are fixed (-2).
+        evidence:
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [630, 695], note: "7-point J_LD sweep and 6-point temperature sweep", supports: true}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [698, 777], note: "Pass 3 lambda_P ablation sweep (6 values) and P_t sweep (5 values) returning perimeter, shape index, fragmentation and sorting order parameters", supports: true}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [1505, 1523], note: "CLI: --J-LL/--J-DD/--J-LD/--J-LM/--J-DM/--Vt/--lam/--T/--mcs/--seed plus Pass 3 --lam-P and --Pt", supports: true}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [963, 967], note: "All five sweeps wired into the default render (B2, B5, C2, C4, C5)", supports: true}
+      morphometric-validation:
+        value: 85
+        rationale: >-
+          Credited: `measure_morphoeval()` (L1265-1391) returns 15 measurements with non-null references and
+          units, including the 7 new Pass 3 metrics (P_t = 44 vs Lean, RMS(p - P_t) 1.73 vs the lambda_P = 0
+          baseline 14.05, shape index 12.30 vs the square's 11.0, fragmented fraction 0.083 vs 0, cortical
+          Delta_r +0.355 vs +0.332, monotone RMS over the lambda_P sweep, P_t tracking r = 0.9999); the
+          morphometrics (L238-359) compute heterotypic boundary fraction, envelopment, radial separation,
+          volume and perimeter statistics and 12-annulus profiles; the log-decay fit gives r = -0.946. Deductions:
+          the PRL Fig. 3 'checkpoint concordance' r = 0.972 is against five `empirical_mcs_checkpoints`
+          (0-150 MCS, het fraction 0.48 -> 0.15) in the reference JSON that carry no digitisation provenance —
+          the paper's Fig. 3 spans ~10^4 MCS for V_t ~ 40 cells, so these are at best rescaled and at worst
+          invented, and the comparison is not a validation against the paper (-7); four of the new references are
+          self-referential (the lambda_P = 0 run or the sweep's own values) rather than literature values, and
+          the shape index reference 11.0 is a geometric constant, not a measured cell shape (-4); the mean cell
+          volume (75.6 % of V_t) is computed but not reported as a measurement with reference V_t (-2); no
+          measurement of the swap-move contribution to sorting exists, so the reported Delta_r cannot be
+          attributed to the Hamiltonian (-2).
+        evidence:
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [238, 359], note: "Morphometrics: heterotypic boundary fraction, envelopment, radial separation, volume and Pass 3 perimeter / shape-index statistics, 12-annulus profiles", supports: true}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [1265, 1391], note: "15 measurements with reference values and units (8 Pass 2 + 7 Pass 3 cortical tension)", supports: true}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [209, 231], note: "compute_cell_fragmentation: 8-connected component count per cell (biological reference 0 fragmented)", supports: true}
+          - {file: datasets/cellular_potts_cell_sorting/cellular_potts_cell_sorting_reference.json, lines: [169, 180], note: "PRL Fig. 3 'empirical_mcs_checkpoints' at 0-150 MCS with no digitisation provenance; the paper's figure spans ~10^4 MCS", supports: false}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [1349, 1355], note: "cortical_tension_rms_perimeter_deviation reference_value is the script's own lambda_P = 0 run (self-referential)", supports: false}
+      source-traceability:
+        value: 87
+        rationale: >-
+          Credited: `datasets/cellular_potts_cell_sorting/` carries 7 sources with DOIs (JSON L6-46), the
+          SHA-256-pinned specimen with Wikimedia source URL and CC BY 3.0 licence (L47-58), the Pass 3
+          `perimeter_constraint_extension_ouchi_2003` block (L181-213) with the term, perimeter definition,
+          square-block formula, sweep values, expected behaviour and Lean theorem names, `paper_citations.bib`
+          with 7 entries, and a README that lists the Pass 3 additions; runtime SHA-256 verification is
+          fail-closed (L85-102). Deductions: the two Pass 3 DOIs (Ouchi 2003, Farhadifar 2007) were recorded
+          from memory and are flagged `doi_verification` but not resolved (-3); the Fig. 3 checkpoints
+          (L169-180) cite 'PRL Fig. 3; PRE Figs. 8-10' with no digitisation method, axis rescaling or page (-4);
+          the specimen segmentation constants — 82nd / 42nd percentile thresholds, 0.35 channel-bleed factor,
+          r_roi = 88 px, panel crop boxes — are uncited and undocumented in the dataset (-3); the canonical J
+          set (14, 2, 11, 16, 16), V_t = 16 and lambda = 1.2 are not traced to the paper's own values
+          (the PRL used larger cells and different J magnitudes) (-3).
+        evidence:
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [85, 102], note: "Fail-closed SHA-256 verification of the specimen against both the script constant and the dataset JSON", supports: true}
+          - {file: datasets/cellular_potts_cell_sorting/cellular_potts_cell_sorting_reference.json, lines: [1, 215], note: "7 DOI-bearing sources, SHA-256-pinned specimen with source URL/licence, Pass 3 Ouchi 2003 block with sweep values and Lean theorem names", supports: true}
+          - {file: datasets/cellular_potts_cell_sorting/paper_citations.bib, lines: [45, 68], note: "Ouchi 2003 and Farhadifar 2007 BibTeX entries with DOIs flagged 'recorded from memory, not re-verified online'", supports: true}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [807, 831], note: "Uncited specimen thresholds: 0.35 channel bleed, 82nd / 42nd percentiles, r_roi = 88 px", supports: false}
+      code-traceability:
+        value: 83
+        rationale: >-
+          Credited: the module docstring (L1-43) maps every Hamiltonian term, tension relation, regime
+          inequality and the Pass 3 perimeter term to PRL/PRE/Physica A equation numbers and to the Lean
+          declarations; `compute_cpm_tensions`, `square_block_perimeter_8nbr`, `perimeter_energy_delta` and
+          `simulate_cpm_regime` docstrings name the matching Lean theorems; the math_kg loop file registers 6
+          equations with single-range code loci (re-pinned this pass). Deductions: the identity-swap block is
+          labelled 'Thermally activated cell-neighbor rearrangement moves' citing §III.B (L467-468), which
+          describes thermal boundary fluctuations, not whole-cell identity exchange — the comment misattributes
+          a non-paper mechanism to the paper (-6); the constants 1.8 (lateral bias), 2.5 T (swap temperature),
+          6 (volume floor), 1.5 (trials per boundary site) and the 17.8 px seeding radius carry no comment or
+          citation (-4); `depinning_prob` is documented in a comment (L451-453) as the pinning activation
+          factor but never used, so the docstring's §III.B pinning explanation is not what the code does (-3);
+          the Section 2 header still says 'Graner & Glazier 1992' although the kernel contains the swap move
+          and the Ouchi term (-1); `is_partial` branches on the classifier string, coupling the regime label to
+          the dynamics (-1 net of the honest lambda_P = 0 disclosure in the docstring).
+        evidence:
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [1, 43], note: "Module docstring maps PRL Eqs. 1-3, PRE Table I/§III.B and Ouchi 2003 Eq. 2 to code and Lean declarations", supports: true}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [378, 398], note: "simulate_cpm_regime docstring: Hamiltonian, Pass 3 extension, lambda_P = 0 recovery, temperature regimes", supports: true}
+          - {file: morphoeval/math_kg_loops/graner-cellular-potts-cell-sorting.yaml, lines: [1, 103], note: "6 registered equations with Lean theorem names and single-range code loci re-pinned to the current file", supports: true}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [467, 500], note: "Swap block attributed to Glazier & Graner §III.B; uncited constants 1.8, 2.5 T", supports: false}
+      repro-package:
+        value: 93
+        rationale: >-
+          Credited: deterministic RNG (seed 1992) with a two-run bitwise determinism check (self-test 7) and a
+          bit-for-bit lambda_P = 0 regression against the Pass 2 kernel (check 9); the 12-check `self_test()`
+          (L1394-1501) covers SHA-256, exact tension parity across 5 regimes, sorting vs controls, T = 0 arrest,
+          log decay, specimen correlation, the 15-measurement contract, perimeter definition (4 x 4 = 44,
+          3 x 3 = 32), zero bookkeeping drift, shape regularisation, lambda_P monotonicity and P_t tracking;
+          `--self-test` runs in ~23 s and the default render in ~20 s, producing the PNG and GIF; `--lam-P`
+          and `--Pt` are documented in argparse and the main() summary prints every headline number.
+          Deductions: no requirements lock file pins numpy/scipy/matplotlib versions (-3); matplotlib emits a
+          font-cache warning when MPLCONFIGDIR is unset, which the invocation notes do not mention (-1); the
+          v2 audit's '<2 s self-test' claim is now 23 s and the README section for this script was not
+          updated in this loop (out of scope for the slot) (-3).
+        evidence:
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [1394, 1501], note: "12-check self_test(): SHA-256, tension parity, controls, T = 0 arrest, log decay, specimen, determinism, 15-measurement contract, perimeter definition, bookkeeping drift, lambda_P monotonicity, P_t tracking", supports: true}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [1462, 1466], note: "lambda_P = 0 reproduces the Pass 2 lattice bit-for-bit; perimeter bookkeeping max |error| = 0", supports: true}
+          - {file: 1992-graner-cellular-potts-cell-sorting.py, lines: [1504, 1560], note: "CLI with --lam-P / --Pt and a main() summary printing Delta_r, RMS(p - P_t), fragmentation, shape index and P_t tracking", supports: true}
+    remediation:
+      - >-
+        1992-graner-cellular-potts-cell-sorting.py:467-500 — remove the whole-cell `cell_type` identity-swap move
+        (8 attempts/MCS, Metropolis at 2.5 T) or demote it to an explicitly labelled non-GGH accelerator behind a
+        CLI flag defaulting to off; sorting must then arise from single-site copies alone (raise n_mcs and/or T
+        as needed) and the self-test must assert Delta_r > 0.25 with swaps disabled. Report the swap-free Delta_r
+        as a measurement so the Hamiltonian's own sorting power is attributable.
+      - >-
+        1992-graner-cellular-potts-cell-sorting.py:469, 494-497 and 932-936 — the `is_partial` 1.8 * x lateral
+        bias field is uncited and the resulting A2 panel is a concentric core-shell (Delta_r = +0.352 > A1),
+        not Glazier & Graner's lens doublet. Delete the bias, seed the lens regime as two apposed homotypic
+        half-aggregates (as the PRE does) and add a lens morphometric (centroid offset / interface curvature)
+        with a reference from PRE Table I or Fig. 6.
+      - >-
+        1992-graner-cellular-potts-cell-sorting.py:369, 530-531 — cells equilibrate at mean v = 12.1 (75.6 % of
+        V_t = 16, RMS 5.16, 3 cells on the hard `vols <= 6` floor) because lambda = 1.2 is weak against
+        J ~ 14-16. Raise lambda (or rescale J) so mean v is within 5 % of V_t as in Glazier & Graner (1993),
+        remove the extra-Hamiltonian floor, add a lambda sweep panel and expose mean_vol / V_t as a measurement
+        with reference 1.0.
+      - >-
+        1992-graner-cellular-potts-cell-sorting.py:451-454 — `depinning_prob` is computed and never used; delete it
+        or use it, and rewrite the §III.B comment so the documented pinning mechanism is the one the acceptance
+        rule (L575-579) actually implements.
+      - >-
+        datasets/cellular_potts_cell_sorting/cellular_potts_cell_sorting_reference.json:169-180 and
+        1992-graner-cellular-potts-cell-sorting.py:868-878 — the PRL Fig. 3 `empirical_mcs_checkpoints` (0-150 MCS)
+        have no digitisation provenance; the paper's figure spans ~10^4 MCS for V_t ~ 40 cells. Either digitise
+        Fig. 3 (record axis ranges, tool and rescaling) or relabel the checkpoints as a synthetic target and drop
+        the 'Fig. 3 checkpoint concordance' language from the measurement, panel B1 and the audit summary.
+      - >-
+        1992-graner-cellular-potts-cell-sorting.py:807-831 — cite or derive the specimen segmentation constants
+        (0.35 channel-bleed subtraction, 82nd / 42nd percentile thresholds, r_roi = 88 px, panel crop boxes) in
+        the dataset README/JSON and add a sensitivity check (e.g. thresholds ±5 percentiles) to the self-test so
+        the r = 0.961 profile match is shown to be robust.
+      - >-
+        1992-graner-cellular-potts-cell-sorting.py:926-961 — the canonical A/B panels are still rendered at
+        lambda_P = 0 and show 21.7 % fragmented cells; once the volume constraint is fixed, run the lambda_P
+        sweep across all four regimes (not only the complete-sorting J set) and report whether the Ouchi term
+        changes the regime boundaries of Panel B2.

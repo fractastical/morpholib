@@ -1,0 +1,312 @@
+# MorphoEval audit — Conte et al. (2012), Martin et al. (2009) & He et al. (2014) Drosophila Ventral Furrow Invagination Biomechanics, 2026-10-19 (v3)
+#
+# Pass 3 remediation-round evaluation of `2012-he-drosophila-ventral-furrow.py` (Slot 046,
+# `slot-046-drosophila-ventral-furrow`) superseding `2026-10-19-drosophila-ventral-furrow-audit-v2` (92.0)
+# in the instrumented loop `morphoeval/runs/2026-10-19-drosophila-ventral-furrow-loop-pass3`.
+#
+# What Pass 3 changed (both open v2 remediation items):
+#   1. v2 item 1 ("couple the 2D transverse ring to longitudinal AP curvature and germband-extension stresses in a
+#      3D shell mesh") -> `ellipsoidal_shell_curvatures`, `solve_ap_coupled_furrow_profile`, `couple_ring_to_ap_shell`,
+#      `sweep_ap_shell_parameters` (L627-852): a Donnell/Winkler elastic line  ell_B^4 D'''' - ell_N^2 D'' + k_rel(z) D
+#      = D_2D(t) chi_meso(z) along the AP axis of the prolate ellipsoid (a = 250 um, b = 83.2 um) with exact meridional and
+#      hoop curvatures (k_pole/k_eq = 13x), driven by the 2D ring depth at every snapshot with a germband-extension
+#      tension ramp, swept into a 65 x 81 (theta x z) shell mesh (Panel G) and swept over ell_N and a/b (Panel H).
+#      CLOSED AS A REDUCED MODEL: this is a 1D elastic line + kinematic circumferential sweep, NOT a 3D FE shell.
+#   2. v2 item 2 ("explicitly resolve intracellular Stokes flow fields around moving nuclei during the early
+#      lengthening phase") -> `solve_intracellular_stokes_flow`, `analyze_phase1_nuclear_hydrodynamics` (L855-1083):
+#      a variable-viscosity Stokes solve in stream-function form (4 d_xy[mu psi_xy] + (d_xx - d_yy)[mu(psi_xx - psi_yy)]
+#      = 0) on a 35 x 192 grid inside the WT mesoderm cell at the instant of maximal Phase-I lengthening rate, with
+#      incompressible-trapezoid boundary kinematics (exact flux closure 5.6e-17), the nucleus as a 50x-viscosity
+#      inclusion (rigid-body CV 0.004), an exact-solution verification (L2 8.1e-13) and a Phase-I nuclear trajectory
+#      (Panel I). CLOSED WITH LIMITATIONS: fixed rectangular domain, no cortical stress BC, no neighbour coupling.
+#   3. Two new machine-checked Lean 4 theorems (0 sorrys): `ap_tension_and_curvature_stiffening_reduce_furrow_depth`
+#      and `affine_lengthening_flow_divergence_free_and_basalward`; registered in the math KG loop file.
+#   4. New SHA-256-pinned parameter table `datasets/drosophila_ventral_furrow/ap_shell_stokes_reference.json`
+#      (+3 citations with explicit `doi_verified_offline: false` flags), 5 new `measure_morphoeval()` entries (7 -> 12),
+#      self-test 4 -> 6 blocks (+21 asserts), 6-panel -> 9-panel figure. GIF regenerates byte-identically to v2.
+#
+# What Pass 3 EXPOSED (score goes DOWN on two dimensions despite the new mechanisms):
+#   The 2D ring "simulation" prescribes its own targets. In `simulate_ventral_furrow_regime` the regime block
+#   (L332-369) hard-codes `target_ap_um`, `target_h_um`, `target_depth_um` equal to the empirical reference values, the
+#   furrow depth is an interpolant `depth_um = target_depth_um * min(1, 0.35 constr_frac + 0.65 prog^1.28)` (L455-458)
+#   pinned to the target at the last step, and `h_mean = target_h_um` is forced at the last step (L443-445). The
+#   6-regime Pearson r = 1.0000 / RMSE = 0.000 um that v2 credited under model-fidelity and morphometric-validation is
+#   therefore circular: depth and height are not emergent from the viscous-vertex mechanics, only the apical-width
+#   pulse ODE is integrated. The new AP shell and Stokes layers are genuine boundary-value solves, but they are driven
+#   by that prescribed depth. This is the top Pass 4 item.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not probabilities).
+# Line numbers refer to the files at commit 7e4f207 as modified in this working tree (verified against the current
+# file at audit time; the script is 1962 lines, the Lean file 243 lines).
+
+audit:
+  id: 2026-10-19-drosophila-ventral-furrow-audit-v3
+  supersedes_audit_id: 2026-10-19-drosophila-ventral-furrow-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 7e4f207
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) remediation-round evaluation of `2012-he-drosophila-ventral-furrow.py` after closing both
+      v2 remediation items in the instrumented loop `2026-10-19-drosophila-ventral-furrow-loop-pass3`
+      (reduced 3D AP shell coupling + variable-viscosity Stokes nucleus solver, 2 new Lean theorems,
+      12 measurements, 9-panel figure). Rendered at commit 7e4f207 with uncommitted slot-046 changes.
+
+references:
+  conte2012:
+    title: "Biomechanical analysis of ventral furrow formation in Drosophila melanogaster"
+    authors: "Conte V, Munoz JJ, Baum B, Miodownik M"
+    venue: "PLoS ONE 7(11):e49973 (2012)"
+    doi: 10.1371/journal.pone.0049973
+  martin2009:
+    title: "Pulsed contractions of an actin-myosin network drive apical constriction"
+    authors: "Martin AC, Kaschube M, Wieschaus EF"
+    venue: "Nature 457(7228):495-499 (2009)"
+    doi: 10.1038/nature07522
+  he2014:
+    title: "Apical constriction drives tissue-scale hydrodynamic flow to mediate cell elongation"
+    authors: "He B, Doubrovinski K, Polyakov O, Wieschaus E"
+    venue: "Nature 508(7496):392-396 (2014)"
+    doi: 10.1038/nature13070
+  polyakov2014:
+    title: "Passive mechanical forces control cell-shape change during Drosophila ventral furrow formation"
+    authors: "Polyakov O, He B, Swan M, Shaevitz JW, Kaschube M, Wieschaus E"
+    venue: "Biophysical Journal 107(4):998-1010 (2014)"
+    doi: 10.1016/j.bpj.2014.07.013
+  sweeton1991:
+    title: "Gastrulation in Drosophila: the formation of the ventral furrow and posterior midgut invaginations"
+    authors: "Sweeton D, Parks S, Costa M, Wieschaus E"
+    venue: "Development 112(3):775-789 (1991)"
+    doi: 10.1242/dev.112.3.775
+    note: "Pass 3 addition; DOI follows the journal pattern as recorded in reference lists, not re-verified offline"
+  leptin1990:
+    title: "Cell shape changes during gastrulation in Drosophila"
+    authors: "Leptin M, Grunewald B"
+    venue: "Development 110(1):73-84 (1990)"
+    doi: 10.1242/dev.110.1.73
+    note: "Pass 3 addition; DOI not re-verified offline"
+  lye2015:
+    title: "Mechanical coupling between endoderm invagination and axis extension in Drosophila"
+    authors: "Lye CM, Blanchard GB, Naylor HW, Muresan L, Huisken J, Adams RJ, Sanson B"
+    venue: "PLoS Biology 13(11):e1002292 (2015)"
+    doi: 10.1371/journal.pbio.1002292
+    note: "Pass 3 addition; used only for the existence of AP tension during germband extension; DOI not re-verified offline"
+
+simulations:
+  - id: he-drosophila-ventral-furrow
+    name: "Conte et al. (2012), Martin et al. (2009) & He et al. (2014) Drosophila ventral furrow invagination biomechanics"
+    organism: "Drosophila melanogaster (gastrulating cellular blastoderm embryo)"
+    script: 2012-he-drosophila-ventral-furrow.py
+    output: docs/media/drosophila_ventral_furrow_comparison.png
+    extra_outputs:
+      - docs/media/drosophila_ventral_furrow_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-drosophila-ventral-furrow-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Conte, Munoz, Baum & Miodownik (2012) PLoS ONE 7(11):e49973 incompressible finite-element cross-sectional decomposition showing apical constriction alone produces only a shallow groove (16.5 um) with over-elongated cells (48.1 um), whereas synergy with basal relaxation, lateral shortening, and ectodermal pushing drives full invagination (41.0 um)"
+        - "Martin, Kaschube & Wieschaus (2009) Nature 457:495-499 Twist-stabilized ratcheted Myosin-II pulses (T_pulse = 82 s) vs unratcheted relaxation recoil; He et al. (2014) Nature 508:392-396 apically driven hydrodynamic cytoplasmic flow that carries nuclei basally as passive tracers during cell lengthening"
+        - "Sweeton et al. (1991) / Leptin & Grunewald (1990): the ventral furrow spans roughly the mesoderm primordium (~0.15-0.80 EL) and germband extension begins as the furrow closes (approximate, not digitised here)"
+      reconstructed_in_script:
+        - "64-cell 2D incompressible trapezoidal blastoderm ring enclosed by the vitelline membrane (R_vit = 83.2 um, A_0 = 262.4 um^2), RK2 integration of the ratcheted Myosin-II apical-width pulse ODE, 6-regime benchmark and 15x15 (r_twist x sigma_synergy) morphospace; NOTE: regime depth and cell height are target-pinned interpolants, not emergent mechanics"
+        - "[Pass 3] Reduced 3D AP shell: Donnell/Winkler elastic line ell_B^4 D'''' - ell_N^2 D'' + k_rel(z) D = D_2D(t) chi_meso(z) on the prolate ellipsoid (exact kappa_z, kappa_theta; k_pole/k_eq = 13x), driven by the ring depth at each snapshot with a germband-extension tension ramp, swept into a 65x81 theta x z shell mesh; sweeps over ell_N (0-150 um, ablation ratio 0.53, monotone) and a/b (1.5-4.0)"
+        - "[Pass 3] Variable-viscosity Stokes flow (stream-function form, 35x192 grid, 6,110 unknowns) inside the Phase-I lengthening mesoderm cell with incompressible-trapezoid boundary kinematics, a 50x-viscosity nucleus (v_nuc/v_cyto = 0.983, rigid-body CV 0.004), exact affine verification (L2 8.1e-13) and a Phase-I nuclear trajectory (4.5 um basal displacement over 16.2 um lengthening)"
+        - "Automated 4-stage confocal cross-section segmentation and ventral apical Myosin-II red enrichment analysis on drosophila_ventral_furrow_specimen.jpg (DV/ML = 1.0496 -> 0.9217, MyoII enrichment = 1.63x, trajectory r = 0.9993)"
+      transfer_boundary:
+        - "The AP coupling is a 1D elastic line with a curvature-weighted Winkler foundation and a kinematic circumferential sweep; ell_B = 22 um and the WT ell_N ramp to 30 um are model assumptions not measured in any cited paper, and N_GB is not calibrated to Lye et al. (2015) ablation recoil"
+        - "The Stokes solve is 2D on a fixed rectangle frozen at t = 1.8 min with velocity (not stress) boundary data; nucleus size/position are order-of-magnitude values; the He et al. (2014) comparison is the qualitative passive-tracer ratio ~1, not a digitised velocity field"
+        - "The 2D ring depth that drives both new layers is pinned to the Conte (2012) / Martin (2009) reference values at the last step, so the 6-regime r = 1.0000 is a consistency check of the calibration, not an independent prediction"
+      does_not_claim:
+        - "A 3D finite-element shell with coupled membrane/bending stresses, a moving-boundary (ALE) or 3D Stokes solve with cortical actomyosin stress boundary conditions, emergent (un-pinned) invagination depth from the viscous-vertex mechanics, or subcellular Rho1/Rok reaction-diffusion signaling"
+    source_refs:
+      - conte2012
+      - martin2009
+      - he2014
+      - polyakov2014
+      - sweeton1991
+      - leptin1990
+      - lye2015
+    summary: >-
+      Pass 3 remediation-round evaluation of `2012-he-drosophila-ventral-furrow.py` (89.9/100, down from
+      92.0 in Pass 2). Both v2 remediation items were closed with honest reduced models: a Donnell/Winkler
+      AP shell line equation on the prolate-ellipsoidal blastoderm (exact meridional/hoop curvatures,
+      $k_{\mathrm{pole}}/k_{\mathrm{eq}} = 13\times$, germband-extension tension $\ell_N$ ramp) driven by the
+      2D ring depth and swept into a 5,265-node $\theta \times z$ shell mesh
+      ($D_{3D}(0.5\,EL) = 39.92\ \mu\text{m}$ vs $D_{2D} = 41.0$, half-depth extent $0.590$ EL vs $\approx 0.65$,
+      $\ell_N$ ablation ratio $0.534$, monotone), and a variable-viscosity Stokes solve in stream-function form
+      inside the Phase-I lengthening cell with a $50\times$-viscosity nucleus
+      ($v_{\mathrm{nuc}}/v_{\mathrm{cyto}} = 0.983$ vs He et al. 2014 $\approx 1$, affine verification
+      $L_2 = 8.1\times10^{-13}$, flux closure $5.6\times10^{-17}$), each pinned by a new machine-checked Lean 4
+      theorem (5 total, 0 sorrys). The round also exposed that the 2D ring depth and cell height are
+      target-pinned interpolants (L332-369, L443-445, L455-458), making the Pass 2 6-regime $r = 1.0000$
+      circular; model-fidelity and morphometric-validation are therefore scored lower than in v2 and the
+      un-pinning of the ring mechanics is the top Pass 4 item.
+    scores:
+      model-fidelity:
+        value: 87
+        rationale: >-
+          Credited: exact incompressible wedge geometry and RK2 ratcheted-pulse ODE (L153-249), the new AP
+          shell line equation with exact ellipsoid curvatures, simply supported poles and a verified
+          second-order stencil (L627-719; uncoupled run recovers the 2D depth to 0.1% at 50% EL), the new
+          variable-viscosity Stokes operator derived by taking the curl of div(sigma) = 0 with exact
+          boundary-flux closure and an exact-solution check to 1e-12 (L855-1003), and 5 Lean theorems
+          (0 sorrys) pinning Theorems 1-5. Deductions: the regime depth and cell height in the 2D ring are
+          prescribed interpolants pinned to the reference values at the last step (L332-369, L443-445,
+          L455-458) rather than solved from the viscous-vertex force balance, so the Conte (2012) decomposition
+          is reproduced by construction (-7, newly exposed); the AP coupling is a 1D line + kinematic sweep,
+          not a 3D FE shell, and ell_B / ell_N are free parameters (-3); the Stokes domain is a fixed rectangle
+          with velocity BCs rather than a moving trapezoid with cortical stress BCs (-3).
+        evidence:
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [153, 249], note: "Incompressible wedge geometry, basal width inversion, and RK2 ratcheted pulse ODE convergence (unchanged, verified)", supports: true}
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [332, 369], note: "Regime block hard-codes target_ap_um / target_h_um / target_depth_um equal to the empirical reference values", supports: false}
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [443, 458], note: "h_mean = target_h_um and depth_um = target_depth_um forced at the last step; depth is an interpolant of constr_frac and prog, not a mechanical solve", supports: false}
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [627, 719], note: "Exact ellipsoid principal curvatures and the Donnell/Winkler AP line equation solver with ghost-node simply supported poles", supports: true}
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [855, 1003], note: "Variable-viscosity Stokes stream-function operator, boundary flux line integral, two-layer Dirichlet closure, sparse direct solve, divergence and affine checks", supports: true}
+          - {file: morphoeval/lean/loops/Loop_046_drosophila_ventral_furrow.lean, lines: [145, 242], note: "Theorems 4-5 (modal stiffness monotonicity; discrete divergence-free basal-ward affine flow), 0 sorrys, verified with lean", supports: true}
+      specimen-match:
+        value: 91
+        rationale: >-
+          Unchanged from v2 for the confocal layer: the CC BY 4.0 4-stage transverse micrograph is vendored,
+          SHA-256-verified and automatically segmented (DV/ML 1.0496 -> 0.9217, Delta h = 42 px, MyoII 1.63x,
+          trajectory r = 0.9993) and shown with bounding boxes in Panel F. New Panel G renders the reduced 3D
+          shell with the ventral furrow strip tapering toward both poles, qualitatively matching the
+          dorsal/lateral views of a gastrulating embryo, and Panel I shows the He et al. (2014)-style basal
+          cytoplasmic flow. Deductions: no side-by-side with a longitudinal (sagittal/ventral) micrograph for
+          the new AP profile, so the 0.59 EL extent is compared to a literature number rather than a specimen
+          (-5); the Stokes panel is compared to no image of nuclear positions (-4).
+        evidence:
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [1086, 1193], note: "Automated 4-stage confocal cross-section segmentation and apical Myosin-II red enrichment analysis (unchanged)", supports: true}
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [1651, 1679], note: "Panel G: theta x z shell mesh surface coloured by inward displacement, ventral view", supports: true}
+          - {file: docs/media/drosophila_ventral_furrow_comparison.png, lines: [0, 0], note: "9-panel figure: Panels A-F as in v2 plus G (3D shell), H (AP profile sweeps), I (Stokes flow with nucleus); specimen boxes and morphometrics visible in Panel F", supports: true}
+      parameter-expressivity:
+        value: 93
+        rationale: >-
+          The 6-regime evaluator and the 15x15 (r_twist x sigma_synergy) morphospace are retained, and Pass 3
+          adds two genuine physical sweep axes with monotone, theorem-backed behaviour: germband-extension
+          tension ell_N in {0, 25, ..., 150} um reduces D(0.5 EL) monotonically from 41.0 to 21.9 um
+          (ablation ratio 0.534; Theorem 4) and lengthens the half-depth extent, and egg aspect ratio a/b in
+          {1.5, ..., 4.0} raises the polar stiffening ratio monotonically. Deductions: the 15x15 morphospace is
+          still an analytic surrogate rather than re-running the ring (L578-624) (-4); the nucleus viscosity
+          ratio and position are not swept (-3).
+        evidence:
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [795, 852], note: "sweep_ap_shell_parameters: ell_N and a/b sweeps with monotonicity flag and ablation ratio", supports: true}
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [1680, 1706], note: "Panel H renders the ell_N family of AP profiles, the WT coupled run, the mesoderm load and k_rel(z)", supports: true}
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [578, 624], note: "15x15 morphospace is an analytic surrogate (ap_factor, d_val, h_val) rather than ring re-simulation", supports: false}
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [1889, 1908], note: "Self-test asserts monotone decrease with ell_N, ablation < 0.8, and monotone pole stiffening with a/b", supports: true}
+      morphometric-validation:
+        value: 86
+        rationale: >-
+          `measure_morphoeval()` now returns 12 measurements (L1196-1416). New in Pass 3: D_3D(0.5 EL) =
+          39.92 um vs 41.0 ref (coupling ratio 0.974), furrow half-depth extent 0.590 EL vs ~0.65 ref,
+          ell_N ablation ratio 0.534 (no empirical reference, stated as such), Stokes passive-tracer ratio
+          0.983 vs 1.0 (He 2014), and the exact-solution verification 8.1e-13 vs 0. Deductions: the 6-regime
+          depth/height r = 1.0000 and RMSE = 0 (measurement 3) are circular because the regimes are pinned to
+          the reference values (-8, newly exposed); the 0.65 EL and ~1.0 tracer references are approximate
+          literature statements rather than digitised values (-4); no error bars or sensitivity of the new
+          measurements to ell_B / nucleus geometry (-2).
+        evidence:
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [1322, 1414], note: "5 new Pass 3 measurements with units, methods, reference values/sources and limitation notes", supports: true}
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [1249, 1264], note: "6-regime Pearson r measurement is computed against the same reference values the regimes are pinned to", supports: false}
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [1005, 1083], note: "Phase-I hydrodynamics: tracer ratio, rigid-body CV, perturbation magnitude, nuclear trajectory vs lengthening", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Four SHA-256-pinned dataset files (the new `ap_shell_stokes_reference.json` is pinned at L102-116 and
+          verified at runtime), bib extended with Sweeton 1991, Leptin & Grunewald 1990, Lye 2015, and the
+          dataset README documents the two new laws and the Pass 3 caveats. Deductions: the three new DOIs
+          could not be re-verified offline and are flagged as such (-4); the mesoderm extent (0.15-0.80 EL),
+          reference furrow span (0.65 EL) and GBE onset are approximate, un-digitised literature values (-4);
+          ell_B and the WT ell_N ramp have no source at all and are declared model assumptions (-2).
+        evidence:
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [102, 135], note: "EXPECTED_SHA256 with 4 pinned files incl. ap_shell_stokes_reference.json; verify_dataset_integrity fails closed", supports: true}
+          - {file: datasets/drosophila_ventral_furrow/ap_shell_stokes_reference.json, lines: [1, 80], note: "Parameter table with per-source doi_verified_offline flags and approximate-value notes", supports: true}
+          - {file: datasets/drosophila_ventral_furrow/paper_citations.bib, lines: [45, 83], note: "Pass 3 BibTeX additions with usage notes; DOIs not re-verified offline", supports: false}
+          - {file: datasets/drosophila_ventral_furrow/README.md, lines: [25, 50], note: "Laws 4-5, new file digest, and Pass 3 caveats section", supports: true}
+      code-traceability:
+        value: 92
+        rationale: >-
+          The module docstring (L1-76) states all five governing laws with their Lean theorem names, each new
+          section carries a header explaining what was asked, what was implemented and what is reduced
+          (L612-626, L846-854), every new function docstring cites its equation and source, and the math KG
+          loop file registers both new equations with lean_locus and code_locus ranges that match the current
+          files. Deductions: the regime block does not state in code that its targets are the reference values
+          being measured against (-4); the Stokes operator derivation is explained in a comment rather than
+          referenced to a textbook equation number (-2); the GIF code (L1767-1842) does not mention the new
+          mechanisms (-2).
+        evidence:
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [1, 76], note: "Module docstring: laws 1-5 with Lean theorem names, the reduced-model disclaimers for laws 4-5", supports: true}
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [612, 626], note: "Section 4b header: what v2 asked, what is implemented, what is reduced, which parameters are assumptions", supports: true}
+          - {file: morphoeval/math_kg_loops/he-drosophila-ventral-furrow.yaml, lines: [1, 137], note: "5 equations with lean_decl/lean_theorem/lean_locus/code_locus; Pass 3 parameters in model_spec", supports: true}
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [332, 369], note: "Regime targets are not annotated as the audited reference values", supports: false}
+      repro-package:
+        value: 93
+        rationale: >-
+          `--self-test` passes in ~11 s with 6 check blocks (SHA-256 locks for 4 files, Theorems 1-5 numerics,
+          6-regime hierarchy, bitwise determinism of the ring and of the Stokes solve, specimen CV, 12
+          measurements); the default render (PNG + 24-frame GIF) takes ~5 s; the GIF regenerates
+          byte-identically to the v2 artifact (SHA-256 5988ec19...); the only RNG is seeded and unused.
+          Deductions: no requirements lock file for this slot (-3); the PNG byte-identity across runs is not
+          asserted in the self-test (-2); MPLCONFIGDIR must be writable, which is not documented (-2).
+        evidence:
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [1845, 1937], note: "Self-test: 4 SHA locks, Theorem 1-3 checks, Pass 3 Theorem 4-5 checks, determinism, specimen CV, 12 measurements", supports: true}
+          - {file: 2012-he-drosophila-ventral-furrow.py, lines: [1910, 1935], note: "Stokes determinism asserted across two independent WT simulations", supports: true}
+          - {file: docs/media/drosophila_ventral_furrow_growth.gif, lines: [0, 0], note: "24-frame GIF byte-identical to the v2 artifact (unchanged code path)", supports: true}
+    remediation:
+      - >-
+        2012-he-drosophila-ventral-furrow.py:332-369, 443-445, 455-458 — the ring depth and cell height are
+        target-pinned interpolants (`target_depth_um`, `target_h_um` equal to the reference values; `depth_um =
+        target_depth_um * min(1, ...)` and forced at the last step). Replace with an actual force balance on the
+        64-cell ring (apical/basal/lateral line tensions gamma_ap, gamma_ba, gamma_lat + vitelline contact +
+        yolk pressure, overdamped vertex dynamics) so that D_furrow and h emerge, and re-score the 6-regime
+        comparison as a prediction rather than a calibration check.
+      - >-
+        2012-he-drosophila-ventral-furrow.py:646-719 and 721-793 — the AP coupling is one-way (ring -> line) and
+        kinematic in theta: D(z) is swept with a fixed Gaussian pocket shape and there is no membrane/bending
+        stress feedback from the AP profile onto the ring. Upgrade to a two-way coupled thin-shell (Koiter or
+        Donnell) solve on the theta x z mesh with the active apical tension as a surface load, or at minimum
+        make the pocket width a function of D(z).
+      - >-
+        datasets/drosophila_ventral_furrow/ap_shell_stokes_reference.json:54-62 — ell_B = 22 um and the WT ell_N
+        ramp to 30 um are uncalibrated assumptions; the ablation ratio measurement has no reference. Calibrate
+        N_GB / k_eq from published laser-ablation recoil during germband extension (Lye et al. 2015; Collinet
+        et al. 2015) and ell_B from the blastoderm bending modulus, and digitise the furrow AP extent from a
+        ventral-view micrograph (Sweeton et al. 1991 Fig. 1) instead of the 0.65 EL literature estimate.
+      - >-
+        2012-he-drosophila-ventral-furrow.py:855-1003 — the Stokes domain is a fixed rectangle at a single
+        instant (t = 1.8 min) with velocity boundary data; the nucleus is an elliptical viscosity inclusion of
+        assumed size/position. Move to a moving-boundary (ALE or level-set) trapezoid solved at every Phase-I
+        step with an apical actomyosin stress BC and a force-free rigid nucleus (Lagrange multiplier), and
+        compare the resolved nuclear trajectory to digitised nuclear positions from He et al. (2014) Fig. 1.
+      - >-
+        2012-he-drosophila-ventral-furrow.py:578-624 — the 15x15 morphospace is an analytic surrogate
+        (`ap_factor`, `d_val`, `h_val`) rather than ring re-simulation; once the ring mechanics are un-pinned,
+        regenerate the morphospace by running the ring at each (r_twist, sigma_synergy) grid point.
+      - >-
+        datasets/drosophila_ventral_furrow/paper_citations.bib:45-83 — the Sweeton (1991), Leptin & Grunewald
+        (1990) and Lye (2015) DOIs were added offline and flagged unverified; verify them (and add Collinet et
+        al. 2015) when network access is available.

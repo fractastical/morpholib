@@ -1,0 +1,283 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-ibrahim-vascular-angiogenesis-notch> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-ibrahim-vascular-angiogenesis-notch-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-ibrahim-vascular-angiogenesis-notch-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Bentley, Gerhardt & Bates (2008) PLoS Comput. Biol., Hellström et al. (2007) Nature & Jakobsson et al. (2010) Nat. Cell Biol. VEGF-VEGFR2-Dll4-Notch1 tip/stalk salt-and-pepper lateral inhibition and angiogenic sprouting, coupled to lumenized Poiseuille flow, wall-shear pruning and arteriovenous specification (Pass 3) — Morphometric validation: 83/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`measure_morphoeval()` (L2045-2223) now returns 14 reference-anchored measurements; the five new hemodynamic metrics (L2078-2131) are WT median capillary wall shear stress 1.0555 Pa (ref 1.5, band 1-2), emergent Murray exponent 3.5264 (ref 3.0), max Kirchhoff residual 6.7e-26 m^3/s (ref 0), DAPT/WT perfused-density ratio 1.625 (ref 1.5, band 1.3-2.0) and WT AV segregation index 1.0 (ref 1.0; DAPT 0.5, no-flow 0.5), all with units, method, source and reference pulled from the SHA-256-pinned JSON; the nine Pass 2 values are unchanged. Deductions: measurement 7 (sweep Pearson r = 0.998, L2192-2201) is a template fit, not a simulation-vs-benchmark statistic (-5); measurements 8-9 (L2202-2221) use reference values 0.1967 and 0.8406 that are the script's own segmentation outputs, so they are self-referential (-4); measurements 1-6 compare regimes whose outcomes are steered by hard-coded branches (L313-380) to the benchmarks they were steered to (-3); the Murray exponent misses the band [2.7, 3.3] by 0.23 and the self-test widens the band by +/-0.4 to pass (L2307-2308) (-2); the AV index is saturated so measurement 14 hitting 1.0 is weakly discriminating, and three references are bands/qualitative rather than points (-3)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:evidenceAgainst "2021-ibrahim-vascular-angiogenesis-notch.py L2192–L2201: Measurement 7: Pearson r of the Section 4 sweep, whose k_t > 0 points are templates (circular) <https://github.com/fractastical/morpholib/blob/45670cb8/2021-ibrahim-vascular-angiogenesis-notch.py#L2192-L2201>",
+            "2021-ibrahim-vascular-angiogenesis-notch.py L2202–L2221: Measurements 8-9: reference_value 0.1967 / 0.8406 are the script's own specimen segmentation outputs, not external values <https://github.com/fractastical/morpholib/blob/45670cb8/2021-ibrahim-vascular-angiogenesis-notch.py#L2202-L2221>",
+            "2021-ibrahim-vascular-angiogenesis-notch.py L2306–L2309: Self-test widens the Murray band by +/-0.4 (k = 3.53 vs band [2.7, 3.3]) to pass <https://github.com/fractastical/morpholib/blob/45670cb8/2021-ibrahim-vascular-angiogenesis-notch.py#L2306-L2309>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-dapt-notch-blockade-k-t-0-0-all-tip-hypersprouting-fraction>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-dll4-haploinsufficiency-heterozygote-tip-cell-fraction>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-high-uniform-vegf-overload-synchronous-dll4-oscillation-cv>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-huvec-angiogenic-sprouting-plexus-specimen-sprouting-tip-to-junction-ratio>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-huvec-angiogenic-sprouting-plexus-specimen-vascular-area-density>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-notch-blockade-dapt-to-wt-perfused-segment-density-ratio-after-pruning>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-notch-trans-activation-gain-sweep-tip-cell-fraction-correlation>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-physiological-salt-and-pepper-brillouin-k-pi-period-2-alternation-index>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-physiological-vegf-salt-and-pepper-regime-tip-cell-fraction>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-notch-gated-arteriovenous-ephrinb2-ephb4-marker-segregation-index>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-perfused-plexus-maximum-kirchhoff-node-mass-conservation-residual>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-perfused-plexus-median-capillary-wall-shear-stress-after-remodelling>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-remodelled-plexus-emergent-murray-bifurcation-exponent>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-vegfr2-mosaic-chimera-wild-type-tip-cell-occupancy>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-morphometric-validation-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-morphometric-validation-2> ;
+        pk:hasScore "0.83"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-dapt-notch-blockade-k-t-0-0-all-tip-hypersprouting-fraction> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "DAPT Notch blockade (k_t = 0.0) all-tip hypersprouting fraction = 1.0 tip cell fraction" ;
+        dct:description "100% all-tip hypersprouting collapse with 0 stalk cells and alternation index = 0.0000" ;
+        schema:measurementTechnique "Negative Notch ablation control with k_t=0.0 => N_i=0 => V_i=V_max (N_tip=16/16, N_stalk=0, delta = +0.5000)" ;
+        schema:name "DAPT Notch blockade (k_t = 0.0) all-tip hypersprouting fraction" ;
+        schema:unitText "tip cell fraction" ;
+        schema:value "1.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-dapt-notch-blockade-k-t-0-0-all-tip-hypersprouting-fraction-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-dapt-notch-blockade-k-t-0-0-all-tip-hypersprouting-fraction-reference> a schema:PropertyValue ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-dll4-haploinsufficiency-heterozygote-tip-cell-fraction> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Dll4+/- haploinsufficiency heterozygote tip-cell fraction = 0.75 tip cell fraction" ;
+        dct:description "Dll4+/- haploinsufficiency increases tip-cell fraction from 0.5000 to 0.7500 (+50% hyperbranching)" ;
+        schema:measurementTechnique "16-cell vessel wall ODE with Dll4 ligand dosage = 0.5 (N_tip=12/16, 1.5x WT tip density)" ;
+        schema:name "Dll4+/- haploinsufficiency heterozygote tip-cell fraction" ;
+        schema:unitText "tip cell fraction" ;
+        schema:value "0.75" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-dll4-haploinsufficiency-heterozygote-tip-cell-fraction-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-dll4-haploinsufficiency-heterozygote-tip-cell-fraction-reference> a schema:PropertyValue ;
+        schema:value "0.75" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-high-uniform-vegf-overload-synchronous-dll4-oscillation-cv> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "High uniform VEGF overload synchronous Dll4 oscillation CV = 0.3808 temporal CV (SD / mean)" ;
+        dct:description "excessive uniform VEGF triggers synchronous anti-phase/in-phase oscillations; soluble Flt1 decoy rescues stable salt-and-pepper (CV = 0.0134)" ;
+        schema:measurementTechnique "Temporal Dll4 coefficient of variation across M=16 cells under 3.4x uniform VEGF overload (sFlt1 rescue reduces CV to 0.0134)" ;
+        schema:name "High uniform VEGF overload synchronous Dll4 oscillation CV" ;
+        schema:unitText "temporal CV (SD / mean)" ;
+        schema:value "0.3808" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-high-uniform-vegf-overload-synchronous-dll4-oscillation-cv-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-high-uniform-vegf-overload-synchronous-dll4-oscillation-cv-reference> a schema:PropertyValue ;
+        schema:value "0.415" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-huvec-angiogenic-sprouting-plexus-specimen-sprouting-tip-to-junction-ratio> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "HUVEC angiogenic sprouting plexus specimen sprouting tip-to-junction ratio = 0.8406 sprouting tips / branch junctions" ;
+        dct:description "N_tip = 58 sprouting tips, N_junc = 69 junctions, inter-tip NND = 31.11 +- 21.79 px (CV = 0.7003)" ;
+        schema:measurementTechnique "Medial-axis skeleton degree-1 endpoint vs degree>=3 junction detection (N_tip=58, N_junc=69, inter-tip NND CV=0.7003)" ;
+        schema:name "HUVEC angiogenic sprouting plexus specimen sprouting tip-to-junction ratio" ;
+        schema:unitText "sprouting tips / branch junctions" ;
+        schema:value "0.8406" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-huvec-angiogenic-sprouting-plexus-specimen-sprouting-tip-to-junction-ratio-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-huvec-angiogenic-sprouting-plexus-specimen-sprouting-tip-to-junction-ratio-reference> a schema:PropertyValue ;
+        schema:value "0.8406" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-huvec-angiogenic-sprouting-plexus-specimen-vascular-area-density> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "HUVEC angiogenic sprouting plexus specimen vascular area density = 0.1967 vascular area fraction" ;
+        dct:description "vascular cord density = 0.1967 with 69 branch junctions" ;
+        schema:measurementTechnique "Calcein green fluorescence morphological segmentation on huvec_angiogenic_sprouting_plexus_specimen.jpg (N_junc=69, N_tip=58)" ;
+        schema:name "HUVEC angiogenic sprouting plexus specimen vascular area density" ;
+        schema:unitText "vascular area fraction" ;
+        schema:value "0.1967" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-huvec-angiogenic-sprouting-plexus-specimen-vascular-area-density-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-huvec-angiogenic-sprouting-plexus-specimen-vascular-area-density-reference> a schema:PropertyValue ;
+        schema:value "0.1967" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-notch-blockade-dapt-to-wt-perfused-segment-density-ratio-after-pruning> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Notch blockade (DAPT) to WT perfused-segment density ratio after pruning = 1.625 DAPT / WT perfused capillary count" ;
+        dct:description "the reference is an approximate band [1.3, 2.0]; the validated claim is the direction (Notch blockade under-prunes); perfusion-arrest control prunes to 1/16" ;
+        schema:measurementTechnique "DAPT all-tip bed (13/16 perfused, pruned 0.188) vs WT salt-and-pepper bed (8/16, pruned 0.500) under identical hemodynamic boundary conditions" ;
+        schema:name "Notch blockade (DAPT) to WT perfused-segment density ratio after pruning" ;
+        schema:unitText "DAPT / WT perfused capillary count" ;
+        schema:value "1.625" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-notch-blockade-dapt-to-wt-perfused-segment-density-ratio-after-pruning-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-notch-blockade-dapt-to-wt-perfused-segment-density-ratio-after-pruning-reference> a schema:PropertyValue ;
+        schema:value "1.5" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-notch-trans-activation-gain-sweep-tip-cell-fraction-correlation> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Notch trans-activation gain sweep tip-cell fraction correlation = 0.99781 Pearson r" ;
+        dct:description "RMSE = 0.0136, p = 2.61e-08; alternation sweep r = 0.99809 (RMSE = 0.0227)" ;
+        schema:measurementTechnique "8-point Notch gain sweep k_t in [0.00, 1.25] comparing simulated tip fraction against Hellström et al. (2007) benchmark (RMSE = 0.0136, p = 2.61e-08)" ;
+        schema:name "Notch trans-activation gain sweep tip-cell fraction correlation" ;
+        schema:unitText "Pearson r" ;
+        schema:value "0.99781" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-notch-trans-activation-gain-sweep-tip-cell-fraction-correlation-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-notch-trans-activation-gain-sweep-tip-cell-fraction-correlation-reference> a schema:PropertyValue ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-physiological-salt-and-pepper-brillouin-k-pi-period-2-alternation-index> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Physiological salt-and-pepper Brillouin k=pi period-2 alternation index = 0.9472 Brillouin k=pi alternation index" ;
+        dct:description "DAPT blockade collapses alternation to 0.0000; sFlt1 decoy rescues high-VEGF alternation from 0.0622 to 0.9480" ;
+        schema:measurementTechnique "Normalized staggered Fourier mode amplitude at k=pi across M=16 endothelial cells (sFlt1 rescue delta = +0.8858)" ;
+        schema:name "Physiological salt-and-pepper Brillouin k=pi period-2 alternation index" ;
+        schema:unitText "Brillouin k=pi alternation index" ;
+        schema:value "0.9472" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-physiological-salt-and-pepper-brillouin-k-pi-period-2-alternation-index-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-physiological-salt-and-pepper-brillouin-k-pi-period-2-alternation-index-reference> a schema:PropertyValue ;
+        schema:value "0.945" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-physiological-vegf-salt-and-pepper-regime-tip-cell-fraction> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Physiological VEGF salt-and-pepper regime tip-cell fraction = 0.5 tip cell fraction" ;
+        dct:description "period-2 Tip-Stalk alternation with Brillouin k=pi index I_pi = 0.9472 and sprout spacing = 36.0 um" ;
+        schema:measurementTechnique "16-cell coupled VEGFR2-Dll4-Notch1 vessel wall ODE at VEGF=1.0, k_t=1.0 (N_tip=8/16, spacing=36.0 um)" ;
+        schema:name "Physiological VEGF salt-and-pepper regime tip-cell fraction" ;
+        schema:unitText "tip cell fraction" ;
+        schema:value "0.5" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-physiological-vegf-salt-and-pepper-regime-tip-cell-fraction-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-physiological-vegf-salt-and-pepper-regime-tip-cell-fraction-reference> a schema:PropertyValue ;
+        schema:value "0.5" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-notch-gated-arteriovenous-ephrinb2-ephb4-marker-segregation-index> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "WT Notch-gated arteriovenous (ephrinB2/EphB4) marker segregation index = 1.0 segregation index (0.5 = chance, 1.0 = exclusive)" ;
+        dct:description "DAPT (Notch transduction 0) gives 0.500 (ref 0.5 = AV shunting), perfusion arrest gives 0.500 (le Noble 2004: flow required for AV identity)" ;
+        schema:measurementTechnique "Logistic readout of local pressure rank and log wall-shear ratio gated by Notch transduction (1.00); fraction of arteriolar segments reading arterial and venular segments reading venous" ;
+        schema:name "WT Notch-gated arteriovenous (ephrinB2/EphB4) marker segregation index" ;
+        schema:unitText "segregation index (0.5 = chance, 1.0 = exclusive)" ;
+        schema:value "1.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-notch-gated-arteriovenous-ephrinb2-ephb4-marker-segregation-index-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-notch-gated-arteriovenous-ephrinb2-ephb4-marker-segregation-index-reference> a schema:PropertyValue ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-perfused-plexus-maximum-kirchhoff-node-mass-conservation-residual> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "WT perfused plexus maximum Kirchhoff node mass-conservation residual = 6.728e-26 m^3/s" ;
+        dct:description "solver-correctness check; residual is ~1e-10 of the 6.455e-13 m^3/s total perfusion" ;
+        schema:measurementTechnique "max |sum_e Q_e| over all internal nodes of the final Poiseuille solve (total perfusion 0.645 pL/s, 8 perfused rungs)" ;
+        schema:name "WT perfused plexus maximum Kirchhoff node mass-conservation residual" ;
+        schema:unitText "m^3/s" ;
+        schema:value "6.728e-26" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-perfused-plexus-maximum-kirchhoff-node-mass-conservation-residual-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-perfused-plexus-maximum-kirchhoff-node-mass-conservation-residual-reference> a schema:PropertyValue ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-perfused-plexus-median-capillary-wall-shear-stress-after-remodelling> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "WT perfused plexus median capillary wall shear stress after remodelling = 1.0555 Pa" ;
+        dct:description "reference is a band [1.0, 2.0] Pa, not a point; uniform-shear-sensing ablation gives 2.935 Pa with 16/16 perfused, shear-only (no metabolic term) collapses to 1/16 shunt at 4.395 Pa" ;
+        schema:measurementTechnique "Hagen-Poiseuille/Kirchhoff resistor network on the anastomosed 16-rung ladder plexus with Pries pressure-dependent set-point adaptation (240 steps, 8/16 perfused, shear CV 0.536 -> 0.782, set-point error 0.137)" ;
+        schema:name "WT perfused plexus median capillary wall shear stress after remodelling" ;
+        schema:unitText "Pa" ;
+        schema:value "1.0555" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-perfused-plexus-median-capillary-wall-shear-stress-after-remodelling-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-perfused-plexus-median-capillary-wall-shear-stress-after-remodelling-reference> a schema:PropertyValue ;
+        schema:value "1.5" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-remodelled-plexus-emergent-murray-bifurcation-exponent> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "WT remodelled plexus emergent Murray bifurcation exponent = 3.5264 radius exponent k (r_p^k = sum r_d^k)" ;
+        dct:description "deviation from 3 measures the residual pressure-dependence of the Pries set point and the metabolic term; DAPT bed k = 3.697" ;
+        schema:measurementTechnique "Brent root of r_p^k - r_a^k - r_c^k at every perfused arteriolar bifurcation of the remodelled network (median; OLS log Q vs log r slope = 3.595, R^2 = 0.949); k is NOT a parameter of the model" ;
+        schema:name "WT remodelled plexus emergent Murray bifurcation exponent" ;
+        schema:unitText "radius exponent k (r_p^k = sum r_d^k)" ;
+        schema:value "3.5264" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-remodelled-plexus-emergent-murray-bifurcation-exponent-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-remodelled-plexus-emergent-murray-bifurcation-exponent-reference> a schema:PropertyValue ;
+        schema:value "3.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-vegfr2-mosaic-chimera-wild-type-tip-cell-occupancy> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "WT : Vegfr2+/- mosaic chimera wild-type tip-cell occupancy = 0.8571 WT fraction of tip cells" ;
+        dct:description "WT cells win 85.7% of tip positions vs 14.3% for Vegfr2+/- cells" ;
+        schema:measurementTechnique "1:1 mosaic vessel wall pairing WT (V_max=1.0) and Vegfr2+/- (V_max=0.5) endothelial cells across M=16 positions" ;
+        schema:name "WT : Vegfr2+/- mosaic chimera wild-type tip-cell occupancy" ;
+        schema:unitText "WT fraction of tip cells" ;
+        schema:value "0.8571" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-vegfr2-mosaic-chimera-wild-type-tip-cell-occupancy-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-measurement-wt-vegfr2-mosaic-chimera-wild-type-tip-cell-occupancy-reference> a schema:PropertyValue ;
+        schema:value "0.875" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-morphometric-validation-1> a pk:EvidenceItem ;
+        rdfs:label "2021-ibrahim-vascular-angiogenesis-notch.py L2045–L2223" ;
+        dct:description "14 reference-anchored morphometrics (9 Pass 2 + 5 Pass 3 hemodynamic), bitwise deterministic" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/2021-ibrahim-vascular-angiogenesis-notch.py#L2045-L2223> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-ibrahim-vascular-angiogenesis-notch-morphometric-validation-2> a pk:EvidenceItem ;
+        rdfs:label "2021-ibrahim-vascular-angiogenesis-notch.py L2078–L2131" ;
+        dct:description "hemo_metrics: WSS 1.0555 Pa, Murray 3.5264, Kirchhoff 6.7e-26, DAPT/WT density 1.625, AV segregation 1.0 — references read from the pinned JSON" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/2021-ibrahim-vascular-angiogenesis-notch.py#L2078-L2131> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 060 Pass 3 Assessor, Phase B subagent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/60> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1006/jtbi.1996.0233>,
+            <https://doi.org/10.1016/S0092-8674(00)81436-1>,
+            <https://doi.org/10.1016/j.devcel.2009.06.004>,
+            <https://doi.org/10.1038/nature05571>,
+            <https://doi.org/10.1038/ncb2103>,
+            <https://doi.org/10.1073/pnas.0611206104>,
+            <https://doi.org/10.1073/pnas.12.3.207>,
+            <https://doi.org/10.1152/ajpheart.1998.275.2.H349>,
+            <https://doi.org/10.1161/01.RES.77.5.1017>,
+            <https://doi.org/10.1242/dev.00929>,
+            <https://doi.org/10.1242/dev.128.19.3675>,
+            <https://doi.org/10.1371/journal.pbio.1001374>,
+            <https://doi.org/10.1371/journal.pbio.1002125>,
+            <https://doi.org/10.1371/journal.pcbi.1000052> .
+    <https://doi.org/10.1006/jtbi.1996.0233> dct:date "1996"^^xsd:gYear ;
+        dct:title "Pattern formation by lateral inhibition with feedback: a mathematical model of delta-notch intercellular signalling" .
+    <https://doi.org/10.1016/S0092-8674(00)81436-1> dct:date "1998"^^xsd:gYear ;
+        dct:title "Molecular distinction and angiogenic interaction between embryonic arteries and veins revealed by ephrin-B2 and its receptor Eph-B4" .
+    <https://doi.org/10.1016/j.devcel.2009.06.004> dct:date "2009"^^xsd:gYear ;
+        dct:title "Local guidance of emerging vessel sprouts requires soluble Flt-1" .
+    <https://doi.org/10.1038/nature05571> dct:date "2007"^^xsd:gYear ;
+        dct:title "Dll4 signalling through Notch1 regulates formation of tip cells during angiogenesis" .
+    <https://doi.org/10.1038/ncb2103> dct:date "2010"^^xsd:gYear ;
+        dct:title "Endothelial cells dynamically compete for the tip cell position during angiogenic sprouting" .
+    <https://doi.org/10.1073/pnas.0611206104> dct:date "2007"^^xsd:gYear ;
+        dct:title "Delta-like ligand 4 (Dll4) is induced by VEGF as a negative regulator of angiogenic sprouting" .
+    <https://doi.org/10.1073/pnas.12.3.207> dct:date "1926"^^xsd:gYear ;
+        dct:title "The physiological principle of minimum work. I. The vascular system and the cost of blood volume" .
+    <https://doi.org/10.1152/ajpheart.1998.275.2.H349> dct:date "1998"^^xsd:gYear ;
+        dct:title "Structural adaptation and stability of microvascular networks: theory and simulations" .
+    <https://doi.org/10.1161/01.RES.77.5.1017> dct:date "1995"^^xsd:gYear ;
+        dct:title "Design principles of vascular beds" .
+    <https://doi.org/10.1242/dev.00929> dct:date "2004"^^xsd:gYear ;
+        dct:title "Flow regulates arterial-venous differentiation in the chick embryo yolk sac" .
+    <https://doi.org/10.1242/dev.128.19.3675> dct:date "2001"^^xsd:gYear ;
+        dct:title "Notch signaling is required for arterial-venous differentiation during embryonic vascular development" .
+    <https://doi.org/10.1371/journal.pbio.1001374> dct:date "2012"^^xsd:gYear ;
+        dct:title "Haemodynamics-driven developmental pruning of brain vasculature in zebrafish" .
+    <https://doi.org/10.1371/journal.pbio.1002125> dct:date "2015"^^xsd:gYear ;
+        dct:title "Dynamic endothelial cell rearrangements drive developmental vessel regression" .
+    <https://doi.org/10.1371/journal.pcbi.1000052> dct:date "2008"^^xsd:gYear ;
+        dct:title "Agent-based simulation of notch-mediated tip cell selection in angiogenic sprout initialisation" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Bentley, Gerhardt & Bates (2008) PLoS Comput. Biol., Hellström et al. (2007) Nature & Jakobsson et al. (2010) Nat. Cell Biol. VEGF-VEGFR2-Dll4-Notch1 tip/stalk salt-and-pepper lateral inhibition and angiogenic sprouting, coupled to lumenized Poiseuille flow, wall-shear pruning and arteriovenous specification (Pass 3) — Morphometric validation 83/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T18:18:15Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-ibrahim-vascular-angiogenesis-notch-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/60> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

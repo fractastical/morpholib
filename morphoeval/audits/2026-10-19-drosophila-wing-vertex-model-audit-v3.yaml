@@ -1,0 +1,321 @@
+# MorphoEval audit — Farhadifar, Röper, Aigouy, Eaton & Jülicher (2007) Drosophila Wing Epithelial Vertex Model, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `2007-farhadifar-drosophila-wing-vertex-model.py` (v3, 2057 lines) after the remediation of the
+# single open v2 item in the instrumented loop `morphoeval/runs/2026-10-19-drosophila-wing-vertex-model-loop-pass3`,
+# superseding `2026-10-19-drosophila-wing-vertex-model-audit-v2` (90.9).
+#
+# What Pass 3 changed (v2 remediation item 1, closed):
+#   1. Section 2b (L480-1061): a genuine tri-cellular vertex model (vertices are the degrees of freedom, cells are
+#      CCW vertex rings, analytic forces F_i = -dE/dr_i of Farhadifar Eq. 1 verified against central differences in
+#      the self-test, T1 exchanges below l_T1 with 3-valence/side-sum conservation) coupled to a per-bond planar cell
+#      polarity Frizzled/Strabismus asymmetry tensor Q_ab = 2 c_ab (n (x) n - I/2), bond tension
+#      Lambda_ab = Lambda_bar (1 + eps_pcp n.Q_ab.n), Fz-Stbm feedback + flow-alignment polarity dynamics, and the
+#      pupal hinge-contraction pure-shear boundary strain diag(lambda, 1/lambda) with an Etournay (2015)-style
+#      shear decomposition (imposed shear = cell-elongation change + rearrangement residual).
+#   2. eps_pcp ablation sweep (-0.6 .. 0.8; 0 = fz/stbm mutant) and `--pcp-epsilon` / `--hinge-strain` CLI flags.
+#   3. Five new figure panels (C1-C5) and a fourth GIF panel; 6 new measurements (14 total); 6 new self-test checks
+#      (14 total); 2 new Lean 4 theorems (6 total, 0 sorrys); 3 new references and a `pcp_hinge_contraction_reference`
+#      block in the vendored dataset.
+#
+# Why the overall score goes DOWN (90.9 -> 84.8) although the remediation item is closed: re-reading the whole script
+# against the current rubric exposed defects the v2 assessor credited without checking:
+#   - the Section 2 "regimes" (panels A1-A4, measurements 1-7) are a Voronoi-seed Lloyd relaxation, not a vertex
+#     model, and their Lewis's-law agreement (r = 0.9994) is manufactured by an explicit post-hoc area reweighting
+#     `adjusted_areas = areas * (1 + 0.14 * (n - 6))` (L401-405) while the pupal regime is pulled toward the perfect
+#     hexagonal lattice by a `0.042 * hex_disp` term (L378-379);
+#   - the vendored "specimen" is a Wikimedia micrograph whose scout manifest records organism "Mus musculus"
+#     (datasets/.../scout_manifest.json:8); it is not a Drosophila wing, so the P(n) match (r = 0.9913) is a
+#     cross-species transfer, not a specimen match;
+#   - the Pass 3 reference values (Etournay 2015 |Q| peak 0.25, ~50% rearrangement share; Classen 2005 WT 0.78 vs
+#     PCP-mutant 0.60) are approximate figure reads recorded offline and the three new DOIs could not be verified
+#     online in this pass (network tools disabled by the loop protocol) — all flagged in the JSON/README/bib;
+#   - the PCP model reproduces oriented T1s and elongation relaxation but gives the WRONG SIGN for the Classen (2005)
+#     hexagon-fraction effect: P(6) falls from 0.867 (eps = 0) to 0.733 (eps = 0.5), delta -0.133 vs +0.18 expected.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated probabilities).
+# Line numbers refer to the files in the working tree at commit 7e4f207 plus this slot's uncommitted Pass 3 edits.
+
+audit:
+  id: 2026-10-19-drosophila-wing-vertex-model-audit-v3
+  supersedes_audit_id: 2026-10-19-drosophila-wing-vertex-model-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Pass 3 builder + primary re-assessor, autonomous loop slot-043)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric protocol, carried from v2; not re-run in Pass 3)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 7e4f207
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) evaluation of `2007-farhadifar-drosophila-wing-vertex-model.py` after the closed-loop
+      remediation run `2026-10-19-drosophila-wing-vertex-model-loop-pass3` (Step 12 of Pass 2 -> Steps 5-11).
+      HEAD is 7e4f207; the Pass 3 edits to this slot's files are uncommitted in the shared working tree by
+      loop protocol (no git add/commit from agent loops).
+
+references:
+  farhadifar2007:
+    title: "The influence of cell mechanics, cell-cell interactions, and proliferation on epithelial packing"
+    authors: "Farhadifar R, Röper JC, Aigouy B, Eaton S, Jülicher F"
+    venue: "Current Biology 17(24):2095-2104 (2007)"
+    doi: 10.1016/j.cub.2007.11.049
+  gibson2006:
+    title: "The emergence of geometric order in proliferating metazoan epithelia"
+    authors: "Gibson MC, Patel AB, Nagpal R, Perrimon N"
+    venue: "Nature 442(7106):1038-1041 (2006)"
+    doi: 10.1038/nature05014
+  classen2005:
+    title: "Hexagonal packing of Drosophila wing epithelial cells by the planar cell polarity pathway"
+    authors: "Classen AK, Anderson KI, Marois E, Eaton S"
+    venue: "Developmental Cell 9(6):805-817 (2005)"
+    doi: 10.1016/j.devcel.2005.10.016
+  nagai2001:
+    title: "A dynamic cell model for the formation of epithelial tissues"
+    authors: "Nagai T, Honda H"
+    venue: "Philosophical Magazine B 81(7):699-719 (2001)"
+    doi: 10.1080/13642810108205772
+  lewis1928:
+    title: "The correlation between cell division and the shapes and sizes of prismatic cells in the epidermis of Cucumis"
+    authors: "Lewis FT"
+    venue: "The Anatomical Record 38(3):341-376 (1928)"
+    doi: 10.1002/ar.1090380305
+  aigouy2010:
+    title: "Cell flow reorients the axis of planar polarity in the wing epithelium of Drosophila"
+    authors: "Aigouy B, Farhadifar R, Staple DB, Sagner A, Röper JC, Jülicher F, Eaton S"
+    venue: "Cell 142(5):773-786 (2010) — DOI recorded offline in Pass 3, not re-verified online"
+    doi: 10.1016/j.cell.2010.07.042
+  etournay2015:
+    title: "Interplay of cell dynamics and epithelial tension during morphogenesis of the Drosophila pupal wing"
+    authors: "Etournay R, Popović M, Merkel M, Nandi A, Blasse C, Aigouy B, Brandl H, Myers G, Salbreux G, Jülicher F, Eaton S"
+    venue: "eLife 4:e07090 (2015) — DOI recorded offline in Pass 3, not re-verified online"
+    doi: 10.7554/eLife.07090
+  sugimura2013:
+    title: "The mechanical anisotropy in a tissue promotes ordering in hexagonal cell packing"
+    authors: "Sugimura K, Ishihara S"
+    venue: "Development 140(19):4091-4101 (2013) — DOI recorded offline in Pass 3, not re-verified online"
+    doi: 10.1242/dev.094060
+
+simulations:
+  - id: farhadifar-drosophila-wing-vertex-model
+    name: "Farhadifar et al. (2007) Drosophila wing disc apical vertex model, Lewis's law packing & PCP (Fz/Stbm) hinge-contraction vertex dynamics"
+    organism: "Fruit fly (Drosophila melanogaster) 3rd-instar larval wing imaginal disc & pupal wing epithelium (vendored specimen micrograph is a Mus musculus epithelium — see transfer_boundary)"
+    script: 2007-farhadifar-drosophila-wing-vertex-model.py
+    output: docs/media/drosophila_wing_vertex_model_comparison.png
+    extra_outputs:
+      - docs/media/drosophila_wing_vertex_model_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-drosophila-wing-vertex-model-audit-v2
+    source_refs:
+      - farhadifar2007
+      - gibson2006
+      - classen2005
+      - nagai2001
+      - lewis1928
+      - aigouy2010
+      - etournay2015
+      - sugimura2013
+    claim_boundary:
+      reported_in_source:
+        - "Farhadifar, Röper, Aigouy, Eaton & Jülicher (2007) Current Biology Eqs. 1-2 & Fig. 2A: apical epithelial vertex energy functional E({r_i}) = sum (K/2)(A_alpha - A^(0))^2 + sum Lambda_{ij} l_{ij} + sum (Gamma/2) L_alpha^2 parameterized by (Lambda_bar, Gamma_bar), partitioning ground states into Case I (rigid hexagonal, canonical wing disc Lambda_bar=0.12, Gamma_bar=0.04), Case II (soft network), and Case III (cell collapse)."
+        - "Farhadifar et al. (2007) Fig. 3-4, Gibson et al. (2006) Nature & Classen et al. (2005) Dev. Cell: proliferating 3rd-instar Drosophila wing disc exhibits P(6) approx 0.455 and obeys Lewis's Law <A_n>/<A> = (n-2)/4, whereas post-mitotic pupal wing annealing increases P(6) to ~0.78, and PCP (fz, stbm) mutants fail to reach wild-type hexagonal order."
+        - "Aigouy et al. (2010) Cell & Etournay et al. (2015) eLife: hinge contraction from ~15 hAPF stretches the blade along the proximal-distal axis, cells elongate along PD and then relax through oriented cell rearrangements while the Fz/Stbm PCP axis reorients to PD; tissue shear decomposes into cell-elongation change plus rearrangement, division and correlation contributions."
+      reconstructed_in_script:
+        - "2D periodic Voronoi-seed (Lloyd-type) packing and mitotic cleavage simulation across 4 regimes (Proliferating Wing Disc, Post-Mitotic Pupal Wing, High-Contractility Case I, Soft Case II), 2D (Lambda_bar, Gamma_bar) phase diagram, UV laser junction ablation recoil curves, and 7-point continuous Lambda_bar sweep (Section 2, panels A1-A4, B1-B5)."
+        - "Pass 3: explicit tri-cellular vertex model (analytic forces of Eq. 1, T1 exchanges) on a 100-cell patch with a per-bond Frizzled/Strabismus asymmetry tensor Q_ab modulating line tension Lambda_ab = Lambda_bar (1 + eps_pcp n.Q_ab.n), Fz-Stbm feedback + flow-alignment polarity dynamics, an area-preserving hinge-contraction boundary strain diag(lambda, 1/lambda) with ln lambda = 0.35, shear decomposition into cell-elongation and rearrangement parts, a PCP loss-of-function (eps_pcp = 0) control and a 6-point eps_pcp sweep (Section 2b, panels C1-C5, GIF panel 4)."
+        - "Junction-guided Voronoi-watershed segmentation of the vendored apical junction-stained polygonal epithelial micrograph (N=37 interior cells, P(6)=0.4865, P(n) correlation r = 0.9913 against the Farhadifar wing-disc distribution)."
+      transfer_boundary:
+        - "2D apical junctional projection of 3D pseudostratified/columnar wing imaginal disc epithelial cells."
+        - "The vendored specimen `drosophila_wing_epithelium_specimen.jpg` is a Wikimedia Commons epithelial monolayer whose scout manifest records organism Mus musculus; its polygon statistics are compared with Drosophila literature values as a cross-species epithelial-packing transfer, not as a Drosophila specimen."
+        - "The Section 2 regimes are Voronoi-seed relaxations with a post-hoc Lewis's-law area reweighting and a hexagonal-lattice pull in the pupal regime; only Section 2b integrates the Farhadifar energy on vertex degrees of freedom."
+        - "The PCP coupling sign (PCP-complex-bearing AP junctions stiffened for eps_pcp > 0), the polarity-dynamics gains (k_fb = 0.6, k_flow = 0.4), the initial polarity spread (0.6 rad) and the hinge log-strain (0.35) are modelling choices, not fitted to data; Pass 3 reference values from Etournay (2015) and Classen (2005) are approximate figure reads recorded offline."
+      does_not_claim:
+        - "Does not model basal extracellular matrix curvature, 3D apico-basal scutoid transitions, Fat/Dachsous polarity, the pre-15 hAPF margin-directed PCP pattern, cell divisions or extrusions during pupal morphogenesis, the hinge as a separate mechanical compartment, or periodic boundary conditions for the explicit vertex model (the patch is clamped at its margin)."
+        - "Does not claim to reproduce the Classen et al. (2005) PCP-mutant loss of hexagonal order: in this model the PCP coupling lowers the final hexagon fraction (sign mismatch disclosed in measurement `pcp_wt_minus_mutant_hexagonal_fraction_delta`)."
+    summary: >-
+      Pass 3 (v3) evaluation of `2007-farhadifar-drosophila-wing-vertex-model.py` (84.8/100, down from 90.9 in Pass 2).
+      The single v2 remediation item is closed: Section 2b adds a genuine vertex model (tri-cellular vertices,
+      analytic forces of Farhadifar Eq. 1 verified by finite differences, T1 exchanges) coupled to an explicit
+      per-bond Frizzled/Strabismus asymmetry tensor with zero trace and perpendicular cancellation (Lean theorem 5),
+      driven by a pupal hinge-contraction pure-shear strain with an Etournay-style shear decomposition (Lean theorem
+      6). At eps_pcp = 0.5 the model gives a cell-elongation peak <|Q|> = 0.253 (Etournay 2015 ~0.25, approx.), 20 T1s
+      all on AP-oriented junctions versus 11 in the eps_pcp = 0 control, a rearrangement share of tissue shear of 0.307
+      (vs 0.165 control), bond-tension anisotropy Lambda_AP/Lambda_PD = 2.39 and a monotonic eps_pcp sweep. The
+      re-score is lower because the audit now records what the v2 scores overlooked: the Section 2 regimes are Lloyd
+      relaxations whose Lewis's-law fit is imposed by a post-hoc area reweighting, the only vendored specimen is a
+      mouse epithelium, three new DOIs and all new reference values are unverified offline, and the PCP effect on
+      hexagon fraction has the opposite sign to Classen et al. (2005).
+    scores:
+      model-fidelity:
+        value: 85
+        rationale: >-
+          Credited: Farhadifar Eq. 1-2 single-cell energy and the Case I/II/III ground-state classifier
+          (L120-202), the ablation recoil model (L205-234), and in Pass 3 a true vertex model — mesh built from the
+          Voronoi tessellation with CCW rings and 3-valent interior vertices (L533-567), per-bond Fz/Stbm asymmetry
+          tensor c_ab/a_ab = n.Q_ab.n (L617-647), analytic forces dA/dr, dL/dr, dl/dr with half-shared bond tension
+          (L650-692) that pass a central-difference check to 1e-5 (self-test 10, L1912-1927), T1 exchange with
+          4-cell re-wiring (L723-771), hinge-contraction pure shear and polarity dynamics (L846-935). Deductions:
+          panels A1-A4 and measurements 1-7 still come from the Section 2 Voronoi-seed Lloyd relaxation, whose
+          Lewis's-law agreement is produced by an explicit post-hoc reweighting `adjusted_areas = areas * (1 + 0.14 *
+          gamma_slope_boost * (n - 6))` (L401-405) and whose pupal regime is pulled toward the perfect lattice by
+          `0.042 * hex_disp` (L378-379) — neither is in Farhadifar et al. (2007) (-8); the explicit vertex model is a
+          clamped non-periodic patch, so boundary cells are prescribed rather than mechanically coupled, and the
+          PCP coupling sign, k_fb, k_flow and the |Q|/0.15 saturation (L931) are uncited modelling choices (-5);
+          polarity is polar but the tension law is nematic, so Fz-distal vs Stbm-proximal identity does not enter
+          the mechanics beyond the bridge density (-2).
+        evidence:
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [617, 692], note: "pcp_bond_asymmetry (c_ab, a_ab = 2c_ab - 1, outward normals) and vertex_forces_and_energy with analytic dA/dr, dL/dr, dl/dr of Farhadifar Eq. 1 and half-shared per-bond tension", supports: true}
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [723, 771], note: "_attempt_t1: interior-bond T1 with A/B losing and C/D gaining the bond, 3-valence preserved, CCW re-sort of the four affected rings", supports: true}
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [774, 1023], note: "simulate_pcp_hinge_contraction: pre-relaxation, smoothstep hinge ramp diag(lambda,1/lambda) on boundary vertices, overdamped vertex update, T1 pass, Fz-Stbm feedback + flow alignment polarity ODE, shear decomposition", supports: true}
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [401, 405], note: "Post-hoc area reweighting by (n - 6) in the Section 2 regimes imposes Lewis's law rather than deriving it from the energy", supports: false}
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [378, 379], note: "Pupal regime adds 0.042 * displacement toward the perfect hexagonal lattice (seeds_hex) — hexagonal order is partly imposed", supports: false}
+          - {file: morphoeval/lean/loops/Loop_043_drosophila_wing_vertex_model.lean, lines: [126, 215], note: "Theorems 5-6: PCP bond tensor traceless + perpendicular cancellation + tension ordering; shear-decomposition closure and area-preserving pure shear (lean exit 0, 0 sorrys)", supports: true}
+      specimen-match:
+        value: 78
+        rationale: >-
+          Judged on the regenerated PNG: the four Section 2 regimes are visually distinct, the segmentation overlay
+          (A5) follows the junction network of the micrograph, and the new C1/C2 panels show PD-elongated cells with
+          bonds coloured by PCP-modulated tension against an isotropic control, which resembles the elongated pupal
+          blade cells of Aigouy et al. (2010) qualitatively. Deductions: the only vendored specimen is a Wikimedia
+          epithelium whose own scout manifest records organism Mus musculus (scout_manifest.json:8) and whose JSON
+          entry gives no species (reference JSON L54-62), so the r = 0.9913 P(n) agreement is a cross-species
+          transfer and not a Drosophila wing match (-12); no Drosophila wing-disc or pupal-wing image (e.g. a CC-BY
+          eLife panel from Etournay 2015) is placed side by side with the simulation, so the hinge-contraction
+          morphology is validated only against approximate numbers (-6); the explicit vertex patch is only 100 cells
+          with a clamped margin, visibly smaller than the ~10^4-cell blade (-4).
+        evidence:
+          - {file: docs/media/drosophila_wing_vertex_model_comparison.png, lines: [0, 0], note: "15-panel figure: A1-A5 regimes + segmented specimen, B1-B5 phase diagram/P(n)/Lewis/ablation/sweep, C1-C5 PCP vertex mesh (WT and eps=0 control), shear decomposition, bond-tensor law, eps_pcp sweep", supports: true}
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [1495, 1544], note: "_draw_pcp_mesh: cells by polygon class, bonds coloured by Lambda_ab, Fz polarity arrows; C1 (eps=0.5) vs C2 (eps=0) controls", supports: true}
+          - {file: datasets/drosophila_wing_vertex_model/scout_manifest.json, lines: [8, 8], note: "Scout manifest records organism 'Mus musculus' for the vendored micrograph — not a Drosophila specimen", supports: false}
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [1064, 1185], note: "segment_epithelial_specimen: junction-guided Voronoi-watershed segmentation (N=37 cells, r=0.9913 vs Farhadifar wing-disc P(n))", supports: true}
+      parameter-expressivity:
+        value: 91
+        rationale: >-
+          Pass 3 adds a 6-point eps_pcp sweep (-0.6 .. 0.8, L1026-1061, panel C5) that is monotonic in T1 count
+          (5 -> 29), rearrangement share (0.06 -> 0.43), residual elongation (0.295 -> 0.166) and bond-tension
+          anisotropy (0.31 -> 4.1), with eps_pcp = 0 as the loss-of-function control; `--pcp-epsilon` and
+          `--hinge-strain` are wired through the CLI (L2004-2015, L2027-2034) and the hinge strain controls the
+          elongation peak (0.13 at gamma = 0, 0.31 at gamma = 0.5 in the Pass 3 diagnostics). The Pass 2 7-point
+          Lambda_bar sweep and (Lambda_bar, Gamma_bar) phase map are retained. Deductions: hinge strain is swept only
+          in the development notes, not rendered (-4); k_fb, k_flow and the initial polarity spread are not exposed
+          on the CLI (-3); the P(6) response to eps_pcp is monotonic but in the biologically wrong direction, so the
+          parameter controls the feature without matching its sign (-2).
+        evidence:
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [1026, 1061], note: "run_pcp_epsilon_sweep over eps_pcp in {-0.6,-0.3,0,0.3,0.5,0.8}: P6, peak/final elongation, T1 count, oriented fraction, anisotropy, rearrangement share", supports: true}
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [2004, 2034], note: "--pcp-epsilon and --hinge-strain CLI flags passed into run_all_regimes_and_render", supports: true}
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [1585, 1606], note: "Panel C5 plots the sweep with the Classen (2005) WT / PCP-mutant P(6) reference lines", supports: true}
+      morphometric-validation:
+        value: 84
+        rationale: >-
+          `measure_morphoeval()` now returns 14 measurements with units and reference values (L1723-1845): the 8
+          Pass 2 metrics are unchanged (wing P(6) = 0.440 vs 0.455, pupal 0.840 vs 0.78, Lewis r = 0.9994, specimen
+          r = 0.9913, recoil v0 = 0.22 um/s) and 6 Pass 3 metrics are added — elongation peak <|Q|> = 0.253 vs ~0.25,
+          rearrangement share 0.307 vs ~0.5, oriented-T1 fraction 1.00 vs the 0.5 isotropic null, WT - mutant P(6)
+          delta = -0.133 vs +0.18, PCP nematic order 0.955 vs 0.9, bond-tensor isotropic residual c0 = -0.025 vs 0.
+          Deductions: four of the six new references are approximate figure reads recorded offline (flagged in the
+          JSON `provenance` fields) rather than digitised values (-6); the Classen (2005) comparison fails in sign
+          and is reported, not resolved (-5); the oriented-T1 reference is a null model rather than a measured
+          Aigouy/Etournay orientation distribution (-2); the Lewis's-law r = 0.9994 of measurement 5 is inflated by
+          the L401-405 reweighting (-3).
+        evidence:
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [1743, 1788], note: "Six Pass 3 measurements with reference values and provenance caveats in `method` strings", supports: true}
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [937, 967], note: "Final statistics: interior-cell P(n), nematic least-squares fit of a_ab(theta_n), AP/PD bond-tension ratio, oriented-T1 fraction", supports: true}
+          - {file: datasets/drosophila_wing_vertex_model/drosophila_wing_vertex_model_reference.json, lines: [192, 252], note: "pcp_hinge_contraction_reference block: model statement, defaults, and approximate Etournay 2015 / Classen 2005 / Aigouy 2010 values flagged 'approximate figure read, offline, unverified'", supports: true}
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [1765, 1771], note: "pcp_wt_minus_mutant_hexagonal_fraction_delta = -0.133 against reference +0.18: sign mismatch with Classen et al. (2005)", supports: false}
+      source-traceability:
+        value: 86
+        rationale: >-
+          The five Pass 2 DOIs are retained; the dataset README, bib and JSON gain Aigouy (2010), Etournay (2015)
+          and Sugimura & Ishihara (2013) with explicit "recorded offline, not re-verified online" flags (README
+          L29-39, bib L55-91, JSON L32-52); the specimen SHA-256 is unchanged and verified fail-closed at runtime
+          (L96-115); the JSON records the exact PCP model statement and defaults (L192-215). Deductions: three DOIs
+          could not be resolved in this pass (-5); the numeric Pass 3 reference values are unlocated beyond
+          figure-level loci and carry no digitisation (-5); the specimen's species is recorded inconsistently
+          ("Mus musculus" in the scout manifest, unspecified in the JSON, "Drosophila wing" in the file name) (-4).
+        evidence:
+          - {file: datasets/drosophila_wing_vertex_model/drosophila_wing_vertex_model_reference.json, lines: [32, 52], note: "Three Pass 3 sources with DOIs and doi_verification = 'recorded offline ... not resolved online'", supports: true}
+          - {file: datasets/drosophila_wing_vertex_model/README.md, lines: [29, 39], note: "Pass 3 section: reference table with verification status and provisional-value caveat", supports: true}
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [96, 113], note: "verify_reference_dataset: SHA-256 of the specimen checked against both the hard-coded digest and the JSON", supports: true}
+          - {file: datasets/drosophila_wing_vertex_model/paper_citations.bib, lines: [55, 91], note: "aigouy2010cellflow, etournay2015interplay, sugimura2013anisotropy entries with 'DOI unverified offline' notes", supports: true}
+      code-traceability:
+        value: 88
+        rationale: >-
+          The module docstring (L1-52) maps every implemented equation to its source and lists the Lean file; the
+          Section 2b header (L480-522) states the PCP/hinge model equation by equation with citations and an explicit
+          not-modelled list; function docstrings cite Farhadifar Eq. 1 derivatives, Etournay's |Q| = 1/2 ln(a/b),
+          Classen/Aigouy for the Fz-Stbm bridge; the math_kg YAML registers both new theorems with code loci
+          (L50-86). Deductions: the gains k_fb = 0.6, k_flow = 0.4, polarity noise 0.02, initial spread 0.6 rad,
+          T1 lengths 0.08/0.12 and the |Q|/0.15 saturation are stated but not traced to any source (-6); the
+          Section 2 reweighting at L401-405 and the hex pull at L378-379 carry comments that cite Farhadifar
+          p. 2101 / Classen 2005 for steps those papers do not contain (-6).
+        evidence:
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [480, 524], note: "Section 2b header: model statement, citations, sign convention, shear decomposition and explicit 'What is NOT modelled' list", supports: true}
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [1, 52], note: "Module docstring with all 8 sources, Pass 3 equations and offline-DOI caveat", supports: true}
+          - {file: morphoeval/math_kg_loops/farhadifar-drosophila-wing-vertex-model.yaml, lines: [50, 86], note: "Two Pass 3 equation entries linked to Lean theorems 5-6 and script loci", supports: true}
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [376, 379], note: "Comment attributes the hexagonal-lattice pull to Classen 2005 / Farhadifar 2007 p. 2101, which describe PCP-driven remodeling, not a lattice-restoring force", supports: false}
+      repro-package:
+        value: 91
+        rationale: >-
+          Deterministic seeds (2007 for Section 2, 2007 + 43 for Section 2b), `--self-test` passes 14 checks in
+          ~6 s including the SHA-256 gate, a central-difference check of the analytic vertex forces, PCP tensor
+          identities, T1 bookkeeping and two-run bitwise determinism of the vertex model (L1848-1973); the default
+          render takes ~17 s and regenerates both artifacts; all CLI flags are documented in argparse. Deductions: no
+          requirements lock file in this slot (environment recorded only in this audit) (-4); the self-test and
+          measurements re-run the vertex model with different step counts (500 vs 900), so the measured values are
+          not the self-tested ones (-3); matplotlib emits a cache-directory warning unless MPLCONFIGDIR is set, which
+          the invocation notes do not mention (-2).
+        evidence:
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [1897, 1973], note: "Pass 3 self-test checks 9-14: mesh 3-valence/CCW, finite-difference force check, PCP tensor identities, hinge/PCP monotonicity, T1 bookkeeping, determinism", supports: true}
+          - {file: 2007-farhadifar-drosophila-wing-vertex-model.py, lines: [1976, 2057], note: "argparse CLI with --lambda-bar, --gamma-bar, --steps, --seed, --pcp-epsilon, --hinge-strain, --self-test", supports: true}
+    remediation:
+      - >-
+        2007-farhadifar-drosophila-wing-vertex-model.py:401-405 and 378-379 — remove the post-hoc Lewis's-law area
+        reweighting (`adjusted_areas = areas * (1 + 0.14 * gamma_slope_boost * (n - 6))`) and the hexagonal-lattice
+        pull (`0.042 * hex_disp`) from `simulate_vertex_regime`, and re-derive panels A1-A4 / measurements 1-7 from the
+        Section 2b explicit vertex model (periodic version with division) so Lewis's law and pupal hexagonal order are
+        emergent rather than imposed.
+      - >-
+        datasets/drosophila_wing_vertex_model/scout_manifest.json:8 and drosophila_wing_vertex_model_reference.json:54-62
+        — the vendored specimen is a Mus musculus epithelium; vendor a genuine Drosophila pupal-wing or wing-disc
+        micrograph (e.g. a CC-BY panel from Etournay et al. 2015 eLife or Aigouy et al. 2010 if licence permits),
+        pin its SHA-256, segment it, and record the species consistently in JSON, README and file name.
+      - >-
+        2007-farhadifar-drosophila-wing-vertex-model.py:1765-1771 and 774-1023 — the PCP coupling lowers the final
+        hexagon fraction (P(6) 0.867 -> 0.733 for eps_pcp 0 -> 0.5) whereas Classen et al. (2005) report the opposite;
+        add the PCP-dependent junction remodeling/annealing step (post-T1 junction regrowth and polarity-dependent
+        tension relaxation) and a longer post-contraction relaxation window, then re-test the sign of
+        `pcp_wt_minus_mutant_hexagonal_fraction_delta`.
+      - >-
+        datasets/drosophila_wing_vertex_model/drosophila_wing_vertex_model_reference.json:192-252 — the Etournay
+        (2015) |Q| peak 0.25 and ~0.5 rearrangement share, the Classen (2005) 0.78 / 0.60 hexagon fractions and the
+        three new DOIs are offline figure reads; digitise the Etournay Fig. 3 shear curves and the Classen polygon
+        histograms into a pinned table, resolve the DOIs, and replace the `provenance: approximate` flags.
+      - >-
+        2007-farhadifar-drosophila-wing-vertex-model.py:782-785, 931 and 523-524 — expose k_feedback, k_flow,
+        init_polarity_sigma and the T1 thresholds on the CLI, cite or fit them (Aigouy 2010 polarity-alignment time
+        scale; Farhadifar 2007 l_T1), and render the hinge-strain sweep (gamma_PD in [0, 0.5]) as a panel rather than
+        leaving it in development notes.
+      - >-
+        2007-farhadifar-drosophila-wing-vertex-model.py:533-567 and 846-848 — replace the clamped non-periodic patch
+        by a periodic explicit vertex model with an affine box deformation so boundary cells participate in the
+        mechanics, and add the Sugimura & Ishihara (2013) force-inference tension anisotropy as a quantitative
+        comparison for `tension_anisotropy_ratio`.

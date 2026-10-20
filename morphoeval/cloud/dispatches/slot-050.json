@@ -8,5 +8,81 @@
   "status": "completed",
   "pass1_score": 57.2,
   "pass2_score": 92.6,
-  "delta": 35.4
+  "delta": 35.4,
+  "pass3_status": "completed",
+  "pass3_run_id": "2026-10-19-gastrulation-streak-attractor-loop-pass3",
+  "pass3_audit_id": "2026-10-19-gastrulation-streak-attractor-audit-v3",
+  "pass3_supersedes": "2026-10-19-gastrulation-streak-attractor-audit-v2",
+  "pass3_score": 67.3,
+  "pass3_delta_vs_pass2": -25.3,
+  "pass3_dims": {
+    "model-fidelity": 68,
+    "specimen-match": 58,
+    "parameter-expressivity": 74,
+    "morphometric-validation": 62,
+    "source-traceability": 70,
+    "code-traceability": 74,
+    "repro-package": 80
+  },
+  "pass2_dims": {
+    "model-fidelity": 93,
+    "specimen-match": 92,
+    "parameter-expressivity": 92,
+    "morphometric-validation": 93,
+    "source-traceability": 93,
+    "code-traceability": 92,
+    "repro-package": 93
+  },
+  "pass3_score_note": "Score decreased because the remediation exposed that the Pass 2 headline readouts (AP/ML 4.25, 2.40 um/min, r = 1.0000, SU5402 1.00) are prescribed lookups of the regime parameters (script L812-843), ~82 % of the Polonaise flow is a prescribed streamfunction (L649-667, STOKES_ACTIVE_WEIGHT = 0.18), and the honest field-derived EMT zone is a posterior crescent (WT AP/ML 0.59 vs 4.25; 5-regime aspect Spearman rho = -0.20). Pass 3 code discloses all of this; the v3 score rates what the coupled model actually produces.",
+  "pass3_completed_at": "2026-10-20T16:33:51Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_remediation_closed": [
+    "item1: reduced 2.5D apical-basal wedging + basement-membrane EMT column model coupled to the planar Stokes sink (step_apical_basal_column L468-505, solve_ingression_sink_velocity L508-522, coupling L655-667 and L701-712); residual: no 3D FEM, no ML intercalation, EMT zone does not elongate to 4.25:1",
+    "item2: explicit Wnt8c/Nodal/FGF8 reaction-diffusion cascade upstream of pMLC (ligand_kinetic_parameters L288-318, step_ligand_fields L359-407, myosin_phosphorylation_field L410-422, verify_ligand_decay_length L425-447, phos_m source L697-699); receptor-level SU5402/SB431542/Y-27632/Vg1 perturbations"
+  ],
+  "pass3_remediation_open": [
+    "L812-843, 1296-1366, 972-981: remove/stop exporting the prescribed lookup readouts and circular pearson_r_*; make the 4 retained Pass 2 measurements and Panel C read measured_* values",
+    "L649-667, 119: solve the planar flow from the active stress alone (STOKES_ACTIVE_WEIGHT -> 1); retire psi_dip/psi_quad/iso_ring_v*; restate Theorem 1 about the solved field",
+    "L775-785, 468-505: add mediolateral intercalation / convergent extension so the EMT zone elongates to AP/ML > 2 within 8 h at < 3 um/min (currently 0.59; 5-regime aspect rho = -0.20)",
+    "L11-14, bib:12-21, JSON, README: verify/correct the Serra et al. (2023) venue/DOI (likely Sci. Adv. 9(49):eadh8152, 10.1126/sciadv.adh8152) and the 4 new DOIs (yu2009, muller2012, nakaya2008, voiculescu2014)",
+    "L114-125, ligand_emt_reference.json:53-61,117-130: source or replace ASSUMED constants (Wnt8c D/t1/2, FGF8 t1/2, h0, column kinetics, source amplitudes, Hill K's) and DERIVED references 1.33/0.08; reconcile ALPHA_M_HR = 0.10 vs vendored 0.45",
+    "L1064-1067, 1117-1120, 1406, 1547-1558: print measured bboxes in Panel E, segment r_AO (not r_ao_px = 128), fix docstring 0.6406, replace self-referential PIV reference 0.9705",
+    "L1727-1731, 105-107, 1837-1851: update run_self_test docstring (5 theorems), remove/render OUTPUT_LIGAND_PNG, add --out/--gif/--no-morphospace/--regime CLI flags, track or relocate the gitignored comparison PNG",
+    "L359-407: replace per-substep soft_wall clipping of ligands with a proper disc-edge boundary; resolve the 72 um Wnt8c decay length with > 2 cells"
+  ],
+  "pass3_lean_theorems_added": [
+    "ligand_cascade_posterior_myosin_asymmetry",
+    "apical_basal_wedging_ingression_sink"
+  ],
+  "pass3_lean_total_theorems": 5,
+  "pass3_lean_sorrys": 0,
+  "pass3_self_test": "pass (1.8 s, 14 measurements, determinism atol=0)",
+  "pass3_artifacts": [
+    "2022-serra-gastrulation-streak-attractor.py",
+    "morphoeval/lean/loops/Loop_050_gastrulation_streak_attractor.lean",
+    "morphoeval/math_kg_loops/serra-gastrulation-streak-attractor.yaml",
+    "datasets/gastrulation_streak_attractor/ligand_emt_reference.json",
+    "datasets/gastrulation_streak_attractor/README.md",
+    "datasets/gastrulation_streak_attractor/paper_citations.bib",
+    "docs/media/gastrulation_streak_attractor_comparison.png",
+    "docs/media/gastrulation_streak_attractor_growth.gif",
+    "docs/media/gastrulation_streak_attractor_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-gastrulation-streak-attractor-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-gastrulation-streak-attractor-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-gastrulation-streak-attractor-audit-v3/REPORT.md",
+    "morphoeval/kg/2026-10-19-gastrulation-streak-attractor-audit-v3/morphoeval_2026-10-19-gastrulation-streak-attractor-audit-v3.ttl",
+    "morphoeval/kg/2026-10-19-gastrulation-streak-attractor-audit-v3/published.json",
+    "morphoeval/kg/2026-10-19-gastrulation-streak-attractor-audit-v3/*.trig",
+    "morphoeval/kg/2026-10-19-gastrulation-streak-attractor-audit-v3/signed/*.trig",
+    "morphoeval/runs/2026-10-19-gastrulation-streak-attractor-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-gastrulation-streak-attractor-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-gastrulation-streak-attractor-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-gastrulation-streak-attractor-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-gastrulation-streak-attractor-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-gastrulation-streak-attractor-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-050.json"
+  ],
+  "pass3_handoff": "/tmp/pass3/handoff/slot-050.md"
 }

@@ -1,0 +1,100 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-serra-gastrulation-streak-attractor> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-serra-gastrulation-streak-attractor-specimen-match> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-serra-gastrulation-streak-attractor-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Saadaoui et al. (2020), Serra et al. (2023) & Rozbicki et al. (2015) avian gastrulation tensile ring, Polonaise twin-vortex flow & primitive streak attractor — Morphological realism / specimen match: 58/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credited: the vendored CC BY Vasiev et al. (2010) whole-blastoderm montage is SHA-256-pinned, segmented automatically (HH1 sickle, HH2 condensation, HH3+ streak, area pellucida/opaca ratio 0.6250 vs 0.6389, PIV bilateral symmetry 0.9705) and shown in Panels E/F of the 9-panel PNG; the new GIF shows recorded simulated states (myosin + flow + EMT contour, Nodal/FGF8, SU5402 ring) instead of interpolating a hand-drawn HH1 crescent into a prescribed HH3 ridge (+). Deductions: the simulated wild-type EMT zone is a posterior crescent, not the elongated midline streak visible in the specimen's HH3+ panel, so the side-by-side does not match on the one feature the loop is about (-18); the specimen is an in-situ hybridisation micrograph montage from Vasiev et al. (2010), not a Saadaoui/Serra light-sheet or PIV image, so the PIV-symmetry 'measurement' is made on a drawn schematic panel and its reference value 0.9705 is the script's own output (-8); r_ao_px = 128 is hard-coded, the docstring claims r_AP/r_AO = 0.6406 while the code measures 0.6250, and Panel E text hard-codes '61x183 px', '135x81 px', '5.00x' rather than printing the measured bounding boxes (-6); the PNG is gitignored so the judged figure is not tracked (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:evidenceAgainst "2022-serra-gastrulation-streak-attractor.py L1064–L1067: Docstring claims r_AP/r_AO = 0.6406; the code measures 0.6250 <https://github.com/fractastical/morpholib/blob/028758bc/2022-serra-gastrulation-streak-attractor.py#L1064-L1067>",
+            "2022-serra-gastrulation-streak-attractor.py L1117–L1120: r_ao_px = 128 hard-coded rather than segmented <https://github.com/fractastical/morpholib/blob/028758bc/2022-serra-gastrulation-streak-attractor.py#L1117-L1120>",
+            "2022-serra-gastrulation-streak-attractor.py L1547–L1558: Panel E annotations hard-code '61x183 px', '135x81 px', '5.00x AP/ML Elongation' instead of the measured bboxes <https://github.com/fractastical/morpholib/blob/028758bc/2022-serra-gastrulation-streak-attractor.py#L1547-L1558>",
+            "2022-serra-gastrulation-streak-attractor.py L775–L785: Field-derived EMT-zone geometry: WT AP/ML 0.59 (posterior crescent) vs reference 4.25 — the simulated morphology does not match the HH3+ specimen panel <https://github.com/fractastical/morpholib/blob/028758bc/2022-serra-gastrulation-streak-attractor.py#L775-L785>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-specimen-match-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-specimen-match-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-specimen-match-3> ;
+        pk:hasScore "0.58"^^xsd:double ;
+        pk:hasVerdict "partially faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "2022-serra-gastrulation-streak-attractor.py L1058–L1153" ;
+        dct:description "segment_chick_gastrulation_specimen: automated CV segmentation of the vendored Vasiev 2010 montage" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/028758bc/2022-serra-gastrulation-streak-attractor.py#L1058-L1153> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "docs/media/gastrulation_streak_attractor_comparison.png (generated output)" ;
+        dct:description "9-panel synthesis figure: Panels E/F show the segmented specimen; Panels B/H show the simulated posterior crescent EMT zone; Panel I shows measured vs reference statistics — docs/media/gastrulation_streak_attractor_comparison.png: rendered output of 2022-serra-gastrulation-streak-attractor.py at 028758bc, image/png, 1754542 B, 2700×2400 px, artifact_sha256 74525e85617b6b2617c2da95d44896606c255ec050d0b3628822429a2641d5b2 (sha256 74525e85617b6b2617c2da95d44896606c255ec050d0b3628822429a2641d5b2), spec_fingerprint 394d38439dd8f3b351ba32f3eef22da12f99bfa222be7659901a95855eb8a1e1" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-serra-gastrulation-streak-attractor-specimen-match-3> a pk:EvidenceItem ;
+        rdfs:label "docs/media/gastrulation_streak_attractor_growth.gif (generated output)" ;
+        dct:description "24 frames of recorded simulated states (m + flow + EMT contour, Nodal/FGF8, SU5402 ring); no longer a hand-drawn interpolation — docs/media/gastrulation_streak_attractor_growth.gif: rendered output of 2022-serra-gastrulation-streak-attractor.py at 028758bc, image/gif, 1340066 B, 1350×430 px, 24 frames, artifact_sha256 8f14b8854a86263a9951ed61b88ccaec0312be14acf9a1f28f5cc025e23caaab (sha256 8f14b8854a86263a9951ed61b88ccaec0312be14acf9a1f28f5cc025e23caaab), spec_fingerprint 394d38439dd8f3b351ba32f3eef22da12f99bfa222be7659901a95855eb8a1e1" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary, Pass 3 Phase B assessor) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/nature08391>,
+            <https://doi.org/10.1038/ncb1739>,
+            <https://doi.org/10.1038/ncb3138>,
+            <https://doi.org/10.1038/s41592-023-02009-y>,
+            <https://doi.org/10.1126/science.1221920>,
+            <https://doi.org/10.1126/science.aaw1965>,
+            <https://doi.org/10.1371/journal.pone.0010571>,
+            <https://doi.org/10.7554/eLife.01817> .
+    <https://doi.org/10.1038/nature08391> dct:date "2009"^^xsd:gYear ;
+        dct:title "Fgf8 morphogen gradient forms by a source-sink mechanism with freely diffusing molecules" .
+    <https://doi.org/10.1038/ncb1739> dct:date "2008"^^xsd:gYear ;
+        dct:title "RhoA and microtubule dynamics control cell-basement membrane interaction in EMT during gastrulation" .
+    <https://doi.org/10.1038/ncb3138> dct:date "2015"^^xsd:gYear ;
+        dct:title "Myosin-II-mediated cell shape changes and cell intercalation contribute to primitive streak formation" .
+    <https://doi.org/10.1038/s41592-023-02009-y> dct:date "2023"^^xsd:gYear ;
+        dct:title "A mechanochemical model recapitulates distinct vertebrate gastrulation modes" .
+    <https://doi.org/10.1126/science.1221920> dct:date "2012"^^xsd:gYear ;
+        dct:title "Differential diffusivity of Nodal and Lefty underlies a reaction-diffusion patterning system" .
+    <https://doi.org/10.1126/science.aaw1965> dct:date "2020"^^xsd:gYear ;
+        dct:title "A tensile ring drives tissue flows to shape the gastrulating amniote embryo" .
+    <https://doi.org/10.1371/journal.pone.0010571> dct:date "2010"^^xsd:gYear ;
+        dct:title "Modeling gastrulation in the chick embryo: formation of the primitive streak" .
+    <https://doi.org/10.7554/eLife.01817> dct:date "2014"^^xsd:gYear ;
+        dct:title "Local cell interactions and self-amplifying individual cell ingression drive amniote gastrulation" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Saadaoui et al. (2020), Serra et al. (2023) & Rozbicki et al. (2015) avian gastrulation tensile ring, Polonaise twin-vortex flow & primitive streak attractor — Morphological realism / specimen match 58/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T16:33:14Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-serra-gastrulation-streak-attractor-specimen-match> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

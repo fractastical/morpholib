@@ -1,0 +1,105 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-caleo-cajal-dendritic-wiring> a pk:Claim ;
+        rdfs:label "Cuntz et al. (2010) PLoS Comput. Biol. & Cuntz et al. (2007) PNAS Ramón y Cajal minimum-wiring and conduction-delay greedy Steiner dendritic trees + Rall's 3/2 diameter power law + (Pass 3) Rall passive-cable electrotonics coupled to a Morris-Lecar dendritic Ca2+ spike hotspot faithfully reproduces Drosophila melanogaster (Class I-IV da sensory neurons), Homo sapiens, Mus musculus & Rattus norvegicus (cerebellar Purkinje cells and cortical pyramidal cells) morphology" ;
+        dct:description "The simulation script(s) 2007-caleo-cajal-dendritic-wiring.py implement the cited source model as published and produce forms that match real Drosophila melanogaster (Class I-IV da sensory neurons), Homo sapiens, Mus musculus & Rattus norvegicus (cerebellar Purkinje cells and cortical pyramidal cells) specimens and the source authors' figures. A belief under audit, not a fact: its credibility is the weight of evidence (MorphoEval 0.1.0 overall 92.2/100, audit 2026-10-19-cajal-dendritic-wiring-audit-v3) and the assessments." ;
+        dct:subject <https://github.com/fractastical/morpholib/blob/45670cb8/2007-caleo-cajal-dendritic-wiring.py> ;
+        pk:context "script(s): https://github.com/fractastical/morpholib/blob/45670cb8/2007-caleo-cajal-dendritic-wiring.py; output: docs/media/cajal_dendritic_wiring_comparison.png; organism: Drosophila melanogaster (Class I-IV da sensory neurons), Homo sapiens, Mus musculus & Rattus norvegicus (cerebellar Purkinje cells and cortical pyramidal cells); checkpoint commit: https://github.com/fractastical/morpholib/commit/45670cb8; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0; spec_fingerprint: a6977d117c117453a3da70243bb87c40c9868192a748b42afa7ab4730c025791; artifact_sha256: d8a5eea145746b4df580c95c55b83255c17ede5c82986441d0dadf63208aca34; input_dataset_sha256: {datasets/cajal_dendritic_wiring/cajal_dendritic_wiring_reference.json=e437ed8419f90b10..., datasets/cajal_dendritic_wiring/cajal_purkinje_dendritic_arbor_specimen.jpg=6255a396655b56c4..., datasets/cajal_dendritic_wiring/electrotonic_ca_spike_reference.json=adf04c13baa46a5e..., datasets/cajal_dendritic_wiring/paper_citations.bib=c8a87e40791184dc..., datasets/cajal_dendritic_wiring/scout_manifest.json=2440e61b14fedf53...}; supersedes_audit_id: 2026-10-19-cajal-dendritic-wiring-audit-v2; claim_boundary: [reported_in_source: Cuntz, Forstner, Borst & Häusser (2010) PLoS Comput. Biol. 6(8):e1000877 & Cuntz et al. (2007) PNAS 104:13319-13324 greedy Minimum Spanning Tree dendritic growth rule minimizing C(u, v) = ||u - v|| + bf * path(u, root) across balancing factor bf in [0, 1] to balance Ramón y Cajal's (1899) conservation of cytoplasmic wiring length W and conduction time P | Wen & Chklovskii (2008) J. Neurophysiol. 99:2320-2328 & Cuntz et al. (2010) dimensional wiring scaling laws W propto N^(1/2) A^(1/2) in 2D planar arbors and W propto N^(2/3) V^(1/3) in 3D volumetric arbors | Rall (1959) Exp. Neurol. 1:491-527 electrotonic input-conductance impedance-matching power law d_parent^(3/2) = sum_k d_daughter_k^(3/2) and the passive cable length constant lambda_DC = sqrt(R_m d / 4 R_i); Koch (1999) Eq. 2.37 sinusoidal steady-state reduction lambda_f = lambda_DC sqrt(2 / (1 + sqrt(1 + (omega tau_m)^2))) | Roth & Häusser (2001) J. Physiol. 535:445-472 Purkinje passive constants (R_m ~ 122 kOhm cm2, R_i ~ 115 Ohm cm, C_m ~ 0.77 uF/cm2); Llinás & Sugimori (1980) J. Physiol. 305:197-213 all-or-none Purkinje dendritic Ca2+ spikes; Polsky, Mel & Schiller (2004) Nat. Neurosci. 7:621-627 within-branch supralinear vs between-branch linear synaptic summation; Morris & Lecar (1981) Biophys. J. 35:193-213 two-variable Ca2+/K+ membrane; reconstructed_in_script: Full Cuntz et al. (2010) greedy MST solver (`grow_cuntz_dendritic_tree`) across 8 balancing factors bf in [0.0, 1.0] on N = 160 synaptic carriers, reproducing normalized wiring cost W(bf)/W(0) (Pearson r = 1.0000, RMSE = 0.0042) and normalized conduction path P(bf)/P(1) (Pearson r = 0.99969, RMSE = 0.0067), plus a random spanning tree negative control (10.43x wiring inflation) | Log-log OLS scaling law verification across N in [25, 320] at bf = 0.15: alpha_2D = 0.4797 +- 0.0168 (vs 0.5000), alpha_3D = 0.6495 +- 0.0456 (vs 0.6667), bf = 1.0 star limit alpha_star = 0.9996 | Bottom-up Rall 3/2 electrotonic diameter assignment verifying (sum d_daughter^(3/2))/d_parent^(3/2) = 1.0000 (RMSE = 1.27e-16 across 40 bifurcations) | Computer-vision segmentation of Santiago Ramón y Cajal's (1899) human cerebellar Purkinje neuron drawing (`cajal_purkinje_dendritic_arbor_specimen.jpg`, Museo Cajal 328 Madrid): box-counting fractal dimension D_f = 1.7817 +- 0.0248, peak Sholl intersection count = 73 at r/R_max = 0.6176, 62 primary/secondary bifurcation hubs | (Pass 3) Rall/Koch passive-cable electrotonics on every Rall-3/2 edge of every Cuntz tree (X_e = l_e / lambda_f(d_e), lambda_f / lambda_DC = 0.2487 at f_syn = 53.05 Hz), exp(-X) attenuation of two alpha-synapse inputs from the 24 nearest-neighbour terminal-tip pairs to their lowest-common-ancestor hotspot, a vectorised forward-Euler Morris-Lecar Ca2+/K+ hotspot with g_Ca = 0 and frozen-K+ (strictly linear RC) ablations, an inter-input delay sweep dt in [0, 30] ms, and the resulting coincidence window dt_c (5.24 ms at bf = 0.20 -> 0.73 ms at bf = 1), supralinear gain (4.28x vs exact linear 2.000000), same-branch fraction (1.00 -> 0.00) and Pearson r(window, bf) = -0.698 (p = 0.054); transfer_boundary: 2D planar fan and 3D cubic Euclidean carrier-point greedy MST arbors with Rall 3/2 passive electrotonic diameter tapering mapped to Cajal's Golgi-stained Purkinje neuron drawing; the specimen reference values in `cajal_dendritic_wiring_reference.json` (D_f = 1.7817, Sholl peak = 73, hubs = 62) are the script's own Pass 2 outputs recorded as regression anchors, not independent literature morphometrics | (Pass 3) The dendritic Ca2+ hotspot is a single isopotential Morris-Lecar compartment with the canonical barnacle Hopf parameter set (C = 20 uF/cm2, Rinzel & Ermentrout 1998), not a Purkinje P-type Ca2+ channel fit; passive attenuation to the hotspot uses the semi-infinite-cylinder factor exp(-X), exact for Rall-matched equivalent cylinders viewed from the soma and approximate centripetally; the synaptic peak current I_peak = 110 uA/cm2 is a protocol choice tuned so single inputs stay sub-threshold | (Pass 3) Roth & Häusser (2001) passive constants and all five new DOIs were transcribed offline and are flagged as not re-verified in `electrotonic_ca_spike_reference.json`, the dataset README and the BibTeX file; does_not_claim: Purkinje P-type Ca2+ channel kinetics fitted to Llinás & Sugimori (1980) recordings, a multi-compartment active cable (NEURON-style) hotspot, Na+ dendritic spikes, activity-dependent filopodial synaptotropic retraction, or an empirical coincidence-window value from the literature (the 3 ms reference is tau_syn and the -1 reference is the predicted sign)]; other sources: Biophysics of Computation: Information Processing in Single Neurons <https://global.oup.com/academic/product/biophysics-of-computation-9780195181999>" ;
+        pk:derivedFromPaper <https://doi.org/10.1016/0014-4886(59)90046-9>,
+            <https://doi.org/10.1016/S0006-3495(81)84782-0>,
+            <https://doi.org/10.1038/nn1253>,
+            <https://doi.org/10.1073/pnas.0704731104>,
+            <https://doi.org/10.1111/j.1469-7793.2001.00445.x>,
+            <https://doi.org/10.1113/jphysiol.1980.sp013358>,
+            <https://doi.org/10.1152/jn.00280.2007>,
+            <https://doi.org/10.1371/journal.pcbi.1000251>,
+            <https://doi.org/10.1371/journal.pcbi.1000877>,
+            <https://doi.org/10.5962/bhl.title.48637> ;
+        pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-caleo-cajal-dendritic-wiring-code-traceability>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-caleo-cajal-dendritic-wiring-model-fidelity>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-caleo-cajal-dendritic-wiring-morphometric-validation>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-caleo-cajal-dendritic-wiring-overall>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-caleo-cajal-dendritic-wiring-parameter-expressivity>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-caleo-cajal-dendritic-wiring-repro-package>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-caleo-cajal-dendritic-wiring-source-traceability>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-caleo-cajal-dendritic-wiring-specimen-match> ;
+        pk:weightOfEvidence "0.922"^^xsd:double .
+    <https://github.com/fractastical/morpholib/blob/45670cb8/2007-caleo-cajal-dendritic-wiring.py> a schema:SoftwareSourceCode ;
+        rdfs:label "2007-caleo-cajal-dendritic-wiring.py" ;
+        schema:codeRepository <https://github.com/fractastical/morpholib> ;
+        schema:programmingLanguage "Python" ;
+        schema:version "45670cb8" .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/58> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0014-4886(59)90046-9>,
+            <https://doi.org/10.1016/S0006-3495(81)84782-0>,
+            <https://doi.org/10.1038/nn1253>,
+            <https://doi.org/10.1073/pnas.0704731104>,
+            <https://doi.org/10.1111/j.1469-7793.2001.00445.x>,
+            <https://doi.org/10.1113/jphysiol.1980.sp013358>,
+            <https://doi.org/10.1152/jn.00280.2007>,
+            <https://doi.org/10.1371/journal.pcbi.1000251>,
+            <https://doi.org/10.1371/journal.pcbi.1000877>,
+            <https://doi.org/10.5962/bhl.title.48637>,
+            <https://global.oup.com/academic/product/biophysics-of-computation-9780195181999> .
+    <https://doi.org/10.1016/0014-4886(59)90046-9> dct:date "1959"^^xsd:gYear ;
+        dct:title "Branching dendritic trees and motoneuron membrane resistivity" .
+    <https://doi.org/10.1016/S0006-3495(81)84782-0> dct:date "1981"^^xsd:gYear ;
+        dct:title "Voltage oscillations in the barnacle giant muscle fiber" .
+    <https://doi.org/10.1038/nn1253> dct:date "2004"^^xsd:gYear ;
+        dct:title "Computational subunits in thin dendrites of pyramidal cells" .
+    <https://doi.org/10.1073/pnas.0704731104> dct:date "2007"^^xsd:gYear ;
+        dct:title "Optimization principles of dendritic structure" .
+    <https://doi.org/10.1111/j.1469-7793.2001.00445.x> dct:date "2001"^^xsd:gYear ;
+        dct:title "Compartmental models of rat cerebellar Purkinje cells based on simultaneous somatic and dendritic patch-clamp recordings" .
+    <https://doi.org/10.1113/jphysiol.1980.sp013358> dct:date "1980"^^xsd:gYear ;
+        dct:title "Electrophysiological properties of in vitro Purkinje cell dendrites in mammalian cerebellar slices" .
+    <https://doi.org/10.1152/jn.00280.2007> dct:date "2008"^^xsd:gYear ;
+        dct:title "A Cost-Benefit Analysis of Neuronal Morphology" .
+    <https://doi.org/10.1371/journal.pcbi.1000251> dct:date "2008"^^xsd:gYear ;
+        dct:title "A Quantitative Description of Sensory Neuron Organization in Drosophila: From Individual Dendritic Trees to the Population" .
+    <https://doi.org/10.1371/journal.pcbi.1000877> dct:date "2010"^^xsd:gYear ;
+        dct:title "One Rule to Grow Them All: A General Theory of Neuronal Dendritic Trees" .
+    <https://doi.org/10.5962/bhl.title.48637> dct:date "1899"^^xsd:gYear ;
+        dct:title "Textura del Sistema Nervioso del Hombre y de los Vertebrados" .
+    <https://global.oup.com/academic/product/biophysics-of-computation-9780195181999> dct:date "1999"^^xsd:gYear ;
+        dct:title "Biophysics of Computation: Information Processing in Single Neurons" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Claim: Cuntz et al. (2010) PLoS Comput. Biol. & Cuntz et al. (2007) PNAS Ramón y Cajal minimum-wiring and conduction-delay greedy Steiner dendritic trees + Rall's 3/2 diameter power law + (Pass 3) Rall passive-cable electrotonics coupled to a Morris-Lecar dendritic Ca2+ spike hotspot is faithful" ;
+        dct:created "2026-10-20T17:50:06Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:Claim ;
+        npx:introduces <https://w3id.org/probknow/resource/claim/morphoeval-caleo-cajal-dendritic-wiring> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/45670cb8/2007-caleo-cajal-dendritic-wiring.py>,
+            <https://github.com/fractastical/morpholib/issues/58> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RApE-nGpCMigXqZjeHuYuMJEVTGmTlNTlZl7IcHi_fhdQ/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

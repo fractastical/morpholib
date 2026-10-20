@@ -10,5 +10,65 @@
   "target_script": "2015-bi-vertex-glass-jamming.py",
   "pass1_score": 54.2,
   "pass2_score": 91.0,
-  "delta": 36.8
+  "delta": 36.8,
+  "pass3_run_id": "2026-10-19-vertex-glass-jamming-loop-pass3",
+  "pass3_audit_id": "2026-10-19-vertex-glass-jamming-audit-v3",
+  "pass3_supersedes_audit_id": "2026-10-19-vertex-glass-jamming-audit-v2",
+  "pass3_score": 90.1,
+  "pass3_dims": {
+    "model-fidelity": 89,
+    "specimen-match": 88,
+    "parameter-expressivity": 92,
+    "morphometric-validation": 91,
+    "source-traceability": 92,
+    "code-traceability": 92,
+    "repro-package": 91
+  },
+  "pass3_completed_at": "2026-10-20T16:14:03Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_remediation_closed": [
+    "v2: Couple the zero-temperature vertex energy to self-propelled active Brownian motility forces (v_0, D_r) as in Bi et al. (2016) PRX 6:021011 to map the 3D (p_0, v_0, D_r) glass transition surface -> CLOSED (finite-time reduced form, declared): exact Voronoi forces spv_voronoi_forces L635-724 (+ _circumcenter_jacobian L590-606), FIRE quench spv_fire_minimize L731-782, SPV integrator simulate_spv_active_monolayer L795-905, (p0,v0) glass map run_spv_motility_phase_map L927-988, D_r sweep run_spv_rotational_diffusion_sweep L990-1047, zero-motility FIRE sweep run_spv_zero_motility_minimized_sweep L1049-1086; Panels C1-C5 L1485-1610 + B2 overlay L1362-1371; GIF SPV panel L1615-1700; 7 measurements L1739-1789; self-test checks 9-13 L1903-1960"
+  ],
+  "pass3_remediation_open": [
+    "L304-458 (tables 336-352, 403-428): regime simulator is phenomenological (phase-indexed stretch/noise/speed); replace A1-A4, GIF, p0 sweep and measurements 1-2/4 with SPV force-based relaxation",
+    "L180-233: Delta e_T1 and G are hard-coded linear laws; compute T1 barrier and shear modulus from the energy landscape and compare with the vendored reference columns",
+    "L103, 823, 865-876: single seed, T=150 window, script-defined Gamma_T1/v0 > 0.02 criterion; add seed ensemble, longer-window/N=400 variant and threshold sensitivity",
+    "bi_2016_spv_motility_reference.json:24-26 and script L90-94, L1762-1775: approximate from-memory slope reference and expectation-based references; digitise Bi 2016 Fig. 1a / Fig. 3 and SHA-pin both reference JSONs",
+    "L990-1047: D_r axis is a single v0=0.30 slice with 3 values (p0c(0.25) ~ p0c(1)); run v0 columns at each D_r to make a real (p0, v0, D_r) surface",
+    "vertex_glass_jamming_reference.json:33-42 and L1092-1215: specimen is corneal endothelium, not bronchial epithelium; vendor an HBEC micrograph or relabel; add segmentation threshold sensitivity",
+    "L532-536: Park maturation q(t) and speed_from_q are curve fits, not model predictions; map p0(t) through the SPV model",
+    "L731-782: FIRE hits the 600-step cap unconverged in the fluid branch without being surfaced; report converged flags / raise cap"
+  ],
+  "pass3_lean_theorems_added": [
+    "spv_motility_lowers_critical_shape_index",
+    "spv_free_active_diffusivity_monotone_in_motility"
+  ],
+  "pass3_lean_theorems_total": 6,
+  "pass3_lean_sorrys": 0,
+  "pass3_self_test": "13/13 passed",
+  "pass3_measurements": 15,
+  "pass3_overall_nanopub_uri": "https://w3id.org/np/RAC__8kJ0u9VWjs9HGgWjhhY6c5mmTzoXY2vgCmiGXOOk",
+  "pass3_artifacts": [
+    "2015-bi-vertex-glass-jamming.py",
+    "datasets/vertex_glass_jamming/bi_2016_spv_motility_reference.json",
+    "datasets/vertex_glass_jamming/README.md",
+    "morphoeval/lean/loops/Loop_045_vertex_glass_jamming.lean",
+    "morphoeval/math_kg_loops/bi-vertex-glass-jamming.yaml",
+    "docs/media/vertex_glass_jamming_comparison.png",
+    "docs/media/vertex_glass_jamming_growth.gif",
+    "docs/media/vertex_glass_jamming_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-vertex-glass-jamming-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-vertex-glass-jamming-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-vertex-glass-jamming-audit-v3/",
+    "morphoeval/runs/2026-10-19-vertex-glass-jamming-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-vertex-glass-jamming-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-vertex-glass-jamming-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-vertex-glass-jamming-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-vertex-glass-jamming-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-vertex-glass-jamming-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-045.json"
+  ],
+  "pass3_delta": -0.9
 }

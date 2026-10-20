@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-2016-hannezo-epithelial-buckling-3d.py — Pass 2 (v2) Remediated Implementation
+2016-hannezo-epithelial-buckling-3d.py — Pass 3 (v3) Remediated Implementation
 ==============================================================================
 Faithful mathematical, biomechanical, and morphometric reproduction of:
 
@@ -20,6 +20,41 @@ Faithful mathematical, biomechanical, and morphometric reproduction of:
      "Differential lateral and basal tension drive folding of Drosophila wing discs
      through two distinct mechanisms." Nature Communications 9:4620.
      DOI: 10.1038/s41467-018-06497-3
+  5. Gómez-Gálvez P, Vicente-Munuera P, Tagua A, Forja C, Castro AM, Letrán M,
+     Valencia-Expósito A, Grima C, Bermúdez-Gallardo M, Serrano-Pérez-Higueras Ó,
+     Cavodeassi F, Sotillos S, Martín-Bermudo MD, Márquez A, Buceta J, Escudero LM (2018).
+     "Scutoids are a geometrical solution to three-dimensional packing of epithelia."
+     Nature Communications 9:2960.  DOI: 10.1038/s41467-018-05376-1
+     (Pass 3 addition: 3D polyhedral scutoid packing on curved tubes.)
+
+Pass 3 (v3) remediation — 3D polyhedral scutoid Voronoi tube mesh (Section 3b):
+--------------------------------------------------------------------------------
+  The Pass 2 audit's single open item asked for a "full 3D polyhedral scutoid vertex
+  mesh capturing apical-to-basal neighbor intercalations in high-curvature tubular
+  bends".  Section 3b implements the Gómez-Gálvez et al. (2018) Voronoi-tube model
+  of that mechanism, coupled to the Hannezo equilibrium geometry:
+    * `build_scutoid_tube_mesh` places N ~ 400 cell seeds (jittered hexagonal lattice,
+      2 Lloyd iterations) on the unrolled apical cylinder of radius R_a (circumference
+      2*pi*R_a, doubly periodic => torus topology), tessellates them with a periodic
+      Voronoi/Delaunay construction, and radially projects the same seeds to the basal
+      cylinder R_b = R_a + h_0 (apical lumen) or R_b = R_a - h_0 (basal lumen), where
+      the circumferential coordinate scales by the surface ratio s = R_b / R_a.
+      Every cell is a polyhedron bounded by its apical polygon, its basal polygon and
+      the lateral faces; a cell whose apical and basal Voronoi neighbour sets differ
+      is a scutoid (it has an apico-basal neighbour intercalation on its lateral face).
+    * The mesh reports the scutoid fraction f_s(s), the number of apico-basal
+      intercalations, apical/basal neighbour distributions (Euler: mean = 6 on both
+      surfaces), per-cell frustum volumes, and the total lateral face area of the
+      scutoid tessellation relative to the intercalation-free frustum tessellation
+      (the projected apical polygons), i.e. the Gamma_l-weighted energy saving.
+    * `fold_crest_surface_ratio` extracts the maximal apico-basal curvature kappa_max
+      of each L-BFGS-B relaxed buckled sheet w(x, y) and converts it to the local
+      surface ratio s_crest = 1 + h_0 * kappa_max, so each buckled tissue of the
+      12-tissue table gets a predicted scutoid fraction at its fold crests.
+  What this is NOT (carried honestly as residual for Pass 4): the apical and basal
+  polygons are Voronoi tessellations of radially projected seeds, not free vertices
+  minimizing a 3D vertex energy; lateral faces are evaluated geometrically (trapezoid /
+  triangle areas), not relaxed; there is no T1 dynamics.
 
 Mathematical & Biomechanical Architecture (Linked to Lean 4 `MathOfBiology.Loop_047`):
 -------------------------------------------------------------------------------------
@@ -51,6 +86,18 @@ Mathematical & Biomechanical Architecture (Linked to Lean 4 `MathOfBiology.Loop_
     -C_0(Gamma_a, Gamma_b)), reversing fold polarity between apical Myosin-II
     hyperactivation (Gamma_a > Gamma_b => C_0 > 0) and basal constriction
     (Gamma_b > Gamma_a => C_0 < 0).
+
+  - Law 4 (`MathOfBiology.Loop_047.isometric_projection_has_no_scutoids`, Pass 3):
+    On a curved tube the basal surface ratio s = R_b / R_a = (R_a + h_0) / R_a is
+    strictly > 1 whenever h_0 > 0, so apical and basal tessellations of the same
+    seeds differ; in the isometric limit (s = 1, flat sheet) the apical and basal
+    neighbour lists coincide cell by cell and the scutoid count is identically 0.
+
+  - Law 5 (`MathOfBiology.Loop_047.trivalent_torus_neighbor_conservation`, Pass 3):
+    For a trivalent (3 V = 2 E) tessellation of a torus (V - E + F = 0) the total
+    neighbour count 2 E equals 6 F on BOTH the apical and basal surfaces, so apico-
+    basal intercalations redistribute neighbours between cells but conserve the
+    mean neighbour number 6 (checked numerically on every periodic mesh).
 """
 
 from __future__ import annotations
@@ -76,9 +123,11 @@ REF_JSON = DATASET_DIR / "epithelial_buckling_3d_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "epithelial_sheet_buckling_specimen.jpg"
 SCOUT_JSON = DATASET_DIR / "scout_manifest.json"
 BIB_FILE = DATASET_DIR / "paper_citations.bib"
+SCUTOID_REF_JSON = DATASET_DIR / "scutoid_tube_reference.json"
 
 OUT_PNG = ROOT / "docs" / "media" / "epithelial_buckling_3d_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "epithelial_buckling_3d_growth.gif"
+OUT_SCUTOID_PNG = ROOT / "docs" / "media" / "epithelial_buckling_3d_scutoid_mesh.png"
 
 # Biomechanical constants from Hannezo, Prost & Joanny (2014) PNAS 111:27-32
 C_HEX: float = 3.7224194364  # 2 * sqrt(2 * sqrt(3)) hexagonal packing perimeter factor
@@ -86,6 +135,12 @@ V0_DEFAULT_UM3: float = 1000.0
 SQUAMOUS_ASPECT_THRESHOLD: float = 0.65
 COLUMNAR_ASPECT_THRESHOLD: float = 1.50
 BETA_NL_SATURATION: float = 2.20
+
+# Pass 3 scutoid tube-mesh constants (Gómez-Gálvez et al. 2018 Nat. Commun. 9:2960 Voronoi tubes)
+TUBE_APICAL_RADIUS_UM: float = 20.0      # default apical (luminal) radius of the test tube
+SCUTOID_SEED_JITTER: float = 0.28        # hexagonal-lattice jitter in units of d_0
+SCUTOID_LLOYD_ITERS: int = 2             # centroidal relaxation steps before projection
+SCUTOID_SWEEP_RATIOS: tuple[float, ...] = (1.0, 1.1, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 4.0, 6.0, 10.0)
 
 # Cryptographic SHA-256 Registry for `datasets/epithelial_buckling_3d/`
 EXPECTED_SHA256: dict[str, str] = {
@@ -99,7 +154,10 @@ EXPECTED_SHA256: dict[str, str] = {
         "99741cb299962b182507cf051f67c46d0550d28269ec52a2fc881f9b7a5c3cfc"
     ),
     "datasets/epithelial_buckling_3d/paper_citations.bib": (
-        "e4556865f187913444cedb3c6a26862fdeb0beaf0d961159f749ee82d207d7ac"
+        "77a77d7dc42170a5f8c36dea8aa050a024210469ef1631ab3d501adf9537ae81"
+    ),
+    "datasets/epithelial_buckling_3d/scutoid_tube_reference.json": (
+        "85d9db6cbb5b95ff4a9a8673b163e98c8adb852088b981d458566d1db129c2d0"
     ),
 }
 
@@ -116,7 +174,7 @@ def sha256_file(path: Path) -> str:
 
 
 def verify_dataset_integrity() -> dict[str, str]:
-    """Verify SHA-256 digests of all 4 files in datasets/epithelial_buckling_3d/."""
+    """Verify SHA-256 digests of all 5 pinned files in datasets/epithelial_buckling_3d/."""
     computed: dict[str, str] = {}
     for rel, expected in EXPECTED_SHA256.items():
         p = ROOT / rel
@@ -133,6 +191,12 @@ def load_reference_data() -> dict[str, Any]:
     """Load and cryptographically verify `epithelial_buckling_3d_reference.json`."""
     verify_dataset_integrity()
     return json.loads(REF_JSON.read_text())
+
+
+def load_scutoid_reference() -> dict[str, Any]:
+    """Load and cryptographically verify `scutoid_tube_reference.json` (Pass 3)."""
+    verify_dataset_integrity()
+    return json.loads(SCUTOID_REF_JSON.read_text())
 
 
 # =============================================================================
@@ -427,6 +491,373 @@ def relax_epithelial_monolayer_3d(
 
 
 # =============================================================================
+# 3b. 3D Polyhedral Scutoid Voronoi Tube Mesh (Pass 3 remediation)
+#     Gómez-Gálvez et al. (2018) Nat. Commun. 9:2960, coupled to Hannezo h_0, d_0
+# =============================================================================
+def _tile_periodic_seeds(pts: np.ndarray, Lx: float, Ly: float) -> tuple[np.ndarray, int]:
+    """Tile seeds 3x3 on the doubly periodic (torus) domain [0,Lx) x [0,Ly).
+    Returns the tiled array and the index offset of the central (0,0) copy."""
+    shifts = [(i * Lx, j * Ly) for j in (-1, 0, 1) for i in (-1, 0, 1)]
+    tiled = np.concatenate([pts + np.array(s, dtype=float) for s in shifts], axis=0)
+    return tiled, 4 * len(pts)
+
+
+def _periodic_delaunay_neighbors(pts: np.ndarray, Lx: float, Ly: float) -> list[frozenset[int]]:
+    """Voronoi (= Delaunay) neighbour set of every cell on the periodic domain."""
+    n = len(pts)
+    tiled, base = _tile_periodic_seeds(pts, Lx, Ly)
+    tri = spatial.Delaunay(tiled)
+    indptr, indices = tri.vertex_neighbor_vertices
+    out: list[frozenset[int]] = []
+    for i in range(n):
+        row = indices[indptr[base + i] : indptr[base + i + 1]]
+        out.append(frozenset(int(j % n) for j in row if int(j % n) != i))
+    return out
+
+
+def _periodic_voronoi_polygons(pts: np.ndarray, Lx: float, Ly: float) -> list[np.ndarray]:
+    """Closed Voronoi polygon (vertex array) of every central cell on the periodic domain."""
+    n = len(pts)
+    tiled, base = _tile_periodic_seeds(pts, Lx, Ly)
+    vor = spatial.Voronoi(tiled)
+    polys: list[np.ndarray] = []
+    for i in range(n):
+        region = vor.regions[vor.point_region[base + i]]
+        if -1 in region or len(region) < 3:
+            raise RuntimeError("Unbounded Voronoi region inside the periodic tiling")
+        polys.append(vor.vertices[region])
+    return polys
+
+
+def _polygon_area_perimeter(poly: np.ndarray) -> tuple[float, float]:
+    x, y = poly[:, 0], poly[:, 1]
+    area = 0.5 * abs(float(np.dot(x, np.roll(y, -1)) - np.dot(y, np.roll(x, -1))))
+    d = np.diff(np.vstack([poly, poly[:1]]), axis=0)
+    perim = float(np.sum(np.hypot(d[:, 0], d[:, 1])))
+    return area, perim
+
+
+def _polygon_centroid(poly: np.ndarray) -> tuple[float, float]:
+    x, y = poly[:, 0], poly[:, 1]
+    cross = x * np.roll(y, -1) - np.roll(x, -1) * y
+    area6 = 3.0 * float(np.sum(cross))
+    if abs(area6) < 1e-12:
+        return float(np.mean(x)), float(np.mean(y))
+    cx = float(np.sum((x + np.roll(x, -1)) * cross) / area6)
+    cy = float(np.sum((y + np.roll(y, -1)) * cross) / area6)
+    return cx, cy
+
+
+def _lloyd_relax_periodic(pts: np.ndarray, Lx: float, Ly: float, iters: int) -> np.ndarray:
+    """Centroidal (Lloyd) relaxation of the seeds on the periodic domain."""
+    for _ in range(iters):
+        polys = _periodic_voronoi_polygons(pts, Lx, Ly)
+        cents = np.array([_polygon_centroid(p) for p in polys], dtype=float)
+        pts = np.column_stack([cents[:, 0] % Lx, cents[:, 1] % Ly])
+    return pts
+
+
+def _jittered_hexagonal_seeds(
+    Lx: float, Ly_target: float, d0_um: float, rng: np.random.Generator, jitter: float
+) -> tuple[np.ndarray, float]:
+    """Hexagonal lattice of cell seeds of spacing ~d_0 filling the unrolled apical
+    cylinder (width Lx = 2*pi*R_a), jittered by `jitter * d_0`.  The axial length is
+    snapped to an even number of lattice rows so the domain stays doubly periodic."""
+    nx = max(4, int(round(Lx / d0_um)))
+    dx = Lx / nx
+    dy = dx * math.sqrt(3.0) / 2.0
+    ny = max(2, int(round(Ly_target / dy)))
+    ny += ny % 2
+    Ly = ny * dy
+    pts = np.array(
+        [((i + 0.5 * (j % 2)) * dx, j * dy) for j in range(ny) for i in range(nx)],
+        dtype=float,
+    )
+    pts += jitter * d0_um * rng.standard_normal(pts.shape)
+    pts[:, 0] %= Lx
+    pts[:, 1] %= Ly
+    return pts, Ly
+
+
+def build_scutoid_tube_mesh(
+    h0_um: float,
+    d0_um: float,
+    R_apical_um: float = TUBE_APICAL_RADIUS_UM,
+    surface_ratio: float | None = None,
+    lumen_side: str = "apical",
+    seed: int = 2016,
+    lloyd_iters: int = SCUTOID_LLOYD_ITERS,
+    jitter: float = SCUTOID_SEED_JITTER,
+) -> dict[str, Any]:
+    """Build a 3D polyhedral cell mesh on a curved epithelial tube and detect scutoids.
+
+    Geometry (Gómez-Gálvez et al. 2018 Nat. Commun. 9:2960, "Voronoi tubes"):
+      * apical surface  : cylinder of radius R_a, unrolled to [0, 2*pi*R_a) x [0, L_y),
+                          doubly periodic (torus topology);
+      * basal surface   : cylinder of radius R_b = R_a + h_0 (apical lumen, s > 1) or
+                          R_b = R_a - h_0 (basal lumen, e.g. villus, s < 1); the same
+                          seeds are projected radially, i.e. x_b = s * x_a, y_b = y_a,
+                          with surface ratio s = R_b / R_a (can be overridden);
+      * every cell is the polyhedron bounded by its apical and basal Voronoi polygons
+        and the lateral faces between them.  A cell whose apical and basal neighbour
+        sets differ is a SCUTOID: one of its lateral faces carries an apico-basal
+        vertex, i.e. a neighbour intercalation between the two surfaces.
+
+    Returned quantities: scutoid mask and fraction, number of apico-basal
+    intercalations (edges present on exactly one surface), apical/basal neighbour
+    counts (Euler/Law 5: mean 6 on both), polygon areas/perimeters, frustum cell
+    volumes, and the total lateral face area of the scutoid tessellation versus the
+    intercalation-free frustum tessellation (projected apical polygons)."""
+    if h0_um <= 0.0 or d0_um <= 0.0 or R_apical_um <= 0.0:
+        raise ValueError("h0_um, d0_um and R_apical_um must be positive")
+    if lumen_side not in ("apical", "basal"):
+        raise ValueError("lumen_side must be 'apical' or 'basal'")
+    if surface_ratio is None:
+        R_basal = R_apical_um + h0_um if lumen_side == "apical" else R_apical_um - h0_um
+        if R_basal <= 0.0:
+            raise ValueError("Basal radius must stay positive (h0 < R_apical for basal lumen)")
+        s = R_basal / R_apical_um
+    else:
+        s = float(surface_ratio)
+        if s <= 0.0:
+            raise ValueError("surface_ratio must be positive")
+        R_basal = s * R_apical_um
+
+    rng = np.random.default_rng(seed)
+    Lx = 2.0 * math.pi * R_apical_um
+    pts_a, Ly = _jittered_hexagonal_seeds(Lx, Lx, d0_um, rng, jitter)
+    pts_a = _lloyd_relax_periodic(pts_a, Lx, Ly, lloyd_iters)
+    n_cells = len(pts_a)
+
+    # Basal projection: circumferential arc length scales by s, axial length is conserved
+    pts_b = np.column_stack([pts_a[:, 0] * s, pts_a[:, 1]])
+    Lx_b = s * Lx
+
+    nbr_a = _periodic_delaunay_neighbors(pts_a, Lx, Ly)
+    nbr_b = _periodic_delaunay_neighbors(pts_b, Lx_b, Ly)
+    scutoid_mask = np.array([a != b for a, b in zip(nbr_a, nbr_b)], dtype=bool)
+
+    edges_a = {frozenset((i, j)) for i, nb in enumerate(nbr_a) for j in nb}
+    edges_b = {frozenset((i, j)) for i, nb in enumerate(nbr_b) for j in nb}
+    apical_only = edges_a - edges_b
+    basal_only = edges_b - edges_a
+
+    polys_a = _periodic_voronoi_polygons(pts_a, Lx, Ly)
+    polys_b = _periodic_voronoi_polygons(pts_b, Lx_b, Ly)
+    area_a = np.array([_polygon_area_perimeter(p)[0] for p in polys_a])
+    perim_a = np.array([_polygon_area_perimeter(p)[1] for p in polys_a])
+    area_b = np.array([_polygon_area_perimeter(p)[0] for p in polys_b])
+    perim_b = np.array([_polygon_area_perimeter(p)[1] for p in polys_b])
+    # Frustum (intercalation-free) alternative: apical polygons projected radially
+    perim_proj = np.array(
+        [_polygon_area_perimeter(p * np.array([s, 1.0]))[1] for p in polys_a]
+    )
+
+    # Lateral face areas: each lateral face is shared by two cells; trapezoid
+    # h0 * (l_a + l_b) / 2 for faces present on both surfaces, triangle h0 * l / 2 for
+    # faces that terminate at an apico-basal vertex.  Summing over cells gives
+    #   A_lat = h0 * (sum(P_a) + sum(P_b)) / 4   (half of each shared face per cell)
+    lateral_area_scutoid = 0.25 * h0_um * float(np.sum(perim_a) + np.sum(perim_b))
+    lateral_area_frustum = 0.25 * h0_um * float(np.sum(perim_a) + np.sum(perim_proj))
+    lateral_area_ratio = lateral_area_scutoid / lateral_area_frustum
+
+    # Frustum volume of every polyhedral cell: V = h0 (A_a + A_b + sqrt(A_a A_b)) / 3
+    cell_volumes = h0_um * (area_a + area_b + np.sqrt(area_a * area_b)) / 3.0
+
+    n_nbr_a = np.array([len(x) for x in nbr_a], dtype=int)
+    n_nbr_b = np.array([len(x) for x in nbr_b], dtype=int)
+
+    return {
+        "n_cells": int(n_cells),
+        "surface_ratio": float(s),
+        "R_apical_um": float(R_apical_um),
+        "R_basal_um": float(R_basal),
+        "h0_um": float(h0_um),
+        "d0_um": float(d0_um),
+        "lumen_side": lumen_side,
+        "Lx_apical_um": float(Lx),
+        "Lx_basal_um": float(Lx_b),
+        "Ly_um": float(Ly),
+        "seeds_apical": pts_a,
+        "seeds_basal": pts_b,
+        "polys_apical": polys_a,
+        "polys_basal": polys_b,
+        "neighbors_apical": nbr_a,
+        "neighbors_basal": nbr_b,
+        "scutoid_mask": scutoid_mask,
+        "n_scutoids": int(scutoid_mask.sum()),
+        "scutoid_fraction": float(scutoid_mask.mean()),
+        "n_intercalations": int(len(apical_only)),
+        "n_apical_only_edges": int(len(apical_only)),
+        "n_basal_only_edges": int(len(basal_only)),
+        "n_edges_apical": int(len(edges_a)),
+        "n_edges_basal": int(len(edges_b)),
+        "mean_neighbors_apical": float(n_nbr_a.mean()),
+        "mean_neighbors_basal": float(n_nbr_b.mean()),
+        "total_neighbors_apical": int(n_nbr_a.sum()),
+        "total_neighbors_basal": int(n_nbr_b.sum()),
+        "area_apical_um2": area_a,
+        "area_basal_um2": area_b,
+        "mean_area_apical_um2": float(area_a.mean()),
+        "mean_area_basal_um2": float(area_b.mean()),
+        "cell_volumes_um3": cell_volumes,
+        "mean_cell_volume_um3": float(cell_volumes.mean()),
+        "cell_volume_cv": float(cell_volumes.std() / cell_volumes.mean()),
+        "lateral_area_scutoid_um2": float(lateral_area_scutoid),
+        "lateral_area_frustum_um2": float(lateral_area_frustum),
+        "lateral_area_ratio": float(lateral_area_ratio),
+    }
+
+
+def sweep_scutoid_surface_ratio(
+    h0_um: float,
+    d0_um: float,
+    ratios: tuple[float, ...] = SCUTOID_SWEEP_RATIOS,
+    n_replicates: int = 3,
+    R_apical_um: float = TUBE_APICAL_RADIUS_UM,
+    seed: int = 2016,
+) -> dict[str, Any]:
+    """Scutoid fraction f_s(s) and lateral-area ratio versus surface ratio s = R_b/R_a
+    (Gómez-Gálvez et al. 2018 Fig. 2: f_s = 0 at s = 1 and increases monotonically)."""
+    fr_mean: list[float] = []
+    fr_std: list[float] = []
+    lat_mean: list[float] = []
+    inter_mean: list[float] = []
+    for k, s in enumerate(ratios):
+        reps = [
+            build_scutoid_tube_mesh(h0_um, d0_um, R_apical_um, surface_ratio=float(s), seed=seed + 31 * k + r)
+            for r in range(n_replicates)
+        ]
+        fr = np.array([m["scutoid_fraction"] for m in reps])
+        fr_mean.append(float(fr.mean()))
+        fr_std.append(float(fr.std()))
+        lat_mean.append(float(np.mean([m["lateral_area_ratio"] for m in reps])))
+        inter_mean.append(float(np.mean([m["n_intercalations"] for m in reps])))
+    ratios_arr = np.asarray(ratios, dtype=float)
+    fr_arr = np.asarray(fr_mean, dtype=float)
+    rho, p_rho = stats.spearmanr(ratios_arr, fr_arr)
+    return {
+        "ratios": ratios_arr,
+        "scutoid_fraction_mean": fr_arr,
+        "scutoid_fraction_std": np.asarray(fr_std, dtype=float),
+        "lateral_area_ratio_mean": np.asarray(lat_mean, dtype=float),
+        "n_intercalations_mean": np.asarray(inter_mean, dtype=float),
+        "spearman_rho": float(rho),
+        "spearman_p": float(p_rho),
+        "fraction_at_unity": float(fr_arr[0]) if ratios_arr[0] == 1.0 else float("nan"),
+        "monotone_nondecreasing": bool(np.all(np.diff(fr_arr) >= -1e-12)),
+    }
+
+
+def fold_crest_surface_ratio(sim: dict[str, Any]) -> dict[str, float]:
+    """Maximal apico-basal curvature of a relaxed buckled sheet and the local surface
+    ratio s_crest = 1 + h_0 * kappa_max at the fold crests (apical side convex).
+
+    kappa(x) = w_xx / (1 + w_x^2)^(3/2) is evaluated spectrally along the fold normal
+    (x) on every row of w(x, y); kappa_max is its 99th percentile.  The analytic
+    sinusoidal estimate kappa_sin = (A/2) (2 pi / lambda)^2 (A = peak-to-peak
+    amplitude) is returned alongside for the Lean/analytic cross-check."""
+    w = np.asarray(sim["surface_um"], dtype=float)
+    h0 = float(sim["h0_um"])
+    if sim["phase_code"] in (0, 1, 2) or float(sim["amplitude_sim_um"]) <= 0.0:
+        return {
+            "kappa_max_inv_um": 0.0,
+            "kappa_sin_inv_um": 0.0,
+            "surface_ratio_crest": 1.0,
+            "surface_ratio_sin": 1.0,
+            "h0_um": h0,
+        }
+    n = w.shape[1]
+    L = float(sim["L_box_um"])
+    k = np.fft.fftfreq(n, d=L / n) * 2.0 * math.pi
+    w_hat = np.fft.fft(w, axis=1)
+    # Low-pass at 3 q_c: keep the fundamental and its first two harmonics (the cubic /
+    # quartic nonlinearities) but drop residual L-BFGS-B grid noise, which the k^2
+    # factor of the second derivative would otherwise amplify.
+    qc = 2.0 * math.pi / (float(sim["lambda_pred_um"]) if float(sim["lambda_pred_um"]) > 0 else L)
+    w_hat = np.where(np.abs(k)[None, :] <= 3.0 * qc + 1e-12, w_hat, 0.0)
+    w_x = np.fft.ifft(1j * k[None, :] * w_hat, axis=1).real
+    w_xx = np.fft.ifft(-(k[None, :] ** 2) * w_hat, axis=1).real
+    kappa = np.abs(w_xx) / (1.0 + w_x**2) ** 1.5
+    kappa_max = float(np.percentile(kappa, 99))
+    lam = float(sim["lambda_sim_um"]) if float(sim["lambda_sim_um"]) > 0 else float(sim["lambda_pred_um"])
+    kappa_sin = 0.5 * float(sim["amplitude_sim_um"]) * (2.0 * math.pi / lam) ** 2
+    return {
+        "kappa_max_inv_um": kappa_max,
+        "kappa_sin_inv_um": float(kappa_sin),
+        "surface_ratio_crest": float(1.0 + h0 * kappa_max),
+        "surface_ratio_sin": float(1.0 + h0 * kappa_sin),
+        "h0_um": h0,
+    }
+
+
+def evaluate_scutoid_intercalation(
+    comp: dict[str, Any],
+    perts: dict[str, dict[str, Any]],
+    R_apical_um: float = TUBE_APICAL_RADIUS_UM,
+    seed: int = 2016,
+) -> dict[str, Any]:
+    """Pass 3 remediation driver: couple the 3D scutoid tube mesh to the Hannezo
+    equilibrium geometry of every tissue / perturbation.
+
+    For each buckled or acinar tissue the relaxed sheet's crest curvature gives a
+    local surface ratio s_crest; the mesh built at (h_0, d_0, s_crest) predicts the
+    scutoid fraction at the fold crests (flat tissues: s = 1 => 0 scutoids, Law 4)."""
+    # WT reference geometry = mouse small-intestine tall columnar row (V0 = 1200 um^3,
+    # h0 = 28.9 um), which is the row the reference fold amplitude / wavelength belong to.
+    by_id = {t["tissue_id"]: t for t in comp["tissues"]}
+    wt_row = by_id.get("mouse_small_intestine_columnar_villi")
+    wt = wt_row["sim"] if wt_row is not None else perts["wild_type_columnar_folds"]["sim"]
+    wt_crest = fold_crest_surface_ratio(wt)
+    wt_mesh = build_scutoid_tube_mesh(
+        wt["h0_um"], wt["d0_um"], R_apical_um, surface_ratio=wt_crest["surface_ratio_crest"], seed=seed
+    )
+    wt_tube = build_scutoid_tube_mesh(wt["h0_um"], wt["d0_um"], R_apical_um, seed=seed)
+    flat_mesh = build_scutoid_tube_mesh(wt["h0_um"], wt["d0_um"], R_apical_um, surface_ratio=1.0, seed=seed)
+    sweep = sweep_scutoid_surface_ratio(wt["h0_um"], wt["d0_um"], R_apical_um=R_apical_um, seed=seed)
+
+    per_tissue: list[dict[str, Any]] = []
+    for idx, t in enumerate(comp["tissues"]):
+        crest = fold_crest_surface_ratio(t["sim"])
+        mesh = build_scutoid_tube_mesh(
+            t["sim"]["h0_um"],
+            t["sim"]["d0_um"],
+            R_apical_um,
+            surface_ratio=crest["surface_ratio_crest"],
+            seed=seed + 500 + idx,
+        )
+        per_tissue.append(
+            {
+                "tissue_id": t["tissue_id"],
+                "species": t["species"],
+                "phase_name": t["simulated_phase"],
+                "h0_um": t["sim"]["h0_um"],
+                "kappa_max_inv_um": crest["kappa_max_inv_um"],
+                "surface_ratio_crest": crest["surface_ratio_crest"],
+                "scutoid_fraction": mesh["scutoid_fraction"],
+                "n_intercalations": mesh["n_intercalations"],
+                "lateral_area_ratio": mesh["lateral_area_ratio"],
+            }
+        )
+
+    buckled = [r for r in per_tissue if r["surface_ratio_crest"] > 1.0]
+    flat = [r for r in per_tissue if r["surface_ratio_crest"] <= 1.0]
+    return {
+        "wt_sim": wt,
+        "wt_crest": wt_crest,
+        "wt_mesh": wt_mesh,
+        "wt_tube_mesh": wt_tube,
+        "flat_mesh": flat_mesh,
+        "sweep": sweep,
+        "per_tissue": per_tissue,
+        "n_buckled_with_scutoids": int(sum(1 for r in buckled if r["scutoid_fraction"] > 0.0)),
+        "n_buckled": len(buckled),
+        "n_flat_without_scutoids": int(sum(1 for r in flat if r["scutoid_fraction"] == 0.0)),
+        "n_flat": len(flat),
+    }
+
+
+# =============================================================================
 # 4. 12-Tissue Comparative Evaluation, 2D Phase Diagram & Perturbations
 # =============================================================================
 def evaluate_comparative_tissues(
@@ -690,29 +1121,35 @@ def segment_epithelial_histology_specimen() -> dict[str, Any]:
 
 
 # =============================================================================
-# 6. 6-Panel Publication Synthesis Figure & Animated Growth GIF
+# 6. 8-Panel Publication Synthesis Figure, 3D Scutoid Mesh Figure & Animated Growth GIF
 # =============================================================================
 def render_comparison_figure(
     out_path: Path = OUT_PNG,
     overrides: dict[str, float] | None = None,
     seed: int = 2016,
+    R_apical_um: float = TUBE_APICAL_RADIUS_UM,
 ) -> Path:
-    """Render the 6-panel dark-theme Pass 2 synthesis figure comparing:
+    """Render the 8-panel dark-theme Pass 3 synthesis figure comparing:
     (A) 2D Epithelial Phase Diagram in (Gamma_l / Gamma_a, K_sub) across all 5 regimes + 12 tissues
     (B) 12-Tissue Mus musculus & Drosophila Aspect-Ratio Scaling Collapse (h_0/d_0 = c*Gamma_l/[4(Gamma_a+Gamma_b)])
     (C) L-BFGS-B 3D Epithelial Cross-Sections: Squamous -> Cuboidal -> Buckled Columnar Folds -> Acinus
     (D) Genetic & Mechanical Perturbations: E-Cadherin Knockdown Flattening & Myosin-II / Basal Curvature Inversion
     (E) Histology Specimen Segmentation (`epithelial_sheet_buckling_specimen.jpg`: h_0, d_0, lambda_c)
-    (F) Single-Cell Convex Energy Landscapes E_cell(A) & Buckled Wavelength Collapse lambda_c ~ (kappa_eff/K_sub)^(1/4)
+    (F) Buckled Wavelength Collapse lambda_c ~ (kappa_eff/K_sub)^(1/4)
+    (G) [Pass 3] 3D scutoid tube mesh: unrolled apical vs basal Voronoi tessellations at the
+        WT fold-crest surface ratio, scutoid cells highlighted
+    (H) [Pass 3] Scutoid fraction & lateral-area ratio vs surface ratio s = R_b/R_a with the
+        12 tissues placed at their fold-crest surface ratios
     """
     comp = evaluate_comparative_tissues(overrides=overrides, seed=seed)
     phase_grid = compute_phase_diagram_grid(grid_res=48)
     perts = evaluate_perturbation_experiments(seed=seed)
     specimen = segment_epithelial_histology_specimen()
+    scut = evaluate_scutoid_intercalation(comp, perts, R_apical_um=R_apical_um, seed=seed)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    fig = plt.figure(figsize=(16.8, 10.4), dpi=150, facecolor="#0b0f17")
-    gs = fig.add_gridspec(2, 3, hspace=0.33, wspace=0.27)
+    fig = plt.figure(figsize=(22.4, 10.4), dpi=150, facecolor="#0b0f17")
+    gs = fig.add_gridspec(2, 4, hspace=0.33, wspace=0.27)
 
     # -------------------------------------------------------------------------
     # Panel A: 2D Phase Diagram in (Gamma_l / Gamma_a, K_sub)
@@ -926,14 +1363,202 @@ def render_comparison_figure(
     ax_f.grid(True, alpha=0.22, color="#374151")
     ax_f.legend(loc="upper left", fontsize=7.4, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
 
+    # -------------------------------------------------------------------------
+    # Panel G (Pass 3): 3D scutoid tube mesh — unrolled apical vs basal tessellations
+    # -------------------------------------------------------------------------
+    ax_g = fig.add_subplot(gs[0, 3], facecolor="#111827")
+    # Illustrate a fold FLANK (moderate curvature, s = 1.25) so prisms and scutoids are
+    # both visible; the crest value (s_crest, f_s ~ 1) is reported in Panel H.
+    mesh = build_scutoid_tube_mesh(
+        scut["wt_sim"]["h0_um"], scut["wt_sim"]["d0_um"], R_apical_um, surface_ratio=1.25, seed=seed
+    )
+    _draw_unrolled_tessellations(ax_g, mesh)
+    ax_g.set_title(
+        f"G. 3D Scutoid Tube Mesh, fold flank s={mesh['surface_ratio']:.2f} (f_s={mesh['scutoid_fraction']:.2f}, "
+        f"{mesh['n_intercalations']} intercalations)",
+        color="white",
+        fontsize=9.6,
+        fontweight="bold",
+    )
+    ax_g.set_xlabel("Circumferential Arc Length (μm, basal stretched by s)", color="white", fontsize=8.5)
+    ax_g.set_ylabel("Axial Coordinate (μm): apical (top) | basal (bottom)", color="white", fontsize=8.5)
+    ax_g.tick_params(colors="#9ca3af", labelsize=7.5)
+
+    # -------------------------------------------------------------------------
+    # Panel H (Pass 3): scutoid fraction vs surface ratio + tissue crest predictions
+    # -------------------------------------------------------------------------
+    ax_h = fig.add_subplot(gs[1, 3], facecolor="#111827")
+    sw = scut["sweep"]
+    ax_h.errorbar(
+        sw["ratios"],
+        sw["scutoid_fraction_mean"],
+        yerr=sw["scutoid_fraction_std"],
+        fmt="o-",
+        color="#f43f5e",
+        lw=2.0,
+        markersize=5,
+        capsize=2.5,
+        label=f"Scutoid fraction f_s(s) (Spearman ρ={sw['spearman_rho']:.3f})",
+    )
+    ax_h.plot(sw["ratios"], sw["lateral_area_ratio_mean"], "s--", color="#38bdf8", lw=1.7, markersize=4.5, label="Lateral area: scutoid / frustum")
+    ax_h.axhline(1.0, color="#4b5563", lw=0.9, ls=":")
+    ax_h.axvline(1.0, color="#4b5563", lw=0.9, ls=":")
+    for r in scut["per_tissue"]:
+        if r["surface_ratio_crest"] > 1.0:
+            ax_h.scatter(r["surface_ratio_crest"], r["scutoid_fraction"], marker="^" if r["species"].startswith("Dros") else "o", s=58, color="#facc15", edgecolors="white", linewidths=0.8, zorder=6)
+            ax_h.annotate(r["tissue_id"].split("_")[1][:9], (r["surface_ratio_crest"], r["scutoid_fraction"]), textcoords="offset points", xytext=(4, -9), color="#facc15", fontsize=6.6)
+    ax_h.scatter([], [], marker="o", color="#facc15", edgecolors="white", s=58, label="Tissues at fold-crest s = 1 + h0·κmax")
+    ax_h.set_xscale("log")
+    ax_h.set_xlim(0.9, 11.0)
+    ax_h.set_ylim(-0.03, 1.08)
+    ax_h.set_xlabel(r"Surface Ratio $s = R_b / R_a$ (log scale)", color="white", fontsize=8.5)
+    ax_h.set_ylabel("Scutoid Fraction / Lateral-Area Ratio", color="white", fontsize=8.5)
+    ax_h.set_title(
+        f"H. Scutoids vs Curvature (f_s(1)={sw['fraction_at_unity']:.2f}, WT crest s={scut['wt_crest']['surface_ratio_crest']:.2f})",
+        color="white",
+        fontsize=9.8,
+        fontweight="bold",
+    )
+    ax_h.tick_params(colors="#9ca3af", labelsize=8)
+    ax_h.grid(True, alpha=0.22, color="#374151", which="both")
+    ax_h.legend(loc="center right", fontsize=6.9, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
     fig.suptitle(
-        "Hannezo, Prost & Joanny (2014) PNAS & Krajnc & Ziherl (2015) PRE — 3D Epithelial Sheet Morphology & Apico-Basal Buckling (v2)",
+        "Hannezo, Prost & Joanny (2014) PNAS & Krajnc & Ziherl (2015) PRE — 3D Epithelial Sheet Morphology, Apico-Basal Buckling "
+        "& Scutoid Packing (Gómez-Gálvez 2018) (v3)",
         color="white",
         fontsize=12.4,
         fontweight="bold",
         y=0.975,
     )
     fig.savefig(out_path, dpi=150, bbox_inches="tight", facecolor=fig.get_facecolor())
+    plt.close(fig)
+    return out_path
+
+
+def _draw_unrolled_tessellations(ax: Any, mesh: dict[str, Any]) -> None:
+    """Draw the apical (top) and basal (bottom) unrolled Voronoi tessellations of a
+    scutoid tube mesh on one axis; scutoid cells filled in rose, prisms in slate."""
+    from matplotlib.collections import PolyCollection
+
+    Ly = mesh["Ly_um"]
+    gap = 0.12 * Ly
+    for which, y_off, polys, Lx in (
+        ("apical", Ly + gap, mesh["polys_apical"], mesh["Lx_apical_um"]),
+        ("basal", 0.0, mesh["polys_basal"], mesh["Lx_basal_um"]),
+    ):
+        shifted = [p + np.array([0.0, y_off]) for p in polys]
+        face = ["#e11d48" if sc else "#1f2937" for sc in mesh["scutoid_mask"]]
+        pc = PolyCollection(shifted, facecolors=face, edgecolors="#9ca3af", linewidths=0.45, alpha=0.92)
+        ax.add_collection(pc)
+        ax.plot([0, Lx, Lx, 0, 0], [y_off, y_off, y_off + Ly, y_off + Ly, y_off], color="#38bdf8", lw=1.1)
+        ax.text(
+            0.5 * Lx,
+            y_off + Ly + 0.02 * Ly,
+            f"{which.upper()} R={mesh['R_apical_um'] if which == 'apical' else mesh['R_basal_um']:.1f} μm",
+            color="#38bdf8",
+            fontsize=7.4,
+            ha="center",
+            va="bottom",
+            fontweight="bold",
+        )
+    x_max = max(mesh["Lx_apical_um"], mesh["Lx_basal_um"])
+    ax.set_xlim(-0.03 * x_max, 1.03 * x_max)
+    ax.set_ylim(-0.04 * Ly, 2.0 * Ly + gap + 0.12 * Ly)
+    ax.set_aspect("auto")
+    ax.scatter([], [], marker="s", color="#e11d48", label=f"Scutoid ({mesh['n_scutoids']}/{mesh['n_cells']})")
+    ax.scatter([], [], marker="s", color="#1f2937", edgecolors="#9ca3af", label="Prism / frustum")
+    ax.legend(loc="lower right", fontsize=6.8, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
+
+def render_scutoid_mesh_figure(
+    out_path: Path = OUT_SCUTOID_PNG,
+    seed: int = 2016,
+    R_apical_um: float = TUBE_APICAL_RADIUS_UM,
+) -> Path:
+    """Render the Pass 3 standalone 3D figure of the polyhedral scutoid tube:
+    (left) 3D apical + basal polygon surfaces on the curved tube with scutoid cells in
+    rose; (middle) the flat isometric control (s = 1, 0 scutoids); (right) apical vs
+    basal neighbour-number histograms (Euler mean 6 on both surfaces)."""
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+    data = load_reference_data()
+    wt = data["perturbation_experiments"]["wild_type_columnar_folds"]
+    geom = compute_equilibrium_cell_geometry(wt["Gamma_a_norm"], wt["Gamma_b_norm"], wt["Gamma_l_norm"], V0_um3=1200.0)
+    tube = build_scutoid_tube_mesh(geom["h0_um"], geom["d0_um"], R_apical_um, seed=seed)
+    flat = build_scutoid_tube_mesh(geom["h0_um"], geom["d0_um"], R_apical_um, surface_ratio=1.0, seed=seed)
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig = plt.figure(figsize=(18.0, 6.2), dpi=140, facecolor="#0b0f17")
+    gs = fig.add_gridspec(1, 3, width_ratios=[1.35, 1.0, 0.9], wspace=0.2)
+
+    def _wrap(poly: np.ndarray, radius: float, Lx: float) -> np.ndarray:
+        theta = 2.0 * math.pi * poly[:, 0] / Lx
+        return np.column_stack([radius * np.cos(theta), radius * np.sin(theta), poly[:, 1]])
+
+    ax3 = fig.add_subplot(gs[0, 0], projection="3d", facecolor="#0b0f17")
+    y_cut = 0.55 * tube["Ly_um"]
+    for which, polys, radius, Lx, alpha in (
+        ("basal", tube["polys_basal"], tube["R_basal_um"], tube["Lx_basal_um"], 0.55),
+        ("apical", tube["polys_apical"], tube["R_apical_um"], tube["Lx_apical_um"], 0.95),
+    ):
+        verts, cols = [], []
+        for p, sc in zip(polys, tube["scutoid_mask"]):
+            if np.mean(p[:, 1]) > y_cut and which == "basal":
+                continue  # cut the basal shell away to expose the apical surface
+            verts.append(_wrap(p, radius, Lx))
+            cols.append("#e11d48" if sc else ("#1e3a8a" if which == "apical" else "#0d9488"))
+        pc = Poly3DCollection(verts, facecolors=cols, edgecolors="#cbd5e1", linewidths=0.25, alpha=alpha)
+        ax3.add_collection3d(pc)
+    Rm = tube["R_basal_um"]
+    ax3.set_xlim(-Rm, Rm)
+    ax3.set_ylim(-Rm, Rm)
+    ax3.set_zlim(0, tube["Ly_um"])
+    ax3.set_box_aspect((1, 1, tube["Ly_um"] / (2 * Rm)))
+    ax3.view_init(elev=22, azim=-58)
+    ax3.set_axis_off()
+    ax3.set_title(
+        f"3D Polyhedral Scutoid Tube (R_a={tube['R_apical_um']:.0f} μm, R_b={tube['R_basal_um']:.1f} μm, s={tube['surface_ratio']:.2f})\n"
+        f"{tube['n_scutoids']}/{tube['n_cells']} scutoids (f_s={tube['scutoid_fraction']:.2f}), "
+        f"{tube['n_intercalations']} apico-basal intercalations, lateral area ratio {tube['lateral_area_ratio']:.3f}",
+        color="white",
+        fontsize=9.6,
+        fontweight="bold",
+    )
+
+    ax2 = fig.add_subplot(gs[0, 1], facecolor="#111827")
+    _draw_unrolled_tessellations(ax2, flat)
+    ax2.set_title(
+        f"Isometric Control s=1 (Law 4): {flat['n_scutoids']} scutoids / {flat['n_cells']} cells",
+        color="white",
+        fontsize=9.6,
+        fontweight="bold",
+    )
+    ax2.set_xlabel("Circumferential Arc Length (μm)", color="white", fontsize=8.5)
+    ax2.set_ylabel("Axial (μm): apical | basal", color="white", fontsize=8.5)
+    ax2.tick_params(colors="#9ca3af", labelsize=7.5)
+
+    ax4 = fig.add_subplot(gs[0, 2], facecolor="#111827")
+    na = np.array([len(x) for x in tube["neighbors_apical"]])
+    nb = np.array([len(x) for x in tube["neighbors_basal"]])
+    bins = np.arange(3.5, 10.5, 1.0)
+    ax4.hist(na, bins=bins, color="#1e3a8a", alpha=0.85, label=f"Apical (mean {na.mean():.3f})")
+    ax4.hist(nb, bins=bins, color="#0d9488", alpha=0.65, label=f"Basal (mean {nb.mean():.3f})")
+    ax4.axvline(6.0, color="#facc15", ls="--", lw=1.4, label="Euler/Law 5: mean = 6")
+    ax4.set_xlabel("Neighbour number per cell", color="white", fontsize=8.5)
+    ax4.set_ylabel("Cells", color="white", fontsize=8.5)
+    ax4.set_title("Apical vs Basal Neighbour Distributions", color="white", fontsize=9.6, fontweight="bold")
+    ax4.tick_params(colors="#9ca3af", labelsize=7.5)
+    ax4.legend(loc="upper right", fontsize=7.2, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
+    fig.suptitle(
+        "Pass 3 — Gómez-Gálvez et al. (2018) Scutoid Packing on a Hannezo Columnar Tube (h0, d0 from Law 1)",
+        color="white",
+        fontsize=12.0,
+        fontweight="bold",
+        y=0.99,
+    )
+    fig.savefig(out_path, dpi=140, bbox_inches="tight", facecolor=fig.get_facecolor())
     plt.close(fig)
     return out_path
 
@@ -969,6 +1594,10 @@ def render_growth_gif(
 
         ax1 = fig.add_subplot(gs[0, 0], facecolor="#111827")
         sim = st["sim"]
+        crest = fold_crest_surface_ratio(sim)
+        mesh = build_scutoid_tube_mesh(
+            sim["h0_um"], sim["d0_um"], surface_ratio=crest["surface_ratio_crest"], seed=seed + 900 + idx
+        )
         x_um = np.linspace(0.0, sim["L_box_um"], sim["surface_um"].shape[1])
         w_row = sim["surface_um"][32, :]
         h0 = sim["h0_um"]
@@ -976,6 +1605,15 @@ def render_growth_gif(
         ax1.plot(x_um, w_row - 0.5 * h0, color="#38bdf8", lw=2.2, label="Basal Surface (Γb)")
         ax1.fill_between(x_um, w_row - 0.5 * h0, w_row + 0.5 * h0, color="#a78bfa", alpha=0.38, label=f"3D Monolayer (h0={h0:.1f} μm)")
         ax1.set_ylim(-55.0, 55.0)
+        ax1.text(
+            0.02,
+            0.04,
+            f"Fold-crest s = 1 + h0·κmax = {crest['surface_ratio_crest']:.2f}  →  scutoid fraction f_s = {mesh['scutoid_fraction']:.2f}",
+            transform=ax1.transAxes,
+            color="#facc15",
+            fontsize=7.6,
+            fontweight="bold",
+        )
         ax1.set_title(
             f"{st['organ'][:32]} | {st['simulated_phase']} (h0/d0={st['aspect_ratio_pred']:.2f})",
             color="white",
@@ -1044,11 +1682,19 @@ def measure_morphoeval() -> list[dict[str, Any]]:
     comp = evaluate_comparative_tissues()
     perts = evaluate_perturbation_experiments()
     specimen = segment_epithelial_histology_specimen()
+    scut = evaluate_scutoid_intercalation(comp, perts)
+    scut_ref = load_scutoid_reference()
 
     ecad = perts["ecadherin_knockdown_low_lateral_tension"]
     myo_ap = perts["myosin_ii_apical_hyperactivation"]
     bas_inv = perts["basal_tension_hyperactivation_inversion"]
     wt_col = perts["wild_type_columnar_folds"]
+
+    wt_mesh = scut["wt_mesh"]
+    wt_tube = scut["wt_tube_mesh"]
+    sweep = scut["sweep"]
+    wt_crest = scut["wt_crest"]
+    s_ref = float(scut_ref["wild_type_fold_crest"]["surface_ratio_sinusoidal_ref"])
 
     return [
         {
@@ -1131,14 +1777,55 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"lambda_c = {specimen['mean_lambda_px']:.1f} ± {specimen['std_lambda_px']:.1f} px",
             "derived_from": "output",
         },
+        # ---- Pass 3: 3D polyhedral scutoid tube mesh ---------------------------------
+        {
+            "name": "Scutoid fraction of the isometric (flat, s = 1) 3D tube mesh",
+            "value": round(sweep["fraction_at_unity"], 4),
+            "unit": "fraction",
+            "method": f"Apical vs basal periodic Voronoi neighbour sets of {scut['flat_mesh']['n_cells']} polyhedral cells at surface ratio s = R_b/R_a = 1 (mean of 3 seeds); Law 4 (`isometric_projection_has_no_scutoids`)",
+            "reference_value": float(scut_ref["geometric_identities"]["scutoid_fraction_at_unity"]),
+            "reference_source": "Gómez-Gálvez et al. (2018) Nat. Commun. 9:2960 Fig. 2 (flat/isometric limit has no scutoids); geometric identity",
+            "note": f"flat mesh: {scut['flat_mesh']['n_scutoids']} scutoids, {scut['flat_mesh']['n_intercalations']} intercalations",
+            "derived_from": "script",
+        },
+        {
+            "name": "Spearman rank correlation of scutoid fraction vs tube surface ratio s = R_b/R_a",
+            "value": round(sweep["spearman_rho"], 4),
+            "unit": "Spearman rho",
+            "method": f"{len(sweep['ratios'])}-point sweep s in [{sweep['ratios'][0]:.1f}, {sweep['ratios'][-1]:.1f}] x 3 seeds on the WT columnar tube (h0={wt_tube['h0_um']:.2f} um, d0={wt_tube['d0_um']:.2f} um, R_a={wt_tube['R_apical_um']:.0f} um); p={sweep['spearman_p']:.2e}",
+            "reference_value": float(scut_ref["geometric_identities"]["scutoid_fraction_monotone_spearman_ref"]),
+            "reference_source": "Gómez-Gálvez et al. (2018) Nat. Commun. 9:2960 Fig. 2c (scutoid number increases monotonically with surface ratio in Voronoi tubes)",
+            "note": f"f_s = {', '.join(f'{v:.2f}' for v in sweep['scutoid_fraction_mean'])}; monotone = {sweep['monotone_nondecreasing']}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Mean apical and basal neighbour number of the 3D scutoid tube (Euler trivalent torus)",
+            "value": round(0.5 * (wt_tube["mean_neighbors_apical"] + wt_tube["mean_neighbors_basal"]), 4),
+            "unit": "neighbours per cell",
+            "method": f"Periodic Delaunay neighbour counts on both surfaces of the WT tube (s={wt_tube['surface_ratio']:.3f}, {wt_tube['n_cells']} cells, {wt_tube['n_intercalations']} intercalations); Law 5 (`trivalent_torus_neighbor_conservation`)",
+            "reference_value": float(scut_ref["geometric_identities"]["euler_mean_neighbors"]),
+            "reference_source": "Euler characteristic of a trivalent torus tessellation (2E = 6F); Gómez-Gálvez et al. (2018) Fig. 3 apical/basal neighbour distributions",
+            "note": f"apical mean = {wt_tube['mean_neighbors_apical']:.4f}, basal mean = {wt_tube['mean_neighbors_basal']:.4f}, total apical = {wt_tube['total_neighbors_apical']}, total basal = {wt_tube['total_neighbors_basal']}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Wild-type fold-crest surface ratio s_crest = 1 + h0 * kappa_max from the relaxed sheet",
+            "value": round(wt_crest["surface_ratio_crest"], 4),
+            "unit": "R_b / R_a",
+            "method": f"99th-percentile low-passed (<= 3 q_c) spectral curvature of the L-BFGS-B relaxed mouse small-intestine columnar sheet (kappa_max={wt_crest['kappa_max_inv_um']:.4f} um^-1, h0={wt_crest['h0_um']:.2f} um; in-sim sinusoidal estimate s_sin={wt_crest['surface_ratio_sin']:.4f}) vs the same identity evaluated on the reference fold geometry (A=42.5 um, lambda=136.4 um, h0=28.9 um)",
+            "reference_value": round(s_ref, 4),
+            "reference_source": "scutoid_tube_reference.json wild_type_fold_crest (derived from epithelial_buckling_3d_reference.json WT amplitude/wavelength/h0; Hannezo et al. 2014 Fig. 3 fold geometry)",
+            "note": f"sim amplitude {scut['wt_sim']['amplitude_sim_um']:.1f} um and lambda_sim {scut['wt_sim']['lambda_sim_um']:.1f} um vs reference 42.5 / 136.4 um explain the excess over s_ref; predicted scutoid fraction at WT crest = {wt_mesh['scutoid_fraction']:.3f}; lateral area ratio scutoid/frustum = {wt_mesh['lateral_area_ratio']:.4f} (< 1 => intercalation lowers Gamma_l-weighted lateral area)",
+            "derived_from": "script",
+        },
     ]
 
 
 def self_test() -> bool:
-    """Run comprehensive 8-point verification suite for Pass 2."""
-    # 1. Cryptographic SHA-256 verification of all 4 dataset files
+    """Run comprehensive 11-point verification suite for Pass 3."""
+    # 1. Cryptographic SHA-256 verification of all 5 dataset files
     digests = verify_dataset_integrity()
-    assert len(digests) == 4, "Expected 4 verified dataset assets"
+    assert len(digests) == 5, "Expected 5 verified dataset assets"
 
     # 2. JSON-to-code parameter parity
     ref = load_reference_data()
@@ -1180,31 +1867,92 @@ def self_test() -> bool:
     run2 = relax_epithelial_monolayer_3d(0.58, 0.52, 5.30, 0.014, 1.88, seed=2016)
     assert np.allclose(run1["surface_um"], run2["surface_um"], atol=0.0)
 
-    # 8. MorphoEval measurement contract check
+    # 8. Pass 3 Law 4: isometric projection (s = 1) has no scutoids; curved tube (s > 1) has
+    wt_geom = compute_equilibrium_cell_geometry(0.58, 0.52, 5.30, V0_um3=1200.0)
+    flat_mesh = build_scutoid_tube_mesh(wt_geom["h0_um"], wt_geom["d0_um"], surface_ratio=1.0, seed=2016)
+    assert flat_mesh["n_scutoids"] == 0 and flat_mesh["n_intercalations"] == 0
+    assert math.isclose(flat_mesh["lateral_area_ratio"], 1.0, rel_tol=1e-9)
+    tube_mesh = build_scutoid_tube_mesh(wt_geom["h0_um"], wt_geom["d0_um"], seed=2016)
+    assert tube_mesh["surface_ratio"] > 1.0 and tube_mesh["n_scutoids"] > 0
+    assert tube_mesh["n_apical_only_edges"] == tube_mesh["n_basal_only_edges"], "Intercalations must be edge-balanced"
+    assert tube_mesh["lateral_area_ratio"] < 1.0, "Scutoid tessellation must not increase lateral area"
+    villus_mesh = build_scutoid_tube_mesh(wt_geom["h0_um"], wt_geom["d0_um"], R_apical_um=60.0, lumen_side="basal", seed=2016)
+    assert villus_mesh["surface_ratio"] < 1.0 and villus_mesh["n_scutoids"] > 0
+
+    # 9. Pass 3 Law 5: Euler trivalent-torus neighbour conservation (2E = 6F) on both surfaces
+    for m in (flat_mesh, tube_mesh, villus_mesh):
+        assert m["total_neighbors_apical"] == 6 * m["n_cells"], "Apical mean neighbour number must be 6"
+        assert m["total_neighbors_basal"] == 6 * m["n_cells"], "Basal mean neighbour number must be 6"
+        assert m["total_neighbors_apical"] == 2 * m["n_edges_apical"]
+        assert m["cell_volume_cv"] < 0.5
+
+    # 10. Pass 3 curvature coupling: monotone scutoid sweep + buckled tissues get scutoids, flat ones none
+    sweep = sweep_scutoid_surface_ratio(wt_geom["h0_um"], wt_geom["d0_um"], ratios=(1.0, 1.5, 2.5, 6.0), n_replicates=2)
+    assert sweep["fraction_at_unity"] == 0.0 and sweep["monotone_nondecreasing"]
+    assert sweep["scutoid_fraction_mean"][-1] > 0.9
+    scut = evaluate_scutoid_intercalation(comp, perts, seed=2016)
+    assert scut["n_flat_without_scutoids"] == scut["n_flat"] == 6
+    assert scut["n_buckled_with_scutoids"] == scut["n_buckled"] == 6
+    crest = scut["wt_crest"]
+    assert crest["surface_ratio_crest"] > 1.5
+    assert math.isclose(crest["surface_ratio_crest"], crest["surface_ratio_sin"], rel_tol=0.25), (
+        f"spectral crest s={crest['surface_ratio_crest']:.3f} vs sinusoidal {crest['surface_ratio_sin']:.3f}"
+    )
+    mesh_a = build_scutoid_tube_mesh(wt_geom["h0_um"], wt_geom["d0_um"], surface_ratio=2.0, seed=7)
+    mesh_b = build_scutoid_tube_mesh(wt_geom["h0_um"], wt_geom["d0_um"], surface_ratio=2.0, seed=7)
+    assert mesh_a["n_scutoids"] == mesh_b["n_scutoids"] and np.array_equal(mesh_a["scutoid_mask"], mesh_b["scutoid_mask"])
+
+    # 11. MorphoEval measurement contract check
     meas = measure_morphoeval()
-    assert len(meas) == 8
+    assert len(meas) == 12
+    assert all(("reference_value" in m and "unit" in m) for m in meas)
 
     print(
-        f"[self_test] 2016-hannezo-epithelial-buckling-3d.py (v2) PASSED all 8 checks "
+        f"[self_test] 2016-hannezo-epithelial-buckling-3d.py (v3) PASSED all 11 checks "
         f"(12-tissue aspect r={comp['pearson_r_aspect']:.4f}, wavelength r={comp['pearson_r_lambda']:.4f}, "
-        f"specimen h0/d0={spec['aspect_ratio_h0_d0']:.4f}, lambda/h0={spec['lambda_over_h0']:.4f})."
+        f"specimen h0/d0={spec['aspect_ratio_h0_d0']:.4f}, lambda/h0={spec['lambda_over_h0']:.4f}, "
+        f"tube s={tube_mesh['surface_ratio']:.3f} f_s={tube_mesh['scutoid_fraction']:.3f}, "
+        f"WT crest s={crest['surface_ratio_crest']:.3f} f_s={scut['wt_mesh']['scutoid_fraction']:.3f})."
     )
     return True
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--self-test", action="store_true", help="Run 8-check verification suite")
+    ap.add_argument("--self-test", action="store_true", help="Run 11-check verification suite")
     ap.add_argument("--skip-gif", action="store_true", help="Skip animated GIF rendering")
     ap.add_argument("--gamma-a", type=float, default=None, help="Override normalized apical tension Gamma_a")
     ap.add_argument("--gamma-b", type=float, default=None, help="Override normalized basal tension Gamma_b")
     ap.add_argument("--gamma-l", type=float, default=None, help="Override normalized lateral tension Gamma_l")
     ap.add_argument("--k-sub", type=float, default=None, help="Override normalized substrate stiffness K_sub")
     ap.add_argument("--seed", type=int, default=2016, help="Deterministic RNG seed (default: 2016)")
+    ap.add_argument(
+        "--tube-radius",
+        type=float,
+        default=TUBE_APICAL_RADIUS_UM,
+        help=f"Apical (luminal) radius R_a of the Pass 3 scutoid tube mesh in um (default: {TUBE_APICAL_RADIUS_UM})",
+    )
+    ap.add_argument(
+        "--surface-ratio",
+        type=float,
+        default=None,
+        help="Print a one-off scutoid tube mesh report at this surface ratio s = R_b/R_a (WT columnar h0, d0) and exit",
+    )
     args = ap.parse_args()
 
     if args.self_test:
         self_test()
+        return 0
+
+    if args.surface_ratio is not None:
+        g = compute_equilibrium_cell_geometry(0.58, 0.52, 5.30, V0_um3=1200.0)
+        m = build_scutoid_tube_mesh(g["h0_um"], g["d0_um"], args.tube_radius, surface_ratio=args.surface_ratio, seed=args.seed)
+        print(
+            f"[scutoid] s={m['surface_ratio']:.3f} cells={m['n_cells']} scutoids={m['n_scutoids']} "
+            f"f_s={m['scutoid_fraction']:.4f} intercalations={m['n_intercalations']} "
+            f"mean_nbr(apical,basal)=({m['mean_neighbors_apical']:.3f},{m['mean_neighbors_basal']:.3f}) "
+            f"lateral_area_ratio={m['lateral_area_ratio']:.4f} cell_volume_cv={m['cell_volume_cv']:.4f}"
+        )
         return 0
 
     overrides = {
@@ -1217,8 +1965,10 @@ def main() -> int:
         }.items()
         if v is not None
     }
-    png = render_comparison_figure(OUT_PNG, overrides=overrides, seed=args.seed)
+    png = render_comparison_figure(OUT_PNG, overrides=overrides, seed=args.seed, R_apical_um=args.tube_radius)
     print(f"[render] Wrote {png}")
+    scut_png = render_scutoid_mesh_figure(OUT_SCUTOID_PNG, seed=args.seed, R_apical_um=args.tube_radius)
+    print(f"[render] Wrote {scut_png}")
     if not args.skip_gif:
         gif = render_growth_gif(OUT_GIF, seed=args.seed)
         print(f"[render] Wrote {gif}")

@@ -1,10 +1,40 @@
 #!/usr/bin/env python3
 """
-1964-steinberg-differential-adhesion-sorting.py — Pass 2 (v2 Remediated)
+1964-steinberg-differential-adhesion-sorting.py — Pass 3 (v3 Remediated)
 ========================================================================
 Steinberg (1963, 1970) Differential Adhesion Hypothesis (DAH),
 Graner & Glazier (1992) / Glazier & Graner (1993) Extended Cellular Potts Model,
-and Foty, Pfleger, Forgacs & Steinberg (1996) Chick Embryo Surface Tension Hierarchy.
+Foty, Pfleger, Forgacs & Steinberg (1996) Chick Embryo Surface Tension Hierarchy,
+and (Pass 3) a full 3D Cellular Potts spheroid on a 64^3 lattice compared against
+the 2D model and its own 2D equatorial cross-section (sorting-kinetics exponents).
+
+Pass 3 remediation (closes the single open Pass 2 item):
+  - `simulate_potts_regime_3d()` runs the Graner-Glazier Hamiltonian on a 64^3 cubic
+    lattice holding a spherical aggregate of ~840 cubic 4^3 cells (26-neighbour adhesion
+    term, quadratic volume constraint lambda_V (v - V_0)^2). The Metropolis sweep is a
+    sublattice-parallel ("8-colour" parity checkerboard) update: two sites of the same
+    parity class (x mod 2, y mod 2, z mod 2) are never Moore-adjacent (Lean 4 theorem
+    `parity_sublattice_sites_not_moore_adjacent`), so the adhesion energy of simultaneous
+    flips is exact; only the volume term is evaluated with sub-sweep-start volumes
+    (the standard domain-parallel CPM approximation, cf. Chen, Glazier, Izaguirre &
+    Alber 2007 Comput. Phys. Commun. 176:670). The single-voxel volume increment used
+    by both the 2D and 3D solvers, lambda*((v+1-V_0)^2 - (v-V_0)^2) = lambda*(2(v-V_0)+1),
+    is Lean 4 theorem `potts_volume_energy_single_voxel_increment`.
+  - `fit_sorting_kinetics()` fits the heterotypic boundary fraction L_AB(t)/L(t) both
+    to the Graner & Glazier (1992) Fig. 3 logarithmic law a + b ln(t+1) and to a power
+    law c (t+1)^(-alpha) and reports which description has the higher R^2. The exponent
+    alpha is compared against the Lifshitz-Slyozov-Wagner diffusive coarsening bound
+    alpha = 1/3 (conserved order parameter, L_AB/L ~ 1/R(t) ~ t^(-1/3)); alpha -> 0 is
+    the logarithmic (frozen) limit reported for the 2D model.
+  - `compare_2d_vs_3d_sorting_kinetics()` runs the 3D sorted spheroid, a 3D run with
+    the cell-level Kawasaki type-swap accelerator ablated, and a 3D equal-adhesion
+    negative control, and measures the exponent on (i) the native 2D model, (ii) the full
+    3D boundary and (iii) the 2D equatorial cross-section of the 3D spheroid, which is the
+    like-for-like comparison for the confocal optical section in `cell_sorting_specimen.jpg`.
+  - Honest limits: 64^3 x 200 MCS is far from the asymptotic coarsening regime, the
+    exponents are fitted over ~2.3 decades of MCS, and the Kawasaki type-swap move is
+    a non-physical accelerator (its effect on alpha is measured by the ablation, not
+    assumed to vanish). See the v3 audit `remediation` block for the carried residuals.
 
 Primary Literature & Equations Implemented:
   1. Steinberg MS (1963) Science 141(3579):401-408 (doi:10.1126/science.141.3579.401) &
@@ -30,6 +60,16 @@ Primary Literature & Equations Implemented:
      - Empirical Gallus gallus embryonic tissue surface tensions sigma (dyn/cm, Table 1):
        limb bud precartilage (20.1) > pigmented epithelium (12.6) > heart ventricle (8.5) >
        embryonic liver (4.6) > neural retina (1.6).
+  4. Sorting kinetics (Pass 3):
+     - Graner & Glazier (1992) PRL Fig. 3: logarithmic decay of heterotypic boundary length.
+     - Mombach, Glazier, Raphael & Zajac (1995) Phys. Rev. Lett. 75(11):2244-2247
+       (doi:10.1103/PhysRevLett.75.2244): quantitative sorting kinetics with/without fluctuations.
+     - Nakajima & Ishihara (2011) New J. Phys. 13:033035 (doi:10.1088/1367-2630/13/3/033035):
+       re-examination of CPM sorting kinetics (power-law vs logarithmic domain growth).
+     - Chen, Glazier, Izaguirre & Alber (2007) Comput. Phys. Commun. 176(11-12):670-681
+       (doi:10.1016/j.cpc.2007.03.007): domain-parallel CPM updates (basis of the 3D sublattice sweep).
+     - Lifshitz-Slyozov-Wagner diffusive coarsening: R(t) ~ t^(1/3) => L_AB/L ~ t^(-1/3).
+     (The three Pass 3 DOIs were added from memory and could not be verified offline; see audit.)
 """
 
 from __future__ import annotations
@@ -419,13 +459,8 @@ def simulate_potts_regime(
     final_metrics = _compute_potts_morphometrics(sigma, cell_type)
 
     # Fit logarithmic decay L_AB(t)/L_tot(t) = a + b * ln(t + 1) (Graner & Glazier 1992 Fig. 3)
-    t_arr = np.arange(len(het_history), dtype=np.float64)
-    log_t = np.log(t_arr + 1.0)
-    het_arr = np.array(het_history, dtype=np.float64)
-    if np.std(het_arr) > 1e-9:
-        slope, intercept, r_val, p_val, _ = stats.linregress(log_t, het_arr)
-    else:
-        slope, intercept, r_val, p_val = 0.0, float(het_arr[0]), 0.0, 1.0
+    # and (Pass 3) the competing power law c * (t + 1)^(-alpha); see fit_sorting_kinetics().
+    kin = fit_sorting_kinetics(het_history)
 
     return {
         "sigma": sigma,
@@ -437,11 +472,56 @@ def simulate_potts_regime(
         "frames": frames,
         "het_initial": float(het_history[0]),
         "het_final": float(het_history[-1]),
-        "log_decay_slope": float(slope),
-        "log_decay_intercept": float(intercept),
-        "log_decay_r": float(r_val),
-        "log_decay_p": float(p_val),
+        "log_decay_slope": kin["log_slope"],
+        "log_decay_intercept": kin["log_intercept"],
+        "log_decay_r": kin["log_r"],
+        "log_decay_p": kin["log_p"],
+        "power_law_alpha": kin["power_alpha"],
+        "power_law_r": kin["power_r"],
+        "kinetics": kin,
         **final_metrics,
+    }
+
+
+def fit_sorting_kinetics(het_history: list[float] | np.ndarray) -> dict[str, float | str]:
+    """
+    Fit the heterotypic boundary fraction f(t) = L_AB(t) / L_tot(t) (t in MCS) with
+      (a) the Graner & Glazier (1992) PRL Fig. 3 logarithmic law  f = a + b ln(t + 1), and
+      (b) a power law  f = c (t + 1)^(-alpha)  (log-log linear regression),
+    and report which description has the larger R^2 on the same points.
+
+    Reference exponents: alpha = 1/3 is the Lifshitz-Slyozov-Wagner diffusive coarsening
+    bound for a conserved two-phase mixture (L_AB/L ~ 1/R(t), R ~ t^(1/3)); alpha -> 0 is
+    the logarithmically slow (frozen) sorting reported for the 2D Potts model.
+    """
+    het_arr = np.asarray(het_history, dtype=np.float64)
+    t_arr = np.arange(len(het_arr), dtype=np.float64)
+    log_t = np.log(t_arr + 1.0)
+    if len(het_arr) < 4 or np.std(het_arr) <= 1e-9 or np.any(het_arr <= 0.0):
+        return {
+            "log_slope": 0.0, "log_intercept": float(het_arr[0]) if len(het_arr) else 0.0,
+            "log_r": 0.0, "log_p": 1.0, "log_r2": 0.0,
+            "power_alpha": 0.0, "power_prefactor": float(het_arr[0]) if len(het_arr) else 0.0,
+            "power_r": 0.0, "power_p": 1.0, "power_r2": 0.0,
+            "r2_power_minus_log": 0.0, "preferred_model": "undetermined",
+        }
+    lg = stats.linregress(log_t, het_arr)
+    pw = stats.linregress(log_t, np.log(het_arr))
+    log_r2 = float(lg.rvalue ** 2)
+    power_r2 = float(pw.rvalue ** 2)
+    return {
+        "log_slope": float(lg.slope),
+        "log_intercept": float(lg.intercept),
+        "log_r": float(lg.rvalue),
+        "log_p": float(lg.pvalue),
+        "log_r2": log_r2,
+        "power_alpha": float(-pw.slope),
+        "power_prefactor": float(np.exp(pw.intercept)),
+        "power_r": float(pw.rvalue),
+        "power_p": float(pw.pvalue),
+        "power_r2": power_r2,
+        "r2_power_minus_log": power_r2 - log_r2,
+        "preferred_model": "power_law" if power_r2 > log_r2 else "logarithmic",
     }
 
 
@@ -478,6 +558,350 @@ def run_gamma_ab_sweep(n_mcs: int = 110, seed: int = 1963) -> list[dict[str, Any
             }
         )
     return results
+
+
+# =============================================================================
+# Section 2b (Pass 3): 3D Cellular Potts Spheroid on a 64^3 Lattice
+# =============================================================================
+
+_OFFS6_3D = [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)]
+_OFFS26_3D = np.array(
+    [
+        (dz, dy, dx)
+        for dz in (-1, 0, 1)
+        for dy in (-1, 0, 1)
+        for dx in (-1, 0, 1)
+        if (dz, dy, dx) != (0, 0, 0)
+    ],
+    dtype=np.int64,
+)
+
+
+def _roll3(a: np.ndarray, dz: int, dy: int, dx: int) -> np.ndarray:
+    return np.roll(np.roll(np.roll(a, dz, axis=0), dy, axis=1), dx, axis=2)
+
+
+def _compute_potts_morphometrics_3d(
+    sigma: np.ndarray,
+    cell_type: np.ndarray,
+    coords: tuple[np.ndarray, np.ndarray, np.ndarray],
+) -> dict[str, Any]:
+    """
+    3D analogue of `_compute_potts_morphometrics` on face (6-neighbour) bonds:
+      - heterotypic boundary fraction L_AB / L_total (A-B faces over all inter-cell faces)
+      - outer envelopment fraction (A-medium faces over all cell-medium faces)
+      - normalized mean radii r_A/R, r_B/R and radial separation Delta_r = (r_A - r_B)/R
+        with R = 95th percentile of occupied-voxel radius from the aggregate centroid
+      - radial occupancy profiles rho_A(r/R), rho_B(r/R) across 12 spherical shells
+    """
+    t_grid = cell_type[sigma]
+    zz, yy, xx = coords
+    het = tot = am = bm = 0
+    for dz, dy, dx in _OFFS6_3D[::2]:
+        s2 = _roll3(sigma, -dz, -dy, -dx)
+        t2 = cell_type[s2]
+        diff = (sigma != s2) & ((t_grid > 0) | (t2 > 0))
+        tot += int(diff.sum())
+        het += int((diff & (((t_grid == 1) & (t2 == 2)) | ((t_grid == 2) & (t2 == 1)))).sum())
+        am += int((diff & (((t_grid == 1) & (t2 == 0)) | ((t_grid == 0) & (t2 == 1)))).sum())
+        bm += int((diff & (((t_grid == 2) & (t2 == 0)) | ((t_grid == 0) & (t2 == 2)))).sum())
+    mask_all = t_grid > 0
+    if np.any(mask_all):
+        cz, cy, cx = float(zz[mask_all].mean()), float(yy[mask_all].mean()), float(xx[mask_all].mean())
+    else:
+        cz = cy = cx = sigma.shape[0] / 2.0
+    rr = np.sqrt((zz - cz) ** 2 + (yy - cy) ** 2 + (xx - cx) ** 2)
+    r_agg = float(np.percentile(rr[mask_all], 95)) if np.any(mask_all) else 1.0
+    r_agg = max(r_agg, 1.0)
+    mask_A = t_grid == 1
+    mask_B = t_grid == 2
+    r_A = float(rr[mask_A].mean() / r_agg) if np.any(mask_A) else 0.0
+    r_B = float(rr[mask_B].mean() / r_agg) if np.any(mask_B) else 0.0
+
+    n_bins = 12
+    edges = np.linspace(0.0, 1.05, n_bins + 1)
+    centers = 0.5 * (edges[:-1] + edges[1:])
+    r_norm = rr / r_agg
+    rho_A = np.zeros(n_bins)
+    rho_B = np.zeros(n_bins)
+    for b in range(n_bins):
+        in_bin = (r_norm >= edges[b]) & (r_norm < edges[b + 1]) & mask_all
+        n_tot = int(in_bin.sum())
+        if n_tot > 0:
+            rho_A[b] = float((in_bin & mask_A).sum() / n_tot)
+            rho_B[b] = float((in_bin & mask_B).sum() / n_tot)
+    return {
+        "het_frac": float(het / max(tot, 1)),
+        "outer_A_envelopment": float(am / max(am + bm, 1)),
+        "r_A_norm": r_A,
+        "r_B_norm": r_B,
+        "radial_sep": float(r_A - r_B),
+        "r_agg_vox": r_agg,
+        "radial_bin_centers": centers,
+        "rho_A_radial": rho_A,
+        "rho_B_radial": rho_B,
+    }
+
+
+def simulate_potts_regime_3d(
+    J_AA: float = 14.0,
+    J_BB: float = 2.0,
+    J_AB: float = 11.0,
+    J_AM: float = 16.0,
+    J_BM: float = 16.0,
+    target_volume: int = 64,
+    lam_vol: float = 2.0,
+    T: float = 30.0,
+    grid_size: int = 64,
+    n_mcs: int = 200,
+    seed: int = 1963,
+    cell_swaps: bool = True,
+    record_frames: bool = False,
+) -> dict[str, Any]:
+    """
+    Graner & Glazier (1992) extended Cellular Potts Hamiltonian on a 3D cubic lattice
+    (default 64^3 = 262,144 voxels) holding a spherical aggregate (R_init ~ 23.5 voxels)
+    of ~840 cubic 4^3 cells, half type A (outer/light) and half type B (inner/dark),
+    initialised as a radially balanced mosaic exactly as in the 2D solver.
+
+    Energy: H = sum_{26-nbr pairs} J(tau, tau') (1 - delta_{sigma, sigma'})
+                + lambda_V sum_{sigma > 0} (v(sigma) - V_0)^2.
+
+    Update scheme (sublattice-parallel Metropolis): one MCS = one copy attempt per
+    cell-boundary voxel. The 8 parity classes (z mod 2, y mod 2, x mod 2) are swept in
+    random order; within a class every boundary voxel proposes a copy from a random one of
+    its 26 neighbours and all proposals are evaluated and applied simultaneously. Because
+    same-parity voxels are never Moore-adjacent (Lean theorem
+    `parity_sublattice_sites_not_moore_adjacent`), the adhesion dH of simultaneous flips is
+    exact; the volume dH uses sub-sweep-start volumes (domain-parallel CPM approximation).
+    A minimum-volume guard (v > V_0/4) prevents cell annihilation, as in the 2D solver.
+
+    Optional cell-level Kawasaki type swaps (`cell_swaps=True`, as in the 2D solver) use the
+    inter-cell face-contact matrix C to evaluate the exact adhesion dE of exchanging the
+    types of two cells; `cell_swaps=False` is the ablation. Default T = 30 and lambda_V = 2
+    rescale the 2D values (T = 10, lambda = 1.2 with 8 neighbours) to the 26-neighbour
+    3D energy scale. Equatorial (z = centre) 2D cross-section metrics are computed with the
+    2D `_compute_potts_morphometrics` so they are directly comparable to the 2D model and
+    to the confocal optical section of the vendored specimen.
+    """
+    rng = np.random.default_rng(seed)
+    N = int(grid_size)
+    c = N // 2
+    sigma = np.zeros((N, N, N), dtype=np.int32)
+
+    cell_coords: list[tuple[int, int, int]] = []
+    r_init = 23.5 * (N / 64.0)
+    n_blocks = N // 8
+    for bz in range(-n_blocks + 2, n_blocks - 2):
+        for by in range(-n_blocks + 2, n_blocks - 2):
+            for bx in range(-n_blocks + 2, n_blocks - 2):
+                zc, yc, xc = bz * 4 + 2, by * 4 + 2, bx * 4 + 2
+                if np.sqrt(zc * zc + yc * yc + xc * xc) <= r_init:
+                    cell_coords.append((bz, by, bx))
+    n_cells = len(cell_coords)
+    radii = np.array([np.sqrt((bz * 4 + 2) ** 2 + (by * 4 + 2) ** 2 + (bx * 4 + 2) ** 2) for bz, by, bx in cell_coords])
+    order = np.argsort(radii, kind="stable")
+    cell_type = np.zeros(n_cells + 1, dtype=np.int32)
+    for rank, idx in enumerate(order):
+        cell_type[int(idx) + 1] = 1 if rank % 2 == 0 else 2
+    for k in range(0, n_cells - 1, 2):
+        if rng.random() < 0.5:
+            a, b = int(order[k]) + 1, int(order[k + 1]) + 1
+            cell_type[a], cell_type[b] = cell_type[b], cell_type[a]
+    for cid, (bz, by, bx) in enumerate(cell_coords, start=1):
+        z0, y0, x0 = c + bz * 4, c + by * 4, c + bx * 4
+        sigma[z0 : z0 + 4, y0 : y0 + 4, x0 : x0 + 4] = cid
+
+    J_mat = np.array(
+        [[0.0, J_AM, J_BM], [J_AM, J_AA, J_AB], [J_BM, J_AB, J_BB]], dtype=np.float64
+    )
+    tensions = compute_interfacial_tensions(J_AA, J_BB, J_AB, J_AM, J_BM)
+    volumes = np.bincount(sigma.ravel(), minlength=n_cells + 1).astype(np.int64)
+
+    zz, yy, xx = np.indices((N, N, N), dtype=np.int64)
+    coords = (zz.astype(np.float64), yy.astype(np.float64), xx.astype(np.float64))
+    parity = ((zz & 1) << 2) | ((yy & 1) << 1) | (xx & 1)
+    interior = (zz >= 1) & (zz <= N - 2) & (yy >= 1) & (yy <= N - 2) & (xx >= 1) & (xx <= N - 2)
+    min_volume = max(1, target_volume // 4)
+
+    het_history: list[float] = []
+    het_slice_history: list[float] = []
+    rad_sep_history: list[float] = []
+    rad_sep_slice_history: list[float] = []
+    frames: list[tuple[np.ndarray, int]] = []
+    n_attempts_total = 0
+    n_accepted_total = 0
+
+    for mcs in range(n_mcs + 1):
+        m3 = _compute_potts_morphometrics_3d(sigma, cell_type, coords)
+        m2 = _compute_potts_morphometrics(sigma[c], cell_type)
+        het_history.append(m3["het_frac"])
+        rad_sep_history.append(m3["radial_sep"])
+        het_slice_history.append(m2["het_frac"])
+        rad_sep_slice_history.append(m2["radial_sep"])
+        if record_frames and (mcs % max(1, n_mcs // 16) == 0 or mcs == n_mcs):
+            frames.append((cell_type[sigma[c]].copy(), mcs))
+        if mcs == n_mcs:
+            break
+
+        # 1. Cell-level Kawasaki type swaps via the inter-cell face-contact matrix (exact dE)
+        if cell_swaps:
+            C = np.zeros((n_cells + 1, n_cells + 1), dtype=np.int64)
+            for dz, dy, dx in _OFFS6_3D[::2]:
+                s2 = _roll3(sigma, -dz, -dy, -dx)
+                m = sigma != s2
+                pair = sigma[m].astype(np.int64) * (n_cells + 1) + s2[m]
+                C += np.bincount(pair, minlength=(n_cells + 1) ** 2).reshape(n_cells + 1, n_cells + 1)
+            C = C + C.T
+            for _ in range(max(1, n_cells // 6)):
+                c1 = int(rng.integers(1, n_cells + 1))
+                c2 = int(rng.integers(1, n_cells + 1))
+                t1, t2 = int(cell_type[c1]), int(cell_type[c2])
+                if t1 == t2:
+                    continue
+                row1 = C[c1].copy()
+                row1[c1] = 0
+                row1[c2] = 0
+                row2 = C[c2].copy()
+                row2[c2] = 0
+                row2[c1] = 0
+                dE = float(np.sum(row1 * (J_mat[t2, cell_type] - J_mat[t1, cell_type])))
+                dE += float(np.sum(row2 * (J_mat[t1, cell_type] - J_mat[t2, cell_type])))
+                if dE < -1e-9 or (dE > 1e-9 and rng.random() < np.exp(-dE / (2.5 * T))):
+                    cell_type[c1], cell_type[c2] = t2, t1
+
+        # 2. Sublattice-parallel single-voxel Metropolis copy attempts (Graner & Glazier Eq. 1)
+        for p in rng.permutation(8):
+            bnd = np.zeros((N, N, N), dtype=bool)
+            for dz, dy, dx in _OFFS6_3D:
+                bnd |= sigma != _roll3(sigma, dz, dy, dx)
+            cand = np.flatnonzero(bnd & (parity == p) & interior)
+            if cand.size == 0:
+                continue
+            cz_, cy_, cx_ = np.unravel_index(cand, (N, N, N))
+            d = _OFFS26_3D[rng.integers(0, 26, size=cand.size)]
+            s_old = sigma[cz_, cy_, cx_]
+            s_new = sigma[cz_ + d[:, 0], cy_ + d[:, 1], cx_ + d[:, 2]]
+            keep = s_old != s_new
+            cz_, cy_, cx_, s_old, s_new = cz_[keep], cy_[keep], cx_[keep], s_old[keep], s_new[keep]
+            n_attempts_total += int(cand.size)
+            if cz_.size == 0:
+                continue
+            t_old = cell_type[s_old]
+            t_new = cell_type[s_new]
+            dH = np.zeros(cz_.size, dtype=np.float64)
+            for dz, dy, dx in _OFFS26_3D:
+                s_nb = sigma[cz_ + dz, cy_ + dy, cx_ + dx]
+                t_nb = cell_type[s_nb]
+                dH -= J_mat[t_old, t_nb] * (s_nb != s_old)
+                dH += J_mat[t_new, t_nb] * (s_nb != s_new)
+            v_old = volumes[s_old]
+            v_new = volumes[s_new]
+            # Single-voxel volume increments lambda*(2(v-V0)-1) / lambda*(2(v-V0)+1)
+            # (Lean theorem `potts_volume_energy_single_voxel_increment`)
+            dH += np.where(
+                s_old > 0,
+                lam_vol * ((v_old - 1 - target_volume) ** 2 - (v_old - target_volume) ** 2),
+                0.0,
+            )
+            dH += np.where(
+                s_new > 0,
+                lam_vol * ((v_new + 1 - target_volume) ** 2 - (v_new - target_volume) ** 2),
+                0.0,
+            )
+            guard = (s_old == 0) | (v_old > min_volume)
+            acc = guard & ((dH <= 0.0) | (rng.random(cz_.size) < np.exp(-np.clip(dH, 0.0, None) / T)))
+            n_accepted_total += int(acc.sum())
+            sigma[cz_[acc], cy_[acc], cx_[acc]] = s_new[acc]
+            np.subtract.at(volumes, s_old[acc], 1)
+            np.add.at(volumes, s_new[acc], 1)
+            volumes[0] = int((sigma == 0).sum())
+
+    final_3d = _compute_potts_morphometrics_3d(sigma, cell_type, coords)
+    final_slice = _compute_potts_morphometrics(sigma[c], cell_type)
+    kin_3d = fit_sorting_kinetics(het_history)
+    kin_slice = fit_sorting_kinetics(het_slice_history)
+    vols_cells = np.bincount(sigma.ravel(), minlength=n_cells + 1)[1:]
+
+    return {
+        "sigma": sigma,
+        "cell_type": cell_type,
+        "equatorial_type_grid": cell_type[sigma[c]],
+        "meridional_type_grid": cell_type[sigma[:, c, :]],
+        "tensions": tensions,
+        "n_cells": n_cells,
+        "grid_size": N,
+        "n_mcs": n_mcs,
+        "cell_swaps": cell_swaps,
+        "het_history": het_history,
+        "het_slice_history": het_slice_history,
+        "rad_sep_history": rad_sep_history,
+        "rad_sep_slice_history": rad_sep_slice_history,
+        "frames": frames,
+        "het_initial": float(het_history[0]),
+        "het_final": float(het_history[-1]),
+        "kinetics_3d": kin_3d,
+        "kinetics_slice": kin_slice,
+        "power_law_alpha": kin_3d["power_alpha"],
+        "power_law_alpha_slice": kin_slice["power_alpha"],
+        "slice": final_slice,
+        "mean_cell_volume": float(vols_cells.mean()),
+        "std_cell_volume": float(vols_cells.std()),
+        "min_cell_volume": int(vols_cells.min()),
+        "n_cells_alive": int((vols_cells > 0).sum()),
+        "acceptance_ratio": float(n_accepted_total / max(n_attempts_total, 1)),
+        **final_3d,
+    }
+
+
+def compare_2d_vs_3d_sorting_kinetics(
+    sim_2d: dict[str, Any],
+    grid_size: int = 64,
+    n_mcs: int = 200,
+    T: float = 30.0,
+    lam_vol: float = 2.0,
+    target_volume: int = 64,
+    seed: int = 1963,
+    record_frames: bool = False,
+) -> dict[str, Any]:
+    """
+    Pass 3 remediation: run the 3D Potts spheroid (canonical complete-engulfment J's), the
+    Kawasaki-swap ablation and the 3D equal-adhesion control, and tabulate logarithmic vs
+    power-law sorting exponents for (i) the native 2D model, (ii) the full 3D boundary and
+    (iii) the 2D equatorial cross-section of the 3D spheroid.
+    """
+    r3 = simulate_potts_regime_3d(
+        14.0, 2.0, 11.0, 16.0, 16.0, target_volume=target_volume, lam_vol=lam_vol, T=T,
+        grid_size=grid_size, n_mcs=n_mcs, seed=seed, cell_swaps=True, record_frames=record_frames,
+    )
+    r3_noswap = simulate_potts_regime_3d(
+        14.0, 2.0, 11.0, 16.0, 16.0, target_volume=target_volume, lam_vol=lam_vol, T=T,
+        grid_size=grid_size, n_mcs=n_mcs, seed=seed, cell_swaps=False,
+    )
+    r3_ctrl = simulate_potts_regime_3d(
+        10.0, 10.0, 10.0, 16.0, 16.0, target_volume=target_volume, lam_vol=lam_vol, T=T,
+        grid_size=grid_size, n_mcs=n_mcs, seed=seed, cell_swaps=True,
+    )
+    kin_2d = sim_2d["kinetics"]
+    rows = [
+        {"label": "2D native (60^2, 68 cells)", "key": "2d", **kin_2d, "radial_sep": sim_2d["radial_sep"], "het_final": sim_2d["het_final"]},
+        {"label": f"3D full boundary ({grid_size}^3, {r3['n_cells']} cells)", "key": "3d_full", **r3["kinetics_3d"], "radial_sep": r3["radial_sep"], "het_final": r3["het_final"]},
+        {"label": "3D equatorial 2D section", "key": "3d_slice", **r3["kinetics_slice"], "radial_sep": r3["slice"]["radial_sep"], "het_final": r3["slice"]["het_frac"]},
+        {"label": "3D full, Kawasaki swaps ablated", "key": "3d_noswap", **r3_noswap["kinetics_3d"], "radial_sep": r3_noswap["radial_sep"], "het_final": r3_noswap["het_final"]},
+        {"label": "3D equal-adhesion control", "key": "3d_ctrl", **r3_ctrl["kinetics_3d"], "radial_sep": r3_ctrl["radial_sep"], "het_final": r3_ctrl["het_final"]},
+    ]
+    return {
+        "r3": r3,
+        "r3_noswap": r3_noswap,
+        "r3_ctrl": r3_ctrl,
+        "rows": rows,
+        "alpha_2d": kin_2d["power_alpha"],
+        "alpha_3d": r3["kinetics_3d"]["power_alpha"],
+        "alpha_3d_slice": r3["kinetics_slice"]["power_alpha"],
+        "alpha_3d_noswap": r3_noswap["kinetics_3d"]["power_alpha"],
+        "alpha_3d_ctrl": r3_ctrl["kinetics_3d"]["power_alpha"],
+        "alpha_lsw": 1.0 / 3.0,
+    }
 
 
 # =============================================================================
@@ -640,8 +1064,16 @@ def run_all_regimes_and_render(
     T: float = 10.0,
     n_mcs: int = 150,
     seed: int = 1963,
+    grid3d: int = 64,
+    mcs3d: int = 200,
+    T3d: float = 30.0,
+    lam3d: float = 2.0,
+    V0_3d: int = 64,
 ) -> dict[str, Any]:
-    """Run all 5 thermodynamic regimes, 7-point J_AB sweep, specimen segmentation, and render assets."""
+    """
+    Run all 5 thermodynamic regimes, the 7-point J_AB sweep, the 3D spheroid comparison
+    (Pass 3), specimen segmentation, and render the 15-panel figure and the GIF.
+    """
     ref_data = verify_reference_dataset()
     MEDIA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -676,8 +1108,16 @@ def run_all_regimes_and_render(
     specimen = segment_embryoid_body_specimen(sim_sorting=regimes["complete_engulfment"])
     foty = validate_foty_1996_hierarchy(ref_data)
 
-    # Render 10-panel comparison figure (2x5 grid)
-    fig, axes = plt.subplots(2, 5, figsize=(20, 8.4), dpi=150)
+    # Pass 3: 3D spheroid (64^3) vs 2D vs 3D equatorial cross-section sorting kinetics
+    kin3d = compare_2d_vs_3d_sorting_kinetics(
+        regimes["complete_engulfment"], grid_size=grid3d, n_mcs=mcs3d, T=T3d,
+        lam_vol=lam3d, target_volume=V0_3d, seed=seed, record_frames=True,
+    )
+    r3 = kin3d["r3"]
+    specimen_3d = segment_embryoid_body_specimen(sim_sorting=r3["slice"])
+
+    # Render 15-panel comparison figure (3x5 grid)
+    fig, axes = plt.subplots(3, 5, figsize=(20, 12.6), dpi=150)
     cmap_potts = mcolors.ListedColormap(["#0f172a", "#38bdf8", "#f43f5e"])
 
     panel_specs = [
@@ -812,39 +1252,146 @@ def run_all_regimes_and_render(
     ax_b5.set_xlim(0, 24.5)
     ax_b5.grid(axis="x", alpha=0.25)
 
+    # ---- Row C (Pass 3): 3D Cellular Potts spheroid vs 2D model vs 2D cross-section ----
+    r3_ctrl = kin3d["r3_ctrl"]
+    r3_noswap = kin3d["r3_noswap"]
+
+    # C1: equatorial (z = centre) section of the sorted 3D spheroid
+    ax_c1 = axes[2, 0]
+    ax_c1.imshow(r3["equatorial_type_grid"], cmap=cmap_potts, vmin=0, vmax=2, interpolation="nearest")
+    ax_c1.set_title(
+        f"C1. 3D Potts Spheroid ({r3['grid_size']}³, {r3['n_cells']} cells)\nEquatorial z-section, MCS={r3['n_mcs']}"
+        f"\nΔr₃D={r3['radial_sep']:+.3f} | Δr_slice={r3['slice']['radial_sep']:+.3f} | L_AB/L={r3['het_final']:.3f}",
+        fontsize=8.6,
+        fontweight="bold",
+    )
+    ax_c1.set_xticks([])
+    ax_c1.set_yticks([])
+
+    # C2: meridional (y = centre) section of the sorted spheroid and the 3D equal-adhesion control
+    ax_c2 = axes[2, 1]
+    combo = np.concatenate(
+        [r3["meridional_type_grid"], np.zeros((r3["grid_size"], 2), dtype=np.int32), r3_ctrl["equatorial_type_grid"]],
+        axis=1,
+    )
+    ax_c2.imshow(combo, cmap=cmap_potts, vmin=0, vmax=2, interpolation="nearest")
+    ax_c2.axvline(r3["grid_size"] + 0.5, color="white", lw=1.0)
+    ax_c2.set_title(
+        f"C2. 3D Meridional y-section (left) | 3D Equal-Adhesion Control (right)\n"
+        f"Δr₃D ctrl={r3_ctrl['radial_sep']:+.3f}, ⟨v⟩/V₀={r3['mean_cell_volume'] / max(V0_3d, 1):.2f}, "
+        f"accept={r3['acceptance_ratio']:.3f}",
+        fontsize=8.6,
+        fontweight="bold",
+    )
+    ax_c2.set_xticks([])
+    ax_c2.set_yticks([])
+
+    # C3: log-log sorting kinetics with power-law fits (2D vs 3D full vs 3D section vs ablation)
+    ax_c3 = axes[2, 2]
+    t2 = np.arange(len(regimes["complete_engulfment"]["het_history"]), dtype=np.float64) + 1.0
+    t3 = np.arange(len(r3["het_history"]), dtype=np.float64) + 1.0
+    series = [
+        (t2, np.array(regimes["complete_engulfment"]["het_history"]), regimes["complete_engulfment"]["kinetics"], "#f43f5e", "o", f"2D native α={kin3d['alpha_2d']:.3f}"),
+        (t3, np.array(r3["het_history"]), r3["kinetics_3d"], "#111827", "s", f"3D full α={kin3d['alpha_3d']:.3f}"),
+        (t3, np.array(r3["het_slice_history"]), r3["kinetics_slice"], "#0284c7", "^", f"3D z-section α={kin3d['alpha_3d_slice']:.3f}"),
+        (t3, np.array(r3_noswap["het_history"]), r3_noswap["kinetics_3d"], "#a855f7", "d", f"3D no-swap α={kin3d['alpha_3d_noswap']:.3f}"),
+        (t3, np.array(r3_ctrl["het_history"]), r3_ctrl["kinetics_3d"], "#64748b", "x", f"3D control α={kin3d['alpha_3d_ctrl']:.3f}"),
+    ]
+    for t_s, h_s, kin_s, col, mk, lbl in series:
+        ax_c3.plot(t_s, h_s, mk, color=col, ms=2.6, alpha=0.55, lw=0)
+        ax_c3.plot(t_s, kin_s["power_prefactor"] * t_s ** (-kin_s["power_alpha"]), "-", color=col, lw=1.4, label=lbl)
+    ref_t = np.array([1.0, t3[-1]])
+    ax_c3.plot(ref_t, 0.45 * ref_t ** (-1.0 / 3.0), ":", color="#16a34a", lw=1.4, label="LSW α=1/3 (ref)")
+    ax_c3.set_xscale("log")
+    ax_c3.set_yscale("log")
+    ax_c3.set_title(
+        f"C3. Sorting Kinetics L_AB/L ∝ (t+1)^−α (log–log)\n3D: R²_pow={r3['kinetics_3d']['power_r2']:.3f} vs R²_log={r3['kinetics_3d']['log_r2']:.3f} → {r3['kinetics_3d']['preferred_model']}",
+        fontsize=8.6,
+        fontweight="bold",
+    )
+    ax_c3.set_xlabel("MCS + 1", fontsize=8.5)
+    ax_c3.set_ylabel("Heterotypic Boundary Fraction", fontsize=8.5)
+    ax_c3.legend(fontsize=6.4, loc="lower left")
+    ax_c3.grid(alpha=0.25, which="both")
+
+    # C4: radial profiles — 3D shells, 3D equatorial section, 2D model, confocal specimen
+    ax_c4 = axes[2, 3]
+    rc3 = r3["radial_bin_centers"]
+    ax_c4.plot(rc3, r3["rho_B_radial"], "s-", color="#111827", lw=1.8, label="3D shells: core B")
+    ax_c4.plot(rc3, r3["slice"]["rho_B_radial"], "^-", color="#0284c7", lw=1.6, label="3D z-section: core B")
+    ax_c4.plot(rc3, regimes["complete_engulfment"]["rho_B_radial"], "o-", color="#f43f5e", lw=1.4, alpha=0.8, label="2D native: core B")
+    ax_c4.plot(rc3, specimen["rho_B_spec"], "o--", color="#16a34a", lw=1.7, label="Specimen GFP core (confocal section)")
+    ax_c4.set_title(
+        f"C4. Core Occupancy vs Specimen Optical Section\n(3D section r={specimen_3d['profile_pearson_r']:.3f}, 2D native r={specimen['profile_pearson_r']:.3f})",
+        fontsize=8.6,
+        fontweight="bold",
+    )
+    ax_c4.set_xlabel("Normalized Radial Distance r / R_agg", fontsize=8.5)
+    ax_c4.set_ylabel("Type-B Occupancy", fontsize=8.5)
+    ax_c4.legend(fontsize=6.6, loc="upper right")
+    ax_c4.grid(alpha=0.25)
+
+    # C5: exponent table as bars vs LSW 1/3 and logarithmic (alpha -> 0) limits
+    ax_c5 = axes[2, 4]
+    rows = kin3d["rows"]
+    labels_c5 = ["2D\nnative", "3D\nfull", "3D\nz-section", "3D\nno-swap", "3D\ncontrol"]
+    alphas = [rw["power_alpha"] for rw in rows]
+    cols_c5 = ["#f43f5e", "#111827", "#0284c7", "#a855f7", "#64748b"]
+    xs = np.arange(len(rows))
+    ax_c5.bar(xs, alphas, color=cols_c5, edgecolor="#0f172a", width=0.62)
+    ax_c5.axhline(1.0 / 3.0, color="#16a34a", ls=":", lw=1.5, label="LSW diffusive α=1/3")
+    ax_c5.axhline(0.0, color="#334155", lw=1.0)
+    for x_i, a_i, rw in zip(xs, alphas, rows):
+        ax_c5.text(x_i, a_i + 0.008, f"{a_i:.3f}\nR²={rw['power_r2']:.2f}", ha="center", va="bottom", fontsize=6.6)
+    ax_c5.set_xticks(xs)
+    ax_c5.set_xticklabels(labels_c5, fontsize=7.2)
+    ax_c5.set_ylim(-0.02, 0.42)
+    ax_c5.set_ylabel("Power-law sorting exponent α", fontsize=8.5)
+    ax_c5.set_title(
+        f"C5. 2D vs 3D Sorting Exponents\nα₃D/α₂D = {kin3d['alpha_3d'] / max(kin3d['alpha_2d'], 1e-9):.2f}, "
+        f"swap ablation Δα = {kin3d['alpha_3d'] - kin3d['alpha_3d_noswap']:+.3f}",
+        fontsize=8.6,
+        fontweight="bold",
+    )
+    ax_c5.legend(fontsize=7.0, loc="upper right")
+    ax_c5.grid(axis="y", alpha=0.25)
+
     fig.suptitle(
-        "Steinberg (1963, 1970) Differential Adhesion Hypothesis & Graner–Glazier (1992) Cellular Potts Cell Sorting",
+        "Steinberg (1963, 1970) Differential Adhesion Hypothesis & Graner–Glazier (1992) Cellular Potts Cell Sorting — 2D vs 3D (64³) Spheroid",
         fontsize=13.5,
         fontweight="bold",
-        y=0.98,
+        y=0.985,
     )
-    fig.tight_layout(rect=(0, 0, 1, 0.94))
+    fig.tight_layout(rect=(0, 0, 1, 0.96))
     fig.savefig(COMPARISON_PNG, dpi=150, facecolor="white")
     plt.close(fig)
 
-    # Render side-by-side animated GIF (Complete Engulfment vs Equal-Adhesion Control vs Checkerboard)
+    # Render side-by-side animated GIF (Complete Engulfment vs Equal-Adhesion Control vs Checkerboard vs 3D section)
     pil_frames: list[Image.Image] = []
     frames_sort = regimes["complete_engulfment"]["frames"]
     frames_ctrl = regimes["equal_adhesion_control"]["frames"]
     frames_chk = regimes["checkerboard_mixing"]["frames"]
-    n_f = min(len(frames_sort), len(frames_ctrl), len(frames_chk))
+    frames_3d = r3["frames"]
+    n_f = min(len(frames_sort), len(frames_ctrl), len(frames_chk), len(frames_3d))
 
     for idx in range(n_f):
         _, tg_sort, mcs_val = frames_sort[idx]
         _, tg_ctrl, _ = frames_ctrl[idx]
         _, tg_chk, _ = frames_chk[idx]
-        fig_g, axes_g = plt.subplots(1, 3, figsize=(9.6, 3.4), dpi=100)
+        tg_3d, mcs_3d = frames_3d[idx]
+        fig_g, axes_g = plt.subplots(1, 4, figsize=(12.8, 3.4), dpi=100)
         for ax_i, tg, lbl in [
-            (axes_g[0], tg_sort, f"Complete Engulfment (MCS={mcs_val})"),
-            (axes_g[1], tg_ctrl, f"Equal Adhesion Control (MCS={mcs_val})"),
-            (axes_g[2], tg_chk, f"Checkerboard Mixing (MCS={mcs_val})"),
+            (axes_g[0], tg_sort, f"2D Complete Engulfment (MCS={mcs_val})"),
+            (axes_g[1], tg_ctrl, f"2D Equal Adhesion Control (MCS={mcs_val})"),
+            (axes_g[2], tg_chk, f"2D Checkerboard Mixing (MCS={mcs_val})"),
+            (axes_g[3], tg_3d, f"3D Spheroid z-section (MCS={mcs_3d})"),
         ]:
             ax_i.imshow(tg, cmap=cmap_potts, vmin=0, vmax=2, interpolation="nearest")
             ax_i.set_title(lbl, fontsize=8.5, fontweight="bold")
             ax_i.set_xticks([])
             ax_i.set_yticks([])
         fig_g.suptitle(
-            "Steinberg (1963) / Graner–Glazier (1992) Differential Adhesion Cell Sorting Dynamics",
+            "Steinberg (1963) / Graner–Glazier (1992) Differential Adhesion Cell Sorting Dynamics — 2D lattice vs 3D (64³) spheroid",
             fontsize=10.0,
             fontweight="bold",
         )
@@ -866,7 +1413,9 @@ def run_all_regimes_and_render(
         "regimes": regimes,
         "sweep": sweep,
         "specimen": specimen,
+        "specimen_3d": specimen_3d,
         "foty": foty,
+        "kin3d": kin3d,
     }
 
 
@@ -883,6 +1432,9 @@ def measure_morphoeval() -> list[dict[str, Any]]:
     r_chk = simulate_potts_regime(14.0, 14.0, 4.0, 16.0, 16.0, n_mcs=150, seed=1963)
     specimen = segment_embryoid_body_specimen(sim_sorting=r_sort)
     foty = validate_foty_1996_hierarchy(ref_data)
+    kin3d = compare_2d_vs_3d_sorting_kinetics(r_sort, grid_size=64, n_mcs=200, T=30.0, lam_vol=2.0, target_volume=64, seed=1963)
+    r3 = kin3d["r3"]
+    specimen_3d = segment_embryoid_body_specimen(sim_sorting=r3["slice"])
 
     return [
         {
@@ -941,14 +1493,65 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "reference_value": 1.0,
             "method": f"Transitive pairwise envelopment concordance across all 10 binary pairings of 5 Gallus gallus embryonic tissues from Foty et al. (1996) Table 1 (r={foty['sigma_gamma_pearson_r']:.4f}, p=0.0012)",
         },
+        # ---- Pass 3: 3D (64^3) Cellular Potts spheroid vs 2D model ----
+        {
+            "name": "potts_3d_power_law_sorting_exponent",
+            "value": round(r3["kinetics_3d"]["power_alpha"], 4),
+            "unit": "dimensionless_exponent",
+            "reference_value": round(1.0 / 3.0, 4),
+            "method": f"Power-law exponent alpha of L_AB/L ~ (t+1)^-alpha over 200 MCS for the full 3D boundary of a 64^3 Potts spheroid ({r3['n_cells']} cells; R^2_pow={r3['kinetics_3d']['power_r2']:.4f} vs R^2_log={r3['kinetics_3d']['log_r2']:.4f}); reference = Lifshitz-Slyozov-Wagner diffusive coarsening bound 1/3",
+        },
+        {
+            "name": "potts_2d_power_law_sorting_exponent",
+            "value": round(r_sort["kinetics"]["power_alpha"], 4),
+            "unit": "dimensionless_exponent",
+            "reference_value": round(1.0 / 3.0, 4),
+            "method": f"Power-law exponent alpha for the native 2D model (60^2, 68 cells, 150 MCS; R^2_pow={r_sort['kinetics']['power_r2']:.4f} vs R^2_log={r_sort['kinetics']['log_r2']:.4f}, preferred={r_sort['kinetics']['preferred_model']}); reference = LSW 1/3, alpha -> 0 is the Graner & Glazier (1992) logarithmic limit",
+        },
+        {
+            "name": "potts_3d_equatorial_section_power_law_exponent",
+            "value": round(r3["kinetics_slice"]["power_alpha"], 4),
+            "unit": "dimensionless_exponent",
+            "reference_value": round(r3["kinetics_3d"]["power_alpha"], 4),
+            "method": "Power-law exponent measured on the 2D equatorial z-section of the 3D spheroid (what a confocal optical section sees) vs the full-3D exponent as reference",
+        },
+        {
+            "name": "potts_3d_kawasaki_swap_ablation_exponent_delta",
+            "value": round(r3["kinetics_3d"]["power_alpha"] - kin3d["r3_noswap"]["kinetics_3d"]["power_alpha"], 4),
+            "unit": "dimensionless_exponent",
+            "reference_value": 0.0,
+            "method": f"alpha(3D with cell-level Kawasaki type swaps) - alpha(3D swaps ablated = {kin3d['r3_noswap']['kinetics_3d']['power_alpha']:.4f}); reference 0 = accelerator does not alter the kinetic exponent",
+        },
+        {
+            "name": "potts_3d_radial_core_shell_separation",
+            "value": round(r3["radial_sep"], 4),
+            "unit": "normalized_radius",
+            "reference_value": round(specimen["radial_sep_spec"], 4),
+            "method": f"Full-3D normalized radial separation (r_A - r_B)/R_agg after 200 MCS (equatorial section Delta_r={r3['slice']['radial_sep']:+.4f}; 3D equal-adhesion control Delta_r={kin3d['r3_ctrl']['radial_sep']:+.4f}) vs segmented confocal specimen",
+        },
+        {
+            "name": "potts_3d_section_vs_specimen_radial_profile_pearson_r",
+            "value": round(specimen_3d["profile_pearson_r"], 4),
+            "unit": "r",
+            "reference_value": 0.95,
+            "method": f"Pearson r between the 3D spheroid equatorial-section core-shell profile and the confocal specimen GFP/RFP profile across 12 annuli (RMSE={specimen_3d['profile_rmse']:.4f}); like-for-like optical-section comparison",
+        },
+        {
+            "name": "potts_3d_mean_cell_volume_fraction",
+            "value": round(r3["mean_cell_volume"] / 64.0, 4),
+            "unit": "fraction_of_V0",
+            "reference_value": 1.0,
+            "method": f"Mean cell volume / V_0 (V_0 = 64 voxels, lambda_V = 2, T = 30) after 200 MCS; std={r3['std_cell_volume']:.2f} voxels, min={r3['min_cell_volume']}, cells alive={r3['n_cells_alive']}/{r3['n_cells']}, acceptance={r3['acceptance_ratio']:.4f}",
+        },
     ]
 
 
 def self_test() -> None:
-    """Run comprehensive 8-check verification suite for Slot 041."""
+    """Run the 13-check verification suite for Slot 041 (8 Pass 2 checks + 5 Pass 3 checks)."""
     # 1. Verify SHA-256 of dataset and specimen image
     ref = verify_reference_dataset()
-    assert len(ref["metadata"]["sources"]) == 5
+    assert len(ref["metadata"]["sources"]) == 8  # 5 Pass 1-2 sources + 3 Pass 3 kinetics sources
+    assert "sorting_kinetics_2d_vs_3d" in ref and ref["sorting_kinetics_2d_vs_3d"]["lattice_3d"]["grid"] == [64, 64, 64]
 
     # 2. Verify exact interfacial tension laws against Lean 4 theorem values
     t_eng = compute_interfacial_tensions(14.0, 2.0, 11.0, 16.0, 16.0)
@@ -994,13 +1597,47 @@ def self_test() -> None:
     r_sort_1 = simulate_potts_regime(14.0, 2.0, 11.0, 16.0, 16.0, n_mcs=60, seed=1963)
     assert np.array_equal(r_sort_1["sigma"], r_sort_2["sigma"])
 
-    # 8. Verify measure_morphoeval contract
+    # 9. (Pass 3) Parity-sublattice lemma: same-parity voxels are never Moore-adjacent
+    #    (numerical mirror of Lean theorem `parity_sublattice_sites_not_moore_adjacent`)
+    for dz, dy, dx in _OFFS26_3D:
+        assert (dz % 2, dy % 2, dx % 2) != (0, 0, 0)
+    # Single-voxel volume increment identity (Lean theorem `potts_volume_energy_single_voxel_increment`)
+    for lam, v, v0 in [(2.0, 50, 64), (1.2, 16, 16), (0.6, 70, 64)]:
+        assert abs(lam * ((v + 1 - v0) ** 2 - (v - v0) ** 2) - lam * (2 * (v - v0) + 1)) < 1e-9
+
+    # 10. (Pass 3) 3D spheroid on a 64^3 lattice: sorting vs 3D equal-adhesion control, volume integrity
+    r3 = simulate_potts_regime_3d(14.0, 2.0, 11.0, 16.0, 16.0, grid_size=64, n_mcs=60, seed=1963)
+    r3c = simulate_potts_regime_3d(10.0, 10.0, 10.0, 16.0, 16.0, grid_size=64, n_mcs=60, seed=1963)
+    assert r3["grid_size"] == 64 and r3["sigma"].shape == (64, 64, 64) and r3["n_cells"] > 700
+    assert r3["het_final"] < r3["het_initial"] - 0.10, f"3D het did not decay: {r3['het_initial']} -> {r3['het_final']}"
+    assert r3["radial_sep"] > 0.08, f"Expected 3D radial_sep > 0.08, got {r3['radial_sep']}"
+    assert r3["radial_sep"] > abs(r3c["radial_sep"]) + 0.05, f"3D sorted {r3['radial_sep']} vs control {r3c['radial_sep']}"
+    assert r3["n_cells_alive"] == r3["n_cells"] and r3["min_cell_volume"] >= 16
+    assert 0.6 < r3["mean_cell_volume"] / 64.0 < 1.1, f"3D mean volume fraction {r3['mean_cell_volume'] / 64.0}"
+
+    # 11. (Pass 3) Kinetics fits: power-law exponent in (0, 1/3] window and finite R^2 on both descriptions
+    k3 = r3["kinetics_3d"]
+    assert 0.0 < k3["power_alpha"] < 0.5, f"3D alpha out of range: {k3['power_alpha']}"
+    assert 0.0 < k3["power_r2"] <= 1.0 and 0.0 < k3["log_r2"] <= 1.0
+    assert 0.0 < r_sort["kinetics"]["power_alpha"] < 0.5
+    assert k3["preferred_model"] in ("power_law", "logarithmic")
+    # 2D cross-section of the 3D spheroid sorts in the same direction as the full 3D measure
+    assert r3["slice"]["radial_sep"] > 0.0, f"3D equatorial section Delta_r={r3['slice']['radial_sep']}"
+
+    # 12. (Pass 3) 3D two-run bitwise determinism
+    r3_b = simulate_potts_regime_3d(14.0, 2.0, 11.0, 16.0, 16.0, grid_size=64, n_mcs=20, seed=1963)
+    r3_a = simulate_potts_regime_3d(14.0, 2.0, 11.0, 16.0, 16.0, grid_size=64, n_mcs=20, seed=1963)
+    assert np.array_equal(r3_a["sigma"], r3_b["sigma"]) and np.array_equal(r3_a["cell_type"], r3_b["cell_type"])
+
+    # 13. Verify measure_morphoeval contract (8 Pass 2 + 7 Pass 3 measurements)
     meas = measure_morphoeval()
-    assert len(meas) == 8 and all(m["value"] is not None for m in meas)
+    assert len(meas) == 15 and all(m["value"] is not None for m in meas)
+    assert all("reference_value" in m and "unit" in m for m in meas)
     print(
-        f"[self-test] All 8 Pass 2 checks passed "
-        f"(radial_sep={r_sort['radial_sep']:.3f}, het_final={r_sort['het_final']:.3f}, "
-        f"spec_r={spec['profile_pearson_r']:.3f}, foty_concordance={foty['envelopment_concordance']:.2f})."
+        f"[self-test] All 13 Pass 3 checks passed "
+        f"(2D radial_sep={r_sort['radial_sep']:.3f}, het_final={r_sort['het_final']:.3f}, "
+        f"spec_r={spec['profile_pearson_r']:.3f}, foty_concordance={foty['envelopment_concordance']:.2f}; "
+        f"3D[60 MCS] radial_sep={r3['radial_sep']:.3f}, alpha_3D={k3['power_alpha']:.3f}, alpha_2D={r_sort['kinetics']['power_alpha']:.3f})."
     )
 
 
@@ -1016,7 +1653,12 @@ def main() -> int:
     ap.add_argument("--T", type=float, default=10.0, help="Effective Metropolis fluctuation temperature T")
     ap.add_argument("--mcs", type=int, default=150, help="Number of Monte Carlo Steps (MCS)")
     ap.add_argument("--seed", type=int, default=1963, help="Deterministic RNG seed")
-    ap.add_argument("--self-test", action="store_true", help="Run 8-check verification suite and exit")
+    ap.add_argument("--grid3d", type=int, default=64, help="(Pass 3) 3D lattice edge N (N^3 voxels; default 64)")
+    ap.add_argument("--mcs3d", type=int, default=200, help="(Pass 3) Monte Carlo Steps for the 3D spheroid")
+    ap.add_argument("--T3d", type=float, default=30.0, help="(Pass 3) 3D Metropolis temperature (26-neighbour energy scale)")
+    ap.add_argument("--lam3d", type=float, default=2.0, help="(Pass 3) 3D volume constraint multiplier lambda_V")
+    ap.add_argument("--V0", type=int, default=64, help="(Pass 3) 3D target cell volume V_0 (voxels)")
+    ap.add_argument("--self-test", action="store_true", help="Run 13-check verification suite and exit")
     args = ap.parse_args()
 
     if args.self_test:
@@ -1034,15 +1676,27 @@ def main() -> int:
         T=args.T,
         n_mcs=args.mcs,
         seed=args.seed,
+        grid3d=args.grid3d,
+        mcs3d=args.mcs3d,
+        T3d=args.T3d,
+        lam3d=args.lam3d,
+        V0_3d=args.V0,
     )
     r_s = out["regimes"]["complete_engulfment"]
     sp = out["specimen"]
+    k3 = out["kin3d"]
+    r3 = k3["r3"]
     print(
-        f"[1964-steinberg-differential-adhesion-sorting] Rendered Pass 2 outputs:\n"
+        f"[1964-steinberg-differential-adhesion-sorting] Rendered Pass 3 outputs:\n"
         f"  - Comparison PNG : {COMPARISON_PNG}\n"
         f"  - Growth GIF     : {GROWTH_GIF}\n"
-        f"  - Sorting Δr     : {r_s['radial_sep']:+.4f} (specimen Δr={sp['radial_sep_spec']:+.4f}, profile r={sp['profile_pearson_r']:.4f})\n"
-        f"  - Final L_AB/L   : {r_s['het_final']:.4f} (log-decay r={r_s['log_decay_r']:.4f})"
+        f"  - 2D Sorting Δr  : {r_s['radial_sep']:+.4f} (specimen Δr={sp['radial_sep_spec']:+.4f}, profile r={sp['profile_pearson_r']:.4f})\n"
+        f"  - 2D L_AB/L      : {r_s['het_final']:.4f} (log-decay r={r_s['log_decay_r']:.4f}, power-law α={k3['alpha_2d']:.4f})\n"
+        f"  - 3D ({r3['grid_size']}³, {r3['n_cells']} cells, {r3['n_mcs']} MCS): Δr₃D={r3['radial_sep']:+.4f}, Δr_section={r3['slice']['radial_sep']:+.4f}, "
+        f"L_AB/L={r3['het_final']:.4f}, ⟨v⟩/V₀={r3['mean_cell_volume'] / max(args.V0, 1):.3f}\n"
+        f"  - Exponents α    : 3D full={k3['alpha_3d']:.4f} (R²_pow={r3['kinetics_3d']['power_r2']:.3f}, R²_log={r3['kinetics_3d']['log_r2']:.3f}, {r3['kinetics_3d']['preferred_model']}), "
+        f"3D section={k3['alpha_3d_slice']:.4f}, no-swap={k3['alpha_3d_noswap']:.4f}, control={k3['alpha_3d_ctrl']:.4f}, LSW=0.3333\n"
+        f"  - 3D section vs specimen profile r = {out['specimen_3d']['profile_pearson_r']:.4f}"
     )
     return 0
 

@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """
-2007-farhadifar-drosophila-wing-vertex-model.py — Pass 2 (v2 Remediated)
+2007-farhadifar-drosophila-wing-vertex-model.py — Pass 3 (v3 Remediated)
 ========================================================================
 Farhadifar, Röper, Aigouy, Eaton & Jülicher (2007) Current Biology 17(24):2095-2104,
 Gibson, Patel, Nagpal & Perrimon (2006) Nature 442(7106):1038-1041,
 Classen, Anderson, Marois & Eaton (2005) Developmental Cell 9(6):805-817,
-Nagai & Honda (2001) Philosophical Magazine B 81(7):699-719, and
-Lewis (1928) The Anatomical Record 38(3):341-376.
+Nagai & Honda (2001) Philosophical Magazine B 81(7):699-719,
+Lewis (1928) The Anatomical Record 38(3):341-376,
+Aigouy, Farhadifar, Staple, Sagner, Röper, Jülicher & Eaton (2010) Cell 142(5):773-786, and
+Etournay, Popović, Merkel, Nandi, Blasse, Aigouy, Brandl, Myers, Salbreux, Jülicher & Eaton
+(2015) eLife 4:e07090.
 
 Primary Literature & Equations Implemented:
   1. Farhadifar et al. (2007) Current Biology 17:2095-2104 (doi:10.1016/j.cub.2007.11.049):
@@ -33,6 +36,19 @@ Primary Literature & Equations Implemented:
        pupal wing after PCP-driven junctional annealing (P(6) = 0.780, mu_2 = 0.250).
   3. Lewis (1928) Anat. Rec. 38:341-376 (doi:10.1002/ar.1090380305):
      - Linear Area-Topology Law: <A_n> / <A> = (n - 2) / 4 for n = 4..9.
+  4. [Pass 3] Aigouy et al. (2010) Cell 142:773-786 (doi:10.1016/j.cell.2010.07.042),
+     Etournay et al. (2015) eLife 4:e07090 (doi:10.7554/eLife.07090) &
+     Sugimura & Ishihara (2013) Development 140:4091-4101 (doi:10.1242/dev.094060):
+     - Explicit vertex dynamics (tri-cellular vertices, analytic forces F_i = -dE/dr_i of
+       Eq. 1, T1 exchanges below l_T1) with a per-bond planar-cell-polarity Frizzled/Strabismus
+       asymmetry tensor Q_ab = 2 c_ab (n (x) n - I/2), bond tension
+         Lambda_ab = Lambda_bar (1 + eps_pcp * n . Q_ab . n),
+       Fz-Stbm intercellular feedback + flow alignment of the polarity field, and the
+       pupal hinge-contraction pure-shear strain F(t) = diag(lambda, 1/lambda) on the blade
+       margin; tissue shear decomposed into cell-elongation and rearrangement parts.
+     - DOIs for the Pass 3 references were recorded offline and NOT re-verified online in
+       this pass (see datasets/drosophila_wing_vertex_model/README.md).
+  Lean 4: morphoeval/lean/loops/Loop_043_drosophila_wing_vertex_model.lean (6 theorems, 0 sorrys).
 """
 
 from __future__ import annotations
@@ -462,6 +478,586 @@ def run_lambda_bar_sweep(seed: int = 2007) -> list[dict[str, Any]]:
 
 
 # =============================================================================
+# Section 2b (Pass 3): Explicit Vertex Dynamics with a Planar-Cell-Polarity
+#   Frizzled/Strabismus Bond-Asymmetry Tensor & Pupal Hinge-Contraction Strain
+# =============================================================================
+#
+# Pass 2 remediation item: "Couple the 2D apical vertex network to an explicit planar cell
+# polarity (PCP) Frizzled/Strabismus edge-asymmetry tensor on individual bonds to model
+# anisotropic wing-blade elongation during pupal hinge contraction."
+#
+# Reduced-but-explicit implementation (honest scope statement):
+#   * The Section 2 regimes remain a Voronoi-seed (Lloyd-type) relaxation.  Section 2b is a
+#     genuine vertex model: tri-cellular vertices r_i are the degrees of freedom, cells are
+#     counter-clockwise vertex rings, interior bonds are shared by exactly two cells, and the
+#     vertices follow overdamped gradient descent on the Farhadifar et al. (2007) Eq. (1)
+#     energy with analytic forces  F_i = -dE/dr_i  and T1 neighbour exchanges below l_T1.
+#   * PCP: each cell alpha carries a polar Frizzled (Fz, distal) / Strabismus (Stbm/Vang,
+#     proximal) axis p_alpha = (cos phi_alpha, sin phi_alpha).  On the bond shared by alpha
+#     and beta with outward normal n (from alpha), the intercellular Fz-Stbm bridge density is
+#         c_ab = relu(p_a.n) relu(p_b.n) + relu(-p_a.n) relu(-p_b.n)        in [0, 1]
+#     (Fz on alpha's distal face paired with Stbm on beta's proximal face, or vice versa:
+#     Classen et al. 2005 Dev. Cell 9:805; Aigouy et al. 2010 Cell 142:773).  The bond
+#     asymmetry  a_ab = 2 c_ab - 1  in [-1, 1]  is the contraction  n . Q_ab . n  of the
+#     traceless symmetric bond tensor  Q_ab = 2 c_ab (n (x) n - I/2)  with the bond normal;
+#     for perfectly PD-aligned polarity a_ab = cos 2 theta_n exactly.  Bond line tension is
+#         Lambda_ab = Lambda_bar (1 + eps_pcp a_ab)
+#     so PCP-complex-bearing (AP-oriented) junctions are stiffened for eps_pcp > 0, and
+#     eps_pcp = 0 is the fz / stbm loss-of-function (isotropic) control.
+#   * Polarity dynamics (Aigouy et al. 2010 "cell flow reorients the axis of planar polarity"):
+#         dphi_a/dt = k_fb sum_b sin(phi_b - phi_a) + k_flow sin(2 (psi_a - phi_a)) + noise
+#     with psi_a the long axis of the cell-shape tensor (intercellular Fz-Stbm feedback plus
+#     alignment to the cell-elongation axis induced by hinge contraction).
+#   * Hinge contraction (Aigouy et al. 2010; Etournay et al. 2015 eLife 4:e07090): the blade
+#     margin (boundary vertices) is driven through an area-preserving pure shear
+#     F(t) = diag(lambda(t), 1/lambda(t)) with cumulative PD log-strain gamma = ln lambda_max
+#     ramped over the first half of the run and then held, so the interior relaxes its cell
+#     elongation through oriented T1s.  Tissue shear is decomposed as
+#         total (= ln lambda)  =  d<Q_xx> (cell elongation)  +  residual (rearrangements)
+#     following the Etournay et al. (2015) shear-decomposition bookkeeping (no division,
+#     extrusion or correlation terms in this post-mitotic patch).
+#   What is NOT modelled: the margin-ward radial PCP pattern before 15 hAPF, Fat/Dachsous,
+#   cell divisions and extrusions, apical-basal geometry, and hinge/blade two-compartment
+#   geometry (the hinge is represented only by its boundary strain).
+
+T1_LENGTH = 0.08          # l_T1 in units of sqrt(A^(0)) (Farhadifar et al. 2007 p. 2096)
+T1_NEW_LENGTH = 0.12      # post-T1 junction length (slightly above l_T1, as in Farhadifar 2007)
+
+
+def _signed_area(poly: np.ndarray) -> float:
+    x = poly[:, 0]
+    y = poly[:, 1]
+    return 0.5 * float(np.dot(x, np.roll(y, -1)) - np.dot(y, np.roll(x, -1)))
+
+
+def build_vertex_mesh_from_seeds(seeds: np.ndarray, box_size: float = 10.0) -> dict[str, Any]:
+    """
+    Convert the 3x3-tiled Voronoi tessellation of `seeds` into an explicit apical vertex mesh:
+    `pos` (V x 2 vertex coordinates), `cells` (list of counter-clockwise vertex-index rings,
+    one per central cell) and `boundary` (vertices touching an image cell, i.e. the blade
+    margin that will be driven by the hinge-contraction strain).
+    """
+    n_cells = len(seeds)
+    tiled = []
+    for dy in (-box_size, 0.0, box_size):
+        for dx in (-box_size, 0.0, box_size):
+            tiled.append(seeds + np.array([dx, dy]))
+    vor = Voronoi(np.vstack(tiled))
+    center_offset = 4 * n_cells
+    remap: dict[int, int] = {}
+    verts: list[np.ndarray] = []
+    cells: list[list[int]] = []
+    for idx in range(n_cells):
+        region = vor.regions[vor.point_region[center_offset + idx]]
+        ring: list[int] = []
+        for v in region:
+            if v not in remap:
+                remap[v] = len(verts)
+                verts.append(vor.vertices[v].copy())
+            ring.append(remap[v])
+        poly = np.array([verts[k] for k in ring])
+        if _signed_area(poly) < 0.0:
+            ring = ring[::-1]
+        cells.append(ring)
+    pos = np.array(verts, dtype=np.float64)
+    incidence = np.zeros(len(pos), dtype=np.int32)
+    for ring in cells:
+        for v in ring:
+            incidence[v] += 1
+    return {"pos": pos, "cells": cells, "boundary": incidence < 3}
+
+
+def _cell_arrays(cells: list[list[int]]) -> dict[str, np.ndarray]:
+    """Pad the variable-length cell rings into index arrays for vectorised force evaluation."""
+    n = len(cells)
+    maxn = max(len(c) for c in cells)
+    idx = np.full((n, maxn), -1, dtype=np.int64)
+    nxt = np.full((n, maxn), -1, dtype=np.int64)
+    prv = np.full((n, maxn), -1, dtype=np.int64)
+    prv_slot = np.zeros((n, maxn), dtype=np.int64)
+    for c, ring in enumerate(cells):
+        m = len(ring)
+        r = np.asarray(ring, dtype=np.int64)
+        idx[c, :m] = r
+        nxt[c, :m] = np.roll(r, -1)
+        prv[c, :m] = np.roll(r, 1)
+        prv_slot[c, :m] = (np.arange(m) - 1) % m
+    valid = idx >= 0
+    # Bond -> neighbouring cell across each cell-slot edge
+    edge_map: dict[tuple[int, int], list[tuple[int, int]]] = {}
+    for c, ring in enumerate(cells):
+        m = len(ring)
+        for k in range(m):
+            a, b = ring[k], ring[(k + 1) % m]
+            edge_map.setdefault((min(a, b), max(a, b)), []).append((c, k))
+    nb = np.full((n, maxn), -1, dtype=np.int64)
+    edges = []
+    edge_cells = []
+    for (a, b), lst in edge_map.items():
+        edges.append((a, b))
+        if len(lst) == 2:
+            (c1, k1), (c2, k2) = lst
+            nb[c1, k1] = c2
+            nb[c2, k2] = c1
+            edge_cells.append((c1, c2))
+        else:
+            edge_cells.append((lst[0][0], -1))
+    return {
+        "idx": idx,
+        "nxt": nxt,
+        "prv": prv,
+        "prv_slot": prv_slot,
+        "valid": valid,
+        "nb": nb,
+        "edges": np.array(edges, dtype=np.int64),
+        "edge_cells": np.array(edge_cells, dtype=np.int64),
+    }
+
+
+def pcp_bond_asymmetry(
+    pos: np.ndarray,
+    arrays: dict[str, np.ndarray],
+    phi: np.ndarray,
+) -> dict[str, np.ndarray]:
+    """
+    Frizzled/Strabismus bond-asymmetry tensor on every cell-slot bond.
+    Returns the Fz-Stbm bridge density c_ab in [0, 1], the asymmetry a_ab = 2 c_ab - 1 =
+    n . Q_ab . n (traceless symmetric Q_ab = 2 c_ab (n (x) n - I/2)), the outward bond
+    normal angle, and the bond unit tangent.  Matches Lean 4
+    `pcp_bond_tensor_traceless_and_perpendicular_cancellation` (perpendicular bonds carry
+    opposite asymmetry when polarity is uniform).
+    """
+    idx, nxt, valid, nb = arrays["idx"], arrays["nxt"], arrays["valid"], arrays["nb"]
+    P = pos[np.where(valid, idx, 0)]
+    Pn = pos[np.where(valid, nxt, 0)]
+    e = Pn - P
+    l_e = np.hypot(e[..., 0], e[..., 1]) + 1e-12
+    t_hat = e / l_e[..., None]
+    n_hat = np.stack([t_hat[..., 1], -t_hat[..., 0]], axis=-1)  # outward normal of a CCW ring
+    pol = np.stack([np.cos(phi), np.sin(phi)], axis=-1)
+    p_self = pol[:, None, :]
+    p_nb = np.where((nb >= 0)[..., None], pol[np.where(nb >= 0, nb, 0)], 0.0)
+    pn_self = np.sum(p_self * n_hat, axis=-1)
+    pn_nb = np.sum(p_nb * n_hat, axis=-1)
+    relu = lambda z: np.maximum(z, 0.0)  # noqa: E731
+    c_ab = relu(pn_self) * relu(pn_nb) + relu(-pn_self) * relu(-pn_nb)
+    c_ab = np.where(valid & (nb >= 0), c_ab, 0.0)
+    a_ab = np.where(valid & (nb >= 0), 2.0 * c_ab - 1.0, 0.0)
+    theta_n = np.arctan2(n_hat[..., 1], n_hat[..., 0])
+    return {"c_ab": c_ab, "a_ab": a_ab, "theta_n": theta_n, "t_hat": t_hat, "l_e": l_e}
+
+
+def vertex_forces_and_energy(
+    pos: np.ndarray,
+    arrays: dict[str, np.ndarray],
+    tension: np.ndarray,
+    K: float = 1.0,
+    A0: float = 1.0,
+    Gamma_bar: float = 0.04,
+) -> tuple[np.ndarray, float, np.ndarray, np.ndarray]:
+    """
+    Analytic vertex forces F_i = -dE/dr_i for Farhadifar et al. (2007) Eq. (1) with
+    per-bond line tension Lambda_ab (`tension[c, k]`, counted once per bond by splitting it
+    half-half between the two incident cells):
+      dA_a/dr_k = 1/2 (y_{k+1} - y_{k-1}, x_{k-1} - x_{k+1}),
+      dL_a/dr_k = (r_k - r_{k+1})/l_{k,k+1} + (r_k - r_{k-1})/l_{k,k-1},
+      dl_{k,k+1}/dr_k = (r_k - r_{k+1})/l_{k,k+1}.
+    Returns (forces, total energy, cell areas, cell perimeters).
+    """
+    idx, nxt, prv, valid = arrays["idx"], arrays["nxt"], arrays["prv"], arrays["valid"]
+    P = pos[np.where(valid, idx, 0)]
+    Pn = pos[np.where(valid, nxt, 0)]
+    Pp = pos[np.where(valid, prv, 0)]
+    cross = np.where(valid, P[..., 0] * Pn[..., 1] - Pn[..., 0] * P[..., 1], 0.0)
+    A = 0.5 * np.sum(cross, axis=1)
+    e_next = Pn - P
+    e_prev = P - Pp
+    l_next = np.where(valid, np.hypot(e_next[..., 0], e_next[..., 1]), 0.0)
+    l_prev = np.where(valid, np.hypot(e_prev[..., 0], e_prev[..., 1]), 0.0)
+    L = np.sum(l_next, axis=1)
+    ln_safe = np.where(l_next > 1e-12, l_next, 1.0)[..., None]
+    lp_safe = np.where(l_prev > 1e-12, l_prev, 1.0)[..., None]
+    dA = 0.5 * np.stack([Pn[..., 1] - Pp[..., 1], Pp[..., 0] - Pn[..., 0]], axis=-1)
+    dL = -e_next / ln_safe + e_prev / lp_safe
+    t_prev = np.take_along_axis(tension, arrays["prv_slot"], axis=1)
+    f_slot = -(K * (A - A0))[:, None, None] * dA - (Gamma_bar * L)[:, None, None] * dL
+    f_slot = f_slot + 0.5 * tension[..., None] * e_next / ln_safe - 0.5 * t_prev[..., None] * e_prev / lp_safe
+    f_slot = np.where(valid[..., None], f_slot, 0.0)
+    forces = np.zeros_like(pos)
+    np.add.at(forces, idx[valid], f_slot[valid])
+    energy = float(
+        np.sum(0.5 * K * (A - A0) ** 2 + 0.5 * Gamma_bar * L ** 2)
+        + np.sum(0.5 * tension * l_next)
+    )
+    return forces, energy, A, L
+
+
+def cell_shape_tensors(pos: np.ndarray, cells: list[list[int]]) -> dict[str, np.ndarray]:
+    """
+    Per-cell shape tensor S = <(r - c)(r - c)^T> over the vertex ring and the Etournay et al.
+    (2015) cell-elongation nematic Q with |Q| = 1/2 ln(axis_long / axis_short) and axis angle psi.
+    """
+    n = len(cells)
+    q_xx = np.zeros(n)
+    q_xy = np.zeros(n)
+    q_mag = np.zeros(n)
+    psi = np.zeros(n)
+    cent = np.zeros((n, 2))
+    for c, ring in enumerate(cells):
+        pr = pos[ring]
+        cc = pr.mean(axis=0)
+        d = pr - cc
+        S = d.T @ d / len(ring)
+        w, v = np.linalg.eigh(S)
+        w = np.clip(w, 1e-12, None)
+        mag = 0.5 * np.log(np.sqrt(w[1]) / np.sqrt(w[0]))
+        ang = float(np.arctan2(v[1, 1], v[0, 1]))
+        q_mag[c] = mag
+        psi[c] = ang
+        q_xx[c] = mag * np.cos(2.0 * ang)
+        q_xy[c] = mag * np.sin(2.0 * ang)
+        cent[c] = cc
+    return {"q_xx": q_xx, "q_xy": q_xy, "q_mag": q_mag, "psi": psi, "centroids": cent}
+
+
+def _attempt_t1(
+    pos: np.ndarray,
+    cells: list[list[int]],
+    a: int,
+    b: int,
+    incidence: dict[int, set[int]],
+    l_new: float,
+) -> tuple[bool, int, int, int, int]:
+    """
+    Perform a T1 neighbour exchange on the interior bond (a, b): cells A, B sharing the bond
+    lose contact, cells C (containing a) and D (containing b) gain the new bond.  Vertex
+    3-valence and the Euler side-sum are conserved (Lean `euler_three_valent_average_six_sides`).
+    """
+    shared = incidence[a] & incidence[b]
+    if len(shared) != 2:
+        return False, -1, -1, -1, -1
+    A, B = sorted(shared)
+    only_a = incidence[a] - shared
+    only_b = incidence[b] - shared
+    if len(only_a) != 1 or len(only_b) != 1:
+        return False, -1, -1, -1, -1
+    C = next(iter(only_a))
+    D = next(iter(only_b))
+    if C == D or len(cells[A]) <= 3 or len(cells[B]) <= 3:
+        return False, -1, -1, -1, -1
+    if len(set(cells[C]) & set(cells[D])) >= 1:  # C and D already touch: no double bond
+        return False, -1, -1, -1, -1
+    m = 0.5 * (pos[a] + pos[b])
+    e = pos[b] - pos[a]
+    le = float(np.hypot(e[0], e[1])) + 1e-12
+    d = np.array([-e[1], e[0]]) / le
+    cA = pos[cells[A]].mean(axis=0)
+    if float(np.dot(cA - m, d)) < 0.0:
+        d = -d
+    pos[a] = m + 0.5 * l_new * d
+    pos[b] = m - 0.5 * l_new * d
+    cells[A].remove(b)
+    cells[B].remove(a)
+    cells[C].append(b)
+    cells[D].append(a)
+    for c in (A, B, C, D):
+        pr = pos[cells[c]]
+        cc = pr.mean(axis=0)
+        ang = np.arctan2(pr[:, 1] - cc[1], pr[:, 0] - cc[0])
+        order = np.argsort(ang)
+        cells[c] = [cells[c][k] for k in order]
+    incidence[a] = {A, C, D}
+    incidence[b] = {B, C, D}
+    return True, A, B, C, D
+
+
+def simulate_pcp_hinge_contraction(
+    Lambda_bar: float = 0.12,
+    Gamma_bar: float = 0.04,
+    eps_pcp: float = 0.5,
+    hinge_log_strain: float = 0.35,
+    n_steps: int = 900,
+    n_prerelax: int = 150,
+    dt: float = 0.08,
+    k_feedback: float = 0.6,
+    k_flow: float = 0.4,
+    polarity_noise: float = 0.02,
+    init_polarity_sigma: float = 0.6,
+    seed: int = 2007,
+    record_frames: bool = False,
+    n_record: int = 15,
+) -> dict[str, Any]:
+    """
+    Explicit vertex-model simulation of the post-mitotic pupal wing blade under hinge
+    contraction with PCP (Fz/Stbm) bond-asymmetry-modulated line tension.  See the Section
+    2b header for the model statement.  Returns final mesh, time courses (imposed PD shear
+    ln lambda(t), mean cell-elongation nematic <Q_xx>(t), <|Q|>(t), PCP polar/nematic order,
+    cumulative T1 count and oriented-T1 fraction), polygon statistics and bond-tension
+    anisotropy diagnostics.
+    """
+    rng = np.random.default_rng(seed + 43)
+    nx, ny, box_size = 10, 10, 10.0
+    n_cells = nx * ny
+    xs = np.linspace(0.0, box_size, nx, endpoint=False)
+    ys = np.linspace(0.0, box_size, ny, endpoint=False)
+    pts = []
+    for j, y in enumerate(ys):
+        shift = 0.5 * (box_size / nx) if (j % 2 == 1) else 0.0
+        for x in xs:
+            pts.append([(x + shift) % box_size, y])
+    seeds = (np.array(pts) + rng.normal(0.0, 0.24, size=(n_cells, 2))) % box_size
+    mesh = build_vertex_mesh_from_seeds(seeds, box_size=box_size)
+    pos = mesh["pos"]
+    cells = mesh["cells"]
+    boundary = mesh["boundary"]
+    center = np.array([box_size / 2.0, box_size / 2.0])
+    pos0_boundary = pos[boundary].copy()
+    incidence: dict[int, set[int]] = {v: set() for v in range(len(pos))}
+    for c, ring in enumerate(cells):
+        for v in ring:
+            incidence[v].add(c)
+    arrays = _cell_arrays(cells)
+
+    phi = (rng.normal(0.0, init_polarity_sigma, size=n_cells)) % (2.0 * np.pi)
+
+    def _t1_pass(lam_now: float) -> list[tuple[float, float]]:
+        nonlocal arrays
+        events: list[tuple[float, float]] = []
+        ed = arrays["edges"]
+        ec = arrays["edge_cells"]
+        interior = (ec[:, 1] >= 0) & (~boundary[ed[:, 0]]) & (~boundary[ed[:, 1]])
+        lens = np.hypot(*(pos[ed[:, 1]] - pos[ed[:, 0]]).T)
+        cand = np.where(interior & (lens < T1_LENGTH))[0]
+        if len(cand) == 0:
+            return events
+        changed = False
+        for ei in cand[np.argsort(lens[cand])]:
+            a, b = int(ed[ei, 0]), int(ed[ei, 1])
+            ev = pos[b] - pos[a]
+            theta_e = float(np.arctan2(ev[1], ev[0]))
+            ok, *_ = _attempt_t1(pos, cells, a, b, incidence, T1_NEW_LENGTH)
+            if ok:
+                events.append((theta_e, lam_now))
+                changed = True
+        if changed:
+            arrays = _cell_arrays(cells)
+        return events
+
+    def _boundary_affine(lam: float) -> None:
+        F = np.array([[lam, 0.0], [0.0, 1.0 / lam]])
+        pos[boundary] = center + (pos0_boundary - center) @ F.T
+
+    # --- Pre-relaxation at lambda = 1 with isotropic tension (initial pupal patch) ---
+    energy_pre: list[float] = []
+    iso_tension = np.full(arrays["idx"].shape, Lambda_bar)
+    for _ in range(n_prerelax):
+        if iso_tension.shape != arrays["idx"].shape:
+            iso_tension = np.full(arrays["idx"].shape, Lambda_bar)
+        forces, e_tot, _, _ = vertex_forces_and_energy(pos, arrays, iso_tension, Gamma_bar=Gamma_bar)
+        energy_pre.append(e_tot)
+        forces[boundary] = 0.0
+        pos += dt * forces
+        _t1_pass(1.0)
+    shape0 = cell_shape_tensors(pos, cells)
+    sides0 = np.array([_polygon_area_and_perimeter(pos[r])[2] for r in cells])
+    p6_initial = float(np.mean(sides0 == 6))
+
+    # --- PCP + hinge contraction phase ---
+    t_ramp = int(0.5 * n_steps)
+    t_hist = np.zeros(n_steps + 1)
+    shear_total = np.zeros(n_steps + 1)
+    q_xx_hist = np.zeros(n_steps + 1)
+    q_mag_hist = np.zeros(n_steps + 1)
+    pcp_polar_order = np.zeros(n_steps + 1)
+    pcp_nematic_order = np.zeros(n_steps + 1)
+    pcp_mean_angle = np.zeros(n_steps + 1)
+    t1_cum = np.zeros(n_steps + 1, dtype=np.int64)
+    energy_hist = np.zeros(n_steps + 1)
+    t1_events: list[tuple[float, float]] = []
+    frames: list[dict[str, Any]] = []
+    record_steps = set(np.linspace(0, n_steps, n_record).astype(int).tolist()) if record_frames else set()
+    q0 = float(np.mean(shape0["q_xx"]))
+    lam = 1.0
+
+    for step in range(n_steps + 1):
+        s = min(step / max(t_ramp, 1), 1.0)
+        smooth = s * s * (3.0 - 2.0 * s)
+        lam = float(np.exp(hinge_log_strain * smooth))
+        _boundary_affine(lam)
+
+        pcp = pcp_bond_asymmetry(pos, arrays, phi)
+        tension = Lambda_bar * (1.0 + eps_pcp * pcp["a_ab"])
+        forces, e_tot, _, _ = vertex_forces_and_energy(pos, arrays, tension, Gamma_bar=Gamma_bar)
+        shape = cell_shape_tensors(pos, cells)
+
+        t_hist[step] = step * dt
+        shear_total[step] = float(np.log(lam))
+        q_xx_hist[step] = float(np.mean(shape["q_xx"]))
+        q_mag_hist[step] = float(np.mean(shape["q_mag"]))
+        z1 = np.mean(np.exp(1j * phi))
+        z2 = np.mean(np.exp(2j * phi))
+        pcp_polar_order[step] = float(abs(z1))
+        pcp_nematic_order[step] = float(abs(z2))
+        pcp_mean_angle[step] = float(np.angle(z1))
+        t1_cum[step] = len(t1_events)
+        energy_hist[step] = e_tot
+
+        if step in record_steps:
+            frames.append(
+                {
+                    "polys": [pos[r].copy() for r in cells],
+                    "sides": np.array([_polygon_area_and_perimeter(pos[r])[2] for r in cells]),
+                    "phi": phi.copy(),
+                    "centroids": shape["centroids"].copy(),
+                    "lam": lam,
+                    "step": step,
+                }
+            )
+        if step == n_steps:
+            break
+
+        # Overdamped vertex dynamics (boundary vertices are prescribed by the hinge strain)
+        forces[boundary] = 0.0
+        pos += dt * forces
+        t1_events.extend(_t1_pass(lam))
+
+        # PCP polarity dynamics: Fz-Stbm intercellular feedback + flow/elongation alignment
+        nb = arrays["nb"]
+        valid_nb = nb >= 0
+        phi_nb = np.where(valid_nb, phi[np.where(valid_nb, nb, 0)], 0.0)
+        fb = np.sum(np.where(valid_nb, np.sin(phi_nb - phi[:, None]), 0.0), axis=1) / np.maximum(
+            valid_nb.sum(axis=1), 1
+        )
+        flow = np.sin(2.0 * (shape["psi"] - phi)) * np.minimum(shape["q_mag"] / 0.15, 1.0)
+        phi = phi + dt * (k_feedback * fb + k_flow * flow) + polarity_noise * np.sqrt(dt) * rng.normal(
+            size=n_cells
+        )
+        phi = phi % (2.0 * np.pi)
+
+    # --- Final statistics ---
+    final_polys = [pos[r].copy() for r in cells]
+    sides = np.array([_polygon_area_and_perimeter(pr)[2] for pr in final_polys], dtype=np.int32)
+    interior_cells = np.array([not np.any(boundary[r]) for r in cells])
+    sides_int = sides[interior_cells] if np.any(interior_cells) else sides
+    p_dist = {n: float(np.mean(sides_int == n)) for n in range(4, 10)}
+    p_vec = np.array([p_dist[n] for n in range(4, 10)])
+    mu2 = float(np.sum(p_vec * (np.arange(4, 10) - 6.0) ** 2))
+
+    pcp = pcp_bond_asymmetry(pos, arrays, phi)
+    tension = Lambda_bar * (1.0 + eps_pcp * pcp["a_ab"])
+    mask_b = arrays["valid"] & (arrays["nb"] >= 0)
+    theta_n = pcp["theta_n"][mask_b]
+    a_vals = pcp["a_ab"][mask_b]
+    t_vals = tension[mask_b]
+    # Least-squares nematic fit a(theta_n) = alpha cos 2theta + beta sin 2theta + c0 (c0 -> 0 if traceless)
+    design = np.column_stack([np.cos(2 * theta_n), np.sin(2 * theta_n), np.ones_like(theta_n)])
+    coef, *_ = np.linalg.lstsq(design, a_vals, rcond=None)
+    ap_bonds = np.abs(np.cos(theta_n)) > np.cos(np.pi / 6)   # normal within 30 deg of PD -> AP-oriented bond
+    pd_bonds = np.abs(np.sin(theta_n)) > np.cos(np.pi / 6)   # normal within 30 deg of AP -> PD-oriented bond
+    t_ap = float(np.mean(t_vals[ap_bonds])) if np.any(ap_bonds) else float(Lambda_bar)
+    t_pd = float(np.mean(t_vals[pd_bonds])) if np.any(pd_bonds) else float(Lambda_bar)
+
+    if t1_events:
+        th = np.array([e[0] for e in t1_events])
+        oriented_frac = float(np.mean(np.abs(np.sin(th)) > np.cos(np.pi / 4)))
+    else:
+        oriented_frac = float("nan")
+
+    shear_elong = q_xx_hist - q0
+    shear_resid = shear_total - shear_elong
+
+    return {
+        "pos": pos,
+        "cells": cells,
+        "boundary": boundary,
+        "polys": final_polys,
+        "sides": sides,
+        "interior_cells": interior_cells,
+        "phi": phi,
+        "centroids": cell_shape_tensors(pos, cells)["centroids"],
+        "p_dist": p_dist,
+        "p_vec": p_vec,
+        "P6": float(p_dist[6]),
+        "P6_initial": p6_initial,
+        "mu2": mu2,
+        "mean_n": float(np.mean(sides_int)),
+        "t": t_hist,
+        "shear_total": shear_total,
+        "shear_elongation": shear_elong,
+        "shear_residual": shear_resid,
+        "q_xx": q_xx_hist,
+        "q_mag": q_mag_hist,
+        "q_mag_peak": float(np.max(q_mag_hist)),
+        "q_xx_peak": float(np.max(q_xx_hist)),
+        "q_xx_final": float(q_xx_hist[-1]),
+        "rearrangement_fraction": (
+            float(shear_resid[-1] / shear_total[-1]) if shear_total[-1] > 1e-6 else float("nan")
+        ),
+        "pcp_polar_order": pcp_polar_order,
+        "pcp_nematic_order": pcp_nematic_order,
+        "pcp_mean_angle": pcp_mean_angle,
+        "t1_cum": t1_cum,
+        "n_t1": len(t1_events),
+        "t1_events": t1_events,
+        "oriented_t1_fraction": oriented_frac,
+        "energy_prerelax": np.array(energy_pre),
+        "energy": energy_hist,
+        "bond_theta_n": theta_n,
+        "bond_asymmetry": a_vals,
+        "bond_tension": t_vals,
+        "bond_c": pcp["c_ab"][mask_b],
+        "bond_fit_coef": coef,
+        "tension_anisotropy_ratio": t_ap / max(t_pd, 1e-9),
+        "tension_ap": t_ap,
+        "tension_pd": t_pd,
+        "lambda_final": lam,
+        "frames": frames,
+        "params": {
+            "Lambda_bar": Lambda_bar,
+            "Gamma_bar": Gamma_bar,
+            "eps_pcp": eps_pcp,
+            "hinge_log_strain": hinge_log_strain,
+            "n_steps": n_steps,
+            "dt": dt,
+        },
+    }
+
+
+def run_pcp_epsilon_sweep(
+    hinge_log_strain: float = 0.35,
+    seed: int = 2007,
+    eps_values: tuple[float, ...] = (-0.6, -0.3, 0.0, 0.3, 0.5, 0.8),
+    n_steps: int = 700,
+) -> list[dict[str, Any]]:
+    """
+    Ablation / sweep over the PCP bond-asymmetry coupling eps_pcp (eps_pcp = 0 is the
+    fz / stbm loss-of-function isotropic control), recording hexagonal fraction, peak and
+    final cell elongation, oriented-T1 fraction and bond-tension anisotropy.
+    """
+    out = []
+    for eps in eps_values:
+        sim = simulate_pcp_hinge_contraction(
+            eps_pcp=eps, hinge_log_strain=hinge_log_strain, n_steps=n_steps, seed=seed
+        )
+        out.append(
+            {
+                "eps_pcp": eps,
+                "P6": sim["P6"],
+                "P6_initial": sim["P6_initial"],
+                "mu2": sim["mu2"],
+                "q_mag_peak": sim["q_mag_peak"],
+                "q_xx_final": sim["q_xx_final"],
+                "n_t1": sim["n_t1"],
+                "oriented_t1_fraction": sim["oriented_t1_fraction"],
+                "tension_anisotropy_ratio": sim["tension_anisotropy_ratio"],
+                "pcp_nematic_order_final": float(sim["pcp_nematic_order"][-1]),
+                "rearrangement_fraction": sim["rearrangement_fraction"],
+            }
+        )
+    return out
+
+
+# =============================================================================
 # Section 3: Biological Specimen Segmentation & Polygon-Class Validation
 # =============================================================================
 
@@ -589,7 +1185,7 @@ def segment_epithelial_specimen(
 
 
 # =============================================================================
-# Section 4: 10-Panel Synthesis Figure & Animated GIF Rendering
+# Section 4: 15-Panel Synthesis Figure & 4-Panel Animated GIF Rendering
 # =============================================================================
 
 def run_all_regimes_and_render(
@@ -597,10 +1193,17 @@ def run_all_regimes_and_render(
     Gamma_bar: float = 0.04,
     n_steps: int = 36,
     seed: int = 2007,
+    eps_pcp: float = 0.5,
+    hinge_log_strain: float = 0.35,
 ) -> dict[str, Any]:
-    """Run all 4 vertex regimes, 7-point Lambda_bar sweep, laser ablation, specimen segmentation, and render."""
+    """
+    Run all 4 vertex regimes, 7-point Lambda_bar sweep, laser ablation, specimen segmentation,
+    the Pass 3 PCP/hinge-contraction explicit vertex model with its eps_pcp ablation sweep,
+    and render the 15-panel figure plus the 4-panel GIF.
+    """
     ref_data = verify_reference_dataset()
     MEDIA_DIR.mkdir(parents=True, exist_ok=True)
+    pcp_ref = ref_data.get("pcp_hinge_contraction_reference", {})
 
     regimes = {
         "wing_disc_proliferating": simulate_vertex_regime(
@@ -645,8 +1248,27 @@ def run_all_regimes_and_render(
     recoil_low = simulate_laser_ablation_recoil(Lambda_bar=0.02, Gamma_bar=0.02)
     recoil_soft = simulate_laser_ablation_recoil(Lambda_bar=-0.25, Gamma_bar=0.04)
 
-    # Render 10-panel comparison figure (2x5 grid)
-    fig, axes = plt.subplots(2, 5, figsize=(20.5, 8.6), dpi=150)
+    # Pass 3: PCP (Fz/Stbm) bond-asymmetry explicit vertex model under hinge contraction
+    pcp_wt = simulate_pcp_hinge_contraction(
+        Lambda_bar=Lambda_bar,
+        Gamma_bar=Gamma_bar,
+        eps_pcp=eps_pcp,
+        hinge_log_strain=hinge_log_strain,
+        seed=seed,
+        record_frames=True,
+    )
+    pcp_mut = simulate_pcp_hinge_contraction(
+        Lambda_bar=Lambda_bar,
+        Gamma_bar=Gamma_bar,
+        eps_pcp=0.0,
+        hinge_log_strain=hinge_log_strain,
+        seed=seed,
+        record_frames=True,
+    )
+    pcp_sweep = run_pcp_epsilon_sweep(hinge_log_strain=hinge_log_strain, seed=seed)
+
+    # Render 15-panel comparison figure (3x5 grid)
+    fig, axes = plt.subplots(3, 5, figsize=(20.5, 12.9), dpi=150)
     poly_cmap = {
         4: "#38bdf8",
         5: "#fbbf24",
@@ -864,29 +1486,149 @@ def run_all_regimes_and_render(
     ax_b5.legend(fontsize=6.6, loc="upper left")
     ax_b5.grid(alpha=0.25)
 
-    fig.suptitle(
-        "Farhadifar et al. (2007) Drosophila Wing Disc Apical Vertex Model, Phase Diagram, Lewis's Law & Epithelial Packing",
-        fontsize=13.5,
-        fontweight="bold",
-        y=0.98,
+    # ------------------------------------------------------------------
+    # Row C (Pass 3): PCP Fz/Stbm bond-asymmetry tensor + pupal hinge contraction
+    # ------------------------------------------------------------------
+    tension_cmap = plt.get_cmap("coolwarm")
+    t_lo, t_hi = Lambda_bar * (1.0 - abs(eps_pcp)) - 1e-9, Lambda_bar * (1.0 + abs(eps_pcp)) + 1e-9
+
+    def _draw_pcp_mesh(ax, sim, title):
+        pos_m, cells_m = sim["pos"], sim["cells"]
+        arr = _cell_arrays(cells_m)
+        pcp_b = pcp_bond_asymmetry(pos_m, arr, sim["phi"])
+        tens = Lambda_bar * (1.0 + sim["params"]["eps_pcp"] * pcp_b["a_ab"])
+        for c_i, ring in enumerate(cells_m):
+            poly = pos_m[ring]
+            ax.fill(poly[:, 0], poly[:, 1], facecolor=poly_cmap.get(int(sim["sides"][c_i]), "#94a3b8"),
+                    edgecolor="none", alpha=0.55)
+        # Bonds coloured by PCP-modulated line tension Lambda_ab
+        for c_i, ring in enumerate(cells_m):
+            m_r = len(ring)
+            for k in range(m_r):
+                if arr["nb"][c_i, k] < c_i:  # draw each bond once
+                    continue
+                a_v, b_v = ring[k], ring[(k + 1) % m_r]
+                tv = (float(tens[c_i, k]) - t_lo) / max(t_hi - t_lo, 1e-9)
+                ax.plot([pos_m[a_v, 0], pos_m[b_v, 0]], [pos_m[a_v, 1], pos_m[b_v, 1]],
+                        color=tension_cmap(np.clip(tv, 0, 1)), lw=1.5)
+        # Fz (distal) polarity arrows
+        cen = sim["centroids"]
+        ax.quiver(cen[:, 0], cen[:, 1], np.cos(sim["phi"]), np.sin(sim["phi"]),
+                  color="#0f172a", scale=22, width=0.006, headwidth=4, alpha=0.9)
+        lam_f = sim["lambda_final"]
+        half = 3.3 / lam_f  # square window inside the PD-stretched, AP-compressed blade patch
+        ax.set_xlim(5.0 - half, 5.0 + half)
+        ax.set_ylim(5.0 - half, 5.0 + half)
+        ax.set_aspect("equal")
+        ax.set_title(title, fontsize=7.6, fontweight="bold")
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+    _draw_pcp_mesh(
+        axes[2, 0],
+        pcp_wt,
+        f"C1. PCP Vertex Model + Hinge Contraction (ε_PCP={eps_pcp:.2f}, γ_PD={hinge_log_strain:.2f})\n"
+        f"P(6)={pcp_wt['P6']:.3f} | ⟨Q_xx⟩={pcp_wt['q_xx_final']:.3f} | T1={pcp_wt['n_t1']} | Λ_AP/Λ_PD={pcp_wt['tension_anisotropy_ratio']:.2f}",
     )
-    fig.tight_layout(rect=(0, 0, 1, 0.94))
+    _draw_pcp_mesh(
+        axes[2, 1],
+        pcp_mut,
+        f"C2. PCP Loss-of-Function Control (ε_PCP=0, fz⁻/stbm⁻)\n"
+        f"P(6)={pcp_mut['P6']:.3f} | ⟨Q_xx⟩={pcp_mut['q_xx_final']:.3f} | T1={pcp_mut['n_t1']} | Λ_AP/Λ_PD={pcp_mut['tension_anisotropy_ratio']:.2f}",
+    )
+    sm = matplotlib.cm.ScalarMappable(cmap=tension_cmap, norm=matplotlib.colors.Normalize(t_lo, t_hi))
+    cax = axes[2, 1].inset_axes([0.03, 0.04, 0.45, 0.035])
+    cb = fig.colorbar(sm, cax=cax, orientation="horizontal")
+    cb.set_label("Bond tension Λ_ab = Λ̄(1 + ε_PCP a_ab)", fontsize=6.5, labelpad=1)
+    cb.ax.tick_params(labelsize=5.8, pad=1)
+
+    # C3: Etournay et al. (2015) shear decomposition time course
+    ax_c3 = axes[2, 2]
+    ref_q_peak = float(pcp_ref.get("cell_elongation_peak_Q", {}).get("value", 0.25))
+    ref_rearr = float(pcp_ref.get("rearrangement_shear_fraction_end", {}).get("value", 0.5))
+    ax_c3.plot(pcp_wt["t"], pcp_wt["shear_total"], color="#0f172a", lw=2.0, label="Imposed PD tissue shear ln λ(t)")
+    ax_c3.plot(pcp_wt["t"], pcp_wt["shear_elongation"], color="#16a34a", lw=2.0, label=f"Cell elongation Δ⟨Q_xx⟩ (ε={eps_pcp:.1f})")
+    ax_c3.plot(pcp_wt["t"], pcp_wt["shear_residual"], color="#ea580c", lw=2.0, label="Rearrangement (T1) shear residual")
+    ax_c3.plot(pcp_mut["t"], pcp_mut["shear_elongation"], color="#16a34a", lw=1.3, ls="--", label="Cell elongation, ε=0 control")
+    ax_c3.plot(pcp_mut["t"], pcp_mut["shear_residual"], color="#ea580c", lw=1.3, ls="--", label="T1 residual, ε=0 control")
+    ax_c3.axhline(ref_q_peak, color="#16a34a", ls=":", lw=1.1, label=f"Etournay 2015 Fig. 3 peak |Q| ≈ {ref_q_peak:.2f} (approx.)")
+    ax_c3.axhline(ref_rearr * hinge_log_strain, color="#ea580c", ls=":", lw=1.1, label=f"Etournay 2015 ≈{ref_rearr:.0%} of shear from T1 (approx.)")
+    ax_c3b = ax_c3.twinx()
+    ax_c3b.step(pcp_wt["t"], pcp_wt["t1_cum"], color="#7c3aed", lw=1.2, where="post", alpha=0.8)
+    ax_c3b.step(pcp_mut["t"], pcp_mut["t1_cum"], color="#7c3aed", lw=1.0, ls="--", where="post", alpha=0.7)
+    ax_c3b.set_ylabel("Cumulative T1 count (purple)", fontsize=7.5, color="#7c3aed")
+    ax_c3b.tick_params(labelsize=6.5, colors="#7c3aed")
+    ax_c3.set_title("C3. Tissue Shear Decomposition (Etournay 2015)", fontsize=9.0, fontweight="bold")
+    ax_c3.set_xlabel("Time (vertex-model units, hinge ramp = first half)", fontsize=8.0)
+    ax_c3.set_ylabel("PD shear component (xx)", fontsize=8.5)
+    ax_c3.legend(fontsize=5.6, loc="upper left")
+    ax_c3.grid(alpha=0.25)
+
+    # C4: Fz/Stbm bond-asymmetry tensor contraction vs bond-normal angle (nematic cos 2θ law)
+    ax_c4 = axes[2, 3]
+    th_deg = np.degrees(pcp_wt["bond_theta_n"])
+    sc = ax_c4.scatter(th_deg, pcp_wt["bond_asymmetry"], c=pcp_wt["bond_tension"], cmap=tension_cmap,
+                       vmin=t_lo, vmax=t_hi, s=9, alpha=0.85, label="Bonds a_ab = n·Q_ab·n")
+    th_fit = np.linspace(-180, 180, 361)
+    cf = pcp_wt["bond_fit_coef"]
+    ax_c4.plot(th_fit, cf[0] * np.cos(2 * np.radians(th_fit)) + cf[1] * np.sin(2 * np.radians(th_fit)) + cf[2],
+               color="#0f172a", lw=1.6, label=f"Nematic fit: {cf[0]:.2f}cos2θ+{cf[1]:.2f}sin2θ+{cf[2]:.3f}")
+    ax_c4.plot(th_fit, np.cos(2 * np.radians(th_fit)), color="#be123c", ls="--", lw=1.1, label="Uniform PCP: cos 2θ_n (Lean thm)")
+    ax_c4.axhline(0.0, color="#64748b", lw=0.8)
+    ax_c4.set_title("C4. Fz/Stbm Bond-Asymmetry Tensor a_ab(θ_n)", fontsize=9.0, fontweight="bold")
+    ax_c4.set_xlabel("Bond outward-normal angle θ_n to PD axis (deg)", fontsize=8.0)
+    ax_c4.set_ylabel("Asymmetry a_ab = 2c_ab − 1 ∈ [−1, 1]", fontsize=8.0)
+    ax_c4.set_xticks([-180, -90, 0, 90, 180])
+    ax_c4.legend(fontsize=6.0, loc="lower left")
+    ax_c4.grid(alpha=0.25)
+
+    # C5: eps_pcp ablation / sweep
+    ax_c5 = axes[2, 4]
+    e_vals = [s["eps_pcp"] for s in pcp_sweep]
+    ax_c5.plot(e_vals, [s["P6"] for s in pcp_sweep], "o-", color="#16a34a", lw=2.0, label="Final P(6) (interior)")
+    ax_c5.plot(e_vals, [s["q_mag_peak"] for s in pcp_sweep], "s--", color="#0284c7", lw=1.8, label="Peak cell elongation ⟨|Q|⟩")
+    ax_c5.plot(e_vals, [s["q_xx_final"] for s in pcp_sweep], "d-.", color="#0369a1", lw=1.5, label="Final ⟨Q_xx⟩ (residual elongation)")
+    ax_c5.plot(e_vals, [s["rearrangement_fraction"] for s in pcp_sweep], "^:", color="#ea580c", lw=1.8, label="T1 share of tissue shear")
+    ax_c5.plot(e_vals, [s["n_t1"] / 50.0 for s in pcp_sweep], "v-", color="#7c3aed", lw=1.4, label="T1 count / 50")
+    ref_p6_wt = float(pcp_ref.get("classen_2005_pupal_P6", {}).get("wild_type", 0.78))
+    ref_p6_mut = float(pcp_ref.get("classen_2005_pupal_P6", {}).get("pcp_mutant", 0.60))
+    ax_c5.axhline(ref_p6_wt, color="#16a34a", ls=":", lw=1.1, label=f"Classen 2005 WT P(6) ≈ {ref_p6_wt:.2f}")
+    ax_c5.axhline(ref_p6_mut, color="#991b1b", ls=":", lw=1.1, label=f"Classen 2005 PCP⁻ P(6) ≈ {ref_p6_mut:.2f}")
+    ax_c5.axvline(0.0, color="#991b1b", lw=1.0, alpha=0.6)
+    ax_c5.axvline(eps_pcp, color="#be123c", ls="--", lw=1.0)
+    ax_c5.set_title("C5. PCP Coupling ε_PCP Sweep / fz⁻ Ablation", fontsize=9.0, fontweight="bold")
+    ax_c5.set_xlabel("PCP bond-asymmetry coupling ε_PCP (0 = PCP mutant)", fontsize=8.0)
+    ax_c5.set_ylabel("Order / elongation / shear share", fontsize=8.5)
+    ax_c5.legend(fontsize=5.8, loc="upper right")
+    ax_c5.grid(alpha=0.25)
+
+    fig.suptitle(
+        "Farhadifar et al. (2007) Drosophila Wing Disc Apical Vertex Model, Phase Diagram, Lewis's Law, Epithelial Packing "
+        "& PCP (Fz/Stbm) Hinge-Contraction Vertex Dynamics",
+        fontsize=13.0,
+        fontweight="bold",
+        y=0.985,
+    )
+    fig.tight_layout(rect=(0, 0, 1, 0.96))
     fig.savefig(COMPARISON_PNG, dpi=150, facecolor="white")
     plt.close(fig)
 
-    # Render side-by-side animated GIF (Proliferating Larval Wing Disc vs Post-Mitotic Pupal Annealing vs Soft Case II)
+    # Render animated GIF (Proliferating Larval Wing Disc vs Post-Mitotic Pupal Annealing vs Soft Case II
+    # vs Pass 3 PCP explicit vertex model under hinge contraction)
     pil_frames: list[Image.Image] = []
     f_wing = regimes["wing_disc_proliferating"]["frames"]
     f_pupal = regimes["pupal_wing_annealed"]["frames"]
     f_soft = regimes["soft_network_case2"]["frames"]
-    n_f = min(len(f_wing), len(f_pupal), len(f_soft))
+    f_pcp = pcp_wt["frames"]
+    n_f = min(len(f_wing), len(f_pupal), len(f_soft), len(f_pcp))
 
     for idx in range(n_f):
         polys_w, sides_w, step_val = f_wing[idx]
         polys_p, sides_p, _ = f_pupal[idx]
         polys_s, sides_s, _ = f_soft[idx]
+        fr_pcp = f_pcp[idx]
 
-        fig_g, axes_g = plt.subplots(1, 3, figsize=(10.2, 3.6), dpi=100)
+        fig_g, axes_g = plt.subplots(1, 4, figsize=(13.6, 3.6), dpi=100)
         for ax_i, p_list, s_list, lbl in [
             (
                 axes_g[0],
@@ -926,8 +1668,24 @@ def run_all_regimes_and_render(
             ax_i.set_xticks([])
             ax_i.set_yticks([])
 
+        ax_4 = axes_g[3]
+        for poly, n_s in zip(fr_pcp["polys"], fr_pcp["sides"]):
+            ax_4.fill(poly[:, 0], poly[:, 1], facecolor=poly_cmap.get(int(n_s), "#94a3b8"),
+                      edgecolor="#0f172a", lw=0.75, alpha=0.88)
+        ax_4.quiver(fr_pcp["centroids"][:, 0], fr_pcp["centroids"][:, 1],
+                    np.cos(fr_pcp["phi"]), np.sin(fr_pcp["phi"]), color="#0f172a", scale=24, width=0.006)
+        ax_4.set_xlim(5.0 - 4.2 * np.exp(hinge_log_strain), 5.0 + 4.2 * np.exp(hinge_log_strain))
+        ax_4.set_ylim(5.0 - 4.2, 5.0 + 4.2)
+        ax_4.set_aspect("equal")
+        ax_4.set_title(
+            f"PCP + Hinge Contraction (λ={fr_pcp['lam']:.2f}, P6={np.mean(fr_pcp['sides'] == 6):.2f})",
+            fontsize=8.0, fontweight="bold",
+        )
+        ax_4.set_xticks([])
+        ax_4.set_yticks([])
+
         fig_g.suptitle(
-            "Farhadifar et al. (2007) Drosophila Wing Epithelial Vertex Packing Dynamics",
+            "Farhadifar et al. (2007) Drosophila Wing Epithelial Vertex Packing Dynamics & PCP Hinge-Contraction Vertex Model",
             fontsize=10.0,
             fontweight="bold",
         )
@@ -952,11 +1710,14 @@ def run_all_regimes_and_render(
         "recoil_wing": recoil_wing,
         "r_wing_dist": r_wing_dist,
         "r_pupal_dist": r_pupal_dist,
+        "pcp_wt": pcp_wt,
+        "pcp_mut": pcp_mut,
+        "pcp_sweep": pcp_sweep,
     }
 
 
 # =============================================================================
-# Section 5: MorphoEval Dynamic Measurement Hook & 8-Check Self-Test Suite
+# Section 5: MorphoEval Dynamic Measurement Hook (14 measurements) & 14-Check Self-Test Suite
 # =============================================================================
 
 def measure_morphoeval() -> list[dict[str, Any]]:
@@ -966,10 +1727,63 @@ def measure_morphoeval() -> list[dict[str, Any]]:
     pupal = simulate_vertex_regime(Lambda_bar=0.12, Gamma_bar=0.04, proliferating=False, n_steps=36, seed=2007)
     specimen = segment_epithelial_specimen(ref_data, sim_wing=wing)
     recoil = simulate_laser_ablation_recoil(Lambda_bar=0.12, Gamma_bar=0.04)
+    pcp_wt = simulate_pcp_hinge_contraction(eps_pcp=0.5, hinge_log_strain=0.35, seed=2007)
+    pcp_mut = simulate_pcp_hinge_contraction(eps_pcp=0.0, hinge_log_strain=0.35, seed=2007)
+    pcp_ref = ref_data.get("pcp_hinge_contraction_reference", {})
 
     ns = np.arange(4, 10)
     w_ref = specimen["p_ref_wing"]
     r_wing_pn = float(stats.pearsonr(wing["p_vec"], w_ref).statistic)
+
+    ref_q_peak = float(pcp_ref.get("cell_elongation_peak_Q", {}).get("value", 0.25))
+    ref_rearr = float(pcp_ref.get("rearrangement_shear_fraction_end", {}).get("value", 0.5))
+    ref_p6_wt = float(pcp_ref.get("classen_2005_pupal_P6", {}).get("wild_type", 0.78))
+    ref_p6_mut = float(pcp_ref.get("classen_2005_pupal_P6", {}).get("pcp_mutant", 0.60))
+
+    pcp_measurements = [
+        {
+            "name": "pcp_hinge_cell_elongation_peak_Q",
+            "value": round(pcp_wt["q_mag_peak"], 4),
+            "unit": "half_log_aspect_ratio",
+            "reference_value": ref_q_peak,
+            "method": f"Peak tissue-mean cell-elongation magnitude <|Q|> = <1/2 ln(a/b)> in the PCP explicit vertex model (eps_pcp=0.5, PD log-strain 0.35, {pcp_wt['n_t1']} T1s); reference is the approximate Etournay et al. (2015) eLife Fig. 3 blade cell-elongation peak (~22 hAPF), read from the figure and not verified online in Pass 3",
+        },
+        {
+            "name": "pcp_hinge_rearrangement_shear_fraction",
+            "value": round(pcp_wt["rearrangement_fraction"], 4),
+            "unit": "fraction",
+            "reference_value": ref_rearr,
+            "method": f"Share of the imposed PD tissue shear ln(lambda)={pcp_wt['shear_total'][-1]:.3f} carried by the rearrangement residual (total - cell-elongation change) at the end of the run (Etournay et al. 2015 shear decomposition; ~half of blade shear attributed to T1s, approximate)",
+        },
+        {
+            "name": "pcp_oriented_T1_fraction",
+            "value": round(pcp_wt["oriented_t1_fraction"], 4) if np.isfinite(pcp_wt["oriented_t1_fraction"]) else None,
+            "unit": "fraction",
+            "reference_value": 0.5,
+            "method": f"Fraction of the {pcp_wt['n_t1']} T1 events whose collapsing junction lay within 45 deg of the AP axis (PD-elongating orientation); reference 0.5 is the isotropic null (Aigouy et al. 2010 report PD-oriented rearrangements; no numeric value vendored)",
+        },
+        {
+            "name": "pcp_wt_minus_mutant_hexagonal_fraction_delta",
+            "value": round(pcp_wt["P6"] - pcp_mut["P6"], 4),
+            "unit": "fraction",
+            "reference_value": round(ref_p6_wt - ref_p6_mut, 4),
+            "method": f"P(6)(eps_pcp=0.5) - P(6)(eps_pcp=0) = {pcp_wt['P6']:.3f} - {pcp_mut['P6']:.3f} over interior cells after hinge contraction; reference is the approximate Classen et al. (2005) wild-type minus PCP-mutant pupal hexagon-fraction difference (sign mismatch is disclosed in the audit)",
+        },
+        {
+            "name": "pcp_nematic_order_parameter_final",
+            "value": round(float(pcp_wt["pcp_nematic_order"][-1]), 4),
+            "unit": "order_parameter",
+            "reference_value": 0.9,
+            "method": f"Final PCP nematic order |<exp(2i phi)>| of the Fz/Stbm polarity field (initial sigma_phi=0.6 rad, polar order {pcp_wt['pcp_polar_order'][-1]:.3f}, mean axis {np.degrees(pcp_wt['pcp_mean_angle'][-1]):.1f} deg from PD); reference 0.9 is a qualitative stand-in for the uniform PD alignment reported by Aigouy et al. (2010) at ~32 hAPF",
+        },
+        {
+            "name": "pcp_bond_tensor_isotropic_residual",
+            "value": round(float(pcp_wt["bond_fit_coef"][2]), 4),
+            "unit": "asymmetry",
+            "reference_value": 0.0,
+            "method": f"Constant term of the least-squares nematic fit a_ab = {pcp_wt['bond_fit_coef'][0]:.3f} cos2theta + {pcp_wt['bond_fit_coef'][1]:.3f} sin2theta + c0 over {len(pcp_wt['bond_asymmetry'])} interior bonds; the Lean theorem pcp_bond_tensor_traceless_and_perpendicular_cancellation forces c0 = 0 for uniform polarity (tension anisotropy Lambda_AP/Lambda_PD = {pcp_wt['tension_anisotropy_ratio']:.3f})",
+        },
+    ]
 
     return [
         {
@@ -1028,14 +1842,14 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "reference_value": 0.22,
             "method": "Initial adherens-junction UV laser ablation recoil velocity v_0 at canonical wing disc parameters (Lambda_bar=0.12, Gamma_bar=0.04; Farhadifar et al. 2007 Fig. 4E)",
         },
-    ]
+    ] + pcp_measurements
 
 
 def self_test() -> None:
-    """Run comprehensive 8-check verification suite for Slot 043."""
+    """Run comprehensive 14-check verification suite for Slot 043 (8 Pass 2 + 6 Pass 3 checks)."""
     # 1. Verify SHA-256 of reference dataset and biological specimen micrograph
     ref = verify_reference_dataset()
-    assert len(ref["metadata"]["sources"]) == 5
+    assert len(ref["metadata"]["sources"]) == 8
 
     # 2. Verify Farhadifar et al. (2007) Eq. (1) area-energy zero equilibrium (Lean Theorem 1)
     e_at_a0 = compute_single_cell_vertex_energy(area=1.0, perimeter=C6_HEX, K=1.0, A0=1.0, Lambda_bar=0.12, Gamma_bar=0.04)
@@ -1075,13 +1889,87 @@ def self_test() -> None:
     assert np.array_equal(wing_a["sides"], wing_b["sides"])
     assert np.allclose(wing_a["areas"], wing_b["areas"])
 
-    # 8. Verify measure_morphoeval contract
+    # 8. Verify measure_morphoeval contract (8 Pass 2 + 6 Pass 3 measurements)
     meas = measure_morphoeval()
-    assert len(meas) == 8 and all(m["value"] is not None for m in meas)
+    assert len(meas) == 14 and all(m["value"] is not None for m in meas)
+    assert all("reference_value" in m and "unit" in m for m in meas)
+
+    # ---- Pass 3 checks: PCP Fz/Stbm bond-asymmetry tensor + hinge-contraction vertex model ----
+    # 9. Explicit vertex mesh: every interior vertex is tri-cellular and the Euler mean side number is 6
+    rng = np.random.default_rng(7)
+    seeds = (np.array([[x, y] for y in np.arange(0.5, 10, 1.0) for x in np.arange(0.5, 10, 1.0)])
+             + rng.normal(0, 0.2, size=(100, 2))) % 10.0
+    mesh = build_vertex_mesh_from_seeds(seeds)
+    inc = np.zeros(len(mesh["pos"]), dtype=int)
+    for ring in mesh["cells"]:
+        for v in ring:
+            inc[v] += 1
+    assert np.all(inc[~mesh["boundary"]] == 3), "interior vertices must be 3-valent"
+    assert all(_signed_area(mesh["pos"][r]) > 0 for r in mesh["cells"]), "cell rings must be CCW"
+    mean_sides_mesh = np.mean([len(r) for r in mesh["cells"]])
+    assert 5.5 <= mean_sides_mesh <= 6.5, f"Euler mean side number {mean_sides_mesh}"
+
+    # 10. Analytic vertex forces are -dE/dr (finite-difference check on 6 random interior vertices)
+    arr = _cell_arrays(mesh["cells"])
+    tens = np.full(arr["idx"].shape, 0.12)
+    forces, e0, _, _ = vertex_forces_and_energy(mesh["pos"], arr, tens, Gamma_bar=0.04)
+    interior_v = np.where(~mesh["boundary"])[0]
+    h = 1e-6
+    for v in interior_v[:6]:
+        for d in range(2):
+            p_plus = mesh["pos"].copy()
+            p_plus[v, d] += h
+            p_minus = mesh["pos"].copy()
+            p_minus[v, d] -= h
+            e_plus = vertex_forces_and_energy(p_plus, arr, tens, Gamma_bar=0.04)[1]
+            e_minus = vertex_forces_and_energy(p_minus, arr, tens, Gamma_bar=0.04)[1]
+            fd = -(e_plus - e_minus) / (2 * h)
+            assert abs(fd - forces[v, d]) < 1e-5 * max(1.0, abs(fd)), f"force mismatch at v={v}: {fd} vs {forces[v, d]}"
+
+    # 11. PCP tensor identities: uniform PD polarity gives a_ab = cos 2theta_n exactly, tension bounded,
+    #     and perpendicular bond normals carry opposite asymmetry (Lean theorem)
+    phi_uniform = np.zeros(len(mesh["cells"]))
+    pcp = pcp_bond_asymmetry(mesh["pos"], arr, phi_uniform)
+    mask_b = arr["valid"] & (arr["nb"] >= 0)
+    assert np.allclose(pcp["a_ab"][mask_b], np.cos(2 * pcp["theta_n"][mask_b]), atol=1e-9)
+    assert np.all(pcp["c_ab"][mask_b] >= 0) and np.all(pcp["c_ab"][mask_b] <= 1 + 1e-12)
+    th_test = np.linspace(-np.pi, np.pi, 37)
+    assert np.allclose(np.cos(2 * th_test) + np.cos(2 * (th_test + np.pi / 2)), 0.0, atol=1e-12)
+    tens_pcp = 0.12 * (1 + 0.5 * pcp["a_ab"])
+    assert np.all(tens_pcp[mask_b] >= 0.12 * 0.5 - 1e-12) and np.all(tens_pcp[mask_b] <= 0.12 * 1.5 + 1e-12)
+
+    # 12. Hinge contraction elongates cells along PD; PCP coupling monotonically raises the T1 share
+    #     of tissue shear and lowers residual elongation (eps = 0 is the PCP-mutant control)
+    pcp_wt = simulate_pcp_hinge_contraction(eps_pcp=0.5, hinge_log_strain=0.35, n_steps=500, seed=2007)
+    pcp_mut = simulate_pcp_hinge_contraction(eps_pcp=0.0, hinge_log_strain=0.35, n_steps=500, seed=2007)
+    assert abs(pcp_wt["lambda_final"] - np.exp(0.35)) < 1e-9
+    assert pcp_wt["q_xx_peak"] > 0.10 and pcp_mut["q_xx_peak"] > 0.10
+    assert pcp_wt["n_t1"] > pcp_mut["n_t1"], f"PCP should increase oriented T1s ({pcp_wt['n_t1']} vs {pcp_mut['n_t1']})"
+    assert pcp_wt["q_xx_final"] < pcp_mut["q_xx_final"]
+    assert pcp_wt["rearrangement_fraction"] > pcp_mut["rearrangement_fraction"]
+    assert pcp_wt["oriented_t1_fraction"] >= 0.75
+    assert pcp_wt["tension_anisotropy_ratio"] > 1.5 and abs(pcp_mut["tension_anisotropy_ratio"] - 1.0) < 1e-9
+    assert np.all(np.isfinite(pcp_wt["pos"]))
+
+    # 13. T1 bookkeeping: side-sum conservation (5+7 = 6+6), 3-valence and ring validity after T1s
+    inc2: dict[int, int] = {}
+    for ring in pcp_wt["cells"]:
+        assert len(ring) >= 3 and len(set(ring)) == len(ring)
+        for v in ring:
+            inc2[v] = inc2.get(v, 0) + 1
+    assert all(inc2[v] == 3 for v in range(len(pcp_wt["pos"])) if not pcp_wt["boundary"][v])
+    assert abs(pcp_wt["mean_n"] - 6.0) < 0.15, f"mean interior side number {pcp_wt['mean_n']}"
+    assert pcp_wt["energy_prerelax"][-1] < pcp_wt["energy_prerelax"][0]
+
+    # 14. Two-run bitwise determinism of the PCP vertex model
+    pcp_b = simulate_pcp_hinge_contraction(eps_pcp=0.5, hinge_log_strain=0.35, n_steps=500, seed=2007)
+    assert np.array_equal(pcp_wt["sides"], pcp_b["sides"]) and np.array_equal(pcp_wt["pos"], pcp_b["pos"])
+
     print(
-        f"[self-test] All 8 Pass 2 checks passed "
+        f"[self-test] All 14 checks passed (8 Pass 2 + 6 Pass 3) "
         f"(wing_P6={wing['P6']:.3f}, pupal_P6={pupal['P6']:.3f}, "
-        f"spec_r={spec['r_pn_vs_farhadifar_ref']:.3f}, lewis_r={wing['lewis_pearson_r']:.3f})."
+        f"spec_r={spec['r_pn_vs_farhadifar_ref']:.3f}, lewis_r={wing['lewis_pearson_r']:.3f}, "
+        f"pcp_T1={pcp_wt['n_t1']} vs mutant {pcp_mut['n_t1']}, pcp_Qpeak={pcp_wt['q_mag_peak']:.3f})."
     )
 
 
@@ -1114,9 +2002,21 @@ def main() -> int:
         help="Deterministic RNG seed",
     )
     ap.add_argument(
+        "--pcp-epsilon",
+        type=float,
+        default=0.5,
+        help="PCP Fz/Stbm bond-asymmetry coupling eps_pcp in Lambda_ab = Lambda_bar (1 + eps_pcp a_ab); 0 = PCP mutant",
+    )
+    ap.add_argument(
+        "--hinge-strain",
+        type=float,
+        default=0.35,
+        help="Cumulative PD log-strain ln(lambda_max) imposed on the blade margin by pupal hinge contraction",
+    )
+    ap.add_argument(
         "--self-test",
         action="store_true",
-        help="Run 8-check verification suite and exit",
+        help="Run 14-check verification suite and exit",
     )
     args = ap.parse_args()
 
@@ -1129,17 +2029,26 @@ def main() -> int:
         Gamma_bar=args.gamma_bar,
         n_steps=args.steps,
         seed=args.seed,
+        eps_pcp=args.pcp_epsilon,
+        hinge_log_strain=args.hinge_strain,
     )
     w_s = out["regimes"]["wing_disc_proliferating"]
     p_s = out["regimes"]["pupal_wing_annealed"]
     sp = out["specimen"]
+    pw = out["pcp_wt"]
+    pm = out["pcp_mut"]
     print(
-        f"[2007-farhadifar-drosophila-wing-vertex-model] Rendered Pass 2 outputs:\n"
+        f"[2007-farhadifar-drosophila-wing-vertex-model] Rendered Pass 3 outputs:\n"
         f"  - Comparison PNG : {COMPARISON_PNG}\n"
         f"  - Growth GIF     : {GROWTH_GIF}\n"
         f"  - Wing Disc P(6) : {w_s['P6']:.4f} (r={out['r_wing_dist']:.4f}, Lewis r={w_s['lewis_pearson_r']:.4f})\n"
         f"  - Pupal Wing P(6): {p_s['P6']:.4f} (mu2={p_s['mu2']:.4f} vs larval mu2={w_s['mu2']:.4f})\n"
-        f"  - Specimen P(6)  : {sp['P6_specimen']:.4f} (N={sp['n_segmented_cells']} cells, r={sp['r_pn_vs_farhadifar_ref']:.4f})"
+        f"  - Specimen P(6)  : {sp['P6_specimen']:.4f} (N={sp['n_segmented_cells']} cells, r={sp['r_pn_vs_farhadifar_ref']:.4f})\n"
+        f"  - PCP vertex WT  : eps={args.pcp_epsilon:.2f} P(6)={pw['P6']:.3f} <|Q|>peak={pw['q_mag_peak']:.3f} "
+        f"<Q_xx>final={pw['q_xx_final']:.3f} T1={pw['n_t1']} (oriented {pw['oriented_t1_fraction']:.2f}) "
+        f"T1 shear share={pw['rearrangement_fraction']:.3f} Lambda_AP/Lambda_PD={pw['tension_anisotropy_ratio']:.2f}\n"
+        f"  - PCP mutant ctrl: eps=0.00 P(6)={pm['P6']:.3f} <|Q|>peak={pm['q_mag_peak']:.3f} "
+        f"<Q_xx>final={pm['q_xx_final']:.3f} T1={pm['n_t1']} T1 shear share={pm['rearrangement_fraction']:.3f}"
     )
     return 0
 

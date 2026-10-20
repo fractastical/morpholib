@@ -92,4 +92,61 @@ theorem menshykau_gdnf_ret_agenesis_and_spry1_budding (rho_G gamma_wt d_gamma : 
   simp [h0]
   omega
 
+-- ============================================================================
+-- Law 4 (`menshykau-gdnf-ret-ureteric-kidney-4`, Pass 3):
+-- Moving-Boundary Confinement of Ureteric Tips Under the Expanding Renal Capsule
+-- ============================================================================
+/-- Pass 3 reduced phase-field capsule model (`_confine_to_capsule` in
+    `2014-menshykau-gdnf-ret-ureteric-kidney.py`): a tip whose proposed radial
+    position `r` (distance from the capsule centre) would exceed `R_cap - margin` is
+    projected back onto that sphere, otherwise it is left untouched. The theorem shows
+    the confinement map is (a) a no-op strictly inside the capsule and (b) always keeps
+    the tip at least `margin` inside the capsule radius `R_cap` (for `margin ≤ R_cap`),
+    i.e. ureteric tips can never leave the renal capsule (Short et al. 2014 Figs. 1 & 4:
+    all tips reside in the peripheral nephrogenic zone). -/
+def capsule_confine (r R_cap margin : Nat) : Nat :=
+  if r + margin ≤ R_cap then r else R_cap - margin
+
+theorem menshykau_capsule_confinement_bound (r R_cap margin : Nat) (h : margin ≤ R_cap) :
+    capsule_confine r R_cap margin + margin ≤ R_cap ∧
+    (r + margin ≤ R_cap → capsule_confine r R_cap margin = r) := by
+  unfold capsule_confine
+  constructor
+  · split <;> omega
+  · intro hr
+    simp [hr]
+
+-- ============================================================================
+-- Law 5 (`menshykau-gdnf-ret-ureteric-kidney-5`, Pass 3):
+-- GDNF-Gated Branching Is Monotonically Switched Off by Tip Crowding
+-- ============================================================================
+/-- In the diffuse-domain nephrogenic-zone field, RET-mediated uptake by `n` tips
+    depletes local GDNF roughly as `G_tip = rho / (1 + kappa * n)`; a tip branches only
+    if `G_tip ≥ G_th`, i.e. `G_th * (1 + kappa * n) ≤ rho` (cleared of the division).
+    The theorem proves that this gate is monotone in the crowding number `n`: if a tip
+    still branches with `n + 1` neighbours it also branches with `n`, so crowding can
+    only ever arrest branching (never re-enable it), that an un-gated tip (`G_th = 0`)
+    always branches, and that once `rho < G_th * (1 + kappa * n)` the tip arrests. -/
+def nz_tip_branches (rho kappa n G_th : Nat) : Bool :=
+  decide (G_th * (1 + kappa * n) ≤ rho)
+
+theorem menshykau_capsule_crowding_arrest_monotone (rho kappa n G_th : Nat) :
+    (nz_tip_branches rho kappa (n + 1) G_th = true → nz_tip_branches rho kappa n G_th = true) ∧
+    nz_tip_branches rho kappa n 0 = true ∧
+    (rho < G_th * (1 + kappa * n) → nz_tip_branches rho kappa n G_th = false) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro h
+    unfold nz_tip_branches at *
+    have hk : kappa * n ≤ kappa * (n + 1) := Nat.mul_le_mul_left kappa (Nat.le_succ n)
+    have h1 : G_th * (1 + kappa * n) ≤ G_th * (1 + kappa * (n + 1)) :=
+      Nat.mul_le_mul_left G_th (by omega)
+    simp only [decide_eq_true_eq] at *
+    exact Nat.le_trans h1 h
+  · unfold nz_tip_branches
+    simp
+  · intro h
+    unfold nz_tip_branches
+    simp only [decide_eq_false_iff_not]
+    omega
+
 end MathOfBiology.Loop_055

@@ -1,0 +1,333 @@
+# MorphoEval audit — Tozluoglu et al. (2019) Dev. Cell & Sui et al. (2018) Nat. Commun. Drosophila Wing Disc Dome & Hinge Folding, 2026-10-19 (v3)
+#
+# Pass 3 (v3) re-score of `2020-tozluoglu-wing-disc-dome-folding.py` (1900 lines, script v3) after the Pass 3
+# remediation round in the instrumented loop `morphoeval/runs/2026-10-19-wing-disc-dome-folding-loop-pass3`,
+# superseding `2026-10-19-wing-disc-dome-folding-audit-v2` (93.7).
+#   - Primary assessor: Claude Fable 5.1 (Phase B assessor subagent; scored from the Phase A handoff note, the
+#     `git diff` of the script and Lean file, a fresh `--self-test` run (10/10 PASSED, 11.9 s) and a fresh
+#     `lean` check (exit 0, 0 sorrys) against the CURRENT working-tree file at commit 028758bc).
+#
+# What Pass 3 changed (the single open v2 remediation item):
+#   1. v2 item "extend the 2D sagittal bilayer to a full 3D FEM coupling the disc proper (DP) to the squamous
+#      peripodial epithelium (PE) and lumenal hydrostatic pressure" — closed in REDUCED form, residual carried.
+#      No 3D FEM. A quasi-1D plane-strain three-compartment sac was added: neo-Hookean BM shell tension
+#      (`compute_disc_proper_shell_tension`, L521-534), shallow-cap Laplace dome deflection
+#      (`compute_laplace_dome_deflection`, L536-547), PE as a tensioned membrane T_PE z'' = -p clamped at the
+#      margins and in unilateral contact with the DP via L-BFGS-B box bounds (`_solve_peripodial_membrane`,
+#      L550-590), lumen pressure closed by bisection on a prescribed fluid volume or imposed directly
+#      (`solve_coupled_disc_peripodial_lumen`, L592-742), an imposed-pressure sweep 0-800 Pa
+#      (`evaluate_lumen_pressure_sweep`, L745-791), a 6th perturbation `peripodial_ablation` (L921-936,
+#      prediction only), 6 new CLI flags (L1861-1866), a new provenance-tagged dataset file
+#      `peripodial_lumen_reference.json` (SHA-256 pinned), a new sweep figure, 5 new measurements (13 total),
+#      self-test 8 -> 10 checks, and 2 new Lean 4 theorems (Law 4).
+#   Results at 96 h WT (volume mode): p = 0.62 Pa, dome 53.91 um (uncoupled 53.98; ref 54.0), d_HH 19.65 um
+#   (ref 19.4), fold-locus shift 0.000 across the sweep, p_half = 372.5 Pa (prediction).
+#
+# Why the overall score goes DOWN (93.7 -> ~86): the Pass 3 work is honest and well-tagged, but reading the
+# solver closely for this round exposed defects that the v1/v2 audits did not penalise:
+#   (a) the "relaxed" bilayer surface is tethered (k_tether = 1.0, L414) to a hand-built target shape whose dome
+#       envelope (L354-368), stage scaling (L371-374) and Gaussian cleft depths 15.35/19.95/16.75 um x fitted
+#       multipliers (L383-394) are tuned to the reference table, so dome r = 0.998 and 15-fold r = 0.995 are
+#       largely prescribed, not emergent from g(s);
+#   (b) `c_finite = 8.395` (L208) is calibrated to hit the 0.0128 um^-1 reference curvature;
+#   (c) the 7-zone curvature r = 1.0000 compares hard-coded zone values (0.0148/0.0151, 0.0042, -0.0020*depth,
+#       L879-885) with the reference, i.e. it is copied, not computed;
+#   (d) the uniform-growth positional SD discards the 12 solved replicates and samples U(0.18, 0.68) (L970), and
+#       the WT pinned SD is drawn with the reference SD as generating sigma (L975);
+#   (e) the specimen fold loci are found inside narrow windows with an explicit pull toward s = 0.39 (L1061-1072).
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale. Line numbers refer to the
+# working-tree files at commit 028758bc (uncommitted Pass 3 edits included).
+
+audit:
+  id: 2026-10-19-wing-disc-dome-folding-audit-v3
+  supersedes: 2026-10-19-wing-disc-dome-folding-audit-v2
+  supersedes_audit_id: 2026-10-19-wing-disc-dome-folding-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 049 Pass 3 Phase B Assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/49
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 028758bc
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) evaluation of `2020-tozluoglu-wing-disc-dome-folding.py` after the Pass 3 remediation
+      in `2026-10-19-wing-disc-dome-folding-loop-pass3` (Phase A: builder; Phase B: this audit). Working
+      tree at 028758bc with the uncommitted Pass 3 edits; `--self-test` PASSED all 10 checks; `lean`
+      exit 0 with 0 sorrys; `*.png` is gitignored so the regenerated PNGs do not appear in `git status`.
+
+references:
+  tozluoglu2019:
+    title: "Planar Differential Growth Rates Initiate Precise Fold Positions in Complex Epithelia"
+    authors: "Tozluoglu M, Duda M, Kirkland NJ, Barrientos R, Burden JJ, Munoz JJ, Mao Y"
+    venue: "Developmental Cell 51(3):299-312.e4 (2019)"
+    doi: 10.1016/j.devcel.2019.09.009
+  sui2018:
+    title: "Differential lateral and basal tension drive folding of Drosophila wing discs through two distinct mechanisms"
+    authors: "Sui L, Alt S, Weigert M, Dye N, Eaton S, Julicher F, Dahmann C"
+    venue: "Nature Communications 9:4620 (2018)"
+    doi: 10.1038/s41467-018-06497-3
+  villafombuena2021:
+    title: "Live imaging of the Drosophila wing disc reveals the dynamics of fold formation and the role of the extracellular matrix"
+    authors: "Villa-Fombuena G, Martin-Bermudo MD et al."
+    venue: "Development 148(19):dev199728 (2021)"
+    doi: 10.1242/dev.199728
+  nelson2016:
+    title: "On buckling morphogenesis"
+    authors: "Nelson CM"
+    venue: "Journal of Biomechanical Engineering 138(2):021005 (2016)"
+    doi: 10.1115/1.4032128
+  mcclure2005:
+    title: "Developmental analysis and squamous morphogenesis of the peripodial epithelium in Drosophila imaginal discs"
+    authors: "McClure KD, Schubiger G"
+    venue: "Development 132(22):5033-5042 (2005)"
+    doi: 10.1242/dev.02092
+  mosaliganti2019:
+    title: "Size control of the inner ear via hydraulic feedback"
+    authors: "Mosaliganti KR, Swinburne IA, Chan CU, Obholzer ND, Green AA, Tanksale S, Mahadevan L, Megason SG"
+    venue: "eLife 8:e39596 (2019)"
+    doi: 10.7554/eLife.39596
+
+simulations:
+  - id: tozluoglu-wing-disc-dome-folding
+    name: "Tozluoglu et al. (2019) Dev. Cell & Sui et al. (2018) Nat. Commun. Drosophila wing imaginal disc planar differential growth, basal ECM dome & H/N, H/H, H/P hinge folding (Pass 3: + reduced disc-proper / peripodial / lumen sac)"
+    organism: "Drosophila melanogaster (third-instar larval wing imaginal disc, 64h-96h AEL)"
+    script: 2020-tozluoglu-wing-disc-dome-folding.py
+    output: docs/media/wing_disc_dome_folding_comparison.png
+    extra_outputs:
+      - docs/media/wing_disc_dome_folding_growth.gif
+      - docs/media/wing_disc_dome_folding_lumen_pressure_sweep.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-wing-disc-dome-folding-audit-v2
+    source_refs:
+      - tozluoglu2019
+      - sui2018
+      - villafombuena2021
+      - nelson2016
+      - mcclure2005
+      - mosaliganti2019
+    claim_boundary:
+      reported_in_source:
+        - "Tozluoglu et al. (2019): planar differential growth rates in the third-instar wing disc, together with the basal ECM, position the H/N, H/H and H/P folds precisely; uniform growth gives unpinned buckling; Collagenase flattens the dome and abolishes folds"
+        - "Sui et al. (2018): differential lateral and basal tension drive H/H vs H/P folding by two distinct mechanisms"
+        - "McClure & Schubiger (2005): the peripodial epithelium is a thin squamous layer overlying the columnar disc proper (used only for h_PE ~ 3 um; DOI not verified offline)"
+        - "Mosaliganti et al. (2019): epithelial lumen pressures of ~100-300 Pa in the zebrafish otic vesicle (order-of-magnitude context only; NOT wing-disc data; DOI not verified offline)"
+      reconstructed_in_script:
+        - "L-BFGS-B 2D sagittal apico-basal bilayer with multiplicative growth stretch, stiff BM tether and local fold remodeling (Pass 2); Pass 3 adds a quasi-1D plane-strain sac: neo-Hookean BM shell tension, shallow-cap Laplace dome deflection, tensioned PE membrane in unilateral contact, lumen pressure closed by prescribed volume (bisection) or imposed, an imposed-pressure sweep, a PE-ablation control, 13 measurements and 10 self-test checks"
+      transfer_boundary:
+        - "The bilayer 'relaxed' surface is tethered to a hand-built target shape (dome envelope, stage scaling and Gaussian cleft depths fitted to the reference table), so the 64-96 h dome and fold-depth correlations largely reproduce the prescription rather than emerge from g(s)"
+        - "T_PE = 1 mN/m, h_lumen = 12 um, h_margin = 8 um and T_cell = 0.5 mN/m are order-of-magnitude assumptions with no wing-disc measurement; the self-consistent p = 0.62 Pa and p_half = 372.5 Pa are model predictions with no published value to compare"
+      does_not_claim:
+        - "A 3D finite-element mesh, dorsoventral curvature, PE growth or PE fold mechanics, a measured wing-disc lumen pressure, or an emergent (untethered) fold pattern"
+    summary: >-
+      Pass 3 (v3) evaluation of `2020-tozluoglu-wing-disc-dome-folding.py`. The single open v2 item (3D FEM
+      of DP + PE + lumen) was closed in reduced form: a quasi-1D plane-strain three-compartment sac coupling
+      the Pass 2 bilayer disc proper to a tensioned squamous peripodial membrane in unilateral contact and an
+      incompressible lumen whose pressure is closed by prescribed volume (p = 0.62 Pa at 96 h, dome 53.91 um
+      vs ref 54.0, d_HH 19.65 um vs ref 19.4) or imposed (sweep 0-800 Pa; p_half = 372.5 Pa; fold-locus shift
+      0.000), with a PE-ablation control, provenance-tagged parameters, two Lean 4 theorems and 10/10 passing
+      self-test checks. The round also exposed that the headline fits are largely prescribed: the relaxed
+      surface is tethered to a reference-fitted target shape, the dome-curvature constant is calibrated to the
+      reference, the 7-zone curvature correlation compares hard-coded values, the uniform-growth positional SD
+      is sampled rather than measured from the solved replicates, and the specimen fold loci are
+      window-prescribed. Scores drop accordingly; the Pass 3 additions themselves are honest and well tagged.
+    scores:
+      model-fidelity:
+        value: 82
+        rationale: >-
+          Credited: the Pass 3 sac is a physically coherent reduced model — neo-Hookean BM membrane tension
+          T_DP = mu_BM h_BM (gamma^2 - gamma^-4) + T_cell (L521-534), shallow-cap Laplace response
+          dz = p chord^2 / (16 T_DP) (L536-547), PE membrane energy sum 0.5 T_PE (dz/dx)^2 - p z with
+          unilateral contact z_PE >= z_DP + h_min through L-BFGS-B bounds (L550-590), and a volume-closed
+          lumen pressure by bisection with PE-ablation reducing exactly to the uncoupled DP (L592-742);
+          Law 4 is machine-checked (Lean L168-207) and the Law 2 trough second difference is proven
+          invariant to a uniform load. Deductions: the Pass 2 bilayer (L267-519) builds `z_target` from a
+          hand-tuned dome envelope (L354-368), stage scaling (L371-374) and Gaussian cleft amplitudes with
+          per-condition multipliers 0.861 / 0.959 / 1 + 0.092(...) and `remodel_mult` / `jak_mult`
+          (L383-394) fitted to the reference, and tethers the solution to it with k_tether = 1.0 (L414), so
+          folds are prescribed rather than emergent from g(s) (-9); `c_finite = 8.395` (L208) is calibrated
+          to the 0.0128 um^-1 reference (-3); the lumen is quasi-1D per unit D-V width with no PE growth or
+          fold mechanics and no 3D mesh, which is the v2 item still open (-4); the pressure-mode sweep lets
+          the PE sag > 100 um for p > 10 Pa, so the sweep is a DP-only response, not a sac equilibrium (-2).
+        evidence:
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [521, 590], note: "Pass 3: DP shell tension, Laplace dome deflection and PE membrane with unilateral contact via L-BFGS-B box bounds", supports: true}
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [592, 742], note: "solve_coupled_disc_peripodial_lumen: volume-mode bisection on p, pressure mode, PE ablation (T_PE = 0, p = 0) reduces to uncoupled DP", supports: true}
+          - {file: morphoeval/lean/loops/Loop_049_wing_disc_dome_folding.lean, lines: [168, 207], note: "Law 4: lumen_pressure_laplace_dome_deflection and uniform_lumen_load_preserves_growth_trough_second_diff (0 sorrys, lean exit 0)", supports: true}
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [354, 414], note: "Target shape: dome_amp_stage with fitted per-condition multipliers, fold_stage_scale, cleft depths 15.35/19.95/16.75 x remodel_mult/jak_mult; k_tether = 1.0 tethers the relaxed surface to z_target", supports: false}
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [193, 211], note: "compute_bilayer_dome_curvature with c_finite = 8.395 calibrated to the 0.0128 um^-1 reference", supports: false}
+      specimen-match:
+        value: 85
+        rationale: >-
+          Credited: the CC BY-SA 2.5 micrograph is SHA-256-locked and segmented (`segment_wing_disc_specimen`,
+          L1005-1118) into 3 discs with a proximal-distal reporter profile; the 6-panel figure now shows the
+          coupled DP + PE + lumen sac cross-section, 6 perturbation bars including the PE-ablation prediction
+          and the specimen CV panel, and the GIF overlays PE and lumen on the 5 stage frames and now honours
+          the CLI overrides (`render_growth_gif(overrides=...)`, L1499-1601). Deductions: the H/N, H/H and
+          H/P loci are searched inside windows [0.22, 0.30], [0.35, 0.43] and [0.50, 0.54], and the H/H
+          objective subtracts 0.8 |s - 0.39| (L1061-1072), so the 'mean fold position error 0.004' and the
+          pouch fraction `pouch_frac = s_hp_emp` (L1082) mostly reflect the windows rather than the
+          specimen (-9); the specimen is a Wikimedia micrograph of unstated genotype, stage and reporter, so
+          the 'reporter staining' reading is unsourced (-4); no side-by-side with Tozluoglu et al. Fig. 1
+          cross-sections or with a PE/lumen micrograph for the new sac (-2).
+        evidence:
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [1005, 1118], note: "CV segmentation of 3 discs, reporter profile and H/N, H/H, H/P loci", supports: true}
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [1061, 1082], note: "Fold loci confined to narrow windows with an explicit -0.8|s - 0.39| pull to the reference; pouch_frac = s_hp_emp", supports: false}
+          - {file: docs/media/wing_disc_dome_folding_comparison.png, lines: [0, 0], note: "6 panels: g(s), DP + PE + lumen sac cross-section, 64-96 h timecourse, 6 perturbation bars incl. PE ablation, specimen CV", supports: true}
+          - {file: docs/media/wing_disc_dome_folding_growth.gif, lines: [0, 0], note: "5 stage frames with PE and lumen overlaid; GIF now follows CLI overrides", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Credited: 5 stages x 7 zones (L809-903), 6 perturbation conditions including the new
+          `peripodial_ablation` (L906-999), the imposed-pressure sweep over 9 values 0-800 Pa reporting
+          p_half, maximal fold-locus shift and monotonicity (L745-791), and 11 CLI overrides: `--mu-bm`,
+          `--g-pouch`, `--jak-stat-boost`, `--remodeling`, `--seed` plus the new `--lumen-mode`,
+          `--p-lumen`, `--h-lumen`, `--t-pe`, `--ablate-peripodial`, `--skip-sweep` (L1853-1866) wired
+          through `_lumen_kwargs_from_overrides` (L797-806) into timecourse, figure and GIF. Deductions:
+          because the fold family is tethered to a prescribed target (L354-414), the swept growth parameters
+          change amplitudes but cannot move or create folds (-6); `--p-lumen` is silent unless
+          `--lumen-mode pressure` is also passed (L1862) (-2); no sweep over T_PE or h_lumen, the two most
+          uncertain Pass 3 inputs (-2).
+        evidence:
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [745, 806], note: "evaluate_lumen_pressure_sweep (0-800 Pa, p_half, locus shift, monotonicity) and _lumen_kwargs_from_overrides", supports: true}
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [906, 999], note: "6 perturbation conditions incl. peripodial_ablation (L921-936) flagged is_prediction_only (L996)", supports: true}
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [1853, 1866], note: "11 CLI flags incl. --lumen-mode, --p-lumen, --h-lumen, --t-pe, --ablate-peripodial, --skip-sweep; --p-lumen only active with --lumen-mode pressure", supports: true}
+      morphometric-validation:
+        value: 80
+        rationale: >-
+          Credited: `measure_morphoeval()` (L1603-1751) returns 13 measurements, 5 new in Pass 3
+          (L1617-1668): coupled-sac dome 53.91 um (ref 54.0), coupled d_HH 19.65 um (ref 19.4),
+          self-consistent p = 0.62 Pa (prediction), maximal fold-locus shift 0.0 across the sweep (ref 0.0),
+          p_half = 372.5 Pa (prediction); the Pass 2 eight remain (dome r = 0.9977, 15-fold r = 0.9953,
+          zone r = 1.0000, Collagenase kappa = 0, specimen s_HH = 0.391, pouch fraction 0.474). Deductions:
+          the zone-curvature r = 1.0000 compares hard-coded 0.0148/0.0151 hinge, 0.0042 notum and
+          -0.0020 x depth fold values (L879-885) with the reference, so it validates nothing (-6); the
+          uniform-growth positional SD discards the 12 solved replicates and appends U(0.18, 0.68) draws
+          (L970) while the WT pinned SD uses the reference SD as its generating sigma (L975) (-5); the
+          uniform-growth fold depths are set equal to their targets (L474-476) instead of measured on the
+          relaxed surface (-3); two of the five new measurements carry `reference_value: None` (L1643,
+          L1663) and the dome / d_HH references are the same prescribed targets as in model-fidelity (-2);
+          the one measurement that is a genuine out-of-sample prediction (p_half) has no published value to
+          test against, which is stated honestly (0).
+        evidence:
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [1603, 1668], note: "measure_morphoeval: 5 new Pass 3 sac/pressure measurements with reference_value keys (two None = predictions)", supports: true}
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [879, 885], note: "7-zone curvature: hinge 0.0148/0.0151, notum 0.0042, fold -0.0020*depth hard-coded; r = 1.0000 is copied", supports: false}
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [958, 975], note: "Uniform-growth SD sampled via rng_rep.uniform(0.18, 0.68); WT pinned SD drawn with the reference SD as sigma", supports: false}
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [474, 476], note: "Uniform-growth d_hn/d_hh/d_hp set equal to the prescribed targets", supports: false}
+      source-traceability:
+        value: 88
+        rationale: >-
+          Credited: 5 dataset files are SHA-256 pinned (`EXPECTED_SHA256`, L118-141) and verified at
+          runtime; the new `peripodial_lumen_reference.json` tags every value `literature` / `derived` /
+          `assumption` / `prediction` and states the residual (`residual_remediation`, L37);
+          `paper_citations.bib` gained McClure & Schubiger 2005 (L38) and Mosaliganti et al. 2019 (L51)
+          and the corrupted `villafombuena2021live` entry (L25) was repaired; the dataset README documents
+          Law 4 and the new file (L34-44). Deductions: the main reference table
+          `wing_disc_dome_folding_reference.json` (timecourse dome 4.2-54.0 um, d_HH 0.8-19.4 um, 7-zone
+          g(s)/curvature, perturbation domes 46.5/51.8/56.4 um, SD 0.142) is not traced to specific figure
+          panels or tables and may be synthesised (-6); the two new DOIs and 10.1242/dev.199728 could not
+          be verified offline (-3); the repaired bib entry still lacks the full author list (-1); the
+          reference curvature 0.0128 um^-1 that `c_finite` is fitted to has no panel citation (-2).
+        evidence:
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [118, 141], note: "EXPECTED_SHA256 for 5 dataset files incl. peripodial_lumen_reference.json (972d43d7...) and re-pinned paper_citations.bib", supports: true}
+          - {file: datasets/wing_disc_dome_folding/peripodial_lumen_reference.json, lines: [1, 38], note: "Provenance-tagged Pass 3 parameter table; T_PE, h_lumen, h_margin, T_cell tagged 'assumption'; residual stated", supports: true}
+          - {file: datasets/wing_disc_dome_folding/paper_citations.bib, lines: [25, 72], note: "Repaired villafombuena2021live; new mcclure2005peripodial and mosaliganti2019hydraulic (DOIs unverified offline)", supports: true}
+          - {file: datasets/wing_disc_dome_folding/wing_disc_dome_folding_reference.json, lines: [1, 298], note: "Timecourse, 7-zone and perturbation reference values not traced to figure panels/tables", supports: false}
+      code-traceability:
+        value: 90
+        rationale: >-
+          Credited: the module header (L1-70) maps Laws 1-4 to the Lean theorems by name and lists the
+          DOIs; every new Pass 3 function has a docstring stating the equation, the compartments and that
+          T_PE / h_lumen / h_margin / T_cell are assumptions (L59-65, L143-147, L559-561, L620); the
+          `peripodial_ablation` entry is labelled a prediction (L914, L922); the sweep figure footer states
+          'quasi-1D plane-strain (residual: no 3D FEM)' (L1488); Law 4 is registered in
+          `morphoeval/math_kg_loops/tozluoglu-wing-disc-dome-folding.yaml`. Deductions: the fitted
+          constants 4.2 + 49.8 frac^0.88, 0.861, 0.959, 0.092, 0.557/0.443, 0.623, 15.35/19.95/16.75 and
+          c_finite = 8.395 carry no citation or 'fitted to reference' label (L208, L354-394) (-5); the
+          `self_test` docstring says '8-point ... for Pass 2' (L1755) and the `--self-test` help says
+          '8-check' (L1853) while 10 checks run (-2); Law 3 in Lean (L116-149) proves an ordering of
+          hand-picked integers and Law 4 is likewise integer inequalities, which the header presents as
+          governing mathematics (-3).
+        evidence:
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [1, 70], note: "Header maps Laws 1-4 to Lean theorem names, lists DOIs, states Pass 3 assumptions", supports: true}
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [143, 147], note: "Pass 3 constants each commented 'assumption'", supports: true}
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [1753, 1755], note: "self_test docstring still says '8-point verification suite for Pass 2' (10 checks run)", supports: false}
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [1853, 1853], note: "--self-test help string says '8-check' (stale)", supports: false}
+      repro-package:
+        value: 93
+        rationale: >-
+          Credited: `self_test()` (L1754-1848) runs 10 checks — SHA-256 integrity of 5 files, JSON-to-code
+          parity incl. `H_LUMEN_MEAN_REF_UM` (L1761), Laws 1-3, timecourse correlations, specimen CV,
+          bitwise determinism, and new checks for PE-DP non-penetration (L1818), volume closure, fold-locus
+          invariance, PE-ablation == uncoupled DP (L1824-1828), sweep monotonicity with p_half > 50 Pa and
+          13 measurements with `reference_value` keys (L1840); a fresh run PASSED all 10 in 11.9 s, the
+          default render takes ~16-18 s and writes the PNG, the new sweep PNG and the GIF; the environment
+          (Python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0) is recorded above.
+          Deductions: stale '8-check' / '8-point' strings (L1755, L1853) (-2); `*.png` is gitignored so the
+          regenerated comparison and sweep PNGs are not versioned and the measurements file is the only
+          fingerprint (-2); no requirements lock file is vendored for this script (-3).
+        evidence:
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [1754, 1848], note: "10-check self_test incl. sac contact, volume closure, PE-ablation equivalence, sweep monotonicity, measurement schema; PASSED all 10 (11.9 s)", supports: true}
+          - {file: 2020-tozluoglu-wing-disc-dome-folding.py, lines: [86, 95], note: "Output paths incl. new OUT_SWEEP_PNG; PNGs are gitignored (.gitignore:48)", supports: true}
+          - {file: docs/media/wing_disc_dome_folding_lumen_pressure_sweep.png, lines: [0, 0], note: "New Pass 3 sweep figure (dome height, p_half marker, fold-locus shift vs imposed p)", supports: true}
+    remediation:
+    - >-
+      2020-tozluoglu-wing-disc-dome-folding.py:354-414 — `solve_wing_disc_sagittal_bilayer` builds `z_target`
+      from a hand-tuned dome envelope (`dome_amp_stage`, L354-368 with per-condition multipliers 0.861 /
+      0.959 / 1 + 0.092(...)), `fold_stage_scale` (L371-374) and Gaussian cleft depths 15.35/19.95/16.75 um
+      x `remodel_mult` / `jak_mult` (L383-394), then tethers the solution with `k_tether = 1.0` (L414), so the
+      dome r = 0.998 and 15-fold r = 0.995 are prescribed. Replace the target-shape tether by an energy whose
+      fold loci and depths emerge from gamma_s(s, t) = exp(g(s)(t - 64)) and the BM stiffness (e.g. a
+      growth-incompatibility bending energy), or relabel the correlations as 'fit to prescribed target'.
+    - >-
+      2020-tozluoglu-wing-disc-dome-folding.py:879-885 — in `evaluate_developmental_timecourse` the hinge
+      ridge (0.0148 / 0.0151), notum (0.0042) and fold (-0.0020 x depth) zone curvatures are hard-coded, so
+      the 7-zone curvature r = 1.0000 compares the reference with itself. Compute kappa(s) by finite
+      differences of the relaxed `z_apical_um` per zone and report the resulting r honestly.
+    - >-
+      2020-tozluoglu-wing-disc-dome-folding.py:958-975 — `evaluate_perturbation_experiments` solves 12
+      uniform-growth replicates but discards them and appends `rng_rep.uniform(0.18, 0.68)` (L970); the WT
+      pinned SD is `rng_pin.normal(0, fold_position_sd_norm_ref)` (L975), i.e. the reference SD is the
+      generating sigma. Measure the central-fold locus on each solved replicate surface and compute the SD
+      from those; drop the sampled jitter (also fixes `d_hn_sim = float(d_hn_target)` at L474-476).
+    - >-
+      2020-tozluoglu-wing-disc-dome-folding.py:193-211 — `c_finite = 8.395` (L208) is calibrated so the WT
+      dome curvature hits the 0.0128 um^-1 reference; derive the shell curvature from the relaxed surface
+      (kappa = z'' / (1 + z'^2)^1.5 at the pouch apex) or document the constant as a fit with its source.
+    - >-
+      2020-tozluoglu-wing-disc-dome-folding.py:1061-1082 — `segment_wing_disc_specimen` confines the H/N,
+      H/H and H/P loci to windows [0.22, 0.30], [0.35, 0.43], [0.50, 0.54] and penalises the H/H objective
+      by -0.8 |s - 0.39|; `pouch_frac = s_hp_emp`. Detect the loci without reference-anchored windows (or
+      widen them to the whole hinge and drop the penalty) and report the detection without the prior;
+      record the specimen's genotype / stage / reporter or mark the 'reporter staining' reading as unknown.
+    - >-
+      2020-tozluoglu-wing-disc-dome-folding.py:592-742 and 745-791 — the Pass 3 sac is quasi-1D per unit
+      dorsoventral width; the pressure-mode sweep lets the PE sag > 100 um for p > 10 Pa (an unphysical
+      DP-only response). Carry the v2 item forward: add dorsoventral curvature (axisymmetric shallow-shell
+      or a 3D FEM mesh) for the DP and PE, give the PE a growth law and its own fold mechanics, and bound
+      the PE sag in pressure mode; sweep T_PE and h_lumen since both are untested assumptions.
+    - >-
+      datasets/wing_disc_dome_folding/wing_disc_dome_folding_reference.json:1-298 — the 64-96 h dome and
+      d_HH timecourse, the 7-zone g(s) / curvature and the perturbation domes (46.5 / 51.8 / 56.4 um, SD
+      0.142) are not traced to specific figure panels or tables of Tozluoglu et al. (2019) or Sui et al.
+      (2018). Add per-value `source_figure` / `extraction_method` fields or mark the values as synthesised.
+    - >-
+      2020-tozluoglu-wing-disc-dome-folding.py:1755 and 1853 — `self_test` docstring '8-point verification
+      suite for Pass 2' and `--self-test` help '8-check verification suite' are stale (10 checks run).
+      Update both; vendor a requirements lock for this script.
