@@ -9,10 +9,10 @@ Features:
     into that grid space's **3×3 Animated Tile View ("Best 9 in Cell")** with pagination for all
     resident models in the cell (10–22 models per cell).
   - Every tile in the 3×3 Zoom Grid features a **Side-by-Side Split Stage**:
-      1. **Left Pane (`Specimen + CV Fit`):** Canonical biological specimen photograph (`datasets/...`)
-         with live computer-vision contour / feature overlay + synchronized mathematical overlay.
-      2. **Right Pane (`Dynamical Simulation`):** Tracked animated GIF (`docs/media/*.gif`) OR a live
-         60-FPS HTML5 Canvas biophysical simulation matched to that cell's Formal/Efficient Cause.
+      1. **Left Pane (`Canonical Specimen`):** Canonical biological specimen photograph (`datasets/...`)
+         shown cleanly without synthetic overlays.
+      2. **Right Pane (`Dynamical Simulation`):** Tracked animated GIF/PNG (`docs/media/*.gif`)
+         from the model's actual Python simulation.
       3. **Header Badges:** `#Rank`, `Genus (Common Name)`, `Audit Score`, and explicit **`ImgFit`
          (Canonical Image Fitness)** score.
       4. **Direct Clickable Footer Links (with `event.stopPropagation()`):**
@@ -37,17 +37,16 @@ SPECIES_MANIFEST_JSON = ROOT / "datasets" / "species_gallery" / "species_manifes
 
 
 def get_tracked_gifs() -> set[str]:
-    """Return set of GIF filenames under `docs/media/` tracked by git (available on GitHub Pages)."""
+    """Return set of GIF/PNG media filenames under `docs/media/` tracked by git (available on GitHub Pages)."""
     try:
         out = subprocess.check_output(
-            ["git", "ls-files", "docs/media/*.gif"], cwd=ROOT, text=True
+            ["git", "ls-files", "docs/media/*.gif", "docs/media/*.png"], cwd=ROOT, text=True
         )
         tracked = {Path(line.strip()).name for line in out.splitlines() if line.strip()}
-        # Also include any newly generated vertex/mesh GIFs in docs/media
-        local_gifs = {p.name for p in MEDIA_DIR.glob("*.gif")}
+        local_gifs = {p.name for p in MEDIA_DIR.glob("*.gif")} | {p.name for p in MEDIA_DIR.glob("*.png")}
         return tracked | local_gifs
     except Exception:
-        return {p.name for p in MEDIA_DIR.glob("*.gif")}
+        return {p.name for p in MEDIA_DIR.glob("*.gif")} | {p.name for p in MEDIA_DIR.glob("*.png")}
 
 
 def resolve_lean_file(slot: int | None, slug: str) -> str:
@@ -162,7 +161,7 @@ def main() -> int:
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Infinite Morphospace — Aristotelian 3×3 Zoom Grid Explorer (105 Verified Models · 49 Genera)</title>
+  <title>Infinite Morphospace — Canonical Classics &amp; Aristotelian 3×3 Zoom Grid Explorer (116 Verified Models · 57 Genera)</title>
   <style>
     :root {
       --bg-deep: #060911;
@@ -286,6 +285,115 @@ def main() -> int:
       color: #060911;
       border-color: #fff;
       font-weight: 800;
+    }
+    .canonical-section {
+      background: linear-gradient(180deg, #0b1326 0%, #080d1a 100%);
+      border-bottom: 1px solid var(--border-dim);
+      padding: 14px 20px 16px 20px;
+    }
+    .canonical-hdr {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .canonical-hdr-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .canonical-hdr h2 {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: var(--accent-gold);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .canonical-hdr p {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+    .canonical-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 1400px) {
+      .canonical-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 760px) {
+      .canonical-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .canonical-card {
+      background: var(--bg-card);
+      border: 1.5px solid #2b3f66;
+      border-radius: 9px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+    }
+    .canonical-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-gold);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    }
+    .canonical-card.active-pillar {
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 12px rgba(250, 204, 21, 0.45);
+    }
+    .canonical-card-top {
+      background: #15223c;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .canonical-era {
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .canonical-era span {
+      color: var(--accent-gold);
+    }
+    .canonical-stage {
+      height: 148px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      background: #060911;
+    }
+    .canonical-desc {
+      padding: 7px 10px;
+      background: #0c1323;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      flex: 1;
+      justify-content: space-between;
+    }
+    .canonical-law {
+      font-size: 0.70rem;
+      color: #cbd5e1;
+      line-height: 1.35;
+    }
+    .canonical-law strong {
+      color: #38bdf8;
     }
     .workspace {
       display: grid;
@@ -513,7 +621,7 @@ def main() -> int:
       border-radius: 4px;
       white-space: nowrap;
     }
-    /* Side-by-side Split Stage: Left = Canonical Specimen + CV/Math Overlay, Right = Simulation */
+    /* Side-by-side Split Stage: Left = Canonical Specimen, Right = Dynamical Simulation */
     .tile-stage-split {
       position: relative;
       height: 195px;
@@ -541,23 +649,11 @@ def main() -> int:
       height: 100%;
       object-fit: cover;
     }
-    .pane-specimen canvas.cv-overlay {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-    }
     .pane-sim img.anim-gif {
       width: 100%;
       height: 100%;
       object-fit: contain;
       background: #070a12;
-    }
-    .pane-sim canvas.sim-canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
     }
     .pane-badge {
       position: absolute;
@@ -718,31 +814,41 @@ def main() -> int:
   <header class="topbar">
     <div>
       <div class="brand-title">
-        <span>Infinite Morphospace — Aristotelian 3×3 Zoom Grid Explorer</span>
+        <span>Infinite Morphospace — Canonical Classics &amp; Aristotelian 3×3 Zoom Grid Explorer</span>
       </div>
       <div class="brand-sub" id="top-summary">
-        Loading 105 Verified Models across 49 Biological Genera &amp; 38 Populated Matrix Cells…
+        Loading 116 Verified Models across 57 Biological Genera &amp; 39 Populated Matrix Cells…
       </div>
     </div>
     <div class="top-controls">
       <input type="text" id="search-box" class="search-input" placeholder="Filter by genus, species, DOI, or law…" />
+      <button class="btn" id="btn-toggle-canonical" title="Show or hide the 8 Canonical Foundational Examples at the top">
+        🏛️ Hide Canonical Classics (8)
+      </button>
       <button class="btn active" id="btn-how-it-works" title="What this explorer is and how the 12-Step MorphoEval + Lean 4 loop works">
         📖 What This Is &amp; How It Works
       </button>
-      <button class="btn" id="btn-toggle-anim" title="Toggle between tracked GIFs and live 60-FPS HTML5 Canvas solvers">
-        Mode: Hybrid (GIF + Live PDE Canvas)
-      </button>
-      <a class="btn" href="https://github.com/fractastical/morpholib#part-1--how-it-works-the-12-step-morphoeval--lean-4-loop" target="_blank" rel="noopener" title="Read the full walkthrough in the root README.md">📄 README (12-Step Loop) ↗</a>
+      <a class="btn" href="https://github.com/fractastical/morpholib/blob/main/README.md#part-1--how-it-works-the-12-step-morphoeval--lean-4-loop" target="_blank" rel="noopener" title="Read the full walkthrough in the root README.md">📄 README (12-Step Loop) ↗</a>
       <a class="btn" href="https://github.com/fractastical/morpholib/blob/main/morphoeval/runs/ARISTOTELIAN_MORPHOSPACE_CATEGORIES.md" target="_blank" rel="noopener" title="Aristotelian Categories &amp; Taxonomic Index">🏛️ Ontology Guide ↗</a>
       <a class="btn" href="https://github.com/fractastical/morpholib" target="_blank" rel="noopener">GitHub Repo ↗</a>
     </div>
   </header>
 
+  <section class="canonical-section" id="canonical-section">
+    <div class="canonical-hdr">
+      <div class="canonical-hdr-left">
+        <h2>🏛️ Canonical Foundational Examples (1917–2021) — The Historical Pillars of Mathematical Morphogenesis</h2>
+        <p>Start with the 8 foundational classics (Thompson's coordinate grids, Turing's reaction–diffusion, Raup's coiled shells, Vogel's phyllotaxis, Wolfram &amp; Meinhardt's Rule 30 cone shells, Runions's leaf venation, and Lobo/Cervera/Levin's planarian bioelectric regeneration) before exploring how they generalize across the 10×10 Aristotelian Matrix below. Click any card for full details or click <strong>🔍 Matrix Cell</strong> to jump to its taxonomic-biophysical grid space.</p>
+      </div>
+    </div>
+    <div class="canonical-grid" id="canonical-grid"></div>
+  </section>
+
   <nav class="quick-bar" id="quick-bar">
     <span class="quick-label">Best-9 Grid Spaces:</span>
   </nav>
 
-  <main class="workspace">
+  <main class="workspace" id="matrix-workspace">
     <section class="matrix-panel">
       <div class="panel-hdr">
         <h2>A. Aristotelian Coverage Matrix (10×10)</h2>
@@ -750,7 +856,7 @@ def main() -> int:
       </div>
       <table class="matrix-table" id="matrix-table"></table>
       <div class="matrix-legend">
-        <div><strong>38 Populated Matrix Cells (105 Verified Models)</strong> across Aristotle's <em>Historia Animalium</em> (Rows: <em>Ousia</em>) &times; <em>De Partibus Animalium</em> (Cols: <em>Poiein</em>). Only models passing the <strong>Canonical Image Fitness (`ImgFit &ge; 70.0`)</strong> pass are included.</div>
+        <div><strong id="matrix-legend-summary">39 Populated Matrix Cells (116 Verified Models)</strong> across Aristotle's <em>Historia Animalium</em> (Rows: <em>Ousia</em>) &times; <em>De Partibus Animalium</em> (Cols: <em>Poiein</em>). Only models passing the <strong>Canonical Image Fitness (`ImgFit &ge; 70.0`)</strong> pass are included.</div>
         <div class="taxon-dots">
           <span style="color:#38bdf8">● I. Enaima (Vertebrata)</span>
           <span style="color:#f59e0b">● II. Anaima (Invertebrata)</span>
@@ -764,7 +870,7 @@ def main() -> int:
       <div class="zoom-banner" id="zoom-banner">
         <div>
           <div class="zoom-title" id="zoom-title">Inside Aristotelian Grid Space</div>
-          <div class="zoom-meta" id="zoom-meta">Left of Each Tile: Canonical Specimen + CV &amp; Math Overlay | Right: Dynamical Simulation + DOI Paper &amp; Code Links</div>
+          <div class="zoom-meta" id="zoom-meta">Left of Each Tile: Canonical Specimen Photograph | Right: Dynamical Simulation + DOI Paper &amp; Code Links</div>
         </div>
         <div class="pager">
           <span class="pager-info" id="pager-info">Showing 1–9</span>
@@ -856,17 +962,146 @@ def main() -> int:
       let selectedC = 3;
       let pageOffset = 0;
       let searchQuery = "";
-      let forceLiveCanvas = false;
       const IMAGE_THRESHOLD = 70.0;
-      let activeCanvases = [];
 
       document.getElementById("top-summary").textContent =
         `${MODELS.length} Verified Models Passing Image Fitness (ImgFit ≥ ${IMAGE_THRESHOLD.toFixed(1)}) across ${DATA.total_genera} Genera & ${populatedCells} Populated Matrix Cells · 100% DOI & Code Repo Linked`;
+      const legendSumEl = document.getElementById("matrix-legend-summary");
+      if (legendSumEl) {
+        legendSumEl.textContent = `${populatedCells} Populated Matrix Cells (${MODELS.length} Verified Models)`;
+      }
 
       function resolveAssetUrl(relPath) {
         if (!relPath) return "";
         if (relPath.startsWith("media/")) return relPath;
         return "../" + relPath;
+      }
+
+      const CANONICAL_PILLARS = [
+        {
+          slug: "thompson-scarus-pomacanthus",
+          year: "1917",
+          title: "D'Arcy Thompson — Coordinate Grids",
+          subtitle: "Scarus → Pomacanthus (Möbius Coaxial Circles vs. Thin-Plate Spline)",
+        },
+        {
+          slug: "turing-gray-scott",
+          year: "1952",
+          title: "Alan Turing (Pearson / Kondo) — Morphogens",
+          subtitle: "Reaction–Diffusion Stripes & Spots (D_v/D_u > d_c Instability)",
+        },
+        {
+          slug: "raup-shell-coiling",
+          year: "1966",
+          title: "David Raup — Logarithmic Coiled Shells",
+          subtitle: "4-Parameter (W, D, T, S) Generative Ammonoid/Gastropod Morphospace",
+        },
+        {
+          slug: "vogel-phyllotaxis",
+          year: "1979",
+          title: "Vogel / Douady–Couder — Phyllotaxis",
+          subtitle: "Golden-Angle (137.508°) Sunflower Capitulum & Fibonacci Cascade",
+        },
+        {
+          slug: "wolfram-conus-textile-rule30",
+          year: "1984",
+          title: "Wolfram / Meinhardt — Rule 30 & Conus",
+          subtitle: "ECA Rule 30 + Activator–Substrate Waves on 3D Cone Snail Shell",
+        },
+        {
+          slug: "runions-leaf-venation",
+          year: "2005",
+          title: "Runions / Murray / Katifori — Leaf Veins",
+          subtitle: "Auxin Space-Colonization, Murray's r^γ Law & Reticulate Areoles",
+        },
+        {
+          slug: "planform-morphology-animation",
+          year: "2013",
+          title: "Lobo & Levin — PlanformDB Regeneration",
+          subtitle: "Formal Graph Decoding of Planarian Surgical & Bioelectric Outcomes",
+        },
+        {
+          slug: "cervera-levin-mafe",
+          year: "2021",
+          title: "Cervera, Levin & Mafé — Bioelectric V_mem",
+          subtitle: "Gap-Junction Bistability: 1-Headed vs. 2-Headed / Cryptic Planaria",
+        },
+      ];
+
+      function renderCanonicalShowcase() {
+        const container = document.getElementById("canonical-grid");
+        if (!container) return;
+        container.innerHTML = "";
+        CANONICAL_PILLARS.forEach((p, idx) => {
+          const m = MODELS.find(x => x.slug === p.slug);
+          if (!m) return;
+          const r = SUBALTERN_ROWS.findIndex(x => x.key === m.subaltern);
+          const c = CAUSE_COLS.findIndex(x => x.key === m.cause);
+          const simUrl = m.gif ? resolveAssetUrl(m.gif) : "";
+          const specimenUrl = resolveAssetUrl(m.specimen);
+          const scriptUrl = `${DATA.repo_url}/${m.script}`;
+          const leanUrl = `${DATA.repo_url}/${m.lean}`;
+
+          const card = document.createElement("div");
+          card.className = "canonical-card" + (r === selectedR && c === selectedC && !searchQuery ? " active-pillar" : "");
+          card.innerHTML = `
+            <div class="canonical-card-top">
+              <div class="canonical-era"><span>${p.year}</span> · ${p.title}</div>
+              <div class="tile-scores-wrap">
+                <span class="tile-score" title="MorphoEval Overall Score">Audit ${m.score.toFixed(1)}</span>
+                <span class="tile-imgfit" title="Canonical Specimen Image Fitness">ImgFit ${m.img_fit.toFixed(1)}</span>
+              </div>
+            </div>
+            <div class="canonical-stage">
+              <div class="pane-specimen" title="Canonical Specimen (${m.species})">
+                <img src="${specimenUrl}" alt="${m.species}" onerror="this.src='${DATA.raw_url}/${m.specimen}'" loading="lazy" />
+                <span class="pane-badge">Specimen</span>
+              </div>
+              <div class="pane-sim" title="Dynamical Simulation (${m.script})">
+                <img class="anim-gif" src="${simUrl || specimenUrl}" alt="${p.title}" loading="lazy" />
+                <span class="pane-badge" style="color:#facc15;border-color:rgba(250,204,21,0.45);">Simulation</span>
+              </div>
+            </div>
+            <div class="canonical-desc">
+              <div class="canonical-law">
+                <strong>${p.subtitle}</strong><br>
+                <span>Law: <code>${m.poson}</code></span>
+              </div>
+              <div class="footer-links-row">
+                <button class="tile-link" style="cursor:pointer;background:rgba(250,204,21,0.16);color:#facc15;border-color:rgba(250,204,21,0.45);" data-jump-r="${r}" data-jump-c="${c}" title="Select and highlight this model's cell in the Aristotelian 10×10 Matrix below">🔍 Matrix Cell</button>
+                ${m.paper_url ? `<a class="tile-link" href="${m.paper_url}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="${m.citation}">📄 Paper ↗</a>` : ``}
+                <a class="tile-link" href="${scriptUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="View Python Simulation Script">🐍 Script ↗</a>
+                <a class="tile-link lean" href="${leanUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="View Machine-Checked Lean 4 Proof">Lean 4 ✓</a>
+              </div>
+            </div>
+          `;
+          const jumpBtn = card.querySelector("[data-jump-r]");
+          if (jumpBtn) {
+            jumpBtn.onclick = (ev) => {
+              ev.stopPropagation();
+              if (r >= 0 && c >= 0) {
+                searchQuery = "";
+                document.getElementById("search-box").value = "";
+                selectCell(r, c);
+                const ws = document.getElementById("matrix-workspace");
+                if (ws) ws.scrollIntoView({ behavior: "smooth", block: "start" });
+              }
+            };
+          }
+          card.onclick = () => openModal(m, idx + 1);
+          container.appendChild(card);
+        });
+      }
+
+      const toggleCanonicalBtn = document.getElementById("btn-toggle-canonical");
+      if (toggleCanonicalBtn) {
+        toggleCanonicalBtn.onclick = () => {
+          const sec = document.getElementById("canonical-section");
+          if (!sec) return;
+          const hidden = sec.style.display === "none";
+          sec.style.display = hidden ? "block" : "none";
+          toggleCanonicalBtn.textContent = hidden ? "🏛️ Hide Canonical Classics (8)" : "🏛️ Show Canonical Classics (8)";
+        };
       }
 
       const quickBar = document.getElementById("quick-bar");
@@ -979,6 +1214,7 @@ def main() -> int:
       }
 
       function updateView() {
+        renderCanonicalShowcase();
         renderMatrixTable();
         document.querySelectorAll(".pill").forEach(btn => {
           const isMatch = !searchQuery && Number(btn.dataset.r) === selectedR && Number(btn.dataset.c) === selectedC;
@@ -1001,7 +1237,7 @@ def main() -> int:
           titleEl.textContent =
             `Inside [${rowObj.label} × ${colObj.key}] — ${list.length} Verified Model${list.length === 1 ? "" : "s"} (ImgFit ≥ ${IMAGE_THRESHOLD.toFixed(1)})`;
           metaEl.textContent =
-            `Left of Each Tile: Canonical Specimen + CV & Registered Math Overlay   |   Right: Dynamical Simulation + Audit & Image Fitness + DOI Paper & Code Links`;
+            `Left of Each Tile: Canonical Specimen Photograph   |   Right: Dynamical Simulation + Audit & Image Fitness + DOI Paper & Code Links`;
         }
 
         const start = pageOffset;
@@ -1014,123 +1250,7 @@ def main() -> int:
         renderNineTiles(slice, start, searchQuery ? "#facc15" : rowObj.color);
       }
 
-      // Live CV & Registered Math Overlay drawn directly over the Canonical Specimen Photo (Left Pane)
-      function attachSpecimenMathOverlay(canvas, model) {
-        const ctx = canvas.getContext("2d");
-        const w = canvas.width = 180;
-        const h = canvas.height = 195;
-        const causeIdx = CAUSE_COLS.findIndex(c => c.key === model.cause);
-        const cx = w / 2, cy = h / 2;
-
-        return function drawOverlay(t) {
-          ctx.clearRect(0, 0, w, h);
-          ctx.save();
-          if (causeIdx === 3) {
-            // Golden-angle parastichies / venation / lobe contour registered over the plant specimen
-            if (model.slug.includes("venation") || model.slug.includes("canalization") || model.slug.includes("leaf")) {
-              function branch(x, y, len, ang, d) {
-                if (d <= 0) return;
-                const nx = x + len * Math.cos(ang + 0.04 * Math.sin(t * 2 + d));
-                const ny = y + len * Math.sin(ang + 0.04 * Math.sin(t * 2 + d));
-                ctx.strokeStyle = "rgba(250, 204, 21, 0.82)";
-                ctx.lineWidth = Math.max(1, d * 0.7);
-                ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(nx, ny); ctx.stroke();
-                branch(nx, ny, len * 0.73, ang - 0.36, d - 1);
-                branch(nx, ny, len * 0.73, ang + 0.36, d - 1);
-              }
-              branch(cx, h - 10, 42, -Math.PI / 2, 5);
-            } else {
-              const golden = 137.507764 * Math.PI / 180;
-              const nPts = 20 + Math.floor(((Math.sin(t * 1.5) + 1) * 0.5) * 45);
-              for (let n = 1; n <= nPts; n++) {
-                const r = 7.2 * Math.sqrt(n);
-                const th = n * golden;
-                const px = cx + r * Math.cos(th);
-                const py = cy + r * Math.sin(th);
-                ctx.fillStyle = "rgba(250, 204, 21, 0.85)";
-                ctx.beginPath(); ctx.arc(px, py, 2.2, 0, Math.PI * 2); ctx.fill();
-              }
-            }
-          } else {
-            // Subtle CV registration contour ring pulsing over specimen
-            ctx.strokeStyle = "rgba(34, 211, 238, 0.75)";
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            for (let s = 0; s <= 48; s++) {
-              const a = (s / 48) * Math.PI * 2;
-              const r = 52 + 6 * Math.sin(a * 4 + t * 2);
-              const px = cx + r * Math.cos(a);
-              const py = cy + r * Math.sin(a);
-              if (s === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-            }
-            ctx.closePath();
-            ctx.stroke();
-          }
-          ctx.restore();
-        };
-      }
-
-      // Live 60-FPS Procedural Biophysical Canvas Animator for the Right Pane when toggled or no GIF
-      function attachProceduralSimulation(canvas, model, rankIndex) {
-        const ctx = canvas.getContext("2d");
-        const w = canvas.width = 180;
-        const h = canvas.height = 195;
-        const causeIdx = CAUSE_COLS.findIndex(c => c.key === model.cause);
-        const seed = model.slot || (rankIndex + 1) * 37;
-
-        return function drawFrame(t) {
-          ctx.fillStyle = "#070b14";
-          ctx.fillRect(0, 0, w, h);
-          const cx = w / 2, cy = h / 2;
-
-          if (causeIdx === 3) {
-            const golden = 137.507764 * Math.PI / 180;
-            for (let n = 1; n <= 75; n++) {
-              const r = 5.6 * Math.sqrt(n) * (0.88 + 0.10 * Math.sin(t * 1.6 + n * 0.05));
-              const th = n * golden + t * 0.45;
-              const px = cx + r * Math.cos(th);
-              const py = cy + r * Math.sin(th);
-              const hue = (115 + (n * 2 + seed) % 55);
-              ctx.fillStyle = `hsl(${hue}, 82%, ${45 + (n % 25)}%)`;
-              ctx.beginPath();
-              ctx.arc(px, py, Math.max(1.8, 4.5 - n * 0.03), 0, Math.PI * 2);
-              ctx.fill();
-            }
-          } else if (causeIdx === 5) {
-            function branch(x, y, len, ang, depth) {
-              if (depth === 0) return;
-              const sway = 0.08 * Math.sin(t * 2.2 + depth + seed * 0.1);
-              const nx = x + len * Math.cos(ang + sway);
-              const ny = y + len * Math.sin(ang + sway);
-              ctx.lineWidth = Math.max(1, depth * 1.1);
-              ctx.strokeStyle = depth > 3 ? "#38bdf8" : "#34d399";
-              ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(nx, ny); ctx.stroke();
-              branch(nx, ny, len * 0.75, ang - 0.45, depth - 1);
-              branch(nx, ny, len * 0.75, ang + 0.45, depth - 1);
-            }
-            branch(cx, h - 12, 36, -Math.PI / 2, 6);
-          } else {
-            const cols = 22, rows = 22;
-            const cw = w / cols, ch = h / rows;
-            const freq = 0.28 + (seed % 5) * 0.05;
-            for (let r = 0; r < rows; r++) {
-              for (let c = 0; c < cols; c++) {
-                const dx = c - cols / 2, dy = r - rows / 2;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                const ang = Math.atan2(dy, dx);
-                const v = Math.sin(dist * freq - t * 2.6 + (causeIdx % 3) * ang) +
-                          Math.cos((c * 0.35 + r * 0.25) * (1 + (seed % 3) * 0.3) - t * 1.4);
-                const norm = Math.floor(((v + 2) / 4) * 255);
-                ctx.fillStyle = `rgb(${Math.floor(norm * 0.25)}, ${norm}, ${180 + Math.floor(norm * 0.25)})`;
-                ctx.fillRect(c * cw, r * ch, cw + 0.6, ch + 0.6);
-              }
-            }
-          }
-        };
-      }
-
       function renderNineTiles(modelsSlice, baseIndex, borderColor) {
-        activeCanvases = [];
         const grid = document.getElementById("tiles-grid");
         grid.innerHTML = "";
 
@@ -1140,7 +1260,7 @@ def main() -> int:
           card.className = "morpho-tile";
           card.style.borderColor = borderColor;
 
-          const useGif = m.gif && !forceLiveCanvas;
+          const simUrl = m.gif ? resolveAssetUrl(m.gif) : "";
           const specimenUrl = resolveAssetUrl(m.specimen);
           const scriptUrl = `${DATA.repo_url}/${m.script}`;
           const leanUrl = `${DATA.repo_url}/${m.lean}`;
@@ -1154,20 +1274,19 @@ def main() -> int:
               </div>
             </div>
             <div class="tile-stage-split">
-              <div class="pane-specimen" title="Canonical Specimen + CV Segmentation & Registered Math Overlay">
+              <div class="pane-specimen" title="Canonical Biological Specimen (${m.species})">
                 ${specimenUrl
                   ? `<img src="${specimenUrl}" alt="${m.species}" onerror="this.src='${DATA.raw_url}/${m.specimen}'" />`
                   : ``
                 }
-                <canvas class="cv-overlay"></canvas>
-                <span class="pane-badge">Specimen + CV Fit</span>
+                <span class="pane-badge">Canonical Specimen</span>
               </div>
-              <div class="pane-sim">
-                ${useGif
-                  ? `<img class="anim-gif" src="${m.gif}" alt="${m.genus} simulation" loading="lazy" />`
-                  : `<canvas class="sim-canvas"></canvas>`
+              <div class="pane-sim" title="Dynamical Simulation (${m.script})">
+                ${simUrl
+                  ? `<img class="anim-gif" src="${simUrl}" alt="${m.genus} simulation" loading="lazy" />`
+                  : `<img class="anim-gif" src="${specimenUrl}" alt="${m.genus} specimen" loading="lazy" />`
                 }
-                <span class="pane-badge" style="color:#facc15;border-color:rgba(250,204,21,0.45);">Math Simulation</span>
+                <span class="pane-badge" style="color:#facc15;border-color:rgba(250,204,21,0.45);">Simulation</span>
                 <span class="mode-tag">${m.tier === "pass3_audited" ? "Pass 3 Audited" : (m.tier === "core_validated" ? "Core Validated" : "Template Stub")}</span>
               </div>
             </div>
@@ -1188,31 +1307,10 @@ def main() -> int:
             </div>
           `;
 
-          const cvCvs = card.querySelector("canvas.cv-overlay");
-          if (cvCvs) {
-            activeCanvases.push(attachSpecimenMathOverlay(cvCvs, m));
-          }
-          if (!useGif) {
-            const simCvs = card.querySelector("canvas.sim-canvas");
-            if (simCvs) {
-              activeCanvases.push(attachProceduralSimulation(simCvs, m, rank));
-            }
-          }
-
           card.onclick = () => openModal(m, rank);
           grid.appendChild(card);
         });
       }
-
-      let tStart = performance.now();
-      function tick(now) {
-        const t = (now - tStart) * 0.001;
-        for (let i = 0; i < activeCanvases.length; i++) {
-          activeCanvases[i](t);
-        }
-        requestAnimationFrame(tick);
-      }
-      requestAnimationFrame(tick);
 
       function openModal(m, rank) {
         const backdrop = document.getElementById("modal-backdrop");
@@ -1276,13 +1374,6 @@ def main() -> int:
         pageOffset = 0;
         updateView();
       };
-      document.getElementById("btn-toggle-anim").onclick = (e) => {
-        forceLiveCanvas = !forceLiveCanvas;
-        e.target.textContent = forceLiveCanvas
-          ? "Mode: All Live 60-FPS PDE Canvas"
-          : "Mode: Hybrid (GIF + Live PDE Canvas)";
-        updateView();
-      };
 
       function openHowItWorksModal() {
         const backdrop = document.getElementById("modal-backdrop");
@@ -1305,13 +1396,13 @@ def main() -> int:
               Only the <strong>${MODELS.length} verified models</strong> across <strong>${DATA.total_genera} genera</strong> and <strong>${populatedCells} matrix cells</strong> that pass computer-vision contour/wavelength/morphometric comparison against their canonical biological specimen photograph (<code>ImgFit &ge; 70.0</code>) are shown in the matrix. Un-fitted template stubs or low-fitness candidates are completely excluded.
             </div>
             <div class="cause-item">
-              <strong>3. Side-by-Side Split Tiles (Specimen + CV Fit vs. Dynamical Simulation):</strong><br>
-              Every tile shows the real biological specimen with a live computer-vision &amp; mathematical registration overlay on the <strong>left</strong>, and the dynamical PDE/ODE/vertex simulation on the <strong>right</strong>, with direct one-click links to the original <strong>Scientific Paper (DOI)</strong>, <strong>Upstream Reference Code</strong>, our <strong>Python Script</strong>, and our <strong>Lean 4 Proof</strong>.
+              <strong>3. Side-by-Side Split Tiles (Canonical Specimen vs. Dynamical Simulation):</strong><br>
+              Every tile shows the real biological specimen photograph on the <strong>left</strong>, and the dynamical PDE/ODE/vertex simulation on the <strong>right</strong>, with direct one-click links to the original <strong>Scientific Paper (DOI)</strong>, <strong>Upstream Reference Code</strong>, our <strong>Python Script</strong>, and our <strong>Lean 4 Proof</strong>.
             </div>
           </div>
           <div class="modal-links" style="margin-top:16px;">
-            <a class="btn active" href="https://github.com/fractastical/morpholib#readme" target="_blank" rel="noopener">📄 Main README (Overview &amp; Walkthroughs) ↗</a>
-            <a class="btn" href="https://github.com/fractastical/morpholib#part-1--how-it-works-the-12-step-morphoeval--lean-4-loop" target="_blank" rel="noopener">🔄 12-Step MorphoEval + Lean 4 Loop ↗</a>
+            <a class="btn active" href="https://github.com/fractastical/morpholib/blob/main/README.md" target="_blank" rel="noopener">📄 Main README (Overview &amp; Walkthroughs) ↗</a>
+            <a class="btn" href="https://github.com/fractastical/morpholib/blob/main/README.md#part-1--how-it-works-the-12-step-morphoeval--lean-4-loop" target="_blank" rel="noopener">🔄 12-Step MorphoEval + Lean 4 Loop ↗</a>
             <a class="btn" href="https://github.com/fractastical/morpholib/blob/main/morphoeval/README.md" target="_blank" rel="noopener">⚖️ MorphoEval 7-Dimension Rubric &amp; Nanopubs ↗</a>
             <a class="btn" href="https://github.com/fractastical/morpholib/blob/main/morphoeval/runs/ARISTOTELIAN_MORPHOSPACE_CATEGORIES.md" target="_blank" rel="noopener">🏛️ Aristotelian Categories &amp; Genus Index ↗</a>
             <a class="btn" href="https://github.com/fractastical/morpholib/blob/main/morphoeval/runs/2026-10-19-turing-morpho-loop.md" target="_blank" rel="noopener">🔬 Worked Sample Run (Turing 38.0 &rarr; 85.5) ↗</a>
