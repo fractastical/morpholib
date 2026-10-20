@@ -137,6 +137,25 @@ theorem rule30_dyadic_corner_mahler_identity (m_2s_2r : Bool) :
     bimahler_dyadic_corner true true true m_2s_2r = bne true m_2s_2r := by
   cases m_2s_2r <;> rfl
 
+/-- Theorem 38 (`rule30_weight2_mixed_mahler_5term_cancellation`):
+    At any weight-2 dyadic shell `u = u1 + u2` (`u1 = 2^s, u2 = 2^{s+d}` with `s, d ≥ 1`),
+    splitting the interior 7-term 2D Bi-Mahler OR-convolution `gam_int` via the column Mahler
+    submask sums `c_col_u1 = B(u1, u1) ⊕ B(u2, u1) ⊕ B(u1+u2, u1)`,
+    `c_col_u2 = B(u1, u2) ⊕ B(u2, u2) ⊕ B(u1+u2, u2)`, and row submask sum
+    `alp_int = B(u1, u1+u2) ⊕ B(u2, u1+u2) ⊕ B(u1+u2, u1+u2)` cancels `B(u1, u2) ⊕ B(u2, u1)`
+    and leaves `c_col_u1 ⊕ c_col_u2 ⊕ B(u1, u1) ⊕ B(u2, u2) ⊕ alp_int = gam_int` over GF(2). -/
+theorem rule30_weight2_mixed_mahler_5term_cancellation
+    (b_u1_u1 b_u2_u1 b_u12_u1 b_u1_u2 b_u2_u2 b_u12_u2 b_u1_u12 b_u2_u12 b_u12_u12 : Bool) :
+    let gam_int := bne (bne (bne b_u2_u1 b_u1_u2) (bne b_u12_u1 b_u12_u2))
+                       (bne (bne b_u1_u12 b_u2_u12) b_u12_u12)
+    let c_col_u1 := bne (bne b_u1_u1 b_u2_u1) b_u12_u1
+    let c_col_u2 := bne (bne b_u1_u2 b_u2_u2) b_u12_u2
+    let alp_int := bne (bne b_u1_u12 b_u2_u12) b_u12_u12
+    bne (bne (c_col_u1 != c_col_u2) (b_u1_u1 != b_u2_u2)) alp_int = gam_int := by
+  cases b_u1_u1 <;> cases b_u2_u1 <;> cases b_u12_u1 <;>
+  cases b_u1_u2 <;> cases b_u2_u2 <;> cases b_u12_u2 <;>
+  cases b_u1_u12 <;> cases b_u2_u12 <;> cases b_u12_u12 <;> decide
+
 /-- Law 3 (`wolfram-conus-textile-rule30-3`):
     Meinhardt & Klingler (1987) 3-species activator-substrate-hormone reaction kinetics. -/
 structure MeinhardtKlinglerParams where

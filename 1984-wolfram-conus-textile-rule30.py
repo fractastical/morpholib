@@ -6916,7 +6916,7 @@ def verify_dyadic_mahler_self_duality_and_crystal_defect_split() -> dict[str, in
 
 def verify_short_run_staircase_sieve_and_decimated_bimahler_laws() -> dict[str, int]:
     """
-    Verify Theorem 37: Unmasked Big-Integer Right-Half-Plane SWAR Law, Exact 2-Adic Zero-Run
+    Verify Theorem 38: Unmasked Big-Integer Right-Half-Plane SWAR Law, Exact 2-Adic Zero-Run
     Staircase Sieve & Short-Run Multi-Block Gate Lock-In Elimination, and 2D Bi-Mahler
     Scale-Decimation, Interior-Only Dyadic Grid & 5-Term Mixed Mahler-Column-Corner Laws:
       1. Exact Unmasked Big-Integer Right-Half-Plane SWAR Law:
@@ -8278,6 +8278,15 @@ def self_test() -> dict:
         and recip_37["wall_invariant_errors"] == 0
     ), "Theorem 37 Mahler Transient-Periodicity Reciprocity, Upward/Downward Integrals, Triangular V Recurrence, or Wall Invariant violated"
 
+    sieve_38 = verify_short_run_staircase_sieve_and_decimated_bimahler_laws()
+    assert (
+        sieve_38["swar_bigint_errors"] == 0
+        and sieve_38["staircase_sieve_errors"] == 0
+        and sieve_38["short_run_lockin_errors"] == 0
+        and sieve_38["decim_and_interior_errors"] == 0
+        and sieve_38["mixed_5term_errors"] == 0
+    ), "Theorem 38 Unmasked Big-Int SWAR Law, 2-Adic Staircase Sieve, Short-Run Multi-Block Lock-In, or 2D Bi-Mahler Decimation/5-Term Law violated"
+
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)
     assert tent_eval["erosion_r30"]["frac_exact_2px_erosion"] == 1.0, "Rule 30 white-tent erosion must be 100% exact 2px/step"
     assert tent_eval["erosion_r90"]["frac_exact_2px_erosion"] == 1.0, "Rule 90 white-tent erosion must be 100% exact 2px/step"
@@ -8349,6 +8358,7 @@ def self_test() -> dict:
         "grand_35": grand_35,
         "dyad_36": dyad_36,
         "recip_37": recip_37,
+        "sieve_38": sieve_38,
         "tent_eval": tent_eval,
     }
 
@@ -9699,8 +9709,8 @@ def render_prize_progress_gif_and_poster(
         },
         {
             "step": 36,
-            "commit": "028758b -> HEAD",
-            "time_str": "Oct 20, 9:30 AM",
+            "commit": "028758b",
+            "time_str": "Oct 20, 9:10 AM",
             "dt_min": 20,
             "cum_min": 850,
             "phase": "Phase IV: General Period-Pi Elimination, Dual Families & Degree Staircase",
@@ -9714,6 +9724,27 @@ def render_prize_progress_gif_and_poster(
             "synthesis": (
                 "Proves 2-adic Mahler transient-periodicity reciprocity P_B=pow2(Q_alpha), boundary-free upward tail-integrals for B_p^(per), "
                 "explicit triangular vertical Mahler recurrences for V_p(n+1,j), the right-cone anti-diagonal Kogge-Stone law, and the W_3={000,110,111} wall trap."
+            ),
+            "pi_max": 30,
+            "necks_done": 74248449,
+        },
+        {
+            "step": 37,
+            "commit": "028758b -> HEAD",
+            "time_str": "Oct 20, 9:30 AM",
+            "dt_min": 20,
+            "cum_min": 870,
+            "phase": "Phase IV: General Period-Pi Elimination, Dual Families & Degree Staircase",
+            "phase_color": "#34d399",
+            "title": "Step 37: Unmasked Big-Int SWAR, 2-Adic Staircase Sieve, Short-Run Multi-Block Lock-In & 2D Bi-Mahler Decimation",
+            "thm_badge": "Theorem 38 (Staircase Sieve & Bi-Mahler Decimation)",
+            "formula_lines": [
+                r"$R_{t+1}=((R_t\ll 1)\lor c_t)\oplus(R_t\lor(R_t\gg 1))\in [2^t,2^{t+1}),\quad k\neq 3\;(a\in\{4,5\}),\;k\notin\{2,3\}\;(a\in\{6,7\}),\;k=1\;(a\geq 8)$",
+                r"$\mathcal{Z}(f_{p,s})(u_{\mathrm{hi}})=\gamma_p(u_{\mathrm{hi}}2^s),\quad \gamma_p(u_1+u_2)=C_p^{(u_1)}(u)\oplus C_p^{(u_2)}(u)\oplus\mathrm{B}_p(u_1,u_2)\oplus\mathrm{B}_p(u_2,u_1)\oplus\alpha_{2u+p,u}$",
+            ],
+            "synthesis": (
+                "Proves the exact unmasked big-integer SWAR law, the 2-adic zero-run staircase sieve across a=1..9, unconditional elimination of "
+                "heterogeneous short-run (a<=8) multi-block families, and 2D Bi-Mahler scale-decimation, interior grid & 5-term mixed laws."
             ),
             "pi_max": 30,
             "necks_done": 74248449,
@@ -9774,7 +9805,7 @@ def render_prize_progress_gif_and_poster(
         ax_top.text(
             98.5,
             7.2,
-            f"[{ms['thm_badge']}]   Milestone {ms['step']} / 36",
+            f"[{ms['thm_badge']}]   Milestone {ms['step']} / 37",
             color=ms["phase_color"],
             fontsize=11.0,
             fontweight="bold",
@@ -9789,7 +9820,7 @@ def render_prize_progress_gif_and_poster(
         ax_top.text(
             85.25,
             2.9,
-            f"37-Theorem Architecture: {int(round(prog_pct * 100))}% Complete",
+            f"38-Theorem Architecture: {int(round(prog_pct * 100))}% Complete",
             color="#0b0f19" if prog_pct > 0.45 else "#f8fafc",
             fontsize=8.6,
             fontweight="bold",
@@ -10067,14 +10098,15 @@ def render_prize_progress_gif_and_poster(
                 "S34\nThm35",
                 "S35\nThm36",
                 "S36\nThm37",
+                "S37\nThm38",
             ],
             color="#cbd5e1",
-            fontsize=4.1,
+            fontsize=4.0,
         )
         ax_time.set_ylim(0, 82)
         ax_time.set_ylabel("Step Duration $\\Delta t$ (min)", color="#cbd5e1", fontsize=9.2)
         ax_time.set_title(
-            "D. Chronological Theorem Build Time per Milestone (Oct 18–20, 2026: 36 Milestones, 14h 10m Active Proof Time)",
+            "D. Chronological Theorem Build Time per Milestone (Oct 18–20, 2026: 37 Milestones, 14h 30m Active Proof Time)",
             color="#f8fafc",
             fontsize=10.3,
             fontweight="bold",
@@ -10126,8 +10158,8 @@ def render_prize_progress_gif_and_poster(
             ),
             (
                 "5. Twin SWAR, 2-Sheet PDE, EF Law & Prize #1-#3",
-                idx >= 35,
-                "PROVED (Thms 31-37: B_p, EF, W_3, deg=2T-1)",
+                idx >= 36,
+                "PROVED (Thms 31-38: B_p, EF, W_3, Sieve, deg=2T-1)",
             ),
             (
                 "6. Primitive Necklaces Extinguished (Pi=2..30)",
@@ -10235,6 +10267,7 @@ def main(argv: list[str] | None = None) -> int:
     grand_35 = res["grand_35"]
     dyad_36 = res["dyad_36"]
     recip_37 = res["recip_37"]
+    sieve_38 = res["sieve_38"]
     print(
         f"[open_problems_A_B_C_D] OK | backward inverse errors={bwd['backward_inverse_errors']} (post-barrier cycles: 0/3, 0/15, 0/255) | "
         f"unit-seed branch='{bs_diag['unit_seed_p16_branch_path']}' -> exact k_5={bs_diag['unit_seed_exact_k5']} (T_lock={bs_diag['unit_seed_exact_tlock_k5']}, "
@@ -10307,7 +10340,7 @@ def main(argv: list[str] | None = None) -> int:
         even_jump["max_ext_30"],
     )
     print(
-        f"[theorems_15_to_37_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv/EvenJump/Bridge31/Twin32/Bich33/Subd34/Grand35/Dyad36/Recip37 errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']},{even_jump['even_jump_errors']},{bridge_31['mahler_bridge_errors']},{twin_32['twin_swar_errors'] + twin_32['shift_rec_errors'] + twin_32['self_dual_errors'] + twin_32['erasure_law_errors'] + twin_32['deriv_and_bijection_errors'] + twin_32['parity_lock_errors'] + twin_32['collapse_9step_errors'] + twin_32['multirun_lockin_errors']},{bich_33['full_cone_errors'] + bich_33['quadrant_pde_errors'] + bich_33['pascal_mahler_errors'] + bich_33['pure_mahler_evol_errors'] + bich_33['bi_sierpinski_errors'] + bich_33['gate_jump_and_leapfrog_errors'] + bich_33['bimahler_or_conv_errors'] + bich_33['universal_zero_errors']},{subd_34['bwd_pde_errors'] + subd_34['col_mahler_bwd_errors'] + subd_34['bimahler_pde_errors'] + subd_34['subdiag_transfer_errors'] + subd_34['shifted_bimahler_errors'] + subd_34['subdiag_lock_violations'] + subd_34['subdiag_invariant_errors'] + subd_34['euler_fermat_violations'] + subd_34['center_mahler_survivors']},{grand_35['top_octave_delta_errors'] + grand_35['post_doubling_degree_errors'] + grand_35['anf_degree_errors'] + grand_35['top_monomial_errors'] + grand_35['sensitivity_boundary_errors']},{dyad_36['self_dual_dyadic_errors'] + dyad_36['joint_pair_contradiction_errors'] + dyad_36['corner_slice_errors'] + dyad_36['monic_lead_errors'] + dyad_36['proj_cutoff_errors'] + dyad_36['crystal_decomp_errors']},{recip_37['reciprocity_errors'] + recip_37['integral_errors'] + recip_37['triangular_v_errors'] + recip_37['antidiag_ks_errors'] + recip_37['wall_invariant_errors']}) | "
+        f"[theorems_15_to_38_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv/EvenJump/Bridge31/Twin32/Bich33/Subd34/Grand35/Dyad36/Recip37/Sieve38 errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']},{even_jump['even_jump_errors']},{bridge_31['mahler_bridge_errors']},{twin_32['twin_swar_errors'] + twin_32['shift_rec_errors'] + twin_32['self_dual_errors'] + twin_32['erasure_law_errors'] + twin_32['deriv_and_bijection_errors'] + twin_32['parity_lock_errors'] + twin_32['collapse_9step_errors'] + twin_32['multirun_lockin_errors']},{bich_33['full_cone_errors'] + bich_33['quadrant_pde_errors'] + bich_33['pascal_mahler_errors'] + bich_33['pure_mahler_evol_errors'] + bich_33['bi_sierpinski_errors'] + bich_33['gate_jump_and_leapfrog_errors'] + bich_33['bimahler_or_conv_errors'] + bich_33['universal_zero_errors']},{subd_34['bwd_pde_errors'] + subd_34['col_mahler_bwd_errors'] + subd_34['bimahler_pde_errors'] + subd_34['subdiag_transfer_errors'] + subd_34['shifted_bimahler_errors'] + subd_34['subdiag_lock_violations'] + subd_34['subdiag_invariant_errors'] + subd_34['euler_fermat_violations'] + subd_34['center_mahler_survivors']},{grand_35['top_octave_delta_errors'] + grand_35['post_doubling_degree_errors'] + grand_35['anf_degree_errors'] + grand_35['top_monomial_errors'] + grand_35['sensitivity_boundary_errors']},{dyad_36['self_dual_dyadic_errors'] + dyad_36['joint_pair_contradiction_errors'] + dyad_36['corner_slice_errors'] + dyad_36['monic_lead_errors'] + dyad_36['proj_cutoff_errors'] + dyad_36['crystal_decomp_errors']},{recip_37['reciprocity_errors'] + recip_37['integral_errors'] + recip_37['triangular_v_errors'] + recip_37['antidiag_ks_errors'] + recip_37['wall_invariant_errors']},{sieve_38['swar_bigint_errors'] + sieve_38['staircase_sieve_errors'] + sieve_38['short_run_lockin_errors'] + sieve_38['decim_and_interior_errors'] + sieve_38['mixed_5term_errors']}) | "
         f"SWAR cone tails={bridge_31['swar_candidates_tested']} (survivors={bridge_31['swar_survivors']}, max_steps={bridge_31['swar_max_steps']}) | "
         f"Q_m={twin_32['moore_sizes_m1_to_6']} | EF tests={subd_34['euler_fermat_tests']} | half-density={grand_35['exact_half_density_count_s1_to_41']}/41 | ANF mons={grand_35['monomial_counts_t1_to_7']} | "
         f"Pi=2..30 ({tot_necks} necklaces, {tot_prefs} prefs): unextinguished={tot_unext} (max_ext_steps={max_ext})"
