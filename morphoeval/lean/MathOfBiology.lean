@@ -308,6 +308,37 @@ theorem rule30_left_cone_1run_alternating_profile_a3
     (l1_0 = false ∧ l2_0 = true ∧ l3_0 = true) := by
   cases l1_0 <;> cases l1_1 <;> cases l1_2 <;> cases r1_0 <;> cases r1_1 <;> cases r1_2 <;> simp_all [rule30]
 
+/-- Law 2u (`wolfram-conus-textile-rule30-2u`):
+    Universal Period-Doubling Horizon Sandwich Law & 9-Row Algebraic Cascade (Theorem 46):
+    Along the sub-diagonal recurrence `B_k(m) = rule30 (B_{k-2}(m+1)) (B_{k-1}(m)) (B_k(m-1))`:
+    1. (`rule30_horizon_falling_edge_predecessor`): When `B_{k_r - 4}(m) = bne u_m u_m1` and
+       `B_{k_r - 3}(m - 1) = u_m1`, the OR gate `(bne u_m u_m1) || u_m1` equals `u_m || u_m1`,
+       so `B_{k_r - 5}(m + 1) = bne u_m ((bne u_m u_m1) || u_m1) = (!u_m) && u_m1` (falling-edge detector).
+    2. (`rule30_horizon_idempotent_shift_and_vacuum`): When `B_{k_r - 4}(m + 1) = bne u_mp1 u_m`
+       and `B_{k_r - 2}(m - 1) = u_m`, the OR gate `u_m || u_m = u_m` linearizes by idempotence to give
+       `B_{k_r - 2}(m) = u_mp1`, which then self-annihilates against `B_{k_r - 1}(m - 1) = false` to give
+       the all-zero vacuum `B_{k_r - 1}(m) = rule30 u_mp1 u_mp1 false = false`.
+    3. (`rule30_horizon_condensate_and_complement_shift`): Against `B_{k_r - 1}(m + 1) = false` and
+       `B_{k_r + 1}(m - 1) = true`, `B_{k_r + 1}(m) = rule30 false v_m true = true` (all-one condensate)
+       for both phases `v_m` and `!v_m`, and at `k_r + 2` the OR gate saturates to give
+       `B_{k_r + 2}(m) = rule30 v_mp1 true b_kp2_m1 = !v_mp1`, followed by
+       `B_{k_r + 3}(m) = rule30 true (!v_mp1) b_kp3_m1 = v_mp1 && (!b_kp3_m1)`. -/
+theorem rule30_horizon_falling_edge_predecessor (u_m u_m1 : Bool) :
+    bne u_m ((bne u_m u_m1) || u_m1) = ((!u_m) && u_m1) := by
+  cases u_m <;> cases u_m1 <;> decide
+
+theorem rule30_horizon_idempotent_shift_and_vacuum (u_mp1 u_m : Bool) :
+    rule30 (bne u_mp1 u_m) u_m u_m = u_mp1 ∧
+    rule30 u_mp1 u_mp1 false = false := by
+  cases u_mp1 <;> cases u_m <;> decide
+
+theorem rule30_horizon_condensate_and_complement_shift (v_m v_mp1 b_kp2_m1 b_kp3_m1 : Bool) :
+    rule30 false v_m true = true ∧
+    rule30 false (!v_m) true = true ∧
+    rule30 v_mp1 true b_kp2_m1 = !v_mp1 ∧
+    rule30 true (!v_mp1) b_kp3_m1 = (v_mp1 && (!b_kp3_m1)) := by
+  cases v_m <;> cases v_mp1 <;> cases b_kp2_m1 <;> cases b_kp3_m1 <;> decide
+
 
 
 /-- Law 3 (`wolfram-conus-textile-rule30-3`):
