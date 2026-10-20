@@ -278,6 +278,38 @@ theorem rule30_adjacent_10_walls_orthogonal (c r rr : Bool) :
     ((c && (!r)) && (r && (!rr))) = false := by
   cases c <;> cases r <;> cases rr <;> rfl
 
+/-- Law 2t (`wolfram-conus-textile-rule30-2t`):
+    Pure Left-Cone Vertical Synthesis (Theorem 45):
+    1. Center-to-Left Opaque Mirror Law:
+       In the Left-Cone Automaton `l_1(t+1) = bne l_2(t) (l_1(t) || c_t)`, whenever `l_1(t) = true`,
+       the center bit `c_t` is 100% erased (`rule30 l2 true c0 = rule30 l2 true c1 = !l2`).
+    2. Exact Linearization of the Depth-2 Period-Pi Defect `D_2(t) = D_1(t+1) ⊕ D_1(t)`:
+       Whenever `c_t` is Pi-periodic (`c_pi = c`) and satisfies the Opaque Mirror Lock on 1s
+       (`c = true → l1_pi = l1`), the OR-gate difference `bne (l1 || c) (l1_pi || c)` equals
+       `bne l1 l1_pi` identically, and `D_2(t) = bne l2 l2_pi` equals `bne (bne l1_next l1_next_pi) (bne l1 l1_pi)`. -/
+theorem rule30_center_to_left_opaque_mirror (l2 c0 c1 : Bool) :
+    rule30 l2 true c0 = !l2 ∧ rule30 l2 true c0 = rule30 l2 true c1 := by
+  cases l2 <;> cases c0 <;> cases c1 <;> decide
+
+theorem rule30_period_pi_defect_d2_linear (c l1 l1_pi l1_next l1_next_pi : Bool)
+    (h_mirror : c = true → l1_pi = l1) :
+    bne (bne l1_next (l1 || c)) (bne l1_next_pi (l1_pi || c)) =
+      bne (bne l1_next l1_next_pi) (bne l1 l1_pi) := by
+  cases c <;> cases l1 <;> cases l1_pi <;> cases l1_next <;> cases l1_next_pi <;> simp_all
+
+theorem rule30_left_cone_1run_alternating_profile_a3
+    (l1_0 l1_1 l1_2 r1_0 r1_1 r1_2 : Bool)
+    (hc1 : rule30 l1_0 true r1_0 = true)
+    (hc2 : rule30 l1_1 true r1_1 = true)
+    (hc3 : rule30 l1_2 true r1_2 = false) :
+    let l2_0 := bne l1_1 (l1_0 || true)
+    let l2_1 := bne l1_2 (l1_1 || true)
+    let l3_0 := bne l2_1 (l2_0 || l1_0)
+    (l1_0 = false ∧ l2_0 = true ∧ l3_0 = true) := by
+  cases l1_0 <;> cases l1_1 <;> cases l1_2 <;> cases r1_0 <;> cases r1_1 <;> cases r1_2 <;> simp_all [rule30]
+
+
+
 /-- Law 3 (`wolfram-conus-textile-rule30-3`):
     Meinhardt & Klingler (1987) 3-species activator-substrate-hormone reaction kinetics. -/
 structure MeinhardtKlinglerParams where
