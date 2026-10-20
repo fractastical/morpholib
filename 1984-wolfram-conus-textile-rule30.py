@@ -3323,6 +3323,738 @@ def verify_full_plane_characteristic_conservation_and_pi18_closure() -> dict:
     }
 
 
+_ZERO_SHIFT_C_LIB = None
+
+_ZERO_SHIFT_C_SRC = r"""
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <pthread.h>
+
+static inline uint32_t suffix_xor32(uint32_t x) {
+    x ^= x >> 1;
+    x ^= x >> 2;
+    x ^= x >> 4;
+    x ^= x >> 8;
+    x ^= x >> 16;
+    return x;
+}
+
+static inline uint32_t prefix_xor32(uint32_t x) {
+    x ^= x << 1;
+    x ^= x << 2;
+    x ^= x << 4;
+    x ^= x << 8;
+    x ^= x << 16;
+    return x;
+}
+
+static inline uint64_t prefix_xor64(uint64_t x) {
+    x ^= x << 1;
+    x ^= x << 2;
+    x ^= x << 4;
+    x ^= x << 8;
+    x ^= x << 16;
+    x ^= x << 32;
+    return x;
+}
+
+typedef struct {
+    int Pi;
+    const uint32_t *all_w;
+    int64_t start_idx;
+    int64_t end_idx;
+    int64_t out_prefs;
+    int64_t out_unext;
+    int out_smax;
+} worker_arg_t;
+
+static void* solve_worker(void *arg_ptr) {
+    worker_arg_t *arg = (worker_arg_t*)arg_ptr;
+    int Pi = arg->Pi;
+    const uint32_t *all_w = arg->all_w;
+    int64_t idx = arg->start_idx;
+    int64_t end_idx = arg->end_idx;
+
+    int t0 = Pi - 1;
+    int N_init = t0 + 1;
+    int64_t total_prefs = 0;
+    int64_t total_unext = 0;
+    int smax = 0;
+
+    int cap = 1 << 21;
+    uint32_t *w_cur = (uint32_t*)malloc(cap * sizeof(uint32_t));
+    uint32_t *R1_cur = (uint32_t*)malloc(cap * sizeof(uint32_t));
+    uint32_t *R2_cur = (uint32_t*)malloc(cap * sizeof(uint32_t));
+    uint32_t *w_nxt = (uint32_t*)malloc(cap * sizeof(uint32_t));
+    uint32_t *R1_nxt = (uint32_t*)malloc(cap * sizeof(uint32_t));
+    uint32_t *R2_nxt = (uint32_t*)malloc(cap * sizeof(uint32_t));
+
+    uint64_t *w64_cur = (uint64_t*)malloc(cap * sizeof(uint64_t));
+    uint64_t *R1_64_cur = (uint64_t*)malloc(cap * sizeof(uint64_t));
+    uint64_t *R2_64_cur = (uint64_t*)malloc(cap * sizeof(uint64_t));
+
+    int K = (Pi >= 8) ? (Pi - 4) : 1;
+    uint32_t mask_K = (1U << K) - 1U;
+
+    while (idx < end_idx) {
+        int n_up = 0;
+        int64_t u_start[256];
+        int32_t u_count[256];
+        uint32_t u_pref[256];
+
+        while (idx < end_idx && n_up < 256) {
+            uint32_t p = all_w[idx] & mask_K;
+            int64_t s = idx;
+            idx++;
+            while (idx < end_idx && (all_w[idx] & mask_K) == p) idx++;
+            u_start[n_up] = s;
+            u_count[n_up] = (int32_t)(idx - s);
+            u_pref[n_up] = p;
+            n_up++;
+        }
+
+        int n_cur = n_up;
+        for (int i = 0; i < n_up; i++) {
+            w_cur[i] = (uint32_t)i;
+            R1_cur[i] = 0;
+            R2_cur[i] = 0;
+        }
+
+        for (int N = 1; N < K; N++) {
+            int tau = N - 1;
+            uint32_t mask_low = (1U << N) - 1U;
+            uint32_t mask_H = (N >= 2) ? ((1U << (N - 1)) - 1U) : 0U;
+            int n_next = 0;
+            for (int i = 0; i < n_cur; i++) {
+                uint32_t pid = w_cur[i];
+                uint32_t wp = u_pref[pid];
+                uint32_t r1 = R1_cur[i];
+                uint32_t r2 = R2_cur[i];
+                uint32_t w_s = (wp >> tau) & 1U;
+                uint32_t w_next = (wp >> (tau + 1)) & 1U;
+                uint32_t w_N = (wp >> N) & 1U;
+                uint32_t H_N = (r1 | r2) & mask_H;
+                uint32_t x = suffix_xor32(((1U ^ w_next) << (N - 1)) ^ H_N);
+                uint32_t r_N_A = (x & mask_low) | (w_N << N);
+
+                int keep_A = 1;
+                if (tau >= 2) {
+                    uint32_t w_m1 = (wp >> (tau - 1)) & 1U;
+                    uint32_t w_m2 = (wp >> (tau - 2)) & 1U;
+                    uint32_t l1_p2 = (r2 >> (N - 3)) & 1U;
+                    if (w_s == 0 && w_m2 == 0 && w_m1 == 1 && l1_p2 == 0) keep_A = 0;
+                }
+                if (keep_A) {
+                    w_nxt[n_next] = pid;
+                    R2_nxt[n_next] = r1;
+                    R1_nxt[n_next] = r_N_A;
+                    n_next++;
+                }
+                int keep_B = (w_s == 0);
+                if (keep_B && tau >= 1) {
+                    uint32_t w_m1 = (wp >> (tau - 1)) & 1U;
+                    uint32_t l1_p1 = (r1 >> (N - 2)) & 1U;
+                    if (w_m1 == 0 && l1_p1 == 1) keep_B = 0;
+                }
+                if (keep_B) {
+                    w_nxt[n_next] = pid;
+                    R2_nxt[n_next] = r1;
+                    R1_nxt[n_next] = r_N_A ^ mask_low;
+                    n_next++;
+                }
+            }
+            uint32_t *tw = w_cur; w_cur = w_nxt; w_nxt = tw;
+            uint32_t *tr1 = R1_cur; R1_cur = R1_nxt; R1_nxt = tr1;
+            uint32_t *tr2 = R2_cur; R2_cur = R2_nxt; R2_nxt = tr2;
+            n_cur = n_next;
+        }
+
+        uint32_t mask_low_K = (1U << K) - 1U;
+        uint32_t full_mask_K = (1U << (K + 1)) - 1U;
+        uint32_t mask_H_K = (1U << (K - 1)) - 1U;
+        int tau_K = K - 1;
+        int n_k_next = 0;
+        for (int i = 0; i < n_cur; i++) {
+            uint32_t pid = w_cur[i];
+            uint32_t wp = u_pref[pid];
+            uint32_t r1 = R1_cur[i];
+            uint32_t r2 = R2_cur[i];
+            uint32_t H_K = (r1 | r2) & mask_H_K;
+            uint32_t x_K = suffix_xor32(H_K) & mask_low_K;
+            uint32_t w_s = (wp >> tau_K) & 1U;
+            uint32_t w_m1 = (wp >> (tau_K - 1)) & 1U;
+            uint32_t w_m2 = (wp >> (tau_K - 2)) & 1U;
+            uint32_t l1_p1 = (r1 >> (K - 2)) & 1U;
+            uint32_t l1_p2 = (r2 >> (K - 3)) & 1U;
+            if (w_s == 1 || !(w_m2 == 0 && w_m1 == 1 && l1_p2 == 0)) {
+                w_nxt[n_k_next] = pid;
+                R2_nxt[n_k_next] = r1;
+                R1_nxt[n_k_next] = x_K ^ mask_low_K;
+                n_k_next++;
+            }
+            if (w_s == 0 && !(w_m1 == 0 && l1_p1 == 1)) {
+                w_nxt[n_k_next] = pid;
+                R2_nxt[n_k_next] = r1;
+                R1_nxt[n_k_next] = x_K;
+                n_k_next++;
+            }
+        }
+
+        int n_pref_surv = n_k_next;
+        uint32_t *p_pid = (uint32_t*)malloc(n_pref_surv * sizeof(uint32_t));
+        uint32_t *p_r1 = (uint32_t*)malloc(n_pref_surv * sizeof(uint32_t));
+        uint32_t *p_r2 = (uint32_t*)malloc(n_pref_surv * sizeof(uint32_t));
+        memcpy(p_pid, w_nxt, n_pref_surv * sizeof(uint32_t));
+        memcpy(p_r1, R1_nxt, n_pref_surv * sizeof(uint32_t));
+        memcpy(p_r2, R2_nxt, n_pref_surv * sizeof(uint32_t));
+
+        int s_idx = 0;
+        while (s_idx < n_pref_surv) {
+            int n_exp = 0;
+            while (s_idx < n_pref_surv && n_exp + u_count[p_pid[s_idx]] <= 16384) {
+                uint32_t pid = p_pid[s_idx];
+                uint32_t x_k_br = p_r1[s_idx];
+                uint32_t r2 = p_r2[s_idx];
+                int64_t st = u_start[pid];
+                int32_t cnt = u_count[pid];
+                for (int32_t c = 0; c < cnt; c++) {
+                    uint32_t w = all_w[st + c];
+                    uint32_t w_K = (w >> K) & 1U;
+                    w_cur[n_exp] = w;
+                    R1_cur[n_exp] = x_k_br ^ (w_K * full_mask_K);
+                    R2_cur[n_exp] = r2;
+                    n_exp++;
+                }
+                s_idx++;
+            }
+
+            int nc = n_exp;
+            for (int N = K + 1; N < N_init; N++) {
+                int tau = N - 1;
+                uint32_t mask_low = (1U << N) - 1U;
+                uint32_t mask_H = (1U << (N - 1)) - 1U;
+                int n_next = 0;
+                for (int i = 0; i < nc; i++) {
+                    uint32_t w = w_cur[i];
+                    uint32_t r1 = R1_cur[i];
+                    uint32_t r2 = R2_cur[i];
+                    uint32_t w_s = (w >> tau) & 1U;
+                    uint32_t w_next = (w >> (tau + 1)) & 1U;
+                    uint32_t w_N = (w >> N) & 1U;
+                    uint32_t H_N = (r1 | r2) & mask_H;
+                    uint32_t x = suffix_xor32(((1U ^ w_next) << (N - 1)) ^ H_N);
+                    uint32_t r_N_A = (x & mask_low) | (w_N << N);
+                    uint32_t w_m1 = (w >> (tau - 1)) & 1U;
+                    uint32_t w_m2 = (w >> (tau - 2)) & 1U;
+                    uint32_t l1_p2 = (r2 >> (N - 3)) & 1U;
+                    if (w_s == 1 || !(w_m2 == 0 && w_m1 == 1 && l1_p2 == 0)) {
+                        w_nxt[n_next] = w;
+                        R2_nxt[n_next] = r1;
+                        R1_nxt[n_next] = r_N_A;
+                        n_next++;
+                    }
+                    uint32_t l1_p1 = (r1 >> (N - 2)) & 1U;
+                    if (w_s == 0 && !(w_m1 == 0 && l1_p1 == 1)) {
+                        w_nxt[n_next] = w;
+                        R2_nxt[n_next] = r1;
+                        R1_nxt[n_next] = r_N_A ^ mask_low;
+                        n_next++;
+                    }
+                }
+                uint32_t *tw = w_cur; w_cur = w_nxt; w_nxt = tw;
+                uint32_t *tr1 = R1_cur; R1_cur = R1_nxt; R1_nxt = tr1;
+                uint32_t *tr2 = R2_cur; R2_cur = R2_nxt; R2_nxt = tr2;
+                nc = n_next;
+            }
+
+            total_prefs += nc;
+            uint32_t mask_low0 = (1U << N_init) - 1U;
+            uint32_t mask_H0 = (1U << (N_init - 1)) - 1U;
+            int N1 = N_init + 1;
+            uint32_t mask_low1 = (1U << N1) - 1U;
+            uint32_t mask_H1 = (1U << (N1 - 1)) - 1U;
+            int n_step1 = 0;
+            for (int i = 0; i < nc; i++) {
+                uint32_t w = w_cur[i];
+                uint32_t r1 = R1_cur[i];
+                uint32_t r2 = R2_cur[i];
+                uint32_t H0 = (r1 | r2) & mask_H0;
+                uint32_t r_init = suffix_xor32((1U << (N_init - 1)) ^ H0) & mask_low0;
+                uint32_t H1 = (r_init | r1) & mask_H1;
+                uint32_t req_l1_1 = __builtin_parity(H1);
+                uint32_t w_next1 = (w >> 1) & 1U;
+                uint32_t g_cur1 = req_l1_1 ^ w_next1;
+                uint32_t w_m2_1 = (w >> (Pi - 2)) & 1U;
+                uint32_t l1_p2_1 = (r1 >> (N1 - 3)) & 1U;
+                if (!(w_m2_1 == 0 && l1_p2_1 == 0 && g_cur1 == 1)) {
+                    uint32_t x1 = prefix_xor32(H1 << 1);
+                    w_nxt[n_step1] = w;
+                    R2_nxt[n_step1] = r_init;
+                    R1_nxt[n_step1] = (x1 & mask_low1) | (w_next1 << N1);
+                    n_step1++;
+                }
+            }
+            if (n_step1 == 0) continue;
+            if (1 > smax) smax = 1;
+
+            for (int i = 0; i < n_step1; i++) {
+                w64_cur[i] = w_nxt[i];
+                R1_64_cur[i] = R1_nxt[i];
+                R2_64_cur[i] = R2_nxt[i];
+            }
+            int nc64 = n_step1;
+            int shift_off = 0;
+            for (int step_idx = 2; step_idx < 250 && nc64 > 0; step_idx++) {
+                int N = N_init + step_idx;
+                if (N == 56 && shift_off == 0) {
+                    for (int i = 0; i < nc64; i++) {
+                        R1_64_cur[i] >>= 14;
+                        R2_64_cur[i] >>= 14;
+                    }
+                    shift_off = 14;
+                }
+                int N_eff = N - shift_off;
+                int tau = t0 + step_idx;
+                int s = tau % Pi;
+                int s_next = (s + 1) % Pi;
+                int s_N = N % Pi;
+                int s_m1 = (tau - 1) % Pi;
+                int s_m2 = (tau - 2) % Pi;
+                uint64_t mask_H = (1ULL << (N_eff - 1)) - 1ULL;
+                uint64_t mask_low = (1ULL << N_eff) - 1ULL;
+                int n_next64 = 0;
+                for (int i = 0; i < nc64; i++) {
+                    uint64_t w = w64_cur[i];
+                    uint64_t r1 = R1_64_cur[i];
+                    uint64_t r2 = R2_64_cur[i];
+                    uint64_t H_N = (r1 | r2) & mask_H;
+                    uint64_t req_l1 = __builtin_parityll(H_N);
+                    uint64_t w_next = (w >> s_next) & 1ULL;
+                    uint64_t g_cur = req_l1 ^ w_next;
+                    uint64_t w_s = (w >> s) & 1ULL;
+                    uint64_t w_m1 = (w >> s_m1) & 1ULL;
+                    uint64_t w_m2 = (w >> s_m2) & 1ULL;
+                    uint64_t l1_p1 = (r1 >> (N_eff - 2)) & 1ULL;
+                    uint64_t l1_p2 = (r2 >> (N_eff - 3)) & 1ULL;
+                    int alive = 0;
+                    if (w_s == 1) {
+                        alive = (g_cur == 1);
+                    } else {
+                        alive = !(w_m1 == 0 && l1_p1 == 1 && g_cur == 0) &&
+                                !(w_m2 == 0 && w_m1 == 1 && l1_p2 == 0 && g_cur == 1);
+                    }
+                    if (alive) {
+                        uint64_t x = prefix_xor64(H_N << 1);
+                        uint64_t w_N = (w >> s_N) & 1ULL;
+                        w64_cur[n_next64] = w;
+                        R2_64_cur[n_next64] = r1;
+                        R1_64_cur[n_next64] = (x & mask_low) | (w_N << N_eff);
+                        n_next64++;
+                    }
+                }
+                if (n_next64 > 0 && step_idx > smax) smax = step_idx;
+                nc64 = n_next64;
+            }
+            total_unext += nc64;
+        }
+        free(p_pid); free(p_r1); free(p_r2);
+    }
+
+    free(w_cur); free(R1_cur); free(R2_cur);
+    free(w_nxt); free(R1_nxt); free(R2_nxt);
+    free(w64_cur); free(R1_64_cur); free(R2_64_cur);
+
+    arg->out_prefs = total_prefs;
+    arg->out_unext = total_unext;
+    arg->out_smax = smax;
+    return NULL;
+}
+
+int solve_pi_closure_mt(
+    int Pi,
+    const uint32_t *all_w,
+    int64_t num_necks,
+    int num_threads,
+    int64_t *out_prefs,
+    int64_t *out_unext,
+    int *out_smax
+) {
+    if (num_threads < 1) num_threads = 1;
+    if (num_threads > 32) num_threads = 32;
+    pthread_t threads[32];
+    worker_arg_t args[32];
+
+    int K = (Pi >= 8) ? (Pi - 4) : 1;
+    uint32_t mask_K = (1U << K) - 1U;
+
+    int64_t cur_start = 0;
+    for (int t = 0; t < num_threads; t++) {
+        int64_t target_end = ((t + 1) * num_necks) / num_threads;
+        if (cur_start >= num_necks) {
+            args[t].Pi = Pi;
+            args[t].all_w = all_w;
+            args[t].start_idx = num_necks;
+            args[t].end_idx = num_necks;
+            args[t].out_prefs = 0;
+            args[t].out_unext = 0;
+            args[t].out_smax = 0;
+        } else {
+            if (target_end < cur_start) target_end = cur_start;
+            if (t < num_threads - 1 && target_end < num_necks) {
+                uint32_t p = all_w[target_end] & mask_K;
+                while (target_end < num_necks && (all_w[target_end] & mask_K) == p) {
+                    target_end++;
+                }
+            } else {
+                target_end = num_necks;
+            }
+            args[t].Pi = Pi;
+            args[t].all_w = all_w;
+            args[t].start_idx = cur_start;
+            args[t].end_idx = target_end;
+            args[t].out_prefs = 0;
+            args[t].out_unext = 0;
+            args[t].out_smax = 0;
+            cur_start = target_end;
+        }
+        pthread_create(&threads[t], NULL, solve_worker, &args[t]);
+    }
+
+    int64_t total_prefs = 0;
+    int64_t total_unext = 0;
+    int smax = 0;
+    for (int t = 0; t < num_threads; t++) {
+        pthread_join(threads[t], NULL);
+        total_prefs += args[t].out_prefs;
+        total_unext += args[t].out_unext;
+        if (args[t].out_smax > smax) smax = args[t].out_smax;
+    }
+    *out_prefs = total_prefs;
+    *out_unext = total_unext;
+    *out_smax = smax;
+    return 0;
+}
+
+static void gen_lyndon_rec(int t, int p, int Pi, uint8_t *a, uint32_t *out, int64_t *cnt) {
+    if (t > Pi) {
+        if (p == Pi) {
+            uint32_t m = 0;
+            for (int j = 1; j <= Pi; j++) {
+                if (a[j]) m |= (1U << (j - 1));
+            }
+            uint32_t full = (1U << Pi) - 1U;
+            if (m > 0 && m < full) {
+                out[*cnt] = m;
+                (*cnt)++;
+            }
+        }
+    } else {
+        a[t] = a[t - p];
+        gen_lyndon_rec(t + 1, p, Pi, a, out, cnt);
+        if (a[t - p] == 0) {
+            a[t] = 1;
+            gen_lyndon_rec(t + 1, t, Pi, a, out, cnt);
+        }
+    }
+}
+
+int64_t generate_lyndon_c(int Pi, uint32_t *out) {
+    uint8_t a[64];
+    memset(a, 0, sizeof(a));
+    int64_t cnt = 0;
+    gen_lyndon_rec(1, 1, Pi, a, out, &cnt);
+    return cnt;
+}
+"""
+
+
+def _solve_zero_shift_pi_fast(Pi: int) -> tuple[int, int, int, int]:
+    """
+    Solve Zero-Branching Row-Coordinate Extinction for period Pi using a JIT-compiled
+    multithreaded C kernel when clang/cc is available, with automatic fallback to
+    NumPy vectorized SWAR execution.
+    Returns (num_necklaces, num_admissible_prefixes, num_unextinguished, s_max).
+    """
+    global _ZERO_SHIFT_C_LIB
+    if _ZERO_SHIFT_C_LIB is None:
+        try:
+            import ctypes
+            import os
+            import subprocess
+            import tempfile
+
+            tmp_dir = tempfile.mkdtemp(prefix="r30_zerosft_")
+            c_path = os.path.join(tmp_dir, "solver.c")
+            so_path = os.path.join(tmp_dir, "solver.so")
+            with open(c_path, "w", encoding="utf-8") as f:
+                f.write(_ZERO_SHIFT_C_SRC)
+            subprocess.run(
+                ["cc", "-O3", "-shared", "-fPIC", "-lpthread", c_path, "-o", so_path],
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            lib = ctypes.CDLL(so_path)
+            lib.generate_lyndon_c.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_uint32)]
+            lib.generate_lyndon_c.restype = ctypes.c_int64
+            lib.solve_pi_closure_mt.argtypes = [
+                ctypes.c_int,
+                ctypes.POINTER(ctypes.c_uint32),
+                ctypes.c_int64,
+                ctypes.c_int,
+                ctypes.POINTER(ctypes.c_int64),
+                ctypes.POINTER(ctypes.c_int64),
+                ctypes.POINTER(ctypes.c_int),
+            ]
+            lib.solve_pi_closure_mt.restype = ctypes.c_int
+            _ZERO_SHIFT_C_LIB = lib
+        except Exception:
+            _ZERO_SHIFT_C_LIB = False
+
+    if _ZERO_SHIFT_C_LIB:
+        import ctypes
+        import os
+
+        max_necks = (1 << Pi) // Pi + 16
+        all_w = np.empty(max_necks, dtype=np.uint32)
+        cnt = int(_ZERO_SHIFT_C_LIB.generate_lyndon_c(Pi, all_w.ctypes.data_as(ctypes.POINTER(ctypes.c_uint32))))
+        all_w = all_w[:cnt]
+        out_prefs = ctypes.c_int64(0)
+        out_unext = ctypes.c_int64(0)
+        out_smax = ctypes.c_int(0)
+        n_threads = min(32, max(1, os.cpu_count() or 8))
+        _ZERO_SHIFT_C_LIB.solve_pi_closure_mt(
+            Pi,
+            all_w.ctypes.data_as(ctypes.POINTER(ctypes.c_uint32)),
+            cnt,
+            n_threads,
+            ctypes.byref(out_prefs),
+            ctypes.byref(out_unext),
+            ctypes.byref(out_smax),
+        )
+        return cnt, int(out_prefs.value), int(out_unext.value), int(out_smax.value)
+
+    a = [0] * (Pi + 1)
+    res: list[int] = []
+
+    def _gen(t: int, p: int) -> None:
+        if t > Pi:
+            if p == Pi:
+                m = 0
+                for j_idx in range(1, Pi + 1):
+                    if a[j_idx]:
+                        m |= 1 << (j_idx - 1)
+                res.append(m)
+        else:
+            a[t] = a[t - p]
+            _gen(t + 1, p)
+            for j_v in range(a[t - p] + 1, 2):
+                a[t] = j_v
+                _gen(t + 1, t)
+
+    _gen(1, 1)
+    full = (1 << Pi) - 1
+    all_w = np.array([m for m in res if 0 < m < full], dtype=np.uint32)
+    num_necks = len(all_w)
+    t0 = Pi - 1
+    N_init = t0 + 1
+    K = Pi - 4
+    mask_K = np.uint32((1 << K) - 1)
+    prefs = all_w & mask_K
+    change = np.empty(num_necks, dtype=bool)
+    change[0] = True
+    change[1:] = prefs[1:] != prefs[:-1]
+    u_start = np.nonzero(change)[0]
+    u_end = np.append(u_start[1:], num_necks)
+    u_prefs = prefs[u_start]
+    num_uprefs = len(u_prefs)
+    w_counts = u_end - u_start
+    smax_pi = 0
+    prefs_pi = 0
+    unext_pi = 0
+    chunk_u = 4096
+    sub_step = 8192
+
+    for b_start in range(0, num_uprefs, chunk_u):
+        b_end = min(b_start + chunk_u, num_uprefs)
+        n_b = b_end - b_start
+        p_id = np.arange(n_b, dtype=np.uint32)
+        w_p = u_prefs[b_start:b_end].copy()
+        R_p2 = np.zeros(n_b, dtype=np.uint32)
+        R_p1 = np.zeros(n_b, dtype=np.uint32)
+        for N in range(1, K):
+            tau = N - 1
+            w_s = (w_p >> np.uint32(tau)) & np.uint32(1)
+            w_next = (w_p >> np.uint32(tau + 1)) & np.uint32(1)
+            w_N = (w_p >> np.uint32(N)) & np.uint32(1)
+            mask_low = np.uint32((1 << N) - 1)
+            H_N = ((R_p1 | R_p2) & np.uint32((1 << (N - 1)) - 1)) if N >= 2 else np.zeros_like(R_p1)
+            x = ((np.uint32(1) ^ w_next) << np.uint32(N - 1)) ^ H_N
+            x ^= x >> np.uint32(1)
+            x ^= x >> np.uint32(2)
+            x ^= x >> np.uint32(4)
+            x ^= x >> np.uint32(8)
+            x ^= x >> np.uint32(16)
+            R_N_A = (x & mask_low) | (w_N << np.uint32(N))
+            if tau >= 1:
+                w_m1 = (w_p >> np.uint32(tau - 1)) & np.uint32(1)
+                l1_p1 = (R_p1 >> np.uint32(N - 2)) & np.uint32(1)
+                keep_B = (w_s == 0) & ~((w_m1 == 0) & (l1_p1 == 1))
+            else:
+                keep_B = (w_s == 0)
+            if tau >= 2:
+                w_m2 = (w_p >> np.uint32(tau - 2)) & np.uint32(1)
+                l1_p2 = (R_p2 >> np.uint32(N - 3)) & np.uint32(1)
+                keep_A = (w_s == 1) | ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0))
+            else:
+                keep_A = np.ones(len(w_p), dtype=bool)
+            idx_A = np.nonzero(keep_A)[0]
+            idx_B = np.nonzero(keep_B)[0]
+            p_id = np.concatenate([p_id[idx_A], p_id[idx_B]])
+            w_p = np.concatenate([w_p[idx_A], w_p[idx_B]])
+            R_p2 = np.concatenate([R_p1[idx_A], R_p1[idx_B]])
+            R_p1 = np.concatenate([R_N_A[idx_A], R_N_A[idx_B] ^ mask_low])
+        n_surv_u = len(p_id)
+        for s_start in range(0, n_surv_u, sub_step):
+            s_end = min(s_start + sub_step, n_surv_u)
+            sub_pid = p_id[s_start:s_end]
+            reps = w_counts[b_start + sub_pid]
+            R2 = np.repeat(R_p2[s_start:s_end], reps)
+            R1 = np.repeat(R_p1[s_start:s_end], reps)
+            tot_exp = len(R1)
+            if tot_exp == 0:
+                continue
+            cum = np.cumsum(reps)
+            base_idx = np.repeat(u_start[b_start + sub_pid] - (cum - reps), reps) + np.arange(tot_exp, dtype=np.int64)
+            w_arr = all_w[base_idx]
+            for N in range(K, N_init):
+                tau = N - 1
+                w_s = (w_arr >> np.uint32(tau)) & np.uint32(1)
+                w_next = (w_arr >> np.uint32(tau + 1)) & np.uint32(1)
+                w_N = (w_arr >> np.uint32(N)) & np.uint32(1)
+                mask_low = np.uint32((1 << N) - 1)
+                H_N = (R1 | R2) & np.uint32((1 << (N - 1)) - 1)
+                x = ((np.uint32(1) ^ w_next) << np.uint32(N - 1)) ^ H_N
+                x ^= x >> np.uint32(1)
+                x ^= x >> np.uint32(2)
+                x ^= x >> np.uint32(4)
+                x ^= x >> np.uint32(8)
+                x ^= x >> np.uint32(16)
+                R_N_A = (x & mask_low) | (w_N << np.uint32(N))
+                w_m1 = (w_arr >> np.uint32(tau - 1)) & np.uint32(1)
+                l1_p1 = (R1 >> np.uint32(N - 2)) & np.uint32(1)
+                keep_B = (w_s == 0) & ~((w_m1 == 0) & (l1_p1 == 1))
+                w_m2 = (w_arr >> np.uint32(tau - 2)) & np.uint32(1)
+                l1_p2 = (R2 >> np.uint32(N - 3)) & np.uint32(1)
+                keep_A = (w_s == 1) | ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0))
+                idx_A = np.nonzero(keep_A)[0]
+                idx_B = np.nonzero(keep_B)[0]
+                w_arr = np.concatenate([w_arr[idx_A], w_arr[idx_B]])
+                R2 = np.concatenate([R1[idx_A], R1[idx_B]])
+                R1 = np.concatenate([R_N_A[idx_A], R_N_A[idx_B] ^ mask_low])
+            N = N_init
+            mask_low = np.uint32((1 << N) - 1)
+            H_N = (R1 | R2) & np.uint32((1 << (N - 1)) - 1)
+            x = (np.uint32(1) << np.uint32(N - 1)) ^ H_N
+            x ^= x >> np.uint32(1)
+            x ^= x >> np.uint32(2)
+            x ^= x >> np.uint32(4)
+            x ^= x >> np.uint32(8)
+            x ^= x >> np.uint32(16)
+            R2 = R1
+            R1 = x & mask_low
+            prefs_pi += len(w_arr)
+            shift_off = 0
+            for step_idx in range(1, 60):
+                if len(w_arr) == 0:
+                    break
+                N = N_init + step_idx
+                if N == 31 and R1.dtype == np.uint32:
+                    R2 = R2.astype(np.uint64)
+                    R1 = R1.astype(np.uint64)
+                    w_arr = w_arr.astype(np.uint64)
+                if N == 56 and shift_off == 0:
+                    R2 >>= np.uint64(14)
+                    R1 >>= np.uint64(14)
+                    shift_off = 14
+                N_eff = N - shift_off
+                tau = t0 + step_idx
+                s = tau % Pi
+                s_next = (s + 1) % Pi
+                s_N = N % Pi
+                if N <= 30:
+                    w_s = (w_arr >> np.uint32(s)) & np.uint32(1)
+                    w_next = (w_arr >> np.uint32(s_next)) & np.uint32(1)
+                    w_N = (w_arr >> np.uint32(s_N)) & np.uint32(1)
+                    w_m1 = (w_arr >> np.uint32((tau - 1) % Pi)) & np.uint32(1)
+                    w_m2 = (w_arr >> np.uint32((tau - 2) % Pi)) & np.uint32(1)
+                    H_N = (R1 | R2) & np.uint32((1 << (N_eff - 1)) - 1)
+                    x = H_N << np.uint32(1)
+                    x ^= x << np.uint32(1)
+                    x ^= x << np.uint32(2)
+                    x ^= x << np.uint32(4)
+                    x ^= x << np.uint32(8)
+                    x ^= x << np.uint32(16)
+                    req_l1 = (x >> np.uint32(N_eff - 1)) & np.uint32(1)
+                    g_cur = req_l1 ^ w_next
+                    l1_p1 = (R1 >> np.uint32(N_eff - 2)) & np.uint32(1)
+                    l1_p2 = (R2 >> np.uint32(N_eff - 3)) & np.uint32(1)
+                    alive1 = (w_s == 1) & (g_cur == 1)
+                    alive0 = (
+                        (w_s == 0)
+                        & ~((w_m1 == 0) & (l1_p1 == 1) & (g_cur == 0))
+                        & ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0) & (g_cur == 1))
+                    )
+                    idx = np.nonzero(alive1 | alive0)[0]
+                    if len(idx) == 0:
+                        w_arr = w_arr[idx]
+                        break
+                    if step_idx > smax_pi:
+                        smax_pi = step_idx
+                    w_arr = w_arr[idx]
+                    mask_low = np.uint32((1 << N_eff) - 1)
+                    R2 = R1[idx]
+                    R1 = (x[idx] & mask_low) | (w_N[idx] << np.uint32(N_eff))
+                else:
+                    w_s = (w_arr >> np.uint64(s)) & np.uint64(1)
+                    w_next = (w_arr >> np.uint64(s_next)) & np.uint64(1)
+                    w_N = (w_arr >> np.uint64(s_N)) & np.uint64(1)
+                    w_m1 = (w_arr >> np.uint64((tau - 1) % Pi)) & np.uint64(1)
+                    w_m2 = (w_arr >> np.uint64((tau - 2) % Pi)) & np.uint64(1)
+                    H_N = (R1 | R2) & np.uint64((1 << (N_eff - 1)) - 1)
+                    x = H_N << np.uint64(1)
+                    x ^= x << np.uint64(1)
+                    x ^= x << np.uint64(2)
+                    x ^= x << np.uint64(4)
+                    x ^= x << np.uint64(8)
+                    x ^= x << np.uint64(16)
+                    x ^= x << np.uint64(32)
+                    req_l1 = (x >> np.uint64(N_eff - 1)) & np.uint64(1)
+                    g_cur = req_l1 ^ w_next
+                    l1_p1 = (R1 >> np.uint64(N_eff - 2)) & np.uint64(1)
+                    l1_p2 = (R2 >> np.uint64(N_eff - 3)) & np.uint64(1)
+                    alive1 = (w_s == 1) & (g_cur == 1)
+                    alive0 = (
+                        (w_s == 0)
+                        & ~((w_m1 == 0) & (l1_p1 == 1) & (g_cur == 0))
+                        & ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0) & (g_cur == 1))
+                    )
+                    idx = np.nonzero(alive1 | alive0)[0]
+                    if len(idx) == 0:
+                        w_arr = w_arr[idx]
+                        break
+                    if step_idx > smax_pi:
+                        smax_pi = step_idx
+                    w_arr = w_arr[idx]
+                    mask_low = np.uint64((1 << N_eff) - 1)
+                    R2 = R1[idx]
+                    R1 = (x[idx] & mask_low) | (w_N[idx] << np.uint64(N_eff))
+            unext_pi += len(w_arr)
+    return num_necks, prefs_pi, unext_pi, smax_pi
+
+
+
 def verify_zero_transient_characteristic_crystals_and_pi20_closure() -> dict:
     """Verify Theorem 22 (Exact Zero-Transient Full-Cone Characteristic Crystal Law,
     2D Bi-Dyadic Duality A_S(j) = d_{2j+(S mod 2)}(ceil(S/2)+j), Unconditional Period Divergence
@@ -3420,228 +4152,18 @@ def verify_zero_transient_characteristic_crystals_and_pi20_closure() -> dict:
             if (t_j + x_j) != (2 * j + (S % 2)):
                 duality_diag_errors += 1
 
-    # 3. Verify Zero-Branching Anti-Diagonal Extinction across Pi = 19 and Pi = 20 via NumPy Batch-Vectorized Suffix-XOR
-    def _lyndon_masks(Pi: int) -> np.ndarray:
-        res: list[int] = []
-        a = [0] * (Pi + 1)
-
-        def _gen(t: int, p: int) -> None:
-            if t > Pi:
-                if Pi == p:
-                    m = 0
-                    for s_i in range(Pi):
-                        if a[s_i + 1]:
-                            m |= 1 << s_i
-                    res.append(m)
-            else:
-                a[t] = a[t - p]
-                _gen(t + 1, p)
-                for j_v in range(a[t - p] + 1, 2):
-                    a[t] = j_v
-                    _gen(t + 1, t)
-
-        _gen(1, 1)
-        full = (1 << Pi) - 1
-        return np.array([m for m in res if 0 < m < full], dtype=np.uint32)
-
+    # 3. Verify Zero-Branching Anti-Diagonal Extinction across Pi = 19 and Pi = 20
     necklaces_19_20 = 0
     prefs_19_20 = 0
     unext_19_20 = 0
     max_ext_19_20 = 0
     smax_by_pi: dict[int, int] = {}
-    chunk_u = 4096
 
     for Pi in (19, 20):
-        all_w = _lyndon_masks(Pi)
-        num_necks = len(all_w)
-        necklaces_19_20 += num_necks
-        t0 = Pi - 1
-        N_init = t0 + 1
-        K = Pi - 3
-        mask_K = np.uint32((1 << K) - 1)
-        prefs = all_w & mask_K
-        change = np.empty(num_necks, dtype=bool)
-        change[0] = True
-        change[1:] = prefs[1:] != prefs[:-1]
-        u_start = np.nonzero(change)[0]
-        u_end = np.append(u_start[1:], num_necks)
-        u_prefs = prefs[u_start]
-        num_uprefs = len(u_prefs)
-        w_counts = u_end - u_start
-        smax_pi = 0
-
-        for b_start in range(0, num_uprefs, chunk_u):
-            b_end = min(b_start + chunk_u, num_uprefs)
-            n_b = b_end - b_start
-            p_id = np.arange(n_b, dtype=np.uint32)
-            w_p = u_prefs[b_start:b_end].copy()
-            R_p2 = np.zeros(n_b, dtype=np.uint32)
-            R_p1 = np.zeros(n_b, dtype=np.uint32)
-
-            for N in range(1, K):
-                tau = N - 1
-                w_s = (w_p >> np.uint32(tau)) & np.uint32(1)
-                w_next = (w_p >> np.uint32(tau + 1)) & np.uint32(1)
-                w_N = (w_p >> np.uint32(N)) & np.uint32(1)
-                mask_low = np.uint32((1 << N) - 1)
-                H_N = ((R_p1 | R_p2) & np.uint32((1 << (N - 1)) - 1)) if N >= 2 else np.zeros_like(R_p1)
-                x = ((np.uint32(1) ^ w_next) << np.uint32(N - 1)) ^ H_N
-                x ^= x >> np.uint32(1)
-                x ^= x >> np.uint32(2)
-                x ^= x >> np.uint32(4)
-                x ^= x >> np.uint32(8)
-                x ^= x >> np.uint32(16)
-                R_N_A = (x & mask_low) | (w_N << np.uint32(N))
-                if tau >= 1:
-                    w_m1 = (w_p >> np.uint32(tau - 1)) & np.uint32(1)
-                    l1_p1 = (R_p1 >> np.uint32(N - 2)) & np.uint32(1)
-                    keep_B = (w_s == 0) & ~((w_m1 == 0) & (l1_p1 == 1))
-                else:
-                    keep_B = (w_s == 0)
-                if tau >= 2:
-                    w_m2 = (w_p >> np.uint32(tau - 2)) & np.uint32(1)
-                    l1_p2 = (R_p2 >> np.uint32(N - 3)) & np.uint32(1)
-                    keep_A = (w_s == 1) | ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0))
-                else:
-                    keep_A = np.ones(len(w_p), dtype=bool)
-                idx_A = np.nonzero(keep_A)[0]
-                idx_B = np.nonzero(keep_B)[0]
-                p_id = np.concatenate([p_id[idx_A], p_id[idx_B]])
-                w_p = np.concatenate([w_p[idx_A], w_p[idx_B]])
-                R_p2 = np.concatenate([R_p1[idx_A], R_p1[idx_B]])
-                R_p1 = np.concatenate([R_N_A[idx_A], R_N_A[idx_B] ^ mask_low])
-
-            reps = w_counts[b_start + p_id]
-            R_p2 = np.repeat(R_p2, reps)
-            R_p1 = np.repeat(R_p1, reps)
-            tot_exp = len(R_p1)
-            if tot_exp == 0:
-                continue
-            cum = np.cumsum(reps)
-            base_idx = np.repeat(u_start[b_start + p_id] - (cum - reps), reps) + np.arange(tot_exp, dtype=np.int64)
-            w_arr = all_w[base_idx]
-
-            for N in range(K, N_init):
-                tau = N - 1
-                w_s = (w_arr >> np.uint32(tau)) & np.uint32(1)
-                w_next = (w_arr >> np.uint32(tau + 1)) & np.uint32(1)
-                w_N = (w_arr >> np.uint32(N)) & np.uint32(1)
-                mask_low = np.uint32((1 << N) - 1)
-                H_N = (R_p1 | R_p2) & np.uint32((1 << (N - 1)) - 1)
-                x = ((np.uint32(1) ^ w_next) << np.uint32(N - 1)) ^ H_N
-                x ^= x >> np.uint32(1)
-                x ^= x >> np.uint32(2)
-                x ^= x >> np.uint32(4)
-                x ^= x >> np.uint32(8)
-                x ^= x >> np.uint32(16)
-                R_N_A = (x & mask_low) | (w_N << np.uint32(N))
-                w_m1 = (w_arr >> np.uint32(tau - 1)) & np.uint32(1)
-                l1_p1 = (R_p1 >> np.uint32(N - 2)) & np.uint32(1)
-                keep_B = (w_s == 0) & ~((w_m1 == 0) & (l1_p1 == 1))
-                w_m2 = (w_arr >> np.uint32(tau - 2)) & np.uint32(1)
-                l1_p2 = (R_p2 >> np.uint32(N - 3)) & np.uint32(1)
-                keep_A = (w_s == 1) | ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0))
-                idx_A = np.nonzero(keep_A)[0]
-                idx_B = np.nonzero(keep_B)[0]
-                w_arr = np.concatenate([w_arr[idx_A], w_arr[idx_B]])
-                R_p2 = np.concatenate([R_p1[idx_A], R_p1[idx_B]])
-                R_p1 = np.concatenate([R_N_A[idx_A], R_N_A[idx_B] ^ mask_low])
-
-            N = N_init
-            mask_low = np.uint32((1 << N) - 1)
-            H_N = (R_p1 | R_p2) & np.uint32((1 << (N - 1)) - 1)
-            x = (np.uint32(1) << np.uint32(N - 1)) ^ H_N
-            x ^= x >> np.uint32(1)
-            x ^= x >> np.uint32(2)
-            x ^= x >> np.uint32(4)
-            x ^= x >> np.uint32(8)
-            x ^= x >> np.uint32(16)
-            R_p2 = R_p1
-            R_p1 = x & mask_low
-            prefs_19_20 += len(w_arr)
-
-            for step_idx in range(1, 43):
-                if len(w_arr) == 0:
-                    break
-                N = N_init + step_idx
-                if N == 31 and R_p1.dtype == np.uint32:
-                    R_p2 = R_p2.astype(np.uint64)
-                    R_p1 = R_p1.astype(np.uint64)
-                    w_arr = w_arr.astype(np.uint64)
-                tau = t0 + step_idx
-                s = tau % Pi
-                s_next = (s + 1) % Pi
-                s_N = N % Pi
-                if N <= 30:
-                    w_s = (w_arr >> np.uint32(s)) & np.uint32(1)
-                    w_next = (w_arr >> np.uint32(s_next)) & np.uint32(1)
-                    w_N = (w_arr >> np.uint32(s_N)) & np.uint32(1)
-                    w_m1 = (w_arr >> np.uint32((tau - 1) % Pi)) & np.uint32(1)
-                    w_m2 = (w_arr >> np.uint32((tau - 2) % Pi)) & np.uint32(1)
-                    H_N = (R_p1 | R_p2) & np.uint32((1 << (N - 1)) - 1)
-                    x = H_N << np.uint32(1)
-                    x ^= x << np.uint32(1)
-                    x ^= x << np.uint32(2)
-                    x ^= x << np.uint32(4)
-                    x ^= x << np.uint32(8)
-                    x ^= x << np.uint32(16)
-                    req_l1 = (x >> np.uint32(N - 1)) & np.uint32(1)
-                    g_cur = req_l1 ^ w_next
-                    l1_p1 = (R_p1 >> np.uint32(N - 2)) & np.uint32(1)
-                    l1_p2 = (R_p2 >> np.uint32(N - 3)) & np.uint32(1)
-                    alive1 = (w_s == 1) & (g_cur == 1)
-                    alive0 = (
-                        (w_s == 0)
-                        & ~((w_m1 == 0) & (l1_p1 == 1) & (g_cur == 0))
-                        & ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0) & (g_cur == 1))
-                    )
-                    idx = np.nonzero(alive1 | alive0)[0]
-                    if len(idx) == 0:
-                        w_arr = w_arr[idx]
-                        break
-                    if step_idx > smax_pi:
-                        smax_pi = step_idx
-                    w_arr = w_arr[idx]
-                    mask_low = np.uint32((1 << N) - 1)
-                    R_p2 = R_p1[idx]
-                    R_p1 = (x[idx] & mask_low) | (w_N[idx] << np.uint32(N))
-                else:
-                    w_s = (w_arr >> np.uint64(s)) & np.uint64(1)
-                    w_next = (w_arr >> np.uint64(s_next)) & np.uint64(1)
-                    w_N = (w_arr >> np.uint64(s_N)) & np.uint64(1)
-                    w_m1 = (w_arr >> np.uint64((tau - 1) % Pi)) & np.uint64(1)
-                    w_m2 = (w_arr >> np.uint64((tau - 2) % Pi)) & np.uint64(1)
-                    H_N = (R_p1 | R_p2) & np.uint64(((1 << (N - 1)) - 1) & ((1 << 64) - 1))
-                    x = H_N << np.uint64(1)
-                    x ^= x << np.uint64(1)
-                    x ^= x << np.uint64(2)
-                    x ^= x << np.uint64(4)
-                    x ^= x << np.uint64(8)
-                    x ^= x << np.uint64(16)
-                    x ^= x << np.uint64(32)
-                    req_l1 = (x >> np.uint64(N - 1)) & np.uint64(1)
-                    g_cur = req_l1 ^ w_next
-                    l1_p1 = (R_p1 >> np.uint64(N - 2)) & np.uint64(1)
-                    l1_p2 = (R_p2 >> np.uint64(N - 3)) & np.uint64(1)
-                    alive1 = (w_s == 1) & (g_cur == 1)
-                    alive0 = (
-                        (w_s == 0)
-                        & ~((w_m1 == 0) & (l1_p1 == 1) & (g_cur == 0))
-                        & ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0) & (g_cur == 1))
-                    )
-                    idx = np.nonzero(alive1 | alive0)[0]
-                    if len(idx) == 0:
-                        w_arr = w_arr[idx]
-                        break
-                    if step_idx > smax_pi:
-                        smax_pi = step_idx
-                    w_arr = w_arr[idx]
-                    mask_low = np.uint64(((1 << N) - 1) & ((1 << 64) - 1))
-                    R_p2 = R_p1[idx]
-                    R_p1 = (x[idx] & mask_low) | (w_N[idx] << np.uint64(N))
-
-            unext_19_20 += len(w_arr)
-
+        n_pi, p_pi, u_pi, smax_pi = _solve_zero_shift_pi_fast(Pi)
+        necklaces_19_20 += n_pi
+        prefs_19_20 += p_pi
+        unext_19_20 += u_pi
         smax_by_pi[Pi] = smax_pi
         if smax_pi > max_ext_19_20:
             max_ext_19_20 = smax_pi
@@ -3772,227 +4294,17 @@ def verify_lucas_mahler_or_convolution_and_pi22_closure() -> dict:
                 doubling_deg_errors += 1
 
     # 3. Verify Zero-Branching Anti-Diagonal Extinction across Pi = 21 and Pi = 22 (290,415 necklaces, 46,671,980 prefixes)
-    def _lyndon_masks(Pi: int) -> np.ndarray:
-        res: list[int] = []
-        a = [0] * (Pi + 1)
-
-        def _gen(t: int, p: int) -> None:
-            if t > Pi:
-                if Pi == p:
-                    m = 0
-                    for s_i in range(Pi):
-                        if a[s_i + 1]:
-                            m |= 1 << s_i
-                    res.append(m)
-            else:
-                a[t] = a[t - p]
-                _gen(t + 1, p)
-                for j_v in range(a[t - p] + 1, 2):
-                    a[t] = j_v
-                    _gen(t + 1, t)
-
-        _gen(1, 1)
-        full = (1 << Pi) - 1
-        return np.array([m for m in res if 0 < m < full], dtype=np.uint32)
-
     necklaces_21_22 = 0
     prefs_21_22 = 0
     unext_21_22 = 0
     max_ext_21_22 = 0
     smax_by_pi: dict[int, int] = {}
-    chunk_u = 4096
 
     for Pi in (21, 22):
-        all_w = _lyndon_masks(Pi)
-        num_necks = len(all_w)
-        necklaces_21_22 += num_necks
-        t0 = Pi - 1
-        N_init = t0 + 1
-        K = Pi - 3
-        mask_K = np.uint32((1 << K) - 1)
-        prefs = all_w & mask_K
-        change = np.empty(num_necks, dtype=bool)
-        change[0] = True
-        change[1:] = prefs[1:] != prefs[:-1]
-        u_start = np.nonzero(change)[0]
-        u_end = np.append(u_start[1:], num_necks)
-        u_prefs = prefs[u_start]
-        num_uprefs = len(u_prefs)
-        w_counts = u_end - u_start
-        smax_pi = 0
-
-        for b_start in range(0, num_uprefs, chunk_u):
-            b_end = min(b_start + chunk_u, num_uprefs)
-            n_b = b_end - b_start
-            p_id = np.arange(n_b, dtype=np.uint32)
-            w_p = u_prefs[b_start:b_end].copy()
-            R_p2 = np.zeros(n_b, dtype=np.uint32)
-            R_p1 = np.zeros(n_b, dtype=np.uint32)
-
-            for N in range(1, K):
-                tau = N - 1
-                w_s = (w_p >> np.uint32(tau)) & np.uint32(1)
-                w_next = (w_p >> np.uint32(tau + 1)) & np.uint32(1)
-                w_N = (w_p >> np.uint32(N)) & np.uint32(1)
-                mask_low = np.uint32((1 << N) - 1)
-                H_N = ((R_p1 | R_p2) & np.uint32((1 << (N - 1)) - 1)) if N >= 2 else np.zeros_like(R_p1)
-                x = ((np.uint32(1) ^ w_next) << np.uint32(N - 1)) ^ H_N
-                x ^= x >> np.uint32(1)
-                x ^= x >> np.uint32(2)
-                x ^= x >> np.uint32(4)
-                x ^= x >> np.uint32(8)
-                x ^= x >> np.uint32(16)
-                R_N_A = (x & mask_low) | (w_N << np.uint32(N))
-                if tau >= 1:
-                    w_m1 = (w_p >> np.uint32(tau - 1)) & np.uint32(1)
-                    l1_p1 = (R_p1 >> np.uint32(N - 2)) & np.uint32(1)
-                    keep_B = (w_s == 0) & ~((w_m1 == 0) & (l1_p1 == 1))
-                else:
-                    keep_B = (w_s == 0)
-                if tau >= 2:
-                    w_m2 = (w_p >> np.uint32(tau - 2)) & np.uint32(1)
-                    l1_p2 = (R_p2 >> np.uint32(N - 3)) & np.uint32(1)
-                    keep_A = (w_s == 1) | ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0))
-                else:
-                    keep_A = np.ones(len(w_p), dtype=bool)
-                idx_A = np.nonzero(keep_A)[0]
-                idx_B = np.nonzero(keep_B)[0]
-                p_id = np.concatenate([p_id[idx_A], p_id[idx_B]])
-                w_p = np.concatenate([w_p[idx_A], w_p[idx_B]])
-                R_p2 = np.concatenate([R_p1[idx_A], R_p1[idx_B]])
-                R_p1 = np.concatenate([R_N_A[idx_A], R_N_A[idx_B] ^ mask_low])
-
-            reps = w_counts[b_start + p_id]
-            R_p2 = np.repeat(R_p2, reps)
-            R_p1 = np.repeat(R_p1, reps)
-            tot_exp = len(R_p1)
-            if tot_exp == 0:
-                continue
-            cum = np.cumsum(reps)
-            base_idx = np.repeat(u_start[b_start + p_id] - (cum - reps), reps) + np.arange(tot_exp, dtype=np.int64)
-            w_arr = all_w[base_idx]
-
-            for N in range(K, N_init):
-                tau = N - 1
-                w_s = (w_arr >> np.uint32(tau)) & np.uint32(1)
-                w_next = (w_arr >> np.uint32(tau + 1)) & np.uint32(1)
-                w_N = (w_arr >> np.uint32(N)) & np.uint32(1)
-                mask_low = np.uint32((1 << N) - 1)
-                H_N = (R_p1 | R_p2) & np.uint32((1 << (N - 1)) - 1)
-                x = ((np.uint32(1) ^ w_next) << np.uint32(N - 1)) ^ H_N
-                x ^= x >> np.uint32(1)
-                x ^= x >> np.uint32(2)
-                x ^= x >> np.uint32(4)
-                x ^= x >> np.uint32(8)
-                x ^= x >> np.uint32(16)
-                R_N_A = (x & mask_low) | (w_N << np.uint32(N))
-                w_m1 = (w_arr >> np.uint32(tau - 1)) & np.uint32(1)
-                l1_p1 = (R_p1 >> np.uint32(N - 2)) & np.uint32(1)
-                keep_B = (w_s == 0) & ~((w_m1 == 0) & (l1_p1 == 1))
-                w_m2 = (w_arr >> np.uint32(tau - 2)) & np.uint32(1)
-                l1_p2 = (R_p2 >> np.uint32(N - 3)) & np.uint32(1)
-                keep_A = (w_s == 1) | ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0))
-                idx_A = np.nonzero(keep_A)[0]
-                idx_B = np.nonzero(keep_B)[0]
-                w_arr = np.concatenate([w_arr[idx_A], w_arr[idx_B]])
-                R_p2 = np.concatenate([R_p1[idx_A], R_p1[idx_B]])
-                R_p1 = np.concatenate([R_N_A[idx_A], R_N_A[idx_B] ^ mask_low])
-
-            N = N_init
-            mask_low = np.uint32((1 << N) - 1)
-            H_N = (R_p1 | R_p2) & np.uint32((1 << (N - 1)) - 1)
-            x = (np.uint32(1) << np.uint32(N - 1)) ^ H_N
-            x ^= x >> np.uint32(1)
-            x ^= x >> np.uint32(2)
-            x ^= x >> np.uint32(4)
-            x ^= x >> np.uint32(8)
-            x ^= x >> np.uint32(16)
-            R_p2 = R_p1
-            R_p1 = x & mask_low
-            prefs_21_22 += len(w_arr)
-
-            for step_idx in range(1, 45):
-                if len(w_arr) == 0:
-                    break
-                N = N_init + step_idx
-                if N == 31 and R_p1.dtype == np.uint32:
-                    R_p2 = R_p2.astype(np.uint64)
-                    R_p1 = R_p1.astype(np.uint64)
-                    w_arr = w_arr.astype(np.uint64)
-                tau = t0 + step_idx
-                s = tau % Pi
-                s_next = (s + 1) % Pi
-                s_N = N % Pi
-                if N <= 30:
-                    w_s = (w_arr >> np.uint32(s)) & np.uint32(1)
-                    w_next = (w_arr >> np.uint32(s_next)) & np.uint32(1)
-                    w_N = (w_arr >> np.uint32(s_N)) & np.uint32(1)
-                    w_m1 = (w_arr >> np.uint32((tau - 1) % Pi)) & np.uint32(1)
-                    w_m2 = (w_arr >> np.uint32((tau - 2) % Pi)) & np.uint32(1)
-                    H_N = (R_p1 | R_p2) & np.uint32((1 << (N - 1)) - 1)
-                    x = H_N << np.uint32(1)
-                    x ^= x << np.uint32(1)
-                    x ^= x << np.uint32(2)
-                    x ^= x << np.uint32(4)
-                    x ^= x << np.uint32(8)
-                    x ^= x << np.uint32(16)
-                    req_l1 = (x >> np.uint32(N - 1)) & np.uint32(1)
-                    g_cur = req_l1 ^ w_next
-                    l1_p1 = (R_p1 >> np.uint32(N - 2)) & np.uint32(1)
-                    l1_p2 = (R_p2 >> np.uint32(N - 3)) & np.uint32(1)
-                    alive1 = (w_s == 1) & (g_cur == 1)
-                    alive0 = (
-                        (w_s == 0)
-                        & ~((w_m1 == 0) & (l1_p1 == 1) & (g_cur == 0))
-                        & ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0) & (g_cur == 1))
-                    )
-                    idx = np.nonzero(alive1 | alive0)[0]
-                    if len(idx) == 0:
-                        w_arr = w_arr[idx]
-                        break
-                    if step_idx > smax_pi:
-                        smax_pi = step_idx
-                    w_arr = w_arr[idx]
-                    mask_low = np.uint32((1 << N) - 1)
-                    R_p2 = R_p1[idx]
-                    R_p1 = (x[idx] & mask_low) | (w_N[idx] << np.uint32(N))
-                else:
-                    w_s = (w_arr >> np.uint64(s)) & np.uint64(1)
-                    w_next = (w_arr >> np.uint64(s_next)) & np.uint64(1)
-                    w_N = (w_arr >> np.uint64(s_N)) & np.uint64(1)
-                    w_m1 = (w_arr >> np.uint64((tau - 1) % Pi)) & np.uint64(1)
-                    w_m2 = (w_arr >> np.uint64((tau - 2) % Pi)) & np.uint64(1)
-                    H_N = (R_p1 | R_p2) & np.uint64(((1 << (N - 1)) - 1) & ((1 << 64) - 1))
-                    x = H_N << np.uint64(1)
-                    x ^= x << np.uint64(1)
-                    x ^= x << np.uint64(2)
-                    x ^= x << np.uint64(4)
-                    x ^= x << np.uint64(8)
-                    x ^= x << np.uint64(16)
-                    x ^= x << np.uint64(32)
-                    req_l1 = (x >> np.uint64(N - 1)) & np.uint64(1)
-                    g_cur = req_l1 ^ w_next
-                    l1_p1 = (R_p1 >> np.uint64(N - 2)) & np.uint64(1)
-                    l1_p2 = (R_p2 >> np.uint64(N - 3)) & np.uint64(1)
-                    alive1 = (w_s == 1) & (g_cur == 1)
-                    alive0 = (
-                        (w_s == 0)
-                        & ~((w_m1 == 0) & (l1_p1 == 1) & (g_cur == 0))
-                        & ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0) & (g_cur == 1))
-                    )
-                    idx = np.nonzero(alive1 | alive0)[0]
-                    if len(idx) == 0:
-                        w_arr = w_arr[idx]
-                        break
-                    if step_idx > smax_pi:
-                        smax_pi = step_idx
-                    w_arr = w_arr[idx]
-                    mask_low = np.uint64(((1 << N) - 1) & ((1 << 64) - 1))
-                    R_p2 = R_p1[idx]
-                    R_p1 = (x[idx] & mask_low) | (w_N[idx] << np.uint64(N))
-
-            unext_21_22 += len(w_arr)
-
+        n_pi, p_pi, u_pi, smax_pi = _solve_zero_shift_pi_fast(Pi)
+        necklaces_21_22 += n_pi
+        prefs_21_22 += p_pi
+        unext_21_22 += u_pi
         smax_by_pi[Pi] = smax_pi
         if smax_pi > max_ext_21_22:
             max_ext_21_22 = smax_pi
@@ -4148,238 +4460,17 @@ def verify_mahler_lock_in_and_pi24_closure() -> dict:
                 if int(alpha_mat[S, m_dyad]) != (1 ^ d_val):
                     dyadic_two_point_errors += 1
 
-    def _lyndon_masks32(Pi: int) -> np.ndarray:
-        a = [0] * (Pi + 1)
-        res: list[int] = []
-
-        def _gen(t: int, p: int) -> None:
-            if t > Pi:
-                if p == Pi:
-                    m = 0
-                    for j_idx in range(1, Pi + 1):
-                        if a[j_idx]:
-                            m |= 1 << (j_idx - 1)
-                    res.append(m)
-            else:
-                a[t] = a[t - p]
-                _gen(t + 1, p)
-                for j_v in range(a[t - p] + 1, 2):
-                    a[t] = j_v
-                    _gen(t + 1, t)
-
-        _gen(1, 1)
-        full = (1 << Pi) - 1
-        return np.array([m for m in res if 0 < m < full], dtype=np.uint32)
-
     necklaces_23_24 = 0
     prefs_23_24 = 0
     unext_23_24 = 0
     max_ext_23_24 = 0
     smax_by_pi: dict[int, int] = {}
-    chunk_u = 4096
 
     for Pi in (23, 24):
-        all_w = _lyndon_masks32(Pi)
-        num_necks = len(all_w)
-        necklaces_23_24 += num_necks
-        t0 = Pi - 1
-        N_init = t0 + 1
-        K = Pi - 4
-        mask_K = np.uint32((1 << K) - 1)
-        prefs = all_w & mask_K
-        change = np.empty(num_necks, dtype=bool)
-        change[0] = True
-        change[1:] = prefs[1:] != prefs[:-1]
-        u_start = np.nonzero(change)[0]
-        u_end = np.append(u_start[1:], num_necks)
-        u_prefs = prefs[u_start]
-        num_uprefs = len(u_prefs)
-        w_counts = u_end - u_start
-        smax_pi = 0
-        sub_step = 8192
-
-        for b_start in range(0, num_uprefs, chunk_u):
-            b_end = min(b_start + chunk_u, num_uprefs)
-            n_b = b_end - b_start
-            p_id = np.arange(n_b, dtype=np.uint32)
-            w_p = u_prefs[b_start:b_end].copy()
-            R_p2 = np.zeros(n_b, dtype=np.uint32)
-            R_p1 = np.zeros(n_b, dtype=np.uint32)
-
-            for N in range(1, K):
-                tau = N - 1
-                w_s = (w_p >> np.uint32(tau)) & np.uint32(1)
-                w_next = (w_p >> np.uint32(tau + 1)) & np.uint32(1)
-                w_N = (w_p >> np.uint32(N)) & np.uint32(1)
-                mask_low = np.uint32((1 << N) - 1)
-                H_N = ((R_p1 | R_p2) & np.uint32((1 << (N - 1)) - 1)) if N >= 2 else np.zeros_like(R_p1)
-                x = ((np.uint32(1) ^ w_next) << np.uint32(N - 1)) ^ H_N
-                x ^= x >> np.uint32(1)
-                x ^= x >> np.uint32(2)
-                x ^= x >> np.uint32(4)
-                x ^= x >> np.uint32(8)
-                x ^= x >> np.uint32(16)
-                R_N_A = (x & mask_low) | (w_N << np.uint32(N))
-                if tau >= 1:
-                    w_m1 = (w_p >> np.uint32(tau - 1)) & np.uint32(1)
-                    l1_p1 = (R_p1 >> np.uint32(N - 2)) & np.uint32(1)
-                    keep_B = (w_s == 0) & ~((w_m1 == 0) & (l1_p1 == 1))
-                else:
-                    keep_B = (w_s == 0)
-                if tau >= 2:
-                    w_m2 = (w_p >> np.uint32(tau - 2)) & np.uint32(1)
-                    l1_p2 = (R_p2 >> np.uint32(N - 3)) & np.uint32(1)
-                    keep_A = (w_s == 1) | ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0))
-                else:
-                    keep_A = np.ones(len(w_p), dtype=bool)
-                idx_A = np.nonzero(keep_A)[0]
-                idx_B = np.nonzero(keep_B)[0]
-                p_id = np.concatenate([p_id[idx_A], p_id[idx_B]])
-                w_p = np.concatenate([w_p[idx_A], w_p[idx_B]])
-                R_p2 = np.concatenate([R_p1[idx_A], R_p1[idx_B]])
-                R_p1 = np.concatenate([R_N_A[idx_A], R_N_A[idx_B] ^ mask_low])
-
-            n_surv_u = len(p_id)
-            for s_start in range(0, n_surv_u, sub_step):
-                s_end = min(s_start + sub_step, n_surv_u)
-                sub_pid = p_id[s_start:s_end]
-                reps = w_counts[b_start + sub_pid]
-                R2 = np.repeat(R_p2[s_start:s_end], reps)
-                R1 = np.repeat(R_p1[s_start:s_end], reps)
-                tot_exp = len(R1)
-                if tot_exp == 0:
-                    continue
-                cum = np.cumsum(reps)
-                base_idx = np.repeat(u_start[b_start + sub_pid] - (cum - reps), reps) + np.arange(tot_exp, dtype=np.int64)
-                w_arr = all_w[base_idx]
-
-                for N in range(K, N_init):
-                    tau = N - 1
-                    w_s = (w_arr >> np.uint32(tau)) & np.uint32(1)
-                    w_next = (w_arr >> np.uint32(tau + 1)) & np.uint32(1)
-                    w_N = (w_arr >> np.uint32(N)) & np.uint32(1)
-                    mask_low = np.uint32((1 << N) - 1)
-                    H_N = (R1 | R2) & np.uint32((1 << (N - 1)) - 1)
-                    x = ((np.uint32(1) ^ w_next) << np.uint32(N - 1)) ^ H_N
-                    x ^= x >> np.uint32(1)
-                    x ^= x >> np.uint32(2)
-                    x ^= x >> np.uint32(4)
-                    x ^= x >> np.uint32(8)
-                    x ^= x >> np.uint32(16)
-                    R_N_A = (x & mask_low) | (w_N << np.uint32(N))
-                    w_m1 = (w_arr >> np.uint32(tau - 1)) & np.uint32(1)
-                    l1_p1 = (R1 >> np.uint32(N - 2)) & np.uint32(1)
-                    keep_B = (w_s == 0) & ~((w_m1 == 0) & (l1_p1 == 1))
-                    w_m2 = (w_arr >> np.uint32(tau - 2)) & np.uint32(1)
-                    l1_p2 = (R2 >> np.uint32(N - 3)) & np.uint32(1)
-                    keep_A = (w_s == 1) | ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0))
-                    idx_A = np.nonzero(keep_A)[0]
-                    idx_B = np.nonzero(keep_B)[0]
-                    w_arr = np.concatenate([w_arr[idx_A], w_arr[idx_B]])
-                    R2 = np.concatenate([R1[idx_A], R1[idx_B]])
-                    R1 = np.concatenate([R_N_A[idx_A], R_N_A[idx_B] ^ mask_low])
-
-                N = N_init
-                mask_low = np.uint32((1 << N) - 1)
-                H_N = (R1 | R2) & np.uint32((1 << (N - 1)) - 1)
-                x = (np.uint32(1) << np.uint32(N - 1)) ^ H_N
-                x ^= x >> np.uint32(1)
-                x ^= x >> np.uint32(2)
-                x ^= x >> np.uint32(4)
-                x ^= x >> np.uint32(8)
-                x ^= x >> np.uint32(16)
-                R2 = R1
-                R1 = x & mask_low
-                prefs_23_24 += len(w_arr)
-
-                shift_off = 0
-                for step_idx in range(1, 50):
-                    if len(w_arr) == 0:
-                        break
-                    N = N_init + step_idx
-                    if N == 31 and R1.dtype == np.uint32:
-                        R2 = R2.astype(np.uint64)
-                        R1 = R1.astype(np.uint64)
-                        w_arr = w_arr.astype(np.uint64)
-                    if N == 56 and shift_off == 0:
-                        R2 >>= np.uint64(14)
-                        R1 >>= np.uint64(14)
-                        shift_off = 14
-                    N_eff = N - shift_off
-                    tau = t0 + step_idx
-                    s = tau % Pi
-                    s_next = (s + 1) % Pi
-                    s_N = N % Pi
-                    if N <= 30:
-                        w_s = (w_arr >> np.uint32(s)) & np.uint32(1)
-                        w_next = (w_arr >> np.uint32(s_next)) & np.uint32(1)
-                        w_N = (w_arr >> np.uint32(s_N)) & np.uint32(1)
-                        w_m1 = (w_arr >> np.uint32((tau - 1) % Pi)) & np.uint32(1)
-                        w_m2 = (w_arr >> np.uint32((tau - 2) % Pi)) & np.uint32(1)
-                        H_N = (R1 | R2) & np.uint32((1 << (N_eff - 1)) - 1)
-                        x = H_N << np.uint32(1)
-                        x ^= x << np.uint32(1)
-                        x ^= x << np.uint32(2)
-                        x ^= x << np.uint32(4)
-                        x ^= x << np.uint32(8)
-                        x ^= x << np.uint32(16)
-                        req_l1 = (x >> np.uint32(N_eff - 1)) & np.uint32(1)
-                        g_cur = req_l1 ^ w_next
-                        l1_p1 = (R1 >> np.uint32(N_eff - 2)) & np.uint32(1)
-                        l1_p2 = (R2 >> np.uint32(N_eff - 3)) & np.uint32(1)
-                        alive1 = (w_s == 1) & (g_cur == 1)
-                        alive0 = (
-                            (w_s == 0)
-                            & ~((w_m1 == 0) & (l1_p1 == 1) & (g_cur == 0))
-                            & ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0) & (g_cur == 1))
-                        )
-                        idx = np.nonzero(alive1 | alive0)[0]
-                        if len(idx) == 0:
-                            w_arr = w_arr[idx]
-                            break
-                        if step_idx > smax_pi:
-                            smax_pi = step_idx
-                        w_arr = w_arr[idx]
-                        mask_low = np.uint32((1 << N_eff) - 1)
-                        R2 = R1[idx]
-                        R1 = (x[idx] & mask_low) | (w_N[idx] << np.uint32(N_eff))
-                    else:
-                        w_s = (w_arr >> np.uint64(s)) & np.uint64(1)
-                        w_next = (w_arr >> np.uint64(s_next)) & np.uint64(1)
-                        w_N = (w_arr >> np.uint64(s_N)) & np.uint64(1)
-                        w_m1 = (w_arr >> np.uint64((tau - 1) % Pi)) & np.uint64(1)
-                        w_m2 = (w_arr >> np.uint64((tau - 2) % Pi)) & np.uint64(1)
-                        H_N = (R1 | R2) & np.uint64((1 << (N_eff - 1)) - 1)
-                        x = H_N << np.uint64(1)
-                        x ^= x << np.uint64(1)
-                        x ^= x << np.uint64(2)
-                        x ^= x << np.uint64(4)
-                        x ^= x << np.uint64(8)
-                        x ^= x << np.uint64(16)
-                        x ^= x << np.uint64(32)
-                        req_l1 = (x >> np.uint64(N_eff - 1)) & np.uint64(1)
-                        g_cur = req_l1 ^ w_next
-                        l1_p1 = (R1 >> np.uint64(N_eff - 2)) & np.uint64(1)
-                        l1_p2 = (R2 >> np.uint64(N_eff - 3)) & np.uint64(1)
-                        alive1 = (w_s == 1) & (g_cur == 1)
-                        alive0 = (
-                            (w_s == 0)
-                            & ~((w_m1 == 0) & (l1_p1 == 1) & (g_cur == 0))
-                            & ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0) & (g_cur == 1))
-                        )
-                        idx = np.nonzero(alive1 | alive0)[0]
-                        if len(idx) == 0:
-                            w_arr = w_arr[idx]
-                            break
-                        if step_idx > smax_pi:
-                            smax_pi = step_idx
-                        w_arr = w_arr[idx]
-                        mask_low = np.uint64((1 << N_eff) - 1)
-                        R2 = R1[idx]
-                        R1 = (x[idx] & mask_low) | (w_N[idx] << np.uint64(N_eff))
-
-                unext_23_24 += len(w_arr)
-
+        n_pi, p_pi, u_pi, smax_pi = _solve_zero_shift_pi_fast(Pi)
+        necklaces_23_24 += n_pi
+        prefs_23_24 += p_pi
+        unext_23_24 += u_pi
         smax_by_pi[Pi] = smax_pi
         if smax_pi > max_ext_23_24:
             max_ext_23_24 = smax_pi
@@ -4549,293 +4640,7 @@ def verify_2adic_projective_tower_and_pi25_closure() -> dict:
             r15_ones = int(np.sum(C_locked))
 
     # Verify Zero-Branching Row-Coordinate Extinction for Pi = 25 (1,342,176 primitive necklaces, 465,081,565 prefixes)
-    def _lyndon_masks32(Pi: int) -> np.ndarray:
-        a = [0] * (Pi + 1)
-        res: list[int] = []
-
-        def _gen(t: int, p: int) -> None:
-            if t > Pi:
-                if p == Pi:
-                    m = 0
-                    for j_idx in range(1, Pi + 1):
-                        if a[j_idx]:
-                            m |= 1 << (j_idx - 1)
-                    res.append(m)
-            else:
-                a[t] = a[t - p]
-                _gen(t + 1, p)
-                for j_v in range(a[t - p] + 1, 2):
-                    a[t] = j_v
-                    _gen(t + 1, t)
-
-        _gen(1, 1)
-        full = (1 << Pi) - 1
-        return np.array([m for m in res if 0 < m < full], dtype=np.uint32)
-
-    Pi = 25
-    all_w = _lyndon_masks32(Pi)
-    necklaces_25 = len(all_w)
-    t0 = Pi - 1
-    N_init = t0 + 1
-    K = Pi - 4
-    mask_K = np.uint32((1 << K) - 1)
-    prefs = all_w & mask_K
-    change = np.empty(necklaces_25, dtype=bool)
-    change[0] = True
-    change[1:] = prefs[1:] != prefs[:-1]
-    u_start = np.nonzero(change)[0]
-    u_end = np.append(u_start[1:], necklaces_25)
-    u_prefs = prefs[u_start]
-    num_uprefs = len(u_prefs)
-    w_counts = u_end - u_start
-
-    smax_25 = 0
-    prefs_25 = 0
-    unext_25 = 0
-    chunk_u = 4096
-    sub_step = 8192
-
-    for b_start in range(0, num_uprefs, chunk_u):
-        b_end = min(b_start + chunk_u, num_uprefs)
-        n_b = b_end - b_start
-        p_id = np.arange(n_b, dtype=np.uint32)
-        w_p = u_prefs[b_start:b_end].copy()
-        R_p2 = np.zeros(n_b, dtype=np.uint32)
-        R_p1 = np.zeros(n_b, dtype=np.uint32)
-
-        for N in range(1, K):
-            tau = N - 1
-            w_s = (w_p >> np.uint32(tau)) & np.uint32(1)
-            w_next = (w_p >> np.uint32(tau + 1)) & np.uint32(1)
-            w_N = (w_p >> np.uint32(N)) & np.uint32(1)
-            mask_low = np.uint32((1 << N) - 1)
-            H_N = ((R_p1 | R_p2) & np.uint32((1 << (N - 1)) - 1)) if N >= 2 else np.zeros_like(R_p1)
-            x = ((np.uint32(1) ^ w_next) << np.uint32(N - 1)) ^ H_N
-            x ^= x >> np.uint32(1)
-            x ^= x >> np.uint32(2)
-            x ^= x >> np.uint32(4)
-            x ^= x >> np.uint32(8)
-            x ^= x >> np.uint32(16)
-            R_N_A = (x & mask_low) | (w_N << np.uint32(N))
-            if tau >= 1:
-                w_m1 = (w_p >> np.uint32(tau - 1)) & np.uint32(1)
-                l1_p1 = (R_p1 >> np.uint32(N - 2)) & np.uint32(1)
-                keep_B = (w_s == 0) & ~((w_m1 == 0) & (l1_p1 == 1))
-            else:
-                keep_B = (w_s == 0)
-            if tau >= 2:
-                w_m2 = (w_p >> np.uint32(tau - 2)) & np.uint32(1)
-                l1_p2 = (R_p2 >> np.uint32(N - 3)) & np.uint32(1)
-                keep_A = (w_s == 1) | ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0))
-            else:
-                keep_A = np.ones(len(w_p), dtype=bool)
-            idx_A = np.nonzero(keep_A)[0]
-            idx_B = np.nonzero(keep_B)[0]
-            p_id = np.concatenate([p_id[idx_A], p_id[idx_B]])
-            w_p = np.concatenate([w_p[idx_A], w_p[idx_B]])
-            R_p2 = np.concatenate([R_p1[idx_A], R_p1[idx_B]])
-            R_p1 = np.concatenate([R_N_A[idx_A], R_N_A[idx_B] ^ mask_low])
-
-        n_surv_u = len(p_id)
-        N_K = K
-        mask_low_K = np.uint32((1 << N_K) - 1)
-        H_K_base = (R_p1 | R_p2) & np.uint32((1 << (N_K - 1)) - 1)
-        x_K_base = H_K_base.copy()
-        x_K_base ^= x_K_base >> np.uint32(1)
-        x_K_base ^= x_K_base >> np.uint32(2)
-        x_K_base ^= x_K_base >> np.uint32(4)
-        x_K_base ^= x_K_base >> np.uint32(8)
-        x_K_base ^= x_K_base >> np.uint32(16)
-        l1_p1_K = (R_p1 >> np.uint32(N_K - 2)) & np.uint32(1)
-        l1_p2_K = (R_p2 >> np.uint32(N_K - 3)) & np.uint32(1)
-
-        for s_start in range(0, n_surv_u, sub_step):
-            s_end = min(s_start + sub_step, n_surv_u)
-            sub_pid = p_id[s_start:s_end]
-            reps = w_counts[b_start + sub_pid]
-            R1_exp = np.repeat(R_p1[s_start:s_end], reps)
-            x_K_exp = np.repeat(x_K_base[s_start:s_end], reps)
-            l1_p1_exp = np.repeat(l1_p1_K[s_start:s_end], reps)
-            l1_p2_exp = np.repeat(l1_p2_K[s_start:s_end], reps)
-            tot_exp = len(R1_exp)
-            if tot_exp == 0:
-                continue
-            cum = np.cumsum(reps)
-            base_idx = np.repeat(u_start[b_start + sub_pid] - (cum - reps), reps) + np.arange(tot_exp, dtype=np.int64)
-            w_arr = all_w[base_idx]
-
-            tau = K - 1
-            w_s = (w_arr >> np.uint32(tau)) & np.uint32(1)
-            w_next = (w_arr >> np.uint32(tau + 1)) & np.uint32(1)
-            w_N = (w_arr >> np.uint32(K)) & np.uint32(1)
-            flip_A = (np.uint32(1) ^ w_next) * mask_low_K
-            R_N_A = ((x_K_exp ^ flip_A) & mask_low_K) | (w_N << np.uint32(K))
-            w_m1 = (w_arr >> np.uint32(tau - 1)) & np.uint32(1)
-            keep_B = (w_s == 0) & ~((w_m1 == 0) & (l1_p1_exp == 1))
-            w_m2 = (w_arr >> np.uint32(tau - 2)) & np.uint32(1)
-            keep_A = (w_s == 1) | ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2_exp == 0))
-            idx_A = np.nonzero(keep_A)[0]
-            idx_B = np.nonzero(keep_B)[0]
-            w_arr = np.concatenate([w_arr[idx_A], w_arr[idx_B]])
-            R2 = np.concatenate([R1_exp[idx_A], R1_exp[idx_B]])
-            R1 = np.concatenate([R_N_A[idx_A], R_N_A[idx_B] ^ mask_low_K])
-
-            for N in range(K + 1, N_init):
-                tau = N - 1
-                w_s = (w_arr >> np.uint32(tau)) & np.uint32(1)
-                w_next = (w_arr >> np.uint32(tau + 1)) & np.uint32(1)
-                w_N = (w_arr >> np.uint32(N)) & np.uint32(1)
-                mask_low = np.uint32((1 << N) - 1)
-                H_N = (R1 | R2) & np.uint32((1 << (N - 1)) - 1)
-                x = ((np.uint32(1) ^ w_next) << np.uint32(N - 1)) ^ H_N
-                x ^= x >> np.uint32(1)
-                x ^= x >> np.uint32(2)
-                x ^= x >> np.uint32(4)
-                x ^= x >> np.uint32(8)
-                x ^= x >> np.uint32(16)
-                R_N_A = (x & mask_low) | (w_N << np.uint32(N))
-                w_m1 = (w_arr >> np.uint32(tau - 1)) & np.uint32(1)
-                l1_p1 = (R1 >> np.uint32(N - 2)) & np.uint32(1)
-                keep_B = (w_s == 0) & ~((w_m1 == 0) & (l1_p1 == 1))
-                w_m2 = (w_arr >> np.uint32(tau - 2)) & np.uint32(1)
-                l1_p2 = (R2 >> np.uint32(N - 3)) & np.uint32(1)
-                keep_A = (w_s == 1) | ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0))
-                idx_A = np.nonzero(keep_A)[0]
-                idx_B = np.nonzero(keep_B)[0]
-                w_arr = np.concatenate([w_arr[idx_A], w_arr[idx_B]])
-                R2 = np.concatenate([R1[idx_A], R1[idx_B]])
-                R1 = np.concatenate([R_N_A[idx_A], R_N_A[idx_B] ^ mask_low])
-
-            N = N_init
-            mask_low = np.uint32((1 << N) - 1)
-            H_N = (R1 | R2) & np.uint32((1 << (N - 1)) - 1)
-            x = (np.uint32(1) << np.uint32(N - 1)) ^ H_N
-            x ^= x >> np.uint32(1)
-            x ^= x >> np.uint32(2)
-            x ^= x >> np.uint32(4)
-            x ^= x >> np.uint32(8)
-            x ^= x >> np.uint32(16)
-            R2 = R1
-            R1 = x & mask_low
-            prefs_25 += len(w_arr)
-
-            N1 = N_init + 1
-            H_N1 = (R1 | R2) & np.uint32((1 << (N1 - 1)) - 1)
-            w_next1 = (w_arr >> np.uint32(1)) & np.uint32(1)
-            w_m2_1 = (w_arr >> np.uint32(Pi - 2)) & np.uint32(1)
-            l1_p2_1 = (R2 >> np.uint32(N1 - 3)) & np.uint32(1)
-            v_p = H_N1 ^ (H_N1 >> np.uint32(16))
-            v_p ^= v_p >> np.uint32(8)
-            v_p ^= v_p >> np.uint32(4)
-            v_p ^= v_p >> np.uint32(2)
-            v_p ^= v_p >> np.uint32(1)
-            g_cur1 = (v_p & np.uint32(1)) ^ w_next1
-            keep1 = ~((w_m2_1 == 0) & (l1_p2_1 == 0) & (g_cur1 == 1))
-            idx1 = np.nonzero(keep1)[0]
-            if len(idx1) == 0:
-                continue
-            if 1 > smax_25:
-                smax_25 = 1
-            w_arr = w_arr[idx1]
-            H_N1 = H_N1[idx1]
-            x1 = H_N1 << np.uint32(1)
-            x1 ^= x1 << np.uint32(1)
-            x1 ^= x1 << np.uint32(2)
-            x1 ^= x1 << np.uint32(4)
-            x1 ^= x1 << np.uint32(8)
-            x1 ^= x1 << np.uint32(16)
-            mask_low1 = np.uint32((1 << N1) - 1)
-            w_N1 = (w_arr >> np.uint32(1)) & np.uint32(1)
-            R2 = R1[idx1]
-            R1 = (x1 & mask_low1) | (w_N1 << np.uint32(N1))
-
-            shift_off = 0
-            for step_idx in range(2, 58):
-                if len(w_arr) == 0:
-                    break
-                N = N_init + step_idx
-                if N == 31 and R1.dtype == np.uint32:
-                    R2 = R2.astype(np.uint64)
-                    R1 = R1.astype(np.uint64)
-                    w_arr = w_arr.astype(np.uint64)
-                if N == 56 and shift_off == 0:
-                    R2 >>= np.uint64(14)
-                    R1 >>= np.uint64(14)
-                    shift_off = 14
-                N_eff = N - shift_off
-                tau = t0 + step_idx
-                s = tau % Pi
-                s_next = (s + 1) % Pi
-                s_N = N % Pi
-                if N <= 30:
-                    w_s = (w_arr >> np.uint32(s)) & np.uint32(1)
-                    w_next = (w_arr >> np.uint32(s_next)) & np.uint32(1)
-                    w_N = (w_arr >> np.uint32(s_N)) & np.uint32(1)
-                    w_m1 = (w_arr >> np.uint32((tau - 1) % Pi)) & np.uint32(1)
-                    w_m2 = (w_arr >> np.uint32((tau - 2) % Pi)) & np.uint32(1)
-                    H_N = (R1 | R2) & np.uint32((1 << (N_eff - 1)) - 1)
-                    x = H_N << np.uint32(1)
-                    x ^= x << np.uint32(1)
-                    x ^= x << np.uint32(2)
-                    x ^= x << np.uint32(4)
-                    x ^= x << np.uint32(8)
-                    x ^= x << np.uint32(16)
-                    req_l1 = (x >> np.uint32(N_eff - 1)) & np.uint32(1)
-                    g_cur = req_l1 ^ w_next
-                    l1_p1 = (R1 >> np.uint32(N_eff - 2)) & np.uint32(1)
-                    l1_p2 = (R2 >> np.uint32(N_eff - 3)) & np.uint32(1)
-                    alive1 = (w_s == 1) & (g_cur == 1)
-                    alive0 = (
-                        (w_s == 0)
-                        & ~((w_m1 == 0) & (l1_p1 == 1) & (g_cur == 0))
-                        & ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0) & (g_cur == 1))
-                    )
-                    idx = np.nonzero(alive1 | alive0)[0]
-                    if len(idx) == 0:
-                        w_arr = w_arr[idx]
-                        break
-                    if step_idx > smax_25:
-                        smax_25 = step_idx
-                    w_arr = w_arr[idx]
-                    mask_low = np.uint32((1 << N_eff) - 1)
-                    R2 = R1[idx]
-                    R1 = (x[idx] & mask_low) | (w_N[idx] << np.uint32(N_eff))
-                else:
-                    w_s = (w_arr >> np.uint64(s)) & np.uint64(1)
-                    w_next = (w_arr >> np.uint64(s_next)) & np.uint64(1)
-                    w_N = (w_arr >> np.uint64(s_N)) & np.uint64(1)
-                    w_m1 = (w_arr >> np.uint64((tau - 1) % Pi)) & np.uint64(1)
-                    w_m2 = (w_arr >> np.uint64((tau - 2) % Pi)) & np.uint64(1)
-                    H_N = (R1 | R2) & np.uint64((1 << (N_eff - 1)) - 1)
-                    x = H_N << np.uint64(1)
-                    x ^= x << np.uint64(1)
-                    x ^= x << np.uint64(2)
-                    x ^= x << np.uint64(4)
-                    x ^= x << np.uint64(8)
-                    x ^= x << np.uint64(16)
-                    x ^= x << np.uint64(32)
-                    req_l1 = (x >> np.uint64(N_eff - 1)) & np.uint64(1)
-                    g_cur = req_l1 ^ w_next
-                    l1_p1 = (R1 >> np.uint64(N_eff - 2)) & np.uint64(1)
-                    l1_p2 = (R2 >> np.uint64(N_eff - 3)) & np.uint64(1)
-                    alive1 = (w_s == 1) & (g_cur == 1)
-                    alive0 = (
-                        (w_s == 0)
-                        & ~((w_m1 == 0) & (l1_p1 == 1) & (g_cur == 0))
-                        & ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0) & (g_cur == 1))
-                    )
-                    idx = np.nonzero(alive1 | alive0)[0]
-                    if len(idx) == 0:
-                        w_arr = w_arr[idx]
-                        break
-                    if step_idx > smax_25:
-                        smax_25 = step_idx
-                    w_arr = w_arr[idx]
-                    mask_low = np.uint64((1 << N_eff) - 1)
-                    R2 = R1[idx]
-                    R1 = (x[idx] & mask_low) | (w_N[idx] << np.uint64(N_eff))
-
-            unext_25 += len(w_arr)
+    necklaces_25, prefs_25, unext_25, smax_25 = _solve_zero_shift_pi_fast(25)
 
     return {
         "tower_errors": tower_errors,
@@ -4963,293 +4768,7 @@ def verify_frobenius_mahler_shift_and_pi26_closure() -> dict:
             if c_msb != int(grid[S, c]):
                 msb_errors += 1
 
-    def _lyndon_masks32(Pi: int) -> np.ndarray:
-        a = [0] * (Pi + 1)
-        res: list[int] = []
-
-        def _gen(t: int, p: int) -> None:
-            if t > Pi:
-                if p == Pi:
-                    m = 0
-                    for j_idx in range(1, Pi + 1):
-                        if a[j_idx]:
-                            m |= 1 << (j_idx - 1)
-                    res.append(m)
-            else:
-                a[t] = a[t - p]
-                _gen(t + 1, p)
-                for j_v in range(a[t - p] + 1, 2):
-                    a[t] = j_v
-                    _gen(t + 1, t)
-
-        _gen(1, 1)
-        full = (1 << Pi) - 1
-        return np.array([m for m in res if 0 < m < full], dtype=np.uint32)
-
-    Pi = 26
-    all_w = _lyndon_masks32(Pi)
-    necklaces_26 = len(all_w)
-    t0 = Pi - 1
-    N_init = t0 + 1
-    K = Pi - 4
-    mask_K = np.uint32((1 << K) - 1)
-    prefs = all_w & mask_K
-    change = np.empty(necklaces_26, dtype=bool)
-    change[0] = True
-    change[1:] = prefs[1:] != prefs[:-1]
-    u_start = np.nonzero(change)[0]
-    u_end = np.append(u_start[1:], necklaces_26)
-    u_prefs = prefs[u_start]
-    num_uprefs = len(u_prefs)
-    w_counts = u_end - u_start
-
-    smax_26 = 0
-    prefs_26 = 0
-    unext_26 = 0
-    chunk_u = 4096
-    sub_step = 8192
-
-    for b_start in range(0, num_uprefs, chunk_u):
-        b_end = min(b_start + chunk_u, num_uprefs)
-        n_b = b_end - b_start
-        p_id = np.arange(n_b, dtype=np.uint32)
-        w_p = u_prefs[b_start:b_end].copy()
-        R_p2 = np.zeros(n_b, dtype=np.uint32)
-        R_p1 = np.zeros(n_b, dtype=np.uint32)
-
-        for N in range(1, K):
-            tau = N - 1
-            w_s = (w_p >> np.uint32(tau)) & np.uint32(1)
-            w_next = (w_p >> np.uint32(tau + 1)) & np.uint32(1)
-            w_N = (w_p >> np.uint32(N)) & np.uint32(1)
-            mask_low = np.uint32((1 << N) - 1)
-            H_N = ((R_p1 | R_p2) & np.uint32((1 << (N - 1)) - 1)) if N >= 2 else np.zeros_like(R_p1)
-            x = ((np.uint32(1) ^ w_next) << np.uint32(N - 1)) ^ H_N
-            x ^= x >> np.uint32(1)
-            x ^= x >> np.uint32(2)
-            x ^= x >> np.uint32(4)
-            x ^= x >> np.uint32(8)
-            x ^= x >> np.uint32(16)
-            R_N_A = (x & mask_low) | (w_N << np.uint32(N))
-            if tau >= 1:
-                w_m1 = (w_p >> np.uint32(tau - 1)) & np.uint32(1)
-                l1_p1 = (R_p1 >> np.uint32(N - 2)) & np.uint32(1)
-                keep_B = (w_s == 0) & ~((w_m1 == 0) & (l1_p1 == 1))
-            else:
-                keep_B = (w_s == 0)
-            if tau >= 2:
-                w_m2 = (w_p >> np.uint32(tau - 2)) & np.uint32(1)
-                l1_p2 = (R_p2 >> np.uint32(N - 3)) & np.uint32(1)
-                keep_A = (w_s == 1) | ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0))
-            else:
-                keep_A = np.ones(len(w_p), dtype=bool)
-            idx_A = np.nonzero(keep_A)[0]
-            idx_B = np.nonzero(keep_B)[0]
-            p_id = np.concatenate([p_id[idx_A], p_id[idx_B]])
-            w_p = np.concatenate([w_p[idx_A], w_p[idx_B]])
-            R_p2 = np.concatenate([R_p1[idx_A], R_p1[idx_B]])
-            R_p1 = np.concatenate([R_N_A[idx_A], R_N_A[idx_B] ^ mask_low])
-
-        n_surv_u = len(p_id)
-        N_K = K
-        mask_low_K = np.uint32((1 << N_K) - 1)
-        H_K_base = (R_p1 | R_p2) & np.uint32((1 << (N_K - 1)) - 1)
-        x_K_base = H_K_base.copy()
-        x_K_base ^= x_K_base >> np.uint32(1)
-        x_K_base ^= x_K_base >> np.uint32(2)
-        x_K_base ^= x_K_base >> np.uint32(4)
-        x_K_base ^= x_K_base >> np.uint32(8)
-        x_K_base ^= x_K_base >> np.uint32(16)
-        l1_p1_K = (R_p1 >> np.uint32(N_K - 2)) & np.uint32(1)
-        l1_p2_K = (R_p2 >> np.uint32(N_K - 3)) & np.uint32(1)
-
-        for s_start in range(0, n_surv_u, sub_step):
-            s_end = min(s_start + sub_step, n_surv_u)
-            sub_pid = p_id[s_start:s_end]
-            reps = w_counts[b_start + sub_pid]
-            R1_exp = np.repeat(R_p1[s_start:s_end], reps)
-            x_K_exp = np.repeat(x_K_base[s_start:s_end], reps)
-            l1_p1_exp = np.repeat(l1_p1_K[s_start:s_end], reps)
-            l1_p2_exp = np.repeat(l1_p2_K[s_start:s_end], reps)
-            tot_exp = len(R1_exp)
-            if tot_exp == 0:
-                continue
-            cum = np.cumsum(reps)
-            base_idx = np.repeat(u_start[b_start + sub_pid] - (cum - reps), reps) + np.arange(tot_exp, dtype=np.int64)
-            w_arr = all_w[base_idx]
-
-            tau = K - 1
-            w_s = (w_arr >> np.uint32(tau)) & np.uint32(1)
-            w_next = (w_arr >> np.uint32(tau + 1)) & np.uint32(1)
-            w_N = (w_arr >> np.uint32(K)) & np.uint32(1)
-            flip_A = (np.uint32(1) ^ w_next) * mask_low_K
-            R_N_A = ((x_K_exp ^ flip_A) & mask_low_K) | (w_N << np.uint32(K))
-            w_m1 = (w_arr >> np.uint32(tau - 1)) & np.uint32(1)
-            keep_B = (w_s == 0) & ~((w_m1 == 0) & (l1_p1_exp == 1))
-            w_m2 = (w_arr >> np.uint32(tau - 2)) & np.uint32(1)
-            keep_A = (w_s == 1) | ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2_exp == 0))
-            idx_A = np.nonzero(keep_A)[0]
-            idx_B = np.nonzero(keep_B)[0]
-            w_arr = np.concatenate([w_arr[idx_A], w_arr[idx_B]])
-            R2 = np.concatenate([R1_exp[idx_A], R1_exp[idx_B]])
-            R1 = np.concatenate([R_N_A[idx_A], R_N_A[idx_B] ^ mask_low_K])
-
-            for N in range(K + 1, N_init):
-                tau = N - 1
-                w_s = (w_arr >> np.uint32(tau)) & np.uint32(1)
-                w_next = (w_arr >> np.uint32(tau + 1)) & np.uint32(1)
-                w_N = (w_arr >> np.uint32(N)) & np.uint32(1)
-                mask_low = np.uint32((1 << N) - 1)
-                H_N = (R1 | R2) & np.uint32((1 << (N - 1)) - 1)
-                x = ((np.uint32(1) ^ w_next) << np.uint32(N - 1)) ^ H_N
-                x ^= x >> np.uint32(1)
-                x ^= x >> np.uint32(2)
-                x ^= x >> np.uint32(4)
-                x ^= x >> np.uint32(8)
-                x ^= x >> np.uint32(16)
-                R_N_A = (x & mask_low) | (w_N << np.uint32(N))
-                w_m1 = (w_arr >> np.uint32(tau - 1)) & np.uint32(1)
-                l1_p1 = (R1 >> np.uint32(N - 2)) & np.uint32(1)
-                keep_B = (w_s == 0) & ~((w_m1 == 0) & (l1_p1 == 1))
-                w_m2 = (w_arr >> np.uint32(tau - 2)) & np.uint32(1)
-                l1_p2 = (R2 >> np.uint32(N - 3)) & np.uint32(1)
-                keep_A = (w_s == 1) | ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0))
-                idx_A = np.nonzero(keep_A)[0]
-                idx_B = np.nonzero(keep_B)[0]
-                w_arr = np.concatenate([w_arr[idx_A], w_arr[idx_B]])
-                R2 = np.concatenate([R1[idx_A], R1[idx_B]])
-                R1 = np.concatenate([R_N_A[idx_A], R_N_A[idx_B] ^ mask_low])
-
-            N = N_init
-            mask_low = np.uint32((1 << N) - 1)
-            H_N = (R1 | R2) & np.uint32((1 << (N - 1)) - 1)
-            x = (np.uint32(1) << np.uint32(N - 1)) ^ H_N
-            x ^= x >> np.uint32(1)
-            x ^= x >> np.uint32(2)
-            x ^= x >> np.uint32(4)
-            x ^= x >> np.uint32(8)
-            x ^= x >> np.uint32(16)
-            R2 = R1
-            R1 = x & mask_low
-            prefs_26 += len(w_arr)
-
-            N1 = N_init + 1
-            H_N1 = (R1 | R2) & np.uint32((1 << (N1 - 1)) - 1)
-            w_next1 = (w_arr >> np.uint32(1)) & np.uint32(1)
-            w_m2_1 = (w_arr >> np.uint32(Pi - 2)) & np.uint32(1)
-            l1_p2_1 = (R2 >> np.uint32(N1 - 3)) & np.uint32(1)
-            v_p = H_N1 ^ (H_N1 >> np.uint32(16))
-            v_p ^= v_p >> np.uint32(8)
-            v_p ^= v_p >> np.uint32(4)
-            v_p ^= v_p >> np.uint32(2)
-            v_p ^= v_p >> np.uint32(1)
-            g_cur1 = (v_p & np.uint32(1)) ^ w_next1
-            keep1 = ~((w_m2_1 == 0) & (l1_p2_1 == 0) & (g_cur1 == 1))
-            idx1 = np.nonzero(keep1)[0]
-            if len(idx1) == 0:
-                continue
-            if 1 > smax_26:
-                smax_26 = 1
-            w_arr = w_arr[idx1]
-            H_N1 = H_N1[idx1]
-            x1 = H_N1 << np.uint32(1)
-            x1 ^= x1 << np.uint32(1)
-            x1 ^= x1 << np.uint32(2)
-            x1 ^= x1 << np.uint32(4)
-            x1 ^= x1 << np.uint32(8)
-            x1 ^= x1 << np.uint32(16)
-            mask_low1 = np.uint32((1 << N1) - 1)
-            w_N1 = (w_arr >> np.uint32(1)) & np.uint32(1)
-            R2 = R1[idx1]
-            R1 = (x1 & mask_low1) | (w_N1 << np.uint32(N1))
-
-            shift_off = 0
-            for step_idx in range(2, 60):
-                if len(w_arr) == 0:
-                    break
-                N = N_init + step_idx
-                if N == 31 and R1.dtype == np.uint32:
-                    R2 = R2.astype(np.uint64)
-                    R1 = R1.astype(np.uint64)
-                    w_arr = w_arr.astype(np.uint64)
-                if N == 56 and shift_off == 0:
-                    R2 >>= np.uint64(14)
-                    R1 >>= np.uint64(14)
-                    shift_off = 14
-                N_eff = N - shift_off
-                tau = t0 + step_idx
-                s = tau % Pi
-                s_next = (s + 1) % Pi
-                s_N = N % Pi
-                if N <= 30:
-                    w_s = (w_arr >> np.uint32(s)) & np.uint32(1)
-                    w_next = (w_arr >> np.uint32(s_next)) & np.uint32(1)
-                    w_N = (w_arr >> np.uint32(s_N)) & np.uint32(1)
-                    w_m1 = (w_arr >> np.uint32((tau - 1) % Pi)) & np.uint32(1)
-                    w_m2 = (w_arr >> np.uint32((tau - 2) % Pi)) & np.uint32(1)
-                    H_N = (R1 | R2) & np.uint32((1 << (N_eff - 1)) - 1)
-                    x = H_N << np.uint32(1)
-                    x ^= x << np.uint32(1)
-                    x ^= x << np.uint32(2)
-                    x ^= x << np.uint32(4)
-                    x ^= x << np.uint32(8)
-                    x ^= x << np.uint32(16)
-                    req_l1 = (x >> np.uint32(N_eff - 1)) & np.uint32(1)
-                    g_cur = req_l1 ^ w_next
-                    l1_p1 = (R1 >> np.uint32(N_eff - 2)) & np.uint32(1)
-                    l1_p2 = (R2 >> np.uint32(N_eff - 3)) & np.uint32(1)
-                    alive1 = (w_s == 1) & (g_cur == 1)
-                    alive0 = (
-                        (w_s == 0)
-                        & ~((w_m1 == 0) & (l1_p1 == 1) & (g_cur == 0))
-                        & ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0) & (g_cur == 1))
-                    )
-                    idx = np.nonzero(alive1 | alive0)[0]
-                    if len(idx) == 0:
-                        w_arr = w_arr[idx]
-                        break
-                    if step_idx > smax_26:
-                        smax_26 = step_idx
-                    w_arr = w_arr[idx]
-                    mask_low = np.uint32((1 << N_eff) - 1)
-                    R2 = R1[idx]
-                    R1 = (x[idx] & mask_low) | (w_N[idx] << np.uint32(N_eff))
-                else:
-                    w_s = (w_arr >> np.uint64(s)) & np.uint64(1)
-                    w_next = (w_arr >> np.uint64(s_next)) & np.uint64(1)
-                    w_N = (w_arr >> np.uint64(s_N)) & np.uint64(1)
-                    w_m1 = (w_arr >> np.uint64((tau - 1) % Pi)) & np.uint64(1)
-                    w_m2 = (w_arr >> np.uint64((tau - 2) % Pi)) & np.uint64(1)
-                    H_N = (R1 | R2) & np.uint64((1 << (N_eff - 1)) - 1)
-                    x = H_N << np.uint64(1)
-                    x ^= x << np.uint64(1)
-                    x ^= x << np.uint64(2)
-                    x ^= x << np.uint64(4)
-                    x ^= x << np.uint64(8)
-                    x ^= x << np.uint64(16)
-                    x ^= x << np.uint64(32)
-                    req_l1 = (x >> np.uint64(N_eff - 1)) & np.uint64(1)
-                    g_cur = req_l1 ^ w_next
-                    l1_p1 = (R1 >> np.uint64(N_eff - 2)) & np.uint64(1)
-                    l1_p2 = (R2 >> np.uint64(N_eff - 3)) & np.uint64(1)
-                    alive1 = (w_s == 1) & (g_cur == 1)
-                    alive0 = (
-                        (w_s == 0)
-                        & ~((w_m1 == 0) & (l1_p1 == 1) & (g_cur == 0))
-                        & ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0) & (g_cur == 1))
-                    )
-                    idx = np.nonzero(alive1 | alive0)[0]
-                    if len(idx) == 0:
-                        w_arr = w_arr[idx]
-                        break
-                    if step_idx > smax_26:
-                        smax_26 = step_idx
-                    w_arr = w_arr[idx]
-                    mask_low = np.uint64((1 << N_eff) - 1)
-                    R2 = R1[idx]
-                    R1 = (x[idx] & mask_low) | (w_N[idx] << np.uint64(N_eff))
-
-            unext_26 += len(w_arr)
+    necklaces_26, prefs_26, unext_26, smax_26 = _solve_zero_shift_pi_fast(26)
 
     return {
         "frob_errors": frob_errors,
@@ -5387,297 +4906,7 @@ def verify_2d_sierpinski_tensor_and_pi27_closure() -> dict:
                     if (d_cur ^ d_prv) != g_diff:
                         chord_recur_errors += 1
 
-    def _lyndon_masks32(Pi: int) -> np.ndarray:
-        a = [0] * (Pi + 1)
-        res: list[int] = []
-
-        def _gen(t: int, p: int) -> None:
-            if t > Pi:
-                if p == Pi:
-                    m = 0
-                    for j_idx in range(1, Pi + 1):
-                        if a[j_idx]:
-                            m |= 1 << (j_idx - 1)
-                    res.append(m)
-            else:
-                a[t] = a[t - p]
-                _gen(t + 1, p)
-                for j_v in range(a[t - p] + 1, 2):
-                    a[t] = j_v
-                    _gen(t + 1, t)
-
-        _gen(1, 1)
-        full = (1 << Pi) - 1
-        return np.array([m for m in res if 0 < m < full], dtype=np.uint32)
-
-    def _parity32(v: np.ndarray) -> np.ndarray:
-        v = v ^ (v >> np.uint32(16))
-        v = v ^ (v >> np.uint32(8))
-        v = v ^ (v >> np.uint32(4))
-        v = v ^ (v >> np.uint32(2))
-        v = v ^ (v >> np.uint32(1))
-        return v & np.uint32(1)
-
-    Pi = 27
-    all_w = _lyndon_masks32(Pi)
-    necklaces_27 = len(all_w)
-    t0 = Pi - 1
-    N_init = t0 + 1
-    K = Pi - 4
-    mask_K = np.uint32((1 << K) - 1)
-    prefs = all_w & mask_K
-    change = np.empty(necklaces_27, dtype=bool)
-    change[0] = True
-    change[1:] = prefs[1:] != prefs[:-1]
-    u_start = np.nonzero(change)[0]
-    u_end = np.append(u_start[1:], necklaces_27)
-    u_prefs = prefs[u_start]
-    num_uprefs = len(u_prefs)
-    w_counts = u_end - u_start
-
-    smax_27 = 0
-    prefs_27 = 0
-    unext_27 = 0
-    chunk_u = 4096
-    sub_step = 8192
-
-    for b_start in range(0, num_uprefs, chunk_u):
-        b_end = min(b_start + chunk_u, num_uprefs)
-        n_b = b_end - b_start
-        p_id = np.arange(n_b, dtype=np.uint32)
-        w_p = u_prefs[b_start:b_end].copy()
-        R_p2 = np.zeros(n_b, dtype=np.uint32)
-        R_p1 = np.zeros(n_b, dtype=np.uint32)
-
-        for N in range(1, K):
-            tau = N - 1
-            w_s = (w_p >> np.uint32(tau)) & np.uint32(1)
-            w_next = (w_p >> np.uint32(tau + 1)) & np.uint32(1)
-            w_N = (w_p >> np.uint32(N)) & np.uint32(1)
-            mask_low = np.uint32((1 << N) - 1)
-            H_N = ((R_p1 | R_p2) & np.uint32((1 << (N - 1)) - 1)) if N >= 2 else np.zeros_like(R_p1)
-            x = ((np.uint32(1) ^ w_next) << np.uint32(N - 1)) ^ H_N
-            x ^= x >> np.uint32(1)
-            x ^= x >> np.uint32(2)
-            x ^= x >> np.uint32(4)
-            x ^= x >> np.uint32(8)
-            x ^= x >> np.uint32(16)
-            R_N_A = (x & mask_low) | (w_N << np.uint32(N))
-            if tau >= 1:
-                w_m1 = (w_p >> np.uint32(tau - 1)) & np.uint32(1)
-                l1_p1 = (R_p1 >> np.uint32(N - 2)) & np.uint32(1)
-                keep_B = (w_s == 0) & ~((w_m1 == 0) & (l1_p1 == 1))
-            else:
-                keep_B = (w_s == 0)
-            if tau >= 2:
-                w_m2 = (w_p >> np.uint32(tau - 2)) & np.uint32(1)
-                l1_p2 = (R_p2 >> np.uint32(N - 3)) & np.uint32(1)
-                keep_A = (w_s == 1) | ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0))
-            else:
-                keep_A = np.ones(len(w_p), dtype=bool)
-            idx_A = np.nonzero(keep_A)[0]
-            idx_B = np.nonzero(keep_B)[0]
-            p_id = np.concatenate([p_id[idx_A], p_id[idx_B]])
-            w_p = np.concatenate([w_p[idx_A], w_p[idx_B]])
-            R_p2 = np.concatenate([R_p1[idx_A], R_p1[idx_B]])
-            R_p1 = np.concatenate([R_N_A[idx_A], R_N_A[idx_B] ^ mask_low])
-
-        N_K = K
-        mask_low_K = np.uint32((1 << N_K) - 1)
-        H_K_base = (R_p1 | R_p2) & np.uint32((1 << (N_K - 1)) - 1)
-        x_K_base = H_K_base.copy()
-        x_K_base ^= x_K_base >> np.uint32(1)
-        x_K_base ^= x_K_base >> np.uint32(2)
-        x_K_base ^= x_K_base >> np.uint32(4)
-        x_K_base ^= x_K_base >> np.uint32(8)
-        x_K_base ^= x_K_base >> np.uint32(16)
-        l1_p1_K = (R_p1 >> np.uint32(N_K - 2)) & np.uint32(1)
-        l1_p2_K = (R_p2 >> np.uint32(N_K - 3)) & np.uint32(1)
-
-        n_surv_u = len(p_id)
-        for s_start in range(0, n_surv_u, sub_step):
-            s_end = min(s_start + sub_step, n_surv_u)
-            sub_pid = p_id[s_start:s_end]
-            reps = w_counts[b_start + sub_pid]
-            R1_exp = np.repeat(R_p1[s_start:s_end], reps)
-            x_K_exp = np.repeat(x_K_base[s_start:s_end], reps)
-            l1_p1_exp = np.repeat(l1_p1_K[s_start:s_end], reps)
-            l1_p2_exp = np.repeat(l1_p2_K[s_start:s_end], reps)
-            tot_exp = len(R1_exp)
-            if tot_exp == 0:
-                continue
-            cum = np.cumsum(reps)
-            base_idx = np.repeat(u_start[b_start + sub_pid] - (cum - reps), reps) + np.arange(tot_exp, dtype=np.int64)
-            w_arr = all_w[base_idx]
-
-            tau = K - 1
-            w_s = (w_arr >> np.uint32(tau)) & np.uint32(1)
-            w_next = (w_arr >> np.uint32(tau + 1)) & np.uint32(1)
-            w_N = (w_arr >> np.uint32(K)) & np.uint32(1)
-            flip_A = (np.uint32(1) ^ w_next) * mask_low_K
-            R_N_A = ((x_K_exp ^ flip_A) & mask_low_K) | (w_N << np.uint32(K))
-            w_m1 = (w_arr >> np.uint32(tau - 1)) & np.uint32(1)
-            keep_B = (w_s == 0) & ~((w_m1 == 0) & (l1_p1_exp == 1))
-            w_m2 = (w_arr >> np.uint32(tau - 2)) & np.uint32(1)
-            keep_A = (w_s == 1) | ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2_exp == 0))
-            idx_A = np.nonzero(keep_A)[0]
-            idx_B = np.nonzero(keep_B)[0]
-            w_arr = np.concatenate([w_arr[idx_A], w_arr[idx_B]])
-            R2 = np.concatenate([R1_exp[idx_A], R1_exp[idx_B]])
-            R1 = np.concatenate([R_N_A[idx_A], R_N_A[idx_B] ^ mask_low_K])
-
-            for N in range(K + 1, N_init):
-                tau = N - 1
-                w_s = (w_arr >> np.uint32(tau)) & np.uint32(1)
-                w_next = (w_arr >> np.uint32(tau + 1)) & np.uint32(1)
-                w_N = (w_arr >> np.uint32(N)) & np.uint32(1)
-                mask_low = np.uint32((1 << N) - 1)
-                H_N = (R1 | R2) & np.uint32((1 << (N - 1)) - 1)
-                x = ((np.uint32(1) ^ w_next) << np.uint32(N - 1)) ^ H_N
-                x ^= x >> np.uint32(1)
-                x ^= x >> np.uint32(2)
-                x ^= x >> np.uint32(4)
-                x ^= x >> np.uint32(8)
-                x ^= x >> np.uint32(16)
-                R_N_A = (x & mask_low) | (w_N << np.uint32(N))
-                w_m1 = (w_arr >> np.uint32(tau - 1)) & np.uint32(1)
-                l1_p1 = (R1 >> np.uint32(N - 2)) & np.uint32(1)
-                keep_B = (w_s == 0) & ~((w_m1 == 0) & (l1_p1 == 1))
-                w_m2 = (w_arr >> np.uint32(tau - 2)) & np.uint32(1)
-                l1_p2 = (R2 >> np.uint32(N - 3)) & np.uint32(1)
-                keep_A = (w_s == 1) | ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0))
-                idx_A = np.nonzero(keep_A)[0]
-                idx_B = np.nonzero(keep_B)[0]
-                w_arr = np.concatenate([w_arr[idx_A], w_arr[idx_B]])
-                R2 = np.concatenate([R1[idx_A], R1[idx_B]])
-                R1 = np.concatenate([R_N_A[idx_A], R_N_A[idx_B] ^ mask_low])
-
-            N = N_init
-            mask_low = np.uint32((1 << N) - 1)
-            H_N = (R1 | R2) & np.uint32((1 << (N - 1)) - 1)
-            x = (np.uint32(1) << np.uint32(N - 1)) ^ H_N
-            x ^= x >> np.uint32(1)
-            x ^= x >> np.uint32(2)
-            x ^= x >> np.uint32(4)
-            x ^= x >> np.uint32(8)
-            x ^= x >> np.uint32(16)
-            R2 = R1
-            R1 = x & mask_low
-            prefs_27 += len(w_arr)
-
-            N1 = N_init + 1
-            H_N1 = (R1 | R2) & np.uint32((1 << (N1 - 1)) - 1)
-            w_next1 = (w_arr >> np.uint32(1)) & np.uint32(1)
-            w_m2_1 = (w_arr >> np.uint32(Pi - 2)) & np.uint32(1)
-            l1_p2_1 = (R2 >> np.uint32(N1 - 3)) & np.uint32(1)
-            req_l1_1 = _parity32(H_N1)
-            g_cur1 = req_l1_1 ^ w_next1
-            keep1 = ~((w_m2_1 == 0) & (l1_p2_1 == 0) & (g_cur1 == 1))
-            idx1 = np.nonzero(keep1)[0]
-            if len(idx1) == 0:
-                continue
-            if 1 > smax_27:
-                smax_27 = 1
-            w_arr = w_arr[idx1]
-            H_N1 = H_N1[idx1]
-            x1 = H_N1 << np.uint32(1)
-            x1 ^= x1 << np.uint32(1)
-            x1 ^= x1 << np.uint32(2)
-            x1 ^= x1 << np.uint32(4)
-            x1 ^= x1 << np.uint32(8)
-            x1 ^= x1 << np.uint32(16)
-            mask_low1 = np.uint32((1 << N1) - 1)
-            w_N1 = (w_arr >> np.uint32(1)) & np.uint32(1)
-            R2 = R1[idx1]
-            R1 = (x1 & mask_low1) | (w_N1 << np.uint32(N1))
-
-            shift_off = 0
-            for step_idx in range(2, 60):
-                if len(w_arr) == 0:
-                    break
-                N = N_init + step_idx
-                if N == 31 and R1.dtype == np.uint32:
-                    R2 = R2.astype(np.uint64)
-                    R1 = R1.astype(np.uint64)
-                    w_arr = w_arr.astype(np.uint64)
-                if N == 56 and shift_off == 0:
-                    R2 >>= np.uint64(14)
-                    R1 >>= np.uint64(14)
-                    shift_off = 14
-                N_eff = N - shift_off
-                tau = t0 + step_idx
-                s = tau % Pi
-                s_next = (s + 1) % Pi
-                s_N = N % Pi
-                if N <= 30:
-                    w_s = (w_arr >> np.uint32(s)) & np.uint32(1)
-                    w_next = (w_arr >> np.uint32(s_next)) & np.uint32(1)
-                    w_N = (w_arr >> np.uint32(s_N)) & np.uint32(1)
-                    w_m1 = (w_arr >> np.uint32((tau - 1) % Pi)) & np.uint32(1)
-                    w_m2 = (w_arr >> np.uint32((tau - 2) % Pi)) & np.uint32(1)
-                    H_N = (R1 | R2) & np.uint32((1 << (N_eff - 1)) - 1)
-                    x = H_N << np.uint32(1)
-                    x ^= x << np.uint32(1)
-                    x ^= x << np.uint32(2)
-                    x ^= x << np.uint32(4)
-                    x ^= x << np.uint32(8)
-                    x ^= x << np.uint32(16)
-                    req_l1 = (x >> np.uint32(N_eff - 1)) & np.uint32(1)
-                    g_cur = req_l1 ^ w_next
-                    l1_p1 = (R1 >> np.uint32(N_eff - 2)) & np.uint32(1)
-                    l1_p2 = (R2 >> np.uint32(N_eff - 3)) & np.uint32(1)
-                    alive1 = (w_s == 1) & (g_cur == 1)
-                    alive0 = (
-                        (w_s == 0)
-                        & ~((w_m1 == 0) & (l1_p1 == 1) & (g_cur == 0))
-                        & ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0) & (g_cur == 1))
-                    )
-                    idx = np.nonzero(alive1 | alive0)[0]
-                    if len(idx) == 0:
-                        w_arr = w_arr[idx]
-                        break
-                    if step_idx > smax_27:
-                        smax_27 = step_idx
-                    w_arr = w_arr[idx]
-                    mask_low = np.uint32((1 << N_eff) - 1)
-                    R2 = R1[idx]
-                    R1 = (x[idx] & mask_low) | (w_N[idx] << np.uint32(N_eff))
-                else:
-                    w_s = (w_arr >> np.uint64(s)) & np.uint64(1)
-                    w_next = (w_arr >> np.uint64(s_next)) & np.uint64(1)
-                    w_N = (w_arr >> np.uint64(s_N)) & np.uint64(1)
-                    w_m1 = (w_arr >> np.uint64((tau - 1) % Pi)) & np.uint64(1)
-                    w_m2 = (w_arr >> np.uint64((tau - 2) % Pi)) & np.uint64(1)
-                    H_N = (R1 | R2) & np.uint64((1 << (N_eff - 1)) - 1)
-                    x = H_N << np.uint64(1)
-                    x ^= x << np.uint64(1)
-                    x ^= x << np.uint64(2)
-                    x ^= x << np.uint64(4)
-                    x ^= x << np.uint64(8)
-                    x ^= x << np.uint64(16)
-                    x ^= x << np.uint64(32)
-                    req_l1 = (x >> np.uint64(N_eff - 1)) & np.uint64(1)
-                    g_cur = req_l1 ^ w_next
-                    l1_p1 = (R1 >> np.uint64(N_eff - 2)) & np.uint64(1)
-                    l1_p2 = (R2 >> np.uint64(N_eff - 3)) & np.uint64(1)
-                    alive1 = (w_s == 1) & (g_cur == 1)
-                    alive0 = (
-                        (w_s == 0)
-                        & ~((w_m1 == 0) & (l1_p1 == 1) & (g_cur == 0))
-                        & ~((w_m2 == 0) & (w_m1 == 1) & (l1_p2 == 0) & (g_cur == 1))
-                    )
-                    idx = np.nonzero(alive1 | alive0)[0]
-                    if len(idx) == 0:
-                        w_arr = w_arr[idx]
-                        break
-                    if step_idx > smax_27:
-                        smax_27 = step_idx
-                    w_arr = w_arr[idx]
-                    mask_low = np.uint64((1 << N_eff) - 1)
-                    R2 = R1[idx]
-                    R1 = (x[idx] & mask_low) | (w_N[idx] << np.uint64(N_eff))
-
-            unext_27 += len(w_arr)
+    necklaces_27, prefs_27, unext_27, smax_27 = _solve_zero_shift_pi_fast(27)
 
     return {
         "tensor_errors": tensor_errors,
@@ -5689,6 +4918,161 @@ def verify_2d_sierpinski_tensor_and_pi27_closure() -> dict:
         "prefs_27": prefs_27,
         "unext_27": unext_27,
         "max_ext_27": smax_27,
+    }
+
+
+def verify_quotient_sierpinski_split_and_pi28_closure() -> dict:
+    """
+    Theorem 28: Quotient Sierpinski Partial-Sum Identity & Generalized Dyadic Mahler Block
+    Telescoping Law (q = 2^d), Dual Quotient-Remainder Split Identity for c_S,
+    Pre-Branched Step-K Full-Mask Identity, and Complete Zero-Branching Anti-Diagonal
+    Extinction Through Period Pi = 28 (19,945,392 Primitive Necklaces, 11,310,050,973 Admissible Prefixes).
+
+    Proves and verifies:
+      1. Quotient Sierpinski Partial-Sum Identity & Generalized Dyadic Mahler Block Telescoping Law (q = 2^d):
+         Inverting the remainder Sierpinski transform over 0 <= r < 2^b in the 2D Quotient-Remainder
+         Sierpinski Tensor Identity (Theorem 27(1)) via Mobius-Lucas involution yields, for every
+         S >= 2, b >= 0, q >= 0, and 0 <= r_j < 2^b, the exact Quotient Sierpinski Partial-Sum Identity:
+           B_{S, b, q}(r_j) := XOR_{0 <= r <= r_j, (r & r_j) == r} alpha_{S, q 2^b + r}
+                             = XOR_{0 <= p <= q, (p & q) == p} A_S(p 2^b + r_j)
+                             = XOR_{0 <= p <= q - 1, (p & (q - 1)) == p} (A_S((p + 1)2^b + r_j) ^ A_S(p 2^b + r_j))  (for q >= 1)
+         (verified with 0 errors across S = 2..299, b = 0..5, q = 0..3, 0 <= r_j < 2^b).
+         In particular, whenever q = 2^d (d >= 0) is a power of two, q has only two submasks
+         p in {0, 2^d}, so the quotient Sierpinski sum collapses to a single two-point dyadic chord:
+           A_S(2^{b+d} + r_j) ^ A_S(r_j) = XOR_{0 <= r < 2^b, (r & r_j) == r} alpha_{S, 2^{b+d} + r}
+         (0 errors across S = 2..299, b = 0..5, d = 0..2, 0 <= r_j < 2^b), unifying Theorem 26(1)
+         (d = 0, q = 1) and Theorem 27(2) (d = 1, q = 2) for all dyadic scales 2^{b+d}.
+      2. Dual Quotient-Remainder Split Identity for c_S:
+         Symmetrically, summing the 2D Sierpinski tensor over quotient submasks (p & q) == p defines
+         the Remainder Sierpinski Partial Sum:
+           Q_{S, b, r}(q) := XOR_{0 <= p <= q, (p & q) == p} alpha_{S, p 2^b + r}
+                           = XOR_{0 <= j_r <= r, (j_r & r) == j_r} A_S(q 2^b + j_r)
+         (0 errors across S = 2..299, b = 0..5, q = 0..3, 0 <= r < 2^b). For any S >= 0, writing
+         k = floor(S/2) = q_k 2^b + r_k (0 <= r_k < 2^b, q_k = k >> b), the Rule 30 center column
+         c_S = a_{S, 0} splits identically along any dyadic cut 2^b into either quotient-indexed
+         or remainder-indexed partial sums:
+           c_S = XOR_{0 <= q <= q_k, (q & q_k) == q} B_{S, b, q}(r_k)
+               = XOR_{0 <= r <= r_k, (r & r_k) == r} Q_{S, b, r}(q_k)
+         (0 errors across all S = 0..299 and b = 0..7).
+      3. Pre-Branched Step-K Full-Mask Identity & Complete Zero-Branching Extinction Through Pi = 28:
+         In the zero-shift row-coordinate recurrence (Theorem 25(2)), at step N = K (tau = K - 1),
+         both branch survival predicates keep_A and keep_B depend only on bits 0..K-1 of w (already
+         known in the K-bit prefix trie) and (R_{K-1}, R_{K-2}). Moreover, flipping bit w_K from 0 to 1
+         flips all K + 1 bits 0..K of R_K, so after prefix expansion:
+           R_K = x_{K, branch} ^ (w_K * (2^{K+1} - 1)),   x_{K, branch} in {x_{K, A}, x_{K, A} ^ (2^K - 1)}.
+         Combining this pre-branched step-K identity with multithreaded C/pthreads + Duval Lyndon
+         generation proves:
+         - Pi = 28: 9,586,395 primitive necklaces, 6,652,756,559 admissible prefixes -> 0 survivors (S_max = 49).
+         - Cumulative Pi = 2..28: 19,945,392 primitive necklaces (> 19.94 million),
+           11,310,050,973 admissible prefixes (> 11.31 billion), 0 survivors, S_max(Pi) <= 53.
+    """
+    T = 480
+    W = 2 * T + 5
+    c = T + 2
+    grid = np.zeros((T + 1, W), dtype=np.uint8)
+    grid[0, c] = 1
+    for t in range(1, T + 1):
+        l = np.roll(grid[t - 1], 1)
+        m = grid[t - 1]
+        r = np.roll(grid[t - 1], -1)
+        grid[t] = l ^ (m | r)
+
+    S_max = 300
+    J_max = 256
+    A_mat = np.zeros((S_max, J_max), dtype=np.uint8)
+    for S in range(S_max):
+        half_f = S // 2
+        half_c = (S + 1) // 2
+        for j in range(J_max):
+            A_mat[S, j] = grid[half_c + j, c + j - half_f]
+
+    alpha_mat = A_mat.copy()
+    for b in range(8):
+        step = 1 << b
+        v_r = alpha_mat.reshape(S_max, -1, 2 * step)
+        v_r[:, :, step:] ^= v_r[:, :, :step]
+
+    b_partial_errors = 0
+    dyadic_q_errors = 0
+    q_partial_errors = 0
+    for S in range(2, S_max):
+        for b in range(6):
+            step = 1 << b
+            for q in range(4):
+                for r_j in range(step):
+                    b_val = 0
+                    for r in range(r_j + 1):
+                        if (r & r_j) == r and alpha_mat[S, (q << b) + r]:
+                            b_val ^= 1
+                    rhs_b = 0
+                    for p_q in range(q + 1):
+                        if (p_q & q) == p_q and A_mat[S, (p_q << b) + r_j]:
+                            rhs_b ^= 1
+                    if b_val != rhs_b:
+                        b_partial_errors += 1
+                    if q >= 1:
+                        rhs_chord = 0
+                        for p_q in range(q):
+                            if (p_q & (q - 1)) == p_q:
+                                rhs_chord ^= int(A_mat[S, ((p_q + 1) << b) + r_j] ^ A_mat[S, (p_q << b) + r_j])
+                        if b_val != rhs_chord:
+                            b_partial_errors += 1
+                    q_val = 0
+                    for p_q in range(q + 1):
+                        if (p_q & q) == p_q and alpha_mat[S, (p_q << b) + r_j]:
+                            q_val ^= 1
+                    rhs_q = 0
+                    for j_r in range(r_j + 1):
+                        if (j_r & r_j) == j_r and A_mat[S, (q << b) + j_r]:
+                            rhs_q ^= 1
+                    if q_val != rhs_q:
+                        q_partial_errors += 1
+            for d in range(3):
+                if b + d <= 7:
+                    q_dyad = 1 << d
+                    for r_j in range(step):
+                        lhs_d = int(A_mat[S, (1 << (b + d)) + r_j] ^ A_mat[S, r_j])
+                        rhs_d = 0
+                        for r in range( r_j + 1 ):
+                            if (r & r_j) == r and alpha_mat[S, (q_dyad << b) + r]:
+                                rhs_d ^= 1
+                        if lhs_d != rhs_d:
+                            dyadic_q_errors += 1
+
+    split_c_errors = 0
+    for S in range(S_max):
+        k_val = S // 2
+        c_true = int(grid[S, c])
+        for b in range(8):
+            step = 1 << b
+            q_k = k_val >> b
+            r_k = k_val & (step - 1)
+            c_via_b = 0
+            for q in range(q_k + 1):
+                if (q & q_k) == q:
+                    for p_q in range(q + 1):
+                        if (p_q & q) == p_q and A_mat[S, (p_q << b) + r_k]:
+                            c_via_b ^= 1
+            c_via_q = 0
+            for r in range(r_k + 1):
+                if (r & r_k) == r:
+                    for j_r in range(r + 1):
+                        if (j_r & r) == j_r and A_mat[S, (q_k << b) + j_r]:
+                            c_via_q ^= 1
+            if c_via_b != c_true or c_via_q != c_true:
+                split_c_errors += 1
+
+    necklaces_28, prefs_28, unext_28, smax_28 = _solve_zero_shift_pi_fast(28)
+
+    return {
+        "b_partial_errors": b_partial_errors,
+        "dyadic_q_errors": dyadic_q_errors,
+        "q_partial_errors": q_partial_errors,
+        "split_c_errors": split_c_errors,
+        "necklaces_28": necklaces_28,
+        "prefs_28": prefs_28,
+        "unext_28": unext_28,
+        "max_ext_28": smax_28,
     }
 
 
@@ -6454,6 +5838,20 @@ def self_test() -> dict:
         and sierp_tensor["max_ext_27"] <= 44
     ), "Theorem 27 Pi=27 extinction violated"
 
+    quot_split = verify_quotient_sierpinski_split_and_pi28_closure()
+    assert (
+        quot_split["b_partial_errors"] == 0
+        and quot_split["dyadic_q_errors"] == 0
+        and quot_split["q_partial_errors"] == 0
+        and quot_split["split_c_errors"] == 0
+    ), "Theorem 28 Quotient Sierpinski partial-sum, dyadic q=2^d block, or dual c_S split violated"
+    assert (
+        quot_split["necklaces_28"] == 9586395
+        and quot_split["prefs_28"] == 6652756559
+        and quot_split["unext_28"] == 0
+        and quot_split["max_ext_28"] <= 49
+    ), "Theorem 28 Pi=28 extinction violated"
+
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)
     assert tent_eval["erosion_r30"]["frac_exact_2px_erosion"] == 1.0, "Rule 30 white-tent erosion must be 100% exact 2px/step"
     assert tent_eval["erosion_r90"]["frac_exact_2px_erosion"] == 1.0, "Rule 90 white-tent erosion must be 100% exact 2px/step"
@@ -6515,6 +5913,7 @@ def self_test() -> dict:
         "proj_tower": proj_tower,
         "frob_mahler": frob_mahler,
         "sierp_tensor": sierp_tensor,
+        "quot_split": quot_split,
         "tent_eval": tent_eval,
     }
 
@@ -7655,7 +7054,7 @@ def render_prize_progress_gif_and_poster(
         },
         {
             "step": 26,
-            "commit": "708cfeb -> HEAD",
+            "commit": "33e07ad",
             "time_str": "Oct 19, 6:38 PM",
             "dt_min": 20,
             "cum_min": 648,
@@ -7674,10 +7073,31 @@ def render_prize_progress_gif_and_poster(
             "pi_max": 27,
             "necks_done": 10358997,
         },
+        {
+            "step": 27,
+            "commit": "33e07ad -> HEAD",
+            "time_str": "Oct 19, 6:58 PM",
+            "dt_min": 20,
+            "cum_min": 668,
+            "phase": "Phase IV: General Period-Pi Elimination, Dual Families & Degree Staircase",
+            "phase_color": "#34d399",
+            "title": "Step 27: Quotient Sierpinski Split, Dyadic q=2^d Block Law & Pi=2..28 Closure (11.31B Prefs)",
+            "thm_badge": "Theorem 28 (19,945,392 Necklaces)",
+            "formula_lines": [
+                r"$B_{S,b,q}(r_j) = \bigoplus_{p\subseteq q}A_S(p2^b+r_j),\quad A_S(2^{b+d}+r_j)\oplus A_S(r_j) = \bigoplus_{r\subseteq r_j}\alpha_{S,2^{b+d}+r},\quad c_S = \bigoplus_{q\subseteq q_k}B_{S,b,q}(r_k) = \bigoplus_{r\subseteq r_k}Q_{S,b,r}(q_k)$",
+                r"$\Pi=2\dots 28:\; 19,945,392/19,945,392\mathrm{\ necklaces\ (11,310,050,973\ prefixes)\ extinguished\ in}\le 53\mathrm{\ steps\ (0\ survivors)}$",
+            ],
+            "synthesis": (
+                "Proves the quotient Sierpinski partial-sum identity, the generalized dyadic Mahler block law (q=2^d), the dual c_S split, "
+                "and extinguishes all 19,945,392 necklaces (11,310,050,973 prefixes) through Pi=28 via multithreaded C/pthreads."
+            ),
+            "pi_max": 28,
+            "necks_done": 19945392,
+        },
     ]
 
-    pi_vals = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
-    s_max_vals = [5, 2, 11, 4, 9, 13, 10, 17, 14, 19, 14, 22, 27, 24, 26, 30, 32, 33, 34, 35, 38, 39, 42, 53, 42, 44]
+    pi_vals = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
+    s_max_vals = [5, 2, 11, 4, 9, 13, 10, 17, 14, 19, 14, 22, 27, 24, 26, 30, 32, 33, 34, 35, 38, 39, 42, 53, 42, 44, 49]
 
     frames_pil: list[Image.Image] = []
     frame_durations_ms: list[int] = []
@@ -7730,7 +7150,7 @@ def render_prize_progress_gif_and_poster(
         ax_top.text(
             98.5,
             7.2,
-            f"[{ms['thm_badge']}]   Milestone {ms['step']} / 26",
+            f"[{ms['thm_badge']}]   Milestone {ms['step']} / 27",
             color=ms["phase_color"],
             fontsize=11.0,
             fontweight="bold",
@@ -7745,7 +7165,7 @@ def render_prize_progress_gif_and_poster(
         ax_top.text(
             85.25,
             2.9,
-            f"27-Theorem Architecture: {int(round(prog_pct * 100))}% Complete",
+            f"28-Theorem Architecture: {int(round(prog_pct * 100))}% Complete",
             color="#0b0f19" if prog_pct > 0.45 else "#f8fafc",
             fontsize=8.6,
             fontweight="bold",
@@ -7952,7 +7372,7 @@ def render_prize_progress_gif_and_poster(
             ax_stair2.tick_params(colors="#34d399", labelsize=8.0)
             ax_stair2.set_ylim(0, 58)
 
-            ax_stair.set_xlim(0.5, 27.5)
+            ax_stair.set_xlim(0.5, 28.5)
             ax_stair.set_ylim(0.5, 4.8)
             ax_stair.set_xlabel("Left Column $m$ / Period $\\Pi$", color="#cbd5e1", fontsize=9.2)
             ax_stair.set_ylabel("Max Algebraic Degree $\\deg(l_m)$", color="#f59e0b", fontsize=9.0)
@@ -7989,7 +7409,7 @@ def render_prize_progress_gif_and_poster(
                     ha="center",
                     va="bottom",
                     color="#f8fafc" if i_bar == idx else "#cbd5e1",
-                    fontsize=6.9,
+                    fontsize=6.7,
                     fontweight="bold" if i_bar == idx else "normal",
                 )
         ax_time.set_xticks(steps_x)
@@ -8021,14 +7441,15 @@ def render_prize_progress_gif_and_poster(
                 "S24\nThm25",
                 "S25\nThm26",
                 "S26\nThm27",
+                "S27\nThm28",
             ],
             color="#cbd5e1",
-            fontsize=5.6,
+            fontsize=5.4,
         )
         ax_time.set_ylim(0, 82)
         ax_time.set_ylabel("Step Duration $\\Delta t$ (min)", color="#cbd5e1", fontsize=9.2)
         ax_time.set_title(
-            "D. Chronological Theorem Build Time per Milestone (Oct 18–19, 2026: 26 Milestones, 10h 48m Active Proof Time)",
+            "D. Chronological Theorem Build Time per Milestone (Oct 18–19, 2026: 27 Milestones, 11h 08m Active Proof Time)",
             color="#f8fafc",
             fontsize=10.3,
             fontweight="bold",
@@ -8079,14 +7500,14 @@ def render_prize_progress_gif_and_poster(
                 "PROVED (Thms 17, 19: S_max <= 5, 14)",
             ),
             (
-                "5. 2D Sierpinski Tensor & MSB Chord Law",
-                idx >= 25,
-                "PROVED (Thm 25-27: C_r, Delta_b, 2D Tensor)",
+                "5. Quotient Sierpinski Split & q=2^d Block Law",
+                idx >= 26,
+                "PROVED (Thms 25-28: B_{S,b,q}, Q_{S,b,r}, C_r)",
             ),
             (
-                "6. Primitive Necklaces Extinguished (Pi=2..27)",
-                idx >= 25,
-                f"{ms['necks_done']:,} / 10,358,997 (4.66B prefs, 0 surv)",
+                "6. Primitive Necklaces Extinguished (Pi=2..28)",
+                idx >= 26,
+                f"{ms['necks_done']:,} / 19,945,392 (11.31B prefs, 0 surv)",
             ),
         ]
 
@@ -8179,6 +7600,7 @@ def main(argv: list[str] | None = None) -> int:
     proj_tower = res["proj_tower"]
     frob_mahler = res["frob_mahler"]
     sierp_tensor = res["sierp_tensor"]
+    quot_split = res["quot_split"]
     print(
         f"[open_problems_A_B_C_D] OK | backward inverse errors={bwd['backward_inverse_errors']} (post-barrier cycles: 0/3, 0/15, 0/255) | "
         f"unit-seed branch='{bs_diag['unit_seed_p16_branch_path']}' -> exact k_5={bs_diag['unit_seed_exact_k5']} (T_lock={bs_diag['unit_seed_exact_tlock_k5']}, "
@@ -8198,6 +7620,7 @@ def main(argv: list[str] | None = None) -> int:
         + proj_tower["necklaces_25"]
         + frob_mahler["necklaces_26"]
         + sierp_tensor["necklaces_27"]
+        + quot_split["necklaces_28"]
     )
     tot_prefs = (
         dual_fam["total_prefs_pi_2_to_10"]
@@ -8211,6 +7634,7 @@ def main(argv: list[str] | None = None) -> int:
         + proj_tower["prefs_25"]
         + frob_mahler["prefs_26"]
         + sierp_tensor["prefs_27"]
+        + quot_split["prefs_28"]
     )
     tot_unext = (
         dual_fam["unextinguished_2_to_10"]
@@ -8224,6 +7648,7 @@ def main(argv: list[str] | None = None) -> int:
         + proj_tower["unext_25"]
         + frob_mahler["unext_26"]
         + sierp_tensor["unext_27"]
+        + quot_split["unext_28"]
     )
     max_ext = max(
         dual_fam["max_exterior_steps_pi_2_to_10"],
@@ -8237,11 +7662,12 @@ def main(argv: list[str] | None = None) -> int:
         proj_tower["max_ext_25"],
         frob_mahler["max_ext_26"],
         sierp_tensor["max_ext_27"],
+        quot_split["max_ext_28"],
     )
     print(
-        f"[theorems_15_to_27_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']}) | "
+        f"[theorems_15_to_28_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']}) | "
         f"P_41={char_crystal['period_at_s41']} | C15_ones={proj_tower['r15_ones']}/65536 | Cone (t0,Pi) pairs={master_eq['cone_pairs_tested']} (survivors={master_eq['cone_survivors']}, max_surv={master_eq['cone_max_surv']}) | "
-        f"Pi=2..27 ({tot_necks} necklaces, {tot_prefs} prefs): unextinguished={tot_unext} (max_ext_steps={max_ext})"
+        f"Pi=2..28 ({tot_necks} necklaces, {tot_prefs} prefs): unextinguished={tot_unext} (max_ext_steps={max_ext})"
     )
     print(
         f"[morphometrics] Conus textile H/W={res['hw_mesh']:.4f} (specimen {res['spec_hw']:.4f}), "
