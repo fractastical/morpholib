@@ -2,6 +2,7 @@
 
 **Target Venues:** Wolfram Rule 30 Prize Committee (Partial Progress & Off-Center Periodicity / Boundary Track) $\cdot$ *Complex Systems* $\cdot$ arXiv (`nlin.CG` / `math.DS`)  
 **Repository & Verification Code:** [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py)  
+**Audit of Unconditional Proofs vs. Open Single-Seed Gaps:** [`docs/RULE30_PRIZE_STATUS_AND_GAPS.md`](./RULE30_PRIZE_STATUS_AND_GAPS.md)  
 **Date:** October 19, 2026
 
 ![Animated 34-Milestone Progress Dashboard: Theorems 1–35 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
