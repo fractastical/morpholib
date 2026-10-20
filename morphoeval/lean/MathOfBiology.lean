@@ -168,6 +168,33 @@ theorem rule30_0right_forcing (a_left a_right : Bool) :
     bne (rule30 a_left false a_right) a_left = a_right := by
   cases a_left <;> cases a_right <;> rfl
 
+/-- Law 2m (`wolfram-conus-textile-rule30-2m`, Theorem 40(1)-(2) Dual Garden-of-Eden Prefix Laws &
+    Universal F_0 Period-2 Cylinder Oscillator `N_odd <-> N_10`):
+    1. (`rule30_universal_010_garden_of_eden`): After any step with `c_t = false`, the 3-bit right-half-plane
+       prefix `(a_{t+1,1}, a_{t+1,2}, a_{t+1,3})` can never equal `(false, true, false)` (`010`).
+    2. (`rule30_universal_110_garden_of_eden`): After any step with `c_t = true`, the 3-bit right-half-plane
+       prefix `(a_{t+1,1}, a_{t+1,2}, a_{t+1,3})` can never equal `(true, true, false)` (`110`).
+    3. (`rule30_f0_oscillator_nodd_to_n10` & `rule30_f0_oscillator_n10_to_nodd`): Under `c_t = false`,
+       every state in `N_odd` (`r1 = true` and `(r2 || r3) = true`) maps into `N_10` (`r1' = true, r2' = false`),
+       and every state in `N_10` (`r1 = true, r2 = false`) maps into `N_odd` (`r1' = true` and `(r2' || r3') = true`). -/
+theorem rule30_universal_010_garden_of_eden (r1 r2 r3 r4 : Bool) :
+    (rule30 false r1 r2 == false && rule30 r1 r2 r3 == true && rule30 r2 r3 r4 == false) = false := by
+  cases r1 <;> cases r2 <;> cases r3 <;> cases r4 <;> rfl
+
+theorem rule30_universal_110_garden_of_eden (r1 r2 r3 r4 : Bool) :
+    (rule30 true r1 r2 == true && rule30 r1 r2 r3 == true && rule30 r2 r3 r4 == false) = false := by
+  cases r1 <;> cases r2 <;> cases r3 <;> cases r4 <;> rfl
+
+theorem rule30_f0_oscillator_nodd_to_n10 (r2 r3 : Bool) :
+    (r2 || r3) = true →
+    rule30 false true r2 = true ∧ rule30 true r2 r3 = false := by
+  cases r2 <;> cases r3 <;> simp [rule30]
+
+theorem rule30_f0_oscillator_n10_to_nodd (r3 r4 : Bool) :
+    rule30 false true false = true ∧
+    (rule30 true false r3 || rule30 false r3 r4) = true := by
+  cases r3 <;> cases r4 <;> simp [rule30]
+
 /-- Law 3 (`wolfram-conus-textile-rule30-3`):
     Meinhardt & Klingler (1987) 3-species activator-substrate-hormone reaction kinetics. -/
 structure MeinhardtKlinglerParams where
