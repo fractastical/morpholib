@@ -96,4 +96,64 @@ theorem murray_conical_tail_spot_to_ring_transition :
     in_turing_band_r2 5 9 7 2 1 = false := by
   decide
 
+
+-- ============================================================================
+-- Law 4 (`murray-mammalian-coat-markings-4`, Pass 3):
+-- P1 Surface-FEM Cotangent Laplace-Beltrami: Constants in the Kernel & Mass Conservation
+-- ============================================================================
+
+/-- One row of the P1 cotangent stiffness matrix restricted to a single triangle
+    `(i, j, k)` (Pinkall & Polthier 1993; Dziuk 1988):
+    `(K u)_i = w_ij * (u_i - u_j) + w_ik * (u_i - u_k)`,
+    where `w_ij = cot(angle opposite edge ij) / 2` etc.  Any scaling of the weights
+    (e.g. by `2 * area`) is absorbed into the integer `w`s. -/
+def fem_cot_row (w_ij w_ik u_i u_j u_k : Int) : Int :=
+  w_ij * (u_i - u_j) + w_ik * (u_i - u_k)
+
+/-- Theorem 4 (`fem_cotangent_laplacian_conserves_mass`):
+    (1) a constant field `c` is annihilated by every stiffness row (`K 1 = 0`, so the
+        homogeneous steady state `(u_0, v_0)` is an exact discrete equilibrium and the
+        natural boundary condition is zero flux), and
+    (2) the three vertex rows of a triangle with edge weights `w_ab, w_bc, w_ca` sum to zero
+        for ANY field `(u_a, u_b, u_c)` -- the discrete divergence theorem: the lumped-mass
+        IMEX diffusion step `(M + dt K) u' = M u` preserves `sum_i M_i u_i`.
+    Numerically twinned by `verify_fem_cylinder_spectrum` (|K 1| < 1e-15) and self-test 10. -/
+theorem fem_cotangent_laplacian_conserves_mass (w_ab w_bc w_ca u_a u_b u_c c : Int) :
+    fem_cot_row w_ab w_ca c c c = 0 ∧
+    fem_cot_row w_ab w_ca u_a u_b u_c
+      + fem_cot_row w_ab w_bc u_b u_a u_c
+      + fem_cot_row w_ca w_bc u_c u_a u_b = 0 := by
+  unfold fem_cot_row
+  simp only [Int.mul_sub]
+  omega
+
+
+-- ============================================================================
+-- Law 5 (`murray-mammalian-coat-markings-5`, Pass 3):
+-- Full Circumferential Exclusion Radius r_excl = 1 / k_+ (n = 0 longitudinal-stripe mode)
+-- ============================================================================
+
+/-- Theorem 5 (`murray_tail_full_exclusion_requires_circumference_below_lambda_plus`):
+    Murray's `r_crit` criterion tests only the fastest-growing axial wavenumber `q_ax = k_c`.
+    Because Neumann ends admit the axially uniform mode `n = 0` (`q_ax = 0`), an `m ≥ 1`
+    "longitudinal stripe" `0 + 10 m^2` is still inside the 10x-scaled band `[5, 9] * r^2`
+    whenever `5 r^2 ≤ 10 m^2 ≤ 9 r^2`, i.e. for `r^2 ∈ [10 m^2 / 9, 2 m^2]`:
+    - `m = 1, r = 1`: `10 > 9` -> excluded (`false`): circumference below lambda_+ = 2π/k_+;
+    - the `m = 0`, `q_ax = 7` ring at `r = 1` is unstable (`true`), so rings survive there;
+    - `m = 3, r = 4`: `80 ≤ 90 ≤ 144` -> the `n = 0` longitudinal mode IS unstable (`true`),
+      whereas `m = 3, r = 3`: `90 > 81` -> excluded (`false`): the cutoff is `r^2 q_max < 10 m^2`;
+    - `m = 1, r = 2`: `n = 0` is BELOW the band (`20 > 10`, `false`) but with axial `q_ax = 4`
+      the same `m = 1` mode is unstable (`20 ≤ 26 ≤ 36`, `true`) -- between `r_excl = 1/k_+`
+      and `r_crit` the tail still carries `m ≥ 1` modes of long axial wavelength.
+    Hence every `m ≥ 1` mode is excluded only when `r < m / k_+` (for `m = 1`: `r < 1/k_+`);
+    the v2 mode count (which started at `n = 1`) silently missed exactly these modes. -/
+theorem murray_tail_full_exclusion_requires_circumference_below_lambda_plus :
+    in_turing_band_r2 5 9 0 1 1 = false ∧
+    in_turing_band_r2 5 9 7 0 1 = true ∧
+    in_turing_band_r2 5 9 0 3 4 = true ∧
+    in_turing_band_r2 5 9 0 3 3 = false ∧
+    in_turing_band_r2 5 9 0 1 2 = false ∧
+    in_turing_band_r2 5 9 4 1 2 = true := by
+  decide
+
 end MathOfBiology.Loop_003

@@ -24,19 +24,19 @@ Morphogenesis is how a living thing gets its shape, and regeneration is how it g
 
 *Every animated form in the repository, 1917–2026 (the Thompson Scarus → Pomacanthus fit is a still and is represented by its score), each animation playing once per loop; the last tile is the MorphoEval overall score. Made by [`docs/media/make_montage.py`](./docs/media/make_montage.py) from the per-script animations below.*
 
-### The 100-Loop Autonomous Morphospace Atlas (Slots `#001`–`#100`)
+### The 1,100-Loop Autonomous Morphospace Atlas (Slots `#001`–`#1100`)
 
-Across **100 autonomous 12-step closed remediation loops** (`slot-001` through `slot-100`) spanning **10 morphogenetic cohorts** (Reaction-Diffusion, Limb/Skeletal, Segmentation Clock, Phyllotaxis/Plant, Vertex/Active Nematics, Branching/Vascular, Mechanical Folding/Buckling, Biomineralization/Shells, Bioelectric/Neural, and Collective/Eusocial Morphogenesis), the repository now contains **116 quantitative morphogenesis models**, **111 dataset directories** (`datasets/`), **101 machine-checked Lean 4 proof modules** (**333 formal equations**, `0 sorry`), **954 quantitative morphometric measurements**, **52,398 RDF triples** in [`morphoeval/kg/math_of_biology.ttl`](./morphoeval/kg/math_of_biology.ttl), and **2,000+ cryptographically signed ProbKnow nanopublications** — improving the mean MorphoEval score across the 100 campaign loops from **`54.88 / 100` (Pass 1)** to **`92.35 / 100` (Pass 2, `+37.47` pts)**. See the full 100-slot table in **[`morphoeval/runs/CLOUD_CAMPAIGN_LEADERBOARD.md`](./morphoeval/runs/CLOUD_CAMPAIGN_LEADERBOARD.md)**.
+Across **1,100 autonomous 12-step closed remediation loops** (`slot-001` through `slot-1100`) spanning **10 morphogenetic cohorts** (Reaction-Diffusion, Limb/Skeletal, Segmentation Clock, Phyllotaxis/Plant, Vertex/Active Nematics, Branching/Vascular, Mechanical Folding/Buckling, Biomineralization/Shells, Bioelectric/Neural, and Collective/Eusocial Morphogenesis) and **150 biological genera**, the repository now contains **1,116 quantitative morphogenesis models**, **1,111 dataset directories** (`datasets/`) plus the central **Iconic Species Gallery** ([`datasets/species_gallery/`](./datasets/species_gallery/SPECIES_ICONIC_ATLAS.md)), **1,101 machine-checked Lean 4 proof modules** (**3,333 formal equations**, `0 sorry`), **2,986 quantitative morphometric measurements**, and **100 / 100 (`100%`) cell occupancy** across the Aristotelian Taxonomic × Biophysical Cause Matrix — improving the mean MorphoEval score from **`58.1 / 100` (Pass 1)** to **`93.7 / 100` (Pass 2, `+35.6` pts)**. See the full index in **[`morphoeval/runs/ARISTOTELIAN_MORPHOSPACE_CATEGORIES.md`](./morphoeval/runs/ARISTOTELIAN_MORPHOSPACE_CATEGORIES.md)** and **[`morphoeval/runs/CLOUD_CAMPAIGN_LEADERBOARD.md`](./morphoeval/runs/CLOUD_CAMPAIGN_LEADERBOARD.md)**.
 
 ![100-Loop Autonomous Morphospace Atlas (10x10 Mosaic of Slots #001–#100)](./docs/media/morphospace_100_loops_atlas.png)
 
 ![100-Loop Quantitative Performance & Formal Verification Dashboard](./docs/media/morphospace_100_loops_dashboard.png)
 
-![Aristotelian Categories & Porphyrian Taxonomic Atlas (55 Genera × 10 Biophysical Causes)](./docs/media/morphospace_aristotelian_atlas.png)
+![Aristotelian Categories & Porphyrian Taxonomic Atlas (150 Genera × 10 Biophysical Causes, n = 1,116 Models)](./docs/media/morphospace_aristotelian_atlas.png)
 
 ![Porphyrian Specimen Gallery Across Aristotle's 10 Taxonomic Classes](./docs/media/morphospace_porphyrian_specimens.png)
 
-*Aristotelian ontological & taxonomic coverage across **55 biological genera**, **4 Megista Genē** (Enaima, Anaima, Phyta, Protista/Monera), **10 Subaltern Taxonomic Classes**, and **10 biophysical mechanisms** — see the complete genus-by-genus index in [`morphoeval/runs/ARISTOTELIAN_MORPHOSPACE_CATEGORIES.md`](./morphoeval/runs/ARISTOTELIAN_MORPHOSPACE_CATEGORIES.md).*
+*Aristotelian ontological & taxonomic coverage across **150 biological genera**, **4 Megista Genē** (Enaima, Anaima, Phyta, Protista/Monera), **10 Subaltern Taxonomic Classes**, and **10 biophysical mechanisms** (`100 / 100` matrix cells populated) — see the complete genus-by-genus index in [`morphoeval/runs/ARISTOTELIAN_MORPHOSPACE_CATEGORIES.md`](./morphoeval/runs/ARISTOTELIAN_MORPHOSPACE_CATEGORIES.md) and the iconic species gallery manifest in [`datasets/species_gallery/SPECIES_ICONIC_ATLAS.md`](./datasets/species_gallery/SPECIES_ICONIC_ATLAS.md).*
 
 ![100-Loop Animated Morphospace Tour (Slots #001–#100 across 10 Cohorts)](./docs/media/morphospace_100_loops_tour.gif)
 

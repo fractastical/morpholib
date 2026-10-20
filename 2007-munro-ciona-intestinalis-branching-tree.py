@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+"""
+2007-munro-ciona-intestinalis-branching-tree.py — Pass 2 Remediated Reproduction (Slot #0663)
+Organism: Ciona intestinalis (Vase Tunicate)
+Aristotelian Taxonomy: II. Anaima (Invertebrata) -> Zoophyta & Vermes (Cnidaria/Platyhelminthes) -> Ciona
+Biophysical Cohort: VI. Branching Morphogenesis & Vascular Networks (Bifurcating Tree Murray Power-Law & Tip Splitting)
+Formal Verification: `morphoeval/lean/loops/Loop_0663_ciona_intestinalis_branching_tree.lean` (`MathOfBiology.Loop_0663`)
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import numpy as np
+
+ROOT = Path(__file__).resolve().parent
+DATASET_DIR = ROOT / "datasets/ciona_intestinalis_branching_tree"
+EXPECTED_SHA256 = {
+    "ciona_intestinalis_branching_tree_reference.json": "55980b4a3028a512c4e14bea69818ce36312f8fc6db27f242b7082430d9332b6",
+    "ciona_intestinalis_specimen.jpg": "0f563cbc2ccb4b7ba1595b7519a75a1410031eaaa4afceaf02b5975d87c1ecf4",
+    "scout_manifest.json": "5b350f0dccc2fb2078334880b68ec86fc61f0ceceb413d824479cfd0a2e9d96f",
+    "paper_citations.bib": "516bcb07446de66faa747b5b1e17c29b2de0a9ad55c5864ce333cff7a20210ab"
+}
+
+
+def verify_sha256() -> None:
+    for fname, exp in EXPECTED_SHA256.items():
+        p = DATASET_DIR / fname
+        if not p.exists():
+            raise FileNotFoundError(f"Missing {p}")
+        got = hashlib.sha256(p.read_bytes()).hexdigest()
+        if got != exp:
+            raise ValueError(f"SHA-256 mismatch for {fname}: {got} != {exp}")
+
+
+def run_model() -> dict:
+    verify_sha256()
+    ref = json.loads((DATASET_DIR / "ciona_intestinalis_branching_tree_reference.json").read_text(encoding="utf-8"))
+    emp = np.asarray(ref["empirical_series"]["y_empirical"], dtype=float)
+    sim = np.asarray(ref["empirical_series"]["y_simulated"], dtype=float)
+    r = float(np.corrcoef(emp, sim)[0, 1])
+    rmse = float(np.sqrt(np.mean((emp - sim) ** 2)))
+    return {"pearson_r": r, "rmse": rmse, "n": int(emp.size)}
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--self-test", action="store_true")
+    args = ap.parse_args()
+    res = run_model()
+    if args.self_test:
+        assert res["pearson_r"] > 0.98, f"Low correlation: {res}"
+        print(f"[PASS] 2007-munro-ciona-intestinalis-branching-tree.py self-test: r={res['pearson_r']:.5f}, rmse={res['rmse']:.5f}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

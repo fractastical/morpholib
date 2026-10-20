@@ -5,6 +5,8 @@
   reaction-diffusion hair follicle spacing laws (`sick-wnt-dkk-hair-follicle`, Slot 006).
 
   All definitions and theorems are self-contained in standard Lean 4 core (zero `sorry`s).
+  Pass 3 (2026-10-19-wnt-dkk-hair-follicle-audit-v3) adds Laws 4-6 for the 3D dermal
+  condensate FGF20/BMP4 chemotaxis + hair peg downgrowth coupling.
 -/
 
 namespace MathOfBiology.Loop_006
@@ -80,5 +82,90 @@ theorem wnt_dkk_follicle_spacing_instability :
     wnt_dkk_fourier_det 2 3 1 10 1 = -1 ∧
     wnt_dkk_fourier_det 2 3 1 40 1 = -31 := by
   decide
+
+
+-- ============================================================================
+-- Law 4 (`sick-wnt-dkk-hair-follicle-4`, Pass 3):
+-- Epidermally Instructed Dermal Condensation — the epidermis-free dermal
+-- FGF20/BMP4 chemotaxis subsystem is linearly stable (Huh et al. 2013)
+-- ============================================================================
+/-- Pass 3 couples the 2D epidermal WNT/DKK sheet to a 3D dermal slab in which the
+    mesenchymal density `rho` moves by Keller-Segel chemotaxis up the placode-derived
+    FGF20 gradient and down the dermally produced BMP4 gradient. Without an epidermal
+    FGF20 source the linearised dermal subsystem `(rho, b)` about the uniform state has
+    Fourier-mode matrix `M(q) = [[-D_rho q, -chi_b m_0 q], [s_b, -(D_b q + mu_b)]]`
+    with `m_0 = rho_0 (1 - rho_0 / rho_max)`. Its negated trace
+    `(D_rho + D_b) q + mu_b` (here `mu_b + 1 > 0`) and determinant
+    `D_rho q (D_b q + mu_b) + chi_b m_0 s_b q` are non-negative for every
+    wavenumber squared `q : Nat`, so no spontaneous dermal condensation can occur:
+    condensation is *instructed* by the epidermal placode, matching Huh et al. (2013)
+    Genes Dev 27:450-458 (Fgf20-null skin forms placodes but no dermal condensates). -/
+def dermal_neg_trace (D_rho D_b mu_b q : Nat) : Nat :=
+  (D_rho + D_b) * q + (mu_b + 1)
+
+def dermal_det (D_rho D_b mu_b chi_b m0 s_b q : Nat) : Nat :=
+  D_rho * q * (D_b * q + mu_b) + chi_b * m0 * s_b * q
+
+theorem dermal_subsystem_instructed_stable (D_rho D_b mu_b chi_b m0 s_b q : Nat) :
+    dermal_neg_trace D_rho D_b mu_b q ≥ 1 ∧
+    dermal_det D_rho D_b mu_b chi_b m0 s_b q ≥ chi_b * m0 * s_b * q := by
+  simp [dermal_neg_trace, dermal_det]
+  omega
+
+
+-- ============================================================================
+-- Law 5 (`sick-wnt-dkk-hair-follicle-5`, Pass 3):
+-- Keller-Segel (1970) Chemotactic Aggregation Threshold (autonomous comparison)
+-- ============================================================================
+/-- For an *autonomous* Keller-Segel system in which the dermis secreted its own
+    chemoattractant at rate `s_f`, the Fourier-mode determinant is
+    `det_KS(q) = D_rho q (D_f q + mu_f) - chi_f m_0 s_f q`, negative (aggregation)
+    iff `chi_f m_0 s_f > D_rho (D_f q + mu_f)`. Integer-scaled instances (x100 of the
+    script's `D_rho = 0.05, D_f = 0.25, mu_f = 0.04, chi_f = 0.25, m_0 = 0.75, s_f = 0.5`):
+    1. canonical chemotactic strength at `q = 1`: `det_KS < 0` (would aggregate);
+    2. `chi_f = 0` (chemotaxis-null): `det_KS = +145 > 0` (stable);
+    3. `q = 0` (mass mode): `det_KS = 0` (neutral, mass conservation);
+    4. unit parameters: `det_KS = +1 > 0`.
+    The general sign lemma `ks_det_neg_of_supercritical` shows `q A - q B < 0`
+    whenever `0 < q` and `A < B` with `A = D_rho (D_f q + mu_f)`, `B = chi_f m_0 s_f`. -/
+def ks_fourier_det (D_rho D_f mu_f chi_f m0 s_f q : Int) : Int :=
+  D_rho * q * (D_f * q + mu_f) - chi_f * m0 * s_f * q
+
+theorem keller_segel_fourier_det_sign :
+    ks_fourier_det 5 25 4 25 75 50 1 < 0 ∧
+    ks_fourier_det 5 25 4 0 75 50 1 = 145 ∧
+    ks_fourier_det 5 25 4 25 75 50 0 = 0 ∧
+    ks_fourier_det 1 1 1 1 1 1 1 = 1 := by
+  decide
+
+theorem ks_det_neg_of_supercritical (q A B : Nat) (hq : 0 < q) (h : A < B) :
+    (q * A : Int) - q * B < 0 := by
+  have := Nat.mul_lt_mul_of_pos_left h hq
+  omega
+
+
+-- ============================================================================
+-- Law 6 (`sick-wnt-dkk-hair-follicle-6`, Pass 3):
+-- Hair Peg Downgrowth Monotonicity (Paus et al. 1999 ordinal staging)
+-- ============================================================================
+/-- The script advances each placode's hair peg depth by the explicit recurrence
+    `z_{n+1} = z_n + dt * v_peg * clip(...)` with a non-negative increment. In the
+    saturated (clip = 1) regime the increment is the constant `v`, so the depth
+    sequence `hair_peg_depth v n` is non-decreasing in time and equals `n * v`.
+    This is the formal counterpart of self-test check 11 (peg depth non-decreasing
+    along the recorded history) and of the ordinal placode -> hair germ -> hair peg
+    staging of Paus et al. (1999) J Invest Dermatol 113:523-532. -/
+def hair_peg_depth (v : Nat) : Nat → Nat
+  | 0 => 0
+  | n + 1 => hair_peg_depth v n + v
+
+theorem hair_peg_depth_monotone (v n : Nat) :
+    hair_peg_depth v n ≤ hair_peg_depth v (n + 1) := by
+  simp [hair_peg_depth]
+
+theorem hair_peg_depth_closed_form (v n : Nat) : hair_peg_depth v n = n * v := by
+  induction n with
+  | zero => simp [hair_peg_depth]
+  | succ k ih => simp [hair_peg_depth, ih, Nat.succ_mul]
 
 end MathOfBiology.Loop_006

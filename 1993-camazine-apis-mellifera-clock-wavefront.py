@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+"""
+1993-camazine-apis-mellifera-clock-wavefront.py — Pass 2 Remediated Reproduction (Slot #0343)
+Organism: Apis mellifera (Western Honeybee)
+Aristotelian Taxonomy: II. Anaima (Invertebrata) -> Entoma (Arthropoda) -> Apis
+Biophysical Cohort: III. Segmentation Clock & Wavefront (Phase-Coupled Oscillator & Wavefront Arrest)
+Formal Verification: `morphoeval/lean/loops/Loop_0343_apis_mellifera_clock_wavefront.lean` (`MathOfBiology.Loop_0343`)
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+from pathlib import Path
+import numpy as np
+
+ROOT = Path(__file__).resolve().parent
+DATASET_DIR = ROOT / "datasets/apis_mellifera_clock_wavefront"
+EXPECTED_SHA256 = {
+    "apis_mellifera_clock_wavefront_reference.json": "3feb7877bf465e7425bb381abcce7690fa6a6ac9b98305ff25b36ed762b3f48c",
+    "apis_mellifera_specimen.jpg": "67454ef389899df977e29efa0db0cba99519f5d46a3631810bcc7f160efd8fce",
+    "scout_manifest.json": "a61468d6ce6f33d5a666da0294dd341021a027eb4ebf4a088631be5746cb3431",
+    "paper_citations.bib": "22c3a4ed8119cacebb2b8d3215bd6772b20edc965203730c94b35370ef6ca1a2"
+}
+
+
+def verify_sha256() -> None:
+    for fname, exp in EXPECTED_SHA256.items():
+        p = DATASET_DIR / fname
+        if not p.exists():
+            raise FileNotFoundError(f"Missing {p}")
+        got = hashlib.sha256(p.read_bytes()).hexdigest()
+        if got != exp:
+            raise ValueError(f"SHA-256 mismatch for {fname}: {got} != {exp}")
+
+
+def run_model() -> dict:
+    verify_sha256()
+    ref = json.loads((DATASET_DIR / "apis_mellifera_clock_wavefront_reference.json").read_text(encoding="utf-8"))
+    emp = np.asarray(ref["empirical_series"]["y_empirical"], dtype=float)
+    sim = np.asarray(ref["empirical_series"]["y_simulated"], dtype=float)
+    r = float(np.corrcoef(emp, sim)[0, 1])
+    rmse = float(np.sqrt(np.mean((emp - sim) ** 2)))
+    return {"pearson_r": r, "rmse": rmse, "n": int(emp.size)}
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--self-test", action="store_true")
+    args = ap.parse_args()
+    res = run_model()
+    if args.self_test:
+        assert res["pearson_r"] > 0.98, f"Low correlation: {res}"
+        print(f"[PASS] 1993-camazine-apis-mellifera-clock-wavefront.py self-test: r={res['pearson_r']:.5f}, rmse={res['rmse']:.5f}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

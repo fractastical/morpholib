@@ -126,4 +126,107 @@ theorem nakamasu_diffusive_turing_band_and_ablation_collapse :
     p3_dispersive 12 2 2 2 = 3510024 := by
   decide
 
+
+-- ============================================================================
+-- Pass 3 additions (hybrid continuum-agent iridophore model on a growing flank)
+-- ============================================================================
+
+-- ----------------------------------------------------------------------------
+-- Law 4 (`nakamasu-zebrafish-three-cell-stripes-4`):
+-- Growing-Domain Neumann Mode Insertion Across the Turing Band
+-- ----------------------------------------------------------------------------
+
+/-- Integer kernel of the Turing-band membership test for the Neumann cosine mode
+    `cos(n π y / L)` on a flank of height `L`: the mode is inside the Nakamasu (2009)
+    band `k ∈ [k_min, k_max] = [2.1134, 5.3669]` iff `k_min L ≤ n π ≤ k_max L`.
+    Scalings: `k × 10^4` (`21134`, `53669`), `π × 10^5` (`314159`), `L × 10` (`L10`).
+    Dividing both sides by `10^5` recovers the real inequality. -/
+def mode_in_turing_band (n L10 : Int) : Bool :=
+  decide (21134 * L10 ≤ n * 314159 ∧ n * 314159 ≤ 53669 * L10)
+
+/-- Theorem 4 (`nakamasu_growing_domain_stripe_insertion`):
+    On the juvenile flank (`L = 3.7`, stage PB, SL ≈ 7.2 mm) the mode `n = 4`
+    (two dark stripes 1D/1V flanking X0) is admissible while the adult mode `n = 10`
+    is not; on the adult flank (`L = 9.2`) the band is `n ∈ [7, 15]` so the juvenile
+    mode `n = 4` has left the band and `n = 10` (≈ five stripes) is admissible.
+    Hence isometric growth from `L = 3.7` to `L = 9.2` *forces* stripe insertion:
+    no single Neumann mode is inside the Turing band at both sizes. -/
+theorem nakamasu_growing_domain_stripe_insertion :
+    mode_in_turing_band 4 37 = true ∧
+    mode_in_turing_band 10 37 = false ∧
+    mode_in_turing_band 4 92 = false ∧
+    mode_in_turing_band 6 92 = false ∧
+    mode_in_turing_band 7 92 = true ∧
+    mode_in_turing_band 10 92 = true ∧
+    mode_in_turing_band 15 92 = true ∧
+    mode_in_turing_band 16 92 = false := by
+  decide
+
+/-- Scale invariance of the band test: the admissible mode set scales with the
+    domain, so doubling `L` doubles every admissible `n` (stripe count ∝ flank height). -/
+theorem mode_in_turing_band_scales (n L10 : Int) :
+    mode_in_turing_band (2 * n) (2 * L10) = mode_in_turing_band n L10 := by
+  unfold mode_in_turing_band
+  apply decide_eq_decide.mpr
+  constructor
+  · intro h; constructor <;> omega
+  · intro h; constructor <;> omega
+
+
+-- ----------------------------------------------------------------------------
+-- Law 5 (`nakamasu-zebrafish-three-cell-stripes-5`):
+-- Growth Dilution Preserves Routh-Hurwitz Stability and the Short-Range Saddle
+-- ----------------------------------------------------------------------------
+
+/-- Theorem 5 (`nakamasu_growth_dilution_preserves_routh_hurwitz`):
+    On a uniformly growing domain (Crampin-Gaffney-Maini 1999) the homogeneous
+    Jacobian becomes `J0 - r I` with dilution rate `r = 2 g'/g ≥ 0`, i.e. every
+    clearance rate is raised by `r`. At the 10x-scaled dilution `r = 1` (0.1, five
+    times the maximum used by the script, 2·g'/g ≤ 0.0195) the invariants stay strictly positive
+    (`p1 = 28`, `p2 = 216`, `p3 = 3150`, `p1 p2 - p3 = 2898`) while the short-range
+    saddle minor remains negative (`81 - 225 = -144`): growth does not destroy the
+    Nakamasu stability/instability structure of Theorems 1-2. -/
+theorem nakamasu_growth_dilution_preserves_routh_hurwitz :
+    routh_hurwitz_p1 9 9 10 = 28 ∧
+    routh_hurwitz_p2 9 9 10 (-15) 12 (-15) (-6) (-9) 12 = 216 ∧
+    routh_hurwitz_p3 9 9 10 (-15) 12 (-15) (-6) (-9) 12 = 3150 ∧
+    (routh_hurwitz_p1 9 9 10) * (routh_hurwitz_p2 9 9 10 (-15) 12 (-15) (-6) (-9) 12)
+      - (routh_hurwitz_p3 9 9 10 (-15) 12 (-15) (-6) (-9) 12) = 2898 ∧
+    short_range_det_uv 9 9 15 15 = -144 := by
+  decide
+
+/-- Dilution only ever increases `p1` (the trace invariant), for any `r ≥ 0`. -/
+theorem dilution_raises_p1 (cu cv cw r : Int) (hr : r ≥ 0) :
+    routh_hurwitz_p1 (cu + r) (cv + r) (cw + r) = routh_hurwitz_p1 cu cv cw + 3 * r ∧
+    routh_hurwitz_p1 (cu + r) (cv + r) (cw + r) ≥ routh_hurwitz_p1 cu cv cw := by
+  unfold routh_hurwitz_p1
+  constructor <;> omega
+
+
+-- ----------------------------------------------------------------------------
+-- Law 6 (`nakamasu-zebrafish-three-cell-stripes-6`):
+-- Iridophore S <-> L Switching Is Exclusive and Conserves Agents
+-- ----------------------------------------------------------------------------
+
+/-- Dense -> loose switch fires when the local melanophore excess `d = u - v`
+    exceeds the threshold `θ`; loose -> dense fires when `-d > θ`
+    (Volkening & Sandstede 2018 rule, scaled to integers). -/
+def switch_S_to_L (d θ : Int) : Bool := decide (d > θ)
+def switch_L_to_S (d θ : Int) : Bool := decide (-d > θ)
+
+/-- Theorem 6 (`iridophore_switch_exclusive_and_conservative`):
+    (1) For any non-negative threshold the two switching rules are mutually exclusive:
+        no iridophore is told to become dense and loose in the same step.
+    (2) Switching conserves agents: if `a` dense cells become loose and `b` loose cells
+        become dense, the total `(s - a + b) + (l + a - b) = s + l` is unchanged. -/
+theorem iridophore_switch_exclusive_and_conservative (d θ s l a b : Int) (hθ : θ ≥ 0) :
+    ¬ (switch_S_to_L d θ = true ∧ switch_L_to_S d θ = true) ∧
+    (s - a + b) + (l + a - b) = s + l := by
+  constructor
+  · intro h
+    have h1 : d > θ := of_decide_eq_true h.1
+    have h2 : -d > θ := of_decide_eq_true h.2
+    omega
+  · omega
+
 end MathOfBiology.Loop_007
