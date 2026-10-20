@@ -378,9 +378,14 @@ def _make_scientific_specimen_plate(genus: str, species: str, common: str, megis
     return buf.getvalue()
 
 
-def fetch_or_create_genus_specimen(g_idx: int, g_info: tuple[str, str, str, str, str, str, int, str]) -> Path:
-    """Fetch a CC-licensed photograph from Wikimedia Commons for `genus species` (or synthesize a
-    clean micrograph plate if offline/rate-limited) and store it in `datasets/species_gallery/`."""
+def fetch_or_create_genus_specimen(
+    g_idx: int,
+    g_info: tuple[str, str, str, str, str, str, int, str],
+    refresh_wikimedia: bool = False,
+) -> Path:
+    """Fetch a CC-licensed photograph from Wikipedia / Wikimedia Commons for `genus species`
+    (or synthesize a clean micrograph plate if offline/rate-limited) and store it in
+    `datasets/species_gallery/`."""
     genus, species, common, megiston, subaltern, _, _, _ = g_info
     meg_slug = (
         "I_Enaima_Vertebrata"
@@ -394,38 +399,32 @@ def fetch_or_create_genus_specimen(g_idx: int, g_info: tuple[str, str, str, str,
     out_dir = SPECIES_GALLERY_DIR / meg_slug
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{genus}_{species}.jpg"
-    if out_path.exists() and out_path.stat().st_size > 5000:
+    if not refresh_wikimedia and out_path.exists() and out_path.stat().st_size > 5000:
         return out_path
 
-    for existing in sorted((ROOT / "datasets").glob(f"*/*{genus.lower()}*.jpg")):
-        if existing.stat().st_size > 5000:
-            shutil.copy2(existing, out_path)
-            return out_path
+    if not refresh_wikimedia:
+        for existing in sorted((ROOT / "datasets").glob(f"*/*{genus.lower()}*.jpg")):
+            if existing.stat().st_size > 5000:
+                shutil.copy2(existing, out_path)
+                return out_path
 
-    query = urllib.parse.quote(f"{genus} {species}")
-    api_url = (
-        f"https://commons.wikimedia.org/w/api.php?action=query&generator=search"
-        f"&gsrsearch=filetype:bitmap%20{query}&gsrlimit=3&prop=imageinfo"
-        f"&iiprop=url|mime&iiurlwidth=800&format=json"
-    )
-    try:
-        req = urllib.request.Request(
-            api_url,
-            headers={"User-Agent": "InfiniteMorphospace-SpeciesAtlas/1.0 (https://github.com/fractastical/morpholib)"},
-        )
-        with urllib.request.urlopen(req, timeout=2.8) as resp:
-            data = json.loads(resp.read().decode("utf-8", errors="replace"))
-        pages = (data.get("query") or {}).get("pages") or {}
-        for p in pages.values():
-            ii = (p.get("imageinfo") or [{}])[0]
-            thumb_url = ii.get("thumburl") or ii.get("url")
-            mime = ii.get("mime", "")
-            if thumb_url and ("jpeg" in mime or "png" in mime):
+    # 1. Try Wikipedia REST v1 page summary (fast CDN endpoint for species/genus thumbnail)
+    for title in (f"{genus}_{species}", genus):
+        rest_url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{urllib.parse.quote(title)}"
+        try:
+            req = urllib.request.Request(
+                rest_url,
+                headers={"User-Agent": "InfiniteMorphospace-SpeciesAtlas/1.0 (https://github.com/fractastical/morpholib)"},
+            )
+            with urllib.request.urlopen(req, timeout=4.0) as resp:
+                summary = json.loads(resp.read().decode("utf-8", errors="replace"))
+            thumb = (summary.get("originalimage") or {}).get("source") or (summary.get("thumbnail") or {}).get("source")
+            if thumb and not thumb.lower().endswith(".svg"):
                 img_req = urllib.request.Request(
-                    thumb_url,
+                    thumb,
                     headers={"User-Agent": "InfiniteMorphospace-SpeciesAtlas/1.0"},
                 )
-                with urllib.request.urlopen(img_req, timeout=3.2) as img_resp:
+                with urllib.request.urlopen(img_req, timeout=5.0) as img_resp:
                     raw = img_resp.read()
                 with Image.open(io.BytesIO(raw)) as im_check:
                     im_rgb = im_check.convert("RGB")
@@ -434,8 +433,11 @@ def fetch_or_create_genus_specimen(g_idx: int, g_info: tuple[str, str, str, str,
                     im_rgb.save(buf, format="JPEG", quality=88)
                     out_path.write_bytes(buf.getvalue())
                     return out_path
-    except Exception:
-        pass
+        except Exception:
+            pass
+
+    if out_path.exists() and out_path.stat().st_size > 5000:
+        return out_path
 
     out_path.write_bytes(_make_scientific_specimen_plate(genus, species, common, megiston, seed=1000 + g_idx))
     return out_path
@@ -1015,12 +1017,16 @@ def main() -> int:
     ap.add_argument("--start", type=int, default=101, help="First slot number (default 101)")
     ap.add_argument("--end", type=int, default=1100, help="Last slot number inclusive (default 1100)")
     ap.add_argument("--workers", type=int, default=8, help="Parallel worker processes")
+    ap.add_argument("--refresh-wikimedia", action="store_true", help="Refresh iconic species photos from Wikipedia/Wikimedia REST API")
     args = ap.parse_args()
 
     t0 = time.time()
     print(f"[overnight-1000] Step 0: Pre-fetching/caching iconic specimen images for all 100 genera into datasets/species_gallery/ ...")
-    with concurrent.futures.ThreadPoolExecutor(max_workers=16) as pool:
-        futs = [pool.submit(fetch_or_create_genus_specimen, idx, g_info) for idx, g_info in enumerate(HUNDRED_GENERA)]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=12) as pool:
+        futs = [
+            pool.submit(fetch_or_create_genus_specimen, idx, g_info, args.refresh_wikimedia)
+            for idx, g_info in enumerate(HUNDRED_GENERA)
+        ]
         for f in concurrent.futures.as_completed(futs):
             f.result()
     print(f"[overnight-1000] Cached 100 genus specimen plates in {time.time() - t0:.1f}s.")
