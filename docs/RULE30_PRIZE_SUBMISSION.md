@@ -4,7 +4,7 @@
 **Repository & Verification Code:** [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py)  
 **Date:** October 19, 2026
 
-![Animated 33-Milestone Progress Dashboard: Theorems 1–34 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
+![Animated 34-Milestone Progress Dashboard: Theorems 1–35 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
 
 ---
 

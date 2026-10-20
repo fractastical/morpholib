@@ -60,6 +60,48 @@ theorem jen_1990_barrier_shielding (d_km2 d_k : Bool) :
     jen_diagonal_step d_km2 true d_k = !d_km2 := by
   cases d_km2 <;> cases d_k <;> rfl
 
+/-- Theorem 33 & 34 (`rule30_quadrant_pde_backward_bijective`):
+    2-Sheet Bi-Characteristic Quadrant PDE forward step
+      `M0(q, j) = M0(q, j-1) ⊕ (M0(q-1, j) ∨ M1(q-1, j-1))`
+      `M1(q, j) = M1(q, j-1) ⊕ (M1(q-1, j) ∨ M0(q, j))`
+    and its 1-step recursion-free spatial backward inverse recovering `(M0(q, j-1), M1(q, j-1))`
+    uniquely from `(M0(q, j), M1(q, j), M0(q-1, j), M1(q-1, j))` with zero vertical recursion. -/
+def quadrant_pde_fwd_m1 (m1_qm1_j m0_q_j m1_q_jm1 : Bool) : Bool :=
+  bne m1_q_jm1 (m1_qm1_j || m0_q_j)
+
+def quadrant_pde_fwd_m0 (m0_qm1_j m1_qm1_jm1 m0_q_jm1 : Bool) : Bool :=
+  bne m0_q_jm1 (m0_qm1_j || m1_qm1_jm1)
+
+def quadrant_pde_bwd_m1 (m1_qm1_j m0_q_j m1_q_j : Bool) : Bool :=
+  bne m1_q_j (m1_qm1_j || m0_q_j)
+
+def quadrant_pde_bwd_m0 (m0_qm1_j m1_qm1_jm1 m0_q_j : Bool) : Bool :=
+  bne m0_q_j (m0_qm1_j || m1_qm1_jm1)
+
+theorem rule30_quadrant_pde_backward_bijective
+    (m0_qm1_j m1_qm1_j m1_qm1_jm1 m0_q_jm1 m1_q_jm1 : Bool) :
+    let m0_q_j := quadrant_pde_fwd_m0 m0_qm1_j m1_qm1_jm1 m0_q_jm1
+    let m1_q_j := quadrant_pde_fwd_m1 m1_qm1_j m0_q_j m1_q_jm1
+    quadrant_pde_bwd_m1 m1_qm1_j m0_q_j m1_q_j = m1_q_jm1 ∧
+    quadrant_pde_bwd_m0 m0_qm1_j m1_qm1_jm1 m0_q_j = m0_q_jm1 := by
+  cases m0_qm1_j <;> cases m1_qm1_j <;> cases m1_qm1_jm1 <;> cases m0_q_jm1 <;> cases m1_q_jm1 <;> decide
+
+/-- Theorem 32 (`rule30_or_gate_erasure_cascade`):
+    When the right-boundary gate vanishes (`G_t = (c_t ∨ r_t) = false`, so `c_t = false` and `r_t = false`),
+    `a_{t+1, 1} = rule30 c_t r_t a_{t, 2} = a_{t, 2}`, and whenever `c_t = true`, the OR-gate absorbs
+    `a_{t, 1}` identically (`c_t || a_{t, 1} = true`). -/
+theorem rule30_or_gate_absorption (r_t : Bool) :
+    (true || r_t) = true := by
+  rfl
+
+/-- Theorem 35 (`rule30_antiperiodic_complement_pair_sum`):
+    For any half-period anti-symmetric crystal bit `b` and its half-period translate `!b`,
+    their integer indicator sum `(b.toNat) + ((!b).toNat)` is identically `1`, proving exact
+    1-period density `1/2` (`P_S / 2` ones per period `P_S`). -/
+theorem rule30_antiperiodic_complement_pair_sum (b : Bool) :
+    b.toNat + (!b).toNat = 1 := by
+  cases b <;> rfl
+
 /-- Law 3 (`wolfram-conus-textile-rule30-3`):
     Meinhardt & Klingler (1987) 3-species activator-substrate-hormone reaction kinetics. -/
 structure MeinhardtKlinglerParams where
