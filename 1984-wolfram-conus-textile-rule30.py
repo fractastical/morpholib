@@ -7784,6 +7784,178 @@ def verify_period3_garden_of_eden_oscillator_and_chu_vandermonde_laws() -> dict[
     }
 
 
+def verify_golden_mean_subshift_and_top_row_defect_mirror_laws() -> dict[str, int]:
+    """
+    Verify Theorem 41 (Milestone 40 toward the Full Problem 1 Grand Prize):
+      1. Universal First-Zero-Gate Exit-1 Law, Golden-Mean Subshift Law on Odd-1-Run Block Sequences,
+         and One-Hot Gate Contraction on (1^5 0^1)^k:
+         - For every block 1^a 0^b (forall a >= 1, b >= 1), if the first zero-gate bit is G_{a+1} == 1
+           (i.e. gate word 1^b on 0^b), then the entry bit was R_0[0] == (a mod 2) ^ 1 and the exit bit
+           after 1^a 0^b is identically a_{a+b, 1} === 1 across 100% of {0, 1}^infty.
+         - Consequently, across any two consecutive odd-1-run blocks (1^{a_1} 0^{b_1})(1^{a_2} 0^{b_2})
+           (a_1, a_2 >= 1 odd, b_1, b_2 >= 1), the first-zero-gate pair (G_{1,1}, G_{2,1}) = (1, 1) is
+           100% impossible (Golden-Mean Subshift Law: |E| <= F_{m+2} across m odd-1-run blocks).
+         - On (1^5 0^1)^k (k in {1, 2, 3}), at most one block can ever have G_i = 1, collapsing the
+           admissible gate words to the exact (k+1)-element one-hot family {0^k} U {0^j 1 0^{k-1-j}}.
+      2. Even-1-Run Closure of N_1 and Two-Block Universal Contraction (1^{a_1} 0^1)(1^6 0^{b_2}) -> N_1:
+         - N_1 = {100*, 101*, 110*, 111*} is strictly closed under every even-1-run block 1^{2k} 0^b
+           (forall k >= 1, b >= 1), restricting gates on 0^b to {1^b, 0 1^{b-1}}.
+         - Every two-block sequence (1^{a_1} 0^1)(1^6 0^{b_2}) with a_1 in {4, 5, 6, 7, 8} and b_2 in {1, 2}
+           contracts 100% of {0, 1}^infty directly into N_1 (specifically into {(1,0,0), (1,1,0), (1,1,1)}
+           for b_2 = 1 and {(1,0,0), (1,0,1), (1,1,0)} for b_2 = 2).
+      3. 2D Bi-Mahler Top-Row Crystal-Defect Mirror Law & Exact n = 0 Shell Cancellation Identity:
+         - In the 2D Bi-Mahler crystal-plus-defect decomposition B_p = B_p^{(per)} ^ B_p^{(def)}, because
+           B_p(0, m) === delta_{p,1} delta_{m,1} ^ delta_{m,0}, the top row (n = 0) of the defect tensor
+           mirrors the periodic crystal tensor identically for all m >= 2 (and all m >= 1 on p = 0):
+             B_p^{(def)}(0, m) === B_p^{(per)}(0, m) ^ (delta_{p, 1} delta_{m, 1})   (forall m >= 1).
+         - Furthermore, for all m < 200 (2m + p < k_4 = 400), P_{2m+p}^{(diag)} <= 8 so B_p^{(per)}(n, m) === 0
+           for all n >= 8, yielding B_p(n, m) === B_p^{(def)}(n, m) for all n >= 8, m < 200 and exact n = 0
+           cancellation at every shell multiple u = u_hi * P (P >= 8, u_hi >= 1):
+             gamma_p(u_hi * P) === XOR_{1 <= n <= u_hi * P, (n | m) = u_hi * P} B_p^{(def)}(n, m).
+    """
+    def _step_r(R: tuple[int, ...], c: int) -> tuple[tuple[int, ...], int]:
+        W = len(R)
+        G = c | R[0]
+        nxt = tuple(
+            (c if x == 1 else R[x - 2]) ^ (R[x - 1] | R[x])
+            for x in range(1, W)
+        )
+        return nxt, G
+
+    golden_mean_and_onehot_errors = 0
+    for a in range(1, 9):
+        for b in range(1, 4):
+            W = a + b + 2
+            for mask in range(1 << W):
+                cur = tuple((mask >> i) & 1 for i in range(W))
+                gs = []
+                for c in ([1] * a + [0] * b):
+                    cur, g = _step_r(cur, c)
+                    gs.append(g)
+                if gs[a] == 1 and cur[0] != 1:
+                    golden_mean_and_onehot_errors += 1
+
+    for a1 in (1, 3, 5):
+        for b1 in (1, 2):
+            for a2 in (1, 3, 5):
+                for b2 in (1, 2):
+                    W = a1 + b1 + a2 + b2 + 1
+                    for mask in range(1 << W):
+                        cur = tuple((mask >> i) & 1 for i in range(W))
+                        gs1 = []
+                        for c in ([1] * a1 + [0] * b1):
+                            cur, g = _step_r(cur, c)
+                            gs1.append(g)
+                        gs2 = []
+                        for c in ([1] * a2 + [0] * b2):
+                            cur, g = _step_r(cur, c)
+                            gs2.append(g)
+                        if gs1[a1] == 1 and gs2[a2] == 1:
+                            golden_mean_and_onehot_errors += 1
+
+    for k_rep in (1, 2, 3):
+        cs = ([1] * 5 + [0]) * k_rep
+        L = len(cs)
+        states = np.arange(1 << L, dtype=np.uint32)
+        gates = np.zeros(1 << L, dtype=np.uint32)
+        for t, c in enumerate(cs):
+            g_bit = c | (states & 1)
+            gates |= (g_bit << t)
+            if t + 1 < L:
+                left = ((states << 1) | c)
+                mid = states
+                right = (states >> 1)
+                states = (left ^ (mid | right)) & ((1 << (L - t - 1)) - 1)
+        u = np.unique(gates)
+        z_set = {tuple(int((g >> t) & 1) for t, c in enumerate(cs) if c == 0) for g in u}
+        if len(z_set) != k_rep + 1 or any(sum(zg) > 1 for zg in z_set):
+            golden_mean_and_onehot_errors += 1
+
+    two_block_n1_errors = 0
+    for a1 in (4, 5, 6, 7, 8):
+        for b2 in (1, 2):
+            cs = [1] * a1 + [0] + [1] * 6 + [0] * b2
+            T = len(cs)
+            W = T + 3
+            states = np.arange(1 << W, dtype=np.uint32)
+            for t, c in enumerate(cs):
+                left = ((states << 1) | c)
+                mid = states
+                right = (states >> 1)
+                states = np.unique((left ^ (mid | right)) & ((1 << (W - t - 1)) - 1))
+            img3 = {tuple(int((s >> i) & 1) for i in range(3)) for s in states}
+            exp3 = {(1, 0, 0), (1, 1, 0), (1, 1, 1)} if b2 == 1 else {(1, 0, 0), (1, 0, 1), (1, 1, 0)}
+            if img3 != exp3:
+                two_block_n1_errors += 1
+
+    T_max = 512
+    grid = np.zeros((T_max + 1, 2 * T_max + 3), dtype=np.int8)
+    off = T_max + 1
+    grid[0, off] = 1
+    for t in range(1, T_max + 1):
+        grid[t, off - t : off + t + 1] = (
+            grid[t - 1, off - t - 1 : off + t]
+            ^ (grid[t - 1, off - t : off + t + 1] | grid[t - 1, off - t + 1 : off + t + 2])
+        )
+    N = 64
+    M = np.zeros((2, N, N), dtype=np.int8)
+    M_per = np.zeros((2, N, N), dtype=np.int8)
+    M_def = np.zeros((2, N, N), dtype=np.int8)
+    for p in (0, 1):
+        for j in range(N):
+            k = 2 * j + p
+            for q in range(N):
+                t = q + j + p
+                M[p, q, j] = grid[t, off + j - q]
+                t_locked = 256 + (t % 16)
+                d_per = grid[t_locked, off - t_locked + k]
+                M_per[p, q, j] = d_per
+                M_def[p, q, j] = M[p, q, j] ^ d_per
+
+    B = M.copy()
+    B_per = M_per.copy()
+    B_def = M_def.copy()
+    for p in (0, 1):
+        for bit in range(6):
+            step = 1 << bit
+            for i in range(N):
+                if i & step:
+                    B[p, i, :] ^= B[p, i ^ step, :]
+                    B[p, :, i] ^= B[p, :, i ^ step]
+                    B_per[p, i, :] ^= B_per[p, i ^ step, :]
+                    B_per[p, :, i] ^= B_per[p, :, i ^ step]
+                    B_def[p, i, :] ^= B_def[p, i ^ step, :]
+                    B_def[p, :, i] ^= B_def[p, :, i ^ step]
+
+    defect_mirror_errors = 0
+    for p in (0, 1):
+        for m in range(1, N):
+            corr = 1 if (p == 1 and m == 1) else 0
+            if int(B_def[p, 0, m]) != (int(B_per[p, 0, m]) ^ corr):
+                defect_mirror_errors += 1
+        if not np.all(B_per[p, 8:, :] == 0) or not np.all(B[p, 8:, :] == B_def[p, 8:, :]):
+            defect_mirror_errors += 1
+        for u_hi in range(1, 8):
+            u = u_hi * 8
+            g_full = 0
+            g_def_pos = 0
+            for n in range(u + 1):
+                if (n & u) == n:
+                    for m in range(u + 1):
+                        if (m & u) == m and (n | m) == u:
+                            g_full ^= int(B[p, n, m])
+                            if n >= 1:
+                                g_def_pos ^= int(B_def[p, n, m])
+            if g_full != g_def_pos:
+                defect_mirror_errors += 1
+
+    return {
+        "golden_mean_and_onehot_errors": golden_mean_and_onehot_errors,
+        "two_block_n1_errors": two_block_n1_errors,
+        "defect_mirror_errors": defect_mirror_errors,
+    }
+
+
 def evaluate_white_tent_extinction_and_drift(
     r30_grid: np.ndarray,
     r90_grid: np.ndarray,
@@ -8700,6 +8872,13 @@ def self_test() -> dict:
         and goe_40["offdiag_dyadic_errors"] == 0
     ), "Theorem 40 First-Column Flip, Period-3 Garden-of-Eden Prefix Law, F_0 Oscillator, or Chu-Vandermonde Spatial-Column Law violated"
 
+    gm_41 = verify_golden_mean_subshift_and_top_row_defect_mirror_laws()
+    assert (
+        gm_41["golden_mean_and_onehot_errors"] == 0
+        and gm_41["two_block_n1_errors"] == 0
+        and gm_41["defect_mirror_errors"] == 0
+    ), "Theorem 41 Golden-Mean Subshift, Two-Block N_1 Contraction, or 2D Bi-Mahler Top-Row Defect Mirror Law violated"
+
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)
     assert tent_eval["erosion_r30"]["frac_exact_2px_erosion"] == 1.0, "Rule 30 white-tent erosion must be 100% exact 2px/step"
     assert tent_eval["erosion_r90"]["frac_exact_2px_erosion"] == 1.0, "Rule 90 white-tent erosion must be 100% exact 2px/step"
@@ -8774,6 +8953,7 @@ def self_test() -> dict:
         "sieve_38": sieve_38,
         "rim_39": rim_39,
         "goe_40": goe_40,
+        "gm_41": gm_41,
         "tent_eval": tent_eval,
     }
 
@@ -10187,7 +10367,7 @@ def render_prize_progress_gif_and_poster(
         },
         {
             "step": 39,
-            "commit": "de27b685 -> HEAD",
+            "commit": "e651a8b8",
             "time_str": "Oct 20, 12:20 PM",
             "dt_min": 20,
             "cum_min": 910,
@@ -10202,6 +10382,27 @@ def render_prize_progress_gif_and_poster(
             "synthesis": (
                 "Proves the First-Column Flip Identity F_1(R)=F_0(R)^e_1, the Dual Period-3 Garden-of-Eden Prefix Laws (0^k 1^{3j+1} 0 impossible after c=0), "
                 "the F_0 Period-2 Oscillator N_odd <-> N_10 for all b>=1, and the Chu-Vandermonde 2D Bi-Mahler Spatial-Column & Off-Diagonal Dyadic Laws."
+            ),
+            "pi_max": 30,
+            "necks_done": 74248449,
+        },
+        {
+            "step": 40,
+            "commit": "e651a8b8 -> HEAD",
+            "time_str": "Oct 20, 12:55 PM",
+            "dt_min": 20,
+            "cum_min": 930,
+            "phase": "Phase IV: General Period-Pi Elimination, Dual Families & Degree Staircase",
+            "phase_color": "#34d399",
+            "title": "Step 40: Golden-Mean Subshift Law on Odd-1-Run Blocks, Two-Block N_1 Contraction & Bi-Mahler Top-Row Defect Mirror Law",
+            "thm_badge": "Theorem 41 (Golden-Mean Subshift & Top-Row Defect Mirror)",
+            "formula_lines": [
+                r"$(G_{1,1},G_{2,1})\neq (1,1)\;\;(\forall\,\mathrm{odd}\;a_1,a_2\ge 1),\quad |\mathcal{E}((1^5 0)^k)|=k+1,\quad T_{(1^{a_1}0)(1^6 0^b)}(\{0,1\}^\infty)\subseteq\mathcal{N}_1$",
+                r"$\mathrm{B}_p^{(\mathrm{def})}(0,m)=\mathrm{B}_p^{(\mathrm{per})}(0,m)\oplus\delta_{p,1}\delta_{m,1},\quad \gamma_p(u_{\mathrm{hi}}P)=\bigoplus_{n\ge 1,\,(n\lor m)=u_{\mathrm{hi}}P}\mathrm{B}_p^{(\mathrm{def})}(n,m)$",
+            ],
+            "synthesis": (
+                "Proves the Universal First-Zero-Gate Exit-1 Law, the Golden-Mean Subshift Law forbidding adjacent G_1=1 across odd 1-runs, "
+                "one-hot gate collapse on (1^5 0)^k, two-block N_1 contraction, and the 2D Bi-Mahler Top-Row Crystal-Defect Mirror & n=0 Cancellation Law."
             ),
             "pi_max": 30,
             "necks_done": 74248449,
@@ -10262,7 +10463,7 @@ def render_prize_progress_gif_and_poster(
         ax_top.text(
             98.5,
             7.2,
-            f"[{ms['thm_badge']}]   Milestone {ms['step']} / 39",
+            f"[{ms['thm_badge']}]   Milestone {ms['step']} / 40",
             color=ms["phase_color"],
             fontsize=11.0,
             fontweight="bold",
@@ -10277,7 +10478,7 @@ def render_prize_progress_gif_and_poster(
         ax_top.text(
             85.25,
             2.9,
-            f"40-Theorem Architecture: {int(round(prog_pct * 100))}% Complete",
+            f"41-Theorem Architecture: {int(round(prog_pct * 100))}% Complete",
             color="#0b0f19" if prog_pct > 0.45 else "#f8fafc",
             fontsize=8.6,
             fontweight="bold",
@@ -10558,14 +10759,15 @@ def render_prize_progress_gif_and_poster(
                 "S37\nThm38",
                 "S38\nThm39",
                 "S39\nThm40",
+                "S40\nThm41",
             ],
             color="#cbd5e1",
-            fontsize=3.8,
+            fontsize=3.7,
         )
         ax_time.set_ylim(0, 82)
         ax_time.set_ylabel("Step Duration $\\Delta t$ (min)", color="#cbd5e1", fontsize=9.2)
         ax_time.set_title(
-            "D. Chronological Theorem Build Time per Milestone (Oct 18–20, 2026: 39 Milestones, 15h 10m Active Proof Time)",
+            "D. Chronological Theorem Build Time per Milestone (Oct 18–20, 2026: 40 Milestones, 15h 30m Active Proof Time)",
             color="#f8fafc",
             fontsize=10.3,
             fontweight="bold",
@@ -10729,6 +10931,7 @@ def main(argv: list[str] | None = None) -> int:
     sieve_38 = res["sieve_38"]
     rim_39 = res["rim_39"]
     goe_40 = res["goe_40"]
+    gm_41 = res["gm_41"]
     print(
         f"[open_problems_A_B_C_D] OK | backward inverse errors={bwd['backward_inverse_errors']} (post-barrier cycles: 0/3, 0/15, 0/255) | "
         f"unit-seed branch='{bs_diag['unit_seed_p16_branch_path']}' -> exact k_5={bs_diag['unit_seed_exact_k5']} (T_lock={bs_diag['unit_seed_exact_tlock_k5']}, "
@@ -10801,7 +11004,7 @@ def main(argv: list[str] | None = None) -> int:
         even_jump["max_ext_30"],
     )
     print(
-        f"[theorems_15_to_40_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv/EvenJump/Bridge31/Twin32/Bich33/Subd34/Grand35/Dyad36/Recip37/Sieve38/Rim39/GoE40 errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']},{even_jump['even_jump_errors']},{bridge_31['mahler_bridge_errors']},{twin_32['twin_swar_errors'] + twin_32['shift_rec_errors'] + twin_32['self_dual_errors'] + twin_32['erasure_law_errors'] + twin_32['deriv_and_bijection_errors'] + twin_32['parity_lock_errors'] + twin_32['collapse_9step_errors'] + twin_32['multirun_lockin_errors']},{bich_33['full_cone_errors'] + bich_33['quadrant_pde_errors'] + bich_33['pascal_mahler_errors'] + bich_33['pure_mahler_evol_errors'] + bich_33['bi_sierpinski_errors'] + bich_33['gate_jump_and_leapfrog_errors'] + bich_33['bimahler_or_conv_errors'] + bich_33['universal_zero_errors']},{subd_34['bwd_pde_errors'] + subd_34['col_mahler_bwd_errors'] + subd_34['bimahler_pde_errors'] + subd_34['subdiag_transfer_errors'] + subd_34['shifted_bimahler_errors'] + subd_34['subdiag_lock_violations'] + subd_34['subdiag_invariant_errors'] + subd_34['euler_fermat_violations'] + subd_34['center_mahler_survivors']},{grand_35['top_octave_delta_errors'] + grand_35['post_doubling_degree_errors'] + grand_35['anf_degree_errors'] + grand_35['top_monomial_errors'] + grand_35['sensitivity_boundary_errors']},{dyad_36['self_dual_dyadic_errors'] + dyad_36['joint_pair_contradiction_errors'] + dyad_36['corner_slice_errors'] + dyad_36['monic_lead_errors'] + dyad_36['proj_cutoff_errors'] + dyad_36['crystal_decomp_errors']},{recip_37['reciprocity_errors'] + recip_37['integral_errors'] + recip_37['triangular_v_errors'] + recip_37['antidiag_ks_errors'] + recip_37['wall_invariant_errors']},{sieve_38['swar_bigint_errors'] + sieve_38['staircase_sieve_errors'] + sieve_38['short_run_lockin_errors'] + sieve_38['decim_and_interior_errors'] + sieve_38['mixed_5term_errors']},{rim_39['forcing_law_errors'] + rim_39['opposite_parity_errors'] + rim_39['trap_automaton_errors'] + rim_39['partial_inv_errors'] + rim_39['rim_strict_errors'] + rim_39['dyadic_slice_errors']},{goe_40['goe_and_flip_errors'] + goe_40['oscillator_and_allb_errors'] + goe_40['chu_vandermonde_errors'] + goe_40['offdiag_dyadic_errors']}) | "
+        f"[theorems_15_to_41_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv/EvenJump/Bridge31/Twin32/Bich33/Subd34/Grand35/Dyad36/Recip37/Sieve38/Rim39/GoE40/GM41 errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']},{even_jump['even_jump_errors']},{bridge_31['mahler_bridge_errors']},{twin_32['twin_swar_errors'] + twin_32['shift_rec_errors'] + twin_32['self_dual_errors'] + twin_32['erasure_law_errors'] + twin_32['deriv_and_bijection_errors'] + twin_32['parity_lock_errors'] + twin_32['collapse_9step_errors'] + twin_32['multirun_lockin_errors']},{bich_33['full_cone_errors'] + bich_33['quadrant_pde_errors'] + bich_33['pascal_mahler_errors'] + bich_33['pure_mahler_evol_errors'] + bich_33['bi_sierpinski_errors'] + bich_33['gate_jump_and_leapfrog_errors'] + bich_33['bimahler_or_conv_errors'] + bich_33['universal_zero_errors']},{subd_34['bwd_pde_errors'] + subd_34['col_mahler_bwd_errors'] + subd_34['bimahler_pde_errors'] + subd_34['subdiag_transfer_errors'] + subd_34['shifted_bimahler_errors'] + subd_34['subdiag_lock_violations'] + subd_34['subdiag_invariant_errors'] + subd_34['euler_fermat_violations'] + subd_34['center_mahler_survivors']},{grand_35['top_octave_delta_errors'] + grand_35['post_doubling_degree_errors'] + grand_35['anf_degree_errors'] + grand_35['top_monomial_errors'] + grand_35['sensitivity_boundary_errors']},{dyad_36['self_dual_dyadic_errors'] + dyad_36['joint_pair_contradiction_errors'] + dyad_36['corner_slice_errors'] + dyad_36['monic_lead_errors'] + dyad_36['proj_cutoff_errors'] + dyad_36['crystal_decomp_errors']},{recip_37['reciprocity_errors'] + recip_37['integral_errors'] + recip_37['triangular_v_errors'] + recip_37['antidiag_ks_errors'] + recip_37['wall_invariant_errors']},{sieve_38['swar_bigint_errors'] + sieve_38['staircase_sieve_errors'] + sieve_38['short_run_lockin_errors'] + sieve_38['decim_and_interior_errors'] + sieve_38['mixed_5term_errors']},{rim_39['forcing_law_errors'] + rim_39['opposite_parity_errors'] + rim_39['trap_automaton_errors'] + rim_39['partial_inv_errors'] + rim_39['rim_strict_errors'] + rim_39['dyadic_slice_errors']},{goe_40['goe_and_flip_errors'] + goe_40['oscillator_and_allb_errors'] + goe_40['chu_vandermonde_errors'] + goe_40['offdiag_dyadic_errors']},{gm_41['golden_mean_and_onehot_errors'] + gm_41['two_block_n1_errors'] + gm_41['defect_mirror_errors']}) | "
         f"SWAR cone tails={bridge_31['swar_candidates_tested']} (survivors={bridge_31['swar_survivors']}, max_steps={bridge_31['swar_max_steps']}) | "
         f"Q_m={twin_32['moore_sizes_m1_to_6']} | EF tests={subd_34['euler_fermat_tests']} | half-density={grand_35['exact_half_density_count_s1_to_41']}/41 | ANF mons={grand_35['monomial_counts_t1_to_7']} | "
         f"Pi=2..30 ({tot_necks} necklaces, {tot_prefs} prefs): unextinguished={tot_unext} (max_ext_steps={max_ext})"

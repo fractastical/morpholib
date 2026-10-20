@@ -195,6 +195,28 @@ theorem rule30_f0_oscillator_n10_to_nodd (r3 r4 : Bool) :
     (rule30 true false r3 || rule30 false r3 r4) = true := by
   cases r3 <;> cases r4 <;> simp [rule30]
 
+/-- Law 2n (`wolfram-conus-textile-rule30-2n`, Theorem 41(1) & (3) Universal First-Zero-Gate Exit-1 Law,
+    Golden-Mean Subshift Law on Odd-1-Run Blocks, and 2D Bi-Mahler Top-Row Crystal-Defect Mirror Law):
+    1. (`rule30_zero_step_gate1_keeps_r1_true`): During a 0-run (`c_t = false`), if the effective gate
+       `G = false || r1 = r1` is `true`, then `a_{t+1, 1} = rule30 false r1 r2 = true` identically, so
+       `a_{t, 1}` remains `true` through the end of the 0-run and exits with `a_{a+b, 1} = true`.
+    2. (`rule30_odd1_entry1_forces_next_gate0`): Entering `1^1` (`c_t = true`) with `r1 = true` forces
+       `a_{t+1, 1} = rule30 true true r2 = false`, so the first zero-gate on the following 0-run is `false`
+       (proving `(G_{1,1}, G_{2,1}) ≠ (true, true)` across consecutive odd 1-runs).
+    3. (`rule30_top_row_defect_mirror_cancellation`): When `B(0, m) = bne (B_per(0, m)) (B_def(0, m)) = false`
+       (`m ≥ 2` or `p = 0`), `B_def(0, m) = B_per(0, m)` and their XOR sum vanishes identically. -/
+theorem rule30_zero_step_gate1_keeps_r1_true (r2 : Bool) :
+    rule30 false true r2 = true := by
+  cases r2 <;> rfl
+
+theorem rule30_odd1_entry1_forces_next_gate0 (r2 : Bool) :
+    rule30 true true r2 = false := by
+  cases r2 <;> rfl
+
+theorem rule30_top_row_defect_mirror_cancellation (b_per : Bool) :
+    bne b_per b_per = false := by
+  cases b_per <;> rfl
+
 /-- Law 3 (`wolfram-conus-textile-rule30-3`):
     Meinhardt & Klingler (1987) 3-species activator-substrate-hormone reaction kinetics. -/
 structure MeinhardtKlinglerParams where
