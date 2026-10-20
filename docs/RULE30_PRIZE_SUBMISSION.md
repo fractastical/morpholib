@@ -4,7 +4,7 @@
 **Repository & Verification Code:** [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py)  
 **Date:** October 19, 2026
 
-![Animated 22-Milestone Progress Dashboard: Theorems 1–23 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
+![Animated 23-Milestone Progress Dashboard: Theorems 1–24 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
 
 ---
 
@@ -480,9 +480,29 @@ be its unique **2-adic Mahler–Lucas binomial expansion** over $\mathbb{F}_2$ (
 
 ---
 
+### Theorem 24 (Bi-Dyadic Mahler Coefficient Lock-In Law, Exact Submask Horizon Bound, Crystal–Defect Center-Column Decomposition $c_{2k+p} = c_{2k+p}^{(\text{asymp})} \oplus c_{2k+p}^{(\text{defect})}$, Dyadic Two-Point Law $\alpha_{S, 2^r} = 1 \oplus A_S(2^r)$, and Complete Zero-Branching Extinction Through $\Pi = 24$ [$1,465,018$ Necklaces, $328,130,568$ Prefixes])
+For every Mahler index $m \ge 0$ and parity $p = S \bmod 2 \in \{0, 1\}$, consider the sequence of 2-adic Lucas–Mahler coefficients $\{\alpha_{2k+p, m}\}_{k \ge 0}$ from Theorem 23 along the characteristic index $S = 2k + p$. Then:
+1. **Bi-Dyadic Mahler Coefficient Lock-In Law & Exact Submask Horizon Bound:** Combining $\alpha_{2k+p, m} = \bigoplus_{(j \land m)=j} A_{2k+p}(j)$ (Theorem 23) with 2D Bi-Dyadic Duality $A_{2k+p}(j) = d_{2j+p}(k + p + j)$ (Theorem 22(2)) expresses every Mahler coefficient $\alpha_{2k+p, m}$ strictly as a finite submask XOR of left-cone diagonals $\{d_{2j+p}(k + p + j) : (j \ \&\ m) = j\}$. Because each diagonal $d_{2j+p}(t)$ locks into its periodic crystal $c_{2j+p}(t)$ of dyadic period $P_{2j+p}^{(\text{diag})} = 2^{m_{2j+p}}$ for all $t \ge T_{\text{lock}}(2j + p)$ (Theorem 2), **for every fixed $m \ge 0$ and $p \in \{0, 1\}$, the Mahler coefficient sequence $\{\alpha_{2k+p, m}\}_{k \ge 0}$ is eventually periodic in $k$ with dyadic period $P_{p, m}^{(\text{Mahler})} \mid \max_{(j \land m)=j} P_{2j+p}^{(\text{diag})}$ and exact lock-in horizon bound**:
+   $$K_{\text{lock}}(p, m) \;\le\; \max_{(j \;\land\; m) = j} \max\bigl(0,\; T_{\text{lock}}(2j + p) - p - j\bigr),$$
+   verified with **`0` bound violations across all $128$ pairs $(p, m) \in \{0, 1\} \times [0, 64)$** (and exact equality on $104 / 128$ pairs).
+2. **Exact Crystal–Defect Center-Column Decomposition:** Decomposing each Mahler coefficient into its locked periodic crystal and finite-support transient defect,
+   $$\alpha_{2k+p, m} \;=\; \alpha_{\infty}^{(p)}(k, m) \;\oplus\; \delta\alpha_{2k+p, m} \qquad \bigl(\delta\alpha_{2k+p, m} \equiv 0 \;\;\forall\, k \ge K_{\text{lock}}(p, m)\bigr),$$
+   splits the Rule 30 center column $c_{2k+p} = a_{2k+p, 0}$ identically into an **asymptotically locked Mahler crystal sum** and a **finite-horizon submask defect sum** (`0` errors across $S = 0 \dots 255$, with $59.52\%$ of all submasks $m \subseteq \lfloor S/2 \rfloor$ already locked to $\delta\alpha_{S, m} = 0$):
+   $$c_{2k+p} \;=\; c_{2k+p}^{(\text{asymp})} \;\oplus\; c_{2k+p}^{(\text{defect})}, \qquad c_{2k+p}^{(\text{asymp})} := \bigoplus_{(m \land k)=m} \alpha_{\infty}^{(p)}(k, m), \qquad c_{2k+p}^{(\text{defect})} := \bigoplus_{(m \land k)=m} \delta\alpha_{2k+p, m}.$$
+3. **Dyadic Two-Point Mahler Law & Single-Term Center-Column Reduction at $S = 2^{r+1} + p$:** Whenever $m = 2^r$ ($r \ge 0$) is a power of two, $m$ has only two submasks $j \in \{0, 2^r\}$. Since $A_S(0) \equiv 1$, the Sierpinski sum collapses to a **two-point identity** (`0` errors across all $S = 2 \dots 255, r = 0 \dots 6$):
+   $$\alpha_{S, 2^r} \;=\; 1 \;\oplus\; A_S(2^r) \;=\; 1 \;\oplus\; d_{2^{r+1} + (S \bmod 2)}\!\left(\left\lceil \frac{S}{2} \right\rceil + 2^r\right),$$
+   and at every dyadic horizon $S = 2^{r+1} + p$ ($k = \lfloor S/2 \rfloor = 2^r$), the Lucas submask sum for $c_S$ reduces to **two Mahler terms** ($\alpha_{S, 0} \oplus \alpha_{S, 2^r}$):
+   $$c_{2^{r+1} + p} \;=\; 1 \;\oplus\; \alpha_{2^{r+1} + p,\; 2^r} \;=\; A_{2^{r+1} + p}(2^r) \;=\; d_{2^{r+1} + p}\bigl(2^{r+1} + p\bigr).$$
+4. **Complete Zero-Branching Anti-Diagonal Extinction Through Period $\Pi = 24$ ($1,465,018$ Primitive Necklaces, $328,130,568$ Admissible Prefixes):** By executing all prefix-build steps $N \le \Pi$ and early exterior steps $N \le 30$ in 32-bit `uint32` SIMD registers (`2x` memory bandwidth and 5-stage Suffix-XOR) before promoting survivors to `uint64` at $N = 31$, our solver verifies:
+   - **$\Pi = 23$:** $364,722$ primitive necklaces, $79,540,262$ admissible 1-period prefixes $\implies$ **$100\%$ extinguished (`0` survivors, $S_{\max} = 39$, `10.6 s`)**.
+   - **$\Pi = 24$:** $698,870$ primitive necklaces, $192,112,499$ admissible 1-period prefixes $\implies$ **$100\%$ extinguished (`0` survivors, $S_{\max} = 42$, `25.4 s`)**.
+   - **Cumulative Total ($\Pi = 2 \dots 24$):** **$1,465,018$ primitive necklaces and $328,130,568$ admissible prefixes extinguished with `0` survivors** ($S_{\max}(\Pi) \le 42$). $\square$
+
+---
+
 ## 7. One-Command Verification
 
-All twenty-three theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
+All twenty-four theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python 1984-wolfram-conus-textile-rule30.py --self-test-only
