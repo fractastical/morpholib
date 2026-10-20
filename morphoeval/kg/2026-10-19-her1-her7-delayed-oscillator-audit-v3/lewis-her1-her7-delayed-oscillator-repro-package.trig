@@ -1,0 +1,85 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-lewis-her1-her7-delayed-oscillator> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-lewis-her1-her7-delayed-oscillator-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-lewis-her1-her7-delayed-oscillator-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Lewis (2003) zebrafish her1/her7 autoinhibitory delay differential oscillator, DeltaC-Notch synchronization, and (Pass 3) 2D her1/her7/deltaC DDE lattice with NICD kinetics on a Schroter (2012) Hes6 dimer-truth-table gradient — Reproducibility package: 93/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Deterministic seeds everywhere (lattice bitwise-identical across two runs, asserted L1535-1537); --self-test runs 9 groups in ~70 s covering SHA pins, Hopf threshold, delay invariance, negative controls, 1D chain, specimen, regime-table honesty, truth-table/JSON parity, Hes6 monotonicity, lattice synchrony / mutant 5-7 cycles / AP gradient / T_N monotonicity / re-synchronisation; the default render takes 25 s and regenerates both PNG and GIF; the environment block is now the actual venv; lattice parameters are asserted against the vendored JSON; `expected_outputs_seed_2003` is recorded in the JSON. Deductions: there is still no requirements lock file pinning numpy 2.5.4 / scipy 1.16.3 (-3); MPLCONFIGDIR must be set manually to avoid a font-cache warning outside the repo (-1); the seed sensitivity (5-7 cycles) is documented but not asserted across seeds (-2); runtime of --self-test doubled because `compute_lattice_suite` runs twice (self-test + measure) (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-lewis-her1-her7-delayed-oscillator-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-lewis-her1-her7-delayed-oscillator-repro-package-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-lewis-her1-her7-delayed-oscillator-repro-package-3> ;
+        pk:hasScore "0.93"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-lewis-her1-her7-delayed-oscillator-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "2003-lewis-her1-her7-delayed-oscillator.py L1457–L1568" ;
+        dct:description "9-group deterministic self-test incl. lattice bitwise determinism, JSON parity, regime honesty and T_N monotonicity" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2003-lewis-her1-her7-delayed-oscillator.py#L1457-L1568> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-lewis-her1-her7-delayed-oscillator-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/her1_her7_delayed_oscillator/her1_her7_delayed_oscillator_reference.json L178–L216" ;
+        dct:description "lattice_model_parameters with provenance and expected_outputs_seed_2003" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/datasets/her1_her7_delayed_oscillator/her1_her7_delayed_oscillator_reference.json#L178-L216> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-lewis-her1-her7-delayed-oscillator-repro-package-3> a pk:EvidenceItem ;
+        rdfs:label "docs/media/her1_her7_delayed_oscillator_growth.gif (generated output)" ;
+        dct:description "24-frame GIF with a third row showing the WT vs eps_N = 0 lattice her mRNA field — docs/media/her1_her7_delayed_oscillator_growth.gif: rendered output of 2003-lewis-her1-her7-delayed-oscillator.py at d58a084, image/gif, 1464325 B, 940×740 px, 24 frames, artifact_sha256 a7d4ff0361b542470b20dcca1e3d429fbe8d4d593cd9e37183dd0f1c95f987d6 (sha256 a7d4ff0361b542470b20dcca1e3d429fbe8d4d593cd9e37183dd0f1c95f987d6), spec_fingerprint 3359489370da632246e18833410da2ca588eb4932d80863d4bcc1a6360ecd4fb" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary, Pass 3 builder+assessor) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0960-9822(03)00534-7>,
+            <https://doi.org/10.1016/j.cub.2010.06.034>,
+            <https://doi.org/10.1371/journal.pbio.0050150>,
+            <https://doi.org/10.1371/journal.pbio.1001364> .
+    <https://doi.org/10.1016/S0960-9822(03)00534-7> dct:date "2003"^^xsd:gYear ;
+        dct:title "Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator" .
+    <https://doi.org/10.1016/j.cub.2010.06.034> dct:date "2010"^^xsd:gYear ;
+        dct:title "Intercellular coupling regulates the period of the segmentation clock" .
+    <https://doi.org/10.1371/journal.pbio.0050150> dct:date "2007"^^xsd:gYear ;
+        dct:title "Setting the tempo in development: an investigation of the zebrafish somite clock mechanism" .
+    <https://doi.org/10.1371/journal.pbio.1001364> dct:date "2012"^^xsd:gYear ;
+        dct:title "Topology and dynamics of the zebrafish segmentation clock core circuit" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Lewis (2003) zebrafish her1/her7 autoinhibitory delay differential oscillator, DeltaC-Notch synchronization, and (Pass 3) 2D her1/her7/deltaC DDE lattice with NICD kinetics on a Schroter (2012) Hes6 dimer-truth-table gradient — Reproducibility package 93/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T07:56:07Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-lewis-her1-her7-delayed-oscillator-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

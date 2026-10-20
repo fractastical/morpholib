@@ -1,0 +1,89 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-hamant-microtubule-stress-meristem> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-hamant-microtubule-stress-meristem-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-hamant-microtubule-stress-meristem-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Hamant et al. (2008), Bozorg et al. (2014), Sampathkumar et al. (2014), Uyttewaal et al. (2012), Heisler et al. (2010) & Louveaux et al. (2016) shoot apical meristem shell stress tensor, stress-vs-strain CMT alignment, katanin boundary morphogenesis and PIN1/CMT co-alignment on a growing L1 cellular vertex mesh — MorphoEval overall 71.0/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Pass 3 (v3) evaluation of `2008-hamant-microtubule-stress-meristem.py` (overall weighted score 71.0/100, down from 93.4 in v2). The remediation adds a genuine mechanistic layer: a growing 2D L1 cellular vertex mesh (`L1VertexTissue`, L509-985; `simulate_l1_vertex_patch`, L1020-1156) in which the zone shell stress tensor is applied as boundary traction, Hookean wall tensions feed a per-cell virial stress tensor, CMT directors follow it with katanin gain, cellulose reinforcement closes the feedback loop, PIN1 is allocated to the most stressed walls and transports auxin, cells divide along sigma_1 and T1 flips are detected. It reproduces, emergently, Heisler (2010)'s co-alignment of PIN1-rich walls with CMTs (cos^2 0.747 WT vs 0.47 oryzalin), PIN1 polarity away from an ablated cell in WT and microtubule-independently under oryzalin (0.83 / 0.83), circumferential CMTs around the wound (0.985), a monotone katanin sweep (r = 0.995) and Louveaux (2016)'s stress-vs-Errera contrast (1.00 vs 0.18), with the Euler characteristic preserved over 420 divisions and two new machine-checked Lean theorems. The re-score is lower because the Pass 2 layers that v2 credited as 'FEM' and 'measurements' are prescribed constants and closed-form fits whose headline correlations compare the reference JSON with itself, the mesh is 2D rather than the requested 3D, it does not reproduce the Bozorg discrimination, and it over-predicts dome CMT order. Overall 71.0/100 (faithfulness 66.0, reproducibility 82.7); rubric morphoeval 0.1.0; checkpoint commit d58a084; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 70, Morphological realism / specimen match 64, Parameter expressivity 72, Morphometric validation 60, Source and data traceability 84, Code-to-model traceability 76, Reproducibility package 86. Output judged: docs/media/microtubule_stress_meristem_comparison.png: rendered output of 2008-hamant-microtubule-stress-meristem.py at d58a084, image/png, 1241129 B, 2310×2128 px, artifact_sha256 f04ae6beca333c729a5589a05d79f4add33769b2697eeab9768fb92ce882708c (sha256 f04ae6beca333c729a5589a05d79f4add33769b2697eeab9768fb92ce882708c), spec_fingerprint 347a8a2f33075229838f9d5d768d51cedd24b71fe8b15d8fd77294f559ac2ecb. Dual provenance: spec_fingerprint: 347a8a2f33075229838f9d5d768d51cedd24b71fe8b15d8fd77294f559ac2ecb; artifact_sha256: f04ae6beca333c729a5589a05d79f4add33769b2697eeab9768fb92ce882708c; input_dataset_sha256: {datasets/microtubule_stress_meristem/arabidopsis_meristem_boundary_specimen.jpg=3a8b54b71f7c780c..., datasets/microtubule_stress_meristem/microtubule_stress_meristem_reference.json=3e04a6dded528819..., datasets/microtubule_stress_meristem/paper_citations.bib=9009d0cffd73437a..., datasets/microtubule_stress_meristem/pin1_cmt_coalignment_reference.json=4d5ce4132c9e546d..., datasets/microtubule_stress_meristem/scout_manifest.json=e3cd62cc5263f317...}. Supersedes audit: 2026-10-19-microtubule-stress-meristem-audit-v2. Claim boundary: reported_in_source: Hamant et al. (2008) Science 322:1650-1655 and Bozorg, Krupinski & Jönsson (2014) PLoS Comput. Biol. 10:e1003410: pressurized-shell / finite-element stress models of the SAM with isotropic stress on the central dome (K > 0), anisotropic tensile stress along the negative-Gaussian-curvature organ boundary (K < 0), 2:1 hoop-to-axial Laplace stress on the stem, circumferential CMTs around single-cell ablations, and the argument that maximal principal stress, not strain, is the directional cue | Uyttewaal et al. (2012) Cell 149:439-451 and Sampathkumar et al. (2014) eLife 3:e01967: katanin (BOT1/KTN1) sets the mechanical feedback gain; bot1/ktn1 and oryzalin reduce CMT ordering and flatten the boundary crease | Heisler et al. (2010) PLoS Biol. 8:e1000516: PIN1 polarity correlates with CMT orientation (PIN1-rich membranes parallel to the CMT array), both reorient after ablation (CMTs circumferential, PIN1 directed away from the wound) and the PIN1 response persists under oryzalin; hypothesis that PIN1 accumulates at the most stressed anticlinal wall | Louveaux et al. (2016) PNAS 113:E4294-E4303: SAM cells, especially at the organ boundary, orient division planes along maximal tensile stress, deviating from the Errera shortest-wall rule when stress is anisotropic; reconstructed_in_script: Section 2: 4-zone pressurized-shell stress table (prescribed sigma_1, sigma_2 per zone), nematic CMT order S = gamma a / (gamma a + 2 D_theta), stiffness anisotropy and viscoplastic Lockhart strain rates; exact integer checks of Lean Laws 1-3; an analytic (Gaussian-weight) 2D cross-section anisotropy field labelled 'FEM' in v2 | Section 3: 24-cell ring with prescribed angular dispersions for stress / strain / bot1 cues; closed-form 5-condition sweep of S, crease depth and ablation cos^2 fitted to the reference JSON (Pearson r = 0.9992 against the same JSON) | Section 3b (Pass 3): 2D L1 cellular vertex mesh — zone stress tensor as affine boundary pre-strain epsilon_i = sigma_i / E_shell; Hookean wall tensions; virial wall-stress tensor and wall-strain tensor per cell; CMT director relaxation with gamma_MT and S; cellulose reinforcement of CMT-parallel walls; softmax PIN1 allocation on wall tension; PIN1-polar auxin transport with diffusion, production and decay; auxin-enhanced Lockhart creep; division along sigma_1 (else Errera); T1 detection and flip (disabled by default); 9 scenarios with emergent PIN1/CMT co-alignment 0.747 (saddle WT), wound-ring CMT circumferential cos^2 0.985, PIN1 away-from-wound fraction 0.83 in WT and 0.83 under oryzalin, katanin sweep r = 0.995, 57 divisions with Euler residual 0 | Section 4: optical-density segmentation and Sobel/Gaussian structure-tensor coherency on the SHA-256-locked longitudinal SAM section (dome / saddle / stem ROIs); transfer_boundary: The vertex mesh is a tangent-plane (2D) approximation of the L1 sheet: curvature enters only through the boundary pre-strain, so dome vs saddle differ by boundary anisotropy, not by Gaussian curvature of a 3D surface; absolute S values on the mesh (dome 0.42, saddle 0.57, stem 0.59) are compared with but do not match the Hamant 2008 zone references (0.08, 0.81, 0.57) | The Heisler (2010) and Louveaux (2016) reference values used for the new measurements are within-30-degree ordinal thresholds (cos^2 >= 0.75) derived from the papers' qualitative statements, with 0.5 as the random null; no figure of either paper was digitised | The specimen is a stained longitudinal histological section, not an apical PIN1-GFP / MBD-GFP image, so its structure-tensor coherency measures cell-wall edge anisotropy in the section plane, not CMT or PIN1 organisation; does_not_claim: A 3D curved-surface vertex or FEM shell solver, the Bozorg (2014) stress-vs-strain discrimination as an emergent property of the mesh (both cues give circumferential CMTs around the wound here), auxin-maximum (phyllotactic) patterning from PIN1 up-the-gradient transport, subcellular katanin dynamics, or internal L2/L3 corpus mechanics." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: 2008-hamant-microtubule-stress-meristem.py:1137-1155 and 1451-1478 — the Bozorg stress-vs-strain discrimination does not emerge: strain-cue ablation gives circumferential CMTs (0.968) like the stress cue (0.985), and the saddle strain-cue S (0.49) barely differs from WT (0.57). Implement growth-strain (not elastic wall strain) as the strain cue — the rate tensor of rest-length creep per cell — which is what Bozorg et al. show becomes perpendicular to the stiffened direction under feedback.",
+            "remediation needed: 2008-hamant-microtubule-stress-meristem.py:1206-1212 and Panel I — dome WT S = 0.42 vs reference 0.082 (zone RMSE 0.24): growth-induced cell-scale stress anisotropy (0.31) under an isotropic boundary drives CMT order the dome should not have. Add a cell-scale averaging length or an anisotropy threshold below which S collapses (Hamant 2008 reports isotropic CMTs in the CZ), and sweep it so the dome / saddle contrast becomes a tested prediction.",
+            "remediation needed: 2008-hamant-microtubule-stress-meristem.py:1397-1405 with 412-432 — the 'Bozorg stress cue vs strain-cue correlation' measurement reports emp_r, a literal 0.991 / -0.415 copied from the reference JSON, and the 5-condition sweep's S_pred / depth / cos^2 are closed-form fits (strain-cue and oryzalin rows are pure constants). Replace both with values computed on the vertex mesh (e.g. correlation between the mesh CMT director field and the shell sigma_1 field under stress vs strain cue; crease depth from an out-of-plane buckling or curvature proxy) or delete the measurements and the r = 0.9992 panel title.",
+            "remediation needed: 2008-hamant-microtubule-stress-meristem.py:1438 and 1447 — specimen coherency and area-fraction measurements use reference_value = value. Either digitise a published coherency value (e.g. Sampathkumar 2014 Fig. 2 anisotropy) or mark reference_value null and let measure_outputs report 'no reference recorded'.",
+            "remediation needed: 2008-hamant-microtubule-stress-meristem.py:288-355 and Panel A title — `build_2d_meristem_fem_field` is a sum of Gaussians; rename it (`build_2d_meristem_anisotropy_sketch`) and retitle Panel A, or replace it with a real 2D membrane solve on the cross-section profile.",
+            "remediation needed: 2008-hamant-microtubule-stress-meristem.py:509-606 and 1046-1047 — the mesh is planar; the saddle's K < 0 enters only as boundary pre-strain (76:12 MPa -> 0.19:0.03 strain). Embed the vertex positions on a parametrised surface (sphere cap for the dome, hyperbolic paraboloid for the boundary, cylinder for the stem), apply turgor as a normal load and recover the in-plane stress from the shell equilibrium so that Law 1's Gaussian-curvature inversion is tested on the mesh rather than imposed.",
+            "remediation needed: 2008-hamant-microtubule-stress-meristem.py:519-530 and 1993-2032 — expose E_shell, k_wall, K_A, beta_pin, kappa_cmt and phi_wall on the CLI, add a `--sweep PARAM:lo:hi:n` over them with a rendered panel, and add a `--seed` sweep so the self-test thresholds (0.70, 0.66) are shown to hold across seeds rather than sitting just below one seed's values.",
+            "remediation needed: datasets/microtubule_stress_meristem/pin1_cmt_coalignment_reference.json:70-118 — figure numbers for Heisler 2010 and Louveaux 2016 are unverified and the thresholds are ordinal. Verify against the PDFs and digitise at least one quantitative distribution (Heisler 2010 PIN1-vs-CMT angle histogram; Louveaux 2016 division-angle vs stress histogram) so the co-alignment and division measurements get numeric references." ;
+        pk:hasScore "0.71"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 036 Pass 3 builder + primary assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/36> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.cell.2012.02.048>,
+            <https://doi.org/10.1073/pnas.1600677113>,
+            <https://doi.org/10.1111/j.1469-8137.2009.03100.x>,
+            <https://doi.org/10.1126/science.1165594>,
+            <https://doi.org/10.1371/journal.pbio.1000516>,
+            <https://doi.org/10.1371/journal.pcbi.1003410>,
+            <https://doi.org/10.7554/eLife.01967> .
+    <https://doi.org/10.1016/j.cell.2012.02.048> dct:date "2012"^^xsd:gYear ;
+        dct:title "Mechanical Stress Acts via Katanin to Amplify Differences in Growth Rate between Adjacent Cells in Arabidopsis" .
+    <https://doi.org/10.1073/pnas.1600677113> dct:date "2016"^^xsd:gYear ;
+        dct:title "Cell division plane orientation based on tensile stress in Arabidopsis thaliana" .
+    <https://doi.org/10.1111/j.1469-8137.2009.03100.x> dct:date "2010"^^xsd:gYear ;
+        dct:title "The mechanics behind plant development" .
+    <https://doi.org/10.1126/science.1165594> dct:date "2008"^^xsd:gYear ;
+        dct:title "Developmental Patterning by Mechanical Signals in Arabidopsis" .
+    <https://doi.org/10.1371/journal.pbio.1000516> dct:date "2010"^^xsd:gYear ;
+        dct:title "Alignment between PIN1 Polarity and Microtubule Orientation in the Shoot Apical Meristem Reveals a Tight Coupling between Morphogenesis and Auxin Transport" .
+    <https://doi.org/10.1371/journal.pcbi.1003410> dct:date "2014"^^xsd:gYear ;
+        dct:title "Stress and Strain Provide Positional and Directional Cues in Development" .
+    <https://doi.org/10.7554/eLife.01967> dct:date "2014"^^xsd:gYear ;
+        dct:title "Subcellular and supracellular mechanical stress prescribes cytoskeleton behavior in Arabidopsis cotyledon pavement cells" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Hamant et al. (2008), Bozorg et al. (2014), Sampathkumar et al. (2014), Uyttewaal et al. (2012), Heisler et al. (2010) & Louveaux et al. (2016) shoot apical meristem shell stress tensor, stress-vs-strain CMT alignment, katanin boundary morphogenesis and PIN1/CMT co-alignment on a growing L1 cellular vertex mesh — MorphoEval overall 71.0/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T09:49:36Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-hamant-microtubule-stress-meristem-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/36>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-hamant-microtubule-stress-meristem> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

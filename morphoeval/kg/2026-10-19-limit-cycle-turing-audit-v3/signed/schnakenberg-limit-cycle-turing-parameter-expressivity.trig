@@ -1,0 +1,123 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RA6hNVX1Mo4yWB4x-FQ71q4ulvwo0TN273vaIff4RU1V4/> .
+@prefix this: <https://w3id.org/np/RA6hNVX1Mo4yWB4x-FQ71q4ulvwo0TN273vaIff4RU1V4> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-schnakenberg-limit-cycle-turing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-schnakenberg-limit-cycle-turing-parameter-expressivity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-schnakenberg-limit-cycle-turing-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Schnakenberg (1979) tri-molecular limit-cycle & Turing reaction-diffusion morphogenesis — Parameter expressivity: 91/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "In addition to the Pass 2 sweeps (5 regimes, 7-point d sweep, CLI overrides), Pass 3 adds three swept parameters whose effect is monotone and visible: mound radius R (predicted l* 0,1,2,3,5,6,10 and measured l_dom 0,1,2,3,5,6,9 across 7 radii; spot count 0->18 tracking 2 pi R^2/((sqrt3/2) lambda_c^2); Panel D2, L1597-1614), the Martiel–Goldbeter PDE rate k_e (period 7.07 -> 14.53 min rising monotonically inside the oscillatory window 2.0-7.0 min^-1 and quenched outside it; D4 inset, L1651-1660) and the Schnakenberg PDE rate k_e (amplitude 0 -> 11.8 rising monotonically past the Hopf point; D5, L1662-1684); `--R-mound`, `--ke-mg`, `--Km-pde` are wired to the panels (L1946-1948, L1967-1969). Deduction: the stalk radius and growth factor are fixed (no sweep), and K_m is a CLI knob without a rendered sweep (-4); the R sweep tolerance (+-1 degree) is the resolution of a 500-step transient, not a converged selection (-5)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-schnakenberg-limit-cycle-turing-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-schnakenberg-limit-cycle-turing-parameter-expressivity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-schnakenberg-limit-cycle-turing-parameter-expressivity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-schnakenberg-limit-cycle-turing-parameter-expressivity-4> ;
+        pk:hasScore "0.91"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-schnakenberg-limit-cycle-turing-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "1979-schnakenberg-limit-cycle-turing.py L967–L1004" ;
+        dcterms:description "run_mound_radius_sweep over MOUND_RADII with l_dom vs l*, spot count vs hexagonal packing" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/3aaa03d/1979-schnakenberg-limit-cycle-turing.py#L967-L1004> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-schnakenberg-limit-cycle-turing-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "1979-schnakenberg-limit-cycle-turing.py L641–L647" ;
+        dcterms:description "run_mg_pde_rate_sweep over 8 k_e values (1-12 min^-1) recording period/amplitude/oscillatory flag" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/3aaa03d/1979-schnakenberg-limit-cycle-turing.py#L641-L647> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-schnakenberg-limit-cycle-turing-parameter-expressivity-3> a pk:EvidenceItem ;
+        rdfs:label "1979-schnakenberg-limit-cycle-turing.py L494–L528" ;
+        dcterms:description "run_schnakenberg_pde_sweep: 7 k_e values spanning 0 to 8 k_e^Hopf plus growth-rate bisection for the onset" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/3aaa03d/1979-schnakenberg-limit-cycle-turing.py#L494-L528> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-schnakenberg-limit-cycle-turing-parameter-expressivity-4> a pk:EvidenceItem ;
+        rdfs:label "1979-schnakenberg-limit-cycle-turing.py L1946–L1948" ;
+        dcterms:description "New CLI flags --R-mound, --ke-mg, --Km-pde forwarded to render_outputs" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/3aaa03d/1979-schnakenberg-limit-cycle-turing.py#L1946-L1948> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 remediation + re-score; Cursor agent)" ;
+        dcterms:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "iRcensb1hjMXD9ecorHWE7a6xnZVdbEnJo1oAFPBNrbHHpiveg7J6D8xXYGJj0z28wEJZmUiU32b9DgP3oEdXgr4IXtz0ebobSsyrdeC/w4jScppbai6N5Mj/qvCgpyfgx0xOdGqfV6C55S86oL7wtbbAUbDZCBbOjfSrLuWOh7jtKpNe4OG6y+Kk7Ukjpy7BZ5k2qYT2TLxhMv2vLz51e/CK/Ife00YGhJt46mLVLfrEw1FCUBhhZdC15Dqo5sAu/7mjJRAr+VdVFcsDSDCAk1MkYXcZo2qa1R472bayR5PBCGSCXSHcCsioCdoc0X92GN55npEQ2HAaHheVtoUkw==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    this: rdfs:label "Schnakenberg (1979) tri-molecular limit-cycle & Turing reaction-diffusion morphogenesis — Parameter expressivity 91/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T05:47:13Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-schnakenberg-limit-cycle-turing-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1006/bulm.1999.0131>,
+            <https://doi.org/10.1016/0022-5193(79)90042-0>,
+            <https://doi.org/10.1016/S0006-3495(87)83275-7>,
+            <https://doi.org/10.1038/253540a0>,
+            <https://doi.org/10.1073/pnas.71.5.2118>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1371/journal.pcbi.1004367> .
+
+    <https://doi.org/10.1006/bulm.1999.0131> dcterms:date "1999"^^xsd:gYear ;
+        dcterms:title "Reaction and diffusion on growing domains: scenarios for robust pattern formation" .
+
+    <https://doi.org/10.1016/0022-5193(79)90042-0> dcterms:date "1979"^^xsd:gYear ;
+        dcterms:title "Simple chemical reaction systems with limit cycle behaviour" .
+
+    <https://doi.org/10.1016/S0006-3495(87)83275-7> dcterms:date "1987"^^xsd:gYear ;
+        dcterms:title "A model based on receptor desensitization for cyclic AMP signaling in Dictyostelium cells" .
+
+    <https://doi.org/10.1038/253540a0> dcterms:date "1975"^^xsd:gYear ;
+        dcterms:title "Mechanism for oscillatory synthesis of cyclic AMP in Dictyostelium discoideum" .
+
+    <https://doi.org/10.1073/pnas.71.5.2118> dcterms:date "1974"^^xsd:gYear ;
+        dcterms:title "Cyclic-AMP-controlled oscillations in suspended Dictyostelium cells: their relation to morphogenetic cell interactions" .
+
+    <https://doi.org/10.1098/rstb.1952.0012> dcterms:date "1952"^^xsd:gYear ;
+        dcterms:title "The chemical basis of morphogenesis" .
+
+    <https://doi.org/10.1371/journal.pcbi.1004367> dcterms:date "2015"^^xsd:gYear ;
+        dcterms:title "Regulation of spatiotemporal patterns by biological variability: general principles and applications to Dictyostelium discoideum" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+

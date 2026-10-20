@@ -1,13 +1,28 @@
 #!/usr/bin/env python3
 """
-2008-hamant-microtubule-stress-meristem.py — Pass 2 Remediated Shoot Apical Meristem Shell Stress & CMT Solver
+2008-hamant-microtubule-stress-meristem.py — Pass 3 Remediated Shoot Apical Meristem Shell Stress, CMT & PIN1 Solver
 Bozorg, Krupinski & Jönsson (2014) PLoS Comput. Biol. 10(1):e1003410;
 Sampathkumar et al. (2014) eLife 3:e01967;
 Hamant, Heisler, Jönsson, Krupinski, Uyttewaal, Boudaoud, Meyerowitz & Traas (2008) Science 322(5908):1650-1655;
-and Uyttewaal et al. (2012) Cell 149(2):439-451.
-2D/3D Finite-Element / Vertex Pressurized Shell Turgor Stress Tensor, Bozorg Stress-vs-Strain Cue Discrimination,
-Anisotropic Viscoplastic Lockhart Growth, Laser Ablation Ring Reorientation, and Katanin (`bot1`/`KTN1`) /
-Oryzalin Boundary Morphogenesis (`hamant-microtubule-stress-meristem`, Slot 036).
+Uyttewaal et al. (2012) Cell 149(2):439-451;
+Heisler et al. (2010) PLoS Biol. 8(10):e1000516 (PIN1 polarity / CMT co-alignment, Pass 3);
+and Louveaux et al. (2016) PNAS 113(30):E4294-E4303 (stress-oriented division planes, Pass 3).
+Pressurized Shell Turgor Stress Tensor across 4 SAM zones, Bozorg Stress-vs-Strain Cue Discrimination,
+Anisotropic Viscoplastic Lockhart Growth, Laser Ablation Ring Reorientation, Katanin (`bot1`/`KTN1`) /
+Oryzalin Boundary Morphogenesis, and — new in Pass 3 — a growing 2D cellular VERTEX MESH of the L1 epidermis
+(section 3b) in which the zone shell stress tensor is applied as boundary traction, anticlinal walls carry
+Hookean tension with Lockhart creep, CMT directors follow the per-cell wall-stress (or wall-strain) tensor
+with katanin gain gamma_MT, cellulose reinforces CMT-parallel walls, PIN1 is allocated to the most stressed
+walls (Heisler 2010) and transports auxin, cells divide along maximal tensile stress (Louveaux 2016) and
+T1 neighbour exchanges are detected (and, for plant tissue, suppressed) (`hamant-microtubule-stress-meristem`, Slot 036).
+
+HONEST SCOPE NOTE (Pass 3): the Pass 2 remediation asked for a *3D* vertex mesh with T1 events. The L1 mesh
+implemented here is a 2D apical-view patch (tangent-plane approximation of the L1 sheet); shell curvature
+enters only through the anisotropic boundary pre-strain derived from the zone stress tensor, not from a
+curved 3D surface. T1 flips are implemented (`L1VertexTissue.apply_t1`) but disabled by default because
+plant cells are cemented by the middle lamella (Hamant & Traas 2010). Sections 2-3 (zone solver, closed-form
+5-condition sweep, 24-cell ring) are retained unchanged from Pass 2 and are phenomenological: the per-zone
+principal stresses and the sweep's S/depth formulas are fitted closed forms, not solved from a shell FEM.
 
 Mathematical Model & Formal Lean 4 Traceability
 -----------------------------------------------
@@ -39,6 +54,24 @@ Mathematical Model & Formal Lean 4 Traceability
      0 < γ_bot1 < γ_WT) strictly reduces stiffness anisotropy and crease folding depth.
    - Formal Lean 4 theorem: `MathOfBiology.Loop_036.uyttewaal_katanin_oryzalin_feedback_gain_reduction`
      (`morphoeval/lean/loops/Loop_036_microtubule_stress_meristem.lean#L132-L167`).
+
+4. Heisler et al. (2010) — Stress-Based PIN1 Polarity / CMT Co-Alignment & Microtubule Independence (Pass 3):
+     For a square L1 cell of side a with isotropic wall tension T_0 and an increment τ > 0 on the walls
+     parallel to the shell σ_1 axis: T_∥ = T_0 + τ > T_⊥ = T_0, virial anisotropy
+       M_xx - M_yy = 2 a T_∥ - 2 a T_⊥ = 2 a τ > 0,
+     so the CMT director (σ_1 axis) is the axis of the PIN1-rich (max-tension) wall; katanin feedback adds
+     κ S γ_MT ≥ 0 to T_∥ only, so the PIN1 preference holds at γ_MT = 0 (oryzalin) and is amplified in WT.
+   - Formal Lean 4 theorem: `MathOfBiology.Loop_036.heisler_pin1_cmt_coalignment_under_anisotropic_wall_tension`
+     (`morphoeval/lean/loops/Loop_036_microtubule_stress_meristem.lean#L165-L226`).
+   - Code: `L1VertexTissue.pin1_state` (softmax of wall tension), `L1VertexTissue.cell_tensors` (virial M_c),
+     `simulate_l1_vertex_patch` (saddle / ablation / oryzalin scenarios).
+
+5. Louveaux et al. (2016) & Hamant & Traas (2010) — Topological Events on the L1 Vertex Mesh (Pass 3):
+     χ = V - E + F;  division along σ_1: (V, E, F) -> (V + 2, E + 3, F + 1), χ invariant, F strictly up;
+     T1 neighbour exchange: (V, E, F) unchanged (suppressed by default for cemented plant walls).
+   - Formal Lean 4 theorem: `MathOfBiology.Loop_036.louveaux_vertex_mesh_division_preserves_euler_characteristic`
+     (`morphoeval/lean/loops/Loop_036_microtubule_stress_meristem.lean#L230-L268`).
+   - Code: `L1VertexTissue.divide_cell`, `L1VertexTissue.apply_t1`, `L1VertexTissue.euler_characteristic`.
 """
 
 from __future__ import annotations
@@ -47,6 +80,7 @@ import argparse
 import hashlib
 import json
 import math
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -54,25 +88,31 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.collections import LineCollection, PolyCollection
 from PIL import Image
 from scipy import ndimage as ndi
 from scipy import stats
+from scipy.spatial import Voronoi
 
 ROOT = Path(__file__).resolve().parent
 DATASET_DIR = ROOT / "datasets" / "microtubule_stress_meristem"
 REF_JSON_PATH = DATASET_DIR / "microtubule_stress_meristem_reference.json"
+PIN1_REF_JSON_PATH = DATASET_DIR / "pin1_cmt_coalignment_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "arabidopsis_meristem_boundary_specimen.jpg"
 BIB_PATH = DATASET_DIR / "paper_citations.bib"
 SCOUT_PATH = DATASET_DIR / "scout_manifest.json"
 
 OUT_PNG = ROOT / "docs" / "media" / "microtubule_stress_meristem_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "microtubule_stress_meristem_growth.gif"
+OUT_VERTEX_GIF = ROOT / "docs" / "media" / "microtubule_stress_meristem_vertex_pin1.gif"
 
 EXPECTED_SHA256: dict[str, str] = {
     "microtubule_stress_meristem_reference.json": "3e04a6dded52881911fd9eedb0387c4a184753d1f78fb51754168201712b5f5e",
     "arabidopsis_meristem_boundary_specimen.jpg": "3a8b54b71f7c780cf7f68a2ff383f346b511ff2aaea015aebff4d1150328c164",
-    "paper_citations.bib": "9355fa7c7b784918dc3e6606119796633d58b5ffb67f252c129e1568d173e28e",
+    "paper_citations.bib": "9009d0cffd73437a3aadb9bea656ef6b5bb5a08ea2de78bf54420a2e58c80d19",
     "scout_manifest.json": "e3cd62cc5263f317c433e043c2100f6f7f237741722d19c17d4a9ff4c2fbe999",
+    # Pass 3: Heisler (2010) / Louveaux (2016) reference thresholds for the L1 vertex-mesh model
+    "pin1_cmt_coalignment_reference.json": "4d5ce4132c9e546dd3510dee6ea53b925956b573e893c89818dca639cd4fd2a1",
 }
 
 
@@ -442,6 +482,787 @@ def simulate_bozorg_stress_vs_strain_and_ablation(
 
 
 # --------------------------------------------------------------------------- #
+# 3b. Pass 3 — Heisler et al. (2010) PIN1 / CMT Co-Alignment on a Growing L1 Cellular Vertex Mesh
+#     with Louveaux et al. (2016) Stress-Oriented Divisions and T1 Detection (Laws 4 & 5)
+# --------------------------------------------------------------------------- #
+# Reduced-dimension statement: this is a 2D apical-view (tangent-plane) vertex model of the L1 sheet.
+# The zone shell stress tensor of section 2 enters as an affine boundary pre-strain
+# epsilon_i = sigma_i / E_shell; shell curvature itself is NOT represented on a 3D surface.
+ZONE_SHELL_STRESS_MPA: dict[str, tuple[float, float]] = {
+    "central_dome_isotropic": (40.0, 40.0),
+    "peripheral_flank_transition": (46.67, 33.33),
+    "organ_boundary_saddle": (76.0, 12.0),
+    "cylindrical_stem_transverse": (80.0, 40.0),
+}
+E_SHELL_EFFECTIVE_MPA = 400.0
+
+
+def _nematic_axis(mxx: np.ndarray, mxy: np.ndarray, myy: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Principal axis angle (rad, in [0, pi)) and anisotropy (l1-l2)/(l1+l2) of symmetric 2x2 tensors."""
+    tr = mxx + myy
+    diff = np.sqrt((mxx - myy) ** 2 + 4.0 * mxy ** 2)
+    aniso = np.where(np.abs(tr) > 1e-12, diff / np.maximum(np.abs(tr), 1e-12), 0.0)
+    theta = 0.5 * np.arctan2(2.0 * mxy, mxx - myy)
+    return np.mod(theta, np.pi), np.clip(aniso, 0.0, 1.0)
+
+
+class L1VertexTissue:
+    """
+    Apical-view 2D cellular vertex model of the SAM L1 epidermis with Hookean (strain-based)
+    anticlinal wall tensions, turgor pressure, Lockhart wall creep, auxin transport by
+    stress-polarised PIN1 (Heisler et al. 2010), CMT directors slaved to the per-cell wall
+    stress (or wall strain) tensor with katanin gain gamma_MT, cellulose reinforcement of
+    CMT-parallel walls, division along maximal tensile stress (Louveaux et al. 2016) and
+    T1 neighbour-exchange detection (disabled by default: plant cells are cemented).
+    """
+
+    def __init__(
+        self,
+        n_rings: int = 4,
+        jitter: float = 0.10,
+        seed: int = 2010036,
+        P_turgor: float = 0.15,
+        k_wall: float = 6.0,
+        K_A: float = 0.9,
+        kappa_cmt: float = 1.56,
+        D_theta: float = 0.32,
+    ) -> None:
+        self.rng = np.random.default_rng(seed)
+        self.P_turgor = P_turgor
+        self.k_wall = k_wall
+        self.K_A = K_A
+        self.kappa_cmt = kappa_cmt
+        self.D_theta = D_theta
+
+        seeds: list[tuple[float, float]] = []
+        rings: list[int] = []
+        R = n_rings + 3
+        for q in range(-R, R + 1):
+            for r in range(-R, R + 1):
+                ring = max(abs(q), abs(r), abs(q + r))
+                if ring > R:
+                    continue
+                x = q + 0.5 * r
+                y = (math.sqrt(3) / 2.0) * r
+                if ring <= n_rings + 1:
+                    jx, jy = jitter * self.rng.normal(size=2)
+                else:
+                    jx = jy = 0.0
+                seeds.append((x + jx, y + jy))
+                rings.append(ring)
+        seeds_arr = np.asarray(seeds)
+        rings_arr = np.asarray(rings)
+        vor = Voronoi(seeds_arr)
+        keep = np.where(rings_arr <= n_rings)[0]
+        ghost = np.where(rings_arr == n_rings + 1)[0]
+
+        cells_raw: list[list[int]] = []
+        for s in keep:
+            reg = vor.regions[vor.point_region[s]]
+            if -1 in reg or len(reg) < 3:
+                raise RuntimeError("Voronoi region of an interior seed is unbounded")
+            pts = vor.vertices[reg]
+            ang = np.arctan2(pts[:, 1] - seeds_arr[s, 1], pts[:, 0] - seeds_arr[s, 0])
+            order = np.argsort(ang)
+            cells_raw.append([int(reg[k]) for k in order])
+        used = sorted({v for c in cells_raw for v in c})
+        remap = {old: i for i, old in enumerate(used)}
+        self.V = vor.vertices[used].copy()
+        self.cells: list[list[int]] = [[remap[v] for v in c] for c in cells_raw]
+        bset: set[int] = set()
+        for s in ghost:
+            for v in vor.regions[vor.point_region[s]]:
+                if v in remap:
+                    bset.add(remap[v])
+        self.is_boundary = np.zeros(len(self.V), dtype=bool)
+        self.is_boundary[list(bset)] = True
+        self.V_ref = self.V.copy()
+        self.centroid_ref = seeds_arr[keep].copy()
+
+        n = len(self.cells)
+        self.theta = self.rng.uniform(0.0, np.pi, n)
+        self.S = np.full(n, 0.05)
+        self.auxin = np.ones(n)
+        self.alive = np.ones(n, dtype=bool)
+        self.P = np.full(n, P_turgor)
+        self.KA = np.full(n, K_A)
+        self.lineage = np.arange(n)
+        self.l0: dict[tuple[int, int], float] = {}
+        self.k_base: dict[tuple[int, int], float] = {}
+        self._rebuild()
+        A, L, l, _ = self._geometry(self.V)
+        self.A0 = A.copy()
+        self.A_init_mean = float(np.mean(A))
+        for e, key in enumerate(self.edge_keys):
+            self.l0[key] = float(l[self.edge_first_he[e]])
+            self.k_base[key] = 1.0
+        self.events: list[dict[str, Any]] = []
+        self.n_divisions = 0
+        self.n_t1 = 0
+        self.t1_candidates_last = 0
+        self.wound_center: np.ndarray | None = None
+        self.division_cos2_sigma1: list[float] = []
+        self.growth_factor = 1.0  # cumulative tissue-scale rest-length growth (boundary follows it)
+
+    # ------------------------------------------------------------------ topology
+    def _rebuild(self) -> None:
+        he_cell, he_from, he_to = [], [], []
+        for c, poly in enumerate(self.cells):
+            n = len(poly)
+            for k in range(n):
+                he_cell.append(c)
+                he_from.append(poly[k])
+                he_to.append(poly[(k + 1) % n])
+        self.he_cell = np.asarray(he_cell, dtype=int)
+        self.he_from = np.asarray(he_from, dtype=int)
+        self.he_to = np.asarray(he_to, dtype=int)
+        keys = [(min(a, b), max(a, b)) for a, b in zip(he_from, he_to)]
+        uniq: dict[tuple[int, int], int] = {}
+        he_edge = np.zeros(len(keys), dtype=int)
+        first = []
+        for h, key in enumerate(keys):
+            if key not in uniq:
+                uniq[key] = len(uniq)
+                first.append(h)
+            he_edge[h] = uniq[key]
+        self.edge_keys: list[tuple[int, int]] = list(uniq.keys())
+        self.he_edge = he_edge
+        self.edge_first_he = np.asarray(first, dtype=int)
+        self.edge_count = np.bincount(he_edge, minlength=len(self.edge_keys))
+        self.n_cells = len(self.cells)
+        # Drop stale rest lengths, seed missing ones lazily in _sync_edge_arrays
+        present = set(self.edge_keys)
+        for key in list(self.l0.keys()):
+            if key not in present:
+                self.l0.pop(key, None)
+                self.k_base.pop(key, None)
+
+    def _sync_edge_arrays(self, l: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        l0 = np.empty(len(self.edge_keys))
+        kb = np.empty(len(self.edge_keys))
+        for e, key in enumerate(self.edge_keys):
+            if key not in self.l0:
+                self.l0[key] = float(l[self.edge_first_he[e]])
+                self.k_base[key] = 1.0
+            l0[e] = self.l0[key]
+            kb[e] = self.k_base[key]
+        return l0, kb
+
+    def euler_characteristic(self) -> int:
+        return int(len(self.V) - len(self.edge_keys) + len(self.cells))
+
+    # ------------------------------------------------------------------ geometry
+    def _geometry(self, V: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        f = V[self.he_from]
+        t = V[self.he_to]
+        d = t - f
+        l = np.hypot(d[:, 0], d[:, 1]) + 1e-12
+        cross = f[:, 0] * t[:, 1] - t[:, 0] * f[:, 1]
+        A = 0.5 * np.bincount(self.he_cell, cross, minlength=self.n_cells)
+        L = np.bincount(self.he_cell, l, minlength=self.n_cells)
+        return A, L, l, d
+
+    def _wall_stiffness(self, d: np.ndarray, l: np.ndarray, kb: np.ndarray) -> np.ndarray:
+        """Per-edge Hookean stiffness with cellulose reinforcement of CMT-parallel walls (mean of both cells)."""
+        phi = np.arctan2(d[:, 1], d[:, 0])
+        cos2 = np.cos(phi - self.theta[self.he_cell]) ** 2
+        k_he = 1.0 + self.kappa_cmt * self.S[self.he_cell] * cos2
+        k_he = np.where(self.alive[self.he_cell], k_he, 1.0)
+        k_edge = np.bincount(self.he_edge, k_he, minlength=len(self.edge_keys)) / self.edge_count
+        return self.k_wall * kb * k_edge
+
+    def wall_state(self, V: np.ndarray | None = None) -> dict[str, np.ndarray]:
+        V = self.V if V is None else V
+        A, L, l, d = self._geometry(V)
+        l0, kb = self._sync_edge_arrays(l)
+        k_edge = self._wall_stiffness(d, l, kb)
+        l_edge = l[self.edge_first_he]
+        strain = l_edge / l0 - 1.0
+        T_edge = k_edge * np.maximum(0.0, strain)
+        return {"A": A, "L": L, "l": l, "d": d, "l0": l0, "k_edge": k_edge, "strain": strain, "T_edge": T_edge}
+
+    def _forces(self, V: np.ndarray, ws: dict[str, np.ndarray]) -> np.ndarray:
+        F = np.zeros_like(V)
+        A = ws["A"]
+        g = self.KA * (A - self.A0) - self.P  # dE/dA per cell (periclinal area elasticity + residual in-plane turgor)
+        f = V[self.he_from]
+        t = V[self.he_to]
+        gc = g[self.he_cell]
+        dA_from = 0.5 * np.stack([t[:, 1], -t[:, 0]], axis=1)
+        dA_to = 0.5 * np.stack([-f[:, 1], f[:, 0]], axis=1)
+        np.add.at(F, self.he_from, -gc[:, None] * dA_from)
+        np.add.at(F, self.he_to, -gc[:, None] * dA_to)
+        # Hookean wall tension applied once per edge
+        ef = self.he_from[self.edge_first_he]
+        et = self.he_to[self.edge_first_he]
+        dvec = V[et] - V[ef]
+        lv = np.hypot(dvec[:, 0], dvec[:, 1])[:, None] + 1e-12
+        tvec = ws["T_edge"][:, None] * dvec / lv
+        np.add.at(F, ef, tvec)
+        np.add.at(F, et, -tvec)
+        F[self.is_boundary] = 0.0
+        return F
+
+    def relax(self, stretch_xy: tuple[float, float], n_iter: int = 12, eta: float = 0.04) -> dict[str, np.ndarray]:
+        sx, sy = stretch_xy
+        gf = self.growth_factor
+        self.V[self.is_boundary, 0] = gf * (1.0 + sx) * self.V_ref[self.is_boundary, 0]
+        self.V[self.is_boundary, 1] = gf * (1.0 + sy) * self.V_ref[self.is_boundary, 1]
+        ws = self.wall_state()
+        for _ in range(n_iter):
+            F = self._forces(self.V, ws)
+            step = eta * F
+            nrm = np.hypot(step[:, 0], step[:, 1])
+            scale = np.minimum(1.0, 0.06 / np.maximum(nrm, 1e-12))
+            self.V += step * scale[:, None]
+            ws = self.wall_state()
+        return ws
+
+    # ------------------------------------------------------------------ tensors
+    def cell_tensors(self, ws: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
+        d = ws["d"]
+        l = ws["l"]
+        tx = d[:, 0] / l
+        ty = d[:, 1] / l
+        T_he = ws["T_edge"][self.he_edge]
+        eps_he = ws["strain"][self.he_edge]
+        n = self.n_cells
+        Mxx = np.bincount(self.he_cell, T_he * l * tx * tx, minlength=n)
+        Mxy = np.bincount(self.he_cell, T_he * l * tx * ty, minlength=n)
+        Myy = np.bincount(self.he_cell, T_he * l * ty * ty, minlength=n)
+        theta_sigma, aniso_sigma = _nematic_axis(Mxx, Mxy, Myy)
+        # Wall-strain (Bozorg strain-cue) nematic tensor (signed strain, tension-only walls)
+        Qxx = np.bincount(self.he_cell, eps_he * l * tx * tx, minlength=n)
+        Qxy = np.bincount(self.he_cell, eps_he * l * tx * ty, minlength=n)
+        Qyy = np.bincount(self.he_cell, eps_he * l * ty * ty, minlength=n)
+        theta_eps, aniso_eps = _nematic_axis(Qxx, Qxy, Qyy)
+        sigma_mean = (Mxx + Myy) / np.maximum(2.0 * ws["A"], 1e-9)
+        return {
+            "theta_sigma1": theta_sigma,
+            "aniso_sigma": aniso_sigma,
+            "theta_eps1": theta_eps,
+            "aniso_eps": aniso_eps,
+            "sigma_mean": sigma_mean,
+            "Mxx": Mxx, "Mxy": Mxy, "Myy": Myy,
+        }
+
+    def pin1_state(self, ws: dict[str, np.ndarray], beta_pin: float = 4.0) -> dict[str, np.ndarray]:
+        """Heisler et al. (2010) stress-based PIN1 allocation: PIN1 fraction on each wall grows with wall tension."""
+        T_he = ws["T_edge"][self.he_edge]
+        l = ws["l"]
+        n = self.n_cells
+        T_mean = np.bincount(self.he_cell, T_he * l, minlength=n) / np.maximum(np.bincount(self.he_cell, l, minlength=n), 1e-12)
+        rel = T_he / np.maximum(T_mean[self.he_cell], 1e-9) - 1.0
+        w = l * np.exp(np.clip(beta_pin * rel, -30.0, 30.0))
+        wsum = np.bincount(self.he_cell, w, minlength=n)
+        p_he = w / np.maximum(wsum[self.he_cell], 1e-12)
+        d = ws["d"]
+        tx = d[:, 0] / l
+        ty = d[:, 1] / l
+        Nxx = np.bincount(self.he_cell, p_he * tx * tx, minlength=n)
+        Nxy = np.bincount(self.he_cell, p_he * tx * ty, minlength=n)
+        Nyy = np.bincount(self.he_cell, p_he * ty * ty, minlength=n)
+        phi_pin, aniso_pin = _nematic_axis(Nxx, Nxy, Nyy)
+        # outward normal of a CCW half-edge is (ty, -tx)
+        vx = np.bincount(self.he_cell, p_he * ty, minlength=n)
+        vy = np.bincount(self.he_cell, p_he * (-tx), minlength=n)
+        return {"p_he": p_he, "phi_pin_wall": phi_pin, "aniso_pin": aniso_pin, "pol_x": vx, "pol_y": vy}
+
+    # ------------------------------------------------------------------ dynamics
+    def step_fields(
+        self,
+        ws: dict[str, np.ndarray],
+        gamma_MT: float,
+        cue: str,
+        dt: float,
+        pin: dict[str, np.ndarray],
+        omega_cmt: float = 2.0,
+        tau_S: float = 1.0,
+        phi_wall: float = 0.45,
+        eps_yield: float = 0.03,
+        k_aux: float = 0.6,
+        tau_pin: float = 0.6,
+        D_aux: float = 0.05,
+        rho_aux: float = 0.1,
+        mu_aux: float = 0.1,
+    ) -> dict[str, np.ndarray]:
+        ten = self.cell_tensors(ws)
+        theta_cue = ten["theta_sigma1"] if cue == "principal_stress" else ten["theta_eps1"]
+        aniso_cue = ten["aniso_sigma"] if cue == "principal_stress" else ten["aniso_eps"]
+        drive = gamma_MT * aniso_cue
+        dtheta = -omega_cmt * drive * np.sin(2.0 * (self.theta - theta_cue)) * dt
+        dtheta += math.sqrt(2.0 * self.D_theta * 0.02 * dt) * self.rng.normal(size=self.n_cells)
+        self.theta = np.mod(self.theta + np.where(self.alive, dtheta, 0.0), np.pi)
+        S_target = np.where(drive > 0, drive / (drive + 2.0 * self.D_theta), 0.0)
+        self.S += (S_target - self.S) * dt / tau_S
+        self.S = np.where(self.alive, np.clip(self.S, 0.0, 0.98), 0.0)
+
+        # Auxin transport through PIN1-polarised walls (interior edges only)
+        a = self.auxin
+        p_he = pin["p_he"]
+        da = rho_aux - mu_aux * a
+        two = np.where(self.edge_count == 2)[0]
+        # pair the two half-edges of each interior edge
+        order = np.argsort(self.he_edge, kind="stable")
+        he_sorted = order
+        edge_sorted = self.he_edge[order]
+        starts = np.searchsorted(edge_sorted, two)
+        h1 = he_sorted[starts]
+        h2 = he_sorted[starts + 1]
+        c1 = self.he_cell[h1]
+        c2 = self.he_cell[h2]
+        flux_12 = tau_pin * p_he[h1] * a[c1] * self.alive[c1] * self.alive[c2]
+        flux_21 = tau_pin * p_he[h2] * a[c2] * self.alive[c1] * self.alive[c2]
+        diff = D_aux * (a[c2] - a[c1]) * self.alive[c1] * self.alive[c2]
+        np.add.at(da, c1, flux_21 - flux_12 + diff)
+        np.add.at(da, c2, flux_12 - flux_21 - diff)
+        self.auxin = np.where(self.alive, np.maximum(0.0, a + dt * da), 0.0)
+
+        # Lockhart creep of wall rest lengths, auxin-enhanced extensibility
+        a_mean = float(np.mean(self.auxin[self.alive])) if np.any(self.alive) else 1.0
+        a_he = self.auxin[self.he_cell]
+        a_edge = np.bincount(self.he_edge, a_he, minlength=len(self.edge_keys)) / self.edge_count
+        g_aux = np.clip(1.0 + k_aux * (a_edge / max(a_mean, 1e-9) - 1.0), 0.2, 3.0)
+        creep = phi_wall * np.maximum(0.0, ws["strain"] - eps_yield) * g_aux
+        for e, key in enumerate(self.edge_keys):
+            if creep[e] > 0.0:
+                self.l0[key] = self.l0[key] * (1.0 + dt * creep[e])
+        # Tissue-scale growth: the patch boundary follows the length-weighted mean wall creep
+        l_edge = ws["l"][self.edge_first_he]
+        mean_creep = float(np.sum(creep * l_edge) / max(np.sum(l_edge), 1e-9))
+        self.growth_factor *= (1.0 + dt * mean_creep)
+        self.A0 += (ws["A"] - self.A0) * dt / 2.0
+        return ten
+
+    # ------------------------------------------------------------------ topology events
+    def _add_vertex(self, p: np.ndarray, ref: np.ndarray, boundary: bool) -> int:
+        self.V = np.vstack([self.V, p[None, :]])
+        self.V_ref = np.vstack([self.V_ref, ref[None, :]])
+        self.is_boundary = np.append(self.is_boundary, boundary)
+        return len(self.V) - 1
+
+    def _insert_vertex_on_edge(self, va: int, vb: int, vnew: int, t: float) -> None:
+        key = (min(va, vb), max(va, vb))
+        l0_old = self.l0.get(key)
+        kb_old = self.k_base.get(key, 1.0)
+        for poly in self.cells:
+            n = len(poly)
+            for k in range(n):
+                p, q = poly[k], poly[(k + 1) % n]
+                if (p == va and q == vb) or (p == vb and q == va):
+                    poly.insert(k + 1, vnew)
+                    break
+        if l0_old is not None:
+            self.l0[(min(va, vnew), max(va, vnew))] = l0_old * t
+            self.l0[(min(vb, vnew), max(vb, vnew))] = l0_old * (1.0 - t)
+            self.k_base[(min(va, vnew), max(va, vnew))] = kb_old
+            self.k_base[(min(vb, vnew), max(vb, vnew))] = kb_old
+            self.l0.pop(key, None)
+            self.k_base.pop(key, None)
+
+    def _append_cell_state(self, parent: int) -> None:
+        self.theta = np.append(self.theta, self.theta[parent])
+        self.S = np.append(self.S, self.S[parent])
+        self.auxin = np.append(self.auxin, self.auxin[parent])
+        self.alive = np.append(self.alive, self.alive[parent])
+        self.P = np.append(self.P, self.P[parent])
+        self.KA = np.append(self.KA, self.KA[parent])
+        self.lineage = np.append(self.lineage, self.lineage[parent])
+        self.A0 = np.append(self.A0, 0.5 * self.A0[parent])
+        self.A0[parent] *= 0.5
+
+    def divide_cell(self, c: int, direction_angle: float) -> bool:
+        poly = list(self.cells[c])
+        P = self.V[poly]
+        n = len(poly)
+        cen = P.mean(axis=0)
+        u = np.array([math.cos(direction_angle), math.sin(direction_angle)])
+        nrm = np.array([-u[1], u[0]])
+        s = (P - cen) @ nrm
+        crossings: list[tuple[int, float]] = []
+        for k in range(n):
+            s0, s1 = s[k], s[(k + 1) % n]
+            if (s0 <= 0.0 < s1) or (s1 <= 0.0 < s0):
+                t = s0 / (s0 - s1)
+                if 0.02 < t < 0.98:
+                    crossings.append((k, float(t)))
+        if len(crossings) != 2:
+            return False
+        (k1, t1), (k2, t2) = crossings
+        va1, vb1 = poly[k1], poly[(k1 + 1) % n]
+        va2, vb2 = poly[k2], poly[(k2 + 1) % n]
+        p1 = self.V[va1] + t1 * (self.V[vb1] - self.V[va1])
+        p2 = self.V[va2] + t2 * (self.V[vb2] - self.V[va2])
+        r1 = self.V_ref[va1] + t1 * (self.V_ref[vb1] - self.V_ref[va1])
+        r2 = self.V_ref[va2] + t2 * (self.V_ref[vb2] - self.V_ref[va2])
+        i1 = self._add_vertex(p1, r1, bool(self.is_boundary[va1] and self.is_boundary[vb1]))
+        i2 = self._add_vertex(p2, r2, bool(self.is_boundary[va2] and self.is_boundary[vb2]))
+        self._insert_vertex_on_edge(va1, vb1, i1, t1)
+        self._insert_vertex_on_edge(va2, vb2, i2, t2)
+        poly = self.cells[c]
+        a = poly.index(i1)
+        b = poly.index(i2)
+        d1 = poly[a:b + 1] if a < b else poly[a:] + poly[:b + 1]
+        d2 = poly[b:a + 1] if b < a else poly[b:] + poly[:a + 1]
+        self.cells[c] = d1
+        self.cells.append(d2)
+        self._append_cell_state(c)
+        key_new = (min(i1, i2), max(i1, i2))
+        self.l0[key_new] = float(np.hypot(*(p2 - p1)))
+        self.k_base[key_new] = 1.0
+        self._rebuild()
+        self.n_divisions += 1
+        return True
+
+    def t1_candidates(self, ws: dict[str, np.ndarray], l_t1: float) -> list[int]:
+        l_edge = ws["l"][self.edge_first_he]
+        cand = [int(e) for e in np.where((l_edge < l_t1) & (self.edge_count == 2))[0]]
+        return cand
+
+    def apply_t1(self, e: int, l_new: float) -> bool:
+        a, b = self.edge_keys[e]
+        cells_ab = [c for c, poly in enumerate(self.cells) if a in poly and b in poly]
+        cells_a = [c for c, poly in enumerate(self.cells) if a in poly and b not in poly]
+        cells_b = [c for c, poly in enumerate(self.cells) if b in poly and a not in poly]
+        if len(cells_ab) != 2 or len(cells_a) != 1 or len(cells_b) != 1:
+            return False
+        if self.is_boundary[a] or self.is_boundary[b]:
+            return False
+        ci = cj = -1
+        for c in cells_ab:
+            poly = self.cells[c]
+            n = len(poly)
+            ia = poly.index(a)
+            if poly[(ia + 1) % n] == b:
+                ci = c
+            else:
+                cj = c
+        if ci < 0 or cj < 0:
+            return False
+        k, l_ = cells_a[0], cells_b[0]
+        m = 0.5 * (self.V[a] + self.V[b])
+        dab = self.V[b] - self.V[a]
+        nrm = np.array([-dab[1], dab[0]])
+        nrm /= (np.hypot(*nrm) + 1e-12)
+        self.V[a] = m + 0.5 * l_new * nrm
+        self.V[b] = m - 0.5 * l_new * nrm
+        # i: [a, b] -> [a];  j: [b, a] -> [b];  k: a -> [b, a];  l: b -> [a, b]
+        pi = self.cells[ci]
+        pi.remove(b)
+        pj = self.cells[cj]
+        pj.remove(a)
+        pk = self.cells[k]
+        ia = pk.index(a)
+        pk[ia:ia + 1] = [b, a]
+        pl = self.cells[l_]
+        ib = pl.index(b)
+        pl[ib:ib + 1] = [a, b]
+        self._rebuild()
+        key = (min(a, b), max(a, b))
+        self.l0[key] = l_new
+        self.k_base[key] = 1.0
+        self.n_t1 += 1
+        return True
+
+    def ablate_center(self) -> int:
+        d = np.hypot(self.centroid_ref[:, 0], self.centroid_ref[:, 1])
+        c = int(np.argmin(d))
+        self.alive[c] = False
+        self.P[c] = 0.0
+        self.KA[c] = 0.0
+        self.S[c] = 0.0
+        self.auxin[c] = 0.0
+        poly = self.cells[c]
+        for k in range(len(poly)):
+            p, q = poly[k], poly[(k + 1) % len(poly)]
+            self.k_base[(min(p, q), max(p, q))] = 0.10
+        self.wound_center = self.V[poly].mean(axis=0).copy()
+        return c
+
+    def neighbours_of(self, c: int) -> list[int]:
+        s = set(self.cells[c])
+        return [j for j, poly in enumerate(self.cells) if j != c and len(s.intersection(poly)) >= 2]
+
+
+def _vertex_snapshot(tissue: L1VertexTissue, ws: dict[str, np.ndarray], pin: dict[str, np.ndarray], ten: dict[str, np.ndarray], step: int) -> dict[str, Any]:
+    """Freeze the mesh geometry and per-cell / per-wall fields for rendering."""
+    return {
+        "step": step,
+        "V": tissue.V.copy(),
+        "cells": [list(p) for p in tissue.cells],
+        "theta": tissue.theta.copy(),
+        "S": tissue.S.copy(),
+        "auxin": tissue.auxin.copy(),
+        "alive": tissue.alive.copy(),
+        "p_he": pin["p_he"].copy(),
+        "he_cell": tissue.he_cell.copy(),
+        "he_from": tissue.he_from.copy(),
+        "he_to": tissue.he_to.copy(),
+        "he_edge": tissue.he_edge.copy(),
+        "pol_x": pin["pol_x"].copy(),
+        "pol_y": pin["pol_y"].copy(),
+        "theta_sigma1": ten["theta_sigma1"].copy(),
+        "aniso_sigma": ten["aniso_sigma"].copy(),
+        "T_edge": ws["T_edge"].copy(),
+        "n_divisions": tissue.n_divisions,
+        "wound_cell": int(np.argmin(tissue.alive)) if not np.all(tissue.alive) else -1,
+    }
+
+
+def _errera_shortest_wall_angle(poly_xy: np.ndarray) -> float:
+    """Errera / shortest-wall rule: new wall perpendicular to the long axis of the cell polygon."""
+    cov = np.cov((poly_xy - poly_xy.mean(axis=0)).T)
+    evals, evecs = np.linalg.eigh(cov)
+    long_axis = evecs[:, int(np.argmax(evals))]
+    return math.atan2(long_axis[1], long_axis[0]) + 0.5 * math.pi
+
+
+def simulate_l1_vertex_patch(
+    zone_id: str = "organ_boundary_saddle",
+    gamma_MT: float = 2.40,
+    cue: str = "principal_stress",
+    ablate: bool = False,
+    n_steps: int = 160,
+    dt: float = 0.05,
+    n_rings: int = 4,
+    seed: int = 2010036,
+    enable_t1: bool = False,
+    A_div_factor: float = 1.75,
+    division_aniso_threshold: float = 0.08,
+    snapshot_every: int = 0,
+) -> dict[str, Any]:
+    """
+    Run one growing L1 vertex-mesh scenario.
+
+    Coupling chain (Pass 3 remediation item 1):
+      zone shell stress tensor (sigma_1, sigma_2)  -> affine boundary pre-strain epsilon_i = sigma_i / E_shell
+      -> Hookean anticlinal wall tensions T_e      -> per-cell virial stress tensor M_c (Batchelor)
+      -> CMT director theta_c (gamma_MT gain, Bozorg 2014 Eq. 12 form) -> cellulose reinforcement of
+         CMT-parallel walls -> back into T_e (positive feedback, Law 4)
+      -> PIN1 softmax on wall tension (Heisler 2010) -> auxin fluxes -> wall extensibility -> Lockhart creep
+      -> growth -> division along sigma_1 (Louveaux 2016, Law 5) / T1 detection.
+    """
+    tissue = L1VertexTissue(n_rings=n_rings, seed=seed)
+    s1, s2 = ZONE_SHELL_STRESS_MPA[zone_id]
+    target = (s1 / E_SHELL_EFFECTIVE_MPA, s2 / E_SHELL_EFFECTIVE_MPA)
+    wound = tissue.ablate_center() if ablate else -1
+    snapshots: list[dict[str, Any]] = []
+    euler0 = tissue.euler_characteristic()
+    euler_residual_max = 0
+    errera_cos2: list[float] = []
+    stress_rule_used = 0
+    ws = tissue.relax((0.0, 0.0), n_iter=20)
+    pin = tissue.pin1_state(ws)
+    ten = tissue.cell_tensors(ws)
+    for step in range(n_steps):
+        ramp = min(1.0, (step + 1) / 40.0)
+        ws = tissue.relax((target[0] * ramp, target[1] * ramp), n_iter=10)
+        pin = tissue.pin1_state(ws)
+        ten = tissue.step_fields(ws, gamma_MT, cue, dt, pin)
+        if step > 40:
+            A = ws["A"]
+            big = [int(c) for c in np.argsort(-A) if A[c] > A_div_factor * tissue.A_init_mean and tissue.alive[c]][:2]
+            for c in big:
+                poly_xy = tissue.V[tissue.cells[c]]
+                ang_errera = _errera_shortest_wall_angle(poly_xy)
+                ang_sigma = float(ten["theta_sigma1"][c])
+                if ten["aniso_sigma"][c] > division_aniso_threshold:
+                    ang = ang_sigma
+                    stress_rule_used += 1
+                else:
+                    ang = ang_errera
+                cos2_choice = math.cos(ang - ang_sigma) ** 2
+                cos2_errera = math.cos(ang_errera - ang_sigma) ** 2
+                if tissue.divide_cell(c, ang):
+                    tissue.division_cos2_sigma1.append(cos2_choice)
+                    errera_cos2.append(cos2_errera)
+                    tissue.events.append(
+                        {"step": step, "type": "division", "cell": c, "cos2_sigma1": round(cos2_choice, 4),
+                         "errera_cos2_sigma1": round(cos2_errera, 4), "aniso_sigma": round(float(ten["aniso_sigma"][c]), 4)}
+                    )
+                    ws = tissue.wall_state()
+                    ten = tissue.cell_tensors(ws)
+                    pin = tissue.pin1_state(ws)
+            euler_residual_max = max(euler_residual_max, abs(tissue.euler_characteristic() - euler0))
+        cand = tissue.t1_candidates(ws, l_t1=0.06)
+        tissue.t1_candidates_last = len(cand)
+        if enable_t1:
+            for e in cand[:1]:
+                if tissue.apply_t1(e, l_new=0.09):
+                    tissue.events.append({"step": step, "type": "t1", "edge": int(e)})
+                    ws = tissue.wall_state()
+                    ten = tissue.cell_tensors(ws)
+                    pin = tissue.pin1_state(ws)
+            euler_residual_max = max(euler_residual_max, abs(tissue.euler_characteristic() - euler0))
+        if snapshot_every and (step % snapshot_every == 0 or step == n_steps - 1):
+            snapshots.append(_vertex_snapshot(tissue, ws, pin, ten, step))
+    ws = tissue.relax(target, n_iter=10)
+    pin = tissue.pin1_state(ws)
+    ten = tissue.cell_tensors(ws)
+    alive = tissue.alive
+    shell_sigma1_axis = 0.0  # the patch x-axis carries the zone's sigma_1
+    out: dict[str, Any] = {
+        "zone_id": zone_id,
+        "shell_sigma_1_MPa": s1,
+        "shell_sigma_2_MPa": s2,
+        "gamma_MT": gamma_MT,
+        "cue": cue,
+        "ablate": ablate,
+        "n_cells_initial": int(len(tissue.centroid_ref)),
+        "n_cells_final": int(np.sum(alive)),
+        "n_divisions": tissue.n_divisions,
+        "n_divisions_stress_rule": stress_rule_used,
+        "n_t1_applied": tissue.n_t1,
+        "t1_candidates_final": tissue.t1_candidates_last,
+        "euler_characteristic": tissue.euler_characteristic(),
+        "euler_residual_max": int(euler_residual_max),
+        "tissue_growth_factor": round(float(tissue.growth_factor), 4),
+        "mean_S": float(np.mean(tissue.S[alive])),
+        "mean_stress_anisotropy": float(np.mean(ten["aniso_sigma"][alive])),
+        "cos2_cmt_vs_local_sigma1": float(np.mean(np.cos(tissue.theta[alive] - ten["theta_sigma1"][alive]) ** 2)),
+        "cos2_cmt_vs_shell_sigma1": float(np.mean(np.cos(tissue.theta[alive] - shell_sigma1_axis) ** 2)),
+        "cos2_pin1wall_vs_cmt": float(np.mean(np.cos(pin["phi_pin_wall"][alive] - tissue.theta[alive]) ** 2)),
+        "cos2_pin1wall_vs_shell_sigma1": float(np.mean(np.cos(pin["phi_pin_wall"][alive] - shell_sigma1_axis) ** 2)),
+        "cos2_pin1wall_vs_local_sigma1": float(np.mean(np.cos(pin["phi_pin_wall"][alive] - ten["theta_sigma1"][alive]) ** 2)),
+        "pin1_polarity_magnitude": float(np.mean(np.hypot(pin["pol_x"], pin["pol_y"])[alive])),
+        "pin1_wall_anisotropy": float(np.mean(pin["aniso_pin"][alive])),
+        "auxin_cv": float(np.std(tissue.auxin[alive]) / max(float(np.mean(tissue.auxin[alive])), 1e-9)),
+        "division_cos2_sigma1_mean": float(np.mean(tissue.division_cos2_sigma1)) if tissue.division_cos2_sigma1 else float("nan"),
+        "division_errera_cos2_sigma1_mean": float(np.mean(errera_cos2)) if errera_cos2 else float("nan"),
+        "events": tissue.events,
+        "snapshot": _vertex_snapshot(tissue, ws, pin, ten, n_steps),
+        "snapshots": snapshots,
+    }
+    if ablate:
+        ring = tissue.neighbours_of(wound)
+        wc = tissue.V[tissue.cells[wound]].mean(axis=0)
+        cent = np.array([tissue.V[tissue.cells[c]].mean(axis=0) for c in ring])
+        rad = cent - wc[None, :]
+        phi_r = np.arctan2(rad[:, 1], rad[:, 0])
+        phi_t = phi_r + 0.5 * np.pi
+        rad_unit = rad / np.maximum(np.hypot(rad[:, 0], rad[:, 1])[:, None], 1e-9)
+        pol = np.stack([pin["pol_x"][ring], pin["pol_y"][ring]], axis=1)
+        radial_comp = np.sum(pol * rad_unit, axis=1) / np.maximum(np.hypot(pol[:, 0], pol[:, 1]), 1e-9)
+        out["ablation"] = {
+            "wound_cell": int(wound),
+            "ring_cells": [int(c) for c in ring],
+            "n_ring": len(ring),
+            "cos2_cmt_circumferential": float(np.mean(np.cos(tissue.theta[ring] - phi_t) ** 2)),
+            "cos2_sigma1_circumferential": float(np.mean(np.cos(ten["theta_sigma1"][ring] - phi_t) ** 2)),
+            "cos2_pin1wall_circumferential": float(np.mean(np.cos(pin["phi_pin_wall"][ring] - phi_t) ** 2)),
+            "pin1_polarity_radial_cos_mean": float(np.mean(radial_comp)),
+            "fraction_pin1_away_from_wound": float(np.mean(radial_comp > 0.0)),
+        }
+    return out
+
+
+VERTEX_SCENARIOS: tuple[tuple[str, str, str, str, bool], ...] = (
+    # (scenario_id, zone_id, gamma key, cue, ablate)
+    ("dome_wt", "central_dome_isotropic", "wt", "principal_stress", False),
+    ("saddle_wt", "organ_boundary_saddle", "wt", "principal_stress", False),
+    ("saddle_strain_cue", "organ_boundary_saddle", "wt", "principal_strain", False),
+    ("saddle_bot1", "organ_boundary_saddle", "bot1", "principal_stress", False),
+    ("saddle_oryzalin", "organ_boundary_saddle", "oryzalin", "principal_stress", False),
+    ("stem_wt", "cylindrical_stem_transverse", "wt", "principal_stress", False),
+    ("ablation_wt", "central_dome_isotropic", "wt", "principal_stress", True),
+    ("ablation_strain_cue", "central_dome_isotropic", "wt", "principal_strain", True),
+    ("ablation_oryzalin", "central_dome_isotropic", "oryzalin", "principal_stress", True),
+)
+
+
+@lru_cache(maxsize=4)
+def simulate_pin1_cmt_coalignment_suite(
+    gamma_WT: float = 2.40,
+    gamma_bot1: float = 0.45,
+    n_steps: int = 160,
+    n_rings: int = 4,
+    enable_t1: bool = False,
+) -> dict[str, Any]:
+    """
+    Run the 9-scenario Heisler (2010) / Louveaux (2016) vertex-mesh suite and summarise it against
+    the SHA-256-locked `pin1_cmt_coalignment_reference.json` thresholds and the zone / katanin
+    benchmarks of `microtubule_stress_meristem_reference.json`.
+    """
+    verify_dataset_integrity()
+    pin_ref = json.loads(PIN1_REF_JSON_PATH.read_text(encoding="utf-8"))
+    thresholds = {t["metric_id"]: t for t in pin_ref["reference_thresholds"]}
+    gammas = {"wt": gamma_WT, "bot1": gamma_bot1, "oryzalin": 0.0}
+    results: dict[str, dict[str, Any]] = {}
+    for sid, zone, gkey, cue, abl in VERTEX_SCENARIOS:
+        results[sid] = simulate_l1_vertex_patch(
+            zone_id=zone, gamma_MT=gammas[gkey], cue=cue, ablate=abl, n_steps=n_steps, n_rings=n_rings,
+            enable_t1=enable_t1, snapshot_every=(20 if sid == "saddle_wt" else 0),
+        )
+
+    # Katanin gain sweep on the vertex mesh vs the reference boundary S of the 3 genotype conditions
+    g_sweep = [0.0, gamma_bot1, gamma_WT]
+    S_sweep = [results["saddle_oryzalin"]["mean_S"], results["saddle_bot1"]["mean_S"], results["saddle_wt"]["mean_S"]]
+    S_sweep_ref = [0.000, 0.284, 0.812]
+    r_sweep, _ = stats.pearsonr(S_sweep, S_sweep_ref)
+    # Zone comparison (dome / saddle / stem) vs the Hamant 2008 reference S
+    S_zone = [results["dome_wt"]["mean_S"], results["saddle_wt"]["mean_S"], results["stem_wt"]["mean_S"]]
+    S_zone_ref = [0.082, 0.812, 0.568]
+    rmse_zone = float(np.sqrt(np.mean((np.array(S_zone) - np.array(S_zone_ref)) ** 2)))
+    euler_residual_total = int(sum(r["euler_residual_max"] for r in results.values()))
+    total_divisions = int(sum(r["n_divisions"] for r in results.values()))
+    total_t1 = int(sum(r["n_t1_applied"] for r in results.values()))
+    summary = {
+        "katanin_gamma_sweep": g_sweep,
+        "katanin_S_sweep_sim": [round(v, 4) for v in S_sweep],
+        "katanin_S_sweep_ref": S_sweep_ref,
+        "katanin_S_sweep_pearson_r": round(float(r_sweep), 4),
+        "zone_S_sim": [round(v, 4) for v in S_zone],
+        "zone_S_ref": S_zone_ref,
+        "zone_S_rmse": round(rmse_zone, 4),
+        "total_divisions": total_divisions,
+        "total_t1_applied": total_t1,
+        "euler_residual_total": euler_residual_total,
+        "pin1_cmt_coalignment_threshold": thresholds["pin1_wall_vs_cmt_cos2"]["reference_value"],
+        "division_alignment_threshold": thresholds["division_plane_vs_sigma1_cos2"]["reference_value"],
+        "wound_cmt_reference": thresholds["wound_ring_cmt_circumferential_cos2"]["reference_value"],
+        "pin1_away_reference": thresholds["pin1_polarity_away_from_wound_fraction"]["reference_value"],
+    }
+    return {"results": results, "summary": summary, "thresholds": thresholds}
+
+
+def verify_t1_transition_topology(n_rings: int = 3, seed: int = 2010036) -> dict[str, Any]:
+    """
+    Unit check of the T1 flip machinery on a fresh mesh: pick the shortest interior wall, flip it, and verify
+    that (i) the two cells that shared it no longer do, (ii) the two cells that touched only one endpoint now
+    share it, and (iii) V, E, F and chi = V - E + F are unchanged (Law 5, T1 branch).
+    """
+    tissue = L1VertexTissue(n_rings=n_rings, seed=seed)
+    ws = tissue.relax((0.05, 0.05), n_iter=20)
+    l_edge = ws["l"][tissue.edge_first_he]
+    interior = np.where(tissue.edge_count == 2)[0]
+    # choose the shortest interior edge whose endpoints are both interior vertices
+    ok_edges = [int(e) for e in interior[np.argsort(l_edge[interior])]
+                if not (tissue.is_boundary[tissue.edge_keys[e][0]] or tissue.is_boundary[tissue.edge_keys[e][1]])]
+    e = ok_edges[0]
+    a, b = tissue.edge_keys[e]
+    before_ab = [c for c, p in enumerate(tissue.cells) if a in p and b in p]
+    before_a = [c for c, p in enumerate(tissue.cells) if a in p and b not in p]
+    before_b = [c for c, p in enumerate(tissue.cells) if b in p and a not in p]
+    V0, E0, F0, chi0 = len(tissue.V), len(tissue.edge_keys), len(tissue.cells), tissue.euler_characteristic()
+    applied = tissue.apply_t1(e, l_new=0.09)
+    after_ab = [c for c, p in enumerate(tissue.cells) if a in p and b in p]
+    V1, E1, F1, chi1 = len(tissue.V), len(tissue.edge_keys), len(tissue.cells), tissue.euler_characteristic()
+    return {
+        "applied": bool(applied),
+        "cells_sharing_before": before_ab,
+        "cells_sharing_after": after_ab,
+        "expected_sharing_after": sorted(before_a + before_b),
+        "neighbour_swap_ok": bool(applied and sorted(after_ab) == sorted(before_a + before_b)
+                                  and not any(c in after_ab for c in before_ab)),
+        "VEF_before": [V0, E0, F0],
+        "VEF_after": [V1, E1, F1],
+        "euler_before": chi0,
+        "euler_after": chi1,
+        "topology_neutral": bool((V0, E0, F0, chi0) == (V1, E1, F1, chi1)),
+    }
+
+
+# --------------------------------------------------------------------------- #
 # 4. Specimen CV Segmentation & Structure-Tensor Cell-Wall Analysis
 # --------------------------------------------------------------------------- #
 def segment_arabidopsis_meristem_specimen() -> dict[str, Any]:
@@ -521,10 +1342,20 @@ def segment_arabidopsis_meristem_specimen() -> dict[str, Any]:
 # 5. MorphoEval Quantitative Measurement Suite (`measure_morphoeval`)
 # --------------------------------------------------------------------------- #
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Compute the 9 reference-anchored morphometric measurements for MorphoEval Step 8."""
+    """
+    Compute the 16 reference-anchored morphometric measurements for MorphoEval Step 8:
+    9 legacy (Pass 2) measurements + 7 Pass 3 vertex-mesh measurements (Heisler 2010 PIN1/CMT
+    co-alignment, wound PIN1 polarity, Louveaux 2016 division planes, Euler invariant, katanin sweep,
+    zone S RMSE).  Reference values marked `ordinal_threshold` in `pin1_cmt_coalignment_reference.json`
+    are within-30-degree alignment thresholds derived from qualitative statements in the papers, not
+    digitised figure values.
+    """
     shell_res = solve_meristem_zone_shell_mechanics()
     bozorg_res = simulate_bozorg_stress_vs_strain_and_ablation()
     spec_res = segment_arabidopsis_meristem_specimen()
+    suite = simulate_pin1_cmt_coalignment_suite()
+    vres = suite["results"]
+    vsum = suite["summary"]
 
     zones = {z["zone_id"]: z for z in shell_res["zones"]}
     conds = {c["condition_id"]: c for c in bozorg_res["conditions"]}
@@ -617,27 +1448,147 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"Stem ROI structure-tensor coherency = {spec_res['stem_coherency_mean']:.4f} ± {spec_res['stem_coherency_se']:.4f} SE across segmented meristem section",
             "derived_from": "script",
         },
+        # ---------------------------------------------------------------- Pass 3 vertex-mesh measurements
+        {
+            "name": "Heisler (2010) PIN1-rich wall axis vs CMT director co-alignment <cos^2> on the growing saddle-boundary L1 vertex mesh (WT)",
+            "value": round(vres["saddle_wt"]["cos2_pin1wall_vs_cmt"], 4),
+            "unit": "cos2_alignment",
+            "method": "Per-cell softmax PIN1 allocation on Hookean wall tension vs CMT director slaved to the virial wall-stress tensor; mean over alive cells after 160 steps with divisions (L1VertexTissue.pin1_state / cell_tensors)",
+            "reference_value": vsum["pin1_cmt_coalignment_threshold"],
+            "note": f"WT saddle = {vres['saddle_wt']['cos2_pin1wall_vs_cmt']:.4f} vs bot1/ktn1 = {vres['saddle_bot1']['cos2_pin1wall_vs_cmt']:.4f}, oryzalin = {vres['saddle_oryzalin']['cos2_pin1wall_vs_cmt']:.4f} (random = 0.5); reference 0.75 is the within-30-degree threshold for 'PIN1 membranes parallel to CMTs' (Heisler 2010 Figs. 2-3), an ordinal threshold not a digitised value",
+            "derived_from": "script",
+        },
+        {
+            "name": "Heisler (2010) fraction of wound-ring cells with PIN1 polarity directed away from the ablated cell (WT vs oryzalin)",
+            "value": round(vres["ablation_wt"]["ablation"]["fraction_pin1_away_from_wound"], 4),
+            "unit": "fraction",
+            "method": "Sign of the radial component of the PIN1 polarity vector sum_e p_e n_e over the 6 cells adjacent to the ablated (depressurised, K_A = 0) centre cell of the dome patch",
+            "reference_value": vsum["pin1_away_reference"],
+            "note": f"WT = {vres['ablation_wt']['ablation']['fraction_pin1_away_from_wound']:.3f} (mean radial cos = {vres['ablation_wt']['ablation']['pin1_polarity_radial_cos_mean']:.3f}); oryzalin gamma_MT = 0 = {vres['ablation_oryzalin']['ablation']['fraction_pin1_away_from_wound']:.3f} (Heisler 2010 Fig. 6: PIN1 wound response is microtubule-independent); strain-cue control = {vres['ablation_strain_cue']['ablation']['fraction_pin1_away_from_wound']:.3f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Wound-ring CMT circumferential alignment <cos^2> emerging on the vertex mesh (WT stress cue) vs oryzalin",
+            "value": round(vres["ablation_wt"]["ablation"]["cos2_cmt_circumferential"], 4),
+            "unit": "cos2_alignment",
+            "method": "CMT director of the 6 wound-adjacent cells vs the circumferential direction around the wound centroid; emergent from the vertex-mesh wall-stress tensor (not the prescribed 24-cell Kirsch ring of section 3)",
+            "reference_value": vsum["wound_cmt_reference"],
+            "note": f"WT = {vres['ablation_wt']['ablation']['cos2_cmt_circumferential']:.4f} (sigma_1 circumferential cos^2 = {vres['ablation_wt']['ablation']['cos2_sigma1_circumferential']:.4f}); oryzalin = {vres['ablation_oryzalin']['ablation']['cos2_cmt_circumferential']:.4f} (random 0.5); strain-cue = {vres['ablation_strain_cue']['ablation']['cos2_cmt_circumferential']:.4f} — in this tension-dominated sheet the strain and stress cues coincide around the wound, so the Bozorg discrimination is NOT reproduced by the mesh",
+            "derived_from": "script",
+        },
+        {
+            "name": "Louveaux (2016) division-plane alignment with local sigma_1 in the saddle boundary (stress rule) vs Errera shortest-wall prediction",
+            "value": round(vres["saddle_wt"]["division_cos2_sigma1_mean"], 4),
+            "unit": "cos2_alignment",
+            "method": "cos^2 between each new wall and the dividing cell's sigma_1 axis; stress rule applied when cell stress anisotropy > 0.08, else Errera shortest wall. The Errera-only prediction for the same cells is reported in the note (emergent, non-tautological contrast)",
+            "reference_value": vsum["division_alignment_threshold"],
+            "note": f"Saddle WT: {vres['saddle_wt']['n_divisions']} divisions, stress-rule cos^2 = {vres['saddle_wt']['division_cos2_sigma1_mean']:.4f} vs Errera-only cos^2 = {vres['saddle_wt']['division_errera_cos2_sigma1_mean']:.4f} (geometry alone would orient walls ACROSS sigma_1); dome WT Errera-only = {vres['dome_wt']['division_errera_cos2_sigma1_mean']:.4f}. Reference 0.75 = within-30-degree threshold (Louveaux 2016 Figs. 2-4), ordinal not digitised",
+            "derived_from": "script",
+        },
+        {
+            "name": "Euler characteristic residual |chi_after - chi_before| over all vertex-mesh topological events (divisions + T1)",
+            "value": vsum["euler_residual_total"],
+            "unit": "count",
+            "method": "chi = V - E + F recomputed after every division (V+2, E+3, F+1) and T1 flip across all 9 scenarios; Law 5 (MathOfBiology.Loop_036.louveaux_vertex_mesh_division_preserves_euler_characteristic)",
+            "reference_value": 0,
+            "note": f"{vsum['total_divisions']} divisions and {vsum['total_t1_applied']} T1 flips applied (T1 suppressed by default: plant walls cemented, Hamant & Traas 2010); unit T1 flip verified separately in run_self_test",
+            "derived_from": "script",
+        },
+        {
+            "name": "Vertex-mesh katanin gain sweep: saddle CMT order S at gamma_MT = 0 / 0.45 / 2.40 vs reference boundary S (Pearson r)",
+            "value": vsum["katanin_S_sweep_pearson_r"],
+            "unit": "Pearson_r",
+            "method": "mean nematic order S over alive cells of the saddle patch for oryzalin, bot1/ktn1 and WT gamma_MT vs microtubule_stress_meristem_reference.json boundary_cmt_order_S_ref (3 points)",
+            "reference_value": 1.0,
+            "note": f"S_sim = {vsum['katanin_S_sweep_sim']} vs S_ref = {vsum['katanin_S_sweep_ref']}; the mesh under-predicts absolute S (WT 0.57 vs 0.81) because cell-scale stress anisotropy (~0.44) is lower than the zone-level index 1.455",
+            "derived_from": "script",
+        },
+        {
+            "name": "Vertex-mesh zone CMT order S (dome / saddle / stem) RMSE vs Hamant (2008) reference S",
+            "value": vsum["zone_S_rmse"],
+            "unit": "nematic_order_S",
+            "method": "RMSE of mean S over alive cells in the dome, saddle and stem patches vs reference S = [0.082, 0.812, 0.568]",
+            "reference_value": 0.0,
+            "note": f"S_sim = {vsum['zone_S_sim']} vs S_ref = {vsum['zone_S_ref']}: growth-induced cell-scale stress anisotropy ({vres['dome_wt']['mean_stress_anisotropy']:.3f}) keeps dome S at {vres['dome_wt']['mean_S']:.3f}, far above the isotropic 0.082 — an open defect carried to Pass 4",
+            "derived_from": "script",
+        },
     ]
 
 
 # --------------------------------------------------------------------------- #
 # 6. Publication Figure (6-Panel) & Animated Growth GIF
 # --------------------------------------------------------------------------- #
+def _draw_vertex_mesh(
+    ax: plt.Axes,
+    snap: dict[str, Any],
+    title: str,
+    color_by: str = "auxin",
+    show_pin1: bool = True,
+    show_cmt: bool = True,
+    show_polarity: bool = False,
+    highlight_cells: list[int] | None = None,
+) -> None:
+    """Draw an L1 vertex-mesh snapshot: cells filled by auxin (or S), PIN1-rich walls as thick green segments,
+    CMT directors as black bars (length ~ S), optional PIN1 polarity arrows (magenta)."""
+    V = snap["V"]
+    polys = [V[c] for c in snap["cells"]]
+    vals = snap["auxin"] if color_by == "auxin" else snap["S"]
+    vals = np.where(snap["alive"], vals, np.nan)
+    cmap = plt.get_cmap("YlGn" if color_by == "auxin" else "viridis")
+    vmin, vmax = (0.0, max(1.5, float(np.nanmax(vals)))) if color_by == "auxin" else (0.0, 1.0)
+    facecolors = [cmap((v - vmin) / (vmax - vmin)) if np.isfinite(v) else (0.25, 0.25, 0.25, 1.0) for v in vals]
+    pc = PolyCollection(polys, facecolors=facecolors, edgecolors="#555555", linewidths=0.5)
+    ax.add_collection(pc)
+    if show_pin1:
+        p = snap["p_he"]
+        segs = np.stack([V[snap["he_from"]], V[snap["he_to"]]], axis=1)
+        strong = p > 0.30
+        if np.any(strong):
+            lc = LineCollection(segs[strong], colors="#00a651", linewidths=1.0 + 6.0 * p[strong], alpha=0.9)
+            ax.add_collection(lc)
+    if show_cmt:
+        cents = np.array([poly.mean(axis=0) for poly in polys])
+        th = snap["theta"]
+        L = 0.42 * (0.25 + 0.75 * snap["S"])
+        segs = np.stack(
+            [cents - L[:, None] * np.stack([np.cos(th), np.sin(th)], axis=1),
+             cents + L[:, None] * np.stack([np.cos(th), np.sin(th)], axis=1)], axis=1)
+        alive = snap["alive"]
+        ax.add_collection(LineCollection(segs[alive], colors="black", linewidths=1.6))
+    if show_polarity:
+        cents = np.array([poly.mean(axis=0) for poly in polys])
+        px, py = snap["pol_x"], snap["pol_y"]
+        sel = snap["alive"] if highlight_cells is None else np.isin(np.arange(len(polys)), highlight_cells)
+        ax.quiver(cents[sel, 0], cents[sel, 1], px[sel], py[sel], color="#d500f9", scale=6.0, width=0.008, zorder=5)
+    if highlight_cells:
+        hp = PolyCollection([polys[c] for c in highlight_cells], facecolors="none", edgecolors="#ff1744", linewidths=1.8)
+        ax.add_collection(hp)
+    ax.set_aspect("equal")
+    ax.set_xlim(V[:, 0].min() - 0.2, V[:, 0].max() + 0.2)
+    ax.set_ylim(V[:, 1].min() - 0.2, V[:, 1].max() + 0.2)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.set_title(title, fontweight="bold", fontsize=10.5)
+
+
 def render_publication_figure_and_gif() -> None:
-    """Render the 6-panel Pass 2 comparison figure and multi-frame morphogenesis GIF."""
+    """Render the 9-panel Pass 3 comparison figure, the legacy katanin-sweep GIF and the vertex-mesh PIN1 GIF."""
     OUT_PNG.parent.mkdir(parents=True, exist_ok=True)
     shell_res = solve_meristem_zone_shell_mechanics()
     fem_res = build_2d_meristem_fem_field()
     bozorg_res = simulate_bozorg_stress_vs_strain_and_ablation()
     spec_res = segment_arabidopsis_meristem_specimen()
+    suite = simulate_pin1_cmt_coalignment_suite()
+    vres = suite["results"]
+    vsum = suite["summary"]
 
-    fig, axes = plt.subplots(2, 3, figsize=(16.5, 10.2), dpi=140)
+    fig, axes = plt.subplots(3, 3, figsize=(16.5, 15.2), dpi=140)
     fig.suptitle(
-        "Shoot Apical Meristem Shell Stress Tensor, Bozorg Stress-vs-Strain Cue Discrimination & Katanin Feedback\n"
-        "(Hamant et al. 2008 Science; Bozorg, Krupinski & Jönsson 2014 PLoS Comput. Biol.; Sampathkumar et al. 2014 eLife)",
-        fontsize=12.5,
+        "Shoot Apical Meristem Shell Stress Tensor, Bozorg Stress-vs-Strain Cue Discrimination, Katanin Feedback\n"
+        "& Pass 3 PIN1/CMT Co-Alignment on a Growing L1 Vertex Mesh (Hamant 2008; Bozorg 2014; Sampathkumar 2014; Heisler 2010; Louveaux 2016)",
+        fontsize=12.0,
         fontweight="bold",
-        y=0.98,
+        y=0.985,
     )
 
     # Panel A: 2D FEM Meristem Cross-Section Stress Anisotropy & Principal Stress Trajectories
@@ -825,9 +1776,83 @@ def render_publication_figure_and_gif() -> None:
         fontsize=10.5,
     )
 
-    fig.tight_layout(rect=[0, 0, 1, 0.94])
+    # Panel G (Pass 3): growing saddle-boundary L1 vertex mesh — auxin, PIN1-rich walls, CMT directors
+    sw = vres["saddle_wt"]
+    _draw_vertex_mesh(
+        axes[2, 0],
+        sw["snapshot"],
+        f"G. Saddle L1 Vertex Mesh (σ₁:σ₂ = 76:12 MPa) — {sw['n_divisions']} divisions\n"
+        f"PIN1∥CMT <cos²> = {sw['cos2_pin1wall_vs_cmt']:.3f}, CMT∥σ₁ = {sw['cos2_cmt_vs_shell_sigma1']:.3f}, S = {sw['mean_S']:.2f}",
+        color_by="auxin",
+    )
+    axes[2, 0].set_xlabel("fill = auxin (YlGn) · green walls = PIN1-rich · black bars = CMT director (length ∝ S)", fontsize=8)
+
+    # Panel H (Pass 3): single-cell ablation on the dome mesh — CMT circumferential, PIN1 polarity away from wound
+    ab = vres["ablation_wt"]
+    ring = ab["ablation"]["ring_cells"]
+    _draw_vertex_mesh(
+        axes[2, 1],
+        ab["snapshot"],
+        f"H. Ablation on Dome Mesh — ring CMT circ. <cos²> = {ab['ablation']['cos2_cmt_circumferential']:.3f}\n"
+        f"PIN1 away-from-wound = {ab['ablation']['fraction_pin1_away_from_wound']:.2f} (oryzalin "
+        f"{vres['ablation_oryzalin']['ablation']['fraction_pin1_away_from_wound']:.2f}, CMT {vres['ablation_oryzalin']['ablation']['cos2_cmt_circumferential']:.2f})",
+        color_by="S",
+        show_polarity=True,
+        highlight_cells=ring,
+    )
+    axes[2, 1].set_xlabel("fill = CMT order S (viridis) · magenta = PIN1 polarity of ring cells · red = wound ring · grey = ablated cell", fontsize=8)
+
+    # Panel I (Pass 3): scenario summary bars vs Heisler / Louveaux thresholds
+    ax = axes[2, 2]
+    sc_ids = ["saddle_wt", "saddle_strain_cue", "saddle_bot1", "saddle_oryzalin", "stem_wt", "dome_wt"]
+    sc_lbl = ["Saddle\nWT", "Saddle\nStrain cue", "Saddle\nbot1/ktn1", "Saddle\nOryzalin", "Stem\nWT", "Dome\nWT"]
+    xi = np.arange(len(sc_ids))
+    S_v = [vres[s]["mean_S"] for s in sc_ids]
+    co_v = [vres[s]["cos2_pin1wall_vs_cmt"] for s in sc_ids]
+    dv_v = [vres[s]["division_cos2_sigma1_mean"] for s in sc_ids]
+    er_v = [vres[s]["division_errera_cos2_sigma1_mean"] for s in sc_ids]
+    ax.bar(xi - 0.30, S_v, width=0.2, color="#2ca02c", label="CMT order S")
+    ax.bar(xi - 0.10, co_v, width=0.2, color="#00a651", alpha=0.75, label="PIN1 wall ∥ CMT <cos²>")
+    ax.bar(xi + 0.10, dv_v, width=0.2, color="#7b1fa2", label="Division wall ∥ σ₁ <cos²> (stress rule)")
+    ax.bar(xi + 0.30, er_v, width=0.2, color="#bdbdbd", label="Errera-only prediction ∥ σ₁")
+    ax.axhline(vsum["pin1_cmt_coalignment_threshold"], color="#00a651", ls="--", lw=1.0)
+    ax.axhline(0.5, color="black", ls=":", lw=0.9)
+    ax.text(len(sc_ids) - 0.55, 0.51, "random", fontsize=7.5, ha="right")
+    ax.text(len(sc_ids) - 0.55, vsum["pin1_cmt_coalignment_threshold"] + 0.01, "Heisler/Louveaux 30° threshold", fontsize=7.5, ha="right", color="#00a651")
+    ax.set_xticks(xi)
+    ax.set_xticklabels(sc_lbl, fontsize=8.0)
+    ax.set_ylim(0, 1.28)
+    ax.set_ylabel("Order / alignment index")
+    ax.legend(loc="upper right", fontsize=7.2, ncol=2)
+    ax.set_title(
+        f"I. Vertex-Mesh Suite (katanin r = {vsum['katanin_S_sweep_pearson_r']:.3f};\nzone S RMSE vs Hamant 2008 = {vsum['zone_S_rmse']:.3f})",
+        fontweight="bold",
+        fontsize=10.5,
+    )
+
+    fig.tight_layout(rect=[0, 0, 1, 0.955])
     fig.savefig(OUT_PNG)
     plt.close(fig)
+
+    # Pass 3 GIF: growing saddle L1 vertex mesh with PIN1-rich walls, CMT directors and divisions
+    v_frames: list[Image.Image] = []
+    for snap in sw["snapshots"]:
+        fig_v, ax_v = plt.subplots(figsize=(6.0, 5.2), dpi=95)
+        _draw_vertex_mesh(
+            ax_v,
+            snap,
+            f"Saddle L1 vertex mesh — step {snap['step']}, {snap['n_divisions']} divisions\n"
+            f"mean S = {float(np.mean(snap['S'][snap['alive']])):.2f}; green = PIN1-rich walls; bars = CMT",
+            color_by="auxin",
+        )
+        fig_v.tight_layout()
+        fig_v.canvas.draw()
+        w, h = fig_v.canvas.get_width_height()
+        buf = np.frombuffer(fig_v.canvas.buffer_rgba(), dtype=np.uint8).reshape(h, w, 4)
+        v_frames.append(Image.fromarray(buf[:, :, :3]))
+        plt.close(fig_v)
+    if v_frames:
+        v_frames[0].save(OUT_VERTEX_GIF, save_all=True, append_images=v_frames[1:], duration=450, loop=0)
 
     # Render animated GIF across katanin feedback gain gamma_MT sweep (Oryzalin -> bot1 -> WT -> Compression)
     frames: list[Image.Image] = []
@@ -871,21 +1896,24 @@ def render_publication_figure_and_gif() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# 7. Deterministic 8-Point Self-Test Suite & CLI Entrypoint
+# 7. Deterministic 14-Point Self-Test Suite & CLI Entrypoint
 # --------------------------------------------------------------------------- #
 def run_self_test() -> dict[str, Any]:
-    """Run deterministic 8-check verification suite for `2008-hamant-microtubule-stress-meristem.py`."""
+    """Run the deterministic 14-check verification suite (8 legacy + 6 Pass 3 vertex-mesh checks)."""
     hashes = verify_dataset_integrity()
     shell_res = solve_meristem_zone_shell_mechanics()
     bozorg_res = simulate_bozorg_stress_vs_strain_and_ablation()
     spec_res = segment_arabidopsis_meristem_specimen()
     meas = measure_morphoeval()
+    suite = simulate_pin1_cmt_coalignment_suite()
+    vres = suite["results"]
+    vsum = suite["summary"]
 
     zones = {z["zone_id"]: z for z in shell_res["zones"]}
     conds = {c["condition_id"]: c for c in bozorg_res["conditions"]}
 
-    # 1. Dataset SHA-256 integrity
-    assert len(hashes) == 4, "All 4 dataset files must be SHA-256 verified"
+    # 1. Dataset SHA-256 integrity (4 Pass 2 files + Pass 3 PIN1/CMT reference)
+    assert len(hashes) == 5, "All 5 dataset files must be SHA-256 verified"
     # 2. Law 1: Saddle boundary stress anisotropy strictly exceeds isotropic dome
     assert shell_res["law1_saddle_amplification_residual"] == 0.0
     assert (
@@ -911,38 +1939,95 @@ def run_self_test() -> dict[str, Any]:
     assert bozorg_res["ablation_ring"]["cos2_stress_cue"] > bozorg_res["ablation_ring"]["cos2_strain_cue"] + 0.45
     # 7. 5-condition perturbation morphospace correlation
     assert bozorg_res["five_condition_depth_pearson_r"] >= 0.995
-    # 8. Specimen CV segmentation & 9-metric MorphoEval suite
+    # 8. Specimen CV segmentation & 16-metric MorphoEval suite (9 legacy + 7 Pass 3)
     assert spec_res["saddle_to_dome_coherency_ratio"] > 1.15
-    assert len(meas) == 9
+    assert len(meas) == 16
+
+    # ---- Pass 3 vertex-mesh checks (Laws 4 & 5) ----
+    # 9. Growth + division on the mesh preserves the Euler characteristic exactly (Law 5, division branch)
+    assert vsum["euler_residual_total"] == 0
+    assert vres["saddle_wt"]["n_divisions"] >= 5
+    assert vres["saddle_wt"]["n_cells_final"] > vres["saddle_wt"]["n_cells_initial"]
+    assert vsum["total_t1_applied"] == 0, "T1 flips must stay suppressed for cemented plant walls by default"
+    # 10. T1 flip machinery is correct and topology-neutral (Law 5, T1 branch)
+    t1 = verify_t1_transition_topology()
+    assert t1["applied"] and t1["neighbour_swap_ok"] and t1["topology_neutral"], t1
+    # 11. Law 4 on the mesh: WT saddle CMTs follow the shell sigma_1 and PIN1-rich walls co-align with CMTs;
+    #     oryzalin (gamma_MT = 0) gives S = 0 and random PIN1/CMT co-alignment
+    assert vres["saddle_wt"]["cos2_cmt_vs_shell_sigma1"] > 0.75
+    assert vres["saddle_wt"]["cos2_pin1wall_vs_cmt"] > 0.70
+    assert vres["saddle_wt"]["cos2_pin1wall_vs_cmt"] > vres["saddle_oryzalin"]["cos2_pin1wall_vs_cmt"] + 0.15
+    assert vres["saddle_oryzalin"]["mean_S"] < 1e-3  # S relaxes exponentially to 0 at gamma_MT = 0
+    # 12. Katanin gain sweep is monotone on the mesh (Law 3 re-emerging from cell-level feedback)
+    assert vres["saddle_wt"]["mean_S"] > vres["saddle_bot1"]["mean_S"] > vres["saddle_oryzalin"]["mean_S"]
+    assert vsum["katanin_S_sweep_pearson_r"] > 0.95
+    # 13. Ablation on the mesh: sigma_1 and CMTs circumferential around the wound (WT), CMTs random under oryzalin,
+    #     PIN1 polarity away from the wound in WT and (microtubule-independently) under oryzalin (Heisler 2010)
+    abw = vres["ablation_wt"]["ablation"]
+    abo = vres["ablation_oryzalin"]["ablation"]
+    assert abw["cos2_sigma1_circumferential"] > 0.85 and abw["cos2_cmt_circumferential"] > 0.85
+    assert abo["cos2_cmt_circumferential"] < 0.65
+    assert abw["fraction_pin1_away_from_wound"] >= 0.66 and abo["fraction_pin1_away_from_wound"] >= 0.66
+    assert abs(abw["fraction_pin1_away_from_wound"] - abo["fraction_pin1_away_from_wound"]) <= 0.20
+    # 14. Louveaux (2016): stress-rule division walls align with sigma_1 while the Errera-only prediction does not
+    assert vres["saddle_wt"]["division_cos2_sigma1_mean"] > 0.75
+    assert vres["saddle_wt"]["division_errera_cos2_sigma1_mean"] < 0.5
 
     return {
         "status": "PASS",
-        "checks_passed": 8,
+        "checks_passed": 14,
         "measurements_count": len(meas),
         "five_condition_r": bozorg_res["five_condition_depth_pearson_r"],
         "saddle_cmt_order_S": zones["organ_boundary_saddle"]["cmt_nematic_order_S"],
         "ablation_cos2_stress": bozorg_res["ablation_ring"]["cos2_stress_cue"],
+        "vertex_saddle_wt_S": round(vres["saddle_wt"]["mean_S"], 4),
+        "vertex_saddle_pin1_cmt_cos2": round(vres["saddle_wt"]["cos2_pin1wall_vs_cmt"], 4),
+        "vertex_saddle_divisions": vres["saddle_wt"]["n_divisions"],
+        "vertex_ablation_cmt_circ_cos2": round(abw["cos2_cmt_circumferential"], 4),
+        "vertex_ablation_pin1_away_wt_vs_oryzalin": [abw["fraction_pin1_away_from_wound"], abo["fraction_pin1_away_from_wound"]],
+        "vertex_euler_residual": vsum["euler_residual_total"],
+        "vertex_t1_unit_check": t1["neighbour_swap_ok"] and t1["topology_neutral"],
     }
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(
-        description="Bozorg et al. (2014) / Sampathkumar et al. (2014) / Hamant et al. (2008) SAM shell stress & CMT solver"
+        description="Bozorg (2014) / Sampathkumar (2014) / Hamant (2008) / Heisler (2010) / Louveaux (2016) SAM shell stress, CMT & PIN1 vertex-mesh solver"
     )
     ap.add_argument("--verify-only", action="store_true", help="Run self-tests without rendering media")
-    ap.add_argument("--self-test", action="store_true", help="Run 8-point self-test suite and print JSON")
-    ap.add_argument("--turgor-mpa", type=float, default=0.50, help="Turgor pressure P in MPa")
-    ap.add_argument("--gamma-mt", type=float, default=2.40, help="Katanin mechanical feedback gain gamma_MT")
-    ap.add_argument("--wall-thickness-um", type=float, default=0.25, help="Epidermal wall thickness h in um")
+    ap.add_argument("--self-test", action="store_true", help="Run 14-point self-test suite and print JSON")
+    ap.add_argument("--turgor-mpa", type=float, default=0.50, help="Turgor pressure P in MPa (zone shell solver)")
+    ap.add_argument("--gamma-mt", type=float, default=2.40, help="Katanin mechanical feedback gain gamma_MT (zone solver and vertex mesh WT)")
+    ap.add_argument("--wall-thickness-um", type=float, default=0.25, help="Epidermal wall thickness h in um (zone shell solver)")
+    ap.add_argument("--vertex-scenario", type=str, default=None, choices=[s[0] for s in VERTEX_SCENARIOS],
+                    help="Run a single vertex-mesh scenario with the overrides below and print its metrics as JSON")
+    ap.add_argument("--vertex-steps", type=int, default=160, help="Vertex-mesh time steps (default 160)")
+    ap.add_argument("--n-rings", type=int, default=4, help="Hexagonal rings of interior cells in the L1 patch (4 -> 61 cells)")
+    ap.add_argument("--enable-t1", action="store_true", help="Allow T1 neighbour exchanges on the vertex mesh (non-plant behaviour; off by default)")
     args = ap.parse_args()
+
+    if args.vertex_scenario is not None:
+        sid, zone, gkey, cue, abl = next(s for s in VERTEX_SCENARIOS if s[0] == args.vertex_scenario)
+        gammas = {"wt": args.gamma_mt, "bot1": 0.45, "oryzalin": 0.0}
+        res = simulate_l1_vertex_patch(zone_id=zone, gamma_MT=gammas[gkey], cue=cue, ablate=abl,
+                                       n_steps=args.vertex_steps, n_rings=args.n_rings, enable_t1=args.enable_t1)
+        res.pop("snapshot", None)
+        res.pop("snapshots", None)
+        print(json.dumps(res, indent=2, default=float))
+        return
+
+    if args.turgor_mpa != 0.50 or args.wall_thickness_um != 0.25 or args.gamma_mt != 2.40:
+        shell = solve_meristem_zone_shell_mechanics(P_MPa=args.turgor_mpa, h_um=args.wall_thickness_um, gamma_MT=args.gamma_mt)
+        print(json.dumps({"zone_shell_override": shell["zones"]}, indent=2, default=float))
 
     summary = run_self_test()
     if args.self_test or args.verify_only:
+        # Pass 3: --self-test no longer falls through into rendering (it previously re-rendered the media)
         print(json.dumps(summary, indent=2))
-        if args.verify_only:
-            return
+        return
 
     render_publication_figure_and_gif()
+    summary["rendered"] = [str(OUT_PNG.relative_to(ROOT)), str(OUT_GIF.relative_to(ROOT)), str(OUT_VERTEX_GIF.relative_to(ROOT))]
     print(json.dumps(summary, indent=2))
 
 

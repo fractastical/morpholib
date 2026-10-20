@@ -1,0 +1,95 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-schnakenberg-limit-cycle-turing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-schnakenberg-limit-cycle-turing-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-schnakenberg-limit-cycle-turing-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Schnakenberg (1979) tri-molecular limit-cycle & Turing reaction-diffusion morphogenesis — Reproducibility package: 92/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Deterministic seed 1979 throughout (hemisphere, stalk, planar), headless Agg backend, LSODA with fixed tolerances for the relay; two consecutive default renders produced a byte-identical PNG (SHA-256 a323c621...); `--self-test` runs 16 checks (8 Pass 2 + 8 Pass 3, including hemisphere bitwise determinism, Laplace–Beltrami constant annihilation, Hopf-onset parity < 2 %, Lean integer mirrors and reference-table parity) in ~5 s; default render ~7 s (well under the 3 min budget); all CLI flags documented in argparse (L1936-1978). Deductions: dependency versions are recorded only in this audit, not in a lock file next to the script (-4); when `$HOME/.matplotlib` is not writable matplotlib rebuilds its font cache (environment note, not a result change) (-2); the GIF is not checked for byte identity (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-schnakenberg-limit-cycle-turing-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-schnakenberg-limit-cycle-turing-repro-package-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-schnakenberg-limit-cycle-turing-repro-package-3> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-schnakenberg-limit-cycle-turing-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "1979-schnakenberg-limit-cycle-turing.py L1787–L1933" ;
+        dct:description "16-check self_test(): Pass 2 checks 1-8 plus Pass 3 checks 9-16 (Lean mirrors, R_min, hemisphere determinism, stalk rings, PDE Hopf parity, Martiel–Goldbeter window, reference-table parity)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/3aaa03d/1979-schnakenberg-limit-cycle-turing.py#L1787-L1933> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-schnakenberg-limit-cycle-turing-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "1979-schnakenberg-limit-cycle-turing.py L1856–L1857" ;
+        dct:description "Hemisphere solver two-run bitwise determinism assertion" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/3aaa03d/1979-schnakenberg-limit-cycle-turing.py#L1856-L1857> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-schnakenberg-limit-cycle-turing-repro-package-3> a pk:EvidenceItem ;
+        rdfs:label "1979-schnakenberg-limit-cycle-turing.py L1936–L1978" ;
+        dct:description "CLI with --self-test, --skip-gif, parameter overrides and the three Pass 3 flags" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/3aaa03d/1979-schnakenberg-limit-cycle-turing.py#L1936-L1978> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 remediation + re-score; Cursor agent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1006/bulm.1999.0131>,
+            <https://doi.org/10.1016/0022-5193(79)90042-0>,
+            <https://doi.org/10.1016/S0006-3495(87)83275-7>,
+            <https://doi.org/10.1038/253540a0>,
+            <https://doi.org/10.1073/pnas.71.5.2118>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1371/journal.pcbi.1004367> .
+    <https://doi.org/10.1006/bulm.1999.0131> dct:date "1999"^^xsd:gYear ;
+        dct:title "Reaction and diffusion on growing domains: scenarios for robust pattern formation" .
+    <https://doi.org/10.1016/0022-5193(79)90042-0> dct:date "1979"^^xsd:gYear ;
+        dct:title "Simple chemical reaction systems with limit cycle behaviour" .
+    <https://doi.org/10.1016/S0006-3495(87)83275-7> dct:date "1987"^^xsd:gYear ;
+        dct:title "A model based on receptor desensitization for cyclic AMP signaling in Dictyostelium cells" .
+    <https://doi.org/10.1038/253540a0> dct:date "1975"^^xsd:gYear ;
+        dct:title "Mechanism for oscillatory synthesis of cyclic AMP in Dictyostelium discoideum" .
+    <https://doi.org/10.1073/pnas.71.5.2118> dct:date "1974"^^xsd:gYear ;
+        dct:title "Cyclic-AMP-controlled oscillations in suspended Dictyostelium cells: their relation to morphogenetic cell interactions" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The chemical basis of morphogenesis" .
+    <https://doi.org/10.1371/journal.pcbi.1004367> dct:date "2015"^^xsd:gYear ;
+        dct:title "Regulation of spatiotemporal patterns by biological variability: general principles and applications to Dictyostelium discoideum" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Schnakenberg (1979) tri-molecular limit-cycle & Turing reaction-diffusion morphogenesis — Reproducibility package 92/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T05:47:13Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-schnakenberg-limit-cycle-turing-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,106 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAepXSTY6nsaGuowF3I7ZXRxSrOnEDcoNZqMUk5PDkmkQ/> .
+@prefix this: <https://w3id.org/np/RAepXSTY6nsaGuowF3I7ZXRxSrOnEDcoNZqMUk5PDkmkQ> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1006/bulm.1999.0131>,
+            <https://doi.org/10.1016/0022-5193(79)90042-0>,
+            <https://doi.org/10.1016/S0006-3495(87)83275-7>,
+            <https://doi.org/10.1038/253540a0>,
+            <https://doi.org/10.1073/pnas.71.5.2118>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1371/journal.pcbi.1004367> .
+
+    <https://doi.org/10.1006/bulm.1999.0131> dcterms:date "1999"^^xsd:gYear ;
+        dcterms:title "Reaction and diffusion on growing domains: scenarios for robust pattern formation" .
+
+    <https://doi.org/10.1016/0022-5193(79)90042-0> dcterms:date "1979"^^xsd:gYear ;
+        dcterms:title "Simple chemical reaction systems with limit cycle behaviour" .
+
+    <https://doi.org/10.1016/S0006-3495(87)83275-7> dcterms:date "1987"^^xsd:gYear ;
+        dcterms:title "A model based on receptor desensitization for cyclic AMP signaling in Dictyostelium cells" .
+
+    <https://doi.org/10.1038/253540a0> dcterms:date "1975"^^xsd:gYear ;
+        dcterms:title "Mechanism for oscillatory synthesis of cyclic AMP in Dictyostelium discoideum" .
+
+    <https://doi.org/10.1073/pnas.71.5.2118> dcterms:date "1974"^^xsd:gYear ;
+        dcterms:title "Cyclic-AMP-controlled oscillations in suspended Dictyostelium cells: their relation to morphogenetic cell interactions" .
+
+    <https://doi.org/10.1098/rstb.1952.0012> dcterms:date "1952"^^xsd:gYear ;
+        dcterms:title "The chemical basis of morphogenesis" .
+
+    <https://doi.org/10.1371/journal.pcbi.1004367> dcterms:date "2015"^^xsd:gYear ;
+        dcterms:title "Regulation of spatiotemporal patterns by biological variability: general principles and applications to Dictyostelium discoideum" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-schnakenberg-limit-cycle-turing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-schnakenberg-limit-cycle-turing-overall> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-schnakenberg-limit-cycle-turing-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Schnakenberg (1979) tri-molecular limit-cycle & Turing reaction-diffusion morphogenesis — MorphoEval overall 89.8/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "Pass 3 (v3) evaluation of `1979-schnakenberg-limit-cycle-turing.py` (overall 89.8/100 vs 90.2 in Pass 2; supersedes audit 2026-10-19-limit-cycle-turing-audit-v2). Both Pass 2 remediation items are closed in the model rather than the presentation: the Schnakenberg PDE now runs on a hemispherical mound and an elongating stalk with the spherical-harmonic ladder, critical mound radius R_min = 0.1297 and hexagonal-packing spot counts verified against the solver (l_dom = l* at 5/6 radii, +-1 at the sixth; 18 vs 18.4 spots at R = 1.5; 0 pattern at R < R_min), and extracellular phosphodiesterase kinetics are modelled three ways (first-order with a Lean-proved generalized Hopf curve, Michaelis–Menten with analytical/numerical Hopf onset agreeing to 0.006 %, and the Martiel–Goldbeter relay with a k_e sweep spanning its oscillatory window 2-7 min^-1). Five Lean 4 theorems (0 sorrys), 18 reference-anchored measurements, a 16-check self-test and a byte-identical PNG back the claims. The score does not rise because the new work exposes the next layer: the curved geometries are not calibrated to the specimen, the Martiel–Goldbeter period (10.68 min) misses the literature anchor (~7 min), the stalk ring count (3) lags L/lambda_c (4.25) and only the ODE form of the PDE-extended model is analysed. Overall 89.8/100 (faithfulness 88.8, reproducibility 92.3); rubric morphoeval 0.1.0; checkpoint commit 3aaa03d; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 93, Morphological realism / specimen match 85, Parameter expressivity 91, Morphometric validation 88, Source and data traceability 93, Code-to-model traceability 92, Reproducibility package 92. Output judged: docs/media/limit_cycle_turing_comparison.png: rendered output of 1979-schnakenberg-limit-cycle-turing.py at 3aaa03d, image/png, 980330 B, 2940×2310 px, artifact_sha256 a323c621aa63149ccc29db5fba8d855d51e45cdd34cffd63205b81f1dff7e9e7 (sha256 a323c621aa63149ccc29db5fba8d855d51e45cdd34cffd63205b81f1dff7e9e7), spec_fingerprint 2171bdf8211cc376e4fec882bcd645f848050c6a4e0c6d15ce22984bb3384713. Dual provenance: spec_fingerprint: 2171bdf8211cc376e4fec882bcd645f848050c6a4e0c6d15ce22984bb3384713; artifact_sha256: a323c621aa63149ccc29db5fba8d855d51e45cdd34cffd63205b81f1dff7e9e7; input_dataset_sha256: {datasets/limit_cycle_turing/dictyostelium_specimen.jpg=e2d2b739211bda97..., datasets/limit_cycle_turing/limit_cycle_turing_reference.json=cc22252b314c8bb8..., datasets/limit_cycle_turing/scout_manifest.json=e71deffb9f317a88...}. Supersedes audit: 2026-10-19-limit-cycle-turing-audit-v2. Claim boundary: reported_in_source: Schnakenberg (1979): the tri-molecular cubic autocatalytic scheme has a unique positive steady state (a+b, b/(a+b)^2), a Hopf curve b - a = (a+b)^3 and, beyond it, a Poincaré–Bendixson limit cycle | Turing (1952): differential diffusion destabilizes a stable reaction equilibrium in a finite wavenumber band; on a sphere the unstable modes are spherical harmonics | Martiel & Goldbeter (1987): a 3-variable receptor-desensitization model (rho_T, beta, gamma) with extracellular PDE rate k_e produces autonomous cAMP oscillations and relay | Gerisch & Hess (1974): suspended D. discoideum cells show spontaneous cAMP-controlled oscillations with a period of several minutes (~5-10 min) | Crampin, Gaffney & Maini (1999): on uniformly growing domains reaction-diffusion patterns undergo frequency-doubling with a dilution term -(L'/L) u; reconstructed_in_script: Exact equilibrium, Jacobian, Hopf curve, d_c(a,b), planar dispersion sigma(k^2) and its Turing band (q_-, q_+); RK4 limit-cycle ODE; 2D pseudo-spectral RD solver with 5 regimes and a 7-point d sweep; SHA-256-locked specimen segmentation (Pass 2) | Hemispherical-mound RD solver with exact Laplace–Beltrami propagators, spherical-harmonic (Legendre) power spectrum, mound-radius sweep against l*(R) and hexagonal packing, critical mound radius R_min; elongating-stalk solver with ring-count kymograph (Pass 3 R1) | First-order and Michaelis–Menten PDE sinks with closed-form equilibria, analytical + numerical Hopf thresholds, Martiel–Goldbeter relay integration and k_e sweep, dimensionless pulse-shape comparison (Pass 3 R2) | Five Lean 4 theorems (Laws 1-5) mirrored by integer checks in --self-test; transfer_boundary: Mound radius R, stalk radius 0.08 and lengths 1->4 are in the dimensionless planar domain units (L = 6); they are NOT calibrated to the specimen's 32.9 px sorus diameter or stalk length, so the curved-geometry results are predictions of the model's own scaling, not specimen measurements | The Martiel–Goldbeter parameter set is the widely used Table I set; with it this implementation gives a 10.68 min period at k_e = 5.4 min^-1, above the ~7 min (5-10 min) Gerisch & Hess anchor; the discrepancy is reported, not tuned away | Schnakenberg u is identified with extracellular cAMP for the PDE sink; the 2-species model has no receptor variable, so the pulse-shape comparison with Martiel–Goldbeter is dimensionless (duty cycle, fold change, waveform r = 0.78), not a time-scale match; does_not_claim: A volumetric 3D solver of the culminant, tip-growth (non-uniform) stalk elongation, chemotactic cell movement, or that Turing rings on a stalk are an observed Dictyostelium phenotype; a digitized comparison with Martiel & Goldbeter's own time-series figures; spatial (Turing) analysis of the PDE-extended model." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: 1979-schnakenberg-limit-cycle-turing.py:1007-1076 and 1079-1084 — stalk elongation is uniform exponential growth with a profile-mean ring threshold; implement apical (tip) growth with a moving boundary and compare the ring-count ladder with the uniform case, and replace the heuristic ring counter with a Fourier/zero-crossing wavelength estimate so the 3 vs 4.25 discrepancy is quantified as a wavelength, not a count.",
+            "remediation needed: 1979-schnakenberg-limit-cycle-turing.py:153 and 1007-1016 — MOUND_RADII and the stalk geometry (R_stalk = 0.08, L0 = 1, L1 = 4) are dimensionless model units with no link to the specimen; calibrate R_mound and R_stalk/L from the segmented sorus diameter (32.9 px, L1114-1130) and a measured stalk length so the curved-geometry panels become specimen comparisons rather than model-internal checks, and add a px-per-domain-unit scale to the D1/D3 panels.",
+            "remediation needed: 1979-schnakenberg-limit-cycle-turing.py:158-176 and 612-638 — the Martiel–Goldbeter run gives T = 10.68 min at k_e = 5.4 min^-1 against the ~7 min anchor; re-read the Table I parameters and the period from the 1987 paper (and Tyson et al. 1989), digitise one published gamma(t) trace, and replace CAMP_PERIOD_REFERENCE_MIN = 7.0 with a tabulated value and uncertainty.",
+            "remediation needed: 1979-schnakenberg-limit-cycle-turing.py:450-492 — only the homogeneous ODE of the PDE-extended model is analysed; derive d_c(a, b, k_e, K_m) and the Turing band with the Michaelis–Menten sink, run the planar and hemispherical solvers with k_pde > 0, and report how PDE degradation shifts lambda_c and R_min (the spatial consequence the remediation item ultimately asks for).",
+            "remediation needed: 1979-schnakenberg-limit-cycle-turing.py:917-941 and 967-1004 — the Legendre power spectrum uses the even-reflected cap on a cell-centred grid (only l+m even modes survive) and a 500-step transient; use Gauss–Legendre quadrature on the full reflected sphere, report the power fraction in l*, l*+-1, and run the radius sweep to a converged (>= 1500-step) state so the +-1 tolerance can be tightened.",
+            "remediation needed: morphoeval/lean/loops/Loop_002_limit_cycle_turing.lean:97-110 — Law 4 proves the finite band only at concrete degrees l = 0..3; add the general statement that det_J(18, l(l+1)) > 0 for all l >= 3 (nonlinear Nat inequality) so the \"finitely many unstable degrees\" claim is machine-checked in general rather than by instance." ;
+        pk:hasScore "0.898"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 remediation + re-score; Cursor agent)" ;
+        dcterms:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "BJWXvuAhD9S+jlslKAE39J+8gOAq6J8UsTcTvXHYCe1EB0DUxazCh1pgaiEKrIEPz+j3HVxhxkYu13cLgwcr84237QR14MuDvQCB73f45CxDcMgf8QWVEWccZ/7JXq86puapbKv2kdP6tOjH+N54oKx31AQ6ofqTSXVlKUB75hq71LcIAWsg3Pk2zq3+P09uFZ0ULZcjEui3uKIhAuxTYcCCLOx7DlkIZ/R3D8dacB81+ffw3A9Kz4QyB2Pjc27PW6Q9J5MKXCoupGH153nNfsplJLsEJclQkj9zPhz57DHSZ3rg/CqSG9dIScwP9qWGUQjl9ezg6h6tPni6Q23/wA==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Schnakenberg (1979) tri-molecular limit-cycle & Turing reaction-diffusion morphogenesis — MorphoEval overall 89.8/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T05:47:13Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-schnakenberg-limit-cycle-turing-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-schnakenberg-limit-cycle-turing> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

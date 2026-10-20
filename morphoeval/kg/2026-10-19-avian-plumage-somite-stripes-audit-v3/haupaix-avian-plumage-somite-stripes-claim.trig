@@ -1,0 +1,78 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-haupaix-avian-plumage-somite-stripes> a pk:Claim ;
+        rdfs:label "Haupaix et al. (2018), Inaba et al. (2019) & Lin et al. (2013) somite-prepatterned Agouti signaling, melanocyte gap-junction reaction-diffusion and feather-follicle ring-niche chevrons in galliform plumage stripes faithfully reproduces Galliform chicks — Japanese quail (Coturnix japonica; wild-type, recessive-black and Fawn strains), common pheasant (Phasianus colchicus), helmeted guineafowl (Numida meleagris), red-legged partridge (Alectoris rufa), and wild turkey (Meleagris gallopavo) morphology" ;
+        dct:description "The simulation script(s) 2018-haupaix-avian-plumage-somite-stripes.py implement the cited source model as published and produce forms that match real Galliform chicks — Japanese quail (Coturnix japonica; wild-type, recessive-black and Fawn strains), common pheasant (Phasianus colchicus), helmeted guineafowl (Numida meleagris), red-legged partridge (Alectoris rufa), and wild turkey (Meleagris gallopavo) specimens and the source authors' figures. A belief under audit, not a fact: its credibility is the weight of evidence (MorphoEval 0.1.0 overall 80.9/100, audit 2026-10-19-avian-plumage-somite-stripes-audit-v3) and the assessments." ;
+        dct:subject <https://github.com/fractastical/morpholib/blob/469bf3c/2018-haupaix-avian-plumage-somite-stripes.py> ;
+        pk:context "script(s): https://github.com/fractastical/morpholib/blob/469bf3c/2018-haupaix-avian-plumage-somite-stripes.py; output: docs/media/avian_plumage_somite_stripes_comparison.png; organism: Galliform chicks — Japanese quail (Coturnix japonica; wild-type, recessive-black and Fawn strains), common pheasant (Phasianus colchicus), helmeted guineafowl (Numida meleagris), red-legged partridge (Alectoris rufa), and wild turkey (Meleagris gallopavo); checkpoint commit: https://github.com/fractastical/morpholib/commit/469bf3c; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0; spec_fingerprint: b82c12bbaf2b8db3609a6e2056ad2f89a6a554142d599d056ea75d733384a4d7; artifact_sha256: 80cf4ed6c9ceafcaa92a29b89a4f12179acf9de9f1be8e80b058a57fc6b4e9a0; input_dataset_sha256: {datasets/avian_plumage_somite_stripes/avian_plumage_somite_stripes_reference.json=4cbeeca03b0939bf..., datasets/avian_plumage_somite_stripes/galliform_chick_stripes_specimen.jpg=78337aba30f62614..., datasets/avian_plumage_somite_stripes/scout_manifest.json=acb7ac44b807e24b...}; supersedes_audit_id: 2026-10-19-avian-plumage-somite-stripes-audit-v2; claim_boundary: [reported_in_source: Haupaix et al. (2018): galliform dorsal stripes form in two steps — the somite autonomously sets the position of dermal agouti expression bands (A1', A1, A2; quail somite -> pheasant host grafts, neural-tube grafts as control), and agouti dose then sets stripe width by controlling the duration of a transient yellow-production pulse within each feather; wild-type quail ly stripe = feather rows 2-5, recessive-black (agouti loss) rows 3-4, Fawn (agouti duplication) rows 1/2-6 with no eumelanin before hatching; yellow band longer at stripe centre than edge; stripe boundaries 2-4 mm (cb) and 3-9 mm (ly) from the midline at wing level | Inaba et al. (2019): quail melanocytes form periodic stripes cell-autonomously; connexin40 gap junctions tune the pattern (dominant-negative cx40 expands black, overexpression expands yellow); melanocytes instruct dermal ASIP expression | Lin et al. (2013): feather melanocyte progenitors form a horizontal ring niche in the proximal follicle and send melanocytes vertically into barb ridges; bars in Barred Plymouth Rock feathers are chevron-shaped when the follicle cylinder is opened from the posterior side and travel toward the anterior; pulp ASIP inhibits melanocyte differentiation (ASIP beads whiten feathers); reconstructed_in_script: A 2D somite-derived Gaussian agouti prepattern S_somite(y) coupled by relaxation beta_A (S - u) to a two-species activator-inhibitor PDE with cubic-saturating linearised kinetics and d = Dv/Du = 20; MC1R threshold switch u >= theta_A; AP orientation index and Ashman bimodality; negative controls beta_A = 0 and d = 1 | Pass 3: a 9-row-per-period hexagonal follicle lattice whose ring niches sample u(x_i, y_i); feather type [A_i >= theta] + [A_i - 2a >= theta] and yellow-pulse duty (1/pi) arccos((theta - (A_i - a))/a); an agouti dose series (x0.60 / x1.00 / x2.80) reproducing 2 / 4 / 6 yellow rows; each follicle rendered as a 3D cylinder and opened into the (ell, s) sheet with chevron band edges s_0 + k|ell|, swept over k and regressed back (max |k_meas - k| = 7e-4); Lean Theorems 4-5 | Pass 1-2 carry-overs: an analytic Gaussian-threshold species width w_y = 2 (1.13 sigma) sqrt(2 ln(A_0/theta)) for five species, a linear donor-autonomy chimera law alpha = 0.94, a fitted exponential dose-response for the 'bead' axis, and DoG segmentation of a CC BY-SA Coturnix japonica photograph (N = 4 stripes, yellow fraction 0.442); transfer_boundary: The mm calibration (Lambda = 0.95 mm, w_y = 0.42 mm, the 5-species widths) and the 'bead' regime widths were introduced in Pass 1 without a source; Haupaix et al. report stripe widths in feather rows and boundaries in mm from the midline, so the row-count validation (Pass 3) is the only width comparison against published values | The follicle model is a geometric + threshold reduction of Lin et al.: the chevron arises from a pigment switch propagating around the ring at rate omega while cells rise at v_z (k = v_z/(r_f omega)); no barb-ridge helical displacement, pulp ASIP diffusion, progenitor-depletion feedback or regeneration cycle is solved; a, k and the dose multipliers are fitted, not measured | The reverse chimeras (pheasant -> quail, guineafowl -> quail) are extrapolations of the quail -> pheasant result; the PDE integrates a cubic linearisation, not the rational Gierer-Meinhardt kinetics written in the reference JSON; does_not_claim: Quantitative reproduction of Haupaix Fig. 3C / fig. S6 relative yellow band lengths or of the midline-distance boundaries, a mechanistic derivation of the agouti fold-change in RB/Fa strains, the melanocyte cell-autonomy or cx40 experiments of Inaba et al., the Barred Plymouth Rock progenitor-depletion mechanism of Lin et al., or a side-by-side comparison with the papers' own figures (none are vendored)]" ;
+        pk:derivedFromPaper <https://doi.org/10.1073/pnas.1816107116>,
+            <https://doi.org/10.1126/science.1230374>,
+            <https://doi.org/10.1126/science.aar4777>,
+            <https://doi.org/10.1371/journal.pbio.3000448> ;
+        pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-haupaix-avian-plumage-somite-stripes-code-traceability>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-haupaix-avian-plumage-somite-stripes-model-fidelity>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-haupaix-avian-plumage-somite-stripes-morphometric-validation>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-haupaix-avian-plumage-somite-stripes-overall>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-haupaix-avian-plumage-somite-stripes-parameter-expressivity>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-haupaix-avian-plumage-somite-stripes-repro-package>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-haupaix-avian-plumage-somite-stripes-source-traceability>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-haupaix-avian-plumage-somite-stripes-specimen-match> ;
+        pk:weightOfEvidence "0.809"^^xsd:double .
+    <https://github.com/fractastical/morpholib/blob/469bf3c/2018-haupaix-avian-plumage-somite-stripes.py> a schema:SoftwareSourceCode ;
+        rdfs:label "2018-haupaix-avian-plumage-somite-stripes.py" ;
+        schema:codeRepository <https://github.com/fractastical/morpholib> ;
+        schema:programmingLanguage "Python" ;
+        schema:version "469bf3c" .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192> ;
+        prov:wasDerivedFrom <https://doi.org/10.1073/pnas.1816107116>,
+            <https://doi.org/10.1126/science.1230374>,
+            <https://doi.org/10.1126/science.aar4777>,
+            <https://doi.org/10.1371/journal.pbio.3000448> .
+    <https://doi.org/10.1073/pnas.1816107116> dct:date "2019"^^xsd:gYear ;
+        dct:title "Instructive role of melanocytes during pigment pattern formation of the avian skin" .
+    <https://doi.org/10.1126/science.1230374> dct:date "2013"^^xsd:gYear ;
+        dct:title "Topology of feather melanocyte progenitor niche allows complex pigment patterns to emerge" .
+    <https://doi.org/10.1126/science.aar4777> dct:date "2018"^^xsd:gYear ;
+        dct:title "The periodic coloration in birds forms through a prepattern of somite origin" .
+    <https://doi.org/10.1371/journal.pbio.3000448> dct:date "2019"^^xsd:gYear ;
+        dct:title "Symmetry breaking in the embryonic skin triggers directional and sequential plumage patterning" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Claim: Haupaix et al. (2018), Inaba et al. (2019) & Lin et al. (2013) somite-prepatterned Agouti signaling, melanocyte gap-junction reaction-diffusion and feather-follicle ring-niche chevrons in galliform plumage stripes is faithful" ;
+        dct:created "2026-10-20T06:18:24Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:Claim ;
+        npx:introduces <https://w3id.org/probknow/resource/claim/morphoeval-haupaix-avian-plumage-somite-stripes> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/469bf3c/2018-haupaix-avian-plumage-somite-stripes.py>,
+            <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RApE-nGpCMigXqZjeHuYuMJEVTGmTlNTlZl7IcHi_fhdQ/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

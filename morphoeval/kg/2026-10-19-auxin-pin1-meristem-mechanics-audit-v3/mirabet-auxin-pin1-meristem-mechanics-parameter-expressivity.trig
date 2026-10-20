@@ -1,0 +1,98 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-mirabet-auxin-pin1-meristem-mechanics> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-mirabet-auxin-pin1-meristem-mechanics-parameter-expressivity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-mirabet-auxin-pin1-meristem-mechanics-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Hamant et al. (2008) & Heisler et al. (2010) pressurized SAM shell stress tensor, cortical microtubule alignment, PIN1-auxin phyllotactic mechanics, and (Pass 3) 3D multi-layered L1/L2/L3 Voronoi cell mesh with dynamic division planes — Parameter expressivity: 92/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Evaluates 4 SAM curvature regimes (L253-L302), 5 perturbation states (L1231-L1315), two division rules (`--division-rule mechanical|geometric`, both run by default), a k_L1/k_inner stiffness-ratio sweep over {1, 2, 5, 10} (`sweep_l1_stiffness_ratio`, L939-L957; Panel H inset) and a mesh/analytic stress-field ablation (`--stress-field`), and exposes `--turgor-P`, `--dome-R`, `--wall-t`, `--b-sigma`, `--k-sigma`, `--seed`, `--k-l1-ratio`, `--mesh-growth-steps`, `--no-sweep`, `--skip-gif` CLI overrides (L2189-L2203). Mesh geometry (sheet counts/depths, pressure, Lockhart phi/eps_Y, growth) is exposed as function arguments but not as CLI flags." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-mirabet-auxin-pin1-meristem-mechanics-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-mirabet-auxin-pin1-meristem-mechanics-parameter-expressivity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-mirabet-auxin-pin1-meristem-mechanics-parameter-expressivity-3> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-mirabet-auxin-pin1-meristem-mechanics-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2008-hamant-meristem-microtubule-stress.py L253–L302" ;
+        dct:description "4-zone curvature and stress anisotropy evaluation" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2008-hamant-meristem-microtubule-stress.py#L253-L302> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-mirabet-auxin-pin1-meristem-mechanics-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2008-hamant-meristem-microtubule-stress.py L939–L957" ;
+        dct:description "k_L1/k_inner stiffness-ratio sweep of the 3D mesh (L1 load share vs Law 4 prediction)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2008-hamant-meristem-microtubule-stress.py#L939-L957> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-mirabet-auxin-pin1-meristem-mechanics-parameter-expressivity-3> a pk:EvidenceItem ;
+        rdfs:label "2008-hamant-meristem-microtubule-stress.py L2189–L2231" ;
+        dct:description "CLI parameter overrides including --stress-field, --division-rule, --k-l1-ratio, --mesh-growth-steps wired into the mesh and ODE solvers; both division rules run by default" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2008-hamant-meristem-microtubule-stress.py#L2189-L2231> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 033 Pass 3 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/33> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.jplph.2007.08.002>,
+            <https://doi.org/10.1073/pnas.0509839103>,
+            <https://doi.org/10.1073/pnas.1011866108>,
+            <https://doi.org/10.1073/pnas.1600677113>,
+            <https://doi.org/10.1126/science.1165594>,
+            <https://doi.org/10.1242/dev.01261>,
+            <https://doi.org/10.1371/journal.pbio.1000516>,
+            <https://doi.org/10.1371/journal.pcbi.1002389> .
+    <https://doi.org/10.1016/j.jplph.2007.08.002> dct:date "2007"^^xsd:gYear ;
+        dct:title "The epidermal-growth-control theory of stem elongation: An old and a new perspective" .
+    <https://doi.org/10.1073/pnas.0509839103> dct:date "2006"^^xsd:gYear ;
+        dct:title "An auxin-driven polarized transport model for phyllotaxis" .
+    <https://doi.org/10.1073/pnas.1011866108> dct:date "2011"^^xsd:gYear ;
+        dct:title "Universal rule for the symmetric division of plant cells" .
+    <https://doi.org/10.1073/pnas.1600677113> dct:date "2016"^^xsd:gYear ;
+        dct:title "Cell division plane orientation based on tensile stress in Arabidopsis thaliana" .
+    <https://doi.org/10.1126/science.1165594> dct:date "2008"^^xsd:gYear ;
+        dct:title "Developmental Patterning by Mechanical Signals in Arabidopsis" .
+    <https://doi.org/10.1242/dev.01261> dct:date "2004"^^xsd:gYear ;
+        dct:title "Real-time lineage analysis reveals oriented cell divisions associated with morphogenesis at the shoot apex of Arabidopsis thaliana" .
+    <https://doi.org/10.1371/journal.pbio.1000516> dct:date "2010"^^xsd:gYear ;
+        dct:title "Alignment between PIN1 Polarity and Microtubule Orientation in the Shoot Apical Meristem Reveals a Tight Coupling between Morphogenesis and Auxin Transport" .
+    <https://doi.org/10.1371/journal.pcbi.1002389> dct:date "2012"^^xsd:gYear ;
+        dct:title "Noise and Robustness in Phyllotaxis" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Hamant et al. (2008) & Heisler et al. (2010) pressurized SAM shell stress tensor, cortical microtubule alignment, PIN1-auxin phyllotactic mechanics, and (Pass 3) 3D multi-layered L1/L2/L3 Voronoi cell mesh with dynamic division planes — Parameter expressivity 92/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T09:18:11Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-mirabet-auxin-pin1-meristem-mechanics-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/33> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

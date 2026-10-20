@@ -1,0 +1,90 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-douady-magnetic-drop-phyllotaxis> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-douady-magnetic-drop-phyllotaxis-code-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-douady-magnetic-drop-phyllotaxis-code-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Douady & Couder (1992, 1996) self-organized magnetic-drop phyllotaxis & imperfect pitchfork cascade — Code-to-model traceability: 91/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The module docstring (L1-93) maps every section, including the Pass 3 additions, to PRL 1992 Eqs. (1)-(3) and Fig. 3, JTB 1996 Part I Secs. 2-4, Levitov (1991) and Lean 4 Theorems 1-5; each new function documents its equation and the v2 defect it replaces (`measure_emergent_pitchfork_threshold`, `extract_contact_parastichy_pair`, `log_polar_spiral_spectrum`, `invert_reciprocal_lattice_peaks`), and the inline comments at the remediated sites name the removed clamps and the clipped g_vis. Deductions: the dynamical discriminant S_dyn is attributed to 'JTB 1996 Part I Sec. 3.1' without an equation number, and the k-weighting is derived in-house rather than quoted (L283-297) (-4); the reciprocal-lattice relation is attributed to 'Sec. 4 van Iterson lattice' generically (L902-915) (-2); Row B's log-radial projection is justified in a comment but not tied to a specific D&C figure convention (L672-676) (-2); panel-building code (L1215-1575) cites figures only in titles (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:evidenceAgainst "1992-douady-magnetic-drop-phyllotaxis.py L283–L297: dynamical_pitchfork_discriminant_sum docstring cites JTB 1996 Part I Sec. 3.1 but the derivation is in-house (no equation number) <https://github.com/fractastical/morpholib/blob/d58a084/1992-douady-magnetic-drop-phyllotaxis.py#L283-L297>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-douady-magnetic-drop-phyllotaxis-code-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-douady-magnetic-drop-phyllotaxis-code-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-douady-magnetic-drop-phyllotaxis-code-traceability-3> ;
+        pk:hasScore "0.91"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-douady-magnetic-drop-phyllotaxis-code-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "1992-douady-magnetic-drop-phyllotaxis.py L1–L93" ;
+        dct:description "Module docstring: sections 1-5 with equations, thresholds, Lean theorem names and the Pass 3 remediation list" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/1992-douady-magnetic-drop-phyllotaxis.py#L1-L93> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-douady-magnetic-drop-phyllotaxis-code-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "1992-douady-magnetic-drop-phyllotaxis.py L539–L548" ;
+        dct:description "Contact-pair docstring cites PRL 1992 Fig. 2 caption and JTB 1996 Part I Sec. 4 nearest-neighbour definition" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/1992-douady-magnetic-drop-phyllotaxis.py#L539-L548> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-douady-magnetic-drop-phyllotaxis-code-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "1992-douady-magnetic-drop-phyllotaxis.py L665–L676" ;
+        dct:description "Inline comments naming the removed v2 clipping and the rho = 1 + ln(r/R0) = 1 + kG identity with PRL 1992 Eq. (1)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/1992-douady-magnetic-drop-phyllotaxis.py#L665-L676> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1006/jtbi.1996.0024>,
+            <https://doi.org/10.1006/jtbi.1996.0025>,
+            <https://doi.org/10.1103/PhysRevLett.68.2098>,
+            <https://doi.org/10.1209/0295-5075/14/6/006>,
+            <https://www.biodiversitylibrary.org/bibliography/9466> .
+    <https://doi.org/10.1006/jtbi.1996.0024> dct:date "1996"^^xsd:gYear ;
+        dct:title "Phyllotaxis as a Dynamical Self Organizing Process Part I: The Spiral Modes Resulting from Time-Periodic Iterations" .
+    <https://doi.org/10.1006/jtbi.1996.0025> dct:date "1996"^^xsd:gYear ;
+        dct:title "Phyllotaxis as a Dynamical Self Organizing Process Part II: The Spontaneous Formation of a Periodicity and the Coexistence of Spiral and Whorled Modes" .
+    <https://doi.org/10.1103/PhysRevLett.68.2098> dct:date "1992"^^xsd:gYear ;
+        dct:title "Phyllotaxis as a physical self-organized growth process" .
+    <https://doi.org/10.1209/0295-5075/14/6/006> dct:date "1991"^^xsd:gYear ;
+        dct:title "Energetic Approach to Phyllotaxis" .
+    <https://www.biodiversitylibrary.org/bibliography/9466> dct:date "1907"^^xsd:gYear ;
+        dct:title "Mathematische und mikroskopisch-anatomische Studien über Blattstellungen, nebst Betrachtungen über den Schalenbau der Miliolinen" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Douady & Couder (1992, 1996) self-organized magnetic-drop phyllotaxis & imperfect pitchfork cascade — Code-to-model traceability 91/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T09:00:29Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-douady-magnetic-drop-phyllotaxis-code-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

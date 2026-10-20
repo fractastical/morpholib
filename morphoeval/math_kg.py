@@ -680,13 +680,29 @@ MATH_LAWS_REGISTRY: dict[str, dict[str, Any]] = {
 }
 
 
+try:
+    from yaml import CSafeLoader as _YamlLoader
+except ImportError:
+    from yaml import SafeLoader as _YamlLoader
+
+
+def _fast_yaml_load(text: str) -> Any:
+    return yaml.load(text, Loader=_YamlLoader)
+
+
+_DYNAMIC_MATH_LAWS_CACHE: dict[str, dict[str, Any]] | None = None
+
+
 def load_dynamic_math_laws_registry() -> dict[str, dict[str, Any]]:
     """Merge the base `MATH_LAWS_REGISTRY` with any isolated per-loop YAML specs in `morphoeval/math_kg_loops/*.yaml`."""
+    global _DYNAMIC_MATH_LAWS_CACHE
+    if _DYNAMIC_MATH_LAWS_CACHE is not None:
+        return _DYNAMIC_MATH_LAWS_CACHE
     merged = dict(MATH_LAWS_REGISTRY)
     if LOOPS_MATH_DIR.exists():
         for yf in sorted(LOOPS_MATH_DIR.glob("*.yaml")):
             try:
-                doc = yaml.safe_load(yf.read_text(encoding="utf-8")) or {}
+                doc = _fast_yaml_load(yf.read_text(encoding="utf-8")) or {}
                 sid = doc.get("sim_id") or yf.stem
                 merged[sid] = {
                     "math_family": doc.get("math_family", "Mathematical Morphogenesis Model"),
@@ -694,6 +710,7 @@ def load_dynamic_math_laws_registry() -> dict[str, dict[str, Any]]:
                 }
             except Exception:
                 continue
+    _DYNAMIC_MATH_LAWS_CACHE = merged
     return merged
 
 
@@ -725,11 +742,15 @@ def verify_lean_module() -> dict[str, Any]:
             return {"verified": False, "version": "toolchain-pending", "elapsed_ms": 0.0, "error": ver_proc.stderr.strip()}
         version_str = ver_proc.stdout.strip().splitlines()[0]
         t0 = time.perf_counter()
-        for lf in lean_files:
-            chk_proc = subprocess.run([lean_bin, str(lf)], capture_output=True, text=True, timeout=30)
-            if chk_proc.returncode != 0:
-                elapsed_ms = round((time.perf_counter() - t0) * 1000.0, 1)
-                return {"verified": False, "version": version_str, "elapsed_ms": elapsed_ms, "error": f"{lf.name}: {(chk_proc.stdout + chk_proc.stderr).strip()}"}
+        import concurrent.futures
+        def _check_one(lf: Path) -> tuple[str, int, str]:
+            p = subprocess.run([lean_bin, str(lf)], capture_output=True, text=True, timeout=30)
+            return (lf.name, p.returncode, (p.stdout + p.stderr).strip())
+        with concurrent.futures.ThreadPoolExecutor(max_workers=12) as pool:
+            for name, rc, out_str in pool.map(_check_one, lean_files):
+                if rc != 0:
+                    elapsed_ms = round((time.perf_counter() - t0) * 1000.0, 1)
+                    return {"verified": False, "version": version_str, "elapsed_ms": elapsed_ms, "error": f"{name}: {out_str}"}
         elapsed_ms = round((time.perf_counter() - t0) * 1000.0, 1)
         return {"verified": True, "version": version_str, "elapsed_ms": elapsed_ms, "error": "", "files_checked": len(lean_files)}
     except Exception as exc:
@@ -773,7 +794,7 @@ def _compute_errors(val_num: float | None, ref_num: float | None) -> tuple[float
 def load_head_audits() -> dict[str, dict[str, Any]]:
     """Resolve the supersession chain across all primary audits in `morphoeval/audits/`
     and return the latest (head) audit + measurements for each of the 12 simulations."""
-    rubric = yaml.safe_load(RUBRIC_PATH.read_text())
+    rubric = _fast_yaml_load(RUBRIC_PATH.read_text())
     dims = rubric["dimensions"]
 
     audits: dict[str, tuple[Path, dict[str, Any]]] = {}
@@ -781,7 +802,9 @@ def load_head_audits() -> dict[str, dict[str, Any]]:
     for p in sorted(AUDITS_DIR.glob("*.yaml")):
         if p.name.endswith(".measurements.yaml"):
             continue
-        d = yaml.safe_load(p.read_text())
+        d = _fast_yaml_load(p.read_text())
+        if not isinstance(d, dict) or "audit" not in d or not isinstance(d["audit"], dict):
+            continue
         if d["audit"].get("role") == "second_assessor":
             continue
         aid = d["audit"]["id"]
@@ -796,7 +819,7 @@ def load_head_audits() -> dict[str, dict[str, Any]]:
     for aid in ordered_ids:
         p, d = audits[aid]
         mpath = p.with_name(p.stem + ".measurements.yaml")
-        meas_doc = yaml.safe_load(mpath.read_text()) if mpath.exists() else {}
+        meas_doc = _fast_yaml_load(mpath.read_text()) if mpath.exists() else {}
         refs = d.get("references", {})
         cp = d["audit"].get("checkpoint", {})
         repo = cp.get("repository", "https://github.com/astronomeer/infinitemorphospace")

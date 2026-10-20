@@ -1,0 +1,98 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-tailbud-neuromesodermal-jamming> a pk:Claim ;
+        rdfs:label "Mongera et al. (2018) & Kim et al. (2021) zebrafish tailbud active fluid-to-solid jamming transition & yield-stress axis elongation faithfully reproduces Danio rerio (zebrafish tailbud mesodermal progenitor zone MPZ & presomitic mesoderm PSM) morphology" ;
+        dct:description "The simulation script(s) 2022-tailbud-neuromesodermal-jamming.py implement the cited source model as published and produce forms that match real Danio rerio (zebrafish tailbud mesodermal progenitor zone MPZ & presomitic mesoderm PSM) specimens and the source authors' figures. A belief under audit, not a fact: its credibility is the weight of evidence (MorphoEval 0.1.0 overall 90.0/100, audit 2026-10-19-neuromesodermal-jamming-audit-v3) and the assessments." ;
+        dct:subject <https://github.com/fractastical/morpholib/blob/d58a084/2022-tailbud-neuromesodermal-jamming.py> ;
+        pk:context "script(s): https://github.com/fractastical/morpholib/blob/d58a084/2022-tailbud-neuromesodermal-jamming.py; output: docs/media/neuromesodermal_jamming_comparison.png; organism: Danio rerio (zebrafish tailbud mesodermal progenitor zone MPZ & presomitic mesoderm PSM); checkpoint commit: https://github.com/fractastical/morpholib/commit/d58a084; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0; spec_fingerprint: 5225f2c29acda8d1ee81d082219556f85a1159006d552c629f56ce7d8a842027; artifact_sha256: 57d7a446903c3cc022726dc33c7904454b93ad9f642da0182f250a8fb9e200a3; supersedes_audit_id: 2026-10-19-neuromesodermal-jamming-audit-v2; claim_boundary: [reported_in_source: Mongera et al. (2018) Nature 561:401-405 Figs. 1-4: along the posterior-to-anterior axis of the zebrafish tailbud, extracellular space fraction phi_ECS(x) decreases from ~14.5% in the posterior Mesodermal Progenitor Zone (MPZ) to ~4.9% in the Anterior Presomitic Mesoderm (A-PSM), driving cell packing phi_pack = 1 - phi_ECS across the rigidity-percolation threshold phi_c approx 0.860 and elevating ferrofluid-measured yield stress sigma_y(x) from ~11 Pa to ~118 Pa while active Myosin-II tension fluctuations sigma_A(x) decline from ~50 Pa to ~13 Pa. | Kim et al. (2021) Nature Physics 17:859-866 & Mongera et al. (2018) Fig. 4: active tension fluctuations fluidize the MPZ (sigma_A > sigma_y) via frequent T1 neighbor exchanges, whereas the jammed solid A-PSM (sigma_y >> sigma_A) serves as an internal mechanical backstop that rectifies MPZ progenitor addition into unidirectional posterior elongation and preserves left-right symmetry; N-cadherin (cdh2) knockdown expands phi_ECS > 14%, unjamming the PSM, slowing elongation, and inducing bilateral body-axis asymmetry. | Dray et al. (2013) Current Biology 23:1335-1341 Figs. 1-4: a fibronectin matrix wraps the tailbud and PSM; fn1a;fn1b double morphants and itga5 morphants lose this boundary, elongate the trunk more slowly and show altered posterior tissue shape and mechanics (the script vendors these as APPROXIMATE ratios, v/v_WT ~0.70 / ~0.82, width ~1.20 / ~1.08, +/-25%). | Herrgen et al. (2010) / Soroldoni et al. (2014): the zebrafish her1/her7 clock period is ~23.5 min at 28 C and clock waves slow and compress toward the anterior PSM before arresting into somite stripes (Cooke-Zeeman S = v_front T).; reconstructed_in_script: Continuous posterior-to-anterior active-foam & Bingham viscoplastic solver across x in [0, 300] um (`solve_ap_jamming_profile`, r_sigma_y = 0.9989, r_kT1 = 0.9922, jamming crossover x* = 81.0 um) and 2D U-shaped tailbud cellular flow simulator across 5 experimental regimes (WT Control, cdh2 Morphant, Blebbistatin, SU5402, Zero-Backstop Ablation; v_elong r = 0.9748, L-R asymmetry r = 0.9851). | (Pass 3) Quasi-3D fibronectin sheath: f_FN(x) profile, hoop equilibrium eps_r = max(0, sigma_A - sigma_y)/(K_FN f_FN + K_t), equilibrium radius R_eq(x), influx-weighted channeling chi (0.951 WT, 0.907 itga5 MO, 0.736 fn1a;fn1b MO) multiplying the elongation speed, tailbud width ratio (1.04 / 1.08 / 1.24), 12-point fn_scale sweep (monotonic), and a diagnostic wall-friction force F_drag. | (Pass 3) Her1/Her7 clock phase advection in the tip frame with a mechanical arrest gate sigma_y/sigma_A >= 4 (x_arrest = 161.1 um > x_jam = 81.0 um), Cooke-Zeeman somite length S = (v_elong + 0.45) * 23.5 min = 46.2 um, frozen her1 stripe wavelength 46.2 um measured on the kymograph, per-regime arrest fronts (cdh2 and ablation: none), and somite-border fibronectin feedback into the sheath profile. | Nuclear-seeded Voronoi tessellation and regional interstitial space segmentation of the Danio rerio posterior tailbud lightsheet micrograph (`zebrafish_tailbud_psm_specimen.jpg`, IDR0051, N = 391 nuclei, <z> = 5.88, AP compaction r = 0.9915).; transfer_boundary: 2D dorsal-ventral optical-plane projection of the 3D U-shaped zebrafish posterior tailbud and paraxial presomitic mesoderm; the fibronectin sheath is a thin-rod axisymmetric reduction (one radius per AP position), not a 3D boundary mesh. | The sheath channeling argument (influx stored in radial dilation is lost to elongation) is a transient-window argument, not a steady-state Stokes balance; K_FN and K_t are calibrated to the approximate Dray et al. (2013) ratios; the dynamic ECM friction F_drag does not feed back on v_elong. | The clock is a phase oscillator with a prescribed frequency profile and a mechanical arrest gate (Lambda_arrest = 4, a modelling choice standing in for the FGF/Wnt determination front and Yap mechanosensitivity), not the Lewis (2003) her1/her7 delay-differential oscillator; v_PSM-shortening = 0.45 um/min and the ~47 um somite length are approximate anchors.; does_not_claim: Does not model 3D notochord vacuolation turgor mechanics, anterior somite epithelialization clefting, an FGF8/Wnt morphogen determination front, Delta-Notch phase coupling, or a full axisymmetric/3D Stokes-Bingham solve with fibronectin traction boundary conditions.]" ;
+        pk:derivedFromPaper <https://doi.org/10.1016/S0960-9822(03)00534-7>,
+            <https://doi.org/10.1016/j.cell.2017.08.043>,
+            <https://doi.org/10.1016/j.cub.2010.06.034>,
+            <https://doi.org/10.1016/j.cub.2013.05.052>,
+            <https://doi.org/10.1038/nmeth.4101>,
+            <https://doi.org/10.1038/s41567-021-01215-1>,
+            <https://doi.org/10.1038/s41586-018-0479-2>,
+            <https://doi.org/10.1126/science.1253089>,
+            <https://doi.org/10.1242/dev.090381> ;
+        pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-tailbud-neuromesodermal-jamming-code-traceability>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-tailbud-neuromesodermal-jamming-model-fidelity>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-tailbud-neuromesodermal-jamming-morphometric-validation>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-tailbud-neuromesodermal-jamming-overall>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-tailbud-neuromesodermal-jamming-parameter-expressivity>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-tailbud-neuromesodermal-jamming-repro-package>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-tailbud-neuromesodermal-jamming-source-traceability>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-tailbud-neuromesodermal-jamming-specimen-match> ;
+        pk:weightOfEvidence "0.9"^^xsd:double .
+    <https://github.com/fractastical/morpholib/blob/d58a084/2022-tailbud-neuromesodermal-jamming.py> a schema:SoftwareSourceCode ;
+        rdfs:label "2022-tailbud-neuromesodermal-jamming.py" ;
+        schema:codeRepository <https://github.com/fractastical/morpholib> ;
+        schema:programmingLanguage "Python" ;
+        schema:version "d58a084" .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0960-9822(03)00534-7>,
+            <https://doi.org/10.1016/j.cell.2017.08.043>,
+            <https://doi.org/10.1016/j.cub.2010.06.034>,
+            <https://doi.org/10.1016/j.cub.2013.05.052>,
+            <https://doi.org/10.1038/nmeth.4101>,
+            <https://doi.org/10.1038/s41567-021-01215-1>,
+            <https://doi.org/10.1038/s41586-018-0479-2>,
+            <https://doi.org/10.1126/science.1253089>,
+            <https://doi.org/10.1242/dev.090381> .
+    <https://doi.org/10.1016/S0960-9822(03)00534-7> dct:date "2003"^^xsd:gYear ;
+        dct:title "Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator" .
+    <https://doi.org/10.1016/j.cell.2017.08.043> dct:date "2017"^^xsd:gYear ;
+        dct:title "Excitable dynamics and Yap-dependent mechanical cues drive the segmentation clock" .
+    <https://doi.org/10.1016/j.cub.2010.06.034> dct:date "2010"^^xsd:gYear ;
+        dct:title "Intercellular coupling regulates the period of the segmentation clock" .
+    <https://doi.org/10.1016/j.cub.2013.05.052> dct:date "2013"^^xsd:gYear ;
+        dct:title "Cell-fibronectin interactions propel vertebrate trunk elongation via tissue mechanics" .
+    <https://doi.org/10.1038/nmeth.4101> dct:date "2017"^^xsd:gYear ;
+        dct:title "In vivo quantification of spatially varying mechanical properties in developing tissues" .
+    <https://doi.org/10.1038/s41567-021-01215-1> dct:date "2021"^^xsd:gYear ;
+        dct:title "Embryonic tissues as active foams" .
+    <https://doi.org/10.1038/s41586-018-0479-2> dct:date "2018"^^xsd:gYear ;
+        dct:title "A fluid-to-solid jamming transition underlies vertebrate body axis elongation" .
+    <https://doi.org/10.1126/science.1253089> dct:date "2014"^^xsd:gYear ;
+        dct:title "A Doppler effect in embryonic pattern formation" .
+    <https://doi.org/10.1242/dev.090381> dct:date "2013"^^xsd:gYear ;
+        dct:title "Regulated tissue fluidity steers zebrafish body elongation" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Claim: Mongera et al. (2018) & Kim et al. (2021) zebrafish tailbud active fluid-to-solid jamming transition & yield-stress axis elongation is faithful" ;
+        dct:created "2026-10-20T08:47:53Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:Claim ;
+        npx:introduces <https://w3id.org/probknow/resource/claim/morphoeval-tailbud-neuromesodermal-jamming> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/d58a084/2022-tailbud-neuromesodermal-jamming.py>,
+            <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RApE-nGpCMigXqZjeHuYuMJEVTGmTlNTlZl7IcHi_fhdQ/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

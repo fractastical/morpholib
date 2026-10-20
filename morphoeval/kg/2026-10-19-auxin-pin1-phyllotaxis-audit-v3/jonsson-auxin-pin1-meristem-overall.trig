@@ -1,0 +1,102 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-jonsson-auxin-pin1-meristem> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-jonsson-auxin-pin1-meristem-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-jonsson-auxin-pin1-meristem-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Jönsson et al. (2006) & Smith et al. (2006) up-the-gradient PIN1 polarization with explicit PIN1 trafficking kinetics, quasi-3D subepidermal canalization, and polar auxin transport for shoot apical meristem phyllotaxis — MorphoEval overall 75.9/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Pass 3 (v3) evaluation of `2006-jonsson-auxin-pin1-meristem.py` (overall weighted score 75.9/100, down from 92.8 in v2). The single v2 remediation item is closed in reduced form: PIN1 polarity now arises from explicit exocytosis/endocytosis kinetics with an exact integrator, verified against the analytic QSS (Lean Law 4), BFA internalisation (0.0857, exactly the first-order prediction) and the fast-cycling Boltzmann limit (0.013), and a quasi-3D subepidermal slice canalizes a single-file provascular strand (width 1 cell, 97 % delivery; no-feedback ablation 14 cells; Hill sweep monotone) under Mitchison's with-the-flux rule (Lean Law 5). The score falls because the remediation exposed that v2 credited prescribed outputs as simulations: the dome primordia and auxin maxima are seeded, the four-mode angles and WT ring profile are hand-built, and the dispersion peak is calibrated to its own reference. Those defects are now labelled in the code, figure and measurements and carried as Pass 4 items. Overall 75.9/100 (faithfulness 71.6, reproducibility 86.0); rubric morphoeval 0.1.0; checkpoint commit d58a084; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 72, Morphological realism / specimen match 74, Parameter expressivity 70, Morphometric validation 68, Source and data traceability 86, Code-to-model traceability 80, Reproducibility package 90. Output judged: docs/media/auxin_pin1_phyllotaxis_comparison.png: rendered output of 2006-jonsson-auxin-pin1-meristem.py at d58a084, image/png, 1867745 B, 2548×2352 px, artifact_sha256 2b06a6ed998e8eaa0669c12d96a5cab8df703b0a27180f87a7433246768cfcb9 (sha256 2b06a6ed998e8eaa0669c12d96a5cab8df703b0a27180f87a7433246768cfcb9), spec_fingerprint 4bb87fc40e78808765bf8caaa78c3f40f08c88fe6ce9f43531ffe4997786d304. Dual provenance: spec_fingerprint: 4bb87fc40e78808765bf8caaa78c3f40f08c88fe6ce9f43531ffe4997786d304; artifact_sha256: 2b06a6ed998e8eaa0669c12d96a5cab8df703b0a27180f87a7433246768cfcb9; input_dataset_sha256: {datasets/auxin_pin1_phyllotaxis/auxin_pin1_phyllotaxis_reference.json=b0ad3fb44bd3bd21..., datasets/auxin_pin1_phyllotaxis/paper_citations.bib=5585fae958a7d7ee..., datasets/auxin_pin1_phyllotaxis/rosette_phyllotaxis_specimen.jpg=ec50801b52dabc46..., datasets/auxin_pin1_phyllotaxis/scout_manifest.json=2e474ee5544f04f4...}. Supersedes audit: 2026-10-19-auxin-pin1-phyllotaxis-audit-v2. Claim boundary: reported_in_source: Jönsson et al. (2006) PNAS 103:1633-1638 & Smith et al. (2006) PNAS 103:1301-1306: up-the-gradient PIN1 membrane allocation P_ij = P_i exp(c_1 a_j) / sum_k exp(c_1 a_k) with explicit PIN1 membrane cycling kinetics whose quasi-steady state is that allocation, intercellular active polar + diffusive auxin transport, and periodic convergence maxima separated by a characteristic wavelength | Geldner et al. (2001) Nature: brefeldin A blocks PIN1 exocytosis and internalises plasma-membrane PIN1 within 1-2 h; Paciorek et al. (2005) Nature: auxin inhibits PIN endocytosis | Bayer et al. (2009) Genes Dev: epidermal up-the-gradient patterning couples to subepidermal with-the-flux canalization (Mitchison 1980/1981; Feugier et al. 2005) producing a narrow provascular strand from the L1 convergence point to the existing vasculature; Scarpella et al. (2006): PIN1-marked preprocambial strands are 1-2 cells wide | Smith et al. (2006): transitions across spiral (137.5 deg), distichous (180 deg), decussate (90 deg) and tricussate (120 deg) phyllotaxis with meristem size; Reinhardt et al. (2003) Nature: NPA/pin1 pin-formed apex and localized IAA rescue; reconstructed_in_script: Explicit per-cell cytosolic + per-wall membrane PIN1 pools cycling by first-order exocytosis (targeting f_ij = exp(c_1 (a_j - a_0))) and endocytosis, solved by an exact exponential integrator (membrane + cytosol conservation err 0.0, flux antisymmetry err 1.3e-14), with QSS ablation, BFA block (PM fraction 0.0857 after 2 h = PM(t_BFA) exp(-k_endo 2 h) exactly; polarity 0.052 vs WT 0.584), auxin-inhibited-endocytosis variant (polarity 0.21) and fast-cycling Boltzmann limit (max |P - Boltzmann| 0.013) | Quasi-3D 15 x 12 subepidermal slice beneath P1 with with-the-flux Hill feedback f_ij = f_0 + J^n/(K^n + J^n): single-file strand (width 1 cell at mid-depth, mean 1.0 over rows 1-8, flux concentration 0.63, 97 % of source flux delivered to the sink); no-feedback ablation width 14 cells; Hill-exponent sweep widths {15, 6, 1, 1, 1} for n in {1, 1.5, 2, 2.5, 3} (Spearman rho -0.89, p 0.04) | Linearized Turing-like dispersion relation with kappa_4 calibrated so that the peak sits at the 5.2-cell reference (threshold c_1 a_0 = 1.75; NPA collapse sigma(k) < 0); 1D ring NPA (contrast 1.000, 0 peaks) and IAA-paste rescue (1 peak at 60 deg) | ExG + DoG segmentation of 410 leaf tips on the SHA-256-locked Aeonium tabuliforme rosette (12/12 sectors, NN 1 - CV = 0.774); transfer_boundary: The 180-cell dome does NOT generate its primordia: P1..P8 are seeded at golden-angle targets (L396-397) and the auxin field is relaxed toward a prescribed envelope (L508-513); only the PIN1 trafficking, polarity, conservation and BFA/QSS/fast-cycling results are emergent outputs of that function | The four phyllotactic regimes are prescribed (nominal angle + seeded noise, L944-957; spiral placed at k*137.5 deg, L923-931) and the WT ring profile is hand-built (L1025-1028); Gamma is a label, not a control parameter | The canalization model is one non-growing vertical slice with a uniform Dirichlet sink row, no lateral neighbours' strands, no growth and no 3D geometry; strand width is compared to a literature band (1-2 cells), not to a vendored PIN1::GFP image | The rosette specimen is Aeonium tabuliforme (top-down leaf rosette), not an Arabidopsis inflorescence meristem; does_not_claim: Full 3D meristem geometry, tissue growth or cell division, PIN1 phosphorylation (PINOID/PP2A) control of apical-basal targeting, emergent golden-angle phyllotaxis, emergent mode transitions with Gamma, or a quantitative comparison of PIN1 plasma-membrane fractions with immunolocalization data." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: 2006-jonsson-auxin-pin1-meristem.py:1023-1036 — the wild-type ring profile of the NPA/IAA panel is a sum of five hand-placed Gaussians; integrate the 1D ring Jönsson model (T = 1.2, c_1 = 1.85) from noise on a ring whose circumference 2 pi R_PZ / l_0 is consistent with the 5.2-cell spacing (~31 cells, ~6 peaks) and compare the emergent peak count with the dispersion prediction.",
+            "remediation needed: 2006-jonsson-auxin-pin1-meristem.py:1346-1354 — the parastichy overlays in Panel F are fixed curves; fit the (8, 13) parastichy families to the 410 detected tips (e.g. via angular-order divergence estimation) and report the measured divergence angle of the specimen against 137.5 deg.",
+            "remediation needed: 2006-jonsson-auxin-pin1-meristem.py:180-184 — kappa_4 is calibrated so the dispersion peak equals the 5.2-cell reference that measurement #2 then reports as a match. Either derive kappa_4 from the lattice (e.g. next-nearest-neighbour or finite-cell-size term) or relabel #2 as a calibration, and validate lambda_c instead against the emergent peak spacing of the 1D ring / dome.",
+            "remediation needed: 2006-jonsson-auxin-pin1-meristem.py:396-415 and 506-514 — the 180-cell dome seeds P1..P8 at golden-angle targets and relaxes the auxin field toward target_a = 1.35 + 0.55 pz + 2.65 prim at rate 0.38 with the transport term weighted 0.14, so the convergence maxima and the 137.39 deg divergence angle are inputs. Replace with Jönsson Eq. 1 as published (da/dt = rho0 - mu a + sum J) on a growing/advecting peripheral zone (radial advection v_r = gamma r, primordium sink mu_prim as in Smith 2006) so that maxima and successive divergence angles emerge, and report the emergent angle.",
+            "remediation needed: 2006-jonsson-auxin-pin1-meristem.py:476-487 and 1638-1646 — the endocytosis variant uses 8 fixed explicit substeps with no stability guard, and the BFA measurement's reference is the model's own first-order prediction. Add an adaptive substep (or reuse the exact integrator with per-wall rates via a per-cell 6x6 expm) and replace the BFA reference with a digitised PIN1 internalisation time course (Geldner 2001 Fig. 1 / Paciorek 2005 Fig. 1).",
+            "remediation needed: 2006-jonsson-auxin-pin1-meristem.py:617-770 — the canalization model is one non-growing vertical slice with a uniform Dirichlet sink row (which broadens the two rows above it, L728-741). Extend to a periodic cylindrical shell beneath the whole peripheral ring (several primordia competing for one vascular ring) or a 3D block with a localized pre-existing strand, add growth, and vendor a PIN1::GFP provascular-strand image (Scarpella 2006 / Bayer 2009, licence permitting) so width is measured from an image rather than quoted.",
+            "remediation needed: 2006-jonsson-auxin-pin1-meristem.py:921-960 — simulate_four_phyllotactic_modes returns the nominal angle plus seeded noise for distichous/decussate/tricussate and places the spiral at k*137.5 deg by construction; Gamma = R_PZ / lambda_0 enters nothing. Implement a Douady-Couder / Smith 2006 ring model (threshold initiation on an expanding ring with depletion wavelength lambda_0) and sweep Gamma in {0.85, 1.45, 1.92, 2.75} so the regimes are selected by the dynamics; report whatever angles result.",
+            "remediation needed: datasets/auxin_pin1_phyllotaxis/auxin_pin1_phyllotaxis_reference.json:165-189 and 2006-jonsson-auxin-pin1-meristem.py:1573-1580 — the convergence index reference 0.84, contrasts 2.68 / 2.85 and per-regime Gamma values have no figure/table pinpoint in the cited papers. Digitise the actual source figures (Heisler 2005 Fig. 2 PIN1 polarity statistics; Smith 2006 Fig. 4) or remove these references and mark the measurements as model-internal.",
+            "remediation needed: datasets/auxin_pin1_phyllotaxis/scout_manifest.json:12-16 — proposed_dataset_dir and proposed_lean_module name `auxin_pin1_meristem` paths that do not exist; regenerate or annotate the scout record so the dossier matches the delivered dataset and Lean module (the file is SHA-256 pinned, so re-pin in the script when it changes)." ;
+        pk:hasScore "0.759"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 032 Pass 3 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/32> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.cub.2005.09.052>,
+            <https://doi.org/10.1016/j.jtbi.2005.03.017>,
+            <https://doi.org/10.1038/35096571>,
+            <https://doi.org/10.1038/nature02081>,
+            <https://doi.org/10.1038/nature03633>,
+            <https://doi.org/10.1073/pnas.0509839103>,
+            <https://doi.org/10.1073/pnas.0510457103>,
+            <https://doi.org/10.1098/rspb.1980.0015>,
+            <https://doi.org/10.1098/rstb.1981.0154>,
+            <https://doi.org/10.1101/gad.1402406>,
+            <https://doi.org/10.1101/gad.497009> .
+    <https://doi.org/10.1016/j.cub.2005.09.052> dct:date "2005"^^xsd:gYear ;
+        dct:title "Patterns of auxin transport and gene expression during primordium development revealed by live imaging of the Arabidopsis inflorescence meristem" .
+    <https://doi.org/10.1016/j.jtbi.2005.03.017> dct:date "2005"^^xsd:gYear ;
+        dct:title "Self-organization of the vascular system in plant leaves: Inter-dependent dynamics of auxin flux and carrier proteins" .
+    <https://doi.org/10.1038/35096571> dct:date "2001"^^xsd:gYear ;
+        dct:title "Auxin transport inhibitors block PIN1 cycling and vesicle trafficking" .
+    <https://doi.org/10.1038/nature02081> dct:date "2003"^^xsd:gYear ;
+        dct:title "Regulation of phyllotaxis by polar auxin transport" .
+    <https://doi.org/10.1038/nature03633> dct:date "2005"^^xsd:gYear ;
+        dct:title "Auxin inhibits endocytosis and promotes its own efflux from cells" .
+    <https://doi.org/10.1073/pnas.0509839103> dct:date "2006"^^xsd:gYear ;
+        dct:title "An auxin-driven polarized transport model for phyllotaxis" .
+    <https://doi.org/10.1073/pnas.0510457103> dct:date "2006"^^xsd:gYear ;
+        dct:title "A plausible model of phyllotaxis" .
+    <https://doi.org/10.1098/rspb.1980.0015> dct:date "1980"^^xsd:gYear ;
+        dct:title "A model for vein formation in higher plants" .
+    <https://doi.org/10.1098/rstb.1981.0154> dct:date "1981"^^xsd:gYear ;
+        dct:title "The polar transport of auxin and vein patterns in plants" .
+    <https://doi.org/10.1101/gad.1402406> dct:date "2006"^^xsd:gYear ;
+        dct:title "Control of leaf vascular patterning by polar auxin transport" .
+    <https://doi.org/10.1101/gad.497009> dct:date "2009"^^xsd:gYear ;
+        dct:title "Integration of transport-based models for phyllotaxis and midvein formation" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Jönsson et al. (2006) & Smith et al. (2006) up-the-gradient PIN1 polarization with explicit PIN1 trafficking kinetics, quasi-3D subepidermal canalization, and polar auxin transport for shoot apical meristem phyllotaxis — MorphoEval overall 75.9/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T10:17:54Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-jonsson-auxin-pin1-meristem-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/32>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-jonsson-auxin-pin1-meristem> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,101 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-hentschel-tgfb-fibronectin-limb> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-hentschel-tgfb-fibronectin-limb-parameter-expressivity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-hentschel-tgfb-fibronectin-limb-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Hentschel, Glimm, Glazier & Newman (2004) Proc. R. Soc. B / Kiskowski et al. (2004) Dev. Biol. multiscale TGF-beta / FGF-inhibitor reaction-diffusion and fibronectin haptotaxis PDE in developing Gallus gallus limb bud, coupled to a Glazier-Graner-Hogeweg cellular Potts cell lattice — Parameter expressivity: 84/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credit: the FGF zonation sweep (L955-995) still produces [1, 2, 3, 4]; the four GGH regimes (L865-910) form a genuine 2 x 2 ablation (differential adhesion x haptotaxis) whose condensation index orders monotonically WT > DA-only > haptotaxis-only > ablation and whose heterotypic fraction drops only when differential adhesion is on; new CLI flags `--cpm-mcs`, `--cpm-wing-mcs`, `--mu-F`, `--J-R2R2` (L1737-1740) are resolved at call time (L725-732). Deductions: the Panel G chi_F sweep (L1231-1258) reports std(R) on clip-collapsed fields, so its plateau at 0.76 is the clip ceiling, not a haptotaxis response (-6); the GGH wing-bud count is prepattern-determined — the full ablation also yields [0, 2, 3] (L913-949), so that panel does not test cell behaviour (-4); haptotaxis adds only +0.15 to the condensation index and mu_F was tuned by hand to 10 because mu_F >= 25 fingers cells across the Hill boundary (disclosed in the JSON) — no mu_F sweep is rendered (-4); no T or lambda_V sweep (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:evidenceAgainst "2004-hentschel-tgfb-fibronectin-limb.py L1231–L1258: Panel G chi_F sweep uses std(R) of clip-collapsed 1D fields (clip fraction 1.00 at fa = 11) <https://github.com/fractastical/morpholib/blob/58b898c/2004-hentschel-tgfb-fibronectin-limb.py#L1231-L1258>",
+            "2004-hentschel-tgfb-fibronectin-limb.py L913–L949: run_cpm_wing_bud_coupling counts peaks of the R2 density; ablation gives the same [0, 2, 3] (prepattern-determined) <https://github.com/fractastical/morpholib/blob/58b898c/2004-hentschel-tgfb-fibronectin-limb.py#L913-L949>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-hentschel-tgfb-fibronectin-limb-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-hentschel-tgfb-fibronectin-limb-parameter-expressivity-2> ;
+        pk:hasScore "0.84"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-hentschel-tgfb-fibronectin-limb-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2004-hentschel-tgfb-fibronectin-limb.py L865–L910" ;
+        dct:description "run_cpm_micromass_coupling: WT / DA-only / haptotaxis-only / full-ablation GGH regimes on the x3 prepattern plus continuum condensation index" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/58b898c/2004-hentschel-tgfb-fibronectin-limb.py#L865-L910> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-hentschel-tgfb-fibronectin-limb-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2004-hentschel-tgfb-fibronectin-limb.py L1727–L1755" ;
+        dct:description "CLI: --fa, --L-AP-um, --Da, --Di, --chi-F, --k-F, --steps, --seed, --cpm-mcs, --cpm-wing-mcs, --mu-F, --J-R2R2, --self-test" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/58b898c/2004-hentschel-tgfb-fibronectin-limb.py#L1727-L1755> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Slot 014 Pass 3 autonomous remediation-loop assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1006/aama.2001.0721>,
+            <https://doi.org/10.1006/jtbi.1996.0237>,
+            <https://doi.org/10.1016/j.cpc.2010.12.011>,
+            <https://doi.org/10.1016/j.jtbi.2005.10.016>,
+            <https://doi.org/10.1016/j.ydbio.2004.03.038>,
+            <https://doi.org/10.1098/rsif.2005.0033>,
+            <https://doi.org/10.1098/rspb.2004.2772>,
+            <https://doi.org/10.1103/PhysRevE.47.2128>,
+            <https://doi.org/10.1103/PhysRevLett.69.2013>,
+            <https://doi.org/10.1186/1752-0509-1-16> .
+    <https://doi.org/10.1006/aama.2001.0721> dct:date "2001"^^xsd:gYear ;
+        dct:title "Global existence for a parabolic chemotaxis model with prevention of overcrowding" .
+    <https://doi.org/10.1006/jtbi.1996.0237> dct:date "1997"^^xsd:gYear ;
+        dct:title "Modelling morphogenesis: from single cells to crawling slugs" .
+    <https://doi.org/10.1016/j.cpc.2010.12.011> dct:date "2011"^^xsd:gYear ;
+        dct:title "Parallelizing the Cellular Potts Model on graphics processing units" .
+    <https://doi.org/10.1016/j.jtbi.2005.10.016> dct:date "2006"^^xsd:gYear ;
+        dct:title "Mixed-mode pattern in Doublefoot mutant mouse limb—Turing reaction-diffusion model on a growing domain during limb development" .
+    <https://doi.org/10.1016/j.ydbio.2004.03.038> dct:date "2004"^^xsd:gYear ;
+        dct:title "A multiscale model for autonomous mesenchymal condensations" .
+    <https://doi.org/10.1098/rsif.2005.0033> dct:date "2005"^^xsd:gYear ;
+        dct:title "On multi-scale modeling of morphogenesis" .
+    <https://doi.org/10.1098/rspb.2004.2772> dct:date "1549"^^xsd:gYear ;
+        dct:title "Dynamical mechanisms for skeletal pattern formation in the vertebrate limb" .
+    <https://doi.org/10.1103/PhysRevE.47.2128> dct:date "1993"^^xsd:gYear ;
+        dct:title "Simulation of the differential adhesion driven rearrangement of biological cells" .
+    <https://doi.org/10.1103/PhysRevLett.69.2013> dct:date "1992"^^xsd:gYear ;
+        dct:title "Simulation of biological cell sorting using a two-dimensional extended Potts model" .
+    <https://doi.org/10.1186/1752-0509-1-16> dct:date "2007"^^xsd:gYear ;
+        dct:title "Patterning of developmental condensations by turing-type and haptotactic mechanisms in discrete and continuum models" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Hentschel, Glimm, Glazier & Newman (2004) Proc. R. Soc. B / Kiskowski et al. (2004) Dev. Biol. multiscale TGF-beta / FGF-inhibitor reaction-diffusion and fibronectin haptotaxis PDE in developing Gallus gallus limb bud, coupled to a Glazier-Graner-Hogeweg cellular Potts cell lattice — Parameter expressivity 84/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T06:56:28Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-hentschel-tgfb-fibronectin-limb-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,80 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-lewis-her1-her7-delayed-oscillator> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-lewis-her1-her7-delayed-oscillator-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-lewis-her1-her7-delayed-oscillator-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Lewis (2003) zebrafish her1/her7 autoinhibitory delay differential oscillator, DeltaC-Notch synchronization, and (Pass 3) 2D her1/her7/deltaC DDE lattice with NICD kinetics on a Schroter (2012) Hes6 dimer-truth-table gradient — MorphoEval overall 87.2/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Pass 3 post-remediation evaluation of `2003-lewis-her1-her7-delayed-oscillator.py` (87.2/100, down from 91.1 in Pass 2). Both v2 remediation items are closed in reduced, declared form: an 8 x 24 two-dimensional her1/her7/deltaC DDE lattice with delayed DeltaC translation and NICD cleavage kinetics (`simulate_her1_her7_lattice`, L598-734) reproduces Notch-dependent synchrony (WT column R = 0.669, all 14 cycles coherent) versus bea/des/aei breakdown after 7 (5-7 across seeds) anterior cycles and a monotone collective-period increase with the NICD delay; the Schroter (2012) dimer truth table on a posterior-high Hes6 gradient (L532-595) yields a monotone single-cell Hes6 titration (41.2 -> 36.4 min), a lattice AP period gradient (40.8 -> 38.6 min) and an AP-uniform hes6-null tissue at the her1-only period. Four new Lean 4 theorems (7 total, 0 sorrys) cover the Notch gate, the uniform-field fixed point, the truth-table reduction and the delay bracketing. The score falls because the remediation exposed deeper v2 defects that are now disclosed rather than hidden: the Pass 2 r = 0.9999 was a JSON-column-vs-JSON-column correlation (model-computed r = 0.791), the tabulated her7 regime is Hopf-subcritical under the script's own T_crit = 7.54 min, the Box 1 law is 12% off the DDE (30.0 vs 33.6 min), and the SHA-pinned specimen is a chick embryo. The 5-regime table parameters, the NICD/dimer constants and most lattice references remain model-internal and are carried into Pass 4. Overall 87.2/100 (faithfulness 85.3, reproducibility 91.7); rubric morphoeval 0.1.0; checkpoint commit d58a084; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 88, Morphological realism / specimen match 80, Parameter expressivity 92, Morphometric validation 86, Source and data traceability 90, Code-to-model traceability 92, Reproducibility package 93. Output judged: docs/media/her1_her7_delayed_oscillator_comparison.png: rendered output of 2003-lewis-her1-her7-delayed-oscillator.py at d58a084, image/png, 1492547 B, 2352×2044 px, artifact_sha256 f5ee9226fc709b1bd5be49ec6f0075bba0ce2e7066d65a0036c4cf97bd3ef858 (sha256 f5ee9226fc709b1bd5be49ec6f0075bba0ce2e7066d65a0036c4cf97bd3ef858), spec_fingerprint 3359489370da632246e18833410da2ca588eb4932d80863d4bcc1a6360ecd4fb. Dual provenance: spec_fingerprint: 3359489370da632246e18833410da2ca588eb4932d80863d4bcc1a6360ecd4fb; artifact_sha256: f5ee9226fc709b1bd5be49ec6f0075bba0ce2e7066d65a0036c4cf97bd3ef858; input_dataset_sha256: {datasets/her1_her7_delayed_oscillator/her1_her7_delayed_oscillator_reference.json=7e974cd678ea5489..., datasets/her1_her7_delayed_oscillator/scout_manifest.json=ebe3f2cee38772dd..., datasets/her1_her7_delayed_oscillator/zebrafish_somites_specimen.jpg=8b80971796cb29e2...}. Supersedes audit: 2026-10-19-her1-her7-delayed-oscillator-audit-v2. Claim boundary: reported_in_source: Lewis (2003) Current Biology 13:1398-1408 single-cell her1/her7 delay differential equations dp/dt = a m(t - T_p) - b p(t) and dm/dt = k / (1 + (p(t - T_m)/p_0)^n) - c m(t), Box 1 period law T_osc ~ 2(T_m + T_p + tau_p + tau_m) ~ 30 min at 28 C, coupled-cell DeltaC-Notch DDEs (Figs. 5-6) and bea/des/aei desynchronization after 5-7 anterior somites | Herrgen et al. (2010): the intercellular coupling delay sets the collective segmentation clock period | Schroter et al. (2012): Her1 homodimers and Her7:Hes6 heterodimers are the DNA-binding repressors of the core circuit; Her1:Her7, Her1:Hes6, Her7:Her7 and Hes6:Hes6 do not bind; hes6 is expressed in a non-oscillating posterior-high PSM gradient; reconstructed_in_script: RK4 method-of-steps single-cell DDE (total-delay invariance, computed Hopf threshold T_crit = 7.54 min, subcritical intron-deletion damping, cycloheximide arrest m* = k/c) and a (T_tot, b) Hopf/period morphospace | 5-regime period table reported three ways: JSON-tabulated (r = 0.9999, Pass 2 headline, NOT computed), Box 1 law gated by the computed T_crit (r = 0.790) and RK4 DDE per regime (r = 0.791, RMSE = 11.8 min); the her7 fast regime (T_tot = 6.3 min) is Hopf-subcritical in the implemented model | 1D 32-cell stochastic Kuramoto-Notch phase chain (WT late R = 0.984 vs mutant 6 intact somites, late R = 0.232) | (Pass 3) 8 x 24 two-dimensional DDE lattice with 7 delayed variables per cell: her1 (9.5 + 2.8 min), her7 (4.6 + 1.7 min), deltaC (16.0 + 20.5 min) mRNA/protein and NICD (Michaelis-Menten occupancy of 4-neighbour DeltaC after T_N = 2 min, decay b_N = 0.35/min), Notch-gated transcription G_N with eps_N = 0.9 (0 in mutants), Langevin mRNA noise and 7% delay heterogeneity; WT late column R = 0.669 with every cycle above 0.5, eps_N = 0 keeps 7 (5-7 across seeds) anterior cycles coherent then drops to R = 0.33; collective period increases monotonically with T_N (39.6 / 42.2 / 44.6 min at T_N = 2 / 10 / 20) | (Pass 3) Schroter (2012) truth table as a mass-action repression functional Rep = [Her1:Her1]/K_11 + [Her7:Hes6]/K_76 on a posterior-high Hes6 gradient (4 -> 40): single-cell period 41.2 -> 36.4 min for Hes6 0 -> 90 (monotone), lattice AP gradient 40.8 (anterior) -> 38.6 (posterior) min, hes6-null lattice uniform 41.4 min = her1-only DDE 42.9 +/- 2.5 min, kinematic wave count 0.14 across the sheet | Bilateral somite-row DoG segmentation of the vendored SEM (48.47 px mean spacing, symmetry 0.9605); transfer_boundary: The vendored `zebrafish_somites_specimen.jpg` is a chick (Gallus gallus) embryo SEM per its Commons source title and is used only as a cross-species proxy for vertebrate somite metamerism; no zebrafish her1 in situ or PSM image is compared | The lattice runs on gene-specific her1/her7 delays and therefore cycles at 38.6-41.2 min, not the 30 min zebrafish clock; deltaC delays (16.0 / 20.5 min), NICD kinetics (k_N, b_N, K_D, N_0, h), dimer constants (K_11 = 400, K_76 = 150), Hes6 levels and the noise/heterogeneity calibration are this repository's reduced parameters, not values tabulated by Lewis or Schroter | Hes6 >~ 80 quenches the oscillation in the truth-table model because the her7 branch alone is Hopf-subcritical, whereas real posterior PSM oscillates robustly; the Hes6 period span (4.9 min single-cell, 2.2 min lattice) is reported against a model-internal reference | References for the lattice synchrony (0.965), the T_N lengthening (2.5 min) and the Hes6 span are model- or table-derived magnitudes with literature direction only; does_not_claim: Tailbud growth, axis elongation or Doppler wave-shortening (Soroldoni et al. 2014), explicit Her1:Hes6 titration depletion or Hes6 dimerization stoichiometry, measured dissociation constants, quantitative agreement with Schroter (2012) hes6 / her7 mutant period shifts, reproduction of the 30 min WT period by the two-gene lattice, or any comparison with zebrafish in situ images." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: 2003-lewis-her1-her7-delayed-oscillator.py:1025-1074 — four lattice measurements use model-internal or table-derived references (0.965, her1-only minus WT DDE, single-cell sweep span, 2.5 min); the T_N lengthening is 2x its reference. Replace with literature values (Herrgen 2010 period shifts in des/bea/aei and under DAPT; Schroter 2012 hes6 / her7 mutant periods) with page pins.",
+            "remediation needed: 2003-lewis-her1-her7-delayed-oscillator.py:1350-1454 — the GIF's 1D somite ribbon still assumes a 30 min cycle (frac * 14 cycles over 420 min) while the lattice row cycles at ~40 min, so the two rows drift out of register; drive the ribbon from the lattice's own column periods or state the two time bases on the frame.",
+            "remediation needed: 2003-lewis-her1-her7-delayed-oscillator.py:219-239 and 975-984 — the Box 1 law (30.0 min) and the RK4 DDE (33.6 min) disagree by 12% yet measurement 1 still reports the analytic value as \"the\" WT period. Either calibrate (a, k, p_0, n) so the DDE hits 30 min or make the DDE period the primary measurement and the Box 1 value the note.",
+            "remediation needed: 2003-lewis-her1-her7-delayed-oscillator.py:358-406 with datasets/her1_her7_delayed_oscillator/her1_her7_delayed_oscillator_reference.json:91-162 — the 5-regime table's T_m/T_p values and observed periods are unsourced and the her7 regime (T_tot = 6.3 min) is Hopf-subcritical under the computed T_crit = 7.54 min, so the model-computed correlation is only r = 0.791. Re-derive the regime delays from Lewis (2003) Table/Fig. 5 legend values and Giudicelli (2007) Table 1 with page pins, or replace the regime by one the model can represent, and retire the tabulated column.",
+            "remediation needed: 2003-lewis-her1-her7-delayed-oscillator.py:544-556 and 682-704 — NICD kinetics (k_N = 0.7, b_N = 0.35, K_D = 600, N_0 = 1, h = 3) and dimer constants (K_11 = 400, K_76 = 150) are uncited calibrations; the her7 branch repression is linear in Her7 and Hes6 >~ 80 quenches the oscillation. Add Her1:Hes6 titration depletion and a cooperative Her7:Hes6 term, and cite or sweep the constants (K_76, eps_N) with pullbacks of the lattice so the posterior PSM oscillates robustly at high Hes6.",
+            "remediation needed: 2003-lewis-her1-her7-delayed-oscillator.py:598-734 and 1035-1044 — the Notch-mutant intact-cycle count is 5-7 across seeds {2003, 7, 11} but only seed 2003 is asserted and the WT column synchrony decays from 0.98 to 0.61 over 14 cycles. Assert the 5-7 band over >= 3 seeds, report mean +/- s.d., and strengthen coupling (or reduce heterogeneity) so WT R stays > 0.9 as in Lewis Fig. 5.",
+            "remediation needed: datasets/her1_her7_delayed_oscillator/her1_her7_delayed_oscillator_reference.json:29-59 — the SHA-pinned specimen is a chick embryo SEM. Vendor a CC-licensed zebrafish her1 / deltaC in situ or PSM image (and rename the file with a new pin), and compare the lattice phase map (L1278-1295) against its stripe count and spacing rather than against the model's own 1D chain.",
+            "remediation needed: repository root — no requirements lock pins numpy 2.5.4 / scipy 1.16.3 / matplotlib 3.10.7 / Pillow 12.0.0 for this script and MPLCONFIGDIR must be set manually; add a lock file reference to the dataset README." ;
+        pk:hasScore "0.872"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary, Pass 3 builder+assessor) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0960-9822(03)00534-7>,
+            <https://doi.org/10.1016/j.cub.2010.06.034>,
+            <https://doi.org/10.1371/journal.pbio.0050150>,
+            <https://doi.org/10.1371/journal.pbio.1001364> .
+    <https://doi.org/10.1016/S0960-9822(03)00534-7> dct:date "2003"^^xsd:gYear ;
+        dct:title "Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator" .
+    <https://doi.org/10.1016/j.cub.2010.06.034> dct:date "2010"^^xsd:gYear ;
+        dct:title "Intercellular coupling regulates the period of the segmentation clock" .
+    <https://doi.org/10.1371/journal.pbio.0050150> dct:date "2007"^^xsd:gYear ;
+        dct:title "Setting the tempo in development: an investigation of the zebrafish somite clock mechanism" .
+    <https://doi.org/10.1371/journal.pbio.1001364> dct:date "2012"^^xsd:gYear ;
+        dct:title "Topology and dynamics of the zebrafish segmentation clock core circuit" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Lewis (2003) zebrafish her1/her7 autoinhibitory delay differential oscillator, DeltaC-Notch synchronization, and (Pass 3) 2D her1/her7/deltaC DDE lattice with NICD kinetics on a Schroter (2012) Hes6 dimer-truth-table gradient — MorphoEval overall 87.2/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T07:56:07Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-lewis-her1-her7-delayed-oscillator-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-lewis-her1-her7-delayed-oscillator> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

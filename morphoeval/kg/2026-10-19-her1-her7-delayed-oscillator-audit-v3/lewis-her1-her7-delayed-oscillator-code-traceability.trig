@@ -1,0 +1,82 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-lewis-her1-her7-delayed-oscillator> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-lewis-her1-her7-delayed-oscillator-code-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-lewis-her1-her7-delayed-oscillator-code-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Lewis (2003) zebrafish her1/her7 autoinhibitory delay differential oscillator, DeltaC-Notch synchronization, and (Pass 3) 2D her1/her7/deltaC DDE lattice with NICD kinetics on a Schroter (2012) Hes6 dimer-truth-table gradient — Code-to-model traceability: 92/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The module docstring (L1-85) now states five laws, each mapped to its Lean theorem(s) and to Lewis Eqs. 1-2 / Box 1 / Figs. 5-6 or Schroter Figs. 2-3, 5-7; the lattice equations are written out variable by variable; every lattice/truth-table function docstring names its law id and Lean theorem; `math_kg_loops/lewis-her1-her7-delayed-oscillator.yaml` registers laws 4-5 with code loci. Deductions: the NICD kinetics and the Notch gate are declared as this script's reduced forms without a traceable equation in the sources (-4); the 1D-chain coupling coefficient 2.4 (L481) and the lattice constants k_N = 0.7, b_N = 0.35, K_D = 600, h = 3 are uncited calibrations (-3); Panel D's bar hatching distinguishes tabulated from computed but the GIF still shows the 1D chain's assumed 30 min period on its x-scale (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:evidenceAgainst "2003-lewis-her1-her7-delayed-oscillator.py L544–L556: LATTICE_DEFAULTS: NICD/gate constants are reduced calibrations with a comment but no source equation <https://github.com/fractastical/morpholib/blob/d58a084/2003-lewis-her1-her7-delayed-oscillator.py#L544-L556>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-lewis-her1-her7-delayed-oscillator-code-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-lewis-her1-her7-delayed-oscillator-code-traceability-2> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-lewis-her1-her7-delayed-oscillator-code-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2003-lewis-her1-her7-delayed-oscillator.py L24–L85" ;
+        dct:description "Docstring laws 1-5 with equations, Lean theorem names, Box 1 disclosure and reduced-parameter statement" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2003-lewis-her1-her7-delayed-oscillator.py#L24-L85> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-lewis-her1-her7-delayed-oscillator-code-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/math_kg_loops/lewis-her1-her7-delayed-oscillator.yaml L39–L172" ;
+        dct:description "Laws 1-5 with lean_locus, lean_code and updated code_locus ranges" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/morphoeval/math_kg_loops/lewis-her1-her7-delayed-oscillator.yaml#L39-L172> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary, Pass 3 builder+assessor) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0960-9822(03)00534-7>,
+            <https://doi.org/10.1016/j.cub.2010.06.034>,
+            <https://doi.org/10.1371/journal.pbio.0050150>,
+            <https://doi.org/10.1371/journal.pbio.1001364> .
+    <https://doi.org/10.1016/S0960-9822(03)00534-7> dct:date "2003"^^xsd:gYear ;
+        dct:title "Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator" .
+    <https://doi.org/10.1016/j.cub.2010.06.034> dct:date "2010"^^xsd:gYear ;
+        dct:title "Intercellular coupling regulates the period of the segmentation clock" .
+    <https://doi.org/10.1371/journal.pbio.0050150> dct:date "2007"^^xsd:gYear ;
+        dct:title "Setting the tempo in development: an investigation of the zebrafish somite clock mechanism" .
+    <https://doi.org/10.1371/journal.pbio.1001364> dct:date "2012"^^xsd:gYear ;
+        dct:title "Topology and dynamics of the zebrafish segmentation clock core circuit" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Lewis (2003) zebrafish her1/her7 autoinhibitory delay differential oscillator, DeltaC-Notch synchronization, and (Pass 3) 2D her1/her7/deltaC DDE lattice with NICD kinetics on a Schroter (2012) Hes6 dimer-truth-table gradient — Code-to-model traceability 92/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T07:56:07Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-lewis-her1-her7-delayed-oscillator-code-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

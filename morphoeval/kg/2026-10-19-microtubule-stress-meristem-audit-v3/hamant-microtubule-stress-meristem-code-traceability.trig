@@ -1,0 +1,96 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-hamant-microtubule-stress-meristem> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-hamant-microtubule-stress-meristem-code-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-hamant-microtubule-stress-meristem-code-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Hamant et al. (2008), Bozorg et al. (2014), Sampathkumar et al. (2014), Uyttewaal et al. (2012), Heisler et al. (2010) & Louveaux et al. (2016) shoot apical meristem shell stress tensor, stress-vs-strain CMT alignment, katanin boundary morphogenesis and PIN1/CMT co-alignment on a growing L1 cellular vertex mesh — Code-to-model traceability: 76/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credited: the module docstring (L1-86) maps Laws 1-5 to equations, papers and Lean theorem line ranges and names the implementing functions; `simulate_l1_vertex_patch` carries an explicit coupling-chain docstring (L1034-1044) and each mesh method states its source rule (Batchelor virial, Heisler softmax, Louveaux division, Hamant & Traas on T1); the honest-scope note names the 2D reduction and the phenomenological sections. Deductions: the sweep constants 1.45, 0.68, 0.806, 15.95, 13.45 (L413-416) and the ring dispersions 0.245 / 0.62 / 0.81 (L391-394) have no citation (-8); `build_2d_meristem_fem_field` is still named and titled 'FEM' in Panel A although the docstring now says it is analytic (-6); the mesh constants (k_wall = 6, K_A = 0.9, beta_pin = 4, phi_wall = 0.45, E_shell = 400 MPa) are documented in the JSON but not derived from any paper value (-6); the softmax PIN1 rule is a modelling choice attributed to Heisler's hypothesis rather than an equation in the paper (-4)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:evidenceAgainst "2008-hamant-microtubule-stress-meristem.py L413–L416: Uncited fitted exponents and offsets in the 5-condition sweep <https://github.com/fractastical/morpholib/blob/d58a084/2008-hamant-microtubule-stress-meristem.py#L413-L416>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-hamant-microtubule-stress-meristem-code-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-hamant-microtubule-stress-meristem-code-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-hamant-microtubule-stress-meristem-code-traceability-3> ;
+        pk:hasScore "0.76"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-hamant-microtubule-stress-meristem-code-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2008-hamant-microtubule-stress-meristem.py L1–L86" ;
+        dct:description "Laws 1-5 with equations, Lean loci (#L30-65, #L81-115, #L132-167, #L165-226, #L230-268) and implementing functions; honest scope note" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2008-hamant-microtubule-stress-meristem.py#L1-L86> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-hamant-microtubule-stress-meristem-code-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "2008-hamant-microtubule-stress-meristem.py L1034–L1044" ;
+        dct:description "Coupling-chain docstring of simulate_l1_vertex_patch" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2008-hamant-microtubule-stress-meristem.py#L1034-L1044> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-hamant-microtubule-stress-meristem-code-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/math_kg_loops/hamant-microtubule-stress-meristem.yaml L110–L155" ;
+        dct:description "Laws 4-5 registered with lean_code, variables, role, source citation and code loci" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/morphoeval/math_kg_loops/hamant-microtubule-stress-meristem.yaml#L110-L155> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 036 Pass 3 builder + primary assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/36> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.cell.2012.02.048>,
+            <https://doi.org/10.1073/pnas.1600677113>,
+            <https://doi.org/10.1111/j.1469-8137.2009.03100.x>,
+            <https://doi.org/10.1126/science.1165594>,
+            <https://doi.org/10.1371/journal.pbio.1000516>,
+            <https://doi.org/10.1371/journal.pcbi.1003410>,
+            <https://doi.org/10.7554/eLife.01967> .
+    <https://doi.org/10.1016/j.cell.2012.02.048> dct:date "2012"^^xsd:gYear ;
+        dct:title "Mechanical Stress Acts via Katanin to Amplify Differences in Growth Rate between Adjacent Cells in Arabidopsis" .
+    <https://doi.org/10.1073/pnas.1600677113> dct:date "2016"^^xsd:gYear ;
+        dct:title "Cell division plane orientation based on tensile stress in Arabidopsis thaliana" .
+    <https://doi.org/10.1111/j.1469-8137.2009.03100.x> dct:date "2010"^^xsd:gYear ;
+        dct:title "The mechanics behind plant development" .
+    <https://doi.org/10.1126/science.1165594> dct:date "2008"^^xsd:gYear ;
+        dct:title "Developmental Patterning by Mechanical Signals in Arabidopsis" .
+    <https://doi.org/10.1371/journal.pbio.1000516> dct:date "2010"^^xsd:gYear ;
+        dct:title "Alignment between PIN1 Polarity and Microtubule Orientation in the Shoot Apical Meristem Reveals a Tight Coupling between Morphogenesis and Auxin Transport" .
+    <https://doi.org/10.1371/journal.pcbi.1003410> dct:date "2014"^^xsd:gYear ;
+        dct:title "Stress and Strain Provide Positional and Directional Cues in Development" .
+    <https://doi.org/10.7554/eLife.01967> dct:date "2014"^^xsd:gYear ;
+        dct:title "Subcellular and supracellular mechanical stress prescribes cytoskeleton behavior in Arabidopsis cotyledon pavement cells" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Hamant et al. (2008), Bozorg et al. (2014), Sampathkumar et al. (2014), Uyttewaal et al. (2012), Heisler et al. (2010) & Louveaux et al. (2016) shoot apical meristem shell stress tensor, stress-vs-strain CMT alignment, katanin boundary morphogenesis and PIN1/CMT co-alignment on a growing L1 cellular vertex mesh — Code-to-model traceability 76/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T09:49:36Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-hamant-microtubule-stress-meristem-code-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/36> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

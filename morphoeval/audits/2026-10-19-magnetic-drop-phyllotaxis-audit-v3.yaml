@@ -1,0 +1,326 @@
+# MorphoEval audit — Douady & Couder (1992, 1996) Self-Organized Magnetic-Drop Phyllotaxis, 2026-10-20 (v3)
+#
+# Pass 3 remediation re-score of `1992-douady-magnetic-drop-phyllotaxis.py` (Slot 031) in the instrumented loop
+# `morphoeval/runs/2026-10-19-magnetic-drop-phyllotaxis-loop-pass3`, superseding
+# `2026-10-19-magnetic-drop-phyllotaxis-audit-v2` (91.2). The v2 audit listed no `supports: false` evidence and
+# no remediation items, so Pass 3 derived its targets from the weakest two v2 dimensions (specimen-match 88,
+# parameter-expressivity 90) and from a line-by-line re-read of the v2 script, which exposed defects that the v2
+# audit had credited as strengths:
+#   1. The (1,1)->(1,2) bifurcation was IMPOSED, not emergent: `if G >= 0.85901889: ... 180.0` short-circuits at
+#      v2 L337, L561 and L583, and the Hessian `curv_180` computed at L336 was discarded.
+#   2. The displayed/triangulated geometry used a clipped visual growth rate `g_vis = clip(G, 0.012, 0.12)`
+#      (v2 L516-518), which mislabelled the Delaunay pair at G = 0.30 as (3,5) (visible in the v2 PNG, panel B2
+#      title "Fibonacci (2,3) ... Delaunay=(3, 5)") and at G = 0.5 as (5,8); the Row B dish panels showed only
+#      the outer few drops (B1 collapsed to a line, B2/B4 spanned +/-4000 and +/-20000 R_0).
+#   3. The Delaunay edge-census extractor is biased to the higher Fibonacci pair near the van Iterson
+#      transitions (G = 0.25, 0.10, 0.04 and Lucas G = 0.11) relative to Douady & Couder's nearest-neighbour
+#      contact definition.
+#   4. Two measurement names misdescribed their content (`pitchfork_threshold_G_c1_*` held the static fold
+#      G_fold = 0.773484, not G_c1 = 0.859019; `lucas_branch_divergence_angle_G006` was evaluated at G = 0.11
+#      against the asymptote 99.50 while the table row at G = 0.10 reads 101.43), the Voronoi CV carried an
+#      unsourced reference 0.14 while the v2 rationale quoted CV = 0.132 against a measured 0.0013, and the
+#      N = 123 "scales" are DoG detections (about 2 per scale; lattice-consistent count ~48).
+#   5. The vendored reference JSON itself carries the G_c1 / G_fold mislabel in its key names.
+# What Pass 3 changed (all in this slot's files):
+#   - emergent threshold by bisection on the unclamped iterated map (0.8595 vs analytic 0.859019), dynamical
+#     discriminant S_dyn(G) used for the 180-deg branch of the equilibrium diagram, Lean 4 Theorem 4;
+#   - true radii r_k = exp(kG) triangulated, nearest-neighbour contact pair as primary extractor (Delaunay kept as
+#     secondary), log-radial display rho = 1 + ln(r/R_0) = 1 + kG (= the PRL 1992 dish geometry) in Row B & GIF;
+#   - memory-depth sweep N_mem in {1..45}, --n-mem CLI, comparison with the 6 dish regimes of the reference table;
+#   - specimen reciprocal-lattice inversion (alpha_emp = 138.03 deg, G_emp = 0.0308, chirality -1) from the
+#     sub-bin (5,8) log-polar FFT peaks, validated on a synthetic image of the simulated lattice (0.014 deg,
+#     0.06 % error), Lean 4 Theorem 5 window; disclosed negative result for radius-ranked detections (R = 0.137);
+#   - 18 measurements (10 -> 18) with provenance-tagged references, 14 self-test checks (8 -> 14), 16 panels.
+# Scores below are the primary assessor's and are uncalibrated criterion-referenced ratings on 0-100 (not
+# probabilities). Line numbers refer to the files in the working tree at commit d58a084 (uncommitted Pass 3 edits).
+# Overall 90.2, DOWN from 91.2: the model, specimen analysis and validation suite are stronger than in v2, but the
+# re-read showed that v2's 93 / 94 for model-fidelity / source-traceability rested on imposed thresholds and a
+# mislabelled reference table, and Pass 3 scores what the evidence now supports.
+
+audit:
+  id: 2026-10-19-magnetic-drop-phyllotaxis-audit-v3
+  supersedes_audit_id: 2026-10-19-magnetic-drop-phyllotaxis-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d58a084
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) remediation re-score of `1992-douady-magnetic-drop-phyllotaxis.py` (1889 lines, 14 self-test
+      checks, 18 measurements) after the loop `2026-10-19-magnetic-drop-phyllotaxis-loop-pass3`. d58a084 is the
+      HEAD at audit time; the Pass 3 edits to this slot's files are in the working tree (zero-conflict isolation,
+      no commit). `--self-test` runs in 6.9 s and the full render (PNG + GIF) in 15 s.
+
+references:
+  douady1992:
+    title: "Phyllotaxis as a physical self-organized growth process"
+    authors: "Douady S, Couder Y"
+    venue: "Physical Review Letters 68(13):2098-2101 (1992)"
+    doi: 10.1103/PhysRevLett.68.2098
+  douady1996a:
+    title: "Phyllotaxis as a Dynamical Self Organizing Process Part I: The Spiral Modes Resulting from Time-Periodic Iterations"
+    authors: "Douady S, Couder Y"
+    venue: "Journal of Theoretical Biology 178(3):255-274 (1996)"
+    doi: 10.1006/jtbi.1996.0024
+  douady1996b:
+    title: "Phyllotaxis as a Dynamical Self Organizing Process Part II: The Spontaneous Formation of a Periodicity and the Coexistence of Spiral and Whorled Modes"
+    authors: "Douady S, Couder Y"
+    venue: "Journal of Theoretical Biology 178(3):275-294 (1996)"
+    doi: 10.1006/jtbi.1996.0025
+  levitov1991:
+    title: "Energetic Approach to Phyllotaxis"
+    authors: "Levitov LS"
+    venue: "Europhysics Letters 14(6):533-539 (1991)"
+    doi: 10.1209/0295-5075/14/6/006
+  vaniterson1907:
+    title: "Mathematische und mikroskopisch-anatomische Studien über Blattstellungen, nebst Betrachtungen über den Schalenbau der Miliolinen"
+    authors: "van Iterson G"
+    venue: "Gustav Fischer, Jena (1907)"
+    url: https://www.biodiversitylibrary.org/bibliography/9466
+
+simulations:
+  - id: douady-magnetic-drop-phyllotaxis
+    name: "Douady & Couder (1992, 1996) self-organized magnetic-drop phyllotaxis & imperfect pitchfork cascade"
+    organism: "Pinus sp. conifer seed cone & botanical shoot apical meristem (SAM)"
+    script: 1992-douady-magnetic-drop-phyllotaxis.py
+    output: docs/media/magnetic_drop_phyllotaxis_comparison.png
+    extra_outputs:
+      - docs/media/magnetic_drop_phyllotaxis_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-magnetic-drop-phyllotaxis-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Douady & Couder (1992) Phys. Rev. Lett. 68:2098-2101 iterative magnetic-dipole repulsion energy E(phi) = sum_{k>=1} d_k(phi, phi_{n-k})^{-3} on a circular rim r = R_0 with linear dish advection r_k = R_0(1 + kG) controlled by the plastochron ratio G = V T / R_0; Figs. 1-2 dish regimes (1,1), (2,3), (3,5), (5,8), (8,13) and a metastable Lucas (4,7)"
+        - "Douady & Couder (1992) Fig. 3 & (1996) J. Theor. Biol. 178:255-274 Secs. 3-4: supercritical (1,1)->(1,2) pitchfork of the iterated map, imperfect pitchfork cascade along the Fibonacci branch -> 137.508 deg, disconnected Lucas branch -> 99.502 deg, and nearest-neighbour contact parastichies on the van Iterson lattice"
+      reconstructed_in_script:
+        - "Exact static Hessian fold (G_fold = 0.773484 exp / 2.514560 lin) AND dynamical pitchfork (G_c1 = 0.859019 exp full chain / 3.631432 lin 2-drop) roots, the EMERGENT threshold of the unclamped iterated map (G_c1^emp = 0.8595 by bisection), the regular-spiral zero-force locus F(G, dphi) = 0, and adiabatic continuation along both Fibonacci (r = 0.99999, RMSE = 0.065 deg, contact pairs 9/10 table rows) and Lucas (RMSE = 0.141 deg) branches"
+        - "Nearest-neighbour contact parastichy pairs on the true radii r_k = exp(kG) (Delaunay census kept as a secondary, biased extractor), memory-depth sweep N_mem in {1,2,3,5,8,13,21,45}, gamma in {1,3,5} universality, and simulated divergence / pair at the six tabulated dish regimes (RMSE 0.141 deg, 6/6 pairs)"
+        - "Reciprocal-lattice inversion m*alpha + omega_m*G = 2*pi*j_m of the sub-bin (5, 8) log-polar FFT peaks of `conifer_cone_specimen.jpg` giving alpha_emp = 138.03 deg and G_emp = 0.0308, validated on a synthetic log-polar image of the simulated G = 0.06 lattice (0.014 deg / 0.06 % recovery error)"
+      transfer_boundary:
+        - "Exponential meristem advection r_k = R_0 exp(kG) is displayed in the log-radial projection rho = 1 + ln(r/R_0) = 1 + kG, which coincides with the PRL 1992 silicone-oil dish geometry; the mature cone's apparent radial law fits the linear dish law better (R^2 0.977) than the exponential law (R^2 0.899), and its lattice is not perfectly log-periodic (closure residual 2.2 bins), so G_emp = 0.031 is an effective, not a developmental, plastochron ratio"
+        - "The 'observed' per-regime divergence means in the reference table are regime-level readings of Douady & Couder (1992) Figs. 1-2 and text, not digitised data with uncertainties; the dish-regime RMSE of 0.141 deg should be read against that provenance"
+      does_not_claim:
+        - "Subcellular PIN1 polar auxin efflux carrier trafficking or continuous reaction-diffusion PDE dynamics on the meristem (Slot 033 Jönsson et al. 2006 / Smith et al. 2006); 3D photogrammetric or micro-CT cone reconstruction (the specimen analysis is a single 2D apical photograph of a 3D cone); a scale-level segmentation of the cone (the DoG detections over-count by ~2x and are not used at lattice level)"
+    source_refs:
+      - douady1992
+      - douady1996a
+      - douady1996b
+      - levitov1991
+      - vaniterson1907
+    summary: >-
+      Pass 3 re-score of `1992-douady-magnetic-drop-phyllotaxis.py` (90.2/100, from 91.2 in Pass 2). The v3 script
+      now lets the iterated placement map find the (1,1) -> (1,2) pitchfork by itself and measures the emergent
+      threshold by bisection (G_c1^emp = 0.8595 vs the analytic full-chain root 0.859019, |error| 4.5e-4, within
+      the finite-iteration bias), uses the dynamical discriminant S_dyn(G) instead of a hard-coded 0.85901889 in
+      the equilibrium diagram, triangulates the true radii r_k = exp(kG) with Douady & Couder's nearest-neighbour
+      contact definition (9/10 Fibonacci table rows, (2,3) at G = 0.30 where the v2 clipped geometry gave (3,5),
+      Lucas (3,4) at G = 0.11 and (4,7) at G = 0.06), displays Row B and the GIF in the dish geometry rho = 1 + kG
+      so the parastichy lattices are visible, adds an N_mem sweep (converged within 0.5 deg at N_mem = 8) and a
+      comparison with the six tabulated dish regimes (RMSE 0.141 deg, 6/6 pairs), and inverts the specimen's own
+      (5,8) reciprocal-lattice peaks to alpha_emp = 138.03 deg (inside the Lean 4 Theorem 5 window 135-138.46 deg,
+      0.52 deg from the golden angle) and G_emp = 0.0308, with the inversion validated on the simulated lattice.
+      Two Lean 4 theorems were added (5 total, 0 sorrys). The score falls slightly because the re-read exposed that
+      v2's thresholds were imposed, its Delaunay pairs mislabelled at transitions, its N = 123 'scales' were
+      detections, and the vendored reference JSON mislabels G_fold as G_c1 and carries dish-regime divergence
+      values of unquantified provenance; those are disclosed here rather than credited.
+    scores:
+      model-fidelity:
+        value: 92
+        rationale: >-
+          The iterated rule phi_n = argmin E(phi) with E = sum_k d_k^{-gamma}, both advection laws, and the exact
+          chord distance (L172-256) are Douady & Couder's Eqs. (1)-(3). Pass 3 removed the three hard-coded
+          180-deg short-circuits so the bifurcation is emergent (L347-398, L446-454, L722-742) and the measured
+          threshold agrees with the analytic root of S_dyn(G) to 4.5e-4 (self-test 3); the two-drop integer form
+          of S_dyn is machine-checked (Lean 4 Theorem 4, D(4,7) = -12646 < 0 < C(4,7) = 27687) and proves the
+          static-fold / dynamical-threshold gap that v2 conflated in its measurement names. Contact parastichies
+          now follow the authors' nearest-neighbour definition on the true radii (L539-577, L665-689). Deductions:
+          the spiral branches of the equilibrium diagram are still labelled stable/unstable by the static Hessian
+          sign while the 180-deg branch uses the dynamical criterion, a mixed criterion (L446-476) (-3); the memory
+          depth N_mem = 45 is an ad-hoc truncation rather than the dish exit radius R_max/R_0 = 8 of the experiment
+          (L610-620) (-2); the emergent threshold carries a +4.5e-4 finite-iteration bias (160 iterations, 0.5 deg
+          criterion) that is tolerated rather than extrapolated (L347-398) (-1); the Delaunay census is kept as a
+          secondary extractor although it disagrees with the contact pair at four transition rows (-2).
+        evidence:
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [172, 256], note: "advected_radii, dipole_energy_grid and step_magnetic_drop: PRL 1992 Eqs. (1)-(3) with bounded Brent refinement", supports: true}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [263, 344], note: "Static C(r1,r2) and dynamical D(r1,r2) integer discriminants, full-chain S_dyn(G), and the eight fold / pitchfork roots", supports: true}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [347, 398], note: "measure_emergent_pitchfork_threshold: bisection on the unclamped iterated map; no imposed 180-deg state", supports: true}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [446, 476], note: "Equilibrium diagram: 180-deg branch stability from sign of S_dyn (computed), spiral branches still from the static Hessian sign — mixed criterion", supports: false}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [539, 577], note: "extract_contact_parastichy_pair: Douady & Couder nearest-neighbour definition on true simulated positions, modal pair + frequency", supports: true}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [665, 689], note: "True radii r_k = exp(kG) triangulated (v2 clipped g_vis removed); opposition classified from the emergent divergence", supports: true}
+          - {file: morphoeval/lean/loops/Loop_031_magnetic_drop_phyllotaxis.lean, lines: [138, 160], note: "Theorem 4 dynamical_pitchfork_discriminant: D(4,7) = -12646 < 0, D(5,9) = 23872 > 0 with C(4,7) > 0 (lean: 0 errors, 0 sorrys)", supports: true}
+      specimen-match:
+        value: 88
+        rationale: >-
+          Row B now shows four visually distinct lattices in the dish geometry rho = 1 + kG with the contact
+          parastichy families drawn from the true-geometry triangulation (L1338-1367): a distichous row, a (2,3)
+          star, a (5,8) cone-top web and a (4,7) Lucas web, instead of the v2 panels that collapsed to a line or
+          to a few outer drops. The specimen comparison is quantitative at the lattice level: the (5,8) FFT pair
+          (C3), the inverted alpha_emp = 138.03 deg / G_emp = 0.031 lattice overlaid on the log-polar unwrapping
+          (C2, L1382-1411) and placed in (G, alpha) space against the model branch (D4, L1491-1510), with the
+          inversion validated on the simulated lattice (L1011-1034). Deductions: no overlay of the inverted lattice
+          or of a synthetic cone on the photograph itself — C1 and B3 are compared across panels, not side by side
+          in image coordinates (-4); the DoG detections drawn in C1 over-count scales by ~2x and are now labelled
+          'detections' but still read as a segmentation to a viewer (-3); Douady & Couder's own dish photographs
+          (PRL Fig. 2) and bifurcation diagram (Fig. 3) are not vendored or digitised, so the Row B lattices are
+          not judged against the authors' figures (-3); a single specimen photograph of a single species (-2).
+        evidence:
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [1338, 1367], note: "Row B dish panels in rho = 1 + ln(r/R0) geometry with contact-pair edges from the true triangulation; four distinct morphologies visible", supports: true}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [1037, 1161], note: "segment_conifer_cone_specimen: DoG detections, log-polar unwrapping, padded spectrum, (5,8) inversion, closure residual, rank-sequence and radial-law diagnostics", supports: true}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [1382, 1411], note: "Panel C2 overlays the parastichy lines of the FITTED (alpha_emp, G_emp) lattice on the specimen's log-polar image", supports: true}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [1491, 1510], note: "Panel D4: specimen (G, alpha) point vs model Fibonacci branch, benchmark table and inversion check — comparison is in parameter space, not overlaid on the photograph", supports: false}
+          - {file: datasets/magnetic_drop_phyllotaxis/README.md, lines: [22, 47], note: "Pass 3 errata: N=123 are detections (~48 lattice-consistent scales), specimen inversion table, chirality and radial-law caveats", supports: true}
+      parameter-expressivity:
+        value: 91
+        rationale: >-
+          G controls the form as claimed: the unclamped adiabatic ramp traverses (1,1) -> (1,2) -> (2,3) -> (3,5)
+          -> (5,8) -> (8,13) with contact pairs matching 9/10 table rows (L715-794) and the six dish regimes 6/6
+          (L857-891); the new N_mem sweep shows 180 deg (N_mem = 1) -> 120.9 deg two-drop spiral (N_mem = 2) ->
+          convergence within 0.5 deg at N_mem = 8 (L816-854, Panel D2) and is exposed on the CLI (--n-mem, L1847-
+          1885); gamma in {1,3,5}, linear vs exponential advection, Lucas basin, gamma = 0 random control and the
+          Lean-backed N_mem = 1 ablation remain. Deductions: the N_mem sweep is convergent but not monotone
+          (143.8 deg at N_mem = 3 vs 135.5 at N_mem = 5) and this is only annotated, not explained (-3); the gamma
+          sweep is evaluated at a single G = 0.06, so the universality claim is not tested across the cascade (-3);
+          the linear dish law is exercised at one G (0.06) and its own cascade / G_c1 = 3.63 are never traversed
+          (-3).
+        evidence:
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [715, 794], note: "Unclamped Fibonacci ramp and benchmark evaluation with per-row contact pairs (9/10 matches)", supports: true}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [816, 854], note: "run_memory_depth_sweep: N_mem in {1,2,3,5,8,13,21,45}, convergence index; non-monotone transient disclosed", supports: true}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [857, 891], note: "compare_ferrofluid_experimental_regimes: simulated divergence and pair at the six tabulated dish G values", supports: true}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [797, 814], note: "Gamma universality sweep only at G = 0.06", supports: false}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [1847, 1885], note: "CLI: --G, --gamma, --n-mem, --advection, --branch, --self-test, --skip-gif", supports: true}
+      morphometric-validation:
+        value: 89
+        rationale: >-
+          Eighteen measurements (L1581-1738) now carry provenance-tagged references: Fibonacci branch r = 0.99999 /
+          RMSE 0.065 deg against the 10 benchmark rows with 9/10 contact pairs; Lucas 101.43 deg at the G = 0.10
+          table row (v2 compared G = 0.11 to the asymptote); static fold and dynamical G_c1 separated, with the
+          analytic root checked against the emergent threshold; dish-regime RMSE 0.141 deg and 6/6 pairs; N_mem
+          convergence index; and three specimen-level morphometrics — alpha_emp = 138.03 deg vs 137.508, G_emp =
+          0.0308 vs the 0.06 model regime, and the linear-vs-exponential radial-law R^2 gap — plus the disclosed
+          negative result that radius-ranked detections give resultant R = 0.137. Deductions: the dish-regime
+          'observed' divergences are regime-level readings of PRL Figs. 1-2 with no uncertainties, so that RMSE is
+          a weak validation (-4); the reference for the specimen's G is the model's own (5,8) regime value, and
+          the measured 0.031 differs from it by 2x because the cone's radial law is linear, which is explained but
+          not resolved (-3); the Voronoi CV reference is the theoretical 0 of a perfect lattice, not a measured
+          value (-2); only one specimen contributes empirical morphometrics (-2).
+        evidence:
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [1581, 1738], note: "measure_morphoeval: 18 entries with reference values and provenance in `method`; renamed v2 entries", supports: true}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [948, 979], note: "invert_reciprocal_lattice_peaks: 2x2 solve of m*alpha + omega*G = 2*pi*j with Fibonacci winding integers; chirality folding", supports: true}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [1011, 1034], note: "validate_lattice_inversion_on_simulation: recovers 137.306 deg / G = 0.0600 from the simulated lattice (0.014 deg, 0.06 %)", supports: true}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [1668, 1674], note: "ferrofluid_experiment_divergence_rmse_deg compares against table values whose provenance is a figure reading without uncertainties", supports: false}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [1690, 1696], note: "Voronoi CV reference set to 0 (theoretical perfect lattice) with the random control and KS p in `method`", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          DOIs for Douady & Couder (1992, 1996a, 1996b) and Levitov (1991) are in the script docstring, the dataset
+          README, the SHA-pinned `paper_citations.bib` and the reference JSON; the specimen is vendored with
+          Wikimedia URL, author, licence and SHA-256; the math KG entry maps five equations to five Lean theorems
+          with line loci. Deductions exposed by Pass 3: the SHA-pinned reference JSON names the static fold roots
+          `two_drop_exponential_G_c1` / `full_chain_exponential_G_c1` (0.7735 / 0.7725) although they are not the
+          dynamical pitchfork threshold, and this could only be corrected in the README errata, not in the pinned
+          file (-4); its `experimental_regimes[].mean_divergence_deg` and `detected_scale_umbos_count: 123` have
+          no quantified provenance (figure readings; detections not scales) (-3); van Iterson (1907), now relied on
+          for Theorem 5 and the inversion's winding integers, is cited in the README, the math KG and this audit
+          but not in the pinned .bib (-2); the (5,8) regime G range 0.04-0.10 used as the specimen reference comes
+          from the Pass-2-authored table rather than from a page/figure pinpoint in the papers (-1).
+        evidence:
+          - {file: datasets/magnetic_drop_phyllotaxis/magnetic_drop_phyllotaxis_reference.json, lines: [65, 86], note: "Keys two_drop_exponential_G_c1 / full_chain_*_G_c1 hold the STATIC fold roots (0.7735, 0.7725, 2.5146, 2.5142), not G_c1 — mislabel in the pinned table", supports: false}
+          - {file: datasets/magnetic_drop_phyllotaxis/magnetic_drop_phyllotaxis_reference.json, lines: [109, 125], note: "experimental_regimes rows with G_exp, observed pairs and mean divergence: figure-level readings of PRL Figs. 1-2, no uncertainties", supports: false}
+          - {file: datasets/magnetic_drop_phyllotaxis/README.md, lines: [22, 47], note: "Pass 3 errata for the pinned table, specimen inversion table and van Iterson (1907) reference", supports: true}
+          - {file: datasets/magnetic_drop_phyllotaxis/paper_citations.bib, lines: [1, 43], note: "BibTeX with DOIs for the four primary sources (SHA-pinned; van Iterson not yet included)", supports: true}
+          - {file: morphoeval/math_kg_loops/douady-magnetic-drop-phyllotaxis.yaml, lines: [1, 107], note: "Five equations with Lean declarations, theorem names, loci, renamed G_fold / G_c1 constants and pass3 block", supports: true}
+      code-traceability:
+        value: 91
+        rationale: >-
+          The module docstring (L1-93) maps every section, including the Pass 3 additions, to PRL 1992 Eqs. (1)-(3)
+          and Fig. 3, JTB 1996 Part I Secs. 2-4, Levitov (1991) and Lean 4 Theorems 1-5; each new function
+          documents its equation and the v2 defect it replaces (`measure_emergent_pitchfork_threshold`,
+          `extract_contact_parastichy_pair`, `log_polar_spiral_spectrum`, `invert_reciprocal_lattice_peaks`), and
+          the inline comments at the remediated sites name the removed clamps and the clipped g_vis. Deductions:
+          the dynamical discriminant S_dyn is attributed to 'JTB 1996 Part I Sec. 3.1' without an equation number,
+          and the k-weighting is derived in-house rather than quoted (L283-297) (-4); the reciprocal-lattice
+          relation is attributed to 'Sec. 4 van Iterson lattice' generically (L902-915) (-2); Row B's log-radial
+          projection is justified in a comment but not tied to a specific D&C figure convention (L672-676) (-2);
+          panel-building code (L1215-1575) cites figures only in titles (-1).
+        evidence:
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [1, 93], note: "Module docstring: sections 1-5 with equations, thresholds, Lean theorem names and the Pass 3 remediation list", supports: true}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [283, 297], note: "dynamical_pitchfork_discriminant_sum docstring cites JTB 1996 Part I Sec. 3.1 but the derivation is in-house (no equation number)", supports: false}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [539, 548], note: "Contact-pair docstring cites PRL 1992 Fig. 2 caption and JTB 1996 Part I Sec. 4 nearest-neighbour definition", supports: true}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [665, 676], note: "Inline comments naming the removed v2 clipping and the rho = 1 + ln(r/R0) = 1 + kG identity with PRL 1992 Eq. (1)", supports: true}
+      repro-package:
+        value: 92
+        rationale: >-
+          All three dataset files are SHA-256 verified at every run (L123-158); the 14-check `--self-test`
+          (L1745-1844) covers Lean parity for Theorems 2 and 4, the emergent threshold, unclamped ramps, contact
+          pairs, sweeps, dish regimes, specimen FFT, inversion validation, the disclosed negative result and a
+          bitwise two-run determinism check; runtime is 6.9 s (self-test) / 15 s (full render) on the recorded
+          environment; seeds are fixed (1992) and the GIF is produced by the default invocation. Deductions: no
+          script-level requirements lock (the audit records versions, the repo has only a shared requirements.txt)
+          (-3); the matplotlib font-cache warning when MPLCONFIGDIR is unwritable is not handled or documented (-2);
+          the rendered PNG/GIF are not pinned by SHA in the script or README, only by the measurements file (-2);
+          the bisection's run-to-run determinism is covered by the fixed-G determinism check only indirectly (-1).
+        evidence:
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [123, 158], note: "EXPECTED_SHA256 and verify_dataset_integrity() locking all 3 dataset files at runtime", supports: true}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [1745, 1844], note: "run_self_test: 14 checks including emergent-threshold, true-radius pairs, inversion validation and bitwise determinism", supports: true}
+          - {file: 1992-douady-magnetic-drop-phyllotaxis.py, lines: [1847, 1885], note: "CLI entrypoint; default invocation renders PNG + GIF after running the self-test", supports: true}
+    overall:
+      value: 90.2
+      method: weighted-mean-v0.1
+    remediation:
+      - >-
+        1992-douady-magnetic-drop-phyllotaxis.py:446-476 — compute_equilibrium_bifurcation_diagram labels the spiral
+        branches stable/unstable by the sign of the static Hessian S(G, dphi) while the 180-deg branch now uses the
+        dynamical discriminant S_dyn(G); implement the linearised multiplier of the iterated map about a regular
+        spiral (Jacobian of phi_n = argmin E w.r.t. the k preceding angles) so every branch of Panel A1 carries the
+        same dynamical stability criterion, and add a Lean 4 integer witness for the (1,2)->(2,3) transition.
+      - >-
+        1992-douady-magnetic-drop-phyllotaxis.py:610-620 and 347-398 — the memory depth N_mem = 45 is an ad-hoc
+        truncation; replace it by the physical dish exit (drops leave at R_max/R_0 = 8, i.e. k_exit = 7/G for linear
+        advection, as in `ferrofluid_experiment_parameters`) and extrapolate the emergent threshold in 1/n_iter to
+        remove the +4.5e-4 finite-iteration bias instead of tolerating it.
+      - >-
+        datasets/magnetic_drop_phyllotaxis/magnetic_drop_phyllotaxis_reference.json:65-86 and 109-125 — re-pin the
+        table (update EXPECTED_SHA256 at 1992-douady-magnetic-drop-phyllotaxis.py:123-134) with the keys renamed
+        static_fold_* / dynamical_pitchfork_* , the G = 0.35 row's pair corrected to (1,2) or marked transitional,
+        detected_scale_umbos_count replaced by detections + FFT-consistent scale count, and the dish-regime
+        divergence means replaced by digitised Fig. 3 points with reading uncertainties; add van Iterson (1907) to
+        paper_citations.bib and re-pin it.
+      - >-
+        1992-douady-magnetic-drop-phyllotaxis.py:1369-1380 and 1491-1510 — the specimen comparison is in log-polar
+        and (G, alpha) space; overlay the inverted (alpha_emp = 138.03 deg, G_emp = 0.031, chirality -1) lattice as
+        a synthetic point set on the photograph in Panel C1 (and a photo-coordinate rendering of the simulated (5,8)
+        lattice beside it), and replace the DoG detections by a lattice-guided scale segmentation so the detection
+        count equals the scale count.
+      - >-
+        1992-douady-magnetic-drop-phyllotaxis.py:797-814 — the gamma universality sweep is evaluated only at
+        G = 0.06; sweep gamma in {1,3,5} across the full cascade (and across the linear dish law up to its own
+        G_c1 = 3.63) so the universality claim and the dish model's cascade are tested, not asserted.
+      - >-
+        1992-douady-magnetic-drop-phyllotaxis.py:1113-1130 — the mature cone's radial law fits linear advection
+        (R^2 0.977) better than exponential (0.899); implement the linear-lattice (Archimedean) variant of the
+        reciprocal-lattice inversion, or invert in (r, theta) rather than (ln r, theta), and report the specimen's
+        G under both laws with the closure residual as a model-selection statistic.

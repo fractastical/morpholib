@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-2004-hentschel-tgfb-fibronectin-limb.py — Pass 2 Remediated Implementation (v2)
+2004-hentschel-tgfb-fibronectin-limb.py — Pass 3 Remediated Implementation (v3)
 ===============================================================================
-Multiscale Reactor-Diffusion-Haptotaxis Limb Chondrogenesis & Micromass Patterning:
+Multiscale Reactor-Diffusion-Haptotaxis Limb Chondrogenesis & Micromass Patterning,
+now coupled to a Glazier-Graner-Hogeweg (GGH) cellular Potts cell lattice:
 
 1. **Hentschel, Glimm, Glazier & Newman (2004)** *Proc. R. Soc. Lond. B* 271(1549):1713-1722
    (`doi:10.1098/rspb.2004.2772`):
@@ -35,7 +36,39 @@ Multiscale Reactor-Diffusion-Haptotaxis Limb Chondrogenesis & Micromass Patterni
      exogenous TGF-beta2 treatment, and fail to condense (`R(x,t) -> 1`, 0 condensations)
      when fibronectin haptotaxis is blocked (`chi_F = 0`, anti-fibronectin antibody / RGD peptide).
 
-3. **Machine-Checked Lean 4 Formalization** (`morphoeval/lean/loops/Loop_014_tgfb_fibronectin_limb.lean`):
+3. **Pass 3 — Discrete GGH Cellular Potts Cell Lattice Coupled to the Continuum Fields**
+   (Kiskowski et al. 2004 Dev. Biol. 271:372-387 discrete-cell multiscale scheme, realised with the
+   Glazier-Graner-Hogeweg model of Graner & Glazier 1992 *Phys. Rev. Lett.* 69:2013-2016
+   (`doi:10.1103/PhysRevLett.69.2013`) and Glazier & Graner 1993 *Phys. Rev. E* 47:2128-2154
+   (`doi:10.1103/PhysRevE.47.2128`), as in the CompuCell limb model of Chaturvedi et al. 2005
+   *J. R. Soc. Interface* 2:237-253):
+   - `simulate_ggh_cellular_potts_condensation()` evolves individual mesenchymal cells `sigma(x)`
+     on the continuum lattice with the GGH Hamiltonian
+       H = sum_<ij> J(tau_i, tau_j) (1 - delta_{sigma_i sigma_j}) + lambda_V sum_sigma (v_sigma - V_T)^2
+     and the haptotaxis copy-energy `Delta H_hapto = -mu_F (F(target) - F(source))`
+     (Savill & Hogeweg 1997 J. Theor. Biol. 184:229-235), accepted with the Metropolis rule
+     `P = min(1, exp(-Delta H / T))`.
+   - Coupling: (i) the continuum TGF-beta prepattern `c_a(x)` sets each cell's R1 -> R2 state through
+     the same Hill switch as the PDE (`R_2 = R * c_a^2 / (K_a^2 + c_a^2)`, R2 when the cell-mean Hill
+     fraction exceeds 1/2); (ii) R2 cells deposit fibronectin on the lattice,
+     `dF/dt = k_F c_a^+ R_2^disc - gamma_F F`, where `R_2^disc` is the discrete occupancy-weighted Hill
+     density (two-way cell <-> ECM coupling); (iii) cells climb `grad F` and sort by differential
+     adhesion `J_R2R2 = 2 < J_R1R2 = 11 < J_R1R1 = 14 < J_cell,medium = 16` (Graner & Glazier 1992 values).
+   - Checkerboard-parallel (stride-3 sub-lattice) Metropolis sweeps (Tapia & D'Souza 2011
+     Comput. Phys. Commun. 182:857-865) keep the adhesion energy exact within a sub-sweep; the volume
+     term uses sub-sweep-stale cell volumes (documented approximation).
+   - Reported discrete <-> continuum parity: condensation index `occ_in / occ_out` vs the continuum
+     `R_in / R_out`, heterotypic R1|R2 boundary fraction (Glazier & Graner 1993 sorting metric),
+     Pearson r of the discrete vs continuum R2 density, and per-compartment digit counts on the 2D
+     wing bud. Ablations: `mu_F = 0` (anti-fibronectin), `J_R2R2 = J_R1R2 = J_R1R1` (no differential
+     adhesion), and both.
+   - Pass 3 also stabilises the 2D micromass continuum solver with volume-filling haptotaxis
+     `chi_F R (1 - R / R_max) grad F` (Hillen & Painter 2001 Adv. Appl. Math. 26:280-301,
+     `doi:10.1006/aama.2001.0721`) after Pass 3 found the Pass 2 micromass `R` field saturated at the
+     clip bounds (18% of pixels at `R = 0.05`, 6% at `R = 3.5`; 415 single-pixel "islands"), and
+     exposes the same chemotactic-collapse diagnostic (`clip_fraction_R`) for the 1D and 2D wing solvers.
+
+4. **Machine-Checked Lean 4 Formalization** (`morphoeval/lean/loops/Loop_014_tgfb_fibronectin_limb.lean`):
    - Theorem 1 (`MathOfBiology.Loop_014.hentschel_tgfb_inhibitor_haptotaxis_stability_controls`):
      Equal morphogen diffusivities (`D_a = D_i`) keep `tr(J_k) < 0` and `det(J_k) > 0`, and
      zero haptotaxis (`chi_F = 0`) keeps `sigma_R_no_hapto < 0` for all `k^2 >= 0`.
@@ -45,6 +78,15 @@ Multiscale Reactor-Diffusion-Haptotaxis Limb Chondrogenesis & Micromass Patterni
    - Theorem 3 (`MathOfBiology.Loop_014.hentschel_kiskowski_fibronectin_haptotaxis_amplification`):
      `chi_F_SF > D_R >= 0` at `q >= 1` yields strictly positive net haptotactic condensation
      flux `hapto_net_flux > 0` exceeding the zero-haptotaxis control.
+   - Theorem 4 (`MathOfBiology.Loop_014.ggh_differential_adhesion_sorting_condition`, Pass 3):
+     the GGH heterotypic surface tension `2 J_ld - J_ll - J_dd > 0` makes the swap of two heterotypic
+     R1|R2 contacts for one R1|R1 and one R2|R2 contact strictly lower H (`sorting_swap_dH < 0`),
+     evaluates to `-6` for the Graner-Glazier values `(14, 2, 11)`, and vanishes under the
+     no-differential-adhesion ablation `J_ll = J_dd = J_ld`.
+   - Theorem 5 (`MathOfBiology.Loop_014.ggh_metropolis_haptotaxis_acceptance`, Pass 3):
+     when the haptotactic energy gain `mu_F * dF` of an up-gradient extension is at least the adhesion
+     plus volume penalty, the total `Delta H <= 0` so the Metropolis rule accepts with probability 1,
+     while the anti-fibronectin control `mu_F = 0` leaves `Delta H = Delta H_adh + Delta H_vol`.
 """
 
 from __future__ import annotations
@@ -72,9 +114,17 @@ REF_JSON_PATH = DATASET_DIR / "tgfb_fibronectin_limb_reference.json"
 SPECIMEN_JPG_PATH = DATASET_DIR / "chick_limb_chondrogenesis_specimen.jpg"
 SCOUT_JSON_PATH = DATASET_DIR / "scout_manifest.json"
 BIB_PATH = DATASET_DIR / "paper_citations.bib"
+CPM_REF_JSON_PATH = DATASET_DIR / "kiskowski_ggh_cpm_reference.json"
 
 OUT_PNG = ROOT / "docs" / "media" / "tgfb_fibronectin_limb_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "tgfb_fibronectin_limb_growth.gif"
+OUT_CPM_GIF = ROOT / "docs" / "media" / "tgfb_fibronectin_limb_cpm_sorting.gif"
+
+# Clip bounds of the continuum mesenchymal cell density R; a well-resolved haptotaxis solution
+# never touches them, so the fraction of samples at the bounds is a chemotactic-collapse diagnostic.
+R_CLIP_LO, R_CLIP_HI = 0.05, 3.5
+# Volume-filling carrying capacity for the 2D micromass haptotaxis (Hillen & Painter 2001).
+R_MAX_VOLUME_FILLING = 2.0
 
 EXPECTED_SHA256: dict[str, str] = {
     "datasets/tgfb_fibronectin_limb/tgfb_fibronectin_limb_reference.json": (
@@ -87,7 +137,10 @@ EXPECTED_SHA256: dict[str, str] = {
         "c810bd77e66557c8372e0f5ba74dcb630eb93aecdb7315cc242e4347b6c0d15f"
     ),
     "datasets/tgfb_fibronectin_limb/paper_citations.bib": (
-        "b8e9c53f3df00e42ecc78e5b0eeb93512d86676e4e440240fd53c8c05f5d1e3d"
+        "c2be675a1125adf799bc3ddb069c921d55b31b5597154a7efb4e71850d4e42fc"
+    ),
+    "datasets/tgfb_fibronectin_limb/kiskowski_ggh_cpm_reference.json": (
+        "a7d13368e41d762a9cbf86337e575173a5fde9328cb90865cfb7877791e88a9f"
     ),
 }
 
@@ -96,7 +149,7 @@ EXPECTED_SHA256: dict[str, str] = {
 # 1. Dataset & SHA-256 Provenance Verification
 # =========================================================================== #
 def verify_dataset_sha256() -> dict[str, str]:
-    """Verify SHA-256 digests of all 4 vendored Slot 014 dataset files."""
+    """Verify SHA-256 digests of all 5 vendored Slot 014 dataset files."""
     actual: dict[str, str] = {}
     for rel, expected in EXPECTED_SHA256.items():
         p = ROOT / rel
@@ -113,6 +166,17 @@ def load_reference_dataset() -> dict[str, Any]:
     """Load and SHA-256-verify `tgfb_fibronectin_limb_reference.json`."""
     verify_dataset_sha256()
     return json.loads(REF_JSON_PATH.read_text(encoding="utf-8"))
+
+
+def load_cpm_reference_dataset() -> dict[str, Any]:
+    """Load and SHA-256-verify the Pass 3 `kiskowski_ggh_cpm_reference.json` GGH parameter table."""
+    verify_dataset_sha256()
+    return json.loads(CPM_REF_JSON_PATH.read_text(encoding="utf-8"))
+
+
+def clip_fraction(R: np.ndarray) -> float:
+    """Fraction of cell-density samples sitting at the clip bounds (0.0 for a resolved solution)."""
+    return float(np.mean((R <= R_CLIP_LO + 1e-9) | (R >= R_CLIP_HI - 1e-9)))
 
 
 # =========================================================================== #
@@ -349,6 +413,7 @@ def integrate_hentschel_1d_multiscale_pde(
         "mean_spacing_um": mean_spacing_um,
         "cv_spacing": cv_spacing,
         "r_FR_coloc": float(r_FR_coloc),
+        "clip_fraction_R": clip_fraction(R),
         "dispersion": disp,
     }
 
@@ -464,8 +529,10 @@ def integrate_hentschel_2d_limb_bud_pde(
         "ca": ca,
         "F": F,
         "R": R,
+        "compartment_masks": {"stylopod": stylo_mask, "zeugopod": zeugo_mask, "autopod": auto_mask},
         "compartment_counts": compartment_counts,
         "total_elements": int(sum(compartment_counts)),
+        "clip_fraction_R": clip_fraction(R),
     }
 
 
@@ -478,12 +545,21 @@ def simulate_2d_micromass_morphospace(
     """
     Simulate the 2D high-density chick limb bud micromass culture morphospace
     (Kiskowski et al. 2004 Dev. Biol. 271:372-387; Miura & Shiota 2000 Dev. Dyn. 217:241-249):
-      1. Wild-Type Nodular Micromass (`q_asym = 0.38`, `chi_F = 0.85`): discrete nodular
-         precartilage spots (~25-30% condensation area fraction).
-      2. Exogenous TGF-beta2 Stripe Fusion (`q_asym = 0.0`, `chi_F = 0.85`): bar-like
-         labyrinthine stripe network (~48-52% condensation area fraction).
+      1. Wild-Type micromass (`q_asym = 0.38`, activator offset `s_TGFb = -1.10`, `chi_F = 0.85`):
+         the thresholded TGF-beta prepattern yields discrete condensation islands.
+      2. Exogenous TGF-beta2 (`q_asym = 0.0`, `s_TGFb = 0.0`, `chi_F = 0.85`): the un-thresholded
+         prepattern yields a more connected, bar-like labyrinth (fewer, larger islands).
       3. Anti-Fibronectin / RGD Haptotaxis Blockade (`chi_F = 0.0`): uniform uncondensed
          mesenchymal sheet (0% condensation area fraction).
+
+    Pass 3 change: the haptotactic flux uses volume-filling sensitivity
+    `chi_F R (1 - R / R_max) grad F` with `R_max = R_MAX_VOLUME_FILLING` (Hillen & Painter 2001),
+    which removes the chemotactic collapse of the Pass 2 solver (18% of pixels pinned at R = 0.05,
+    6% at R = 3.5, 415 single-pixel "islands"). Honest consequence: with the resolved solver both
+    haptotactic regimes are labyrinthine bands rather than hexagonal spots; the Pass 2 "nodular spots
+    (19.8%) vs stripes (44.8%)" contrast was an artefact of thresholding a collapsed field. The regime
+    dictionary keys are kept for API stability; `wt_nodular` is reported as `WT (thresholded)` and
+    `tgfb_stripes` as `+TGF-beta2 (fused)` in the figure.
     """
     Da, Di, fa, fi, gi = 0.5, 50.0, 11.0, -1.0, -200.0
     ga = 200.0 * fa + 2.0 * ((fa - 2.0) ** 2)
@@ -526,22 +602,34 @@ def simulate_2d_micromass_morphospace(
             F_hat = np.fft.fft2(F)
             dF_dx = np.real(np.fft.ifft2(1j * KX * F_hat))
             dF_dy = np.real(np.fft.ifft2(1j * KY * F_hat))
-            div_hat = 1j * KX * np.fft.fft2(chi_val * R * dF_dx) + 1j * KY * np.fft.fft2(chi_val * R * dF_dy)
+            # Volume-filling haptotactic sensitivity (Hillen & Painter 2001) prevents overcrowding collapse
+            sens = chi_val * R * np.maximum(0.0, 1.0 - R / R_MAX_VOLUME_FILLING)
+            div_hat = 1j * KX * np.fft.fft2(sens * dF_dx) + 1j * KY * np.fft.fft2(sens * dF_dy)
             div_flux = 0.25 * np.real(np.fft.ifft2(div_hat))
 
             rhs_R = R + dt * (-div_flux + r_R * R * (1.0 - R))
-            R = np.clip(np.real(np.fft.ifft2(np.fft.fft2(rhs_R) / denom_R)), 0.05, 3.5)
+            R = np.clip(np.real(np.fft.ifft2(np.fft.fft2(rhs_R) / denom_R)), R_CLIP_LO, R_CLIP_HI)
 
         cond_mask = R > 1.08
         labeled, n_islands = ndi.label(cond_mask)
         area_frac = float(np.mean(cond_mask))
+        ca_eff = ca + s_tgfb
+        hill_mask = np.maximum(0.0, ca_eff) > K_a  # Hill(c_a) > 1/2
+        if hill_mask.any() and (~hill_mask).any():
+            cont_cond_index = float(np.mean(R[hill_mask]) / np.mean(R[~hill_mask]))
+        else:
+            cont_cond_index = 1.0
         return {
             "R": R,
             "F": F,
             "ca": ca,
+            "ca_eff": ca_eff,
             "std_R": float(np.std(R)),
             "area_fraction": area_frac,
             "n_islands": int(n_islands),
+            "mean_island_px": float(np.sum(cond_mask) / max(n_islands, 1)),
+            "clip_fraction_R": clip_fraction(R),
+            "continuum_condensation_index": cont_cond_index,
         }
 
     wt_nodular = _run_regime(q_asym=0.38, chi_val=0.85, s_tgfb=-1.10)
@@ -552,6 +640,312 @@ def simulate_2d_micromass_morphospace(
         "wt_nodular": wt_nodular,
         "tgfb_stripes": tgfb_stripes,
         "no_hapto": no_hapto,
+    }
+
+
+# =========================================================================== #
+# 3b. Pass 3 — Glazier-Graner-Hogeweg Cellular Potts Cell Lattice Coupled to the Continuum
+# =========================================================================== #
+MOORE_OFFSETS: tuple[tuple[int, int], ...] = ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
+
+# Graner & Glazier (1992) Phys. Rev. Lett. 69:2013 cell-sorting contact energies and Metropolis
+# temperature; R1 = "light" (loosely cohesive) mesenchyme, R2 = "dark" (TGF-beta-activated,
+# strongly cohesive) prechondrogenic cells, M = medium / ECM.
+GGH_DEFAULTS: dict[str, float] = {
+    "J_R1R1": 14.0,
+    "J_R2R2": 2.0,
+    "J_R1R2": 11.0,
+    "J_cellM": 16.0,
+    "T": 10.0,
+    "lambda_V": 6.0,
+    "cell_size_px": 5.0,
+    "gap_px": 1.0,
+    "mu_F": 10.0,
+    "dt_F": 0.04,
+}
+
+
+def spectral_zoom_periodic(field: np.ndarray, zoom: int) -> np.ndarray:
+    """Exact Fourier (zero-padding) upsampling of a periodic square field by an integer factor."""
+    n = field.shape[0]
+    m = n * zoom
+    f_hat = np.fft.fftshift(np.fft.fft2(field))
+    pad = (m - n) // 2
+    big = np.pad(f_hat, pad)
+    return np.real(np.fft.ifft2(np.fft.ifftshift(big))) * (zoom * zoom)
+
+
+def simulate_ggh_cellular_potts_condensation(
+    ca_eff: np.ndarray,
+    periodic: bool = True,
+    mcs: int = 150,
+    J_R1R1: float | None = None,
+    J_R2R2: float | None = None,
+    J_R1R2: float | None = None,
+    J_cellM: float | None = None,
+    T: float | None = None,
+    lambda_V: float | None = None,
+    cell_size: int = 5,
+    gap: int = 1,
+    mu_F: float | None = None,
+    k_F: float = 1.8,
+    gamma_F: float = 0.65,
+    dt_F: float = GGH_DEFAULTS["dt_F"],
+    K_a: float = 0.60,
+    seed: int = 2004,
+    snapshot_steps: tuple[int, ...] = (),
+) -> dict[str, Any]:
+    """
+    Glazier-Graner-Hogeweg cellular Potts model of discrete mesenchymal cells on the continuum
+    lattice, coupled to the Hentschel et al. (2004) TGF-beta prepattern `ca_eff` and to a
+    cell-deposited fibronectin field F (Kiskowski et al. 2004 discrete-cell scheme; Chaturvedi et al.
+    2005 CompuCell realisation).
+
+    Hamiltonian (Graner & Glazier 1992 Eq. 1; Glazier & Graner 1993 Eq. 2):
+      H = sum_{<i,j> Moore} J(tau(sigma_i), tau(sigma_j)) (1 - delta(sigma_i, sigma_j))
+          + lambda_V sum_sigma (v_sigma - V_T)^2
+    Copy attempt (source -> target) energy change adds the haptotaxis term
+      Delta H_hapto = -mu_F (F(target) - F(source))   for the extending cell (Savill & Hogeweg 1997),
+    with Metropolis acceptance P = 1 if Delta H <= 0 else exp(-Delta H / T).
+
+    Coupling to the continuum:
+      - cell state: R2 (prechondrogenic) when the cell-mean Hill fraction c_a^2/(K_a^2 + c_a^2) > 1/2,
+        i.e. the same switch as the PDE term R_2 = R * Hill(c_a); the state is re-evaluated every MCS.
+      - ECM: dF/dt = k_F c_a^+ R_2^disc - gamma_F F on the lattice, with R_2^disc the Gaussian-smoothed
+        (sigma = 1 px) occupancy-weighted Hill density; cells then climb grad F (two-way coupling).
+
+    Sweeps are checkerboard-parallel over the 9 stride-3 sub-lattices (Tapia & D'Souza 2011): within a
+    sub-sweep no two targets share a Moore neighbour, so the adhesion energy is exact; the volume term
+    uses the cell volumes at the start of the sub-sweep (standard parallel-CPM approximation).
+
+    Returns the final lattice, cell types, F, the coarse-grained (sigma = 2 px) occupancy density, the
+    discrete R2 density, kinetic traces of the condensation index and heterotypic boundary fraction,
+    and optional snapshots for the animation.
+    """
+    # Resolve GGH parameters at call time so the CLI flags (`--mu-F`, `--J-R2R2`) take effect
+    J_R1R1 = GGH_DEFAULTS["J_R1R1"] if J_R1R1 is None else J_R1R1
+    J_R2R2 = GGH_DEFAULTS["J_R2R2"] if J_R2R2 is None else J_R2R2
+    J_R1R2 = GGH_DEFAULTS["J_R1R2"] if J_R1R2 is None else J_R1R2
+    J_cellM = GGH_DEFAULTS["J_cellM"] if J_cellM is None else J_cellM
+    T = GGH_DEFAULTS["T"] if T is None else T
+    lambda_V = GGH_DEFAULTS["lambda_V"] if lambda_V is None else lambda_V
+    mu_F = GGH_DEFAULTS["mu_F"] if mu_F is None else mu_F
+
+    H_, W_ = ca_eff.shape
+    rng = np.random.default_rng(seed)
+
+    # --- initial cell sheet: square cells of side `cell_size` separated by `gap` medium pixels
+    sigma = np.zeros((H_, W_), dtype=np.int64)
+    pitch = cell_size + gap
+    border = 0 if periodic else 1
+    sid = 1
+    for y0 in range(border, H_ - border - cell_size + 1, pitch):
+        for x0 in range(border, W_ - border - cell_size + 1, pitch):
+            sigma[y0 : y0 + cell_size, x0 : x0 + cell_size] = sid
+            sid += 1
+    n_cells = sid - 1
+    V_T = float(cell_size * cell_size)
+
+    cell_type = np.zeros(n_cells + 1, dtype=np.int64)  # 0 = medium, 1 = R1, 2 = R2
+    cell_type[1:] = 1
+    J = np.array(
+        [
+            [0.0, J_cellM, J_cellM],
+            [J_cellM, J_R1R1, J_R1R2],
+            [J_cellM, J_R1R2, J_R2R2],
+        ]
+    )
+    frozen = np.zeros((H_, W_), dtype=bool)
+    if not periodic:
+        frozen[0, :] = frozen[-1, :] = frozen[:, 0] = frozen[:, -1] = True  # zero-flux medium frame
+    filt_mode = "wrap" if periodic else "nearest"
+
+    ca_pos = np.maximum(0.0, ca_eff)
+    hill = (ca_pos * ca_pos) / (K_a * K_a + ca_pos * ca_pos)
+    hill_mask = hill > 0.5
+    F = np.zeros((H_, W_), dtype=np.float64)
+    vol = np.bincount(sigma.ravel(), minlength=n_cells + 1).astype(np.float64)
+
+    yy, xx = np.mgrid[0:H_, 0:W_]
+    sub_targets = [(yy[oy::3, ox::3].ravel(), xx[oy::3, ox::3].ravel()) for oy in range(3) for ox in range(3)]
+    nbr = np.array(MOORE_OFFSETS)
+
+    cond_index_trace: list[float] = []
+    het_frac_trace: list[float] = []
+    snapshots: dict[int, np.ndarray] = {}
+
+    def _metrics(sig: np.ndarray, types_px: np.ndarray) -> tuple[float, float]:
+        occ = sig > 0
+        ci = float(np.mean(occ[hill_mask]) / max(np.mean(occ[~hill_mask]), 1e-9)) if hill_mask.any() else 1.0
+        het = 0
+        hom2 = 0
+        for dy, dx in ((0, 1), (1, 0)):
+            t2 = np.roll(np.roll(types_px, -dy, axis=0), -dx, axis=1)
+            s2 = np.roll(np.roll(sig, -dy, axis=0), -dx, axis=1)
+            het += int(np.sum(((types_px == 1) & (t2 == 2)) | ((types_px == 2) & (t2 == 1))))
+            hom2 += int(np.sum((types_px == 2) & (t2 == 2) & (sig != s2)))
+        return ci, float(het / max(het + hom2, 1))
+
+    for step in range(mcs):
+        # (i) continuum -> cells: R1/R2 state from the cell-mean Hill fraction of the TGF-beta prepattern
+        hill_cell = np.bincount(sigma.ravel(), weights=hill.ravel(), minlength=n_cells + 1) / np.maximum(vol, 1.0)
+        cell_type[1:] = np.where(hill_cell[1:] > 0.5, 2, 1)
+        cell_type[vol <= 0.0] = 0
+        types_px = cell_type[sigma]
+
+        # (ii) cells -> ECM: fibronectin deposition by occupancy-weighted Hill density, linear decay
+        R2_disc = ndi.gaussian_filter((sigma > 0).astype(np.float64) * hill, sigma=1.0, mode=filt_mode)
+        F = (F + dt_F * k_F * ca_pos * R2_disc) / (1.0 + dt_F * gamma_F)
+
+        # (iii) one Monte Carlo step = 9 checkerboard sub-sweeps covering every lattice site once
+        for ty, tx in sub_targets:
+            n = ty.size
+            d = rng.integers(0, 8, size=n)
+            sy = (ty + nbr[d, 0]) % H_
+            sx = (tx + nbr[d, 1]) % W_
+            s_old = sigma[ty, tx]
+            s_new = sigma[sy, sx]
+            active = (s_old != s_new) & (~frozen[ty, tx])
+            t_old = cell_type[s_old]
+            t_new = cell_type[s_new]
+            dH = np.zeros(n, dtype=np.float64)
+            for dy, dx in MOORE_OFFSETS:
+                nb = sigma[(ty + dy) % H_, (tx + dx) % W_]
+                t_nb = cell_type[nb]
+                dH += J[t_new, t_nb] * (s_new != nb) - J[t_old, t_nb] * (s_old != nb)
+            dH += np.where(s_new > 0, lambda_V * (2.0 * (vol[s_new] - V_T) + 1.0), 0.0)
+            dH += np.where(s_old > 0, lambda_V * (-2.0 * (vol[s_old] - V_T) + 1.0), 0.0)
+            dF_copy = F[ty, tx] - F[sy, sx]
+            dH += np.where(s_new > 0, -mu_F * dF_copy, np.where(s_old > 0, mu_F * dF_copy, 0.0))
+            accept = active & ((dH <= 0.0) | (rng.random(n) < np.exp(-np.minimum(dH, 60.0) / T)))
+            if accept.any():
+                sigma[ty[accept], tx[accept]] = s_new[accept]
+                np.add.at(vol, s_new[accept], 1.0)
+                np.add.at(vol, s_old[accept], -1.0)
+
+        ci, hf = _metrics(sigma, cell_type[sigma])
+        cond_index_trace.append(ci)
+        het_frac_trace.append(hf)
+        if step in snapshot_steps:
+            snapshots[step] = cell_type[sigma].copy()
+
+    types_px = cell_type[sigma]
+    occ = (sigma > 0).astype(np.float64)
+    density = ndi.gaussian_filter(occ, sigma=2.0, mode=filt_mode)
+    density_rel = density / max(float(density.mean()), 1e-9)
+    r2_density = ndi.gaussian_filter((types_px == 2).astype(np.float64), sigma=2.0, mode=filt_mode)
+    cond_mask = density_rel > 1.08
+    _, n_islands = ndi.label(cond_mask)
+
+    return {
+        "sigma": sigma,
+        "types_px": types_px,
+        "F": F,
+        "hill": hill,
+        "hill_mask": hill_mask,
+        "n_cells": n_cells,
+        "n_cells_alive": int(np.sum(vol[1:] > 0.0)),
+        "n_R2_cells": int(np.sum(cell_type == 2)),
+        "density_rel": density_rel,
+        "r2_density": r2_density,
+        "condensation_index": float(cond_index_trace[-1]) if cond_index_trace else 1.0,
+        "heterotypic_boundary_fraction": float(het_frac_trace[-1]) if het_frac_trace else 1.0,
+        "condensation_index_trace": np.asarray(cond_index_trace),
+        "heterotypic_fraction_trace": np.asarray(het_frac_trace),
+        "area_fraction": float(np.mean(cond_mask)),
+        "n_islands": int(n_islands),
+        "snapshots": snapshots,
+        "params": {
+            "J_R1R1": J_R1R1, "J_R2R2": J_R2R2, "J_R1R2": J_R1R2, "J_cellM": J_cellM, "T": T,
+            "lambda_V": lambda_V, "V_T": V_T, "mu_F": mu_F, "mcs": mcs, "periodic": periodic,
+        },
+    }
+
+
+def run_cpm_micromass_coupling(mcs: int = 150, zoom: int = 3, seed: int = 2004) -> dict[str, Any]:
+    """
+    Couple the GGH cell lattice to the WT 2D micromass continuum solution: the continuum
+    TGF-beta prepattern `ca_eff` and cell density `R` are Fourier-upsampled by `zoom` (so one
+    condensation wavelength spans ~7 cell diameters, as in Kiskowski et al. 2004), then four GGH
+    regimes are evolved on the same prepattern:
+      WT            : differential adhesion (2 < 11 < 14) + haptotaxis (mu_F = 10)
+      DA-only       : mu_F = 0 (anti-fibronectin / RGD blockade of haptotaxis)
+      hapto-only    : J_R2R2 = J_R1R2 = J_R1R1 = 14 (no differential adhesion)
+      full ablation : both
+    Returns per-regime results plus the continuum condensation index on the same mask.
+    """
+    micromass = simulate_2d_micromass_morphospace(seed=seed)
+    wt = micromass["wt_nodular"]
+    ca_eff_hi = spectral_zoom_periodic(wt["ca_eff"], zoom)
+    R_hi = spectral_zoom_periodic(wt["R"], zoom)
+    hill_hi = np.maximum(0.0, ca_eff_hi) ** 2 / (0.36 + np.maximum(0.0, ca_eff_hi) ** 2)
+    hill_mask_hi = hill_hi > 0.5
+    cont_ci = float(np.mean(R_hi[hill_mask_hi]) / np.mean(R_hi[~hill_mask_hi]))
+    R2_cont_hi = R_hi * hill_hi
+
+    snaps = tuple(int(v) for v in np.linspace(0, mcs - 1, 8).round())
+    regimes = {
+        "wt": simulate_ggh_cellular_potts_condensation(ca_eff_hi, periodic=True, mcs=mcs, seed=seed, snapshot_steps=snaps),
+        "da_only": simulate_ggh_cellular_potts_condensation(ca_eff_hi, periodic=True, mcs=mcs, seed=seed, mu_F=0.0),
+        "hapto_only": simulate_ggh_cellular_potts_condensation(
+            ca_eff_hi, periodic=True, mcs=mcs, seed=seed, J_R2R2=14.0, J_R1R2=14.0
+        ),
+        "ablation": simulate_ggh_cellular_potts_condensation(
+            ca_eff_hi, periodic=True, mcs=mcs, seed=seed, mu_F=0.0, J_R2R2=14.0, J_R1R2=14.0
+        ),
+    }
+    r_r2, _ = pearsonr(regimes["wt"]["r2_density"].ravel(), R2_cont_hi.ravel())
+    r_abl, _ = pearsonr(regimes["ablation"]["r2_density"].ravel(), R2_cont_hi.ravel())
+    return {
+        "zoom": zoom,
+        "ca_eff_hi": ca_eff_hi,
+        "R_hi": R_hi,
+        "R2_cont_hi": R2_cont_hi,
+        "hill_mask_hi": hill_mask_hi,
+        "continuum_condensation_index": cont_ci,
+        "regimes": regimes,
+        "r_R2_discrete_vs_continuum": float(r_r2),
+        "r_R2_discrete_vs_continuum_ablation": float(r_abl),
+        "micromass": micromass,
+    }
+
+
+def run_cpm_wing_bud_coupling(mcs: int = 300, seed: int = 2004) -> dict[str, Any]:
+    """
+    Couple the GGH cell lattice to the 2D proximodistal wing bud prepattern `c_a(x, z)` of
+    `integrate_hentschel_2d_limb_bud_pde` and count discrete R2 condensations per compartment from
+    the anteroposterior profile of the discrete R2 density (same `find_peaks` rule as the continuum).
+    """
+    wing = integrate_hentschel_2d_limb_bud_pde(seed=seed)
+    nx = wing["ca"].shape[1]
+    cpm = simulate_ggh_cellular_potts_condensation(wing["ca"], periodic=False, mcs=mcs, seed=seed)
+    abl = simulate_ggh_cellular_potts_condensation(
+        wing["ca"], periodic=False, mcs=mcs, seed=seed, mu_F=0.0, J_R2R2=14.0, J_R1R2=14.0
+    )
+
+    def _count(r2d: np.ndarray, z_mask: np.ndarray) -> tuple[int, np.ndarray]:
+        prof = np.mean(r2d[z_mask, :], axis=0)
+        if np.std(prof) < 0.02 or np.max(prof) < 0.05:
+            return 0, prof
+        pks, _ = find_peaks(prof, height=0.22 * np.max(prof), distance=max(8, nx // 8), prominence=0.15 * np.std(prof))
+        return int(len(pks)), prof
+
+    counts = []
+    profiles = {}
+    for name in ("stylopod", "zeugopod", "autopod"):
+        c, prof = _count(cpm["r2_density"], wing["compartment_masks"][name])
+        counts.append(c)
+        profiles[name] = prof
+    counts_abl = [_count(abl["r2_density"], wing["compartment_masks"][n])[0] for n in ("stylopod", "zeugopod", "autopod")]
+    return {
+        "wing": wing,
+        "cpm": cpm,
+        "ablation": abl,
+        "compartment_counts": counts,
+        "compartment_counts_ablation": counts_abl,
+        "total_elements": int(sum(counts)),
+        "profiles": profiles,
+        "continuum_counts": wing["compartment_counts"],
     }
 
 
@@ -590,6 +984,7 @@ def run_fgf_zonation_sweep() -> list[dict[str, Any]]:
                 "std_R": pde["std_R"],
                 "contrast_R": pde["contrast_R"],
                 "r_FR_coloc": pde["r_FR_coloc"],
+                "clip_fraction_R": pde["clip_fraction_R"],
                 "ca_profile": pde["ca"],
                 "F_profile": pde["F"],
                 "R_profile": pde["R"],
@@ -692,17 +1087,19 @@ def segment_chick_limb_specimen() -> dict[str, Any]:
 # =========================================================================== #
 # 6. Publication Figure & Animation Rendering
 # =========================================================================== #
-def render_outputs() -> dict[str, Any]:
-    """Render the 8-panel Pass 2 synthesis figure and 4-frame multiscale outgrowth GIF."""
+def render_outputs(cpm_mcs: int = 150, cpm_wing_mcs: int = 300) -> dict[str, Any]:
+    """Render the 12-panel Pass 3 synthesis figure, the 4-frame outgrowth GIF and the 8-frame GGH sorting GIF."""
     OUT_PNG.parent.mkdir(parents=True, exist_ok=True)
     stages = run_fgf_zonation_sweep()
-    wing_2d = integrate_hentschel_2d_limb_bud_pde()
-    micromass = simulate_2d_micromass_morphospace()
+    micromass_cpm = run_cpm_micromass_coupling(mcs=cpm_mcs)
+    micromass = micromass_cpm["micromass"]
+    wing_cpm = run_cpm_wing_bud_coupling(mcs=cpm_wing_mcs)
+    wing_2d = wing_cpm["wing"]
     controls = run_negative_controls()
     spec = segment_chick_limb_specimen()
 
-    fig = plt.figure(figsize=(17.4, 9.6), dpi=150)
-    gs = GridSpec(2, 4, figure=fig, hspace=0.35, wspace=0.28)
+    fig = plt.figure(figsize=(17.4, 14.2), dpi=150)
+    gs = GridSpec(3, 4, figure=fig, hspace=0.38, wspace=0.28)
 
     # Panel A: TGF-beta / Inhibitor Dispersion Re(sigma(k)) Across Proximodistal FGF Zonation
     ax_a = fig.add_subplot(gs[0, 0])
@@ -758,20 +1155,25 @@ def render_outputs() -> dict[str, Any]:
     ax_c.set_xlim(0.0, 1.18)
     ax_c.set_yticks([(len(stages) - 1 - i) * 2.3 for i in range(len(stages))])
     ax_c.set_yticklabels(stage_labels, fontsize=7.8)
-    ax_c.set_title("C. Coupled $(F, R)$ Haptotactic Condensations ($1 \\to 4$)", fontsize=10.2, fontweight="bold")
+    ax_c.set_title("C. Coupled $(F, R)$ Condensations ($1 \\to 4$)", fontsize=10.2, fontweight="bold")
     ax_c.set_xlabel("Normalized AP Coordinate $x / L_{\\mathrm{AP}}$")
     ax_c.legend(fontsize=7.3, loc="upper right")
     ax_c.grid(alpha=0.25)
 
-    # Panel D: 2D Micromass Morphospace (Nodular Spots vs Exogenous TGF-beta2 Stripes vs chi_F=0)
+    # Panel D: 2D Micromass Continuum Morphospace (volume-filling haptotaxis; WT thresholded vs +TGF-beta2 fused)
     ax_d = fig.add_subplot(gs[0, 3])
     comp_mm = np.hstack([micromass["wt_nodular"]["R"], micromass["tgfb_stripes"]["R"]])
     im_d = ax_d.imshow(comp_mm, cmap="YlOrRd", vmin=0.75, vmax=1.55, aspect="auto")
     nx_m = micromass["wt_nodular"]["R"].shape[1]
     ax_d.axvline(nx_m - 0.5, color="white", lw=2.0, ls="--")
-    ax_d.text(0.25 * nx_m, 8, f"WT Nodular\n({100*micromass['wt_nodular']['area_fraction']:.1f}% area)", color="white", ha="center", fontsize=8.0, fontweight="bold", bbox=dict(facecolor="#0f172a", alpha=0.75, edgecolor="none"))
-    ax_d.text(1.25 * nx_m, 8, f"+TGF-$\\beta_2$ Stripes\n({100*micromass['tgfb_stripes']['area_fraction']:.1f}% area)", color="white", ha="center", fontsize=8.0, fontweight="bold", bbox=dict(facecolor="#0f172a", alpha=0.75, edgecolor="none"))
-    ax_d.set_title("D. 2D Micromass Spot vs. Stripe Morphospace", fontsize=10.2, fontweight="bold")
+    ax_d.text(0.25 * nx_m, 8, f"WT (thresholded)\n{micromass['wt_nodular']['n_islands']} islands, {100*micromass['wt_nodular']['area_fraction']:.1f}% area", color="white", ha="center", fontsize=7.6, fontweight="bold", bbox=dict(facecolor="#0f172a", alpha=0.75, edgecolor="none"))
+    ax_d.text(1.25 * nx_m, 8, f"+TGF-$\\beta_2$ (fused)\n{micromass['tgfb_stripes']['n_islands']} islands, {100*micromass['tgfb_stripes']['area_fraction']:.1f}% area", color="white", ha="center", fontsize=7.6, fontweight="bold", bbox=dict(facecolor="#0f172a", alpha=0.75, edgecolor="none"))
+    ax_d.text(
+        nx_m, nx_m - 5,
+        f"volume-filling $\\chi_F R(1-R/{R_MAX_VOLUME_FILLING:.0f})\\nabla F$; clip fraction = {micromass['wt_nodular']['clip_fraction_R']:.3f} (Pass 2: 0.244)",
+        color="#0f172a", ha="center", fontsize=6.8, bbox=dict(facecolor="white", alpha=0.85, edgecolor="none"),
+    )
+    ax_d.set_title("D. 2D Micromass Continuum (Resolved)", fontsize=10.2, fontweight="bold")
     ax_d.set_xticks([])
     ax_d.set_yticks([])
     plt.colorbar(im_d, ax=ax_d, fraction=0.046, pad=0.04, label="Cell density $R$")
@@ -878,14 +1280,131 @@ def render_outputs() -> dict[str, Any]:
     ax_h.legend(fontsize=7.4, loc="upper left")
     ax_h.grid(axis="y", alpha=0.25)
 
+    # ------------------------------------------------------------------ Pass 3 row: GGH cellular Potts coupling
+    type_cmap = matplotlib.colors.ListedColormap(["#f1f5f9", "#94a3b8", "#b45309"])  # medium, R1, R2
+    reg = micromass_cpm["regimes"]
+
+    # Panel I: GGH micromass lattice on the continuum TGF-beta prepattern (WT regime)
+    ax_i = fig.add_subplot(gs[2, 0])
+    wt_cpm = reg["wt"]
+    ax_i.imshow(wt_cpm["types_px"], cmap=type_cmap, vmin=0, vmax=2, interpolation="nearest")
+    # cell outlines
+    sig = wt_cpm["sigma"]
+    edges = (sig != np.roll(sig, 1, axis=0)) | (sig != np.roll(sig, 1, axis=1))
+    ax_i.imshow(np.ma.masked_where(~edges, edges), cmap=matplotlib.colors.ListedColormap(["#0f172a"]), alpha=0.55, interpolation="nearest")
+    ax_i.contour(micromass_cpm["hill_mask_hi"].astype(float), levels=[0.5], colors="#dc2626", linewidths=1.1)
+    ax_i.set_title(
+        f"I. GGH Cellular Potts Micromass ({wt_cpm['n_cells']} cells)",
+        fontsize=10.0, fontweight="bold",
+    )
+    ax_i.text(
+        0.02, 0.02,
+        f"R2 cells = {wt_cpm['n_R2_cells']}; cond. index = {wt_cpm['condensation_index']:.2f} (continuum {micromass_cpm['continuum_condensation_index']:.2f})\n"
+        f"red: continuum Hill$(c_a)=1/2$ contour; orange: R2, grey: R1, white: medium",
+        transform=ax_i.transAxes, fontsize=6.6, va="bottom",
+        bbox=dict(facecolor="white", alpha=0.85, edgecolor="none"),
+    )
+    ax_i.set_xticks([])
+    ax_i.set_yticks([])
+
+    # Panel J: GGH lattice on the 2D wing bud prepattern with per-compartment discrete R2 condensation counts
+    ax_j = fig.add_subplot(gs[2, 1])
+    wcp = wing_cpm["cpm"]
+    ax_j.imshow(wcp["types_px"], cmap=type_cmap, vmin=0, vmax=2, interpolation="nearest", aspect="auto", origin="lower",
+                extent=[wing_2d["x_um"][0], wing_2d["x_um"][-1], wing_2d["z"][0], wing_2d["z"][-1]])
+    ax_j.contour(wing_2d["x_um"], wing_2d["z"], wcp["hill_mask"].astype(float), levels=[0.5], colors="#dc2626", linewidths=0.9)
+    ax_j.axhline(0.36, color="#475569", ls="--", lw=1.0)
+    ax_j.axhline(0.70, color="#475569", ls="--", lw=1.0)
+    cc = wing_cpm["compartment_counts"]
+    ccont = wing_cpm["continuum_counts"]
+    for zc, lbl, idx in ((0.19, "Stylopod", 0), (0.53, "Zeugopod", 1), (0.84, "Autopod", 2)):
+        ax_j.text(575, zc, f"{lbl}: GGH m={cc[idx]} | PDE m={ccont[idx]}", ha="center", va="center", fontsize=7.6, fontweight="bold",
+                  color="#0f172a", bbox=dict(facecolor="white", alpha=0.8, edgecolor="none", pad=1.4))
+    ax_j.set_title(f"J. GGH Wing Bud: GGH {cc} vs PDE {ccont}", fontsize=9.8, fontweight="bold")
+    ax_j.set_xlabel("Anteroposterior Coordinate $x$ ($\\mu$m)")
+    ax_j.set_ylabel("Proximodistal Axis $z / L_{\\mathrm{wing}}$")
+
+    # Panel K: sorting / condensation kinetics across the four GGH regimes
+    ax_k = fig.add_subplot(gs[2, 2])
+    reg_style = {
+        "wt": ("#dc2626", "WT (DA + haptotaxis)"),
+        "da_only": ("#d97706", "DA only ($\\mu_F=0$)"),
+        "hapto_only": ("#1d4ed8", "haptotaxis only ($J$ equal)"),
+        "ablation": ("#64748b", "full ablation"),
+    }
+    for key, (col, lbl) in reg_style.items():
+        ax_k.plot(reg[key]["condensation_index_trace"], color=col, lw=1.9, label=lbl)
+    ax_k.axhline(micromass_cpm["continuum_condensation_index"], color="#0f172a", ls=":", lw=1.2, label="continuum $R_{in}/R_{out}$")
+    ax_k.axhline(1.0, color="#94a3b8", ls="--", lw=0.9)
+    ax_k.set_xlabel("Monte Carlo step")
+    ax_k.set_ylabel("Condensation index $\\mathrm{occ}_{in}/\\mathrm{occ}_{out}$")
+    ax_k2 = ax_k.twinx()
+    for key, (col, _) in reg_style.items():
+        ax_k2.plot(reg[key]["heterotypic_fraction_trace"], color=col, lw=1.0, ls="--", alpha=0.75)
+    ax_k2.set_ylabel("Heterotypic fraction (dashed)", fontsize=7.6)
+    ax_k2.set_ylim(0.0, 1.05)
+    ax_k.set_title("K. GGH Sorting & Condensation Kinetics", fontsize=10.0, fontweight="bold")
+    ax_k.legend(fontsize=6.6, loc="center right")
+    ax_k.grid(alpha=0.25)
+
+    # Panel L: discrete <-> continuum parity and chemotactic-collapse diagnostics
+    ax_l = fig.add_subplot(gs[2, 3])
+    names = ["continuum\nPDE", "GGH WT", "GGH DA\nonly", "GGH hapto\nonly", "GGH\nablation"]
+    vals = [
+        micromass_cpm["continuum_condensation_index"],
+        reg["wt"]["condensation_index"],
+        reg["da_only"]["condensation_index"],
+        reg["hapto_only"]["condensation_index"],
+        reg["ablation"]["condensation_index"],
+    ]
+    cols = ["#0f172a", "#dc2626", "#d97706", "#1d4ed8", "#64748b"]
+    ax_l.bar(np.arange(5), vals, color=cols, width=0.62)
+    for i, v in enumerate(vals):
+        ax_l.text(i, v + 0.02, f"{v:.2f}", ha="center", fontsize=7.6)
+    ax_l.axhline(1.0, color="#94a3b8", ls="--", lw=0.9)
+    ax_l.set_xticks(np.arange(5))
+    ax_l.set_xticklabels(names, fontsize=7.4)
+    ax_l.set_ylim(0.0, max(vals) * 1.32)
+    ax_l.set_ylabel("Condensation index (density in / out of Hill mask)")
+    ax_l.set_title("L. Discrete $\\leftrightarrow$ Continuum Parity", fontsize=10.0, fontweight="bold")
+    ax_l.text(
+        0.03, 0.97,
+        f"Pearson r(R$_2^{{disc}}$, R$_2^{{cont}}$) = {micromass_cpm['r_R2_discrete_vs_continuum']:.3f} (ablation {micromass_cpm['r_R2_discrete_vs_continuum_ablation']:.3f})\n"
+        f"heterotypic fraction WT {reg['wt']['heterotypic_boundary_fraction']:.2f} vs ablation {reg['ablation']['heterotypic_boundary_fraction']:.2f}\n"
+        f"clip fraction R: micromass {micromass['wt_nodular']['clip_fraction_R']:.3f}, 2D wing PDE {wing_2d['clip_fraction_R']:.3f},\n"
+        f"1D stages {', '.join(f'{st_['clip_fraction_R']:.2f}' for st_ in stages)} (0 = resolved)",
+        transform=ax_l.transAxes, fontsize=6.8, va="top",
+        bbox=dict(facecolor="#f8fafc", edgecolor="#cbd5e1", boxstyle="round,pad=0.3"),
+    )
+    ax_l.grid(axis="y", alpha=0.25)
+
     fig.suptitle(
-        "Hentschel, Glimm, Glazier & Newman (2004) Proc. R. Soc. B — Multiscale TGF-$\\beta$, FGF & Fibronectin Haptotaxis Limb Chondrogenesis",
-        fontsize=12.1,
+        "Hentschel, Glimm, Glazier & Newman (2004) Proc. R. Soc. B — Multiscale TGF-$\\beta$, FGF & Fibronectin Haptotaxis Limb Chondrogenesis "
+        "+ Pass 3 GGH Cellular Potts Coupling",
+        fontsize=11.6,
         fontweight="bold",
-        y=0.98,
+        y=0.985,
     )
     fig.savefig(OUT_PNG, bbox_inches="tight")
     plt.close(fig)
+
+    # Render 8-frame GGH cell-sorting / condensation GIF (WT micromass regime)
+    cpm_frames: list[Image.Image] = []
+    for step in sorted(wt_cpm["snapshots"]):
+        fig_c, axc = plt.subplots(1, 1, figsize=(5.2, 5.2), dpi=100)
+        axc.imshow(wt_cpm["snapshots"][step], cmap=type_cmap, vmin=0, vmax=2, interpolation="nearest")
+        axc.contour(micromass_cpm["hill_mask_hi"].astype(float), levels=[0.5], colors="#dc2626", linewidths=1.0)
+        ci_step = wt_cpm["condensation_index_trace"][step]
+        hf_step = wt_cpm["heterotypic_fraction_trace"][step]
+        axc.set_title(f"GGH cellular Potts micromass — MCS {step + 1}/{wt_cpm['params']['mcs']}\ncond. index {ci_step:.2f}, heterotypic fraction {hf_step:.2f}", fontsize=9.0, fontweight="bold")
+        axc.set_xticks([])
+        axc.set_yticks([])
+        fig_c.tight_layout()
+        fig_c.canvas.draw()
+        rgba_c = np.asarray(fig_c.canvas.buffer_rgba())
+        cpm_frames.append(Image.fromarray(rgba_c[:, :, :3]).convert("P", palette=Image.Palette.ADAPTIVE))
+        plt.close(fig_c)
+    cpm_frames[0].save(OUT_CPM_GIF, save_all=True, append_images=cpm_frames[1:], duration=420, loop=0)
 
     # Render 4-frame animated GIF showing proximodistal FGF-zoned haptotactic condensation
     gif_frames: list[Image.Image] = []
@@ -925,6 +1444,8 @@ def render_outputs() -> dict[str, Any]:
         "stages": stages,
         "wing_2d": wing_2d,
         "micromass": micromass,
+        "micromass_cpm": micromass_cpm,
+        "wing_cpm": wing_cpm,
         "controls": controls,
         "specimen": spec,
     }
@@ -934,12 +1455,15 @@ def render_outputs() -> dict[str, Any]:
 # 7. MorphoEval Dynamic Measurement Hook (`measure_morphoeval`)
 # =========================================================================== #
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Compute 8 reference-backed morphometric measurements for `measure_outputs.py`."""
+    """Compute 14 reference-backed morphometric measurements for `measure_outputs.py` (8 Pass 2 + 6 Pass 3 GGH/diagnostic)."""
     stages = run_fgf_zonation_sweep()
-    wing_2d = integrate_hentschel_2d_limb_bud_pde()
-    micromass = simulate_2d_micromass_morphospace()
+    micromass_cpm = run_cpm_micromass_coupling()
+    micromass = micromass_cpm["micromass"]
+    wing_cpm = run_cpm_wing_bud_coupling()
+    wing_2d = wing_cpm["wing"]
     controls = run_negative_controls()
     spec = segment_chick_limb_specimen()
+    reg = micromass_cpm["regimes"]
 
     st_stylo, st_zeugo, st_wing_auto, st_leg_auto = stages[0], stages[1], stages[2], stages[3]
 
@@ -1001,7 +1525,7 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "method": "spatial correlation between ECM fibronectin F(x) and haptotactic mesenchymal cell density R(x) in HH27 wing autopod",
             "reference_value": 0.98,
             "reference_source": "Kiskowski et al. (2004) Dev. Biol. 271:372-387 & Hentschel et al. (2004) Proc. R. Soc. B 271:1713-1722 (colocalization of fibronectin and cell condensations)",
-            "note": f"micromass WT nodular area fraction = {micromass['wt_nodular']['area_fraction']:.3f} vs +TGF-beta2 stripe area fraction = {micromass['tgfb_stripes']['area_fraction']:.3f}",
+            "note": f"resolved (volume-filling) micromass continuum: WT thresholded {micromass['wt_nodular']['n_islands']} islands / {micromass['wt_nodular']['area_fraction']:.3f} area vs +TGF-beta2 fused {micromass['tgfb_stripes']['n_islands']} islands / {micromass['tgfb_stripes']['area_fraction']:.3f} area (both labyrinthine; Pass 2 spot-vs-stripe contrast was a collapse artefact)",
             "derived_from": "script",
         },
         {
@@ -1024,6 +1548,67 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"segmented specimen compartment bone counts = {spec['compartment_counts']} (1 humerus -> 2 radius+ulna -> 3 digits II-IV, total = {spec['total_wing_elements']})",
             "derived_from": "output_pixels",
         },
+        # ---------------------------------------------------------------- Pass 3: GGH cellular Potts coupling
+        {
+            "name": "GGH cellular Potts WT micromass condensation index occ_in/occ_out vs continuum R_in/R_out",
+            "value": round(reg["wt"]["condensation_index"], 4),
+            "unit": "dimensionless ratio",
+            "method": f"mean lattice occupancy of {reg['wt']['n_cells']} GGH cells inside vs outside the continuum Hill(c_a) > 1/2 mask after {reg['wt']['params']['mcs']} MCS (J = 14/2/11/16, T = 10, lambda_V = 6, mu_F = 10); reference = same ratio on the continuum R field",
+            "reference_value": round(micromass_cpm["continuum_condensation_index"], 4),
+            "reference_source": "Continuum 4-field PDE on the same prepattern (discrete-continuum parity; Christley, Alber & Newman (2007) BMC Syst. Biol. 1:16) with Graner & Glazier (1992) Phys. Rev. Lett. 69:2013 contact energies",
+            "note": f"GGH regimes: WT {reg['wt']['condensation_index']:.3f} > DA-only {reg['da_only']['condensation_index']:.3f} > haptotaxis-only {reg['hapto_only']['condensation_index']:.3f} > full ablation {reg['ablation']['condensation_index']:.3f}; differential adhesion dominates, haptotaxis adds a smaller increment",
+            "derived_from": "script",
+        },
+        {
+            "name": "GGH heterotypic R1|R2 boundary fraction WT vs no-differential-adhesion ablation (Glazier-Graner sorting metric)",
+            "value": round(reg["wt"]["heterotypic_boundary_fraction"], 4),
+            "unit": "boundary fraction",
+            "method": "R1|R2 contact length / (R1|R2 + inter-cell R2|R2 contact length) after the final MCS; reference = the same metric under J_R2R2 = J_R1R2 = J_R1R1 = 14, mu_F = 0 (no sorting drive)",
+            "reference_value": round(reg["ablation"]["heterotypic_boundary_fraction"], 4),
+            "reference_source": "Glazier & Graner (1993) Phys. Rev. E 47:2128 (heterotypic boundary length decreases under positive surface tension 2 J_ld - J_ll - J_dd = 6 > 0; Lean Theorem 4 ggh_differential_adhesion_sorting_condition)",
+            "note": f"a lower value than the ablation reference indicates sorting; DA-only {reg['da_only']['heterotypic_boundary_fraction']:.3f}, haptotaxis-only {reg['hapto_only']['heterotypic_boundary_fraction']:.3f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "GGH discrete R2-cell density vs continuum R_2 = R Hill(c_a) Pearson r (micromass, x3 lattice)",
+            "value": round(micromass_cpm["r_R2_discrete_vs_continuum"], 4),
+            "unit": "Pearson r",
+            "method": "spatial correlation between the sigma = 2 px smoothed R2-cell occupancy of the WT GGH lattice and the Fourier-upsampled continuum prechondrogenic density on the 216 x 216 lattice",
+            "reference_value": 0.9,
+            "reference_source": "Parity threshold adopted in this script (not a literature value); Christley, Alber & Newman (2007) BMC Syst. Biol. 1:16 report qualitative agreement between discrete and continuum condensation patterns without a quantitative correlation",
+            "note": f"full-ablation lattice gives r = {micromass_cpm['r_R2_discrete_vs_continuum_ablation']:.3f}: most of the correlation is inherited from the shared prepattern, the WT - ablation difference ({micromass_cpm['r_R2_discrete_vs_continuum'] - micromass_cpm['r_R2_discrete_vs_continuum_ablation']:+.3f}) is the cell-behaviour contribution",
+            "derived_from": "script",
+        },
+        {
+            "name": "GGH 2D wing bud discrete R2 condensations per compartment (stylopod + zeugopod + autopod) vs Hentschel (2004) 1 + 2 + 3",
+            "value": float(wing_cpm["total_elements"]),
+            "unit": "elements",
+            "method": f"peaks of the anteroposterior mean discrete R2 density per FGF compartment after {wing_cpm['cpm']['params']['mcs']} MCS on the 96 x 128 wing-bud prepattern (same find_peaks rule as the continuum)",
+            "reference_value": 6.0,
+            "reference_source": "Hentschel, Glimm, Glazier & Newman (2004) Proc. R. Soc. B 271:1713-1722 Figs. 2-4 (1 humerus + 2 radius/ulna + 3 digits)",
+            "note": f"GGH compartment counts = {wing_cpm['compartment_counts']} vs continuum {wing_cpm['continuum_counts']}; the stylopod activator peak (c_a max = {float(np.max(wing_2d['ca'][wing_2d['compartment_masks']['stylopod']])):.2f}) never crosses the half-maximal Hill switch K_a = 0.60, so no discrete stylopod condensation forms; GGH condensation index {wing_cpm['cpm']['condensation_index']:.3f} vs ablation {wing_cpm['ablation']['condensation_index']:.3f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "2D wing bud continuum cell density R fraction pinned at the clip bounds [0.05, 3.5] (chemotactic-collapse diagnostic)",
+            "value": round(wing_2d["clip_fraction_R"], 4),
+            "unit": "fraction of samples",
+            "method": "fraction of R(x, z) samples equal to the lower or upper clip bound after the 180 haptotaxis steps of integrate_hentschel_2d_limb_bud_pde",
+            "reference_value": 0.0,
+            "reference_source": "A resolved haptotaxis solution never touches the clip bounds (Hillen & Painter 2001 Adv. Appl. Math. 26:280 volume-filling bound R <= R_max); nonzero values mean the condensation amplitude is set by the clip, not by the PDE",
+            "note": f"1D stage clip fractions = {[round(st_['clip_fraction_R'], 3) for st_ in stages]} (fa = 3, 6, 11, 18); resolved micromass continuum = {micromass['wt_nodular']['clip_fraction_R']:.4f} (Pass 2 micromass was 0.244)",
+            "derived_from": "script",
+        },
+        {
+            "name": "resolved micromass continuum island count WT (thresholded) vs +TGF-beta2 (fused) with volume-filling haptotaxis",
+            "value": float(micromass["wt_nodular"]["n_islands"]),
+            "unit": "islands",
+            "method": "connected components of R > 1.08 on the 72 x 72 periodic micromass lattice with chi_F R (1 - R / 2) grad F haptotaxis; reference = the +TGF-beta2 regime island count (fusion lowers the count)",
+            "reference_value": float(micromass["tgfb_stripes"]["n_islands"]),
+            "reference_source": "Miura & Shiota (2000) Dev. Dyn. 217:241-249: exogenous TGF-beta2 fuses micromass condensations into bar-like patterns (qualitative direction only; the paper does not report island counts)",
+            "note": f"mean island area WT {micromass['wt_nodular']['mean_island_px']:.0f} px vs +TGF-beta2 {micromass['tgfb_stripes']['mean_island_px']:.0f} px; area fractions {micromass['wt_nodular']['area_fraction']:.3f} vs {micromass['tgfb_stripes']['area_fraction']:.3f}; both regimes are labyrinthine (no hexagonal spots) — Pass 4 item",
+            "derived_from": "script",
+        },
     ]
 
 
@@ -1031,10 +1616,15 @@ def measure_morphoeval() -> list[dict[str, Any]]:
 # 8. Deterministic Self-Test Suite (`--self-test`)
 # =========================================================================== #
 def self_test() -> bool:
-    """Run 8 deterministic verification checks covering SHA-256, theory, 4-field PDE, micromass, controls, and specimen."""
-    # 1. Dataset SHA-256 & JSON parity
+    """Run 12 deterministic verification checks covering SHA-256, theory, 4-field PDE, micromass, controls, specimen, and the GGH cell lattice."""
+    # 1. Dataset SHA-256 & JSON parity (5 pinned files incl. the Pass 3 GGH parameter table)
     ref = load_reference_dataset()
     assert len(ref["proximodistal_fgf_zonation_regimes"]) == 4, "Expected 4 FGF zonation regimes in reference dataset"
+    cpm_ref = load_cpm_reference_dataset()
+    assert cpm_ref["contact_energies"]["J_R1R1"] == GGH_DEFAULTS["J_R1R1"] and cpm_ref["contact_energies"]["J_R2R2"] == GGH_DEFAULTS["J_R2R2"]
+    assert cpm_ref["contact_energies"]["J_R1R2"] == GGH_DEFAULTS["J_R1R2"] and cpm_ref["contact_energies"]["J_cellM"] == GGH_DEFAULTS["J_cellM"]
+    assert cpm_ref["monte_carlo"]["T"] == GGH_DEFAULTS["T"] and cpm_ref["monte_carlo"]["mu_F"] == GGH_DEFAULTS["mu_F"]
+    assert 2 * GGH_DEFAULTS["J_R1R2"] - GGH_DEFAULTS["J_R1R1"] - GGH_DEFAULTS["J_R2R2"] == cpm_ref["contact_energies"]["heterotypic_surface_tension_2gamma"]
 
     # 2. Analytical wavenumber monotonicity & haptotactic flux gain (Lean Theorems 2 & 3)
     d1 = compute_hentschel_dispersion(fa=3.0)
@@ -1061,29 +1651,74 @@ def self_test() -> bool:
     assert ctrls["equal_diffusion_std_R"] < 1e-3 and ctrls["equal_diffusion_elements"] == 0
     assert ctrls["no_haptotaxis_std_R"] < 1e-3 and ctrls["no_haptotaxis_elements"] == 0
 
-    # 6. 2D Micromass nodular vs stripe morphospace & biological specimen segmentation
+    # 6. Resolved 2D micromass continuum (volume-filling) & biological specimen segmentation
     mm = simulate_2d_micromass_morphospace()
     assert 0.15 <= mm["wt_nodular"]["area_fraction"] <= 0.40
-    assert mm["tgfb_stripes"]["area_fraction"] > mm["wt_nodular"]["area_fraction"] + 0.08
+    assert mm["wt_nodular"]["clip_fraction_R"] < 0.01, f"micromass continuum still collapsing: clip fraction {mm['wt_nodular']['clip_fraction_R']:.3f}"
+    assert mm["tgfb_stripes"]["clip_fraction_R"] < 0.01
+    assert mm["wt_nodular"]["n_islands"] >= 2 and mm["tgfb_stripes"]["n_islands"] <= mm["wt_nodular"]["n_islands"], "TGF-beta2 regime should fuse islands (fewer islands)"
+    assert mm["tgfb_stripes"]["mean_island_px"] > mm["wt_nodular"]["mean_island_px"], "TGF-beta2 regime should yield larger fused islands"
     assert mm["no_hapto"]["area_fraction"] == 0.0
 
     spec = segment_chick_limb_specimen()
     assert spec["compartment_counts"] == [1, 2, 3], f"Expected [1, 2, 3] wing bones, got {spec['compartment_counts']}"
     assert 1.35 <= spec["zeugopod_to_autopod_spacing_ratio"] <= 1.55
 
-    # 7. MorphoEval measurement hook completeness
-    meas = measure_morphoeval()
-    assert len(meas) == 8, f"Expected 8 morphoeval measurements, got {len(meas)}"
+    # 7. GGH cellular Potts micromass coupling: cell conservation, condensation ordering, sorting, parity
+    cpm_mm = run_cpm_micromass_coupling()
+    reg = cpm_mm["regimes"]
+    for key, r_ in reg.items():
+        assert r_["n_cells_alive"] == r_["n_cells"], f"GGH regime {key}: cells evaporated ({r_['n_cells_alive']}/{r_['n_cells']})"
+    assert reg["wt"]["condensation_index"] > reg["da_only"]["condensation_index"] > reg["hapto_only"]["condensation_index"] > reg["ablation"]["condensation_index"], (
+        "Expected GGH condensation ordering WT > DA-only > haptotaxis-only > ablation, got "
+        f"{[round(reg[k]['condensation_index'], 3) for k in ('wt', 'da_only', 'hapto_only', 'ablation')]}"
+    )
+    assert reg["wt"]["condensation_index"] > 1.15 and abs(reg["ablation"]["condensation_index"] - 1.0) < 0.10
+    assert reg["wt"]["heterotypic_boundary_fraction"] < reg["ablation"]["heterotypic_boundary_fraction"] - 0.10, "Differential adhesion should lower the heterotypic boundary fraction"
+    assert cpm_mm["r_R2_discrete_vs_continuum"] > 0.85, f"Discrete-continuum R2 parity too low: r = {cpm_mm['r_R2_discrete_vs_continuum']:.3f}"
+    assert cpm_mm["r_R2_discrete_vs_continuum"] > cpm_mm["r_R2_discrete_vs_continuum_ablation"]
 
-    # 8. Bitwise two-run determinism check
+    # 8. GGH cellular Potts 2D wing bud coupling: discrete zeugopod (2) and autopod (3) condensations, stylopod gap disclosed
+    cpm_wing = run_cpm_wing_bud_coupling()
+    assert cpm_wing["compartment_counts"][1:] == [2, 3], f"Expected GGH zeugopod/autopod [2, 3], got {cpm_wing['compartment_counts']}"
+    assert cpm_wing["compartment_counts"][0] == 0, "Stylopod GGH count changed: update the disclosed [0, 2, 3] discrepancy"
+    assert cpm_wing["cpm"]["condensation_index"] > cpm_wing["ablation"]["condensation_index"]
+
+    # 9. GGH haptotaxis sign check on a linear TGF-beta ramp (fibronectin deposited on the right half):
+    #    mu_F > 0 must raise occupancy on the fibronectin side relative to mu_F = 0, with and without differential adhesion
+    ramp = np.tile(np.linspace(-1.0, 2.0, 60)[None, :], (30, 1))
+    up = simulate_ggh_cellular_potts_condensation(ramp, periodic=False, mcs=120, mu_F=10.0, seed=2004)
+    flat = simulate_ggh_cellular_potts_condensation(ramp, periodic=False, mcs=120, mu_F=0.0, seed=2004)
+    up_eqJ = simulate_ggh_cellular_potts_condensation(ramp, periodic=False, mcs=120, mu_F=10.0, J_R2R2=14.0, J_R1R2=14.0, seed=2004)
+    flat_eqJ = simulate_ggh_cellular_potts_condensation(ramp, periodic=False, mcs=120, mu_F=0.0, J_R2R2=14.0, J_R1R2=14.0, seed=2004)
+    assert up["condensation_index"] > flat["condensation_index"], "Haptotaxis should increase occupancy where fibronectin is deposited (with DA)"
+    assert up_eqJ["condensation_index"] > flat_eqJ["condensation_index"], "Haptotaxis should increase occupancy where fibronectin is deposited (equal J)"
+
+    # 10. Chemotactic-collapse diagnostic is exposed (nonzero for the 2D wing continuum, zero for the resolved micromass)
+    assert wing_2d["clip_fraction_R"] > 0.0, "clip_fraction_R diagnostic should expose the 2D wing collapse"
+    assert all("clip_fraction_R" in st for st in stages)
+
+    # 11. MorphoEval measurement hook completeness (8 Pass 2 + 6 Pass 3)
+    meas = measure_morphoeval()
+    assert len(meas) == 14, f"Expected 14 morphoeval measurements, got {len(meas)}"
+    assert all(m.get("reference_value") is not None for m in meas)
+
+    # 12. Bitwise two-run determinism check (continuum and GGH lattice)
     r1 = integrate_hentschel_1d_multiscale_pde(fa=6.0, nx=128, steps=200, seed=2004)
     r2 = integrate_hentschel_1d_multiscale_pde(fa=6.0, nx=128, steps=200, seed=2004)
     assert np.allclose(r1["R"], r2["R"], atol=0.0) and np.allclose(r1["F"], r2["F"], atol=0.0), "Bitwise two-run determinism check failed"
+    c1 = simulate_ggh_cellular_potts_condensation(ramp, periodic=False, mcs=20, seed=2004)
+    c2 = simulate_ggh_cellular_potts_condensation(ramp, periodic=False, mcs=20, seed=2004)
+    assert np.array_equal(c1["sigma"], c2["sigma"]), "GGH lattice two-run determinism check failed"
 
     print(
-        "[self_test] All 8 Hentschel et al. (2004) / Kiskowski et al. (2004) checks PASSED "
+        "[self_test] All 12 Hentschel et al. (2004) / Kiskowski et al. (2004) / GGH checks PASSED "
         f"(stage_series={actual_counts}, wing_2d={wing_2d['compartment_counts']}, "
-        f"micromass_nodular={mm['wt_nodular']['area_fraction']:.3f}, micromass_stripes={mm['tgfb_stripes']['area_fraction']:.3f}, "
+        f"micromass_islands WT={mm['wt_nodular']['n_islands']} +TGFb2={mm['tgfb_stripes']['n_islands']}, "
+        f"ggh_cond_index={[round(reg[k]['condensation_index'], 3) for k in ('wt', 'da_only', 'hapto_only', 'ablation')]}, "
+        f"ggh_het_frac WT={reg['wt']['heterotypic_boundary_fraction']:.3f} abl={reg['ablation']['heterotypic_boundary_fraction']:.3f}, "
+        f"ggh_wing={cpm_wing['compartment_counts']}, r_R2_parity={cpm_mm['r_R2_discrete_vs_continuum']:.3f}, "
+        f"wing_clip_fraction={wing_2d['clip_fraction_R']:.3f}, "
         f"specimen_compartments={spec['compartment_counts']}, spacing_ratio={spec['zeugopod_to_autopod_spacing_ratio']:.4f})."
     )
     return True
@@ -1099,15 +1734,24 @@ def main() -> int:
     ap.add_argument("--k-F", type=float, default=1.8, help="Fibronectin secretion rate k_F")
     ap.add_argument("--steps", type=int, default=750, help="PDE integration steps")
     ap.add_argument("--seed", type=int, default=2004, help="Deterministic RNG seed")
-    ap.add_argument("--self-test", action="store_true", help="Run 8-check verification suite and exit")
+    ap.add_argument("--cpm-mcs", type=int, default=150, help="GGH cellular Potts Monte Carlo steps for the micromass coupling (Pass 3)")
+    ap.add_argument("--cpm-wing-mcs", type=int, default=300, help="GGH cellular Potts Monte Carlo steps for the 2D wing bud coupling (Pass 3)")
+    ap.add_argument("--mu-F", type=float, default=GGH_DEFAULTS["mu_F"], help="GGH haptotaxis copy-energy strength mu_F (Pass 3)")
+    ap.add_argument("--J-R2R2", type=float, default=GGH_DEFAULTS["J_R2R2"], help="GGH R2-R2 contact energy (Graner-Glazier J_dd = 2)")
+    ap.add_argument("--self-test", action="store_true", help="Run 12-check verification suite and exit")
     args = ap.parse_args()
 
     if args.self_test:
         self_test()
         return 0
 
-    render_outputs()
-    print(f"[2004-hentschel-tgfb-fibronectin-limb] Rendered {OUT_PNG.relative_to(ROOT)} and {OUT_GIF.relative_to(ROOT)}")
+    GGH_DEFAULTS["mu_F"] = float(args.mu_F)
+    GGH_DEFAULTS["J_R2R2"] = float(args.J_R2R2)
+    render_outputs(cpm_mcs=args.cpm_mcs, cpm_wing_mcs=args.cpm_wing_mcs)
+    print(
+        f"[2004-hentschel-tgfb-fibronectin-limb] Rendered {OUT_PNG.relative_to(ROOT)}, {OUT_GIF.relative_to(ROOT)} "
+        f"and {OUT_CPM_GIF.relative_to(ROOT)}"
+    )
     return 0
 
 

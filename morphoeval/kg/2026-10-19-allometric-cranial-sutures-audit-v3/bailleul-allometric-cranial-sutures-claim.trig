@@ -1,0 +1,94 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-bailleul-allometric-cranial-sutures> a pk:Claim ;
+        rdfs:label "Miura et al. (2009) & Jaslow (1990) cranial suture fractal interdigitation, Kuramoto-Sivashinsky osteogenic instability, quasi-3D plate layering and reduced-order masticatory strain coupling faithfully reproduces Homo sapiens and Mus musculus coronal, sagittal and lambdoid calvarial skull sutures morphology" ;
+        dct:description "The simulation script(s) 2020-bailleul-allometric-cranial-sutures.py implement the cited source model as published and produce forms that match real Homo sapiens and Mus musculus coronal, sagittal and lambdoid calvarial skull sutures specimens and the source authors' figures. A belief under audit, not a fact: its credibility is the weight of evidence (MorphoEval 0.1.0 overall 86.5/100, audit 2026-10-19-allometric-cranial-sutures-audit-v3) and the assessments." ;
+        dct:subject <https://github.com/fractastical/morpholib/blob/d58a084/2020-bailleul-allometric-cranial-sutures.py> ;
+        pk:context "script(s): https://github.com/fractastical/morpholib/blob/d58a084/2020-bailleul-allometric-cranial-sutures.py; output: docs/media/allometric_cranial_sutures_comparison.png; organism: Homo sapiens and Mus musculus coronal, sagittal and lambdoid calvarial skull sutures; checkpoint commit: https://github.com/fractastical/morpholib/commit/d58a084; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0; spec_fingerprint: 74cdd6073c2c17e25ba7d52bc092caa9009007cab52635bb5182e43bad1f6297; artifact_sha256: 7d403d848e058ca7d287c7643ecb7c7794378d0d5755d61934ce8ee7cc788cf8; input_dataset_sha256: {datasets/allometric_cranial_sutures/allometric_cranial_sutures_reference.json=c41074e16d3025c9..., datasets/allometric_cranial_sutures/human_sagittal_suture_specimen.jpg=b3c411a6a4713770..., datasets/allometric_cranial_sutures/paper_citations.bib=81d1b1b367ddb12c..., datasets/allometric_cranial_sutures/scout_manifest.json=226c072307597439...}; supersedes_audit_id: 2026-10-19-allometric-cranial-sutures-audit-v2; claim_boundary: [reported_in_source: Miura et al. (2009) PNAS 106:11218-11223 fourth-order Kuramoto-Sivashinsky / KPZ osteogenic front instability dh/dt = -alpha*d^2h/dx^2 - beta*d^4h/dx^4 + (v_0/2)*(dh/dx)^2 + eta(x,t) generating self-affine fractal cranial suture interdigitation (D_f ~ 1.30-1.45) and collapse to a flat line under surgical mechanical unloading | Jaslow (1990) J. Biomech. 23:313-321 monotonic enhancement of cranial suture bending and impact energy absorption with Suture Interdigitation Index SII = L_arc / L_chord | Khonsari et al. (2013) Proc. R. Soc. B 280:20122670 & Zollikofer & Weissmann (2011) J. Anat. 219:100-114 bidirectional normal-front overhang and FGFR2 craniosynostosis fusion | Byron et al. (2004) Anat. Rec. 279A:676-684 increased temporalis mass / bite force raises sagittal suture fractal dimension (direction of mechanotransduction only); Herring & Teng (2000) in vivo suture strains are suture-specific and heterogeneous; Curtis et al. (2013) full-skull finite-element suture-strain coupling (precedent, not reproduced); reconstructed_in_script: Pseudo-spectral integrating-factor / ETDRK2 Kuramoto-Sivashinsky + KPZ solver with spatially heterogeneous alpha(x) = alpha_mean + alpha_dev(x) (alpha_dev h_xx evaluated in real space, 2/3 dealiased), a 5-layer ectocranial-to-endocranial stack through T = 6 mm coupled by explicit kappa_z d^2h/dz^2, a continuous flat/infant/overhang blend of the 2D front construction, 5 vendored regimes, a simulated 15x15 (alpha, beta) morphospace, depth ablations (no gradient, kappa_z = 0) and a nuchal : temporalis traction sweep | Reduced-order Kirchhoff-Love vault strain field: analytic ellipsoid (90 x 70 x 65 mm), Gaussian temporalis and nuchal normal-deflection patches, isotropic intracranial membrane strain, curvature tensor projected on each suture's in-plane normal, eps_nn(s, zeta) = eps_mem + zeta kappa_nn, affine mechanotransduction alpha(eps_hat) = -0.35 + 1.55 eps_hat anchored on the vendored unloading and sagittal regimes | Automated CV calvarial segmentation, sagittal suture midline cleft extraction, SII (2.6791) and 5-scale dyadic box-counting fractal dimension (D_f = 1.2847) on human_sagittal_suture_specimen.jpg; 5 Lean 4 theorems (0 sorrys); transfer_boundary: 1D/2D osteogenic front geometry (x(s), y(s)), box-counting D_f, SII and Jaslow bending energy ratio compared against the superior-view human calvarial sagittal suture only; coronal, lambdoid and endocranial outputs are compared against vendored/literature expectations, not against a specimen | The strain field is a reduced-order analytic model whose traction magnitudes are stated assumptions; it reproduces the mean-alpha ordering lambdoid > sagittal > coronal but NOT the SII ordering (lambdoid/sagittal SII = 0.885 vs vendored 1.22) for any nuchal scale in [0, 2] | The 2D overhanging trace is a phenomenological construction (std(h)-normalised KS shape plus cascade harmonics), so D_f/SII magnitudes are set by that construction rather than by the PDE amplitude; does_not_claim: A finite-element solution of masticatory strain on a CT-derived 3D skull mesh, trabecular diploe micro-CT fracture mechanics, membrane equilibrium of a pressurised triaxial ellipsoidal shell, or single-cell scRNA-seq trajectories of Twist1+/Runx2+ suture stem cells]" ;
+        pk:derivedFromPaper <https://doi.org/10.1002/1096-8644(200008)112:4%3C575::AID-AJPA10%3E3.0.CO;2-0>,
+            <https://doi.org/10.1002/ar.a.20055>,
+            <https://doi.org/10.1002/jmor.10445>,
+            <https://doi.org/10.1016/0021-9290(90)90059-C>,
+            <https://doi.org/10.1073/pnas.0813269106>,
+            <https://doi.org/10.1098/rsif.2013.0442>,
+            <https://doi.org/10.1098/rspb.2012.2670>,
+            <https://doi.org/10.1111/j.1469-7580.2011.01386.x> ;
+        pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-bailleul-allometric-cranial-sutures-code-traceability>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-bailleul-allometric-cranial-sutures-model-fidelity>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-bailleul-allometric-cranial-sutures-morphometric-validation>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-bailleul-allometric-cranial-sutures-overall>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-bailleul-allometric-cranial-sutures-parameter-expressivity>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-bailleul-allometric-cranial-sutures-repro-package>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-bailleul-allometric-cranial-sutures-source-traceability>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-bailleul-allometric-cranial-sutures-specimen-match> ;
+        pk:weightOfEvidence "0.865"^^xsd:double .
+    <https://github.com/fractastical/morpholib/blob/d58a084/2020-bailleul-allometric-cranial-sutures.py> a schema:SoftwareSourceCode ;
+        rdfs:label "2020-bailleul-allometric-cranial-sutures.py" ;
+        schema:codeRepository <https://github.com/fractastical/morpholib> ;
+        schema:programmingLanguage "Python" ;
+        schema:version "d58a084" .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/1096-8644(200008)112:4%3C575::AID-AJPA10%3E3.0.CO;2-0>,
+            <https://doi.org/10.1002/ar.a.20055>,
+            <https://doi.org/10.1002/jmor.10445>,
+            <https://doi.org/10.1016/0021-9290(90)90059-C>,
+            <https://doi.org/10.1073/pnas.0813269106>,
+            <https://doi.org/10.1098/rsif.2013.0442>,
+            <https://doi.org/10.1098/rspb.2012.2670>,
+            <https://doi.org/10.1111/j.1469-7580.2011.01386.x> .
+    <https://doi.org/10.1002/1096-8644(200008)112:4%3C575::AID-AJPA10%3E3.0.CO;2-0> dct:date "2000"^^xsd:gYear ;
+        dct:title "Strain in the braincase and its sutures during function" .
+    <https://doi.org/10.1002/ar.a.20055> dct:date "2004"^^xsd:gYear ;
+        dct:title "Effects of increased muscle mass on mouse sagittal suture morphology and mechanics" .
+    <https://doi.org/10.1002/jmor.10445> dct:date "2006"^^xsd:gYear ;
+        dct:title "Cranial suture complexity in white-tailed deer (Odocoileus virginianus)" .
+    <https://doi.org/10.1016/0021-9290(90)90059-C> dct:date "1990"^^xsd:gYear ;
+        dct:title "Mechanical properties of cranial sutures" .
+    <https://doi.org/10.1073/pnas.0813269106> dct:date "2009"^^xsd:gYear ;
+        dct:title "Mechanism of cranial suture fractal interdigitation" .
+    <https://doi.org/10.1098/rsif.2013.0442> dct:date "2013"^^xsd:gYear ;
+        dct:title "Cranial sutures work collectively to distribute strain throughout the reptile skull" .
+    <https://doi.org/10.1098/rspb.2012.2670> dct:date "1759"^^xsd:gYear ;
+        dct:title "A mathematical model for mechanotransduction at the early steps of suture formation" .
+    <https://doi.org/10.1111/j.1469-7580.2011.01386.x> dct:date "2011"^^xsd:gYear ;
+        dct:title "A bidirectional interface growth model for cranial interosseous suture morphogenesis" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Claim: Miura et al. (2009) & Jaslow (1990) cranial suture fractal interdigitation, Kuramoto-Sivashinsky osteogenic instability, quasi-3D plate layering and reduced-order masticatory strain coupling is faithful" ;
+        dct:created "2026-10-20T07:49:02Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:Claim ;
+        npx:introduces <https://w3id.org/probknow/resource/claim/morphoeval-bailleul-allometric-cranial-sutures> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/d58a084/2020-bailleul-allometric-cranial-sutures.py>,
+            <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RApE-nGpCMigXqZjeHuYuMJEVTGmTlNTlZl7IcHi_fhdQ/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

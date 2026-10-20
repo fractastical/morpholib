@@ -1,0 +1,103 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-jonsson-auxin-pin1-meristem> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-jonsson-auxin-pin1-meristem-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-jonsson-auxin-pin1-meristem-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Jönsson et al. (2006) & Smith et al. (2006) up-the-gradient PIN1 polarization with explicit PIN1 trafficking kinetics, quasi-3D subepidermal canalization, and polar auxin transport for shoot apical meristem phyllotaxis — Reproducibility package: 90/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credited: `--self-test` runs 13 deterministic checks in ~7 s (SHA-256, Laws 1-5, exact integrator vs analytic QSS to 1e-9, BFA, fast-cycling limit, canalization width/delivery and sweep monotonicity, modes, NPA/IAA, segmentation, 16-measurement schema, bitwise determinism of dome and slice) (L1685-1789); the default render takes ~12 s and the PNG/GIF regenerate from `./venv/bin/python3 2006-jonsson-auxin-pin1-meristem.py`; seeds are explicit and the exact integrator removes the stiffness risk of an explicit scheme; all CLI flags are documented in argparse. Deductions: no per-script requirements lock (the repo-level requirements.txt is unpinned) and the environment is recorded only in this audit (-5); the endocytosis variant uses fixed explicit substeps (n_sub = 8, L478-482) without a stability guard if k_exo is raised via --k-exo (-3); matplotlib emits a cache-directory warning when MPLCONFIGDIR is not writable, which the invocation notes do not mention (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:evidenceAgainst "2006-jonsson-auxin-pin1-meristem.py L476–L487: Endocytosis variant: fixed 8 explicit substeps, no CFL-style guard on k_exo * sum f <https://github.com/fractastical/morpholib/blob/d58a084/2006-jonsson-auxin-pin1-meristem.py#L476-L487>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-jonsson-auxin-pin1-meristem-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-jonsson-auxin-pin1-meristem-repro-package-2> ;
+        pk:hasScore "0.9"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-jonsson-auxin-pin1-meristem-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "2006-jonsson-auxin-pin1-meristem.py L1685–L1789" ;
+        dct:description "13-check self-test incl. frozen-field QSS fixed point (check 5), BFA (6), Boltzmann limit (7), canalization (8-9), determinism (13)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2006-jonsson-auxin-pin1-meristem.py#L1685-L1789> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-jonsson-auxin-pin1-meristem-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "2006-jonsson-auxin-pin1-meristem.py L1792–L1868" ;
+        dct:description "main(): argparse with all flags, default render writes PNG + GIF and prints key metrics" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2006-jonsson-auxin-pin1-meristem.py#L1792-L1868> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 032 Pass 3 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/32> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.cub.2005.09.052>,
+            <https://doi.org/10.1016/j.jtbi.2005.03.017>,
+            <https://doi.org/10.1038/35096571>,
+            <https://doi.org/10.1038/nature02081>,
+            <https://doi.org/10.1038/nature03633>,
+            <https://doi.org/10.1073/pnas.0509839103>,
+            <https://doi.org/10.1073/pnas.0510457103>,
+            <https://doi.org/10.1098/rspb.1980.0015>,
+            <https://doi.org/10.1098/rstb.1981.0154>,
+            <https://doi.org/10.1101/gad.1402406>,
+            <https://doi.org/10.1101/gad.497009> .
+    <https://doi.org/10.1016/j.cub.2005.09.052> dct:date "2005"^^xsd:gYear ;
+        dct:title "Patterns of auxin transport and gene expression during primordium development revealed by live imaging of the Arabidopsis inflorescence meristem" .
+    <https://doi.org/10.1016/j.jtbi.2005.03.017> dct:date "2005"^^xsd:gYear ;
+        dct:title "Self-organization of the vascular system in plant leaves: Inter-dependent dynamics of auxin flux and carrier proteins" .
+    <https://doi.org/10.1038/35096571> dct:date "2001"^^xsd:gYear ;
+        dct:title "Auxin transport inhibitors block PIN1 cycling and vesicle trafficking" .
+    <https://doi.org/10.1038/nature02081> dct:date "2003"^^xsd:gYear ;
+        dct:title "Regulation of phyllotaxis by polar auxin transport" .
+    <https://doi.org/10.1038/nature03633> dct:date "2005"^^xsd:gYear ;
+        dct:title "Auxin inhibits endocytosis and promotes its own efflux from cells" .
+    <https://doi.org/10.1073/pnas.0509839103> dct:date "2006"^^xsd:gYear ;
+        dct:title "An auxin-driven polarized transport model for phyllotaxis" .
+    <https://doi.org/10.1073/pnas.0510457103> dct:date "2006"^^xsd:gYear ;
+        dct:title "A plausible model of phyllotaxis" .
+    <https://doi.org/10.1098/rspb.1980.0015> dct:date "1980"^^xsd:gYear ;
+        dct:title "A model for vein formation in higher plants" .
+    <https://doi.org/10.1098/rstb.1981.0154> dct:date "1981"^^xsd:gYear ;
+        dct:title "The polar transport of auxin and vein patterns in plants" .
+    <https://doi.org/10.1101/gad.1402406> dct:date "2006"^^xsd:gYear ;
+        dct:title "Control of leaf vascular patterning by polar auxin transport" .
+    <https://doi.org/10.1101/gad.497009> dct:date "2009"^^xsd:gYear ;
+        dct:title "Integration of transport-based models for phyllotaxis and midvein formation" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Jönsson et al. (2006) & Smith et al. (2006) up-the-gradient PIN1 polarization with explicit PIN1 trafficking kinetics, quasi-3D subepidermal canalization, and polar auxin transport for shoot apical meristem phyllotaxis — Reproducibility package 90/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T10:17:54Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-jonsson-auxin-pin1-meristem-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/32> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
