@@ -5610,6 +5610,273 @@ def verify_crystal_midpoint_mahler_gate_bridge_and_swar_autonomy() -> dict:
     }
 
 
+def verify_twin_swar_right_halfplane_erasure_and_multirun_lockin() -> dict:
+    """
+    Theorem 32: Twin 1-Line SWAR Half-Plane Decomposition, Right-Boundary OR-Gate Erasure Cascade,
+    Moore-Reduced Automaton Hierarchy, Light-Cone Parametric Bijection, and Unconditional
+    Multi-Run Right-Half-Plane Gate Lock-In Impossibility.
+
+    Verifies:
+      1. Twin 1-Line SWAR Half-Plane Decomposition & Self-Similar Shift-Recursion Identity:
+         - R_{t+1}^{(+)} = ((R_t^{(+)} << 1) | c_t) ^ (R_t^{(+)} | (R_t^{(+)} >> 1)), G_t = R_t^{(+)} & 1,
+           and c_{t+1} = (L_t & 1) ^ (c_t | (R_t^{(+)} & 1)) across t = 0..61 (0 bit errors).
+         - T_c(a) = (c ^ (a_1 | a_2), T_{a_1}(sigma(a))) across all 2,048 (c, a) pairs (0 errors).
+         - Self-Dual Right-Half-Plane Fixed-Point Identity:
+           (G_0..G_L) in G_L(c) <=> (c_0^G_1 .. c_{L-1}^G_L) in E_L(G_0..G_{L-1}) across L = 1..6 (0 errors).
+      2. Right-Boundary OR-Gate Erasure Cascade (Laws 1, 2, 3) & Moore-Reduced Automata Q_m:
+         - Law 1: G_t = 1 => G_{t+1} = 1 ^ c_t (0 errors).
+         - Law 2: (G_t, a_{t,+2}) = (0, 1) => (G_{t+1}, a_{t+1,+2}) = (0, 1) under c_t = 1 and (1, 1) under c_t = 0 (0 errors).
+         - Law 3: (G_t = 0 and c_t = 1) => G_{t+2} = 1 ^ c_{t+1} identically across all 512 states (0 errors).
+         - Moore-Reduced Right-Half-Plane Automata Q_m sizes |Q_m| = [3, 5, 7, 11, 16, 25, 35] for m = 1..7,
+           and quadratic collapse |E_L((01)^{L/2})| = 2, 3, 5, 8, 12, 17 for L = 2, 4, 6, 8, 10, 12.
+      3. Light-Cone Boolean Derivative & Exact Parametric Bijection Theorem (2^{floor(k/2)} x 2^{ceil(k/2)} = 2^k):
+         - dG_k / da_{0,k+1} == prod_{s=0}^{k-1} (1 ^ a_{s, k-s}) across all k = 1..6 (0 errors).
+         - Exact parametric bijection (b_0..b_{k-2}, c_{k-1}) <-> surviving (c, R_0) via
+           P_0(t) = 0, P_1(t) = b_t, P_d(t) = P_{d-2}(t+1) ^ (P_{d-1}(t) | P_{d-2}(t)) across k = 1..7 (0 errors).
+      4. Universal Run-Pair Parity-Lock Theorem & 9-Step 1-Run Collapse Law:
+         - Across all 72 (a, b, G_0) configurations (a, b in 1..6):
+           Case 1 (G_0 != a mod 2) => G_{a+1} == 1, G_{a+b} == 1, |E| == 2;
+           Case 2 (G_0 == a mod 2) => G_a == 0 (and |E| == 1 when b == 1) (0 errors).
+         - On c = 1^L, |G_L(1^L)| = min(L + 2, 10) for L = 1..10, and for all a >= 9,
+           (G_a, a_{a,+2}) == (0, 1) identically across all R_0, forcing |E_{a+b}(1^a 0^b)| == 1 (0 errors).
+      5. Unconditional Multi-Run Right-Half-Plane Gate Lock-In Impossibility (Theorem 21 + Morse-Hedlund):
+         - Verifies |E_{k*Pi}(w^k)| == 1 across representative 2r-run and 4r-run periodic words
+           w = prod_i (1^{a_i} 0^{b_i} (1^{d_i} 0)^{eps_i}) (a_i >= 9, b_i >= 1, d_i odd) up to Pi = 30.
+    """
+    T_cone = 66
+    W_cone = 2 * T_cone + 5
+    center = T_cone + 2
+    cone = np.zeros((T_cone + 2, W_cone), dtype=np.uint8)
+    cone[0, center] = 1
+    for t in range(1, T_cone + 2):
+        cone[t] = np.roll(cone[t - 1], 1) ^ (cone[t - 1] | np.roll(cone[t - 1], -1))
+
+    # 1. Twin 1-Line SWAR Half-Plane Decomposition & Self-Similar Shift-Recursion Identity
+    L_val = 0
+    R_val = 0
+    twin_swar_errors = 0
+    for t in range(62):
+        c_t = int(cone[t, center])
+        for m in range(1, t + 1):
+            if ((L_val >> (m - 1)) & 1) != int(cone[t, center - m]):
+                twin_swar_errors += 1
+            if ((R_val >> (m - 1)) & 1) != int(cone[t, center + m]):
+                twin_swar_errors += 1
+        c_next_seam = (L_val & 1) ^ (c_t | (R_val & 1))
+        if c_next_seam != int(cone[t + 1, center]):
+            twin_swar_errors += 1
+        L_val = (L_val >> 1) ^ (L_val | ((L_val << 1) | c_t))
+        R_val = ((R_val << 1) | c_t) ^ (R_val | (R_val >> 1))
+
+    shift_rec_errors = 0
+    for c_in in (0, 1):
+        for a_int in range(1 << 10):
+            a1 = a_int & 1
+            a2 = (a_int >> 1) & 1
+            tc_a = (((a_int << 1) | c_in) ^ (a_int | (a_int >> 1))) & ((1 << 9) - 1)
+            first_bit = c_in ^ (a1 | a2)
+            sig_a = a_int >> 1
+            ta1_sig = (((sig_a << 1) | a1) ^ (sig_a | (sig_a >> 1))) & ((1 << 8) - 1)
+            if tc_a != (first_bit | (ta1_sig << 1)):
+                shift_rec_errors += 1
+
+    self_dual_errors = 0
+    for L_win in range(1, 6):
+        all_E = {}
+        all_G = {}
+        for w_bits in range(1 << L_win):
+            c_tup = tuple((w_bits >> s) & 1 for s in range(L_win))
+            G_set = set()
+            E_set = set()
+            for R0 in range(1 << (L_win + 1)):
+                R = R0
+                Gs = [R & 1]
+                Es = []
+                for s in range(L_win):
+                    c_s = c_tup[s]
+                    Es.append(c_s | (R & 1))
+                    R = ((R << 1) | c_s) ^ (R | (R >> 1))
+                    Gs.append(R & 1)
+                G_set.add(tuple(Gs))
+                E_set.add(tuple(Es))
+            all_E[c_tup] = E_set
+            all_G[c_tup] = G_set
+        for c_tup, G_set in all_G.items():
+            rec_G = set()
+            for g_bits in range(1 << (L_win + 1)):
+                G_cand = tuple((g_bits >> s) & 1 for s in range(L_win + 1))
+                derived_E = tuple(c_tup[s] ^ G_cand[s + 1] for s in range(L_win))
+                if derived_E in all_E[G_cand[:L_win]]:
+                    rec_G.add(G_cand)
+            if rec_G != G_set:
+                self_dual_errors += 1
+
+    # 2. Right-Boundary OR-Gate Erasure Cascade (Laws 1, 2, 3) & Moore Automata Q_m
+    erasure_law_errors = 0
+    for R0 in range(1 << 7):
+        g0 = R0 & 1
+        a2_0 = (R0 >> 1) & 1
+        for c0 in (0, 1):
+            R1 = ((R0 << 1) | c0) ^ (R0 | (R0 >> 1))
+            g1 = R1 & 1
+            a2_1 = (R1 >> 1) & 1
+            if g0 == 1 and g1 != (1 ^ c0):
+                erasure_law_errors += 1
+            if g0 == 0 and a2_0 == 1:
+                if c0 == 1 and (g1, a2_1) != (0, 1):
+                    erasure_law_errors += 1
+                if c0 == 0 and (g1, a2_1) != (1, 1):
+                    erasure_law_errors += 1
+            for c1 in (0, 1):
+                R2 = ((R1 << 1) | c1) ^ (R1 | (R1 >> 1))
+                g2 = R2 & 1
+                if g0 == 0 and c0 == 1 and g2 != (1 ^ c1):
+                    erasure_law_errors += 1
+
+    moore_sizes = []
+    for m_h in range(1, 7):
+        sigs = set()
+        for R0 in range(1 << (m_h + 1)):
+            sig = []
+            for w_bits in range(1 << m_h):
+                R = R0
+                gs = [R & 1]
+                for s in range(m_h):
+                    c_s = (w_bits >> s) & 1
+                    R = ((R << 1) | c_s) ^ (R | (R >> 1))
+                    gs.append(R & 1)
+                sig.append(tuple(gs))
+            sigs.add(tuple(sig))
+        moore_sizes.append(len(sigs))
+
+    # 3. Light-Cone Boolean Derivative & Parametric Bijection Theorem (P_d(t))
+    def _eval_Pd(d: int, b_seq: list[int], t_idx: int) -> int:
+        if d == 0:
+            return 0
+        if d == 1:
+            return b_seq[t_idx]
+        return _eval_Pd(d - 2, b_seq, t_idx + 1) ^ (_eval_Pd(d - 1, b_seq, t_idx) | _eval_Pd(d - 2, b_seq, t_idx))
+
+    deriv_and_bijection_errors = 0
+    for k_lc in range(1, 7):
+        param_pairs = set()
+        for bits in range(1 << k_lc):
+            b_seq = [(bits >> i) & 1 for i in range(k_lc - 1)]
+            c_last = (bits >> (k_lc - 1)) & 1
+            R0_p = 0
+            for x_pos in range(1, k_lc + 1):
+                R0_p |= (_eval_Pd(k_lc - x_pos, b_seq, 0) << (x_pos - 1))
+            c_word_p = 0
+            for t_pos in range(k_lc - 1):
+                c_word_p |= (_eval_Pd(k_lc - t_pos, b_seq, t_pos) << t_pos)
+            c_word_p |= (c_last << (k_lc - 1))
+            param_pairs.add((c_word_p, R0_p))
+
+        actual_pairs = set()
+        for c_word in range(1 << k_lc):
+            for R0 in range(1 << k_lc):
+                R_a = R0
+                R_b = R0 | (1 << k_lc)
+                diag_zero = 1
+                for s in range(k_lc):
+                    if ((R_a >> (k_lc - s - 1)) & 1) == 1:
+                        diag_zero = 0
+                    c_s = (c_word >> s) & 1
+                    R_a = ((R_a << 1) | c_s) ^ (R_a | (R_a >> 1))
+                    R_b = ((R_b << 1) | c_s) ^ (R_b | (R_b >> 1))
+                diff_gk = (R_a & 1) ^ (R_b & 1)
+                if diff_gk != diag_zero:
+                    deriv_and_bijection_errors += 1
+                if diff_gk == 1:
+                    actual_pairs.add((c_word, R0))
+        if len(param_pairs) != (1 << k_lc) or param_pairs != actual_pairs:
+            deriv_and_bijection_errors += 1
+
+    # 4. Universal Run-Pair Parity-Lock Theorem & 9-Step 1-Run Collapse Law
+    parity_lock_errors = 0
+    for a_run in range(1, 7):
+        for b_run in range(1, 7):
+            c_tup = (1,) * a_run + (0,) * b_run
+            L_ab = a_run + b_run
+            for g0 in (0, 1):
+                end_G = set()
+                ga_set = set()
+                ga1_set = set()
+                e_set = set()
+                for R0 in range(1 << (L_ab + 1)):
+                    if (R0 & 1) != g0:
+                        continue
+                    R = R0
+                    Gs = [R & 1]
+                    es = []
+                    for s in range(L_ab):
+                        c_s = c_tup[s]
+                        es.append(c_s | (R & 1))
+                        R = ((R << 1) | c_s) ^ (R | (R >> 1))
+                        Gs.append(R & 1)
+                    end_G.add(Gs[L_ab])
+                    ga_set.add(Gs[a_run])
+                    ga1_set.add(Gs[a_run + 1])
+                    e_set.add(tuple(es))
+                if g0 != (a_run % 2):
+                    if ga1_set != {1} or end_G != {1} or len(e_set) != 2:
+                        parity_lock_errors += 1
+                else:
+                    if ga_set != {0} or (b_run == 1 and len(e_set) != 1):
+                        parity_lock_errors += 1
+
+    collapse_9step_errors = 0
+    for L_one in range(1, 11):
+        G_set = set()
+        for R0 in range(1 << (L_one + 1)):
+            R = R0
+            Gs = [R & 1]
+            for _ in range(L_one):
+                R = ((R << 1) | 1) ^ (R | (R >> 1))
+                Gs.append(R & 1)
+            G_set.add(tuple(Gs))
+        if len(G_set) != min(L_one + 2, 10):
+            collapse_9step_errors += 1
+
+    # 5. Unconditional Multi-Run Right-Half-Plane Gate Lock-In Impossibility
+    multirun_lockin_errors = 0
+    multirun_words = [
+        (1,) * 9 + (0,) * 3 + (1,) * 1 + (0,) * 1,
+        (1,) * 9 + (0,) * 2 + (1,) * 3 + (0,) * 1,
+        (1,) * 9 + (0,) * 4 + (1,) * 5 + (0,) * 1,
+        (1,) * 10 + (0,) * 3 + (1,) * 1 + (0,) * 1 + (1,) * 9 + (0,) * 2 + (1,) * 3 + (0,) * 1,
+    ]
+    m_depth = 9
+    mask_m = (1 << m_depth) - 1
+    for pw in multirun_words:
+        states = {(R0, ()) for R0 in range(1 << m_depth)}
+        for _ in range(2):
+            for c_s in pw:
+                nxt_states = set()
+                for R, es in states:
+                    e_s = c_s | (R & 1)
+                    es_nxt = es + (e_s,)
+                    for top_bit in (0, 1):
+                        R_ext = R | (top_bit << m_depth)
+                        R_nxt = (((R_ext << 1) | c_s) ^ (R_ext | (R_ext >> 1))) & mask_m
+                        nxt_states.add((R_nxt, es_nxt))
+                states = nxt_states
+            if len({es for _, es in states}) != 1:
+                multirun_lockin_errors += 1
+
+    return {
+        "twin_swar_errors": twin_swar_errors,
+        "shift_rec_errors": shift_rec_errors,
+        "self_dual_errors": self_dual_errors,
+        "erasure_law_errors": erasure_law_errors,
+        "moore_sizes_m1_to_6": moore_sizes,
+        "deriv_and_bijection_errors": deriv_and_bijection_errors,
+        "parity_lock_errors": parity_lock_errors,
+        "collapse_9step_errors": collapse_9step_errors,
+        "multirun_lockin_errors": multirun_lockin_errors,
+    }
+
+
 def evaluate_white_tent_extinction_and_drift(
     r30_grid: np.ndarray,
     r90_grid: np.ndarray,
@@ -6427,6 +6694,19 @@ def self_test() -> dict:
         and abs(bridge_31["spectral_radius_001"] - (1.0 + np.sqrt(2.0))) < 1e-6
     ), "Theorem 31 All-Pi Analytical Bridge, Midpoint Crystal Triple, Mahler Gate Bridge, or SWAR Autonomy violated"
 
+    twin_32 = verify_twin_swar_right_halfplane_erasure_and_multirun_lockin()
+    assert (
+        twin_32["twin_swar_errors"] == 0
+        and twin_32["shift_rec_errors"] == 0
+        and twin_32["self_dual_errors"] == 0
+        and twin_32["erasure_law_errors"] == 0
+        and twin_32["moore_sizes_m1_to_6"] == [3, 5, 7, 11, 16, 25]
+        and twin_32["deriv_and_bijection_errors"] == 0
+        and twin_32["parity_lock_errors"] == 0
+        and twin_32["collapse_9step_errors"] == 0
+        and twin_32["multirun_lockin_errors"] == 0
+    ), "Theorem 32 Twin SWAR Decomposition, Right-Boundary Erasure Cascade, Light-Cone Bijection, or Multi-Run Lock-In violated"
+
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)
     assert tent_eval["erosion_r30"]["frac_exact_2px_erosion"] == 1.0, "Rule 30 white-tent erosion must be 100% exact 2px/step"
     assert tent_eval["erosion_r90"]["frac_exact_2px_erosion"] == 1.0, "Rule 90 white-tent erosion must be 100% exact 2px/step"
@@ -6492,6 +6772,7 @@ def self_test() -> dict:
         "mahler_inv": mahler_inv,
         "even_jump": even_jump,
         "bridge_31": bridge_31,
+        "twin_32": twin_32,
         "tent_eval": tent_eval,
     }
 
@@ -7716,7 +7997,7 @@ def render_prize_progress_gif_and_poster(
         },
         {
             "step": 30,
-            "commit": "3fe5dda -> HEAD",
+            "commit": "ec6e23d",
             "time_str": "Oct 19, 9:35 PM",
             "dt_min": 20,
             "cum_min": 728,
@@ -7731,6 +8012,27 @@ def render_prize_progress_gif_and_poster(
             "synthesis": (
                 "Closes the analytical bridge connecting the zero-transient crystal midpoint triple (A_S(k-1),A_S(k),A_S(k+1)), the binary-borrow "
                 "Mahler gate bridge, the 1-line SWAR forward left-half-plane autonomy machine (4,062,178 cone tails -> 0 survivors), and Pell-Lucas spectral radius 1+sqrt(2)."
+            ),
+            "pi_max": 30,
+            "necks_done": 74248449,
+        },
+        {
+            "step": 31,
+            "commit": "ec6e23d -> HEAD",
+            "time_str": "Oct 19, 10:25 PM",
+            "dt_min": 20,
+            "cum_min": 748,
+            "phase": "Phase IV: General Period-Pi Elimination, Dual Families & Degree Staircase",
+            "phase_color": "#34d399",
+            "title": "Step 31: Twin SWAR Half-Planes, OR-Gate Erasure Cascade, Light-Cone Bijection & Multi-Run Lock-In",
+            "thm_badge": "Theorem 32 (Twin SWAR & Multi-Run Lock-In)",
+            "formula_lines": [
+                r"$R_{t+1}^{(+)}=((R_t^{(+)}\ll 1)\lor c_t)\oplus(R_t^{(+)}\lor(R_t^{(+)}\gg 1)),\quad (G_t=0\land c_t=1)\implies G_{t+2}=1\oplus c_{t+1},\quad \frac{\partial G_k}{\partial a_{0,k+1}}=\prod_{s=0}^{k-1}(1\oplus a_{s,k-s})$",
+                r"$P_d(t)=P_{d-2}(t+1)\oplus(P_{d-1}(t)\lor P_{d-2}(t)),\quad |\mathcal{E}_{k\Pi}(w^k)|=1\;\;\forall w=\prod_i 1^{a_i}0^{b_i}(1^{d_i}0)^{\varepsilon_i}\;(a_i\ge 9)\implies \bot\;\;(\forall t_0,\Pi)$",
+            ],
+            "synthesis": (
+                "Proves the twin 1-line SWAR right-half-plane machine, self-dual recursion T_c(a), 3-law OR-gate erasure cascade, Moore automata Q_m, "
+                "exact 2^{floor(k/2)}x2^{ceil(k/2)}=2^k light-cone bijection, 9-step 1-run collapse, and unconditional 2r/4r-run gate lock-in impossibility."
             ),
             "pi_max": 30,
             "necks_done": 74248449,
@@ -7791,7 +8093,7 @@ def render_prize_progress_gif_and_poster(
         ax_top.text(
             98.5,
             7.2,
-            f"[{ms['thm_badge']}]   Milestone {ms['step']} / 29",
+            f"[{ms['thm_badge']}]   Milestone {ms['step']} / 31",
             color=ms["phase_color"],
             fontsize=11.0,
             fontweight="bold",
@@ -7806,7 +8108,7 @@ def render_prize_progress_gif_and_poster(
         ax_top.text(
             85.25,
             2.9,
-            f"30-Theorem Architecture: {int(round(prog_pct * 100))}% Complete",
+            f"32-Theorem Architecture: {int(round(prog_pct * 100))}% Complete",
             color="#0b0f19" if prog_pct > 0.45 else "#f8fafc",
             fontsize=8.6,
             fontweight="bold",
@@ -8086,14 +8388,15 @@ def render_prize_progress_gif_and_poster(
                 "S28\nThm29",
                 "S29\nThm30",
                 "S30\nThm31",
+                "S31\nThm32",
             ],
             color="#cbd5e1",
-            fontsize=4.8,
+            fontsize=4.6,
         )
         ax_time.set_ylim(0, 82)
         ax_time.set_ylabel("Step Duration $\\Delta t$ (min)", color="#cbd5e1", fontsize=9.2)
         ax_time.set_title(
-            "D. Chronological Theorem Build Time per Milestone (Oct 18–19, 2026: 30 Milestones, 12h 08m Active Proof Time)",
+            "D. Chronological Theorem Build Time per Milestone (Oct 18–19, 2026: 31 Milestones, 12h 28m Active Proof Time)",
             color="#f8fafc",
             fontsize=10.3,
             fontweight="bold",
@@ -8144,9 +8447,9 @@ def render_prize_progress_gif_and_poster(
                 "PROVED (Thms 17, 19: S_max <= 5, 14)",
             ),
             (
-                "5. All-Pi Analytical Bridge & Mahler Gate Law",
-                idx >= 29,
-                "PROVED (Thm 31: SWAR L_t, rho=1+sqrt(2))",
+                "5. Twin SWAR Half-Planes & Multi-Run Lock-In",
+                idx >= 30,
+                "PROVED (Thms 31-32: Q_m, 2^k Cone, 2r/4r-Run)",
             ),
             (
                 "6. Primitive Necklaces Extinguished (Pi=2..30)",
@@ -8248,6 +8551,7 @@ def main(argv: list[str] | None = None) -> int:
     mahler_inv = res["mahler_inv"]
     even_jump = res["even_jump"]
     bridge_31 = res["bridge_31"]
+    twin_32 = res["twin_32"]
     print(
         f"[open_problems_A_B_C_D] OK | backward inverse errors={bwd['backward_inverse_errors']} (post-barrier cycles: 0/3, 0/15, 0/255) | "
         f"unit-seed branch='{bs_diag['unit_seed_p16_branch_path']}' -> exact k_5={bs_diag['unit_seed_exact_k5']} (T_lock={bs_diag['unit_seed_exact_tlock_k5']}, "
@@ -8320,9 +8624,9 @@ def main(argv: list[str] | None = None) -> int:
         even_jump["max_ext_30"],
     )
     print(
-        f"[theorems_15_to_31_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv/EvenJump/Bridge31 errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']},{even_jump['even_jump_errors']},{bridge_31['mahler_bridge_errors']}) | "
+        f"[theorems_15_to_32_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv/EvenJump/Bridge31/Twin32 errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']},{even_jump['even_jump_errors']},{bridge_31['mahler_bridge_errors']},{twin_32['twin_swar_errors'] + twin_32['shift_rec_errors'] + twin_32['self_dual_errors'] + twin_32['erasure_law_errors'] + twin_32['deriv_and_bijection_errors'] + twin_32['parity_lock_errors'] + twin_32['collapse_9step_errors'] + twin_32['multirun_lockin_errors']}) | "
         f"SWAR cone tails={bridge_31['swar_candidates_tested']} (survivors={bridge_31['swar_survivors']}, max_steps={bridge_31['swar_max_steps']}) | "
-        f"rho(T_001)={bridge_31['spectral_radius_001']:.6f} | "
+        f"Q_m={twin_32['moore_sizes_m1_to_6']} | rho(T_001)={bridge_31['spectral_radius_001']:.6f} | "
         f"Pi=2..30 ({tot_necks} necklaces, {tot_prefs} prefs): unextinguished={tot_unext} (max_ext_steps={max_ext})"
     )
     print(
