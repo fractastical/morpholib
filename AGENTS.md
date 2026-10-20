@@ -43,19 +43,19 @@ Most validation here is script-specific smoke testing.
 ```bash
 # PlanformDB timeline + morphology animation
 export PLANFORM_DB_PATH=/path/to/planformDB_2.5.0.edb
-python3 1900-planformDB_parser.py
+python3 models/1900-planformDB_parser.py
 
 # Or pass the database path explicitly
-python3 1900-planformDB_parser.py /path/to/planformDB_2.5.0.edb
+python3 models/1900-planformDB_parser.py /path/to/planformDB_2.5.0.edb
 
 # Gray-Scott / Turing pattern animation
-python3 1952-turing-morpho.py
+python3 models/1952-turing-morpho.py
 
 # Raup shell parameter exploration
-python3 1966-raup.py
+python3 models/1966-raup.py
 
 # Generate the Raup animation and comparison assets
-python3 create_raup_animations.py
+python3 models/create_raup_animations.py
 
 # Thompson transformation demo
 python3 thompson/1917-thompson.py

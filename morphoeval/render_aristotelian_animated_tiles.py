@@ -204,11 +204,8 @@ def build_animated_specimen_overlay_frames(
     target_size: tuple[int, int],
 ) -> list[Image.Image]:
     """
-    Build `n_frames` of the canonical biological specimen photograph with:
-      1. Real computer-vision contour / skeleton / parastichy feature segmentation extracted
-         directly from the image pixels (cyan/lime contour & feature overlay).
-      2. A synchronized mathematical simulation overlay (gold/magenta) growing directly on top of
-         the segmented specimen geometry so the viewer can immediately judge visual fitness.
+    Build `n_frames` of the canonical biological specimen photograph cleanly fitted
+    to `target_size` without synthetic moving overlays.
     """
     tw, th = target_size
     if not sp_path.exists() or sp_path.is_dir():
@@ -218,138 +215,13 @@ def build_animated_specimen_overlay_frames(
     with Image.open(sp_path) as raw_im:
         base_im = ImageOps.fit(raw_im.convert("RGB"), (tw, th), method=Image.Resampling.LANCZOS)
 
-    arr = np.asarray(base_im, dtype=np.float64) / 255.0
-    gray = 0.299 * arr[:, :, 0] + 0.587 * arr[:, :, 1] + 0.114 * arr[:, :, 2]
-
-    # Compute real CV edge/contour map from the canonical image pixels
-    gx = ndi.sobel(gray, axis=1)
-    gy = ndi.sobel(gray, axis=0)
-    grad = np.hypot(gx, gy)
-    edge_th = float(np.percentile(grad, 82.0))
-    edge_mask = grad >= max(edge_th, 0.08)
-
-    # Also compute adaptive foreground boundary contour
-    border = np.concatenate([gray[0, :], gray[-1, :], gray[:, 0], gray[:, -1]])
-    bg_med = float(np.median(border))
-    fg_mask = ndi.binary_fill_holes(ndi.binary_closing(np.abs(gray - bg_med) >= np.percentile(np.abs(gray - bg_med), 52.0), structure=np.ones((3, 3))))
-    boundary_mask = fg_mask ^ ndi.binary_erosion(fg_mask, iterations=2)
-
-    # Pre-tint the base image with the CV-extracted contour (cyan) and internal ridges (emerald)
-    cv_rgb = (arr * 255.0).astype(np.uint8).copy()
-    cv_rgb[edge_mask] = np.clip(0.45 * cv_rgb[edge_mask] + 0.55 * np.array([16, 185, 129]), 0, 255).astype(np.uint8)
-    cv_rgb[boundary_mask] = np.array([34, 211, 238], dtype=np.uint8)
-    cv_base = Image.fromarray(cv_rgb, mode="RGB")
-
-    # Find centroid of foreground for registering radial/branching overlays
-    ys, xs = np.where(fg_mask)
-    cx = float(np.mean(xs)) if len(xs) > 20 else tw * 0.5
-    cy = float(np.mean(ys)) if len(ys) > 20 else th * 0.5
-    cx = float(np.clip(cx, tw * 0.28, tw * 0.72))
-    cy = float(np.clip(cy, th * 0.28, th * 0.72))
-
     f_tiny = get_font(8, True)
-    frames: list[Image.Image] = []
-
-    for k in range(n_frames):
-        prog = (k + 1) / float(n_frames)
-        fr = cv_base.copy()
-        draw = ImageDraw.Draw(fr, "RGBA")
-
-        if any(w in slug for w in ["phyllotaxis", "rosette", "jonsson", "roman-esco", "romanesco"]):
-            # Golden-angle Fibonacci parastichy lattice registered to the specimen capitulum/rosette/cone center
-            golden = 137.507764 * math.pi / 180.0
-            n_pts = int(12 + prog * 68)
-            max_r = min(tw, th) * 0.44
-            for n in range(1, n_pts + 1):
-                r = max_r * math.sqrt(n / 80.0)
-                theta = n * golden
-                px = cx + r * math.cos(theta)
-                py = cy + r * math.sin(theta)
-                if 2 <= px < tw - 2 and 2 <= py < th - 2:
-                    # Connect parastichy arms (n -> n-8 and n -> n-13)
-                    for step_arm, col_arm in [(8, (250, 204, 21, 185)), (13, (244, 63, 94, 175))]:
-                        if n > step_arm:
-                            r0 = max_r * math.sqrt((n - step_arm) / 80.0)
-                            t0 = (n - step_arm) * golden
-                            draw.line([(cx + r0 * math.cos(t0), cy + r0 * math.sin(t0)), (px, py)], fill=col_arm, width=1)
-                    rad_pt = 2.2 if n < 45 else 1.7
-                    draw.ellipse([px - rad_pt, py - rad_pt, px + rad_pt, py + rad_pt], fill=(250, 204, 21, 230), outline=(7, 10, 18, 220))
-        elif any(w in slug for w in ["venation", "canalization", "compound-leaf"]):
-            # Dichotomous / reticulate auxin-flux venation tree growing from petiole base onto the leaf blade
-            bx, by = cx, th - 8
-            def _draw_vein(x0: float, y0: float, length: float, angle: float, depth: int) -> None:
-                if depth <= 0 or length < 3.0:
-                    return
-                x1 = x0 + length * math.cos(angle)
-                y1 = y0 + length * math.sin(angle)
-                draw.line([(x0, y0), (x1, y1)], fill=(250, 204, 21, 220), width=max(1, depth // 2))
-                spread = 0.34 if "venation" in slug else 0.42
-                _draw_vein(x1, y1, length * 0.74, angle - spread, depth - 1)
-                _draw_vein(x1, y1, length * 0.74, angle + spread, depth - 1)
-            max_d = max(1, int(round(1 + prog * 5)))
-            _draw_vein(bx, by, th * 0.27, -math.pi / 2.0, max_d)
-        elif "root-auxin" in slug:
-            # Diagonal root meristem reflux fountain streamlines & quiescent-center auxin maximum
-            # Root specimen runs from bottom-left (tip) to top-right
-            x_tip, y_tip = tw * 0.22, th * 0.76
-            x_top, y_top_r = tw * 0.84, th * 0.20
-            for offset in [-10, -5, 0, 5, 10]:
-                pts = []
-                n_seg = int(4 + prog * 18)
-                for s in range(n_seg):
-                    u = s / 21.0
-                    px = x_tip + u * (x_top - x_tip) - offset * 0.6
-                    py = y_tip + u * (y_top_r - y_tip) + offset * 0.8
-                    pts.append((px, py))
-                if len(pts) >= 2:
-                    col = (250, 204, 21, 220) if abs(offset) <= 5 else (56, 189, 248, 195)
-                    draw.line(pts, fill=col, width=2 if offset == 0 else 1)
-            # Auxin maximum at QC tip
-            r_qc = 5 + 3 * math.sin(prog * math.pi * 2)
-            draw.ellipse([x_tip - r_qc, y_tip - r_qc, x_tip + r_qc, y_tip + r_qc], fill=(244, 63, 94, 215), outline=(250, 204, 21, 255))
-        elif "pavement-cell" in slug:
-            # Interlocking ROP2/ROP6 sinusoidal puzzle-cell lobe contour overlay + microtubule neck bands
-            n_lobes = 7
-            r_base = min(tw, th) * 0.26
-            amp = r_base * (0.08 + 0.26 * prog)
-            pts = []
-            for s in range(72):
-                ang = 2.0 * math.pi * s / 72.0
-                rr = r_base + amp * math.sin(n_lobes * ang)
-                pts.append((cx + rr * math.cos(ang), cy + rr * math.sin(ang)))
-            pts.append(pts[0])
-            draw.line(pts, fill=(250, 204, 21, 235), width=2)
-            # Draw MT indentation bands at concave necks
-            for lb in range(n_lobes):
-                ang = (2.0 * math.pi * lb + 1.5 * math.pi) / n_lobes
-                r_in = r_base - amp
-                nx, ny = cx + r_in * math.cos(ang), cy + r_in * math.sin(ang)
-                tx, ty = -math.sin(ang) * 6, math.cos(ang) * 6
-                draw.line([(nx - tx, ny - ty), (nx + tx, ny + ty)], fill=(244, 63, 94, 230), width=2)
-        else:
-            # Meristem dome L1 contour + saddle-boundary (K < 0) principal stress tensor bars registered on the SAM
-            xs_arc = np.linspace(tw * 0.16, tw * 0.84, 40)
-            fold_amp = 0.2 + 0.8 * prog
-            ys_arc = []
-            for x_v in xs_arc:
-                u = (x_v - tw * 0.5) / (tw * 0.34)
-                dome = -th * 0.26 * math.exp(-u * u * 1.8)
-                crease = th * 0.11 * fold_amp * (math.exp(-((u + 0.58) ** 2) / 0.04) + math.exp(-((u - 0.58) ** 2) / 0.04))
-                ys_arc.append(th * 0.52 + dome + crease)
-            pts = list(zip(xs_arc.tolist(), ys_arc))
-            draw.line(pts, fill=(250, 204, 21, 240), width=2)
-            # Highlight K < 0 saddle boundary creases
-            for u_s in [-0.58, 0.58]:
-                sx = tw * 0.5 + u_s * (tw * 0.34)
-                sy = th * 0.44
-                draw.ellipse([sx - 5, sy - 5, sx + 5, sy + 5], outline=(244, 63, 94, 240), width=2)
-
-        # Top-left micro-badge inside specimen pane
-        draw.rectangle([2, 2, tw - 2, 16], fill=(7, 10, 18, 205))
-        draw.text((5, 3), "Specimen + CV & Math Fit", font=f_tiny, fill=(34, 211, 238, 255))
-        frames.append(fr.convert("RGB"))
-
-    return frames
+    fr = base_im.copy()
+    draw = ImageDraw.Draw(fr, "RGBA")
+    draw.rectangle([2, 2, 98, 16], fill=(7, 10, 18, 205))
+    draw.text((5, 3), "Canonical Specimen", font=f_tiny, fill=(56, 189, 248, 255))
+    clean_frame = fr.convert("RGB")
+    return [clean_frame.copy() for _ in range(n_frames)]
 
 
 def render_left_matrix_panel(
@@ -358,13 +230,14 @@ def render_left_matrix_panel(
     panel_w: int,
     panel_h: int,
 ) -> Image.Image:
-    """Render the 10×10 Aristotelian Coverage Matrix with `[1]..[9]` callout badges."""
+    """Render the 10×10 Aristotelian Coverage Matrix (verified models only) with `[1]..[9]` callout badges."""
     dpi = 110
     fig, ax = plt.subplots(figsize=(panel_w / dpi, panel_h / dpi), dpi=dpi, facecolor="#070a12")
     fig.subplots_adjust(left=0.31, right=0.96, bottom=0.22, top=0.88)
     ax.set_facecolor("#0f172a")
 
-    im = ax.imshow(mat_counts, cmap="YlGnBu", aspect="auto", vmin=0, vmax=max(22, int(mat_counts.max())))
+    vmax_val = max(8, int(mat_counts.max()))
+    im = ax.imshow(mat_counts, cmap="YlGnBu", aspect="auto", vmin=0, vmax=vmax_val)
 
     row_labels = [s[1] for s in SUBALTERN_ORDER]
     ax.set_yticks(np.arange(len(row_labels)))
@@ -377,7 +250,7 @@ def render_left_matrix_panel(
     for r in range(mat_counts.shape[0]):
         for c in range(mat_counts.shape[1]):
             val = int(mat_counts[r, c])
-            if (r, c) in badge_lookup:
+            if (r, c) in badge_lookup and val > 0:
                 b_num = badge_lookup[(r, c)]
                 rect = plt.Rectangle(
                     (c - 0.47, r - 0.47),
@@ -409,21 +282,34 @@ def render_left_matrix_panel(
                     va="center",
                     fontsize=7.2,
                     fontweight="bold",
-                    color="#ffffff",
+                    color="#ffffff" if val >= vmax_val * 0.55 else "#0f172a",
                     zorder=6,
                 )
-            else:
-                txt_col = "#0f172a" if val < 12 else "#ffffff"
+            elif val > 0:
+                txt_col = "#0f172a" if val < vmax_val * 0.55 else "#ffffff"
                 ax.text(c, r, f"{val}", ha="center", va="center", fontsize=8.0, fontweight="bold", color=txt_col)
+            else:
+                ax.add_patch(
+                    plt.Rectangle(
+                        (c - 0.5, r - 0.5),
+                        1.0,
+                        1.0,
+                        facecolor="#090e1a",
+                        edgecolor="#1e293b",
+                        linewidth=0.6,
+                        zorder=2,
+                    )
+                )
 
     for boundary in [3.5, 6.5, 7.5]:
         ax.axhline(boundary, color="#facc15", ls="--", lw=1.1, alpha=0.8)
 
+    pop_cells = int(np.sum(mat_counts > 0))
     ax.set_title(
-        f"Aristotelian 10×10 Matrix (n = {total_models:,} Models)\n"
-        "Yellow Badges #1–#9 = Live Animated Tiles on Right →",
+        f"Aristotelian 10×10 Matrix ({total_models:,} Verified Models · {pop_cells} Cells)\n"
+        "Only Models Passing Image Fitness (ImgFit ≥ 70.0) Shown",
         color="white",
-        fontsize=10.5,
+        fontsize=10.2,
         fontweight="bold",
         pad=10,
     )
@@ -440,23 +326,19 @@ def build_best9_animated_matrix_gif(entries: list[dict[str, Any]], n_frames: int
     sub_keys = [s[0] for s in SUBALTERN_ORDER]
     sub_colors = {s[0]: s[2] for s in SUBALTERN_ORDER}
 
+    passing_entries = [
+        e for e in entries if e.get("passes_image_threshold", False) and float(e.get("image_fitness", 0.0)) >= 70.0
+    ]
+
     mat_counts = np.zeros((10, 10), dtype=int)
     cell_entries: dict[tuple[int, int], list[dict[str, Any]]] = defaultdict(list)
 
-    for e in entries:
+    for e in passing_entries:
         if e["subaltern_genos"] in sub_keys and e["efficient_cause"] in CAUSE_ORDER:
             r = sub_keys.index(e["subaltern_genos"])
             c = CAUSE_ORDER.index(e["efficient_cause"])
             mat_counts[r, c] += 1
-            if e.get("passes_image_threshold", False):
-                cell_entries[(r, c)].append(e)
-    # Fallback if a cell has only candidate models
-    for e in entries:
-        if e["subaltern_genos"] in sub_keys and e["efficient_cause"] in CAUSE_ORDER:
-            r = sub_keys.index(e["subaltern_genos"])
-            c = CAUSE_ORDER.index(e["efficient_cause"])
-            if not cell_entries[(r, c)]:
-                cell_entries[(r, c)].append(e)
+            cell_entries[(r, c)].append(e)
 
     for k in cell_entries:
         cell_entries[k].sort(key=lambda x: x.get("rank_score", x["score"]), reverse=True)
@@ -471,7 +353,7 @@ def build_best9_animated_matrix_gif(entries: list[dict[str, Any]], n_frames: int
     tile_h = (H - header_h - (tile_rows + 1) * gap) // tile_rows
     anim_h = tile_h - 64
 
-    left_panel = render_left_matrix_panel(mat_counts, len(entries), left_w, H - header_h - 12)
+    left_panel = render_left_matrix_panel(mat_counts, len(passing_entries), left_w, H - header_h - 12)
 
     tile_data = []
     for cell_spec in BEST_9_CELLS:
@@ -518,14 +400,14 @@ def build_best9_animated_matrix_gif(entries: list[dict[str, Any]], n_frames: int
         draw.line([(0, header_h), (W, header_h)], fill=(56, 189, 248), width=2)
         draw.text(
             (16, 8),
-            "Aristotelian Morphospace Matrix — Animated Best-9 Grid Spaces (Ousia × Poiein across 1,116 Models & 150 Genera)",
+            f"Aristotelian Morphospace Matrix — Animated Best-9 Grid Spaces (Ousia × Poiein across {len(passing_entries)} Verified Models)",
             font=f_title,
             fill=(248, 250, 252),
         )
         draw.text(
             (16, 33),
-            "Left: 10×10 Taxonomic × Biophysical Coverage Matrix (100/100 Cells)   |   "
-            "Right: Audited Top Models First (Image Fitness + DOI Paper + Code Provenance)",
+            f"Left: 10×10 Coverage Matrix ({int(np.sum(mat_counts > 0))} Populated Cells Passing ImgFit ≥ 70.0)   |   "
+            "Right: Audited Top Models (Image Fitness + DOI Paper + Code Provenance)",
             font=f_sub,
             fill=(148, 163, 184),
         )
@@ -685,8 +567,8 @@ def build_single_cell_9tiles_gif(entries: list[dict[str, Any]], n_frames: int = 
         )
         draw.text(
             (16, 34),
-            f"Threshold Gate Active: Showing {len(preloaded)}/{len(all_cell_models)} Models with ImgFit ≥ 70.0   |   "
-            f"{len(all_cell_models) - len(preloaded)} Models Below Threshold (< 70.0) Suppressed from Display",
+            f"Left of Each Tile: Canonical Biological Specimen   |   "
+            f"Right: Dynamical Simulation + Audit & Image Fitness + DOI Paper & Code Links",
             font=f_sub,
             fill=(167, 243, 208),
         )
@@ -735,61 +617,6 @@ def build_single_cell_9tiles_gif(entries: list[dict[str, Any]], n_frames: int = 
             while draw.textlength(line2, font=f_meta) > tile_w - 14 and len(line2) > 16:
                 line2 = line2[:-2] + "…"
             draw.text((tx + 6, by0 + 17), line2, font=f_meta, fill=(203, 213, 225))
-
-        # If fewer than 9 models pass the ImgFit >= 70.0 threshold, render the 9th slot as an explicit
-        # "Threshold Gate Summary" card listing the suppressed models (< 70.0) so low-fitness models are NOT displayed.
-        if len(preloaded) < 9:
-            r, c = 2, 2
-            tx = gap + c * (tile_w + gap)
-            ty = header_h + gap + r * (tile_h + gap)
-            draw.rectangle([tx, ty, tx + tile_w, ty + tile_h], fill=(17, 20, 32), outline=(239, 68, 68), width=2)
-            draw.rectangle([tx + 2, ty + 2, tx + tile_w - 2, ty + 24], fill=(45, 18, 26))
-            draw.text(
-                (tx + 8, ty + 5),
-                f"IMAGE FITNESS GATE: {len(all_cell_models) - len(preloaded)} Models Suppressed (< 70.0)",
-                font=f_hdr,
-                fill=(252, 165, 165),
-            )
-            gy = ty + 34
-            draw.text(
-                (tx + 10, gy),
-                "Not displayed because Canonical Image Fitness < 70.0 threshold:",
-                font=f_score,
-                fill=(248, 250, 252),
-            )
-            gy += 18
-            for sm in sorted(suppressed_core, key=lambda x: x["image_fitness"], reverse=True):
-                s_line = f"• {sm['script'][:30]} — ImgFit {sm['image_fitness']:.1f} (Audit {sm['score']:.1f})"
-                draw.text((tx + 12, gy), s_line, font=f_meta_b, fill=(253, 186, 116))
-                gy += 15
-            gy += 6
-            draw.text(
-                (tx + 12, gy),
-                f"• + {len(suppressed_templates)} Expansion Template Stubs (Slots #0471–#0480):",
-                font=f_meta_b,
-                fill=(148, 163, 184),
-            )
-            gy += 14
-            draw.text(
-                (tx + 20, gy),
-                "ImgFit 55.0–57.9 (Un-fitted cosine waves suppressed from view)",
-                font=f_meta,
-                fill=(148, 163, 184),
-            )
-            by0 = ty + 26 + anim_h + 2
-            draw.rectangle([tx + 2, by0, tx + tile_w - 2, ty + tile_h - 2], fill=(11, 17, 30))
-            draw.text(
-                (tx + 8, by0 + 4),
-                "Policy: Only models with verified Specimen Image Fitness ≥ 70.0 are rendered",
-                font=f_meta_b,
-                fill=(250, 204, 21),
-            )
-            draw.text(
-                (tx + 8, by0 + 17),
-                "Remediation required: direct contour/parastichy registration to specimen photo",
-                font=f_meta,
-                fill=(203, 213, 225),
-            )
 
         out_frames.append(canvas)
 
@@ -851,19 +678,22 @@ def build_3x3_aristotelian_matrix_grid_gif(entries: list[dict[str, Any]], n_fram
     f_tile_hdr = get_font(10, True)
     f_tile_meta = get_font(9, False)
 
+    passing_entries = [
+        e for e in entries if e.get("passes_image_threshold", False) and float(e.get("image_fitness", 0.0)) >= 70.0
+    ]
     cells_prepared = []
     for r, c, meg_prefix, cause_prefixes, gif_name, desc in grid_3x3_specs:
         if r < 2:
             residents = [
                 e
-                for e in entries
+                for e in passing_entries
                 if e["megiston_genos"].startswith(meg_prefix)
                 and any(e["efficient_cause"].startswith(cp) for cp in cause_prefixes)
             ]
         else:
             residents = [
                 e
-                for e in entries
+                for e in passing_entries
                 if (e["megiston_genos"].startswith("III.") or e["megiston_genos"].startswith("IV."))
                 and any(e["efficient_cause"].startswith(cp) for cp in cause_prefixes)
             ]
@@ -890,13 +720,13 @@ def build_3x3_aristotelian_matrix_grid_gif(entries: list[dict[str, Any]], n_fram
         draw.line([(0, header_h), (W, header_h)], fill=(250, 204, 21), width=2)
         draw.text(
             (16, 9),
-            "Aristotelian 3×3 Animated Matrix Grid — Taxonomic Genus (Ousia) × Formal/Efficient Cause (n = 1,116 Models)",
+            f"Aristotelian 3×3 Animated Matrix Grid — Taxonomic Genus (Ousia) × Formal/Efficient Cause (n = {len(passing_entries)} Verified Models)",
             font=f_title,
             fill=(248, 250, 252),
         )
         draw.text(
             (16, 34),
-            "Every Matrix Cell Cycles Through Audited Models First (With Image-Fitness Score & DOI Paper Provenance)",
+            "Every Matrix Cell Cycles Exclusively Through Verified Models Passing Canonical Image Fitness (ImgFit ≥ 70.0)",
             font=f_sub,
             fill=(250, 204, 21),
         )

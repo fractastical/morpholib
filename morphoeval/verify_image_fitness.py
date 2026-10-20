@@ -122,7 +122,7 @@ FOUNDATIONAL_DOIS: dict[str, tuple[str, str]] = {
 FOUNDATIONAL_SPECIMENS: dict[str, str] = {
     "thompson-scarus-pomacanthus": "datasets/species_gallery/I_Enaima_Vertebrata/Pomacanthus_imperator.jpg",
     "raup-shell-coiling": "datasets/species_gallery/II_Anaima_Invertebrata/Murex_pecten.jpg",
-    "wolfram-conus-textile-rule30": "datasets/species_gallery/II_Anaima_Invertebrata/Murex_pecten.jpg",
+    "wolfram-conus-textile-rule30": "datasets/conus/conus_textile_shell.jpg",
     "hoffmann-wing-venation": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_melanogaster.jpg",
     "eshghi-odonata-wing-cells": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_melanogaster.jpg",
     "chindapol-coral-flow": "datasets/species_gallery/II_Anaima_Invertebrata/Madracis_mirabilis.jpg",
@@ -136,24 +136,30 @@ FOUNDATIONAL_SPECIMENS: dict[str, str] = {
 }
 
 
-def load_latest_audit_scores() -> tuple[dict[str, dict[str, Any]], dict[str, list[dict[str, Any]]]]:
+def load_latest_audit_scores(core_slugs_and_scripts: set[str] | None = None) -> tuple[dict[str, dict[str, Any]], dict[str, list[dict[str, Any]]]]:
     """Load latest primary audit scores (preferring v3 > v2 > v1, skipping blinded second-assessor sidecars) and measurement sidecars."""
     audit_by_key: dict[str, dict[str, Any]] = {}
     meas_by_key: dict[str, list[dict[str, Any]]] = {}
 
-    # Order files so v1 -> v2 -> v3 overwrites with the latest primary version
+    # Order files so v1 -> v2 -> v3 -> v4 overwrites with the latest primary version
     audit_files = sorted(glob.glob(str(ROOT / "morphoeval" / "audits" / "*.yaml")))
-    for pass_tag in ["", "-v2", "-v3"]:
+    for pass_tag in ["", "-v2", "-v3", "-v4"]:
         for fpath in audit_files:
             if fpath.endswith(".measurements.yaml"):
                 continue
             stem = Path(fpath).stem
             if "second-assessor" in stem or "blinded-sample" in stem:
                 continue
-            if pass_tag == "" and (stem.endswith("-v2") or stem.endswith("-v3")):
+            if pass_tag == "" and (stem.endswith("-v2") or stem.endswith("-v3") or stem.endswith("-v4")):
                 continue
             if pass_tag != "" and not stem.endswith(pass_tag):
                 continue
+            if core_slugs_and_scripts is not None:
+                # Quick filename filter: skip the ~2,000 expansion-only audit files (slots 101-1100)
+                base_stem = re.sub(r"^20\d{2}-\d{2}-\d{2}-", "", stem)
+                base_stem = re.sub(r"-audit(?:-v\d+)?$", "", base_stem)
+                if not any(base_stem in k or k in base_stem for k in core_slugs_and_scripts):
+                    continue
             d = yaml.load(Path(fpath).read_text(encoding="utf-8"), Loader=SafeLoader)
             if not d or "audit" not in d:
                 continue
@@ -185,6 +191,8 @@ def load_latest_audit_scores() -> tuple[dict[str, dict[str, Any]], dict[str, lis
                     audit_by_key[sim["id"]] = rec
                 if sim.get("script"):
                     audit_by_key[sim["script"]] = rec
+                    audit_by_key[Path(sim["script"]).name] = rec
+                    audit_by_key[f"models/{Path(sim['script']).name}"] = rec
 
             # Load corresponding .measurements.yaml if present
             mpath = Path(fpath).with_suffix(".measurements.yaml")
@@ -347,7 +355,8 @@ def resolve_sim_media_path(entry: dict[str, Any]) -> Path | None:
     media_dir = ROOT / "docs" / "media"
     slug_u = entry["slug"].replace("-", "_")
     ds_name = entry.get("dataset_dir", "").split("/")[-1]
-    script_stem = re.sub(r"^\d{4}-[a-z0-9]+-", "", entry.get("script", "").replace(".py", "")).replace("-", "_")
+    script_name = Path(entry.get("script", "")).name
+    script_stem = re.sub(r"^\d{4}-[a-z0-9]+-", "", script_name.replace(".py", "")).replace("-", "_")
 
     candidates = []
     for key in [slug_u, ds_name, script_stem]:
@@ -414,7 +423,17 @@ def main() -> int:
     species_manifest: list[dict[str, Any]] = json.loads(SPECIES_MANIFEST_JSON.read_text(encoding="utf-8"))
     genus_to_gallery = {sm["genus"]: sm["gallery_path"] for sm in species_manifest}
 
-    audit_by_key, meas_by_key = load_latest_audit_scores()
+    core_keys: set[str] = set()
+    for e in entries:
+        slot = e.get("slot")
+        if slot is None or int(slot) <= 100:
+            core_keys.add(e["slug"])
+            if e.get("script"):
+                core_keys.add(Path(e["script"]).stem)
+            ds = e.get("dataset_dir", "").split("/")[-1]
+            if ds:
+                core_keys.add(ds.replace("_", "-"))
+    audit_by_key, meas_by_key = load_latest_audit_scores(core_keys)
     cv_cache: dict[str, dict[str, Any]] = {}
     sim_cv_cache: dict[str, float] = {}
 

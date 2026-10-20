@@ -454,7 +454,7 @@ See [`datasets/planform/paper_citations.bib`](./datasets/planform/paper_citation
 
 The original PlanformDB reader. Reads a local PlanformDB SQLite/EDB file (`PLANFORM_DB_PATH` or a positional argument) and extracts yearly time series — experiments per year (via `Experiment → Publication.Year`), publications per year, and distinct morphologies observed per year — into a gap-filled `pandas.DataFrame` and the timeline plot below. It also produces `planform_morphology_animation.gif`, which approximates each morphology as a convex hull of organ landmarks; that rendering was audited at 14.7/100 and has been superseded by `2013-lobo-planform-morphology.py` (this section), so use the parser for the time series and the 2013 script for morphology. [`explore_planform_schema.py`](./models/explore_planform_schema.py) dumps the database schema.
 
-![PlanformDB timeline: experiments, publications, and cumulative morphologies](parser_output.png)
+![PlanformDB timeline: experiments, publications, and cumulative morphologies](docs/media/parser_output.png)
 
 ### [models/1966-raup.py](./models/1966-raup.py)
 
@@ -539,7 +539,7 @@ Audit note (2026-10-13, 55.5): the reduction is explicit, and the paper's symmet
 
 Turing's (1952) linear reaction–diffusion instability and $N=20$ ring-of-cells morphogenesis, Pearson's (1993) 12-class Gray–Scott $(k, F)$ phase space with exact Saddle-Node and Hopf bifurcation curves, and Kondo & Asai's (1995) biological skin-stripe and Y-junction morphogenesis in the marine angelfish *Pomacanthus*. Outputs: `turing_pearson_morphospace.png` (15-panel synthesis figure), `turing_pearson_metrics.csv`, and `docs/media/turing_gray_scott.gif`.
 
-![Turing (1952), Pearson (1993) & Kondo–Asai (1995) 15-panel synthesis figure](turing_pearson_morphospace.png)
+![Turing (1952), Pearson (1993) & Kondo–Asai (1995) 15-panel synthesis figure](docs/media/turing_pearson_morphospace.png)
 
 ![Turing patterns (Gray–Scott)](docs/media/turing_gray_scott.gif)
 
