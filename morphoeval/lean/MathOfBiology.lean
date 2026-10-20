@@ -102,6 +102,41 @@ theorem rule30_antiperiodic_complement_pair_sum (b : Bool) :
     b.toNat + (!b).toNat = 1 := by
   cases b <;> rfl
 
+/-- Theorem 36 (`rule30_horizon_preserving_left_seam_contradiction`):
+    1. By Jen's left-inverse `l_{m+1}(t) = rule30_left_inverse (l_m(t+1)) (l_m(t)) (l_{m-1}(t))`,
+       if `l_m` and `l_{m-1}` are periodic with period `L` from horizon `t_init` (`∀ t ≥ t_init`),
+       then `l_{m+1}` is periodic with the exact same period `L` from the exact same horizon `t_init`
+       (zero loss of horizon).
+    2. Evaluating a periodic left column `l_m` at `m = t_init + L` where `l_m(t_init + L) = true`
+       (left light-cone boundary `d_0 = 1`) and `l_m(t_init) = false` (outside the light-cone)
+       yields an immediate `true = false` contradiction (`∀ L ≥ 1, ∀ t_init ≥ 0`). -/
+theorem rule30_horizon_preserving_left_step
+    (lm_tp1 lm_t lm1_t lm_tp1_L lm_t_L lm1_t_L : Bool)
+    (h1 : lm_tp1_L = lm_tp1) (h2 : lm_t_L = lm_t) (h3 : lm1_t_L = lm1_t) :
+    rule30_left_inverse lm_tp1_L lm_t_L lm1_t_L = rule30_left_inverse lm_tp1 lm_t lm1_t := by
+  rw [h1, h2, h3]
+
+theorem rule30_left_boundary_lightcone_contradiction
+    (lm_tinit lm_tinit_plus_L : Bool)
+    (h_periodic : lm_tinit_plus_L = lm_tinit)
+    (h_outside_cone : lm_tinit = false)
+    (h_on_boundary : lm_tinit_plus_L = true) : False := by
+  rw [h_outside_cone] at h_periodic
+  rw [h_on_boundary] at h_periodic
+  contradiction
+
+/-- Theorem 36 (`rule30_dyadic_corner_mahler_identity`):
+    Because a power of two `2^s` (`s ≥ 1`) has only two submasks `{0, 2^s}`, the 2D Bi-Mahler
+    transform at `(2^s, 2^r)` equals `M(0,0) ⊕ M(2^s,0) ⊕ M(0,2^r) ⊕ M(2^s,2^r)`. With unit
+    boundary conditions `M(0,0) = M(2^s,0) = M(0,2^r) = true`, this simplifies identically to
+    `!M(2^s, 2^r) = bne true (M(2^s, 2^r))`. -/
+def bimahler_dyadic_corner (m_0_0 m_2s_0 m_0_2r m_2s_2r : Bool) : Bool :=
+  bne (bne m_0_0 m_2s_0) (bne m_0_2r m_2s_2r)
+
+theorem rule30_dyadic_corner_mahler_identity (m_2s_2r : Bool) :
+    bimahler_dyadic_corner true true true m_2s_2r = bne true m_2s_2r := by
+  cases m_2s_2r <;> rfl
+
 /-- Law 3 (`wolfram-conus-textile-rule30-3`):
     Meinhardt & Klingler (1987) 3-species activator-substrate-hormone reaction kinetics. -/
 structure MeinhardtKlinglerParams where

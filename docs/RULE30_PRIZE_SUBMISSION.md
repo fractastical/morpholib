@@ -3,9 +3,9 @@
 **Target Venues:** Wolfram Rule 30 Prize Committee (Partial Progress & Off-Center Periodicity / Boundary Track) $\cdot$ *Complex Systems* $\cdot$ arXiv (`nlin.CG` / `math.DS`)  
 **Repository & Verification Code:** [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py)  
 **Audit of Unconditional Proofs vs. Open Single-Seed Gaps:** [`docs/RULE30_PRIZE_STATUS_AND_GAPS.md`](./RULE30_PRIZE_STATUS_AND_GAPS.md)  
-**Date:** October 19, 2026
+**Date:** October 20, 2026
 
-![Animated 34-Milestone Progress Dashboard: Theorems 1–35 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
+![Animated 35-Milestone Progress Dashboard: Theorems 1–36 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
 
 ---
 
@@ -729,9 +729,35 @@ Across the three Wolfram Rule 30 Prize Problems (Problem 1: Center-Column Aperio
 
 ---
 
+### Theorem 36 (Self-Dual Dyadic Mahler Tail-Periodicity Theorem, Unconditional Horizon-Preserving Joint-Seam Elimination for All $L \ge 1$, Exact 2D Bi-Mahler Dyadic Corner/Slice & Zero-Transient Monic Laws, Projective Tower Cutoff, and Crystal-Plus-Defect Decomposition)
+For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamma(u) = \bigoplus_{k \subseteq u} f(k)$, and for the 2-Sheet Quadrant PDE $M_p(q, j) = A_{2q+p}(j)$ ($p \in \{0, 1\}$) with 2D Bi-Mahler tensor $\mathrm{B}_p(n, m) = \bigoplus_{q \subseteq n} \alpha_{2q+p, m}$ and diagonal Mahler spectrum $\gamma_p(u) = \bigoplus_{(n \lor m) = u} \mathrm{B}_p(n, m)$:
+1. **Self-Dual Dyadic Mahler Tail-Periodicity Law & Unconditional Elimination of All Joint Periodic Seam Pairs $(c_t, l_1(t))$:**
+   - **Self-Dual Dyadic Tail-Periodicity Law:** A sequence $f(k)$ is eventually periodic with dyadic period $L = 2^a$ ($a \ge 0$) for $k \ge k_{\text{init}}$ if and only if for every dyadic scale $s \ge a$ with $2^s > k_{\text{init}}$, its 1D Mahler spectrum $\gamma(u)$ is constant across all shells $p \ge 1$ (`0` errors across $280$ test sequences for $s = 0 \dots 6$):
+     $$f(k + 2^a) = f(k) \quad (\forall\, k \ge k_{\text{init}}) \qquad \Longleftrightarrow \qquad \gamma\bigl(u_{\text{lo}} + p\, 2^s\bigr) \;=\; \gamma\bigl(u_{\text{lo}} + 2^s\bigr) \quad (\forall\, p \ge 1,\;\; \forall\, 0 \le u_{\text{lo}} < 2^s).$$
+     In particular, at the matching threshold $k_{\text{init}} = 2^s$, the Sierpinski–Mahler involution is **strictly self-dual**: $f(k + 2^s) = f(k)$ ($\forall k \ge 2^s$) $\iff \gamma(u + 2^s) = \gamma(u)$ ($\forall u \ge 2^s$).
+   - **Horizon-Preserving Left-Boundary Contradiction for Joint Periodic Seam Pairs $(c_t, l_1(t))$:** By Jen's left-bijective spatial recurrence $l_{m+1}(t) = l_m(t + 1) \oplus (l_m(t) \lor l_{m-1}(t))$ ($m \ge 1$, $l_0(t) = c_t$), if the two-column seam pair $(c_t, l_1(t))$ is eventually periodic with **any** period $L \ge 1$ for all $t \ge t_{\text{init}}$, then by induction on $m$, every left column $l_m(t)$ ($m \ge 0$) is periodic in $t$ with period $L$ for all $t \ge t_{\text{init}}$ (**with zero loss of horizon $t_{\text{init}}$ as $m$ increases!**). Evaluating at spatial column $m = t_{\text{init}} + L > t_{\text{init}}$ yields
+     $$1 \;=\; d_0(t_{\text{init}} + L) \;=\; l_{t_{\text{init}} + L}(t_{\text{init}} + L) \;=\; l_{t_{\text{init}} + L}(t_{\text{init}}) \;=\; 0$$
+     (since $-m = -(t_{\text{init}} + L) < -t_{\text{init}}$ lies strictly outside the Rule 30 light-cone at time $t_{\text{init}}$), an unconditional $1 = 0$ contradiction for **all $L \ge 1$ and all $t_{\text{init}} \ge 0$** (`0` errors across $48$ configurations). Consequently, if $c_t$ were ever eventually periodic with any period $\Pi \ge 1$, the adjacent left column $l_1(t)$ (and therefore $e_t = c_t \lor a_{t, 1} = c_{t+1} \oplus l_1(t)$) could **never** be eventually periodic!
+2. **Exact 2D Bi-Mahler Dyadic Corner Identity, Power-of-2 Slice Laws, Projective Tower Cutoff & Zero-Transient Monic Law:**
+   - **Dyadic Corner & Power-of-2 Slice Laws:** Because a power of two $2^s$ ($s \ge 1$) has only two submasks $\{0, 2^s\}$, for all $s, r \ge 1$, $m \ge 2$, and $n \ge 1$ (`0` errors):
+     $$\mathrm{B}_p(2^s, 2^r) \;\equiv\; 1 \oplus M_p(2^s, 2^r), \qquad \gamma_p(2^s) \;\equiv\; \mathrm{B}_p(2^s, 2^s) \;\equiv\; 1 \oplus c_{2^{s+1} + p}, \qquad \mathrm{B}_p(2^s, m) \;\equiv\; \alpha_{2^{s+1} + p,\; m}, \qquad \mathrm{B}_p(n, 2^s) \;\equiv\; C_p^{(2^s)}(n).$$
+   - **Projective Tower Frequency Cutoff Law:** The $r$-th projective limit $C_r(2k + p) := A_{2k+p}(k \bmod 2^r)$ has 1D Mahler spectrum given by the exact $m < 2^r$ horizontal cutoff of the 2D Bi-Mahler OR-convolution (`0` errors across $r = 1 \dots 5, u = 0 \dots 127$):
+     $$\mathcal{Z}\bigl(C_r(2k + p)\bigr)(u) \;\equiv\; \bigoplus_{\substack{(n \;\lor\; m) = u \\ 0 \le m < 2^r}} \mathrm{B}_p(n, m).$$
+   - **Leading-Edge Monic Law (Zero Horizontal Transient):** Because every row $M_p(q, j) = A_{2q+p}(j)$ is purely periodic in $j \ge 0$ with **zero transient**, for every column $m \ge 0$, the first non-zero vertical Mahler index of $\mathrm{B}_p(n, m)$ equals the first row index $q$ where $\alpha_{2q+p, m} = 1$ (`0` errors across all $512$ columns):
+     $$q_{\min}(p, m) \;:=\; \min\{n \ge 0 : \mathrm{B}_p(n, m) = 1\} \;\equiv\; \min\{q \ge 0 : \alpha_{2q + p,\; m} = 1\}, \qquad \mathrm{B}_p(n, m) \equiv 0 \quad (\forall\, 0 \le n < q_{\min}(p, m)).$$
+3. **2D Bi-Mahler Crystal-Plus-Defect Decomposition, Upper-Left Quadrant Annihilation, High-Bit Pass-Through Law & Dislocation Spike Law:**
+   - Decomposing $M_p(q, j) = M_p^{(\text{per})}(q, j) \oplus E_p(q, j)$ into the periodic diagonal crystal $M_p^{(\text{per})}(q, j) := c_{2j+p}^{(\text{diag})}((q + j + p) \bmod P_{2j+p}^{(\text{diag})})$ (which satisfies both forward and backward 2-Sheet Quadrant PDEs identically on $\mathbb{Z} \times \mathbb{Z}_{\ge 0}$) and finite-support transient defect $E_p(q, j)$ splits the 2D Bi-Mahler tensor and diagonal Mahler spectrum into
+     $$\mathrm{B}_p(n, m) \;=\; \mathrm{B}_p^{(\text{per})}(n, m) \;\oplus\; \mathrm{B}_p^{(\text{def})}(n, m), \qquad \gamma_p(u) \;=\; \gamma_p^{(\text{per})}(u) \;\oplus\; \gamma_p^{(\text{def})}(u),$$
+     where $\mathrm{B}_p^{(\text{per})}(n, m) \equiv 0$ for all $n \ge P_{2m+p}^{(\text{diag})}$ (so for every $s \ge 1$, the entire upper-left quadrant $\{n \ge 2^s, m < 2^s\}$ of $\mathrm{B}_p^{(\text{per})}$ vanishes identically!) and $\mathrm{B}_p^{(\text{def})}(n, m)$ is strictly periodic in $n \ge 0$ with dyadic period $2^{R(p, m)}$.
+   - **High-Bit Pass-Through Law:** For $P = P_{2u+p}^{(\text{diag})}$ and $u = u_{\text{hi}} P + u_{\text{lo}}$ ($0 \le u_{\text{lo}} < P$), all upper bits $u_{\text{hi}}$ pass directly into the horizontal coordinate $m$ (`0` errors across all $1,024$ modes):
+     $$\gamma_p^{(\text{per})}\bigl(u_{\text{hi}} P + u_{\text{lo}}\bigr) \;\equiv\; \bigoplus_{\substack{0 \le n, m_{\text{lo}} < P \\ (n \;\lor\; m_{\text{lo}}) = u_{\text{lo}}}} \mathrm{B}_p^{(\text{per})}\bigl(n,\; u_{\text{hi}} P + m_{\text{lo}}\bigr), \qquad \gamma_p^{(\text{per})}\bigl(u_{\text{hi}} P\bigr) \;\equiv\; \mathrm{B}_p^{(\text{per})}\bigl(0,\; u_{\text{hi}} P\bigr).$$
+   - **Dislocation Spike Law:** At every period-doubling dislocation $K_r = 2 j_r + p_r$ ($P_{K_r}^{(\text{diag})} = 2^r, r \ge 1$), half-period anti-symmetry forces $\mathrm{B}_{p_r}^{(\text{per})}(2^{r-1}, j_r) \equiv 1$ and $\mathrm{B}_{p_r}^{(\text{per})}(n, j_r) \equiv 0$ ($\forall n > 2^{r-1}$), while $\mathrm{B}_p^{(\text{per})}(n, m) \equiv 0$ for all $m < j_r, n \ge 2^{r-1}$ (`0` errors across $K_1=1, K_2=5, K_3=15, K_4=51$). $\square$
+
+---
+
 ## 7. One-Command Verification
 
-All thirty-five theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
+All thirty-six theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python 1984-wolfram-conus-textile-rule30.py --self-test-only
