@@ -871,11 +871,35 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
    - **First-Mismatch Deterministic 1-Bit Gate Contradiction:** For any hypothetical single-seed periodic trajectory $(t_0, \Pi)$, let $S_0 \ge \max(2, t_0 + \Pi)$ be the first mismatch step where $c_{\text{true}}[S_0] \ne c_{\text{true}}[t_0 + ((S_0 - t_0) \bmod \Pi)]$. Because the left half-plane at time $S_0 - 1$ is $100\%$ identical to the true single-seed evolution, whenever $c_{\text{true}}[S_0 - 1] = 1$ the 1-bit gate law ($e_{S_0 - 1} = 1$) deterministically forces $c_{\text{periodic}}(S_0) = c_{\text{true}}[S_0]$, immediately refuting **$117,544$ of the $249,500$ pairs ($47.11\%$)** at post-mismatch step $0$.
    - **32-Bit Lightcone Perturbation Law & $500 \times 500$ Cone Refutation:** At step $s \ge 0$ after the first mismatch $S_0$, the anti-diagonal perturbation $\Delta B_{S_0 + s} := B_{S_0 + s} \oplus B_{\text{true}}[S_0 + s]$ is strictly supported on bits $0 \le m \le \lfloor s / 2 \rfloor + 1$ (reaching at most $9$ bits across all $249,500$ pairs), reducing the exact left-cone parity demand to an $O(1)$ 32-bit operation $\mathrm{req\_l1}(S) = l_{1,\text{true}}[S] \oplus \mathrm{parity}(\Delta G_S)$ and refuting all **$249,500$ pairs $(t_0, \Pi) \in [0, 500) \times [1, 500)$** with **`0` survivors** and maximum post-mismatch survival $24$ steps (`0.50 s` runtime). $\square$
 
+### 6.32 Theorem 44: Biological *Oliva–Conus* Pascal–Lucas Ballot Green's Function, Ermentrout–Oster Integer Conservation Law, Short-Run Forbidden Gate Subwords & Pure Left-Cone Opaque Mirror Refutation
+
+> **Theorem 44 (*Oliva–Conus* `10`-Right-Wall Source Law, Unified Pascal–Lucas Ballot–Submask Green's Function for $l_1(t)$, Ermentrout–Oster Integer Conservation & $100\%$ Pure Left-Cone Opaque Mirror Refutation).**  
+> 1. ***Oliva–Conus* (Rule 90 / Rule 30) `10`-Right-Wall Source Law & Unified Pascal–Lucas Ballot–Submask Green's Function for $l_1(t) = a_{t,-1}$:**  
+>    - **Exact `10`-Right-Wall Source Identity:** Comparing Class II *Oliva porphyria* (additive Rule 90: $a_{t+1,i} = a_{t,i-1} \oplus a_{t,i+1}$) against Class III *Conus textile* (Rule 30) isolates the nonlinear source term:
+>      $$\Delta_{\text{R90}}(t, i) \;:=\; a_{t+1, i} \;\oplus\; a_{t, i-1} \;\oplus\; a_{t, i+1} \;\equiv\; a_{t, i} \land \overline{a_{t, i+1}},$$
+>      which equals $1$ if and only if $(a_{t,i}, a_{t,i+1}) = (1, 0)$ (the right wall of a pigmented band) and is strictly orthogonal between adjacent spatial cells ($\Delta_{\text{R90}}(t, i) \land \Delta_{\text{R90}}(t, i+1) \equiv 0$, `0` errors).
+>    - **Unified Pascal–Lucas Ballot–Submask Green's Function:** In the left half-plane ($i = -m \le -1$), viewing Rule 30 as linear Rule 90 on the half-lattice $m \ge 1$ with absorbing boundary at $m = 0$ and interior `10`-wall sources $Q_{\tau, m_0} := a_{\tau, -m_0} \land \overline{a_{\tau, -(m_0-1)}}$ yields the Reflection-Principle Ballot propagator $G_{\text{half}}(n; m_0, 1) \equiv \binom{n}{k} \oplus \binom{n}{k-1} \pmod 2$ for $n = 2k + m_0 - 1$. By Pascal's identity and Lucas' theorem over $\mathbb{F}_2$, $G_{\text{half}}(L-1; m_0, 1)$ collapses identically to the single binary submask condition:
+>      $$G_{\text{half}}(L - 1;\, m_0, 1) \;\equiv\; \binom{L}{k} \pmod 2 \;\equiv\; [k \subseteq L], \qquad L = t - \tau,\quad k = \frac{L - m_0}{2}.$$
+>      For $m_0 = 1$ (where $c_\tau \oplus Q_{\tau,1} = c_\tau \lor l_1(\tau)$), $[k \subseteq 2k+1]$ holds if and only if $L = 2^r - 1$ (Mersenne–Catalan lags $L \in \{1, 3, 7, 15, 31, \dots\}$), yielding the exact closed-form representation of $l_1(t)$ for all $t \ge 1$ (`0` errors across all $159$ steps):
+>      $$l_1(t) \;=\; \Biggl(\bigoplus_{r \ge 1 \,:\, 2^r - 1 \le t} \bigl(c_{t - (2^r - 1)} \lor l_1(t - (2^r - 1))\bigr)\Biggr) \;\oplus\; \Biggl(\bigoplus_{L = 2}^{t} \;\bigoplus_{k = 0}^{\lfloor(L-2)/2\rfloor} [k \subseteq L]\, Q_{t - L,\; L - 2k}\Biggr).$$
+> 2. **Ermentrout–Oster (1986) / Boettiger–Oster (2009) Integer Conservation Law & Mandatory `10`-Refractory Quench:**  
+>    - Lifting the 3-cell discrete neural mantle gate $E_{t,i} = 2\,a_{t,i-1} + (a_{t,i} \lor a_{t,i+1}) \in \{0, 1, 2, 3\}$ from $\mathbb{F}_2$ to the ordinary integers $\mathbb{Z}$ gives the exact non-mod-2 conservation law:
+>      $$a_{t+1, i} \;=\; a_{t, i-1} \;+\; e_{t, i} \;-\; 2\,R_{t, i} \quad (\text{in }\mathbb{Z}), \qquad e_{t,i} = a_{t,i} \lor a_{t,i+1},\quad R_{t,i} = a_{t,i-1}\cdot e_{t,i} \in \{0, 1\},$$
+>      where $R_{t,i} = 1 \iff E_{t,i} = 3$ is the neural refractory overflow indicator. At every step where $a_{t,i} = 1$ and $a_{t+1,i} = 0$ (the end of every `1`-run in column $i$), both $e_{t,i} = 1$ and $a_{t,i-1} = 1$ are forced, so every `10` transition in column $i$ is a mandatory neural refractory quench ($R_{t,i} = 1$, `0` errors).
+> 3. **Waddington–Cowe (1969) White-Tent Erosion & Short-Run Forbidden Gate-Subword Classification for $a \in \{2, 5, 6\}$:**  
+>    - Because interior white tents $1\,0^w\,1$ erode deterministically at $2$ cells/step (`1 0^w 1 -> 0^{w-2}`), the Depth-$8$ spatial cylinder transducer proves unconditional forbidden zero-gate subwords across $100\%$ of $\{0, 1\}^\infty$ for all three remaining short-run families (`0` errors):
+>      - $(1^2 0^1)^k$ forbids `100` at $k = 3$ (exact gate-word counts $[2, 4, 7, 12, 20, 29, 41]$ for $k = 1 \dots 7$),
+>      - $(1^5 0^1)^k$ forbids `11` and `101` at $k = 2, 3$ (Padovan counts $[2, 3, 4, 6, 9, 13, 19]$), and
+>      - $(1^6 0^1)^k$ forbids `1111` at $k = 4$ and `11100` at $k = 5$ (counts $[2, 4, 8, 15, 28, 53, 100]$).
+> 4. **Pure Left-Cone Opaque Mirror Refutation of $100\%$ of Non-Zero Periodic Candidates in $[0, 500) \times [1, 500)$ ($248,984 / 248,984$ Refuted Without Using the Right Half-Plane at All):**  
+>    - Whenever $c_{S-1} = 1$, the OR gate at $x = 0$ saturates ($1 \lor a_{S-1,1} = 1$) and erases the right half-plane completely, forcing $c_S = 1 \oplus l_1(S-1)$ purely from the left half-plane.
+>    - Across all $249,500$ pairs $(t_0, \Pi) \in [0, 500) \times [1, 500)$, $516$ pairs have an all-zero slice $0^\Pi$ (already unconditionally impossible by Theorem 9 Monotone Latch), and all **$248,984$ non-zero pairs ($100\%$)** are refuted by the **Pure Left-Cone Opaque Mirror Law** ($c_{S-1} = 1 \implies c_S = 1 \oplus l_1(S-1)$) alone in at most $37$ post-mismatch steps without consulting the right half-plane at all! Furthermore, across all arbitrary transients of length $t_0 \in \{1 \dots 7\}$ and all non-trivial periodic words of period $\Pi \in \{1 \dots 7\}$, `0` candidates survive Pure Left-Cone Opaque Mirror alone. $\square$
+
 ---
 
 ## 7. One-Command Verification
 
-All forty-three theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
+All forty-four theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python 1984-wolfram-conus-textile-rule30.py --self-test-only

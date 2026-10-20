@@ -259,6 +259,25 @@ theorem rule30_first_mismatch_one_gate_contradiction (l1 r_true r_per : Bool) :
     rule30 l1 true r_true = rule30 l1 true r_per := by
   cases l1 <;> cases r_true <;> cases r_per <;> rfl
 
+/-- Law 2s (`wolfram-conus-textile-rule30-2s`):
+    Biological Rule 30 Synthesis (Theorem 44):
+    1. Oliva-Conus (Rule 90 / Rule 30) 10-Right-Wall Source Law:
+       The nonlinear deviation `bne (rule30 l c r) (rule90 l c r)` between Class III
+       *Conus textile* (`rule30`) and Class II *Oliva porphyria* (`rule90`) equals `c && (!r)`
+       (1 iff `(c, r) = (true, false)`, the right wall of a pigmented band), and is strictly
+       orthogonal between adjacent spatial cells (`(c && !r) && (r && !rr) = false`).
+    2. Ermentrout-Oster Mandatory 10-Refractory Quench Law:
+       Whenever `c = true` and `rule30 l c r = false` (a `1 -> 0` transition in the column),
+       the left neighbor must be `l = true` and the neural excitation `ermentrout_oster_net_excitation l c r`
+       is forced to the refractory overflow state `3`. -/
+theorem rule30_oliva_conus_10_right_wall_source (l c r : Bool) :
+    bne (rule30 l c r) (bne l r) = (c && (!r)) := by
+  cases l <;> cases c <;> cases r <;> rfl
+
+theorem rule30_adjacent_10_walls_orthogonal (c r rr : Bool) :
+    ((c && (!r)) && (r && (!rr))) = false := by
+  cases c <;> cases r <;> cases rr <;> rfl
+
 /-- Law 3 (`wolfram-conus-textile-rule30-3`):
     Meinhardt & Klingler (1987) 3-species activator-substrate-hormone reaction kinetics. -/
 structure MeinhardtKlinglerParams where
@@ -298,6 +317,10 @@ def ermentrout_oster_neural_gate (l c r : Bool) : Bool :=
 theorem ermentrout_oster_neural_gate_eq_rule30 (l c r : Bool) :
     ermentrout_oster_neural_gate l c r = rule30 l c r := by
   cases l <;> cases c <;> cases r <;> rfl
+
+theorem rule30_ermentrout_oster_10_transition_forces_quench (l r : Bool) :
+    rule30 l true r = false → (l = true ∧ ermentrout_oster_net_excitation l true r = 3) := by
+  cases l <;> cases r <;> decide
 
 /-- Law 5 (`wolfram-conus-textile-rule30-5`):
     Molluscan clade Wolfram Class II (`rule90`, *Oliva porphyria*) vs. Class III (`rule30`,
