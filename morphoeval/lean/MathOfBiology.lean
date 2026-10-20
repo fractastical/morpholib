@@ -339,6 +339,34 @@ theorem rule30_horizon_condensate_and_complement_shift (v_m v_mp1 b_kp2_m1 b_kp3
     rule30 true (!v_mp1) b_kp3_m1 = (v_mp1 && (!b_kp3_m1)) := by
   cases v_m <;> cases v_mp1 <;> cases b_kp2_m1 <;> cases b_kp3_m1 <;> decide
 
+/-- Law 2v (`wolfram-conus-textile-rule30-2v`):
+    Unconditional 4-Line Inward Defect Wavefront Step & Two-Band `1`-Run Anti-Diagonal
+    Defect Tunneling Laws (Theorem 47):
+    1. (`rule30_inward_defect_wavefront_step`): Along `B_k(m - 1) = rule30 (B_{k-2}(m)) (B_{k-1}(m - 1)) (B_k(m - 2))`,
+       if a defect is present at depth `m` on sub-diagonal `k - 2` (`bne b_km2_pi b_km2 = true`) while
+       both `B_{k-1}(m - 1)` and `B_k(m - 2)` are defect-free (`b_km1_pi = b_km1` and `b_k_m2_pi = b_k_m2`),
+       then `B_k(m - 1)` is unconditionally forced to carry a defect (`bne (rule30 b_km2_pi b_km1_pi b_k_m2_pi)
+       (rule30 b_km2 b_km1 b_k_m2) = true`), proving `min(m_lead(k - 1), m_lead(k)) ≤ m_lead(k - 2) - 1`.
+    2. (`rule30_band1_and_band2_1run_defect_tunneling_step`):
+       - When the adjacent zero-defect bit is `true` (`lm1 = true`), the OR gate `lm || true = true`
+         saturates in both trajectories, so `bne (rule30 lm_next_pi lm_pi true) (rule30 lm_next lm true) =
+         bne lm_next_pi lm_next` (pure anti-diagonal defect shift across Band 1 and odd-rem steps of Band 2).
+       - When the adjacent zero-defect bit is `false` (`lm1 = false`), the OR gate `lm || false = lm`
+         reduces to `lm`, so `bne (rule30 lm_next_pi lm_pi false) (rule30 lm_next lm false) =
+         bne (bne lm_next_pi lm_next) (bne lm_pi lm)` (causing the period-4 parity alternation on Band 2). -/
+theorem rule30_inward_defect_wavefront_step
+    (b_km2 b_km2_pi b_km1 b_k_m2 : Bool)
+    (h_def : bne b_km2_pi b_km2 = true) :
+    bne (rule30 b_km2_pi b_km1 b_k_m2) (rule30 b_km2 b_km1 b_k_m2) = true := by
+  cases b_km2 <;> cases b_km2_pi <;> cases b_km1 <;> cases b_k_m2 <;> simp_all [rule30]
+
+theorem rule30_band1_and_band2_1run_defect_tunneling_step
+    (lm_next lm_next_pi lm lm_pi : Bool) :
+    bne (rule30 lm_next_pi lm_pi true) (rule30 lm_next lm true) = bne lm_next_pi lm_next ∧
+    bne (rule30 lm_next_pi lm_pi false) (rule30 lm_next lm false) =
+      bne (bne lm_next_pi lm_next) (bne lm_pi lm) := by
+  cases lm_next <;> cases lm_next_pi <;> cases lm <;> cases lm_pi <;> decide
+
 
 
 /-- Law 3 (`wolfram-conus-textile-rule30-3`):

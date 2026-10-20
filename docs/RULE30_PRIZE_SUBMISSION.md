@@ -942,11 +942,29 @@ For any sequence $f(k)$ ($k \ge 0$) with 1D Sierpinski–Mahler transform $\gamm
 >    - For all $m > a_r := \max(0, m_*)$, $B_{k_r - 1}(m) = 0$ keeps the memory-erasure gate $(1 \oplus B_{k_r - 1}(m)) = 1$ permanently open, transmitting the finite anchor bit $B_{k_r}(a_r)$ (which equals the center-column bit $c_{k_r}$ itself for $k_1 = 3, k_2 = 8$, and $B_{k_r - 2}(m_* + 1) \oplus 1$ for $k_3 = 29, k_4 = 400$) unattenuated all the way to $m = \infty$ (`0` errors across all $m \in (a_r, 510]$):
 >      $$B_{k_r}(m) \;=\; B_{k_r}(a_r) \;\oplus\; \bigoplus_{j = a_r + 1}^{m} B_{k_r - 2}(j + 1) \qquad (\forall\, m > a_r). \quad \square$$
 
+### 6.35 Theorem 47: Unconditional 4-Line Inward Defect Wavefront Lemma, Exact $2(m_{\mathrm{lead}}-1)$ Hit-Time Bound to Depth $m=1$, Two-Band `1`-Run Anti-Diagonal Defect Tunneling & Period-$\Pi$ Defect Opaque-Mirror Clash
+
+> **Theorem 47 (Unconditional 4-Line Inward Defect Wavefront Lemma, Exact $2(m_{\mathrm{lead}}(k_0)-1)$ Hit-Time Bound, Exact First & Second Anti-Diagonal `1`-Run Defect Tunneling Laws, and $39,606$-Pair Direct Period-$\Pi$ Defect Opaque-Mirror Clash).**  
+> 1. **Unconditional 4-Line Inward Defect Wavefront Lemma & Exact $2(m_{\mathrm{lead}}(k_0)-1)$ Hit-Time Bound (`wavefront_step_errors == 0`, `hit_bound_errors == 0`):**  
+>    - Along sub-diagonals $B_k(m) := l_m(k + m)$ of the Pure Left-Cone Automaton driven by any $(t_0, \Pi)$-periodic center column ($D_k(0) = c_{k+\Pi} \oplus c_k = 0$ for all $k \ge t_0$), define the **leading defect depth** $m_{\mathrm{lead}}(k) := \min\{m \ge 1 : D_k(m) := B_{k+\Pi}(m) \oplus B_k(m) = 1\} \in \mathbb{N}_{\ge 1} \cup \{+\infty\}$.
+>    - Taking $\Delta_\Pi$ of $B_k(m - 1) = B_{k-2}(m) \oplus \bigl(B_{k-1}(m - 1) \lor B_k(m - 2)\bigr)$ gives $D_k(m - 1) = D_{k-2}(m) \oplus \Delta_\Pi\bigl(B_{k-1}(m - 1) \lor B_k(m - 2)\bigr)$. If $k - 2 \ge t_0$, $2 \le m_* := m_{\mathrm{lead}}(k - 2) < \infty$, and both $m_{\mathrm{lead}}(k - 1) \ge m_*$ and $m_{\mathrm{lead}}(k) \ge m_*$, then $D_{k-1}(m_* - 1) = 0$ and $D_k(m_* - 2) = 0$ (including $D_k(0) = 0$ when $m_* = 2$), so $\Delta_\Pi\bigl(B_{k-1}(m_* - 1) \lor B_k(m_* - 2)\bigr) = 0$, forcing $D_k(m_* - 1) = D_{k-2}(m_*) = 1$ ($m_{\mathrm{lead}}(k) \le m_* - 1$), a contradiction!
+>    - Hence **unconditionally for every $k \ge t_0 + 2$ with $2 \le m_{\mathrm{lead}}(k - 2) < \infty$** (`0` errors across $7,584$ steps):
+>      $$\min\bigl(m_{\mathrm{lead}}(k - 1),\; m_{\mathrm{lead}}(k)\bigr) \;\le\; m_{\mathrm{lead}}(k - 2) - 1,$$
+>      forcing a guaranteed hit $m_{\mathrm{lead}}(k_{\mathrm{hit}}) = 1$ ($D_1(k_{\mathrm{hit}} + 1) = 1$) within $k_{\mathrm{hit}} - k_0 \le 2\bigl(m_{\mathrm{lead}}(k_0) - 1\bigr)$ steps from any finite-depth defect sub-diagonal $k_0 \ge t_0$ (`0` errors across all $225$ pairs $(t_0, \Pi) \in [1, 15]^2$).
+> 2. **Exact First & Second Anti-Diagonal `1`-Run Defect Tunneling Laws (`band1_tunneling_errors == 0`, `band2_mod4_errors == 0`):**  
+>    - Across every center `1`-run of length $a = a(t) \ge 1$ ($\bigl(c_t, \dots, c_{t+a-1}, c_{t+a}\bigr) = (1^a, 0)$), the alternating zero-defect profile $(l_0(t+j), \dots, l_{a-j}(t+j)) = (1, 0, 1, \dots, (a-j)\bmod 2, (a-j)\bmod 2)$ (Theorem 45(1)) forces:
+>      - **Band 1 (First Anti-Diagonal $s + m = t + a + 1$, `0` errors across $2,080$ entries):** Because $\bigl(l_{a-j}(t+j), l_{a-j-1}(t+j)\bigr)$ always contains a deterministic `1` with zero defect, the OR gate saturates to $1$ in both trajectories and shifts the defect unattenuated along the anti-diagonal:
+>        $$D_{a+1}(t) \;=\; D_a(t + 1) \;=\; D_{a-1}(t + 2) \;=\; \dots \;=\; D_2(t + a - 1) \;=\; D_1(t + a).$$
+>      - **Band 2 (Second Anti-Diagonal $s + m = t + a + 2$, for all $2 \le m \le a + 2$, `0` errors across $2,080$ entries):** Because $l_{m-2}(s)$ alternates between `1` (at odd remaining length $\mathrm{rem} = m - 2 \equiv 1 \pmod 2$, saturating the OR gate) and `0` (at even remaining length $\mathrm{rem} = m - 2 \equiv 0 \pmod 2$, feeding in the Band-1 defect $D_{m-1}(s) = D_1(t+a)$), Band 2 obeys the exact period-$4$ linear law:
+>        $$D_m(t + a + 2 - m) \;=\; \begin{cases} D_1(t + a + 1) \oplus D_1(t + a), & \text{if } m \bmod 4 \in \{2, 3\}, \\[3pt] D_1(t + a + 1), & \text{if } m \bmod 4 \in \{0, 1\}. \end{cases}$$
+> 3. **Direct Period-$\Pi$ Defect Opaque-Mirror Clash ($c_t \land D_1(t) = 1$) Across All $39,606$ Non-Zero Pairs in $[0, 200) \times [1, 200)$ (`defect_mirror_survivors_200 == 0`):**  
+>    - In any valid Rule 30 trajectory with $\Pi$-periodic center column for $t \ge t_0$, Opaque Mirror forces $l_1(t) = 1 \oplus c_{t+1} = l_1(t + \Pi)$ whenever $c_t = 1$, so $c_t \land D_1(t) = 0$ is mandatory for all $t \ge t_0$. Across all $39,606$ non-zero periodic pairs $(t_0, \Pi) \in [0, 200) \times [1, 200)$, **$100\%$ ($39,606 / 39,606$)** produce a direct Period-$\Pi$ Defect Opaque-Mirror clash $c_t \land D_1(t) = 1$ in at most $35$ post-mismatch steps (`0` survivors). $\square$
+
 ---
 
 ## 7. One-Command Verification
 
-All forty-six theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
+All forty-seven theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python 1984-wolfram-conus-textile-rule30.py --self-test-only
