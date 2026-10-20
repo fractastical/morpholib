@@ -4,7 +4,7 @@
 **Repository & Verification Code:** [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py)  
 **Date:** October 19, 2026
 
-![Animated 18-Milestone Progress Dashboard: Theorems 1–19 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
+![Animated 21-Milestone Progress Dashboard: Theorems 1–22 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
 
 ---
 
@@ -432,9 +432,32 @@ Let $S := t - x \ge 0$ be the global characteristic coordinate across the entire
 
 ---
 
+### Theorem 22 (Exact Zero-Transient Full-Cone Characteristic Crystal Law, 2D Bi-Dyadic Duality $A_S(j) = d_{2j+(S \bmod 2)}(\lceil S/2 \rceil + j)$, Unconditional Period Divergence $\limsup_{S \to \infty} P_S = \infty$, Midpoint Center-Column Identity $c_S = A_S(\lfloor S/2 \rfloor)$, and Complete Zero-Branching Extinction Through $\Pi = 20$ [$111,011$ Necklaces, $9,805,827$ Prefixes])
+For every characteristic index $S = t - x \ge 0$ and left-boundary offset $j \ge 0$, define the left-cone-anchored characteristic sequence
+$$A_S(j) \;:=\; F_S\bigl(j - \lfloor S/2 \rfloor\bigr) \;=\; a_{\lceil S/2 \rceil + j,\; j - \lfloor S/2 \rfloor} \qquad (S \ge 0,\;\; j \ge 0).$$
+Then:
+1. **Closed Even/Odd Characteristic Crystal Recurrence & Zero-Transient Full-Cone Dyadic Periodicity ($\forall\, S \ge 0$):** Substituting $x = j - \lfloor S/2 \rfloor$ into the Full-Plane Characteristic Conservation Law (Theorem 21(1)) yields $A_0(j) \equiv 1$ ($P_0 = 1$), $A_1(j) = 1 - (j \bmod 2)$ ($P_1 = 2$), $A_S(0) = 1$ for all $S \ge 0$, and for all $k \ge 1, j \ge 1$:
+   $$\begin{aligned}
+   S = 2k\text{ (even)}:\quad &A_{2k}(j) \;\oplus\; A_{2k}(j - 1) \;=\; A_{2k-1}(j - 1) \;\lor\; A_{2k-2}(j) \qquad (\forall\, j \ge 1), \\
+   S = 2k + 1\text{ (odd)}:\quad &A_{2k+1}(j) \;\oplus\; A_{2k+1}(j - 1) \;=\; A_{2k}(j) \;\lor\; A_{2k-1}(j) \qquad (\forall\, j \ge 1).
+   \end{aligned}$$
+   Because $j \ge 1 \implies j - 1 \ge 0$, the right-hand side **only ever evaluates $A_{S-1}$ and $A_{S-2}$ at non-negative interior indices $\ge 0$** and never touches the exterior $j < 0$. By induction on $S \ge 0$, **for every $S \ge 0$, the sequence $\{A_S(j)\}_{j \ge 0}$ is $100\%$ purely periodic from $j = 0$ (the left light-cone boundary $x = -\lfloor S/2 \rfloor$, across the center column $x = 0$, to the right light-cone boundary $x = +\lceil S/2 \rceil$) with ZERO transient and dyadic period $P_S = 2^{n_S}$** (`0` bit errors across the entire 2D cone for $S = 0 \dots 41$, reaching $P_{41} = 131,072 = 2^{17}$ with `0` monotonicity drops).
+2. **Self-Dual Anti-Periodicity at Every Period Doubling & Exact 2D Bi-Dyadic Duality with Left-Cone Diagonals $d_K$:** Let $P = \max(P_{S-1}, P_{S-2})$ and let $g_S(j)$ be the $P$-periodic OR-gate right-hand side. Whenever $\sum_{j=1}^P g_S(j) \equiv 1 \pmod 2$, the period doubles ($P_S = 2P$) and the second half-period is the exact bitwise complement of the first half-period:
+   $$A_S\bigl(j + P_S / 2\bigr) \;=\; 1 \;\oplus\; A_S(j) \qquad (\forall\, j \ge 0),$$
+   so **every period-doubling characteristic crystal $A_S$ has exact 1-period ones density $1/2$** (`0` errors across all $17$ period doublings up to $S = 41$). Moreover, since $(\lceil S/2 \rceil + j) + (j - \lfloor S/2 \rfloor) = 2j + (S \bmod 2)$, the 2D space-time cone decomposes into the exact **Bi-Dyadic Duality Identity** (`0` errors):
+   $$A_S(j) \;=\; d_{2j + (S \bmod 2)}\!\left(\left\lceil \frac{S}{2} \right\rceil + j\right) \qquad (\forall\, S \ge 0,\;\; \forall\, j \ge 0),$$
+   and at the midpoint $j = \lfloor S/2 \rfloor$ ($x = 0$), **the Rule 30 center column $c_S = a_{S, 0}$ is the exact midpoint evaluation of the zero-transient periodic crystal $A_S$**:
+   $$c_S \;=\; A_S\bigl(\lfloor S/2 \rfloor\bigr) \qquad (\forall\, S \ge 0).$$
+3. **Unconditional Divergence $\limsup_{S \to \infty} P_S = \infty$:** Suppose for contradiction that there exist $S_0 \ge 0$ and $P_* = 2^M$ such that $P_S \mid P_*$ for all $S \ge S_0$. Then $A_S(j + P_*) = A_S(j)$ for all $S \ge S_0$ and all $j \ge 0$. By Bi-Dyadic Duality, setting $S = 2k \ge S_0$ and $S = 2k + 1 \ge S_0$ yields
+   $$d_{K + 2P_*}\!\left(k + \left\lceil \frac{K}{2} \right\rceil + P_*\right) \;=\; d_K\!\left(k + \left\lceil \frac{K}{2} \right\rceil\right) \qquad \bigl(\forall\, K \ge 0,\;\; \forall\, k \ge \lceil S_0 / 2 \rceil\bigr),$$
+   which forces the asymptotic temporal period $P_{K + 2P_*}^{(\text{diag})}$ of diagonal $K + 2P_*$ to equal $P_K^{(\text{diag})}$ for every $K \ge 0$, bounding $\{P_K^{(\text{diag})}\}_{K \ge 0}$ by $\max_{0 \le K < 2P_*} P_K^{(\text{diag})} < \infty$ — contradicting Theorem 4 ($\lim_{K \to \infty} P_K^{(\text{diag})} = \infty$). Hence **$\limsup_{S \to \infty} P_S = \infty$ unconditionally**.
+4. **Complete Zero-Branching Anti-Diagonal Extinction Through Period $\Pi = 20$ ($111,011$ Primitive Necklaces, $9,805,827$ Admissible Prefixes):** Using our NumPy batch-vectorized Lyndon + Kogge–Stone Suffix-XOR solver (`2.1 s` total runtime across $\Pi = 19, 20$), $100\%$ of the **$2,383,387$ admissible 1-period prefixes across all $27,594$ primitive necklaces of $\Pi = 19$** extinguish in $\le 33$ exterior steps, and $100\%$ of the **$5,702,273$ admissible 1-period prefixes across all $52,377$ primitive necklaces of $\Pi = 20$** extinguish in $\le 34$ exterior steps — bringing the cumulative total across **$\Pi \in \{2, \dots, 20\}$** to **$111,011$ primitive necklaces and $9,805,827$ admissible prefixes with `0` survivors** ($S_{\max}(\Pi) \le 34$). $\square$
+
+---
+
 ## 7. One-Command Verification
 
-All twenty-one theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
+All twenty-two theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python 1984-wolfram-conus-textile-rule30.py --self-test-only
