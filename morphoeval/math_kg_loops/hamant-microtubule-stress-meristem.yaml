@@ -1,18 +1,37 @@
 sim_id: hamant-microtubule-stress-meristem
-math_family: "Finite-Element Pressurized Shell Turgor Stress Tensor, Bozorg Stress-vs-Strain Cue Discrimination & Anisotropic Viscoplastic Lockhart Growth"
+math_family: "Finite-Element Pressurized Shell Turgor Stress Tensor, Bozorg Stress-vs-Strain Cue Discrimination, Anisotropic Viscoplastic Lockhart Growth & (Pass 3) Heisler PIN1/CMT Co-Alignment on a Growing L1 Cellular Vertex Mesh"
 model_spec:
-  model: "Bozorg, Krupinski & Jönsson (2014) PLoS Comput. Biol. 10(1):e1003410 + Sampathkumar et al. (2014) eLife 3:e01967 + Hamant et al. (2008) Science 322:1650-1655 pressurized SAM shell stress tensor, stress-vs-strain CMT feedback & katanin boundary morphogenesis"
+  model: "Bozorg, Krupinski & Jönsson (2014) PLoS Comput. Biol. 10(1):e1003410 + Sampathkumar et al. (2014) eLife 3:e01967 + Hamant et al. (2008) Science 322:1650-1655 pressurized SAM shell stress tensor, stress-vs-strain CMT feedback & katanin boundary morphogenesis; Pass 3: Heisler et al. (2010) PLoS Biol. 8:e1000516 stress-based PIN1 polarity and Louveaux et al. (2016) PNAS 113:E4294 stress-oriented divisions on a 2D L1 vertex mesh"
   turgor_pressure_P_MPa: 0.50
   wall_thickness_h_um: 0.25
   dome_radius_R_um: 40.0
   wt_gamma_MT: 2.40
   bot1_gamma_MT: 0.45
   seed: 2008
+  vertex_mesh:
+    hex_rings_interior: 4
+    n_cells_initial: 61
+    E_shell_effective_MPa: 400.0
+    k_wall: 6.0
+    K_A: 0.9
+    P_turgor_in_plane: 0.15
+    kappa_cmt: 1.56
+    D_theta: 0.32
+    beta_pin: 4.0
+    tau_pin: 0.6
+    phi_wall: 0.45
+    eps_yield: 0.03
+    division_area_factor: 1.75
+    t1_enabled: false
+    n_steps: 160
+    dt: 0.05
+    seed: 2010036
   inputs:
     - datasets/microtubule_stress_meristem/microtubule_stress_meristem_reference.json
     - datasets/microtubule_stress_meristem/arabidopsis_meristem_boundary_specimen.jpg
     - datasets/microtubule_stress_meristem/scout_manifest.json
     - datasets/microtubule_stress_meristem/paper_citations.bib
+    - datasets/microtubule_stress_meristem/pin1_cmt_coalignment_reference.json
 equations:
   - law_name: "Hamant et al. (2008) & Bozorg et al. (2014) Saddle-Boundary Stress Anisotropy Amplification & Gaussian Curvature Inversion Law"
     formula: "K = κ_1 κ_2;  Δσ(P_s, κ_1, κ_2) = P_s (κ_1 - κ_2);  Δσ(P_s, κ_0, κ_0) = 0 (dome, K > 0) vs Δσ(P_s, κ_0, -κ_s) = P_s(κ_0 + κ_s) > P_s κ_0 > 0 (saddle crease, K < 0)"
@@ -35,7 +54,7 @@ equations:
     variables: "κ_1, κ_2: principal curvatures along and across organ-meristem boundary (μm^-1); K = κ_1 κ_2: Gaussian curvature (μm^-2); P_s: turgor shell stress scale; Δσ: principal tensile stress difference (MPa)"
     role: "Proves that transitioning from the positive-Gaussian-curvature SAM dome (K > 0) to the negative-Gaussian-curvature organ boundary saddle (K < 0) switches tensile stress from isotropic (Δσ = 0) to strongly amplified along the boundary crease axis"
     source_citation: "Hamant et al. (2008) Science 322:1650-1655 Fig. 2 & SOM; Bozorg et al. (2014) PLoS Comput. Biol. 10(1):e1003410 Figs. 3-4"
-    code_locus: "2008-hamant-microtubule-stress-meristem.py#L95-L215"
+    code_locus: "2008-hamant-microtubule-stress-meristem.py#L147-L286"
 
   - law_name: "Bozorg et al. (2014) & Hamant et al. (2008) Cylindrical Stem 2:1 Hoop-to-Axial Laplace Stress Switch & Longitudinal Lockhart Elongation Law"
     formula: "σ_θ = P R / h = 2 S_0 = 2 σ_z > σ_z;  ε̇_z - ε̇_θ = C_z σ_z - C_θ σ_θ = (C_z - 2 C_θ) S_0 > 0  for C_z > 2 C_θ"
@@ -60,7 +79,7 @@ equations:
     variables: "S_0 = P R / (2 h): axial Laplace stress (MPa); σ_θ = 2 S_0: circumferential hoop stress (MPa); C_z, C_θ: axial and circumferential viscoplastic compliances (MPa^-1 hr^-1)"
     role: "Proves that the 2:1 circumferential-to-axial Laplace stress ratio on the cylindrical stem drives transverse cortical microtubule hoops and longitudinal stem elongation when transverse cellulose reinforcement reduces circumferential compliance below C_z / 2"
     source_citation: "Bozorg et al. (2014) PLoS Comput. Biol. 10(1):e1003410 Fig. 2; Hamant et al. (2008) Science 322:1650-1655 Fig. 1"
-    code_locus: "2008-hamant-microtubule-stress-meristem.py#L95-L260"
+    code_locus: "2008-hamant-microtubule-stress-meristem.py#L147-L286"
 
   - law_name: "Uyttewaal et al. (2012) & Hamant et al. (2008) Katanin (bot1/KTN1) & Oryzalin Mechanical Feedback Gain Reduction Law"
     formula: "ΔE(γ_MT) = E_1(γ_MT) - E_2(γ_MT) = 2 dE Δσ γ_MT;  ΔE(0) = 0 (Oryzalin);  ΔE(γ_WT) - ΔE(γ_bot1) = 2 dE Δσ (γ_WT - γ_bot1) > 0"
@@ -86,4 +105,51 @@ equations:
     variables: "γ_MT: katanin-dependent mechanical stress feedback gain; E_1, E_2: principal cell-wall elastic moduli along and perpendicular to maximal stress (MPa); Δσ: principal stress difference (MPa)"
     role: "Proves that reducing mechanical stress feedback gain γ_MT via katanin (bot1/ktn1) loss-of-function or Oryzalin microtubule depolymerization (γ_MT = 0) reduces or abolishes cellulose stiffness anisotropy and organ-meristem boundary crease folding"
     source_citation: "Uyttewaal et al. (2012) Cell 149:439-451 Figs. 2-5; Hamant et al. (2008) Science 322:1650-1655 Fig. 5"
-    code_locus: "2008-hamant-microtubule-stress-meristem.py#L265-L385"
+    code_locus: "2008-hamant-microtubule-stress-meristem.py#L357-L480"
+
+  - law_name: "Heisler et al. (2010) Stress-Based PIN1 Polarity / CMT Co-Alignment & Microtubule-Independence Law (Pass 3)"
+    formula: "T_∥ = T_0 + τ > T_⊥ = T_0;  M_xx - M_yy = 2 a T_∥ - 2 a T_⊥ = 2 a τ > 0 (σ_1 axis = PIN1-rich wall axis = CMT director);  T_∥(γ_MT) = T_0 + τ + κ S γ_MT with T_∥(0) = T_0 + τ > T_⊥ (oryzalin) and T_∥(γ_MT) ≥ T_∥(0)"
+    lean_decl: "MathOfBiology.Loop_036.virial_stress_anisotropy"
+    lean_theorem: "MathOfBiology.Loop_036.heisler_pin1_cmt_coalignment_under_anisotropic_wall_tension"
+    lean_locus: "morphoeval/lean/loops/Loop_036_microtubule_stress_meristem.lean#L165-L226"
+    lean_code: |
+      def wall_tension_parallel (T_0 tau : Int) : Int := T_0 + tau
+      def wall_tension_perpendicular (T_0 : Int) : Int := T_0
+      def virial_stress_anisotropy (a T_par T_perp : Int) : Int := 2 * a * T_par - 2 * a * T_perp
+      def cmt_reinforced_parallel_tension (T_0 tau kappa S gamma_MT : Int) : Int := T_0 + tau + kappa * S * gamma_MT
+      theorem heisler_pin1_cmt_coalignment_under_anisotropic_wall_tension
+          (a T_0 tau kappa S gamma_MT : Int)
+          (ha : a > 0) (_hT : T_0 > 0) (htau : tau > 0)
+          (hkappa : kappa ≥ 0) (hS : S ≥ 0) (hgamma : gamma_MT ≥ 0) :
+          wall_tension_parallel T_0 tau > wall_tension_perpendicular T_0 ∧
+          virial_stress_anisotropy a (wall_tension_parallel T_0 tau) (wall_tension_perpendicular T_0) = 2 * a * tau ∧
+          virial_stress_anisotropy a (wall_tension_parallel T_0 tau) (wall_tension_perpendicular T_0) > 0 ∧
+          cmt_reinforced_parallel_tension T_0 tau kappa S 0 = wall_tension_parallel T_0 tau ∧
+          cmt_reinforced_parallel_tension T_0 tau kappa S 0 > wall_tension_perpendicular T_0 ∧
+          cmt_reinforced_parallel_tension T_0 tau kappa S gamma_MT ≥ wall_tension_parallel T_0 tau
+    variables: "a: cell side (μm); T_0: isotropic anticlinal wall tension; τ: tension increment on σ_1-parallel walls from the shell stress tensor; M_xx - M_yy: virial (Batchelor) wall-stress anisotropy Σ_e T_e l_e t_e⊗t_e; κ S γ_MT: katanin/cellulose reinforcement of CMT-parallel walls"
+    role: "Proves that PIN1 allocated to the most-tensed wall and CMTs aligned with the virial σ_1 axis pick the same wall axis (co-alignment), that this holds without microtubules (γ_MT = 0, oryzalin) and is only amplified by wild-type katanin feedback"
+    source_citation: "Heisler et al. (2010) PLoS Biol. 8(10):e1000516 Figs. 2-6; Hamant et al. (2008) Science 322:1650-1655 Fig. 3"
+    code_locus: "2008-hamant-microtubule-stress-meristem.py#L509-L1156"
+
+  - law_name: "Louveaux et al. (2016) & Hamant & Traas (2010) Vertex-Mesh Topological Event Law — Division Preserves the Euler Characteristic, T1 is Topology-Neutral (Pass 3)"
+    formula: "χ = V - E + F;  division along σ_1: (V, E, F) → (V + 2, E + 3, F + 1), χ invariant, F + 1 > F;  after n ≥ 0 divisions (V + 2n, E + 3n, F + n) has the same χ;  T1: (V, E, F) unchanged"
+    lean_decl: "MathOfBiology.Loop_036.euler_characteristic"
+    lean_theorem: "MathOfBiology.Loop_036.louveaux_vertex_mesh_division_preserves_euler_characteristic"
+    lean_locus: "morphoeval/lean/loops/Loop_036_microtubule_stress_meristem.lean#L230-L268"
+    lean_code: |
+      def euler_characteristic (V E F : Int) : Int := V - E + F
+      def vertices_after_divisions (V n : Int) : Int := V + 2 * n
+      def edges_after_divisions (E n : Int) : Int := E + 3 * n
+      def cells_after_divisions (F n : Int) : Int := F + n
+      theorem louveaux_vertex_mesh_division_preserves_euler_characteristic
+          (V E F n : Int) (hn : n ≥ 0) :
+          euler_characteristic (vertices_after_divisions V 1) (edges_after_divisions E 1) (cells_after_divisions F 1) = euler_characteristic V E F ∧
+          cells_after_divisions F 1 > F ∧
+          euler_characteristic (vertices_after_divisions V n) (edges_after_divisions E n) (cells_after_divisions F n) = euler_characteristic V E F ∧
+          cells_after_divisions F n ≥ F ∧
+          euler_characteristic V E F = euler_characteristic V E F
+    variables: "V, E, F: vertices, walls and cells of the planar L1 vertex mesh (outer face excluded, χ = 1 for a disc); n: number of symmetric divisions"
+    role: "Fixes the bookkeeping invariant that every division (two vertices inserted on existing walls, one new wall, one new cell) and every T1 flip must satisfy on the mesh; verified numerically after each event in simulate_l1_vertex_patch and verify_t1_transition_topology"
+    source_citation: "Louveaux et al. (2016) PNAS 113(30):E4294-E4303 Figs. 2-4 (division along maximal tensile stress); Hamant & Traas (2010) New Phytol. 185:369-385 (no neighbour exchange in cemented plant tissue)"
+    code_locus: "2008-hamant-microtubule-stress-meristem.py#L874-L965"

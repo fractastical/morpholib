@@ -122,4 +122,78 @@ theorem douady_couder_fibonacci_vs_lucas_parastichy_cascades (p q : Int) :
   simp [cassini_det, Int.add_mul, Int.mul_add]
   omega
 
+
+-- ============================================================================
+-- Law 4 (`douady-magnetic-drop-phyllotaxis-4`, Pass 3):
+-- Dynamical Pitchfork Discriminant & the Static-Fold / Dynamical-Threshold Gap
+-- ============================================================================
+
+/-- Cross-multiplied numerator of the two-drop *dynamical* pitchfork condition
+    `sum_{k=1}^{2} (-1)^{k-1} k r_k / (r_k - (-1)^k)^5 = 0` obtained by linearising the
+    iterated placement map `φ_n = argmin E(φ)` about the steady spiral `Δφ = π - ε`
+    (Douady & Couder 1996 Part I Sec. 3.1): the `k`-th older drop sits at `-k Δφ`, so its
+    perturbation enters with weight `k`. Clearing `(r_1 + 1)^5 (r_2 - 1)^5 > 0` gives
+      `D(r_1, r_2) = r_1 (r_2 - 1)^5 - 2 r_2 (r_1 + 1)^5`.
+    `D > 0` means opposition is a stable fixed point of the map (multiplier `λ < 1`). -/
+def dynamical_pitchfork_discriminant (r1 r2 : Int) : Int :=
+  r1 * (r2 - 1) ^ 5 - 2 * r2 * (r1 + 1) ^ 5
+
+/-- Theorem 4 (`douady_couder_dynamical_threshold_exceeds_static_fold`):
+    Under linear advection `r_1 = 1 + G, r_2 = 1 + 2 G`:
+    1. At `G = 3` (`r_1 = 4, r_2 = 7`) the static curvature discriminant is positive,
+       `C(4, 7) = 27687 > 0` (opposition is a strict local *energy* minimum for a frozen
+       history), yet the dynamical discriminant is negative, `D(4, 7) = -12646 < 0`
+       (opposition is an *unstable* fixed point of the iterated map).
+    2. At `G = 4` (`r_1 = 5, r_2 = 9`), `D(5, 9) = 23872 > 0`, so the map's fixed point
+       has become stable.
+    Hence `G_fold ∈ (2, 3)` from Theorem 2 while `G_{c,1} ∈ (3, 4)`: the dynamical pitchfork
+    threshold strictly exceeds the static Hessian fold (numerically `2.51456 < 3 < 3.63143`).
+    This is the integer witness for the Pass 3 remediation that measures the *emergent*
+    threshold of the unclamped iterated map rather than imposing the fold value. -/
+theorem douady_couder_dynamical_threshold_exceeds_static_fold :
+    pitchfork_curvature_discriminant (linear_advected_radius 1 3) (linear_advected_radius 2 3) > 0 ∧
+    dynamical_pitchfork_discriminant (linear_advected_radius 1 3) (linear_advected_radius 2 3) = -12646 ∧
+    dynamical_pitchfork_discriminant (linear_advected_radius 1 3) (linear_advected_radius 2 3) < 0 ∧
+    dynamical_pitchfork_discriminant (linear_advected_radius 1 4) (linear_advected_radius 2 4) = 23872 ∧
+    dynamical_pitchfork_discriminant (linear_advected_radius 1 4) (linear_advected_radius 2 4) > 0 := by
+  decide
+
+
+-- ============================================================================
+-- Law 5 (`douady-magnetic-drop-phyllotaxis-5`, Pass 3):
+-- Fibonacci Convergent Window of the Divergence Angle for a (p, q) Contact Lattice
+-- ============================================================================
+
+/-- For a spiral lattice whose two contact parastichy numbers are consecutive Fibonacci
+    numbers `(F_k, F_{k+1})`, the divergence angle `α` (as a fraction `α / 2π`) lies between
+    the two consecutive Fibonacci convergents `F_{k-2} / F_k` and `F_{k-1} / F_{k+1}` of
+    `1 / τ^2` (van Iterson 1907; Douady & Couder 1996 Part I Fig. 5). The convergents
+    alternate around `1 / τ^2 = 0.381966…`, which is the statement
+      `a / b < c / d  ⇔  a * d < c * b`  for positive denominators.
+    The `(5, 8)` window is `3 / 8 ≤ α / 2π ≤ 5 / 13`, i.e. `135° ≤ α ≤ 138.46°`, which is the
+    acceptance window used for the specimen's lattice-inverted divergence angle. -/
+def fib_convergent_lt (a b c d : Nat) : Prop := a * d < c * b
+
+/-- Theorem 5 (`douady_couder_fibonacci_convergent_window`):
+    1. The consecutive Fibonacci convergents alternate:
+       `1/3 < 3/8 < 8/21 < 13/34 … < 1/τ² < … 21/55 < 5/13 < 2/5` written as integer
+       cross-multiplications `3*13 < 5*8`, `8*13 < 5*21`, `8*34 < 13*21`, `21*34 < 13*55`,
+       `21*55 < 34*89`, so each `(F_k, F_{k+1})` window nests strictly inside the previous one;
+    2. The `(5, 8)` window is bounded by the `(3, 5)` window (`1/3 < 3/8` and `5/13 < 2/5`);
+    3. The lower and upper Fibonacci parastichy numbers in each window are those produced by
+       `parastichy_seq 1 1`. -/
+theorem douady_couder_fibonacci_convergent_window :
+    fib_convergent_lt 3 8 5 13 ∧
+    fib_convergent_lt 8 21 5 13 ∧
+    fib_convergent_lt 8 21 13 34 ∧
+    fib_convergent_lt 21 55 13 34 ∧
+    fib_convergent_lt 21 55 34 89 ∧
+    fib_convergent_lt 1 3 3 8 ∧
+    fib_convergent_lt 5 13 2 5 ∧
+    (parastichy_seq 1 1 4, parastichy_seq 1 1 5) = (5, 8) ∧
+    (parastichy_seq 1 1 2, parastichy_seq 1 1 4) = (2, 5) ∧
+    (parastichy_seq 1 1 3, parastichy_seq 1 1 5) = (3, 8) := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, by decide, by decide, by decide⟩ <;>
+    simp [fib_convergent_lt]
+
 end MathOfBiology.Loop_031

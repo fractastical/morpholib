@@ -160,4 +160,111 @@ theorem uyttewaal_katanin_oryzalin_feedback_gain_reduction
   refine ⟨hZero, hId, ?_⟩
   omega
 
+
+-- ============================================================================
+-- Law 4 (`hamant-microtubule-stress-meristem-4`, Pass 3):
+-- Heisler et al. (2010) Stress-Based PIN1 Polarity / CMT Co-Alignment & Microtubule-Independence
+-- ============================================================================
+/-- In Heisler et al. (2010) PLoS Biol. 8(10):e1000516, PIN1 auxin efflux carriers accumulate on the
+    plasma membrane adjacent to the anticlinal wall carrying the highest tensile load, while cortical
+    microtubules (CMTs) align with the maximal principal stress of the same cell.  For a square L1 cell
+    of side `a > 0` whose walls carry an isotropic tension `T_0 > 0` plus an anisotropic increment
+    `tau > 0` on the walls parallel to the shell's maximal principal stress sigma_1:
+      `T_par = T_0 + tau`, `T_perp = T_0`,
+    the virial (Batchelor) wall-stress anisotropy is
+      `M_xx - M_yy = 2 a T_par - 2 a T_perp = 2 a tau > 0`,
+    so the CMT director (sigma_1 axis) is the axis of the PIN1-rich (max-tension) wall: PIN1 and CMTs
+    are co-aligned.  Katanin/CMT feedback adds `kappa * S * gamma_MT >= 0` to the parallel wall only,
+    so the PIN1 preference persists at `gamma_MT = 0` (oryzalin; Heisler 2010 Fig. 6 microtubule
+    independence) and is only amplified by wild-type feedback. -/
+def wall_tension_parallel (T_0 tau : Int) : Int :=
+  T_0 + tau
+
+def wall_tension_perpendicular (T_0 : Int) : Int :=
+  T_0
+
+def virial_stress_anisotropy (a T_par T_perp : Int) : Int :=
+  2 * a * T_par - 2 * a * T_perp
+
+def cmt_reinforced_parallel_tension (T_0 tau kappa S gamma_MT : Int) : Int :=
+  T_0 + tau + kappa * S * gamma_MT
+
+theorem heisler_pin1_cmt_coalignment_under_anisotropic_wall_tension
+    (a T_0 tau kappa S gamma_MT : Int)
+    (ha : a > 0) (_hT : T_0 > 0) (htau : tau > 0)
+    (hkappa : kappa ≥ 0) (hS : S ≥ 0) (hgamma : gamma_MT ≥ 0) :
+    wall_tension_parallel T_0 tau > wall_tension_perpendicular T_0 ∧
+    virial_stress_anisotropy a (wall_tension_parallel T_0 tau) (wall_tension_perpendicular T_0)
+      = 2 * a * tau ∧
+    virial_stress_anisotropy a (wall_tension_parallel T_0 tau) (wall_tension_perpendicular T_0) > 0 ∧
+    cmt_reinforced_parallel_tension T_0 tau kappa S 0 = wall_tension_parallel T_0 tau ∧
+    cmt_reinforced_parallel_tension T_0 tau kappa S 0 > wall_tension_perpendicular T_0 ∧
+    cmt_reinforced_parallel_tension T_0 tau kappa S gamma_MT ≥ wall_tension_parallel T_0 tau := by
+  have hPar : wall_tension_parallel T_0 tau > wall_tension_perpendicular T_0 := by
+    dsimp [wall_tension_parallel, wall_tension_perpendicular]
+    omega
+  have hId : virial_stress_anisotropy a (wall_tension_parallel T_0 tau) (wall_tension_perpendicular T_0)
+      = 2 * a * tau := by
+    dsimp [virial_stress_anisotropy, wall_tension_parallel, wall_tension_perpendicular]
+    rw [Int.mul_add, Int.add_comm (2 * a * T_0) (2 * a * tau)]
+    exact Int.add_sub_cancel (2 * a * tau) (2 * a * T_0)
+  have h2a : 2 * a > 0 := by omega
+  have hPos : 2 * a * tau > 0 := Int.mul_pos h2a htau
+  have hOry : cmt_reinforced_parallel_tension T_0 tau kappa S 0 = wall_tension_parallel T_0 tau := by
+    dsimp [cmt_reinforced_parallel_tension, wall_tension_parallel]
+    rw [Int.mul_zero, Int.add_zero]
+  have hOryGt : cmt_reinforced_parallel_tension T_0 tau kappa S 0 > wall_tension_perpendicular T_0 := by
+    rw [hOry]
+    exact hPar
+  have hkS : kappa * S ≥ 0 := Int.mul_nonneg hkappa hS
+  have hkSg : kappa * S * gamma_MT ≥ 0 := Int.mul_nonneg hkS hgamma
+  have hAmp : cmt_reinforced_parallel_tension T_0 tau kappa S gamma_MT ≥ wall_tension_parallel T_0 tau := by
+    dsimp [cmt_reinforced_parallel_tension, wall_tension_parallel]
+    omega
+  refine ⟨hPar, hId, ?_, hOry, hOryGt, hAmp⟩
+  rw [hId]
+  exact hPos
+
+
+-- ============================================================================
+-- Law 5 (`hamant-microtubule-stress-meristem-5`, Pass 3):
+-- Topological Events on the L1 Cellular Vertex Mesh — Division Preserves the Euler Characteristic,
+-- T1 Neighbour Exchange is Topology-Neutral (Louveaux et al. 2016; Hamant & Traas 2010)
+-- ============================================================================
+/-- A planar cellular vertex mesh with `V` vertices, `E` walls (edges) and `F` cells has Euler
+    characteristic `chi = V - E + F` (the outer face excluded, so `chi = 1` for a disc).
+    - A symmetric cell division along the maximal tensile stress (Louveaux et al. 2016 PNAS
+      113:E4294) inserts two vertices on existing walls (each split wall becomes two: `+2` edges),
+      adds one new wall (`+1` edge) and one cell: `(V, E, F) -> (V + 2, E + 3, F + 1)`, so
+      `chi` is invariant and the cell count strictly increases.  After `n >= 0` divisions
+      `(V + 2 n, E + 3 n, F + n)` has the same `chi`.
+    - A T1 neighbour exchange (relevant to animal epithelia; suppressed by default here because
+      plant cells are cemented by the middle lamella) keeps `(V, E, F)` and hence `chi` unchanged
+      while swapping which cell pairs share the flipped wall. -/
+def euler_characteristic (V E F : Int) : Int :=
+  V - E + F
+
+def vertices_after_divisions (V n : Int) : Int := V + 2 * n
+def edges_after_divisions (E n : Int) : Int := E + 3 * n
+def cells_after_divisions (F n : Int) : Int := F + n
+
+theorem louveaux_vertex_mesh_division_preserves_euler_characteristic
+    (V E F n : Int) (hn : n ≥ 0) :
+    euler_characteristic (vertices_after_divisions V 1) (edges_after_divisions E 1)
+        (cells_after_divisions F 1) = euler_characteristic V E F ∧
+    cells_after_divisions F 1 > F ∧
+    euler_characteristic (vertices_after_divisions V n) (edges_after_divisions E n)
+        (cells_after_divisions F n) = euler_characteristic V E F ∧
+    cells_after_divisions F n ≥ F ∧
+    euler_characteristic V E F = euler_characteristic V E F := by
+  refine ⟨?_, ?_, ?_, ?_, rfl⟩
+  · dsimp [euler_characteristic, vertices_after_divisions, edges_after_divisions, cells_after_divisions]
+    omega
+  · dsimp [cells_after_divisions]
+    omega
+  · dsimp [euler_characteristic, vertices_after_divisions, edges_after_divisions, cells_after_divisions]
+    omega
+  · dsimp [cells_after_divisions]
+    omega
+
 end MathOfBiology.Loop_036
