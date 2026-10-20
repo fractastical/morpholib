@@ -7,6 +7,10 @@ model_spec:
     equilibrium_lumen_ratio: "R_in^* / R_out^* = L_ap^* / L_bas^* = (N * gamma_lat - 2 * pi * gamma_ap) / (N * gamma_lat + 2 * pi * gamma_bas)"
     eph_ephrin_cleft_barrier: "Delta_E_cleft = 2 * L_cleft * (gamma_het - (gamma_ant + gamma_post) / 2) > 0"
     rock_matrigel_collapse: "gamma_ap -> gamma_bas  =>  Delta_gamma_{ap-bas} = 0  (loss of wedge polarization under Y-27632 or Minus-Matrigel)"
+    shell_3d_energy_pass3: "E_3D = sum_i [ (K_V/2)(V_i - V_0)^2 + gamma_ap A_ap,i + gamma_bas A_bas,i ] + gamma_lat sum_faces A_lat,ij - P V_lumen"
+    shell_3d_lumen_ratio_pass3: "rho_3D = R_in / R_out = (Lambda - 4 pi gamma_ap + 2 pi P R_in) / (Lambda + 4 pi gamma_bas),  Lambda = gamma_lat sum_ij l_ij / 2,  R_out^3 = R_in^3 + 3 N_3D V_0 / (4 pi)"
+    hes7_delayed_oscillator_pass3: "dm/dt = k / (1 + (p(t - T_m)/p_0)^2) - c m ;  dp/dt = a m(t - T_p) - b p   (Lewis 2003, time-scaled to T_HES7 ~ 5 h)"
+    clock_wavefront_coupling_pass3: "x_wf = v t ; t_a,j = x_j / v ; S = v T_HES7 ; gamma_ap,j(t) = gamma_bas + (gamma_ap^WT - gamma_bas)(1 - exp(-(t - t_a,j)/tau_ROCK)) ; gamma_het,k(t) = gamma_hom + (gamma_het^WT - gamma_hom)(1 - exp(-(t - t_det,k)/tau_Eph))"
   canonical_parameters:
     N_wedge_cells: 16
     cell_area_A0_um2: 115.0
@@ -15,6 +19,14 @@ model_spec:
     gamma_bas_matrigel: 0.45
     gamma_lat_cdh2: 1.0
     gamma_het_epha4_ephrinb2: 2.35
+    N_3D_shell_cells_pass3: 96
+    cell_volume_V0_um3_pass3: 700.0
+    K_V_volume_modulus_pass3: 0.05
+    hes7_target_period_h_pass3: 5.0
+    wavefront_speed_um_per_h_pass3: 20.0
+    tau_rock_h_pass3: 3.0
+    tau_eph_h_pass3: 1.5
+    tau_ripply2_h_pass3: 1.0
   inputs:
     - datasets/somitoid_chirality_buckling/somitoid_chirality_buckling_reference.json
     - datasets/somitoid_chirality_buckling/somitoid_rosette_specimen.jpg
@@ -59,7 +71,7 @@ equations:
     variables: "R_in: inner somitecoel lumen radius (um); R_out: outer somite rosette radius (um); N: number of radial wedge cells; gamma_ap: apical actomyosin tension; gamma_bas: basal ECM-engaged tension; gamma_lat: lateral N-cadherin tension"
     role: "Proves that apical actomyosin constriction (gamma_ap > gamma_bas > 0) enforces wedge-cell tapering (L_ap < L_bas) and stabilizes a finite central somitecoel lumen"
     source_citation: "Yamanaka et al. (2023) Nature 614:509-520 Figs. 1-3; Adhyapok et al. (2021) Dev. Cell 56:1312-1324 Figs. 2-4"
-    code_locus: "2021-yaman-somitoid-chirality-buckling.py#L120-L255"
+    code_locus: "2021-yaman-somitoid-chirality-buckling.py#L200-L379"
   - id: yaman-somitoid-chirality-buckling-2
     law_name: "Adhyapok et al. (2021) EphA4/ephrinB2 Inter-Somite Cleft Boundary Sorting Energy Barrier Law"
     title: "Adhyapok et al. (2021) EphA4/ephrinB2 Inter-Somite Cleft Boundary Sorting Energy Barrier Law"
@@ -91,7 +103,7 @@ equations:
     variables: "L_cleft: inter-somitic boundary contact length (um); gamma_het: heterotypic EphA4-ephrinB2 interfacial tension; gamma_ant, gamma_post: homotypic intra-somite cell-cell tensions"
     role: "Establishes that heterotypic EphA4/ephrinB2 repulsion (2*gamma_het > gamma_ant + gamma_post) creates a positive energy barrier that drives physical somite cleft separation"
     source_citation: "Adhyapok et al. (2021) Dev. Cell 56:1312-1324 Figs. 1-3; Yamanaka et al. (2023) Nature 614:509-520 Fig. 2"
-    code_locus: "2021-yaman-somitoid-chirality-buckling.py#L258-L355"
+    code_locus: "2021-yaman-somitoid-chirality-buckling.py#L722-L748"
   - id: yaman-somitoid-chirality-buckling-3
     law_name: "Yamanaka et al. (2023) & Miao et al. (2023) Y-27632 ROCK Inhibition & Minus-Matrigel Curvature Collapse Law"
     title: "Yamanaka et al. (2023) & Miao et al. (2023) Y-27632 ROCK Inhibition & Minus-Matrigel Curvature Collapse Law"
@@ -123,4 +135,94 @@ equations:
     variables: "gamma_ap_wt: wild-type apical actomyosin tension under RhoA/ROCK activation; gamma_bas: basal ECM tension; N_lat: lateral N-cadherin adhesion term N*gamma_lat"
     role: "Proves that ROCK inhibition (Y-27632) or absence of Matrigel ECM abolishes the apico-basal tension differential and dilates the somitecoel lumen relative to wild-type MET rosettes"
     source_citation: "Yamanaka et al. (2023) Nature 614:509-520 Fig. 3; Miao et al. (2023) Nature 614:500-508 Fig. 4"
-    code_locus: "2021-yaman-somitoid-chirality-buckling.py#L358-L455"
+    code_locus: "2021-yaman-somitoid-chirality-buckling.py#L381-L413,L750-L822"
+  - id: yaman-somitoid-chirality-buckling-4
+    added_in: pass3
+    law_name: "Yamanaka et al. (2023) 3D Polyhedral Shell Somitecoel Lumen Pressurization Law"
+    title: "Yamanaka et al. (2023) 3D Polyhedral Shell Somitecoel Lumen Pressurization Law"
+    formula: "rho_3D = R_in / R_out = (Lambda - 4 pi gamma_ap + 2 pi P R_in) / (Lambda + 4 pi gamma_bas);  rho_3D < 1 iff 2 pi P R_in < 4 pi (gamma_ap + gamma_bas)"
+    latex: "\\rho_{3D} = \\frac{R_{\\text{in}}}{R_{\\text{out}}} = \\frac{\\Lambda - 4\\pi \\gamma_{\\text{ap}} + 2\\pi P R_{\\text{in}}}{\\Lambda + 4\\pi \\gamma_{\\text{bas}}}, \\qquad \\rho_{3D} < 1 \\iff P < \\frac{2(\\gamma_{\\text{ap}} + \\gamma_{\\text{bas}})}{R_{\\text{in}}}"
+    ascii: "rho_3D = (Lambda - 4*pi*gamma_ap + 2*pi*P*R_in) / (Lambda + 4*pi*gamma_bas); closed iff 2*pi*P*R_in < 4*pi*(gamma_ap + gamma_bas)"
+    lean_decl: "MathOfBiology.Loop_029.shell_lumen_numerator"
+    lean_theorem: "MathOfBiology.Loop_029.yamanaka_2023_shell_lumen_pressurization"
+    lean_file: morphoeval/lean/loops/Loop_029_somitoid_chirality_buckling.lean
+    lean_locus: "morphoeval/lean/loops/Loop_029_somitoid_chirality_buckling.lean#L122-L163"
+    lean_code: |-
+      def shell_lumen_numerator (Lam four_pi_gamma_ap two_pi_P_Rin : Int) : Int :=
+        Lam - four_pi_gamma_ap + two_pi_P_Rin
+      def shell_basal_denominator (Lam four_pi_gamma_bas : Int) : Int :=
+        Lam + four_pi_gamma_bas
+      theorem yamanaka_2023_shell_lumen_pressurization
+          (Lam four_pi_gamma_ap four_pi_gamma_bas two_pi_P_Rin : Int)
+          (h_P : 0 < two_pi_P_Rin)
+          (h_bas : 0 < four_pi_gamma_bas)
+          (h_ap : 0 < four_pi_gamma_ap) :
+          shell_lumen_numerator Lam four_pi_gamma_ap 0 <
+            shell_lumen_numerator Lam four_pi_gamma_ap two_pi_P_Rin ∧
+          (shell_lumen_numerator Lam four_pi_gamma_ap two_pi_P_Rin <
+              shell_basal_denominator Lam four_pi_gamma_bas ↔
+            two_pi_P_Rin < four_pi_gamma_ap + four_pi_gamma_bas) ∧
+          shell_lumen_numerator Lam four_pi_gamma_ap 0 <
+            shell_basal_denominator Lam four_pi_gamma_bas
+    lean_declaration: |-
+      theorem yamanaka_2023_shell_lumen_pressurization
+          (Lam four_pi_gamma_ap four_pi_gamma_bas two_pi_P_Rin : Int)
+          (h_P : 0 < two_pi_P_Rin)
+          (h_bas : 0 < four_pi_gamma_bas)
+          (h_ap : 0 < four_pi_gamma_ap) :
+          shell_lumen_numerator Lam four_pi_gamma_ap 0 <
+            shell_lumen_numerator Lam four_pi_gamma_ap two_pi_P_Rin ∧
+          (shell_lumen_numerator Lam four_pi_gamma_ap two_pi_P_Rin <
+              shell_basal_denominator Lam four_pi_gamma_bas ↔
+            two_pi_P_Rin < four_pi_gamma_ap + four_pi_gamma_bas) ∧
+          shell_lumen_numerator Lam four_pi_gamma_ap 0 <
+            shell_basal_denominator Lam four_pi_gamma_bas
+    variables: "Lambda = gamma_lat * (total angular lateral edge length) / 2 for the N_3D-cell spherical Voronoi shell; gamma_ap, gamma_bas: apical and basal face tensions; P: somitecoel lumen pressure (gamma_lat / um); R_in: lumen radius"
+    role: "Proves that lumen pressure strictly dilates the 3D somitecoel equilibrium and that the closed-shell condition is the two-surface Laplace bound P < 2 (gamma_ap + gamma_bas) / R_in; the discrete 2 N_3D-DOF polyhedral relaxation reproduces the closed form to < 1e-3"
+    source_citation: "Yamanaka et al. (2023) Nature 614:509-520 Figs. 2-3 (somitecoel lumen); Gomez-Galvez et al. (2018) Nat Commun 9:2960 (polyhedral/scutoid shell geometry)"
+    code_locus: "2021-yaman-somitoid-chirality-buckling.py#L415-L714"
+  - id: yaman-somitoid-chirality-buckling-5
+    added_in: pass3
+    law_name: "Lewis (2003) / Cooke & Zeeman (1976) HES7 Clock-Wavefront Arrest & Tension Maturation Gradient Law"
+    title: "Lewis (2003) / Cooke & Zeeman (1976) HES7 Clock-Wavefront Arrest & Tension Maturation Gradient Law"
+    formula: "S = v * T_HES7 ;  gamma(t) = gamma_base + k * (t - t_arrest) ;  t_ant < t_post <= t  =>  gamma_ant(t) > gamma_post(t)"
+    latex: "S = v\\,T_{\\text{HES7}}, \\qquad \\gamma_j(t) = \\gamma_{\\text{base}} + k\\,(t - t_{a,j}), \\qquad t_{a,\\text{ant}} < t_{a,\\text{post}} \\le t \\implies \\gamma_{\\text{ant}}(t) > \\gamma_{\\text{post}}(t)"
+    ascii: "S = v*T; gamma_j(t) = gamma_base + k*(t - t_arrest_j); anterior (earlier-arrested) cell has strictly larger tension"
+    lean_decl: "MathOfBiology.Loop_029.segment_length"
+    lean_theorem: "MathOfBiology.Loop_029.hes7_wavefront_arrest_tension_gradient"
+    lean_file: morphoeval/lean/loops/Loop_029_somitoid_chirality_buckling.lean
+    lean_locus: "morphoeval/lean/loops/Loop_029_somitoid_chirality_buckling.lean#L165-L212"
+    lean_code: |-
+      def segment_length (v T : Int) : Int :=
+        v * T
+      def cell_age (t t_arrest : Int) : Int :=
+        t - t_arrest
+      def tension_ramp (gamma_base k age : Int) : Int :=
+        gamma_base + k * age
+      theorem hes7_wavefront_arrest_tension_gradient
+          (v T_short T_long t t_ant t_post gamma_base k : Int)
+          (h_v : 0 < v)
+          (h_T : T_short < T_long)
+          (h_order : t_ant < t_post)
+          (h_t : t_post ≤ t)
+          (h_k : 0 < k) :
+          segment_length v T_short < segment_length v T_long ∧
+          (0 ≤ cell_age t t_post ∧ cell_age t t_post < cell_age t t_ant) ∧
+          tension_ramp gamma_base k (cell_age t t_post) <
+            tension_ramp gamma_base k (cell_age t t_ant)
+    lean_declaration: |-
+      theorem hes7_wavefront_arrest_tension_gradient
+          (v T_short T_long t t_ant t_post gamma_base k : Int)
+          (h_v : 0 < v)
+          (h_T : T_short < T_long)
+          (h_order : t_ant < t_post)
+          (h_t : t_post ≤ t)
+          (h_k : 0 < k) :
+          segment_length v T_short < segment_length v T_long ∧
+          (0 ≤ cell_age t t_post ∧ cell_age t t_post < cell_age t t_ant) ∧
+          tension_ramp gamma_base k (cell_age t t_post) <
+            tension_ramp gamma_base k (cell_age t t_ant)
+    variables: "v: determination wavefront speed (um/h); T: HES7 clock period (h); t_arrest: wavefront passage time of a cell; k: linearised RhoA/ROCK (or EphA4/ephrinB2) tension ramp slope; gamma_base: pre-MET baseline tension"
+    role: "Proves the clock-and-wavefront segment-length law S = v T and the anterior-to-posterior MET maturation gradient that the live HES7 -> MESP2/RIPPLY2 -> tension coupling feeds into the vertex rosette solver"
+    source_citation: "Lewis (2003) Curr Biol 13:1398-1408; Cooke & Zeeman (1976) J Theor Biol 58:455-476; Diaz-Cuadros et al. (2020) Nature 580:113-118; Matsuda et al. (2020) Nature 580:124-129; Yamanaka et al. (2023) Nature 614:509-520 Fig. 4"
+    code_locus: "2021-yaman-somitoid-chirality-buckling.py#L824-L1121"

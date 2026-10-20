@@ -12,10 +12,30 @@ model_spec:
   thresholds_linear: [0.6666666666666666, 0.3333333333333333]
   thresholds_zpa: [0.45, 0.18, 0.05]
   seed: 1969
+  limb2d_pass3:
+    W_um: 500.0
+    dx_um: 12.5
+    ny: 59
+    r_tip_um: 150.0
+    lambda_F_um: 100.0
+    lambda_S_um: 80.0
+    s_F: 0.008
+    s_S: 0.006
+    g_S: 1.0
+    K_S: 0.3
+    K_FS: 0.1
+    K_g: 0.3
+    v_max_um_s: 0.016
+    L0_um: 180.0
+    T_s: 43200.0
+    dt_s: 3.0
+    graft_strengths: [0.0, 0.10, 0.35, 1.0]
+    aer_excision_stages: [HH18, HH20, HH22, HH24, HH26]
   inputs:
     - datasets/french_flag_morphogen/french_flag_morphogen_reference.json
     - datasets/french_flag_morphogen/french_flag_specimen.jpg
     - datasets/french_flag_morphogen/scout_manifest.json
+    - datasets/french_flag_morphogen/limb_bud_2d_aer_zpa_reference.json
 equations:
   - id: wolpert-french-flag-morphogen-1
     law_name: "Wolpert (1969) Linear Source-Sink Positional Gradient & Scale-Invariant French-Flag Trisection"
@@ -85,3 +105,70 @@ equations:
     role: "Resolves the SDD scaling failure by locking the morphogen decay length λ_eff proportionally to domain size L(t) across developmental growth stages"
     source_citation: "Ben-Zvi & Barkai (2010) PNAS 107(15):6924-6929 Eqs. 1-4 (doi:10.1073/pnas.0912734107)"
     code_locus: "1969-wolpert-french-flag-morphogen.py#L413-L490"
+  # ---- Pass 3 (2026-10-19, audit v3): 2D PD x AP paddle with AER-FGF / ZPA-Shh coupling ----
+  - id: wolpert-french-flag-morphogen-5
+    law_name: "2D Zero-Flux SDD Stencil on the Limb Bud Paddle & Reduction to the 1D cosh Steady State"
+    formula: "∂F/∂t = D ∇²F − k_F F + s_F·AER(x,y,t)·(1 + g_S S/(S+K_S));  masked 5-point stencil R = D(Σ_nb c − n c_mid) − k c_mid, missing neighbours ⇒ zero flux;  rectangle ⇒ F(y) = cosh(y/λ_F)/cosh(L/λ_F)"
+    lean_decl: "MathOfBiology.Loop_011.sdd_residual_2d"
+    lean_theorem: "MathOfBiology.Loop_011.sdd_2d_steady_state_balance"
+    lean_locus: "morphoeval/lean/loops/Loop_011_french_flag_morphogen.lean#L137-L162"
+    lean_code: |
+      def sdd_residual_2d (D k_deg n sum_nb c_mid : Int) : Int :=
+        D * (sum_nb - n * c_mid) - k_deg * c_mid
+      theorem sdd_2d_steady_state_balance (D k_deg n sum_nb c_mid : Int)
+          (h_bal : D * sum_nb = n * (D * c_mid) + k_deg * c_mid) :
+          sdd_residual_2d D k_deg n sum_nb c_mid = 0
+      theorem sdd_2d_reduces_to_1d_interior (D k_deg c_prox c_mid c_dist : Int) :
+          sdd_residual_2d D k_deg 4 (c_prox + c_dist + c_mid + c_mid) c_mid =
+            sdd_residual D k_deg c_prox c_mid c_dist
+    variables: "F(x,y,t): AER FGF (Fgf8 + Shh-induced Fgf4); n: number of in-mask neighbours (zero-flux paddle boundary); λ_F = √(D/k_F) = 100 μm; AER(x,y,t): distal-facing rim cells of the growing paddle"
+    role: "Governs the 2D FGF field on the paddle; the stencil is verified against the 1D cosh steady state (RMSE 2.4e-3, zero cross-column spread) in verify_limb2d_against_1d_cosh"
+    source_citation: "Crick (1970) Nature 225:420-422; Crossley et al. (1996) Cell 84:127-136 (doi:10.1016/S0092-8674(00)80999-X)"
+    code_locus: "1969-wolpert-french-flag-morphogen.py#L501-L718"
+  - id: wolpert-french-flag-morphogen-6
+    law_name: "Shh–FGF Positive Feedback Loop & AER-Excision Quiescence of the ZPA"
+    formula: "∂S/∂t = D ∇²S − k_S S + s_S·[ZPA + graft·ZPA_ant]·F/(F+K_FS);  F = 0 ⇒ Shh production = 0 ⇒ all positions sub-threshold"
+    lean_decl: "MathOfBiology.Loop_011.shh_production"
+    lean_theorem: "MathOfBiology.Loop_011.shh_fgf_feedback_aer_ablation_quiescence"
+    lean_locus: "morphoeval/lean/loops/Loop_011_french_flag_morphogen.lean#L165-L182"
+    lean_code: |
+      def shh_production (s_S F K_FS : Nat) : Nat := s_S * F / (F + K_FS)
+      theorem shh_fgf_feedback_aer_ablation_quiescence (s_S K_FS T1 T2 : Nat)
+          (hT1 : 0 < T1) (hT2 : 0 < T2) :
+          shh_production s_S 0 K_FS = 0 ∧ french_flag_zone 0 T1 T2 = 0
+    variables: "S(x,y,t): ZPA Shh; K_FS: FGF half-saturation of Shh production; g_S, K_S: Shh → Fgf4 feedback gain and half-saturation; λ_S = 80 μm"
+    role: "Couples the AP (Shh) and PD (FGF) systems: AER removal collapses Shh (Niswander 1994) and a ZPA graft induces anterior AER FGF (Laufer 1994); measured as Shh remaining ≤ 0.06 % 3 h after excision and posterior/anterior AER FGF = 1.56 (WT) → 1.00 (symmetric graft)"
+    source_citation: "Laufer et al. (1994) Cell 79:993-1003 (doi:10.1016/0092-8674(94)90030-2); Niswander et al. (1994) Nature 371:609-612 (doi:10.1038/371609a0)"
+    code_locus: "1969-wolpert-french-flag-morphogen.py#L558-L678"
+  - id: wolpert-french-flag-morphogen-7
+    law_name: "Progress-Zone Outgrowth & Monotone Distal Truncation after AER Excision"
+    formula: "dL/dt = v_max ⟨F⟩_PZ/(⟨F⟩_PZ + K_g);  L_final(t_exc) = L0 + v·t_exc non-decreasing in t_exc;  segment = stylopod (< ⅓ L_WT), zeugopod (< ⅔ L_WT), autopod"
+    lean_decl: "MathOfBiology.Loop_011.truncated_length"
+    lean_theorem: "MathOfBiology.Loop_011.aer_excision_truncation_monotone"
+    lean_locus: "morphoeval/lean/loops/Loop_011_french_flag_morphogen.lean#L186-L207"
+    lean_code: |
+      def truncated_length (L0 v t_exc : Nat) : Nat := L0 + v * t_exc
+      theorem aer_excision_truncation_monotone (L0 v t1 t2 : Nat) (h : t1 ≤ t2) :
+          truncated_length L0 v t1 ≤ truncated_length L0 v t2
+      theorem progress_zone_segment_order (k L1 L2 : Nat) (h12 : L1 ≤ L2)
+          (h1 : L1 < k) (h2 : 2 * k ≤ L2) :
+          L1 < k ∧ k ≤ 2 * k ∧ 2 * k ≤ L2 ∧ L1 < L2
+    variables: "L(t): proximo-distal paddle length; ⟨F⟩_PZ: mean FGF within 100 μm of the rim (progress zone); v_max = 0.016 μm/s of compressed model time; K_g: half-saturation"
+    role: "Reproduces Saunders (1948) / Summerbell (1974): AER excision at HH18/20/22/24/26 truncates at stylopod/zeugopod/zeugopod/autopod/autopod (5/5 matches, Spearman ρ = 1)"
+    source_citation: "Saunders (1948) J Exp Zool 108:363-403 (doi:10.1002/jez.1401080304); Summerbell (1974) J Embryol Exp Morphol 32:651-660 (PMID 4463222); Summerbell, Lewis & Wolpert (1973) Nature 244:492-496 (doi:10.1038/244492a0)"
+    code_locus: "1969-wolpert-french-flag-morphogen.py#L681-L799"
+  - id: wolpert-french-flag-morphogen-8
+    law_name: "Tickle (1981) Graft Dose Series: Digit Classes Monotone in Graft Strength (Morphogen-Valley Digit Reader)"
+    formula: "digits(c) = [T2 ≤ c] + [T3 ≤ c] + [T4 ≤ c] non-decreasing in c;  new territory at identity change or at an interior minimum of c ⇒ 4-3-2, 4-3-2-2, 4-3-2-2-3, 4-3-2-2-3-4"
+    lean_decl: "MathOfBiology.Loop_011.digit_classes_reached"
+    lean_theorem: "MathOfBiology.Loop_011.tickle_1981_graft_dose_digit_monotone"
+    lean_locus: "morphoeval/lean/loops/Loop_011_french_flag_morphogen.lean#L211-L228"
+    lean_code: |
+      def digit_classes_reached (c T4 T3 T2 : Nat) : Nat :=
+        (if T2 ≤ c then 1 else 0) + (if T3 ≤ c then 1 else 0) + (if T4 ≤ c then 1 else 0)
+      theorem tickle_1981_graft_dose_digit_monotone (c c' T4 T3 T2 : Nat) (h : c ≤ c') :
+          digit_classes_reached c T4 T3 T2 ≤ digit_classes_reached c' T4 T3 T2
+    variables: "c: Shh level next to the anterior graft relative to the wild-type peak; graft strengths 0 / 0.10 / 0.35 / 1.0 ⇒ +0 / +1 / +2 / +3 digits"
+    role: "Replaces the Pass 2 ad hoc half-domain split (which produced the non-biological 4-3-2-3 for the attenuated graft) with one rule shared by the 1D and 2D readouts"
+    source_citation: "Tickle (1981) Nature 289:295-298 (doi:10.1038/289295a0); Tickle, Summerbell & Wolpert (1975) Nature 254:199-202"
+    code_locus: "1969-wolpert-french-flag-morphogen.py#L347-L378"

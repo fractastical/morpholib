@@ -137,5 +137,59 @@
         "observed_somite_sd_um": 7.5
       }
     ]
+  },
+  "pass3_goldbeter_2007_ra_fgf8_bistable_switch": {
+    "source": "Goldbeter A, Gonze D, Pourquie O (2007) Developmental Dynamics 236(6):1495-1508, doi:10.1002/dvdy.21193 (functional forms of the RA -| FGF -> Cyp26 -| RA double-negative loop)",
+    "equations": {
+      "fgf_signaling": "dF/dt = v_F * m(x) * K_I^n / (K_I^n + RA^n) - k_F * F",
+      "cyp26": "dX/dt = v_X * F^n / (K_A^n + F^n) - k_X * X",
+      "retinoic_acid": "dRA/dt = v_R - k_R * RA - k_C * X * RA / (K_C + RA)",
+      "hysteretic_front": "x_SN = lambda_m * ln(m_0 / m_SN_lo);  reverse switch requires m >= m_SN_hi"
+    },
+    "parameter_provenance": "Dimensionless values below are this repository's bistable-regime choice (Pass 3), NOT the published parameter table; rates are divided by tau_sw_min",
+    "parameters": {
+      "n": 4.0, "v_F": 1.0, "k_F": 1.0, "K_I": 0.6, "v_X": 1.0, "k_X": 1.0, "K_A": 0.18,
+      "v_R": 1.0, "k_R": 1.0, "k_C": 2.0, "K_C": 0.1, "tau_sw_min": 10.0
+    },
+    "derived_quantities": {
+      "m_SN_lo": 0.1843,
+      "m_SN_hi": 0.5463,
+      "x_SN_lo_um": 609.95,
+      "x_SN_hi_um": 218.07,
+      "bistable_window_um": 391.88,
+      "cell_trajectory_switch_x_sw_um": 720.42,
+      "transition_width_90_10_um": 198.33,
+      "threshold_model_width_lambda_ln9_um": 792.48,
+      "sharpening_factor": 3.996
+    }
+  },
+  "pass3_2d_cell_strip_division_dilution": {
+    "source": "Dubrulle J, Pourquie O (2004) Nature 427:419-422 (cell-autonomous fgf8 mRNA decay); closed forms derived in 2003-dubrulle-fgf8-wavefront-somitogenesis.py Section 4b",
+    "model": "n_rows x cell columns (cell_len_um = 10) fed by a self-renewing tailbud progenitor pool (N_pool = v_g T_div / cell_len per row) with transcription k_s, decay k_d, lognormal cell-cycle (cv 0.15), mRNA partitioning fraction N(0.5, 0.04); exported daughters push the column anteriorly (all elongation from progenitor division); PSM cells do not divide; FGF8 signaling = Gaussian smoothing (sigma_F = 25 um along x, 0.7 rows)",
+    "equations": {
+      "log2_bookkeeping": "log2 m = log2 m_0 - D - n  (one division = one half-life of decay)",
+      "periodic_exit_level": "m_exit = (k_s / k_d) * (1 - e^(-k_d T_div)) / (2 - e^(-k_d T_div))",
+      "dilution_front_shift": "Delta_x_dil = lambda_m * ln[(2 - e^(-k_d T_div)) / (1 - e^(-k_d T_div))]"
+    },
+    "default_parameters": {
+      "n_rows": 8, "cell_len_um": 10.0, "T_div_min": 480.0, "N_pool_per_row": 80,
+      "k_s_per_min_dilution_compensated": 0.009806213241363,
+      "m_ss": 2.1221, "sigma_F_um": 25.0, "cycle_cv": 0.15, "partition_sd": 0.04, "t_max_min": 1260.0, "dt_min": 2.0
+    },
+    "reference_outputs_seed_2003": {
+      "m_exit_geo_mean": 0.9942,
+      "lambda_fit_um": 370.5,
+      "front_mean_um": 698.75,
+      "front_sd_um": 6.96,
+      "front_pred_um": 694.38,
+      "somite_mean_um": 148.24,
+      "somite_sd_um": 33.08,
+      "boundary_roughness_um": 18.72,
+      "no_division_control_front_um": 975.0,
+      "dilution_shift_sim_um_T480_sweep_8rows_t1500": 286.25,
+      "dilution_shift_closed_form_um_T480": 271.37,
+      "dilution_sweep_shift_sim_vs_closed_form_um": {"240": [342.5, 329.36], "480": [286.25, 271.37], "960": [280.0, 252.16], "1920": [277.5, 250.03]},
+      "dilution_sweep_rmse_um": 21.9
+    }
   }
 }

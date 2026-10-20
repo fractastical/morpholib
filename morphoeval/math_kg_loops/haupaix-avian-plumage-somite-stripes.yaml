@@ -1,7 +1,11 @@
 sim_id: haupaix-avian-plumage-somite-stripes
 math_family: Somite-Prepatterned Stripe Spacing
 model_spec:
-  model: "Haupaix et al. (2018) Science & Inaba et al. (2019) Science somite-derived dermal Agouti (Asip) prepattern coupled with Connexin40/melanocyte reaction-diffusion PDE governing longitudinal avian plumage stripe orientation and width"
+  model: "Haupaix et al. (2018) Science & Inaba et al. (2019) PNAS somite-derived dermal Agouti (Asip) prepattern coupled with Connexin40/melanocyte reaction-diffusion PDE governing longitudinal avian plumage stripe orientation and width, coupled (Pass 3) to Lin et al. (2013) cylindrical feather-follicle ring niches via the Haupaix agouti-dose yellow-pulse-duration law"
+  rows_per_period: 9
+  niche_pulse_dip_a: 0.20
+  chevron_pitch_k: 0.35
+  agouti_dose_scales: {RB: 0.60, WT: 1.00, Fa: 2.80}
   D_u: 0.12
   D_v: 2.40
   d_ratio: 20.0
@@ -37,7 +41,7 @@ equations:
     variables: "Lambda: somite-specified dorsoventral stripe period (μm); w_y: Agouti-positive yellow pheomelanin stripe width; delta_bead: exogenous Agouti protein bead expansion"
     role: "Proves conservation of the somite-specified dorsoventral stripe period and exact reciprocal narrowing of adjacent black eumelanin bands upon exogenous Agouti bead implantation"
     source_citation: "Haupaix et al. (2018) Science 361(6408):eaar4777 Figs. 1 & 4"
-    code_locus: "2018-haupaix-avian-plumage-somite-stripes.py#L115-L260"
+    code_locus: "2018-haupaix-avian-plumage-somite-stripes.py#L158-L336,L452-L488"
   - law_name: "Heterospecific Somite-to-Dermis Chimera Donor Autonomy Law"
     formula: "W_{\\text{chimera}} = \\alpha_{\\text{donor}} w_{\\text{donor}} + (1 - \\alpha_{\\text{donor}}) w_{\\text{host}}; \\quad w_{\\text{donor}} > w_{\\text{host}} \\implies W_{\\text{chimera}} > w_{\\text{host}}"
     lean_decl: "MathOfBiology.Loop_010.chimera_agouti_width_scaled"
@@ -55,7 +59,7 @@ equations:
     variables: "alpha_pct: percentage donor somite autonomy in chimeric dermis (≈94% in galliform chimeras); w_donor, w_host: donor and host species Agouti stripe widths"
     role: "Proves that heterospecific somite grafting between quail, pheasant, and guineafowl autonomously shifts host dermal Agouti stripe width toward the somite donor species"
     source_citation: "Haupaix et al. (2018) Science 361(6408):eaar4777 Fig. 3"
-    code_locus: "2018-haupaix-avian-plumage-somite-stripes.py#L265-L345"
+    code_locus: "2018-haupaix-avian-plumage-somite-stripes.py#L395-L449"
   - law_name: "Agouti-MC1R Threshold Fate Switch & Connexin40 Melanocyte Reaction-Diffusion Instability"
     formula: "F_{\\text{pigment}}(A) = \\mathbb{I}(A \\ge \\theta_A); \\quad \\partial_t u = D_u \\nabla^2 u + f(u,v) + \\beta_A S_{\\text{somite}}(y), \\; \\partial_t v = D_v \\nabla^2 v + g(u,v)"
     lean_decl: "MathOfBiology.Loop_010.mc1r_pigment_fate"
@@ -69,5 +73,51 @@ equations:
           turing_cross_term 5 (-7) 1 < 0 ∧ turing_cross_term 5 (-7) 20 > 0 := by decide
     variables: "A: dermal Agouti concentration; theta_A: MC1R antagonism threshold; u, v: melanocyte gap-junction activator and long-range inhibitor; d_ratio = D_v/D_u"
     role: "Proves that Agouti threshold antagonism switches melanocytes from black eumelanin (0) to yellow pheomelanin (1) while differential diffusivity (d=20 vs d=1) amplifies periodic stripes aligned to the somite prepattern"
-    source_citation: "Haupaix et al. (2018) Science 361:eaar4777 Fig. 4; Inaba et al. (2019) Science 363:eaaw1969 Figs. 2-4"
-    code_locus: "2018-haupaix-avian-plumage-somite-stripes.py#L140-L255"
+    source_citation: "Haupaix et al. (2018) Science 361:eaar4777 Fig. 3; Inaba et al. (2019) PNAS 116:6884-6890 Figs. 2-4"
+    code_locus: "2018-haupaix-avian-plumage-somite-stripes.py#L158-L336"
+  - law_name: "Lin (2013) Ring-Niche Chevron Geometry on the Opened Feather-Follicle Cylinder"
+    formula: "s_{\\text{edge}}(\\ell) = s_0 + k\\,|\\ell|, \\quad k = \\frac{v_z}{r_f\\,\\omega}; \\quad s(\\ell) = s(-\\ell), \\; s(\\ell)|_{k=0} = s_0, \\; s_0 \\le s(\\ell), \\; k < k' \\wedge \\ell \\ne 0 \\implies s_k(\\ell) < s_{k'}(\\ell)"
+    lean_decl: "MathOfBiology.Loop_010.chevron_s"
+    lean_theorem: "MathOfBiology.Loop_010.ring_niche_chevron_geometry"
+    lean_locus: "morphoeval/lean/loops/Loop_010_avian_plumage_somite_stripes.lean#L126-L157"
+    lean_code: |
+      def chevron_s (s0 k ell : Int) : Int := s0 + k * (Int.natAbs ell : Int)
+      theorem ring_niche_chevron_geometry (s0 k ell : Int) (hk : 0 ≤ k) :
+          chevron_s s0 k ell = chevron_s s0 k (-ell) ∧
+          chevron_s s0 0 ell = s0 ∧
+          s0 ≤ chevron_s s0 k ell ∧
+          (∀ k', k < k' → ell ≠ 0 → chevron_s s0 k ell < chevron_s s0 k' ell) := by
+        refine ⟨?_, ?_, ?_, ?_⟩
+        · simp [chevron_s, Int.natAbs_neg]
+        · simp [chevron_s]
+        · unfold chevron_s; have h := Int.mul_nonneg hk (Int.natCast_nonneg (Int.natAbs ell)); omega
+        · intro k' hk' hell; unfold chevron_s
+          have hpos : (0 : Int) < (Int.natAbs ell : Int) := by omega
+          have h := Int.mul_lt_mul_of_pos_right hk' hpos; omega
+    variables: "s: proximodistal position from the feather tip (growth-time axis); ell: signed lateral/azimuthal distance from the anterior rachis on the cylinder opened at the posterior new-barb locus; k = v_z/(r_f omega): helical pitch of a pigment switch propagating around the ring niche at angular rate omega while melanocytes rise at v_z"
+    role: "Proves that a pigment switch propagating around the Lin (2013) ring niche yields a mirror-symmetric chevron band on the opened follicle whose apex sits on the rachis and whose opening grows monotonically with the helical pitch, degenerating to a transverse bar for a synchronous ring (k = 0)"
+    source_citation: "Lin et al. (2013) Science 340(6139):1442-1445 Fig. 1B, Fig. 2B, fig. S9"
+    code_locus: "2018-haupaix-avian-plumage-somite-stripes.py#L659-L742"
+  - law_name: "Haupaix (2018) Agouti-Dose Yellow-Pulse Duration & Feather-Type Law on the Follicle Niche"
+    formula: "A(\\tau) = A_i - a + a\\cos(2\\pi(\\tau - \\tfrac12)); \\quad \\text{type} = \\mathbb{I}(A_i \\ge \\theta_A) + \\mathbb{I}(A_i - 2a \\ge \\theta_A) \\in \\{0: b,\\; 1: y,\\; 2: \\text{fully pheomelanic}\\}; \\quad \\text{duty} = \\tfrac{1}{\\pi}\\arccos\\!\\big(\\tfrac{\\theta_A - (A_i - a)}{a}\\big)"
+    lean_decl: "MathOfBiology.Loop_010.feather_type"
+    lean_theorem: "MathOfBiology.Loop_010.agouti_pulse_duration_feather_type"
+    lean_locus: "morphoeval/lean/loops/Loop_010_avian_plumage_somite_stripes.lean#L160-L192"
+    lean_code: |
+      def mc1r_pigment_fate_int (A theta_A : Int) : Nat := if A ≥ theta_A then 1 else 0
+      def feather_type (A a theta_A : Int) : Nat :=
+        mc1r_pigment_fate_int (A + a) theta_A + mc1r_pigment_fate_int (A - a) theta_A
+      theorem agouti_pulse_duration_feather_type (A a theta_A : Int) (ha : 0 < a) :
+          (A - a ≥ theta_A → feather_type A a theta_A = 2) ∧
+          (A + a < theta_A → feather_type A a theta_A = 0) ∧
+          (theta_A - a ≤ A ∧ A < theta_A + a → feather_type A a theta_A = 1) ∧
+          (∀ A', A ≤ A' → feather_type A a theta_A ≤ feather_type A' a theta_A) := by
+        refine ⟨?_, ?_, ?_, ?_⟩
+        · intro h; simp only [feather_type, mc1r_pigment_fate_int]; split <;> (try split) <;> omega
+        · intro h; simp only [feather_type, mc1r_pigment_fate_int]; split <;> (try split) <;> omega
+        · intro h; simp only [feather_type, mc1r_pigment_fate_int]; split <;> (try split) <;> omega
+        · intro A' h; simp only [feather_type, mc1r_pigment_fate_int]; repeat (first | omega | split)
+    variables: "A_i: dermal agouti dose read by the follicle ring niche from the body-wide field u(x_i, y_i) (Lean A = A_i - a); a: amplitude of the transient yellow-pulse modulation (peak A_i at mid-growth, trough A_i - 2a at tip and base); theta_A: MC1R antagonism threshold; duty: relative yellow band length"
+    role: "Proves the Haupaix et al. (2018) feather-type trichotomy (b / y with black base and tip / fully pheomelanic) and that feather type is monotone non-decreasing in agouti dose, the law behind the recessive-black (2 rows) < wild-type (4 rows) < Fawn (5-6 rows, no eumelanin) stripe-width series"
+    source_citation: "Haupaix et al. (2018) Science 361(6408):eaar4777 Fig. 3A-C, fig. S1, fig. S6"
+    code_locus: "2018-haupaix-avian-plumage-somite-stripes.py#L545-L656,L745-L773"

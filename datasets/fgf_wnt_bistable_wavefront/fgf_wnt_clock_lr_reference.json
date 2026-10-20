@@ -1,0 +1,181 @@
+{
+  "metadata": {
+    "dataset_id": "lewis-2003-delayed-clock-vermot-2005-lr-asymmetry-v1",
+    "slot": 25,
+    "slot_id": "slot-025-fgf-wnt-bistable-wavefront",
+    "pass": 3,
+    "title": "Lewis (2003) delayed Her1/Hes7 autoinhibition oscillator parameters and Vermot & Pourquie (2005) retinoic-acid-buffered left-right somite asymmetry reference table for the RA-FGF8/Wnt bistable determination front (Slot 025, Pass 3 remediation)",
+    "created_for": "Pass 3 remediation of 2012-baker-fgf-wnt-bistable-wavefront.py (audit 2026-10-19-fgf-wnt-bistable-wavefront-audit-v2 items 1 and 2)",
+    "sources": [
+      {
+        "id": "lewis2003",
+        "citation": "Lewis J (2003). Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator. Current Biology 13(16):1398-1408.",
+        "doi": "10.1016/S0960-9822(03)00534-7"
+      },
+      {
+        "id": "palmeirim1997",
+        "citation": "Palmeirim I, Henrique D, Ish-Horowicz D, Pourquie O (1997). Avian hairy gene expression identifies a molecular clock linked to vertebrate segmentation and somitogenesis. Cell 91(5):639-648.",
+        "doi": "10.1016/S0092-8674(00)80451-1"
+      },
+      {
+        "id": "dubrulle2001",
+        "citation": "Dubrulle J, McGrew MJ, Pourquie O (2001). FGF signaling controls somite boundary position and regulates segmentation determination front position during vertebrate segmentation. Cell 106(2):219-232.",
+        "doi": "10.1016/S0092-8674(01)00437-8"
+      },
+      {
+        "id": "vermot2005nature",
+        "citation": "Vermot J, Pourquie O (2005). Retinoic acid coordinates somitogenesis and left-right patterning in vertebrate embryos. Nature 435(7039):215-220.",
+        "doi": "10.1038/nature03488"
+      },
+      {
+        "id": "vermot2005science",
+        "citation": "Vermot J, Gallego Llamas J, Fraulob V, Niederreither K, Chambon P, Dolle P (2005). Retinoic acid controls the bilateral symmetry of somite formation in the mouse embryo. Science 308(5721):563-566.",
+        "doi": "10.1126/science.1108363"
+      }
+    ]
+  },
+  "lewis_2003_delayed_autoinhibition_oscillator": {
+    "section": "Lewis (2003) Curr. Biol. 13:1398-1408, Eqs. 2A-2B and the 'Period of Oscillation Is Determined by the Sum of the Transcriptional and Translational Delays' section",
+    "equations": {
+      "mrna": "dm/dt = k * f(p(t - T_m)) - c * m,   f(p) = 1 / (1 + (p / p_0)^2)",
+      "protein": "dp/dt = a * m(t - T_p) - b * p",
+      "notch_delta_coupling": "k_eff,j(t) = k * [(1 - eps_N) + eps_N * <m_nb(t - T_N)> / (K_D + <m_nb(t - T_N)>)]",
+      "period_formula": "T_osc ~= 2 * (T + 1/b + 1/c),  T = T_m + T_p   (accurate to within 15%)",
+      "sustained_oscillation_conditions": [
+        "a * k / (b * c) > 2 * p_0",
+        "b > 1.7 / T",
+        "c > 1.7 / T"
+      ]
+    },
+    "parameter_values_as_published": {
+      "a_protein_molecules_per_mrna_per_min": 4.5,
+      "b_protein_decay_per_min": 0.23,
+      "c_mrna_decay_per_min": 0.23,
+      "k_mrna_molecules_per_diploid_cell_per_min": 33.0,
+      "p0_molecules": 40.0,
+      "T_p_her1_min": 2.8,
+      "T_m_her1_min_lower": 10.2,
+      "T_m_her1_min_upper": 31.5,
+      "T_total_her1_min_lower": 13.0,
+      "T_notch_pathway_min": 36.0,
+      "note": "Lewis (2003) estimates 10.2 min < T_m(her1) < 31.5 min and T_p(her1) ~ 2.8 min, giving a total intracellular delay T >= 13.0 min; the total Notch-pathway delay T_N is 'about 36 min up to a few hours' and Lewis explicitly notes that longer Notch-dominated delays yield 'oscillations of a much longer period, resembling that of the mouse or chick somitogenesis oscillator'."
+    },
+    "period_reference_table": [
+      {
+        "preset_id": "zebrafish_her1_homodimer",
+        "species": "Danio rerio",
+        "T_m_min": 10.2,
+        "T_p_min": 2.8,
+        "predicted_period_min_formula": 43.39,
+        "reported_period_min": 47.0,
+        "reported_period_source": "Lewis (2003) Curr. Biol. 13:1398-1408 ('a period of 47 min for the pure Her1 dimer oscillator')",
+        "observed_period_min": 30.0,
+        "observed_period_source": "Lewis (2003); zebrafish somite formation period 30 min"
+      },
+      {
+        "preset_id": "chick_hairy1_lfng",
+        "species": "Gallus gallus",
+        "T_m_min": 31.5,
+        "T_p_min": 2.8,
+        "predicted_period_min_formula": 85.99,
+        "reported_period_min": 90.0,
+        "reported_period_source": "Palmeirim et al. (1997) Cell 91:639-648 (c-hairy1 oscillation period in chick PSM = 90 min, one somite per 90 min)",
+        "observed_period_min": 90.0,
+        "observed_period_source": "Palmeirim et al. (1997) Cell 91:639-648"
+      }
+    ],
+    "derived_segment_length": {
+      "formula": "S_0 = v_g * T_osc",
+      "v_g_um_per_min": 1.6666666666666667,
+      "T_osc_chick_min": 90.0,
+      "S_0_um": 150.0,
+      "observed_somite_length_um": 150.0,
+      "observed_somite_sd_um": 6.5,
+      "source": "Dubrulle et al. (2001) Cell 106:219-232; Palmeirim et al. (1997) Cell 91:639-648"
+    },
+    "bistability_competence_window": {
+      "definition": "x in [lambda_M * ln(M_0 / M_2), lambda_M * ln(M_0 / M_1)] measured from the posterior tailbud",
+      "x_posterior_boundary_um": 149.45,
+      "x_anterior_boundary_um": 571.44,
+      "window_width_um": 421.98,
+      "window_width_in_somites": 2.813,
+      "requirement": "Goldbeter, Gonze & Pourquie (2007) Fig. 10 requires the bistability window to be equal to or larger than one segmental domain (window_width_in_somites >= 1)",
+      "source": "Goldbeter, Gonze & Pourquie (2007) Dev. Dyn. 236:1495-1508 Figs. 7, 10, 11"
+    }
+  },
+  "vermot_2005_left_right_somite_asymmetry": {
+    "section": "Vermot & Pourquie (2005) Nature 435:215-220; Vermot et al. (2005) Science 308:563-566",
+    "mechanism": "Retinoic acid buffers the lateralizing influence of the left-right machinery on the segmentation clock and the determination front. When RA synthesis is blocked (VAD / disulfiram / Raldh2-/-), the buffering fails, the segmentation clock desynchronizes between the two sides, the FGF8 domain expands anteriorly on the delayed side, and the segmented region on that side is shortened by about one somite. Reversing the situs of the embryo reverses the laterality of the defect.",
+    "buffering_law": {
+      "formula": "b_eff(R_ant) = b_LR * K_buf^h / (K_buf^h + R_ant^h);  Delta_x_LR = lambda_M * ln(1 + b_eff);  N_LR = Delta_x_LR / S_0",
+      "b_LR_lateralizing_bias": 0.727,
+      "b_LR_calibration_note": "b_LR is the single free parameter of the left-right module; it is calibrated so that the fully unbuffered (VAD) case reproduces the observed one-somite lag of Vermot & Pourquie (2005). The wild-type symmetry (N_LR ~ 0) is then a prediction of the buffering law, not a fit.",
+      "K_buf_nM": 1.0,
+      "h_buf": 4,
+      "R_ant_wildtype_nM": 2.5,
+      "R_ant_vad_nM": 0.8,
+      "R_ant_formula": "R_ant = v_sc / k_d2 in the anterior PSM where FGF8-induced CYP26A1 activity C(F) -> 0",
+      "lateralized_side_note": "lateralized_side is the strip that the left-right machinery biases in each species (left in chick, right in mouse/zebrafish); situs='inversus' flips it, reproducing the situs-reversal experiment of Vermot & Pourquie (2005)."
+    },
+    "regimes": [
+      {
+        "regime_id": "wildtype_bilateral",
+        "species": "Gallus gallus",
+        "label": "Wild-type chick: RA buffers the left-right machinery, somites form synchronously on both sides",
+        "v_sc_nM_per_min": 0.25,
+        "situs": "normal",
+        "delayed_side": "none",
+        "observed_lr_somite_difference": 0.0,
+        "observed_lr_somite_difference_sd": 0.2,
+        "observed_source": "Vermot & Pourquie (2005) Nature 435:215-220 (control embryos are bilaterally symmetric)",
+        "lateralized_side": "left"
+      },
+      {
+        "regime_id": "vad_disulfiram_chick",
+        "species": "Gallus gallus",
+        "label": "RA-deficient chick (VAD / disulfiram): somite formation delayed on the LEFT, shortened left segmented region",
+        "v_sc_nM_per_min": 0.08,
+        "situs": "normal",
+        "delayed_side": "left",
+        "observed_lr_somite_difference": 1.0,
+        "observed_lr_somite_difference_sd": 0.5,
+        "observed_source": "Vermot & Pourquie (2005) Nature 435:215-220 (delay of about one somite on the left side in disulfiram-treated chick embryos)",
+        "lateralized_side": "left"
+      },
+      {
+        "regime_id": "vad_situs_inversus_chick",
+        "species": "Gallus gallus",
+        "label": "RA-deficient chick with reversed situs: the laterality of the somitogenesis defect reverses (delay on the RIGHT)",
+        "v_sc_nM_per_min": 0.08,
+        "situs": "inversus",
+        "delayed_side": "right",
+        "observed_lr_somite_difference": -1.0,
+        "observed_lr_somite_difference_sd": 0.5,
+        "observed_source": "Vermot & Pourquie (2005) Nature 435:215-220 (reversal of situs reverses the somitogenesis laterality defect)",
+        "lateralized_side": "left"
+      },
+      {
+        "regime_id": "raldh2_null_mouse",
+        "species": "Mus musculus",
+        "label": "Raldh2-/- mouse: shorter segmented region on the RIGHT side in the cervical region",
+        "v_sc_nM_per_min": 0.08,
+        "situs": "normal",
+        "delayed_side": "right",
+        "observed_lr_somite_difference": -1.0,
+        "observed_lr_somite_difference_sd": 0.5,
+        "observed_source": "Vermot et al. (2005) Science 308:563-566 (mouse Raldh2 mutants: shorter right segmental region)",
+        "lateralized_side": "right"
+      }
+    ],
+    "bilateral_geometry_um": {
+      "psm_length_um": 1000.0,
+      "half_width_um": 250.0,
+      "neural_tube_half_width_um": 80.0,
+      "paraxial_strip_inner_um": 80.0,
+      "paraxial_strip_outer_um": 250.0,
+      "neural_tube_raldh2_factor": 0.3,
+      "neural_tube_fgf8_factor": 0.3,
+      "note": "Transverse geometry of the 2D bilateral solver; strip and neural-tube widths are set from the vendored chick SEM specimen (neural tube y in [260, 298] px, paraxial somite rows y in [208, 252] and [312, 356] px) rescaled to the 1000 um PSM."
+    }
+  }
+}

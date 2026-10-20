@@ -21,6 +21,40 @@ Faithful mathematical, numerical, and morphometric reproduction of:
      Nature 613(7944):550-557. DOI: 10.1038/s41586-022-05574-4
   4. Yamanaka, Y. et al. (2023). "Reconstituting human somitogenesis in vitro."
      Nature 614(7948):509-520. DOI: 10.1038/s41586-022-05649-2
+  5. Matsuda, M., Yamanaka, Y., Uemura, M., Osawa, M., Saito, M. K., Nagahashi, A.,
+     Nishio, M., Guo, L., Ikegawa, S., Sakurai, S., Kihara, S., Maurissen, T. L.,
+     Nakamura, M., Matsumoto, T., Yoshitomi, H., Ikeya, M., Kawakami, N., Yamamoto, T.,
+     Woltjen, K., Ebisuya, M., Toguchida, J. & Alev, C. (2020). "Recapitulating the
+     human segmentation clock with pluripotent stem cells." Nature 580(7801):124-129.
+     DOI: 10.1038/s41586-020-2144-9   (DAPT pulse-washout synchronisation of hPSC-PSM)
+  6. Lewis, J. (2003). "Autoinhibition with transcriptional delay: a simple mechanism for
+     the zebrafish somitogenesis oscillator." Current Biology 13(16):1398-1408.
+     DOI: 10.1016/S0960-9822(03)00534-7   (delayed Delta-Notch coupled her oscillators)
+  7. Riedel-Kruse, I. H., Müller, C. & Oates, A. C. (2007). "Synchrony dynamics during
+     initiation, failure, and rescue of the segmentation clock." Science 317(5846):1911-1915.
+     DOI: 10.1126/science.1142538   (Notch-inhibition desynchronisation, Kuramoto order)
+  8. Herrgen, L., Ares, S., Morelli, L. G., Schröter, C., Jülicher, F. & Oates, A. C. (2010).
+     "Intercellular coupling regulates the period of the segmentation clock."
+     Current Biology 20(14):1244-1253. DOI: 10.1016/j.cub.2010.06.034   (coupling delay tau_c)
+  9. Sanaki-Matsumiya, M. et al. (2022). "Periodic formation of epithelial somites from
+     human pluripotent stem cells." Nature Communications 13:2325.
+     DOI: 10.1038/s41467-022-29967-1   (Matrigel-dependent epithelial somite rosettes)
+
+Pass 3 remediation (superseding audit `2026-10-19-human-somite-organoid-clock-audit-v2`):
+  * Section 4b couples the single-cell delayed HES7 TTFL to intercellular DLL1-Notch delay
+    coupling on a 2D hexagonal (odd-r offset, 12 x 12 = 144 cell) presomitic mesoderm lattice
+    with 5 % cell-autonomous tempo heterogeneity, and runs the DAPT pulse-washout protocol of
+    Matsuda et al. (2020) Nature: coupled synchronisation from random phases -> gamma-secretase
+    (DAPT) block (Notch-dependent HES7 transcription gated off, oscillations collapse) ->
+    washout (coupling restored). Phase synchrony is quantified by the Kuramoto order parameter
+    R(t) with a coupling-ablated control, a coupling-strength sweep and a Herrgen (2010)
+    coupling-delay sweep of the collective period.
+  * Section 4c adds an explicit Matrigel-embedded mechanical boundary (elastic ECM shell whose
+    stiffness scales with Matrigel volume fraction) to a reduced 2D overdamped cell-centre model
+    of human axioloid epithelial somite rosette formation (Yamanaka et al. 2023; Sanaki-Matsumiya
+    et al. 2022): basal ECM contact polarises cells, apical constriction between epithelialised
+    neighbours converges their apical ends on a lumen, and the Matrigel fraction is swept
+    0 -> 20 %. This is a reduced honest model, not a 3D FEM of apical constriction.
 
 Governing Mathematical Laws (verified in `morphoeval/lean/loops/Loop_028_human_somite_organoid_clock.lean`):
 ------------------------------------------------------------------------------------------------------------
@@ -51,6 +85,24 @@ Governing Mathematical Laws (verified in `morphoeval/lean/loops/Loop_028_human_s
    lowers cytosolic NAD+/NADH and global translation rate (k_ETC < k_WT), lengthening T_osc to ~402 min,
    whereas ectopic LbNOX expression elevates NAD+/NADH (k_LbNOX > k_WT) and accelerates the human
    segmentation clock to ~228 min.
+
+4. Intercellular DLL1-Notch Delay Coupling, Mean-Field Reduction & DAPT Gating
+   (`lewis_herrgen_notch_coupling_mean_field_dapt_gating`):
+       D_bar_i(t) = (1/k_i) * sum_{j in N6(i)} D_j(t)                     (hexagonal neighbour mean, k_i <= 6)
+       S_i(t)     = D_bar_i(t - tau_c)^h / (K_D^h + D_bar_i(t - tau_c)^h)   (NICD, gamma-secretase dependent)
+       dm_i/dt = alpha_m [ (1 - eps) + 2 eps S_i(t) ] / (1 + (p_i(t - tau_tx,i)/K)^n) - delta_m,i m_i
+       dD_i/dt = alpha_D / (1 + (p_i(t - tau_tx,i)/K)^n) - delta_D,i D_i
+   In the homogeneous in-phase state the neighbour mean equals the cell's own Delta
+   (k * D / k = D), so the lattice reduces exactly to a single self-coupled DDE whose period
+   T_coll(tau_c) is modulated by the coupling delay (Herrgen et al. 2010). DAPT sets S_i = 0 and
+   lowers HES7 synthesis to (1 - eps) alpha_m < alpha_m, collapsing the oscillation; washout
+   restores S_i and re-synchronises the lattice (Kuramoto R -> 1).
+
+5. Matrigel-Embedded Elastic Boundary Force Scaling
+   (`yamanaka_2023_matrigel_boundary_force_scaling`):
+       k_M(phi) = kappa * phi,   F_M,i = -k_M(phi) * max(0, |x_i - c| - R_M) * r_hat_i
+   The ECM boundary force vanishes without Matrigel (phi = 0) and inside the shell
+   (|x_i - c| <= R_M), and increases strictly with the Matrigel volume fraction phi outside it.
 """
 
 from __future__ import annotations
@@ -77,6 +129,18 @@ SPECIMEN_JPG = DATASET_DIR / "human_somite_organoid_specimen.jpg"
 SCOUT_MANIFEST_JSON = DATASET_DIR / "scout_manifest.json"
 OUTPUT_PNG = ROOT / "docs" / "media" / "human_somite_organoid_clock_comparison.png"
 OUTPUT_GIF = ROOT / "docs" / "media" / "human_somite_organoid_clock_growth.gif"
+OUTPUT_LATTICE_PNG = ROOT / "docs" / "media" / "human_somite_organoid_clock_notch_lattice.png"
+
+# Mouse-WT calibration anchor shared by Sections 2-4b (T = 122.00 min at lam_eff = 1).
+BASE_SCALE = 122.0 / 165.4185
+HUMAN_LAMBDA = 300.0 / 122.0
+# Process-level memo so the (deterministic) lattice / rosette simulations run once per process.
+_MEMO: dict[tuple[Any, ...], Any] = {}
+# Default DLL1-Notch coupling delay as a fraction of the single-cell period. Delayed-coupling
+# theory (Morelli 2009 / Herrgen 2010) and the lattice stability scan in Section 4b place the
+# stable in-phase window at tau_c / T in ~[0.6, 0.95]; 0.8 leaves the collective period unchanged.
+# tau_c has not been measured in human PSM (assumed to scale with the species tempo).
+DEFAULT_TAU_C_FRACTION = 0.8
 
 EXPECTED_SHA256 = {
     "datasets/human_somite_organoid_clock/human_somite_organoid_specimen.jpg": (
@@ -535,6 +599,583 @@ def simulate_axioloid_kymograph(
 
 
 # ============================================================================
+# Section 4b: Intercellular DLL1-Notch Delay Coupling on a 2D Hexagonal PSM Lattice
+# & DAPT Pulse-Washout Phase-Synchronisation Recovery
+# (Lewis 2003 Curr Biol; Riedel-Kruse et al. 2007 Science; Herrgen et al. 2010 Curr Biol;
+#  Matsuda et al. 2020 Nature 580:124-129; Diaz-Cuadros et al. 2020 Nature;
+#  Law 4 `diaza-human-somite-organoid-clock-4`)
+# ============================================================================
+def tempo_scaled_dde_params(lam_eff: float = HUMAN_LAMBDA) -> dict[str, float]:
+    """Single-cell HES7 DDE kinetics used for the human WT regime in Section 3
+    (`lam_eff = 300/122` dilation of the mouse-WT calibration anchor). Returned so
+    that the coupled lattice uses *identical* cell-autonomous kinetics."""
+    return {
+        "tau_tx_min": 24.0 * 0.70 * BASE_SCALE * lam_eff,
+        "tau_tl_min": 24.0 * 0.30 * BASE_SCALE * lam_eff,
+        "t_half_m_min": 19.8 * BASE_SCALE * lam_eff,
+        "t_half_p_min": 21.0 * BASE_SCALE * lam_eff,
+        "alpha_m": (3.5 / BASE_SCALE) / lam_eff,
+        "alpha_p": (1.15 / BASE_SCALE) / lam_eff,
+        "K_rep": 12.0,
+        "hill_n": 4.8,
+        "dt_min": 0.20 * BASE_SCALE * lam_eff,
+    }
+
+
+def build_hex_lattice(n_rows: int = 12, n_cols: int = 12, cell_diameter_um: float = 12.0) -> dict[str, Any]:
+    """Odd-r offset hexagonal presomitic mesoderm lattice (6-neighbour interior cells,
+    non-periodic tissue boundary). Returns cell-centre coordinates, the 0/1 adjacency
+    matrix, degrees and the row-normalised neighbour-mean operator W = A / k_i.
+    For a single cell the mean-field operator is W = [[1]] (self-coupled reduction,
+    Law 4)."""
+    n_cells = n_rows * n_cols
+    xy = np.zeros((n_cells, 2), dtype=float)
+    adjacency = np.zeros((n_cells, n_cells), dtype=float)
+    for r in range(n_rows):
+        for c in range(n_cols):
+            i = r * n_cols + c
+            xy[i, 0] = cell_diameter_um * (c + 0.5 * (r % 2))
+            xy[i, 1] = cell_diameter_um * (math.sqrt(3.0) / 2.0) * r
+            if r % 2 == 0:
+                nbrs = [(r, c - 1), (r, c + 1), (r - 1, c - 1), (r - 1, c), (r + 1, c - 1), (r + 1, c)]
+            else:
+                nbrs = [(r, c - 1), (r, c + 1), (r - 1, c), (r - 1, c + 1), (r + 1, c), (r + 1, c + 1)]
+            for rr, cc in nbrs:
+                if 0 <= rr < n_rows and 0 <= cc < n_cols:
+                    adjacency[i, rr * n_cols + cc] = 1.0
+    degree = adjacency.sum(axis=1)
+    if n_cells == 1:
+        W = np.ones((1, 1), dtype=float)
+    else:
+        W = adjacency / np.maximum(degree, 1.0)[:, None]
+    n_interior = int(np.sum(degree == 6))
+    return {
+        "n_rows": n_rows,
+        "n_cols": n_cols,
+        "n_cells": n_cells,
+        "cell_diameter_um": cell_diameter_um,
+        "xy_um": xy,
+        "adjacency": adjacency,
+        "degree": degree,
+        "W": W,
+        "n_edges": int(round(adjacency.sum() / 2.0)),
+        "n_interior_six_neighbour_cells": n_interior,
+    }
+
+
+def _hes7_limit_cycle_template(lam_eff: float = HUMAN_LAMBDA) -> dict[str, Any]:
+    """One limit-cycle period of the uncoupled (Notch-neutral, gate = 1) single-cell
+    HES7 oscillator (m, p, D), used (i) as the phase-shifted initial history of every
+    lattice cell, (ii) to define the geometric phase centre (m_bar, p_bar), and (iii) to
+    calibrate the Notch half-activation constant K_D = <D> over one cycle."""
+    key = ("lc_template", round(lam_eff, 9))
+    if key in _MEMO:
+        return _MEMO[key]
+    prm = tempo_scaled_dde_params(lam_eff)
+    sim = simulate_hes7_dde(
+        tau_tx_min=prm["tau_tx_min"], tau_tl_min=prm["tau_tl_min"],
+        t_half_m_min=prm["t_half_m_min"], t_half_p_min=prm["t_half_p_min"],
+        alpha_m=prm["alpha_m"], alpha_p=prm["alpha_p"], K_rep=prm["K_rep"], hill_n=prm["hill_n"],
+        n_steps=3600, dt_min=prm["dt_min"],
+    )
+    t = sim["t_min"]
+    m = sim["m_nM"]
+    p = sim["p_nM"]
+    dt = prm["dt_min"]
+    # DLL1 ligand: HES7-repressed transcription (same delayed Hill repression as HES7 mRNA),
+    # membrane-protein half-life 1.5 x t_{1/2,p}; integrated along the known p(t) history.
+    delta_D = math.log(2.0) / (1.5 * prm["t_half_p_min"])
+    tau_tx_steps = prm["tau_tx_min"] / dt
+    D = np.zeros_like(p)
+    D[0] = prm["alpha_m"] / delta_D * 0.5
+    for i in range(len(p) - 1):
+        idx = i - tau_tx_steps
+        p_del = p[0] if idx <= 0 else float(np.interp(idx, np.arange(len(p)), p))
+        rep = 1.0 / (1.0 + (max(p_del, 0.0) / prm["K_rep"]) ** prm["hill_n"])
+        D[i + 1] = max(0.0, D[i] + dt * (prm["alpha_m"] * rep - delta_D * D[i]))
+    half = len(p) // 2
+    peaks, _ = signal.find_peaks(p[half:], distance=int(0.6 * sim["period_min"] / dt), prominence=0.8)
+    peaks = peaks + half
+    i0, i1 = int(peaks[-2]), int(peaks[-1])
+    out = {
+        "period_min": float(sim["period_min"]),
+        "dt_min": dt,
+        "cycle_t_min": t[i0:i1 + 1] - t[i0],
+        "cycle_m": m[i0:i1 + 1].copy(),
+        "cycle_p": p[i0:i1 + 1].copy(),
+        "cycle_D": D[i0:i1 + 1].copy(),
+        "m_bar": float(np.mean(m[i0:i1])),
+        "p_bar": float(np.mean(p[i0:i1])),
+        "K_D": float(np.mean(D[i0:i1])),
+        "delta_D_per_min": delta_D,
+        "params": prm,
+    }
+    _MEMO[key] = out
+    return out
+
+
+def _limit_cycle_time_phase(M: np.ndarray, P: np.ndarray, lc: dict[str, Any]) -> np.ndarray:
+    """Uniform-rate oscillator phase phi = 2 pi u / T of every (m, p) sample, where u is the
+    cycle time of the nearest point on the single-cell limit-cycle template in the
+    std-normalised (log m, log p) plane. Unlike a geometric atan2 phase this advances at a
+    constant rate along the relaxation cycle, so the Kuramoto R measures time spread."""
+    from scipy.spatial import cKDTree
+
+    cm = np.log1p(lc["cycle_m"][:-1])
+    cp = np.log1p(lc["cycle_p"][:-1])
+    sm, sp = float(np.std(cm)) + 1e-9, float(np.std(cp)) + 1e-9
+    tree = cKDTree(np.stack([cm / sm, cp / sp], axis=1))
+    u = lc["cycle_t_min"][:-1] / lc["period_min"]
+    q = np.stack([np.log1p(M).ravel() / sm, np.log1p(P).ravel() / sp], axis=1)
+    _, idx = tree.query(q, k=1)
+    return (2.0 * math.pi * u[idx]).reshape(M.shape)
+
+
+def simulate_notch_coupled_lattice(
+    n_rows: int = 12,
+    n_cols: int = 12,
+    eps_notch: float = 0.25,
+    tau_c_min: float | None = None,
+    hetero_cv: float = 0.05,
+    t_dapt_on_min: float = 1500.0,
+    t_dapt_off_min: float = 1800.0,
+    t_end_min: float = 3600.0,
+    couple_after_washout: bool = True,
+    random_initial_phase: bool = True,
+    hill_notch: float = 2.0,
+    dapt_basal_fraction: float = 0.1,
+    seed: int = 2019,
+    lam_eff: float = HUMAN_LAMBDA,
+) -> dict[str, Any]:
+    """Integrate the DLL1-Notch delay-coupled HES7 TTFL on a hexagonal PSM lattice
+    (Law 4) through the Matsuda et al. (2020) Nature DAPT pulse-washout protocol:
+
+        [0, t_on)        coupled culture starting from random cell phases
+        [t_on, t_off)    DAPT: gamma-secretase blocked -> NICD absent, HES7 promoter at its
+                         Notch-independent basal activity b alpha_m (b = dapt_basal_fraction)
+        [t_off, t_end)   washout: Notch coupling restored (or ablated for the control)
+
+    Per-cell kinetics are the human-WT single-cell parameters dilated by a cell-autonomous
+    tempo factor g_i = 1 + hetero_cv * xi_i (delays and half-lives), giving a ~hetero_cv
+    spread of cell-autonomous periods that un-coupled cells drift apart with.
+    Phase phi_i(t) = atan2(p_i - p_bar, m_i - m_bar) is the geometric phase about the
+    limit-cycle centre; R(t) = |<exp(i phi_j)>_j| is the Kuramoto order parameter.
+    RK2 midpoint, linear-interpolated delayed states, vectorised over cells."""
+    key = (
+        "lattice", n_rows, n_cols, round(eps_notch, 6), None if tau_c_min is None else round(tau_c_min, 6),
+        round(hetero_cv, 6), round(t_dapt_on_min, 3), round(t_dapt_off_min, 3), round(t_end_min, 3),
+        couple_after_washout, random_initial_phase, round(hill_notch, 6), round(dapt_basal_fraction, 6),
+        seed, round(lam_eff, 9),
+    )
+    if key in _MEMO:
+        return _MEMO[key]
+
+    lc = _hes7_limit_cycle_template(lam_eff)
+    prm = lc["params"]
+    dt = prm["dt_min"]
+    T1 = lc["period_min"]
+    if tau_c_min is None:
+        tau_c_min = DEFAULT_TAU_C_FRACTION * T1
+    lattice = build_hex_lattice(n_rows, n_cols)
+    N = lattice["n_cells"]
+    W = lattice["W"]
+    rng = np.random.default_rng(seed)
+
+    g = 1.0 + hetero_cv * np.clip(rng.standard_normal(N), -3.0, 3.0)
+    if N == 1:
+        g = np.ones(1)
+    tau_tx_steps = prm["tau_tx_min"] * g / dt
+    tau_tl_steps = prm["tau_tl_min"] * g / dt
+    tau_c_steps = np.full(N, tau_c_min / dt)
+    delta_m = math.log(2.0) / (prm["t_half_m_min"] * g)
+    delta_p = math.log(2.0) / (prm["t_half_p_min"] * g)
+    delta_D = lc["delta_D_per_min"] / g
+    alpha_m, alpha_p, alpha_D = prm["alpha_m"], prm["alpha_p"], prm["alpha_m"]
+    K_rep, hill_n, K_D = prm["K_rep"], prm["hill_n"], lc["K_D"]
+
+    n_steps = int(round(t_end_min / dt))
+    n_hist = int(math.ceil(max(float(tau_tx_steps.max()), float(tau_tl_steps.max()), tau_c_min / dt))) + 2
+    T_total = n_hist + n_steps + 1
+    M = np.zeros((T_total, N))
+    P = np.zeros((T_total, N))
+    D = np.zeros((T_total, N))
+    Dbar = np.zeros((T_total, N))
+
+    # Phase-shifted limit-cycle history for t <= 0
+    theta0 = rng.uniform(0.0, 1.0, N) if random_initial_phase else np.zeros(N)
+    cyc_u = lc["cycle_t_min"] / T1
+    hist_t = (np.arange(n_hist + 1) - n_hist) * dt
+    for i in range(N):
+        u = np.mod(hist_t / T1 + theta0[i], 1.0)
+        M[: n_hist + 1, i] = np.interp(u, cyc_u, lc["cycle_m"])
+        P[: n_hist + 1, i] = np.interp(u, cyc_u, lc["cycle_p"])
+        D[: n_hist + 1, i] = np.interp(u, cyc_u, lc["cycle_D"])
+    Dbar[: n_hist + 1] = D[: n_hist + 1] @ W.T
+
+    ar = np.arange(N)
+    t_max_idx = T_total - 1
+
+    def _lag(arr: np.ndarray, k_float: float, lag_steps: np.ndarray) -> np.ndarray:
+        f = np.clip(k_float - lag_steps, 0.0, t_max_idx - 1e-9)
+        i0 = np.floor(f).astype(int)
+        fr = f - i0
+        return (1.0 - fr) * arr[i0, ar] + fr * arr[i0 + 1, ar]
+
+    def _rates(k_float: float, m_cur: np.ndarray, p_cur: np.ndarray, d_cur: np.ndarray, gate_mode: str, eps_now: float):
+        p_tx = _lag(P, k_float, tau_tx_steps)
+        m_tl = _lag(M, k_float, tau_tl_steps)
+        if gate_mode == "coupled":
+            dbar_c = np.maximum(_lag(Dbar, k_float, tau_c_steps), 0.0)
+            S = dbar_c ** hill_notch / (K_D ** hill_notch + dbar_c ** hill_notch)
+        else:  # Notch-neutral (coupling ablated): S = 1/2 -> gate = 1, K_eff = K
+            S = 0.5
+        # NICD/RBPJ activation competes with HES7 N-box autorepression at the HES7 promoter:
+        # synthesis gate (1 - eps) + 2 eps S (linearised about the physiological NICD operating
+        # point S ~ 1/2) and effective repression threshold K_eff = K * gate. Under DAPT NICD is
+        # absent and the promoter falls to its Notch-independent basal activity b < 1 - eps.
+        gate = dapt_basal_fraction if gate_mode == "dapt" else (1.0 - eps_now) + 2.0 * eps_now * S
+        K_eff = K_rep * gate
+        rep = 1.0 / (1.0 + (np.maximum(p_tx, 0.0) / np.maximum(K_eff, 1e-6)) ** hill_n)
+        rep_D = 1.0 / (1.0 + (np.maximum(p_tx, 0.0) / K_rep) ** hill_n)  # DLL1 promoter: HES7 repression only
+        dm = alpha_m * gate * rep - delta_m * m_cur
+        dp = alpha_p * m_tl - delta_p * p_cur
+        dd = alpha_D * rep_D - delta_D * d_cur
+        return dm, dp, dd
+
+    t_arr = np.arange(n_steps + 1) * dt
+    for s in range(n_steps):
+        k = n_hist + s
+        t_now = s * dt
+        if t_dapt_on_min <= t_now < t_dapt_off_min:
+            mode = "dapt"
+        elif t_now < t_dapt_on_min or couple_after_washout:
+            mode = "coupled"
+        else:
+            mode = "neutral"
+        k1 = _rates(float(k), M[k], P[k], D[k], mode, eps_notch)
+        m_mid = np.maximum(0.0, M[k] + 0.5 * dt * k1[0])
+        p_mid = np.maximum(0.0, P[k] + 0.5 * dt * k1[1])
+        d_mid = np.maximum(0.0, D[k] + 0.5 * dt * k1[2])
+        M[k + 1], P[k + 1], D[k + 1] = m_mid, p_mid, d_mid
+        Dbar[k + 1] = W @ d_mid
+        k2 = _rates(k + 0.5, m_mid, p_mid, d_mid, mode, eps_notch)
+        M[k + 1] = np.maximum(0.0, M[k] + dt * k2[0])
+        P[k + 1] = np.maximum(0.0, P[k] + dt * k2[1])
+        D[k + 1] = np.maximum(0.0, D[k] + dt * k2[2])
+        Dbar[k + 1] = W @ D[k + 1]
+
+    Ms, Ps = M[n_hist:], P[n_hist:]
+    phase = _limit_cycle_time_phase(Ms, Ps, lc)
+    R_t = np.abs(np.mean(np.exp(1j * phase), axis=1))
+
+    def _win(a: float, b: float) -> np.ndarray:
+        return (t_arr >= a) & (t_arr < b)
+
+    pre_w = _win(max(t_dapt_on_min - T1, 0.0), t_dapt_on_min)
+    dapt_w = _win(t_dapt_off_min - 0.5 * (t_dapt_off_min - t_dapt_on_min), t_dapt_off_min)
+    post_w = _win(t_end_min - T1, t_end_min + dt)
+    wash_w = t_arr >= t_dapt_off_min
+    amp_pre = float(np.mean(Ps[pre_w].max(axis=0) - Ps[pre_w].min(axis=0))) if pre_w.any() else float("nan")
+    amp_dapt = float(np.mean(Ps[dapt_w].max(axis=0) - Ps[dapt_w].min(axis=0))) if dapt_w.any() else float("nan")
+    amp_post = float(np.mean(Ps[post_w].max(axis=0) - Ps[post_w].min(axis=0)))
+    R_pre = float(np.mean(R_t[pre_w])) if pre_w.any() else float("nan")
+    R_post = float(np.mean(R_t[post_w]))
+    R_post_peak = float(np.max(R_t[wash_w])) if wash_w.any() else float("nan")
+    resync_min = float("nan")
+    if wash_w.any():
+        hit = np.where(wash_w & (R_t >= 0.9))[0]
+        if len(hit):
+            resync_min = float(t_arr[hit[0]] - t_dapt_off_min)
+
+    # Time after washout at which synchrony is first lost (R < 1/2); NaN if retained to t_end
+    t_R_half = float("nan")
+    if wash_w.any():
+        lost = np.where(wash_w & (t_arr >= t_dapt_off_min + 0.25 * T1) & (R_t < 0.5))[0]
+        if len(lost):
+            t_R_half = float(t_arr[lost[0]] - t_dapt_off_min)
+
+    # Collective (tissue-mean) period after washout, excluding the restart transient (1.5 cycles)
+    seg = (t_arr >= t_dapt_off_min + 1.5 * T1) if wash_w.any() else np.ones_like(t_arr, dtype=bool)
+    if seg.sum() < int(2.5 * T1 / dt):
+        seg = wash_w if wash_w.any() else np.ones_like(t_arr, dtype=bool)
+    p_mean = Ps[seg].mean(axis=1)
+    t_seg = t_arr[seg]
+    pk, _ = signal.find_peaks(p_mean, distance=max(4, int(0.6 * T1 / dt)), prominence=0.5)
+    if len(pk) >= 2:
+        pt = []
+        for q in pk:
+            if 0 < q < len(p_mean) - 1:
+                y_m1, y_0, y_p1 = p_mean[q - 1], p_mean[q], p_mean[q + 1]
+                den = y_m1 - 2.0 * y_0 + y_p1
+                pt.append(float(t_seg[q] + (0.5 * (y_m1 - y_p1) / den if abs(den) > 1e-12 else 0.0) * dt))
+        T_coll = float(np.mean(np.diff(pt))) if len(pt) >= 2 else float("nan")
+    else:
+        T_coll = float("nan")
+
+    out = {
+        "lattice": lattice,
+        "params": prm,
+        "T_single_cell_min": T1,
+        "tau_c_min": float(tau_c_min),
+        "eps_notch": float(eps_notch),
+        "dapt_basal_fraction": float(dapt_basal_fraction),
+        "hetero_cv": float(hetero_cv),
+        "K_D_nM": float(K_D),
+        "t_min": t_arr,
+        "p_nM": Ps,
+        "phase_rad": phase,
+        "R_t": R_t,
+        "R_initial": float(R_t[0]),
+        "R_pre_dapt": R_pre,
+        "R_post_washout": R_post,
+        "R_post_washout_peak": R_post_peak,
+        "resync_time_min": resync_min,
+        "resync_time_cycles": resync_min / T1 if np.isfinite(resync_min) else float("nan"),
+        "sync_loss_time_min": t_R_half,
+        "sync_loss_time_cycles": t_R_half / T1 if np.isfinite(t_R_half) else float("nan"),
+        "R_dapt_defined": False,
+        "amplitude_pre_nM": amp_pre,
+        "amplitude_dapt_nM": amp_dapt,
+        "amplitude_post_nM": amp_post,
+        "dapt_amplitude_ratio": amp_dapt / amp_pre if (np.isfinite(amp_pre) and amp_pre > 0) else float("nan"),
+        "collective_period_post_min": T_coll,
+        "protocol": {"t_dapt_on_min": t_dapt_on_min, "t_dapt_off_min": t_dapt_off_min, "t_end_min": t_end_min,
+                     "couple_after_washout": couple_after_washout, "random_initial_phase": random_initial_phase},
+    }
+    _MEMO[key] = out
+    return out
+
+
+def evaluate_dapt_washout_synchrony(eps_notch: float = 0.25, seed: int = 2019) -> dict[str, Any]:
+    """Run the coupled lattice and its coupling-ablated control (identical DAPT reset, Notch
+    coupling held neutral after washout) through the DAPT pulse-washout protocol."""
+    coupled = simulate_notch_coupled_lattice(eps_notch=eps_notch, couple_after_washout=True, seed=seed)
+    ablated = simulate_notch_coupled_lattice(eps_notch=eps_notch, couple_after_washout=False, seed=seed)
+    return {
+        "coupled": coupled,
+        "ablated": ablated,
+        "delta_R_post_coupling": float(coupled["R_post_washout"] - ablated["R_post_washout"]),
+    }
+
+
+def evaluate_coupling_strength_sweep(
+    eps_values: tuple[float, ...] = (0.0, 0.05, 0.1, 0.15, 0.25, 0.35),
+    n_rows: int = 8,
+    n_cols: int = 8,
+    t_end_min: float = 1800.0,
+    seed: int = 2019,
+) -> dict[str, Any]:
+    """Post-washout synchrony retained after 6 human cycles as a function of Notch coupling
+    strength eps (8 x 8 lattice, synchronous reset at t = 0, 5 % tempo heterogeneity)."""
+    R_end, R_min = [], []
+    for eps in eps_values:
+        sim = simulate_notch_coupled_lattice(
+            n_rows=n_rows, n_cols=n_cols, eps_notch=eps, t_dapt_on_min=t_end_min + 1.0,
+            t_dapt_off_min=t_end_min + 2.0, t_end_min=t_end_min, couple_after_washout=True,
+            random_initial_phase=False, seed=seed,
+        )
+        R_end.append(sim["R_post_washout"])
+        R_min.append(float(np.min(sim["R_t"])))
+    rho, p_rho = stats.spearmanr(np.array(eps_values), np.array(R_end))
+    return {
+        "eps_values": list(eps_values),
+        "R_end": R_end,
+        "R_min": R_min,
+        "spearman_rho": float(rho),
+        "spearman_p": float(p_rho),
+    }
+
+
+def evaluate_coupling_delay_period_modulation(
+    tau_c_fractions: tuple[float, ...] = (0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.8, 0.875, 0.95),
+    eps_notch: float = 0.25,
+    t_end_min: float = 2400.0,
+) -> dict[str, Any]:
+    """Herrgen et al. (2010) coupling-delay modulation of the collective period, computed on
+    the exact mean-field (single self-coupled cell, Law 4) reduction of the synchronised
+    homogeneous lattice: T_coll(tau_c) for tau_c in [0, T) and its deviation from the
+    uncoupled single-cell period. The in-phase stability of each delay is tested on an
+    8 x 8 heterogeneous lattice started synchronised (R_end after 6 cycles)."""
+    T_coll, tau_c_list, R_end_lattice = [], [], []
+    T1 = _hes7_limit_cycle_template()["period_min"]
+    for frac in tau_c_fractions:
+        sim = simulate_notch_coupled_lattice(
+            n_rows=1, n_cols=1, eps_notch=eps_notch, tau_c_min=frac * T1, hetero_cv=0.0,
+            t_dapt_on_min=t_end_min + 1.0, t_dapt_off_min=t_end_min + 2.0, t_end_min=t_end_min,
+            couple_after_washout=True, random_initial_phase=False,
+        )
+        T_coll.append(sim["collective_period_post_min"])
+        tau_c_list.append(frac * T1)
+        lat = simulate_notch_coupled_lattice(
+            n_rows=8, n_cols=8, eps_notch=eps_notch, tau_c_min=frac * T1, hetero_cv=0.05,
+            t_dapt_on_min=1801.0, t_dapt_off_min=1802.0, t_end_min=1800.0,
+            couple_after_washout=True, random_initial_phase=False,
+        )
+        R_end_lattice.append(lat["R_post_washout"])
+    T_arr = np.array(T_coll)
+    return {
+        "tau_c_fractions": list(tau_c_fractions),
+        "tau_c_min": tau_c_list,
+        "T_coll_min": T_coll,
+        "R_end_lattice": R_end_lattice,
+        "in_phase_stable_fractions": [f for f, r in zip(tau_c_fractions, R_end_lattice) if r >= 0.85],
+        "T_single_cell_min": T1,
+        "max_fractional_modulation": float(np.nanmax(np.abs(T_arr - T1)) / T1),
+        "T_coll_min_over_sweep": float(np.nanmin(T_arr)),
+        "T_coll_max_over_sweep": float(np.nanmax(T_arr)),
+    }
+
+
+# ============================================================================
+# Section 4c: Matrigel-Embedded Mechanical Boundary & Epithelial Somite Rosette Formation
+# (Yamanaka et al. 2023 Nature; Sanaki-Matsumiya et al. 2022 Nat Commun;
+#  Law 5 `diaza-human-somite-organoid-clock-5`)
+# ============================================================================
+KAPPA_MATRIGEL_PER_PCT = 0.01      # shell stiffness per % Matrigel (min^-1), k_M = kappa * phi
+PHI_HALF_ECM_PCT = 4.0             # half-saturation of the basal laminin/integrin polarity cue (%), Hill 2
+ROSETTE_CELL_RADIUS_UM = 6.0       # human PSM cell radius
+MATRIGEL_SHELL_RADIUS_UM = 28.0    # ECM boundary radius enclosing one nascent somite cross-section
+
+
+def simulate_matrigel_rosette(
+    matrigel_pct: float = 10.0,
+    n_cells: int = 24,
+    n_steps: int = 2000,
+    dt_min: float = 0.5,
+    seed: int = 2019,
+) -> dict[str, Any]:
+    """Reduced 2D overdamped cell-centre model of one axioloid somite cross-section
+    epithelialising into a rosette inside a Matrigel ECM shell (Law 5).
+
+    State per cell: centre x_i (um), apico-basal polarity unit vector n_i (apical = +n_i),
+    epithelial state e_i in [0, 1].  Forces (overdamped, dx/dt = F):
+      * soft-disc repulsion (d < 2 r_c) and cadherin adhesion (2 r_c <= d < 2.8 r_c);
+      * Matrigel elastic boundary  F_M = -kappa * phi * max(0, |x_i - c| - R_M) r_hat  (explicit
+        ECM boundary force whose stiffness scales with the Matrigel volume fraction phi);
+      * apical constriction between epithelialised neighbours pulling their apical points
+        a_i = x_i + r_c n_i together (weight e_i e_j), with the matching torque on n_i;
+      * mesenchymal random motility with amplitude (1 - e_i).
+    Basal ECM contact (cells within 1.5 r_c of the shell) polarises n_i toward the aggregate
+    centre and drives e_i -> 1 at a rate saturating in phi (phi^2 / (phi^2 + phi_half^2));
+    epithelial state and polarity also spread to neighbours through junctions.
+    Without Matrigel (phi = 0) there is neither boundary force nor basal cue, so the aggregate
+    stays a motile, unpolarised mesenchymal cluster (Yamanaka et al. 2023: no epithelial
+    somites without Matrigel embedding).  This is a reduced honest model, not a 3D FEM."""
+    key = ("rosette", round(matrigel_pct, 6), n_cells, n_steps, round(dt_min, 6), seed)
+    if key in _MEMO:
+        return _MEMO[key]
+    rng = np.random.default_rng(seed)
+    r_c = ROSETTE_CELL_RADIUS_UM
+    R_M = MATRIGEL_SHELL_RADIUS_UM
+    phi = float(matrigel_pct)
+    k_M = KAPPA_MATRIGEL_PER_PCT * phi
+    f_ecm = phi ** 2 / (phi ** 2 + PHI_HALF_ECM_PCT ** 2)
+    k_rep, k_adh, k_ac, k_epi, k_de = 0.6, 0.08, 0.25, 0.08, 0.01
+    rho_pol, rho_nb, sigma_n, sigma_x = 0.3, 0.15, 0.03, 0.9
+
+    rad = 20.0 * np.sqrt(rng.uniform(0.0, 1.0, n_cells))
+    ang = rng.uniform(0.0, 2.0 * math.pi, n_cells)
+    x = np.stack([rad * np.cos(ang), rad * np.sin(ang)], axis=1)
+    ang_n = rng.uniform(0.0, 2.0 * math.pi, n_cells)
+    n_vec = np.stack([np.cos(ang_n), np.sin(ang_n)], axis=1)
+    e = np.zeros(n_cells)
+    eye = np.eye(n_cells, dtype=bool)
+    traj_polarity = []
+
+    for _ in range(n_steps):
+        c = x.mean(axis=0)
+        rv = x - c
+        rn = np.linalg.norm(rv, axis=1) + 1e-9
+        r_hat = rv / rn[:, None]
+        dvec = x[:, None, :] - x[None, :, :]
+        d = np.linalg.norm(dvec, axis=2) + eye * 1e9
+        u = dvec / d[:, :, None]
+        rep = k_rep * np.clip(2.0 * r_c - d, 0.0, None)
+        adh = -k_adh * np.clip(d - 2.0 * r_c, 0.0, 0.8 * r_c) * (d < 2.8 * r_c)
+        F_cc = ((rep + adh)[:, :, None] * u).sum(axis=1)
+        nb = (d < 2.6 * r_c) & ~eye
+        nb_count = np.maximum(nb.sum(axis=1), 1)
+        contact = 1.0 / (1.0 + np.exp(-(rn - (R_M - 1.5 * r_c)) / (0.5 * r_c)))
+        e_nb = (nb * e[None, :]).sum(axis=1) / nb_count
+        de = k_epi * f_ecm * contact * (1.0 - e) + 0.5 * k_epi * f_ecm * (e_nb - e) * (e_nb > e) - k_de * e
+        n_nb = (nb[:, :, None] * n_vec[None, :, :]).sum(axis=1) / nb_count[:, None]
+        dn = rho_pol * f_ecm * contact[:, None] * (-r_hat - n_vec) + rho_nb * f_ecm * (n_nb - n_vec)
+        a = x + r_c * n_vec
+        wgt = (e[:, None] * e[None, :]) * nb
+        pull = -(wgt[:, :, None] * (a[:, None, :] - a[None, :, :])).sum(axis=1)
+        F_ac = k_ac * pull
+        dn = dn + (k_ac / r_c) * pull
+        out = np.clip(rn - R_M, 0.0, None)
+        F_M = -k_M * out[:, None] * r_hat
+        x = x + dt_min * (F_cc + F_ac + F_M) + sigma_x * math.sqrt(dt_min) * (1.0 - e)[:, None] * rng.standard_normal((n_cells, 2))
+        n_vec = n_vec + dt_min * dn + sigma_n * math.sqrt(dt_min) * rng.standard_normal((n_cells, 2))
+        n_vec = n_vec / (np.linalg.norm(n_vec, axis=1)[:, None] + 1e-12)
+        e = np.clip(e + dt_min * de, 0.0, 1.0)
+        traj_polarity.append(float(np.mean(-np.sum(n_vec * r_hat, axis=1))))
+
+    c = x.mean(axis=0)
+    rv = x - c
+    rn = np.linalg.norm(rv, axis=1) + 1e-9
+    r_hat = rv / rn[:, None]
+    a = x + r_c * n_vec
+    polarity_order = float(np.mean(-np.sum(n_vec * r_hat, axis=1)))
+    rg_x = float(np.sqrt(np.mean(np.sum((x - x.mean(0)) ** 2, axis=1))))
+    rg_a = float(np.sqrt(np.mean(np.sum((a - a.mean(0)) ** 2, axis=1))))
+    apical_convergence = float(1.0 - min(rg_a / max(rg_x, 1e-9), 1.0))
+    try:
+        from scipy.spatial import ConvexHull
+        hull = ConvexHull(x)
+        circularity = float(4.0 * math.pi * hull.volume / max(hull.area, 1e-9) ** 2)
+    except Exception:
+        circularity = float("nan")
+    out = {
+        "matrigel_pct": phi,
+        "k_M_per_min": float(k_M),
+        "f_ecm": float(f_ecm),
+        "x_um": x,
+        "n_vec": n_vec,
+        "apical_um": a,
+        "e_state": e,
+        "centroid_um": c,
+        "shell_radius_um": R_M,
+        "cell_radius_um": r_c,
+        "polarity_order": polarity_order,
+        "epithelial_fraction": float(np.mean(e)),
+        "apical_convergence": apical_convergence,
+        "boundary_circularity": circularity,
+        "aggregate_radius_um": float(np.max(rn) + r_c),
+        "polarity_trajectory": np.array(traj_polarity),
+    }
+    _MEMO[key] = out
+    return out
+
+
+def evaluate_matrigel_sweep(
+    matrigel_pcts: tuple[float, ...] = (0.0, 1.0, 2.5, 5.0, 10.0, 20.0),
+    seed: int = 2019,
+) -> dict[str, Any]:
+    """Sweep the Matrigel volume fraction and record rosette polarity order, epithelial
+    fraction, apical convergence and boundary circularity (Yamanaka et al. 2023 used 10 %
+    Matrigel embedding; 0 % is the non-embedded control)."""
+    runs = [simulate_matrigel_rosette(matrigel_pct=p, seed=seed) for p in matrigel_pcts]
+    pol = np.array([r["polarity_order"] for r in runs])
+    rho, p_rho = stats.spearmanr(np.array(matrigel_pcts), pol)
+    by_pct = {r["matrigel_pct"]: r for r in runs}
+    return {
+        "matrigel_pcts": list(matrigel_pcts),
+        "runs": runs,
+        "by_pct": by_pct,
+        "polarity_order": pol.tolist(),
+        "epithelial_fraction": [r["epithelial_fraction"] for r in runs],
+        "apical_convergence": [r["apical_convergence"] for r in runs],
+        "boundary_circularity": [r["boundary_circularity"] for r in runs],
+        "spearman_rho": float(rho),
+        "spearman_p": float(p_rho),
+        "delta_polarity_10_vs_0": float(by_pct[10.0]["polarity_order"] - by_pct[0.0]["polarity_order"]) if (10.0 in by_pct and 0.0 in by_pct) else float("nan"),
+    }
+
+
+# ============================================================================
 # Section 5: Empirical Paraxial Somite / PSM Specimen Segmentation
 # ============================================================================
 def _extract_somite_row_peaks(
@@ -613,17 +1254,24 @@ def segment_somite_organoid_specimen(
 # Section 6: MorphoEval Dynamic Measurement Hook (`measure_morphoeval()`)
 # ============================================================================
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Return 5 quantitative morphometric measurements for `morphoeval/measure_outputs.py`."""
+    """Return 9 quantitative morphometric measurements for `morphoeval/measure_outputs.py`."""
     verify_dataset_integrity()
     ref = load_reference_data()
     invariance = evaluate_tempo_rescaling_invariance()
     pert = evaluate_perturbation_series(ref)
     allom = evaluate_vertebrate_clock_allometry(ref)
     spec = segment_somite_organoid_specimen()
+    sync = evaluate_dapt_washout_synchrony()
+    eps_sw = evaluate_coupling_strength_sweep()
+    tau_sw = evaluate_coupling_delay_period_modulation()
+    mg = evaluate_matrigel_sweep()
+    hp = tempo_scaled_dde_params(HUMAN_LAMBDA)
 
     human_wt = pert["by_id"]["human_wt_hpsm"]
     mouse_wt = pert["by_id"]["mouse_wt_mpsm"]
     intronless = pert["by_id"]["intronless_hes7_ablation"]
+    cpl, abl = sync["coupled"], sync["ablated"]
+    ros10, ros0 = mg["by_pct"][10.0], mg["by_pct"][0.0]
 
     return [
         {
@@ -640,7 +1288,7 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "name": "human pluripotent stem-cell PSM HES7-Achilles oscillation period T_human",
             "value": round(human_wt["predicted_period_min"], 2),
             "unit": "min",
-            "method": "parabolic peak-refined limit-cycle period of human WT HES7 DDE (tau_total = 51 min, t_{1/2,p} = 40 min, t_{1/2,m} = 42 min)",
+            "method": f"parabolic peak-refined limit-cycle period of human WT HES7 DDE (mouse-WT anchor dilated by lam_eff = 300/122: tau_tx = {hp['tau_tx_min']:.1f} min, tau_tl = {hp['tau_tl_min']:.1f} min, t_{{1/2,p}} = {hp['t_half_p_min']:.1f} min, t_{{1/2,m}} = {hp['t_half_m_min']:.1f} min)",
             "reference_value": 300.0,
             "reference_source": "Diaz-Cuadros et al. (2020) Nature 580:113-118 Fig. 2d (human segmentation clock period 300 +/- 18 min = 5.0 h)",
             "note": f"LbNOX NAD+ elevation accelerates human period to {pert['by_id']['human_lbnox_nad_rescue']['predicted_period_min']:.1f} min; sodium azide ETC inhibition slows period to {pert['by_id']['human_azide_etc_inhibition']['predicted_period_min']:.1f} min",
@@ -676,6 +1324,46 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"bilateral symmetry ratio = {spec['bilateral_symmetry_ratio']:.4f}, std = {spec['bilateral_sd_spacing_px']:.2f} px, phase correlation r = {spec['profile_phase_correlation_r']:.4f}",
             "derived_from": "output",
         },
+        {
+            "name": "DLL1-Notch coupled hexagonal PSM lattice Kuramoto order parameter R after DAPT washout (6 cycles)",
+            "value": round(cpl["R_post_washout"], 4),
+            "unit": "Kuramoto R (dimensionless)",
+            "method": f"12x12 odd-r hexagonal lattice of delay-coupled HES7 TTFL cells (eps = {cpl['eps_notch']:.2f}, tau_c = {cpl['tau_c_min']:.0f} min = {cpl['tau_c_min'] / cpl['T_single_cell_min']:.2f} T, 5 % cell-autonomous tempo CV); mean R over the last cycle of a 6-cycle post-washout window; coupling-ablated control R = {abl['R_post_washout']:.4f} (synchrony lost, R < 0.5, after {abl['sync_loss_time_cycles']:.2f} cycles)",
+            "reference_value": 1.0,
+            "reference_source": "Matsuda et al. (2020) Nature 580:124-129 (DAPT pulse-washout synchronises culture-level HES7 oscillations; R = 1 is perfect in-phase synchrony); Riedel-Kruse et al. (2007) Science 317:1911-1915 (Notch-inhibition desynchronisation)",
+            "note": f"pre-DAPT R from random phases after 5 coupled cycles = {cpl['R_pre_dapt']:.3f} (R_0 = {cpl['R_initial']:.3f}); DAPT amplitude ratio = {cpl['dapt_amplitude_ratio']:.3f} (collapse); coupling gain in R = {sync['delta_R_post_coupling']:.3f}; R_end vs eps Spearman rho = {eps_sw['spearman_rho']:.2f} over eps in {eps_sw['eps_values']}",
+            "derived_from": "script",
+        },
+        {
+            "name": "post-washout collective period of the Notch-coupled lattice T_coll",
+            "value": round(cpl["collective_period_post_min"], 2),
+            "unit": "min",
+            "method": f"tissue-mean HES7 peak-to-peak period over the last 4.5 post-washout cycles (restart transient excluded); exact mean-field reduction at tau_c = 0.8 T gives {tau_sw['T_coll_min'][tau_sw['tau_c_fractions'].index(0.8)]:.1f} min; Herrgen (2010) delay sweep spans {tau_sw['T_coll_min_over_sweep']:.0f}-{tau_sw['T_coll_max_over_sweep']:.0f} min over tau_c/T in [0, 0.95]",
+            "reference_value": 300.0,
+            "reference_source": "Diaz-Cuadros et al. (2020) Nature 580:113-118 Fig. 2d (human segmentation clock period 300 +/- 18 min); Herrgen et al. (2010) Curr. Biol. 20:1244-1253 (coupling delay sets the collective period)",
+            "note": f"in-phase state stable (R_end >= 0.85) for tau_c/T in {tau_sw['in_phase_stable_fractions']}; single-cell period = {cpl['T_single_cell_min']:.2f} min",
+            "derived_from": "script",
+        },
+        {
+            "name": "Matrigel-embedded (10 %) axioloid somite rosette radial apical-polarity order P_rad",
+            "value": round(ros10["polarity_order"], 4),
+            "unit": "dimensionless order parameter",
+            "method": f"reduced 2D overdamped cell-centre model (24 cells) with elastic Matrigel shell k_M = kappa*phi ({ros10['k_M_per_min']:.3f} min^-1 at 10 %), ECM-contact polarisation and apical constriction; P_rad = <-n_i . r_hat_i>; epithelial fraction <e> = {ros10['epithelial_fraction']:.3f}, apical convergence = {ros10['apical_convergence']:.3f}, boundary circularity = {ros10['boundary_circularity']:.3f}, aggregate radius = {ros10['aggregate_radius_um']:.1f} um",
+            "reference_value": 1.0,
+            "reference_source": "Geometric ideal of a fully radially polarised epithelial rosette; Yamanaka et al. (2023) Nature 614:509-520 and Sanaki-Matsumiya et al. (2022) Nat. Commun. 13:2325 report epithelial somite rosettes only in Matrigel-embedded axioloids/somitoids (qualitative; no published P_rad)",
+            "note": f"non-embedded 0 % Matrigel control: P_rad = {ros0['polarity_order']:.3f}, <e> = {ros0['epithelial_fraction']:.3f}, aggregate radius = {ros0['aggregate_radius_um']:.1f} um (dispersed mesenchyme); Matrigel sweep {mg['matrigel_pcts']} % Spearman rho = {mg['spearman_rho']:.2f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Matrigel ablation effect on rosette polarity order (10 % minus 0 %)",
+            "value": round(mg["delta_polarity_10_vs_0"], 4),
+            "unit": "dimensionless order parameter difference",
+            "method": "difference of P_rad between the 10 % Matrigel-embedded and the non-embedded (0 %) rosette simulations with identical seed and initial cell positions",
+            "reference_value": 1.0,
+            "reference_source": "Yamanaka et al. (2023) Nature 614:509-520 (Matrigel embedding is required for epithelial somite formation in human axioloids; ideal contrast = 1)",
+            "note": f"polarity order by Matrigel %: {dict(zip(mg['matrigel_pcts'], [round(v, 3) for v in mg['polarity_order']]))}",
+            "derived_from": "script",
+        },
     ]
 
 
@@ -694,6 +1382,10 @@ def render_comparison_figure(out_png: Path = OUTPUT_PNG) -> Path:
     kymo = simulate_axioloid_kymograph()
     spec = segment_somite_organoid_specimen()
     im_spec = np.asarray(Image.open(SPECIMEN_JPG).convert("L"), dtype=float)
+    sync = evaluate_dapt_washout_synchrony()
+    eps_sw = evaluate_coupling_strength_sweep()
+    tau_sw = evaluate_coupling_delay_period_modulation()
+    mg = evaluate_matrigel_sweep()
 
     plt.rcParams.update(
         {
@@ -709,13 +1401,14 @@ def render_comparison_figure(out_png: Path = OUTPUT_PNG) -> Path:
         }
     )
 
-    fig, axes = plt.subplots(2, 3, figsize=(18.5, 11.0), dpi=150)
+    fig, axes = plt.subplots(3, 3, figsize=(18.5, 16.2), dpi=150)
     fig.suptitle(
-        "Diaz-Cuadros et al. (2020, 2023) Nature & Matsuda et al. (2020) Science — Human Segmentation Clock & Metabolic Tempo Scaling",
-        fontsize=13.2,
+        "Diaz-Cuadros et al. (2020, 2023) Nature & Matsuda et al. (2020) Science — Human Segmentation Clock, Metabolic Tempo Scaling,\n"
+        "DLL1-Notch Lattice Synchrony (DAPT Washout) & Matrigel-Embedded Somite Rosette Mechanics",
+        fontsize=13.0,
         fontweight="bold",
         color="#f8fafc",
-        y=0.975,
+        y=0.985,
     )
 
     by_id = pert["by_id"]
@@ -904,8 +1597,135 @@ def render_comparison_figure(out_png: Path = OUTPUT_PNG) -> Path:
     ax.grid(True, alpha=0.35)
     ax.legend(loc="upper right", fontsize=7.8, framealpha=0.85)
 
-    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.955])
+    # Panel G: DLL1-Notch hexagonal lattice Kuramoto synchrony through the DAPT pulse-washout protocol
+    ax = axes[2, 0]
+    cpl, abl = sync["coupled"], sync["ablated"]
+    prot = cpl["protocol"]
+    t_h = cpl["t_min"] / 60.0
+    dapt_mask = (cpl["t_min"] >= prot["t_dapt_on_min"]) & (cpl["t_min"] < prot["t_dapt_off_min"])
+    R_c = np.where(dapt_mask, np.nan, cpl["R_t"])
+    R_a = np.where(dapt_mask, np.nan, abl["R_t"])
+    ax.axvspan(prot["t_dapt_on_min"] / 60.0, prot["t_dapt_off_min"] / 60.0, color="#f87171", alpha=0.18, lw=0)
+    ax.plot(t_h, R_c, color="#34d399", lw=2.0, label=f"Notch-coupled 12x12 hex PSM ($\\varepsilon={cpl['eps_notch']:.2f}$, $\\tau_c={cpl['tau_c_min']:.0f}$ min): $R_{{\\rm post}}={cpl['R_post_washout']:.2f}$")
+    ax.plot(t_h, R_a, color="#94a3b8", lw=1.7, ls="--", label=f"Coupling-ablated control (same DAPT reset): $R_{{\\rm post}}={abl['R_post_washout']:.2f}$")
+    ax.text(0.5 * (prot["t_dapt_on_min"] + prot["t_dapt_off_min"]) / 60.0, 0.5, "DAPT\n($\\gamma$-secretase block,\nHES7 collapse\n" + f"amp. ratio {cpl['dapt_amplitude_ratio']:.2f})", ha="center", va="center", fontsize=7.2, color="#fecaca")
+    ax.axhline(0.9, color="#fbbf24", lw=0.9, ls=":")
+    ax.set_ylim(0.0, 1.05)
+    ax.set_xlim(0.0, prot["t_end_min"] / 60.0)
+    ax.set_title("G. Notch Hex-Lattice Synchrony: DAPT Pulse-Washout (Matsuda 2020)", fontweight="bold")
+    ax.set_xlabel("Time $t$ (hours) [random phases $\\to$ coupled $\\to$ DAPT $\\to$ washout]")
+    ax.set_ylabel("Kuramoto order parameter $R(t)$")
+    ax.grid(True, alpha=0.35)
+    ax.legend(loc="lower left", fontsize=7.0, framealpha=0.85)
+
+    # Panel H: coupling-delay (Herrgen 2010) and coupling-strength sweeps
+    ax = axes[2, 1]
+    T1 = tau_sw["T_single_cell_min"]
+    ax.plot(tau_sw["tau_c_fractions"], np.array(tau_sw["T_coll_min"]) / T1, "o-", color="#fbbf24", lw=2.0, ms=5.5,
+            label="Mean-field $T_{\\rm coll}(\\tau_c)/T_{\\rm cell}$ (Herrgen 2010 delay modulation)")
+    ax.axhline(1.0, color="#f8fafc", lw=0.9, ls=":")
+    ax.set_xlabel("Coupling delay $\\tau_c / T$  |  coupling strength $\\varepsilon$")
+    ax.set_ylabel("Collective period ratio $T_{\\rm coll}/T_{\\rm cell}$", color="#fbbf24")
+    ax.set_ylim(0.6, 1.5)
+    ax2 = ax.twinx()
+    ax2.plot(tau_sw["tau_c_fractions"], tau_sw["R_end_lattice"], "s--", color="#34d399", lw=1.6, ms=5,
+             label="In-phase stability $R_{\\rm end}(\\tau_c)$ (8x8 lattice, 6 cycles)")
+    ax2.plot(eps_sw["eps_values"], eps_sw["R_end"], "^-", color="#38bdf8", lw=1.8, ms=6,
+             label=f"$R_{{\\rm end}}(\\varepsilon)$ at $\\tau_c=0.8T$ (Spearman $\\rho={eps_sw['spearman_rho']:.2f}$)")
+    ax2.set_ylim(0.0, 1.05)
+    ax2.set_ylabel("Kuramoto $R$ after 6 cycles", color="#34d399")
+    ax2.tick_params(axis="y", colors="#c6d4ec")
+    ax.set_title("H. Coupling Delay & Strength Sweeps (Delayed Coupling Theory)", fontweight="bold")
+    ax.grid(True, alpha=0.35)
+    h1, l1 = ax.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    ax.legend(h1 + h2, l1 + l2, loc="upper left", fontsize=7.0, framealpha=0.85)
+
+    # Panel I: Matrigel-embedded somite rosette mechanics (0 % vs 10 % Matrigel) + Matrigel sweep inset
+    ax = axes[2, 2]
+    offsets = {0.0: -60.0, 10.0: 60.0}
+    for pct, dx in offsets.items():
+        run = mg["by_pct"][pct]
+        x = run["x_um"] - run["centroid_um"]
+        shell = plt.Circle((dx, 0.0), run["shell_radius_um"], fill=False, ls="--", lw=1.4,
+                           color="#fbbf24" if pct > 0 else "#475569")
+        ax.add_patch(shell)
+        sc = ax.scatter(x[:, 0] + dx, x[:, 1], c=run["e_state"], cmap="viridis", vmin=0.0, vmax=1.0,
+                        s=110, edgecolors="#e6edf8", linewidths=0.6, zorder=3)
+        ax.quiver(x[:, 0] + dx, x[:, 1], run["n_vec"][:, 0], run["n_vec"][:, 1], color="#f8fafc",
+                  scale=18, width=0.004, zorder=4)
+        ax.text(dx, -62.0, f"{pct:.0f} % Matrigel\n$P_{{\\rm rad}}={run['polarity_order']:.2f}$, $\\langle e\\rangle={run['epithelial_fraction']:.2f}$",
+                ha="center", va="top", fontsize=7.8, color="#f0f4fc")
+    ax.set_aspect("equal")
+    ax.set_xlim(-120.0, 120.0)
+    ax.set_ylim(-88.0, 118.0)
+    ax.set_title("I. Matrigel-Embedded Somite Rosette (Yamanaka 2023)", fontweight="bold")
+    ax.set_xlabel("$x$ ($\\mu$m)  —  arrows: apical polarity $n_i$, colour: epithelial state $e_i$")
+    ax.set_ylabel("$y$ ($\\mu$m)")
+    cb = fig.colorbar(sc, ax=ax, fraction=0.04, pad=0.02)
+    cb.set_label("epithelial state $e_i$", fontsize=8)
+    axin = ax.inset_axes([0.30, 0.70, 0.40, 0.27])
+    axin.plot(mg["matrigel_pcts"], mg["polarity_order"], "o-", color="#fbbf24", lw=1.6, ms=4)
+    axin.plot(mg["matrigel_pcts"], mg["epithelial_fraction"], "s--", color="#34d399", lw=1.3, ms=4)
+    axin.set_xscale("symlog", linthresh=1.0)
+    axin.set_ylim(-0.2, 1.05)
+    axin.set_xlabel("Matrigel (%)", fontsize=7)
+    axin.set_ylabel("$P_{\\rm rad}$ / $\\langle e\\rangle$", fontsize=7)
+    axin.tick_params(labelsize=6.5)
+    axin.set_title(f"sweep (Spearman $\\rho={mg['spearman_rho']:.2f}$)", fontsize=7)
+    axin.grid(True, alpha=0.3)
+
+    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.962])
     fig.savefig(out_png, dpi=150)
+    plt.close(fig)
+    return out_png
+
+
+def render_notch_lattice_figure(out_png: Path = OUTPUT_LATTICE_PNG) -> Path:
+    """Render `docs/media/human_somite_organoid_clock_notch_lattice.png`: hexagonal PSM
+    lattice phase maps (coupled vs coupling-ablated) at four protocol times."""
+    out_png.parent.mkdir(parents=True, exist_ok=True)
+    sync = evaluate_dapt_washout_synchrony()
+    cpl, abl = sync["coupled"], sync["ablated"]
+    prot = cpl["protocol"]
+    T1 = cpl["T_single_cell_min"]
+    snap_times = [
+        (prot["t_dapt_on_min"] - 0.2 * T1, "pre-DAPT (coupled, from random phases)"),
+        (prot["t_dapt_off_min"] - 0.05 * T1, "end of DAPT (HES7 collapsed)"),
+        (prot["t_dapt_off_min"] + 1.0 * T1, "washout + 1 cycle"),
+        (prot["t_end_min"] - 0.05 * T1, f"washout + {int(round((prot['t_end_min'] - prot['t_dapt_off_min']) / T1))} cycles"),
+    ]
+    xy = cpl["lattice"]["xy_um"]
+    fig, axes = plt.subplots(2, 4, figsize=(17.0, 8.6), dpi=130)
+    fig.patch.set_facecolor("#0b1020")
+    for row, (lab, run) in enumerate((("Notch-coupled", cpl), ("coupling-ablated control", abl))):
+        for col, (t_s, title) in enumerate(snap_times):
+            ax = axes[row, col]
+            ax.set_facecolor("#121a30")
+            j = int(np.searchsorted(run["t_min"], t_s))
+            j = min(j, len(run["t_min"]) - 1)
+            ph = run["phase_rad"][j]
+            j0 = max(0, j - int(0.5 * T1 / run["params"]["dt_min"]))
+            amp = float(np.mean(run["p_nM"][j0:j + 1].max(axis=0) - run["p_nM"][j0:j + 1].min(axis=0)))
+            sc = ax.scatter(xy[:, 0], xy[:, 1], c=ph, cmap="twilight", vmin=0.0, vmax=2.0 * math.pi, s=150, marker="h", edgecolors="#0b1020", linewidths=0.4)
+            R_here = float(run["R_t"][j])
+            r_txt = "R undefined (collapsed)" if (prot["t_dapt_on_min"] <= t_s < prot["t_dapt_off_min"]) else f"$R={R_here:.2f}$"
+            ax.set_title(f"{lab}\n{title}\n$t={t_s / 60.0:.1f}$ h, {r_txt}, half-cycle amp {amp:.0f} nM", fontsize=8.6, color="#f0f4fc")
+            ax.set_aspect("equal")
+            ax.set_xticks([])
+            ax.set_yticks([])
+            for sp in ax.spines.values():
+                sp.set_color("#3b4c7a")
+    cb = fig.colorbar(sc, ax=axes.ravel().tolist(), fraction=0.02, pad=0.015)
+    cb.set_label("HES7 limit-cycle phase $\\phi_i$ (rad)", color="#e6edf8")
+    cb.ax.yaxis.set_tick_params(color="#c6d4ec")
+    plt.setp(cb.ax.get_yticklabels(), color="#c6d4ec")
+    fig.suptitle(
+        "DLL1-Notch delay-coupled HES7 oscillators on a 12x12 hexagonal human PSM lattice — DAPT pulse-washout "
+        f"(Matsuda 2020 Nature; $\\varepsilon={cpl['eps_notch']:.2f}$, $\\tau_c/T={cpl['tau_c_min'] / T1:.2f}$, 5 % tempo heterogeneity)",
+        fontsize=11, fontweight="bold", color="#f8fafc",
+    )
+    fig.savefig(out_png, dpi=130, facecolor=fig.get_facecolor())
     plt.close(fig)
     return out_png
 
@@ -1048,8 +1868,49 @@ def run_self_test() -> bool:
     assert spec["lower_row"]["n_somites"] >= 7
     assert 35.0 <= spec["bilateral_mean_spacing_px"] <= 65.0
 
+    # 6. Hexagonal lattice topology (Law 4: k_i <= 6, interior degree 6, symmetric adjacency, mean-field W = [[1]])
+    lat = build_hex_lattice(12, 12)
+    assert np.array_equal(lat["adjacency"], lat["adjacency"].T), "Hex adjacency must be symmetric"
+    assert int(lat["degree"].max()) == 6 and lat["n_interior_six_neighbour_cells"] == 100, "12x12 odd-r hex lattice must have 100 interior 6-neighbour cells"
+    assert np.allclose(lat["W"].sum(axis=1), 1.0), "Neighbour-mean operator rows must sum to 1"
+    assert build_hex_lattice(1, 1)["W"].tolist() == [[1.0]], "Single-cell mean-field operator must be [[1]]"
+    lc = _hes7_limit_cycle_template()
+    assert abs(lc["period_min"] - 300.0) < 1.0, "Lattice cell template must carry the 300 min human period"
+
+    # 7. DLL1-Notch coupled lattice through the DAPT pulse-washout protocol (Law 4)
+    sync = evaluate_dapt_washout_synchrony()
+    cpl, abl = sync["coupled"], sync["ablated"]
+    assert cpl["R_initial"] < 0.4, "Random initial phases must start incoherent"
+    assert cpl["dapt_amplitude_ratio"] < 0.3, "DAPT (NICD absent) must collapse HES7 oscillation amplitude"
+    assert cpl["R_post_washout_peak"] > 0.98, "DAPT washout must reset the lattice to near-perfect synchrony"
+    assert cpl["R_post_washout"] > 0.75, f"Coupled lattice must retain synchrony after 6 cycles, got {cpl['R_post_washout']:.3f}"
+    assert abl["R_post_washout"] < 0.4, f"Coupling-ablated control must desynchronise, got {abl['R_post_washout']:.3f}"
+    assert sync["delta_R_post_coupling"] > 0.4, "Notch coupling must add > 0.4 to post-washout R"
+    assert abs(cpl["collective_period_post_min"] - cpl["T_single_cell_min"]) < 0.05 * cpl["T_single_cell_min"], "Collective period at tau_c = 0.8 T must stay within 5 % of the single-cell period"
+    sync_rep = simulate_notch_coupled_lattice(couple_after_washout=True, seed=2019)
+    assert np.allclose(sync_rep["R_t"], cpl["R_t"], atol=0.0), "Lattice run must be bitwise deterministic"
+    eps_sw = evaluate_coupling_strength_sweep()
+    assert eps_sw["R_end"][0] < 0.4 and max(eps_sw["R_end"]) > 0.9, "Coupling-strength sweep must span incoherent -> synchronised"
+    assert eps_sw["R_end"][eps_sw["eps_values"].index(0.25)] > eps_sw["R_end"][0] + 0.5, "eps = 0.25 must strongly outperform eps = 0"
+    tau_sw = evaluate_coupling_delay_period_modulation()
+    assert 0.8 in tau_sw["in_phase_stable_fractions"], "tau_c = 0.8 T must be in the stable in-phase window"
+    assert 0.0 not in tau_sw["in_phase_stable_fractions"], "Zero coupling delay must not stabilise in-phase synchrony (delayed coupling theory)"
+    assert tau_sw["max_fractional_modulation"] > 0.1, "Coupling delay must modulate the collective period by > 10 % (Herrgen 2010)"
+
+    # 8. Matrigel-embedded rosette mechanics (Law 5)
+    mg = evaluate_matrigel_sweep()
+    assert mg["by_pct"][0.0]["k_M_per_min"] == 0.0, "No Matrigel -> no boundary force"
+    assert mg["by_pct"][0.0]["polarity_order"] < 0.3, "Non-embedded aggregate must stay unpolarised"
+    assert mg["by_pct"][10.0]["polarity_order"] > 0.8, "10 % Matrigel must produce a radially polarised rosette"
+    assert mg["by_pct"][10.0]["epithelial_fraction"] > 0.5, "10 % Matrigel must epithelialise the aggregate"
+    assert mg["by_pct"][10.0]["aggregate_radius_um"] < mg["by_pct"][0.0]["aggregate_radius_um"], "Matrigel shell must confine the aggregate"
+    assert mg["spearman_rho"] > 0.8, "Rosette polarity must increase monotonically with Matrigel fraction"
+    ros_rep = simulate_matrigel_rosette(matrigel_pct=10.0)
+    assert np.allclose(ros_rep["x_um"], mg["by_pct"][10.0]["x_um"], atol=0.0), "Rosette simulation must be bitwise deterministic"
+
     measurements = measure_morphoeval()
-    assert len(measurements) == 5, "Expected 5 MorphoEval measurements"
+    assert len(measurements) == 9, "Expected 9 MorphoEval measurements"
+    assert all(("reference_value" in m and "unit" in m) for m in measurements)
 
     print("[2019-diaza-human-somite-organoid-clock] SELF-TEST PASSED:")
     print(f"  * Mouse WT period = {by_id['mouse_wt_mpsm']['predicted_period_min']:.2f} min vs Human WT = {by_id['human_wt_hpsm']['predicted_period_min']:.2f} min (ratio = {pert['human_mouse_period_ratio']:.4f})")
@@ -1057,6 +1918,9 @@ def run_self_test() -> bool:
     print(f"  * 6-regime perturbation Pearson r = {pert['pearson_r']:.4f} (RMSE = {pert['rmse_min']:.2f} min)")
     print(f"  * 6-species vertebrate allometry r = {allom['model_vs_empirical_r']:.4f} (RMSE = {allom['model_vs_empirical_rmse_min']:.2f} min)")
     print(f"  * Specimen bilateral somite spacing = {spec['bilateral_mean_spacing_px']:.2f} px (CV = {spec['bilateral_cv_spacing']:.4f})")
+    print(f"  * Notch lattice: R_0 = {cpl['R_initial']:.3f} -> R_pre-DAPT = {cpl['R_pre_dapt']:.3f}; DAPT amp ratio = {cpl['dapt_amplitude_ratio']:.3f}; R_post (coupled) = {cpl['R_post_washout']:.3f} vs ablated = {abl['R_post_washout']:.3f}; T_coll = {cpl['collective_period_post_min']:.1f} min")
+    print(f"  * eps sweep R_end = {[round(v, 3) for v in eps_sw['R_end']]}; tau_c/T stable window = {tau_sw['in_phase_stable_fractions']}; T_coll range {tau_sw['T_coll_min_over_sweep']:.0f}-{tau_sw['T_coll_max_over_sweep']:.0f} min")
+    print(f"  * Matrigel rosette P_rad: 0 % = {mg['by_pct'][0.0]['polarity_order']:.3f}, 10 % = {mg['by_pct'][10.0]['polarity_order']:.3f} (Spearman rho = {mg['spearman_rho']:.2f}, <e>_10% = {mg['by_pct'][10.0]['epithelial_fraction']:.3f})")
     return True
 
 
@@ -1067,6 +1931,9 @@ def main() -> int:
     parser.add_argument("--tau-human", type=float, default=51.0, help="Human HES7 total feedback delay tau (min)")
     parser.add_argument("--thalf-human", type=float, default=40.0, help="Human HES7 protein half-life t_{1/2,p} (min)")
     parser.add_argument("--seed", type=int, default=2019, help="Deterministic RNG seed")
+    parser.add_argument("--eps-notch", type=float, default=0.25, help="DLL1-Notch coupling modulation depth eps (Section 4b)")
+    parser.add_argument("--tau-c-fraction", type=float, default=DEFAULT_TAU_C_FRACTION, help="Notch coupling delay tau_c as a fraction of the single-cell period (Section 4b)")
+    parser.add_argument("--matrigel-pct", type=float, default=10.0, help="Matrigel volume fraction (%%) for a single extra rosette run printed to stdout (Section 4c)")
     parser.add_argument("--self-test", action="store_true", help="Run self-verification suite and exit")
     args = parser.parse_args()
 
@@ -1075,9 +1942,16 @@ def main() -> int:
         return 0
 
     run_self_test()
+    if args.eps_notch != 0.25 or args.tau_c_fraction != DEFAULT_TAU_C_FRACTION or args.matrigel_pct != 10.0:
+        T1 = _hes7_limit_cycle_template()["period_min"]
+        extra = simulate_notch_coupled_lattice(eps_notch=args.eps_notch, tau_c_min=args.tau_c_fraction * T1, seed=args.seed)
+        ros = simulate_matrigel_rosette(matrigel_pct=args.matrigel_pct, seed=args.seed)
+        print(f"[2019-diaza-human-somite-organoid-clock] eps={args.eps_notch:.2f}, tau_c/T={args.tau_c_fraction:.2f}: R_post={extra['R_post_washout']:.3f}, T_coll={extra['collective_period_post_min']:.1f} min; Matrigel {args.matrigel_pct:.1f} %: P_rad={ros['polarity_order']:.3f}, <e>={ros['epithelial_fraction']:.3f}")
     png_path = render_comparison_figure(OUTPUT_PNG)
+    lattice_png = render_notch_lattice_figure(OUTPUT_LATTICE_PNG)
     gif_path = render_growth_gif(OUTPUT_GIF)
     print(f"[2019-diaza-human-somite-organoid-clock] Wrote figure -> {png_path}")
+    print(f"[2019-diaza-human-somite-organoid-clock] Wrote lattice figure -> {lattice_png}")
     print(f"[2019-diaza-human-somite-organoid-clock] Wrote animation -> {gif_path}")
     return 0
 

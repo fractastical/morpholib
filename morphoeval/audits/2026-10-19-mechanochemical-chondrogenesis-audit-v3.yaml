@@ -1,0 +1,329 @@
+# MorphoEval audit — Oster, Murray & Harris (1983) / Oster, Murray & Maini (1985) Mechanochemical Chondrogenesis, 2026-10-19 (v3)
+#
+# Pass 3 remediation-round re-score of `1983-oster-mechanochemical-chondrogenesis.py` (Slot 013) in the
+# instrumented loop `morphoeval/runs/2026-10-19-mechanochemical-chondrogenesis-loop-pass3`, superseding
+# `2026-10-19-mechanochemical-chondrogenesis-audit-v2` (90.7). Both Pass 2 remediation items were closed:
+#   R1. The 2D limb paddle is now a genuine coupled cell-ECM PDE on a domain whose distal boundary (the AER
+#       front L(t) = L_0 + v_AER t) is a moving free boundary with an AER progress zone; the 1 -> 2 -> 4/5
+#       hierarchy emerges from the dynamics (only the proximal humeral nucleus is seeded) and the Saunders
+#       (1948) AER-ablation truncation series is reproduced ([1, 1, 2, 3] segments).
+#   R2. Raspopovic et al. (2014) Bmp-Sox9-Wnt kinetics are hybridised with the traction mechanics; the 4x4
+#       hybrid Jacobian lowers tau_c from 1.44 to 0.35 and a 2x2 factorial at tau = 0.85 gives [0, 0, 0, 4].
+# What the remediation exposed (hence several dimensions go DOWN despite the model being much better):
+#   - The Pass 2 Panel C that v2 scored as a "2D ... solver" (v2 evidence L280-345) was a kinematic template
+#     (prescribed Gaussian rods gated by tanh weights), so the v2 model-fidelity/parameter-expressivity
+#     evidence was overstated.
+#   - The 1D (and now 2D) solvers' drift kernel i k sigma_hat / (E k^2 + s + mu k^2) puts the viscous term in
+#     the quasi-static stiffness; its effective threshold tau_c = 1.4397 is 12.7% above the analytic 1.2776
+#     that the figure, phase diagram and measurement 1 report. Measured and disclosed (measurement 14).
+#   - The 1D "wavelength = lambda_c, CV = 0" validation (measurement 2) is tautological: the periodic domain is
+#     set to W = 4 lambda_c and the m = 4 cosine is seeded, so the spacing is lambda_c by construction.
+#   - The vendored reference JSON `canonical_parameters` (D_1 = 0.08, D_2 = 0.0025, s = 0.5, r = 0.2) were never
+#     the script's parameters (D_1 = 0.28, D_2 = 0.015, s = 0.85, r = 0.32); now disclosed side by side.
+#   - In the 2D solver the autopod count is partly inherited by 2 -> 4 bifurcation of the zeugopod rods: during
+#     tuning W_autopod = 3.0 ... 4.5 lambda_c all gave 4 rods, so Law 3 (m = W / lambda_c) is not what the 2D
+#     dynamics does in that range; the staircase m(W) has not been measured in the shipped script.
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale. Line numbers refer to the
+# files at commit d58a084 after the Pass 3 edits (verified against the working tree while writing this audit).
+
+audit:
+  id: 2026-10-19-mechanochemical-chondrogenesis-audit-v3
+  supersedes_audit_id: 2026-10-19-mechanochemical-chondrogenesis-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d58a084
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) remediation-round evaluation of `1983-oster-mechanochemical-chondrogenesis.py`
+      (1719 lines; 14 measurements; --self-test 31 s; default render 31-60 s) after closing both
+      open v2 remediation items in `2026-10-19-mechanochemical-chondrogenesis-loop-pass3`. The
+      working tree carries uncommitted Pass 3 edits on top of d58a084 (file-isolation rule: no commits).
+
+references:
+  oster1983:
+    title: "Mechanical aspects of mesenchymal morphogenesis"
+    authors: "Oster GF, Murray JD, Harris AK"
+    venue: "Journal of Embryology and Experimental Morphology 78(1):83-125 (1983)"
+    doi: 10.1242/dev.78.1.83
+  oster1985:
+    title: "A model for chondrogenic condensations in the developing limb: the role of extracellular matrix and cell tractions"
+    authors: "Oster GF, Murray JD, Maini PK"
+    venue: "Journal of Embryology and Experimental Morphology 89(1):93-112 (1985)"
+    doi: 10.1242/dev.89.1.93
+  murray1984:
+    title: "Generation of biological pattern and form"
+    authors: "Murray JD, Oster GF"
+    venue: "IMA Journal of Mathematics Applied in Medicine and Biology 1(1):51-75 (1984)"
+    doi: 10.1093/imammb/1.1.51
+  shubin1986:
+    title: "A morphogenetic approach to the origin and basic organization of the tetrapod limb"
+    authors: "Shubin NH, Alberch P"
+    venue: "Evolutionary Biology 20:319-387 (1986)"
+    doi: 10.1007/978-1-4615-6983-1_6
+  saunders1948:
+    title: "The proximo-distal sequence of origin of the parts of the chick wing and the role of the ectoderm"
+    authors: "Saunders JW Jr"
+    venue: "Journal of Experimental Zoology 108(3):363-403 (1948)"
+    doi: 10.1002/jez.1401080304
+  raspopovic2014:
+    title: "Digit patterning is controlled by a Bmp-Sox9-Wnt Turing network modulated by morphogen gradients"
+    authors: "Raspopovic J, Marcon L, Russo L, Sharpe J"
+    venue: "Science 345(6196):566-570 (2014)"
+    doi: 10.1126/science.1252960
+  tenberge2008:
+    title: "Wnt and FGF signals interact to coordinate growth with cell fate specification during limb development"
+    authors: "ten Berge D, Brugmann SA, Helms JA, Nusse R"
+    venue: "Development 135(19):3247-3257 (2008)"
+    doi: 10.1242/dev.023176
+  hall2000:
+    title: "All for one and one for all: condensation and the initiation of skeletal development"
+    authors: "Hall BK, Miyake T"
+    venue: "BioEssays 22(2):138-147 (2000)"
+    doi: 10.1002/(SICI)1521-1878(200002)22:2%3C138::AID-BIES5%3E3.0.CO;2-4  # angle brackets percent-encoded for RDF/Turtle serialisation
+
+simulations:
+  - id: oster-mechanochemical-chondrogenesis
+    name: "Oster, Murray & Harris (1983) / Oster, Murray & Maini (1985) mechanochemical limb chondrogenesis"
+    organism: "Ambystoma mexicanum & Oedipina ecuatoriana urodele salamander limb cartilage"
+    script: 1983-oster-mechanochemical-chondrogenesis.py
+    output: docs/media/mechanochemical_chondrogenesis_comparison.png
+    extra_outputs:
+      - docs/media/mechanochemical_chondrogenesis_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-mechanochemical-chondrogenesis-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Oster, Murray & Harris (1983) J. Embryol. Exp. Morph. 78:83-125 and Oster, Murray & Maini (1985) J. Embryol. Exp. Morph. 89:93-112 coupled mesenchymal cell-density and viscoelastic ECM traction PDE system; the AER maintains a distal recruitment/progress zone and condensations are laid down proximo-distally"
+        - "Critical cell traction bifurcation threshold tau_c driving focal condensation (stylopod), dichotomous Y-bifurcation (zeugopod) and digital branching (autopod: 4 forelimb / 5 hindlimb digits in urodele salamanders)"
+        - "Saunders (1948): removing the chick-wing AER at progressively later stages leaves progressively more distal skeletal parts (proximo-distal sequence of origin)"
+        - "Raspopovic et al. (2014): a Bmp-Sox9-Wnt Turing network with Sox9 out of phase with Bmp and Wnt patterns the digits"
+      reconstructed_in_script:
+        - "Exact marginal stability curve tau_eff(k^2) with analytic tau_c = 1.2776 at k_c = 0.9597 (lambda_c = 6.5472) and the 1D spectral-pseudospectral cell-ECM solver reproducing modes [0, 1, 2, 4, 5] on periodic domains W = m lambda_c with seeded m-cosine perturbations"
+        - "A 2D coupled cell-ECM PDE on a limb paddle with a moving free-boundary AER front (progress-zone traction suppression and proliferation, AER regression, anisotropic PD cell diffusion a_y = 3, ectoderm-balanced prestress) producing the forelimb [1, 2, 4] and hindlimb [1, 2, 5] hierarchies from a seeded proximal nucleus plus noise, with proximo-distal onset order and the Saunders (1948) ablation series [1, 1, 2, 3]"
+        - "A 4x4 hybrid Jacobian and 1D hybrid PDE coupling the mechanics to Raspopovic (2014) BSW kinetics (tau(1 + alpha_S S), +kappa_S (n - N_0)), with wavelength-matched ligand diffusivities, showing tau_c lowering 1.44 -> 0.35 and a 2x2 factorial [0, 0, 0, 4] at tau = 0.85"
+        - "Morphological segmentation of the vendored Oedipina ecuatoriana specimen giving [1, 2, 4] / [1, 2, 5] hierarchies, autopod spacings 39.0 / 41.25 px and the zeugopod/autopod spacing ratio compared with the 2D PDE (1.235 vs 1.373)"
+      transfer_boundary:
+        - "The 2D domain is a Fourier-periodic box with a diffuse (tanh) competence field, not a sharp Neumann boundary; the ECM force balance is reduced to a component-wise Helmholtz operator (no shear/Poisson coupling, no ECM density equation) and the viscous relaxation rate 1/(mu + 0.15) is ad hoc"
+        - "The solvers' drift kernel includes mu k^2 in the quasi-static stiffness, so their effective tau_c (1.4397) is 12.7% above the analytic 1.2776 shown in Panels A/D; all supercritical regimes used exceed both"
+        - "Only the proximal humeral/femoral nucleus is seeded in the 2D solver; the stylopod width W = 1.4 lambda_c is a tuned choice (W = 1.0 is marginal), and the autopod count is partly inherited by 2 -> 4 bifurcation rather than set by W / lambda_c"
+        - "The BSW parameters are copied from the Slot 016 reference JSON, rescaled in diffusivity to match lambda_c; the Saunders (1948) comparison is a qualitative stage-to-segment mapping, not digitised data; lengths are in lambda_c units with no micron calibration against the specimen"
+      does_not_claim:
+        - "A 3D finite-element limb, explicit ECM density/advection, joint/phalangeal segmentation of the rods, Hoxd13 gene-dosage polydactyly scaling (Slot 017), or quantitative reproduction of the full Raspopovic (2014) 2D autopod (Slot 016)"
+    source_refs:
+      - oster1983
+      - oster1985
+      - murray1984
+      - shubin1986
+      - saunders1948
+      - raspopovic2014
+      - tenberge2008
+      - hall2000
+    summary: >-
+      Pass 3 remediation-round evaluation of `1983-oster-mechanochemical-chondrogenesis.py` (87.1/100,
+      down from 90.7 in Pass 2 although the model is substantially more faithful). Both v2 remediation
+      items were closed: the kinematic 2D template that v2 had credited as a solver is replaced by a
+      genuine 2D coupled cell-ECM PDE on a limb paddle with a moving free-boundary AER front
+      (`_simulate_2d_aer_free_boundary_outgrowth`, L427-628) that produces the forelimb [1, 2, 4] and
+      hindlimb [1, 2, 5] hierarchies from a seeded proximal nucleus plus noise, lays them down in
+      proximo-distal order (onset 30.0 < 56.5 < 78.5) and reproduces the Saunders (1948) AER-ablation
+      truncation series [1, 1, 2, 3]; and the mechanics are hybridised with Raspopovic (2014)
+      Bmp-Sox9-Wnt kinetics (`hybrid_mechanochemical_bsw_jacobian`, L717-759;
+      `simulate_1d_hybrid_mechanochemical_bsw`, L816-902) showing a synergy window (tau_c 1.44 -> 0.35)
+      and a 2x2 factorial [0, 0, 0, 4] at tau = 0.85 with corr(S, B) = -0.988. The same work exposed
+      that the solvers' drift kernel is 12.7% off the analytic threshold, that the 1D wavelength
+      validation is tautological, that the reference JSON's canonical parameters were never the
+      script's, and that in 2D the autopod count is partly inherited by bifurcation rather than set by
+      W / lambda_c; these drive the lower, more honest scores. 9 machine-checked Lean 4 theorems
+      (6 new, 0 sorrys) and 14 reference-anchored measurements (9 new).
+    scores:
+      model-fidelity:
+        value: 85
+        rationale: >-
+          Credits: the analytic marginal-stability curve and tau_c (L192-237) match the linearised
+          Oster-Murray-Maini balance; the new 2D solver (L427-628) couples cell conservation with
+          biharmonic diffusion, traction-driven drift and Kelvin-Voigt ECM relaxation to a moving
+          free-boundary AER with a progress zone, which is the mechanism Oster, Murray & Maini (1985)
+          Sec. 4 describe; the hybrid 4x4 Jacobian (L717-759) is a correct linearisation of the stated
+          coupled system and its analytic-kernel limit reproduces tau_c = 1.2776 (self-test L1645).
+          Deductions: the drift kernel 1/(E k^2 + s + mu k^2) (L508; 1D L329) treats viscosity as
+          stiffness, so the solvers' tau_c = 1.4397 differs by 12.7% from the analytic value the figure
+          reports (-5); the ECM balance is component-wise Helmholtz with no shear/Poisson term, no ECM
+          density rho equation and the paper's -div(n du/dt) advection is replaced by the traction-drift
+          velocity (-4); ad hoc constants (relaxation 1/(mu + 0.15) L327/L572-573, cubic -0.18 (n - N_0)^3
+          L334/L580, aniso_y = 3.0 L444) are not from the source (-3); the v2 Panel C was a kinematic
+          template, so part of the v2 fidelity credit was unearned and is not restored here (-3).
+        evidence:
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [192, 237], note: "Analytic marginal stability curve tau_eff(k^2) and tau_c = 1.2776 at k_c = 0.9597", supports: true}
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [427, 628], note: "2D coupled cell-ECM PDE with moving free-boundary AER front, progress zone, AER regression, anisotropic PD diffusion and ectoderm-balanced prestress (sigma_drive L566, drift kernel L508)", supports: true}
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [717, 759], note: "4x4 hybrid mechanochemical + Bmp-Sox9-Wnt Jacobian; den = m_k + mu k^2 (solver kernel) vs m_k (analytic) at L751", supports: true}
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [1251, 1261], note: "Measurement 14 discloses tau_c(solver) = 1.4397 vs analytic 1.2776 (12.7%) — the solver does not implement the analytic dispersion relation exactly", supports: false}
+          - {file: morphoeval/lean/loops/Loop_013_mechanochemical_chondrogenesis.lean, lines: [98, 185], note: "6 new machine-checked theorems: AER front monotone, outgrowth mode monotone, Saunders ablation truncation, hybrid threshold lowering, synergy window, n-Sox9 loop determinant", supports: true}
+      specimen-match:
+        value: 86
+        rationale: >-
+          Credits: the vendored Oedipina ecuatoriana specimen is SHA-256-verified and segmented into
+          [1, 2, 4] / [1, 2, 5] (L968-1058); the 2D free-boundary PDE output (Panels C, G) now shows a
+          single proximal rod, a Y-bifurcation and 4 or 5 parallel digital rays within a widening
+          paddle, visibly the same architecture as the specimen in Panel E, and its autopod section is
+          overlaid on the specimen profile in Panel F; the GIF shows the sequence emerging behind the
+          AER. Deductions: the PDE rods are continuous with no joints, carpals/tarsals or phalangeal
+          segmentation and all digits have equal length, unlike the specimen (-6); the PDE
+          zeugopod/autopod spacing ratio is 1.235 vs the specimen's 1.373 (10% error, L1190-1199) (-3);
+          the forelimb stylopod rod is faint (amplitude ~0.3-0.4 vs ~0.6 for digits) because
+          W_stylopod = 1.4 lambda_c is near-marginal (-3); the comparison remains count-and-spacing level
+          with no micron calibration (-2).
+        evidence:
+          - {file: docs/media/mechanochemical_chondrogenesis_comparison.png, lines: [0, 0], note: "Panels C/G: 2D free-boundary PDE forelimb [1, 2, 4] and hindlimb [1, 2, 5]; Panel E specimen segmentation; Panel F specimen profile with the scaled PDE autopod section overlaid", supports: true}
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [968, 1058], note: "Specimen segmentation (forelimb/hindlimb hierarchies, spacings, profile correlation r = 0.874)", supports: true}
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [1190, 1199], note: "Zeugopod/autopod spacing ratio PDE 1.235 vs specimen 1.373 (10% error)", supports: true}
+          - {file: docs/media/mechanochemical_chondrogenesis_growth.gif, lines: [0, 0], note: "24 frames of the free-boundary PDE: stylopod rod -> Y-bifurcation -> 4 digits behind the advancing AER front", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: >-
+          Credits: v_AER, t_ablate, bsw_gain, coupling and digits are CLI flags (L1682-1692, --sweep-2d);
+          the ablation time controls the truncation level monotonically ([1, 1, 2, 3], Spearman rho =
+          0.95, Panel H); the coupling strength lowers tau_c monotonically along an 11-point curve
+          (L928-929, inset of Panel I; self-test L1647-1648); autopod_digits = 4 / 5 sets the distal paddle
+          width and yields 4 / 5 digits; the phase diagram marks the 2D-PDE zone counts. Deductions:
+          during tuning W_autopod = 3.0 ... 4.5 lambda_c all produced 4 rods, i.e. in the 2D solver the
+          digit count is partly inherited by 2 -> 4 bifurcation and is not the m = round(W / lambda_c)
+          staircase of Law 3 that Panel D draws — this sweep is not in the shipped script and the
+          discrepancy is not displayed (-7); W_stylopod = 1.0 gives no condensation and 1.3-1.5 give one,
+          so the stylopod regime is narrow and tuned (-4); aniso_y, d_pz and gate_w are fixed and unswept
+          although they decide rod orientation (isotropic diffusion gives stripes parallel to the front)
+          (-3).
+        evidence:
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [631, 668], note: "Saunders ablation series over t_ablate = (0, 14, 30, intact) with Spearman rho and RMSE vs [1, 1, 2, 3]", supports: true}
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [905, 962], note: "Synergy evaluation: tau_c(alpha_S = kappa_S) curve, factorial counts, phase correlations", supports: true}
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [1678, 1716], note: "CLI: --tau, --digits, --aer-speed, --ablate-at, --bsw-gain, --coupling, --seed, --sweep-2d", supports: true}
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [444, 451], note: "aniso_y = 3.0, w_stylopod = 1.4, w_zeugopod = 2.0 fixed defaults; no shipped W-sweep of the 2D mode staircase", supports: false}
+      morphometric-validation:
+        value: 88
+        rationale: >-
+          Credits: 14 reference-anchored measurements (L1069-1262), 9 new: 2D hierarchies vs specimen
+          [1, 2, 4] / [1, 2, 5] (RMSE 0), 2D zeugopod/autopod spacing ratio vs the specimen's 1.373,
+          proximo-distal onset rank correlation (1.0), Saunders series RMSE vs [1, 1, 2, 3] (0), synergy
+          ratio 0.240 vs null 1.0, factorial [0, 0, 0, 4], corr(S, B) = -0.988 vs Raspopovic's
+          out-of-phase prediction, and the disclosed solver/analytic tau_c discrepancy. Deductions:
+          measurement 2 (1D wavelength = lambda_c, CV = 0.0000, L1129-1137) is circular — the periodic
+          domain is W = 4 lambda_c and the m = 4 cosine is seeded (L312-313) (-5); the synergy and
+          factorial references are model-internal nulls/predictions, not literature values (-3); the
+          Saunders expectation is a qualitative mapping of stages to segments, not digitised data (-2);
+          no absolute length/time calibration (lambda_c in micrometres, outgrowth speed in micrometres
+          per hour) against the specimen or chick data (-2).
+        evidence:
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [1069, 1262], note: "measure_morphoeval(): 14 measurements with reference_value/reference_source/unit; 9 added in Pass 3 (L1168-1261)", supports: true}
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [1129, 1137], note: "Measurement 2: 1D autopod wavelength vs lambda_c is exact by construction (domain W = 4 lambda_c with seeded cosine at L312-313)", supports: false}
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [1200, 1220], note: "Proximo-distal onset-order measurement (Spearman rho) and Saunders ablation RMSE", supports: true}
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [1241, 1250], note: "corr(S, B) = -0.988 vs Raspopovic (2014) out-of-phase reference -1.0", supports: true}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Credits: 8 primary sources with DOIs in the docstring (L6-34), `paper_citations.bib` and the
+          reference JSON `sources`; the specimen JPG and scout manifest are SHA-256-pinned at runtime
+          (L128-158); the reference JSON now records the script's actual defaults, the AER/ablation table
+          and the BSW coupling table with their sources; the BSW parameters cite the Slot 016 reference
+          JSON they were copied from (L674-686). Deductions: the reference JSON `canonical_parameters`
+          (D_1 = 0.08 ...) still differ from the script's (D_1 = 0.28 ...) — disclosed side by side but
+          not reconciled (-4); the reference JSON is hashed but not pinned, so edits are not fail-closed
+          (-2); the BSW parameters are a copy rather than a hash-verified read of the Slot 016 fixture
+          (-2); the Saunders (1948) table carries no digitised stage/truncation data (-2).
+        evidence:
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [128, 158], note: "SHA-256 pins for specimen JPG and scout manifest; reference JSON hashed at runtime", supports: true}
+          - {file: datasets/mechanochemical_chondrogenesis/mechanochemical_chondrogenesis_reference.json, lines: [1, 60], note: "8 sources with DOIs (4 added in Pass 3) and the SHA-pinned specimen record", supports: true}
+          - {file: datasets/mechanochemical_chondrogenesis/mechanochemical_chondrogenesis_reference.json, lines: [102, 137], note: "canonical_parameters (never used by the script) next to the new script_default_parameters block with the disclosure note", supports: false}
+          - {file: datasets/mechanochemical_chondrogenesis/paper_citations.bib, lines: [44, 86], note: "Saunders 1948, Raspopovic 2014, ten Berge 2008, Hall & Miyake 2000 BibTeX entries with DOIs", supports: true}
+      code-traceability:
+        value: 88
+        rationale: >-
+          Credits: every new function docstring names the section/figure it implements (Oster-Murray-Maini
+          1985 Sec. 4 for the progress zone, Oster-Murray-Harris 1983 Sec. 5 for anisotropy, Raspopovic
+          2014 Fig. 2E / Supp. 1.2 for the BSW Jacobian, Hall & Miyake 2000 for kappa_S, Saunders 1948 for
+          ablation) and the Lean theorem it is checked by; laws 4-5 are registered with code and Lean loci in
+          `oster-mechanochemical-chondrogenesis.yaml` and the stale loci of laws 1-3 were corrected.
+          Deductions: the diffuse-competence/prestress-balance formulation (L566) and the progress-zone
+          noise term (L579) are modelling choices argued in the docstring, not steps of the source
+          (-4); peak-detection thresholds (height 1.15, prominence 0.25, onset 0.30; L377-409, L590) and
+          the 0.15 / 0.18 constants are uncited (-4); the Lean theorems formalise monotonicity and sign
+          conditions, not the PDE dynamics (-4).
+        evidence:
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [36, 58], note: "Pass 3 docstring block R1-R3 mapping each remediation to functions, sources and the disclosed kernel discrepancy", supports: true}
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [458, 488], note: "Free-boundary solver docstring: geometry, progress zone, equations, prestress balance, sources, Lean theorem", supports: true}
+          - {file: morphoeval/math_kg_loops/oster-mechanochemical-chondrogenesis.yaml, lines: [109, 174], note: "Laws 4 and 5 registered with Lean declarations, variables, roles, source citations and code loci", supports: true}
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [377, 409], note: "count_transverse_condensations thresholds (height 1.15, prominence 0.25) are uncited heuristics", supports: false}
+      repro-package:
+        value: 90
+        rationale: >-
+          Credits: deterministic seeds everywhere (seed + 100 * autopod_digits in 2D, seed + m in 1D and
+          hybrid); the self-test (L1591-1675) checks bitwise determinism of the 1D, 2D and hybrid solvers,
+          the analytic/solver tau_c relation, the synergy window, the factorial, the hierarchies, the onset
+          order and the ablation series and runs in ~31 s; the memoising wrapper (L412-424) makes figure,
+          GIF, measurement hook and self-test share one run per configuration; default render 31-60 s;
+          CLI flags documented in argparse. Deductions: no requirements lock file for this slot and the
+          environment is recorded only in this audit (-4); the matplotlib font-cache directory must be
+          writable or MPLCONFIGDIR set, which the script does not mention (-2); the memo cache keeps up to
+          24 snapshots per 2D configuration in memory (~3 MB each) without a documented bound (-2); the
+          dataset README invocation notes do not list the new flags (-2).
+        evidence:
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [1591, 1675], note: "Self-test: SHA-256, 1D/2D/hybrid bitwise determinism, hierarchies, onset order, ablation, synergy window, factorial, 14 measurements", supports: true}
+          - {file: 1983-oster-mechanochemical-chondrogenesis.py, lines: [412, 424], note: "Memoising wrapper keyed on bound solver arguments (excluding n_snapshots)", supports: true}
+          - {file: docs/media/mechanochemical_chondrogenesis_growth.gif, lines: [0, 0], note: "24-frame GIF rendered from the stored free-boundary PDE snapshots", supports: true}
+    remediation:
+      - >-
+        1983-oster-mechanochemical-chondrogenesis.py:329 and :508 — the drift kernel i k sigma_hat / (E k^2 + s + mu k^2)
+        places the viscous term in the quasi-static stiffness, so the 1D and 2D solvers' effective threshold is
+        tau_c = 1.4397 while Panels A/D, measurement 1 and the Lean law report the analytic 1.2776 (measurement 14,
+        L1251-1261). Either solve the Kelvin-Voigt balance properly (mu k^2 du/dt + (E k^2 + s) u = i k sigma_hat and
+        advect cells with du/dt) or re-derive and display the solver's own marginal curve.
+      - >-
+        1983-oster-mechanochemical-chondrogenesis.py:444-446 and :517-523 — the 2D autopod count is partly inherited by
+        2 -> 4 bifurcation of the zeugopod rods (W_autopod = 3.0 ... 4.5 lambda_c all gave 4 rods during tuning) and the
+        stylopod only condenses for W_stylopod in roughly [1.3, 1.5] lambda_c, so the 2D dynamics does not follow the
+        m = round(W / lambda_c) staircase that Panel D draws. Add a shipped W_autopod sweep (3.0 ... 6.0) and a W_stylopod
+        sweep as measurements, and overlay the 2D staircase on Panel D.
+      - >-
+        1983-oster-mechanochemical-chondrogenesis.py:312-313 and :1129-1137 — measurement 2 (1D autopod wavelength =
+        lambda_c, CV = 0.0000) is exact by construction because the periodic domain is W = 4 lambda_c and the m = 4 cosine
+        is seeded. Replace it with a noise-only 1D run on a long domain (W >= 12 lambda_c) and report the emergent
+        dominant wavelength and its error against lambda_c.
+      - >-
+        datasets/mechanochemical_chondrogenesis/mechanochemical_chondrogenesis_reference.json:102-115 vs :116-137 —
+        `canonical_parameters` (D_1 = 0.08, D_2 = 0.0025, s = 0.5, r = 0.2, tau_stylopod = 1.48) were never the script's
+        values; the new `script_default_parameters` block discloses this. Reconcile: either adopt the vendored values
+        in the script (re-deriving tau_c, lambda_c) or trace each script default to a source and retire the stale block;
+        then SHA-256-pin the reference JSON.
+      - >-
+        1983-oster-mechanochemical-chondrogenesis.py:566 and :579 — the ectoderm-balanced prestress sigma_drive =
+        chi (1 - g_pz) [sigma_cell(n) - sigma_cell(N_0)] and the progress-zone mitotic noise are modelling choices that
+        remove a boundary-rim artefact; add an ablation (bare penalised mask, no noise) as a measurement so the
+        dependence of the 1 -> 2 -> 4 result on these choices is quantified rather than argued in the docstring.
+      - >-
+        1983-oster-mechanochemical-chondrogenesis.py:674-686 — BSW_PARAMS are copied from
+        datasets/bmp_sox9_wnt_digits/bmp_sox9_wnt_digits_reference.json rather than read from it with its SHA-256;
+        read the Slot 016 fixture at runtime (verify its digest) so the hybrid inherits its provenance, and add a
+        micron/hour calibration of lambda_c and v_AER against the specimen scale and chick outgrowth rates.

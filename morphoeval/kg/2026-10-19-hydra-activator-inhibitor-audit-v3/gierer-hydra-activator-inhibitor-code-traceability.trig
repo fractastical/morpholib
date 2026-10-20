@@ -1,0 +1,82 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-gierer-hydra-activator-inhibitor> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-gierer-hydra-activator-inhibitor-code-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-gierer-hydra-activator-inhibitor-code-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Gierer & Meinhardt (1972) & Meinhardt (1993, 2012) Hydra vulgaris activator-inhibitor morphogenesis, head regeneration, tentacle ring & coupled three-system 3D shell — Code-to-model traceability: 90/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The module docstring (L1-131) maps every section to its equations and figures, including a new §2b that writes out the three-system equations, the operator, the analytic threshold and what the shell does and does not reproduce; every shell function carries a docstring naming its role; the math KG now registers 7 laws with Lean and code loci that were re-pinned to the current line numbers. Deductions: the three-system coupling functions cite Meinhardt (1993) by section title (\"how to form structures close to each other\") rather than equation (-4); the kappa_head saturation, Hill exponents and the `1e-5..250` clipping are untraced numerical choices (-3); the Pass 2 docstring statistics were stale until this pass (now corrected), which shows the docstring is not generated from the measurements (-3)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:evidenceAgainst "1972-gierer-hydra-activator-inhibitor.py L913–L923: tentacle_drive / foot_drive docstrings state the functional form and its purpose but cite no equation of Meinhardt (1993) <https://github.com/fractastical/morpholib/blob/4d5512d/1972-gierer-hydra-activator-inhibitor.py#L913-L923>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-gierer-hydra-activator-inhibitor-code-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gierer-hydra-activator-inhibitor-code-traceability-2> ;
+        pk:hasScore "0.9"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gierer-hydra-activator-inhibitor-code-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "1972-gierer-hydra-activator-inhibitor.py L27–L113" ;
+        dct:description "Docstring §2 Lean theorem list and §2b three-system shell equations, operator, threshold and reproduced features" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/4d5512d/1972-gierer-hydra-activator-inhibitor.py#L27-L113> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gierer-hydra-activator-inhibitor-code-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/math_kg_loops/gierer-hydra-activator-inhibitor.yaml L95–L187" ;
+        dct:description "Laws 4-7 registered with lean_decl/lean_theorem/lean_locus/lean_code and code_locus pinned to the current file" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/4d5512d/morphoeval/math_kg_loops/gierer-hydra-activator-inhibitor.yaml#L95-L187> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary, Pass 3 builder+assessor) + MorphoEval Dual-Rubric Assessor" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1006/dbio.1993.1138>,
+            <https://doi.org/10.1007/BF00289234>,
+            <https://doi.org/10.1242/jcs.15.2.321>,
+            <https://doi.org/10.1387/ijdb.113483hm> .
+    <https://doi.org/10.1006/dbio.1993.1138> dct:date "1993"^^xsd:gYear ;
+        dct:title "A model for pattern formation of hypostome, tentacles, and foot in hydra: how to form structures close to each other, how to form them at a distance" .
+    <https://doi.org/10.1007/BF00289234> dct:date "1972"^^xsd:gYear ;
+        dct:title "A theory of biological pattern formation" .
+    <https://doi.org/10.1242/jcs.15.2.321> dct:date "1974"^^xsd:gYear ;
+        dct:title "Applications of a theory of biological pattern formation based on lateral inhibition" .
+    <https://doi.org/10.1387/ijdb.113483hm> dct:date "2012"^^xsd:gYear ;
+        dct:title "Modeling pattern formation in hydra: a route to understanding essential steps in development" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Gierer & Meinhardt (1972) & Meinhardt (1993, 2012) Hydra vulgaris activator-inhibitor morphogenesis, head regeneration, tentacle ring & coupled three-system 3D shell — Code-to-model traceability 90/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T06:03:19Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-gierer-hydra-activator-inhibitor-code-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

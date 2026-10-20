@@ -1,0 +1,92 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-raspopovic-bmp-sox9-wnt-digits> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-raspopovic-bmp-sox9-wnt-digits-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-raspopovic-bmp-sox9-wnt-digits-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Raspopovic et al. (2014) 3-node Bmp-Sox9-Wnt Turing digit patterning network modulated by distal FGF on a moving-boundary FEM limb-bud outgrowth mesh — MorphoEval overall 84.0/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Pass 3 (v3) evaluation of `2014-raspopovic-bmp-sox9-wnt-digits.py` (84.0/100; v2 96.3, v1 56.8). The single v2 remediation item is closed: Section 3b couples the 3-node network to a genuine moving-boundary P1 finite-element limb-bud mesh (2496 nodes / 4750 triangles) with a conservative ALE lumped-mass update that realises the Crampin-Gaffney-Maini dilution term exactly, implicit diffusion with the stiffness re-assembled on the deformed mesh, and AER-anchored FGF/Hoxd wavelength modulation. From unbiased noise the growing bud produces 5 unbranched Sox9 rays (bifurcation range 0 in 3/3 seeds; 0.67 without the modulation), out-of-phase ligands (r = -0.978 / -0.994), and sequential ray addition 2 -> 4 -> 5 as the distal arc grows 11.9 -> 20.1. The solver is verified against the analytic dispersion relation (2.2 % at q_c), the dilution law (slope -1.000, rho_c 0.265 vs 0.261) and the arc-length law (monotone, slope 0.225 vs 0.250); three new Lean theorems formalise these laws. The overall score nevertheless falls because the re-read exposed that the v2 2D fan result was mode-seeded and masked, the v2 FGF/Hox collapse rests on a fitted exponent that contradicts the network's own dispersion relation, and the LDN / CHIR counts are capped by hand; the FEM layer's own reductions (prescribed fan, uniform stretch, analytic references, interior ray insertion) are priced in as well. Overall 84.0/100 (faithfulness 81.9, reproducibility 88.9); rubric morphoeval 0.1.0; checkpoint commit d58a084; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 82, Morphological realism / specimen match 81, Parameter expressivity 84, Morphometric validation 82, Source and data traceability 90, Code-to-model traceability 86, Reproducibility package 90. Output judged: docs/media/bmp_sox9_wnt_digits_comparison.png: rendered output of 2014-raspopovic-bmp-sox9-wnt-digits.py at d58a084, image/png, 1351556 B, 2453×2288 px, artifact_sha256 22b27c34b46a015ca80913991f77bbaec823119454402539c53eb86847740d91 (sha256 22b27c34b46a015ca80913991f77bbaec823119454402539c53eb86847740d91), spec_fingerprint fcc019aeaf38ae13b447dccbc8f276f80745d761e03ea95627ecad0617dd1321. Dual provenance: spec_fingerprint: fcc019aeaf38ae13b447dccbc8f276f80745d761e03ea95627ecad0617dd1321; artifact_sha256: 22b27c34b46a015ca80913991f77bbaec823119454402539c53eb86847740d91; input_dataset_sha256: {datasets/bmp_sox9_wnt_digits/bmp_sox9_wnt_digits_reference.json=c0444b665610be2e..., datasets/bmp_sox9_wnt_digits/limb_bud_outgrowth_fem_reference.json=3db7c9493f12c2b3..., datasets/bmp_sox9_wnt_digits/paper_citations.bib=88ff32a60b567060..., datasets/bmp_sox9_wnt_digits/paper_citations_pass3.bib=eab1e111424c9ac1..., datasets/bmp_sox9_wnt_digits/scout_manifest.json=f990b473b6a93cfa..., datasets/bmp_sox9_wnt_digits/sox9_limb_digits_specimen.jpg=533f621904d6f2ce...}. Supersedes audit: 2026-10-19-bmp-sox9-wnt-digits-audit-v2. Claim boundary: reported_in_source: Raspopovic et al. (2014): a 3-node network of cell-autonomous Sox9 with diffusing Bmp and Wnt (Sox9 represses both ligands, Bmp activates and Wnt represses Sox9) is Turing-unstable without ligand self-activation; Sox9 digit stripes are out of phase with Bmp and Wnt; on the growing autopod a distal FGF / Hoxd gradient that lengthens the wavelength keeps the stripes unbranched, and the growing-domain simulations were run on a realistic limb-bud growth map (Marcon et al. 2011) | Sheth et al. (2012): digit number scales with autopod width / Hox dosage through the Turing wavelength | Crampin, Gaffney & Maini (1999): on a growing domain every species acquires the dilution term -(div u) c and modes are inserted sequentially as the domain lengthens | Boehm et al. (2010): finite-element limb-bud growth; a proliferation gradient alone does not explain the bud shape | Farin et al. (2013): E12.5 Sox9 / E13.5 Col2a1 WISH of wild-type (5) and Tbx2-/- (6) digit condensations (the vendored specimen) | Shubin & Alberch (1986): the digital arch forms posterior to anterior with the marginal digit I last; reconstructed_in_script: 3-node and reduced 2-diffuser Jacobians, dispersion relation and D = 0 control (Laws 1-3); 1D distal-arc explicit solver; 2D polar-fan finite-difference solver carried from v2; 7-regime FGF/Hox table; 6-condition perturbation suite; DoG + chromogen segmentation of the WISH specimen (5 WT vs 6 Tbx2-/- rays) | Pass 3: P1 finite-element solver on a Lagrangian / ALE polar-fan mesh with a moving AER boundary, implicit diffusion, conservative lumped-mass dilution, re-assembled stiffness, AER-anchored wavelength modulation with three modes, FEM verification against the analytic dispersion relation, growth-dilution sweep, final-arc sweep, 3 x 3 modulation ablation, 9 new reference-anchored measurements and 3 new Lean theorems (Laws 4-6); transfer_boundary: The mesh is a prescribed polar fan (r_prox = 4.2, R: 5.0 -> 8.4, theta_max = 0.38 pi) with a uniform radial Lagrangian stretch and an exponential-then-capped outgrowth law; there is no proliferation field, no realistic bud outline, no dorsoventral axis and no measured growth kinetics | The FGF / Hoxd modulation enters as D ∝ (r / R(t))^2 (lambda ∝ r / R(t)); this is the unique modulation that keeps sigma_max fixed while scaling lambda with the arc, not an equation of Raspopovic et al. (2014), whose supplementary modulation functions were not retrieved | All new reference values are analytic consequences of the baseline parameters (dispersion relation, Lean Laws 4-6) or qualitative statements from the papers; no digitised stripe count, growth curve or width-vs-digit-number data are vendored | The v2 7-regime FGF/Hox collapse depends on a fitted exponent (3.12) in a diffusion scaling that the network itself does not produce; the v2 LDN / CHIR digit counts are capped by hand; the v2 2D polar-fan result is mode-seeded and cosmetically masked (all three are disclosed here and carried as Pass 4 items); does_not_claim: A reproduction of the Raspopovic et al. (2014) supplementary growing-domain simulations, measured outgrowth kinetics of the mouse limb bud, the posterior-to-anterior order of digit condensation (the model inserts new rays in the interior), chondrogenic condensation mechanics, 3D geometry, or digit identity." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: 2014-raspopovic-bmp-sox9-wnt-digits.py:1088-1120 and 1993-2000 — the arc sweep gives 2, 4, 5, 5, 6 against the integer law 3, 4, 5, 6, 7 (exact 2/5) and the self-test only requires |slope - 1/lambda| < 0.08. Report the band of admissible counts per arc (from the dispersion band sigma > 0.9 sigma_max) and tighten the test, or average over seeds.",
+            "remediation needed: 2014-raspopovic-bmp-sox9-wnt-digits.py:1721-1812 and datasets/bmp_sox9_wnt_digits/limb_bud_outgrowth_fem_reference.json — eight of nine Pass 3 references are analytic / model-internal. Vendor measured anchors (Sheth 2012 width vs digit number, Raspopovic Fig. 4 stripe counts with and without modulation) and compare the FEM ray width, spacing CV and taper with the segmented specimen rays.",
+            "remediation needed: 2014-raspopovic-bmp-sox9-wnt-digits.py:303-365 (L318 d_scale = (k_bs_eff / k_bs)^3.12 * fgf_scale^2) with datasets/bmp_sox9_wnt_digits/bmp_sox9_wnt_digits_reference.json `fgf_hox_wavelength_scaling` — the 7-regime wavelength collapse is produced by a fitted exponent; with D fixed the network shortens lambda_c as k_bs rises (5.02 -> 3.27 for k_bs 1.0 -> 3.2). Retrieve the Raspopovic et al. (2014) supplementary modulation functions, re-derive which parameter the FGF / Hox gradients modulate, and re-score the table without a fitted exponent.",
+            "remediation needed: 2014-raspopovic-bmp-sox9-wnt-digits.py:476-594 (L526-528 mode seeding, L549-550 radial diffusion x 0.0008, L514 / L560-567 cosmetic envelope) — the v2 2D polar-fan solver imposes its 5-ray result. Remove it (or rerun it from noise with isotropic diffusion) and drop the '2D fan-shaped autopod ... digit ray count' measurement (L1855-1864) in favour of the FEM measurement, or label it explicitly as seeded.",
+            "remediation needed: 2014-raspopovic-bmp-sox9-wnt-digits.py:617-629 and 644-649 — per-condition basal Sox9 offsets and the min(1, ...) / min(2, ...) caps hard-code the LDN-193189 and CHIR99021 digit counts. Derive the counts from the solver with a single condensation threshold and report the failures if the network does not reproduce them.",
+            "remediation needed: 2014-raspopovic-bmp-sox9-wnt-digits.py:712-718 and 871 (fan map, R(t) = min(R1, R0 exp(g t)), uniform stretch) — the limb-bud geometry and kinematics are prescribed. Vendor the Boehm et al. (2010) / Marcon et al. (2011) outgrowth kinetics and bud outline (or digitise Raspopovic Fig. 4 stage outlines), drive the mesh by a proliferation field and compare L_arc(t) with the measured width.",
+            "remediation needed: 2014-raspopovic-bmp-sox9-wnt-digits.py:915-923 with measurement L1796-1811 — new rays are inserted in the interior (0/3 marginal; eta = -0.25, +0.47, +0.11) and marginal half-rays sit on the straight fan boundary, whereas the digital arch adds the marginal digits last and the specimen's digits I / V are inset. Add a rounded outline with margin competence loss (or a Shh / Gli3 anterior-posterior bias) and re-measure the insertion order.",
+            "remediation needed: Repro: add a requirements.lock for the recorded environment (python 3.14.7 / numpy 2.5.4 / scipy 1.16.3 / matplotlib 3.10.7 / Pillow 12.0.0), set MPLCONFIGDIR inside the script when the default is unwritable, and tighten the FEM tolerances (sigma 0.05 -> 0.03, slope 0.08 -> 0.04) in self_test (L1974-1977, L1999-2000)." ;
+        pk:hasScore "0.84"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary, Pass 3 remediation + re-score; MorphoEval Autonomous Loop Slot 016)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/16> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1006/bulm.1999.0131>,
+            <https://doi.org/10.1007/978-1-4615-6983-1_6>,
+            <https://doi.org/10.1126/science.1226804>,
+            <https://doi.org/10.1126/science.1252960>,
+            <https://doi.org/10.1371/journal.pbio.1000420>,
+            <https://doi.org/10.1371/journal.pcbi.1001071>,
+            <https://doi.org/10.1371/journal.pgen.1003467>,
+            <https://doi.org/10.7554/eLife.14022> .
+    <https://doi.org/10.1006/bulm.1999.0131> dct:date "1999"^^xsd:gYear ;
+        dct:title "Reaction and diffusion on growing domains: Scenarios for robust pattern formation" .
+    <https://doi.org/10.1007/978-1-4615-6983-1_6> dct:date "1986"^^xsd:gYear ;
+        dct:title "A morphogenetic approach to the origin and basic organization of the tetrapod limb" .
+    <https://doi.org/10.1126/science.1226804> dct:date "2012"^^xsd:gYear ;
+        dct:title "Hox genes regulate digit patterning by controlling the wavelength of a Turing-type mechanism" .
+    <https://doi.org/10.1126/science.1252960> dct:date "2014"^^xsd:gYear ;
+        dct:title "Digit patterning is controlled by a Bmp-Sox9-Wnt Turing network modulated by morphogen gradients" .
+    <https://doi.org/10.1371/journal.pbio.1000420> dct:date "2010"^^xsd:gYear ;
+        dct:title "The role of spatially controlled cell proliferation in limb bud morphogenesis" .
+    <https://doi.org/10.1371/journal.pcbi.1001071> dct:date "2011"^^xsd:gYear ;
+        dct:title "A computational clonal analysis of the developing mouse limb bud" .
+    <https://doi.org/10.1371/journal.pgen.1003467> dct:date "2013"^^xsd:gYear ;
+        dct:title "Tbx2 terminates Shh/Fgf signaling in the developing mouse limb bud by direct repression of Gremlin1" .
+    <https://doi.org/10.7554/eLife.14022> dct:date "2016"^^xsd:gYear ;
+        dct:title "High-throughput mathematical analysis identifies Turing networks for patterning with equally diffusing signals" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Raspopovic et al. (2014) 3-node Bmp-Sox9-Wnt Turing digit patterning network modulated by distal FGF on a moving-boundary FEM limb-bud outgrowth mesh — MorphoEval overall 84.0/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T07:18:59Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-raspopovic-bmp-sox9-wnt-digits-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/16>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-raspopovic-bmp-sox9-wnt-digits> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

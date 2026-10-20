@@ -124,4 +124,70 @@ theorem hentschel_kiskowski_fibronectin_haptotaxis_amplification
   have hneg : (0 - D_R) * q ≤ 0 := Int.mul_nonpos_of_nonpos_of_nonneg (by omega) (by omega)
   omega
 
+
+-- ============================================================================
+-- Law 4 (`hentschel-tgfb-fibronectin-limb-4`, Pass 3):
+-- Glazier-Graner-Hogeweg Differential-Adhesion Sorting Condition
+-- ============================================================================
+
+/-- Twice the heterotypic surface tension of the GGH cellular Potts model,
+    `2 γ_ld = 2 J_ld - J_ll - J_dd` (Glazier & Graner 1993 Phys. Rev. E 47:2128), for
+    R1 ("light", `J_ll`), R2 ("dark", `J_dd`) and heterotypic (`J_ld`) contact energies. -/
+def ggh_hetero_surface_tension2 (J_ll J_dd J_ld : Int) : Int :=
+  2 * J_ld - J_ll - J_dd
+
+/-- Energy change of replacing two heterotypic R1|R2 contacts by one R1|R1 and one R2|R2
+    contact (the elementary sorting swap in the GGH Hamiltonian
+    `H = Σ J(τ_i, τ_j)(1 - δ_{σ_i σ_j}) + λ_V Σ (v_σ - V_T)^2`). -/
+def ggh_sorting_swap_dH (J_ll J_dd J_ld : Int) : Int :=
+  (J_ll + J_dd) - 2 * J_ld
+
+/-- Theorem 4 (`ggh_differential_adhesion_sorting_condition`):
+    Whenever the heterotypic surface tension is positive (`2 J_ld > J_ll + J_dd`), the
+    elementary sorting swap strictly lowers the GGH Hamiltonian (`ggh_sorting_swap_dH < 0`), so
+    R2 prechondrogenic cells sort into compact condensations surrounded by R1 mesenchyme;
+    for the Graner & Glazier (1992) values `(J_ll, J_dd, J_ld) = (14, 2, 11)` used in
+    `simulate_ggh_cellular_potts_condensation` the swap energy is `-6`; and under the
+    no-differential-adhesion ablation `J_ll = J_dd = J_ld = J` both the surface tension and the
+    swap energy vanish (no sorting drive), matching the `hapto_only` / `ablation` regimes. -/
+theorem ggh_differential_adhesion_sorting_condition (J_ll J_dd J_ld J : Int)
+    (hsort : 2 * J_ld > J_ll + J_dd) :
+    ggh_sorting_swap_dH J_ll J_dd J_ld < 0 ∧
+    ggh_hetero_surface_tension2 J_ll J_dd J_ld > 0 ∧
+    ggh_sorting_swap_dH 14 2 11 = -6 ∧
+    ggh_hetero_surface_tension2 14 2 11 = 6 ∧
+    ggh_sorting_swap_dH J J J = 0 ∧
+    ggh_hetero_surface_tension2 J J J = 0 := by
+  unfold ggh_sorting_swap_dH ggh_hetero_surface_tension2
+  omega
+
+
+-- ============================================================================
+-- Law 5 (`hentschel-tgfb-fibronectin-limb-5`, Pass 3):
+-- Metropolis Haptotactic Acceptance in the Coupled GGH Cell Lattice
+-- ============================================================================
+
+/-- Total GGH copy-attempt energy change for a cell extending into a target lattice site:
+    adhesion term `dH_adh`, volume-constraint term `dH_vol`, and the haptotaxis term
+    `-μ_F (F(target) - F(source)) = -μ_F · dF` (Savill & Hogeweg 1997). -/
+def ggh_total_dH (dH_adh dH_vol mu_F dF : Int) : Int :=
+  dH_adh + dH_vol - mu_F * dF
+
+/-- Theorem 5 (`ggh_metropolis_haptotaxis_acceptance`):
+    (1) If the haptotactic energy gain of an up-gradient extension (`μ_F ≥ 1`, `dF ≥ 1`) is at
+        least the adhesion-plus-volume penalty, the total `ΔH ≤ 0`, so the Metropolis rule
+        `P = min(1, exp(-ΔH/T))` accepts the copy with probability 1 — mesenchymal cells climb
+        fibronectin gradients deterministically once `μ_F dF` dominates.
+    (2) The anti-fibronectin control `μ_F = 0` removes the haptotactic term entirely:
+        `ΔH = dH_adh + dH_vol`, so acceptance is governed by adhesion and volume alone (the
+        `da_only` regime), and the haptotactic term is strictly favourable whenever `μ_F dF > 0`. -/
+theorem ggh_metropolis_haptotaxis_acceptance (dH_adh dH_vol mu_F dF : Int)
+    (hmu : mu_F ≥ 1) (hdF : dF ≥ 1) (hpen : dH_adh + dH_vol ≤ mu_F * dF) :
+    ggh_total_dH dH_adh dH_vol mu_F dF ≤ 0 ∧
+    ggh_total_dH dH_adh dH_vol 0 dF = dH_adh + dH_vol ∧
+    ggh_total_dH dH_adh dH_vol mu_F dF < ggh_total_dH dH_adh dH_vol 0 dF := by
+  unfold ggh_total_dH
+  have hpos : mu_F * dF ≥ 1 * 1 := Int.mul_le_mul hmu hdF (by omega) (by omega)
+  omega
+
 end MathOfBiology.Loop_014

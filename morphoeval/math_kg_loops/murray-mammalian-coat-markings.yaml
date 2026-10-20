@@ -10,11 +10,14 @@ model_spec:
   d: 10.0
   gamma_flank: 25.0
   gamma_tail: 8.0
+  gamma_mesh_unit_wavelength: 53.05
+  growth_factor_default: 2.0
   seed: 1981
   inputs:
     - datasets/mammalian_coat_markings/mammalian_coat_markings_reference.json
     - datasets/mammalian_coat_markings/panthera_pardus_specimen.jpg
     - datasets/mammalian_coat_markings/scout_manifest.json
+    - datasets/mammalian_coat_markings/felid_body_profile.json
 equations:
   - law_name: "Thomas (1975) / Murray (1981) Homogeneous Steady-State Reservoir Flux Balance"
     formula: "f(u_0, v_0) = a - u_0 - h(u_0, v_0) = 0 ∧ g(u_0, v_0) = α(b - v_0) - h(u_0, v_0) = 0 ⟹ a - u_0 = α(b - v_0) = ρ u_0 v_0 / (1 + u_0 + K u_0^2)"
@@ -31,7 +34,7 @@ equations:
     variables: "u_0, v_0: homogeneous steady-state substrate and co-substrate concentrations; a, b: reservoir concentrations; α: relative co-substrate influx; h(u,v): immobilized uricase reaction flux"
     role: "Pins the exact linear conservation relation v_0 = b - (a - u_0)/α reducing the 2D equilibrium intersection to a 1D root in u_0"
     source_citation: "Murray (1981) J. Theor. Biol. 88(1):161-199 Eqs. (4)-(7); Thomas (1975) Biochimie 57:499-507"
-    code_locus: "1981-murray-mammalian-coat-markings.py#L140-L215"
+    code_locus: "1981-murray-mammalian-coat-markings.py#L160-L254"
   - law_name: "Thomas Substrate-Inhibition Autocatalysis Threshold (K u_0^2 > 1)"
     formula: "(1 + u_0 + K u_0^2)^2 f_u = ρ v_0 (K u_0^2 - 1) - (1 + u_0 + K u_0^2)^2 > 0  ⟹  K u_0^2 > 1"
     lean_decl: "MathOfBiology.Loop_003.thomas_fu_scaled_num"
@@ -48,12 +51,12 @@ equations:
     variables: "K: substrate-inhibition constant; u_0, v_0: steady-state concentrations; ρ: maximum enzyme velocity; f_u = ∂f/∂u: self-activation Jacobian entry"
     role: "Proves that non-inhibitory Michaelis-Menten kinetics (K=0) cannot self-activate (f_u < 0), whereas substrate inhibition K u_0^2 > 1 creates positive feedback f_u > 0 at Murray's Table 1 regime"
     source_citation: "Murray (1981) J. Theor. Biol. 88(1):161-199 Section 2 Eqs. (8)-(14), Table 1"
-    code_locus: "1981-murray-mammalian-coat-markings.py#L165-L245"
+    code_locus: "1981-murray-mammalian-coat-markings.py#L160-L254"
   - law_name: "Murray (1981) Conical Tail Circumferential-to-Axial Eigenmode Exclusion Theorem"
     formula: "k_{n,m}^2(r) = (n π / L)^2 + (m / r)^2 ∈ [k_-^2 / γ, k_+^2 / γ];  r < r_crit = m √(γ / k_+^2) ⟹ m ≥ 1 damped, m = 0 rings unstable"
     lean_decl: "MathOfBiology.Loop_003.in_turing_band_r2"
     lean_theorem: "MathOfBiology.Loop_003.murray_conical_tail_spot_to_ring_transition"
-    lean_locus: "morphoeval/lean/loops/Loop_003_mammalian_coat_markings.lean#L73-L99"
+    lean_locus: "morphoeval/lean/loops/Loop_003_mammalian_coat_markings.lean#L73-L98"
     lean_code: |
       def in_turing_band_r2 (q_min_10 q_max_10 q_ax_10 m r : Nat) : Bool :=
         decide (q_min_10 * r * r ≤ q_ax_10 * r * r + 10 * m * m ∧
@@ -67,4 +70,42 @@ equations:
     variables: "r(x): local tapered tail radius; L: tail length; n: axial mode number; m: circumferential mode number; [k_-^2, k_+^2]: unstable Turing wavenumber band"
     role: "Proves why a tapered mammalian tail transitions from 2D spots (m ≥ 1) at the broad proximal base to 1D transverse rings (m = 0) at the narrow distal tip, and never from rings at the base to spots at the tip"
     source_citation: "Murray (1981) J. Theor. Biol. 88(1):161-199 Section 4 Eqs. (26)-(32), Figs. 9-12; Murray (1988) Sci. Am. 258(3):80-87"
-    code_locus: "1981-murray-mammalian-coat-markings.py#L250-L335"
+    code_locus: "1981-murray-mammalian-coat-markings.py#L255-L330"
+  - law_name: "P1 Surface-FEM Cotangent Laplace-Beltrami: Constants in the Kernel & Discrete Mass Conservation"
+    formula: "(K u)_i = Σ_j w_ij (u_i - u_j), w_ij = (cot α_ij + cot β_ij)/2  ⟹  K 1 = 0 ∧ 1ᵀ K u = 0  ⟹  Σ_i M_i u_i^{n+1} = Σ_i M_i u_i^n for (M + (dt/γ) K) u^{n+1} = M u^n"
+    lean_decl: "MathOfBiology.Loop_003.fem_cot_row"
+    lean_theorem: "MathOfBiology.Loop_003.fem_cotangent_laplacian_conserves_mass"
+    lean_locus: "morphoeval/lean/loops/Loop_003_mammalian_coat_markings.lean#L110-L128"
+    lean_code: |
+      def fem_cot_row (w_ij w_ik u_i u_j u_k : Int) : Int :=
+        w_ij * (u_i - u_j) + w_ik * (u_i - u_k)
+      theorem fem_cotangent_laplacian_conserves_mass (w_ab w_bc w_ca u_a u_b u_c c : Int) :
+          fem_cot_row w_ab w_ca c c c = 0 ∧
+          fem_cot_row w_ab w_ca u_a u_b u_c
+            + fem_cot_row w_ab w_bc u_b u_a u_c
+            + fem_cot_row w_ca w_bc u_c u_a u_b = 0 := by
+        unfold fem_cot_row
+        simp only [Int.mul_sub]
+        omega
+    variables: "V, F: vertices and triangles of the body-of-revolution surface mesh; w_ij: half cotangent edge weight; K: stiffness matrix; M: lumped (Voronoi-area) mass matrix; Δ_S ≈ -M^{-1} K: discrete Laplace-Beltrami"
+    role: "Guarantees the homogeneous Thomas steady state (u_0, v_0) is an exact discrete equilibrium on the curved felid body and that the IMEX surface diffusion step is conservative (zero-flux natural boundary), so every pattern seen on the FEM body is a Turing instability and not a discretisation source term"
+    source_citation: "Dziuk (1988) Lecture Notes in Math. 1357:142-155; Pinkall & Polthier (1993) Exp. Math. 2(1):15-36; Dziuk & Elliott (2013) Acta Numerica 22:289-396"
+    code_locus: "1981-murray-mammalian-coat-markings.py#L712-L781"
+  - law_name: "Murray (1981) Full Circumferential Exclusion Radius r_excl = 1/k_+ (n = 0 Longitudinal-Stripe Mode)"
+    formula: "k_{0,m}^2(r) = (m / r)^2 ≤ k_+^2 / γ unstable  ⟹  every m ≥ 1 excluded iff r < r_excl = m √(γ) / k_+ < r_crit = m √(γ / (k_+^2 - k_c^2));  2π r_excl = λ_+"
+    lean_decl: "MathOfBiology.Loop_003.in_turing_band_r2"
+    lean_theorem: "MathOfBiology.Loop_003.murray_tail_full_exclusion_requires_circumference_below_lambda_plus"
+    lean_locus: "morphoeval/lean/loops/Loop_003_mammalian_coat_markings.lean#L150-L157"
+    lean_code: |
+      theorem murray_tail_full_exclusion_requires_circumference_below_lambda_plus :
+          in_turing_band_r2 5 9 0 1 1 = false ∧
+          in_turing_band_r2 5 9 7 0 1 = true ∧
+          in_turing_band_r2 5 9 0 3 4 = true ∧
+          in_turing_band_r2 5 9 0 3 3 = false ∧
+          in_turing_band_r2 5 9 0 1 2 = false ∧
+          in_turing_band_r2 5 9 4 1 2 = true := by
+        decide
+    variables: "r(x): local tail radius; m: circumferential mode number; n = 0: axially uniform (Neumann-admissible) mode; k_+: upper edge of the unstable band; λ_+ = 2π/k_+: shortest unstable wavelength; r_excl: radius below which only m = 0 rings remain"
+    role: "Corrects the Pass 2 fastest-mode criterion r_crit (which only tests q_ax = k_c): between r_excl and r_crit a tail still carries long-axial-wavelength m ≥ 1 modes, so pure transverse rings appear only where the circumference 2πr drops below λ_+. Numerically twinned by the implicit conical solver (ring zone starts at x_excl/L) and the FEM body (tail_exclusion_fraction vs measured ring onset)"
+    source_citation: "Murray (1981) J. Theor. Biol. 88(1):161-199 Section 4 Eqs. (26)-(32); Murray (1988) Sci. Am. 258(3):80-87"
+    code_locus: "1981-murray-mammalian-coat-markings.py#L255-L330"

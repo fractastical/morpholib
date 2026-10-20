@@ -94,4 +94,108 @@ theorem hubaud_2017_latrunculin_yap_inhibition_rescue
   rw [Int.mul_sub]
   omega
 
+/-! ### Pass 3 extensions (remediation of the v2 audit)
+
+  Laws 4-6 formalise the two mechanisms added in Pass 3:
+    * an explicit anteroposterior FGF/Wnt gradient that arrests the excitable
+      clock at a moving determination front (clock-and-wavefront, Cooke &
+      Zeeman 1976 J Theor Biol 58:455-476, DOI 10.1016/S0022-5193(76)80131-2;
+      Dubrulle, McGrew & Pourquie 2001 Cell 106:219-232,
+      DOI 10.1016/S0092-8674(01)00437-8), and
+    * the substrate-stiffness -> F-actin tension -> LATS1/2 -> nuclear YAP
+      mechanotransduction cascade (Dupont et al. 2011 Nature 474:179-183,
+      DOI 10.1038/nature10137; Wada et al. 2011 Development 138:3907-3914,
+      DOI 10.1242/dev.070987). -/
+
+/-- Law 4 (`hubaud-yap-excitable-segmentation-4`):
+    Clock-and-Wavefront Somite Spacing Law (Cooke & Zeeman 1976).
+    The determination front (the anteroposterior position where the FGF/Wnt
+    gate drops the excitability current below the lower Hopf threshold) moves
+    posteriorly at the axis-elongation speed `v_wf`:
+    `x_wf(t) = x_wf0 + v_wf * t`.  Successive clock cycles (period `T`) arrest
+    at positions separated by exactly `S = v_wf * T`, independent of the phase
+    offset `t0` and of the cycle index `n`. -/
+def wavefront_position (x_wf0 v_wf t : Int) : Int :=
+  x_wf0 + v_wf * t
+
+/-- Theorem 4 (`hubaud_2017_clock_wavefront_somite_spacing`):
+    Two consecutive arrests of the clock, at times `t0 + n T` and
+    `t0 + (n + 1) T`, freeze the pattern at positions exactly `v_wf * T` apart. -/
+theorem hubaud_2017_clock_wavefront_somite_spacing (x_wf0 v_wf t0 T n : Int) :
+    wavefront_position x_wf0 v_wf (t0 + (n + 1) * T) -
+      wavefront_position x_wf0 v_wf (t0 + n * T) = v_wf * T := by
+  dsimp [wavefront_position]
+  simp only [Int.mul_add, Int.add_mul, Int.one_mul]
+  omega
+
+/-- Law 5 (`hubaud-yap-excitable-segmentation-5`):
+    FGF/Wnt-Gated Wavefront Arrest Criterion.  With the FGF/Wnt gate
+    `g(F) = F^h / (F_thr^h + F^h)` saturating at `g_max` in the tail bud, the
+    excitability current of a PSM cell is
+    `I_eff(x,t) = I_post - gamma_F * (g_max - g(F(x,t)))`.  A cell is arrested
+    (drops out of the oscillatory window, Law 2) exactly when the FGF/Wnt loss
+    `gamma_F * (g_max - g)` exceeds the posterior excitability margin
+    `I_post - I_H`.  Because `F(x,t) = exp(-(x_tb(t) - x)/lambda_F)` decays
+    monotonically anteriorly, this defines a single moving front. -/
+def fgf_gated_current (I_post gamma_F g_max g : Int) : Int :=
+  I_post - gamma_F * (g_max - g)
+
+/-- Theorem 5 (`hubaud_2017_fgf_wavefront_arrest_criterion`):
+    `I_eff < I_H` if and only if `gamma_F * (g_max - g) > I_post - I_H`; and the
+    arrest front, which sits a fixed FGF decay distance `d` anterior to the tail
+    bud `x_tb(t) = x_tb0 + v_wf * t`, advances by `v_wf * dt` per `dt`
+    independently of `d` (so the gradient length scale sets the PSM length but
+    not the somite spacing). -/
+theorem hubaud_2017_fgf_wavefront_arrest_criterion
+    (I_post gamma_F g_max g I_H x_tb0 v_wf t dt d : Int) :
+    (fgf_gated_current I_post gamma_F g_max g < I_H ↔
+      I_post - I_H < gamma_F * (g_max - g)) ∧
+    ((wavefront_position x_tb0 v_wf (t + dt) - d) -
+      (wavefront_position x_tb0 v_wf t - d) = v_wf * dt) := by
+  constructor
+  · dsimp [fgf_gated_current]
+    constructor <;> intro h <;> omega
+  · dsimp [wavefront_position]
+    simp only [Int.mul_add]
+    omega
+
+/-- Law 6 (`hubaud-yap-excitable-segmentation-6`):
+    YAP Mechanotransduction Nuclear-Fraction Monotonicity (Dupont et al. 2011;
+    Wada et al. 2011).  In the three-state YAP cycle
+    (cytoplasmic `Y_c`, LATS-phosphorylated `Y_p`, nuclear `Y_n`; `Y_c + Y_p + Y_n = 1`)
+    with tension-dependent import ratio `r_n = (k_imp / k_exp) (1 + alpha_T T)`
+    and LATS phosphorylation ratio `r_p = (k_LATS L(T)) / k_PP`, the steady-state
+    nuclear fraction is `Y_n = r_n / (1 + r_n + r_p)`.  Expressed without
+    division (cross-multiplied), `Y_n` strictly increases with the
+    tension-driven import ratio `r_n` and strictly decreases with the LATS
+    phosphorylation ratio `r_p`. -/
+def yap_nuclear_denominator (r_n r_p : Int) : Int :=
+  1 + r_n + r_p
+
+/-- Theorem 6 (`hubaud_2017_yap_mechanotransduction_monotonicity`):
+    (1) For `0 <= r_p` and `r_n1 < r_n2`:
+        `r_n1 * (1 + r_n2 + r_p) < r_n2 * (1 + r_n1 + r_p)`, i.e.
+        `Y_n(r_n1, r_p) < Y_n(r_n2, r_p)` (stiffer substrate / larger F-actin
+        tension -> more nuclear YAP -> lower `I_eff`, Law 3).
+    (2) For `0 < r_n` and `r_p1 < r_p2`:
+        `r_n * (1 + r_n + r_p1) < r_n * (1 + r_n + r_p2)`, i.e.
+        `Y_n(r_n, r_p2) < Y_n(r_n, r_p1)` (LATS1/2 phosphorylation, released by
+        Latrunculin A F-actin loss, lowers nuclear YAP -> rescues oscillations). -/
+theorem hubaud_2017_yap_mechanotransduction_monotonicity
+    (r_n1 r_n2 r_n r_p r_p1 r_p2 : Int)
+    (h_rp : 0 ≤ r_p) (h_lt : r_n1 < r_n2) (h_rn : 0 < r_n) (h_p : r_p1 < r_p2) :
+    r_n1 * yap_nuclear_denominator r_n2 r_p < r_n2 * yap_nuclear_denominator r_n1 r_p ∧
+    r_n * yap_nuclear_denominator r_n r_p1 < r_n * yap_nuclear_denominator r_n r_p2 := by
+  constructor
+  · have h1 : r_n1 * r_p ≤ r_n2 * r_p :=
+      Int.mul_le_mul_of_nonneg_right (Int.le_of_lt h_lt) h_rp
+    have h2 : r_n1 * r_n2 = r_n2 * r_n1 := Int.mul_comm _ _
+    dsimp [yap_nuclear_denominator]
+    simp only [Int.mul_add, Int.mul_one]
+    omega
+  · have h1 : r_n * r_p1 < r_n * r_p2 := Int.mul_lt_mul_of_pos_left h_p h_rn
+    dsimp [yap_nuclear_denominator]
+    simp only [Int.mul_add, Int.mul_one]
+    omega
+
 end MathOfBiology.Loop_027

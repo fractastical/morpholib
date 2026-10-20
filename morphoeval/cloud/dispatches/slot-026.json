@@ -19,5 +19,68 @@
   "slot_index": 26,
   "slug": "ex-vivo-scaling-mPSM",
   "target_script": "2014-lauschke-ex-vivo-scaling-mPSM.py",
-  "delta": 31.3
+  "delta": 31.3,
+  "pass3_run_id": "2026-10-19-ex-vivo-scaling-mPSM-loop-pass3",
+  "pass3_audit_id": "2026-10-19-ex-vivo-scaling-mPSM-audit-v3",
+  "audit_v3": "morphoeval/audits/2026-10-19-ex-vivo-scaling-mPSM-audit-v3.yaml",
+  "pass3_score": 89.9,
+  "pass3_dims": {
+    "model-fidelity": 93,
+    "specimen-match": 85,
+    "parameter-expressivity": 93,
+    "morphometric-validation": 90,
+    "source-traceability": 91,
+    "code-traceability": 92,
+    "repro-package": 90
+  },
+  "pass3_delta_vs_pass2": -1.5,
+  "pass3_completed_at": "2026-10-20T08:23:00Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_kg_dir": "morphoeval/kg/2026-10-19-ex-vivo-scaling-mPSM-audit-v3",
+  "pass3_quick_gate": 100,
+  "pass3_remediation_closed": [
+    "Couple the radial mPSM Notch phase-gradient model to an explicit dynamic wavelength-adaptation feedback driven by a shrinking FGF/Wnt gradient (Lauschke 2013 Fig. 4; Beaupeux & Francois 2016) -> closed: quasi-static source-sink FGF/Wnt gradient W = W_0 sinh((R-r)/l_k)/sinh(R/l_k) with half-length exponent 1.000 vs fixed-length exponential control (exponent 0.000) (fgf_wnt_signaling_gradient / signaling_gradient_half_length L552-602); wavelength relaxation d lambda/dt = -(lambda - c l_half)/tau_lambda with Phi(t) = 2 pi R/lambda and fixed-window gating so alpha emerges (simulate_wavelength_adaptation L605-671): mean Phi 6.125 rad (2.5% from 2 pi), alpha_8 = 0.1103 at tau_lambda = 35 min, 0.5601 frozen, constant 39.5 um segments with fixed gradient; tau sweep (evaluate_adaptation_sweep L674-717), Panel G, Lean Laws 4-5",
+    "Extend the 2D continuum disc to a discrete disordered cell-reaggregation lattice (Tsiairis & Aulehla 2016) to simulate de novo emergence of multiple mPSM target-wave pacemakers -> closed: 1577-cell jittered-hexagonal Kuramoto-Sakaguchi lattice with spatially correlated frequency heterogeneity (build_reaggregate_lattice / simulate_reaggregate_lattice L724-913), phase-gradient flow-source pacemaker detector (detect_wave_sources L769-835): median 4 de novo pacemakers (cycles 1-3) -> 1 (cycles 12-14) at the local frequency maximum (17.7 um), local coherence 0.945; K = 0 and eta = 0 ablations give 0 pacemakers; K/eta sweeps (evaluate_reaggregate_sweep L916-931), Panels H-I, reaggregate GIF, Lean Law 6"
+  ],
+  "pass3_remediation_open": [
+    "L626-627/605-671: c_lambda and delta_phi_seg are calibrated from Phi_0 and alpha -> replace the relaxation ODE by a coupled Notch phase-oscillator continuum with a published Wnt/FGF-dependent omega(W) so Phi -> 2 pi and alpha emerge without c_lambda",
+    "L552-602 + reference.json fgf_wnt_signaling_gradient: quasi-static gradient with placeholder l_k = 1e6 um -> time-integrate dW/dt = D W'' - k W on the moving boundary with measured FGF8/Wnt3a D, k and report the actual half-length exponent",
+    "datasets/ex_vivo_scaling_mPSM/mouse_mpsm_somites_specimen.jpg + reference.json:41-45: specimen is a chick embryo SEM named as mouse -> add correct species metadata/alias (keep SHA-pinned file) and vendor or digitise a mouse mPSM explant / reaggregate image for Panels B, G, H",
+    "L865/132: kappa_init = 1 required; kappa_init = 0 pins spiral defects (0 target sources) -> add a defect-annihilation mechanism (longer-range coupling, delayed oscillation onset, or cell motility) and report the topological defect count",
+    "reference.json:145-209: observed_S1/S5/v1 columns lack figure-digitisation provenance -> digitise Lauschke 2013 Fig. 3d / Fig. 4 and recompute Pearson r / RMSE",
+    "L1806-1826/394: --R0/--alpha/--T-osc/--seed do not reach the default render; dead RNG in simulate_2d_mpsm_target_waves -> forward CLI parameters to the renderers and add a requirements lock",
+    "L769-835/916-931: pacemaker detector thresholds (0.6, rho = 30 um) and single-seed K/eta sweeps -> threshold sensitivity sweep and seed-averaged counts with confidence intervals"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_026.lauschke_2013_fgf_wnt_gradient_scale_covariance",
+    "MathOfBiology.Loop_026.lauschke_2013_wavelength_adaptation_contraction",
+    "MathOfBiology.Loop_026.tsiairis_2016_pacemaker_dispersion_monotone"
+  ],
+  "pass3_lean_theorems_total": 6,
+  "pass3_lean_verified": true,
+  "pass3_self_test": "passed (35 assertions, 18 new; 10 measurements)",
+  "pass3_artifacts": [
+    "2014-lauschke-ex-vivo-scaling-mPSM.py",
+    "morphoeval/lean/loops/Loop_026_ex_vivo_scaling_mPSM.lean",
+    "morphoeval/math_kg_loops/lauschke-ex-vivo-scaling-mPSM.yaml",
+    "datasets/ex_vivo_scaling_mPSM/ex_vivo_scaling_mPSM_reference.json",
+    "datasets/ex_vivo_scaling_mPSM/README.md",
+    "datasets/ex_vivo_scaling_mPSM/paper_citations.bib",
+    "docs/media/ex_vivo_scaling_mPSM_comparison.png",
+    "docs/media/ex_vivo_scaling_mPSM_growth.gif",
+    "docs/media/ex_vivo_scaling_mPSM_reaggregate.gif",
+    "docs/media/ex_vivo_scaling_mPSM_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-ex-vivo-scaling-mPSM-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-ex-vivo-scaling-mPSM-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-ex-vivo-scaling-mPSM-audit-v3/",
+    "morphoeval/runs/2026-10-19-ex-vivo-scaling-mPSM-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-ex-vivo-scaling-mPSM-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-ex-vivo-scaling-mPSM-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-ex-vivo-scaling-mPSM-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-ex-vivo-scaling-mPSM-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-ex-vivo-scaling-mPSM-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-026.json"
+  ]
 }

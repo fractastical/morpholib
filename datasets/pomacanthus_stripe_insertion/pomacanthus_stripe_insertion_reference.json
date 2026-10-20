@@ -22,6 +22,16 @@
         "id": "kondo2009",
         "citation": "Kondo S, Iwashita M, Yamaguchi M (2009). How animals get their skin patterns: fish pigment pattern as a live Turing wave. International Journal of Developmental Biology 53(5-6):851-856.",
         "doi": "10.1387/ijdb.072502sk"
+      },
+      {
+        "id": "nakamasu2009",
+        "citation": "Nakamasu A, Takahashi G, Kanbe A, Kondo S (2009). Interactions between zebrafish pigment cells responsible for the generation of Turing patterns. PNAS 106(21):8429-8434.",
+        "doi": "10.1073/pnas.0808622106"
+      },
+      {
+        "id": "bullara2015",
+        "citation": "Bullara D, De Decker Y (2015). Pigment cell movement is not required for generation of Turing patterns in zebrafish skin. Nature Communications 6:6971.",
+        "doi": "10.1038/ncomms7971"
       }
     ],
     "specimens": {
@@ -157,5 +167,52 @@
     "initial_posterior_stripes": 3,
     "final_stripes_after_unzipping": 4,
     "branch_point_displacement_fraction": 0.65
+  },
+  "pass3_curvilinear_and_agent_coupling": {
+    "section": "Pass 3 remediation: curvilinear C-shaped polar-sector solver, specimen concentric-arc geometry, and discrete pigment-cell agent coupling",
+    "curvilinear_polar_sector_solver": {
+      "coordinates": "scaled polar (rho, theta) on rho in [rho_in, 1], theta in [-theta_half, theta_half]; physical radius r = rho * R(t), R(t) = R_0 * s(t)",
+      "laplacian": "Lap_phys = R^-2 [d2/drho2 + (1/rho) d/drho + (1/rho^2) d2/dtheta2], zero-flux (Neumann) on all four edges",
+      "rho_in": 0.25,
+      "theta_half_deg": 100.0,
+      "grid_n_rho_n_theta": [48, 96],
+      "initial_concentric_arcs_N0": 3,
+      "radial_span_at_s1_in_lambda_c": 3.0,
+      "growth_s_final": 2.6,
+      "n_equilibrate_steps": 2000,
+      "n_grow_steps": 6000,
+      "dt": 0.25,
+      "background_fluctuation_amplitude": 0.004,
+      "insertion_threshold_I_thr": 0.625,
+      "insertion_threshold_derivation": "F_trough(I) = min(F_max, max(0, c_2 I + c_3)) > 0 iff I < c_3/|c_2| = 0.05/0.08 = 0.625 (zero-activator sufficient condition; Lean theorem kondo_asai_1995_curvilinear_mid_trough_threshold_partition)",
+      "expected_arcs_after_doubling": 6,
+      "measured_first_insertion_scale_s_star": 2.18,
+      "measured_I_mid_at_first_insertion": 0.74,
+      "note": "Insertion fires ~20% above I_thr because diffusive activator supply from flanking arcs (A_trough ~ 0.05-0.1) adds c_1 A to the local synthesis; the Lean bound is the A = 0 sufficient condition."
+    },
+    "specimen_concentric_arc_fit": {
+      "method": "structure-tensor stripe normals -> robust least-squares concentric centre -> radial ridge-point histogram peaks",
+      "body_polygon_xy_px": [[240, 100], [300, 112], [400, 182], [455, 262], [468, 355], [425, 418], [330, 402], [262, 332], [200, 272], [166, 216], [182, 172], [230, 150]],
+      "mm_per_px": 0.10526,
+      "concentric_centre_xy_px": [262.0, 217.1],
+      "n_arcs": 8,
+      "arc_radii_mm": [4.95, 7.68, 10.21, 12.53, 16.74, 18.84, 20.53, 23.26],
+      "radial_spacing_mm": 2.62,
+      "radial_spacing_cv": 0.2816,
+      "row_wise_spacing_mm_for_comparison": 3.80,
+      "note": "Radial spacing is the curvature-corrected wavelength; row-wise DoG spacing over-estimates it by the row/stripe obliquity factor. 8 arcs at 40 mm body span lies between the Kondo-Asai s = 2 (6 arcs) and s = 4 (12 arcs) cascade stages."
+    },
+    "pigment_cell_agent_layer": {
+      "domain": "1D periodic, L = 6 lambda_c (s = 2 stage), 256 PDE grid points, 128 cells (2 grid points per cell)",
+      "fate_rule": "P(iridophore) = sigmoid((A_cell - A_thr) / 0.3), A_thr = A* = 3.0; asynchronous update of 35% of cells every 20 PDE steps; unbiased 50/50 initial fates",
+      "short_range_exclusion": "melanophore flanked by two iridophores -> P(iridophore) >= 0.9",
+      "long_range_support": "iridophore with no melanophore within round(lambda_c / 2 / cell_dx) cells -> P(iridophore) <= 0.1",
+      "feedback": "c_3 -> c_3 + kappa_A * iridophore, c_5 -> c_5 + kappa_I * melanophore",
+      "kappa_default": 0.01,
+      "kappa_ablation_grid": [0.0, 0.005, 0.01, 0.02],
+      "expected_fate_concordance_min": 0.9,
+      "expected_agent_stripes": 6,
+      "sources": ["nakamasu2009", "bullara2015"]
+    }
   }
 }

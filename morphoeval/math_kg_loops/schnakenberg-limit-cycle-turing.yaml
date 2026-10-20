@@ -6,6 +6,12 @@ model_spec:
   domain_length_L: 6.0
   gamma: 180.0
   seed: 1979
+  pass3_geometries:
+    hemispherical_mound: {N_theta: 40, N_phi: 96, radii: [0.10, 0.20, 0.35, 0.50, 0.75, 1.00, 1.50], R_min: 0.1297}
+    elongating_stalk: {R_stalk: 0.08, L0: 1.0, L1: 4.0, N_z: 96, N_phi: 16, steps: 1500}
+  pass3_pde_kinetics:
+    michaelis_menten: {K_m: 1.0, k_e_hopf: 0.12486}
+    martiel_goldbeter_ke_sweep_min: [1.0, 2.0, 3.0, 4.0, 5.4, 7.0, 9.0, 12.0]
   regimes:
     - {id: turing_spots_standard, a: 0.10, b: 0.90, d: 18.0}
     - {id: turing_labyrinth_high_d, a: 0.08, b: 0.92, d: 25.0}
@@ -16,6 +22,7 @@ model_spec:
     - datasets/limit_cycle_turing/scout_manifest.json
     - datasets/limit_cycle_turing/limit_cycle_turing_reference.json
     - datasets/limit_cycle_turing/dictyostelium_specimen.jpg
+    - datasets/limit_cycle_turing/pass3_curved_geometry_pde_reference.json
 equations:
   - law_name: "Schnakenberg (1979) Cubic Autocatalytic Equilibrium & Flux Conservation Law"
     formula: "∂u/∂t = γ(a - u + u^2 v) + ∇^2 u,   ∂v/∂t = γ(b - u^2 v) + d ∇^2 v,   (u_*, v_*) = (a + b, b / (a + b)^2)"
@@ -34,7 +41,7 @@ equations:
     variables: "u: autocatalytic activator concentration; v: substrate/inhibitor concentration; a, b: dimensionless feed rates; γ: reaction-rate/area scale factor; d = D_v/D_u: diffusivity ratio"
     role: "Establishes the unique positive homogeneous equilibrium (u_*, v_*) = (a+b, b/(a+b)^2) with invariant cubic flux u_*^2 v_* = b and linear total mass balance R_u + R_v = a + b - u"
     source_citation: "Schnakenberg (1979) J. Theor. Biol. 81(3):389-400 Eqs. (15)-(20)"
-    code_locus: "1979-schnakenberg-limit-cycle-turing.py#L139-L178"
+    code_locus: "1979-schnakenberg-limit-cycle-turing.py#L202-L241"
   - law_name: "Schnakenberg (1979) Exact Hopf Bifurcation Curve & Positive Jacobian Determinant Law"
     formula: "tr(J_0) = (b - a - (a + b)^3) / (a + b) = 0  <=>  b - a = (a + b)^3,   det(J_0) = (a + b)^2 > 0"
     lean_decl: "MathOfBiology.Loop_002.schnakenberg_scaled_trace"
@@ -51,7 +58,7 @@ equations:
     variables: "J_0: 2x2 reaction Jacobian at (u_*, v_*); s = a + b: equilibrium activator concentration; tr(J_0): Jacobian trace; det(J_0): Jacobian determinant"
     role: "Separates stable steady states from autonomous Poincaré-Bendixson limit-cycle oscillations across b - a = (a + b)^3 while proving det(J_0) = (a + b)^2 > 0 excludes fold bifurcations"
     source_citation: "Schnakenberg (1979) J. Theor. Biol. 81(3):389-400 Eqs. (21)-(24)"
-    code_locus: "1979-schnakenberg-limit-cycle-turing.py#L196-L226"
+    code_locus: "1979-schnakenberg-limit-cycle-turing.py#L259-L289"
   - law_name: "Schnakenberg-Turing Differential-Diffusion Dispersion & Critical Ratio Law"
     formula: "det(J(k^2)) = d k^4 - γ (d (b-a)/(a+b) - (a+b)^2) k^2 + γ^2 (a+b)^2,   d_c(a,b) = (((a+b)^2 + (a+b)√(2b(a+b))) / (b-a))^2"
     lean_decl: "MathOfBiology.Loop_002.schnakenberg_fourier_det"
@@ -70,4 +77,49 @@ equations:
     variables: "q = k^2: squared spatial wavenumber; d = D_v/D_u: substrate-to-activator diffusivity ratio; d_c: critical Turing diffusivity ratio"
     role: "Proves equal diffusion (d = 1) is unconditionally stable at (a,b) = (0.1, 0.9) whereas d > d_c ≈ 8.5676 drives det(J(k^2)) < 0 and amplifies periodic Turing spots/stripes"
     source_citation: "Schnakenberg (1979) J. Theor. Biol. 81:389-400 & Turing (1952) Phil. Trans. R. Soc. B 237:37-72"
-    code_locus: "1979-schnakenberg-limit-cycle-turing.py#L229-L276"
+    code_locus: "1979-schnakenberg-limit-cycle-turing.py#L292-L340"
+  - law_name: "Laplace–Beltrami Spherical-Harmonic Ladder & Finite Turing Band on a Hemispherical Mound (Pass 3)"
+    formula: "Δ_S Y_l^m = -l(l+1)/R^2 · Y_l^m;   (l+1)(l+2) = l(l+1) + 2(l+1);   det_J(18, l(l+1)) = 100, -96, -56, 1084 for l = 0, 1, 2, 3  (γR^2 = 10 units);   R_min = sqrt(2/q_+) = 0.1297"
+    lean_decl: "MathOfBiology.Loop_002.sphere_laplace_eigenvalue"
+    lean_theorem: "MathOfBiology.Loop_002.schnakenberg_sphere_turing_band"
+    lean_locus: "morphoeval/lean/loops/Loop_002_limit_cycle_turing.lean#L97-L110"
+    lean_code: |
+      def sphere_laplace_eigenvalue (l : Nat) : Nat := l * (l + 1)
+      theorem schnakenberg_sphere_turing_band :
+          sphere_laplace_eigenvalue 0 = 0 ∧
+          (∀ l : Nat, sphere_laplace_eigenvalue (l + 1) = sphere_laplace_eigenvalue l + 2 * (l + 1)) ∧
+          schnakenberg_fourier_det 18 (sphere_laplace_eigenvalue 0) = 100 ∧
+          schnakenberg_fourier_det 18 (sphere_laplace_eigenvalue 1) = -96 ∧
+          schnakenberg_fourier_det 18 (sphere_laplace_eigenvalue 2) = -56 ∧
+          schnakenberg_fourier_det 18 (sphere_laplace_eigenvalue 3) = 1084 := by
+        refine ⟨rfl, ?_, by decide, by decide, by decide, by decide⟩
+        intro l
+        simp only [sphere_laplace_eigenvalue, Nat.mul_add, Nat.add_mul, Nat.mul_one, Nat.one_mul]
+        omega
+    variables: "l: spherical-harmonic degree; R: mound radius; q_l = l(l+1)/R^2: Laplace–Beltrami eigenvalue replacing the planar k^2; q_+: upper edge of the planar Turing band; R_min: critical mound radius"
+    role: "On a hemispherical Dictyostelium mound (no-flux equator) only finitely many spherical-harmonic degrees fall inside the Turing band; mound size selects the fastest-growing degree l*(R) and mounds smaller than R_min stay homogeneous — verified numerically by simulate_schnakenberg_hemisphere and the mound-radius sweep"
+    source_citation: "Turing (1952) Phil. Trans. R. Soc. B 237:37-72 (spherical case) & Schnakenberg (1979) kinetics; Crampin, Gaffney & Maini (1999) Bull. Math. Biol. 61:1093-1120 for the growing-stalk companion solver"
+    code_locus: "1979-schnakenberg-limit-cycle-turing.py#L785-L1090"
+  - law_name: "Extracellular Phosphodiesterase Degradation Shifts the Schnakenberg Hopf Curve (Pass 3)"
+    formula: "du/dτ = a - (1+κ) u + u^2 v  ⇒  u_* = (a+b)/(1+κ),  s(1+κ)^2 · tr(J_0) = (1+κ)^3 (b-a) - (a+b)^3,  det(J_0) = (a+b)^2/(1+κ) > 0;   Hopf: (1+κ)^3 (b-a) = (a+b)^3;   Michaelis–Menten form -k_e u/(K_m+u): u_*^2 + (K_m + k_e - a - b) u_* - (a+b) K_m = 0, k_e^Hopf(0.1, 0.9, K_m=1) = 0.12486"
+    lean_decl: "MathOfBiology.Loop_002.schnakenberg_pde_scaled_trace"
+    lean_theorem: "MathOfBiology.Loop_002.schnakenberg_pde_hopf_shift"
+    lean_locus: "morphoeval/lean/loops/Loop_002_limit_cycle_turing.lean#L127-L140"
+    lean_code: |
+      def schnakenberg_pde_scaled_trace (a b kappa1 s_cubed : Int) : Int :=
+        kappa1 * kappa1 * kappa1 * (b - a) - s_cubed
+      theorem schnakenberg_pde_hopf_shift (a m kappa1 : Int) :
+          schnakenberg_pde_scaled_trace a (a + m) kappa1 (kappa1 * kappa1 * kappa1 * m) = 0 ∧
+          schnakenberg_pde_scaled_trace a (a + m) 1 m = 0 ∧
+          schnakenberg_pde_scaled_trace 1 9 1 1000 = -992 ∧
+          schnakenberg_pde_scaled_trace 1 9 5 1000 = 0 ∧
+          schnakenberg_pde_scaled_trace 1 9 6 1000 = 728 := by
+        refine ⟨?_, ?_, by decide, by decide, by decide⟩
+        · have h : a + m - a = m := by omega
+          simp only [schnakenberg_pde_scaled_trace, h, Int.sub_self]
+        · simp only [schnakenberg_pde_scaled_trace]
+          omega
+    variables: "κ = k_PDE/k_-1: first-order extracellular phosphodiesterase rate relative to Schnakenberg's X→A decay; k_e, K_m: Michaelis–Menten PDE rate and constant; s = a + b"
+    role: "Extracellular cAMP phosphodiesterase moves the Hopf boundary — at fixed feed rates increasing PDE degradation destabilizes the focus into autonomous relaxation oscillations (κ = 4 is exactly Hopf at (a,b) = (1,9)); compared in the script against the 3-variable Martiel–Goldbeter (1987) cAMP relay with its own PDE rate k_e"
+    source_citation: "Schnakenberg (1979) J. Theor. Biol. 81:389-400 Eq. (24) generalized; Martiel & Goldbeter (1987) Biophys. J. 52:807-828 (doi:10.1016/S0006-3495(87)83275-7); Gerisch & Hess (1974) PNAS 71:2118-2122 (doi:10.1073/pnas.71.5.2118)"
+    code_locus: "1979-schnakenberg-limit-cycle-turing.py#L427-L653"

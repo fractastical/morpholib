@@ -1,0 +1,102 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-pringle-roman-esco-fractal-inflorescence> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-pringle-roman-esco-fractal-inflorescence-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-pringle-roman-esco-fractal-inflorescence-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Azpeitia et al. (2021) TFL1-LFY-AP1/CAL-SOC1 floral GRN perturbation, PIN1 auxin-transport epidermal mesh and accelerating-plastochron Romanesco fractal inflorescence morphogenesis — Source and data traceability: 70/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Nine primary sources with DOIs in the module docstring (L1-93), the audit, `paper_citations.bib` and the two reference JSONs; the specimen and scout manifest are SHA-256 pinned and verified fail-closed at every run (L133-150); the new `pin1_auxin_transport_reference.json` lists every model parameter, its literature anchor and the model's limitations; the Pass 1 `kempin1995` BibTeX entry, which had merged two different Kempin et al. (1995) papers, is corrected. Deductions: the Kim (2004) Phys. Rev. E 70:046109 entry — the only source of the D_f 2.71 / 2.38 references — could not be re-verified offline and may be mis-cited (-10); `plastochron_beta_sweep_benchmark_series`, `genotype_morphometric_benchmarks`, `radial_expansion_rate_v_r` and the dz values in the Pass 1 JSON are interpolations/syntheses not traced to a figure or table of Azpeitia et al. (2021), and the JSON itself does not say so (the dataset README now does) (-12); the GRN Hill coefficients have no source (-5); the paper's actual meristem-size and plastochron measurements (its Fig. 3 data) are not vendored (-3)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:evidenceAgainst "datasets/roman_esco_fractal_inflorescence/roman_esco_fractal_inflorescence_reference.json L74–L123: Beta sweep 'benchmark series' with no figure/table citation; values are a linear interpolation between the two end-points <https://github.com/fractastical/morpholib/blob/d58a084/datasets/roman_esco_fractal_inflorescence/roman_esco_fractal_inflorescence_reference.json#L74-L123>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-pringle-roman-esco-fractal-inflorescence-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-pringle-roman-esco-fractal-inflorescence-source-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-pringle-roman-esco-fractal-inflorescence-source-traceability-3> ;
+        pk:hasScore "0.7"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-pringle-roman-esco-fractal-inflorescence-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2021-pringle-roman-esco-fractal-inflorescence.py L133–L150" ;
+        dct:description "Runtime SHA-256 verification of specimen and scout manifest; digests of all 5 dataset files returned" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2021-pringle-roman-esco-fractal-inflorescence.py#L133-L150> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-pringle-roman-esco-fractal-inflorescence-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/roman_esco_fractal_inflorescence/pin1_auxin_transport_reference.json L1–L68" ;
+        dct:description "PIN1 model sources (Jönsson 2006, Smith 2006, Reinhardt 2003, Douady & Couder 1992, Smyth 1990) with DOIs, every parameter, the coupling statement and four stated limitations" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/datasets/roman_esco_fractal_inflorescence/pin1_auxin_transport_reference.json#L1-L68> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-pringle-roman-esco-fractal-inflorescence-source-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "datasets/roman_esco_fractal_inflorescence/paper_citations.bib L37–L60" ;
+        dct:description "kempin1995 corrected; kim2004 flagged as not re-verified" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/datasets/roman_esco_fractal_inflorescence/paper_citations.bib#L37-L60> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 040 Pass 3 Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/40> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/nature02081>,
+            <https://doi.org/10.1073/pnas.0509839103>,
+            <https://doi.org/10.1073/pnas.0510457103>,
+            <https://doi.org/10.1103/PhysRevE.70.046109>,
+            <https://doi.org/10.1103/PhysRevLett.68.2098>,
+            <https://doi.org/10.1105/tpc.2.8.755>,
+            <https://doi.org/10.1126/science.1140429>,
+            <https://doi.org/10.1126/science.7824951>,
+            <https://doi.org/10.1126/science.abg5935> .
+    <https://doi.org/10.1038/nature02081> dct:date "2003"^^xsd:gYear ;
+        dct:title "Regulation of phyllotaxis by polar auxin transport" .
+    <https://doi.org/10.1073/pnas.0509839103> dct:date "2006"^^xsd:gYear ;
+        dct:title "An auxin-driven polarized transport model for phyllotaxis" .
+    <https://doi.org/10.1073/pnas.0510457103> dct:date "2006"^^xsd:gYear ;
+        dct:title "A plausible model of phyllotaxis" .
+    <https://doi.org/10.1103/PhysRevE.70.046109> dct:date "2004"^^xsd:gYear ;
+        dct:title "Fractal analysis of Romanesco and cauliflower curds (as vendored in Pass 1; NOT independently re-verified in Pass 3)" .
+    <https://doi.org/10.1103/PhysRevLett.68.2098> dct:date "1992"^^xsd:gYear ;
+        dct:title "Phyllotaxis as a physical self-organized growth process" .
+    <https://doi.org/10.1105/tpc.2.8.755> dct:date "1990"^^xsd:gYear ;
+        dct:title "Early flower development in Arabidopsis" .
+    <https://doi.org/10.1126/science.1140429> dct:date "2007"^^xsd:gYear ;
+        dct:title "Evolution and development of inflorescence architectures" .
+    <https://doi.org/10.1126/science.7824951> dct:date "1995"^^xsd:gYear ;
+        dct:title "Molecular basis of the cauliflower phenotype in Arabidopsis" .
+    <https://doi.org/10.1126/science.abg5935> dct:date "2021"^^xsd:gYear ;
+        dct:title "Cauliflower fractal forms arise from perturbations of floral gene networks" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Azpeitia et al. (2021) TFL1-LFY-AP1/CAL-SOC1 floral GRN perturbation, PIN1 auxin-transport epidermal mesh and accelerating-plastochron Romanesco fractal inflorescence morphogenesis — Source and data traceability 70/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T10:20:38Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-pringle-roman-esco-fractal-inflorescence-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/40> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

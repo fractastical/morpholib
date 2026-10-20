@@ -13,5 +13,57 @@
   "audit_v2": "morphoeval/audits/2026-10-19-allometric-cranial-sutures-audit-v2.yaml",
   "lean_proof": "morphoeval/lean/loops/Loop_020_allometric_cranial_sutures.lean",
   "math_kg": "morphoeval/math_kg_loops/bailleul-allometric-cranial-sutures.yaml",
-  "delta": 35.1
+  "delta": 35.1,
+  "pass3_run_id": "2026-10-19-allometric-cranial-sutures-loop-pass3",
+  "pass3_audit_id": "2026-10-19-allometric-cranial-sutures-audit-v3",
+  "audit_v3": "morphoeval/audits/2026-10-19-allometric-cranial-sutures-audit-v3.yaml",
+  "pass3_score": 86.5,
+  "pass3_dims": {
+    "model-fidelity": 84,
+    "specimen-match": 82,
+    "parameter-expressivity": 90,
+    "morphometric-validation": 86,
+    "source-traceability": 92,
+    "code-traceability": 88,
+    "repro-package": 92
+  },
+  "pass3_delta_vs_pass2": -5.9,
+  "pass3_completed_at": "2026-10-20T07:50:14Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_kg_dir": "morphoeval/kg/2026-10-19-allometric-cranial-sutures-audit-v3",
+  "pass3_remediation_closed": [
+    "Extend the 2D overhanging calvarial suture solver to full 3D ectocranial-to-endocranial cortical plate thickness where endocranial sutures remain simpler than ectocranial traces -> closed in reduced form: 5-layer KS/KPZ stack through T = 6 mm with per-layer alpha_j(x), explicit kappa_z d^2h/dz^2 coupling, per-layer D_f/SII, no-gradient and kappa_z = 0 ablations (simulate_cranial_suture_regime L505-727, evaluate_layered_depth_profile L814-859, Lean Law 5); ectocranial SII 2.863 vs endocranial 1.000",
+    "Couple spatially heterogeneous masticatory finite-element strain tensors across the coronal, sagittal, and lambdoid sutures on a 3D skull mesh -> closed in reduced (non-FEM) form: Kirchhoff-Love thin-shell strain on an analytic ellipsoidal vault with Gaussian temporalis/nuchal deflection patches + ICP membrane term, projected on each suture's in-plane normal and through-thickness offset, affine mechanotransduction alpha(eps_hat) (strain_to_alpha L267-281, calvarial_shell_strain_field L346-441, simulate_strain_coupled_sutures L783-811, nuchal_force_sweep L861-888, Lean Law 4); residual (true FEM / shell equilibrium) carried to Pass 4"
+  ],
+  "pass3_remediation_open": [
+    "L466-491 construct_osteogenic_front_curve: std(h)-normalised amplitude and hand-coded cascade harmonics -> replace with a solved bidirectional interface (Zollikofer & Weissmann 2011 / 2D phase field) so D_f/SII emerge from the PDE amplitude",
+    "L322-344, L386-389 + reference.json L135-180: Gaussian-deflection + isotropic-ICP vault strain fails the lambdoid > sagittal SII comparison (0.885 vs 1.22) for all nuchal scales -> thin-shell FD/FEM solve with membrane equilibrium on the ellipsoid or an open CT skull mesh",
+    "L893-913: only the sagittal suture is extractable from the vendored specimen -> vendor lateral/posterior and endocranial CC views, generalise segmentation to oriented ROIs, make measurements 7-8 specimen comparisons",
+    "reference.json L151 + L616-631: explicit -alpha_dev(x) h_xx needs alpha clip 3.0 which shifts the lambdoid mean alpha -> IMEX/Crank-Nicolson treatment of alpha(x) k^2 so no clip is required",
+    "L762-768, L851-853: ties-unaware Spearman (argsort of argsort) -> scipy.stats.spearmanr with tie-aware monotonicity test"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_020.strain_mechanotransduction_alpha_monotone",
+    "MathOfBiology.Loop_020.kirchhoff_love_ectocranial_endocranial_ordering"
+  ],
+  "pass3_lean_verified": true,
+  "pass3_self_test": "14/14 passed",
+  "pass3_artifacts": [
+    "2020-bailleul-allometric-cranial-sutures.py",
+    "morphoeval/lean/loops/Loop_020_allometric_cranial_sutures.lean",
+    "morphoeval/math_kg_loops/bailleul-allometric-cranial-sutures.yaml",
+    "datasets/allometric_cranial_sutures/allometric_cranial_sutures_reference.json",
+    "datasets/allometric_cranial_sutures/paper_citations.bib",
+    "datasets/allometric_cranial_sutures/README.md",
+    "docs/media/allometric_cranial_sutures_comparison.png",
+    "docs/media/allometric_cranial_sutures_growth.gif",
+    "docs/media/allometric_cranial_sutures_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-allometric-cranial-sutures-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-allometric-cranial-sutures-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-allometric-cranial-sutures-audit-v3/ (10 signed nanopubs, REPORT.md, ttl, published.json)",
+    "morphoeval/runs/2026-10-19-allometric-cranial-sutures-loop-pass3.{yaml,csv,md,trig,events.jsonl,ledger.jsonl}",
+    "morphoeval/cloud/dispatches/slot-020.json"
+  ]
 }

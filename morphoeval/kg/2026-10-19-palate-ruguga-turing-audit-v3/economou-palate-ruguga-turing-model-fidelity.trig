@@ -1,0 +1,91 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-economou-palate-ruguga-turing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-economou-palate-ruguga-turing-model-fidelity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-economou-palate-ruguga-turing-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Economou et al. (2012) FGF10/FGF7-SHH activator-inhibitor Turing stripe mechanism at mammalian palatal growth zones, coupled to quasi-static epithelial plate ridge elevation — Model fidelity to source: 88/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credited: exact FGF-SHH Jacobian, dispersion curve and equal-diffusion control (L183-237); 9-stage intercalation (L240-291); 2D growing-shelf RD with incision barriers (L516-737); and the new Law 4 plate coupling that is mathematically correct and exactly solved (transfer stiffness L391-402, DCT solver L405-429 certified against the FD operator L440-454, rectified thickening load L457-465, in-loop feedback L645-647 and L684-688), with 5 Lean theorems (0 sorrys). Deductions: the coronal-cut, FGF10-bead and cyclopamine outcomes are seeded by condition-specific initial patterns (mediolateral cos modulation and q_gz at L606-615, q_high + bead halo at L616-627, q_cyc at L628-633) so those phenotypes are not emergent consequences of the barrier or rate change (-5); the x spacing is rescaled by dx_eff = dx (q / 1.24) (L338, L600, L619, L631), decoupling the integrated wavelength (3.37) from the dispersion lambda_c (3.22) and from the plate's physical dx (-3); the plate is a linear 2.5D reduction with assumed dimensionless constants and one-way coupling by default (chi_m = 0), not the 3D FEM invagination requested (-4)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "2012-economou-palate-ruguga-turing.py L598–L600: dx_eff = dx * (q_ap / 1.24) rescaling: grid wavelength 3.37 vs dispersion lambda_c 3.22 <https://github.com/fractastical/morpholib/blob/d58a084/2012-economou-palate-ruguga-turing.py#L598-L600>",
+            "2012-economou-palate-ruguga-turing.py L606–L633: Condition-specific initial conditions encode the coronal / bead / cyclopamine outcomes rather than letting them emerge <https://github.com/fractastical/morpholib/blob/d58a084/2012-economou-palate-ruguga-turing.py#L606-L633>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-model-fidelity-3> ;
+        pk:hasScore "0.88"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2012-economou-palate-ruguga-turing.py L391–L465" ;
+        dct:description "Law 4: transfer stiffness S(q^2), exact DCT-II plate solver, FD residual certificate, rectified active-thickening load" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2012-economou-palate-ruguga-turing.py#L391-L465> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2012-economou-palate-ruguga-turing.py L645–L727" ;
+        dct:description "Plate re-equilibration and chi_m feedback inside the 2D RD loop; final h field and ridge morphometrics returned with A, H" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2012-economou-palate-ruguga-turing.py#L645-L727> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_008_palate_ruguga_turing.lean L113–L143" ;
+        dct:description "economou_ridge_plate_stiffness_monotone and economou_ridge_elevation_in_phase (lean exit 0, 0 sorrys)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/morphoeval/lean/loops/Loop_008_palate_ruguga_turing.lean#L113-L143> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary, Pass 3 remediation + re-score) + MorphoEval Dual-Rubric Assessor" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/8> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.ydbio.2009.09.028>,
+            <https://doi.org/10.1038/ng.1090>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1186/1471-213X-8-116>,
+            <https://www.sciencedirect.com/book/9780080570693/theory-of-elasticity> .
+    <https://doi.org/10.1016/j.ydbio.2009.09.028> dct:date "2009"^^xsd:gYear ;
+        dct:title "Signaling integration in the rugae growth zone directs anteroposterior palatal outgrowth" .
+    <https://doi.org/10.1038/ng.1090> dct:date "2012"^^xsd:gYear ;
+        dct:title "Periodic stripe formation by a Turing mechanism operating at growth zones in the mammalian palate" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The chemical basis of morphogenesis" .
+    <https://doi.org/10.1186/1471-213X-8-116> dct:date "2008"^^xsd:gYear ;
+        dct:title "Patterning of palatal rugae through sequential addition reveals an anterior/posterior boundary in palatal development" .
+    <https://www.sciencedirect.com/book/9780080570693/theory-of-elasticity> dct:date "1986"^^xsd:gYear ;
+        dct:title "Theory of Elasticity (Course of Theoretical Physics, Vol. 7), 3rd edition — Secs. 11-14, equilibrium of thin plates" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Economou et al. (2012) FGF10/FGF7-SHH activator-inhibitor Turing stripe mechanism at mammalian palatal growth zones, coupled to quasi-static epithelial plate ridge elevation — Model fidelity to source 88/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T10:12:25Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-economou-palate-ruguga-turing-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/8> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

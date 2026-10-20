@@ -1,0 +1,366 @@
+# MorphoEval audit — Kavanagh et al. (2013) PNAS & Hiscock et al. (2017) Dev. Cell Synovial Joint Interzone
+# Clefting & Phalangeal Inhibitory Cascade, 2026-10-19 slot 018 (v3, Pass 3 remediation round)
+#
+# Pass 3 re-score of `2016-onuff-joint-interzone-clefting.py` after the remediation of the single open v2
+# finding (couple the 2D GDF5-Noggin digit-ray RD PDE to a fluid-poroelastic synovial cavitation and
+# articular morphogenesis solver) in the instrumented loop `2026-10-19-joint-interzone-clefting-loop-pass3`,
+# superseding `2026-10-19-joint-interzone-clefting-audit-v2` (96.6, Gemini 4 Argon).
+#   - Primary assessor: Claude Fable 5.1 (same agent that performed the remediation; all line numbers were
+#     re-verified against the working-tree file after the last edit, commit d58a084 + uncommitted slot changes).
+#
+# What Pass 3 changed:
+#   1. `simulate_poroelastic_cavitation()` (L566-791): reduced 2D Biot storage-equation solver on a 360 x 72
+#      refinement of the digit rod — mechanosensitive hyaluronan synthesis by Gdf5+ interzone cells
+#      (Dowthwaite 1998), linearised Donnan osmotic pore pressure with free perichondrial drainage (Mow 1980,
+#      Maroudas 1976), HA/CD44 loss of cohesion sigma_coh = sigma_0(1 - kappa_G G) (Edwards 1994), irreversible
+#      cavity phase field where p > sigma_coh, Carter & Wong (1988) articular arch a(y), Kahn (2009) Sox9
+#      reversion of unloaded interzone cells. One-way coupled to the RD Gdf5 field via a Hill interzone-identity
+#      transform (L635-640).
+#   2. Three literature conditions (motile WT 3/3 cavities; paralysed 3 interzones / 0 cavities; Nog-/- 0/0),
+#      a muscle-loading sweep (threshold m* = 0.80, monotone) and a Darcy permeability sweep (monotone,
+#      cavities lost at 16x), each rendered in the new `docs/media/joint_interzone_clefting_cavitation.png`.
+#   3. New empirical comparison: the joint-line arch (sagitta/chord) traced on the vendored radiograph at
+#      +/-9 px lateral offsets (`measure_specimen_articular_arc`, L869-948) vs the model's PIP cavity
+#      mid-contour: 0.056 +/- 0.078 (3/4 valid joints convex-head sign) vs 0.064.
+#   4. Two new Lean 4 theorems (Law 4 cavitation gate + monotonicity; Law 5 Darcy lens midline maximum),
+#      0 sorrys; `synovial_cavitation_reference.json` + README added to the dataset (5 SHA-256-pinned files);
+#      8 new citations in paper_citations.bib; measure_morphoeval 9 -> 16 metrics; self-test 8 -> 12 checks.
+#
+# Why the overall score goes DOWN (96.6 -> 89.4) although the v2 item is closed: scoring the current file
+# against the rubric with line-pinned evidence exposed defects that v2 did not deduct for — the 1D "Turing"
+# PDE places its joints at pre-computed `joint_targets` and hard-codes the brachypodism PIP fusion
+# (L334-349, L364-373), the vendored specimen is a juvenile hand radiograph with open physes and a Digit II
+# centerline whose distal half has no bone contrast (L1019-1023, L1053), the articular arch is an imposed
+# parametric rule rather than an outcome of the mechanics (L631-633), and several Pass 3 constants (A_arc 0.22,
+# Kahn reversion 0.85, K_identity 0.30) are uncited calibrations. These are listed under `remediation`.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated
+# probabilities). Line numbers refer to the working-tree files at the Pass 3 checkpoint (commit d58a084).
+
+audit:
+  id: 2026-10-19-joint-interzone-clefting-audit-v3
+  supersedes: 2026-10-19-joint-interzone-clefting-audit-v2
+  supersedes_audit_id: 2026-10-19-joint-interzone-clefting-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 018 Pass 3 Assessor)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 2 primary assessor; v2 scores retained as the comparison baseline, not re-run in Pass 3)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/18
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d58a084
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) post-remediation evaluation of `2016-onuff-joint-interzone-clefting.py` (1892 lines;
+      12 self-test checks; 16 measurements) in `2026-10-19-joint-interzone-clefting-loop-pass3`, closing the
+      single v2 remediation item with a reduced Biot poroelastic cavitation solver and re-scoring all 7
+      dimensions against the current file. Default render (comparison PNG + cavitation PNG + GIF) takes 7.8 s;
+      `--self-test` 10.5 s.
+
+references:
+  kavanagh2013:
+    title: "Developmental bias in the evolution of phalanges"
+    authors: "Kavanagh KD, Shoval O, Winslow BB, Alon U, Leary BP, Kan A, Tabin CJ"
+    venue: "PNAS 110(45):18190-18195 (2013)"
+    doi: 10.1073/pnas.1315213110
+  hiscock2017:
+    title: "On the formation of digits and joints during limb development"
+    authors: "Hiscock TW, Tschopp P, Tabin CJ"
+    venue: "Developmental Cell 41(5):459-465 (2017)"
+    doi: 10.1016/j.devcel.2017.04.021
+  hartmann2001:
+    title: "Wnt-14 plays a pivotal role in inducing synovial joint formation in the developing appendicular skeleton"
+    authors: "Hartmann C, Tabin CJ"
+    venue: "Cell 104(3):341-351 (2001)"
+    doi: 10.1016/S0092-8674(01)00222-7
+  brunet1998:
+    title: "Noggin, cartilage morphogenesis, and joint formation in the mammalian skeleton"
+    authors: "Brunet LJ, McMahon JA, McMahon AP, Harland RM"
+    venue: "Science 280(5368):1455-1457 (1998)"
+    doi: 10.1126/science.280.5368.1455
+  storm1994:
+    title: "Limb alterations in brachypodism mice due to mutations in a new member of the TGF-beta superfamily"
+    authors: "Storm EE, Huynh TV, Copeland NG, Jenkins NA, Kingsley DM, Lee SJ"
+    venue: "Nature 368(6472):639-643 (1994)"
+    doi: 10.1038/368639a0
+  drachman1966:
+    title: "The role of movement in embryonic joint development"
+    authors: "Drachman DB, Sokoloff L"
+    venue: "Developmental Biology 14(3):401-420 (1966)"
+    doi: 10.1016/0012-1606(66)90022-4
+  kahn2009:
+    title: "Muscle contraction is necessary to maintain joint progenitor cell fate"
+    authors: "Kahn J, Shwartz Y, Blitz E, Krief S, Sharir A, Breitel DA, Rattenbach R, Relaix F, Maire P, Rountree RB, Kingsley DM, Zelzer E"
+    venue: "Developmental Cell 16(5):734-743 (2009)"
+    doi: 10.1016/j.devcel.2009.04.013
+  roddy2011:
+    title: "Mechanical influences on morphogenesis of the knee joint revealed through morphological, molecular and computational analysis of immobilised embryos"
+    authors: "Roddy KA, Prendergast PJ, Murphy P"
+    venue: "PLoS ONE 6(2):e17526 (2011)"
+    doi: 10.1371/journal.pone.0017526
+  carter1988:
+    title: "The role of mechanical loading histories in the development of diarthrodial joints"
+    authors: "Carter DR, Wong M"
+    venue: "Journal of Orthopaedic Research 6(6):804-816 (1988)"
+    doi: 10.1002/jor.1100060604
+  edwards1994:
+    title: "The formation of human synovial joint cavities: a possible role for hyaluronan and CD44 in altered interzone cohesion"
+    authors: "Edwards JC, Wilkinson LS, Jones HM, Soothill P, Henderson KJ, Worrall JG, Pitsillides AA"
+    venue: "Journal of Anatomy 185(Pt 2):355-367 (1994)"
+    url: https://pubmed.ncbi.nlm.nih.gov/7961140/
+  dowthwaite1998:
+    title: "An essential role for the interaction between hyaluronan and hyaluronan binding proteins during joint development"
+    authors: "Dowthwaite GP, Edwards JC, Pitsillides AA"
+    venue: "Journal of Histochemistry & Cytochemistry 46(5):641-651 (1998)"
+    doi: 10.1177/002215549804600509
+  mow1980:
+    title: "Biphasic creep and stress relaxation of articular cartilage in compression: theory and experiments"
+    authors: "Mow VC, Kuei SC, Lai WM, Armstrong CG"
+    venue: "Journal of Biomechanical Engineering 102(1):73-84 (1980)"
+    doi: 10.1115/1.3138202
+  maroudas1976:
+    title: "Balance between swelling pressure and collagen tension in normal and degenerate cartilage"
+    authors: "Maroudas A"
+    venue: "Nature 260(5554):808-809 (1976)"
+    doi: 10.1038/260808a0
+
+simulations:
+  - id: onuff-joint-interzone-clefting
+    name: "Kavanagh et al. (2013) phalangeal Inhibitory Cascade & Hiscock et al. (2017) BMP-GDF5-Noggin synovial joint interzone segmentation, with Pass 3 reduced Biot poroelastic synovial cavitation"
+    organism: "Gallus gallus / Mus musculus tetrapod autopod digits & synovial joint interzones"
+    script: 2016-onuff-joint-interzone-clefting.py
+    output: docs/media/joint_interzone_clefting_comparison.png
+    extra_outputs:
+      - docs/media/joint_interzone_clefting_cavitation.png
+      - docs/media/joint_interzone_clefting_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-joint-interzone-clefting-audit-v2
+    source_refs:
+      - kavanagh2013
+      - hiscock2017
+      - hartmann2001
+      - brunet1998
+      - storm1994
+      - drachman1966
+      - kahn2009
+      - roddy2011
+      - carter1988
+      - edwards1994
+      - dowthwaite1998
+      - mow1980
+      - maroudas1976
+    claim_boundary:
+      reported_in_source:
+        - "Kavanagh et al. (2013): phalanx lengths of triphalangeal digits across tetrapods fall on the inhibitory-cascade line P2/P1 = 1/2 + 1/2 (P3/P1), i.e. P2 is 1/3 of the phalangeal total"
+        - "Hiscock et al. (2017), Hartmann & Tabin (2001): periodic Gdf5+/Wnt9a+ interzones segment a chondrogenic digit ray; Brunet et al. (1998): Nog-/- embryos form no joints; Storm et al. (1994): Gdf5 bp/bp fuses interphalangeal joints"
+        - "Drachman & Sokoloff (1966), Kahn et al. (2009): paralysed or muscle-less embryos specify interzones but fail to cavitate and the interzone re-chondrifies; Roddy et al. (2011): immobilised rudiments lose articular curvature"
+        - "Edwards et al. (1994), Dowthwaite et al. (1998): cavitation coincides with mechanosensitive hyaluronan accumulation and loss of interzone cohesion; Mow et al. (1980), Maroudas (1976): cartilage is a biphasic poroelastic solid whose Donnan swelling pressure is ~0.1-0.25 MPa"
+      reconstructed_in_script:
+        - "GDF5-Noggin 2x2 Turing dispersion with D=0 control; 1D growing-domain RD PDE with a distal PFR mask; 2D digit-ray view; Kavanagh 12-taxon morphospace regression; six genetic/signalling perturbations; radiograph segmentation of Digits II-IV"
+        - "Pass 3: reduced 2D Biot storage-equation cavitation solver (HA synthesis -> osmotic pore pressure with free drainage -> cohesion threshold -> irreversible cavity phase field), three literature cavitation conditions, muscle-loading and permeability sweeps, Carter-Wong articular arch, Kahn Sox9 reversion, and the radiograph joint-line sagitta/chord comparison"
+      transfer_boundary:
+        - "The 1D RD PDE does not self-organise its joint positions: `joint_targets` are pre-computed from the arithmetic progression and injected as a Gaussian source behind the PFR, and the bp/bp PIP fusion is hard-coded (L334-349, L364-373); the Turing dispersion is verified analytically, not as the pattern-selecting mechanism of the PDE"
+        - "The poroelastic solver has a rigid solid skeleton (no u-p Biot displacement, effective stress, capsule or ligament), is 2D, one-way coupled (RD -> poroelastic), and its articular arch is a parametric Carter-Wong rule a(y) = A_arc phi(m)(1 - (y/W)^2), not a computed growth response; all constants are dimensionless and scaled only to adult cartilage"
+        - "The vendored specimen is a juvenile hand radiograph with open physes, not an embryonic interzone section; the joint-line arch statistic rests on 4 valid joints with sd > mean"
+      does_not_claim:
+        - "A full Biot u-p or triphasic solution, 3D geometry, synovial fluid flow, capsule/ligament mechanics, convex-head emergence from growth (the model's head contour is flat because the lens cancels the arch), or any dimensional embryonic poroelastic constant"
+    summary: >-
+      Pass 3 (v3) re-scored evaluation of `2016-onuff-joint-interzone-clefting.py` (overall weighted score
+      89.4/100, down 7.2 from the v2 score of 96.6). The single v2 remediation item is closed: the 2D Gdf5
+      interzone field now drives a reduced Biot poroelastic cavitation solver (hyaluronan synthesis, Donnan
+      osmotic pore pressure with Darcy drainage, HA/CD44 loss of cohesion, irreversible cavity phase field,
+      Carter-Wong articular arch, Kahn Sox9 reversion) that reproduces the three literature outcomes (motile WT
+      3 interzones -> 3 cavities; paralysed 3 -> 0 with interzone Sox9 0.81 vs 0.23; Nog-/- 0 -> 0), has monotone
+      muscle-loading (m* = 0.80) and permeability sweeps, matches the radiograph joint-line sagitta/chord
+      (0.064 vs 0.056 +/- 0.078; 3/4 joints convex-head sign), and is backed by two new machine-verified Lean 4
+      theorems (5 total, 0 sorrys). Scoring the current file line by line, however, exposed defects that v2
+      did not deduct for: templated joint positions and hard-coded PIP fusion in the RD PDE, an imposed rather
+      than emergent articular arch (the modelled head contour is flat), a juvenile specimen with a
+      low-contrast Digit II centerline and a hard-coded cleft count, and several uncited Pass 3 calibration
+      constants. These are carried as 8 line-pinned Pass 4 items.
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >-
+          Credited: the GDF5-Noggin dispersion (L194-242) and the Kavanagh cascade laws (L245-285) are exact;
+          the new poroelastic solver (L566-791) implements a recognisable reduced Biot storage equation
+          S dp/dt = kappa lap(p) + gamma(beta H - p) with Dirichlet drainage, a mechanosensitive HA source and
+          a cohesion threshold, and its steady-state gate and Darcy lens are proved in Lean (Laws 4-5).
+          Deductions: the 1D "Turing-wavefront" PDE does not select its own wavelength — joint positions
+          are pre-computed `joint_targets` injected as Gaussian sources and the bp/bp PIP fusion is an `if idx_j
+          == 1: continue` (L334-349, L364-373), so the dispersion relation is verified beside, not inside, the
+          PDE (-6); the solid skeleton is rigid (no u-p coupling, effective stress or volumetric strain), so
+          "poroelastic" is a storage equation (-4); the articular arch is an imposed parametric rule and the
+          interzone identity is a Hill transform chosen to make the DIP cavitate (L631-640) (-3); the Kahn
+          reversion factor 0.85 (L666) is a phenomenological constant (-1).
+        evidence:
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [194, 242], note: "Exact 2x2 GDF5-Noggin dispersion relation with integer witnesses matching Lean Law 2", supports: true}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [566, 663], note: "Reduced Biot storage-equation cavitation solver: HA source, Darcy pressure diffusion with p = 0 outside the rod, cohesion threshold, irreversible cavity phase field", supports: true}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [334, 373], note: "Joint positions are pre-computed `joint_targets` and the brachypodism PIP fusion is hard-coded; the RD PDE does not self-organise the pattern", supports: false}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [631, 640], note: "Articular arch a(y) is an imposed Carter-Wong rule and the interzone identity is a Hill transform (K_identity = 0.30) rather than an emergent mechanical outcome", supports: false}
+          - {file: morphoeval/lean/loops/Loop_018_joint_interzone_clefting.lean, lines: [107, 193], note: "Laws 4-5: cavitation gate (m_load = 0 or gdf5 = 0 -> no cavity; monotone in loading) and Darcy lens midline maximum, 0 sorrys, verified with `lean`", supports: true}
+      specimen-match:
+        value: 84
+        rationale: >-
+          Credited: the comparison PNG shows the radiograph with traced centerlines and MCP/PIP/DIP markers
+          beside the Kavanagh morphospace (Panels D, F), and the new Panel C / cavitation figure make the WT
+          lens cavities, the paralysed uncavitated interzones and the Nog-/- rod visually distinct; the new
+          joint-line arch trace agrees in sign with 3 of 4 valid joints (s/c 0.064 vs 0.056). Deductions:
+          the specimen is a juvenile hand radiograph with open physes — the "interzone clefts" are adult
+          joint spaces 10-12 px from a growth plate, not embryonic interzones (-5); Digit II's centerline has
+          no bone contrast over its distal half (profile ~67 flat), so its DIP minimum is window-determined
+          and it fails the Pass 3 contrast gate (L1019-1023) (-4); `n_synovial_clefts: 3` is asserted, not
+          detected (L1053) (-3); the modelled proximal head contour is flat (head sagitta/half-span -0.036)
+          because the lens thickening cancels the arch, whereas the radiograph heads are convex (-3); the
+          joint-line statistic has sd 0.078 > mean 0.056 on n = 4 (-1).
+        evidence:
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [1272, 1302], note: "Panel F: radiograph with Digit II-IV centerlines and MCP/PIP/DIP markers; Panel D overlays segmented digits on the Kavanagh morphospace (L1185-1246)", supports: true}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [1154, 1184], note: "Panel C: motile WT cavities vs paralysed (interzones, no cavities, Sox9 re-expressed) vs Nog-/- fused rod, visually distinct", supports: true}
+          - {file: docs/media/joint_interzone_clefting_cavitation.png, lines: [0, 0], note: "Rendered Pass 3 figure: lens cavities in the pressure field (A), midline gate (B), three literature conditions (C), loading and permeability sweeps (D-E), joint-line arch vs radiograph (F); the model head contour in F is flat while the specimen joint lines are convex-head", supports: true}
+          - {file: docs/media/joint_interzone_clefting_growth.gif, lines: [0, 0], note: "Growth GIF regenerated; shows sequential MCP -> PIP -> DIP interzone clefting but not the Pass 3 cavitation (cavities are only in the PNGs)", supports: true}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [869, 948], note: "Specimen joint-line arch trace with contrast gate; 4/6 joints valid, 3/4 convex-head sign, mean s/c 0.056 +/- 0.078", supports: true}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [1019, 1023], note: "PIP/DIP minima are argmin within hand-set window fractions; Digit II's distal profile has no bone contrast so its DIP is window-determined", supports: false}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [1053, 1053], note: "`n_synovial_clefts: 3` is a constant, not a detection result", supports: false}
+          - {file: datasets/joint_interzone_clefting/README.md, lines: [10, 10], note: "Specimen is a juvenile radiograph with open physes (disclosed in Pass 3, not an embryonic interzone)", supports: false}
+      parameter-expressivity:
+        value: 93
+        rationale: >-
+          Credited: the 12-taxon morphospace and six genetic conditions are retained (L245-285, L951-982);
+          Pass 3 adds two genuine mechanical parameters, each swept and monotone with a visible transition —
+          muscle loading m_load (cavity count 0 -> 3 with threshold m* = 0.80, pore pressure monotone up,
+          interzone Sox9 monotone down; L811-841) and Darcy permeability (cavity area monotone down, cavities
+          lost at 16x; L844-866), both exposed on the CLI (`--m-load`, `--permeability`, L1863-1864) and
+          rendered as Panels D-E. Deductions: A_arc_over_W, kappa_G, sigma_0 and beta_osm are not swept, so
+          the articular arch amplitude and the cohesion threshold are fixed calibrations (-4); the loading
+          sweep is coarse (9 points) and the threshold is reported to the grid resolution 0.2 (-2);
+          the CLI `--m-load` and `--permeability` only affect the cavitation figure, not Panel C of the
+          comparison figure (L1872-1879 vs L1882) (-1).
+        evidence:
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [811, 866], note: "Muscle-loading and permeability sweeps with monotonicity flags and loading threshold", supports: true}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [1409, 1438], note: "Panels D-E render both sweeps (count, area, pressure, Sox9, lens height)", supports: true}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [1863, 1864], note: "CLI overrides --m-load and --permeability", supports: true}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [951, 982], note: "Six genetic/signalling perturbation conditions retained from Pass 2", supports: true}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          Credited: `measure_morphoeval()` (L1561-1742) returns 16 metrics, all with `reference_value`,
+          `reference_source` and `unit` keys (asserted in self-test check 7); the seven Pass 3 metrics
+          anchor cavity counts to Edwards 1994 / Drachman 1966 / Kahn 2009, and introduce an output-derived
+          specimen statistic (joint-line s/c) that the model statistic is compared with. Deductions: two of
+          the new metrics (Sox9 reversion ratio, loading threshold m*) carry `reference_value: null` because
+          no published magnitude exists — they are model predictions, not validations (-4); the model s/c
+          reference is the specimen mean whose sd exceeds it, so the agreement (|diff| < 0.05 in check 12)
+          is weak (-3); the permeability metric is a boolean monotonicity flag rather than a measured
+          quantity (-2); the Pass 2 lambda_c "reference" 3.5904 is still the model's own value (-1).
+        evidence:
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [1578, 1649], note: "Seven Pass 3 measurements: WT/paralysed cavity counts, Sox9 reversion ratio, loading threshold, permeability monotonicity, model and specimen joint-line s/c", supports: true}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [1791, 1794], note: "Self-test asserts 16 metrics each carrying reference_value / reference_source / unit", supports: true}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [1598, 1619], note: "Sox9 reversion ratio and loading threshold have reference_value null (no literature magnitude)", supports: false}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [1841, 1849], note: "Check 12: model and specimen s/c agree within 0.05 and share the majority convex-head sign", supports: true}
+      source-traceability:
+        value: 96
+        rationale: >-
+          Credited: all 5 dataset files are SHA-256 pinned and verified fail-closed on every run (L134-176);
+          `synovial_cavitation_reference.json` records each Pass 3 source with DOI (or PMID for Edwards 1994),
+          its finding, the reduced equations, dimensionless constants and a dimensional scaling note; the bib
+          carries all 13 sources; the dataset README documents provenance and the juvenile-specimen caveat.
+          Deductions: dimensional embryonic poroelastic constants are not available, only adult cartilage
+          scales (Mow 1980, Maroudas 1976) are recorded (-2); Edwards 1994 has no DOI, PMID only (-1); the
+          specimen's Wikimedia source is cited but its CC BY-SA attribution author is not recorded (-1).
+        evidence:
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [134, 176], note: "SHA-256 registry for 5 files and fail-closed verify_dataset_integrity()", supports: true}
+          - {file: datasets/joint_interzone_clefting/synovial_cavitation_reference.json, lines: [1, 100], note: "Eight Pass 3 sources with DOI/PMID and finding, reduced model equations and parameters", supports: true}
+          - {file: datasets/joint_interzone_clefting/paper_citations.bib, lines: [56, 144], note: "BibTeX entries appended for Drachman 1966 ... Maroudas 1976", supports: true}
+          - {file: datasets/joint_interzone_clefting/README.md, lines: [1, 43], note: "Dataset README with file table, Pass 3 additions and claim boundary", supports: true}
+      code-traceability:
+        value: 92
+        rationale: >-
+          Credited: the module docstring maps Laws 1-5 to the five Lean theorems and to equations and
+          sources (L45-101); `simulate_poroelastic_cavitation` has an equation-level docstring naming the
+          source of each term (L580-612); `mechanosensitive_gain`, `digit_rod_geometry`, the sweeps and the
+          arc tracer are documented; the math_kg loop YAML registers Laws 4-5 with lean_locus and code_locus.
+          Deductions: A_arc_over_W = 0.22, the Kahn reversion factor 0.85, K_identity = 0.30 and the
+          Panel C composite weights are uncited calibration constants (L566-591, L666) (-5); the 1D PDE's
+          `wave_drive` template and `drive_gain` clamp (L364-389) remain uncited Pass 2 heuristics (-3).
+        evidence:
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [45, 101], note: "Module docstring: Laws 1-5 mapped to Lean theorems, equations and sources, with an explicit Pass 3 claim boundary", supports: true}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [580, 612], note: "Solver docstring names each term's source (Dowthwaite 1998, Mow 1980, Maroudas 1976, Edwards 1994, Carter & Wong 1988, Kahn 2009)", supports: true}
+          - {file: morphoeval/math_kg_loops/onuff-joint-interzone-clefting.yaml, lines: [80, 150], note: "Laws 4-5 registered with lean_theorem, lean_locus and code_locus", supports: true}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [566, 591], note: "Default constants A_arc_over_W, K_identity, r_cav, kappa_G are calibrations without a cited value", supports: false}
+      repro-package:
+        value: 95
+        rationale: >-
+          Credited: `--self-test` runs 12 checks in 10.5 s including bitwise two-run determinism of both the
+          RD PDE and the poroelastic solver (L1796-1804); the default invocation renders all three artifacts
+          in 7.8 s; the explicit scheme carries a stability guard (L626-629); the audit environment (Python
+          3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0) is recorded; all dataset inputs
+          are hash-verified. Deductions: no per-slot requirements lock file (-2); matplotlib needs a writable
+          MPLCONFIGDIR and the script does not set one (-1); the GIF is not covered by a determinism check
+          (-1); `measure_morphoeval()` re-runs every solver (16 metrics, ~9 s) rather than reading a cached
+          run (-1).
+        evidence:
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [1745, 1848], note: "12-point self-test with bitwise determinism for RD and poroelastic solvers, Law 4-5 checks and the specimen arc check", supports: true}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [626, 629], note: "Explicit-scheme stability guard adapts dt to permeability", supports: true}
+          - {file: 2016-onuff-joint-interzone-clefting.py, lines: [1852, 1888], note: "CLI with --self-test, --skip-gif, --skip-cavitation-figure, --m-load, --permeability and Pass 2 overrides", supports: true}
+    remediation:
+      - >-
+        2016-onuff-joint-interzone-clefting.py:334-349 and 364-373 — the 1D RD PDE places its interzones at
+        pre-computed `joint_targets` injected as Gaussian `wave_drive` sources and hard-codes the Gdf5 bp/bp PIP
+        fusion with `if cleft_amp < 0.35 and idx_j == 1: continue`. Replace the template with genuine
+        wavelength selection (PFR-modulated D_G, D_N or kinetic parameters so the Turing wavelength of Law 2
+        sets the phalanx lengths) and let the bp/bp fusion follow from a Gdf5-dose-dependent cohesion/threshold.
+      - >-
+        2016-onuff-joint-interzone-clefting.py:566-663 — the poroelastic solver is a storage equation with a
+        rigid skeleton; add the solid displacement u and effective stress (Biot u-p, or at least a 1D
+        consolidation column across the interzone) so that the tissue separation and the articular arch arise
+        from strain, not from the parametric rule at L631-633.
+      - >-
+        2016-onuff-joint-interzone-clefting.py:631-640 and 691-751 — the modelled proximal head contour is flat
+        (head sagitta/half-span -0.036) because the Darcy lens thickens at the midline and cancels the imposed
+        arch; the radiograph heads are convex. Either let the cavity reach the capsule periphery (Robin instead
+        of Dirichlet drainage at the perichondrium) or compute the arch from a Carter-Wong growth law so a
+        convex head / concave base pair emerges, and assert head_sagitta_norm > 0 in self-test check 12.
+      - >-
+        2016-onuff-joint-interzone-clefting.py:1019-1023 and 1053 — Digit II's stored centerline has no bone
+        contrast over its distal half (profile ~67 flat), so its DIP minimum is set by the window fraction, and
+        `n_synovial_clefts: 3` is a constant. Re-trace the Digit II centerline through bone, detect the cleft
+        count from the number of radiolucent minima with a contrast gate, and separate the joint space from the
+        physis minimum 10-12 px distal (the specimen is juvenile).
+      - >-
+        2016-onuff-joint-interzone-clefting.py:566-591 and 666 — A_arc_over_W = 0.22, K_identity = 0.30,
+        kappa_G = 0.5, r_cav = 3.0 and the Kahn reversion factor 0.85 are uncited calibrations. Sweep A_arc and
+        kappa_G (parameter-expressivity), and anchor at least kappa_G / sigma_0 to the Edwards 1994 / Maroudas 1976
+        ratio of interzone cohesion to Donnan pressure, or state them as free in the docstring and reference JSON.
+      - >-
+        2016-onuff-joint-interzone-clefting.py:1598-1619 — the Sox9 reversion ratio and the loading threshold m*
+        carry `reference_value: null`. Replace with a quantitative anchor (e.g. Kahn 2009 Fig. 4 Col2a1 signal
+        in the muscle-less interzone, or Roddy 2011's graded immobilisation series) or move them out of the
+        validation set into a 'predictions' list.
+      - >-
+        2016-onuff-joint-interzone-clefting.py:869-948 — the joint-line arch statistic rests on 4 valid joints
+        with sd 0.078 > mean 0.056. Add a second radiograph (adult, closed physes) or trace the MCP joints as
+        well, and report a bootstrap CI so the model-specimen comparison in check 12 is not a 0.05 tolerance.
+      - >-
+        2016-onuff-joint-interzone-clefting.py:1872-1879 vs 1882 — `--m-load` / `--permeability` only reach
+        `render_cavitation_figure`; Panel C of the comparison figure always uses m_load = 1 and 0. Thread the CLI
+        values through `render_comparison_figure` and add a requirements lock file for the slot.

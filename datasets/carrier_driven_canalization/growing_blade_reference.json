@@ -1,0 +1,116 @@
+{
+  "dataset_id": "carrier_driven_canalization_growing_blade_v1",
+  "title": "Pass 3 reference table — Lockhart-growing hexagonal leaf blade mesh and sequential vein-order emergence for Slot 035 (feugier-carrier-driven-canalization)",
+  "organism": "Arabidopsis thaliana (first-leaf lamina, procambial venation orders 1-4)",
+  "bibliographic_corrections": [
+    {
+      "field": "feugier2005 venue",
+      "pass1_pass2_value": "Journal of Theoretical Biology 236(3):313-325 (2005)",
+      "verified_value": "Journal of Theoretical Biology 236(4):366-375 (2005), published 21 October 2005",
+      "doi": "10.1016/j.jtbi.2005.03.017",
+      "pmid": "15899502",
+      "verified_against": "Crossref works API and PubMed efetch, 2026-10-20"
+    }
+  ],
+  "primary_sources": [
+    {
+      "key": "feugier2005",
+      "citation": "Feugier FG, Mochizuki A, Iwasa Y (2005) Self-organization of the vascular system in plant leaves: inter-dependent dynamics of auxin flux and carrier proteins. J. Theor. Biol. 236(4):366-375",
+      "doi": "10.1016/j.jtbi.2005.03.017",
+      "pmid": "15899502",
+      "reported_results_used": [
+        "Result 1: branching auxin distribution patterns self-organize on a hexagonal lattice with uniform auxin production and a single marginal petiole sink cell.",
+        "Result 2: response functions that accelerate (carrier number increases faster than flux) generate branching patterns; linear or decelerating response functions form NO branching pattern.",
+        "Result 3: when membrane domains compete for a limited cellular pool of carriers, auxin is more abundant in veins than in surrounding tissue."
+      ]
+    },
+    {
+      "key": "scarpella2004",
+      "citation": "Scarpella E, Francis P, Berleth T (2004) Stage-specific markers define early steps of procambium development in Arabidopsis leaves and correlate termination of vein formation with mesophyll differentiation. Development 131(14):3445-3455",
+      "doi": "10.1242/dev.01182",
+      "pmid": "15226260",
+      "reported_results_used": [
+        "Preprocambial domains are always continuous with pre-existing vasculature; veins are initiated as freely ending preprocambial domains and the network forms by subsequent fusion of these domains.",
+        "Vein orders arise reiteratively (new preprocambial branches) during blade expansion until mesophyll differentiation terminates the process; interrupting extension yields fewer vein orders and more freely ending veins."
+      ]
+    },
+    {
+      "key": "scarpella2006",
+      "citation": "Scarpella E, Marcos D, Friml J, Berleth T (2006) Control of leaf vascular patterning by polar auxin transport. Genes Dev. 20(8):1015-1027",
+      "doi": "10.1101/gad.1402406",
+      "reported_results_used": [
+        "Epidermal PIN1 convergence points at the margin initiate secondary veins; transient bipolar PIN1 cells bridge nascent strands to pre-existing veins."
+      ]
+    },
+    {
+      "key": "kang2004",
+      "citation": "Kang J, Dengler N (2004) Vein pattern development in adult leaves of Arabidopsis thaliana. Int. J. Plant Sci. 165(2):231-242",
+      "doi": "10.1086/382794",
+      "reported_results_used": [
+        "Vein orders (midvein, secondary, tertiary, quaternary / higher order) are initiated sequentially during lamina expansion."
+      ]
+    },
+    {
+      "key": "lockhart1965",
+      "citation": "Lockhart JA (1965) An analysis of irreversible plant cell elongation. J. Theor. Biol. 8(2):264-275",
+      "doi": "10.1016/0022-5193(65)90077-9",
+      "reported_results_used": [
+        "Irreversible (plastic) cell expansion rate (1/V) dV/dt = phi (P - Y) for turgor P above the wall yield threshold Y; zero below."
+      ]
+    },
+    {
+      "key": "kuchen2012",
+      "citation": "Kuchen EE, Fox S, Barbier de Reuille P, Kennaway R, Bensmihen S, Avondo J, Calder GM, Southam P, Robinson S, Bangham A, Coen E (2012) Generation of leaf shape through early patterns of growth and tissue polarity. Science 335(6072):1092-1096",
+      "doi": "10.1126/science.1214678",
+      "reported_results_used": [
+        "Early Arabidopsis leaf primordia are narrow and widen allometrically as the lamina expands (used to motivate the g^1.5 width / g^0.5 length mask allometry; exponents are a reduced modelling choice, not fitted to this paper)."
+      ]
+    }
+  ],
+  "lockhart_growth_law": {
+    "equation": "(1/A) dA/dt = phi * max(0, P_turgor - Y(t)),  Y(t) = Y0 + kappa * t",
+    "closed_form": "A(t)/A0 = exp(phi * ((P - Y0) t - kappa t^2 / 2)) for t <= (P - Y0)/kappa, constant afterwards",
+    "units": {"P_turgor": "MPa", "Y0": "MPa", "kappa": "MPa/day", "phi": "1/(MPa day)", "t": "days after germination (DAG)"},
+    "parameters": {"phi_extensibility": 1.0, "turgor_P": 0.6, "yield_Y0": 0.2, "yield_hardening_kappa": 0.05},
+    "growth_arrest_day": 8.0,
+    "stage_days": [2.0, 3.5, 5.0, 7.0],
+    "stage_labels": ["1 midvein", "2 secondaries", "3 tertiaries", "4 quaternaries"],
+    "area_fold_change_2_to_7_dag_closed_form": 2.3989,
+    "note": "Parameter values are illustrative (order-of-magnitude for growing tissues: P 0.3-0.8 MPa, Y 0.1-0.3 MPa); the stage schedule follows the qualitative chronology of Scarpella et al. (2004) first leaves. The blade mesh grows by marginal cell addition; no cell-expansion or viscoelastic wall mechanics are modelled."
+  },
+  "canalization_parameters": {
+    "rows": 26, "cols": 22, "steps_per_stage": 4000, "dt": 0.05,
+    "sigma": 0.005, "sigma_convergence": 0.6, "mu": 0.02, "D": 0.3,
+    "k1": 1.0, "k2": 0.3, "P_total": 6.0, "K_saturation": 1.0,
+    "P_vein": 1.2, "P_commit": 1.2, "tau_commit": 2.0,
+    "interior_convergence_points": [0, 0, 4, 6],
+    "marginal_convergence_height": [null, 0.72, 0.5, 0.3],
+    "seed": 2005
+  },
+  "expected_outcomes": {
+    "accelerating_open_tree": {
+      "source": "Feugier et al. (2005) results 1-2 (accelerating Phi = J^2, conserved pool)",
+      "betti_1_loops_final_ref": 0,
+      "single_connected_network": true,
+      "sequential_orders_emerged_ref": 4
+    },
+    "accelerating_committed_reticulate": {
+      "source": "Feugier (2005) Phi = J^2 + Scarpella et al. (2004) irreversible procambial commitment of fusing preprocambial domains",
+      "betti_1_loops_final_ref_min": 1,
+      "sequential_orders_emerged_ref": 4,
+      "note": "Reference loop count is not taken from an external specimen; the test is beta_1 >= 1 with beta_1 monotonically decreasing in tau_commit (Spearman rho -> -1)."
+    },
+    "decelerating_no_branching": {
+      "source": "Feugier et al. (2005) result 2: linear or decelerating response -> no branching pattern",
+      "vein_cell_fraction_final_ref": 1.0,
+      "vein_cell_fraction_tolerance": 0.15,
+      "note": "A diffuse, (near-)uniformly polarized sheet; measured as the fraction of blade cells whose maximal membrane face exceeds P_vein."
+    },
+    "exocytosis_ablation": {"vein_cell_fraction_final_ref": 0.0, "betti_1_loops_final_ref": 0}
+  },
+  "sequential_emergence_reference": {
+    "orders_ref": 4,
+    "source": "Scarpella, Francis & Berleth (2004) Development 131:3445-3455; Kang & Dengler (2004) Int. J. Plant Sci. 165:231-242",
+    "statement": "Midvein, secondary, tertiary and quaternary veins appear in that order during blade expansion; higher orders are initiated only while the blade is still expanding."
+  }
+}

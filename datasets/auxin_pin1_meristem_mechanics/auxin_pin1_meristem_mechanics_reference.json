@@ -130,6 +130,67 @@
       "boundary_crease_depth_ratio_vs_wt_ref": 0.18
     }
   },
+  "secondary_papers_pass3": [
+    {
+      "citation": "Louveaux et al. (2016) PNAS 113(30):E4294-E4303",
+      "doi": "10.1073/pnas.1600677113",
+      "used_for": "Mechanical division rule (new wall along maximal tension) for L1/L2 anticlinal planes; shoot-apex statistics: 65-77% of all division planes are the shortest (Besson-Dumais class 1) plane, 81% of 829 divisions are symmetric (smaller daughter 40-50% of mother), epidermis thickness ~5 um, boundary region enriched in long planes"
+    },
+    {
+      "citation": "Besson & Dumais (2011) PNAS 108(15):6294-6299",
+      "doi": "10.1073/pnas.1011866108",
+      "used_for": "Gibbs-measure division rule P_i = exp(-beta l_i / rho) / Z with universal beta = 20.6 (geometric ablation rule and L3 corpus rule extrapolated to relative plane areas)"
+    },
+    {
+      "citation": "Reddy et al. (2004) Development 131(17):4225-4237",
+      "doi": "10.1242/dev.01261",
+      "used_for": "L1 and L2 are single clonal layers maintained by anticlinal divisions; the corpus (L3) divides in periclinal as well as anticlinal planes (qualitative, no fraction reported)"
+    },
+    {
+      "citation": "Kutschera & Niklas (2007) Journal of Plant Physiology 164(11):1395-1409",
+      "doi": "10.1016/j.jplph.2007.08.002",
+      "used_for": "Epidermal-growth-control / tensile-skin theory: the thick outer epidermal walls are the load-bearing layer, motivating the k_L1 / k_inner > 1 in-plane stiffness ratio of the multilayer mesh (Lean Law 4 load sharing)"
+    }
+  ],
+  "multilayer_mesh_parameters_pass3": {
+    "note": "Reduced 3D multi-layered Voronoi cell-centre mesh (NOT a finite-element vertex model). Model units: pressure = 1, lengths in um, spring stiffness per unit face area. All values below are modelling assumptions unless a source is given.",
+    "sheets": ["L1", "L2", "L3a", "L3b"],
+    "sheet_cell_counts": [168, 150, 120, 88],
+    "sheet_depths_um": [0.0, 5.0, 10.5, 18.0],
+    "epidermal_layer_thickness_um": 5.0,
+    "epidermal_thickness_source": "Louveaux et al. (2016) Fig. S2A: shoot apex epidermis almost constant thickness of around 5 um",
+    "dome_radius_R_um": 50.0,
+    "l1_sheet_radius_um": 52.0,
+    "turgor_pressure_model_units": 1.0,
+    "inner_wall_stiffness_k_inner": 8.0,
+    "l1_over_inner_stiffness_ratio": 5.0,
+    "stiffness_ratio_sweep": [1.0, 2.0, 5.0, 10.0],
+    "lockhart_extensibility_phi_per_step": 0.5,
+    "lockhart_yield_strain": 0.005,
+    "cell_autonomous_growth_per_step": 0.0025,
+    "relaxation_steps": 320,
+    "growth_steps": 80,
+    "jacobi_relaxation_factor": 0.8,
+    "division_volume_threshold": "V >= 2 V_birth (V_birth = V_eq * U(0.55, 1.0) for founder cells, V_mother / 2 for daughters)",
+    "daughter_offset_fraction_of_V_cuberoot": 0.18,
+    "division_rules": {
+      "L1_L2_default": "mechanical (Louveaux 2016): plane normal n_s x e_1 of tissue virial + cell-autonomous turgor tension P w_perp / (2 h)",
+      "L1_L2_ablation": "geometric (Besson & Dumais 2011): Gibbs over 12 anticlinal candidate planes, beta = 20.6",
+      "L3": "3D Gibbs over the three principal axes of the polyhedron, beta = 20.6 on relative plane area (extrapolation)"
+    },
+    "division_plane_benchmarks": {
+      "shortest_plane_fraction_ref": 0.71,
+      "shortest_plane_fraction_range": [0.65, 0.77],
+      "shortest_plane_source": "Louveaux et al. (2016) PNAS 113:E4294 (65-77% of all planes; 68-81% of predicted planes)",
+      "symmetric_division_fraction_ref": 0.81,
+      "symmetric_division_source": "Louveaux et al. (2016) Fig. S2E (n = 829; smaller daughter 40-50% of mother)",
+      "l1_l2_anticlinal_fraction_ref": 1.0,
+      "l1_l2_anticlinal_source": "Reddy et al. (2004) Development 131:4225; Louveaux et al. (2016) Fig. S2A",
+      "l3_periclinal_fraction_prior": 0.5,
+      "l3_periclinal_note": "Reddy et al. (2004): corpus divides in periclinal as well as anticlinal planes; no quantitative fraction reported"
+    },
+    "membrane_law_comparison": "A_sigma(r) = (1 - q) / (3 - q), q = kappa_m / kappa_theta = 1 / (1 + r^2 / R^2) on the paraboloid z = -r^2/(2R) (Hamant 2008 SOM thin-shell balance; Lean Law 1)"
+  },
   "specimen_metadata": {
     "filename": "arabidopsis_sam_meristem_specimen.jpg",
     "source_title": "File:Arabidopsis round SAM.jpg",

@@ -1,0 +1,85 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-gierer-hydra-activator-inhibitor> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-gierer-hydra-activator-inhibitor-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-gierer-hydra-activator-inhibitor-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Gierer & Meinhardt (1972) & Meinhardt (1993, 2012) Hydra vulgaris activator-inhibitor morphogenesis, head regeneration, tentacle ring & coupled three-system 3D shell — Reproducibility package: 92/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Deterministic seed 1972 throughout; 14-check `--self-test` (L1862-2001) including bitwise determinism of both the 1D solver and the shell solver (FFT + banded solve, L1986-1990), JSON parity, analytic-threshold consistency and every Pass 3 behaviour; CLI documented in argparse; render ~53 s and self-test ~35 s on the pinned venv whose versions are now recorded correctly in this audit. Deductions: no requirements lock file is shipped for this script (-3); the README invocation notes in the dataset describe the model but not the CLI flags or runtimes (-2); `measure_morphoeval()` re-runs the whole ~40 s shell set, and self-test and render each run it again, so a full Pass costs ~2 min of recomputation without caching (-2); matplotlib emits a font-cache warning unless MPLCONFIGDIR is set (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-gierer-hydra-activator-inhibitor-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gierer-hydra-activator-inhibitor-repro-package-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-gierer-hydra-activator-inhibitor-repro-package-3> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gierer-hydra-activator-inhibitor-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "1972-gierer-hydra-activator-inhibitor.py L1862–L2001" ;
+        dct:description "14-check self_test() covering SHA-256, parity, 1D regimes, specimen, shell, sweeps, regeneration and determinism" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/4d5512d/1972-gierer-hydra-activator-inhibitor.py#L1862-L2001> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gierer-hydra-activator-inhibitor-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "1972-gierer-hydra-activator-inhibitor.py L1986–L1990" ;
+        dct:description "Bitwise determinism of the shell solver (two 200-step runs compared with np.array_equal)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/4d5512d/1972-gierer-hydra-activator-inhibitor.py#L1986-L1990> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-gierer-hydra-activator-inhibitor-repro-package-3> a pk:EvidenceItem ;
+        rdfs:label "docs/media/hydra_activator_inhibitor_growth.gif (generated output)" ;
+        dct:description "60-frame GIF: Phase 1 intact column + ring, Phase 2 bisection regeneration, Phase 3 shell development and fragment regeneration — docs/media/hydra_activator_inhibitor_growth.gif: rendered output of 1972-gierer-hydra-activator-inhibitor.py at 4d5512d, image/gif, 1009104 B, 792×342 px, 60 frames, artifact_sha256 1a530c77e9c827988f1ab2e4a692e926fa3aed4a72679bdb190cb21b0cfe2c8b (sha256 1a530c77e9c827988f1ab2e4a692e926fa3aed4a72679bdb190cb21b0cfe2c8b), spec_fingerprint 49a5051749b0c67e34c6eeaa4fb8201bc071879dc58596403d8aa74086bc42c4" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary, Pass 3 builder+assessor) + MorphoEval Dual-Rubric Assessor" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1006/dbio.1993.1138>,
+            <https://doi.org/10.1007/BF00289234>,
+            <https://doi.org/10.1242/jcs.15.2.321>,
+            <https://doi.org/10.1387/ijdb.113483hm> .
+    <https://doi.org/10.1006/dbio.1993.1138> dct:date "1993"^^xsd:gYear ;
+        dct:title "A model for pattern formation of hypostome, tentacles, and foot in hydra: how to form structures close to each other, how to form them at a distance" .
+    <https://doi.org/10.1007/BF00289234> dct:date "1972"^^xsd:gYear ;
+        dct:title "A theory of biological pattern formation" .
+    <https://doi.org/10.1242/jcs.15.2.321> dct:date "1974"^^xsd:gYear ;
+        dct:title "Applications of a theory of biological pattern formation based on lateral inhibition" .
+    <https://doi.org/10.1387/ijdb.113483hm> dct:date "2012"^^xsd:gYear ;
+        dct:title "Modeling pattern formation in hydra: a route to understanding essential steps in development" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Gierer & Meinhardt (1972) & Meinhardt (1993, 2012) Hydra vulgaris activator-inhibitor morphogenesis, head regeneration, tentacle ring & coupled three-system 3D shell — Reproducibility package 92/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T06:03:19Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-gierer-hydra-activator-inhibitor-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

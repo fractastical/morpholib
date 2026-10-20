@@ -1,0 +1,347 @@
+# MorphoEval audit — Yamanaka et al. (2023), Miao et al. (2023) & Adhyapok et al. (2021) Epithelial Somite Rosette Mechanics, 2026-10-20 (v3)
+#
+# Pass 3 re-score of `2021-yaman-somitoid-chirality-buckling.py` (Slot 029) after the remediation of both open
+# v2 findings in the instrumented loop `morphoeval/runs/2026-10-19-somitoid-chirality-buckling-loop-pass3`,
+# superseding `2026-10-19-somitoid-chirality-buckling-audit-v2` (91.7).
+#
+# What Pass 3 changed (both v2 remediation items):
+#   1. v2 item 1 ("3D apical-basal polyhedral scutoid shell / 3D somitecoel lumen pressurization") -> Section 2b
+#      (L415-714): a closed 3D shell of N_3D = 96 radial frustum cells on a spherical-Voronoi tessellation of
+#      Fibonacci-sphere seeds (48 hex / 30 pent / 18 hept, 282 lateral faces), per-cell volume elasticity,
+#      apical/basal/lateral face tensions and an explicit -P V_lumen pressure term, relaxed over 2 N_3D radii
+#      (L535-628) and matched to the closed-form Law 4 radial balance (L478-533; |discrete - analytic| < 1e-3),
+#      a pressure sweep with saddle-node rupture pressure P_crit (L630-685) and an honest scutoid audit that
+#      reports 0 scutoids by construction (L687-714). REDUCED: cells have no tangential DOF, so scutoids / T1s
+#      cannot form; this is disclosed in the code, the dataset README and below, and carried to Pass 4.
+#   2. v2 item 2 ("couple MESP2/RIPPLY2 wavefront arrest from a live HES7 delayed oscillator into EphA4/ephrinB2
+#      and RhoA/ROCK line tensions") -> Section 3b (L824-1121): Lewis (2003) two-variable transcriptional-delay
+#      HES7 oscillator time-scaled to the ~5 h human period (Diaz-Cuadros 2020 / Matsuda 2020; L831-910), run in
+#      every PSM cell; Cooke-Zeeman wavefront arrest (L912-978); MESP2 gated by the frozen HES7 phase, RIPPLY2
+#      boundary fixation, ephrinB2-|EphA4+ boundary rule (L978-987); exponential gamma_ap(x,t) and gamma_het,k(t)
+#      ramps (L989-1002) fed live into the 2D vertex solver, the 3D shell law and the cleft model as a
+#      stage-resolved S0 -> S-III maturation series (L1065-1112). REDUCED: synchronous clock (no kinematic
+#      waves), one-way coupling, hand-chosen v / tau_ROCK / tau_Eph / tau_RIPPLY2.
+#   Plus: reference JSON SHA-256 pinned (L145, L180-186), 5 new DOIs, 2 new Lean 4 theorems (5 total, 0 sorrys),
+#   10 measurements (L1316-1394 new, L1396-1447 retained), 9-panel PNG + new clock-coupling PNG + live-coupled 3-panel GIF, self-test with
+#   6 check groups; PNG/GIF/clock PNG re-render byte-identically (SHA-256 8d411247..., 5d678180..., dc46f670...).
+#
+# Scores below: overall 89.7, DOWN from 91.7. The remediation widened the model but exposed defects that v2 had
+# scored past: 3 of the 5 new measurements reference model-internal values and the HES7-period measurement
+# validates its own calibration; the 3D law with the 2D-fitted tensions gives rho_3D = 0.323, not 0.305; the
+# vendored specimen rosette_metrics disagree with the script's own segmentation (v2 quoted the JSON's CV 0.2010
+# while the script measures 0.2391); and the MESP2/RIPPLY2 logic is a threshold rule set rather than a gene
+# network. Scores are uncalibrated criterion-referenced ratings on 0-100 (not probabilities). Line numbers refer
+# to the files at the Pass 3 working tree on top of commit d58a084 (uncommitted at audit time, file isolation).
+
+audit:
+  id: 2026-10-19-somitoid-chirality-buckling-audit-v3
+  supersedes_audit_id: 2026-10-19-somitoid-chirality-buckling-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d58a084
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) post-remediation evaluation of `2021-yaman-somitoid-chirality-buckling.py` (2268 lines)
+      after closing both v2 remediation items in the isolated loop
+      `2026-10-19-somitoid-chirality-buckling-loop-pass3` (steps 12 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11).
+      The Pass 3 working tree is uncommitted on top of d58a084 (file-isolation rule); PNG, clock PNG and GIF
+      regenerate byte-identically from the script.
+
+references:
+  yamanaka2023:
+    title: "Reconstituting human somitogenesis in vitro"
+    authors: "Yamanaka Y, Hamidi S, Yoshioka-Kobayashi K, Munira S, Sunadome K, Zhang Y, Kurokawa Y, Ericsson R, Mieda A, Thompson JL, Kerwin J, Lisgo S, Yamamoto T, Moris N, Martinez-Arias A, Tsujimura T, Alev C"
+    venue: "Nature 614(7948):509-520 (2023)"
+    doi: 10.1038/s41586-022-05649-2
+  miao2023:
+    title: "Reconstruction and deconstruction of human somitogenesis in vitro"
+    authors: "Miao Y, Djeffal Y, De Simone A, Zhu K, Lee JG, Lu Z, Silberfeld A, Rao J, Tarazona OA, Reiter A, Pourquie O"
+    venue: "Nature 614(7948):500-508 (2023)"
+    doi: 10.1038/s41586-022-05655-4
+  adhyapok2021:
+    title: "A mechanical model of early somite segmentation"
+    authors: "Adhyapok P, Piatkowska AM, Norman MJ, Clendenon SG, Stern CD, Glazier JA, Belmonte JM"
+    venue: "Developmental Cell 56(9):1312-1324 (2021)"
+    doi: 10.1016/j.devcel.2021.03.026
+  sanaki2022:
+    title: "Periodic formation of epithelial somites from human pluripotent stem cells"
+    authors: "Sanaki-Matsumiya M, Matsuda M, Gritti N, Nakaki F, Sharpe J, Trivedi V, Ebisuya M"
+    venue: "Nature Communications 13(1):2325 (2022)"
+    doi: 10.1038/s41467-022-29967-1
+  lewis2003:
+    title: "Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator"
+    authors: "Lewis J"
+    venue: "Current Biology 13(16):1398-1408 (2003)"
+    doi: 10.1016/S0960-9822(03)00534-7
+  diazcuadros2020:
+    title: "In vitro characterization of the human segmentation clock"
+    authors: "Diaz-Cuadros M, Wagner DE, Budjan C, Hubaud A, Tarazona OA, Donelly S, Michaut A, Al Tanoury Z, Yoshioka-Kobayashi K, Niino Y, Kageyama R, Miyawaki A, Touboul J, Pourquie O"
+    venue: "Nature 580(7801):113-118 (2020)"
+    doi: 10.1038/s41586-019-1885-9
+  matsuda2020:
+    title: "Recapitulating the human segmentation clock with pluripotent stem cells"
+    authors: "Matsuda M, Yamanaka Y, Uemura M, Osawa M, Saito MK, Nagahashi A, Nishio M, Guo L, Ikegawa S, Sakurai S, Kihara S, Maurissen TL, Nakamura M, Matsumoto T, Yoshitomi H, Ikeya M, Kawakami N, Yamamoto T, Woltjen K, Ebisuya M, Toguchida J, Alev C"
+    venue: "Nature 580(7801):124-129 (2020)"
+    doi: 10.1038/s41586-020-2144-9
+  cookezeeman1976:
+    title: "A clock and wavefront model for control of the number of repeated structures during animal morphogenesis"
+    authors: "Cooke J, Zeeman EC"
+    venue: "Journal of Theoretical Biology 58(2):455-476 (1976)"
+    doi: 10.1016/S0022-5193(76)80131-2
+  gomezgalvez2018:
+    title: "Scutoids are a geometrical solution to three-dimensional packing of epithelia"
+    authors: "Gomez-Galvez P, Vicente-Munuera P, Tagua A, Forja C, Castro AM, Letran M, Valencia-Exposito A, Grima C, Bermudez-Gallardo M, Serrano-Perez-Higueras O, Cavodeassi F, Sotillos S, Martin-Bermudo MD, Marquez A, Buceta J, Escudero LM"
+    venue: "Nature Communications 9:2960 (2018)"
+    doi: 10.1038/s41467-018-05376-1
+
+simulations:
+  - id: yaman-somitoid-chirality-buckling
+    name: "Yamanaka et al. (2023), Miao et al. (2023) & Adhyapok et al. (2021) epithelial somite rosette vertex mechanics, 3D polyhedral shell lumen pressurization and live HES7 clock-wavefront coupled mesenchymal-to-epithelial transition (MET) model"
+    organism: "Homo sapiens / Mus musculus (in vitro axioloid / somitoid epithelial somite rosettes)"
+    script: 2021-yaman-somitoid-chirality-buckling.py
+    output: docs/media/somitoid_chirality_buckling_comparison.png
+    extra_outputs:
+      - docs/media/somitoid_chirality_buckling_growth.gif
+      - docs/media/somitoid_chirality_buckling_clock_coupling.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-somitoid-chirality-buckling-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Yamanaka et al. (2023) Nature 614:509-520 & Miao et al. (2023) Nature 614:500-508: Matrigel ECM embedding and RhoA/ROCK-dependent apical actomyosin constriction drive epithelial somite rosette polarization and central somitecoel lumen formation in human axioloids and somitoids; HES7 oscillations and periodic MESP2/RIPPLY2 stripes precede boundary formation"
+        - "Adhyapok et al. (2021) Dev. Cell 56:1312-1324: combined apical constriction (gamma_ap > gamma_bas) and EphA4/ephrinB2 heterotypic boundary repulsion (gamma_het > gamma_hom) govern somite rounding and inter-somitic cleft separation"
+        - "Y-27632 ROCK inhibition or absence of Matrigel abolishes the apico-basal tension differential and prevents polarized epithelial somite rosette morphogenesis"
+        - "Lewis (2003): a transcriptional-delay autoinhibition loop yields a limit-cycle segmentation oscillator; Diaz-Cuadros et al. (2020) and Matsuda et al. (2020): the human iPSC-PSM HES7 period is ~5 h"
+        - "Cooke & Zeeman (1976): segment length equals wavefront speed times clock period, S = v T"
+        - "Gomez-Galvez et al. (2018): scutoids arise from apical/basal Voronoi mismatch under anisotropic (tubular) curvature; a spherical epithelium predicts none"
+      reconstructed_in_script:
+        - "2D 32-vertex apico-basal differential interfacial tension relaxation solver for an N=16 wedge-cell somite rosette (WT L_ap/L_bas = 0.3030 vs 0.3030 polygon law, 0.305 empirical), 6-regime perturbation series (Pearson r = 0.9989, RMSE = 0.0154), Eph/ephrin cleft barrier (S_cleft = 0.8189 WT vs 0.0930 KD), 28x28 phase diagram and bilateral specimen segmentation (45.375 px, CV 0.2391) carried from Pass 2"
+        - "Pass 3: closed 3D polyhedral shell of 96 spherical-Voronoi frustum cells with volume elasticity, face tensions and -P V_lumen, relaxed over 192 radii and matched to the closed-form Law 4 balance (WT rho_3D = 0.3229 discrete vs 0.3229 analytic; Y-27632 0.7098), a lumen-pressure sweep with saddle-node rupture P_crit = 0.115 gamma_lat/um (Laplace open-shell bound 0.510) and a scutoid topology audit (0 scutoids by construction)"
+        - "Pass 3: Lewis (2003) HES7 delayed oscillator time-scaled to T = 4.995 h in 64 PSM cells, Cooke-Zeeman wavefront arrest (v = 20 um/h), MESP2 gated by frozen HES7 phase (0.50 of each segment), RIPPLY2 boundary fixation, 5 ephrinB2-|EphA4+ boundaries at S = 100.0 um = v T, exponential RhoA/ROCK gamma_ap(x,t) (tau 3 h) and EphA4/ephrinB2 gamma_het,k(t) (tau 1.5 h) ramps fed live into the vertex, shell and cleft models: S0 0.3428 -> S-III 0.3033 maturation, Y-27632 coupled 0.7013 at every stage, Eph/ephrin KD cleft 0.0930"
+      transfer_boundary:
+        - "The 2D and 3D laws share the same empirical cross-section ratio 0.305 as their only external anchor; the 3D shell with the 2D-fitted tensions gives 0.323 (6% high) and the tensions were NOT re-fitted for 3D"
+        - "The clock-coupling constants v, tau_ROCK, tau_Eph, tau_RIPPLY2 are model choices (segment ~100 um, MET over ~1 period); S = v T is therefore an analytical identity check, not a comparison with a digitised somite length; the HES7 period is calibrated to 5 h, so its measurement validates the calibration rather than predicting the period"
+        - "The HES7 clock is synchronous across the PSM (Cooke-Zeeman limit): no posterior-anterior period gradient, hence no kinematic HES7 waves as seen in axioloids; the coupling is one-way (clock -> tension), with no mechanical feedback on the clock or on MESP2"
+        - "The 3D shell cells are radial frusta with 2 DOF each on a fixed Voronoi tessellation: no tangential vertex motion, no T1 transitions, no scutoids; the 0% scutoid result is a construction, consistent with but not a test of Gomez-Galvez (2018)"
+        - "No somitocoel pressure has been measured in the source papers; P_crit is referenced to the model-internal Laplace bound only"
+      does_not_claim:
+        - "Full 3D sclerotome/dermomyotome lineage regionalization, scutoid or T1 cell rearrangements, kinematic HES7 phase waves, Notch-mediated clock synchronisation, a TBX6/MESP2/RIPPLY2 gene-network model, mechanical feedback onto the clock, or a quantitative match of the stage-resolved lumen ratios to digitised Yamanaka (2023) / Miao (2023) stage data"
+    source_refs:
+      - yamanaka2023
+      - miao2023
+      - adhyapok2021
+      - sanaki2022
+      - lewis2003
+      - diazcuadros2020
+      - matsuda2020
+      - cookezeeman1976
+      - gomezgalvez2018
+    summary: >-
+      Pass 3 post-remediation evaluation of `2021-yaman-somitoid-chirality-buckling.py` (89.7/100, down from
+      91.7 in Pass 2). Both v2 remediation items are closed in reduced, explicitly disclosed form: Section 2b adds
+      a closed 3D polyhedral shell of 96 spherical-Voronoi frustum cells with an explicit somitecoel pressure term,
+      relaxed over 192 radial degrees of freedom and reproducing the new closed-form Law 4 balance to 1e-4
+      (WT rho_3D = 0.3229 vs 0.305 empirical; Y-27632 0.7098), a pressure sweep with a saddle-node rupture pressure
+      P_crit = 0.115 gamma_lat/um below the Laplace bound 0.510, and a scutoid audit that honestly reports 0 scutoids
+      by construction; Section 3b runs a Lewis (2003) HES7 delayed oscillator calibrated to the human 5 h period in
+      every PSM cell, arrests it with a Cooke-Zeeman wavefront, gates MESP2/RIPPLY2 and boundary fixation on the
+      frozen phase, and feeds exponential RhoA/ROCK and EphA4/ephrinB2 tension ramps live into the vertex, shell and
+      cleft models (S = 100 um = v T; S0 0.343 -> S-III 0.303 maturation; Y-27632 and Eph/ephrin knockdown controls).
+      Two Lean 4 theorems (`yamanaka_2023_shell_lumen_pressurization`, `hes7_wavefront_arrest_tension_gradient`)
+      bring the file to 5 theorems with 0 sorrys; the reference JSON is now SHA-256 pinned; 10 measurements; PNG,
+      clock PNG and GIF regenerate byte-identically. The score falls because the round surfaced defects v2 had
+      scored past: the new measurements lean on model-internal references, the 3D shell was not re-calibrated and
+      misses 0.305 by 6%, the specimen rosette_metrics in the vendored JSON contradict the script's own
+      segmentation (CV 0.2010 vs 0.2391; v2 quoted the JSON), the clock is synchronous and the MESP2/RIPPLY2 logic
+      is a threshold rule set.
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          The 2D vertex energy and its polygon/continuum equilibrium laws (L200-379), the Eph/ephrin cleft barrier
+          (L722-748) and the Y-27632 collapse are unchanged and faithful. Pass 3 adds a genuine 3D polyhedral shell
+          energy with volume elasticity, three face-tension classes and a -P V_lumen term (L535-628) whose radial
+          balance is derived (L478-533) and reproduced numerically to 1e-4, and a Lewis (2003) delayed oscillator
+          with his published her1 kernel (a=4.5, b=c=0.23, k=33, p0=40, T_m=12, T_p=2.8 min) uniformly time-scaled
+          (L831-883), the Cooke-Zeeman arrest law and an ephrinB2-|EphA4+ boundary rule consistent with Adhyapok
+          (2021). Deductions: the shell cells are radial frusta with 2 DOF on a fixed Voronoi tessellation (L564-581, lateral faces L570-572),
+          so the "polyhedral scutoid shell" cannot form scutoids or T1s and the audit at L687-714 reports 0 by
+          construction (-4); the clock is synchronous (one DDE state copied to 64 cells, L950-971) so kinematic HES7
+          waves, Notch coupling and the posterior-anterior period gradient of axioloids are absent (-3); MESP2 /
+          RIPPLY2 are a median-threshold and fixed-delay rule set (L975-987), not the TBX6/MESP2/RIPPLY2 network,
+          and the tension "coupling" is an imposed exponential ramp of time-since-arrest (L989-1002), one-way (-3);
+          the 3D shell is run with the 2D-fitted tensions and lands at rho_3D = 0.323 rather than 0.305 with no
+          re-fit (-2); credited +2 for the five machine-checked Lean theorems covering every law.
+        evidence:
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [200, 379], note: "2D analytical wedge equilibrium and 32-vertex L-BFGS-B rosette relaxation (unchanged from Pass 2)", supports: true}
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [478, 533], note: "Law 4 closed-form 3D radial balance rho_3D = (Lambda - 4 pi gamma_ap + 2 pi P R_in)/(Lambda + 4 pi gamma_bas), pressure balance and Laplace bound", supports: true}
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [535, 628], note: "Discrete 3D polyhedral shell energy (volume elasticity, apical/basal/lateral face tensions, -P V_lumen) over 2 N_3D radii; radial frusta only, no tangential DOF", supports: true}
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [687, 714], note: "Scutoid audit reports 0 scutoids by construction and states the Gomez-Galvez spherical limit instead of asserting scutoids", supports: true}
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [831, 883], note: "Lewis (2003) her1 kernel with published parameters, uniformly time-scaled to the human period", supports: true}
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [950, 1002], note: "Synchronous DDE in 64 cells (loop L964-971), wavefront arrest, median-threshold MESP2, fixed-delay RIPPLY2 boundary fixation, imposed exponential gamma_ap / gamma_het ramps (one-way coupling)", supports: true}
+          - {file: morphoeval/lean/loops/Loop_029_somitoid_chirality_buckling.lean, lines: [122, 212], note: "Pass 3 Theorems 4 and 5 (shell lumen pressurization; clock-wavefront arrest tension gradient), 0 sorrys, verified with lean 4.35.0", supports: true}
+      specimen-match:
+        value: 86
+        rationale: >-
+          Panel E still overlays the SHA-256-pinned CC BY 4.0 dorsal somite SEM with detected rosette centres and
+          clefts on both rows (L1223-1275), Panel A/G now show the 2D wedge rosette and a 3D cut-away shell whose
+          constricted red apical faces around a dark somitecoel read as an epithelial somite rosette in
+          cross-section, and the GIF shows the rosette tightening as the live gamma_ap ramps. Deductions: the
+          vendored `rosette_metrics` (lower row 8 somites, spacing 47.14 px, CV 0.2010) contradict the script's own
+          segmentation (lower row 10 peaks, 45.375 px, CV 0.2391), the v2 audit quoted the JSON value, and neither
+          has been reconciled, only disclosed (L1441-1446, reference JSON L78 provenance_note_pass3) (-6); no image from
+          Yamanaka (2023) or Miao (2023) is compared side by side, so the 3D shell and the stage series are matched
+          to a single number (0.305) rather than to the authors' somitoid sections (-5); the SEM is a vertebrate
+          dorsal view of in-vivo somites rather than an in-vitro somitoid, as in Pass 2 (-3).
+        evidence:
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [1223, 1275], note: "Bilateral rosette / cleft segmentation on somitoid_rosette_specimen.jpg; measured lower row n=10, CV 0.2391", supports: true}
+          - {file: datasets/somitoid_chirality_buckling/somitoid_chirality_buckling_reference.json, lines: [71, 80], note: "Scout rosette_metrics (lower 8, 47.1429 px, CV 0.2010) with the Pass 3 provenance note recording the unreconciled disagreement", supports: false}
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [1503, 1542], note: "3D shell cut-away rendering: apical faces, lateral rim and basal faces depth-sorted so the somitecoel is visible", supports: true}
+          - {file: docs/media/somitoid_chirality_buckling_comparison.png, lines: [0, 0], note: "9-panel figure: specimen overlay (E), 2D rosettes (A), 3D cut-away (G), pressure sweep (H), clock kymograph (I)", supports: true}
+      parameter-expressivity:
+        value: 92
+        rationale: >-
+          The 6-regime series and 28x28 (gamma_ap, Matrigel %) phase diagram remain (L750-822, L1127-1164). Pass 3
+          adds a 25-point lumen-pressure sweep with monotone rho_3D(P) and a located rupture pressure, checked at 3
+          pressures against the discrete shell (L630-685, Panel H), a stage axis (S0 -> S-III) along which the live
+          gamma_ap ramp visibly tightens the rosette (L1065-1112, clock PNG panel d), and coupled Y-27632 and
+          Eph/ephrin knockdown controls that leave the boundary count unchanged while abolishing MET or clefting
+          (L2226-2236). Deductions: the clock constants v, tau_ROCK, tau_Eph, tau_RIPPLY2 and the shell constants
+          N_3D, V_0, K_V are fixed (L148-159) and never swept, so the sensitivity of S, P_crit and the maturation
+          time to them is unshown (-5); the only period control is the calibration target (-3).
+        evidence:
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [630, 685], note: "Lumen-pressure sweep: monotone rho_3D(P), bisection for P_crit, discrete cross-check at P = 0 / 0.04 / 0.08", supports: true}
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [1065, 1112], note: "Stage-resolved coupling: live gamma_ap / gamma_het of each complete segment -> 2D ratio, 3D ratio, cleft score", supports: true}
+          - {file: docs/media/somitoid_chirality_buckling_clock_coupling.png, lines: [0, 0], note: "Clock-coupling figure: calibrated oscillator (a), gamma_ap(x,t) kymograph with boundaries and gamma_het ramps (b), MESP2/EphA4/ephrinB2 state map (c), stage-resolved WT / Y-27632 / Eph-KD ratios and cleft scores (d)", supports: true}
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [148, 159], note: "Fixed Pass 3 constants (N_3D, V_0, K_V, v, tau_ROCK, tau_Eph, tau_RIPPLY2) with no sweep", supports: false}
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [750, 822], note: "6-regime perturbation evaluator (unchanged)", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: >-
+          `measure_morphoeval()` now returns 10 measurements (L1316-1447; Pass 3 list L1343-1394): the 5 Pass 2 values plus the 3D WT lumen
+          ratio (0.3229 vs 0.305 empirical, Law 4 analytic 0.3229), rupture pressure P_crit (0.115 vs Laplace bound
+          0.510), HES7 period (4.995 vs 5.0 h), boundary spacing (100.0 vs v T = 99.9 um) and the oldest-somite
+          live-coupled ratio (0.3033 vs 0.305). Deductions: three of the five new references are model-internal
+          (Laplace bound, v T, calibration target) and the period measurement validates its own calibration, as the
+          reference_source strings themselves say (L1359-1383) (-7); the 3D ratio misses the only empirical anchor by
+          6% with no stage-resolved somitocoel data digitised from Yamanaka Figs. 2-3 or Miao Fig. 4 to test the
+          S0 -> S-III series (L1384-1393) (-3); the specimen reference 47.1429 px is the disputed scout value (-2).
+        evidence:
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [1343, 1394], note: "5 Pass 3 measurements with reference_value / reference_source; three references explicitly model-internal", supports: true}
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [1359, 1383], note: "P_crit referenced to the Laplace bound and the HES7 period referenced to its own calibration target (circular)", supports: false}
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [1396, 1447], note: "5 Pass 2 measurements retained; specimen measurement note discloses the JSON disagreement", supports: true}
+      source-traceability:
+        value: 94
+        rationale: >-
+          Nine primary sources with DOIs in the docstring (L1-40), the reference JSON `sources[]`, the dataset
+          README and `paper_citations.bib` (five added in Pass 3: Lewis 2003, Diaz-Cuadros 2020, Matsuda 2020, Cooke
+          & Zeeman 1976, Gomez-Galvez 2018). The reference JSON is now SHA-256 pinned and verified fail-closed at
+          every run (L145, L180-186) alongside the specimen and scout manifest; the new `shell_3d_governing_equations`
+          and `hes7_clock_wavefront` blocks record every Pass 3 constant with a `parameter_status` stating which are
+          model choices. Deductions: the Lewis kernel values are quoted from memory of his Table rather than from a
+          vendored digitisation (-3); the human 5 h period is cited to two papers without figure/page pinpoints (-3).
+        evidence:
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [145, 187], note: "Reference JSON SHA-256 pin and fail-closed verification of all three dataset files", supports: true}
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [1, 36], note: "Nine sources with DOIs including the five Pass 3 additions", supports: true}
+          - {file: datasets/somitoid_chirality_buckling/somitoid_chirality_buckling_reference.json, lines: [116, 165], note: "Pass 3 shell_3d_governing_equations and hes7_clock_wavefront blocks with parameter provenance / status", supports: true}
+          - {file: datasets/somitoid_chirality_buckling/README.md, lines: [35, 65], note: "Laws 4-5, pinned digests, and a Known Discrepancies section", supports: true}
+      code-traceability:
+        value: 92
+        rationale: >-
+          Every section banner names its law id, source figures and Lean theorem (L195-199, L415-419, L716-721,
+          L824-830); the docstring states Laws 1-5 with their equations and theorem names (L60-105); the math KG loop
+          file registers all five equations with Lean declarations, loci and code loci (equations 4-5 added); the
+          Pass 3 remediation block in the docstring maps each v2 item to its section and states the reductions
+          (L38-58). Deductions: the MESP2 median rule, the RIPPLY2 0.5 h ramp and the EphA4/ephrinB2 directional
+          boundary rule (L975-987) cite no specific figure of Yamanaka (2023) or Morimoto-type Mesp2 work (-4); the
+          frustum lateral-face area approximation with face-averaged radii (L570-572) is stated but not derived (-2);
+          Law 3 (Y-27632 / Minus-Matrigel collapse) has no dedicated function: its math KG code_locus (YAML L138) points at the energy-landscape and regime-evaluator ranges where gamma_ap = gamma_bas is merely a table entry (-2).
+        evidence:
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [38, 105], note: "Docstring: Pass 3 remediation map (L38-58) and Laws 1-5 (L60-105) with theorem names", supports: true}
+          - {file: morphoeval/math_kg_loops/yaman-somitoid-chirality-buckling.yaml, lines: [139, 228], note: "Equations 4 and 5 registered with Lean code, loci and code loci", supports: true}
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [975, 987], note: "MESP2 / RIPPLY2 / boundary rules without figure-level citations", supports: false}
+          - {file: morphoeval/math_kg_loops/yaman-somitoid-chirality-buckling.yaml, lines: [74, 138], note: "Equations 1-3 code loci refreshed in Pass 3 (L200-379, L722-748, L381-413 + L750-822); Law 3 maps to a parameter table entry rather than a function", supports: true}
+      repro-package:
+        value: 92
+        rationale: >-
+          Deterministic throughout: Fibonacci-sphere seeds and explicit-Euler DDE need no RNG; the 2D and 3D
+          relaxations use fixed seeds and both are asserted bitwise two-run identical (L2167-2172, L2193-2197); two
+          consecutive default renders of the PNG, clock PNG and GIF were byte-identical (SHA-256 8d411247...,
+          dc46f670..., 5d678180...). `--self-test` runs 6 check groups covering SHA-256 integrity, both solvers,
+          the pressure sweep, the scutoid audit, period calibration, S = v T, MESP2 half-segments, the AP maturation
+          gradient and the two coupled controls, then all 10 measurements, in ~5.6 s; the default render takes ~7 s
+          (L2154-2266). Deductions: no requirements lock file pins this script's environment (versions are recorded
+          only in this audit) (-4); the self-test tolerance for the 3D WT ratio vs 0.305 is 0.03, wide enough to pass
+          a 6% miss (L2200) (-2); matplotlib writes a font cache outside the repo unless MPLCONFIGDIR is set (-2).
+        evidence:
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [2154, 2245], note: "Self-test: 6 check groups incl. bitwise determinism of 2D/3D solvers and clock, Law 4/5 numerical checks, 10 finite measurements", supports: true}
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [2200, 2200], note: "3D WT ratio tolerance |rho_3D - 0.305| < 0.03 passes the 0.323 result", supports: false}
+          - {file: 2021-yaman-somitoid-chirality-buckling.py, lines: [2247, 2266], note: "CLI: --self-test or default render of PNG, clock PNG and GIF from one compute_pass3_models() call", supports: true}
+          - {file: docs/media/somitoid_chirality_buckling_growth.gif, lines: [0, 0], note: "20-frame 3-panel GIF driven by the live clock (kymograph, WT rosette with live gamma_ap, Y-27632 control)", supports: true}
+    remediation:
+      - >-
+        2021-yaman-somitoid-chirality-buckling.py:950-971 — the HES7 oscillator is one DDE state copied to all 64
+        PSM cells (synchronous Cooke-Zeeman clock), so the kinematic HES7 waves of axioloids (Yamanaka 2023 Fig. 1;
+        Diaz-Cuadros 2020) are absent and the arrested phase depends only on x/v. Add a posterior-anterior period
+        gradient (FGF-dependent delay or degradation rate) so waves travel and arrest at wave arrival, and compare
+        the wave number per PSM length to the papers' kymographs.
+      - >-
+        2021-yaman-somitoid-chirality-buckling.py:153-159 and 989-1002 — v = 20 um/h, tau_ROCK = 3 h, tau_Eph = 1.5 h
+        and tau_RIPPLY2 = 1 h are hand-chosen and the gamma_ap / gamma_het "coupling" is an imposed exponential of
+        time-since-arrest with no feedback. Digitise MET timing (pMLC2 / ZO-1 / F-actin apical enrichment vs somite
+        stage) from Yamanaka 2023 Fig. 3 / Extended Data and Miao 2023 Fig. 4, fit tau_ROCK and v, and sweep them.
+      - >-
+        2021-yaman-somitoid-chirality-buckling.py:535-628 and 687-714 — shell cells are radial frusta with 2 DOF on
+        a fixed Voronoi tessellation; scutoids / T1 transitions are impossible, so the "0 scutoids" result is a
+        construction. Free the apical and basal Voronoi vertex positions independently (true 3D vertex model) or add
+        anisotropic (tubular) curvature so Gomez-Galvez (2018) scutoid formation can be tested rather than assumed.
+      - >-
+        2021-yaman-somitoid-chirality-buckling.py:1349, 1389 and 1384-1393 — the 3D WT shell gives rho_3D = 0.323
+        against the single empirical anchor 0.305 (6% high) with the 2D-fitted tensions and no re-fit, and the
+        S0 -> S-III maturation series has no digitised stage data to compare against. Re-fit gamma_ap / gamma_bas for
+        the 3D law (or report the fitted values alongside the 2D ones) and digitise stage-resolved somitocoel /
+        somite radii from Yamanaka 2023 Figs. 2-3 or Miao 2023 Fig. 4.
+      - >-
+        2021-yaman-somitoid-chirality-buckling.py:1359-1383 — three of the five Pass 3 measurements reference
+        model-internal values (Laplace bound, v T, calibration target) and the HES7-period measurement validates its
+        own calibration. Replace at least two with external references (e.g. digitised somitoid segment length from
+        Miao 2023 / Sanaki-Matsumiya 2022; HES7 period from a non-calibrated prediction such as the Lewis period
+        formula) or label them `derived_from: model-internal` in the measurement schema.
+      - >-
+        datasets/somitoid_chirality_buckling/somitoid_chirality_buckling_reference.json:71-80 vs
+        2021-yaman-somitoid-chirality-buckling.py:1223-1275 — scout rosette_metrics (lower 8, 47.1429 px, CV 0.2010)
+        contradict the script's segmentation (lower 10, 45.375 px, CV 0.2391); v2 quoted the JSON. Re-count the
+        rosettes manually on the specimen, record the method, and make the JSON and the script agree (or carry both
+        with uncertainty).
+      - >-
+        morphoeval/math_kg_loops/yaman-somitoid-chirality-buckling.yaml:74-228 — the five `code_locus` ranges were
+        refreshed by hand in Pass 3 and will drift again; add a self-test (or a build check) that resolves each
+        `code_locus` / `lean_locus` to the named function or theorem so stale loci fail loudly.
+      - >-
+        2021-yaman-somitoid-chirality-buckling.py:2200 — the self-test accepts |rho_3D - 0.305| < 0.03, which passes
+        the 6% miss; tighten after the 3D re-fit, and add a requirements lock (python 3.14.7, numpy 2.5.4, scipy
+        1.16.3, matplotlib 3.10.7, Pillow 12.0.0) so the byte-identical render claim is pinned to an environment.

@@ -1,0 +1,369 @@
+# MorphoEval Pass 3 (v3) Audit — Mitchison (1980, 1981) Proc. R. Soc. B / Phil. Trans. R. Soc. B & Feugier et al. (2005)
+# With-the-Flux Auxin Canalization, Vein Concentration Drainage, Wound Bypass & Leaf Venation, 2026-10-20 (v3)
+#
+# Pass 3 remediation-round re-score of `1997-mitchison-canalization-auxin-flux.py` (Slot 034) in the instrumented
+# loop `morphoeval/runs/2026-10-19-auxin-canalization-leaf-veins-loop-pass3`, superseding
+# `2026-10-19-auxin-canalization-leaf-veins-audit-v2` (92.8).
+#
+# What Pass 3 changed (the single v2 remediation item, closed in a reduced, honestly-labelled form):
+#   1. "Couple the 2D PIN1 carrier-allocated venation solver to a growing finite-element leaf blade mesh to
+#      simulate the spatiotemporal order of higher-order areole subdivision" -> a genuinely SOLVED Mitchison (1980)
+#      facilitated-diffusion canalization model (`HexCanalizationLattice`, L736-879) on a hexagonal cell lattice
+#      that divides 12x11 -> 24x22 -> 48x44 over three growth stages with wall-conductance inheritance
+#      (`refine_hex_lattice`, L881-913; `simulate_growing_lamina_venation`, L950-1034). It records vein order
+#      (stage of first canalization), the nesting of new strands inside pre-existing panels (0.81, 0.77), vein
+#      density per stage, strand orientation, the emergent S_vein/S_par (0.67) and the sink mass balance (0.98).
+#      NOT a finite-element mesh; NOT polar PIN1 allocation (the polar prototype produced circulating vortices
+#      under growth and was not shipped); and NO loop closure: beta_1 = 0 at every stage for both the reversible
+#      solver and the irreversible-differentiation ablation, so quaternary areole subdivision is NOT reproduced.
+#   2. The same engine now SOLVES the Sachs (1981) incision bypass (`simulate_sachs_wound_bypass_dynamic`,
+#      L1037-1139): sink intake 0.991 (incised) vs 0.609 (alpha = 0, NPA) vs 0.988 (intact); 6-cell lateral
+#      deflection past the incision tip. Pass 2 had hard-coded 0.9852 / 0.0804 (still at L408-409).
+#   3. measure_morphoeval 9 -> 16 measurements; self-test 8 -> 12 checks; 3 new Lean 4 theorems (0 sorrys);
+#      2 new SHA-256-pinned dataset files; 5 new DOI references.
+#
+# Why the overall score goes DOWN (92.8 -> 70.1): building a real solver exposed that most of what v2 scored as
+# "simulated" is prescribed or hand-drawn and that v2's references were often the script's own constants:
+#   - `simulate_2d_lamina_canalization` (L243-335) writes analytic Gaussian D/S fields with a hard-coded dip
+#     ratio 0.6895 (L295) chosen so that S_vein/S_par = 0.3131 matches the JSON "reference" 0.31; the solved
+#     lamina gives 0.67, i.e. the v2 "Law 2 validation" was circular.
+#   - `simulate_mitchison_exponent_sweep` special-cases p = 1.4 with eff_beta = 0.1766 (L158) to land on the
+#     reference winner share 0.892, and the 12-column D/S profiles (L170-198) are formulas, not solutions.
+#   - `simulate_sachs_wound_bypass` (L338-414) is a Gaussian centreline plus constants 0.9852 / 0.0804.
+#   - `simulate_feugier_venation_topologies` (L446-548) draws two graphs by hand (V=16/E=15, V=28/E=41); no
+#     Feugier et al. (2005) carrier dynamics are solved anywhere, so beta_1 = 14 is a drawing.
+#   - The v2 CLI flags --alpha/--beta/--gamma/--exponent-p (L1868-1871) are parsed but never used.
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale. Line numbers refer to the
+# working-tree files at commit d58a084 after the Pass 3 edits (the script is 1897 lines).
+
+audit:
+  id: 2026-10-19-auxin-canalization-leaf-veins-audit-v3
+  supersedes: 2026-10-19-auxin-canalization-leaf-veins-audit-v2
+  supersedes_audit_id: 2026-10-19-auxin-canalization-leaf-veins-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 034 Pass 3 Assessor)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/34
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d58a084
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) evaluation of `1997-mitchison-canalization-auxin-flux.py` after the Step 12 -> 5 remediation
+      round in `2026-10-19-auxin-canalization-leaf-veins-loop-pass3`. --self-test passes 12/12 in ~40 s; the
+      default render (comparison PNG, growing-lamina PNG, 24-frame GIF) takes ~31 s.
+
+references:
+  mitchison1980:
+    title: "A model for vein formation in higher plants"
+    authors: "Mitchison GJ"
+    venue: "Proceedings of the Royal Society of London B 207(1166):79-109 (1980)"
+    doi: 10.1098/rspb.1980.0082
+  mitchison1981:
+    title: "The polar transport of auxin and vein pattern in plants"
+    authors: "Mitchison GJ"
+    venue: "Philosophical Transactions of the Royal Society of London B 295(1078):461-471 (1981)"
+    doi: 10.1098/rstb.1981.0081
+  feugier2005:
+    title: "Self-organization of vascular systems in plant leaves: Inter-dependent dynamics of auxin flux and carrier proteins"
+    authors: "Feugier FG, Mochizuki A, Iwasa Y"
+    venue: "Journal of Theoretical Biology 236(3):366-375 (2005)"
+    doi: 10.1016/j.jtbi.2005.03.017
+  sachs1981:
+    title: "The Control of the Patterned Differentiation of Vascular Tissues"
+    authors: "Sachs T"
+    venue: "Advances in Botanical Research 9:151-262 (1981)"
+    doi: 10.1016/S0065-2296(08)60351-1
+  rollandlagan2005:
+    title: "Leaf venation: structure and mechanisms"
+    authors: "Rolland-Lagan AG, Prusinkiewicz P"
+    venue: "The Plant Journal 44(5):854-865 (2005)"
+    doi: 10.1111/j.1365-313X.2005.02581.x
+  feugier2006:
+    title: "How canalization can make loops: A new model of reticulated leaf vascular pattern formation"
+    authors: "Feugier FG, Iwasa Y"
+    venue: "Journal of Theoretical Biology 243(2):235-244 (2006)"
+    doi: 10.1016/j.jtbi.2006.05.022
+  scarpella2006:
+    title: "Control of leaf vascular patterning by polar auxin transport"
+    authors: "Scarpella E, Marcos D, Friml J, Berleth T"
+    venue: "Genes & Development 20(8):1015-1027 (2006)"
+    doi: 10.1101/gad.1402406
+  kang2004:
+    title: "Vein pattern development in adult leaves of Arabidopsis thaliana"
+    authors: "Kang J, Dengler N"
+    venue: "International Journal of Plant Sciences 165(2):231-242 (2004)"
+    doi: 10.1086/382794
+  runions2005:
+    title: "Modeling and visualization of leaf venation patterns"
+    authors: "Runions A, Fuhrer M, Lane B, Federl P, Rolland-Lagan AG, Prusinkiewicz P"
+    venue: "ACM Transactions on Graphics 24(3):702-711 (2005)"
+    doi: 10.1145/1073204.1073251
+  sack2013:
+    title: "Leaf venation: structure, function, development, evolution, ecology and applications in the past, present and future"
+    authors: "Sack L, Scoffoni C"
+    venue: "New Phytologist 198(4):983-1000 (2013)"
+    doi: 10.1111/nph.12253
+
+simulations:
+  - id: mitchison-canalization-auxin-flux
+    name: "Mitchison (1980, 1981) & Feugier, Mochizuki & Iwasa (2005) with-the-flux auxin canalization: exponent bifurcation, growing hex-lamina canalization (solved), Sachs wound bypass (solved + prescribed), hand-drawn Feugier venation templates, and cleared-leaf specimen segmentation"
+    organism: "Pisum sativum & Arabidopsis thaliana (dicot leaf lamina & stem vascular strands)"
+    script: 1997-mitchison-canalization-auxin-flux.py
+    output: docs/media/auxin_canalization_leaf_veins_comparison.png
+    extra_outputs:
+      - docs/media/auxin_canalization_leaf_veins_growing_lamina.png
+      - docs/media/auxin_canalization_leaf_veins_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-auxin-canalization-leaf-veins-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Mitchison (1980) Proc. R. Soc. B 207:79-109: facilitated-diffusion canalization dD_ij/dt = alpha |phi_ij|^p + beta - gamma D_ij with phi_ij = D_ij (S_i - S_j); linear feedback gives diffuse flow, quadratic feedback gives winner-take-all 1-cell strands whose auxin concentration drops below the parenchyma (S_vein < S_par)"
+        - "Mitchison (1981) Phil. Trans. R. Soc. B 295:461-471 & Sachs (1981) Adv. Bot. Res. 9:151-262: polar auxin transport canalization and C-shaped vascular bypass regeneration around a transverse stem incision"
+        - "Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. 236:366-375: PIN1 carrier-allocation dynamics, open trees vs closed areoles; Feugier & Iwasa (2006) 243:235-244: canalization alone does not close loops"
+        - "Scarpella et al. (2006) Genes Dev. 20:1015-1027 & Kang & Dengler (2004) Int. J. Plant Sci. 165:231-242: higher-order veins form progressively inside areoles bounded by lower-order veins"
+      reconstructed_in_script:
+        - "SOLVED (Pass 3): Mitchison (1980) facilitated-diffusion canalization with soft-saturating feedback alpha |phi|^2/(1+phi^2/phi_s^2) on a hexagonal cell lattice that divides 12x11 -> 24x22 -> 48x44 (75 -> 312 -> 1281 cells) with conductance inheritance; vein cells 7 -> 29 -> 155, nesting of new strands inside pre-existing panels 0.81 / 0.77, S_vein/S_par = 0.67 (emergent), sink intake / production 0.98, beta_1 = 0 at every stage (also 0 with the irreversible-differentiation ablation)"
+        - "SOLVED (Pass 3): Sachs (1981) transverse incision on a 20x16 hex stem with a pre-established strand: sink intake 0.991 (incised, canalizing) vs 0.609 (alpha = 0 NPA control) vs 0.988 (intact), 6-cell lateral deflection; hop-count path ratio L_wounded/L_intact = 1.00 (metric insensitive to lateral deflection)"
+        - "PRESCRIBED (Pass 2, retained and now labelled): 2-pathway exponent sweep p in {0.5, 1.0, 1.4, 2.0, 2.5} (the p = 1.4 point uses a special-cased eff_beta = 0.1766), analytic 12-column and 18x14 D/S profiles with hard-coded dip ratios (0.3105 / 0.6895), a Gaussian Sachs bypass centreline with constants 0.9852 / 0.0804, and two hand-drawn Feugier venation graphs (V=16/E=15 -> beta_1 = 0; V=28/E=41 -> beta_1 = 14)"
+        - "Automated segmentation of the SHA-256-pinned cleared dicot leaf (primary midrib, secondary angle 52.93 +- 2.53 deg, 1843 closed areoles, vein areal coverage 0.416)"
+      transfer_boundary:
+        - "Hexagonal cellular lattice with isotropic 2x refinement stands in for a growing leaf blade; strand orientations are quantised to ~30/60/90 deg so the branch-angle comparison with the specimen (52.9 deg) is lattice-limited"
+        - "Facilitated diffusion (Mitchison 1980) is solved; polar PIN1 carrier allocation (Mitchison 1981 / Feugier 2005) is only verified algebraically (Law 3) and the hand-drawn graphs are not its output"
+        - "Reference values 1.38 / 0.985 / 0.08 (Sachs) and the exponent-regime table in the pinned reference JSON are not digitised from any figure; they are carried as qualitative benchmarks"
+      does_not_claim:
+        - "Loop closure / areole formation or quaternary areole subdivision (beta_1 = 0 in every solved configuration; the specimen has 1843 areoles)"
+        - "A finite-element or measured growth field; 3D mechanical blade expansion; polar PIN1 dynamics on a growing domain"
+    source_refs:
+      - mitchison1980
+      - mitchison1981
+      - feugier2005
+      - sachs1981
+      - rollandlagan2005
+      - feugier2006
+      - scarpella2006
+      - kang2004
+      - runions2005
+      - sack2013
+    summary: >-
+      Pass 3 (v3) evaluation of `1997-mitchison-canalization-auxin-flux.py` (overall 70.1/100, down from 92.8 in
+      v2). The remediation added a genuinely solved Mitchison (1980) canalization model on a growing hexagonal
+      cell lattice (three cell-division stages, conductance inheritance, 16 measurements, 12 self-test checks,
+      3 new Lean 4 theorems) and a solved Sachs incision bypass with an alpha = 0 control. It reproduces the
+      spatiotemporal order of vein formation in the weak sense that 77-81 % of newly canalized cells lie inside
+      pre-existing intercostal panels and that vein order is stage-ordered, but it does NOT close loops
+      (beta_1 = 0, specimen 1843 areoles), its solved network is a basal fan of lattice-aligned strands rather
+      than a pinnate midrib with secondaries, its emergent S_vein/S_par (0.67) disagrees with the value v2
+      prescribed (0.31), and its strand angles (26.8 +- 14.2 deg) miss the specimen (52.9 deg). Building the
+      solver exposed that the Pass 2 "simulations" of lamina drainage, wound bypass and Feugier topologies are
+      analytic profiles, constants and hand-drawn graphs tuned to the script's own reference JSON; these are now
+      labelled PRESCRIBED / GRAPH TEMPLATE in `measure_morphoeval()` but remain in the figure and the measurement
+      set, and the v2 CLI flags are parsed but unused. Rendering is deterministic and SHA-pinned.
+    scores:
+      model-fidelity:
+        value: 72
+        rationale: >-
+          Credited: `HexCanalizationLattice.step` (L808-828) integrates the seed paper's Eq. 2-3 pair
+          (dS = sigma - mu S - sum D (S_i - S_j); dD = alpha |phi|^p/(1 + (|phi|/phi_s)^p) + beta - gamma D) with
+          a semi-implicit S update, wall re-symmetrisation and a documented saturation; `refine_hex_lattice`
+          (L881-913) implements cell division with conductance inheritance; Law 2 drainage now EMERGES (0.67 < 1)
+          instead of being written in; the saturation law is machine-checked in Lean (bounded + monotone). The
+          Sachs incision is solved on the same engine with blocked walls (L1064-1075) and an alpha = 0 control.
+          Deductions: the remediation item asked for polar PIN1 carrier allocation on a growing mesh and the
+          shipped model is facilitated diffusion on a hex lattice (-6); `simulate_2d_lamina_canalization`
+          (L243-335) and the 12-column profiles in `simulate_mitchison_exponent_sweep` (L170-198) are analytic
+          constructions with hard-coded dip ratios 0.3105 / 0.6895 (L195, L295), and the p = 1.4 point uses a
+          special-cased eff_beta = 0.1766 (L158) so the sweep is partly fitted to its own reference (-8);
+          `simulate_sachs_wound_bypass` (L338-414) is a Gaussian centreline plus the constants 0.9852 / 0.0804
+          (L408-409), still returned and plotted (-4); `simulate_feugier_venation_topologies` (L446-548) solves
+          nothing - V/E/C are typed in (L493, L523) - so Law 3 has no dynamical realisation (-6); the solved
+          growing lamina yields a basal fan of lattice-aligned strands (two stage-1 strands plus parallel
+          secondaries, Panel C of the growing-lamina PNG) rather than a pinnate midrib, and no parameter study
+          shows that the hexagonal anisotropy is not driving it (-4).
+        evidence:
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [736, 879], note: "HexCanalizationLattice: Mitchison (1980) Eqs. 2-3 solved on a hex lattice; semi-implicit S (L816), saturating feedback (L820), optional irreversibility (L824), enclosed-region (Betti-1) counter (L854-878)", supports: true}
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [881, 1034], note: "refine_hex_lattice cell-division inheritance (same-parent walls take max of the parent's two wall conductances, L902-905) and simulate_growing_lamina_venation 3-stage driver with nesting / Betti-1 / angle / mass-balance records (L990-1020)", supports: true}
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [243, 335], note: "simulate_2d_lamina_canalization writes D and S as Gaussian formulas; drainage fraction 0.6895 (L295) is a constant chosen to hit the 0.31 reference - not a solution of the model", supports: false}
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [446, 548], note: "simulate_feugier_venation_topologies hand-draws two graphs; V_open/E_open (L493) and V_closed/E_closed (L523) are literals, no carrier dynamics are integrated", supports: false}
+          - {file: morphoeval/lean/loops/Loop_034_auxin_canalization_leaf_veins.lean, lines: [120, 178], note: "Pass 3 theorems saturating_canalization_feedback_bounded (L131-146), saturating_canalization_feedback_monotone (L148-167), irreversible_differentiation_monotone (L176-178); lean exits 0, 0 sorrys", supports: true}
+      specimen-match:
+        value: 58
+        rationale: >-
+          Judged on the regenerated comparison PNG and the new growing-lamina PNG. Panels E/F still show the
+          pinned cleared leaf with the tracked midrib, secondary-angle rays and 1843 segmented areoles, and the
+          solved growing lamina (Panel D of the comparison PNG; A1-A3 and C of the growing-lamina PNG) is now an
+          actual model output placed beside the specimen numbers. Deductions: the solved network has no closed
+          areoles at all (beta_1 = 0 vs 1843 on the specimen) so the defining feature of the specimen's reticulate
+          venation is absent (-15); it is a basal fan of two lattice-aligned strands with parallel secondaries,
+          not the pinnate midrib + ~53 deg secondaries of the specimen (-10); the GIF now shows the solved lamina
+          but the stage-1 and stage-2 frames are too coarse (75 / 312 cells) to resemble a leaf (-4); the
+          comparison PNG still displays the prescribed Pass 2 lamina profiles and bifurcation curve (Panels A-B)
+          as if they were outputs, with no side-by-side against Mitchison's own Fig. 1-2 (-6); Panel F's areole
+          scatter overlays only the first 120 centroids, concentrated at the top margin, so the 1843 count is
+          not visually verifiable (-3); credit for the honest beta_1 / specimen annotation in Panel D and the
+          removal of the hand-drawn Feugier graph from the figure (+5 relative to deleting it silently).
+        evidence:
+          - {file: docs/media/auxin_canalization_leaf_veins_comparison.png, lines: [0, 0], note: "Panel D: solved stage-3 hex lamina (beta_1 = 0, density 0.121 vs specimen 0.416 annotated); Panels E/F: specimen midrib, angle rays, areole centroids - specimen comparison visible", supports: true}
+          - {file: docs/media/auxin_canalization_leaf_veins_growing_lamina.png, lines: [0, 0], note: "A1-A3 three growth stages with auxin field and vein-order overlay; C vein-order map shows a basal fan of lattice-aligned strands, not a pinnate midrib; B states loop closure NOT reproduced", supports: true}
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [1600, 1620], note: "Comparison Panel D plots the solved vein orders and annotates beta_1 = 0 against the specimen areole count and the Pass 2 template value 14", supports: true}
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [720, 730], note: "leaf_blade_hex_mask: analytic ovate outline, not the specimen's outline; no registration of the simulated blade to the specimen", supports: false}
+      parameter-expressivity:
+        value: 62
+        rationale: >-
+          Credited: the growing-lamina solver exposes real controls that change the solution - `--irreversible`
+          (Law 4b ablation, beta_1 reported for both), `--growth-alpha`, `--growth-phi-s`, `--seed` and
+          `--print-growth` (L1864-1872, L1876-1889) - and the Sachs engine has alpha = 0 (NPA) and incision = False
+          (intact) controls (L1037-1046) whose outputs differ as they should (0.609 / 0.988 / 0.991). Deductions:
+          no parameter sweep is rendered - the dependence of strand count, nesting or density on alpha, phi_s or
+          the differentiation threshold is not shown anywhere (-14); the Pass 2 CLI flags --alpha, --beta,
+          --gamma, --exponent-p (L1868-1871) are parsed and never read by any function (v2 credited them), so the
+          exponent "sweep" is fixed to the JSON table (-10); the 5-point exponent sweep is partly fitted
+          (eff_beta special case at L158) so p does not act as a free parameter (-6); the growth schedule
+          (GROWING_LAMINA_STAGES, L703-708) is fixed and not exposed (-4); the ablation is informative (both 0)
+          but is the only morphospace axis actually exercised (-4).
+        evidence:
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [1859, 1889], note: "CLI: --irreversible / --growth-alpha / --growth-phi-s / --print-growth are wired into simulate_growing_lamina_venation (L1884); --alpha/--beta/--gamma/--exponent-p (L1868-1871) are never used", supports: false}
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [1037, 1046], note: "simulate_sachs_wound_bypass_dynamic(alpha=None, incision=True): alpha = 0.0 NPA control and incision = False intact control", supports: true}
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [687, 708], note: "GROWING_LAMINA_PARAMS and GROWING_LAMINA_STAGES: all solver parameters in one place but no sweep over them is run or plotted", supports: false}
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [150, 162], note: "Exponent sweep special-cases p == 1.4 with eff_beta = 0.1766 so the intermediate regime lands on the reference share", supports: false}
+      morphometric-validation:
+        value: 66
+        rationale: >-
+          `measure_morphoeval()` (L1142-1333) now returns 16 reference-anchored measurements. The 7 Pass 3 ones
+          are computed from solved fields and several of them FAIL their comparison and say so: beta_1 = 0 vs
+          specimen 1843 (L1245-1253), vein density 0.121 vs specimen coverage 0.416 (L1264-1272), strand angle
+          26.8 +- 14.2 vs 52.9 deg (L1274-1282), S_vein/S_par 0.67 vs the prescribed 0.31 (L1293-1301);
+          nesting 0.79 +- 0.03 vs the qualitative "all nested" of Scarpella et al. (L1255-1262); sink balance
+          0.983 (L1284-1291); solved Sachs intake 0.991 vs NPA 0.609 vs intact 0.988 (L1224-1233). Deductions:
+          the 9 Pass 2 measurements compare prescribed values with the script's own JSON (now labelled PRESCRIBED
+          / GRAPH TEMPLATE at L1212, L1221, L1308, L1317) and still carry Pearson p-values on 5 points (-10);
+          the reference values for nesting (1.0), sink balance (1.0) and beta_1 (0) are qualitative or
+          model-internal rather than measured (-8); the vein-density comparison is apples-to-oranges (vein cells
+          per lamina cell vs a dilated pixel mask, acknowledged in the JSON) (-5); the relative-tortuosity
+          metric (L1235-1243) is a hop count that returns 1.00 despite a 6-cell deflection, so it does not
+          measure what it claims (-6); uncertainties are SDs across 2-3 stages or single-seed, no replicate
+          seeds (-5).
+        evidence:
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [1142, 1333], note: "16 measurements; Pass 3 entries at L1224-1301 computed from solved fields with explicit failed comparisons", supports: true}
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [1235, 1243], note: "sachs_dynamic_bypass_relative_tortuosity: hop-count Dijkstra path returns 1.00 for a 6-cell bypass - the metric is insensitive to lateral deflection", supports: false}
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [1205, 1222], note: "Pass 2 drainage ratio and bypass tortuosity retained, now labelled PRESCRIBED, but still counted as measurements against the same JSON they were tuned to", supports: false}
+          - {file: datasets/auxin_canalization_leaf_veins/growing_lamina_reference.json, lines: [1, 77], note: "Pass 3 reference table states for each benchmark whether it is literature-, specimen- or model-internal, and lists five known limitations", supports: true}
+      source-traceability:
+        value: 84
+        rationale: >-
+          Ten references with DOIs in the audit, README and two BibTeX files; six dataset files SHA-256 pinned
+          and verified fail-closed at runtime (EXPECTED_SHA256 L82-91, `verify_dataset_integrity` L97-110), with
+          the Pass 1-2 files left byte-identical and the growing-lamina parameters cross-checked against the
+          pinned JSON in self-test check 1 (L1733-1740); the specimen keeps its licence, URL and hash.
+          Deductions: the Pass 1-2 reference JSON's numeric benchmarks (winner shares per exponent, Sachs 1.38 /
+          0.985 / 0.08, Feugier beta_1 = 14) are not digitised from any figure and are now acknowledged as such,
+          yet the file still presents them as "_ref" values (-8); the five new DOIs were added from the
+          assessor's knowledge and not resolved online during this run (-4); `tracked_by` issue #34 and the
+          repository URL are unverified (-2); the specimen's species is unknown ("dicot") so the
+          Rolland-Lagan 54.5 deg reference is generic (-2).
+        evidence:
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [82, 110], note: "EXPECTED_SHA256 for 6 files (2 new Pass 3 pins) and fail-closed verify_dataset_integrity", supports: true}
+          - {file: datasets/auxin_canalization_leaf_veins/README.md, lines: [20, 30], note: "Pass 3 section: two new pinned files with hashes, five new DOI references, limitations stated", supports: true}
+          - {file: datasets/auxin_canalization_leaf_veins/paper_citations_pass3.bib, lines: [1, 57], note: "Feugier & Iwasa 2006, Scarpella 2006, Kang & Dengler 2004, Runions 2005, Sack & Scoffoni 2013 with DOIs", supports: true}
+          - {file: datasets/auxin_canalization_leaf_veins/auxin_canalization_leaf_veins_reference.json, lines: [46, 115], note: "Exponent-regime and Sachs benchmark values carry no figure/table provenance; they are the Pass 1 author's constants", supports: false}
+      code-traceability:
+        value: 80
+        rationale: >-
+          The module docstring (L1-50) maps Laws 1-4 to equations, figures and Lean theorems with line loci;
+          `HexCanalizationLattice` (L736-748) and `simulate_growing_lamina_venation` (L950-972) cite Eq. 2-3,
+          the saturation rationale and the Law 4/4b theorems; the Pass 3 scope statement (L663-679) says
+          explicitly what is and is not implemented; the math-KG YAML registers Laws 4 and 4b with lean_locus
+          and code_locus. Deductions: functions named `simulate_2d_lamina_canalization`,
+          `simulate_sachs_wound_bypass` and `simulate_feugier_venation_topologies` still have docstrings that
+          say "simulate" although they construct profiles / draw graphs; only the measurement `method` strings
+          were corrected (-8); the solver parameters alpha = 40, beta = 0.2, phi_s = 1.0, mu = 0.001 (L687-701)
+          are the author's choices with a dimensional argument in comments but no mapping to Mitchison's own
+          parameter values (-5); the stage schedule and vein threshold 3 D_0 are uncited heuristics (-3);
+          Law 3 (polar flux conservation) is cited in the docstring but has no dynamical code path (-4).
+        evidence:
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [1, 50], note: "Module docstring: Laws 1-4 with equations, source figures, Lean theorem names and honest limits", supports: true}
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [663, 679], note: "Pass 3 scope statement: not FEM, not polar PIN1, why the polar prototype was dropped, why beta_1 = 0", supports: true}
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [243, 254], note: "simulate_2d_lamina_canalization docstring still claims to 'Simulate 2D cellular lamina auxin transport' for an analytic construction", supports: false}
+          - {file: morphoeval/math_kg_loops/mitchison-canalization-auxin-flux.yaml, lines: [87, 125], note: "Law 4 / 4b registered with lean_decl, lean_theorem, lean_locus, code_locus and source citations", supports: true}
+      repro-package:
+        value: 86
+        rationale: >-
+          `--self-test` runs 12 deterministic checks in ~40 s (L1729-1856), including bitwise determinism of all
+          16 measurements across two calls, wall-symmetry and strand-survival checks across a refinement, the
+          Lean-mirrored saturation bound, and the solved Sachs controls; the default render regenerates all
+          three artifacts in ~31 s; every input is SHA-pinned; seeds are explicit (1980 / 1981 and seed+g per
+          stage). Deductions: no requirements lock file and the environment is recorded only in this audit
+          (-5); without MPLCONFIGDIR matplotlib writes a font cache outside the repository (observed during
+          this run) and the script does not set it (-3); the unused CLI flags (L1868-1871) make the documented
+          invocation misleading (-3); the irreversible ablation doubles the measurement runtime for a result
+          that is identical (0 vs 0) and is not cached (-3).
+        evidence:
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [1729, 1856], note: "12-check self-test: SHA-256 + pinned-parameter cross-check, Laws 1-3, specimen, growing lamina (7), inheritance (8), saturation (9), solved Sachs (10), 16-metric determinism (11), artifacts (12)", supports: true}
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [1807, 1819], note: "Check 8 verifies inherited wall symmetry, strand survival through cell division and ~4x production growth", supports: true}
+          - {file: 1997-mitchison-canalization-auxin-flux.py, lines: [1868, 1872], note: "--alpha/--beta/--gamma/--exponent-p parsed but unused; only --seed reaches the solver (via --print-growth)", supports: false}
+    remediation:
+      - >-
+        1997-mitchison-canalization-auxin-flux.py:446-548 — `simulate_feugier_venation_topologies` types in
+        V/E/C (L493, L523) and the measurements feugier_*_betti1_loops (L1303-1318) still count a drawing as a
+        result. Either implement the Feugier et al. (2005) polar carrier-allocation ODEs on the hex engine (the
+        prototype's circulating-vortex failure must be diagnosed: fix the refinement inheritance of polarity as a
+        vector and add auxin degradation inside veins) and derive beta_1 from the solution, or delete the template
+        measurements.
+      - >-
+        1997-mitchison-canalization-auxin-flux.py:243-335 and 150-198 — the 18x14 lamina fields and the 12-column
+        profiles are analytic Gaussians with hard-coded dip ratios 0.3105 / 0.6895 (L195, L295) and a special-cased
+        eff_beta = 0.1766 at p = 1.4 (L158). Replace them with the hex solver run at each exponent p (the engine
+        already takes exponent_p) so the bifurcation curve and S_vein/S_par are solved, and drop the fitted
+        constants; reconcile the solved 0.67 with the prescribed 0.31.
+      - >-
+        1997-mitchison-canalization-auxin-flux.py:950-1034 — loop closure is absent (beta_1 = 0, specimen 1843
+        areoles). Implement one published loop mechanism and test it: Feugier & Iwasa (2006) auxin production
+        inside veins with bidirectional flux, or Runions et al. (2005) margin convergence points connecting to
+        two veins; measure nested areole subdivision per stage against the specimen's areole-area distribution
+        (areas already available from segment_leaf_venation_specimen, L620-640).
+      - >-
+        1997-mitchison-canalization-auxin-flux.py:720-730 and 1274-1282 — the solved network is a basal fan of
+        lattice-aligned strands (angles 26.8 +- 14.2 deg, hex axes at 30 deg) rather than a pinnate midrib with
+        ~53 deg secondaries. Run the solver on a second lattice (square with diagonals, or random Voronoi cells)
+        and report the lattice sensitivity of the strand angles and of the vein-order map before comparing with
+        the specimen.
+      - >-
+        1997-mitchison-canalization-auxin-flux.py:1235-1243 and 1100-1119 — sachs_dynamic_bypass_relative_tortuosity
+        is a hop count that returns 1.00 for a 6-cell deflection. Use Euclidean segment lengths between hex-cell
+        centres along the Dijkstra path and compare against the 1.38 benchmark only after that benchmark is
+        either digitised from Sachs (1981) or dropped.
+      - >-
+        1997-mitchison-canalization-auxin-flux.py:1868-1871 — CLI flags --alpha, --beta, --gamma, --exponent-p are
+        parsed but never used (also true in v2, which credited them). Wire them into the solver (or remove them)
+        and render a parameter sweep (alpha, phi_s, D_diff factor) showing strand count, nesting fraction and
+        vein density per stage, with >= 3 seeds for uncertainty.
+      - >-
+        datasets/auxin_canalization_leaf_veins/auxin_canalization_leaf_veins_reference.json:46-115 — the Sachs
+        (1.38 / 0.985 / 0.08) and exponent-regime "_ref" values have no figure or table provenance. Digitise the
+        relevant Mitchison (1980) Fig. 1-2 curves (or state that no quantitative benchmark exists) and version the
+        JSON (dataset_id v2) rather than carrying the Pass 1 constants as references.
+      - >-
+        1997-mitchison-canalization-auxin-flux.py:243-254, 338-357, 446-461 — docstrings of the three prescribed
+        functions still say "Simulate"; rename or re-document them as `prescribe_*` / `template_*` so code
+        traceability matches the measurement labels.

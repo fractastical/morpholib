@@ -2,9 +2,13 @@
   morphoeval/lean/loops/Loop_010_avian_plumage_somite_stripes.lean
   =============================================================================
   Formal Lean 4 Specification & Machine-Checked Proofs for Slot 010:
-  Haupaix et al. (2018) Science 361(6408):eaar4777 & Inaba et al. (2019)
-  Science 363(6426):eaaw1969 — "The periodicelly striped plumage of galliform
-  chicks is prepatterned by somitic Agouti signaling" (`haupaix-avian-plumage-somite-stripes`).
+  Haupaix et al. (2018) Science 361(6408):eaar4777 — "The periodic coloration in
+  birds forms through a prepattern of somite origin"; Inaba et al. (2019) PNAS
+  116(14):6884-6890 — "Instructive role of melanocytes during pigment pattern
+  formation of the avian skin"; Lin et al. (2013) Science 340(6139):1442-1445 —
+  "Topology of feather melanocyte progenitor niche allows complex pigment patterns
+  to emerge" (`haupaix-avian-plumage-somite-stripes`).
+  (Citations corrected in Pass 3; Laws 4-5 added in Pass 3.)
 
   Pure core Lean 4 (zero external dependencies, zero `sorry`s).
   Verify with:
@@ -112,5 +116,79 @@ theorem agouti_mc1r_switch_and_cx40_turing_instability :
     turing_cross_term 5 (-7) 1 < 0 ∧
     turing_cross_term 5 (-7) 20 > 0 := by
   decide
+
+
+-- ============================================================================
+-- Law 4 (`haupaix-avian-plumage-somite-stripes-4`, Pass 3):
+-- Lin et al. (2013) Ring-Niche Chevron Geometry on the Opened Follicle Cylinder
+-- ============================================================================
+
+/-- Proximodistal position (measured from the feather tip, scaled integer units) of a
+    pigment-band edge on the follicle cylinder opened at the posterior new-barb locus:
+    `s(ell) = s0 + k * |ell|`, where `ell` is the signed lateral (azimuthal) distance from
+    the anterior rachis and `k = v_z / (r_f * omega)` is the helical pitch of a pigment
+    switch that propagates around the ring niche at angular rate `omega` while
+    melanocytes rise at `v_z` (Lin et al. 2013 Fig. 2B, fig. S9). -/
+def chevron_s (s0 k ell : Int) : Int := s0 + k * (Int.natAbs ell : Int)
+
+/-- Theorem 4 (`ring_niche_chevron_geometry`):
+    For any non-negative helical pitch `k`:
+    (1) the band edge is mirror-symmetric about the rachis (`s(ell) = s(-ell)`) — the
+        two arms of the chevron;
+    (2) a synchronous ring (`k = 0`) gives a transverse bar (`s(ell) = s0` for all `ell`);
+    (3) the apex on the rachis is the tip-most point of the edge (`s0 ≤ s(ell)`);
+    (4) the chevron opens monotonically with the pitch: for `k < k'` and `ell ≠ 0`,
+        `s_k(ell) < s_k'(ell)`. -/
+theorem ring_niche_chevron_geometry (s0 k ell : Int) (hk : 0 ≤ k) :
+    chevron_s s0 k ell = chevron_s s0 k (-ell) ∧
+    chevron_s s0 0 ell = s0 ∧
+    s0 ≤ chevron_s s0 k ell ∧
+    (∀ k', k < k' → ell ≠ 0 → chevron_s s0 k ell < chevron_s s0 k' ell) := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · simp [chevron_s, Int.natAbs_neg]
+  · simp [chevron_s]
+  · unfold chevron_s
+    have h := Int.mul_nonneg hk (Int.natCast_nonneg (Int.natAbs ell))
+    omega
+  · intro k' hk' hell
+    unfold chevron_s
+    have hpos : (0 : Int) < (Int.natAbs ell : Int) := by omega
+    have h := Int.mul_lt_mul_of_pos_right hk' hpos
+    omega
+
+
+-- ============================================================================
+-- Law 5 (`haupaix-avian-plumage-somite-stripes-5`, Pass 3):
+-- Haupaix et al. (2018) Agouti-Dose-Dependent Yellow-Pulse Duration & Feather Type
+-- ============================================================================
+
+/-- Integer MC1R pigment switch (`1` pheomelanin if `A ≥ theta_A`, else `0` eumelanin). -/
+def mc1r_pigment_fate_int (A theta_A : Int) : Nat := if A ≥ theta_A then 1 else 0
+
+/-- Feather type under a transient niche Agouti pulse of mid-level `A` and modulation
+    amplitude `a` (peak `A + a` at mid-growth, trough `A - a` at tip and base):
+    `type = [A + a ≥ theta_A] + [A - a ≥ theta_A]` ∈ {0, 1, 2} —
+    `0` = b feather (entirely eumelanic), `1` = y feather (pheomelanin band with black
+    base and tip), `2` = fully pheomelanic feather (Fawn: no eumelanin before hatching). -/
+def feather_type (A a theta_A : Int) : Nat :=
+  mc1r_pigment_fate_int (A + a) theta_A + mc1r_pigment_fate_int (A - a) theta_A
+
+/-- Theorem 5 (`agouti_pulse_duration_feather_type`):
+    (1) `A - a ≥ theta_A` (trough suprathreshold) ⇒ fully pheomelanic feather (type 2);
+    (2) `A + a < theta_A` (peak subthreshold) ⇒ entirely eumelanic b feather (type 0);
+    (3) `theta_A - a ≤ A < theta_A + a` ⇒ y feather with pheomelanin band (type 1);
+    (4) feather type is monotone non-decreasing in the agouti dose `A`
+        (recessive-black agouti loss ≤ wild type ≤ Fawn agouti gain; Haupaix et al. 2018 Fig. 3B-C). -/
+theorem agouti_pulse_duration_feather_type (A a theta_A : Int) (ha : 0 < a) :
+    (A - a ≥ theta_A → feather_type A a theta_A = 2) ∧
+    (A + a < theta_A → feather_type A a theta_A = 0) ∧
+    (theta_A - a ≤ A ∧ A < theta_A + a → feather_type A a theta_A = 1) ∧
+    (∀ A', A ≤ A' → feather_type A a theta_A ≤ feather_type A' a theta_A) := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro h; simp only [feather_type, mc1r_pigment_fate_int]; split <;> (try split) <;> omega
+  · intro h; simp only [feather_type, mc1r_pigment_fate_int]; split <;> (try split) <;> omega
+  · intro h; simp only [feather_type, mc1r_pigment_fate_int]; split <;> (try split) <;> omega
+  · intro A' h; simp only [feather_type, mc1r_pigment_fate_int]
+    repeat (first | omega | split)
 
 end MathOfBiology.Loop_010

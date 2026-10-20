@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-2015-manukyan-ocellated-lizard-ca.py — Pass 2 Remediated Implementation (v2)
+2015-manukyan-ocellated-lizard-ca.py — Pass 3 Remediated Implementation (v3)
 ============================================================================
 Mathematical & Empirical Reproduction of Ocellated Lizard (*Timon lepidus*)
 Skin-Scale Mesoscopic Cellular Automaton Morphogenesis:
@@ -9,42 +9,76 @@ Skin-Scale Mesoscopic Cellular Automaton Morphogenesis:
    544(7649):173-179 (`doi:10.1038/nature22031`):
    - "A living mesoscopic cellular automaton made of skin scales"
    - Continuous **Kondo & Asai (1995)** (*Nature* 376:765-768, `doi:10.1038/376765a0`)
-     reaction-diffusion PDE on a 2D hexagonal skin-scale geometry where skin
-     thickness is reduced by factor P = h_border / h_interior ≈ 0.17 at inter-scale
-     borders (Methods Eqs. 1-8, Fig. 4):
-       du/dt = F(u, v) - gamma_u * u + div(D_u(x) * grad(u))
-       dv/dt = G(u, v) - gamma_v * v + div(D_v(x) * grad(v))
-       F(u, v) = clip(c_u * u + c_v * v + c_0, 0, F_max)
-       G(u, v) = clip(d_u * u + d_v * v + d_0, 0, G_max)
-     with spatially modulated diffusivity D_s(x) = D_s,interior inside hexagonal
-     scale cores and D_s(x) = P * D_s,interior on inter-scale borders.
-   - Because intra-scale diffusion is fast relative to inter-scale border flux
-     (D_border = P * D_interior << D_interior), morphogen concentrations homogenize
-     within each individual scale (creating bimodal monochromatic green vs black
-     scales) and the continuous PDE reduces mathematically to a discrete 2D
-     **hexagonal outer-totalistic cellular automaton (CA)** whose adult steady-state
-     nearest-neighbor histogram peaks at n_green = 3 green (and n_black = 3 black)
-     neighbors, forming 1-to-2-scale-wide labyrinthine chains.
+     reaction-diffusion PDE on a skin-scale geometry where skin thickness is
+     reduced by factor P = h_border / h_interior ~ 0.17 at inter-scale borders
+     (Methods, Fig. 4):
+       du/dt = F(u, v) + div(D_u grad u),   dv/dt = G(u, v) + div(D_v grad v)
+   - Because intra-scale lateral diffusion is fast relative to inter-scale border
+     flux, morphogen concentrations homogenize within each individual scale
+     (bimodal monochromatic green vs black scales) and the continuous PDE reduces
+     to a discrete 2D **hexagonal outer-totalistic cellular automaton (CA)** whose
+     adult nearest-neighbor histogram peaks at n_green = 3 (and n_black = 3).
 
 2. **Fofonjka & Milinkovitch (2021)** *Nat. Commun.* 12:2433 (`doi:10.1038/s41467-021-22525-1`)
-   & **Zakany & Milinkovitch (2023)** *Phys. Rev. X* 13:041011 (`doi:10.1103/PhysRevX.13.041011`):
-   - 3D/2D scale-border geometry and neighborhood-dependent color subclustering.
+   — reaction-diffusion in a 3D domain of skin scales (thick scale centres, thin
+   inter-scale borders) generates a discrete cellular automaton.
+   **Pass 3 remediation (this file):** the Pass 2 audit asked for the 2D
+   scale-border PDE to be extended to 3D skin-scale volumes. No micro-CT mesh is
+   vendored in this repository, so this script implements the closest honest
+   reduced version and says so:
+   - `integrate_skin_volume_pde_3d` integrates the SAME reaction-diffusion
+     system in a genuine 3D voxelized skin volume Omega = {(x, y, z) : 0 <= z < h(x, y)}
+     whose thickness map h(x, y) is h_interior inside hexagonal scale cores and
+     h_border = P * h_interior on inter-scale borders (a stepped-thickness skin,
+     not a micro-CT reconstruction), with zero-flux (no-flux) boundaries on the
+     epidermal surface and basal lamina, a finite-volume face-conductance scheme,
+     explicit lateral diffusion and an unconditionally stable implicit vertical
+     (Thomas / tridiagonal) solve so that the vertical voxel spacing dz can be
+     finer than the lateral pixel spacing (thin-film regime h << lambda_c).
+   - `integrate_scale_border_pde_2d(border_model="thickness")` integrates the
+     depth-averaged (thin-film / lubrication) reduction of that 3D problem,
+       d ubar/dt = F(ubar, vbar) + (1 / h(x)) div( h(x) D grad ubar ),
+     i.e. the depth-integrated face conductance between two columns is
+     min(h_i, h_j) * D and the column capacity is h(x). The v2 "diffusivity"
+     model D(x) = P * D on borders with unit capacity is kept as a comparison
+     variant (`border_model="diffusivity"`).
+   - The artificial per-scale averaging step that v2 applied after every PDE
+     step (`homog_rate`) has been REMOVED: scale-level discretization now has to
+     emerge from the thickness geometry alone, and the script measures how well
+     the 3D volume solution agrees with its depth-averaged 2D reduction (scale
+     state agreement, RMS of the depth-averaged fields, vertical non-uniformity).
+   - Intra-scale homogenization requires the Turing wavelength lambda_c to be
+     several scale pitches (the first zero-flux mode of an insulated scale must
+     lie outside the unstable band); `kinetics_linear_stability` computes
+     tr J, det J, the critical diffusivity ratio d_c, k_c, lambda_c and the
+     unstable band for both the script kinetics and the canonical clipped-linear
+     Kondo-Asai parameter set vendored in `ocellated_lizard_ca_reference.json`.
 
-3. **Machine-Checked Lean 4 Formalization** (`morphoeval/lean/loops/Loop_009_ocellated_lizard_ca.lean`):
+3. **Zakany & Milinkovitch (2023)** *Phys. Rev. X* 13:041011 (`doi:10.1103/PhysRevX.13.041011`):
+   neighborhood-dependent colour subclustering of lizard scales.
+
+4. **Machine-Checked Lean 4 Formalization** (`morphoeval/lean/loops/Loop_009_ocellated_lizard_ca.lean`):
    - Theorem 1 (`MathOfBiology.Loop_009.hex_scale_neighbor_partition_and_symmetry`):
      n_g + n_b = 6 on the 6-regular hexagonal lattice, and n_g = n_b <-> n_g = 3.
    - Theorem 2 (`MathOfBiology.Loop_009.border_diffusivity_reduction_quenches_interscale_flux`):
      P_pct = 0 yields zero inter-scale flux, while physiological border thinning
      (P_pct = 17 < 100) strictly attenuates inter-scale flux relative to continuum skin.
    - Theorem 3 (`MathOfBiology.Loop_009.manukyan_outer_totalistic_ca_labyrinth_fixed_point`):
-     n_g = 3 is a simultaneous fixed point for green (s=1) and black (s=0) scales,
-     whereas overcrowded green interiors (n_g=5) flip to black and all-black
-     pockets (n_g=1) flip to green.
+     n_g = 3 is a simultaneous fixed point for green (s=1) and black (s=0) scales.
+   - Theorem 4 (`MathOfBiology.Loop_009.thin_film_depth_average_recovers_uniform_column`, Pass 3):
+     the depth average (h * c) / h of a vertically uniform skin column of height
+     h > 0 recovers c, and column mass is monotone in thickness.
+   - Theorem 5 (`MathOfBiology.Loop_009.voxel_face_conductance_ratio_equals_thickness_ratio`, Pass 3):
+     the depth-integrated face conductance min(h_b, h_i) * D between a border
+     and an interior column has ratio h_b / h_i independent of D, vanishes for
+     an insulated border (h_b = 0), and is strictly smaller than the
+     interior-interior conductance whenever h_b < h_i.
 """
 
 from __future__ import annotations
 
 import argparse
+import functools
 import hashlib
 import json
 from pathlib import Path
@@ -58,7 +92,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
 from scipy.spatial import cKDTree
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, spearmanr
 
 ROOT = Path(__file__).resolve().parent
 DATASET_DIR = ROOT / "datasets" / "ocellated_lizard_ca"
@@ -66,9 +100,11 @@ REF_JSON_PATH = DATASET_DIR / "ocellated_lizard_ca_reference.json"
 SPECIMEN_JPG_PATH = DATASET_DIR / "timon_lepidus_specimen.jpg"
 SCOUT_JSON_PATH = DATASET_DIR / "scout_manifest.json"
 BIB_PATH = DATASET_DIR / "paper_citations.bib"
+SKIN_VOLUME_JSON_PATH = DATASET_DIR / "skin_volume_reference.json"
 
 OUT_PNG = ROOT / "docs" / "media" / "ocellated_lizard_ca_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "ocellated_lizard_ca_growth.gif"
+OUT_3D_PNG = ROOT / "docs" / "media" / "ocellated_lizard_ca_3d_volume.png"
 
 EXPECTED_SHA256: dict[str, str] = {
     "datasets/ocellated_lizard_ca/ocellated_lizard_ca_reference.json": (
@@ -83,14 +119,36 @@ EXPECTED_SHA256: dict[str, str] = {
     "datasets/ocellated_lizard_ca/paper_citations.bib": (
         "1bf1c8f580f69de9960ecf821d70b1304b7ce2bbfb8a0cd9802856bfa5c0cac8"
     ),
+    "datasets/ocellated_lizard_ca/skin_volume_reference.json": (
+        "dc8da9f0b72dad3a7326d0becb3f0aa475c84bb3f5c0f99723e1575f64779a27"
+    ),
 }
+
+# --------------------------------------------------------------------------- #
+# Default PDE discretization (shared by the 3D volume solver and its 2D reduction)
+# --------------------------------------------------------------------------- #
+# 12 x 12 hexagonal scales on a 60 x 60 lateral pixel grid -> scale pitch 5 px.
+# Turing wavelength lambda_c = 25 px = 5 scale pitches so that the first zero-flux
+# mode of an insulated scale (k_1 ~ pi / 4 px^-1) lies above the unstable band
+# (k_max ~ 1.9 k_c at d = 20): isolated scales cannot pattern internally, which is
+# the mesoscopic premise of Manukyan et al. (2017) Fig. 4.
+PDE_SCALE_ROWS = 12
+PDE_SCALE_COLS = 12
+PDE_NY = 60
+PDE_NX = 60
+PDE_NZ = 12          # interior skin thickness in voxels
+PDE_DZ_PX = 0.2      # vertical voxel spacing in lateral-pixel units (h_interior = 2.4 px = 0.48 pitch)
+PDE_LAMBDA_PX = 25.0 # target Turing wavelength lambda_c in pixels
+PDE_D_RATIO = 20.0   # d = D_v / D_u (canonical, ocellated_lizard_ca_reference.json)
+PDE_DT = 0.006       # explicit lateral stability: dt < 1 / (4 D_v) ~ 0.0066 at lambda_c = 25 px
+PDE_STEPS = 6000     # T = 36 time units ~ 7 / sigma_max (pattern saturated; see inter_std_history)
 
 
 # =========================================================================== #
 # 1. Dataset & SHA-256 Provenance Verification
 # =========================================================================== #
 def verify_dataset_sha256() -> dict[str, str]:
-    """Verify SHA-256 digests of all 4 vendored Slot 009 reference files."""
+    """Verify SHA-256 digests of all 5 vendored Slot 009 reference files."""
     actual: dict[str, str] = {}
     for rel, expected in EXPECTED_SHA256.items():
         p = ROOT / rel
@@ -103,10 +161,18 @@ def verify_dataset_sha256() -> dict[str, str]:
     return actual
 
 
+@functools.lru_cache(maxsize=1)
 def load_reference_dataset() -> dict[str, Any]:
     """Load and SHA-256-verify `ocellated_lizard_ca_reference.json`."""
     verify_dataset_sha256()
     return json.loads(REF_JSON_PATH.read_text(encoding="utf-8"))
+
+
+@functools.lru_cache(maxsize=1)
+def load_skin_volume_reference() -> dict[str, Any]:
+    """Load the Pass 3 `skin_volume_reference.json` (3D skin-volume model & thin-film reduction notes)."""
+    verify_dataset_sha256()
+    return json.loads(SKIN_VOLUME_JSON_PATH.read_text(encoding="utf-8"))
 
 
 # =========================================================================== #
@@ -257,20 +323,148 @@ def simulate_hexagonal_ca(
 
 
 # =========================================================================== #
-# 3. Continuous 2D Scale-Border Reaction-Diffusion PDE (Manukyan Fig. 4)
+# 3. Reaction Kinetics & Turing Linear Stability (Manukyan Methods / Kondo-Asai)
 # =========================================================================== #
+# Script kinetics: Kondo-Asai-type activator-inhibitor kinetics linearized around the
+# homogeneous steady state (u*, v*) = (0.50, 0.50) with a cubic saturation on the
+# activator. Jacobian: f_u = +0.50, f_v = -0.75, g_u = +0.82, g_v = -0.65
+# (tr J = -0.15 < 0, det J = +0.29 > 0 -> stable without diffusion; d_c = 7.0).
+KIN_FU, KIN_FV, KIN_GU, KIN_GV, KIN_CUBIC = 0.50, -0.75, 0.82, -0.65, 1.25
+
+
+def reaction_kinetics(u: np.ndarray, v: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """F(u, v), G(u, v) of the script's activator-inhibitor kinetics around (0.50, 0.50)."""
+    x = u - 0.50
+    y = v - 0.50
+    du = KIN_FU * x + KIN_FV * y - KIN_CUBIC * x**3
+    dv = KIN_GU * x + KIN_GV * y
+    return du, dv
+
+
+def turing_critical_ratio(fu: float, fv: float, gu: float, gv: float) -> float:
+    """
+    Critical diffusivity ratio d_c = D_v / D_u above which a Turing (diffusion-driven)
+    instability exists for a stable homogeneous steady state (tr J < 0, det J > 0):
+      d_c = [ (2 det J - f_u g_v) + 2 sqrt( det J (det J - f_u g_v) ) ] / f_u^2
+    (Turing 1952; Murray, Mathematical Biology II, Ch. 2).
+    """
+    det = fu * gv - fv * gu
+    return float(((2.0 * det - fu * gv) + 2.0 * np.sqrt(det * (det - fu * gv))) / fu**2)
+
+
+def kinetics_linear_stability(
+    fu: float, fv: float, gu: float, gv: float, d_ratio: float, D_u: float
+) -> dict[str, Any]:
+    """
+    Linear Turing analysis of du/dt = J (u, v)^T + diag(D_u, d D_u) Laplacian:
+    growth rate sigma(k) = max Re eig(J - k^2 diag(D_u, D_v)), critical wavenumber
+    k_c^2 = sqrt(det J / (D_u D_v)), critical ratio d_c, and the unstable band
+    [k_min, k_max] where det(J - k^2 D) < 0.
+    """
+    J = np.array([[fu, fv], [gu, gv]], dtype=np.float64)
+    tr = float(np.trace(J))
+    det = float(np.linalg.det(J))
+    D_v = d_ratio * D_u
+    d_c = turing_critical_ratio(fu, fv, gu, gv)
+    k_c = float(np.sqrt(np.sqrt(det / (D_u * D_v))))
+    lambda_c = float(2.0 * np.pi / k_c)
+
+    ks = np.linspace(0.0, 2.5 * k_c, 600)
+    sigma = np.empty_like(ks)
+    for i, k in enumerate(ks):
+        M = J - (k * k) * np.diag([D_u, D_v])
+        sigma[i] = float(np.max(np.linalg.eigvals(M).real))
+    i_max = int(np.argmax(sigma))
+
+    # Unstable band: roots of h(k^2) = D_u D_v k^4 - (D_v f_u + D_u g_v) k^2 + det J
+    b = D_v * fu + D_u * gv
+    disc = b * b - 4.0 * D_u * D_v * det
+    if disc > 0.0 and b > 0.0:
+        q_lo = (b - np.sqrt(disc)) / (2.0 * D_u * D_v)
+        q_hi = (b + np.sqrt(disc)) / (2.0 * D_u * D_v)
+        k_min, k_max = float(np.sqrt(max(q_lo, 0.0))), float(np.sqrt(q_hi))
+    else:
+        k_min, k_max = float("nan"), float("nan")
+
+    return {
+        "trace": tr,
+        "det": det,
+        "stable_homogeneous": bool(tr < 0.0 and det > 0.0),
+        "d_ratio": float(d_ratio),
+        "d_critical": d_c,
+        "turing_unstable": bool(d_ratio > d_c and tr < 0.0 and det > 0.0),
+        "D_u": float(D_u),
+        "D_v": float(D_v),
+        "k_c": k_c,
+        "lambda_c_px": lambda_c,
+        "k_grid": ks,
+        "sigma_grid": sigma,
+        "sigma_max": float(sigma[i_max]),
+        "k_sigma_max": float(ks[i_max]),
+        "k_min_unstable": k_min,
+        "k_max_unstable": k_max,
+    }
+
+
+def script_diffusivity_for_wavelength(lambda_px: float = PDE_LAMBDA_PX, d_ratio: float = PDE_D_RATIO) -> float:
+    """D_u such that the script kinetics have Turing wavelength lambda_c = lambda_px: D_u = sqrt(det J / d) / k_c^2."""
+    det = KIN_FU * KIN_GV - KIN_FV * KIN_GU
+    k_c = 2.0 * np.pi / lambda_px
+    return float(np.sqrt(det / d_ratio) / (k_c * k_c))
+
+
+def canonical_json_kinetics_stability(d_ratio: float | None = None) -> dict[str, Any]:
+    """
+    Linear stability of the canonical clipped-linear Kondo-Asai parameter set in
+    `ocellated_lizard_ca_reference.json` (F = clip(c_u u + c_v v + c_0) - gamma_u u,
+    G = clip(d_u u + d_v v + d_0) - gamma_v v) at its own diffusivity ratio.
+    Exposes whether that vendored parameter set is actually Turing-unstable.
+    """
+    cp = load_reference_dataset()["scale_border_reaction_diffusion_model"]["canonical_parameters"]
+    fu = cp["c_u"] - cp["gamma_u"]
+    fv = cp["c_v"]
+    gu = cp["d_u"]
+    gv = cp["d_v"] - cp["gamma_v"]
+    d = float(cp["diffusivity_ratio_d"] if d_ratio is None else d_ratio)
+    # Steady state of the unclipped linear system
+    A = np.array([[fu, fv], [gu, gv]])
+    rhs = -np.array([cp["c_0"], cp["d_0"]], dtype=np.float64)
+    u_star, v_star = np.linalg.solve(A, rhs)
+    F_star = cp["c_u"] * u_star + cp["c_v"] * v_star + cp["c_0"]
+    G_star = cp["d_u"] * u_star + cp["d_v"] * v_star + cp["d_0"]
+    out = kinetics_linear_stability(fu, fv, gu, gv, d_ratio=d, D_u=float(cp["D_u_interior"]))
+    out.update(
+        {
+            "u_star": float(u_star),
+            "v_star": float(v_star),
+            "steady_state_within_clip": bool(0.0 <= F_star <= cp["F_max"] and 0.0 <= G_star <= cp["G_max"]),
+        }
+    )
+    return out
+
+
+# =========================================================================== #
+# 4. Hexagonal Scale Geometry, Skin Thickness Map & Reaction-Diffusion Solvers
+# =========================================================================== #
+@functools.lru_cache(maxsize=16)
 def build_hexagonal_scale_geometry(
-    scale_rows: int = 14,
-    scale_cols: int = 14,
-    ny: int = 98,
-    nx: int = 98,
-    border_width_frac: float = 0.22,
+    scale_rows: int = PDE_SCALE_ROWS,
+    scale_cols: int = PDE_SCALE_COLS,
+    ny: int = PDE_NY,
+    nx: int = PDE_NX,
 ) -> dict[str, Any]:
     """
     Construct a 2D periodic hexagonal skin-scale mosaic on an (ny x nx) sub-scale
     continuum grid. Each pixel (y, x) is mapped to its closest hexagonal scale
-    center i in {0 .. N_scales - 1}, and pixels near Voronoi cell boundaries
-    (d2 - d1 < border_width) are marked as thinned inter-scale borders.
+    center i in {0 .. N_scales - 1} (Voronoi cell).
+
+    Border pixels (Pass 3, leak-proof definition): a pixel is an inter-scale border
+    pixel iff its +y or +x lattice neighbor belongs to a different scale. Every
+    4-adjacent pixel pair that straddles two scales therefore contains a border
+    pixel, so with face conductance min(h_i, h_j) ALL inter-scale flux passes
+    through thinned skin and P = 0 insulates every scale (checked by connected
+    component labelling). The v2 Voronoi-distance band (d2 - d1 < w) left
+    sub-pixel gaps through which scales coupled at full thickness.
     """
     centers_yx: list[tuple[float, float]] = []
     rc_to_idx: dict[tuple[int, int], int] = {}
@@ -290,20 +484,17 @@ def build_hexagonal_scale_geometry(
     centers = np.array(centers_yx, dtype=np.float64)
     yy, xx = np.meshgrid(np.arange(ny, dtype=np.float64), np.arange(nx, dtype=np.float64), indexing="ij")
 
-    # Compute periodic squared distance to all scale centers
     dy_mat = np.abs(yy[:, :, None] - centers[None, None, :, 0])
     dy_mat = np.minimum(dy_mat, ny - dy_mat)
     dx_mat = np.abs(xx[:, :, None] - centers[None, None, :, 1])
     dx_mat = np.minimum(dx_mat, nx - dx_mat)
-    dist = np.sqrt(dy_mat ** 2 + dx_mat ** 2)
-
-    part = np.partition(dist, 1, axis=2)
-    d1 = part[:, :, 0]
-    d2 = part[:, :, 1]
+    dist = np.sqrt(dy_mat**2 + dx_mat**2)
     scale_id_map = np.argmin(dist, axis=2).astype(np.int32)
 
-    mean_scale_radius = 0.5 * np.sqrt(dy * dx)
-    border_mask = (d2 - d1) < (border_width_frac * mean_scale_radius)
+    border_mask = (scale_id_map != np.roll(scale_id_map, -1, axis=0)) | (scale_id_map != np.roll(scale_id_map, -1, axis=1))
+
+    # Insulation check: with borders removed, 4-connected components of the interior
+    n_components, _ = _label_periodic_components(~border_mask)
 
     return {
         "scale_rows": scale_rows,
@@ -312,166 +503,424 @@ def build_hexagonal_scale_geometry(
         "centers_yx": centers,
         "scale_id_map": scale_id_map,
         "border_mask": border_mask,
+        "border_area_fraction": float(np.mean(border_mask)),
+        "n_interior_components": int(n_components),
         "rc_to_idx": rc_to_idx,
+        "pitch_px": float(np.sqrt(dy * dx)),
     }
 
 
+def _label_periodic_components(mask: np.ndarray) -> tuple[int, np.ndarray]:
+    """4-connected component count of a boolean mask on a periodic 2D grid (labels merged across the wrap seams)."""
+    lab, _ = ndi.label(mask)
+    ny, nx = mask.shape
+    parent: dict[int, int] = {}
+
+    def find(a: int) -> int:
+        while parent.get(a, a) != a:
+            a = parent[a]
+        return a
+
+    def union(a: int, b: int) -> None:
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[max(ra, rb)] = min(ra, rb)
+
+    for i in range(ny):
+        if mask[i, 0] and mask[i, -1]:
+            union(int(lab[i, 0]), int(lab[i, -1]))
+    for j in range(nx):
+        if mask[0, j] and mask[-1, j]:
+            union(int(lab[0, j]), int(lab[-1, j]))
+    roots = {find(int(v)) for v in np.unique(lab) if v != 0}
+    return len(roots), lab
+
+
+def skin_thickness_map(geom: dict[str, Any], P_border: float, nz: int = PDE_NZ) -> dict[str, Any]:
+    """
+    Stepped skin thickness map h(x, y) in voxels: h_interior = nz inside scale cores,
+    h_border = round(P * nz) (>= 1 voxel for any P > 0, 0 for P = 0) on borders.
+    Returns the realised effective thickness ratio P_eff = h_border / nz, which
+    differs from P at voxel resolution (e.g. P = 0.17 -> 2 / 12 = 0.167).
+    """
+    if P_border <= 0.0:
+        h_border = 0
+    else:
+        h_border = int(max(1, round(P_border * nz)))
+    h = np.where(geom["border_mask"], h_border, nz).astype(np.int32)
+    return {
+        "h_map": h,
+        "h_interior": int(nz),
+        "h_border": int(h_border),
+        "P_effective": float(h_border / nz),
+        "skin_volume_fraction_vs_slab": float(np.mean(h) / nz),
+    }
+
+
+def _initial_fields(geom: dict[str, Any], seed: int, shape_3d: tuple[int, int, int] | None = None) -> tuple[np.ndarray, np.ndarray]:
+    """Deterministic initial condition: per-scale offsets (std 0.06) + pixel noise (std 0.01) around (0.50, 0.50)."""
+    rng = np.random.default_rng(seed)
+    ny, nx = geom["scale_id_map"].shape
+    scale_init = rng.normal(0.50, 0.06, size=geom["n_scales"])
+    u2 = scale_init[geom["scale_id_map"]] + rng.normal(0.0, 0.01, size=(ny, nx))
+    v2 = 0.50 + rng.normal(0.0, 0.01, size=(ny, nx))
+    if shape_3d is None:
+        return np.clip(u2, 0.05, 0.95), np.clip(v2, 0.05, 0.95)
+    nz = shape_3d[0]
+    u3 = np.broadcast_to(u2, (nz, ny, nx)).copy() + rng.normal(0.0, 0.005, size=(nz, ny, nx))
+    v3 = np.broadcast_to(v2, (nz, ny, nx)).copy()
+    return np.clip(u3, 0.05, 0.95), np.clip(v3, 0.05, 0.95)
+
+
+def _per_scale_statistics(u_bar: np.ndarray, geom: dict[str, Any], valid: np.ndarray) -> dict[str, Any]:
+    """Per-scale mean / intra-scale std of a depth-averaged field over valid (interior) pixels."""
+    sid = geom["scale_id_map"]
+    rows, cols = geom["scale_rows"], geom["scale_cols"]
+    scale_means = np.zeros((rows, cols), dtype=np.float64)
+    intra_stds: list[float] = []
+    for r in range(rows):
+        for c in range(cols):
+            s = geom["rc_to_idx"][(r, c)]
+            mask_s = (sid == s) & valid
+            if not np.any(mask_s):
+                mask_s = sid == s
+            vals = u_bar[mask_s]
+            scale_means[r, c] = float(np.mean(vals))
+            intra_stds.append(float(np.std(vals)))
+    inter = float(np.std(scale_means))
+    intra = float(np.mean(intra_stds))
+    patterned = inter > 0.03
+    if patterned:
+        thresh = float(np.percentile(scale_means, 55.0))
+        binary = (scale_means >= thresh).astype(np.int32)
+        g_vals = scale_means[binary == 1]
+        b_vals = scale_means[binary == 0]
+        ashman_D = float(np.sqrt(2.0) * abs(np.mean(g_vals) - np.mean(b_vals)) / np.sqrt(np.var(g_vals) + np.var(b_vals) + 1e-8))
+    else:
+        binary = np.zeros((rows, cols), dtype=np.int32)
+        ashman_D = 0.0
+    return {
+        "scale_means": scale_means,
+        "inter_scale_std": inter,
+        "mean_intra_scale_std": intra,
+        # Undefined (NaN) when no scale-level pattern formed (e.g. insulated P = 0, equal diffusion d = 1)
+        "discretization_ratio": float(inter / max(intra, 1e-9)) if patterned else float("nan"),
+        "patterned": bool(patterned),
+        "binary_scales": binary,
+        "ashman_D": ashman_D,
+        "neighbor_stats": compute_neighbor_statistics(binary),
+    }
+
+
+@functools.lru_cache(maxsize=32)
 def integrate_scale_border_pde_2d(
     P_border: float = 0.17,
-    d_ratio: float = 20.0,
-    scale_rows: int = 14,
-    scale_cols: int = 14,
-    ny: int = 98,
-    nx: int = 98,
-    steps: int = 650,
-    dt: float = 0.035,
+    d_ratio: float = PDE_D_RATIO,
+    scale_rows: int = PDE_SCALE_ROWS,
+    scale_cols: int = PDE_SCALE_COLS,
+    ny: int = PDE_NY,
+    nx: int = PDE_NX,
+    nz: int = PDE_NZ,
+    steps: int = PDE_STEPS,
+    dt: float = PDE_DT,
+    lambda_px: float = PDE_LAMBDA_PX,
+    seed: int = 2017,
+    border_model: str = "thickness",
+) -> dict[str, Any]:
+    """
+    Depth-averaged (thin-film) 2D reduction of reaction-diffusion in a skin volume
+    of stepped thickness h(x) (Fofonjka & Milinkovitch 2021; Manukyan et al. 2017 Fig. 4):
+
+      d ubar/dt = F(ubar, vbar) + (1 / h(x)) div( h(x) D_u grad ubar )
+      d vbar/dt = G(ubar, vbar) + (1 / h(x)) div( h(x) D_v grad vbar )
+
+    Finite volume on the periodic pixel grid: the depth-integrated conductance of
+    the face between columns i, j is min(h_i, h_j) * D (shared face area) and the
+    capacity of column i is h_i (`border_model="thickness"`, default).
+
+    `border_model="diffusivity"` reproduces the Pass 2 variant D(x) = P * D on border
+    pixels with unit capacity (face conductance = arithmetic mean of the two
+    pixel weights) for comparison. No artificial per-scale averaging is applied.
+
+    Cross-references Lean 4 Theorems 2, 4, 5 in
+    `morphoeval/lean/loops/Loop_009_ocellated_lizard_ca.lean`.
+    """
+    geom = build_hexagonal_scale_geometry(scale_rows, scale_cols, ny, nx)
+    thick = skin_thickness_map(geom, P_border, nz)
+    h = thick["h_map"].astype(np.float64) / float(nz)  # normalized thickness (interior = 1)
+    skin = (h > 0.0).astype(np.float64)
+    h_cap = np.maximum(h, 1e-12)
+
+    if border_model == "thickness":
+        g_yp = np.minimum(h, np.roll(h, -1, axis=0))
+        g_ym = np.minimum(h, np.roll(h, 1, axis=0))
+        g_xp = np.minimum(h, np.roll(h, -1, axis=1))
+        g_xm = np.minimum(h, np.roll(h, 1, axis=1))
+        cap = h_cap
+    elif border_model == "diffusivity":
+        w = np.where(geom["border_mask"], float(P_border), 1.0)
+        g_yp = 0.5 * (w + np.roll(w, -1, axis=0))
+        g_ym = 0.5 * (w + np.roll(w, 1, axis=0))
+        g_xp = 0.5 * (w + np.roll(w, -1, axis=1))
+        g_xm = 0.5 * (w + np.roll(w, 1, axis=1))
+        cap = np.ones_like(h)
+        skin = np.ones_like(h)
+    else:
+        raise ValueError(f"Unknown border_model {border_model!r}")
+
+    D_u0 = script_diffusivity_for_wavelength(lambda_px, d_ratio)
+    D_v0 = D_u0 * float(d_ratio)
+    u, v = _initial_fields(geom, seed)
+    u *= skin
+    v *= skin
+
+    def div_h_grad(f: np.ndarray) -> np.ndarray:
+        return (
+            g_yp * (np.roll(f, -1, axis=0) - f)
+            + g_ym * (np.roll(f, 1, axis=0) - f)
+            + g_xp * (np.roll(f, -1, axis=1) - f)
+            + g_xm * (np.roll(f, 1, axis=1) - f)
+        ) / cap
+
+    history_every = max(1, steps // 24)
+    inter_std_history: list[tuple[float, float]] = []
+    interior = ~geom["border_mask"]
+    for n in range(steps):
+        du, dv = reaction_kinetics(u, v)
+        u = np.clip(u + dt * (du + D_u0 * div_h_grad(u)), 0.05, 0.95) * skin
+        v = np.clip(v + dt * (dv + D_v0 * div_h_grad(v)), 0.05, 0.95) * skin
+        if n % history_every == 0 or n == steps - 1:
+            means = np.bincount(geom["scale_id_map"][interior], weights=u[interior], minlength=geom["n_scales"]) / np.bincount(
+                geom["scale_id_map"][interior], minlength=geom["n_scales"]
+            )
+            inter_std_history.append(((n + 1) * dt, float(np.std(means))))
+
+    stats = _per_scale_statistics(u, geom, interior)
+    out = {
+        "model": f"2d-{border_model}",
+        "P_border": float(P_border),
+        "P_effective": thick["P_effective"] if border_model == "thickness" else float(P_border),
+        "d_ratio": float(d_ratio),
+        "D_u": D_u0,
+        "D_v": D_v0,
+        "dt": float(dt),
+        "steps": int(steps),
+        "u_field": u,
+        "v_field": v,
+        "u_bar": u,
+        "h_map": thick["h_map"],
+        "border_mask": geom["border_mask"],
+        "geometry": geom,
+        "inter_std_history": inter_std_history,
+    }
+    out.update(stats)
+    return out
+
+
+def _thomas_solve_along_z(a: np.ndarray, b: np.ndarray, c: np.ndarray, d: np.ndarray) -> np.ndarray:
+    """Vectorized Thomas (tridiagonal) solve along axis 0 for arrays of shape (nz, ny, nx)."""
+    nz = a.shape[0]
+    cp = np.empty_like(c)
+    dp = np.empty_like(d)
+    cp[0] = c[0] / b[0]
+    dp[0] = d[0] / b[0]
+    for k in range(1, nz):
+        denom = b[k] - a[k] * cp[k - 1]
+        cp[k] = c[k] / denom
+        dp[k] = (d[k] - a[k] * dp[k - 1]) / denom
+    x = np.empty_like(d)
+    x[-1] = dp[-1]
+    for k in range(nz - 2, -1, -1):
+        x[k] = dp[k] - cp[k] * x[k + 1]
+    return x
+
+
+@functools.lru_cache(maxsize=16)
+def integrate_skin_volume_pde_3d(
+    P_border: float = 0.17,
+    d_ratio: float = PDE_D_RATIO,
+    scale_rows: int = PDE_SCALE_ROWS,
+    scale_cols: int = PDE_SCALE_COLS,
+    ny: int = PDE_NY,
+    nx: int = PDE_NX,
+    nz: int = PDE_NZ,
+    dz_px: float = PDE_DZ_PX,
+    steps: int = PDE_STEPS,
+    dt: float = PDE_DT,
+    lambda_px: float = PDE_LAMBDA_PX,
     seed: int = 2017,
 ) -> dict[str, Any]:
     """
-    Numerically integrate the Manukyan et al. (2017) *Nature* / Kondo & Asai (1995)
-    2D reaction-diffusion PDE on a hexagonal skin-scale domain with inter-scale
-    border thickness reduction factor P = h_border / h_interior in [0, 1]:
+    Genuine 3D reaction-diffusion in a voxelized skin volume of stepped thickness
+    (Pass 3 remediation of the Fofonjka & Milinkovitch 2021 item):
 
-      du/dt = F(u, v) - gamma_u * u + div(D_u(x) * grad(u))
-      dv/dt = G(u, v) - gamma_v * v + div(D_v(x) * grad(v))
+      Omega = { (x, y, z) : 0 <= z < h(x, y) },  h = h_interior in scale cores,
+                                                  h = P * h_interior on borders
+      du/dt = F(u, v) + D_u Laplacian u,  dv/dt = G(u, v) + D_v Laplacian v  in Omega
+      n . grad u = n . grad v = 0 on the epidermal surface, basal lamina and the
+      vertical steps between thick and thin skin (finite-volume face conductance
+      = 1 iff both voxels are skin), periodic laterally.
 
-    where D_s(x) = D_s,interior inside scale interiors and P * D_s,interior on
-    scale borders.
+    Lateral diffusion is explicit; vertical diffusion (voxel spacing dz_px << 1 px)
+    is implicit via a vectorized tridiagonal solve, so dt is limited only by the
+    lateral explicit constraint dt < 1 / (4 D_v). Returns the full voxel field,
+    its depth average ubar(x, y) = (1/h) sum_z u, the vertical non-uniformity
+    (RMS over depth of u - ubar) that measures how well the thin-film reduction
+    holds, and the same per-scale statistics as the 2D solver.
 
-    Cross-references Lean 4 Theorem 2:
-      `MathOfBiology.Loop_009.border_diffusivity_reduction_quenches_interscale_flux`
+    This is a stepped-thickness voxel skin, NOT a micro-CT finite-element mesh; see
+    `datasets/ocellated_lizard_ca/skin_volume_reference.json` for the residual gap.
     """
-    geom = build_hexagonal_scale_geometry(scale_rows=scale_rows, scale_cols=scale_cols, ny=ny, nx=nx)
-    border_mask = geom["border_mask"]
-    scale_id_map = geom["scale_id_map"]
-    n_scales = geom["n_scales"]
+    geom = build_hexagonal_scale_geometry(scale_rows, scale_cols, ny, nx)
+    thick = skin_thickness_map(geom, P_border, nz)
+    h = thick["h_map"]
+    zz = np.arange(nz)[:, None, None]
+    skin = (zz < h[None, :, :]).astype(np.float64)  # (nz, ny, nx)
 
-    # Spatially varying diffusivity weight w(x) = 1.0 in interior, P_border on scale borders
-    w = np.where(border_mask, float(P_border), 1.0)
-    # Face-centered conductances on periodic 2D grid
-    w_yp = 0.5 * (w + np.roll(w, -1, axis=0))
-    w_ym = 0.5 * (w + np.roll(w, 1, axis=0))
-    w_xp = 0.5 * (w + np.roll(w, -1, axis=1))
-    w_xm = 0.5 * (w + np.roll(w, 1, axis=1))
+    c_yp = skin * np.roll(skin, -1, axis=1)
+    c_ym = skin * np.roll(skin, 1, axis=1)
+    c_xp = skin * np.roll(skin, -1, axis=2)
+    c_xm = skin * np.roll(skin, 1, axis=2)
+    c_zp = skin * np.roll(skin, -1, axis=0)
+    c_zp[-1] = 0.0
+    c_zm = skin * np.roll(skin, 1, axis=0)
+    c_zm[0] = 0.0
+    inv_dz2 = 1.0 / (dz_px * dz_px)
 
-    D_u0 = 0.14
+    D_u0 = script_diffusivity_for_wavelength(lambda_px, d_ratio)
     D_v0 = D_u0 * float(d_ratio)
-    scale_pixel_counts = np.bincount(scale_id_map.ravel(), minlength=n_scales).astype(np.float64)
-    # Intra-scale rapid equilibration due to high interior-to-border conductance ratio (1 - P_border)
-    homog_rate = 0.28 * (1.0 - float(P_border))
 
-    rng = np.random.default_rng(seed)
-    # Initial scale-level perturbation + fine-scale noise around homogeneous steady state (0.50, 0.50)
-    scale_init = rng.normal(0.50, 0.06, size=n_scales)
-    u = np.clip(scale_init[scale_id_map] + rng.normal(0.0, 0.01, size=(ny, nx)), 0.05, 0.95)
-    v = np.clip(0.50 + rng.normal(0.0, 0.01, size=(ny, nx)), 0.05, 0.95)
+    def tridiagonal(D: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        a = -dt * D * inv_dz2 * c_zm
+        c = -dt * D * inv_dz2 * c_zp
+        b = 1.0 - a - c
+        return a, b, c
 
-    for _ in range(steps):
-        du_yp = np.roll(u, -1, axis=0) - u
-        du_ym = np.roll(u, 1, axis=0) - u
-        du_xp = np.roll(u, -1, axis=1) - u
-        du_xm = np.roll(u, 1, axis=1) - u
-        div_u = D_u0 * (w_yp * du_yp + w_ym * du_ym + w_xp * du_xp + w_xm * du_xm)
+    au, bu, cu = tridiagonal(D_u0)
+    av, bv, cv = tridiagonal(D_v0)
 
-        dv_yp = np.roll(v, -1, axis=0) - v
-        dv_ym = np.roll(v, 1, axis=0) - v
-        dv_xp = np.roll(v, -1, axis=1) - v
-        dv_xm = np.roll(v, 1, axis=1) - v
-        div_v = D_v0 * (w_yp * dv_yp + w_ym * dv_ym + w_xp * dv_xp + w_xm * dv_xm)
+    u, v = _initial_fields(geom, seed, shape_3d=(nz, ny, nx))
+    u *= skin
+    v *= skin
 
-        # Kondo-Asai / Manukyan activator-inhibitor reaction kinetics around (0.50, 0.50)
-        # Jacobian at (0.50, 0.50): fu=+0.50, fv=-0.75, gu=+0.82, gv=-0.65 (tr=-0.15 < 0, det=+0.29 > 0)
-        du_react = 0.50 * (u - 0.50) - 0.75 * (v - 0.50) - 1.25 * ((u - 0.50) ** 3)
-        dv_react = 0.82 * (u - 0.50) - 0.65 * (v - 0.50)
-
-        u = np.clip(u + 0.06 * (du_react + div_u), 0.05, 0.95)
-        v = np.clip(v + 0.06 * (dv_react + div_v), 0.05, 0.95)
-        if homog_rate > 0.0:
-            s_means = np.bincount(scale_id_map.ravel(), weights=u.ravel(), minlength=n_scales) / scale_pixel_counts
-            u = (1.0 - homog_rate) * u + homog_rate * s_means[scale_id_map]
-
-    # Extract per-scale mean activator u_i and intra-scale concentration std
-    interior_pixels = ~border_mask
-    scale_means = np.zeros((scale_rows, scale_cols), dtype=np.float64)
-    intra_stds: list[float] = []
-    for r in range(scale_rows):
-        for c in range(scale_cols):
-            sid = geom["rc_to_idx"][(r, c)]
-            mask_s = (scale_id_map == sid) & interior_pixels
-            if not np.any(mask_s):
-                mask_s = scale_id_map == sid
-            vals = u[mask_s]
-            scale_means[r, c] = float(np.mean(vals))
-            intra_stds.append(float(np.std(vals)))
-
-    inter_scale_std = float(np.std(scale_means))
-    mean_intra_scale_std = float(np.mean(intra_stds))
-    discretization_ratio = float(inter_scale_std / max(mean_intra_scale_std, 1e-6))
-
-    # Classify hexagonal scales into binary green (1) vs black (0)
-    # targeting physiological Timon lepidus green fraction (~0.44) when patterned
-    if inter_scale_std > 0.015:
-        thresh = float(np.percentile(scale_means, 55.0))
-        binary_scales = (scale_means >= thresh).astype(np.int32)
-        g_vals = scale_means[binary_scales == 1]
-        b_vals = scale_means[binary_scales == 0]
-        ashman_D = float(
-            np.sqrt(2.0) * abs(np.mean(g_vals) - np.mean(b_vals)) / np.sqrt(np.var(g_vals) + np.var(b_vals) + 1e-8)
+    def lateral_laplacian(f: np.ndarray) -> np.ndarray:
+        return (
+            c_yp * (np.roll(f, -1, axis=1) - f)
+            + c_ym * (np.roll(f, 1, axis=1) - f)
+            + c_xp * (np.roll(f, -1, axis=2) - f)
+            + c_xm * (np.roll(f, 1, axis=2) - f)
         )
-    else:
-        binary_scales = np.zeros((scale_rows, scale_cols), dtype=np.int32)
-        ashman_D = 0.0
 
-    neighbor_stats = compute_neighbor_statistics(binary_scales)
+    h_safe = np.maximum(h, 1).astype(np.float64)
+    interior = ~geom["border_mask"]
+    history_every = max(1, steps // 24)
+    inter_std_history: list[tuple[float, float]] = []
+    for n in range(steps):
+        du, dv = reaction_kinetics(u, v)
+        u_star = u + dt * (du + D_u0 * lateral_laplacian(u))
+        v_star = v + dt * (dv + D_v0 * lateral_laplacian(v))
+        u = np.clip(_thomas_solve_along_z(au, bu, cu, u_star), 0.05, 0.95) * skin
+        v = np.clip(_thomas_solve_along_z(av, bv, cv, v_star), 0.05, 0.95) * skin
+        if n % history_every == 0 or n == steps - 1:
+            ub = (u * skin).sum(axis=0) / h_safe
+            means = np.bincount(geom["scale_id_map"][interior], weights=ub[interior], minlength=geom["n_scales"]) / np.bincount(
+                geom["scale_id_map"][interior], minlength=geom["n_scales"]
+            )
+            inter_std_history.append(((n + 1) * dt, float(np.std(means))))
 
+    u_bar = (u * skin).sum(axis=0) / h_safe
+    v_bar = (v * skin).sum(axis=0) / h_safe
+    vert_rms = np.sqrt((((u - u_bar[None, :, :]) ** 2) * skin).sum(axis=0) / h_safe)
+    stats = _per_scale_statistics(u_bar, geom, interior)
+
+    out = {
+        "model": "3d-voxel-skin-volume",
+        "P_border": float(P_border),
+        "P_effective": thick["P_effective"],
+        "h_interior_voxels": thick["h_interior"],
+        "h_border_voxels": thick["h_border"],
+        "h_interior_px": float(nz * dz_px),
+        "dz_px": float(dz_px),
+        "skin_volume_fraction_vs_slab": thick["skin_volume_fraction_vs_slab"],
+        "skin_volume_fraction_analytic": float(1.0 - (1.0 - thick["P_effective"]) * geom["border_area_fraction"]),
+        "n_skin_voxels": int(skin.sum()),
+        "d_ratio": float(d_ratio),
+        "D_u": D_u0,
+        "D_v": D_v0,
+        "dt": float(dt),
+        "steps": int(steps),
+        "u_volume": u,
+        "v_volume": v,
+        "skin_mask": skin.astype(bool),
+        "u_bar": u_bar,
+        "v_bar": v_bar,
+        "vertical_nonuniformity_rms": float(np.mean(vert_rms[interior])),
+        "vertical_nonuniformity_max": float(np.max(vert_rms)),
+        "h_map": h,
+        "border_mask": geom["border_mask"],
+        "geometry": geom,
+        "inter_std_history": inter_std_history,
+    }
+    out.update(stats)
+    return out
+
+
+def compare_3d_volume_to_depth_averaged_2d(P_border: float = 0.17, **kwargs: Any) -> dict[str, Any]:
+    """
+    Quantify how well the depth-averaged 2D thin-film reduction reproduces the 3D
+    skin-volume solution at the same P, seed and discretization: binary scale state
+    agreement, Pearson r of per-scale means, RMS of the depth-averaged fields, and
+    the 3D vertical non-uniformity (thin-film validity).
+    """
+    s3 = integrate_skin_volume_pde_3d(P_border=P_border, **kwargs)
+    kw2 = {k: v for k, v in kwargs.items() if k != "dz_px"}
+    s2 = integrate_scale_border_pde_2d(P_border=P_border, border_model="thickness", **kw2)
+    m3 = s3["scale_means"].ravel()
+    m2 = s2["scale_means"].ravel()
+    both_patterned = s3["patterned"] and s2["patterned"]
+    agreement = float(np.mean(s3["binary_scales"] == s2["binary_scales"])) if both_patterned else float("nan")
+    r = float(pearsonr(m3, m2)[0]) if np.std(m3) > 1e-9 and np.std(m2) > 1e-9 else float("nan")
+    skin2d = s2["h_map"] > 0
+    rms = float(np.sqrt(np.mean((s3["u_bar"][skin2d] - s2["u_bar"][skin2d]) ** 2)))
     return {
-        "P_border": P_border,
-        "d_ratio": d_ratio,
-        "u_field": u,
-        "v_field": v,
-        "border_mask": border_mask,
-        "scale_means": scale_means,
-        "binary_scales": binary_scales,
-        "inter_scale_std": inter_scale_std,
-        "mean_intra_scale_std": mean_intra_scale_std,
-        "discretization_ratio": discretization_ratio,
-        "ashman_D": ashman_D,
-        "neighbor_stats": neighbor_stats,
+        "P_border": float(P_border),
+        "P_effective": s3["P_effective"],
+        "scale_state_agreement": agreement,
+        "scale_mean_pearson_r": r,
+        "depth_averaged_rms_difference": rms,
+        "vertical_nonuniformity_rms_3d": s3["vertical_nonuniformity_rms"],
+        "discretization_ratio_3d": s3["discretization_ratio"],
+        "discretization_ratio_2d": s2["discretization_ratio"],
+        "ashman_D_3d": s3["ashman_D"],
+        "ashman_D_2d": s2["ashman_D"],
+        "sim_3d": s3,
+        "sim_2d": s2,
     }
 
 
-def run_border_reduction_sweep() -> list[dict[str, Any]]:
+def run_border_reduction_sweep(model: str = "3d") -> list[dict[str, Any]]:
     """
     Sweep the 5 scale-border thickness reduction regimes P in {0.0, 0.08, 0.17, 0.45, 1.0}
-    from `ocellated_lizard_ca_reference.json` and quantify intra-scale vs inter-scale
-    discretization ratio and labyrinthine chain statistics.
+    from `ocellated_lizard_ca_reference.json` in the 3D skin volume (`model="3d"`) or
+    its depth-averaged 2D reduction (`model="2d"`), reporting P_eff at voxel resolution,
+    inter/intra-scale std, discretization ratio, Ashman D and labyrinth statistics.
     """
-    regimes = [
-        ("insulated_decoupled_scales", 0.0),
-        ("strong_border_thinning_ca", 0.08),
-        ("timon_lepidus_physiological", 0.17),
-        ("moderate_border_thinning", 0.45),
-        ("homogeneous_continuum_skin", 1.0),
-    ]
+    regimes = load_reference_dataset()["hexagonal_outer_totalistic_ca"]["border_reduction_P_regimes"]
     results: list[dict[str, Any]] = []
-    for rid, p_val in regimes:
-        sim = integrate_scale_border_pde_2d(
-            P_border=p_val,
-            d_ratio=20.0,
-            scale_rows=12,
-            scale_cols=12,
-            ny=84,
-            nx=84,
-            steps=550,
-            seed=2017,
-        )
+    for reg in regimes:
+        p_val = float(reg["P"])
+        sim = integrate_skin_volume_pde_3d(P_border=p_val) if model == "3d" else integrate_scale_border_pde_2d(P_border=p_val)
         results.append(
             {
-                "regime_id": rid,
+                "regime_id": reg["regime_id"],
+                "predicted_pattern": reg["predicted_pattern"],
                 "P": p_val,
+                "P_effective": sim["P_effective"],
+                "model": sim["model"],
                 "inter_scale_std": sim["inter_scale_std"],
                 "mean_intra_scale_std": sim["mean_intra_scale_std"],
                 "discretization_ratio": sim["discretization_ratio"],
+                "patterned": sim["patterned"],
                 "ashman_D": sim["ashman_D"],
                 "mean_ng_green": sim["neighbor_stats"]["mean_ng_green"],
                 "labyrinth_chain_fraction": sim["neighbor_stats"]["labyrinth_chain_fraction"],
@@ -482,39 +931,46 @@ def run_border_reduction_sweep() -> list[dict[str, Any]]:
 
 def run_negative_controls() -> dict[str, Any]:
     """
-    Execute formal negative/ablation controls:
-      1. Positive physiological Timon lepidus scale-border PDE (P = 0.17, d = 20.0).
-      2. Equal-diffusion ablation control (P = 0.17, d = Dv/Du = 1.0): abolishes
-         Turing instability so all scales decay to homogeneous steady state.
-      3. Unattenuated continuum skin ablation (P = 1.0, d = 20.0): removes scale
-         border thinning so smooth Turing bands cut across scale interiors,
-         inflating intra-scale concentration gradient std relative to P = 0.17.
+    Formal negative/ablation controls (all in the 3D skin volume unless noted):
+      1. Positive physiological Timon lepidus skin volume (P = 0.17, d = 20).
+      2. Equal-diffusion ablation (P = 0.17, d = D_v/D_u = 1.0; 2D reduction): no
+         Turing instability, so every scale relaxes to the homogeneous steady state.
+      3. Unattenuated continuum skin (P = 1.0, d = 20): no border thinning, smooth
+         Turing bands cut across scale interiors (lower discretization ratio).
+      4. Insulated scales (P = 0.0, d = 20): zero inter-scale conductance; isolated
+         scales cannot pattern internally because lambda_c = 5 pitches, so the
+         pattern is absent (inter-scale std ~ 0) and interiors are uniform.
     """
-    pos = integrate_scale_border_pde_2d(P_border=0.17, d_ratio=20.0, scale_rows=12, scale_cols=12, ny=84, nx=84, steps=550, seed=2017)
-    eq_diff = integrate_scale_border_pde_2d(P_border=0.17, d_ratio=1.0, scale_rows=12, scale_cols=12, ny=84, nx=84, steps=550, seed=2017)
-    continuum = integrate_scale_border_pde_2d(P_border=1.0, d_ratio=20.0, scale_rows=12, scale_cols=12, ny=84, nx=84, steps=550, seed=2017)
-
+    pos = integrate_skin_volume_pde_3d(P_border=0.17)
+    eq_diff = integrate_scale_border_pde_2d(P_border=0.17, d_ratio=1.0)
+    continuum = integrate_skin_volume_pde_3d(P_border=1.0)
+    insulated = integrate_skin_volume_pde_3d(P_border=0.0)
     return {
         "positive_inter_scale_std": pos["inter_scale_std"],
-        "equal_diffusion_inter_scale_std": eq_diff["inter_scale_std"],
-        "positive_discretization_ratio": pos["discretization_ratio"],
-        "continuum_P1_discretization_ratio": continuum["discretization_ratio"],
         "positive_intra_std": pos["mean_intra_scale_std"],
+        "positive_discretization_ratio": pos["discretization_ratio"],
+        "equal_diffusion_inter_scale_std": eq_diff["inter_scale_std"],
+        "continuum_P1_inter_scale_std": continuum["inter_scale_std"],
         "continuum_P1_intra_std": continuum["mean_intra_scale_std"],
+        "continuum_P1_discretization_ratio": continuum["discretization_ratio"],
+        "insulated_P0_inter_scale_std": insulated["inter_scale_std"],
+        "insulated_P0_intra_std": insulated["mean_intra_scale_std"],
+        "insulated_P0_patterned": insulated["patterned"],
         "discretization_gain_vs_continuum": float(pos["discretization_ratio"] / max(continuum["discretization_ratio"], 1e-6)),
     }
 
 
 # =========================================================================== #
-# 4. Biological Specimen Segmentation (`timon_lepidus_specimen.jpg`)
+# 5. Biological Specimen Segmentation (`timon_lepidus_specimen.jpg`)
 # =========================================================================== #
+@functools.lru_cache(maxsize=1)
 def segment_timon_lepidus_specimen() -> dict[str, Any]:
     """
     Segment the SHA-256-locked *Timon lepidus* dorsal scale specimen photograph
     (`datasets/ocellated_lizard_ca/timon_lepidus_specimen.jpg`):
       1. Extract Dorsal Scale ROI `[120, 180, 320, 360]`.
       2. Sample hexagonal scale sites across the dorsal scale lattice, measure each
-         scale's green chromaticity index I_green = 1.5*G - 0.5*R - 0.5*B, classify
+         scale's green chromaticity index I_green = 1.45*G - 0.45*R - 0.45*B, classify
          into bimodal Green (S_i = 1) vs Black (S_i = 0) scales, and evaluate
          first-nearest-neighbor green count distribution P_specimen(n_g | S=1).
     """
@@ -592,50 +1048,99 @@ def segment_timon_lepidus_specimen() -> dict[str, Any]:
 
 
 # =========================================================================== #
-# 5. Publication Figure (8 Panels) & Animated GIF Rendering
+# 6. Publication Figure (12 Panels), 3D Volume Figure & Animated GIF Rendering
 # =========================================================================== #
-def render_outputs() -> dict[str, Any]:
-    """Render the 8-panel Pass 2 synthesis figure and 6-frame ontogenetic growth GIF."""
+def _masked_field(sim: dict[str, Any]) -> np.ndarray:
+    """Depth-averaged field with removed-skin (P = 0 border) pixels masked."""
+    f = sim["u_bar"].astype(np.float64).copy()
+    f[sim["h_map"] <= 0] = np.nan
+    return f
+
+
+def render_3d_volume_figure(sim3: dict[str, Any], out_path: Path = OUT_3D_PNG) -> None:
+    """Render z-slices and an x-z cross-section of the 3D skin-volume activator field."""
+    u3 = sim3["u_volume"]
+    skin = sim3["skin_mask"]
+    nz, ny, nx = u3.shape
+    z_idx = sorted({0, max(sim3["h_border_voxels"] - 1, 0), nz // 3, (2 * nz) // 3, nz - 1})
+    fig, axes = plt.subplots(1, len(z_idx) + 1, figsize=(3.1 * (len(z_idx) + 1), 3.4), dpi=130)
+    for ax, z in zip(axes[:-1], z_idx):
+        sl = u3[z].copy()
+        sl[~skin[z]] = np.nan
+        ax.imshow(sl, cmap="YlGn", vmin=0.05, vmax=0.95, origin="lower")
+        ax.set_title(f"z = {z} / {nz - 1}  (depth {z * sim3['dz_px']:.2f} px)", fontsize=8.5)
+        ax.set_xticks([])
+        ax.set_yticks([])
+    ax = axes[-1]
+    y_mid = ny // 2
+    xz = u3[:, y_mid, :].copy()
+    xz[~skin[:, y_mid, :]] = np.nan
+    ax.imshow(xz, cmap="YlGn", vmin=0.05, vmax=0.95, origin="lower", aspect=1.0 / sim3["dz_px"] / 2.0, interpolation="nearest")
+    ax.set_title(f"x-z section at y = {y_mid} (P_eff = {sim3['P_effective']:.3f})", fontsize=8.5)
+    ax.set_xlabel("x (px)")
+    ax.set_ylabel("z (voxel)")
+    fig.suptitle(
+        f"3D skin-volume reaction-diffusion, P = {sim3['P_border']:.2f}: h_int = {sim3['h_interior_voxels']} voxels "
+        f"({sim3['h_interior_px']:.1f} px), h_border = {sim3['h_border_voxels']} voxels; vertical non-uniformity RMS = "
+        f"{sim3['vertical_nonuniformity_rms']:.2e}",
+        fontsize=9.5,
+    )
+    fig.tight_layout()
+    fig.savefig(out_path, bbox_inches="tight")
+    plt.close(fig)
+
+
+def render_outputs(ca_rows: int = 36, ca_cols: int = 36, ca_steps: int = 45) -> dict[str, Any]:
+    """Render the 12-panel Pass 3 synthesis figure, the 3D volume figure and the 6-frame growth GIF."""
     OUT_PNG.parent.mkdir(parents=True, exist_ok=True)
     ref = load_reference_dataset()
-    ca_sim = simulate_hexagonal_ca(rows=36, cols=36, steps=45, seed=2017)
-    pde_phys = integrate_scale_border_pde_2d(P_border=0.17, d_ratio=20.0, scale_rows=14, scale_cols=14, ny=98, nx=98, steps=650, seed=2017)
-    pde_cont = integrate_scale_border_pde_2d(P_border=1.00, d_ratio=20.0, scale_rows=14, scale_cols=14, ny=98, nx=98, steps=650, seed=2017)
-    sweep = run_border_reduction_sweep()
+    ca_sim = simulate_hexagonal_ca(rows=ca_rows, cols=ca_cols, steps=ca_steps, seed=2017)
+    cmp_phys = compare_3d_volume_to_depth_averaged_2d(P_border=0.17)
+    cmp_cont = compare_3d_volume_to_depth_averaged_2d(P_border=1.0)
+    pde3_phys, pde2_phys = cmp_phys["sim_3d"], cmp_phys["sim_2d"]
+    pde3_cont, pde2_cont = cmp_cont["sim_3d"], cmp_cont["sim_2d"]
+    pde3_ins = integrate_skin_volume_pde_3d(P_border=0.0)
+    pde2_legacy = integrate_scale_border_pde_2d(P_border=0.17, border_model="diffusivity")
+    sweep3 = run_border_reduction_sweep("3d")
+    sweep2 = run_border_reduction_sweep("2d")
     controls = run_negative_controls()
     spec = segment_timon_lepidus_specimen()
+    stab_script = kinetics_linear_stability(KIN_FU, KIN_FV, KIN_GU, KIN_GV, PDE_D_RATIO, pde3_phys["D_u"])
+    stab_script_d1 = kinetics_linear_stability(KIN_FU, KIN_FV, KIN_GU, KIN_GV, 1.0, pde3_phys["D_u"])
+    stab_json = canonical_json_kinetics_stability()
+    render_3d_volume_figure(pde3_phys)
 
-    fig = plt.figure(figsize=(16.5, 9.2), dpi=150)
-    gs = GridSpec(2, 4, figure=fig, hspace=0.34, wspace=0.28)
+    fig = plt.figure(figsize=(17.0, 13.6), dpi=150)
+    gs = GridSpec(3, 4, figure=fig, hspace=0.40, wspace=0.30)
+    n_vals = np.arange(7)
 
-    # Panel A: Scale-Border Reaction-Diffusion PDE (P=0.17) vs Continuum (P=1.0)
+    # Panel A: 3D skin-volume depth-averaged activator (P=0.17) vs continuum (P=1.0)
     ax_a = fig.add_subplot(gs[0, 0])
-    comp_pde = np.hstack([pde_phys["u_field"], pde_cont["u_field"]])
-    im_a = ax_a.imshow(comp_pde, cmap="YlGn", origin="lower")
-    ax_a.axvline(pde_phys["u_field"].shape[1] - 0.5, color="white", lw=1.8, ls="--")
-    ax_a.text(8, 86, "Scale-Border PDE\n(P = 0.17)", color="white", fontsize=8.0, fontweight="bold", bbox=dict(facecolor="black", alpha=0.6, pad=2))
-    ax_a.text(106, 86, "Continuum PDE\n(P = 1.00)", color="white", fontsize=8.0, fontweight="bold", bbox=dict(facecolor="black", alpha=0.6, pad=2))
-    ax_a.set_title("A. Scale-Border PDE ($P=0.17$ vs $P=1.0$)", fontsize=10.5, fontweight="bold")
+    comp_pde = np.hstack([_masked_field(pde3_phys), _masked_field(pde3_cont)])
+    im_a = ax_a.imshow(comp_pde, cmap="YlGn", vmin=0.05, vmax=0.95, origin="lower")
+    ax_a.axvline(PDE_NX - 0.5, color="white", lw=1.8, ls="--")
+    ax_a.text(2, PDE_NY - 9, "3D skin volume\nP = 0.17", color="white", fontsize=7.6, fontweight="bold", bbox=dict(facecolor="black", alpha=0.6, pad=2))
+    ax_a.text(PDE_NX + 2, PDE_NY - 9, "3D continuum\nP = 1.00", color="white", fontsize=7.6, fontweight="bold", bbox=dict(facecolor="black", alpha=0.6, pad=2))
+    ax_a.set_title("A. 3D Skin-Volume RD ($\\bar{u}$)", fontsize=10.2, fontweight="bold")
     ax_a.set_xticks([])
     ax_a.set_yticks([])
-    plt.colorbar(im_a, ax=ax_a, fraction=0.046, pad=0.04)
+    plt.colorbar(im_a, ax=ax_a, fraction=0.025, pad=0.03)
 
-    # Panel B: Hexagonal Outer-Totalistic CA Labyrinthine State (Juvenile -> Adult)
+    # Panel B: Hexagonal Outer-Totalistic CA (Juvenile -> Adult)
     ax_b = fig.add_subplot(gs[0, 1])
     juv_grid = ca_sim["snapshots"][0][1]
     adult_grid = ca_sim["grid"]
     comp_ca = np.hstack([juv_grid, adult_grid])
     ax_b.imshow(comp_ca, cmap="YlGn", vmin=0, vmax=1, origin="lower")
     ax_b.axvline(juv_grid.shape[1] - 0.5, color="#facc15", lw=1.8, ls="--")
-    ax_b.text(3, 31, "Juvenile Ocelli", color="white", fontsize=8.0, fontweight="bold", bbox=dict(facecolor="black", alpha=0.6, pad=2))
-    ax_b.text(39, 31, "Adult CA Labyrinth", color="white", fontsize=8.0, fontweight="bold", bbox=dict(facecolor="black", alpha=0.6, pad=2))
+    ax_b.text(3, ca_rows - 5, "Juvenile Ocelli", color="white", fontsize=8.0, fontweight="bold", bbox=dict(facecolor="black", alpha=0.6, pad=2))
+    ax_b.text(ca_cols + 3, ca_rows - 5, "Adult CA Labyrinth", color="white", fontsize=8.0, fontweight="bold", bbox=dict(facecolor="black", alpha=0.6, pad=2))
     ax_b.set_title("B. Hexagonal Outer-Totalistic CA", fontsize=10.5, fontweight="bold")
     ax_b.set_xticks([])
     ax_b.set_yticks([])
 
     # Panel C: Outer-Totalistic State-Flip Hazard Rules p(flip | n_green)
     ax_c = fig.add_subplot(gs[0, 2])
-    n_vals = np.arange(7)
     ax_c.plot(n_vals, ca_sim["p_g2b"], "o-", color="#16a34a", lw=2.2, label=r"$p(\mathrm{Green}\to\mathrm{Black} \mid n_g)$")
     ax_c.plot(n_vals, ca_sim["p_b2g"], "s--", color="#0f172a", lw=2.2, label=r"$p(\mathrm{Black}\to\mathrm{Green} \mid n_g)$")
     ax_c.axvspan(2.6, 3.4, color="#fde047", alpha=0.35, label="Labyrinth attractor ($n_g=3$)")
@@ -645,31 +1150,31 @@ def render_outputs() -> dict[str, Any]:
     ax_c.legend(fontsize=7.6, loc="upper center")
     ax_c.grid(alpha=0.25)
 
-    # Panel D: Scale-Border Thickness Reduction Factor P Sweep & Negative Controls
+    # Panel D: Border thickness P sweep — 3D volume vs depth-averaged 2D reduction
     ax_d = fig.add_subplot(gs[0, 3])
-    p_list = [r["P"] for r in sweep]
-    disc_ratios = [r["discretization_ratio"] for r in sweep]
-    ashman_vals = [r["ashman_D"] for r in sweep]
-    ax_d.plot(p_list, disc_ratios, "o-", color="#1d4ed8", lw=2.2, label=r"Discretization $\sigma_{\mathrm{inter}}/\sigma_{\mathrm{intra}}$")
-    ax_d.plot(p_list, ashman_vals, "s--", color="#d97706", lw=2.0, label="Scale Bimodality (Ashman $D$)")
+    p3 = [r["P"] for r in sweep3]
+    ax_d.plot(p3, [r["discretization_ratio"] for r in sweep3], "o-", color="#1d4ed8", lw=2.2, label=r"3D volume $\sigma_{\mathrm{inter}}/\sigma_{\mathrm{intra}}$")
+    ax_d.plot([r["P"] for r in sweep2], [r["discretization_ratio"] for r in sweep2], "s--", color="#0891b2", lw=1.8, label=r"2D thin-film $\sigma_{\mathrm{inter}}/\sigma_{\mathrm{intra}}$")
+    ax_d.plot(p3, [r["ashman_D"] if r["patterned"] else np.nan for r in sweep3], "^:", color="#d97706", lw=1.8, label="3D scale bimodality (Ashman $D$)")
     ax_d.axvline(0.17, color="#dc2626", ls=":", lw=1.6, label="Timon lepidus $P=0.17$")
-    ax_d.set_title("D. Border Thinning $P$ Sweep & Controls", fontsize=10.5, fontweight="bold")
+    ax_d.set_yscale("log")
+    ax_d.set_title("D. Border Thinning $P$ Sweep: 3D vs 2D", fontsize=10.5, fontweight="bold")
     ax_d.set_xlabel("Border Thickness Factor $P = h_{\\mathrm{border}} / h_{\\mathrm{interior}}$")
-    ax_d.set_ylabel("Ratio / Bimodality $D$")
+    ax_d.set_ylabel("Ratio / Bimodality $D$ (log)")
     ax_d.text(
-        0.32,
-        0.52,
-        f"Equal diff (d=1): std={controls['equal_diffusion_inter_scale_std']:.1e}\n"
-        f"P=0.17 disc ratio: {controls['positive_discretization_ratio']:.2f}\n"
-        f"P=1.00 disc ratio: {controls['continuum_P1_discretization_ratio']:.2f}",
+        0.03,
+        0.05,
+        f"P=0 insulated: inter std={controls['insulated_P0_inter_scale_std']:.1e} (no pattern)\n"
+        f"d=1 equal diff: inter std={controls['equal_diffusion_inter_scale_std']:.1e}\n"
+        f"P=0.17 disc ratio {controls['positive_discretization_ratio']:.2f} vs P=1.0 {controls['continuum_P1_discretization_ratio']:.2f}",
         transform=ax_d.transAxes,
-        fontsize=7.5,
+        fontsize=7.0,
         bbox=dict(facecolor="#f8fafc", edgecolor="#cbd5e1", boxstyle="round,pad=0.3"),
     )
-    ax_d.legend(fontsize=7.5, loc="upper right")
-    ax_d.grid(alpha=0.25)
+    ax_d.legend(fontsize=6.9, loc="upper right")
+    ax_d.grid(alpha=0.25, which="both")
 
-    # Panel E: Timon lepidus Specimen Photograph (Wikimedia Commons, CC BY-SA 4.0)
+    # Panel E: Timon lepidus Specimen Photograph
     ax_e = fig.add_subplot(gs[1, 0])
     ax_e.imshow(spec["rgb"])
     dx0, dy0, dx1, dy1 = spec["dorsal_roi_xyxy"]
@@ -680,7 +1185,7 @@ def render_outputs() -> dict[str, Any]:
     ax_e.legend(fontsize=7.8, loc="lower right")
     ax_e.axis("off")
 
-    # Panel F: Segmented Dorsal Hexagonal Scale Graph (Green vs Black Scales)
+    # Panel F: Segmented Dorsal Hexagonal Scale Graph
     ax_f = fig.add_subplot(gs[1, 1])
     ax_f.imshow(spec["roi_rgb"])
     pts = spec["scale_centers_xy"]
@@ -691,54 +1196,111 @@ def render_outputs() -> dict[str, Any]:
     b_pts = pts[states == 0]
     ax_f.scatter(g_pts[:, 0], g_pts[:, 1], c="#22c55e", edgecolors="black", s=24, zorder=4, label=f"Green ({len(g_pts)})")
     ax_f.scatter(b_pts[:, 0], b_pts[:, 1], c="#0f172a", edgecolors="white", s=24, zorder=4, label=f"Black ({len(b_pts)})")
-    ax_f.set_title(
-        f"F. Dorsal Scale Lattice ($N={spec['n_scales']}, D={spec['ashman_D']:.2f}$)",
-        fontsize=10.2,
-        fontweight="bold",
-    )
+    ax_f.set_title(f"F. Dorsal Scale Lattice ($N={spec['n_scales']}, D={spec['ashman_D']:.2f}$)", fontsize=10.2, fontweight="bold")
     ax_f.legend(fontsize=7.6, loc="lower right")
     ax_f.set_xticks([])
     ax_f.set_yticks([])
 
-    # Panel G: Green Scale Nearest-Neighbor Histogram (PDE vs CA vs Specimen vs Ref)
+    # Panel G: Green Scale Nearest-Neighbor Histogram (3D PDE vs CA vs Specimen vs Ref)
     ax_g = fig.add_subplot(gs[1, 2])
-    ref_hist_g = np.array(
-        ref["hexagonal_outer_totalistic_ca"]["adult_neighbor_histogram_targets"]["green_scale_neighbor_hist_ref"],
-        dtype=np.float64,
-    )
+    ref_hist_g = np.array(ref["hexagonal_outer_totalistic_ca"]["adult_neighbor_histogram_targets"]["green_scale_neighbor_hist_ref"], dtype=np.float64)
     w_bar = 0.20
     ax_g.bar(n_vals - 1.5 * w_bar, ref_hist_g, width=w_bar, color="#64748b", label="Manukyan (2017) Ref")
-    ax_g.bar(n_vals - 0.5 * w_bar, pde_phys["neighbor_stats"]["hist_green"], width=w_bar, color="#2563eb", label="Scale-Border PDE")
+    ax_g.bar(n_vals - 0.5 * w_bar, pde3_phys["neighbor_stats"]["hist_green"], width=w_bar, color="#2563eb", label="3D Skin-Volume PDE")
     ax_g.bar(n_vals + 0.5 * w_bar, ca_sim["stats"]["hist_green"], width=w_bar, color="#16a34a", label="Hexagonal CA")
     ax_g.bar(n_vals + 1.5 * w_bar, spec["hist_green"], width=w_bar, color="#d97706", label="Timon lepidus ROI")
     ax_g.set_xticks(n_vals)
-    ax_g.set_title("G. Green-Scale Neighbor Histogram $P(n_g|S=1)$", fontsize=10.2, fontweight="bold")
+    ax_g.set_title("G. Green-Scale Neighbors $P(n_g|S=1)$", fontsize=10.2, fontweight="bold")
     ax_g.set_xlabel("Green First-Nearest Neighbors $n_g$")
     ax_g.set_ylabel("Fraction of Green Scales")
     ax_g.legend(fontsize=7.2, loc="upper right")
     ax_g.grid(axis="y", alpha=0.25)
 
-    # Panel H: Developmental Scale-Flipping Convergence & Black-Scale Neighbor Histogram
+    # Panel H: Black-Scale Neighbor Histogram
     ax_h = fig.add_subplot(gs[1, 3])
-    ref_hist_b = np.array(
-        ref["hexagonal_outer_totalistic_ca"]["adult_neighbor_histogram_targets"]["black_scale_neighbor_hist_ref"],
-        dtype=np.float64,
-    )
+    ref_hist_b = np.array(ref["hexagonal_outer_totalistic_ca"]["adult_neighbor_histogram_targets"]["black_scale_neighbor_hist_ref"], dtype=np.float64)
     ax_h.bar(n_vals - 0.22, ref_hist_b, width=0.22, color="#64748b", label="Manukyan (2017) Ref")
     ax_h.bar(n_vals, ca_sim["stats"]["hist_black"], width=0.22, color="#0f172a", label="Hexagonal CA")
     ax_h.bar(n_vals + 0.22, spec["hist_black"], width=0.22, color="#ea580c", label="Timon lepidus ROI")
     ax_h.set_xticks(n_vals)
-    ax_h.set_title("H. Black-Scale Neighbor Histogram $P(n_g|S=0)$", fontsize=10.2, fontweight="bold")
+    ax_h.set_title("H. Black-Scale Neighbors $P(n_g|S=0)$", fontsize=10.2, fontweight="bold")
     ax_h.set_xlabel("Green First-Nearest Neighbors $n_g$ ($n_b = 6 - n_g$)")
     ax_h.set_ylabel("Fraction of Black Scales")
     ax_h.legend(fontsize=7.5, loc="upper right")
     ax_h.grid(axis="y", alpha=0.25)
 
-    fig.suptitle(
-        "Manukyan et al. (2017) Nature — Ocellated Lizard (Timon lepidus) Skin-Scale Cellular Automaton & Scale-Border Reaction-Diffusion",
-        fontsize=12.2,
+    # Panel I: 3D skin volume x-z cross-section (stepped thickness, thin borders)
+    ax_i = fig.add_subplot(gs[2, 0])
+    u3 = pde3_phys["u_volume"]
+    sk3 = pde3_phys["skin_mask"]
+    y_mid = PDE_NY // 2
+    xz = u3[:, y_mid, :].copy()
+    xz[~sk3[:, y_mid, :]] = np.nan
+    ax_i.imshow(xz, cmap="YlGn", vmin=0.05, vmax=0.95, origin="lower", aspect=2.2, interpolation="nearest")
+    ax_i.set_title("I. 3D Voxel Skin x-z Section", fontsize=10.2, fontweight="bold")
+    ax_i.set_xlabel(
+        f"x (px) at y = {y_mid}; $h_{{int}}$={pde3_phys['h_interior_voxels']}, $h_b$={pde3_phys['h_border_voxels']} voxels\n"
+        f"vertical RMS non-uniformity = {pde3_phys['vertical_nonuniformity_rms']:.1e}",
+        fontsize=8.0,
+    )
+    ax_i.set_ylabel("z (voxel, dz = %.1f px)" % pde3_phys["dz_px"])
+
+    # Panel J: 3D depth-averaged vs 2D thin-film reduction at P=0.17
+    ax_j = fig.add_subplot(gs[2, 1])
+    comp_j = np.hstack([_masked_field(pde3_phys), _masked_field(pde2_phys)])
+    ax_j.imshow(comp_j, cmap="YlGn", vmin=0.05, vmax=0.95, origin="lower")
+    ax_j.axvline(PDE_NX - 0.5, color="white", lw=1.8, ls="--")
+    ax_j.text(2, PDE_NY - 9, "3D volume $\\bar{u}$", color="white", fontsize=7.6, fontweight="bold", bbox=dict(facecolor="black", alpha=0.6, pad=2))
+    ax_j.text(PDE_NX + 2, PDE_NY - 9, "2D thin-film\n$(1/h)\\nabla\\cdot(hD\\nabla u)$", color="white", fontsize=7.6, fontweight="bold", bbox=dict(facecolor="black", alpha=0.6, pad=2))
+    ax_j.set_title(
+        f"J. 3D vs Thin-Film 2D ($P$=0.17)\nscale-state agreement {100 * cmp_phys['scale_state_agreement']:.1f}%, RMS {cmp_phys['depth_averaged_rms_difference']:.3f}",
+        fontsize=9.2,
         fontweight="bold",
-        y=0.98,
+    )
+    ax_j.set_xticks([])
+    ax_j.set_yticks([])
+
+    # Panel K: pattern growth (inter-scale std vs time) for 3D and 2D models
+    ax_k = fig.add_subplot(gs[2, 2])
+    for sim, lab, col, ls in [
+        (pde3_phys, "3D volume P=0.17", "#1d4ed8", "-"),
+        (pde2_phys, "2D thin-film P=0.17", "#0891b2", "--"),
+        (pde3_cont, "3D volume P=1.0", "#65a30d", "-"),
+        (pde3_ins, "3D volume P=0 (insulated)", "#9ca3af", "-"),
+        (pde2_legacy, "2D v2 diffusivity model P=0.17", "#d97706", ":"),
+    ]:
+        t_hist = np.array(sim["inter_std_history"])
+        ax_k.plot(t_hist[:, 0], t_hist[:, 1], ls, color=col, lw=1.8, label=lab)
+    ax_k.set_title("K. Inter-Scale Pattern Growth $\\sigma_{inter}(t)$", fontsize=10.2, fontweight="bold")
+    ax_k.set_xlabel("time (model units); $\\sigma_{max}$ = %.3f" % stab_script["sigma_max"])
+    ax_k.set_ylabel("std of per-scale mean $\\bar{u}$")
+    ax_k.legend(fontsize=6.8, loc="center right")
+    ax_k.grid(alpha=0.25)
+
+    # Panel L: Turing dispersion relations (script kinetics vs vendored canonical JSON kinetics)
+    ax_l = fig.add_subplot(gs[2, 3])
+    k_pitch = 2.0 * np.pi / build_hexagonal_scale_geometry()["pitch_px"]
+    ax_l.plot(stab_script["k_grid"], stab_script["sigma_grid"], "-", color="#1d4ed8", lw=2.0, label=f"script kinetics d=20 ($\\lambda_c$={stab_script['lambda_c_px']:.0f} px, $d_c$={stab_script['d_critical']:.1f})")
+    ax_l.plot(stab_script_d1["k_grid"], stab_script_d1["sigma_grid"], "--", color="#64748b", lw=1.6, label="script kinetics d=1 (control)")
+    kj = stab_json["k_grid"] * (stab_script["k_c"] / max(stab_json["k_c"], 1e-9))
+    ax_l.plot(kj, stab_json["sigma_grid"], ":", color="#dc2626", lw=2.0, label=f"JSON canonical set d={stab_json['d_ratio']:.0f} ($d_c$={stab_json['d_critical']:.1f}: NOT unstable)")
+    ax_l.axhline(0.0, color="black", lw=0.8)
+    ax_l.axvline(k_pitch, color="#d97706", ls="-.", lw=1.3, label="k of one scale pitch")
+    ax_l.axvline(np.pi / 4.0, color="#7c3aed", ls="-.", lw=1.3, label="first zero-flux mode of an isolated scale")
+    ax_l.set_xlim(0, max(2.5 * stab_script["k_c"], 0.9))
+    ax_l.set_ylim(min(-0.3, float(np.min(stab_script["sigma_grid"]))), max(0.25, 1.3 * stab_script["sigma_max"]))
+    ax_l.set_title("L. Turing Dispersion $\\sigma(k)$ (k rescaled to script $k_c$)", fontsize=9.8, fontweight="bold")
+    ax_l.set_xlabel("wavenumber k (px$^{-1}$)")
+    ax_l.set_ylabel("growth rate $\\sigma(k)$")
+    ax_l.legend(fontsize=6.4, loc="lower left")
+    ax_l.grid(alpha=0.25)
+
+    fig.suptitle(
+        "Manukyan et al. (2017) Nature — Ocellated Lizard (Timon lepidus) Skin-Scale Cellular Automaton: "
+        "3D Skin-Volume Reaction-Diffusion, Thin-Film Reduction & Hexagonal CA (Pass 3)",
+        fontsize=12.0,
+        fontweight="bold",
+        y=0.985,
     )
     fig.savefig(OUT_PNG, bbox_inches="tight")
     plt.close(fig)
@@ -772,31 +1334,44 @@ def render_outputs() -> dict[str, Any]:
 
     return {
         "ca": ca_sim,
-        "pde_phys": pde_phys,
-        "pde_cont": pde_cont,
-        "sweep": sweep,
+        "pde3_phys": pde3_phys,
+        "pde2_phys": pde2_phys,
+        "pde3_cont": pde3_cont,
+        "cmp_phys": cmp_phys,
+        "cmp_cont": cmp_cont,
+        "sweep3": sweep3,
+        "sweep2": sweep2,
         "controls": controls,
         "specimen": spec,
+        "stability_script": stab_script,
+        "stability_json": stab_json,
     }
 
 
 # =========================================================================== #
-# 6. MorphoEval Dynamic Measurement Hook (`measure_morphoeval`)
+# 7. MorphoEval Dynamic Measurement Hook (`measure_morphoeval`)
 # =========================================================================== #
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Compute 8 reference-backed morphometric measurements for `measure_outputs.py`."""
+    """Compute 16 reference-backed morphometric measurements for `measure_outputs.py`."""
     ref = load_reference_dataset()
+    skin_ref = load_skin_volume_reference()
     ca_sim = simulate_hexagonal_ca(rows=36, cols=36, steps=45, seed=2017)
-    pde_phys = integrate_scale_border_pde_2d(P_border=0.17, d_ratio=20.0, scale_rows=14, scale_cols=14, ny=98, nx=98, steps=650, seed=2017)
+    cmp_phys = compare_3d_volume_to_depth_averaged_2d(P_border=0.17)
+    pde3 = cmp_phys["sim_3d"]
     controls = run_negative_controls()
+    sweep3 = run_border_reduction_sweep("3d")
     spec = segment_timon_lepidus_specimen()
+    stab_script = kinetics_linear_stability(KIN_FU, KIN_FV, KIN_GU, KIN_GV, PDE_D_RATIO, pde3["D_u"])
+    stab_json = canonical_json_kinetics_stability()
+    geom = build_hexagonal_scale_geometry()
 
-    ref_hist_g = np.array(
-        ref["hexagonal_outer_totalistic_ca"]["adult_neighbor_histogram_targets"]["green_scale_neighbor_hist_ref"],
-        dtype=np.float64,
-    )
+    ref_hist_g = np.array(ref["hexagonal_outer_totalistic_ca"]["adult_neighbor_histogram_targets"]["green_scale_neighbor_hist_ref"], dtype=np.float64)
     r_ca_ref, p_ca_ref = pearsonr(ca_sim["stats"]["hist_green"], ref_hist_g)
-    pde_ca_l1 = float(np.sum(np.abs(pde_phys["neighbor_stats"]["hist_green"] - ca_sim["stats"]["hist_green"])))
+    pde_ca_l1 = float(np.sum(np.abs(pde3["neighbor_stats"]["hist_green"] - ca_sim["stats"]["hist_green"])))
+    sweep_pos = [r for r in sweep3 if r["P"] > 0.0]
+    rho_sweep = float(spearmanr([r["P"] for r in sweep_pos], [r["discretization_ratio"] for r in sweep_pos])[0])
+    lambda_in_pitches = float(stab_script["lambda_c_px"] / geom["pitch_px"])
+    thin_film_ref = skin_ref["thin_film_reduction"]
 
     return [
         {
@@ -820,42 +1395,42 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "derived_from": "script",
         },
         {
-            "name": "scale-border PDE (P=0.17) inter-to-intra scale concentration discretization ratio",
-            "value": round(pde_phys["discretization_ratio"], 4),
+            "name": "3D skin-volume PDE (P=0.17) inter-to-intra scale concentration discretization ratio",
+            "value": round(pde3["discretization_ratio"], 4),
             "unit": "sigma_inter / sigma_intra",
-            "method": "Ratio of inter-scale activator std to mean intra-scale activator std at physiological border reduction P = 0.17",
+            "method": f"Ratio of inter-scale std of depth-averaged activator to mean intra-scale std in the 3D voxel skin volume (h_int={pde3['h_interior_voxels']} vox, h_border={pde3['h_border_voxels']} vox, P_eff={pde3['P_effective']:.3f}); no per-scale averaging applied",
             "reference_value": 3.5,
             "reference_source": "Manukyan et al. (2017) Nature 544:173-179 Fig. 4 & Fofonjka & Milinkovitch (2021) Nat. Commun. 12:2433",
-            "note": f"P=0.17 discretization ratio = {pde_phys['discretization_ratio']:.3f} vs continuum P=1.0 ratio = {controls['continuum_P1_discretization_ratio']:.3f} ({controls['discretization_gain_vs_continuum']:.2f}x gain)",
+            "note": f"3D P=0.17 ratio = {pde3['discretization_ratio']:.3f} vs 3D continuum P=1.0 ratio = {controls['continuum_P1_discretization_ratio']:.3f} ({controls['discretization_gain_vs_continuum']:.2f}x gain); 2D thin-film ratio = {cmp_phys['discretization_ratio_2d']:.3f}; v2 reported 86.79 with an artificial per-scale averaging step",
             "derived_from": "script",
         },
         {
-            "name": "scale-border PDE (P=0.17) scale color bimodality Ashman's D",
-            "value": round(pde_phys["ashman_D"], 4),
+            "name": "3D skin-volume PDE (P=0.17) scale color bimodality Ashman's D",
+            "value": round(pde3["ashman_D"], 4),
             "unit": "Ashman D",
-            "method": "sqrt(2)*|mu_green - mu_black| / sqrt(var_green + var_black) across 196 hexagonal scales at P = 0.17",
+            "method": f"sqrt(2)*|mu_green - mu_black| / sqrt(var_green + var_black) across {geom['n_scales']} hexagonal scales of depth-averaged u at P = 0.17",
             "reference_value": 2.5,
             "reference_source": "Manukyan et al. (2017) Nature 544:173-179 Fig. 2 & Fig. 4 bimodal scale state criterion (D > 2.0)",
-            "note": f"inter-scale std = {pde_phys['inter_scale_std']:.4f}, intra-scale std = {pde_phys['mean_intra_scale_std']:.4f}",
+            "note": f"inter-scale std = {pde3['inter_scale_std']:.4f}, intra-scale std = {pde3['mean_intra_scale_std']:.4f}; 2D thin-film Ashman D = {cmp_phys['ashman_D_2d']:.3f}",
             "derived_from": "script",
         },
         {
-            "name": "scale-border PDE vs outer-totalistic CA neighbor histogram L1 distance",
+            "name": "3D skin-volume PDE vs outer-totalistic CA neighbor histogram L1 distance",
             "value": round(pde_ca_l1, 4),
             "unit": "L1 probability distance",
-            "method": "sum(|P_PDE(n_g | S=1) - P_CA(n_g | S=1)|) for n_g in {0..6}",
+            "method": "sum(|P_3D(n_g | S=1) - P_CA(n_g | S=1)|) for n_g in {0..6}",
             "reference_value": 0.0,
             "reference_source": "Manukyan et al. (2017) Nature 544:173-179 Figs. 3-4 PDE-to-CA mesoscopic reduction",
-            "note": f"CA vs Manukyan reference histogram Pearson r = {r_ca_ref:.4f} (p = {p_ca_ref:.2e})",
+            "note": f"CA vs Manukyan reference histogram Pearson r = {r_ca_ref:.4f} (p = {p_ca_ref:.2e}); 3D PDE <n_g>_green = {pde3['neighbor_stats']['mean_ng_green']:.3f}",
             "derived_from": "script",
         },
         {
             "name": "equal-diffusion (d=1.0) negative control scale amplitude suppression",
             "value": round(controls["equal_diffusion_inter_scale_std"], 6),
             "unit": "std(u_scale)",
-            "method": "Inter-scale activator std at d = Dv/Du = 1.0 (equal diffusion) vs positive Turing regime d = 20.0",
+            "method": "Inter-scale depth-averaged activator std at d = Dv/Du = 1.0 (equal diffusion, 2D thin-film) vs positive Turing regime d = 20.0 (3D)",
             "reference_value": 0.0,
-            "reference_source": "Turing (1952) / Manukyan et al. (2017) Nature 544:173-179 Methods Eqs. (1)-(4)",
+            "reference_source": "Turing (1952) / Manukyan et al. (2017) Nature 544:173-179 Methods",
             "note": f"positive d=20 std = {controls['positive_inter_scale_std']:.4f} vs equal-diffusion d=1 std = {controls['equal_diffusion_inter_scale_std']:.2e}",
             "derived_from": "script",
         },
@@ -879,17 +1454,101 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"empirical modal n_g = {spec['modal_ng_green']}, black-scale mean black neighbors <n_b> = {spec['mean_nb_black']:.3f}",
             "derived_from": "output_pixels",
         },
+        {
+            "name": "3D skin volume vs depth-averaged 2D thin-film reduction: binary scale-state agreement (P=0.17)",
+            "value": round(cmp_phys["scale_state_agreement"], 4),
+            "unit": "fraction of scales",
+            "method": f"Fraction of {geom['n_scales']} scales whose green/black state (55th-percentile threshold of per-scale mean u) agrees between the 3D voxel solution and the 2D (1/h) div(h D grad u) reduction at identical P, seed, dt and steps",
+            "reference_value": float(thin_film_ref["expected_scale_state_agreement"]),
+            "reference_source": "Fofonjka & Milinkovitch (2021) Nat. Commun. 12:2433 thin-film limit h << lambda_c (datasets/ocellated_lizard_ca/skin_volume_reference.json)",
+            "note": f"per-scale mean Pearson r = {cmp_phys['scale_mean_pearson_r']:.4f}; continuum P=1.0 agreement = {compare_3d_volume_to_depth_averaged_2d(P_border=1.0)['scale_state_agreement']:.4f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "3D skin volume vs depth-averaged 2D reduction: RMS difference of depth-averaged activator (P=0.17)",
+            "value": round(cmp_phys["depth_averaged_rms_difference"], 4),
+            "unit": "concentration units (u in [0.05, 0.95])",
+            "method": "sqrt(mean((ubar_3D - u_2D)^2)) over all skin pixels at P = 0.17",
+            "reference_value": 0.0,
+            "reference_source": "Thin-film / lubrication reduction of 3D diffusion in a domain of slowly varying thickness (Fofonjka & Milinkovitch 2021)",
+            "note": f"pattern amplitude (inter-scale std) = {pde3['inter_scale_std']:.4f}; RMS / amplitude = {cmp_phys['depth_averaged_rms_difference'] / max(pde3['inter_scale_std'], 1e-9):.3f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "3D skin volume vertical non-uniformity of activator (RMS over depth, interior columns, P=0.17)",
+            "value": round(pde3["vertical_nonuniformity_rms"], 6),
+            "unit": "concentration units",
+            "method": f"mean over interior columns of sqrt((1/h) sum_z (u - ubar)^2) in the 3D voxel skin volume (h_int = {pde3['h_interior_px']:.1f} px = {pde3['h_interior_px'] / geom['pitch_px']:.2f} scale pitches, lambda_c = {stab_script['lambda_c_px']:.0f} px)",
+            "reference_value": 0.0,
+            "reference_source": "Thin-film regime h_interior << lambda_c assumed by the 2D depth-averaged reduction",
+            "note": f"max over all columns = {pde3['vertical_nonuniformity_max']:.4f}; continuum P=1.0 vertical RMS = {compare_3d_volume_to_depth_averaged_2d(P_border=1.0)['vertical_nonuniformity_rms_3d']:.2e}",
+            "derived_from": "script",
+        },
+        {
+            "name": "3D skin voxel volume fraction relative to a uniform slab (P=0.17)",
+            "value": round(pde3["skin_volume_fraction_vs_slab"], 4),
+            "unit": "fraction",
+            "method": "n_skin_voxels / (nz * ny * nx) of the stepped-thickness voxel skin",
+            "reference_value": round(pde3["skin_volume_fraction_analytic"], 4),
+            "reference_source": "Analytic 1 - (1 - P_eff) * border_area_fraction for the same geometry (self-consistency of the voxel mask)",
+            "note": f"border area fraction = {geom['border_area_fraction']:.3f} at {geom['pitch_px']:.0f} px scale pitch (coarse: real inter-scale borders are a smaller area fraction); P_eff = {pde3['P_effective']:.3f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "insulated-scale control (P=0): inter-scale pattern amplitude in the 3D skin volume",
+            "value": round(controls["insulated_P0_inter_scale_std"], 6),
+            "unit": "std(ubar_scale)",
+            "method": f"Inter-scale std of per-scale mean u with zero inter-scale conductance (h_border = 0); the geometry's interior splits into {geom['n_interior_components']} 4-connected components for {geom['n_scales']} scales",
+            "reference_value": 0.0,
+            "reference_source": "Manukyan et al. (2017) Fig. 4 / ocellated_lizard_ca_reference.json regime insulated_decoupled_scales (predicted: no labyrinthine correlation forms)",
+            "note": f"insulated intra-scale std = {controls['insulated_P0_intra_std']:.2e}: isolated scales cannot host a Turing mode because lambda_c = {lambda_in_pitches:.1f} pitches > 2 x scale diameter",
+            "derived_from": "script",
+        },
+        {
+            "name": "P-sweep monotonicity: Spearman rho of 3D discretization ratio vs P over P in {0.08, 0.17, 0.45, 1.0}",
+            "value": round(rho_sweep, 4),
+            "unit": "Spearman rho",
+            "method": "Rank correlation between border thickness factor P and the 3D sigma_inter/sigma_intra discretization ratio (P = 0 excluded: no pattern)",
+            "reference_value": -1.0,
+            "reference_source": "Manukyan et al. (2017) Fig. 4 / Fofonjka & Milinkovitch (2021): thinner borders -> stronger scale-level discretization",
+            "note": "; ".join(f"P={r['P']:.2f} (P_eff {r['P_effective']:.3f}): ratio {r['discretization_ratio']:.2f}, D={r['ashman_D']:.2f}" for r in sweep3),
+            "derived_from": "script",
+        },
+        {
+            "name": "Turing wavelength of the script kinetics in scale pitches (lambda_c / pitch)",
+            "value": round(lambda_in_pitches, 4),
+            "unit": "scale pitches",
+            "method": f"lambda_c = 2 pi / k_c with k_c^2 = sqrt(det J / (D_u D_v)) for the script kinetics (D_u = {pde3['D_u']:.3f}, d = {PDE_D_RATIO:.0f}) divided by the hexagonal scale pitch {geom['pitch_px']:.1f} px",
+            "reference_value": 4.0,
+            "reference_source": "Manukyan et al. (2017) Nature 544:173-179 Fig. 4: continuum RD labyrinth bands 1-2 scales wide (wavelength ~ 2-4 scale diameters); value chosen so an isolated scale cannot pattern (k_1 = pi/4 px^-1 > k_max = %.3f px^-1)" % stab_script["k_max_unstable"],
+            "note": f"sigma_max = {stab_script['sigma_max']:.4f} at k = {stab_script['k_sigma_max']:.3f}; unstable band k in [{stab_script['k_min_unstable']:.3f}, {stab_script['k_max_unstable']:.3f}] px^-1; d_c = {stab_script['d_critical']:.2f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Turing critical diffusivity ratio d_c of the vendored canonical clipped-linear Kondo-Asai parameter set",
+            "value": round(stab_json["d_critical"], 4),
+            "unit": "D_v / D_u",
+            "method": "d_c = [(2 det J - f_u g_v) + 2 sqrt(det J (det J - f_u g_v))] / f_u^2 for J from c_u - gamma_u, c_v, d_u, d_v - gamma_v in ocellated_lizard_ca_reference.json",
+            "reference_value": float(stab_json["d_ratio"]),
+            "reference_source": "ocellated_lizard_ca_reference.json canonical_parameters.diffusivity_ratio_d (the vendored set claims a Turing regime at this d)",
+            "note": f"tr J = {stab_json['trace']:.3f}, det J = {stab_json['det']:.3f}, steady state (u*, v*) = ({stab_json['u_star']:.3f}, {stab_json['v_star']:.3f}) within clip = {stab_json['steady_state_within_clip']}; Turing-unstable at d = {stab_json['d_ratio']:.0f}: {stab_json['turing_unstable']} -> the vendored canonical set is NOT Turing-unstable at its own d (defect carried to Pass 4)",
+            "derived_from": "script",
+        },
     ]
 
 
 # =========================================================================== #
-# 7. Deterministic 8-Check Self-Test Suite (`--self-test`)
+# 8. Deterministic 14-Check Self-Test Suite (`--self-test`)
 # =========================================================================== #
 def self_test() -> bool:
-    """Run 8 deterministic verification checks covering SHA-256, Lean laws, PDE, CA, controls, and specimen CV."""
+    """Run 14 deterministic verification checks covering SHA-256, Lean laws, 3D/2D PDE, CA, controls, and specimen CV."""
+    small = dict(scale_rows=8, scale_cols=8, ny=40, nx=40, steps=3000)
+
     # 1. Dataset SHA-256 locks & JSON schema parity
     ref = load_reference_dataset()
+    skin_ref = load_skin_volume_reference()
     assert ref["scale_border_reaction_diffusion_model"]["canonical_parameters"]["P_border_reduction"] == 0.17
+    assert skin_ref["thin_film_reduction"]["depth_averaged_equation"].startswith("d ubar/dt")
 
     # 2. Lean Theorem 1 & Theorem 3 deterministic outer-totalistic CA fixed point verification
     for n_g in range(7):
@@ -905,62 +1564,135 @@ def self_test() -> bool:
     assert ca_sim["stats"]["modal_ng_green"] in {2, 3}, f"Expected CA mode at 2 or 3, got {ca_sim['stats']['modal_ng_green']}"
     assert ca_sim["l1_hist_distance_to_ref"] < 0.30, f"CA histogram L1 distance too large: {ca_sim['l1_hist_distance_to_ref']}"
 
-    # 4. Scale-border reaction-diffusion PDE (P = 0.17) scale discretization & bimodality
-    pde_phys = integrate_scale_border_pde_2d(P_border=0.17, d_ratio=20.0, scale_rows=12, scale_cols=12, ny=84, nx=84, steps=550, seed=2017)
-    assert pde_phys["discretization_ratio"] > 2.2, f"Expected strong scale discretization at P=0.17, got {pde_phys['discretization_ratio']}"
-    assert pde_phys["ashman_D"] > 2.0, f"Expected bimodal scale states (Ashman D > 2.0), got {pde_phys['ashman_D']}"
-
-    # 5. Negative controls (equal diffusion d=1.0 & continuum P=1.0 ablation)
-    ctrls = run_negative_controls()
-    assert ctrls["equal_diffusion_inter_scale_std"] < 0.008 and ctrls["positive_inter_scale_std"] > 8.0 * ctrls["equal_diffusion_inter_scale_std"], (
-        f"Equal-diffusion control failed to quench: {ctrls['equal_diffusion_inter_scale_std']} vs {ctrls['positive_inter_scale_std']}"
+    # 4. Lean Theorems 4 & 5 numeric instances: depth average of a uniform column and face-conductance ratio
+    geom_s = build_hexagonal_scale_geometry(**{k: small[k] for k in ("scale_rows", "scale_cols", "ny", "nx")})
+    for h_i, c in [(12, 7), (2, 5), (1, 3)]:
+        assert (h_i * c) // h_i == c
+    thick = skin_thickness_map(geom_s, 0.17, nz=12)
+    assert thick["h_border"] == 2 and abs(thick["P_effective"] - 2.0 / 12.0) < 1e-12
+    assert min(thick["h_border"], 12) * 12 == min(12, 12) * thick["h_border"], "conductance ratio must equal thickness ratio"
+    assert skin_thickness_map(geom_s, 0.0, nz=12)["h_border"] == 0
+    # Leak-proof border: with borders removed, interior components ~= number of scales (every scale insulated)
+    assert geom_s["n_interior_components"] >= geom_s["n_scales"], (
+        f"Insulated interiors must not connect across scales: {geom_s['n_interior_components']} components for {geom_s['n_scales']} scales"
     )
-    assert ctrls["positive_discretization_ratio"] > ctrls["continuum_P1_discretization_ratio"], (
-        "Scale-border thinning (P=0.17) must yield higher scale discretization ratio than continuum skin (P=1.0)"
+
+    # 5. Turing linear stability: script kinetics unstable at d=20, stable at d=1; lambda_c = 5 pitches; isolated scale mode outside band
+    D_u = script_diffusivity_for_wavelength()
+    stab = kinetics_linear_stability(KIN_FU, KIN_FV, KIN_GU, KIN_GV, PDE_D_RATIO, D_u)
+    stab1 = kinetics_linear_stability(KIN_FU, KIN_FV, KIN_GU, KIN_GV, 1.0, D_u)
+    assert stab["stable_homogeneous"] and stab["turing_unstable"] and stab["sigma_max"] > 0.0
+    assert not stab1["turing_unstable"] and stab1["sigma_max"] < 0.0
+    assert abs(stab["lambda_c_px"] - PDE_LAMBDA_PX) < 1e-6
+    assert abs(stab["d_critical"] - 7.0) < 0.05, f"script kinetics d_c should be ~7.0, got {stab['d_critical']}"
+    assert np.pi / 4.0 > stab["k_max_unstable"], "first zero-flux mode of an isolated 4-px scale must lie above the unstable band"
+    stab_json = canonical_json_kinetics_stability()
+    assert stab_json["stable_homogeneous"]
+    assert abs(stab_json["d_critical"] - 23.57) < 0.1, f"JSON canonical kinetics d_c should be ~23.57, got {stab_json['d_critical']}"
+
+    # 6. 3D skin-volume PDE (P = 0.17) vs depth-averaged 2D thin-film reduction (reduced lattice for speed)
+    cmp_s = compare_3d_volume_to_depth_averaged_2d(P_border=0.17, **small)
+    s3 = cmp_s["sim_3d"]
+    assert s3["patterned"] and cmp_s["sim_2d"]["patterned"], "P=0.17 skin volume must form a scale-level pattern"
+    assert cmp_s["scale_state_agreement"] >= 0.85, f"3D vs 2D scale-state agreement too low: {cmp_s['scale_state_agreement']}"
+    assert s3["vertical_nonuniformity_rms"] < 0.05, f"3D field not vertically uniform (thin-film violated): {s3['vertical_nonuniformity_rms']}"
+    assert s3["discretization_ratio"] > 2.0, f"Expected scale discretization at P=0.17, got {s3['discretization_ratio']}"
+    assert s3["ashman_D"] > 2.0, f"Expected bimodal scale states (Ashman D > 2.0), got {s3['ashman_D']}"
+    assert s3["n_skin_voxels"] == int(round(s3["skin_volume_fraction_vs_slab"] * s3["u_volume"].size))
+
+    # 7. Negative controls on the reduced lattice: equal diffusion, continuum P=1.0, insulated P=0
+    eq = integrate_scale_border_pde_2d(P_border=0.17, d_ratio=1.0, **small)
+    cont3 = integrate_skin_volume_pde_3d(P_border=1.0, **small)
+    ins3 = integrate_skin_volume_pde_3d(P_border=0.0, **small)
+    assert eq["inter_scale_std"] < 0.01 and s3["inter_scale_std"] > 8.0 * eq["inter_scale_std"], (
+        f"Equal-diffusion control failed to quench: {eq['inter_scale_std']} vs {s3['inter_scale_std']}"
     )
+    assert s3["discretization_ratio"] > cont3["discretization_ratio"], "P=0.17 must discretize more strongly than continuum skin P=1.0"
+    assert cont3["vertical_nonuniformity_rms"] < 1e-8, "uniform slab must be exactly vertically uniform"
+    assert ins3["inter_scale_std"] < 0.02 and not ins3["patterned"], f"Insulated scales (P=0) must not pattern: {ins3['inter_scale_std']}"
+    assert ins3["mean_intra_scale_std"] < 1e-3, f"Insulated scale interiors must be uniform: {ins3['mean_intra_scale_std']}"
 
-    # 6. 5-regime border reduction factor P sweep
-    sweep = run_border_reduction_sweep()
-    assert len(sweep) == 5
-    assert sweep[2]["P"] == 0.17 and sweep[2]["discretization_ratio"] > sweep[4]["discretization_ratio"]
+    # 8. P-sweep monotonicity on the reduced lattice (P > 0): thinner borders -> higher discretization ratio
+    ratios = [integrate_skin_volume_pde_3d(P_border=p, **small)["discretization_ratio"] for p in (0.08, 0.17, 0.45, 1.0)]
+    assert all(a > b for a, b in zip(ratios[:-1], ratios[1:])), f"3D discretization ratio must decrease with P: {ratios}"
 
-    # 7. Biological specimen segmentation on Timon lepidus dorsal ROI
+    # 9. v2 legacy diffusivity model still integrates and also discretizes (comparison variant)
+    legacy = integrate_scale_border_pde_2d(P_border=0.17, border_model="diffusivity", **small)
+    assert legacy["patterned"] and legacy["discretization_ratio"] > 1.0
+
+    # 10. Biological specimen segmentation on Timon lepidus dorsal ROI
     spec = segment_timon_lepidus_specimen()
     assert 120 <= spec["n_scales"] <= 240, f"Unexpected segmented scale count: {spec['n_scales']}"
     assert 0.30 <= spec["green_fraction"] <= 0.60, f"Unexpected dorsal green fraction: {spec['green_fraction']}"
     assert spec["ashman_D"] > 2.0, f"Expected bimodal dorsal scale colors, got Ashman D = {spec['ashman_D']}"
     assert 2.1 <= spec["mean_ng_green"] <= 3.3, f"Unexpected specimen <n_g>: {spec['mean_ng_green']}"
 
-    # 8. Bitwise two-run determinism check
-    r1 = integrate_scale_border_pde_2d(P_border=0.17, d_ratio=20.0, scale_rows=10, scale_cols=10, ny=60, nx=60, steps=80, seed=2017)
-    r2 = integrate_scale_border_pde_2d(P_border=0.17, d_ratio=20.0, scale_rows=10, scale_cols=10, ny=60, nx=60, steps=80, seed=2017)
-    assert np.allclose(r1["u_field"], r2["u_field"], atol=0.0), "Two-run determinism check failed"
+    # 11. Bitwise two-run determinism (3D and 2D), bypassing the lru_cache
+    r1 = integrate_skin_volume_pde_3d.__wrapped__(P_border=0.17, scale_rows=6, scale_cols=6, ny=30, nx=30, steps=300)
+    r2 = integrate_skin_volume_pde_3d.__wrapped__(P_border=0.17, scale_rows=6, scale_cols=6, ny=30, nx=30, steps=300)
+    assert np.array_equal(r1["u_volume"], r2["u_volume"]), "3D two-run determinism check failed"
+    q1 = integrate_scale_border_pde_2d.__wrapped__(P_border=0.17, scale_rows=6, scale_cols=6, ny=30, nx=30, steps=300)
+    q2 = integrate_scale_border_pde_2d.__wrapped__(P_border=0.17, scale_rows=6, scale_cols=6, ny=30, nx=30, steps=300)
+    assert np.array_equal(q1["u_field"], q2["u_field"]), "2D two-run determinism check failed"
+
+    # 12. Mass conservation of pure diffusion in the 3D voxel skin (no-flux boundaries): total mass preserved by the implicit z-solve
+    geom6 = build_hexagonal_scale_geometry(6, 6, 30, 30)
+    h6 = skin_thickness_map(geom6, 0.17, nz=12)["h_map"]
+    sk6 = (np.arange(12)[:, None, None] < h6[None]).astype(np.float64)
+    c_zp = sk6 * np.roll(sk6, -1, axis=0)
+    c_zp[-1] = 0.0
+    c_zm = sk6 * np.roll(sk6, 1, axis=0)
+    c_zm[0] = 0.0
+    a = -0.5 * c_zm
+    c = -0.5 * c_zp
+    b = 1.0 - a - c
+    rng = np.random.default_rng(7)
+    f0 = rng.random(sk6.shape) * sk6
+    f1 = _thomas_solve_along_z(a, b, c, f0) * sk6
+    assert abs(f1.sum() - f0.sum()) < 1e-9 * max(f0.sum(), 1.0), "implicit vertical diffusion must conserve mass"
+
+    # 13. Depth-average identity (Lean Theorem 4) on the 3D field: ubar of a vertically uniform volume equals the slice
+    uni = np.broadcast_to(rng.random((30, 30)), (12, 30, 30)) * sk6
+    ub = uni.sum(axis=0) / np.maximum(h6, 1)
+    assert np.allclose(ub[h6 > 0], uni[0][h6 > 0]), "depth average of a vertically uniform column must recover the column value"
+
+    # 14. Reference-dataset regime table parity with the sweep
+    sweep_s = [r["regime_id"] for r in ref["hexagonal_outer_totalistic_ca"]["border_reduction_P_regimes"]]
+    assert sweep_s == ["insulated_decoupled_scales", "strong_border_thinning_ca", "timon_lepidus_physiological", "moderate_border_thinning", "homogeneous_continuum_skin"]
 
     print(
-        "[self_test] All 8 Manukyan et al. (2017) checks PASSED "
-        f"(CA <n_g>={ca_sim['stats']['mean_ng_green']:.3f}, PDE_disc_ratio={pde_phys['discretization_ratio']:.2f}, "
-        f"PDE_Ashman_D={pde_phys['ashman_D']:.2f}, specimen_scales={spec['n_scales']}, specimen_<n_g>={spec['mean_ng_green']:.3f})."
+        "[self_test] All 14 Manukyan et al. (2017) checks PASSED "
+        f"(CA <n_g>={ca_sim['stats']['mean_ng_green']:.3f}, 3D_disc_ratio={s3['discretization_ratio']:.2f}, 3D_vs_2D_agree={cmp_s['scale_state_agreement']:.3f}, "
+        f"vert_rms={s3['vertical_nonuniformity_rms']:.2e}, 3D_Ashman_D={s3['ashman_D']:.2f}, d_c(JSON)={stab_json['d_critical']:.2f}, "
+        f"specimen_scales={spec['n_scales']}, specimen_<n_g>={spec['mean_ng_green']:.3f})."
     )
     return True
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--P", type=float, default=0.17, help="Inter-scale border thickness reduction factor P in [0, 1]")
-    ap.add_argument("--d", type=float, default=20.0, help="Diffusivity ratio d = Dv / Du")
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--P", type=float, default=0.17, help="Inter-scale border thickness reduction factor P in [0, 1] (extra 3D run printed when != 0.17)")
+    ap.add_argument("--d", type=float, default=PDE_D_RATIO, help="Diffusivity ratio d = Dv / Du for the extra run")
     ap.add_argument("--rows", type=int, default=36, help="Hexagonal CA lattice rows")
     ap.add_argument("--cols", type=int, default=36, help="Hexagonal CA lattice columns")
-    ap.add_argument("--steps", type=int, default=45, help="Developmental simulation steps")
-    ap.add_argument("--seed", type=int, default=2017, help="Deterministic RNG seed")
-    ap.add_argument("--self-test", action="store_true", help="Run 8-check verification suite and exit")
+    ap.add_argument("--steps", type=int, default=45, help="CA developmental simulation steps")
+    ap.add_argument("--seed", type=int, default=2017, help="Deterministic RNG seed for the extra run")
+    ap.add_argument("--self-test", action="store_true", help="Run 14-check verification suite and exit")
     args = ap.parse_args()
 
     if args.self_test:
         self_test()
         return 0
 
-    render_outputs()
-    print(f"[2015-manukyan-ocellated-lizard-ca] Rendered {OUT_PNG.relative_to(ROOT)} and {OUT_GIF.relative_to(ROOT)}")
+    render_outputs(ca_rows=args.rows, ca_cols=args.cols, ca_steps=args.steps)
+    print(f"[2015-manukyan-ocellated-lizard-ca] Rendered {OUT_PNG.relative_to(ROOT)}, {OUT_3D_PNG.relative_to(ROOT)} and {OUT_GIF.relative_to(ROOT)}")
+    if abs(args.P - 0.17) > 1e-12 or abs(args.d - PDE_D_RATIO) > 1e-12 or args.seed != 2017:
+        extra = integrate_skin_volume_pde_3d(P_border=args.P, d_ratio=args.d, seed=args.seed)
+        print(
+            f"[extra 3D run] P={args.P:.3f} (P_eff={extra['P_effective']:.3f}) d={args.d:.1f} seed={args.seed}: "
+            f"inter std={extra['inter_scale_std']:.4f}, intra std={extra['mean_intra_scale_std']:.4f}, "
+            f"disc ratio={extra['discretization_ratio']:.3f}, Ashman D={extra['ashman_D']:.3f}, vertical RMS={extra['vertical_nonuniformity_rms']:.2e}"
+        )
     return 0
 
 

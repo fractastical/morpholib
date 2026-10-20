@@ -1,0 +1,80 @@
+{
+  "metadata": {
+    "dataset_id": "sheth-2012-hox-turing-polydactyly-pass3-aer-growth-v1",
+    "title": "Pass 3 reference table — AER-FGF8 mitogenic outgrowth coupled to the Sheth et al. (2012) fan-shaped autopod Turing solver",
+    "purpose": "Parameters, source anchors and expected qualitative behaviours for the kinematic growing-domain (deforming Lagrangian mesh) extension added in Pass 3 of Slot 015. Closes the Pass 2 remediation item 'Couple the 2D polar fan-shaped limb bud Turing solver to a deforming tissue-mechanics mesh driven by localized AER-FGF8 mitogenic outgrowth'.",
+    "honesty_note": "The Pass 3 coupling is a kinematic (prescribed-dilation) growth model: the area dilation rate g(r,t) is set directly by the AER-FGF8 mitogen field and the radial tissue velocity follows from mass conservation. No elastic constitutive law, stress balance or anisotropic cell-shape mechanics is solved; that residual is carried as an open Pass 4 remediation item.",
+    "sources": [
+      {
+        "id": "sheth2012",
+        "citation": "Sheth R, Marcon L, Bastida MF, Junco M, Quintana L, Dahn R, Kmita M, Sharpe J, Ros MA (2012). Hox genes regulate digit patterning by controlling the wavelength of a Turing-type mechanism. Science 338(6113):1476-1480.",
+        "doi": "10.1126/science.1226804",
+        "used_for": "Digit number N = L_autopod / lambda(H): digit period shrinks with distal Hox/Gli3 dose while autopod width sets how many wavelengths fit (Figs. 2-3)."
+      },
+      {
+        "id": "crampin1999",
+        "citation": "Crampin EJ, Gaffney EA, Maini PK (1999). Reaction and diffusion on growing domains: scenarios for robust pattern formation. Bulletin of Mathematical Biology 61(6):1093-1120.",
+        "doi": "10.1006/bulm.1999.0131",
+        "used_for": "Reaction-diffusion on a growing domain in Eulerian/ALE form: u_t + v . grad(u) + (div v) u = D Lap(u) + f(u,v); dilution term (div v) u; patterns on growing domains lag the fixed-domain wavelength until a mode transition (frequency doubling / peak insertion)."
+      },
+      {
+        "id": "boehm2010",
+        "citation": "Boehm B, Westerberg H, Lesnicar-Pucko G, Raja S, Rautschka M, Cotterell J, Swoger J, Sharpe J (2010). The role of spatially controlled cell proliferation in limb bud morphogenesis. PLoS Biology 8(7):e1000420.",
+        "doi": "10.1371/journal.pbio.1000420",
+        "used_for": "Quantitative 3D limb bud proliferation maps: distally biased (AER-proximate) proliferation exists but is insufficient alone to explain limb bud shape; motivates the exponentially decaying FGF8 mitogen field M(r) = exp(-(R - r)/l_F) and the carried residual that oriented cell behaviours / mechanics are missing."
+      },
+      {
+        "id": "summerbell1974",
+        "citation": "Summerbell D (1974). A quantitative analysis of the effect of excision of the AER from the chick limb-bud. Journal of Embryology and Experimental Morphology 32(3):651-660.",
+        "doi": "10.1242/dev.32.3.651",
+        "used_for": "AER excision arrests distal outgrowth; the earlier the excision the more proximal the truncation and the fewer distal skeletal elements form. Used as the qualitative anchor for the AER-ablation series (t_abl in {0.6, 1.2, 1.8} model time)."
+      },
+      {
+        "id": "kondo2010",
+        "citation": "Kondo S, Miura T (2010). Reaction-diffusion model as a framework for understanding biological pattern formation. Science 329(5999):1616-1620.",
+        "doi": "10.1126/science.1179047",
+        "used_for": "Review context: Turing pattern wavelength is set by kinetics/diffusion while the number of repeated elements scales with domain size (digit number = width / wavelength)."
+      }
+    ]
+  },
+  "growth_model": {
+    "mitogen_field": "M(r, t) = A(t) * exp(-(R(t) - r) / l_F)   (AER-FGF8 secreted at the distal rim r = R(t), decaying proximally with length l_F)",
+    "area_dilation_rate": "g(r, t) = g_max * M(r, t)   (prescribed kinematic growth; div v = g)",
+    "radial_tissue_velocity": "v(r, t) = (1 / r) * integral_{r_prox}^{r} g(r', t) r' dr'   (mass conservation in the polar sector; purely radial flow so the sector angle Theta is fixed and the arc Theta * r widens)",
+    "distal_rim_outgrowth": "dR/dt = v(R, t)",
+    "aer_activity": "A(t) = 1 for t <= t_aer_off; A(t) = exp(-(t - t_aer_off) / tau_aer) afterwards (AER regression); A(t) = 0 for t >= t_abl in the ablation series",
+    "reaction_diffusion_ale_form": "u_t|_rho = -(v - w) u_r - g u + D_u Lap(u) + f_u u + f_v v - u^3 ;  v_t|_rho = -(v - w) v_r - g v + D_v Lap(v) + g_u u + g_v v, with mesh velocity w = rho * dR/dt on the computational coordinate rho = (r - r_prox)/(R - r_prox) in [0, 1]",
+    "radial_anisotropy": "D_r = eps_r * D for both species (eps_r = 0.05); stripe (digit-ray) orientation is therefore imposed by PD/AP diffusion anisotropy standing in for the Fgf/Wnt proximodistal modulation of Raspopovic et al. (2014) — carried as an open item",
+    "gene_expression_noise": "additive seeded Gaussian forcing of amplitude 0.02 * sqrt(dt) per step so that newly generated distal tissue carries pattern-seeding fluctuations",
+    "parameters": {
+      "theta_span_rad": 1.7278759594743862,
+      "theta_span_note": "0.55 * pi (same sector angle as the Pass 2 fixed-width fan)",
+      "r_prox": 1.0,
+      "R0": 1.6,
+      "R_target": 3.6363636363636362,
+      "R_target_note": "2 / 0.55: the distal arc Theta * R_target = 2 * pi nondimensional = 2500 um (Sheth et al. 2012 constant autopod width)",
+      "l_F": 0.5,
+      "l_F_um": 198.9,
+      "t_aer_off": 2.4,
+      "tau_aer": 0.3,
+      "T_total": 5.0,
+      "dt": 0.002,
+      "nr": 48,
+      "ntheta": 160,
+      "eps_r": 0.05,
+      "noise_amp": 0.02,
+      "r_wrist": 1.42,
+      "w_gate": 0.08,
+      "nondim_length_um": 397.8873577297384,
+      "g_max_calibration": "g_max is solved (Brent root find on the outgrowth ODE alone) so that the WT distal arc reaches 2500 um at T_total; g_max = 1.95 for the default parameters"
+    },
+    "aer_ablation_series_t_abl": [0.6, 1.2, 1.8],
+    "g_max_sweep": [0.5, 1.0, 1.5, "g_cal", 2.5]
+  },
+  "expected_behaviours": {
+    "digit_number_width_law": "N_digits increases monotonically with final autopod arc L(T) at fixed Hox dose and with k_c(H) at fixed width (Sheth et al. 2012; Kondo & Miura 2010); formalized as Lean 4 Theorem 4 sheth_growing_autopod_digit_number_law",
+    "growth_dilution_threshold": "the modal eigenvalue on a growing domain is sigma_g(k) = sigma(k) - g; patterning proceeds during outgrowth only if sigma_max > g_rim (Crampin et al. 1999); formalized as Lean 4 Theorem 5 sheth_growth_dilution_turing_threshold",
+    "growth_induced_wavelength_lag": "patterns laid down while the arc is short are stretched by subsequent outgrowth and persist while they remain inside the Turing band, so N_grow <= L(T)/lambda(H) with the deficit largest for the widest band (WT); Crampin et al. (1999) peak-insertion scenario",
+    "aer_ablation": "earlier AER ablation -> smaller L(T) -> fewer digit wavelengths (Summerbell 1974 qualitative truncation ordering)"
+  }
+}

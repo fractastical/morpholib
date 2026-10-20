@@ -1,0 +1,98 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-diaza-human-somite-organoid-clock> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-diaza-human-somite-organoid-clock-code-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-diaza-human-somite-organoid-clock-code-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Diaz-Cuadros et al. (2020, 2023) & Matsuda et al. (2020) human pluripotent stem-cell segmentation clock and metabolic tempo scaling model — Code-to-model traceability: 84/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The module docstring (L1-106) states laws 1-5 with their Lean theorem names and the papers they come from; Sections 4b/4c carry docstrings tying each term to Lewis (2003), Herrgen (2010), Matsuda (2020) Nature and Yamanaka (2023); the math KG loop file registers laws 4-5 with code loci; Lean theorems 4-5 verify. Deductions: the lam_eff weights 0.82/0.18, exponent 0.38, 0.55/0.45 and 0.65/0.35 (L407, L411, L498) have no source and in practice are overridden by observed-period constants (-8); the rosette rate constants (L1073-1074) and the DAPT basal fraction are uncited choices (-4); the kymograph phase_lag exponent 1.4 and amplitude constants are uncited (-2); math KG code loci are section ranges rather than per-equation lines (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:evidenceAgainst "2019-diaza-human-somite-organoid-clock.py L1072–L1074: Rosette rate constants and Hill cue are phenomenological and uncited <https://github.com/fractastical/morpholib/blob/d58a084/2019-diaza-human-somite-organoid-clock.py#L1072-L1074>",
+            "2019-diaza-human-somite-organoid-clock.py L402–L416: Unsourced tempo-factor weights/exponents overridden by observed-period constants <https://github.com/fractastical/morpholib/blob/d58a084/2019-diaza-human-somite-organoid-clock.py#L402-L416>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-code-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-code-traceability-2> ;
+        pk:hasScore "0.84"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-code-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2019-diaza-human-somite-organoid-clock.py L1–L106" ;
+        dct:description "Docstring: 9 sources, Pass 3 remediation statement, laws 1-5 with Lean theorem names" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2019-diaza-human-somite-organoid-clock.py#L1-L106> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-code-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/math_kg_loops/diaza-human-somite-organoid-clock.yaml L128–L207" ;
+        dct:description "Laws 4-5 registered with lean_theorem, lean_locus, variables, role, source and code loci" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/morphoeval/math_kg_loops/diaza-human-somite-organoid-clock.yaml#L128-L207> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0960-9822(03)00534-7>,
+            <https://doi.org/10.1016/j.cub.2010.06.034>,
+            <https://doi.org/10.1038/s41467-022-29967-1>,
+            <https://doi.org/10.1038/s41586-019-1885-9>,
+            <https://doi.org/10.1038/s41586-020-2144-9>,
+            <https://doi.org/10.1038/s41586-022-05574-4>,
+            <https://doi.org/10.1038/s41586-022-05649-2>,
+            <https://doi.org/10.1126/science.1142538>,
+            <https://doi.org/10.1126/science.aba7668> .
+    <https://doi.org/10.1016/S0960-9822(03)00534-7> dct:date "2003"^^xsd:gYear ;
+        dct:title "Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator" .
+    <https://doi.org/10.1016/j.cub.2010.06.034> dct:date "2010"^^xsd:gYear ;
+        dct:title "Intercellular coupling regulates the period of the segmentation clock" .
+    <https://doi.org/10.1038/s41467-022-29967-1> dct:date "2022"^^xsd:gYear ;
+        dct:title "Periodic formation of epithelial somites from human pluripotent stem cells" .
+    <https://doi.org/10.1038/s41586-019-1885-9> dct:date "2020"^^xsd:gYear ;
+        dct:title "In vitro characterization of the human segmentation clock" .
+    <https://doi.org/10.1038/s41586-020-2144-9> dct:date "2020"^^xsd:gYear ;
+        dct:title "Recapitulating the human segmentation clock with pluripotent stem cells" .
+    <https://doi.org/10.1038/s41586-022-05574-4> dct:date "2023"^^xsd:gYear ;
+        dct:title "Metabolic regulation of species-specific developmental rates" .
+    <https://doi.org/10.1038/s41586-022-05649-2> dct:date "2023"^^xsd:gYear ;
+        dct:title "Reconstituting human somitogenesis in vitro" .
+    <https://doi.org/10.1126/science.1142538> dct:date "2007"^^xsd:gYear ;
+        dct:title "Synchrony dynamics during initiation, failure, and rescue of the segmentation clock" .
+    <https://doi.org/10.1126/science.aba7668> dct:date "2020"^^xsd:gYear ;
+        dct:title "Species-specific oscillation periods of human and mouse segmentation clocks are due to cell autonomous properties of HES7" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Diaz-Cuadros et al. (2020, 2023) & Matsuda et al. (2020) human pluripotent stem-cell segmentation clock and metabolic tempo scaling model — Code-to-model traceability 84/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T12:21:23Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-diaza-human-somite-organoid-clock-code-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

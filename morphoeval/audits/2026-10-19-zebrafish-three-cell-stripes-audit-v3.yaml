@@ -1,0 +1,343 @@
+# MorphoEval audit — Nakamasu et al. (2009) Zebrafish Three-Variable Pigment-Cell Reaction-Diffusion & Stripe Morphogenesis, 2026-10-19 (v3)
+#
+# Pass 3 post-remediation re-score of `2009-nakamasu-zebrafish-three-cell-stripes.py` (v3, 1726 lines; 13 self-test
+# checks) after closing the single open Pass 2 remediation item in the instrumented loop
+# `morphoeval/runs/2026-10-19-zebrafish-three-cell-stripes-loop-pass3`, superseding
+# `2026-10-19-zebrafish-three-cell-stripes-audit-v2` (92.1).
+#
+# What Pass 3 changed (the v2 remediation item: "couple the 3-species continuum PDE to discrete agent-based
+# iridophore S-to-L shape transitions (Volkening & Sandstede 2015) across growing juvenile-to-adult zebrafish fins"):
+#   1. New Section 5b `simulate_hybrid_iridophore_growth()` (L566-898): the continuum (u, v, w) Nakamasu PDE is
+#      integrated in Lagrangian coordinates on an isometrically growing flank g(t): 0.40 -> 1 (stage PB, SL 7.2 mm ->
+#      SL 18 mm; Parichy et al. 2009) with the Crampin-Gaffney-Maini (1999) dilution term -2 (g'/g) u and D / g^2
+#      diffusion, coupled to discrete iridophore agents in dense (S) / loose (L) states seeded on the horizontal
+#      myoseptum (Singh et al. 2014) that proliferate, random-walk, switch S -> L in melanophore-dominated and
+#      L -> S in xanthophore-dominated tissue (reduced Volkening & Sandstede 2018 rule) and feed back on the
+#      continuum (dense: -gamma_u on melanophores, +gamma_v on xanthophores; loose: +gamma_L on melanophores).
+#      The emergent agent-derived X0 cue replaces the hand-coded cos(k_c y) template for the headline wild type.
+#   2. Validation (L901-942, L1255-1340, L1409-1470): stripe-count ontogeny vs the stage-anchored normal table in
+#      the new `datasets/zebrafish_three_cell_stripes/iridophore_ontogeny_reference.json` (2 stripes at SL 9 mm ->
+#      4 at SL 18 mm), S/L occupancy of interstripes/stripes, iridophore-less (shady-like) control, static adult-size
+#      control, S<->L switching ablation, growth-rate sweep (3 schedules), 3-seed alignment robustness.
+#   3. Lean 4 Theorems 4-6 (+2 lemmas) in `Loop_007_zebrafish_three_cell_stripes.lean` (0 sorrys, verified):
+#      Turing-band Neumann mode insertion under growth, Routh-Hurwitz persistence under dilution, exclusivity and
+#      conservation of the S<->L switching rule; registered in the math KG spec with code loci.
+#   4. Dataset v2: +7 BibTeX entries, corrected two garbled paper titles in scout_manifest.json, all pins updated;
+#      self-test 8 -> 13 checks; CLI wired (`--variant`, hybrid flags) — the v2 CLI flags were parsed but never used.
+#
+# Deeper defects exposed by this round (they lower two dimensions relative to v2):
+#   * the v2 "wild-type 5 stripes" (Panel B) and the Fig. 3 regeneration experiment (Panel D) are driven by a
+#     cos(k_c y) template applied over the WHOLE flank (L308-309, L468), which pre-determines the stripe count and
+#     orientation; v3 labels the panel "template-cued" but still uses the template in Sections 3-4;
+#   * the hybrid insertion is dorsoventrally symmetric and occurs by splitting of stretched stripes at SL 13.5 mm,
+#     later than the in vivo ventral-first addition at ~10.4-11.0 mm, and the parallel-insertion result depends on an
+#     x-coherent iridophore kernel (kernel_sigma_x = 1.2) that is biologically motivated but not quantified.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated probabilities).
+# Line numbers refer to the files in the working tree at commit 3aaa03d (uncommitted Pass 3 edits included).
+
+audit:
+  id: 2026-10-19-zebrafish-three-cell-stripes-audit-v3
+  supersedes_audit_id: 2026-10-19-zebrafish-three-cell-stripes-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Slot 007 Pass 3 autonomous loop assessor; Passes 1-2 assessed by Gemini 4 Argon)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 3aaa03d
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) post-remediation evaluation of `2009-nakamasu-zebrafish-three-cell-stripes.py`
+      after completing Step 12 of `2026-10-19-zebrafish-three-cell-stripes-loop` (Pass 2) in the
+      isolated run `2026-10-19-zebrafish-three-cell-stripes-loop-pass3`. The Pass 3 edits are in the
+      working tree on top of 3aaa03d (file-isolated loop; no commit made by this loop).
+
+references:
+  nakamasu2009:
+    title: "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns"
+    authors: "Nakamasu A, Takahashi G, Kanbe A, Kondo S"
+    venue: "Proceedings of the National Academy of Sciences 106(21):8429-8434 (2009)"
+    doi: 10.1073/pnas.0808622106
+  yamaguchi2007:
+    title: "Pattern regulation in the stripe of zebrafish suggests an underlying dynamic and autonomous mechanism"
+    authors: "Yamaguchi M, Yoshimoto E, Kondo S"
+    venue: "Proceedings of the National Academy of Sciences 104(12):4790-4793 (2007)"
+    doi: 10.1073/pnas.0607790104
+  watanabe2006:
+    title: "Spot pattern of leopard Danio is caused by mutation in the zebrafish connexin41.8 gene"
+    authors: "Watanabe M, Iwashita M, Ishii M, Kurachi Y, Kawakami A, Kondo S, Okada N"
+    venue: "EMBO Reports 7(9):893-897 (2006)"
+    doi: 10.1038/sj.embor.7400757
+  inaba2012:
+    title: "Pigment pattern formation by contact-dependent depolarization"
+    authors: "Inaba M, Yamanaka H, Kondo S"
+    venue: "Science 335(6069):677 (2012)"
+    doi: 10.1126/science.1212821
+  volkening2015:
+    title: "Modelling stripe formation in zebrafish: an agent-based approach"
+    authors: "Volkening A, Sandstede B"
+    venue: "Journal of the Royal Society Interface 12(112):20150812 (2015)"
+    doi: 10.1098/rsif.2015.0812
+  volkening2018:
+    title: "Iridophores as a source of robustness in zebrafish stripes and variability in Danio patterns"
+    authors: "Volkening A, Sandstede B"
+    venue: "Nature Communications 9:3231 (2018)"
+    doi: 10.1038/s41467-018-05629-z
+  singh2014:
+    title: "Proliferation, dispersal and patterned aggregation of iridophores in the skin prefigure striped colouration of zebrafish"
+    authors: "Singh AP, Schach U, Nüsslein-Volhard C"
+    venue: "Nature Cell Biology 16(6):607-614 (2014)"
+    doi: 10.1038/ncb2955
+  frohnhofer2013:
+    title: "Iridophores and their interactions with other chromatophores are required for stripe formation in zebrafish"
+    authors: "Frohnhöfer HG, Krauss J, Maischein HM, Nüsslein-Volhard C"
+    venue: "Development 140(14):2997-3007 (2013)"
+    doi: 10.1242/dev.096719
+  patterson2013:
+    title: "Interactions with iridophores and the tissue environment required for patterning melanophores and xanthophores during zebrafish adult pigment stripe formation"
+    authors: "Patterson LB, Parichy DM"
+    venue: "PLoS Genetics 9(5):e1003561 (2013)"
+    doi: 10.1371/journal.pgen.1003561
+  parichy2009:
+    title: "Normal table of postembryonic zebrafish development: staging by externally visible anatomy of the living fish"
+    authors: "Parichy DM, Elizondo MR, Mills MG, Gordon TN, Engeszer RE"
+    venue: "Developmental Dynamics 238(12):2975-3015 (2009)"
+    doi: 10.1002/dvdy.22113
+  crampin1999:
+    title: "Reaction and diffusion on growing domains: scenarios for robust pattern formation"
+    authors: "Crampin EJ, Gaffney EA, Maini PK"
+    venue: "Bulletin of Mathematical Biology 61(6):1093-1120 (1999)"
+    doi: 10.1006/bulm.1999.0131
+
+simulations:
+  - id: nakamasu-zebrafish-three-cell-stripes
+    name: "Nakamasu et al. (2009) 3-variable zebrafish pigment-cell reaction-diffusion network + Volkening-Sandstede iridophore S/L agents on a growing flank, laser-ablation polarity & leopard (cx41.8) spot-to-stripe morphospace"
+    organism: "Zebrafish (Danio rerio) melanophore-xanthophore-iridophore flank stripes, juvenile (stage PB) to adult"
+    script: 2009-nakamasu-zebrafish-three-cell-stripes.py
+    output: docs/media/zebrafish_three_cell_stripes_comparison.png
+    extra_outputs:
+      - docs/media/zebrafish_three_cell_stripes_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-zebrafish-three-cell-stripes-audit-v2
+    source_refs:
+      - nakamasu2009
+      - yamaguchi2007
+      - watanabe2006
+      - inaba2012
+      - volkening2015
+      - volkening2018
+      - singh2014
+      - frohnhofer2013
+      - patterson2013
+      - parichy2009
+      - crampin1999
+    claim_boundary:
+      reported_in_source:
+        - "Nakamasu et al. (2009): short-range mutual melanophore-xanthophore repulsion plus long-range xanthophore-to-melanophore survival support form a Turing network; xanthophore interstripe ablation kills >45% of flanked melanophores (Fig. 2); regeneration orientation follows intact boundaries (Fig. 3)"
+        - "Volkening & Sandstede (2015, 2018): agent-based melanophores/xanthophores on a growing domain add stripes sequentially; iridophores in dense (interstripe) and loose (stripe) forms switch shape according to the local melanophore/xanthophore environment and make stripe formation robust"
+        - "Singh et al. (2014), Frohnhöfer et al. (2013), Patterson & Parichy (2013): iridophores appear on the horizontal myoseptum (X0), proliferate as a dense sheet, disperse as loose cells over stripes and re-aggregate at the next interstripes; dense iridophores promote xanthophores and exclude melanophores; iridophore-less shady mutants lack organized stripes"
+        - "Parichy et al. (2009): post-embryonic stage anchors PB 7.2, PR 8.6, SP 9.6, J 10.4, J+ 11.0, J++ 13.0 mm SL"
+      reconstructed_in_script:
+        - "Exact 3x3 Nakamasu Jacobian, Routh-Hurwitz invariants, dispersion curve and a DCT-II IMEX 2D 3-species PDE with saturating synthesis (Sections 2-3); in silico Fig. 2 / Fig. 3 ablations (Section 4); leopard sweep and dual negative controls (Section 5); specimen segmentation (Section 6)"
+        - "Section 5b hybrid model: Lagrangian growing-flank PDE with dilution and D/g^2 diffusion, point iridophore agents with S/L state, density-limited proliferation, state-dependent random walk, sigmoidal S<->L switching on u - v, anisotropic (x-coherent) density kernel feeding back on the continuum; ontogeny record of stripe count vs standard length; controls and sweeps"
+        - "Lean 4 Theorems 1-6 for the integer kernels of the laws above"
+      transfer_boundary:
+        - "The hybrid model is a REDUCED version of Volkening & Sandstede: melanophores and xanthophores remain continuum fields (no birth/death agent rules), only iridophores are discrete, and the switching rule is a sigmoid of the continuum difference u - v rather than counts of neighbouring cells"
+        - "Growth is isometric and uniform; the standard-length axis is a linear map SL = 7.2 g / 0.4 with no allometry; stripe insertion happens by splitting of stretched stripes rather than by marginal addition, and symmetrically (X1D and X1V together) rather than ventral-first"
+        - "The normal-table stripe counts in iridophore_ontogeny_reference.json are approximate readings (+/- 1 stripe) of published descriptions, not digitized data"
+        - "Panel B and the Fig. 3 regeneration experiment still use the cos(k_c y) whole-flank template cue"
+      does_not_claim:
+        - "A reproduction of the Volkening & Sandstede (2015/2018) simulations or their parameter values; quantitative iridophore density, sheet correlation length or S/L switching rates measured in vivo; fin (as opposed to trunk flank) patterning; the 3V stripe of large adults; the Danio species variability of Volkening & Sandstede (2018)"
+    summary: >-
+      Pass 3 (v3) post-remediation evaluation of `2009-nakamasu-zebrafish-three-cell-stripes.py`
+      (overall weighted score: 90.6 / 100, down 1.5 points from 92.1 in Pass 2 because the round
+      exposed two defects that the Pass 2 scores had credited). The single Pass 2 remediation item is
+      closed: Section 5b couples the Nakamasu (u, v, w) continuum PDE to discrete dense/loose iridophore
+      agents (reduced Volkening & Sandstede 2018 rules) on an isometrically growing flank (stage PB,
+      SL 7.2 mm -> SL 18 mm) with the Crampin-Gaffney-Maini dilution term; the X0 cue now emerges from
+      agents seeded on the myoseptum instead of a whole-flank cos(k_c y) template, stripes are inserted
+      sequentially 2 -> 4 (parallel, anisotropy 30.2; 3/3 seeds aligned) with dense iridophores
+      colonizing the new X1D/X1V interstripes (100% of S agents in interstripes, 68% of L agents in
+      stripes), the iridophore-less control is isotropic (anisotropy 1.01, shady-like) and the static
+      adult-size control is less aligned (8.4) than the growing flank; six new reference-backed
+      measurements, five new self-test checks and Lean Theorems 4-6 (+2 lemmas, 0 sorrys) back the
+      new mathematics. Exposed defects: the v2 wild-type panel and the Fig. 3 regeneration experiment
+      are template-cued over the whole flank (their stripe count/orientation is imposed), the v2 CLI
+      flags were never wired to the computation, the hybrid insertion is symmetric and late (SL 13.5
+      vs ~10.4-11.0 mm) and depends on a calibrated x-coherent iridophore kernel.
+    scores:
+      model-fidelity:
+        value: 89
+        rationale: >-
+          The Nakamasu core (exact J0, Routh-Hurwitz, dispersion, saturating 3-species PDE, L153-388)
+          and the laser-ablation reproductions (L394-492) are unchanged and remain faithful. The
+          remediation adds the requested mechanism in recognisable Volkening & Sandstede form: discrete
+          iridophores with S/L state, environment-dependent switching, proliferation, dispersal and
+          feedback, on a growing domain whose Lagrangian PDE carries the correct -2 (g'/g) u dilution
+          and D/g^2 scaling (L778-786). Deductions: the whole-flank cos(k_c y) template that drives
+          Panel B and the Fig. 3 regeneration run (L308-309, L468) imposes the 5-stripe count and
+          orientation that v2 credited as emergent (-3); the iridophore rules are reduced (sigmoid of
+          the continuum u - v instead of neighbour counts; no melanophore/xanthophore agents, no
+          long-range iridophore -> melanophore term) (-3); gamma_u/gamma_v/gamma_L, rho_ref, step and
+          division rates and the x-coherent kernel are calibration choices without source values, and
+          the parallel-insertion outcome depends on that kernel (-3); insertion is by splitting of
+          stretched stripes and symmetric, unlike the ventral-first marginal addition in vivo (-2).
+        evidence:
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [153, 388], note: "Exact 3-species Jacobian, Routh-Hurwitz invariants, dispersion curve, DCT-II IMEX 3-cell PDE (unchanged from v2)", supports: true}
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [636, 898], note: "simulate_hybrid_iridophore_growth: Lagrangian growing-flank PDE with dilution (L780-783), S<->L switching (L802-812), state-dependent motility and density-limited proliferation (L814-832), feedback terms (L785-786)", supports: true}
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [308, 309], note: "Whole-flank cue_profile = myoseptum_cue * cos(k_c (y - L_y/2)) still templates Panel B; L468 repeats it for the Fig. 3 regeneration run — stripe count/orientation imposed, not emergent", supports: false}
+          - {file: morphoeval/lean/loops/Loop_007_zebrafish_three_cell_stripes.lean, lines: [131, 232], note: "Theorems 4-6 (+ mode_in_turing_band_scales, dilution_raises_p1), 0 sorrys, verified with lean 4.35.0", supports: true}
+      specimen-match:
+        value: 90
+        rationale: >-
+          Panel I shows an emergent (not templated) adult flank with 4 dark stripes separated by
+          3 interstripes whose dense iridophores sit in the light bands — the same 4-stripe count the
+          specimen segmentation finds (Panel F, L954-1030) and a plausible rendering of the X0/X1D/X1V
+          sheets of Frohnhöfer 2013 / Singh 2014; Panels E-G keep the SHA-256-locked Danio rerio
+          photograph, its segmented stripes and the standardized profile comparison. Deductions: no
+          juvenile-stage specimen images are vendored, so the 2 -> 4 ontogeny is compared with a
+          qualitative normal table rather than with pictures (-5); dense iridophore coverage of X1D/X1V
+          is sparse compared with the contiguous sheets seen in vivo, and loose iridophores are few
+          (loose fraction 0.02) (-3); the GIF is the model alone with no specimen frame (-2).
+        evidence:
+          - {file: docs/media/zebrafish_three_cell_stripes_comparison.png, lines: [0, 0], note: "12-panel figure: E specimen with ROIs, F segmented stripes, G profiles vs specimen, I emergent hybrid flank with S/L agents (4 stripes, matching the 4 segmented stripes)", supports: true}
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [954, 1030], note: "Specimen segmentation: 4 dark stripes, 23.67 px spacing, CV 0.111 (unchanged)", supports: true}
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [1255, 1271], note: "Panel I draws the final hybrid state with dense/loose agents over the (u, v) colour render", supports: true}
+          - {file: docs/media/zebrafish_three_cell_stripes_growth.gif, lines: [0, 0], note: "8-frame growing-flank GIF (SL 7.2 -> 18 mm) with agents and dorsoventral profiles; no juvenile specimen frames", supports: false}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          The leopard sweep and dual negative controls (L499-562) are retained; Pass 3 adds a
+          growth-rate sweep (3 schedules), the iridophore-less, static-domain and no-switch controls
+          and a 3-seed robustness check (L901-942), and the CLI is now actually wired: `--variant` runs
+          the template PDE and the hybrid model with every kinetic and hybrid flag and prints a JSON
+          summary (L1660-1726). Deductions: the v2 CLI parsed its flags but `main()` ignored them, so
+          the v2 "exposes full CLI flags" credit was unearned (-3); the growth sweep behaves monotonically
+          (faster growth delays the first insertion: SL 16.9 / 13.5 / 13.4 mm for fast / default / slow)
+          but is shown only as stripe count vs SL with no rendered flanks along the sweep, and the
+          kernel-anisotropy and feedback-strength calibrations are not swept at all (-4); `--variant`
+          does not render a figure, so non-default parameter sets cannot be inspected visually (-3).
+        evidence:
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [901, 942], note: "run_hybrid_growth_experiments: WT, no-iridophore, no-switch, static adult, growth sweep (0.4/0.8/1.0), 3-seed alignment fraction", supports: true}
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [1660, 1726], note: "CLI with kinetic + hybrid flags and --variant JSON summary; flags are now consumed", supports: true}
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [499, 562], note: "leopard 4-regime sweep and dual negative controls (unchanged)", supports: true}
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [1273, 1296], note: "Panel J plots only stripe count vs SL per growth schedule; no rendered flanks along the sweep", supports: false}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          `measure_morphoeval()` (L1396-1553) now returns 14 measurements: the 8 Pass 2 ones plus the
+          hybrid adult stripe count vs the normal table (4 vs 4-5), SL at first insertion (13.5 mm vs
+          J 10.4 mm), dense-iridophore interstripe occupancy (1.00 vs >= 0.85), iridophore-less control
+          anisotropy (1.01 vs 1.0 isotropic reference), Turing-band mode count (9, Lean Theorem 4) and
+          the hybrid anti-phase correlation (-0.9995). Deductions: the normal-table stripe counts are
+          approximate (+/- 1) readings and not digitized data (-4); the first-insertion SL misses its
+          reference by ~3 mm and the asymmetry (ventral-first) is not measured (-3); S/L occupancy and
+          the shady-like control are compared with qualitative statements, not measured fractions (-3).
+        evidence:
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [1409, 1470], note: "6 new hybrid measurements with reference values, units and sources", supports: true}
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [1472, 1553], note: "8 Pass 2 measurements retained (theory, PDE, ablation, controls, specimen pixels)", supports: true}
+          - {file: datasets/zebrafish_three_cell_stripes/iridophore_ontogeny_reference.json, lines: [60, 72], note: "Stage-anchored stripe-count normal table with confidence_note declaring +/- 1 approximate readings", supports: false}
+      source-traceability:
+        value: 94
+        rationale: >-
+          All 11 sources carry DOIs in the module docstring, the audit and `paper_citations.bib`
+          (+7 entries); the new `iridophore_ontogeny_reference.json` records what each source was used
+          for and declares its approximations; the two garbled candidate titles in `scout_manifest.json`
+          were corrected and the correction is recorded in the file; all five dataset files are SHA-256
+          pinned and verified fail-closed at run time (L107-141). Deductions: the stripe-count table
+          is an assessor reading of published descriptions rather than data with a page/figure pin (-4);
+          the Parichy 2009 stage SL anchors are cited without page numbers (-2).
+        evidence:
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [107, 141], note: "EXPECTED_SHA256 pins for 5 files (v2 pins), verify_dataset_sha256 fail-closed", supports: true}
+          - {file: datasets/zebrafish_three_cell_stripes/iridophore_ontogeny_reference.json, lines: [1, 51], note: "7 sources with DOIs and used_for statements; confidence_note", supports: true}
+          - {file: datasets/zebrafish_three_cell_stripes/paper_citations.bib, lines: [45, 121], note: "7 Pass 3 BibTeX entries with DOIs", supports: true}
+          - {file: datasets/zebrafish_three_cell_stripes/scout_manifest.json, lines: [1, 52], note: "Corrected titles for Watanabe 2006 and Yamaguchi 2007 with pass3_correction note", supports: true}
+      code-traceability:
+        value: 91
+        rationale: >-
+          The Section 5b banner (L565-590) maps every agent rule to its source (Volkening & Sandstede
+          2015/2018, Singh 2014, Frohnhöfer 2013, Patterson & Parichy 2013, Parichy 2009, Crampin 1999)
+          and to Lean Theorems 4-6; the math KG spec registers the three new laws with Lean loci and code
+          loci; the docstring lists the known residuals. Deductions: the calibration constants
+          (gamma_u 0.10, gamma_v 0.03, gamma_L 0.02, rho_ref 30, step_S/step_L, p_div, kernel sigmas,
+          switch threshold 0.10) have no cited origin and are only described as calibration (-5); the
+          stripe counter and juvenile-count heuristics (L605-634) are uncited conventions (-2); Panel B's
+          template cue is disclosed on the panel but the Fig. 3 regeneration template at L468 is not (-2).
+        evidence:
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [565, 594], note: "Section 5b banner: rule-by-rule source mapping and Lean theorem cross-references", supports: true}
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [1, 76], note: "Module docstring: Pass 3 sources with DOIs, Theorems 1-6, known residuals", supports: true}
+          - {file: morphoeval/math_kg_loops/nakamasu-zebrafish-three-cell-stripes.yaml, lines: [98, 152], note: "Laws 4-6 registered with lean_theorem, lean_locus, code_locus and source_citation", supports: true}
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [655, 668], note: "Hybrid calibration defaults (gamma_*, step_*, p_div_*, rho_ref, kernel sigmas) without cited values", supports: false}
+      repro-package:
+        value: 93
+        rationale: >-
+          Deterministic seeds for both the PDE noise and the agent RNG (bitwise two-run determinism of
+          fields, states and positions is checked, L1642-1647); the 13-check `--self-test` runs in ~32 s
+          and the default render in 13-25 s, well under the 3-minute budget; outputs are self-contained
+          (12-panel PNG + 8-frame GIF); the environment is recorded above. Deductions: no requirements
+          lock file is vendored for this slot (-3); the self-test thresholds for the hybrid (anisotropy
+          > 5, aligned fraction >= 2/3, SL_first in [11, 16]) are tuned to the default seed set (-2);
+          the README in the dataset directory documents the files but the top-level README section was
+          not updated (outside this loop's allowed files) (-2).
+        evidence:
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [1559, 1657], note: "13-check self_test incl. Lean parity checks 9-10, hybrid checks 11-13 and bitwise determinism", supports: true}
+          - {file: 2009-nakamasu-zebrafish-three-cell-stripes.py, lines: [1625, 1640], note: "Hybrid acceptance thresholds tuned to default seeds", supports: false}
+          - {file: datasets/zebrafish_three_cell_stripes/README.md, lines: [1, 39], note: "Dataset README documents all 5 files, pins and what the script computes", supports: true}
+    remediation:
+      - >-
+        2009-nakamasu-zebrafish-three-cell-stripes.py:308-309 and 468 — the whole-flank template cue
+        cos(k_c (y - L_y/2)) still drives Panel B (`integrate_nakamasu_pde_2d`, myoseptum_cue = 0.22)
+        and the Fig. 3 regeneration run (0.14 amplitude), imposing the 5-stripe count and the horizontal
+        orientation that the regeneration anisotropy (7.38) then reports. Replace both with the
+        agent-derived X0 cue of Section 5b (or a cue confined to |y - L_y/2| < lambda_c/4) and
+        re-measure the Fig. 3 regeneration anisotropy without the template.
+      - >-
+        2009-nakamasu-zebrafish-three-cell-stripes.py:636-898 — insertion is dorsoventrally symmetric
+        (X1D and X1V appear together at SL 13.5 mm) and proceeds by splitting of stretched stripes,
+        whereas in vivo X1V/2V precede X1D/2D (~10.4-11.0 mm) and new stripes are added at the margins.
+        Add a ventral-first bias (e.g. ventral dispersal/aggregation bias of loose iridophores, Singh
+        2014) or a marginal-growth variant, and measure the SL of the first ventral vs dorsal insertion
+        separately against the normal table.
+      - >-
+        2009-nakamasu-zebrafish-three-cell-stripes.py:727-744 and 655-668 — the x-coherent dense
+        iridophore kernel (kernel_sigma_x = 1.2 vs kernel_sigma = 0.3) is the calibration that makes
+        insertion parallel; with an isotropic kernel about half of the seeds produced labyrinthine
+        insertions (documented in the function docstring only). Quantify this with a kernel-anisotropy
+        sweep reporting the aligned-seed fraction, and anchor kernel_sigma_x to a measured along-interstripe
+        correlation length of dense iridophore sheets (Singh 2014 Fig. 1-2 images) or derive it from an
+        agent adhesion rule.
+      - >-
+        datasets/zebrafish_three_cell_stripes/iridophore_ontogeny_reference.json:60-72 and
+        2009-nakamasu-zebrafish-three-cell-stripes.py:1409-1429 — the normal-table stripe counts are
+        approximate (+/- 1) readings. Digitize quantitative stripe/interstripe counts vs SL from
+        Parichy et al. (2009) or Frohnhöfer et al. (2013) Fig. 1 / Volkening & Sandstede (2015) Fig. 4,
+        store them with page/figure pins, and tighten the two ontogeny measurements to those values.
+      - >-
+        2009-nakamasu-zebrafish-three-cell-stripes.py:1660-1726 — `--variant` prints a JSON summary but
+        does not render; add `--out PATH` so a non-default parameter set (e.g. --n-irid 0,
+        --growth-fraction 0.0) produces a flank image, and show at least one rendered flank per growth
+        schedule in Panel J.
+      - >-
+        morphoeval/lean/loops/Loop_007_zebrafish_three_cell_stripes.lean:176-205 and
+        2009-nakamasu-zebrafish-three-cell-stripes.py:781-783 — Theorem 5 checks a single dilution value
+        (r = 0.1) on the Routh-Hurwitz invariants; add a theorem on the IMEX denominators
+        1 + dt (c + r + D k^2) >= 1 for all r, k^2 >= 0 (unconditional stability of the implicit step on
+        the growing domain) and a general-r Routh-Hurwitz lemma rather than the r = 1 instance.

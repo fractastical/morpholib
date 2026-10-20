@@ -1,0 +1,74 @@
+{
+  "dataset_id": "pavement_cell_shell_depth_v1",
+  "title": "Pass 3 reduced pressurized periclinal membrane-shell and depth-resolved anticlinal wall buckling parameters for Arabidopsis thaliana pavement cells",
+  "created_for": "2017-runions-pavement-cell-lobing.py (Slot 039, Pass 3 remediation of audit 2026-10-19-pavement-cell-lobing-audit-v2)",
+  "honesty_note": "This table parameterises a REDUCED model (Foppl uniform-tension membrane on the 2D cell footprint + prestressed vertical anticlinal strip), not a 3D finite-element shell. Entries flagged assumption=true are order-of-magnitude modelling choices with the stated literature range; they are NOT values digitised from a figure or table of the cited papers. Entries flagged analytic=true are closed-form consequences of the governing equations used as solver verification targets.",
+  "periclinal_membrane_shell": {
+    "turgor_pressure_P_MPa": 0.60,
+    "outer_wall_thickness_h_um": 0.30,
+    "cell_wall_youngs_modulus_E_MPa": 300.0,
+    "cell_wall_youngs_modulus_range_MPa": [100.0, 1000.0],
+    "cell_wall_youngs_modulus_assumption": true,
+    "cell_wall_youngs_modulus_note": "Primary cell wall in-plane tensile modulus; order-of-magnitude range spanned by tensile tests of Arabidopsis / onion primary walls and the elastic moduli used in Sapala et al. (2018) MorphoMechanX pressurised-shell simulations. Chosen value is a mid-range assumption, swept via --shell-E.",
+    "cell_wall_poisson_ratio_nu": 0.30,
+    "cell_wall_poisson_ratio_assumption": true,
+    "pavement_cell_depth_H_um": 15.0,
+    "pavement_cell_depth_range_um": [10.0, 25.0],
+    "pavement_cell_depth_assumption": true,
+    "pavement_cell_depth_note": "Anticlinal wall height (outer to inner periclinal junction) of Arabidopsis cotyledon pavement cells; typical confocal z-extent 10-25 um (Armour et al. 2015 Plant Cell 27:2484; Sapala et al. 2018 3D templates). Mid-range assumption, swept via --wall-depth-H.",
+    "membrane_pretension_T0_rule": "T0 = P * H / 2 (in-plane tension transmitted to the outer periclinal wall by the pressurised anticlinal walls of a slab cell of depth H; reduced estimate)",
+    "membrane_pretension_T0_uN_per_um": 4.5,
+    "clamped_edge_bending_rule": "ell_b = sqrt(D / T), D = E h^3 / (12 (1 - nu^2)); sigma_b,edge = 6 T theta_edge ell_b / h^2 (clamped membrane boundary layer, reported separately from the membrane stress)",
+    "laplace_stress_proxy_reference": {
+      "formula": "sigma_max = P * R_LEC / (2 h)",
+      "source": "Sapala et al. (2018) eLife 7:e32794 Box 1 & Fig. 3 (thin-walled pressure-vessel proxy; FEM maximum periclinal stress increases with LEC radius)",
+      "exponent_in_R_LEC": 1.0,
+      "wt_vs_isotropic_stress_reduction_factor_at_4500um2": 3.32
+    },
+    "foppl_large_stretch_scaling": {
+      "formula": "T^3 ~ E h P^2 R^2 / 16  (bulge-test regime, T0 -> 0)  =>  sigma = T/h ~ R^(2/3)",
+      "exponent_in_R_LEC": 0.6667,
+      "analytic": true
+    },
+    "disk_closed_form": {
+      "formula": "z(r) = P (R^2 - r^2) / (4 T);  z_max = P R^2 / (4 T);  theta_edge = P R / (2 T);  mean_strain = P^2 R^2 / (16 T^2)",
+      "analytic": true
+    },
+    "inscribed_disk_comparison_bound": {
+      "statement": "For any footprint Omega containing the LEC disk B(R_LEC), the Dirichlet Poisson solution satisfies z_max(Omega) >= P R_LEC^2 / (4 T) (maximum principle / sub-solution comparison)",
+      "lean_theorem": "MathOfBiology.Loop_039.sapala_2018_pressurized_membrane_inscribed_disk_bound",
+      "analytic": true
+    }
+  },
+  "anticlinal_wall_depth_buckling": {
+    "wall_length_L_um": 196.0,
+    "wall_depth_H_um": 15.0,
+    "n_depth_layers": 31,
+    "inner_face_anchoring_beta_default": 2.0,
+    "inner_face_anchoring_beta_sweep": [0.0, 0.5, 2.0, 8.0, "clamped"],
+    "inner_face_anchoring_beta_assumption": true,
+    "inner_face_anchoring_note": "beta = k_in H / T_a is the dimensionless Robin stiffness of the inner periclinal junction (mesophyll-adjacent face): 0 = free (lobes uniform through depth), clamped = inner face held flat (lobes confined to the outer face). No depth-resolved empirical constraint on beta is vendored; the default is a modelling choice and the full sweep is rendered.",
+    "modal_depth_transfer_function": {
+      "formula": "g_k(zeta) = [k cosh(k zeta) + beta' sinh(k zeta)] / [k cosh(k H) + beta' sinh(k H)],  beta' = beta / H;  g_0(zeta) = (1 + beta' zeta) / (1 + beta' H)",
+      "clamped_limit": "g_k(zeta) = sinh(k zeta) / sinh(k H);  g_0(zeta) = zeta / H",
+      "analytic": true
+    },
+    "dominant_lobe_mode_k": 8,
+    "dominant_lobe_wavelength_um": 24.5,
+    "lean_theorems": [
+      "MathOfBiology.Loop_039.anticlinal_depth_mode_monotone_outward",
+      "MathOfBiology.Loop_039.anticlinal_depth_mode_wavenumber_comparison"
+    ]
+  },
+  "secondary_sources": [
+    {
+      "citation": "Armour WJ, Barton DA, Law AMK, Overall RL (2015) Plant Cell 27(9):2484-2500",
+      "doi": "10.1105/tpc.114.126664",
+      "role": "Differential growth of periclinal vs anticlinal walls during lobe formation in Arabidopsis cotyledon pavement cells; 3D confocal context for anticlinal wall depth"
+    },
+    {
+      "citation": "Timoshenko S, Woinowsky-Krieger S (1959) Theory of Plates and Shells, 2nd ed., McGraw-Hill",
+      "role": "Uniformly loaded circular membrane / clamped plate closed forms and the membrane-bending boundary layer used as solver verification targets"
+    }
+  ]
+}

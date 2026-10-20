@@ -101,4 +101,84 @@ theorem traveling_wave_hexagonal_fidelity_advantage (d_min d_gain : Nat)
   simp [hexagonal_p6_opt_pct, hexagonal_p6_simul_pct]
   omega
 
+
+-- ============================================================================
+-- Law 4 (`glimm-avian-feather-bud-hexagonal-4`, Pass 3):
+-- Euler / Gauss-Bonnet Disclination Charge of a Closed Triangulated Primordium Lattice
+-- ============================================================================
+/-- Let a closed surface of Euler characteristic `chi = V - E + F` be triangulated by the
+    Delaunay graph of its feather primordia (vertices `V`, edges `E`, triangular faces `F`),
+    and let `sum_z` be the sum of the coordination numbers `z_i`. In a triangulation every
+    face has three edges and every edge borders two faces (`3 F = 2 E`), and every edge has
+    two endpoints (`sum_z = 2 E`). Then the total disclination charge
+    `sum_i (6 - z_i) = 6 V - sum_z` equals `6 chi` — independent of the positions of the
+    primordia. On a sphere (`chi = 2`) a lattice built only of 5-, 6- and 7-coordinated
+    primordia must therefore carry `n_5 - n_7 = 12` excess pentagons (Bausch et al. 2003
+    "grain boundary scars"): Gaussian curvature forces 5/7 defects into the hexagonal array,
+    which is why limb-bud bumps dislocate the humeral and femoral feather tracts. -/
+def disclination_charge (V sum_z : Int) : Int :=
+  6 * V - sum_z
+
+theorem euler_disclination_charge (V E F sum_z : Int)
+    (h_faces : 3 * F = 2 * E) (h_degrees : sum_z = 2 * E) :
+    disclination_charge V sum_z = 6 * (V - E + F) := by
+  simp [disclination_charge]
+  omega
+
+theorem sphere_pentagon_excess (n5 n6 n7 E F : Int)
+    (h_faces : 3 * F = 2 * E)
+    (h_degrees : 5 * n5 + 6 * n6 + 7 * n7 = 2 * E)
+    (h_euler : (n5 + n6 + n7) - E + F = 2) :
+    n5 - n7 = 12 := by
+  omega
+
+
+-- ============================================================================
+-- Law 5 (`glimm-avian-feather-bud-hexagonal-5`, Pass 3):
+-- Isochrone Row-Count Dislocation Lemma on a Curved Tract
+-- ============================================================================
+/-- Successive feather rows are isochrones of the geodesic EDA competence wave. A row whose
+    arc length is `L` carries `L / lambda` primordia at the inhibitory-disk spacing `lambda`
+    (natural-number division = floor). If the next isochrone is longer by at least one
+    period (`L_1 + lambda <= L_2`, as happens where the surface metric stretches the
+    isochrones over a limb-bud flank), it must carry at least one more primordium:
+    `L_1 / lambda + 1 <= L_2 / lambda`. The extra primordium terminates a row, i.e. it is a
+    5-7 dislocation. -/
+def isochrone_primordium_count (L lam : Nat) : Nat :=
+  L / lam
+
+theorem isochrone_row_count_dislocation (L1 L2 lam : Nat)
+    (h_pos : 0 < lam) (h_longer : L1 + lam ≤ L2) :
+    isochrone_primordium_count L1 lam + 1 ≤ isochrone_primordium_count L2 lam := by
+  simp only [isochrone_primordium_count]
+  have h1 : (L1 + lam) / lam = L1 / lam + 1 := Nat.add_div_right L1 h_pos
+  have h2 : (L1 + lam) / lam ≤ L2 / lam := Nat.div_le_div_right h_longer
+  omega
+
+
+-- ============================================================================
+-- Law 6 (`glimm-avian-feather-bud-hexagonal-6`, Pass 3):
+-- Monge-Patch Metric Determinant (well-posedness of the surface Laplace-Beltrami operator)
+-- ============================================================================
+/-- For the skin surface written as a Monge patch `z = h(u, v)` the induced metric is
+    `g = [[1 + p, s], [s, 1 + q]]` with `p = h_u^2`, `q = h_v^2`, `s = h_u h_v`, so `s^2 = p q`.
+    Its determinant is `(1 + p)(1 + q) - s^2 = 1 + p + q >= 1`: the metric is never
+    degenerate, `sqrt(det g)` and `g^{ij}` exist everywhere, and the Laplace-Beltrami
+    operator `(1/sqrt g) d_i (sqrt g g^{ij} d_j f)` used by the curved-tract solver is
+    well defined on the whole trunk + limb-bud patch. -/
+def monge_metric_det (p q s_sq : Nat) : Nat :=
+  (1 + p) * (1 + q) - s_sq
+
+theorem monge_metric_determinant (p q s_sq : Nat) (h_cross : s_sq = p * q) :
+    monge_metric_det p q s_sq = 1 + p + q ∧ 1 ≤ monge_metric_det p q s_sq := by
+  subst h_cross
+  have h_expand : (1 + p) * (1 + q) = 1 + p + q + p * q := by
+    simp [Nat.add_mul, Nat.mul_add, Nat.one_mul, Nat.mul_one]
+    omega
+  constructor
+  · simp only [monge_metric_det]
+    omega
+  · simp only [monge_metric_det]
+    omega
+
 end MathOfBiology.Loop_019

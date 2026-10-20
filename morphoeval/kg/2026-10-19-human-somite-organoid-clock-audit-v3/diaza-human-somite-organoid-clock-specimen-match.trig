@@ -1,0 +1,101 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-diaza-human-somite-organoid-clock> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-diaza-human-somite-organoid-clock-specimen-match> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-diaza-human-somite-organoid-clock-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Diaz-Cuadros et al. (2020, 2023) & Matsuda et al. (2020) human pluripotent stem-cell segmentation clock and metabolic tempo scaling model — Morphological realism / specimen match: 72/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Judged on the regenerated PNGs: Panel E overlays the detected bilateral somite rows on the SEM and the periodicity is visibly matched (Panel F waveform r = 0.48); the new lattice figure shows the expected phenomenology (incoherent -> partially clustered -> collapsed -> reset -> coupled lattice stays ordered while the ablated one scrambles), and Panel I shows a compact radially polarised rosette inside the Matrigel shell against a dispersed unpolarised 0 % aggregate. Deductions: the specimen is a chick embryo SEM (dataset JSON L60), not a human axioloid or any figure from the four source papers, so the human organoid morphology itself is never compared (-12); the rosette and lattice panels are compared with no side-by-side image from Yamanaka (2023) / Matsuda (2020) Nature (-8); the kymograph (Panel D) is a hand-drawn kinematic wave (-4); the rosette is a 24-cell 2D cross-section without a lumen or the multi-somite periodic array of the axioloid (-4)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:evidenceAgainst "2019-diaza-human-somite-organoid-clock.py L549–L599: Axioloid kymograph is a prescribed cos(omega t - phase_lag(x)) wave with hand-set somite boundaries, not DDE output <https://github.com/fractastical/morpholib/blob/d58a084/2019-diaza-human-somite-organoid-clock.py#L549-L599>",
+            "datasets/human_somite_organoid_clock/human_somite_organoid_clock_reference.json L56–L89: Specimen is Wikimedia 'Aves Neural tube and somites in chick embryo' (chick, not human organoid); empirical_somite_metrics are the script's own outputs <https://github.com/fractastical/morpholib/blob/d58a084/datasets/human_somite_organoid_clock/human_somite_organoid_clock_reference.json#L56-L89>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-specimen-match-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-specimen-match-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-specimen-match-3> ;
+        pk:hasScore "0.72"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "docs/media/human_somite_organoid_clock_comparison.png (generated output)" ;
+        dct:description "3x3 figure: A-C clock traces/regimes/allometry, D kinematic kymograph, E-F SEM segmentation and waveform fit, G Kuramoto R through DAPT washout, H tau_c/eps sweeps, I 0 % vs 10 % Matrigel rosette with sweep inset — docs/media/human_somite_organoid_clock_comparison.png: rendered output of 2019-diaza-human-somite-organoid-clock.py at d58a084, image/png, 1774211 B, 2775×2430 px, artifact_sha256 9f51f92b46d6a341eea40af3bf94cfb9d643809033460182d5d2873b9bd4c2d2 (sha256 9f51f92b46d6a341eea40af3bf94cfb9d643809033460182d5d2873b9bd4c2d2), spec_fingerprint dc5fc9fc0d0a3efa51f3e2df8dff0c42308ff7921502f484af6294b4b564fb24" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "docs/media/human_somite_organoid_clock_notch_lattice.png (generated output)" ;
+        dct:description "2x4 hex-lattice phase maps, coupled vs coupling-ablated, at pre-DAPT / DAPT end / washout+1 / washout+6 cycles — docs/media/human_somite_organoid_clock_notch_lattice.png: rendered output of 2019-diaza-human-somite-organoid-clock.py at d58a084, image/png, 482927 B, 2210×1118 px, artifact_sha256 745c360711edb85b415a2f17920d83cdaeecfd14d0fca296c0b9f7eda37be723 (sha256 745c360711edb85b415a2f17920d83cdaeecfd14d0fca296c0b9f7eda37be723), spec_fingerprint dc5fc9fc0d0a3efa51f3e2df8dff0c42308ff7921502f484af6294b4b564fb24" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-specimen-match-3> a pk:EvidenceItem ;
+        rdfs:label "2019-diaza-human-somite-organoid-clock.py L1211–L1251" ;
+        dct:description "Bilateral DoG somite segmentation of the vendored SEM with bilateral spacing, CV and phase-gated waveform correlation" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2019-diaza-human-somite-organoid-clock.py#L1211-L1251> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0960-9822(03)00534-7>,
+            <https://doi.org/10.1016/j.cub.2010.06.034>,
+            <https://doi.org/10.1038/s41467-022-29967-1>,
+            <https://doi.org/10.1038/s41586-019-1885-9>,
+            <https://doi.org/10.1038/s41586-020-2144-9>,
+            <https://doi.org/10.1038/s41586-022-05574-4>,
+            <https://doi.org/10.1038/s41586-022-05649-2>,
+            <https://doi.org/10.1126/science.1142538>,
+            <https://doi.org/10.1126/science.aba7668> .
+    <https://doi.org/10.1016/S0960-9822(03)00534-7> dct:date "2003"^^xsd:gYear ;
+        dct:title "Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator" .
+    <https://doi.org/10.1016/j.cub.2010.06.034> dct:date "2010"^^xsd:gYear ;
+        dct:title "Intercellular coupling regulates the period of the segmentation clock" .
+    <https://doi.org/10.1038/s41467-022-29967-1> dct:date "2022"^^xsd:gYear ;
+        dct:title "Periodic formation of epithelial somites from human pluripotent stem cells" .
+    <https://doi.org/10.1038/s41586-019-1885-9> dct:date "2020"^^xsd:gYear ;
+        dct:title "In vitro characterization of the human segmentation clock" .
+    <https://doi.org/10.1038/s41586-020-2144-9> dct:date "2020"^^xsd:gYear ;
+        dct:title "Recapitulating the human segmentation clock with pluripotent stem cells" .
+    <https://doi.org/10.1038/s41586-022-05574-4> dct:date "2023"^^xsd:gYear ;
+        dct:title "Metabolic regulation of species-specific developmental rates" .
+    <https://doi.org/10.1038/s41586-022-05649-2> dct:date "2023"^^xsd:gYear ;
+        dct:title "Reconstituting human somitogenesis in vitro" .
+    <https://doi.org/10.1126/science.1142538> dct:date "2007"^^xsd:gYear ;
+        dct:title "Synchrony dynamics during initiation, failure, and rescue of the segmentation clock" .
+    <https://doi.org/10.1126/science.aba7668> dct:date "2020"^^xsd:gYear ;
+        dct:title "Species-specific oscillation periods of human and mouse segmentation clocks are due to cell autonomous properties of HES7" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Diaz-Cuadros et al. (2020, 2023) & Matsuda et al. (2020) human pluripotent stem-cell segmentation clock and metabolic tempo scaling model — Morphological realism / specimen match 72/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T12:21:23Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-diaza-human-somite-organoid-clock-specimen-match> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,216 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-diaza-human-somite-organoid-clock> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-diaza-human-somite-organoid-clock-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-diaza-human-somite-organoid-clock-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Diaz-Cuadros et al. (2020, 2023) & Matsuda et al. (2020) human pluripotent stem-cell segmentation clock and metabolic tempo scaling model — Morphometric validation: 74/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Nine measurements with units and references are emitted by `measure_morphoeval()` (L1256-1368): period ratio 2.4591 vs 2.459, T_human 300.01 vs 300 +/- 18 min, allometry r 0.997, SEM spacing 47.14 px, lattice R 0.85 vs 1.0 ideal (ablated 0.21), T_coll 298.2 vs 300 min, rosette P_rad 0.99 vs 1.0 ideal, Matrigel contrast 1.07 vs 1.0. Deductions: the 6-regime r = 0.9999 / RMSE 2.18 min measurement is circular (the predictions encode the observations, L402-416) (-10); the human period itself is fixed by construction (lam_eff = 300/122) so 300.01 vs 300 validates nothing (-4); the SEM reference value is the script's own output copied into the JSON (-4); the new lattice and rosette references are theoretical ideals (R = 1, P_rad = 1) because the sources report no order parameter (-4); R_post = 0.85 is below the 0.9 line drawn in Panel G and no quantitative resynchronisation time from Matsuda (2020) Nature is compared (-4)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:evidenceAgainst "2019-diaza-human-somite-organoid-clock.py L1298–L1306: 6-regime Pearson r measurement reports a calibration as validation (regimes encode observed periods) <https://github.com/fractastical/morpholib/blob/d58a084/2019-diaza-human-somite-organoid-clock.py#L1298-L1306>",
+            "2019-diaza-human-somite-organoid-clock.py L1318–L1326: SEM spacing reference_value 47.14 is the script's own measurement <https://github.com/fractastical/morpholib/blob/d58a084/2019-diaza-human-somite-organoid-clock.py#L1318-L1326>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-6-regime-hes7-genetic-metabolic-perturbation-series-pearson-correlation-r>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-6-species-vertebrate-segmentation-clock-delay-turnover-allometry-pearson-r>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-dll1-notch-coupled-hexagonal-psm-lattice-kuramoto-order-parameter-r-after-dapt-washout-6-cycles>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-human-pluripotent-stem-cell-psm-hes7-achilles-oscillation-period-t-human>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-human-vs-mouse-hes7-segmentation-clock-period-ratio-t-human-t-mouse>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-matrigel-ablation-effect-on-rosette-polarity-order-10-minus-0>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-matrigel-embedded-10-axioloid-somite-rosette-radial-apical-polarity-order-p-rad>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-post-washout-collective-period-of-the-notch-coupled-lattice-t-coll>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-vertebrate-somite-psm-specimen-bilateral-somite-spacing-s-obs>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-morphometric-validation-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-morphometric-validation-2> ;
+        pk:hasScore "0.74"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-6-regime-hes7-genetic-metabolic-perturbation-series-pearson-correlation-r> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "6-regime HES7 genetic & metabolic perturbation series Pearson correlation r = 0.9999 Pearson r" ;
+        dct:description "p = 5.90e-09; mouse hHES7 knock-in swap period = 135.1 min vs 134.0 min observed" ;
+        schema:measurementTechnique "correlation between DDE-predicted and empirical oscillation periods across 6 Matsuda (2020) & Diaz-Cuadros (2020, 2023) regimes (RMSE = 2.18 min)" ;
+        schema:name "6-regime HES7 genetic & metabolic perturbation series Pearson correlation r" ;
+        schema:unitText "Pearson r" ;
+        schema:value "0.9999" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-6-regime-hes7-genetic-metabolic-perturbation-series-pearson-correlation-r-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-6-regime-hes7-genetic-metabolic-perturbation-series-pearson-correlation-r-reference> a schema:PropertyValue ;
+        dct:source "Matsuda et al. (2020) Science 369:1450-1455 Figs. 1-4; Diaz-Cuadros et al. (2023) Nature 613:550-557 Figs. 2-4" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-6-species-vertebrate-segmentation-clock-delay-turnover-allometry-pearson-r> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "6-species vertebrate segmentation clock delay-turnover allometry Pearson r = 0.997 Pearson r" ;
+        dct:description "linear allometric slope vs (tau + t_1/2,p) = 3.334 (r = 0.9955, p = 3.08e-05)" ;
+        schema:measurementTechnique "correlation between HES7 DDE predicted and empirical clock periods across 6 vertebrate species (zebrafish 30 min to human 300 min, RMSE = 14.24 min)" ;
+        schema:name "6-species vertebrate segmentation clock delay-turnover allometry Pearson r" ;
+        schema:unitText "Pearson r" ;
+        schema:value "0.997" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-6-species-vertebrate-segmentation-clock-delay-turnover-allometry-pearson-r-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-6-species-vertebrate-segmentation-clock-delay-turnover-allometry-pearson-r-reference> a schema:PropertyValue ;
+        dct:source "Diaz-Cuadros et al. (2020) Nature 580:113-118; Matsuda et al. (2020) Science 369:1450-1455; Lazaro et al. (2023) Nat. Ecol. Evol. 7:1107-1118" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-dll1-notch-coupled-hexagonal-psm-lattice-kuramoto-order-parameter-r-after-dapt-washout-6-cycles> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "DLL1-Notch coupled hexagonal PSM lattice Kuramoto order parameter R after DAPT washout (6 cycles) = 0.85 Kuramoto R (dimensionless)" ;
+        dct:description "pre-DAPT R from random phases after 5 coupled cycles = 0.396 (R_0 = 0.188); DAPT amplitude ratio = 0.166 (collapse); coupling gain in R = 0.641; R_end vs eps Spearman rho = 0.66 over eps in [0.0, 0.05, 0.1, 0.15, 0.25, 0.35]" ;
+        schema:measurementTechnique "12x12 odd-r hexagonal lattice of delay-coupled HES7 TTFL cells (eps = 0.25, tau_c = 240 min = 0.80 T, 5 % cell-autonomous tempo CV); mean R over the last cycle of a 6-cycle post-washout window; coupling-ablated control R = 0.2085 (synchrony lost, R < 0.5, after 2.99 cycles)" ;
+        schema:name "DLL1-Notch coupled hexagonal PSM lattice Kuramoto order parameter R after DAPT washout (6 cycles)" ;
+        schema:unitText "Kuramoto R (dimensionless)" ;
+        schema:value "0.85" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-dll1-notch-coupled-hexagonal-psm-lattice-kuramoto-order-parameter-r-after-dapt-washout-6-cycles-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-dll1-notch-coupled-hexagonal-psm-lattice-kuramoto-order-parameter-r-after-dapt-washout-6-cycles-reference> a schema:PropertyValue ;
+        dct:source "Matsuda et al. (2020) Nature 580:124-129 (DAPT pulse-washout synchronises culture-level HES7 oscillations; R = 1 is perfect in-phase synchrony); Riedel-Kruse et al. (2007) Science 317:1911-1915 (Notch-inhibition desynchronisation)" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-human-pluripotent-stem-cell-psm-hes7-achilles-oscillation-period-t-human> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "human pluripotent stem-cell PSM HES7-Achilles oscillation period T_human = 300.01 min" ;
+        dct:description "LbNOX NAD+ elevation accelerates human period to 227.8 min; sodium azide ETC inhibition slows period to 396.8 min" ;
+        schema:measurementTechnique "parabolic peak-refined limit-cycle period of human WT HES7 DDE (mouse-WT anchor dilated by lam_eff = 300/122: tau_tx = 30.5 min, tau_tl = 13.1 min, t_{1/2,p} = 38.1 min, t_{1/2,m} = 35.9 min)" ;
+        schema:name "human pluripotent stem-cell PSM HES7-Achilles oscillation period T_human" ;
+        schema:unitText "min" ;
+        schema:value "300.01" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-human-pluripotent-stem-cell-psm-hes7-achilles-oscillation-period-t-human-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-human-pluripotent-stem-cell-psm-hes7-achilles-oscillation-period-t-human-reference> a schema:PropertyValue ;
+        dct:source "Diaz-Cuadros et al. (2020) Nature 580:113-118 Fig. 2d (human segmentation clock period 300 +/- 18 min = 5.0 h)" ;
+        schema:value "300.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-human-vs-mouse-hes7-segmentation-clock-period-ratio-t-human-t-mouse> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "human vs mouse HES7 segmentation clock period ratio T_human / T_mouse = 2.4591 dimensionless ratio" ;
+        dct:description "intronless Hes7 Delta-intron1-3 ablation collapses to T = 0.0 min (sustained=False)" ;
+        schema:measurementTechnique "ratio of human WT iPSC-PSM period (300.01 min) to mouse WT PSM period (122.00 min) in the delayed HES7 TTFL DDE solver (exact rescaling collapse std = 2.32e-13 nM)" ;
+        schema:name "human vs mouse HES7 segmentation clock period ratio T_human / T_mouse" ;
+        schema:unitText "dimensionless ratio" ;
+        schema:value "2.4591" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-human-vs-mouse-hes7-segmentation-clock-period-ratio-t-human-t-mouse-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-human-vs-mouse-hes7-segmentation-clock-period-ratio-t-human-t-mouse-reference> a schema:PropertyValue ;
+        dct:source "Diaz-Cuadros et al. (2020) Nature 580:113-118 Fig. 2; Matsuda et al. (2020) Science 369:1450-1455 Fig. 1 (300 min / 122 min = 2.459)" ;
+        schema:value "2.459" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-matrigel-ablation-effect-on-rosette-polarity-order-10-minus-0> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Matrigel ablation effect on rosette polarity order (10 % minus 0 %) = 1.0699 dimensionless order parameter difference" ;
+        dct:description "polarity order by Matrigel %: {0.0: -0.084, 1.0: 0.641, 2.5: 0.737, 5.0: 0.99, 10.0: 0.986, 20.0: 0.991}" ;
+        schema:measurementTechnique "difference of P_rad between the 10 % Matrigel-embedded and the non-embedded (0 %) rosette simulations with identical seed and initial cell positions" ;
+        schema:name "Matrigel ablation effect on rosette polarity order (10 % minus 0 %)" ;
+        schema:unitText "dimensionless order parameter difference" ;
+        schema:value "1.0699" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-matrigel-ablation-effect-on-rosette-polarity-order-10-minus-0-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-matrigel-ablation-effect-on-rosette-polarity-order-10-minus-0-reference> a schema:PropertyValue ;
+        dct:source "Yamanaka et al. (2023) Nature 614:509-520 (Matrigel embedding is required for epithelial somite formation in human axioloids; ideal contrast = 1)" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-matrigel-embedded-10-axioloid-somite-rosette-radial-apical-polarity-order-p-rad> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Matrigel-embedded (10 %) axioloid somite rosette radial apical-polarity order P_rad = 0.986 dimensionless order parameter" ;
+        dct:description "non-embedded 0 % Matrigel control: P_rad = -0.084, <e> = 0.000, aggregate radius = 85.3 um (dispersed mesenchyme); Matrigel sweep [0.0, 1.0, 2.5, 5.0, 10.0, 20.0] % Spearman rho = 0.94" ;
+        schema:measurementTechnique "reduced 2D overdamped cell-centre model (24 cells) with elastic Matrigel shell k_M = kappa*phi (0.100 min^-1 at 10 %), ECM-contact polarisation and apical constriction; P_rad = <-n_i . r_hat_i>; epithelial fraction <e> = 0.670, apical convergence = 0.342, boundary circularity = 0.964, aggregate radius = 27.8 um" ;
+        schema:name "Matrigel-embedded (10 %) axioloid somite rosette radial apical-polarity order P_rad" ;
+        schema:unitText "dimensionless order parameter" ;
+        schema:value "0.986" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-matrigel-embedded-10-axioloid-somite-rosette-radial-apical-polarity-order-p-rad-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-matrigel-embedded-10-axioloid-somite-rosette-radial-apical-polarity-order-p-rad-reference> a schema:PropertyValue ;
+        dct:source "Geometric ideal of a fully radially polarised epithelial rosette; Yamanaka et al. (2023) Nature 614:509-520 and Sanaki-Matsumiya et al. (2022) Nat. Commun. 13:2325 report epithelial somite rosettes only in Matrigel-embedded axioloids/somitoids (qualitative; no published P_rad)" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-post-washout-collective-period-of-the-notch-coupled-lattice-t-coll> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "post-washout collective period of the Notch-coupled lattice T_coll = 298.22 min" ;
+        dct:description "in-phase state stable (R_end >= 0.85) for tau_c/T in [0.625, 0.75, 0.8, 0.875, 0.95]; single-cell period = 300.01 min" ;
+        schema:measurementTechnique "tissue-mean HES7 peak-to-peak period over the last 4.5 post-washout cycles (restart transient excluded); exact mean-field reduction at tau_c = 0.8 T gives 299.9 min; Herrgen (2010) delay sweep spans 235-417 min over tau_c/T in [0, 0.95]" ;
+        schema:name "post-washout collective period of the Notch-coupled lattice T_coll" ;
+        schema:unitText "min" ;
+        schema:value "298.22" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-post-washout-collective-period-of-the-notch-coupled-lattice-t-coll-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-post-washout-collective-period-of-the-notch-coupled-lattice-t-coll-reference> a schema:PropertyValue ;
+        dct:source "Diaz-Cuadros et al. (2020) Nature 580:113-118 Fig. 2d (human segmentation clock period 300 +/- 18 min); Herrgen et al. (2010) Curr. Biol. 20:1244-1253 (coupling delay sets the collective period)" ;
+        schema:value "300.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-vertebrate-somite-psm-specimen-bilateral-somite-spacing-s-obs> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "vertebrate somite/PSM specimen bilateral somite spacing S_obs = 47.1429 px" ;
+        dct:description "bilateral symmetry ratio = 1.0061, std = 9.48 px, phase correlation r = 0.4795" ;
+        schema:measurementTechnique "bilateral dorsal somite row DoG peak segmentation on human_somite_organoid_specimen.jpg (upper=8 somites, lower=8 somites, CV=0.2010)" ;
+        schema:name "vertebrate somite/PSM specimen bilateral somite spacing S_obs" ;
+        schema:unitText "px" ;
+        schema:value "47.1429" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-vertebrate-somite-psm-specimen-bilateral-somite-spacing-s-obs-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-measurement-vertebrate-somite-psm-specimen-bilateral-somite-spacing-s-obs-reference> a schema:PropertyValue ;
+        dct:source "Vendored CC BY 4.0 vertebrate embryo SEM specimen (datasets/human_somite_organoid_clock/human_somite_organoid_specimen.jpg)" ;
+        schema:value "47.14" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-morphometric-validation-1> a pk:EvidenceItem ;
+        rdfs:label "2019-diaza-human-somite-organoid-clock.py L1256–L1368" ;
+        dct:description "9 measurements with reference values, sources, units and ablation notes (lattice L1328-1346, rosette L1348-1366)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2019-diaza-human-somite-organoid-clock.py#L1256-L1368> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-diaza-human-somite-organoid-clock-morphometric-validation-2> a pk:EvidenceItem ;
+        rdfs:label "2019-diaza-human-somite-organoid-clock.py L949–L959" ;
+        dct:description "Coupled vs coupling-ablated control sharing the same DAPT reset (delta R = 0.64)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2019-diaza-human-somite-organoid-clock.py#L949-L959> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0960-9822(03)00534-7>,
+            <https://doi.org/10.1016/j.cub.2010.06.034>,
+            <https://doi.org/10.1038/s41467-022-29967-1>,
+            <https://doi.org/10.1038/s41586-019-1885-9>,
+            <https://doi.org/10.1038/s41586-020-2144-9>,
+            <https://doi.org/10.1038/s41586-022-05574-4>,
+            <https://doi.org/10.1038/s41586-022-05649-2>,
+            <https://doi.org/10.1126/science.1142538>,
+            <https://doi.org/10.1126/science.aba7668> .
+    <https://doi.org/10.1016/S0960-9822(03)00534-7> dct:date "2003"^^xsd:gYear ;
+        dct:title "Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator" .
+    <https://doi.org/10.1016/j.cub.2010.06.034> dct:date "2010"^^xsd:gYear ;
+        dct:title "Intercellular coupling regulates the period of the segmentation clock" .
+    <https://doi.org/10.1038/s41467-022-29967-1> dct:date "2022"^^xsd:gYear ;
+        dct:title "Periodic formation of epithelial somites from human pluripotent stem cells" .
+    <https://doi.org/10.1038/s41586-019-1885-9> dct:date "2020"^^xsd:gYear ;
+        dct:title "In vitro characterization of the human segmentation clock" .
+    <https://doi.org/10.1038/s41586-020-2144-9> dct:date "2020"^^xsd:gYear ;
+        dct:title "Recapitulating the human segmentation clock with pluripotent stem cells" .
+    <https://doi.org/10.1038/s41586-022-05574-4> dct:date "2023"^^xsd:gYear ;
+        dct:title "Metabolic regulation of species-specific developmental rates" .
+    <https://doi.org/10.1038/s41586-022-05649-2> dct:date "2023"^^xsd:gYear ;
+        dct:title "Reconstituting human somitogenesis in vitro" .
+    <https://doi.org/10.1126/science.1142538> dct:date "2007"^^xsd:gYear ;
+        dct:title "Synchrony dynamics during initiation, failure, and rescue of the segmentation clock" .
+    <https://doi.org/10.1126/science.aba7668> dct:date "2020"^^xsd:gYear ;
+        dct:title "Species-specific oscillation periods of human and mouse segmentation clocks are due to cell autonomous properties of HES7" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Diaz-Cuadros et al. (2020, 2023) & Matsuda et al. (2020) human pluripotent stem-cell segmentation clock and metabolic tempo scaling model — Morphometric validation 74/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T12:21:23Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-diaza-human-somite-organoid-clock-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,0 +1,280 @@
+# MorphoEval audit — Haupaix et al. (2018), Inaba et al. (2019) & Lin et al. (2013) Somite-Prepatterned
+# Avian Plumage Stripes with Feather-Follicle Ring-Niche Coupling, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `2018-haupaix-avian-plumage-somite-stripes.py` (v3, 1452 lines, 12 self-test checks,
+# 14 measurements) after the remediation loop `2026-10-19-avian-plumage-somite-stripes-loop-pass3`,
+# superseding `2026-10-19-avian-plumage-somite-stripes-audit-v2` (92.2).
+#
+# What Pass 3 changed:
+#   1. The single open v2 item — couple the 2D somite-Agouti solver to individual 3D cylindrical feather-follicle
+#      progenitor niches (Lin et al. 2013) — is closed as a reduced geometric + threshold model: a hexagonal
+#      follicle lattice (9 feather rows per somitic period) whose ring niches read the body-wide field u(x, y),
+#      the Haupaix (2018) agouti-dose yellow-pulse-duration law (feather type b / y / fully pheomelanic), and
+#      each follicle unrolled from a 3D cylinder into the opened sheet of Lin's fig. S9 with chevron bands
+#      s(ell) = s_0 + k|ell|. Two new Lean 4 theorems (Laws 4-5, 0 sorrys) pin the governing maths.
+#   2. New paper-grounded validation: wild-type / recessive-black / Fawn quail yellow-feather-row counts
+#      (4 / 2 / 5-6 rows, Haupaix Fig. 3B) are reproduced (4 / 2 / 6) with fitted dose multipliers; Fawn centre
+#      rows are fully pheomelanic (paper: no eumelanin before hatching); centre-row yellow band > edge-row (fig. S1).
+#   3. Two of the four primary citations were WRONG in Passes 1-2 and are corrected: Haupaix et al. (2018) was
+#      cited under a non-existent title; Inaba et al. (2019) was cited as a non-existent Science 363:eaaw1969
+#      article (it is PNAS 116(14):6884-6890, doi:10.1073/pnas.1816107116). Bib + JSON re-pinned (SHA-256).
+#   4. Reading the paper for (2) exposed that the Pass 1-2 "reference" numbers the model is fitted to — the 5-species
+#      mm stripe widths, the quail Lambda = 0.95 / w_y = 0.42 mm, the "Agouti bead" dose regimes (not a Haupaix
+#      experiment; ASIP beads are Lin 2013 and whiten feathers) and the reverse-direction chimeras — are not in
+#      the papers. They are flagged in the dataset (`pass3_provenance_flags`) and scored accordingly below.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated probabilities).
+# Line numbers refer to the files at commit 469bf3c (working tree of the slot-010 loop). Several dimensions go
+# DOWN relative to v2 because the v2 assessor credited reference values and citations that do not exist.
+
+audit:
+  id: 2026-10-19-avian-plumage-somite-stripes-audit-v3
+  supersedes_audit_id: 2026-10-19-avian-plumage-somite-stripes-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Slot 010 Pass 3 autonomous loop assessor)"
+    homepage: https://www.anthropic.com
+  second_assessor: null
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 469bf3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) post-remediation evaluation of `2018-haupaix-avian-plumage-somite-stripes.py`
+      after Step 12 of `2026-10-19-avian-plumage-somite-stripes-loop` (Pass 2) was executed in
+      `2026-10-19-avian-plumage-somite-stripes-loop-pass3`. The PNG regenerates byte-identically
+      across two runs (SHA-256 80cf4ed6...); `--self-test` passes 12 checks in ~4 s; default render ~7 s.
+
+references:
+  haupaix2018:
+    title: "The periodic coloration in birds forms through a prepattern of somite origin"
+    authors: "Haupaix N, Curantz C, Bailleul R, Beck S, Robic A, Manceau M"
+    venue: "Science 361(6408):eaar4777 (2018)"
+    doi: 10.1126/science.aar4777
+    pmid: "30237324"
+  inaba2019:
+    title: "Instructive role of melanocytes during pigment pattern formation of the avian skin"
+    authors: "Inaba M, Jiang TX, Liang YC, Tsai S, Lai YC, Widelitz RB, Chuong CM"
+    venue: "Proceedings of the National Academy of Sciences USA 116(14):6884-6890 (2019)"
+    doi: 10.1073/pnas.1816107116
+    pmid: "30886106"
+  bailleul2019:
+    title: "Symmetry breaking in the embryonic skin triggers directional and sequential plumage patterning"
+    authors: "Bailleul R, Curantz C, Desmarquet-Trin Dinh C, Hidalgo M, Touboul J, Manceau M"
+    venue: "PLOS Biology 17(10):e3000448 (2019)"
+    doi: 10.1371/journal.pbio.3000448
+  lin2013:
+    title: "Topology of feather melanocyte progenitor niche allows complex pigment patterns to emerge"
+    authors: "Lin SJ, Foley J, Jiang TX, Yeh CY, Wu P, Foley A, Yen CM, Widelitz R, Chuong CM"
+    venue: "Science 340(6139):1442-1445 (2013)"
+    doi: 10.1126/science.1230374
+
+simulations:
+  - id: haupaix-avian-plumage-somite-stripes
+    name: "Haupaix et al. (2018), Inaba et al. (2019) & Lin et al. (2013) somite-prepatterned Agouti signaling, melanocyte gap-junction reaction-diffusion and feather-follicle ring-niche chevrons in galliform plumage stripes"
+    organism: "Galliform chicks — Japanese quail (Coturnix japonica; wild-type, recessive-black and Fawn strains), common pheasant (Phasianus colchicus), helmeted guineafowl (Numida meleagris), red-legged partridge (Alectoris rufa), and wild turkey (Meleagris gallopavo)"
+    script: 2018-haupaix-avian-plumage-somite-stripes.py
+    output: docs/media/avian_plumage_somite_stripes_comparison.png
+    extra_outputs:
+      - docs/media/avian_plumage_somite_stripes_growth.gif
+    status: evaluated
+    source_refs:
+      - haupaix2018
+      - inaba2019
+      - bailleul2019
+      - lin2013
+    supersedes_audit_id: 2026-10-19-avian-plumage-somite-stripes-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Haupaix et al. (2018): galliform dorsal stripes form in two steps — the somite autonomously sets the position of dermal agouti expression bands (A1', A1, A2; quail somite -> pheasant host grafts, neural-tube grafts as control), and agouti dose then sets stripe width by controlling the duration of a transient yellow-production pulse within each feather; wild-type quail ly stripe = feather rows 2-5, recessive-black (agouti loss) rows 3-4, Fawn (agouti duplication) rows 1/2-6 with no eumelanin before hatching; yellow band longer at stripe centre than edge; stripe boundaries 2-4 mm (cb) and 3-9 mm (ly) from the midline at wing level"
+        - "Inaba et al. (2019): quail melanocytes form periodic stripes cell-autonomously; connexin40 gap junctions tune the pattern (dominant-negative cx40 expands black, overexpression expands yellow); melanocytes instruct dermal ASIP expression"
+        - "Lin et al. (2013): feather melanocyte progenitors form a horizontal ring niche in the proximal follicle and send melanocytes vertically into barb ridges; bars in Barred Plymouth Rock feathers are chevron-shaped when the follicle cylinder is opened from the posterior side and travel toward the anterior; pulp ASIP inhibits melanocyte differentiation (ASIP beads whiten feathers)"
+      reconstructed_in_script:
+        - "A 2D somite-derived Gaussian agouti prepattern S_somite(y) coupled by relaxation beta_A (S - u) to a two-species activator-inhibitor PDE with cubic-saturating linearised kinetics and d = Dv/Du = 20; MC1R threshold switch u >= theta_A; AP orientation index and Ashman bimodality; negative controls beta_A = 0 and d = 1"
+        - "Pass 3: a 9-row-per-period hexagonal follicle lattice whose ring niches sample u(x_i, y_i); feather type [A_i >= theta] + [A_i - 2a >= theta] and yellow-pulse duty (1/pi) arccos((theta - (A_i - a))/a); an agouti dose series (x0.60 / x1.00 / x2.80) reproducing 2 / 4 / 6 yellow rows; each follicle rendered as a 3D cylinder and opened into the (ell, s) sheet with chevron band edges s_0 + k|ell|, swept over k and regressed back (max |k_meas - k| = 7e-4); Lean Theorems 4-5"
+        - "Pass 1-2 carry-overs: an analytic Gaussian-threshold species width w_y = 2 (1.13 sigma) sqrt(2 ln(A_0/theta)) for five species, a linear donor-autonomy chimera law alpha = 0.94, a fitted exponential dose-response for the 'bead' axis, and DoG segmentation of a CC BY-SA Coturnix japonica photograph (N = 4 stripes, yellow fraction 0.442)"
+      transfer_boundary:
+        - "The mm calibration (Lambda = 0.95 mm, w_y = 0.42 mm, the 5-species widths) and the 'bead' regime widths were introduced in Pass 1 without a source; Haupaix et al. report stripe widths in feather rows and boundaries in mm from the midline, so the row-count validation (Pass 3) is the only width comparison against published values"
+        - "The follicle model is a geometric + threshold reduction of Lin et al.: the chevron arises from a pigment switch propagating around the ring at rate omega while cells rise at v_z (k = v_z/(r_f omega)); no barb-ridge helical displacement, pulp ASIP diffusion, progenitor-depletion feedback or regeneration cycle is solved; a, k and the dose multipliers are fitted, not measured"
+        - "The reverse chimeras (pheasant -> quail, guineafowl -> quail) are extrapolations of the quail -> pheasant result; the PDE integrates a cubic linearisation, not the rational Gierer-Meinhardt kinetics written in the reference JSON"
+      does_not_claim:
+        - "Quantitative reproduction of Haupaix Fig. 3C / fig. S6 relative yellow band lengths or of the midline-distance boundaries, a mechanistic derivation of the agouti fold-change in RB/Fa strains, the melanocyte cell-autonomy or cx40 experiments of Inaba et al., the Barred Plymouth Rock progenitor-depletion mechanism of Lin et al., or a side-by-side comparison with the papers' own figures (none are vendored)"
+    summary: >-
+      Pass 3 closes the single v2 remediation item with a reduced but machine-checked follicle-niche model and,
+      for the first time in this loop, validates the script against numbers that Haupaix et al. (2018) actually
+      publish: the wild-type / recessive-black / Fawn yellow-feather-row counts (4 / 2 / 5-6; simulated 4 / 2 / 6)
+      and the qualitative centre-vs-edge yellow band gradient, with Fawn centre rows fully pheomelanic as the paper
+      describes. Doing so exposed that the Pass 1-2 audits had credited two non-existent citations (a fabricated
+      Haupaix title; a non-existent Inaba Science article) and a set of unsourced mm "reference" widths and "bead"
+      experiments that the model was fitted to; these are now corrected or flagged in the vendored dataset. The
+      overall score therefore falls from 92.2 to 80.9 even though the model grew: the remaining structure is
+      honest but its oldest layer is still calibrated to numbers of unknown provenance.
+    scores:
+      model-fidelity:
+        value: 78
+        rationale: >-
+          The two-step Haupaix mechanism is now implemented end-to-end: somite prepattern -> dermal agouti band
+          -> dose-dependent yellow-pulse duration -> feather type (b / y / fully pheomelanic), with the Lin (2013)
+          ring niche and opened-cylinder chevron geometry (`niche_feather_type`, `niche_yellow_pulse_duty`,
+          `build_feather_follicle_lattice`, `simulate_follicle_niche_cylinder`, L545-L724) and five Lean theorems
+          (0 sorrys). Deductions: the PDE integrates a cubic-saturating linearisation around (0.46, 0.46) while
+          the docstring/JSON write rational Gierer-Meinhardt kinetics (-6); the species widths come from an
+          analytic Gaussian-threshold formula with an unexplained 1.13 sigma factor, not from the PDE, whose own
+          yellow fraction is 0.35, not 0.44 (-5); the 'bead' dose-response is a fitted exponential (-3); the
+          follicle model has no barb-ridge mechanics, pulp diffusion or regeneration cycle, and its a, k and
+          dose multipliers are free parameters fitted to the row counts (-5); reverse chimeras are extrapolations (-3).
+        evidence:
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [545, 572], note: "Feather-type trichotomy and yellow-pulse duty law on the ring niche (Lean Theorem 5)", supports: true}
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [574, 656], note: "Hexagonal 9-row/period follicle lattice sampling the body-wide u field; yellow rows per period readout", supports: true}
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [659, 724], note: "3D cylindrical follicle opened into the (ell, s) sheet with chevron edge s_0 + k|ell| and regressed k_meas (Lean Theorem 4)", supports: true}
+          - {file: morphoeval/lean/loops/Loop_010_avian_plumage_somite_stripes.lean, lines: [121, 192], note: "Laws 4-5: ring_niche_chevron_geometry and agouti_pulse_duration_feather_type, verified with lean, 0 sorrys", supports: true}
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [286, 289], note: "Cubic-saturating linearised kinetics, not the rational form in the reference JSON governing_pde", supports: false}
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [351, 356], note: "Species width from analytic Gaussian threshold with sigma_eff = 1.13 sigma; comment calls it 'PDE-coupled' but no PDE is run", supports: false}
+      specimen-match:
+        value: 76
+        rationale: >-
+          Panels E-G keep the SHA-256-locked Coturnix japonica photograph with the DoG segmentation (4 yellow / 4
+          black stripes, period 35 px, yellow fraction 0.442, Ashman D 2.30) and the dorsoventral profile overlay;
+          Panels I-L add the follicle lattice (yellow rows visibly 4 of 9 per period), a 3D cylinder with the ring
+          niche, opened follicles whose yellow band lengthens from edge row to centre row to Fawn and carries the
+          chevron, and the RB / WT / Fa row-count bars. Deductions: the specimen is an adult-plumage Wikimedia
+          photograph, not a juvenile flat-skin preparation like Haupaix Fig. 1A, and the ROI stripes are not
+          established to be the cb/ly/lb sequence the paper describes (-8); no figure of the paper is vendored for
+          a side-by-side (-6); the chevron panels are compared only with their own analytic law, not with a feather
+          photograph or Lin fig. S9 (-6); Panel A remains small with its title overlapping the colour bar (-2);
+          the GIF shows only the body-wide field (-2).
+        evidence:
+          - {file: docs/media/avian_plumage_somite_stripes_comparison.png, lines: [0, 0], note: "12-panel figure: E-G specimen ROI, segmentation and DV profile; I lattice; J 3D follicle; K opened chevrons (edge/centre/Fawn); L dose mutants", supports: true}
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [778, 835], note: "DoG pheomelanin segmentation and peak/trough detection on the dorsal ROI", supports: true}
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [995, 1089], note: "Panels I-L rendering of the follicle-niche coupling", supports: true}
+          - {file: datasets/avian_plumage_somite_stripes/avian_plumage_somite_stripes_reference.json, lines: [31, 40], note: "Specimen is an adult Coturnix japonica photograph (Wikimedia CC BY-SA 2.0), not a juvenile flat skin", supports: false}
+      parameter-expressivity:
+        value: 84
+        rationale: >-
+          Agouti dose is now a genuine model axis: x0.60 / x1.00 / x2.80 gives 2 / 4 / 6 yellow rows with duty
+          0.38 / 0.60 / 1.00, monotone as Lean Theorem 5 requires, and `--agouti-scale` exposes it; the helical
+          pitch k is swept over {0, 0.15, 0.35, 0.60, 0.90} with k_meas tracking k to 7e-4 and k = 0 giving a bar;
+          `--chevron-pitch`, `--niche-dip`, `--rows-per-period` are exposed; beta_A and d controls are kept.
+          Deductions: the dose multipliers are fitted to the target row counts rather than measured, and Fawn
+          saturates (any scale >= 2.5 gives 6 rows) (-6); `--species` is parsed but never used (-4); the species
+          axis is still the analytic formula, not the PDE (-3); 5-species and chimera panels unchanged (-3).
+        evidence:
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [534, 542], note: "Fitted dose multipliers RB 0.60 / WT 1.00 / Fa 2.80 and Haupaix row-count references", supports: true}
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [727, 773], note: "Chevron pitch sweep and agouti dose mutant panel", supports: true}
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [1408, 1446], note: "CLI: --chevron-pitch, --niche-dip, --rows-per-period, --agouti-scale readout; --species is parsed at L1410 but unused", supports: true}
+      morphometric-validation:
+        value: 80
+        rationale: >-
+          `measure_morphoeval()` (L1138-L1306) now returns 14 measurements. Three are against values the paper
+          publishes: WT 4.0 yellow rows (ref 4), RB 2.0 (ref 2), Fa 6.0 (ref 5-6), with Fa 4 of 6 rows fully
+          pheomelanic and the centre/edge duty ratio 1.88 (paper: > 1). Deductions: the eight Pass 2 measurements
+          compare against mm widths and bead regimes that are not in the papers (reference JSON provenance flags),
+          so 4 of 8 'reference-backed' comparisons are against unsourced numbers (-8); the chevron k error and the
+          lattice-vs-body fraction are self-consistency checks (-4); the lattice y-fraction (0.444) differs from the
+          body pigment-map fraction (0.35) by 0.094, exposing a 9-row vs 80-row quantisation mismatch (-4); no
+          relative-yellow-band-length numbers from Fig. 3C / fig. S6 were digitised (-4).
+        evidence:
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [1162, 1223], note: "Six Pass 3 measurements: WT/RB/Fa yellow rows vs Haupaix Fig. 3B, centre/edge duty ratio, chevron pitch error, lattice vs body fraction", supports: true}
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [1225, 1305], note: "Eight Pass 2 measurements retained; four reference values (species mm widths, chimera 0.608 mm, bead 0.24 mm) have no published source", supports: false}
+          - {file: datasets/avian_plumage_somite_stripes/avian_plumage_somite_stripes_reference.json, lines: [223, 240], note: "haupaix2018_feather_row_benchmarks transcribed from the paper's text (rows 2-5 / 3-4 / 1(2)-6)", supports: true}
+      source-traceability:
+        value: 82
+        rationale: >-
+          All four primary sources now resolve: Haupaix (2018) and Inaba (2019) carry the published titles, venues,
+          DOIs and PMIDs after Pass 3 corrected a fabricated title and a non-existent Science article; the bib and
+          JSON were re-pinned and the four SHA-256 locks are verified fail-closed at runtime (L113-L146); the new
+          `pass3_provenance_flags` block states which numbers are not from the papers. Deductions: the model is
+          still calibrated to those unsourced numbers (species mm widths, Lambda = 0.95 mm, bead regimes) (-8);
+          `scout_manifest.json` was not re-audited and may carry the old citations (-3); Lin (2013) and Bailleul
+          (2019) have no PMID recorded (-2); no paper figure or supplementary table is vendored (-5).
+        evidence:
+          - {file: datasets/avian_plumage_somite_stripes/paper_citations.bib, lines: [1, 27], note: "Corrected Haupaix and Inaba entries with PMIDs 30237324 and 30886106", supports: true}
+          - {file: datasets/avian_plumage_somite_stripes/avian_plumage_somite_stripes_reference.json, lines: [3, 18], note: "pass3_citation_corrections and corrected source records", supports: true}
+          - {file: datasets/avian_plumage_somite_stripes/avian_plumage_somite_stripes_reference.json, lines: [214, 222], note: "pass3_provenance_flags: species widths, bead regimes, reverse chimeras and PDE form are not from the papers", supports: true}
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [113, 146], note: "EXPECTED_SHA256 re-pinned for the JSON and bib; verify_dataset_sha256 fail-closed", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          The module docstring (L1-L83) maps each mechanism to the paper and figure it comes from, states what
+          was corrected and what remains a reduction, and names all five Lean theorems; the section 3b banner
+          (L517-L532) states the modelling assumptions of the follicle reduction; the math KG YAML registers Laws
+          4-5 with Lean loci and code loci. Deductions: Panel B/C/D and the Pass 2 measurement strings still cite
+          'Haupaix Figs. 1-2' for mm widths the paper does not report (-6); the 'bead' naming persists in function
+          and variable names (-3); the Lean laws are linked by name but the Python does not assert the integer
+          instances of Theorem 4 (-2); some KG code loci span whole sections rather than the exact lines (-3).
+        evidence:
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [1, 83], note: "Module docstring: corrected citations, Haupaix two-step mechanism, Lin ring niche, Theorems 1-5", supports: true}
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [517, 532], note: "Section 3b banner stating the reduced follicle model and its omissions", supports: true}
+          - {file: morphoeval/math_kg_loops/haupaix-avian-plumage-somite-stripes.yaml, lines: [78, 123], note: "Laws 4-5 registered with Lean code, loci and Python code loci", supports: true}
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [1225, 1242], note: "Measurement strings still attribute the 0.42 mm quail width to 'Haupaix Figs. 1-2'", supports: false}
+      repro-package:
+        value: 90
+        rationale: >-
+          Deterministic seed 2018, 12-check `--self-test` (L1312-L1405, ~4 s) covering the four SHA-256 locks,
+          Lean Laws 1-5 as integer/monotonicity instances, PDE, species, chimeras, dose axis, controls, specimen
+          CV, bitwise two-run determinism, lattice row counts, mutants and chevron geometry; the PNG regenerates
+          byte-identically across runs (80cf4ed6...) and the default render takes ~7 s. Deductions: no
+          requirements lock file is vendored for this slot (-4); matplotlib needs MPLCONFIGDIR when the home
+          cache is unwritable and the README does not say so (-2); the GIF is unchanged from Pass 2 and does not
+          show the follicle coupling (-2); `--species` is a dead flag (-2).
+        evidence:
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [1312, 1405], note: "12-check self_test including Pass 3 checks 9-12", supports: true}
+          - {file: 2018-haupaix-avian-plumage-somite-stripes.py, lines: [1408, 1452], note: "CLI with Pass 3 flags and the --agouti-scale JSON readout", supports: true}
+          - {file: datasets/avian_plumage_somite_stripes/README.md, lines: [1, 31], note: "Dataset README with corrected citations, Pass 3 additions and the re-pinned SHA-256 table", supports: true}
+    remediation:
+      - >-
+        2018-haupaix-avian-plumage-somite-stripes.py:286-289 vs datasets/avian_plumage_somite_stripes/avian_plumage_somite_stripes_reference.json governing_pde —
+        the solver integrates a cubic-saturating linearisation around (0.46, 0.46) while the docstring and JSON write
+        rational Gierer-Meinhardt kinetics alpha_u u^2 / (v (1 + kappa u^2)). Either integrate the rational form (and
+        re-derive the Lean Theorem 3 Jacobian from its fixed point) or rewrite the JSON/docstring to the cubic model.
+      - >-
+        2018-haupaix-avian-plumage-somite-stripes.py:339-361 and 452-488 — species yellow widths come from an analytic
+        Gaussian-threshold formula with an unexplained sigma_eff = 1.13 sigma, and the dose axis from a fitted exponential
+        delta_w = 0.48 (1 - exp(-0.82 dose)); the PDE's own quail yellow fraction is 0.35, not the 0.448 reported.
+        Derive species and dose widths from the PDE + lattice (as the Pass 3 mutant panel already does) and drop the formulas.
+      - >-
+        datasets/avian_plumage_somite_stripes/avian_plumage_somite_stripes_reference.json galliform_species_panel and
+        agouti_bead_perturbation_regimes — mm widths, Lambda = 0.95 mm and the five 'bead' regimes have no published source
+        (now flagged in pass3_provenance_flags). Replace them with the paper's own data: midline distances (cb 2-4 mm, ly
+        3-9 mm at wing level), feather-row counts, and digitised Fig. 3C / fig. S6 relative yellow band lengths; re-pin.
+      - >-
+        2018-haupaix-avian-plumage-somite-stripes.py:534-542 and 659-724 — niche dip a = 0.20, chevron pitch k = 0.35 and the
+        RB/Fa dose multipliers 0.60 / 2.80 are fitted to the target row counts and Fawn saturates (any scale >= 2.5 gives 6
+        rows). Calibrate a against digitised relative yellow band lengths and k against Lin (2013) fig. S9 chevron angles;
+        add barb-ridge helical displacement so k is derived from (v_z, r_f, omega) rather than set.
+      - >-
+        2018-haupaix-avian-plumage-somite-stripes.py:574-656 — the lattice y-feather fraction (0.444, 9-row quantisation) differs
+        from the body pigment-map fraction (0.35, 80-row grid) by 0.094. Resolve by sampling the lattice on a finer grid or
+        by reporting the body fraction in feather-row units, and tighten self-test check 10 from 0.12 to < 0.03.
+      - >-
+        2018-haupaix-avian-plumage-somite-stripes.py:1410 — `--species` is parsed but never used. Wire it to the species panel /
+        follicle readout (per-species rows_per_period and A_0) or remove it.
+      - >-
+        2018-haupaix-avian-plumage-somite-stripes.py:395-449 — the pheasant -> quail and guineafowl -> quail chimeras and
+        alpha_donor = 0.94 are extrapolations; Haupaix et al. report quail somites -> pheasant hosts (and neural-tube controls).
+        Keep the reported direction as validation, label the others as predictions, and add the neural-tube negative control.
+      - >-
+        morphoeval/lean/loops/Loop_010_avian_plumage_somite_stripes.lean:132-157 — Theorem 4 treats k as a free integer; add
+        the definitional link k = v_z / (r_f omega) (scaled integers) and prove the bar limit as omega -> large; Theorem 5 proves
+        the trichotomy but not the duty formula's monotonicity, which needs reals (Mathlib) and is carried as out of reach in core Lean.
+      - >-
+        datasets/avian_plumage_somite_stripes/scout_manifest.json — not re-audited in Pass 3; check it for the old Haupaix/Inaba
+        citations and vendor PMIDs for Lin (2013) and Bailleul (2019); vendor or digitise one paper figure (Haupaix Fig. 1A flat
+        skin or Lin fig. S9) so specimen-match can be judged side by side.

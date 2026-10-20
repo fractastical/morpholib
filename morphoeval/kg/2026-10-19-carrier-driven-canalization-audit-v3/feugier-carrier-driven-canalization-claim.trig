@@ -1,0 +1,94 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-feugier-carrier-driven-canalization> a pk:Claim ;
+        rdfs:label "Feugier, Mochizuki & Iwasa (2005) PIN1 efflux carrier canalization on a Lockhart (1965)-growing hexagonal leaf blade with Scarpella et al. (2004/2006) procambial commitment: sequential 1°→4° vein-order emergence, open trees vs closed areoles vs decelerating no-branching faithfully reproduces Arabidopsis thaliana (dicot leaf lamina and procambial venation network) morphology" ;
+        dct:description "The simulation script(s) 2005-feugier-carrier-driven-canalization.py implement the cited source model as published and produce forms that match real Arabidopsis thaliana (dicot leaf lamina and procambial venation network) specimens and the source authors' figures. A belief under audit, not a fact: its credibility is the weight of evidence (MorphoEval 0.1.0 overall 91.9/100, audit 2026-10-19-carrier-driven-canalization-audit-v3) and the assessments." ;
+        dct:subject <https://github.com/fractastical/morpholib/blob/d58a084/2005-feugier-carrier-driven-canalization.py> ;
+        pk:context "script(s): https://github.com/fractastical/morpholib/blob/d58a084/2005-feugier-carrier-driven-canalization.py; output: docs/media/carrier_driven_canalization_comparison.png; organism: Arabidopsis thaliana (dicot leaf lamina and procambial venation network); checkpoint commit: https://github.com/fractastical/morpholib/commit/d58a084; environment: python 3.14.7, numpy 2.4.2, scipy 1.17.0, matplotlib 3.10.8, Pillow 12.1.1, lean 4.35.0; spec_fingerprint: d5956a07207a9a97703c7b3ba0b06fe87ba07192a5b48400bfa9427bfa87a2c3; artifact_sha256: 74b39f5757cc4cb7020ab8f336cc4b70b0c34685f5c9d809bf4214e79583dd22; input_dataset_sha256: {datasets/carrier_driven_canalization/carrier_driven_canalization_reference.json=2f5e49e4cb5437bf..., datasets/carrier_driven_canalization/growing_blade_reference.json=400f277d561dfd8c..., datasets/carrier_driven_canalization/leaf_tip_venation_loops_specimen.jpg=e54c8add6cf7c916..., datasets/carrier_driven_canalization/paper_citations.bib=648885997eb3e2ee..., datasets/carrier_driven_canalization/scout_manifest.json=1de2b4f4c53ac234...}; supersedes_audit_id: 2026-10-19-carrier-driven-canalization-audit-v2; claim_boundary: [reported_in_source: Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. 236(4):366-375 hexagonal leaf lamina auxin S_i and directional PIN1 carrier P_ij ODEs with conserved total cellular carrier pool P_total = P_{i,cyt} + sum_{j=1}^6 P_ij; accelerating carrier-response functions Phi(J) produce branching vein patterns while linear or decelerating Phi produce no branching; conserved-pool competition yields higher auxin in veins than surrounding tissue | Scarpella, Francis & Berleth (2004) Development 131:3445-3455: vein orders form sequentially (midvein, then secondaries, tertiaries, quaternaries) during blade expansion; preprocambial domains extend as freely ending strands and fuse with pre-existing veins; procambial identity, once acquired, is not lost | Scarpella, Marcos, Friml & Berleth (2006) Genes & Development 20:1015-1027 ProPIN1:PIN1-GFP imaging showing epidermal PIN1 convergence points and transient bipolar PIN1 cells bridging strands into closed areoles | Lockhart (1965) J. Theor. Biol. 8:264-275: irreversible cell expansion rate (1/V)dV/dt = phi * max(0, P - Y) with wall extensibility phi, turgor P and yield threshold Y; reconstructed_in_script: Emergent growing-blade module (`simulate_growing_blade_canalization`): Feugier Eqs. 1-6 integrated on a 26x22 hexagonal mesh whose active blade mask expands by the Lockhart area law A(t) = A_0 exp(phi[(P-Y_0)t - kappa t^2/2]) (A(7)/A(2) = 2.399, arrest at 8 DAG) through four stages (2.0, 3.5, 5.0, 7.0 DAG) with marginal cell birth; 1°, 2°, 3°, 4° vein orders emerge sequentially (4 of 4 orders) with beta_1 = 0 at every stage in the accelerating open-tree regime, beta_1 = 4 closed areoles at 7 DAG under the Scarpella (2004) commitment lock, vein-cell fraction 0.86 (no discrete strands) under decelerating Phi, and no veins under k_1 = 0 | Commitment-delay expressivity sweep tau_commit in {0.5, 1, 2, 4, 8} giving monotone non-increasing beta_1 (Spearman rho = -1.0) | 6-face hexagonal intracellular PIN1 pool conservation and face-competition algebra (`verify_hexagonal_pool_conservation_and_face_competition`): pool error 0.0, winner-take-all share 0.9978 (ref 0.9960), saturated bipolar share 0.5221 (ref 0.5180), 6-regime Pearson r = 0.9999 | Templated topology scaffold (`simulate_hexagonal_venation_models`, Panels A-B): vein paths placed by a shortest-path template, ODEs relaxed on the scaffold, Betti-1 = 0 vs 16 graph readouts — relabelled in Pass 3 as a scaffold / Law 1 & Law 3 check, NOT an emergent result | Automated ridge + chromatic warmth segmentation of the cleared dicot leaf tip venation skeleton specimen (`leaf_tip_venation_loops_specimen.jpg`, CC BY-SA 4.0, 539x351 px): vein density 0.3585, Betti-1 = 205 closed areoles, mean compactness 0.7749 +- 0.0191 SE; transfer_boundary: 2D hexagonal cellular lattice with Lockhart area growth and marginal cell addition mapped to a cleared dicot leaf venation skeleton; blade growth is applied to the area/mask only (no per-cell anisotropic expansion, no carrier dilution by growth) | The 'closed areole' mechanism is Scarpella (2004/2006) procambial commitment, implemented as a sustained-flux lock, not a Feugier (2005) result; does_not_claim: 3D viscoelastic cell-wall FEM, turgor-driven anisotropic cell expansion, or stress feedback on PIN1 polarity | That Feugier et al. (2005) report closed loops under saturating Phi (withdrawn in Pass 3: the paper reports no branching under decelerating Phi, which the `decelerating_no_branching` regime reproduces) | Quantitative agreement of the simulated areole count (beta_1 = 4 on a 407-cell blade) with the specimen's 205 areoles; only the topological class (open tree vs reticulate) is compared]" ;
+        pk:derivedFromPaper <https://doi.org/10.1016/0022-5193(65)90077-9>,
+            <https://doi.org/10.1016/j.jtbi.2005.03.017>,
+            <https://doi.org/10.1086/382794>,
+            <https://doi.org/10.1101/gad.1402406>,
+            <https://doi.org/10.1111/j.1365-313X.2005.02581.x>,
+            <https://doi.org/10.1126/science.1214678>,
+            <https://doi.org/10.1242/dev.01182>,
+            <https://doi.org/10.1371/journal.pcbi.1000207> ;
+        pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-feugier-carrier-driven-canalization-code-traceability>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-feugier-carrier-driven-canalization-model-fidelity>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-feugier-carrier-driven-canalization-morphometric-validation>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-feugier-carrier-driven-canalization-overall>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-feugier-carrier-driven-canalization-parameter-expressivity>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-feugier-carrier-driven-canalization-repro-package>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-feugier-carrier-driven-canalization-source-traceability>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-feugier-carrier-driven-canalization-specimen-match> ;
+        pk:weightOfEvidence "0.919"^^xsd:double .
+    <https://github.com/fractastical/morpholib/blob/d58a084/2005-feugier-carrier-driven-canalization.py> a schema:SoftwareSourceCode ;
+        rdfs:label "2005-feugier-carrier-driven-canalization.py" ;
+        schema:codeRepository <https://github.com/fractastical/morpholib> ;
+        schema:programmingLanguage "Python" ;
+        schema:version "d58a084" .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/35> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0022-5193(65)90077-9>,
+            <https://doi.org/10.1016/j.jtbi.2005.03.017>,
+            <https://doi.org/10.1086/382794>,
+            <https://doi.org/10.1101/gad.1402406>,
+            <https://doi.org/10.1111/j.1365-313X.2005.02581.x>,
+            <https://doi.org/10.1126/science.1214678>,
+            <https://doi.org/10.1242/dev.01182>,
+            <https://doi.org/10.1371/journal.pcbi.1000207> .
+    <https://doi.org/10.1016/0022-5193(65)90077-9> dct:date "1965"^^xsd:gYear ;
+        dct:title "An analysis of irreversible plant cell elongation" .
+    <https://doi.org/10.1016/j.jtbi.2005.03.017> dct:date "2005"^^xsd:gYear ;
+        dct:title "Self-organization of the vascular system in plant leaves: Inter-dependent dynamics of auxin flux and carrier proteins" .
+    <https://doi.org/10.1086/382794> dct:date "2004"^^xsd:gYear ;
+        dct:title "Vein pattern development in adult leaves of Arabidopsis thaliana" .
+    <https://doi.org/10.1101/gad.1402406> dct:date "2006"^^xsd:gYear ;
+        dct:title "Control of leaf vascular patterning by polar auxin transport" .
+    <https://doi.org/10.1111/j.1365-313X.2005.02581.x> dct:date "2005"^^xsd:gYear ;
+        dct:title "Reviewing models of auxin canalization in the context of leaf vein pattern formation in Arabidopsis" .
+    <https://doi.org/10.1126/science.1214678> dct:date "2012"^^xsd:gYear ;
+        dct:title "Generation of leaf shape through early patterns of growth and tissue polarity" .
+    <https://doi.org/10.1242/dev.01182> dct:date "2004"^^xsd:gYear ;
+        dct:title "Stage-specific markers define early steps of procambium development in Arabidopsis leaves and correlate termination of vein formation with mesophyll differentiation" .
+    <https://doi.org/10.1371/journal.pcbi.1000207> dct:date "2008"^^xsd:gYear ;
+        dct:title "Flux-based transport enhancement as a plausible unifying mechanism for auxin transport in meristem development" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Claim: Feugier, Mochizuki & Iwasa (2005) PIN1 efflux carrier canalization on a Lockhart (1965)-growing hexagonal leaf blade with Scarpella et al. (2004/2006) procambial commitment: sequential 1°→4° vein-order emergence, open trees vs closed areoles vs decelerating no-branching is faithful" ;
+        dct:created "2026-10-20T09:46:12Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:Claim ;
+        npx:introduces <https://w3id.org/probknow/resource/claim/morphoeval-feugier-carrier-driven-canalization> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/d58a084/2005-feugier-carrier-driven-canalization.py>,
+            <https://github.com/fractastical/morpholib/issues/35> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RApE-nGpCMigXqZjeHuYuMJEVTGmTlNTlZl7IcHi_fhdQ/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

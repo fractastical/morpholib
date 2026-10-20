@@ -1,0 +1,66 @@
+{
+  "dataset_id": "limb_chondrogenesis_turing_fgf8_moving_boundary",
+  "pass": 3,
+  "created_utc": "2026-10-19",
+  "purpose": "Provenance for the FGF8-graded moving-boundary 3D wing bud model added in Pass 3 of 1979-newman-limb-chondrogenesis-turing.py (Section 4b). Every numeric default of FGF8_GROWTH_DEFAULTS is traced here to a source or flagged as a model assumption.",
+  "organism": "Gallus gallus (chick wing bud, Hamburger-Hamilton stages 20-27)",
+  "hyaluronidase_clock": {
+    "law": "lambda_F(t) = lambda_0 exp(-t / tau_H); L_PD(t) = lambda_F(t) ln(F_ap / F_thr)",
+    "fit_inputs_table1_wing": [
+      {"stage": "HH20-21", "t_h_after_HH20": 0.0, "L_PD_um": 500.0},
+      {"stage": "HH24", "t_h_after_HH20": 24.0, "L_PD_um": 250.0},
+      {"stage": "HH27", "t_h_after_HH20": 48.0, "L_PD_um": 140.0}
+    ],
+    "stage_timing_source": "Hamburger & Hamilton (1951) J. Morphol. 88:49-92: HH20 ~ 3.5 d, HH24 ~ 4.5 d, HH27 ~ 5.5 d of incubation (~24 h between the Table 1 wing stages)",
+    "fit_method": "least squares of ln(L_PD(0)/L_PD(t)) on t through the origin (one free parameter tau_H)",
+    "fit_result": {"tau_H_h": 37.05, "lambda_F0_um": 310.67, "fit_L_PD_um": [500.0, 261.6, 136.9], "max_abs_rel_err": 0.046},
+    "mechanistic_basis": "Toole (1972) Dev. Biol. 29:321-329 (hyaluronate removal precedes chondrogenesis); Newman & Frisch (1979) p. 664-665 (hyaluronidase-driven decrease of effective diffusivity shrinks the uncondensed zone). The exponential is a FIT, not derived from enzyme kinetics (Pass 4 item)."
+  },
+  "fgf8_gradient_and_thresholds": {
+    "profile": "F(z, t) = F_AER(t) exp(-(L(t) - z) / lambda_F(t)) (quasi-steady diffusion-degradation from the AER)",
+    "F_apical": {"value": 0.5, "meaning": "FGF8 fraction above which distal mesenchyme stays undifferentiated / refractory to condensation (Dirichlet u = v = 0 boundary of the active zone)", "source": "model assumption calibrated so that L_PD = lambda_F ln 5; FGF8 keeps distal mesenchyme undifferentiated: Sun, Mariani & Martin (2002) Nature 418:501-508"},
+    "F_thr": {"value": 0.1, "meaning": "FGF8 fraction below which tissue exits the progress zone and the pattern is frozen into the record", "source": "model assumption; three-zone structure after Hentschel et al. (2004) Proc. R. Soc. B 271:1713-1722 and Zhu et al. (2010) PLoS ONE 5:e10892"},
+    "progress_zone_depth_identity": "L_PD = lambda_F (ln F_ap - ln F_thr) for any F_AER (Lean Theorem 5)"
+  },
+  "proliferation": {
+    "law": "S(F) = S_max F^2 / (K_F^2 + F^2) (Hill coefficient 2)",
+    "S_max_per_h": {"value": 0.05776, "derivation": "ln 2 / 12 h: ~12 h mesenchymal cell cycle in the distal wing bud", "source": "Summerbell & Wolpert (1972) Nature New Biol. 239:24-26 (cell-cycle time in the chick limb bud); Boehm et al. (2010) PLoS Biol. 8:e1000420 (measured proliferation rates are insufficient alone to shape the bud -> treated here as a ceiling, not a shape generator)"},
+    "K_F": {"value": 0.3, "source": "model assumption (half-maximal response inside the active zone)"},
+    "outgrowth_kinematics": "tissue velocity a(z) = integral_0^z S dz'; tip velocity v_tip = a(L); Lagrangian P1 nodes advected with a(z); dilution -S u",
+    "predicted_outgrowth_48_h_um": 612,
+    "observed_order_of_magnitude": "wing bud PD length roughly doubles between HH20 and HH27 (Summerbell 1976 J. Embryol. Exp. Morphol. 35:241-260, growth-rate maps); the model doubles 800 -> ~1410 um"
+  },
+  "geometry": {
+    "L0_um": {"value": 800.0, "source": "model assumption for the HH20 bud PD length (Summerbell 1976 gives ~0.7-0.9 mm)"},
+    "L_AP_um": {"value": 1150.0, "source": "Newman & Frisch (1979) Table 1 wing AP width"},
+    "L_DV_um": {"value": 500.0, "source": "Newman & Frisch (1979) L_DV = 0.5 mm, n_DV = 1 (single dorsoventral hump)"},
+    "dv_boundary": "Dirichlet (DST-II): dorsal/ventral ectodermal inhibition of chondrogenesis (Solursh 1984 Cell Differ. 15:17-24)",
+    "ap_boundary": "Neumann (DCT-II) with a weak anterior/posterior ectodermal inhibitory bias of range 50 um (phase selection only)"
+  },
+  "aer_excision": {
+    "tau_FGF_h": {"value": 3.0, "source": "model assumption for FGF8 protein clearance after AER removal (FGF bead rescue experiments imply hours-scale persistence: Niswander et al. 1993 Cell 75:579-587)"},
+    "rule": "kinetics held at their value at excision (the already-specified progress zone completes its pattern); no new positional values are generated; distal mesenchyme death after AER removal: Rowe & Fallon (1982) J. Embryol. Exp. Morphol. 68:1-7",
+    "reference_series": [
+      {"t_exc_h": 0.0, "stage": "HH20", "expected_cumulative_elements": 1, "source": "Saunders (1948) stage 18-19 AER removal -> humerus only"},
+      {"t_exc_h": 24.0, "stage": "HH24", "expected_cumulative_elements": 3, "source": "Summerbell (1974) J. Embryol. Exp. Morphol. 32:651-660; Summerbell, Lewis & Wolpert (1973)"},
+      {"t_exc_h": null, "stage": "intact", "expected_cumulative_elements": 6, "source": "normal wing: humerus + radius/ulna + digits II-IV"}
+    ],
+    "model_series_t_exc_h": [0, 8, 16, 24, 32, 40],
+    "model_series_cumulative_elements": [1, 1, 3, 3, 3, 6]
+  },
+  "active_zone_kinetics": {
+    "helmholtz_relation": "k_c^2 = k_AP^2 + k_DV^2 + k_PD^2 (Newman & Frisch 1979 Eq. 4; Lean Theorem 4)",
+    "k_PD_sq": "lowest eigenvalue of the discrete P1 proximodistal operator on the active-zone nodes with Dirichlet ghosts at the condensed front and at the apical boundary",
+    "fu_selection": "bisection so that the fastest-growing linear mode q* equals m^2 + k_DV^2 + k_PD^2 with det J0 = eta * (D_v f_u + D_u g_v)^2 / (4 D_u D_v), eta = 0.9",
+    "m_map_L_PD_um": {"ge_375": 1, "ge_190": 2, "ge_125": 3, "else": 4},
+    "m_map_status": "empirical input from Newman & Frisch Table 1 (not derived; Pass 4 item)"
+  },
+  "numerics": {
+    "z": "Lagrangian P1 finite elements, h0 = 8 um, bisection above h_max = 14 um, lumped mass",
+    "x": "DCT-II spectral Galerkin, nx = 48",
+    "y": "DST-II spectral Galerkin, ny = 8",
+    "time": "fully implicit coupled linear step (block-Thomas 2x2) + exact cubic substep, dt = 0.04 Turing units = 0.6 min",
+    "burn_in_units": 96.0,
+    "seed": 1979
+  }
+}

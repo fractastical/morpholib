@@ -1,0 +1,146 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RALtVrsAnY3jZaj6v0KSwNtMfJA8OoWNdOILlgx8lDrgQ/> .
+@prefix this: <https://w3id.org/np/RALtVrsAnY3jZaj6v0KSwNtMfJA8OoWNdOILlgx8lDrgQ> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/BFb0082865>,
+            <https://doi.org/10.1016/0022-5193(81)90334-9>,
+            <https://doi.org/10.1016/S0300-9084(75)80312-9>,
+            <https://doi.org/10.1017/S0962492913000056>,
+            <https://doi.org/10.1038/scientificamerican0388-80>,
+            <https://doi.org/10.1080/10586458.1993.10504266>,
+            <https://doi.org/10.1103/PhysRevE.74.011914>,
+            <https://doi.org/10.1644/900.1> .
+
+    <https://doi.org/10.1007/BFb0082865> dcterms:date "1988"^^xsd:gYear ;
+        dcterms:title "Finite elements for the Beltrami operator on arbitrary surfaces" .
+
+    <https://doi.org/10.1016/0022-5193(81)90334-9> dcterms:date "1981"^^xsd:gYear ;
+        dcterms:title "A pre-pattern formation mechanism for animal coat markings" .
+
+    <https://doi.org/10.1016/S0300-9084(75)80312-9> dcterms:date "1975"^^xsd:gYear ;
+        dcterms:title "Artificial enzyme membranes: transport, memory, and oscillations" .
+
+    <https://doi.org/10.1017/S0962492913000056> dcterms:date "2013"^^xsd:gYear ;
+        dcterms:title "Finite element methods for surface PDEs" .
+
+    <https://doi.org/10.1038/scientificamerican0388-80> dcterms:date "1988"^^xsd:gYear ;
+        dcterms:title "How the leopard gets its spots" .
+
+    <https://doi.org/10.1080/10586458.1993.10504266> dcterms:date "1993"^^xsd:gYear ;
+        dcterms:title "Computing discrete minimal surfaces and their conjugates" .
+
+    <https://doi.org/10.1103/PhysRevE.74.011914> dcterms:date "2006"^^xsd:gYear ;
+        dcterms:title "Two-stage Turing model for generating pigment patterns on the leopard and the jaguar" .
+
+    <https://doi.org/10.1644/900.1> dcterms:date "2013"^^xsd:gYear ;
+        dcterms:title "Panthera pardus (Carnivora: Felidae)" .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-murray-mammalian-coat-markings> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-murray-mammalian-coat-markings-model-fidelity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-murray-mammalian-coat-markings-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Murray (1981) Thomas substrate-inhibition reaction-diffusion pre-pattern, conical tail spot-to-ring transition & P1 surface-FEM felid body — Model fidelity to source: 91/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "Solves the exact Thomas (1975) / Murray (1981) steady state (u0, v0) = (9.9338, 9.2892), Jacobian, d_c = 9.6292 and dispersion curve (L169-259); counts Neumann cylinder eigenmodes from n = 0 and distinguishes r_crit = 0.7527 (fastest mode) from the full-exclusion radius r_excl = 1/k_+ = 0.36 (L264-338, Lean Theorem 5); integrates the tapered tail with a fully implicit per-Fourier-mode surface Laplace-Beltrami operator including the arc-length metric factor (L340-470), replacing the v2 explicit-axial scheme that violated its own stability limit; runs the planar PDE to saturation with a genuine two-stage protocol (L475-563); and assembles a P1 cotangent surface FEM (L697-789) whose m = 1 cylinder eigenvalue matches the analytic value to 3.1e-14 and whose stiffness rows sum to zero (Lean Theorem 4), on which the two-stage run is executed on the felid body (L955-1056). Not 94 as in v2: the body is a surface of revolution rather than a scanned mesh, the FEM reaction step is explicit (dt = 0.1 is only safe because |eig J0| <= 7.1 at Table 1; the K = 0 control needs dt = 0.02), and the demonstration tail had to be thinned to r_tip = 0.15 for the ring zone to exist -- the v2 geometry does not produce rings." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "1981-murray-mammalian-coat-markings.py L20–L34: Disclosure that the v2 conical solver was numerically unstable (dt = 0.015 > 0.0043) and that its 865x ratio was a clipping artifact <https://github.com/fractastical/morpholib/blob/64526a0/1981-murray-mammalian-coat-markings.py#L20-L34>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-murray-mammalian-coat-markings-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-murray-mammalian-coat-markings-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-murray-mammalian-coat-markings-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-murray-mammalian-coat-markings-model-fidelity-4>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-murray-mammalian-coat-markings-model-fidelity-5>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-murray-mammalian-coat-markings-model-fidelity-6>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-murray-mammalian-coat-markings-model-fidelity-7> ;
+        pk:hasScore "0.91"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-murray-mammalian-coat-markings-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "1981-murray-mammalian-coat-markings.py L169–L259" ;
+        dcterms:description "Exact Thomas steady state via brentq, Jacobian J0, d_c, unstable band, dispersion" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/64526a0/1981-murray-mammalian-coat-markings.py#L169-L259> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-murray-mammalian-coat-markings-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "1981-murray-mammalian-coat-markings.py L264–L338" ;
+        dcterms:description "Conical tail eigenmode census from n = 0, r_crit (fastest mode) vs r_excl = 1/k_+ (all m >= 1 excluded), slant length and metric factor" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/64526a0/1981-murray-mammalian-coat-markings.py#L264-L338> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-murray-mammalian-coat-markings-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "1981-murray-mammalian-coat-markings.py L340–L470" ;
+        dcterms:description "Fully implicit conical-tail solver (per-mode dense inverses, dt = 0.1); exclusion-zone diagnostics; v2 geometry shown to have no ring zone" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/64526a0/1981-murray-mammalian-coat-markings.py#L340-L470> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-murray-mammalian-coat-markings-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "1981-murray-mammalian-coat-markings.py L697–L789" ;
+        dcterms:description "Surface-of-revolution triangulation, P1 cotangent stiffness + lumped mass assembly, eigenvalue check against (n*pi/L)^2 + (m/r)^2 with m >= 1 double multiplicity" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/64526a0/1981-murray-mammalian-coat-markings.py#L697-L789> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-murray-mammalian-coat-markings-model-fidelity-5> a pk:EvidenceItem ;
+        rdfs:label "1981-murray-mammalian-coat-markings.py L836–L892" ;
+        dcterms:description "IMEX surface FEM time-stepper (M + dt/gamma K) u = M (u + dt f) via splu; explicit reaction" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/64526a0/1981-murray-mammalian-coat-markings.py#L836-L892> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-murray-mammalian-coat-markings-model-fidelity-6> a pk:EvidenceItem ;
+        rdfs:label "1981-murray-mammalian-coat-markings.py L955–L1056" ;
+        dcterms:description "Two-stage FEM run: Stage 1 on cub body (mass scaled 1/G^2), Stage 2 reseeded on adult body; r_crit/r_excl transition positions; annularity and spot statistics" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/64526a0/1981-murray-mammalian-coat-markings.py#L955-L1056> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-murray-mammalian-coat-markings-model-fidelity-7> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_003_mammalian_coat_markings.lean L110–L157" ;
+        dcterms:description "Theorem 4 (cotangent rows annihilate constants and sum to zero) and Theorem 5 (r_excl = 1/k_+ required to exclude n = 0 longitudinal modes); 5 theorems total, 0 sorrys" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/64526a0/morphoeval/lean/loops/Loop_003_mammalian_coat_markings.lean#L110-L157> .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (Slot 003 autonomous loop assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "ImC0ZH7Q4bc22T+lhTdmcE/WqAO0TdIi1CgxpNsjJQtgJzoEqoAs7VVoFbHY6/8vPiAG05aZvlsPGwSwoleJciwXT2oru8Ux7U5d/QpnMPaV16OHWtb/04ZI7KGZYobD3yUlqT5JtO6M/wGV09vb5kryL9O4Kim5533bE+GOTyCRjbpP5Jd2trRloGuv7L+m8y/Y+hT6R1SnMaVm9xYVl9QJFiLE+Tw5of6shGP5/tlVjkVtJJ4wfnxiFCpy49GQbqpmIobLi1hdF97RGteALTexVL3rA/GnnFfi72f17l/ytVgVJ2PB+kIwBjnTmCfp+yBEbHK2mNRODRgfh7yT+Q==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    this: rdfs:label "Murray (1981) Thomas substrate-inhibition reaction-diffusion pre-pattern, conical tail spot-to-ring transition & P1 surface-FEM felid body — Model fidelity to source 91/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T06:08:42Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-murray-mammalian-coat-markings-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+

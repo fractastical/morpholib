@@ -1,0 +1,296 @@
+# MorphoEval audit — Murray (1981) Thomas Substrate-Inhibition Reaction-Diffusion & Mammalian Coat Markings, Pass 3 (v3)
+#
+# Pass 3 post-remediation evaluation of `1981-murray-mammalian-coat-markings.py` (v3, 1,809 lines; v2 was 973)
+# after the Pass 3 remediation round `2026-10-19-mammalian-coat-markings-loop-pass3`, superseding
+# `2026-10-19-mammalian-coat-markings-audit-v2`.
+#
+# What Pass 3 changed (the single open v2 remediation item + defects found while closing it):
+#   1. v2 item "extend the two-stage rosette solver to full 3D finite-element surface meshes reconstructed from
+#      photogrammetric felid body scans" -> CLOSED IN REDUCED FORM: a P1 (linear) surface finite-element
+#      Laplace-Beltrami solver (cotangent stiffness + lumped mass, IMEX) on a triangulated 3D felid body surface
+#      (47,520 vertices / 94,776 triangles), eigenvalues verified against the exact Neumann cylinder spectrum
+#      (m = 1 relative error 3.1e-14), Liu-Liaw-Maini two-stage growth run as a genuine PDE on that body.
+#      The body is a PARAMETRIC SURFACE OF REVOLUTION (`datasets/mammalian_coat_markings/felid_body_profile.json`,
+#      hand-set knots informed by Stein et al. 2013 proportions), NOT a photogrammetric scan; the scan is carried
+#      as a Pass 4 remediation item.
+#   2. v2 defects uncovered and disclosed in code and here (the reason several scores go DOWN relative to v2):
+#      - the v2 conical-tail solver treated axial diffusion explicitly with dt = 0.015 > dx^2/(2d/gamma) = 0.0043,
+#        i.e. it was numerically unstable; its headline "865x proximal-to-distal spot suppression ratio" (v2
+#        measurement #5, v2 morphometric-validation rationale) was a clipping artifact. The stable implicit
+#        solver on the SAME v2 geometry gives a ratio of 0.90 (no ring zone). Retracted and carried as a
+#        disclosure measurement.
+#      - v2 counted unstable tail eigenmodes from n = 1, silently omitting the Neumann n = 0 longitudinal-stripe
+#        modes; the fastest-mode radius r_crit does not exclude m >= 1 modes -- only r_excl = 1/k_+ does
+#        (new Lean Theorem 5). The v2 tail tip (r = 0.35) never reaches r_excl = 0.36.
+#      - v2 planar runs stopped at t = 13 (std(u) = 0.05, linear regime); the v2 "two-stage rosette" step was
+#        a Gaussian image filter on that linear field, not a second PDE stage.
+#      - the v2 tail ROI on the specimen covers mostly hindquarters and background grass (3/4-view photograph).
+#      - the CLI flags --a/--b/--alpha/--rho/--K/--d/--gamma/--seed were (and still are) parsed but never
+#        passed to the solvers; v2 parameter-expressivity credited them as "full CLI flags".
+#   3. Lean 4 Theorems 4 and 5 added (5 theorems, 0 sorrys); Math KG laws 4 and 5 registered.
+
+audit:
+  id: 2026-10-19-mammalian-coat-markings-audit-v3
+  supersedes_audit_id: 2026-10-19-mammalian-coat-markings-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Slot 003 autonomous loop assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 64526a0
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 3 (v3) post-remediation evaluation of `1981-murray-mammalian-coat-markings.py`
+      after completing Step 12 -> 5 -> 11 in `2026-10-19-mammalian-coat-markings-loop-pass3`.
+      All line pins below were verified against the v3 file at this checkpoint's working tree
+      (1,809 lines). Scores are re-derived from scratch; where v2 credited a result that v3
+      shows to have been an artifact, the v3 score is lower than v2 even though the code improved.
+
+references:
+  murray1981:
+    title: "A pre-pattern formation mechanism for animal coat markings"
+    authors: "Murray JD"
+    venue: "Journal of Theoretical Biology 88(1):161-199 (1981)"
+    doi: 10.1016/0022-5193(81)90334-9
+  thomas1975:
+    title: "Artificial enzyme membranes: transport, memory, and oscillations"
+    authors: "Thomas D"
+    venue: "Biochimie 57(4):499-507 (1975)"
+    doi: 10.1016/S0300-9084(75)80312-9
+  murray1988:
+    title: "How the leopard gets its spots"
+    authors: "Murray JD"
+    venue: "Scientific American 258(3):80-87 (1988)"
+    doi: 10.1038/scientificamerican0388-80
+  liu2006:
+    title: "Two-stage Turing model for generating pigment patterns on the leopard and the jaguar"
+    authors: "Liu RT, Liaw SS, Maini PK"
+    venue: "Physical Review E 74(1):011914 (2006)"
+    doi: 10.1103/PhysRevE.74.011914
+  dziuk1988:
+    title: "Finite elements for the Beltrami operator on arbitrary surfaces"
+    authors: "Dziuk G"
+    venue: "Partial Differential Equations and Calculus of Variations, Lecture Notes in Mathematics 1357:142-155 (1988)"
+    doi: 10.1007/BFb0082865
+  pinkall1993:
+    title: "Computing discrete minimal surfaces and their conjugates"
+    authors: "Pinkall U, Polthier K"
+    venue: "Experimental Mathematics 2(1):15-36 (1993)"
+    doi: 10.1080/10586458.1993.10504266
+  dziuk2013:
+    title: "Finite element methods for surface PDEs"
+    authors: "Dziuk G, Elliott CM"
+    venue: "Acta Numerica 22:289-396 (2013)"
+    doi: 10.1017/S0962492913000056
+  stein2013:
+    title: "Panthera pardus (Carnivora: Felidae)"
+    authors: "Stein AB, Hayssen V"
+    venue: "Mammalian Species 45(900):30-48 (2013)"
+    doi: 10.1644/900.1
+
+simulations:
+  - id: murray-mammalian-coat-markings
+    name: "Murray (1981) Thomas substrate-inhibition reaction-diffusion pre-pattern, conical tail spot-to-ring transition & P1 surface-FEM felid body"
+    organism: "African leopard (Panthera pardus) coat rosettes and tapered tail markings"
+    script: 1981-murray-mammalian-coat-markings.py
+    output: docs/media/mammalian_coat_markings_comparison.png
+    extra_outputs:
+      - docs/media/mammalian_coat_markings_growth.gif
+      - docs/media/mammalian_coat_markings_fem_surface.png
+    status: evaluated
+    source_refs:
+      - murray1981
+      - thomas1975
+      - murray1988
+      - liu2006
+      - dziuk1988
+      - pinkall1993
+      - dziuk2013
+      - stein2013
+    summary: >-
+      Pass 3 (v3) post-remediation evaluation of `1981-murray-mammalian-coat-markings.py`
+      (overall weighted score: 84.2 / 100, DOWN 7.4 points from 91.6 / 100 in Pass 2, up from
+      49.4 / 100 in Pass 1). The v3 script keeps the exact Thomas (1975) / Murray (1981)
+      steady state, Jacobian, d_c and dispersion analysis; replaces the numerically unstable v2
+      conical-tail solver with a fully implicit surface-of-revolution Laplace-Beltrami solver
+      (metric factor 1/(1+r'^2) included) and shows that the v2 geometry has no ring zone;
+      adds a P1 cotangent surface finite-element solver on a triangulated 3D felid body of
+      revolution (47,520 vertices) verified against the exact cylinder spectrum, on which the
+      Liu, Liaw & Maini (2006) two-stage protocol is run as a genuine PDE (cub body -> adult
+      body, growth factor G = 2) yielding torso annularity 0.84 and a tail ring onset at
+      x/L_tail = 0.82 vs the Lean-backed prediction 0.86; sweeps G in {1, 1.5, 2, 3} on the
+      planar flank; and backs five mathematical laws with machine-checked Lean 4 theorems
+      (0 sorrys). The score falls because v3 retracts the v2 865x suppression ratio (clipping
+      artifact), shows the v2 "two-stage" step to have been an image filter on a linear-regime
+      field, finds the specimen tail ROI mis-placed, reports a 3.7x marking-density shortfall
+      against the specimen (5.1 vs 18.9 markings per torso depth), and finds the kinetic CLI
+      flags unwired -- none of which v2 had penalised.
+    claim_boundary:
+      reported_in_source:
+        - "Murray (1981): Thomas substrate-inhibition kinetics at a = 92, b = 64, alpha = 1.5, rho = 18.5, K = 0.1 are diffusively unstable for d > d_c; the domain scale factor gamma selects between no pattern, stripes, spots and crowding; on a tapered cylinder spot modes (m >= 1) are excluded below a critical radius so a spotted animal can have a ringed tail but not vice versa"
+        - "Liu, Liaw & Maini (2006): leopard rosettes arise from a two-stage process in which a juvenile spot pre-pattern is re-run under changed parameters on the grown adult skin"
+        - "Dziuk (1988), Pinkall & Polthier (1993), Dziuk & Elliott (2013): P1 surface finite elements with cotangent weights converge to the Laplace-Beltrami operator on a triangulated surface"
+      reconstructed_in_script:
+        - "Exact steady state, Jacobian, d_c, dispersion curve and Turing band; Neumann cylinder eigenmode counting including n = 0; r_crit (fastest-mode) and r_excl = 1/k_+ (full-exclusion) radii; fully implicit conical-tail PDE; planar DCT-II IMEX PDE run to saturation with a genuine two-stage protocol and growth-factor sweep; P1 surface FEM (stiffness/mass assembly, spectrum verification, two-stage run on the felid body) with annularity and spot-spacing diagnostics; DoG segmentation of the Kruger specimen"
+      transfer_boundary:
+        - "The 3D body is a parametric surface of revolution with hand-set knots (felid_body_profile.json), not a photogrammetric scan; its head-body length of 22 cub wavelengths and the growth factor G = 2 are ASSUMED, not fitted, which is why the FEM marking density (5.1 per torso depth) is 3.7x below the specimen estimate (18.9)"
+        - "The tail ring onset comparison (0.82 measured vs 0.86 predicted) is on the surrogate taper, whose tip radius (0.004 HBL) was chosen to lie below r_excl; it is a consistency check of solver against linear theory, not a measurement on a real tail"
+        - "The specimen is a 3/4-view photograph: the flank ROI is foreshortened and the v2 tail ROI covers hindquarters/background, so the Delaunay CV and polygonality are flank-only statistics"
+      does_not_claim:
+        - "That Murray (1981) or Liu et al. (2006) reported any of the FEM, annularity, growth-sweep or marking-density numbers; all are v3 reconstructions"
+        - "That the Thomas kinetics are the biological mechanism of felid pigmentation"
+    scores:
+      model-fidelity:
+        value: 91
+        rationale: >-
+          Solves the exact Thomas (1975) / Murray (1981) steady state (u0, v0) = (9.9338, 9.2892),
+          Jacobian, d_c = 9.6292 and dispersion curve (L169-259); counts Neumann cylinder
+          eigenmodes from n = 0 and distinguishes r_crit = 0.7527 (fastest mode) from the
+          full-exclusion radius r_excl = 1/k_+ = 0.36 (L264-338, Lean Theorem 5); integrates
+          the tapered tail with a fully implicit per-Fourier-mode surface Laplace-Beltrami
+          operator including the arc-length metric factor (L340-470), replacing the v2
+          explicit-axial scheme that violated its own stability limit; runs the planar PDE to
+          saturation with a genuine two-stage protocol (L475-563); and assembles a P1 cotangent
+          surface FEM (L697-789) whose m = 1 cylinder eigenvalue matches the analytic value to
+          3.1e-14 and whose stiffness rows sum to zero (Lean Theorem 4), on which the two-stage
+          run is executed on the felid body (L955-1056). Not 94 as in v2: the body is a
+          surface of revolution rather than a scanned mesh, the FEM reaction step is explicit
+          (dt = 0.1 is only safe because |eig J0| <= 7.1 at Table 1; the K = 0 control needs
+          dt = 0.02), and the demonstration tail had to be thinned to r_tip = 0.15 for the ring
+          zone to exist -- the v2 geometry does not produce rings.
+        evidence:
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [169, 259], note: "Exact Thomas steady state via brentq, Jacobian J0, d_c, unstable band, dispersion", supports: true}
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [264, 338], note: "Conical tail eigenmode census from n = 0, r_crit (fastest mode) vs r_excl = 1/k_+ (all m >= 1 excluded), slant length and metric factor", supports: true}
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [340, 470], note: "Fully implicit conical-tail solver (per-mode dense inverses, dt = 0.1); exclusion-zone diagnostics; v2 geometry shown to have no ring zone", supports: true}
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [697, 789], note: "Surface-of-revolution triangulation, P1 cotangent stiffness + lumped mass assembly, eigenvalue check against (n*pi/L)^2 + (m/r)^2 with m >= 1 double multiplicity", supports: true}
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [836, 892], note: "IMEX surface FEM time-stepper (M + dt/gamma K) u = M (u + dt f) via splu; explicit reaction", supports: true}
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [955, 1056], note: "Two-stage FEM run: Stage 1 on cub body (mass scaled 1/G^2), Stage 2 reseeded on adult body; r_crit/r_excl transition positions; annularity and spot statistics", supports: true}
+          - {file: morphoeval/lean/loops/Loop_003_mammalian_coat_markings.lean, lines: [110, 157], note: "Theorem 4 (cotangent rows annihilate constants and sum to zero) and Theorem 5 (r_excl = 1/k_+ required to exclude n = 0 longitudinal modes); 5 theorems total, 0 sorrys", supports: true}
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [20, 34], note: "Disclosure that the v2 conical solver was numerically unstable (dt = 0.015 > 0.0043) and that its 865x ratio was a clipping artifact", supports: false}
+      specimen-match:
+        value: 72
+        rationale: >-
+          The SHA-256-locked Kruger *Panthera pardus pardus* photograph is loaded and
+          segmented into N = 164 flank markings (DoG + opening, L1082-1155) with Delaunay
+          NN spacing 7.44 px (CV 0.30) and interior Voronoi polygonality compared against the
+          planar PDE lattice (Panels E, F, H); the FEM body now yields a marking density that
+          can be compared with the specimen. But that comparison FAILS by 3.7x (FEM Stage 2:
+          5.1 markings per torso depth vs specimen estimate 18.9, `felid_body_profile.json`
+          L63) because HBL = 22 lambda_c and G = 2 are assumed, not fitted; the v2 tail ROI
+          [410, 115, 560, 225] covers mostly hindquarters and background grass on this 3/4-view
+          image (caveat recorded at `felid_body_profile.json` L64) so no tail statistic is
+          actually measured on the animal; and the FEM "rosettes" are compared to the specimen
+          only through a self-defined annularity index, not through segmented rosette
+          morphology (ring/core ratios, rosette diameters). v2's 89 credited a tail ROI that
+          does not contain the tail.
+        evidence:
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [1082, 1155], note: "SHA-verified specimen load, DoG segmentation, Delaunay NN spacing, Voronoi polygonality, flank and tail ROIs", supports: true}
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [1025, 1053], note: "FEM markings-per-torso-depth computed and compared with the specimen estimate (5.09 vs 18.9) -- the comparison is made but the model is 3.7x too coarse", supports: false}
+          - {file: datasets/mammalian_coat_markings/felid_body_profile.json, lines: [57, 65], note: "Specimen torso-depth scale estimate (18.9 markings per torso depth) and the tail-ROI caveat: the v2 tail ROI is on the hindquarters/background", supports: false}
+          - {file: docs/media/mammalian_coat_markings_comparison.png, lines: [0, 0], note: "12-panel figure: specimen (E), flank segmentation (F), polygonality (H) and FEM body (I, J, L) side by side with the theory panels", supports: true}
+      parameter-expressivity:
+        value: 80
+        rationale: >-
+          Sweeps Murray's five gamma regimes {0.4, 3.5, 8, 25, 120} to saturation
+          (`run_scale_morphospace_sweep`, L620-668), runs dual negative controls at d = 1 and
+          K = 0 with the stability-appropriate time step (L671-692), adds a Liu-Liaw-Maini
+          growth-factor sweep G in {1, 1.5, 2, 3} with an annularity read-out (L594-618,
+          Panel K; non-monotonic: G = 3 yields central-spot jaguar-like rosettes, annularity
+          0.25), and exposes `--growth-factor`, which IS wired through to both the planar and
+          FEM two-stage runs (L1792, L1800). However the kinetic/scale flags `--a`, `--b`,
+          `--alpha`, `--rho`, `--K`, `--d`, `--gamma`, `--seed` and `--steps` are parsed
+          (L1783-1791) and never passed to any solver: `render_outputs` is called with
+          `growth_factor` only (L1800). v2 scored this dimension 90 on the strength of "full CLI
+          flags" that were already inert in v2.
+        evidence:
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [594, 692], note: "Growth-factor sweep, 5-regime gamma sweep and dual negative controls (K = 0 run at dt = 0.02 because f_u = -48.6)", supports: true}
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [1783, 1800], note: "CLI parses a, b, alpha, rho, K, d, gamma, steps, seed but only growth_factor reaches render_outputs()", supports: false}
+      morphometric-validation:
+        value: 84
+        rationale: >-
+          `measure_morphoeval()` (L1513-1676) now emits 14 measurements: the four exact
+          analytic quantities (u0, d_c, gamma*k_c^2, r_crit; error 0), the gamma-vs-mode-count
+          Pearson r = 0.9996, both negative controls (std_u 8.6e-15 and 4.1e-16), the specimen
+          Delaunay CV (0.296 vs 0.24), the FEM m = 1 eigenvalue error (3.1e-14), the FEM tail
+          ring onset (0.817 measured vs 0.858 predicted from r_excl), the FEM torso annularity
+          (0.84 vs planar 0.80), the G = 1 null (0.0) and the FEM marking density (5.09 vs
+          18.9). It also RETRACTS the v2 headline: the conical suppression ratio on the v2
+          geometry is 0.90, not 865.5, and this is carried as an explicit disclosure measurement
+          (L1636-1647); the new ratio (9.86 vs reference 5.0) is on a thinner tail chosen so
+          that r_excl is reached. Weaknesses: the annularity reference (0.8) is the script's own
+          planar run, not a literature value; the ring-onset reference is linear theory on a
+          surrogate taper; the marking-density measurement fails by 3.7x; and no measurement
+          uses segmented rosette morphology from the specimen.
+        evidence:
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [1513, 1676], note: "14 reference-backed measurements incl. FEM eigenvalue error, FEM tail onset, FEM annularity, G = 1 null and marking density", supports: true}
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [1636, 1647], note: "v2 865x suppression ratio retracted: stable solver on the v2 geometry gives 0.90 (no exclusion zone)", supports: false}
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [565, 592], note: "Annularity index (rim-vs-core of Stage-1 cores in the Stage-2 field) -- a self-defined statistic, not a literature morphometric", supports: false}
+      source-traceability:
+        value: 92
+        rationale: >-
+          Vendors `datasets/mammalian_coat_markings/` with the reference JSON, the specimen
+          photograph, the scout manifest, `paper_citations.bib` and the new
+          `felid_body_profile.json` (knots, growth defaults, specimen scale estimates, Stein et
+          al. 2013 proportion sources, honesty statement), all five files SHA-256-verified at
+          runtime (`EXPECTED_SHA256`, L118-134; `verify_dataset_sha256`, L140-152). The four
+          surface-FEM references (Dziuk 1988, Pinkall & Polthier 1993, Dziuk & Elliott 2013,
+          Stein & Hayssen 2013) are cited with DOIs in the module docstring and this audit but
+          are NOT in `paper_citations.bib`, which is SHA-pinned and was left untouched.
+        evidence:
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [118, 152], note: "Runtime SHA-256 verification of all 5 vendored files including felid_body_profile.json", supports: true}
+          - {file: datasets/mammalian_coat_markings/felid_body_profile.json, lines: [1, 66], note: "Body profile with honesty statement (not a photogrammetric scan), sources, growth defaults and specimen scale estimates", supports: true}
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [72, 75], note: "Surface-FEM DOIs cited in the docstring only; paper_citations.bib (SHA-pinned) not extended", supports: false}
+      code-traceability:
+        value: 92
+        rationale: >-
+          The module docstring (L1-76) lists every Pass 3 change, the v2 defects it corrects,
+          the equations of Murray (1981) Sections 2 and 4, Liu et al. (2006) and the five Lean
+          theorems; each solver docstring cites its source; the isolated Math KG spec registers
+          five laws with Lean declarations, Lean loci and current code loci
+          (`murray-mammalian-coat-markings.yaml`, 5 equations); and the Lean file documents
+          why each theorem is the formal twin of a numerical check (Theorem 4 <-> self-test 10,
+          Theorem 5 <-> exclusion-zone diagnostics).
+        evidence:
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [1, 76], note: "Module docstring: Pass 3 change log, v2 defect disclosure, equation-to-source map, Lean theorems 1-5, surface-FEM references", supports: true}
+          - {file: morphoeval/math_kg_loops/murray-mammalian-coat-markings.yaml, lines: [1, 111], note: "5 laws with lean_decl / lean_theorem / lean_locus / code_locus, inputs now include felid_body_profile.json", supports: true}
+          - {file: morphoeval/lean/loops/Loop_003_mammalian_coat_markings.lean, lines: [100, 157], note: "Theorems 4 and 5 docstrings tie each proof to the numerical check it certifies", supports: true}
+      repro-package:
+        value: 90
+        rationale: >-
+          Deterministic RNG (`seed=1981`), a 12-check `--self-test` (L1681-1778) covering SHA
+          locks, JSON parity, the K*u0^2 > 1 threshold, the n = 0-inclusive mode census, the
+          stable conical solver (ring zone exists at r_tip = 0.15 and does NOT at the v2
+          r_tip = 0.35, field stays off the clip bounds), both controls, segmentation, bitwise
+          two-run determinism, FEM cylinder spectrum, FEM mass conservation, a coarse FEM body
+          run and the G = 1 <= G = 2 annularity ordering; three self-contained outputs (12-panel
+          PNG, FEM-surface PNG, 12-frame GIF). Render ~55-70 s and self-test ~70 s on the
+          reference machine. Residual: the initial noise amplitude is applied per vertex, so the
+          seeded field (and hence the exact spot layout) depends on mesh resolution.
+        evidence:
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [1681, 1778], note: "12-check self_test() including FEM spectrum/mass-conservation checks and the v2-geometry negative assertion", supports: true}
+          - {file: 1981-murray-mammalian-coat-markings.py, lines: [1198, 1215], note: "render_outputs() computes both the v2-geometry and the thin-tip conical runs so the retraction is visible in the figure (Panel G)", supports: true}
+    remediation:
+      - "Replace the parametric surface of revolution with a triangulated photogrammetric or CT-derived felid body mesh (`build_felid_body_surface_mesh`, L791-834; profile knots at `datasets/mammalian_coat_markings/felid_body_profile.json` L44-48): the FEM assembly (`assemble_p1_fem_laplace_beltrami`, L721-753) is already mesh-agnostic, so this is a data item, not a solver item. Carried over from v2 in reduced form."
+      - "Fit the body scale and growth factor to the specimen instead of assuming them: HBL = 22 lambda_c and G = 2 give 5.09 markings per torso depth vs 18.9 observed (`run_two_stage_fem_body`, L1025-1053; measurement 'FEM Stage-2 torso markings per torso depth', L1573-1581). Sweep HBL/lambda_c in [22, 90] and G in [1.5, 3] and report the (HBL, G) that matches the specimen density and polygonality jointly."
+      - "Wire the kinetic and scale CLI flags into the solvers: `--a`, `--b`, `--alpha`, `--rho`, `--K`, `--d`, `--gamma`, `--steps`, `--seed` are parsed at L1783-1791 but `render_outputs()` is called with `growth_factor` only (L1800); thread a parameter dict through `compute_thomas_steady_state`, `integrate_thomas_pde_2d`, `integrate_thomas_conical_tail_pde` and `run_two_stage_fem_body`, and add a self-test check that `--K 0` reproduces the negative control."
+      - "Relocate the specimen tail ROI onto the curled tail (approximately x = 470-530, y = 200-240 per `felid_body_profile.json` L64) or replace the 3/4-view specimen with a lateral-view, SHA-pinned photograph in which the tail is resolved, then add a measured tail spot-to-ring onset to compare with `tail_exclusion_fraction` (currently only the surrogate-mesh value is compared, L1543-1551)."
+      - "Make the initial noise field mesh-resolution independent (`integrate_thomas_fem_surface_pde` L870-876 draws per-vertex noise; planar reseed at L544), e.g. by projecting a fixed low-pass random field onto the mesh, so that the FEM spot layout is reproducible across `nx`/`ntheta` and the coarse self-test body (nx = 200) and the default render (nx = 360) seed the same pattern."
+      - "Add the surface-FEM and body-proportion references (Dziuk 1988, Pinkall & Polthier 1993, Dziuk & Elliott 2013, Stein & Hayssen 2013) to `datasets/mammalian_coat_markings/paper_citations.bib` and re-pin its SHA-256 in `EXPECTED_SHA256` (L128-130)."

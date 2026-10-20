@@ -28,3 +28,11 @@ Formal SHA-256-locked reference dataset and *Gallus gallus* forelimb skeleton sp
 
 4. **`paper_citations.bib`**
    - BibTeX citations for Newman & Frisch (1979), Saunders (1948), Summerbell et al. (1973), Hentschel et al. (2004), and Stewart et al. (2017).
+
+## Pass 3 additions (FGF8-graded moving-boundary 3D wing bud)
+
+5. **`fgf8_moving_boundary_reference.json`** (SHA-256-pinned in the script's `EXPECTED_SHA256`)
+   - Provenance for every default of `FGF8_GROWTH_DEFAULTS` in Section 4b of `1979-newman-limb-chondrogenesis-turing.py`: the one-parameter hyaluronidase clock $\lambda_F(t) = \lambda_0 e^{-t/\tau_H}$ fitted to the three Newman & Frisch Table 1 wing depths ($\tau_H = 37.0$ h, max $|$rel err$| = 4.6\,\%$), the FGF8 thresholds $F_{\text{ap}} = 0.5$ / $F_{\text{thr}} = 0.1$ (three-zone structure after Hentschel et al. 2004 and Zhu et al. 2010), the Hill-2 mitogenic response $S_{\max} = \ln 2 / 12\,\text{h}$ (Sun et al. 2002; Boehm et al. 2010), the AER-excision rule (Summerbell 1974, 1977; Rowe & Fallon 1982) and its reference series ($t_{\text{exc}} = 0 \to 1$ element, $24\,\text{h} \to 3$, intact $\to 6$).
+   - Entries marked `model assumption` are not measured values; they are listed so that the audit can distinguish sourced constants from calibrations.
+
+- **`paper_citations.bib`** now also contains Crampin, Gaffney & Maini (1999), Zhu et al. (2010), Boehm et al. (2010), Sun, Mariani & Martin (2002), Toole (1972), Solursh (1984), and Summerbell (1974, 1976, 1977).

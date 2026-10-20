@@ -60,3 +60,43 @@ equations:
     role: "Proves that the jammed A-PSM acts as an internal mechanical backstop that channels fluid MPZ cell addition into unidirectional posterior elongation and preserves left-right symmetry, whereas cdh2 knockdown unjams the PSM and induces bilateral asymmetry"
     source_citation: "Mongera et al. (2018) Nature 561:401-405 Fig. 4; Lawton et al. (2013) Development 140:573-582"
     code_locus: "2022-tailbud-neuromesodermal-jamming.py#L250-L435"
+  - law_name: Quasi-3D Fibronectin ECM Sheath Hoop Confinement & Axial Channeling Law (Pass 3, Dray et al. 2013)
+    formula: "\\varepsilon_r(x) = \\frac{\\max(0,\\, \\sigma_A(x) - \\sigma_y(x))}{K_{FN} f_{FN}(x) + K_t},\\qquad R_{eq}(x) = R_0(x)\\,(1 + \\varepsilon_r(x)),\\qquad \\chi = 1 - \\left\\langle 1 - \\frac{A_0}{A_{eq}} \\right\\rangle_{w,\\, x \\le x_{jam}},\\qquad v_{\\text{elong}} = J_{MPZ}\\, \\frac{\\sigma_{y,APSM}}{\\sigma_{y,APSM} + \\sigma_{y,MPZ} + \\sigma_{ref}}\\, \\chi"
+    lean_decl: MathOfBiology.Loop_030.sheath_hoop_stiffness
+    lean_theorem: MathOfBiology.Loop_030.fibronectin_sheath_confinement_channeling
+    lean_locus: morphoeval/lean/loops/Loop_030_neuromesodermal_jamming.lean#L150-L212
+    lean_code: |-
+      def sheath_hoop_stiffness (k_fn f_fn k_t : Int) : Int := k_fn * f_fn + k_t
+      def channeling_milli (leak_milli : Int) : Int := 1000 - leak_milli
+      theorem fibronectin_sheath_confinement_channeling
+          (k_fn f_wt f_mut k_t p eps_wt eps_mut leak_wt leak_mut : Int)
+          (h_kfn : 0 < k_fn) (h_f : f_mut < f_wt) (h_kt : 0 < k_t) (h_fmut : 0 <= f_mut)
+          (h_eps_wt : 0 < eps_wt)
+          (h_eq_wt : eps_wt * sheath_hoop_stiffness k_fn f_wt k_t = p)
+          (h_eq_mut : eps_mut * sheath_hoop_stiffness k_fn f_mut k_t = p)
+          (h_leak : leak_wt < leak_mut) :
+          sheath_hoop_stiffness k_fn f_mut k_t < sheath_hoop_stiffness k_fn f_wt k_t ∧
+          eps_wt < eps_mut ∧
+          channeling_milli leak_mut < channeling_milli leak_wt
+    variables: "f_FN(x): relative fibronectin matrix density wrapping the tailbud/PSM (0.35 MPZ -> 0.80 PSM, +0.20 at epithelialised somite borders anterior to the clock arrest front; fn_scale = 1.0 WT, 0.45 itga5 MO, 0.12 fn1a;fn1b MO); K_FN = 2800 Pa, K_t = 40 Pa per unit radial strain (calibrated); R_0(x): unstrained tissue radius (55 um MPZ bulb -> 38 um PSM column); chi: axial channeling efficiency (0.951 WT, 0.736 fn1a;fn1b MO)"
+    role: "Reduced thin-rod (axisymmetric) stand-in for the 3D fibronectin boundary of Dray et al. (2013): the fluid MPZ dilates radially against the FN sheath wherever active pressure exceeds the tissue yield stress, so fibronectin loss widens the tailbud and diverts progenitor influx away from posterior axis elongation (v/v_WT = 0.79 for fn1a;fn1b MO vs ~0.70 reported). Dynamic wall friction F_drag is reported as a diagnostic only."
+    source_citation: "Dray et al. (2013) Current Biology 23(14):1335-1341 Figs. 1-4; Lawton et al. (2013) Development 140:573-582; Mongera et al. (2018) Nature 561:401-405 Fig. 1a"
+    code_locus: "2022-tailbud-neuromesodermal-jamming.py#L393-L514"
+  - law_name: Her1/Her7 Segmentation-Clock Advection, Mechanical Wavefront Arrest & Cooke-Zeeman Somite Length Law (Pass 3)
+    formula: "\\partial_t \\theta + u(x)\\, \\partial_x \\theta = \\omega(x),\\qquad \\omega(x) = \\omega_0 \\left[1 - c_{slow} \\left(\\frac{x}{x_{arr}}\\right)^2\\right] \\mathbb{1}_{x < x_{arr}},\\qquad x_{arr} = \\min\\{x : \\sigma_y(x)/\\sigma_A(x) \\ge \\Lambda_{arr}\\},\\qquad S = (v_{\\text{elong}} + v_{short})\\, T_{clock}"
+    lean_decl: MathOfBiology.Loop_030.somite_length_num
+    lean_theorem: MathOfBiology.Loop_030.clock_wavefront_arrest_somite_scaling
+    lean_locus: morphoeval/lean/loops/Loop_030_neuromesodermal_jamming.lean#L214-L247
+    lean_code: |-
+      def somite_length_num (v_front t_clock : Int) : Int := v_front * t_clock
+      theorem clock_wavefront_arrest_somite_scaling
+          (r : Int → Int) (x_jam x_arr lam v_wt v_mut t_clock : Int)
+          (h_mono : ∀ x y : Int, x < y → r x < r y)
+          (h_jam : r x_jam = 1000) (h_lam : 1000 < lam) (h_arr : lam <= r x_arr)
+          (h_t : 0 < t_clock) (h_v : v_mut < v_wt) :
+          x_jam < x_arr ∧
+          somite_length_num v_mut t_clock < somite_length_num v_wt t_clock
+    variables: "theta(x,t): Her1/Her7 clock phase in the tailbud-tip frame; u(x) = v_front [0.15 + 0.85 (1 - e^{-x/45 um})]: tissue advection; omega_0 = 2 pi / T_clock, T_clock = 23.5 min at 28 C (Herrgen 2010); c_slow = 0.6 (Soroldoni 2014 wave compression); Lambda_arr = 4 (deep-solid jamming ratio gating arrest, reduced stand-in for Hubaud 2017 mechanosensitivity); v_short = 0.45 um/min PSM shortening; S: somite length (46.2 um WT model vs ~47 um reference; 27 um blebbistatin; no arrest for cdh2 MO)"
+    role: "Couples the jamming gradient to the segmentation clock in both directions: the sigma_y/sigma_A ratio sets WHERE the clock arrests (strictly anterior to the fluid-to-solid crossover, Theorem 6 part 1), the backstop/sheath elongation speed sets HOW LONG each frozen her1 stripe is (Theorem 6 part 2), and arrested somites assemble fibronectin that feeds back into the sheath profile."
+    source_citation: "Oates & Ho (2002) Development 129:2929; Lewis (2003) Current Biology 13:1398-1408; Herrgen et al. (2010) Current Biology 20:1244-1253; Soroldoni et al. (2014) Science 345:222-225; Hubaud et al. (2017) Cell 171:668-682; Cooke & Zeeman (1976) J. Theor. Biol. 58:455-476"
+    code_locus: "2022-tailbud-neuromesodermal-jamming.py#L517-L640"

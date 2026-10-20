@@ -15,6 +15,20 @@ model_spec:
     diffusivity_ratio_d: 30.0
     critical_diffusivity_ratio_dc: 5.8284271247461903
     seed: 1972
+  three_system_shell_pass3:
+    body_length_cells: 90
+    n_theta: 64
+    steps: 3000
+    dt: 0.5
+    D_h: 60.0
+    D_g: 60.0
+    kappa_a: 1.0
+    sigma_t: 0.6
+    p_t: 8.0
+    sigma_f: 0.03
+    c_sigma: 0.0012
+    mu_sigma: 0.004
+    tentacle_firing_threshold_w_c: 0.16329931618554522
   inputs:
     - datasets/hydra_activator_inhibitor/hydra_activator_inhibitor_reference.json
     - datasets/hydra_activator_inhibitor/hydra_vulgaris_specimen.jpg
@@ -38,7 +52,7 @@ equations:
     variables: "a(x,t): head/tentacle activator concentration; h(x,t): long-range inhibitor concentration; ρ(x): morphogen source density; μ_a, μ_h: turnover rates; D_a, D_h: diffusivities"
     role: "Establishes the exact algebraic homogeneous steady state of the nonlinear Gierer-Meinhardt reaction kinetics prior to diffusive symmetry breaking"
     source_citation: "Gierer & Meinhardt (1972) Kybernetik 12(1):30-39 Eqs. (15a)-(15b)"
-    code_locus: "1972-gierer-hydra-activator-inhibitor.py#L140-L220"
+    code_locus: "1972-gierer-hydra-activator-inhibitor.py#L187-L268"
   - law_name: "Gierer & Meinhardt (1972) Inhibitor Turnover & Equal-Diffusion Stability Law"
     formula: "tr(J_0) = μ_a - μ_h < 0  (μ_h > μ_a),   det(J_0) = μ_a μ_h > 0;   D_a = D_h = D ⟹ det(J_0 - q D I) = (Dq)^2 + Dq(μ_h - μ_a) + μ_a μ_h > 0  ∀ q ≥ 0"
     lean_decl: "MathOfBiology.Loop_001.gm_equal_diff_det"
@@ -57,7 +71,7 @@ equations:
     variables: "J_0: homogeneous reaction Jacobian; q = k^2: squared spatial wavenumber; D: common diffusivity"
     role: "Proves that faster inhibitor turnover (μ_h > μ_a) stabilizes the homogeneous state against oscillations and that equal diffusion (D_a = D_h) can never generate spatial Hydra polarity peaks"
     source_citation: "Gierer & Meinhardt (1972) Kybernetik 12(1):30-39 Sec. 2-3"
-    code_locus: "1972-gierer-hydra-activator-inhibitor.py#L222-L295"
+    code_locus: "1972-gierer-hydra-activator-inhibitor.py#L273-L365"
   - law_name: "Gierer & Meinhardt (1972) Critical Diffusivity Ratio & Lateral-Inhibition Instability Theorem"
     formula: "det_J(q) = (D_a q - μ_a)(D_h q + μ_h) + 2 μ_a μ_h < 0  ⟺  d = D_h / D_a > d_c = (√2 + 1)^2 = 3 + 2√2 ≈ 5.8284"
     lean_decl: "MathOfBiology.Loop_001.gm_fourier_det"
@@ -76,4 +90,98 @@ equations:
     variables: "d = D_h / D_a: inhibitor-to-activator diffusivity ratio; d_c = (√2 + 1)^2 ≈ 5.8284: critical lateral-inhibition threshold; q = k^2: unstable spatial mode"
     role: "Proves that long-range inhibitor diffusion exceeding d_c = (√2+1)^2 drives det_J(q) < 0, triggering spontaneous hypostome polarity and periodic tentacle ring formation in Hydra vulgaris"
     source_citation: "Gierer & Meinhardt (1972) Kybernetik 12(1):30-39; Meinhardt (1993) Dev. Biol. 157:321-333"
-    code_locus: "1972-gierer-hydra-activator-inhibitor.py#L222-L345"
+    code_locus: "1972-gierer-hydra-activator-inhibitor.py#L187-L268;L433-L533"
+  # ---------------------------------------------------------------------------
+  # Pass 3 (2026-10-19): coupled three-system model on the specimen-shaped 3D shell
+  # ---------------------------------------------------------------------------
+  - law_name: "Meinhardt (1993) Thresholded Subsystem Firing Law (basal inhibitor production ⇒ drive threshold w_c)"
+    formula: "b' = w (c b^2 / c_i + ρ_act) − μ b,  c_i' = c' b^2 − μ_inh c_i + ρ_inh;  off state exists ⟺ μ^2 ρ_inh − 4 w^2 c μ_inh ρ_act ≥ 0 ⟺ w ≤ w_c = (μ/2)·sqrt(ρ_inh / (c μ_inh ρ_act)) = 0.1633 (shell defaults)"
+    lean_decl: "MathOfBiology.Loop_001.meinhardt_off_state_disc"
+    lean_theorem: "MathOfBiology.Loop_001.meinhardt_three_system_off_state_discriminant_antitone"
+    lean_theorem_instance: "MathOfBiology.Loop_001.meinhardt_three_system_threshold_instance"
+    lean_locus: "morphoeval/lean/loops/Loop_001_hydra_activator_inhibitor.lean#L96-L130"
+    lean_code: |
+      def meinhardt_off_state_disc (mu w c mu_inh rho_act rho_inh : Nat) : Nat :=
+        mu * mu * rho_inh - 4 * w * w * c * mu_inh * rho_act
+      theorem meinhardt_three_system_off_state_discriminant_antitone
+          (mu c mu_inh rho_act rho_inh w₁ w₂ : Nat) (h : w₁ ≤ w₂) :
+          meinhardt_off_state_disc mu w₂ c mu_inh rho_act rho_inh ≤
+            meinhardt_off_state_disc mu w₁ c mu_inh rho_act rho_inh := by
+        unfold meinhardt_off_state_disc
+        apply Nat.sub_le_sub_left
+        apply Nat.mul_le_mul _ (Nat.le_refl rho_act)
+        apply Nat.mul_le_mul _ (Nat.le_refl mu_inh)
+        apply Nat.mul_le_mul _ (Nat.le_refl c)
+        apply Nat.mul_le_mul _ h
+        exact Nat.mul_le_mul (Nat.le_refl 4) h
+      theorem meinhardt_three_system_threshold_instance :
+          meinhardt_off_state_disc 200 1 50 30 5 2 = 50000 ∧
+          meinhardt_off_state_disc 200 2 50 30 5 2 = 0 := by
+        decide
+    variables: "w: subsystem drive (φ_t for tentacles, φ_f for the foot); ρ_act, ρ_inh: basal activator / inhibitor production; μ, μ_inh: turnover rates; w_c: firing threshold"
+    role: "Explains why the tentacle ring on the shell is confined to the band φ_t(s) > w_c and why the foot fires only where the source density is low; the Python three_system_firing_threshold() and self-test check 9 mirror the discriminant"
+    source_citation: "Meinhardt (1993) Dev. Biol. 157:321-333 (basal inhibitor production / threshold behaviour); Meinhardt (2012) Int. J. Dev. Biol. 56:447-462"
+    code_locus: "1972-gierer-hydra-activator-inhibitor.py#L808-L825"
+  - law_name: "Meinhardt (1993) Tentacle Placement Law: source-density promotion × head-activator suppression"
+    formula: "φ_t(σ, a) = H_t(σ) / (1 + κ_a a),  H_t(σ) = σ^p / (σ_t^p + σ^p);  ∂φ_t/∂σ ≥ 0, ∂φ_t/∂a ≤ 0  (integer form: σ K / (K + a) monotone in σ, antitone in a)"
+    lean_decl: "MathOfBiology.Loop_001.meinhardt_tentacle_drive"
+    lean_theorem: "MathOfBiology.Loop_001.meinhardt_tentacle_drive_monotone"
+    lean_locus: "morphoeval/lean/loops/Loop_001_hydra_activator_inhibitor.lean#L133-L153"
+    lean_code: |
+      def meinhardt_tentacle_drive (sigma K a : Nat) : Nat :=
+        sigma * K / (K + a)
+      theorem meinhardt_tentacle_drive_monotone (K a σ₁ σ₂ a₁ a₂ σ : Nat)
+          (hσ : σ₁ ≤ σ₂) (ha : a₁ ≤ a₂) :
+          meinhardt_tentacle_drive σ₁ K a ≤ meinhardt_tentacle_drive σ₂ K a ∧
+          meinhardt_tentacle_drive σ (K + 1) a₂ ≤ meinhardt_tentacle_drive σ (K + 1) a₁ := by
+        unfold meinhardt_tentacle_drive
+        constructor
+        · exact Nat.div_le_div_right (Nat.mul_le_mul hσ (Nat.le_refl K))
+        · apply Nat.div_le_div_left
+          · omega
+          · omega
+    variables: "σ: source density; a: head activator; κ_a = 1/K: head→tentacle suppression; σ_t, p: Hill gating constants"
+    role: "Places the tentacle ring at the sub-hypostomal border (maximal σ with low a); the κ_a sweep (ring shifts basally, Spearman ρ = 1.0) and the κ_a = 0 ablation (tentacle activator leaks into the hypostome) exercise this law on the shell"
+    source_citation: "Meinhardt (1993) Dev. Biol. 157:321-333 ('how to form structures close to each other')"
+    code_locus: "1972-gierer-hydra-activator-inhibitor.py#L913-L918"
+  - law_name: "Meinhardt (2012) Head–Foot Source-Density Exclusion Law"
+    formula: "head drive = σ,  foot drive φ_f = 1 / (1 + (σ/σ_f)^2);  σ₁ ≤ σ₂ ⟹ φ_f(σ₂) ≤ φ_f(σ₁): the two drives are anti-monotone in σ"
+    lean_decl: "MathOfBiology.Loop_001.meinhardt_foot_drive"
+    lean_theorem: "MathOfBiology.Loop_001.meinhardt_head_foot_source_density_exclusion"
+    lean_locus: "morphoeval/lean/loops/Loop_001_hydra_activator_inhibitor.lean#L156-L174"
+    lean_code: |
+      def meinhardt_foot_drive (K sigma : Nat) : Nat :=
+        K / (K + sigma * sigma)
+      theorem meinhardt_head_foot_source_density_exclusion (K σ₁ σ₂ : Nat) (h : σ₁ ≤ σ₂) :
+          σ₁ ≤ σ₂ ∧ meinhardt_foot_drive (K + 1) σ₂ ≤ meinhardt_foot_drive (K + 1) σ₁ := by
+        unfold meinhardt_foot_drive
+        constructor
+        · exact h
+        · apply Nat.div_le_div_left
+          · exact Nat.add_le_add_left (Nat.mul_le_mul h h) (K + 1)
+          · omega
+    variables: "σ: source density (initial profile exp(−4 s/L), raised by the head activator); σ_f: foot gating constant"
+    role: "Segregates head and foot to opposite poles of the shell (measured head–foot separation = 0.99 L); the foot forms at the position of lowest source density"
+    source_citation: "Meinhardt (2012) Int. J. Dev. Biol. 56:447-462 ('how to form them at a distance'); Meinhardt (1993) Dev. Biol. 157:321-333"
+    code_locus: "1972-gierer-hydra-activator-inhibitor.py#L920-L923"
+  - law_name: "Laplace–Beltrami Operator on the Specimen-Shaped Surface of Revolution (finite-difference shell)"
+    formula: "Δu = (1/r) ∂_s ( r ∂_s u ) + (1/r^2) ∂_θθ u;  stencil: [ r_{i+½}(u_{i+1} − u_i) − r_{i−½}(u_i − u_{i−1}) ] / r_i + (u_{j+1} + u_{j−1} − 2u_j) / (r_i Δθ)^2;  Δ(const) = 0"
+    lean_decl: "MathOfBiology.Loop_001.shell_axial_stencil"
+    lean_theorem: "MathOfBiology.Loop_001.cylindrical_shell_laplacian_annihilates_constants"
+    lean_locus: "morphoeval/lean/loops/Loop_001_hydra_activator_inhibitor.lean#L177-L198"
+    lean_code: |
+      def shell_axial_stencil (r_plus r_minus u_up u u_down : Int) : Int :=
+        r_plus * (u_up - u) - r_minus * (u - u_down)
+      def shell_circumferential_stencil (u_next u u_prev : Int) : Int :=
+        u_next + u_prev - 2 * u
+      theorem cylindrical_shell_laplacian_annihilates_constants (r_plus r_minus u : Int) :
+          shell_axial_stencil r_plus r_minus u u u = 0 ∧
+          shell_circumferential_stencil u u u = 0 := by
+        constructor
+        · simp [shell_axial_stencil]
+        · unfold shell_circumferential_stencil
+          omega
+    variables: "r(s): body radius profile measured on the Hydra vulgaris specimen (distance transform along the PCA axis); s: apico-basal arclength; θ: circumferential angle"
+    role: "Geometry operator of the Pass 3 shell (CylindricalShellGrid): exact Fourier step in θ with row-dependent symbol −D k_n^2 / r_i^2 and backward-Euler tridiagonal step in s; conservation of constants guarantees the homogeneous Gierer–Meinhardt state is an exact fixed point on the tapering geometry"
+    source_citation: "Standard Laplace–Beltrami operator for surfaces of revolution (reduced form of the 3D shell requested by audit 2026-10-19-hydra-activator-inhibitor-audit-v2)"
+    code_locus: "1972-gierer-hydra-activator-inhibitor.py#L827-L886"

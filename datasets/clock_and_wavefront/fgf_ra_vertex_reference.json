@@ -1,0 +1,69 @@
+{
+  "metadata": {
+    "dataset_id": "cooke-zeeman-1976-clock-and-wavefront-pass3-fgf-ra-vertex-v1",
+    "slot": 21,
+    "slot_id": "slot-021-clock-and-wavefront",
+    "title": "Pass 3 reference table: Goldbeter (2007) FGF8/RA bistable determination front, Dubrulle & Pourquie (2004) fgf8 mRNA decay gradient, Dubrulle et al. (2001) FGF8 bead perturbation, and Farhadifar (2007) vertex-model paraxial mesoderm sheet",
+    "created": "2026-10-19",
+    "supersedes": null,
+    "sources": [
+      {"id": "goldbeter2007", "citation": "Goldbeter A, Gonze D, Pourquie O (2007). Sharp developmental thresholds defined through bistability by antagonistic gradients of retinoic acid and FGF signaling. Developmental Dynamics 236(6):1495-1508.", "doi": "10.1002/dvdy.21193"},
+      {"id": "dubrulle2004", "citation": "Dubrulle J, Pourquie O (2004). fgf8 mRNA decay establishes a gradient that couples axial elongation to patterning in the vertebrate embryo. Nature 427(6973):419-422.", "doi": "10.1038/nature02216"},
+      {"id": "dubrulle2001", "citation": "Dubrulle J, McGrew MJ, Pourquie O (2001). FGF signaling controls somite boundary position and regulates segmentation clock control of spatiotemporal Hox gene activation. Cell 106(2):219-232.", "doi": "10.1016/S0092-8674(01)00437-8"},
+      {"id": "farhadifar2007", "citation": "Farhadifar R, Roper J-C, Aigouy B, Eaton S, Julicher F (2007). The influence of cell mechanics, cell-cell interactions, and proliferation on epithelial packing. Current Biology 17(24):2095-2104.", "doi": "10.1016/j.cub.2007.11.049"},
+      {"id": "bi2015", "citation": "Bi D, Lopez JH, Schwarz JM, Manning ML (2015). A density-independent rigidity transition in biological tissues. Nature Physics 11:1074-1079.", "doi": "10.1038/nphys3471"},
+      {"id": "saga2001", "citation": "Saga Y, Takeda H (2001). The making of the somite: molecular events in vertebrate segmentation. Nature Reviews Genetics 2(11):835-845.", "doi": "10.1038/35098552"}
+    ]
+  },
+  "goldbeter_2007_fgf_ra_toggle_reduced": {
+    "description": "Two-variable reduction of the Goldbeter-Gonze-Pourquie (2007) FGF/RA mutual-inhibition model. RA represses fgf8 (Hill, K_RF, n); FGF represses RA (Raldh2 repression + Cyp26 induction lumped into one Hill term, K_FR, n). F and R are normalised protein levels; M_F is fgf8 mRNA normalised to its tailbud level. The intermediates Cyp26 / Raldh2 of the published model are NOT represented explicitly (residual carried to Pass 4).",
+    "equations": {
+      "fgf8": "tau_FR * dF/dt = alpha_F * M_F(x,t) * K_RF^n / (K_RF^n + R^n) - F",
+      "retinoic_acid": "tau_FR * dR/dt = alpha_R * K_FR^n / (K_FR^n + F^n) - R",
+      "fgf8_mrna_gradient": "M_F(x,t) = exp(-(x_tb(t) - x) / lambda_F),  x_tb(t) = x_tb0 + v_tb * t,  lambda_F = v_tb / k_dM   (Dubrulle & Pourquie 2004)",
+      "cusp_coupling": "a(x,t) = tanh((R - F) / kappa_a);  m(x,t) = F^4 / (F^4 + K_mob^4)",
+      "determination_front": "x_w(t) = x_tb(t) - lambda_F * ln(1 / M_lo)  =>  dx_w/dt = v_tb"
+    },
+    "parameters": {
+      "alpha_F": 3.0, "alpha_R": 3.0, "K_RF": 1.0, "K_FR": 1.0, "n_hill": 4,
+      "tau_FR_min": 12.0, "k_dM_per_min": 0.0074, "kappa_a": 0.5, "K_mob": 0.3, "n_mob": 4
+    },
+    "derived_at_v_tb_2_2222_um_per_min": {
+      "lambda_F_mm": 0.3003,
+      "M_lo_saddle_node": 0.53,
+      "M_hi_saddle_node": "none below M_F = 1.6 (tailbud M_F = 1 remains in the bistable window, FGF-high branch)",
+      "front_offset_behind_tailbud_mm": 0.1907,
+      "v_front_fit_um_per_min": 2.22222,
+      "v_front_fit_r2": 1.0,
+      "S_sim_um": 100.1252,
+      "N_sim": 40,
+      "front_width_10_90_um": 35.04
+    },
+    "v_tb_sweep": [
+      {"v_tb_um_per_min": 1.3333, "v_front_fit_um_per_min": 1.3333, "S_sim_um": 60.0751, "S_pred_um": 59.9985, "lambda_F_mm": 0.1802},
+      {"v_tb_um_per_min": 1.6667, "v_front_fit_um_per_min": 1.66669, "S_sim_um": 75.0939, "S_pred_um": 75.0015, "lambda_F_mm": 0.2252},
+      {"v_tb_um_per_min": 2.2222, "v_front_fit_um_per_min": 2.2222, "S_sim_um": 100.1252, "S_pred_um": 99.999, "lambda_F_mm": 0.3003},
+      {"v_tb_um_per_min": 3.3333, "v_front_fit_um_per_min": 3.3333, "S_sim_um": 149.9875, "S_pred_um": 149.9985, "lambda_F_mm": 0.4505}
+    ],
+    "reference_claims": {
+      "front_velocity_equals_elongation": "Goldbeter et al. (2007) Fig. 2-4: the switching threshold of the bistable FGF/RA system defines a sharp determination front that moves posteriorly with axis elongation.",
+      "fgf8_bead_smaller_somites": "Dubrulle et al. (2001) Cell 106:219-232: FGF8-soaked beads implanted in the PSM shift the determination front posteriorly and produce smaller somites at the level of the bead; no numerical size ratio is reported, so the comparison is directional (ratio < 1).",
+      "bead_simulation": {"x_mm": 0.6, "amplitude": 1.0, "width_mm": 0.06, "tau_min": 300.0, "min_adjacent_ratio_sim": 0.700, "max_adjacent_ratio_sim": 1.550}
+    }
+  },
+  "farhadifar_2007_vertex_sheet": {
+    "description": "Pointy-top hexagonal vertex model of the anterior 1.2 mm of the paraxial mesoderm sheet (60 x 6 cells, 20 um AP pitch => 5 cells per 100 um Xenopus somite). Energy E = sum_c [K_A/2 (A_c - A_0)^2 + Gamma/2 P_c^2] + sum_e Lambda_e l_e (Farhadifar et al. 2007 case I, Lambda_bar = 0.12, Gamma_bar = 0.04). Edges separating a posterior (-1) half-somite cell on the anterior side from an anterior (+1) half-somite cell on the posterior side (Saga & Takeda 2001 A/P compartment polarity) receive extra tension dLambda. Gradient descent, outer boundary pinned, no T1 transitions, no apical constriction / rosette formation, no 3D epithelialisation.",
+    "parameters": {"K_A": 1.0, "Gamma": 0.04, "Lambda_0": 0.12, "delta_Lambda_cleft": 0.9, "step": 0.05, "steps_per_stage": 150, "cell_pitch_um": 20.0, "n_rows": 6, "sheet_length_mm": 1.2, "commit_threshold": 0.5},
+    "reference_values": {
+      "shape_index_rigidity_transition": {"value": 3.81, "source": "Bi et al. (2015) Nat. Phys. 11:1074-1079", "note": "p0 < 3.81 solid-like; regular hexagon p = 3.72"},
+      "straight_intersomitic_boundary": {"cleft_angle_deg": 0.0, "tortuosity": 1.0, "source": "Cooke & Zeeman (1976) Fig. 1; Saga & Takeda (2001)"},
+      "specimen_cleft_angle_deg": {"value": 7.876, "method": "luminance-minimum line fit of 8 lower-row clefts on somite_embryo_specimen.jpg", "per_cleft_deg": [4.03, 1.17, 14.4, 11.18, 3.12, 11.81, 14.04, 3.25]}
+    },
+    "simulated_values_default": {
+      "n_cells": 360, "n_vertices": 852, "n_edges": 1211,
+      "cleft_angle_lattice_deg": 28.248, "cleft_angle_final_deg": 10.26, "cleft_angle_control_dLambda0_deg": 27.273,
+      "cleft_tortuosity_lattice": 1.2998, "cleft_tortuosity_final": 1.0274, "cleft_tortuosity_control": 1.2941,
+      "n_clefts": 12, "S_2d_um": 100.005, "shape_index_mean": 3.7639, "shape_index_sd": 0.0579
+    }
+  }
+}

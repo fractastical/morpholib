@@ -25,3 +25,13 @@ Formal SHA-256-locked dataset and biological specimen photograph for `2015-manuk
    - SHA-256: `e5bca2d8766b49e70b149cad4bf068d8b93192157b57de770973193cc36cab2c`.
 
 4. **`paper_citations.bib`** — BibTeX entries for Manukyan et al. (2017), Kondo & Asai (1995), Fofonjka & Milinkovitch (2021), and Zakany & Milinkovitch (2023).
+
+5. **`skin_volume_reference.json`** (Pass 3, 2026-10-20)
+   - Reference notes for the 3D skin-volume reaction-diffusion model added in Pass 3 (`integrate_skin_volume_pde_3d`) and its depth-averaged thin-film reduction (`integrate_scale_border_pde_2d(border_model="thickness")`):
+     $$\frac{\partial \bar u}{\partial t} = F(\bar u, \bar v) + \frac{1}{h(\mathbf{x})} \nabla \cdot \big(h(\mathbf{x}) D_u \nabla \bar u\big)$$
+     with stepped skin thickness $h = h_{\text{interior}}$ in scale cores and $h = P\,h_{\text{interior}}$ on inter-scale borders; finite-volume face conductance $\min(h_i, h_j)\,D$ (Lean Theorems 4–5 in `morphoeval/lean/loops/Loop_009_ocellated_lizard_ca.lean`).
+   - Records the discretization (12 × 12 scales on 60 × 60 px, 12 interior voxels at $dz = 0.2$ px, $\lambda_c = 25$ px = 5 scale pitches, $d = 20$, $dt = 0.006$, 6000 steps), the script kinetics and their Jacobian, and the residual gap for Pass 4: the domain is a **stepped-thickness voxel skin, not a micro-CT finite-element mesh** of Fofonjka & Milinkovitch (2021), it does not grow, and the kinetics are a phenomenological Kondo–Asai-type set.
+   - Documents that the canonical clipped-linear parameter set in `ocellated_lizard_ca_reference.json` has Turing critical ratio $d_c = 23.57$, above its own stated $d = 20$ (i.e. it is not Turing-unstable as vendored).
+   - SHA-256: `dc8da9f0b72dad3a7326d0becb3f0aa475c84bb3f5c0f99723e1575f64779a27`.
+
+All five files are SHA-256-verified at runtime by `verify_dataset_sha256()` in `2015-manukyan-ocellated-lizard-ca.py`.

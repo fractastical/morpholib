@@ -32,5 +32,58 @@
   "slot_index": 33,
   "slug": "meristem-phyllotaxis-pin",
   "target_script": "2008-hamant-meristem-microtubule-stress.py",
-  "delta": 38.5
+  "delta": 38.5,
+  "pass3_run_id": "2026-10-19-auxin-pin1-meristem-mechanics-loop-pass3",
+  "pass3_audit_id": "2026-10-19-auxin-pin1-meristem-mechanics-audit-v3",
+  "audit_v3": "morphoeval/audits/2026-10-19-auxin-pin1-meristem-mechanics-audit-v3.yaml",
+  "pass3_score": 86.9,
+  "pass3_dims": {
+    "model-fidelity": 86,
+    "specimen-match": 80,
+    "parameter-expressivity": 92,
+    "morphometric-validation": 84,
+    "source-traceability": 94,
+    "code-traceability": 90,
+    "repro-package": 94
+  },
+  "pass3_delta_vs_pass2": -5.7,
+  "pass3_completed_at": "2026-10-20T09:20:01Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_kg_dir": "morphoeval/kg/2026-10-19-auxin-pin1-meristem-mechanics-audit-v3",
+  "pass3_overall_trusty_uri_v3": "https://w3id.org/np/RA4xh-DH7MZQS52ShJwbdxGAdlv6pTwwPtC1cfKs0TFgA",
+  "pass3_remediation_closed": [
+    "Couple the 168-cell L1 dome to a 3D multi-layered L1/L2/L3 polyhedral finite-element vertex mesh with dynamic periclinal/anticlinal cell division planes -> closed in reduced (non-FEM, cell-centre Voronoi) form: 526-cell four-sheet L1/L2/L3a/L3b 3D Voronoi polyhedral mesh with wall springs (L1 5x stiffer), turgor on exterior faces, elastic ghost supports, Jacobi-relaxed quasi-statics, per-cell virial tension tensor, Lockhart creep, volume-doubling division with Louveaux-2016 tension / Besson-Dumais-2011 Gibbs anticlinal planes (L1/L2) and 3D Gibbs corpus planes (simulate_multilayer_sam_mesh L513-937, _choose_anticlinal_division_plane L418-487, _choose_corpus_division_plane L489-511), mesh L1 tension field coupled into the ODE (simulate_cellular_sam_pin1_cmt L1041-1066; Lean Laws 4-5); residual (true vertex/FEM mechanics) carried to Pass 4"
+  ],
+  "pass3_remediation_open": [
+    "L653 + simulate_multilayer_sam_mesh L513-937: cell-centre Voronoi mesh with stress-free new contacts, no vertex DOF / bending / volume constraint -> true vertex or FEM model",
+    "L740-800, measurements L1988-2003: mesh L1 anisotropy magnitude does not grow with r as the membrane law (-0.11 Pearson, RMSE 0.072, apex artefact 0.059) -> anisotropic L1 wall stiffness / proper thin-membrane limit, remove sunflower apex bias",
+    "L1163-1166: imposed PIN1 angular noise model (N(0,0.165) + 15.5 % switching cells) determines the 84.9 % co-alignment; L1271-1273 fitted post-ablation asymptote 0.918; L1281 compression factor 1.48 -> make these emergent from the ODE on the Kirsch field",
+    "_choose_anticlinal_division_plane L418-487, measurements L2012-2027: tension rule gives 38 % shortest-plane vs 65-77 % (p = 5e-18) and 98 % symmetric vs 81 %; daughter/mother volume 1.29 -> combined stress + geometry rule, realistic cell shapes, volume-conserving division",
+    "L1389 calibration identity, compare_mesh_profile_with_specimen L1443-1467 (5.5 um RMS): single 2D section -> vendor a segmented confocal SAM stack with lineage data for layer thickness, off-apex profile and division-plane validation"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_033.hamant_2008_multilayer_shell_load_sharing",
+    "MathOfBiology.Loop_033.louveaux_2016_anticlinal_tension_division_plane"
+  ],
+  "pass3_lean_verified": true,
+  "pass3_lean_theorems_total": 5,
+  "pass3_self_test": "13/13 passed (~30 s)",
+  "pass3_artifacts": [
+    "2008-hamant-meristem-microtubule-stress.py",
+    "morphoeval/lean/loops/Loop_033_auxin_pin1_meristem_mechanics.lean",
+    "morphoeval/math_kg_loops/mirabet-auxin-pin1-meristem-mechanics.yaml",
+    "datasets/auxin_pin1_meristem_mechanics/auxin_pin1_meristem_mechanics_reference.json",
+    "datasets/auxin_pin1_meristem_mechanics/paper_citations.bib",
+    "datasets/auxin_pin1_meristem_mechanics/README.md",
+    "docs/media/auxin_pin1_meristem_mechanics_comparison.png",
+    "docs/media/auxin_pin1_meristem_mechanics_growth.gif",
+    "docs/media/auxin_pin1_meristem_mechanics_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-auxin-pin1-meristem-mechanics-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-auxin-pin1-meristem-mechanics-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-auxin-pin1-meristem-mechanics-audit-v3/ (10 signed nanopubs, REPORT.md, ttl, published.json)",
+    "morphoeval/runs/2026-10-19-auxin-pin1-meristem-mechanics-loop-pass3.{yaml,csv,md,trig,events.jsonl,ledger.jsonl}",
+    "morphoeval/cloud/dispatches/slot-033.json"
+  ]
 }

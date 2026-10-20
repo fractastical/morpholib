@@ -24,6 +24,26 @@
         "id": "dupont2011",
         "citation": "Dupont S, Morsut L, Aragona M, Enzo E, Giulitti S, Cordenonsi M, Zanconato F, Le Digabel J, Forcato M, Bicciato S, Elvassore N, Piccolo S (2011). Role of YAP/TAZ in mechanotransduction. Nature 474(7350):179-183.",
         "doi": "10.1038/nature10137"
+      },
+      {
+        "id": "cooke1976",
+        "citation": "Cooke J, Zeeman EC (1976). A clock and wavefront model for control of the number of repeated structures during animal morphogenesis. Journal of Theoretical Biology 58(2):455-476.",
+        "doi": "10.1016/S0022-5193(76)80131-2"
+      },
+      {
+        "id": "dubrulle2001",
+        "citation": "Dubrulle J, McGrew MJ, Pourquie O (2001). FGF signaling controls somite boundary position and regulates segmentation clock control of spatiotemporal Hox gene activation. Cell 106(2):219-232.",
+        "doi": "10.1016/S0092-8674(01)00437-8"
+      },
+      {
+        "id": "wada2011",
+        "citation": "Wada K, Itoga K, Okano T, Yonemura S, Sasaki H (2011). Hippo pathway regulation by cell morphology and stress fibers. Development 138(18):3907-3914.",
+        "doi": "10.1242/dev.070987"
+      },
+      {
+        "id": "gomez2008",
+        "citation": "Gomez C, Ozbudak EM, Wunderlich J, Baumann D, Lewis J, Pourquie O (2008). Control of segment number in vertebrate embryos. Nature 454(7202):335-339.",
+        "doi": "10.1038/nature07020"
       }
     ],
     "specimens": {
@@ -77,7 +97,7 @@
       "I_hopf_lower": 0.331282,
       "I_hopf_upper": 1.418718,
       "Y_nuc_critical_hopf": 0.610898,
-      "D_u_um2_per_min": 18.0,
+      "D_u_um2_per_min": 24.0,
       "intact_mpsm_clock_period_min": 140.0
     }
   },
@@ -157,5 +177,70 @@
         "observed_period_min": 0.0
       }
     ]
+  },
+  "clock_wavefront_fgf_gradient_reference": {
+    "section": "Pass 3 extension: anteroposterior FGF/Wnt gradient coupled to the excitable FHN clock (clock-and-wavefront arrest into discrete somite stripes)",
+    "sources": ["cooke1976", "dubrulle2001", "lauschke2013", "gomez2008", "hubaud2017"],
+    "fgf_gradient_law": "F(x, t) = min(1, exp(-(x_tb(t) - x) / lambda_F)),  x_tb(t) = x_tb0 + v_wf * t  (Dubrulle et al. 2001: Fgf8 mRNA decays in cells after they leave the tail bud, producing a posterior-high exponential gradient that regresses with axis elongation)",
+    "fgf_wnt_excitability_gate": "g(F) = F^h / (F_thr^h + F^h);  I_eff(x, t) = I_basal + J_Dll1(x, t) + gamma_F * (g(F) - 1) - gamma_YAP * Y_nuc",
+    "wavefront_arrest_criterion": "cell arrested  <=>  gamma_F * (1 - g(F)) > I_post - I_H_lower  (Lean Theorem 5)",
+    "clock_and_wavefront_spacing_law": "S = v_wf * T_clock  (Cooke & Zeeman 1976; Lean Theorem 4)",
+    "dll1_notch_juxtacrine_coupling": "J_Dll1,i = J_max * mean_{j in N(i)} sigma(u_j),  sigma(u) = (1 + tanh(u)) / 2",
+    "parameters": {
+      "domain_length_um": 2000.0,
+      "nx": 400,
+      "x_tailbud_initial_um": 700.0,
+      "v_wf_um_per_min": 0.70,
+      "lambda_F_um": 350.0,
+      "F_thr": 0.15,
+      "h_F": 4.0,
+      "gamma_F": 1.60,
+      "Y_nuc_psm": 0.18,
+      "J_max": 0.15,
+      "D_u_um2_per_min": 24.0,
+      "dt_min": 0.25,
+      "t_max_min": 1400.0
+    },
+    "empirical_anchors": {
+      "mouse_somite_ap_length_um": 100.0,
+      "mouse_somite_ap_length_note": "order-of-magnitude anteroposterior somite length of E9.5-E10.5 mouse somites (Gomez et al. 2008 Nature 454:335-339 cross-species comparison; Hubaud et al. 2017 mPSM explant clock period ~140 min)",
+      "clock_period_min": 142.0,
+      "implied_wavefront_speed_um_per_min": 0.704,
+      "cooke_zeeman_prediction_um": "S = v_wf * T_tailbud (computed at runtime from the simulated tail-bud period)"
+    }
+  },
+  "yap_mechanotransduction_kinetics_reference": {
+    "section": "Pass 3 extension: substrate stiffness -> F-actin tension -> LATS1/2 -> YAP phosphorylation / nuclear translocation kinetics feeding Y_nuc of Law 3",
+    "sources": ["dupont2011", "wada2011", "hubaud2017"],
+    "tension_index": "T(E_sub, A_cell) = [E^hE / (E_50^hE + E^hE)] * [A / (A_50 + A)] * rho_actin * c_ROCK  in [0, 1]",
+    "lats_activity": "L(T) = 1 / (1 + (T / T_L)^m_L)  (F-actin stress fibers inhibit LATS1/2; Wada et al. 2011)",
+    "yap_three_state_kinetics": "dY_n/dt = k_imp (1 + alpha_T T) Y_c - k_exp Y_n;  dY_p/dt = k_LATS L(T) Y_c - k_PP Y_p;  Y_c = 1 - Y_n - Y_p",
+    "steady_state": "Y_n = r_n / (1 + r_n + r_p),  r_n = (k_imp/k_exp)(1 + alpha_T T),  r_p = k_LATS L(T) / k_PP  (Lean Theorem 6: increasing in r_n, decreasing in r_p)",
+    "honesty_note": "Dupont et al. (2011) reported that the stiffness response of YAP/TAZ requires Rho/F-actin tension and is largely LATS-independent; the LATS1/2 branch here follows Wada et al. (2011) (stress fibers inhibit LATS). Both branches are included; the fitted kappa_LATS and alpha_T apportion them. Yap5SA (five LATS serine sites mutated) is modelled as kappa_LATS = 0 with a 2x overexpression factor.",
+    "fixed_parameters": {
+      "E_50_kPa": 10.0,
+      "h_E": 2.0,
+      "A_50_um2": 500.0,
+      "m_L": 3.0,
+      "r0_import_export_ratio": 1.0,
+      "k_exp_per_min": 0.0833,
+      "k_PP_per_min": 0.05,
+      "tau_actin_min": 8.0,
+      "yap5sa_overexpression_factor": 2.0
+    },
+    "fitted_parameters": ["alpha_T", "kappa_LATS", "T_L"],
+    "dupont_2011_stiffness_anchors": {
+      "soft_kPa": 0.7,
+      "stiff_kPa": 40.0,
+      "note": "Dupont et al. 2011 Fig. 1: YAP/TAZ cytoplasmic on ~0.7 kPa fibronectin-coated hydrogels, nuclear on ~40 kPa; predicted critical stiffness E_crit (Y_nuc = Y_nuc_crit) must lie inside this bracket"
+    },
+    "regime_mechanical_inputs": {
+      "isolated_spread_fn_quiescent": {"E_sub_kPa": 40.0, "A_cell_um2": 2000.0, "rho_actin": 1.0, "c_rock": 1.0, "lats_sensitive": true, "overexpression": 1.0},
+      "isolated_dll1_coated_fn": {"E_sub_kPa": 40.0, "A_cell_um2": 2000.0, "rho_actin": 1.0, "c_rock": 1.0, "lats_sensitive": true, "overexpression": 1.0},
+      "isolated_latrunculin_a_rescue": {"E_sub_kPa": 40.0, "A_cell_um2": 2000.0, "rho_actin": 0.15, "c_rock": 1.0, "lats_sensitive": true, "overexpression": 1.0},
+      "isolated_rockout_y27632_rescue": {"E_sub_kPa": 40.0, "A_cell_um2": 2000.0, "rho_actin": 1.0, "c_rock": 0.25, "lats_sensitive": true, "overexpression": 1.0},
+      "intact_high_density_mpsm": {"E_sub_kPa": 40.0, "A_cell_um2": 150.0, "rho_actin": 1.0, "c_rock": 1.0, "lats_sensitive": true, "overexpression": 1.0},
+      "yap5sa_constitutively_active_block": {"E_sub_kPa": 40.0, "A_cell_um2": 2000.0, "rho_actin": 0.15, "c_rock": 1.0, "lats_sensitive": false, "overexpression": 2.0}
+    }
   }
 }

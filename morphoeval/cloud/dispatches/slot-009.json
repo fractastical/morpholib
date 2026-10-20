@@ -15,7 +15,7 @@
   "pass2_score": 91.9,
   "quick_gate_score": 100.0,
   "lean_file": "morphoeval/lean/loops/Loop_009_ocellated_lizard_ca.lean",
-  "lean_theorems_proved": 3,
+  "lean_theorems_proved": 5,
   "lean_sorrys": 0,
   "nanopubs_signed": 20,
   "overall_nanopub_uri_v1": "https://w3id.org/np/RALZfHdOxJGsZG4BskI6PSWFcDeN8J0yV4ebq-Y-JZYpc",
@@ -43,5 +43,71 @@
   "slot_index": 9,
   "slug": "ocellated-lizard-ca",
   "target_script": "2015-manukyan-ocellated-lizard-ca.py",
-  "delta": 43.1
+  "delta": 43.1,
+  "pass3_run_id": "2026-10-19-ocellated-lizard-ca-loop-pass3",
+  "pass3_audit_id": "2026-10-19-ocellated-lizard-ca-audit-v3",
+  "pass3_score": 83.6,
+  "pass3_dims": {
+    "model-fidelity": 82,
+    "specimen-match": 82,
+    "parameter-expressivity": 86,
+    "morphometric-validation": 80,
+    "source-traceability": 84,
+    "code-traceability": 86,
+    "repro-package": 90
+  },
+  "pass2_dims": {
+    "model-fidelity": 94,
+    "specimen-match": 90,
+    "parameter-expressivity": 90,
+    "morphometric-validation": 91,
+    "source-traceability": 95,
+    "code-traceability": 92,
+    "repro-package": 92
+  },
+  "pass3_delta": -8.3,
+  "pass3_score_note": "Lower than Pass 2 although the model is more faithful: v2 credited an artificial per-scale averaging step (homog_rate), a leaky border band, un-provenanced histogram/parameter tables and a lattice-imposed specimen segmentation; v3 scores only what the evidence supports.",
+  "pass3_completed_at": "2026-10-20T06:28:14Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "overall_nanopub_uri_v3": "https://w3id.org/np/RAGLVNq6GTQTlUDFUcwYuBDcg-467m6XVlbcRfg9x2vH0",
+  "pass3_remediation_closed": [
+    "Extend the 2D hexagonal scale-border PDE to full 3D finite-element micro-CT skin-scale meshes following Fofonjka & Milinkovitch (2021) \u2014 closed in reduced honest form: genuine 3D voxel skin-volume RD solver `integrate_skin_volume_pde_3d` (2015-manukyan-ocellated-lizard-ca.py L739-865; stepped thickness h_border = P*h_interior, zero-flux surfaces, implicit vertical Thomas solve) plus its depth-averaged thin-film 2D reduction `integrate_scale_border_pde_2d(border_model='thickness')` (L616-717) with measured 3D-vs-2D agreement (90.3 % scale states, RMS 0.118, vertical RMS 2.2e-2 at P=0.17). Residual (no micro-CT mesh, no growth) carried as Pass 4 item 2."
+  ],
+  "pass3_remediation_open": [
+    "L326-341 + ocellated_lizard_ca_reference.json L53-70: solvers use phenomenological kinetics; vendored canonical clipped-linear set has d_c = 23.57 > its stated d = 20 (not Turing-unstable). Digitise Manukyan Methods parameters with provenance and run the 3D solver with them.",
+    "L739-865 + L135-144: 3D domain is a stepped voxel skin at 5 px pitch (border area fraction 0.36, h_interior 0.48 pitch, no growth), not the micro-CT geometry of Fofonjka & Milinkovitch (2021). Smooth hexagonal-dome h(x) at >= 10 px pitch, growing domain, convergence of 3D-vs-2D agreement with h_interior/lambda_c.",
+    "L993-1010: specimen segmentation samples a fixed 13x14 hexagonal lattice instead of detecting scale centres; replace with blob/watershed detection and orthorectify the ROI.",
+    "L276-278 + L1418-1427 + ocellated_lizard_ca_reference.json L75-90: CA flip probabilities and histogram targets have no digitisation provenance and the 3D PDE histogram peaks at n_g = 2 (L1 0.34 to CA); estimate p(flip|n_g) from the PDE time series as the paper does and cite each target vector's figure.",
+    "L1672-1700: lambda_c, nz, dz, dt and PDE steps are module constants, not CLI flags; add a rendered gallery of depth-averaged fields along the P sweep.",
+    "L1398-1407 + L1518-1527: reference anchors 3.5 (discretization ratio) and 4.0 pitches (lambda_c) are assessor-chosen; replace with values measured on Manukyan Fig. 4 / Fofonjka 2021 or mark as self-consistency targets."
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_009.thin_film_depth_average_recovers_uniform_column",
+    "MathOfBiology.Loop_009.voxel_face_conductance_ratio_equals_thickness_ratio"
+  ],
+  "pass3_self_test_checks": 14,
+  "pass3_measurements": 16,
+  "pass3_artifacts": [
+    "2015-manukyan-ocellated-lizard-ca.py",
+    "morphoeval/lean/loops/Loop_009_ocellated_lizard_ca.lean",
+    "morphoeval/math_kg_loops/manukyan-ocellated-lizard-ca.yaml",
+    "datasets/ocellated_lizard_ca/skin_volume_reference.json",
+    "datasets/ocellated_lizard_ca/README.md",
+    "docs/media/ocellated_lizard_ca_comparison.png",
+    "docs/media/ocellated_lizard_ca_growth.gif",
+    "docs/media/ocellated_lizard_ca_3d_volume.png",
+    "docs/media/ocellated_lizard_ca_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-ocellated-lizard-ca-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-ocellated-lizard-ca-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-ocellated-lizard-ca-audit-v3/",
+    "morphoeval/runs/2026-10-19-ocellated-lizard-ca-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-ocellated-lizard-ca-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-ocellated-lizard-ca-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-ocellated-lizard-ca-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-ocellated-lizard-ca-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-ocellated-lizard-ca-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-009.json"
+  ]
 }

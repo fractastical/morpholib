@@ -1,0 +1,328 @@
+# MorphoEval audit — Mongera et al. (2018) Nature & Kim et al. (2021) Nature Physics Zebrafish Tailbud Fluid-to-Solid Jamming Transition, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `2022-tailbud-neuromesodermal-jamming.py` (v3, 2019 lines) after the remediation of the single
+# open v2 item in the instrumented loop `morphoeval/runs/2026-10-19-neuromesodermal-jamming-loop-pass3`, superseding
+# `2026-10-19-neuromesodermal-jamming-audit-v2` (91.4). Same protocol as Passes 1-2 (primary assessor + second
+# assessor rubric protocol); line numbers refer to the files at commit d58a084 plus the uncommitted Pass 3 edits
+# recorded in the loop ledger.
+#
+# What Pass 3 changed (the one v2 remediation item, closed in a REDUCED and explicitly labelled form):
+#   1. Quasi-3D fibronectin ECM sheath (Dray et al. 2013): thin-rod axisymmetric reduction of the 3D paraxial column.
+#      f_FN(x) wraps the tailbud/PSM; hoop equilibrium eps_r = max(0, sigma_A - sigma_y)/(K_FN f_FN + K_t) sets the
+#      equilibrium radius R_eq(x); the influx fraction stored in radial dilation lowers the axial channeling chi that
+#      multiplies the Bingham-backstop elongation speed (v/v_WT = 0.79 for fn1a;fn1b MO vs ~0.70 reported, width 1.24
+#      vs ~1.20). Dynamic cell-ECM wall friction F_drag is computed but only reported (diagnostic).
+#   2. Her1/Her7 clock phase advected in the tip frame with a posterior pacemaker, Soroldoni-type slowing and arrest
+#      anterior to a mechanical gate sigma_y/sigma_A >= 4 (x_arrest = 161 um, strictly anterior to x_jam = 81 um);
+#      Cooke-Zeeman somite length S = (v_elong + v_short) T = 46.2 um (ref ~47 um); frozen stripe wavelength on the
+#      kymograph 46.2 um; cdh2 morphant never reaches the gate (no arrest front). Arrested somites add fibronectin
+#      that feeds back into the sheath profile, so the coupling is bidirectional.
+#   3. 3 Dray-2013 fibronectin regimes, 12-point fn_scale sweep (monotonic), CLI --fn-scale / --clock-period,
+#      6 new measurements (14 total), self-test 8 -> 13 checks, 2 new Lean 4 theorems (6 total, 0 sorry),
+#      4 new DOIs in the bib/reference JSON (SHA re-pinned), row C (5 panels) in the PNG and a 4th GIF panel.
+#
+# Scores below: overall 90.0 (down 1.4 from 91.4). The remediation is credited, but writing the reduced sheath and
+# clock modules exposed that (a) the elongation law remains a calibrated phenomenological product (prefactor,
+# tanh fluidity, hard-coded blebbistatin/SU5402 asymmetry overrides) that the new modules multiply rather than
+# replace, (b) the fibronectin reference ratios are approximate digitisations, (c) the arrest gate Lambda = 4 and
+# several clock constants are modelling choices without a cited measurement, and (d) row C has no specimen.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated probabilities).
+
+audit:
+  id: 2026-10-19-neuromesodermal-jamming-audit-v3
+  supersedes_audit_id: 2026-10-19-neuromesodermal-jamming-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric protocol)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d58a084
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) evaluation of `2022-tailbud-neuromesodermal-jamming.py` after the remediation
+      loop `2026-10-19-neuromesodermal-jamming-loop-pass3` (Step 12 of v2 -> Steps 5-11). The
+      script regenerates `docs/media/neuromesodermal_jamming_comparison.png` (15 panels) and
+      `docs/media/neuromesodermal_jamming_growth.gif` in ~3.3 s; `--self-test` passes 13/13 in <1 s.
+
+references:
+  mongera2018:
+    title: "A fluid-to-solid jamming transition underlies vertebrate body axis elongation"
+    authors: "Mongera A, Rowghanian P, Gustafson HJ, Shelton E, Kealhofer DA, Carn EK, Serwane F, Lucio AA, Giammona J, Campas O"
+    venue: "Nature 561(7723):401-405 (2018)"
+    doi: 10.1038/s41586-018-0479-2
+  kim2021:
+    title: "Embryonic tissues as active foams"
+    authors: "Kim S, Pochitaloff M, Stooke-Vaughan GA, Campas O"
+    venue: "Nature Physics 17(7):859-866 (2021)"
+    doi: 10.1038/s41567-021-01215-1
+  lawton2013:
+    title: "Regulated tissue fluidity steers zebrafish body elongation"
+    authors: "Lawton AK, Nandi A, Stulberg MJ, Dray N, Sneddon MW, Emonet T, Blawzdziewicz J, Holley SA"
+    venue: "Development 140(3):573-582 (2013)"
+    doi: 10.1242/dev.090381
+  serwane2017:
+    title: "In vivo quantification of spatially varying mechanical properties in developing tissues"
+    authors: "Serwane F, Mongera A, Rowghanian P, Kealhofer DA, Lucio AA, Hockenbery ZM, Campas O"
+    venue: "Nature Methods 14(2):181-186 (2017)"
+    doi: 10.1038/nmeth.4101
+  dray2013:
+    title: "Cell-fibronectin interactions propel vertebrate trunk elongation via tissue mechanics"
+    authors: "Dray N, Lawton A, Nandi A, Julicher F, Emonet T, Holley SA"
+    venue: "Current Biology 23(14):1335-1341 (2013)"
+    doi: 10.1016/j.cub.2013.05.052
+  soroldoni2014:
+    title: "A Doppler effect in embryonic pattern formation"
+    authors: "Soroldoni D, Jorg DJ, Morelli LG, Richmond DL, Schindelin J, Julicher F, Oates AC"
+    venue: "Science 345(6193):222-225 (2014)"
+    doi: 10.1126/science.1253089
+  herrgen2010:
+    title: "Intercellular coupling regulates the period of the segmentation clock"
+    authors: "Herrgen L, Ares S, Morelli LG, Schroter C, Julicher F, Oates AC"
+    venue: "Current Biology 20(14):1244-1253 (2010)"
+    doi: 10.1016/j.cub.2010.06.034
+  hubaud2017:
+    title: "Excitable dynamics and Yap-dependent mechanical cues drive the segmentation clock"
+    authors: "Hubaud A, Regev I, Mahadevan L, Pourquie O"
+    venue: "Cell 171(3):668-682 (2017)"
+    doi: 10.1016/j.cell.2017.08.043
+  lewis2003:
+    title: "Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator"
+    authors: "Lewis J"
+    venue: "Current Biology 13(16):1398-1408 (2003)"
+    doi: 10.1016/S0960-9822(03)00534-7
+
+simulations:
+  - id: tailbud-neuromesodermal-jamming
+    name: "Mongera et al. (2018) & Kim et al. (2021) zebrafish tailbud active fluid-to-solid jamming transition & yield-stress axis elongation"
+    organism: "Danio rerio (zebrafish tailbud mesodermal progenitor zone MPZ & presomitic mesoderm PSM)"
+    script: 2022-tailbud-neuromesodermal-jamming.py
+    output: docs/media/neuromesodermal_jamming_comparison.png
+    extra_outputs:
+      - docs/media/neuromesodermal_jamming_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-neuromesodermal-jamming-audit-v2
+    source_refs:
+      - mongera2018
+      - kim2021
+      - lawton2013
+      - serwane2017
+      - dray2013
+      - soroldoni2014
+      - herrgen2010
+      - hubaud2017
+      - lewis2003
+    claim_boundary:
+      reported_in_source:
+        - "Mongera et al. (2018) Nature 561:401-405 Figs. 1-4: along the posterior-to-anterior axis of the zebrafish tailbud, extracellular space fraction phi_ECS(x) decreases from ~14.5% in the posterior Mesodermal Progenitor Zone (MPZ) to ~4.9% in the Anterior Presomitic Mesoderm (A-PSM), driving cell packing phi_pack = 1 - phi_ECS across the rigidity-percolation threshold phi_c approx 0.860 and elevating ferrofluid-measured yield stress sigma_y(x) from ~11 Pa to ~118 Pa while active Myosin-II tension fluctuations sigma_A(x) decline from ~50 Pa to ~13 Pa."
+        - "Kim et al. (2021) Nature Physics 17:859-866 & Mongera et al. (2018) Fig. 4: active tension fluctuations fluidize the MPZ (sigma_A > sigma_y) via frequent T1 neighbor exchanges, whereas the jammed solid A-PSM (sigma_y >> sigma_A) serves as an internal mechanical backstop that rectifies MPZ progenitor addition into unidirectional posterior elongation and preserves left-right symmetry; N-cadherin (cdh2) knockdown expands phi_ECS > 14%, unjamming the PSM, slowing elongation, and inducing bilateral body-axis asymmetry."
+        - "Dray et al. (2013) Current Biology 23:1335-1341 Figs. 1-4: a fibronectin matrix wraps the tailbud and PSM; fn1a;fn1b double morphants and itga5 morphants lose this boundary, elongate the trunk more slowly and show altered posterior tissue shape and mechanics (the script vendors these as APPROXIMATE ratios, v/v_WT ~0.70 / ~0.82, width ~1.20 / ~1.08, +/-25%)."
+        - "Herrgen et al. (2010) / Soroldoni et al. (2014): the zebrafish her1/her7 clock period is ~23.5 min at 28 C and clock waves slow and compress toward the anterior PSM before arresting into somite stripes (Cooke-Zeeman S = v_front T)."
+      reconstructed_in_script:
+        - "Continuous posterior-to-anterior active-foam & Bingham viscoplastic solver across x in [0, 300] um (`solve_ap_jamming_profile`, r_sigma_y = 0.9989, r_kT1 = 0.9922, jamming crossover x* = 81.0 um) and 2D U-shaped tailbud cellular flow simulator across 5 experimental regimes (WT Control, cdh2 Morphant, Blebbistatin, SU5402, Zero-Backstop Ablation; v_elong r = 0.9748, L-R asymmetry r = 0.9851)."
+        - "(Pass 3) Quasi-3D fibronectin sheath: f_FN(x) profile, hoop equilibrium eps_r = max(0, sigma_A - sigma_y)/(K_FN f_FN + K_t), equilibrium radius R_eq(x), influx-weighted channeling chi (0.951 WT, 0.907 itga5 MO, 0.736 fn1a;fn1b MO) multiplying the elongation speed, tailbud width ratio (1.04 / 1.08 / 1.24), 12-point fn_scale sweep (monotonic), and a diagnostic wall-friction force F_drag."
+        - "(Pass 3) Her1/Her7 clock phase advection in the tip frame with a mechanical arrest gate sigma_y/sigma_A >= 4 (x_arrest = 161.1 um > x_jam = 81.0 um), Cooke-Zeeman somite length S = (v_elong + 0.45) * 23.5 min = 46.2 um, frozen her1 stripe wavelength 46.2 um measured on the kymograph, per-regime arrest fronts (cdh2 and ablation: none), and somite-border fibronectin feedback into the sheath profile."
+        - "Nuclear-seeded Voronoi tessellation and regional interstitial space segmentation of the Danio rerio posterior tailbud lightsheet micrograph (`zebrafish_tailbud_psm_specimen.jpg`, IDR0051, N = 391 nuclei, <z> = 5.88, AP compaction r = 0.9915)."
+      transfer_boundary:
+        - "2D dorsal-ventral optical-plane projection of the 3D U-shaped zebrafish posterior tailbud and paraxial presomitic mesoderm; the fibronectin sheath is a thin-rod axisymmetric reduction (one radius per AP position), not a 3D boundary mesh."
+        - "The sheath channeling argument (influx stored in radial dilation is lost to elongation) is a transient-window argument, not a steady-state Stokes balance; K_FN and K_t are calibrated to the approximate Dray et al. (2013) ratios; the dynamic ECM friction F_drag does not feed back on v_elong."
+        - "The clock is a phase oscillator with a prescribed frequency profile and a mechanical arrest gate (Lambda_arrest = 4, a modelling choice standing in for the FGF/Wnt determination front and Yap mechanosensitivity), not the Lewis (2003) her1/her7 delay-differential oscillator; v_PSM-shortening = 0.45 um/min and the ~47 um somite length are approximate anchors."
+      does_not_claim:
+        - "Does not model 3D notochord vacuolation turgor mechanics, anterior somite epithelialization clefting, an FGF8/Wnt morphogen determination front, Delta-Notch phase coupling, or a full axisymmetric/3D Stokes-Bingham solve with fibronectin traction boundary conditions."
+    summary: >-
+      Pass 3 (v3) evaluation of `2022-tailbud-neuromesodermal-jamming.py` (90.0/100, down 1.4 from
+      91.4 in Pass 2). The one open v2 item is closed in a reduced, explicitly labelled form: a
+      quasi-3D fibronectin sheath (`compute_sheath_channeling`, L452-499) couples Dray et al. (2013)
+      cell-fibronectin loss to tailbud widening and slower elongation through a hoop-equilibrium
+      channeling factor (fn1a;fn1b MO v/v_WT = 0.79 vs ~0.70, width 1.24 vs ~1.20), and a Her1/Her7
+      clock advection solver (`solve_segmentation_clock_arrest`, L546-640) arrests the clock at a
+      jamming-ratio gate strictly anterior to the fluid-to-solid crossover (161 vs 81 um) and yields
+      Cooke-Zeeman somites of 46.2 um (ref ~47 um; frozen stripe wavelength 46.2 um), with somite
+      fibronectin feeding back into the sheath. Six Lean 4 theorems (2 new), 14 measurements (6 new),
+      13 self-test checks and 9 DOIs back the script. The score drops slightly because the new modules
+      multiply a still-phenomenological elongation law (prefactor, tanh fluidity, hard-coded asymmetry
+      overrides at L716-728), the new reference values are approximate digitisations, the arrest gate
+      and several clock constants are uncited modelling choices, and row C carries no specimen.
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          The Mongera/Kim laws of Pass 2 are unchanged and remain faithful: cell packing, Maxwell
+          coordination, rigidity-percolation yield stress, Kramers T1 rate, Bingham strain rate and the
+          continuous AP crossover solver (L194-390). Pass 3 adds the requested fibronectin and clock
+          couplings as reduced models that are honest about their status: a hoop-equilibrium sheath
+          with an explicit calibration note (L398-514; reference JSON L269-286) and a phase-advection
+          clock with a mechanical arrest gate (L521-640), both wired bidirectionally into the jamming
+          gradient (arrest front -> somite fibronectin -> channeling -> v_elong -> somite length) and
+          backed by Lean Theorems 5-6. Deductions: the remediation asked for ECM boundary FRICTION, and
+          the implemented coupling is confinement — the computed wall-friction force (L485-486) is
+          reported but never feeds back (-3); the channeling factor is a transient stored-volume
+          argument rather than a steady-state force balance, and it multiplies an elongation law that is
+          still a calibrated product (J prefactor 2.034, tanh(sigma_A/29) fluidity, blebbistatin/SU5402
+          asymmetry overrides at L716-728) (-4); Lambda_arrest = 4, the u(x) floor 0.15 and c_slow = 0.6
+          (L576-583) are modelling choices without a cited measurement, and the clock is a phase model,
+          not the Lewis (2003) DDE (-3). Down 3 from v2 because the new modules make the phenomenological
+          core more visible, not less.
+        evidence:
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [194, 390], note: "Unchanged Pass 2 active-foam laws: packing, isostatic z, rigidity-percolation sigma_y, Kramers k_T1, Bingham rate, AP crossover solver with NaN-safe Pearson r", supports: true}
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [398, 514], note: "Quasi-3D fibronectin sheath: R_0(x), f_FN(x) with somite feedback, hoop strain, influx-weighted channeling chi, diagnostic wall friction F_drag", supports: true}
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [521, 640], note: "Her1/Her7 clock: mechanical arrest gate, tip-frame upwind advection with pacemaker, steady-state initial phase, frozen-stripe wavelength measurement", supports: true}
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [683, 728], note: "2D simulator: sheath channeling multiplies the elongation law; J prefactor, tanh fluidity and hard-coded blebbistatin/SU5402 asymmetry overrides remain phenomenological", supports: false}
+          - {file: morphoeval/lean/loops/Loop_030_neuromesodermal_jamming.lean, lines: [150, 247], note: "Theorems 5-6: sheath stiffness ordering => larger morphant hoop strain and lower channeling; arrest front strictly anterior to x_jam and somite length monotone in wavefront speed (lean verified, 0 sorry)", supports: true}
+      specimen-match:
+        value: 88
+        rationale: >-
+          Panels A5, B1 and B5 still carry the SHA-256-verified IDR0051 *Danio rerio* tailbud lightsheet
+          micrograph with N = 391 segmented nuclei, Voronoi coordination <z> = 5.88 and AP interstitial
+          compaction matching Mongera et al. (2018) with r = 0.9915 (`segment_zebrafish_tailbud_specimen`,
+          L980-1092), and the four 2D regimes in A1-A4 remain visually distinct (jammed anterior plasma
+          colouring vs uniformly fluid cdh2/ablation fields, widened cdh2 envelope). Deductions: the new
+          row C (L1478-1601) compares the sheath envelope, kymograph and frozen stripes only with model
+          references and approximate literature ratios — no fibronectin immunostain or her1 in situ
+          specimen is vendored, so the specimen does not test either new mechanism (-6); the fn1a;fn1b
+          2D regime is simulated (L1142-1153) but not rendered as a spatial panel, so the predicted
+          wider tailbud is shown only as an envelope curve (-3); the kymograph's posterior synchronous
+          band and anterior frozen stripes are qualitatively right but no comparison image from
+          Soroldoni et al. (2014) is placed beside it (-3).
+        evidence:
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [980, 1092], note: "CV nuclear & Voronoi segmentation of IDR0051 zebrafish tailbud lightsheet micrograph (N=391 nuclei, r=0.9915)", supports: true}
+          - {file: docs/media/neuromesodermal_jamming_comparison.png, lines: [0, 0], note: "15-panel figure: specimen overlay (A5), specimen compaction vs model (B1), Voronoi P(z) (B5); row C sheath envelope, her1 kymograph, frozen stripes, Dray regimes, fn_scale sweep", supports: true}
+          - {file: docs/media/neuromesodermal_jamming_growth.gif, lines: [0, 0], note: "4-panel animation: WT and cdh2 2D foams, AP crossover profile, and the Her1/Her7 kymograph filling in with the arrest front and x_jam marked", supports: true}
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [1478, 1601], note: "Row C has no vendored specimen (no FN immunostain, no her1 in situ); comparisons are to approximate literature ratios and to the model's own Cooke-Zeeman S", supports: false}
+      parameter-expressivity:
+        value: 91
+        rationale: >-
+          All 5 Mongera/Lawton regimes (`evaluate_all_perturbation_regimes`, L920-973) plus 3 new Dray
+          fibronectin regimes (`evaluate_fibronectin_regimes`, L808-855) are evaluated; the 12-point
+          fn_scale sweep (`sweep_fibronectin_scale`, L858-878) is monotonic in both elongation speed
+          (increasing) and tailbud width (decreasing), asserted in self-test check 9 and shown in Panel
+          C5; the clock period and fn_scale are exposed as CLI flags (L1987-1988) alongside the Pass 2
+          flags, and somite length scales with wavefront speed across regimes (Panel C3/C5). Deductions:
+          the fn_scale sweep saturates above ~0.6 so the WT point sits on a flat shoulder, which limits
+          the diagnostic value of the sweep near WT (-4); Lambda_arrest, c_slow, K_FN and K_t are not
+          swept, and no 2D sweep (fn_scale x phi_ECS) is shown (-5).
+        evidence:
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [808, 878], note: "3 Dray fibronectin regimes and 12-point fn_scale sweep with monotonicity flags", supports: true}
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [920, 973], note: "5-regime Mongera/Lawton perturbation evaluator (unchanged semantics; channeling now included)", supports: true}
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [1980, 1995], note: "CLI: --phi-ecs-mpz, --phi-ecs-apsm, --sigma-a-mpz, --fn-scale, --clock-period, --steps, --seed, --self-test", supports: true}
+      morphometric-validation:
+        value: 89
+        rationale: >-
+          `measure_morphoeval()` (L1734-1862) now returns 14 measurements with units and references: the
+          8 Pass 2 metrics (MPZ/A-PSM yield stress, 7-point sigma_y and k_T1 correlations, WT-cdh2 speed
+          drop, cdh2 asymmetry, N = 391 nuclei, specimen compaction r = 0.9915) plus 6 Pass 3 metrics
+          (fn1a;fn1b speed ratio 0.79 vs ~0.70, width ratio 1.24 vs ~1.20, arrest front 161 vs ~180 um,
+          Cooke-Zeeman S 46.2 vs ~47 um, frozen stripe wavelength vs S, cdh2 peak jamming ratio vs the
+          gate). Deductions: the Dray ratios, the 47 um somite length, the 180 um arrest front and the
+          0.45 um/min PSM shortening are approximate anchors flagged as such (reference JSON L288-333),
+          not digitised figure values with uncertainties (-5); the stripe-wavelength-vs-S check is a
+          numerical consistency test of the advection scheme (both derive from v_front), not a biological
+          validation (-3); the itga5 regime misses its approximate ratio by 16% (0.95 vs 0.82) and this is
+          only reported via the 3-regime RMSE (-3).
+        evidence:
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [1734, 1862], note: "14 measurements (8 Pass 2 + 6 Pass 3) with units, reference values and method strings", supports: true}
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [343, 365], note: "7-point AP profile Pearson r and RMSE validation against Mongera et al. (2018)", supports: true}
+          - {file: datasets/neuromesodermal_jamming/neuromesodermal_jamming_reference.json, lines: [288, 333], note: "Dray-2013 ratios and clock anchors are explicitly approximate (approximate_digitization: true, uncertainty_pct 25)", supports: false}
+      source-traceability:
+        value: 92
+        rationale: >-
+          `datasets/neuromesodermal_jamming/` vendors the reference JSON (now 9 DOIs incl. Soroldoni
+          2014, Herrgen 2010, Hubaud 2017, Lewis 2003), the IDR0051 micrograph, `paper_citations.bib`
+          (re-pinned SHA-256 8ad03bd2...), `scout_manifest.json` and an updated README; runtime SHA-256
+          verification fails closed (`verify_reference_dataset`, L166-187) and the self-test confirms
+          the dataset slot. Deductions: the Dray et al. (2013) ratios cite "Figs. 2-4 / text" without
+          panel-level pins and are digitised approximately (-4); the calibration of K_FN and K_t is
+          disclosed but has no literature anchor for a fibronectin sheath modulus (-2); Cooke & Zeeman
+          (1976) is cited in the math-KG YAML but not in the bib (-2).
+        evidence:
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [166, 187], note: "Runtime SHA-256 verification of reference dataset, IDR0051 micrograph, scout manifest and (re-pinned) bib", supports: true}
+          - {file: datasets/neuromesodermal_jamming/neuromesodermal_jamming_reference.json, lines: [1, 60], note: "9 sources with DOIs and SHA-256 pins for the three vendored artifacts", supports: true}
+          - {file: datasets/neuromesodermal_jamming/paper_citations.bib, lines: [56, 98], note: "4 new BibTeX entries (Soroldoni 2014, Herrgen 2010, Hubaud 2017, Lewis 2003)", supports: true}
+      code-traceability:
+        value: 92
+        rationale: >-
+          The module docstring (L1-94) maps every Pass 2 and Pass 3 step to its source figure/equation
+          and to the 6 Lean theorems; each new function docstring states its equation, its source and
+          the Lean theorem it instantiates (L398-514, L521-640), and the math-KG YAML registers the two
+          new laws with code and Lean loci. Deductions: the clock advection floor 0.15/0.85 and the
+          slowing exponent (L576-583), the sheath taper constants 95/35 um (L398-406) and the f_FN
+          sigmoid 110/40 um (L409-429) are stated but not traced to a figure (-5); the hard-coded
+          asymmetry overrides at L724-728 still carry no citation (-3).
+        evidence:
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [1, 94], note: "Module docstring: Pass 3 remediation summary, 9 primary sources with DOIs, 6 Lean theorems", supports: true}
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [398, 450], note: "Sheath functions cite Dray 2013 Fig. 1 / Mongera Fig. 1a and Lean Theorem 5; taper and sigmoid constants are uncited", supports: true}
+          - {file: morphoeval/math_kg_loops/tailbud-neuromesodermal-jamming.yaml, lines: [63, 102], note: "Two new laws registered with formula, Lean decl/theorem/locus, variables, role, source and code locus", supports: true}
+      repro-package:
+        value: 92
+        rationale: >-
+          Deterministic RNG (`seed=2018`), full render in ~3.3 s and `--self-test` in <1 s with 13 checks
+          (L1865-1977) covering SHA-256 integrity, Lean Theorem 1-6 parity, AP correlations, cdh2 and
+          blebbistatin perturbations, specimen segmentation, two-run bitwise determinism, sheath
+          monotonicity, arrest-front ordering, stripe-wavelength parity, the cdh2 no-arrest case and the
+          somite fibronectin feedback; the clock solver raises on CFL > 0.9. Deductions: no
+          requirements lock file pins the numpy/scipy/matplotlib versions recorded in this audit (-5);
+          the invocation notes live only in argparse help (-3).
+        evidence:
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [1865, 1977], note: "13-check self_test() including SHA-256 verification, Lean parity, two-run determinism and the 5 Pass 3 checks", supports: true}
+          - {file: 2022-tailbud-neuromesodermal-jamming.py, lines: [594, 598], note: "CFL guard on the clock advection scheme", supports: true}
+    remediation:
+      - >-
+        2022-tailbud-neuromesodermal-jamming.py:452-499 and 485-486 — `compute_sheath_channeling` converts
+        influx stored in radial dilation into a channeling factor (a transient-window argument) and the
+        dynamic cell-ECM wall friction F_drag is computed but never fed back on v_elong, so the v2 request
+        for ECM boundary FRICTION is only half met. Replace with an axisymmetric thin-film Stokes/Bingham
+        solve with a fibronectin traction boundary condition (zeta_FN f_FN v_rel) so friction and
+        confinement both enter the axial force balance.
+      - >-
+        2022-tailbud-neuromesodermal-jamming.py:146-147 with datasets/neuromesodermal_jamming/
+        neuromesodermal_jamming_reference.json:269-315 — K_FN = 2800 Pa and K_t = 40 Pa are calibrated to
+        approximate Dray et al. (2013) ratios (fn1a;fn1b 0.70, itga5 0.82, widths 1.20/1.08) and the itga5
+        regime misses by 16% (0.95 vs 0.82). Digitise the actual Dray 2013 Fig. 2/4 elongation-rate and
+        tissue-width values with panel pins and uncertainties, and anchor the sheath modulus to a measured
+        ECM/tissue stiffness.
+      - >-
+        2022-tailbud-neuromesodermal-jamming.py:521-543 and 156 — the clock arrest gate Lambda_arrest = 4
+        is an uncited modelling choice; the biological determination front is set by FGF8/Wnt (Dubrulle et al.
+        2001; cf. 2003-dubrulle-fgf8-wavefront-somitogenesis.py in this repository). Couple x_arrest to an
+        FGF8 gradient threshold and compare the resulting position with her1 in situ / Soroldoni (2014) wave
+        data instead of the P-PSM/A-PSM boundary proxy (ref 180 um).
+      - >-
+        2022-tailbud-neuromesodermal-jamming.py:546-640 — the clock is a phase oscillator with a prescribed
+        omega(x) (floor 0.15/0.85 at L576, c_slow = 0.6 at L159), and the frozen-stripe wavelength check
+        (L615-623, measurement `wt_frozen_her1_stripe_wavelength_um`) is numerically circular with S. Replace
+        the phase model with the Lewis (2003) her1/her7 DDE (or the repository's 2003-lewis script) coupled
+        through the same advection, and validate stripe spacing against measured somite lengths per stage.
+      - >-
+        2022-tailbud-neuromesodermal-jamming.py:716-728 — the elongation law remains a calibrated product
+        (J prefactor 2.034 x backstop x tanh(sigma_A/29) fluidity x chi, ablation special-case 0.41) and the
+        blebbistatin (2.25%) and SU5402 (2.65%) L-R asymmetries are hard-coded overrides; the 5-regime
+        r = 0.9748 therefore partly scores fitted constants. Derive v_elong and the asymmetry from the 2D
+        simulator's own kinematics (tip displacement, left/right length difference) and remove the overrides.
+      - >-
+        2022-tailbud-neuromesodermal-jamming.py:1478-1601 — row C has no vendored specimen: vendor a
+        CC-licensed fibronectin immunostain of the zebrafish tailbud (Dray/Lawton or IDR) and a her1 in situ
+        or Soroldoni (2014) wave image, segment the FN boundary / stripe spacing, and add them as specimen
+        comparisons and measurements (also render the fn1a;fn1b 2D regime, simulated at L1142-1153, as a
+        spatial panel).

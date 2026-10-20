@@ -114,4 +114,115 @@ theorem riedel_2007_ald_prp_pulse_chase_window_invariance (s_in delta_s dapt_dur
   · dsimp [posterior_rescue_point, anterior_limit_of_defects]
     omega
 
+/-! ### Pass 3 laws (2026-10-19): kinematic phase waves, Mib1 ubiquitination gate, emergent defect span -/
+
+/-- Law 4 (`riedel-delta-notch-phase-synchrony-4`):
+    Morelli et al. (2009) Kinematic Phase-Wave Law for an advected frequency profile.
+    In the frame co-moving with the tailbud a cell at position `x` oscillates at the local
+    effective frequency `omega_eff x` while the pattern oscillates at the collective frequency
+    `Omega`; over one advection step of duration `dt` the cell accumulates the phase lag
+      `delta_phi = (Omega - omega_eff) * dt`,
+    so the local wave number is `k = (Omega - omega_eff) / v` with `v` the advection speed. -/
+def kinematic_phase_lag (Omega omega_eff dt : Int) : Int :=
+  (Omega - omega_eff) * dt
+
+/-- Theorem 4 (`morelli_2009_kinematic_wave_phase_lag_law`):
+    (i) A uniform frequency profile (`omega_eff = Omega`) carries no kinematic wave
+        (zero phase lag per step, `k = 0`);
+    (ii) for a non-negative step `dt`, a slower cell (`omega_1 <= omega_2`) accumulates at least
+         as much lag as a faster one, so the lag is monotone decreasing in the local frequency:
+         the anterior (FGF8/Wnt-slowed) PSM lags the tailbud and waves travel tail -> front;
+    (iii) the phase lag accumulated over two successive advection steps is additive, which is the
+          discrete form of `Phi(x) = Int k dx` and of `N_w = (1 / 2 pi) * Int k dx`. -/
+theorem morelli_2009_kinematic_wave_phase_lag_law
+    (Omega omega_1 omega_2 dt dt_1 dt_2 : Int) (h_omega : omega_1 ≤ omega_2) (h_dt : 0 ≤ dt) :
+    kinematic_phase_lag Omega Omega dt = 0 ∧
+    kinematic_phase_lag Omega omega_2 dt ≤ kinematic_phase_lag Omega omega_1 dt ∧
+    kinematic_phase_lag Omega omega_1 dt_1 + kinematic_phase_lag Omega omega_1 dt_2 =
+      kinematic_phase_lag Omega omega_1 (dt_1 + dt_2) := by
+  refine ⟨?_, ?_, ?_⟩
+  · dsimp [kinematic_phase_lag]
+    omega
+  · dsimp [kinematic_phase_lag]
+    apply Int.mul_le_mul_of_nonneg_right _ h_dt
+    omega
+  · dsimp [kinematic_phase_lag]
+    rw [Int.mul_add]
+
+/-- Law 5 (`riedel-delta-notch-phase-synchrony-5`):
+    Itoh et al. (2003) Mind bomb (Mib1) DeltaC ubiquitination gate. The steady-state fraction of
+    Mib1-ubiquitinated, signalling-competent DeltaC is
+      `u_ss = k_ub * M / (k_ub * M + k_endo)`,
+    represented here by its numerator and denominator in `Nat` so that fraction comparisons are
+    cross-multiplications. The coupling is `kappa = kappa_max * u_ss * g`. -/
+def mib1_ubiquitinated_numerator (k_ub M : Nat) : Nat :=
+  k_ub * M
+
+def mib1_ubiquitinated_denominator (k_ub k_endo M : Nat) : Nat :=
+  k_ub * M + k_endo
+
+/-- Theorem 5 (`itoh_2003_mib1_ubiquitination_gate_monotone`):
+    (i) In the *mib* null (`M = 0`) no DeltaC is ubiquitinated (`u_ss = 0`), so the Delta-Notch
+        coupling vanishes exactly as under saturating DAPT;
+    (ii) `u_ss <= 1` (numerator <= denominator), so `kappa(t)` never exceeds `kappa_max`;
+    (iii) `u_ss` is monotone non-decreasing in the Mib1 activity `M` (`M_1 <= M_2` implies
+          `u_ss(M_1) <= u_ss(M_2)`, stated as the cross-multiplied inequality
+          `num(M_1) * den(M_2) <= num(M_2) * den(M_1)`). -/
+theorem itoh_2003_mib1_ubiquitination_gate_monotone
+    (k_ub k_endo M_1 M_2 : Nat) (h : M_1 ≤ M_2) :
+    mib1_ubiquitinated_numerator k_ub 0 = 0 ∧
+    mib1_ubiquitinated_numerator k_ub M_1 ≤ mib1_ubiquitinated_denominator k_ub k_endo M_1 ∧
+    mib1_ubiquitinated_numerator k_ub M_1 * mib1_ubiquitinated_denominator k_ub k_endo M_2 ≤
+      mib1_ubiquitinated_numerator k_ub M_2 * mib1_ubiquitinated_denominator k_ub k_endo M_1 := by
+  refine ⟨?_, ?_, ?_⟩
+  · dsimp [mib1_ubiquitinated_numerator]
+  · dsimp [mib1_ubiquitinated_numerator, mib1_ubiquitinated_denominator]
+    exact Nat.le_add_right _ _
+  · dsimp [mib1_ubiquitinated_numerator, mib1_ubiquitinated_denominator]
+    have h1 : k_ub * M_1 * k_endo ≤ k_ub * M_2 * k_endo :=
+      Nat.mul_le_mul_right k_endo (Nat.mul_le_mul_left k_ub h)
+    have e1 : k_ub * M_1 * (k_ub * M_2 + k_endo) = k_ub * M_1 * (k_ub * M_2) + k_ub * M_1 * k_endo :=
+      Nat.mul_add _ _ _
+    have e2 : k_ub * M_2 * (k_ub * M_1 + k_endo) = k_ub * M_2 * (k_ub * M_1) + k_ub * M_2 * k_endo :=
+      Nat.mul_add _ _ _
+    have e3 : k_ub * M_1 * (k_ub * M_2) = k_ub * M_2 * (k_ub * M_1) := by
+      rw [Nat.mul_comm (k_ub * M_1) (k_ub * M_2)]
+    rw [e1, e2, e3]
+    exact Nat.add_le_add_left h1 _
+
+/-- Law 6 (`riedel-delta-notch-phase-synchrony-6`):
+    Emergent ALD / PRP read-out. `s_cross` (`s_recross`) is the somite stage at which the
+    determination-front lateral order parameter first falls below (recovers above) `R_crit`;
+    the morphological boundary index follows after the determination-to-boundary lag
+    `Delta_n_det`. -/
+def emergent_anterior_limit_of_defects (s_cross Delta_n_det : Nat) : Nat :=
+  s_cross + Delta_n_det
+
+def emergent_posterior_rescue_point (s_recross Delta_n_det : Nat) : Nat :=
+  s_recross + Delta_n_det
+
+/-- Theorem 6 (`riedel_2007_emergent_defect_span_independent_of_determination_lag`):
+    (i) The emergent defective span `PRP - ALD` equals the coherence-loss span
+        `s_recross - s_cross`, i.e. it is independent of the maturation lag `Delta_n_det`;
+    (ii) the emergent ALD is never anterior to the coherence-loss stage (`s_cross <= ALD`);
+    (iii) changing the lag by `d` shifts ALD and PRP by exactly `d` each. -/
+theorem riedel_2007_emergent_defect_span_independent_of_determination_lag
+    (s_cross s_recross Delta_n_det d : Nat) (h : s_cross ≤ s_recross) :
+    emergent_posterior_rescue_point s_recross Delta_n_det -
+      emergent_anterior_limit_of_defects s_cross Delta_n_det = s_recross - s_cross ∧
+    s_cross ≤ emergent_anterior_limit_of_defects s_cross Delta_n_det ∧
+    emergent_anterior_limit_of_defects s_cross (Delta_n_det + d) =
+      emergent_anterior_limit_of_defects s_cross Delta_n_det + d ∧
+    emergent_posterior_rescue_point s_recross (Delta_n_det + d) =
+      emergent_posterior_rescue_point s_recross Delta_n_det + d := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · dsimp [emergent_posterior_rescue_point, emergent_anterior_limit_of_defects]
+    omega
+  · dsimp [emergent_anterior_limit_of_defects]
+    omega
+  · dsimp [emergent_anterior_limit_of_defects]
+    omega
+  · dsimp [emergent_posterior_rescue_point]
+    omega
+
 end MathOfBiology.Loop_023

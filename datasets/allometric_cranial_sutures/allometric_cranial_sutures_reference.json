@@ -110,6 +110,74 @@
       "expected_sii_range": [1.00, 1.02]
     }
   ],
+  "secondary_papers_pass3": [
+    {
+      "citation": "Herring SW, Teng S (2000) Strain in the braincase and its sutures during function. American Journal of Physical Anthropology 112(4):575-593",
+      "doi": "10.1002/1096-8644(200008)112:4<575::AID-AJPA10>3.0.CO;2-0",
+      "used_for": "In vivo evidence that masticatory strain in calvarial sutures is spatially heterogeneous and suture-specific (motivates alpha(s) heterogeneity); no magnitudes are transcribed into this model"
+    },
+    {
+      "citation": "Byron CD, Borke J, Yu J, Pashley D, Wingard CJ, Hamrick M (2004) Effects of increased muscle mass on mouse sagittal suture morphology and mechanics. The Anatomical Record Part A 279A(1):676-684",
+      "doi": "10.1002/ar.a.20055",
+      "used_for": "Direction of the strain mechanotransduction law (greater temporalis mass / bite force -> higher sagittal suture fractal dimension); magnitude of the law is a model assumption"
+    },
+    {
+      "citation": "Nicolay CW, Vaders MJ (2006) Cranial suture complexity in white-tailed deer (Odocoileus virginianus). Journal of Morphology 267(7):841-849",
+      "doi": "10.1002/jmor.10445",
+      "used_for": "Comparative evidence that suture fractal complexity differs between sutures and between cranial surfaces (qualitative expectation that ectocranial traces exceed endocranial traces); no numeric D_f pair is transcribed"
+    },
+    {
+      "citation": "Curtis N, Jones MEH, Evans SE, O'Higgins P, Fagan MJ (2013) Cranial sutures work collectively to distribute strain throughout the reptile skull. Journal of the Royal Society Interface 10(86):20130442",
+      "doi": "10.1098/rsif.2013.0442",
+      "used_for": "Finite-element precedent for suture-strain coupling on a full 3D skull mesh; the reduced-order Kirchhoff-Love vault model here is the honest stand-in, NOT a reproduction of this FEM"
+    }
+  ],
+  "calvarial_shell_strain_model": {
+    "description": "Pass 3 reduced-order Kirchhoff-Love thin-shell masticatory strain field on an analytic ellipsoidal calvarial vault. Muscle groups act as Gaussian normal-deflection patches w = sum_m F_m (d_m . N_m) exp(-|P - c_m|^2 / (2 sigma_m^2)); the strain normal to each suture at through-thickness offset zeta is eps_nn(s, zeta) = eps_mem + zeta * kappa_nn(s) with kappa_nn = -n^T Hess(w) n, normalised so the ectocranial sagittal mean is 1. This is NOT a finite-element solve on a CT skull mesh; all traction magnitudes below are stated model assumptions.",
+    "not_a_finite_element_model": true,
+    "ellipsoid_semi_axes_mm": [90.0, 70.0, 65.0],
+    "plate_thickness_mm": 6.0,
+    "n_layers": 5,
+    "layer_names": ["ectocranial table", "outer diploe", "mid diploe", "inner diploe", "endocranial table"],
+    "vertical_coupling_kappa_z": 0.60,
+    "alpha_endo_ratio_homogeneous": -0.42,
+    "alpha_endo_ratio_note": "Linear alpha(z) ramp used by the homogeneous layered sagittal run; -0.42 reproduces the strain model's endocranial sagittal mean alpha (-0.505 / 1.20).",
+    "intracranial_membrane_strain_rel": 0.45,
+    "mechanotransduction": {
+      "law": "alpha(eps_hat) = alpha_unloaded + (alpha_sagittal - alpha_unloaded) * eps_hat",
+      "alpha_unloaded": -0.35,
+      "alpha_sagittal": 1.20,
+      "eps_hat_critical": 0.2258,
+      "alpha_clip": [-0.80, 3.00],
+      "alpha_clip_note": "Numerical safeguard for the explicit heterogeneous term -alpha_dev(x) h_xx (dealiased pseudo-spectral stability), not a biological bound; the lambdoid asterion flanks exceed 2.0 in the reduced model.",
+      "lean_theorem": "MathOfBiology.Loop_020.strain_mechanotransduction_alpha_monotone"
+    },
+    "through_thickness_law": {
+      "law": "eps_nn(s, zeta) = eps_mem + zeta * kappa_nn(s), zeta in [-T/2, +T/2] (ectocranial = +T/2, endocranial = -T/2)",
+      "lean_theorem": "MathOfBiology.Loop_020.kirchhoff_love_ectocranial_endocranial_ordering"
+    },
+    "overhang_coupling_law": "overhang(alpha) = 0.68 * clip(alpha / 1.20, 0, 1.3)^0.7",
+    "suture_landmarks_mm": {
+      "bregma_x": 30.0,
+      "lambda_x": -55.0,
+      "coronal_psi_deg": 78.0,
+      "coronal_x_sweep": 8.0,
+      "lambdoid_psi_deg": 72.0,
+      "lambdoid_x_sweep": 16.0
+    },
+    "muscle_tractions": [
+      {"id": "temporalis_R", "group": "temporalis", "center_mm": [-14.0, 66.0, 14.0], "direction": [0.40, -0.20, -0.89], "force_rel": 1.2, "sigma_mm": 32.0},
+      {"id": "temporalis_L", "group": "temporalis", "center_mm": [-14.0, -66.0, 14.0], "direction": [0.40, 0.20, -0.89], "force_rel": 1.2, "sigma_mm": 32.0},
+      {"id": "nuchal_R", "group": "nuchal", "center_mm": [-70.0, 22.0, -34.0], "direction": [-0.40, 0.0, -0.92], "force_rel": 1.0, "sigma_mm": 42.0},
+      {"id": "nuchal_L", "group": "nuchal", "center_mm": [-70.0, -22.0, -34.0], "direction": [-0.40, 0.0, -0.92], "force_rel": 1.0, "sigma_mm": 42.0}
+    ],
+    "nuchal_force_sweep": [0.0, 0.25, 0.5, 1.0, 1.5, 2.0],
+    "literature_expectations": {
+      "ectocranial_more_complex_than_endocranial": "qualitative (Nicolay & Vaders 2006; endocranial closure precedes ectocranial)",
+      "suture_sii_ordering": "lambdoid >= sagittal > coronal (vendored regime expectations 3.35 / 2.75; Jaslow 1990)",
+      "caveat": "The vendored specimen photograph shows only the sagittal suture fully in frame; coronal and lambdoid traces are not extractable from it, so the ordering is compared against literature/vendored expectations, not against this specimen."
+    }
+  },
   "specimen_provenance": {
     "file": "datasets/allometric_cranial_sutures/human_sagittal_suture_specimen.jpg",
     "species": "Homo sapiens",
@@ -120,7 +188,7 @@
   },
   "sha256_digests": {
     "datasets/allometric_cranial_sutures/scout_manifest.json": "226c072307597439c420ed63e072337b85a3f7589d616e9fdcb015f37426d5d6",
-    "datasets/allometric_cranial_sutures/paper_citations.bib": "bffc86bbbd2dd3d64b987c843a02f10519e40cfc84375c288037b982b5770d46",
+    "datasets/allometric_cranial_sutures/paper_citations.bib": "81d1b1b367ddb12cb555d438d56a93df4c44855786a549ba55f399234e2a3342",
     "datasets/allometric_cranial_sutures/human_sagittal_suture_specimen.jpg": "b3c411a6a47137708e4922c1b0f0381b67a3c1e885dc4d016fb0f7bb2f4eaf13"
   }
 }

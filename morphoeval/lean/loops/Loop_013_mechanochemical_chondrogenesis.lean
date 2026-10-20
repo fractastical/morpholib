@@ -95,4 +95,92 @@ theorem oster_maini_1985_limb_branching_progression (lambda_c : Nat) (h : 0 < la
   · exact Nat.mul_div_cancel 4 h
   · exact Nat.mul_div_cancel 5 h
 
+/-! ### Pass 3 additions (2026-10-19, superseding audit v2) -/
+
+/-- Law 4 (`oster-mechanochemical-chondrogenesis-4`):
+    Position of the apical ectodermal ridge (AER) free boundary after time `t`
+    when the limb bud grows at constant outgrowth speed `v` from `L_0`:
+    `L(t) = L_0 + v * t`. -/
+def aer_front (L0 v t : Nat) : Nat :=
+  L0 + v * t
+
+/-- Theorem 4a (`oster_maini_1985_aer_front_monotone`):
+    The AER front never retreats: for `t_1 <= t_2`, `L(t_1) <= L(t_2)`. -/
+theorem oster_maini_1985_aer_front_monotone (L0 v t1 t2 : Nat) (h : t1 ≤ t2) :
+    aer_front L0 v t1 ≤ aer_front L0 v t2 := by
+  unfold aer_front
+  exact Nat.add_le_add_left (Nat.mul_le_mul_left v h) L0
+
+/-- Theorem 4b (`oster_maini_1985_aer_outgrowth_mode_monotone`):
+    For a limb paddle whose width is non-decreasing along the proximo-distal
+    axis (`W1 <= W2` for a proximal and a more distal section), the mechanochemical
+    condensation mode laid down behind the advancing AER cannot decrease distally:
+    `m(W1, lambda_c) <= m(W2, lambda_c)`. Together with 4a this is the
+    proximo-distal `1 -> 2 -> 4/5` sequence of the free-boundary solver. -/
+theorem oster_maini_1985_aer_outgrowth_mode_monotone (W1 W2 lambda_c : Nat)
+    (h : W1 ≤ W2) :
+    limb_condensation_mode W1 lambda_c ≤ limb_condensation_mode W2 lambda_c := by
+  unfold limb_condensation_mode
+  exact Nat.div_le_div_right h
+
+/-- Theorem 4c (`saunders_1948_aer_ablation_truncation`):
+    Saunders (1948): removing the AER at `t_ablate` freezes the front at
+    `L(t_ablate)`, so a zone at proximo-distal level `y > L(t_ablate)` is never
+    reached and no condensation forms there — the limb is truncated distally.
+    Formally: if `y > aer_front L0 v t_ablate` then the front at the ablation
+    time (and at every earlier time, by 4a) lies strictly proximal to `y`. -/
+theorem saunders_1948_aer_ablation_truncation (L0 v t_ablate y t : Nat)
+    (h_t : t ≤ t_ablate) (h_y : aer_front L0 v t_ablate < y) :
+    aer_front L0 v t < y :=
+  Nat.lt_of_le_of_lt (oster_maini_1985_aer_front_monotone L0 v t t_ablate h_t) h_y
+
+/-- Law 5 (`oster-mechanochemical-chondrogenesis-5`):
+    Hybrid mechanochemical + Bmp-Sox9-Wnt effective restoring stiffness.
+    A Sox9-mediated positive feedback (condensation -> Sox9 -> traction) with
+    gain `chi_bsw >= 0` subtracts from the mechanics-only stiffness
+    `K_mech = E_eff + D1_s - tau_eff`. -/
+def hybrid_effective_stiffness (E_eff D1_s tau_eff chi_bsw : Int) : Int :=
+  mechanochemical_effective_stiffness E_eff D1_s tau_eff - chi_bsw
+
+/-- Theorem 5a (`hybrid_mechanochemical_bsw_threshold_lowering`):
+    A non-negative biochemical feedback gain can only lower the effective
+    stiffness: `K_hyb <= K_mech`. Hence the hybrid critical traction is never
+    above the mechanics-only one. -/
+theorem hybrid_mechanochemical_bsw_threshold_lowering
+    (E_eff D1_s tau_eff chi_bsw : Int) (h : 0 ≤ chi_bsw) :
+    hybrid_effective_stiffness E_eff D1_s tau_eff chi_bsw ≤
+      mechanochemical_effective_stiffness E_eff D1_s tau_eff := by
+  unfold hybrid_effective_stiffness mechanochemical_effective_stiffness
+  omega
+
+/-- Theorem 5b (`hybrid_mechanochemical_bsw_synergy_threshold`):
+    Synergy window: if mechanics alone is stable (`0 < K_mech`) but the feedback
+    gain exceeds that margin (`K_mech < chi_bsw`), the hybrid system is unstable
+    (`K_hyb < 0`) — neither subsystem alone patterns, the hybrid does. This is the
+    regime tested at `tau = 0.85` in `evaluate_mechanochemical_bsw_synergy`. -/
+theorem hybrid_mechanochemical_bsw_synergy_threshold
+    (E_eff D1_s tau_eff chi_bsw : Int)
+    (h_mech_stable : 0 < mechanochemical_effective_stiffness E_eff D1_s tau_eff)
+    (h_gain : mechanochemical_effective_stiffness E_eff D1_s tau_eff < chi_bsw) :
+    0 < mechanochemical_effective_stiffness E_eff D1_s tau_eff ∧
+    hybrid_effective_stiffness E_eff D1_s tau_eff chi_bsw < 0 := by
+  unfold hybrid_effective_stiffness mechanochemical_effective_stiffness at *
+  omega
+
+/-- Theorem 5c (`hybrid_n_sox9_loop_destabilises_when_gain_exceeds_margin`):
+    Two-variable reduction of the hybrid Jacobian on (n, S):
+    `J = [[-a, b], [c, -mu]]` with `a > 0` (mechanics-only stable), `b, c >= 0`
+    (Sox9 -> traction, condensation -> Sox9) and `mu > 0` (Sox9 clearance).
+    Its determinant `a * mu - b * c` is negative — a real positive eigenvalue,
+    i.e. a stationary instability — exactly when the loop gain `b * c` exceeds the
+    stability margin `a * mu`. -/
+def hybrid_reduced_det (a mu b c : Int) : Int :=
+  a * mu - b * c
+
+theorem hybrid_n_sox9_loop_destabilises_when_gain_exceeds_margin (a mu b c : Int)
+    (h : a * mu < b * c) :
+    hybrid_reduced_det a mu b c < 0 := by
+  unfold hybrid_reduced_det
+  omega
+
 end MathOfBiology.Loop_013

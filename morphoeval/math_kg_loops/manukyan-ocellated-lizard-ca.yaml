@@ -12,10 +12,22 @@ model_spec:
   d_u: 0.80
   gamma_v: 0.45
   seed: 2017
+  pass3_3d_skin_volume:
+    lateral_grid_px: [60, 60]
+    scale_lattice: [12, 12]
+    h_interior_voxels: 12
+    dz_px: 0.2
+    turing_wavelength_px: 25.0
+    d_ratio: 20.0
+    dt: 0.006
+    steps: 6000
+    script_kinetics_jacobian: {f_u: 0.50, f_v: -0.75, g_u: 0.82, g_v: -0.65}
+    script_kinetics_d_critical: 7.0
   inputs:
     - datasets/ocellated_lizard_ca/ocellated_lizard_ca_reference.json
     - datasets/ocellated_lizard_ca/timon_lepidus_specimen.jpg
     - datasets/ocellated_lizard_ca/scout_manifest.json
+    - datasets/ocellated_lizard_ca/skin_volume_reference.json
 equations:
   - law_name: "Hexagonal Skin-Scale First-Nearest-Neighbor Partition & Labyrinthine Symmetry"
     formula: "n_g + n_b = 6  (n_g, n_b ∈ {0..6});   n_g = n_b ⟺ n_g = 3"
@@ -31,7 +43,7 @@ equations:
     variables: "n_g: number of green first-nearest-neighbor scales; n_b: number of black first-nearest-neighbor scales on the 6-regular hexagonal skin lattice"
     role: "Establishes the exact 6-neighbor conservation law on hexagonal lizard skin scales and proves n_g = n_b = 3 is the unique symmetric labyrinthine chain degree"
     source_citation: "Manukyan et al. (2017) Nature 544(7649):173-179 Fig. 3d-f"
-    code_locus: "2015-manukyan-ocellated-lizard-ca.py#L115-L210"
+    code_locus: "2015-manukyan-ocellated-lizard-ca.py#L181-L322"
   - law_name: "Scale-Border Thickness Reduction Inter-Scale Flux Attenuation (D_border = P D_interior ≪ D_interior)"
     formula: "J_border = P · D_interior · ∇u;   0 < P < 1 ⟹ 0 < J_border < J_continuum,   P = 0 ⟹ J_border = 0"
     lean_decl: "MathOfBiology.Loop_009.interscale_border_flux"
@@ -51,7 +63,7 @@ equations:
     variables: "P = h_border / h_interior: scale-border thickness reduction factor (P ≈ 0.17 in Timon lepidus); D_interior: intra-scale morphogen diffusivity; ∇u: inter-scale morphogen difference"
     role: "Proves that thinning skin at scale borders attenuates inter-scale diffusive flux relative to intra-scale homogenization, discretizing continuous Turing PDEs into monochromatic scale states"
     source_citation: "Manukyan et al. (2017) Nature 544(7649):173-179 Fig. 4 & Methods Eqs. (1)-(8); Fofonjka & Milinkovitch (2021) Nat. Commun. 12:2433"
-    code_locus: "2015-manukyan-ocellated-lizard-ca.py#L220-L355"
+    code_locus: "2015-manukyan-ocellated-lizard-ca.py#L616-L717"
   - law_name: "Manukyan Hexagonal Outer-Totalistic Cellular Automaton Labyrinthine Attractor Rule"
     formula: "S_i(t+1) = Φ(S_i(t), n_g(i));   Φ(1, 3) = 1 ∧ Φ(0, 3) = 0 ∧ Φ(1, 5) = 0 ∧ Φ(0, 1) = 1"
     lean_decl: "MathOfBiology.Loop_009.manukyan_ca_step"
@@ -67,4 +79,50 @@ equations:
     variables: "s ∈ {0, 1}: scale color state (0 = black, 1 = green); n_g ∈ {0..6}: number of green first-nearest neighbors"
     role: "Proves that n_g = 3 is a simultaneous fixed point for both green and black scales while overcrowded green clusters (n_g ≥ 4) flip to black and isolated black pockets (n_g ≤ 1) flip to green"
     source_citation: "Manukyan et al. (2017) Nature 544(7649):173-179 Figs. 2-3"
-    code_locus: "2015-manukyan-ocellated-lizard-ca.py#L120-L215"
+    code_locus: "2015-manukyan-ocellated-lizard-ca.py#L204-L322"
+  - law_name: "Thin-Film Depth Average of a Skin Column (3D voxel skin volume → 2D depth-averaged reduction)"
+    formula: "ū = (1/h) Σ_z u;   u(z) ≡ c ⟹ ū = (h·c)/h = c;   h_border ≤ h_interior ⟹ h_border·c ≤ h_interior·c"
+    lean_decl: "MathOfBiology.Loop_009.column_mass, MathOfBiology.Loop_009.depth_average"
+    lean_theorem: "MathOfBiology.Loop_009.thin_film_depth_average_recovers_uniform_column"
+    lean_locus: "morphoeval/lean/loops/Loop_009_ocellated_lizard_ca.lean#L109-L137"
+    lean_code: |
+      def column_mass (h c : Nat) : Nat := h * c
+      def depth_average (h m : Nat) : Nat := m / h
+      theorem thin_film_depth_average_recovers_uniform_column
+          (h_interior h_border c : Nat) (hpos : 0 < h_interior) (hle : h_border ≤ h_interior) :
+          depth_average h_interior (column_mass h_interior c) = c ∧
+          column_mass h_border c ≤ column_mass h_interior c := by
+        unfold depth_average column_mass
+        exact ⟨Nat.mul_div_cancel_left c hpos, Nat.mul_le_mul_right c hle⟩
+    variables: "h: skin column height in voxels (h_interior = 12, h_border = P·h_interior); c: voxel concentration; ū: depth-averaged concentration used by the 2D reduction d ū/dt = F(ū) + (1/h)∇·(h D ∇ū)"
+    role: "Justifies replacing the 3D voxel field by its depth average wherever the field is vertically uniform (thin-film regime h ≪ λ_c) and gives the border column its reduced capacity h(x) in the depth-averaged equation"
+    source_citation: "Fofonjka & Milinkovitch (2021) Nat. Commun. 12:2433 (3D skin-scale reaction-diffusion); thin-film / lubrication reduction of diffusion in a domain of varying thickness"
+    code_locus: "2015-manukyan-ocellated-lizard-ca.py#L739-L865"
+    code_locus_secondary: "2015-manukyan-ocellated-lizard-ca.py#L616-L717 (integrate_scale_border_pde_2d, border_model='thickness')"
+  - law_name: "Finite-Volume Face Conductance Between Skin Columns Equals Shared Face Area (min(h_i, h_j)·D)"
+    formula: "C_ij = min(h_i, h_j)·D;   C_int,border·h_interior = C_int,int·h_border  (ratio = h_border/h_interior ∀ D);   h_border = 0 ⟹ C = 0;   h_border < h_interior ∧ D > 0 ⟹ C_int,border < C_int,int"
+    lean_decl: "MathOfBiology.Loop_009.face_conductance"
+    lean_theorem: "MathOfBiology.Loop_009.voxel_face_conductance_ratio_equals_thickness_ratio"
+    lean_locus: "morphoeval/lean/loops/Loop_009_ocellated_lizard_ca.lean#L140-L176"
+    lean_code: |
+      def face_conductance (h_i h_j D : Nat) : Nat := min h_i h_j * D
+      theorem voxel_face_conductance_ratio_equals_thickness_ratio
+          (h_interior h_border D : Nat) (hlt : h_border < h_interior) (hD : 0 < D) :
+          face_conductance h_interior h_border D = h_border * D ∧
+          face_conductance h_interior h_interior D = h_interior * D ∧
+          face_conductance h_interior h_border D * h_interior =
+            face_conductance h_interior h_interior D * h_border ∧
+          face_conductance h_interior 0 D = 0 ∧
+          face_conductance h_interior h_border D < face_conductance h_interior h_interior D := by
+        unfold face_conductance
+        have hmin : min h_interior h_border = h_border := Nat.min_eq_right (Nat.le_of_lt hlt)
+        have hself : min h_interior h_interior = h_interior := Nat.min_self h_interior
+        have hzero : min h_interior 0 = 0 := Nat.min_eq_right (Nat.zero_le h_interior)
+        rw [hmin, hself, hzero]
+        refine ⟨rfl, rfl, ?_, by simp, Nat.mul_lt_mul_of_pos_right hlt hD⟩
+        ac_rfl
+    variables: "h_i, h_j: heights (voxels) of two laterally adjacent skin columns; D: morphogen diffusivity; C_ij: depth-integrated conductance of their shared vertical face (number of skin-skin voxel pairs × D)"
+    role: "Proves that in the voxel skin volume all inter-scale flux passes through the thinned border with conductance reduced exactly by the thickness ratio P = h_border/h_interior, that P = 0 insulates scales, and that the 2D reduction's face conductance min(h_i, h_j)·D is the exact depth integral of the 3D face"
+    source_citation: "Manukyan et al. (2017) Nature 544(7649):173-179 Fig. 4 (P = h_border/h_interior ≈ 0.17); Fofonjka & Milinkovitch (2021) Nat. Commun. 12:2433"
+    code_locus: "2015-manukyan-ocellated-lizard-ca.py#L539-L557"
+    code_locus_secondary: "2015-manukyan-ocellated-lizard-ca.py#L654-L660 (min(h_i,h_j) 2D face conductances); #L780-L788 (3D skin-skin face conductances)"

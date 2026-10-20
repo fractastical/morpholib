@@ -1,0 +1,107 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-cooke-clock-and-wavefront> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-cooke-clock-and-wavefront-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-cooke-clock-and-wavefront-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Cooke & Zeeman (1976) clock-and-wavefront somite segmentation — Source and data traceability: 93/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Nine primary sources carry DOIs in the module docstring (L6-38), `paper_citations.bib` (9 entries) and the two reference JSONs; the specimen and scout manifest remain SHA-256-pinned and verified fail-closed at every run (L125-132, L167-189); the new `fgf_ra_vertex_reference.json` records every toggle and vertex parameter, the v_tb sweep, bead settings and the Bi (2015) / specimen reference values, and the dataset README documents Laws 4-5, the new file and a reproduction block. Deductions: the new JSON's SHA-256 is recorded at runtime but not pinned in EXPECTED_SHA256, so a silent edit would pass (-3); Goldbeter et al.'s own parameter table is not vendored or cited by equation number, and Meinhardt (1986) is cited in the math-KG without a DOI (-2); the SEM specimen's Wikimedia provenance still lacks a scale (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:evidenceAgainst "1976-cooke-clock-and-wavefront.py L125–L132: EXPECTED_SHA256 does not include fgf_ra_vertex_reference.json <https://github.com/fractastical/morpholib/blob/d58a084/1976-cooke-clock-and-wavefront.py#L125-L132>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-cooke-clock-and-wavefront-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-cooke-clock-and-wavefront-source-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-cooke-clock-and-wavefront-source-traceability-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-cooke-clock-and-wavefront-source-traceability-4> ;
+        pk:hasScore "0.93"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-cooke-clock-and-wavefront-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "1976-cooke-clock-and-wavefront.py L6–L38" ;
+        dct:description "Nine sources with DOIs in the module docstring" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/1976-cooke-clock-and-wavefront.py#L6-L38> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-cooke-clock-and-wavefront-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "1976-cooke-clock-and-wavefront.py L167–L189" ;
+        dct:description "verify_dataset_integrity: pinned SHA-256 for specimen + scout manifest; reference JSONs only recorded (L185-188)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/1976-cooke-clock-and-wavefront.py#L167-L189> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-cooke-clock-and-wavefront-source-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "datasets/clock_and_wavefront/fgf_ra_vertex_reference.json L1–L69" ;
+        dct:description "Pass 3 reference table: 6 sources with DOIs, toggle/vertex parameters, derived values, sweep, bead, reference values" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/datasets/clock_and_wavefront/fgf_ra_vertex_reference.json#L1-L69> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-cooke-clock-and-wavefront-source-traceability-4> a pk:EvidenceItem ;
+        rdfs:label "datasets/clock_and_wavefront/paper_citations.bib L45–L97" ;
+        dct:description "Five new BibTeX entries: Dubrulle 2004, Dubrulle 2001, Farhadifar 2007, Bi 2015, Saga & Takeda 2001" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/datasets/clock_and_wavefront/paper_citations.bib#L45-L97> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/dvdy.21193>,
+            <https://doi.org/10.1016/S0022-5193(76)80131-2>,
+            <https://doi.org/10.1016/S0092-8674(00)80451-1>,
+            <https://doi.org/10.1016/S0092-8674(01)00437-8>,
+            <https://doi.org/10.1016/j.cub.2007.11.049>,
+            <https://doi.org/10.1038/254196a0>,
+            <https://doi.org/10.1038/35098552>,
+            <https://doi.org/10.1038/nature02216>,
+            <https://doi.org/10.1038/nphys3471> .
+    <https://doi.org/10.1002/dvdy.21193> dct:date "2007"^^xsd:gYear ;
+        dct:title "Sharp developmental thresholds defined through bistability by antagonistic gradients of retinoic acid and FGF signaling" .
+    <https://doi.org/10.1016/S0022-5193(76)80131-2> dct:date "1976"^^xsd:gYear ;
+        dct:title "A clock and wavefront model for control of the number of repeated structures during animal morphogenesis" .
+    <https://doi.org/10.1016/S0092-8674(00)80451-1> dct:date "1997"^^xsd:gYear ;
+        dct:title "Avian hairy gene expression identifies a molecular clock linked to vertebrate segmentation and somitogenesis" .
+    <https://doi.org/10.1016/S0092-8674(01)00437-8> dct:date "2001"^^xsd:gYear ;
+        dct:title "FGF signaling controls somite boundary position and regulates segmentation clock control of spatiotemporal Hox gene activation" .
+    <https://doi.org/10.1016/j.cub.2007.11.049> dct:date "2007"^^xsd:gYear ;
+        dct:title "The influence of cell mechanics, cell-cell interactions, and proliferation on epithelial packing" .
+    <https://doi.org/10.1038/254196a0> dct:date "1975"^^xsd:gYear ;
+        dct:title "Control of somite number during morphogenesis of a vertebrate, Xenopus laevis" .
+    <https://doi.org/10.1038/35098552> dct:date "2001"^^xsd:gYear ;
+        dct:title "The making of the somite: molecular events in vertebrate segmentation" .
+    <https://doi.org/10.1038/nature02216> dct:date "2004"^^xsd:gYear ;
+        dct:title "fgf8 mRNA decay establishes a gradient that couples axial elongation to patterning in the vertebrate embryo" .
+    <https://doi.org/10.1038/nphys3471> dct:date "2015"^^xsd:gYear ;
+        dct:title "A density-independent rigidity transition in biological tissues" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Cooke & Zeeman (1976) clock-and-wavefront somite segmentation — Source and data traceability 93/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T07:49:49Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-cooke-clock-and-wavefront-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

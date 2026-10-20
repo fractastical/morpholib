@@ -24,13 +24,28 @@
         "id": "horikawa2006",
         "citation": "Horikawa K, Ishimatsu K, Yoshimoto E, Kondo S, Takeda H (2006). Noise-resistant and synchronized oscillation of the segmentation clock. Nature 441(7094):719-723.",
         "doi": "10.1038/nature04861"
+      },
+      {
+        "id": "itoh2003",
+        "citation": "Itoh M, Kim CH, Palardy G, Oda T, Jiang YJ, Maust D, Yeo SY, Lorick K, Wright GJ, Ariza-McNaughton L, Weissman AM, Lewis J, Chandrasekharappa SC, Chitnis AB (2003). Mind bomb is a ubiquitin ligase that is essential for efficient activation of Notch signaling by Delta. Developmental Cell 4(1):67-82.",
+        "doi": "10.1016/S1534-5807(02)00409-4"
+      },
+      {
+        "id": "dubrulle2001",
+        "citation": "Dubrulle J, McGrew MJ, Pourquié O (2001). FGF signaling controls somite boundary position and regulates segmentation clock control of spatiotemporal Hox gene activation. Cell 106(2):219-232.",
+        "doi": "10.1016/S0092-8674(01)00437-8"
+      },
+      {
+        "id": "soroldoni2014",
+        "citation": "Soroldoni D, Jörg DJ, Morelli LG, Richmond DL, Schindelin J, Jülicher F, Oates AC (2014). A Doppler effect in embryonic pattern formation. Science 345(6193):222-225.",
+        "doi": "10.1126/science.1253089"
       }
     ],
     "specimens": {
       "zebrafish_psm_synchrony_specimen": {
         "file": "datasets/delta_notch_phase_synchrony/zebrafish_psm_synchrony_specimen.jpg",
         "sha256": "8b80971796cb29e290c10886c0026092bc30f3f624d2a75fa72f9aaf05187d5f",
-        "species": "Danio rerio / Vertebrate embryo dorsal scanning electron micrograph showing central neural tube, presomitic mesoderm, and bilateral segmented somite metameres",
+        "species": "Gallus gallus (chick) embryo per the Wikimedia source title 'Aves Neural tube and somites in chick embryo' — dorsal scanning electron micrograph showing central neural tube, presomitic mesoderm, and bilateral segmented somite metameres; used as a vertebrate somite-metamere stand-in, NOT a Danio rerio specimen (species label corrected in Pass 3, 2026-10-19; file name retained because it is SHA-256-pinned)",
         "license": "CC BY 4.0",
         "source_url": "https://commons.wikimedia.org/wiki/File:Aves_Neural_tube_and_somites_in_chick_embryo.jpg",
         "width_px": 736,
@@ -70,13 +85,56 @@
       "autonomous_frequency_omega0_rad_per_min": 0.25132741228718347,
       "coupling_strength_kappa_per_min": 0.070,
       "intercellular_delay_tau_c_min": 20.5,
-      "collective_frequency_Omega_rad_per_min": 0.2896,
-      "collective_period_Tsync_min": 21.70,
-      "effective_stiffness_kappa_eff_per_min": 0.0566,
-      "phase_noise_diffusivity_D_phi_rad2_per_min": 0.0042,
+      "collective_frequency_Omega_rad_per_min": 0.283333,
+      "collective_period_Tsync_min": 22.176,
+      "effective_stiffness_kappa_eff_per_min": 0.062255,
+      "canonical_parameter_note": "Pass 3 (2026-10-19) corrected Omega / T_sync / kappa_eff to the self-consistent root of Omega = omega_0 - kappa*sin(Omega*tau_c) (omega_0 = 0.251327, kappa = 0.070, tau_c = 20.5): the Pass 1-2 entries 0.2896 / 21.70 / 0.0566 were not roots of that equation; the script's --self-test now asserts parity with these values.",
+      "phase_noise_diffusivity_D_phi_rad2_per_min": 0.003,
+      "autonomous_frequency_spread_sigma_omega_rad_per_min": 0.014,
+      "determination_to_boundary_lag_Delta_n_det_somites": 2.5,
       "boundary_coherence_threshold_R_crit": 0.50,
       "anterior_limit_defect_lag_somites": 5.5,
       "posterior_rescue_point_lag_somites": 5.5
+    }
+  },
+  "pass3_kinematic_wave_and_mib1_mechanisms": {
+    "section": "Pass 3 (2026-10-19) reduced mechanisms added to 2006-riedel-delta-notch-phase-synchrony.py; all rate constants below are this script's declared choices unless a source is named",
+    "fgf8_wnt_frequency_profile": {
+      "law": "omega(xi) = omega_0 * exp(-xi / lambda_F), xi = distance from tailbud in somite lengths S; lambda_F = L / ln(1 / f_A) so omega(front) = f_A * omega_0",
+      "source": "Morelli et al. (2009) HFSP J. 3:55-66 frequency profile; Dubrulle et al. (2001) Cell 106:219-232 tailbud-anchored FGF8 gradient; Soroldoni et al. (2014) Science 345:222-225 kinematic waves",
+      "psm_length_L_somite_lengths": 6.0,
+      "cells_per_somite_length": 4,
+      "lateral_cells": 12,
+      "anterior_frequency_fraction_f_A": 0.5,
+      "delay_scaling": "tau_c(x) = tau_c * omega_0 / omega(x) (coupling delay scales with the local autonomous period; declared assumption)",
+      "kinematic_wave_law": "k(x) = (Omega / v) * (1 - omega(x)/omega_0), v = S / T_seg; N_w = (1/S) * Int_0^L (1 - omega/omega_0) dx; anterior wavelength / S = 1 / (1 - f_A)",
+      "analytic_waves_per_psm_at_default": 1.67,
+      "analytic_anterior_wavelength_over_S": 2.0,
+      "empirical_anchor": "Soroldoni et al. (2014) and Morelli et al. (2009) report of order 1-2 her1/deltaC expression waves across the zebrafish PSM, with waves slowing toward the anterior; not digitised"
+    },
+    "mib1_deltac_ubiquitination_gate": {
+      "law": "du/dt = k_ub * M * (1 - u) - k_endo * u; u_ss = k_ub M / (k_ub M + k_endo); kappa(t) = kappa_max * u(t) * g(t)",
+      "source": "Itoh et al. (2003) Dev Cell 4:67-82 (Mind bomb E3 ubiquitin ligase required for Delta endocytosis and trans-activation of Notch)",
+      "k_ub_per_min_at_M_1": 0.08,
+      "k_endo_per_min": 0.02,
+      "u_ss_wild_type": 0.8,
+      "kappa_max_per_min": 0.0875,
+      "mib1_dose_M_wild_type": 1.0,
+      "mib1_dose_M_mib_ta52b": 0.0
+    },
+    "dapt_gamma_secretase_gate": {
+      "law": "g(t) = 1 / (1 + (C(t)/IC50)^n); C/IC50 = dose_ratio during treatment, then C(t) = C(t_out) * exp(-(t - t_out)/tau_wash)",
+      "source": "Riedel-Kruse et al. (2007) Science 317:1911-1915 DAPT pulse-washout protocol",
+      "dose_ratio_C_over_IC50": 20.0,
+      "hill_n": 2.0,
+      "tau_wash_min": 8.0
+    },
+    "emergent_ald_prp_readout": {
+      "law": "ALD = s_cross + Delta_n_det, PRP = s_recross + Delta_n_det, where s_cross / s_recross are the first somite stages at which the half-period-smoothed lateral Kuramoto R of the anterior somite-length block falls below / recovers above R_crit = 0.50; PRP - ALD = s_recross - s_cross",
+      "Delta_n_det_somites": 2.5,
+      "no_defect_sentinel_somites": 31.0,
+      "somite_stage_clock": "ds/dt = Omega(kappa(t)) / 2 pi (collective frequency at the instantaneous coupling; DAPT lengthens the period to T_0, Herrgen et al. 2010)",
+      "calibrated_parameters": "D_phi = 0.003 rad^2/min and sigma_omega = 0.014 rad/min were calibrated so that the emergent desynchronisation lag matches the observed ALD(s_in) data (Riedel-Kruse 2007 fitted its desynchronisation rate the same way); tau_wash = 8 min was chosen so the emergent PRP lies within the observed PRP +/- SD"
     }
   },
   "riedel_kruse_2007_dapt_perturbation_regimes": {

@@ -1,0 +1,93 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-painter-chemotactic-stripe-splitting> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-painter-chemotactic-stripe-splitting-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-painter-chemotactic-stripe-splitting-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Painter, Maini & Othmer (1999) Pomacanthus Turing-chemotaxis stripe doubling on a growing curved flank & Keller-Segel rippling with slime-trail tensor — Reproducibility package: 92/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Deterministic RNG (`seed=1999`), memoised simulations (`_memo`, L119-123) so the self-test and render share runs, and an extended `--self-test` (`run_self_test`, L1744-1849) that checks 4 SHA-256 digests, the corrected title, Turing quantities to 1e-12, exact stripe sequences 3 -> 6 -> 12 on line and cylinder, bitwise determinism of the surface solver (`atol=0.0`), contrast ratio bounds, chi_0 monotonicity, Law-6 threshold inside the hysteresis bracket and 13 measurements. Deductions: default render (92 s) and self-test (108 s) are within the 3-minute budget but the cylinder/spindle runs (~30 s each at nx = 256) make the suite slow, and nx = 128 silently degrades the second doubling (documented in the solver docstring L729-733) so resolution is a hidden correctness parameter." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:evidenceAgainst "1999-painter-chemotactic-stripe-splitting.py L729–L733: Solver docstring: nx = 256 required, nx = 128 degrades the second doubling to 6 -> 8 (resolution-sensitive result) <https://github.com/fractastical/morpholib/blob/4d5512d/1999-painter-chemotactic-stripe-splitting.py#L729-L733>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-painter-chemotactic-stripe-splitting-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-painter-chemotactic-stripe-splitting-repro-package-2> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-painter-chemotactic-stripe-splitting-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "1999-painter-chemotactic-stripe-splitting.py L1744–L1849" ;
+        dct:description "Deterministic --self-test suite: digests, Turing analysis, 3 -> 6 -> 12 sequences, determinism, trail hysteresis, 13 measurements" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/4d5512d/1999-painter-chemotactic-stripe-splitting.py#L1744-L1849> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-painter-chemotactic-stripe-splitting-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "docs/media/chemotactic_stripe_splitting_growth.gif (generated output)" ;
+        dct:description "24-frame GIF with new third row: Pomacanthus iridophores on the growing spindle flank — docs/media/chemotactic_stripe_splitting_growth.gif: rendered output of 1999-painter-chemotactic-stripe-splitting.py at 4d5512d, image/gif, 1270709 B, 900×720 px, 24 frames, artifact_sha256 5601295a5b98645d227961d8da9f982c33621c851825733000406806c465da7a (sha256 5601295a5b98645d227961d8da9f982c33621c851825733000406806c465da7a), spec_fingerprint 61dda0c23fef2f0f55c7da992a8bddf50bfafc949a3445d76feebcc32dbff90f" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1006/bulm.1999.0131>,
+            <https://doi.org/10.1007/BF02458621>,
+            <https://doi.org/10.1016/0022-5193(70)90092-5>,
+            <https://doi.org/10.1016/j.physd.2010.09.011>,
+            <https://doi.org/10.1038/376765a0>,
+            <https://doi.org/10.1073/pnas.96.10.5549>,
+            <https://doi.org/10.1098/rspa.1991.0100>,
+            <https://doi.org/10.1371/journal.pcbi.1004474> .
+    <https://doi.org/10.1006/bulm.1999.0131> dct:date "1999"^^xsd:gYear ;
+        dct:title "Reaction and diffusion on growing domains: Scenarios for robust pattern formation" .
+    <https://doi.org/10.1007/BF02458621> dct:date "1992"^^xsd:gYear ;
+        dct:title "Analysis of propagating pattern in a chemotaxis system" .
+    <https://doi.org/10.1016/0022-5193(70)90092-5> dct:date "1970"^^xsd:gYear ;
+        dct:title "Initiation of slime mold aggregation viewed as an instability" .
+    <https://doi.org/10.1016/j.physd.2010.09.011> dct:date "2011"^^xsd:gYear ;
+        dct:title "Spatio-temporal chaos in a chemotaxis model" .
+    <https://doi.org/10.1038/376765a0> dct:date "1995"^^xsd:gYear ;
+        dct:title "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus" .
+    <https://doi.org/10.1073/pnas.96.10.5549> dct:date "1999"^^xsd:gYear ;
+        dct:title "Stripe formation in juvenile Pomacanthus explained by a generalized Turing mechanism with chemotaxis" .
+    <https://doi.org/10.1098/rspa.1991.0100> dct:date "1891"^^xsd:gYear ;
+        dct:title "Stripes or spots? Nonlinear effects in bifurcation of reaction-diffusion equations on the square" .
+    <https://doi.org/10.1371/journal.pcbi.1004474> dct:date "2015"^^xsd:gYear ;
+        dct:title "Mechanism for collective cell alignment in Myxococcus xanthus bacteria" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Painter, Maini & Othmer (1999) Pomacanthus Turing-chemotaxis stripe doubling on a growing curved flank & Keller-Segel rippling with slime-trail tensor — Reproducibility package 92/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T06:07:44Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-painter-chemotactic-stripe-splitting-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

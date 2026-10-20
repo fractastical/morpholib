@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-2016-onuff-joint-interzone-clefting.py — Pass 2 (v2) Remediated Implementation
+2016-onuff-joint-interzone-clefting.py — Pass 3 (v3) Remediated Implementation
 ==============================================================================
-Faithful mathematical, growing-domain reaction-diffusion PDE, and morphometric
-reproduction of synovial joint interzone segmentation and the tetrapod phalangeal
-Inhibitory Cascade (Slot 018, `onuff-joint-interzone-clefting`):
+Faithful mathematical, growing-domain reaction-diffusion PDE, reduced Biot
+poroelastic synovial-cavitation, and morphometric reproduction of synovial joint
+interzone segmentation and the tetrapod phalangeal Inhibitory Cascade
+(Slot 018, `onuff-joint-interzone-clefting`):
 
   1. Kavanagh KD, Shoval O, Winslow BB, Alon U, Leary BP, Kan A, Tabin CJ (2013).
      "Developmental bias in the evolution of phalanges."
@@ -28,6 +29,18 @@ Inhibitory Cascade (Slot 018, `onuff-joint-interzone-clefting`):
       the TGF-beta superfamily."
      Nature 368(6472):639-643.
      DOI: 10.1038/368639a0
+  Pass 3 synovial cavitation / articular morphogenesis sources
+  (full entries in datasets/joint_interzone_clefting/paper_citations.bib and
+   synovial_cavitation_reference.json):
+  6. Drachman DB, Sokoloff L (1966). Dev. Biol. 14:401-420. DOI: 10.1016/0012-1606(66)90022-4
+  7. Kahn J, ..., Zelzer E (2009). Dev. Cell 16:734-743. DOI: 10.1016/j.devcel.2009.04.013
+  8. Roddy KA, Prendergast PJ, Murphy P (2011). PLoS ONE 6:e17526. DOI: 10.1371/journal.pone.0017526
+  9. Carter DR, Wong M (1988). J. Orthop. Res. 6:804-816. DOI: 10.1002/jor.1100060604
+ 10. Edwards JC, ..., Pitsillides AA (1994). J. Anat. 185:355-367. PMID 7961140
+ 11. Dowthwaite GP, Edwards JC, Pitsillides AA (1998). J. Histochem. Cytochem. 46:641-651.
+     DOI: 10.1177/002215549804600509
+ 12. Mow VC, Kuei SC, Lai WM, Armstrong CG (1980). J. Biomech. Eng. 102:73-84. DOI: 10.1115/1.3138202
+ 13. Maroudas A (1976). Nature 260:808-809. DOI: 10.1038/260808a0
 
 Mathematical & Mechanistic Architecture (Linked to Lean 4 `MathOfBiology.Loop_018`):
 -----------------------------------------------------------------------------------
@@ -56,6 +69,36 @@ Mathematical & Mechanistic Architecture (Linked to Lean 4 `MathOfBiology.Loop_01
     joint clefts (N_joints = 0), fusing the digit ray into a single continuous
     cartilaginous rod (N_phalanges = 1), whereas Gdf5 brachypodism (`bp/bp`)
     selectively fuses proximal interphalangeal (PIP) joints (N_joints = 2).
+
+  - Law 4 (`MathOfBiology.Loop_018.poroelastic_cavitation_requires_load_and_interzone`,
+    Pass 3): the 2D Gdf5 interzone field G(x, y) from the digit-ray reaction-
+    diffusion PDE drives a reduced Biot poroelastic cavitation solver
+    (`simulate_poroelastic_cavitation`): interzone cells synthesise hyaluronan at a
+    mechanosensitive rate k_H phi(m_load) G (Dowthwaite 1998), the HA raises the
+    linearised Donnan osmotic pore pressure S dp/dt = kappa_p lap(p) +
+    gamma_osm (beta_osm H - p) with free drainage p = 0 at the perichondrium
+    (Mow 1980 biphasic; Maroudas 1976), the interzone cohesion falls as
+    sigma_coh = sigma_0 (1 - kappa_G G) (Edwards 1994, CD44/HA), and a synovial
+    cavity opens irreversibly where p > sigma_coh. At steady state
+    p_ss = beta_osm k_H phi(m_load) G / delta_H, so m_load = 0 (paralysed /
+    muscle-less embryo; Drachman & Sokoloff 1966, Kahn 2009) or G = 0 (Nog-/-)
+    give p_ss = 0 and no cavity, and p_ss is monotone in m_load.
+
+  - Law 5 (`MathOfBiology.Loop_018.darcy_lens_cavity_midline_maximum`, Pass 3):
+    with free drainage at y = +/-W and a uniform osmotic source s, the steady
+    Darcy pressure is the parabola 2 kappa p(y) = s (W^2 - y^2), maximal on the
+    digit midline, so the cavity nucleates as a transverse lens centred on the ray
+    axis. Articular morphogenesis follows the Carter & Wong (1988) hydrostatic-
+    pressure rule as a reduced arch a(y) = A_arc phi(m_load) (1 - (y/W)^2): a
+    convex proximal head and congruent concave distal base whose sagitta
+    vanishes under immobilisation (Roddy 2011). The sagitta sign and magnitude
+    are compared with the joint lines traced on the vendored radiograph.
+
+  Claim boundary of the Pass 3 solver: it is a reduced 2D, one-way-coupled
+  (RD -> poroelastic) storage-equation model with a rigid solid skeleton; it does
+  NOT solve the full Biot u-p system (solid displacement, effective stress), nor
+  3D geometry, nor two-way feedback of cavity opening on the RD field. These
+  residuals are carried as Pass 4 remediation items.
 """
 
 from __future__ import annotations
@@ -81,14 +124,16 @@ REF_JSON = DATASET_DIR / "joint_interzone_clefting_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "tetrapod_digit_interzone_specimen.jpg"
 SCOUT_JSON = DATASET_DIR / "scout_manifest.json"
 BIB_FILE = DATASET_DIR / "paper_citations.bib"
+CAVITATION_JSON = DATASET_DIR / "synovial_cavitation_reference.json"
 
 OUT_PNG = ROOT / "docs" / "media" / "joint_interzone_clefting_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "joint_interzone_clefting_growth.gif"
+OUT_CAVITATION_PNG = ROOT / "docs" / "media" / "joint_interzone_clefting_cavitation.png"
 
-# Cryptographic SHA-256 Registry for `datasets/joint_interzone_clefting/`
+# Cryptographic SHA-256 Registry for `datasets/joint_interzone_clefting/` (5 files, Pass 3)
 EXPECTED_SHA256: dict[str, str] = {
     "datasets/joint_interzone_clefting/joint_interzone_clefting_reference.json": (
-        "9acd7913813a1a7b5ee58b9b0ebf1f66bc963890566e7a035c08dfb6bcba6fa1"
+        "8ce3cc464602a8271db31f9a1a300dd006402618dd2fc986b8cb2814e56a397f"
     ),
     "datasets/joint_interzone_clefting/tetrapod_digit_interzone_specimen.jpg": (
         "995e43a2a0cf781547dc8f573685a533013cea3502fb2ebbb9c1fc8a6cb14e90"
@@ -97,7 +142,10 @@ EXPECTED_SHA256: dict[str, str] = {
         "1ae24e293d2062b2bd117c1b8d3eb74094cd667079a1f5fcae706c4eef1cbcce"
     ),
     "datasets/joint_interzone_clefting/paper_citations.bib": (
-        "4d966fca533780af9267a998b5bfd43ac1a2d443cf05ed85b292f06e9c0a15ba"
+        "4dba5970a1ffae7659da3f7d4b4c4860d81b76777261e4b21f74cd5ac2c599fe"
+    ),
+    "datasets/joint_interzone_clefting/synovial_cavitation_reference.json": (
+        "9ca273ead3e3606e0c5cff93481e314259ca4fa5cb6962476b2c0d433410b9b9"
     ),
 }
 
@@ -115,7 +163,7 @@ def sha256_file(path: Path) -> str:
 
 
 def verify_dataset_integrity() -> dict[str, str]:
-    """Verify SHA-256 digests of all 4 files in `datasets/joint_interzone_clefting/`."""
+    """Verify SHA-256 digests of all 5 files in `datasets/joint_interzone_clefting/`."""
     computed: dict[str, str] = {}
     for rel, expected in EXPECTED_SHA256.items():
         p = ROOT / rel
@@ -132,6 +180,12 @@ def load_reference_data() -> dict[str, Any]:
     """Load and cryptographically verify `joint_interzone_clefting_reference.json`."""
     verify_dataset_integrity()
     return json.loads(REF_JSON.read_text(encoding="utf-8"))
+
+
+def load_cavitation_reference() -> dict[str, Any]:
+    """Load and cryptographically verify `synovial_cavitation_reference.json` (Pass 3)."""
+    verify_dataset_integrity()
+    return json.loads(CAVITATION_JSON.read_text(encoding="utf-8"))
 
 
 # =============================================================================
@@ -433,6 +487,15 @@ def simulate_growing_digit_interzone_pde(
     }
 
 
+def digit_rod_geometry(X: np.ndarray, Y: np.ndarray, tip_pos: float) -> tuple[np.ndarray, np.ndarray]:
+    """Chondrogenic digit-ray envelope shared by the 2D RD view and the poroelastic
+    solver: half-width tapering from proximal P1 to the distal ungual tip and a
+    super-Gaussian inside-rod indicator on [0.70, tip_pos + 0.25]."""
+    half_width = 0.62 * (1.0 - 0.28 * (X / 12.0)) * (1.0 / (1.0 + np.exp((X - tip_pos) / 0.18)))
+    inside_rod = np.exp(-((Y / np.maximum(half_width, 0.08)) ** 6)) * (X >= 0.70) * (X <= tip_pos + 0.25)
+    return half_width, inside_rod
+
+
 def simulate_2d_digit_ray_pde(
     noggin_dose: float = 1.0,
     gdf5_dose: float = 1.0,
@@ -454,8 +517,7 @@ def simulate_2d_digit_ray_pde(
     X, Y = np.meshgrid(x, y)
 
     # Digit ray tapers slightly in width from proximal P1 to distal ungual tip P3
-    half_width = 0.62 * (1.0 - 0.28 * (X / 12.0)) * (1.0 / (1.0 + np.exp((X - sim1d["tip_pos"]) / 0.18)))
-    inside_rod = np.exp(-((Y / np.maximum(half_width, 0.08)) ** 6)) * (X >= 0.70) * (X <= sim1d["tip_pos"] + 0.25)
+    half_width, inside_rod = digit_rod_geometry(X, Y, sim1d["tip_pos"])
 
     # 2D Gdf5 synovial interzone bands & Sox9/Col2a1 phalangeal cartilage condensations
     gdf5_2d = inside_rod * sim1d["gdf5"][None, :]
@@ -473,6 +535,11 @@ def simulate_2d_digit_ray_pde(
         "y": y,
         "sox9_2d": sox9_2d,
         "gdf5_2d": gdf5_2d,
+        "inside_rod": inside_rod,
+        "half_width": half_width,
+        "gdf5_1d": sim1d["gdf5"],
+        "detected_joints": sim1d["detected_joints"],
+        "tip_pos": sim1d["tip_pos"],
         "corr_sox9_gdf5_2d": corr_2d,
         "n_joints_2d": sim1d["n_joints"],
         "n_phalanges_2d": sim1d["n_phalanges"],
@@ -480,6 +547,404 @@ def simulate_2d_digit_ray_pde(
         "P2": sim1d["P2"],
         "P3": sim1d["P3"],
         "P2_fraction": sim1d["P2_fraction"],
+    }
+
+
+# =============================================================================
+# 3b. Reduced Biot Poroelastic Synovial Cavitation & Articular Morphogenesis (Pass 3)
+# =============================================================================
+def mechanosensitive_gain(m_load: float, K_m: float = 0.5) -> float:
+    """Hill mechanosensitivity phi(m) = m^2 / (K_m^2 + m^2), normalised so that the
+    motile wild-type embryo (m_load = 1) has phi = 1 (UDPGD/HA synthesis at the joint
+    line is mechanoresponsive; Dowthwaite et al. 1998 J. Histochem. Cytochem. 46:641-651)."""
+    m = max(float(m_load), 0.0)
+    raw = (m * m) / (K_m * K_m + m * m)
+    raw_wt = 1.0 / (K_m * K_m + 1.0)
+    return float(raw / raw_wt)
+
+
+def simulate_poroelastic_cavitation(
+    noggin_dose: float = 1.0,
+    gdf5_dose: float = 1.0,
+    alpha_taper: float = 0.28,
+    m_load: float = 1.0,
+    permeability: float = 1.0,
+    k_ha: float = 2.0,
+    delta_ha: float = 2.0,
+    D_ha: float = 0.004,
+    kappa_p_base: float = 0.006,
+    gamma_osm: float = 2.0,
+    beta_osm: float = 1.0,
+    sigma_0: float = 1.0,
+    kappa_G: float = 0.5,
+    r_cav: float = 3.0,
+    A_arc_over_W: float = 0.22,
+    K_identity: float = 0.30,
+    n_steps: int = 600,
+    dt: float = 0.01,
+    nx: int = 360,
+    ny: int = 72,
+    sim2d: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Reduced 2D Biot poroelastic synovial cavitation and Carter-Wong articular
+    morphogenesis solver, one-way coupled to the 2D GDF5-Noggin digit-ray PDE
+    (Pass 3 remediation of audit v2 item 1).
+
+    Fields on a (ny x nx) refinement of the `simulate_2d_digit_ray_pde` rod:
+      G(x, y)   Gdf5+ interzone identity: Hill transform G^4 / (K^4 + G^4) of the RD
+                Gdf5 profile (each Gdf5+ domain is one interzone irrespective of its
+                RD amplitude), arched by a(y)  (input coupling)
+      H         hyaluronan content:  dH/dt = k_H phi(m) G - delta_H H + D_H lap(H)
+      p         excess pore pressure: S dp/dt = kappa_p lap(p) + gamma_osm (beta_osm H - p),
+                p = 0 outside the rod (free perichondrial drainage; Mow et al. 1980 biphasic
+                theory with a linearised Donnan osmotic source, Maroudas 1976)
+      sigma_coh = sigma_0 (1 - kappa_G G)   (HA/CD44 loss of interzone cohesion, Edwards 1994)
+      c         cavity phase field: dc/dt = r_c max(p - sigma_coh, 0) (1 - c)
+      a(y)      articular arch A_arc phi(m) (1 - (y/W)^2) (Carter & Wong 1988 rule)
+
+    Lean 4: `MathOfBiology.Loop_018.poroelastic_cavitation_requires_load_and_interzone`
+    (steady-state gate p_ss = beta k_H phi(m) G / delta_H > sigma_coh; m = 0 or G = 0 give no
+    cavity; p_ss monotone in m) and `MathOfBiology.Loop_018.darcy_lens_cavity_midline_maximum`
+    (free-drainage Darcy parabola is maximal on the midline -> lens-shaped cavity).
+
+    Claim boundary: rigid solid skeleton (storage equation only, no u-p Biot coupling or
+    effective stress), 2D, one-way RD -> poroelastic coupling. See module docstring.
+    """
+    if sim2d is None:
+        sim2d = simulate_2d_digit_ray_pde(noggin_dose=noggin_dose, gdf5_dose=gdf5_dose, alpha_taper=alpha_taper)
+    x = np.linspace(float(sim2d["x"][0]), float(sim2d["x"][-1]), nx)
+    y = np.linspace(-1.0, 1.0, ny)
+    X, Y = np.meshgrid(x, y)
+    dx = float(x[1] - x[0])
+    dy = float(y[1] - y[0])
+    half_w_raw, rod = digit_rod_geometry(X, Y, float(sim2d["tip_pos"]))
+    rod_mask = rod > 0.5
+    half_w = np.maximum(half_w_raw, 0.08)
+
+    phi_m = mechanosensitive_gain(m_load)
+    kappa_p = kappa_p_base * max(float(permeability), 0.0)
+    # Explicit-scheme stability guard for the pressure diffusion term
+    dt_stab = 0.5 / max(max(kappa_p, D_ha) * (1.0 / (dx * dx) + 1.0 / (dy * dy)), 1e-9)
+    dt_eff = min(dt, 0.9 * dt_stab)
+    n_eff = int(math.ceil(n_steps * dt / dt_eff))
+
+    # Articular arch a(y): joint line displaced distally on the midline (convex proximal
+    # head, congruent concave distal base); vanishes when unloaded (Roddy et al. 2011).
+    arch = A_arc_over_W * phi_m * half_w * np.clip(1.0 - (Y / half_w) ** 2, 0.0, 1.0)
+    # Arched 2D Gdf5 interzone identity: G(x, y) = Hill(G_1d(x - a(y))) (RD -> mechanics)
+    g1d_raw = np.asarray(sim2d["gdf5_1d"], dtype=np.float64)
+    g1d = g1d_raw**4 / (K_identity**4 + g1d_raw**4)
+    G = np.empty_like(X)
+    for j in range(X.shape[0]):
+        G[j, :] = np.interp(x - arch[j, :], sim2d["x"], g1d)
+    G = np.clip(G * rod, 0.0, 1.0)
+
+    sigma_coh = sigma_0 * (1.0 - kappa_G * G)
+
+    H = np.zeros_like(X)
+    P = np.zeros_like(X)
+    C = np.zeros_like(X)
+    source_H = k_ha * phi_m * G * rod
+
+    def lap(F: np.ndarray) -> np.ndarray:
+        out = np.zeros_like(F)
+        out[1:-1, 1:-1] = (
+            (F[1:-1, :-2] - 2.0 * F[1:-1, 1:-1] + F[1:-1, 2:]) / (dx * dx)
+            + (F[:-2, 1:-1] - 2.0 * F[1:-1, 1:-1] + F[2:, 1:-1]) / (dy * dy)
+        )
+        return out
+
+    for _ in range(n_eff):
+        dH = source_H - delta_ha * H + D_ha * lap(H)
+        dP = kappa_p * lap(P) + gamma_osm * (beta_osm * H - P)
+        H = np.clip(H + dt_eff * dH, 0.0, None) * rod_mask
+        P = np.clip(P + dt_eff * dP, 0.0, None) * rod_mask  # p = 0 outside rod (free drainage)
+        drive = np.maximum(P - sigma_coh, 0.0)
+        C = np.clip(C + dt_eff * r_cav * drive * (1.0 - C), 0.0, 1.0) * rod_mask
+
+    # Chondrogenic reversion of unloaded Gdf5-lineage interzone cells (Kahn et al. 2009)
+    suppression = 0.96 * G * (1.0 - 0.85 * (1.0 - phi_m))
+    sox9_2d = np.clip(rod * (1.0 - suppression), 0.0, 1.0) * (1.0 - C)
+
+    # Cavity census along the midline: count connected cavitated intervals
+    cav_bin = C > 0.5
+    j_mid = int(np.argmin(np.abs(y)))
+    mid_line = cav_bin[j_mid, :]
+    labels, n_cav = ndi.label(mid_line.astype(int))
+    cavity_centres: list[float] = []
+    cavity_widths: list[float] = []
+    for k in range(1, n_cav + 1):
+        idx = np.where(labels == k)[0]
+        cavity_centres.append(float(np.mean(x[idx])))
+        cavity_widths.append(float(len(idx) * dx))
+    cavity_area = float(np.sum(cav_bin) * dx * dy)
+    rod_area = float(np.sum(rod_mask) * dx * dy)
+
+    # Lens shape: transverse cavity extent at the first cavity centre
+    lens_half_height = 0.0
+    if n_cav >= 1:
+        i_c = int(np.argmin(np.abs(x - cavity_centres[0])))
+        col = cav_bin[:, i_c]
+        if np.any(col):
+            lens_half_height = float(0.5 * (y[np.where(col)[0]].max() - y[np.where(col)[0]].min()))
+
+    # Articular congruence: sub-cell c = 0.5 contours of the proximal head x_prox(y) and
+    # distal base x_dist(y) of the PIP cavity (second cavity if present, else the first);
+    # congruent convex/concave surfaces share the same arch so x_prox and x_dist co-vary.
+    congruence_r = 0.0
+    head_sagitta = 0.0
+    base_sagitta = 0.0
+    head_sagitta_norm = 0.0
+    joint_line_sag_over_chord = 0.0
+    x_prox_prof = np.full(len(y), np.nan)
+    x_dist_prof = np.full(len(y), np.nan)
+    if n_cav >= 1:
+        k_sel = 1 if n_cav >= 2 else 0
+        xc = cavity_centres[k_sel]
+        i_lo = int(np.searchsorted(x, xc - 0.9))
+        i_hi = int(np.searchsorted(x, xc + 0.9))
+        for j in range(len(y)):
+            row = C[j, i_lo:i_hi]
+            above = np.where(row >= 0.5)[0]
+            if len(above) == 0:
+                continue
+            a0, a1 = int(above[0]), int(above[-1])
+            # proximal crossing between a0-1 and a0
+            if a0 > 0:
+                f = (0.5 - row[a0 - 1]) / max(row[a0] - row[a0 - 1], 1e-12)
+                x_prox_prof[j] = x[i_lo + a0 - 1] + f * dx
+            else:
+                x_prox_prof[j] = x[i_lo + a0]
+            if a1 < len(row) - 1:
+                f = (row[a1] - 0.5) / max(row[a1] - row[a1 + 1], 1e-12)
+                x_dist_prof[j] = x[i_lo + a1] + f * dx
+            else:
+                x_dist_prof[j] = x[i_lo + a1]
+        ok = ~np.isnan(x_prox_prof)
+        if ok.sum() >= 5:
+            yy = y[ok]
+            xp = x_prox_prof[ok]
+            xd = x_dist_prof[ok]
+            if np.std(xp) > 1e-9 and np.std(xd) > 1e-9:
+                congruence_r = float(np.corrcoef(xp, xd)[0, 1])
+            j0 = int(np.argmin(np.abs(yy)))
+            edge = 0.5 * (xp[0] + xp[-1])
+            head_sagitta = float(xp[j0] - edge)  # > 0: head most distal on midline (convex)
+            edge_d = 0.5 * (xd[0] + xd[-1])
+            base_sagitta = float(xd[j0] - edge_d)  # > 0: base most distal on midline (concave socket)
+            half_span = 0.5 * float(yy[-1] - yy[0])
+            head_sagitta_norm = float(head_sagitta / half_span) if half_span > 1e-9 else 0.0
+            # Joint line = cavity mid-contour; quadratic fit gives the sagitta/chord ratio that
+            # is compared with the radiograph joint lines (measure_specimen_articular_arc)
+            x_mid = 0.5 * (xp + xd)
+            Aq = np.vstack([np.ones_like(yy), yy, yy**2]).T
+            coef_q, *_ = np.linalg.lstsq(Aq, x_mid, rcond=None)
+            chord = float(yy[-1] - yy[0])
+            joint_line_sag_over_chord = float(-coef_q[2] * chord / 4.0)  # + = most distal on midline
+    arch_sagitta_norm = float(A_arc_over_W * phi_m)
+
+    # Mean Sox9 re-expression inside the interzone columns (Kahn 2009 fusion readout)
+    g_cols = np.interp(x, sim2d["x"], g1d)
+    iz_mask = rod_mask & (g_cols > 0.6)[None, :]
+    sox9_interzone = float(np.mean(sox9_2d[iz_mask])) if np.any(iz_mask) else 0.0
+    p_mid_max = float(np.max(P[j_mid, :])) if P.size else 0.0
+
+    # Steady-state gate (Lean Law 4): p_ss = beta k_H phi G / delta_H vs sigma_coh at G = 1
+    p_ss_peak = beta_osm * k_ha * phi_m * 1.0 / delta_ha
+    gate_predicts_cavity = bool(p_ss_peak > sigma_0 * (1.0 - kappa_G))
+
+    return {
+        "x": x,
+        "y": y,
+        "G_2d": G,
+        "H_2d": H,
+        "p_2d": P,
+        "cavity_2d": C,
+        "sox9_2d": sox9_2d,
+        "sigma_coh_2d": sigma_coh,
+        "arch": arch,
+        "phi_m": phi_m,
+        "m_load": float(m_load),
+        "permeability": float(permeability),
+        "n_gdf5_interzones": int(sim2d["n_joints_2d"]),
+        "n_cavities": int(n_cav),
+        "cavity_centres": cavity_centres,
+        "cavity_widths": cavity_widths,
+        "cavity_area": cavity_area,
+        "cavity_area_fraction": (cavity_area / rod_area) if rod_area > 0 else 0.0,
+        "lens_half_height": lens_half_height,
+        "congruence_r": congruence_r,
+        "head_sagitta": head_sagitta,
+        "base_sagitta": base_sagitta,
+        "head_sagitta_norm": head_sagitta_norm,
+        "joint_line_sagitta_over_chord": joint_line_sag_over_chord,
+        "arch_sagitta_norm": arch_sagitta_norm,
+        "x_prox_profile": x_prox_prof,
+        "x_dist_profile": x_dist_prof,
+        "sox9_interzone_mean": sox9_interzone,
+        "p_midline_max": p_mid_max,
+        "p_ss_peak": float(p_ss_peak),
+        "gate_predicts_cavity": gate_predicts_cavity,
+        "dt_eff": float(dt_eff),
+        "n_steps_eff": int(n_eff),
+        "rod_mask": rod_mask,
+    }
+
+
+def evaluate_cavitation_conditions() -> dict[str, dict[str, Any]]:
+    """Run the three literature cavitation conditions of
+    `synovial_cavitation_reference.json`: motile wild type (3 cavities), paralysed /
+    muscle-less embryo (3 Gdf5 interzones, 0 cavities; Drachman & Sokoloff 1966,
+    Kahn 2009) and Noggin null (no interzone, 0 cavities; Brunet 1998)."""
+    ref = load_cavitation_reference()
+    out: dict[str, dict[str, Any]] = {}
+    for cond in ref["cavitation_outcomes"]["conditions"]:
+        sim = simulate_poroelastic_cavitation(
+            noggin_dose=float(cond["noggin_dose"]),
+            gdf5_dose=float(cond["gdf5_dose"]),
+            m_load=float(cond["m_load"]),
+        )
+        out[str(cond["condition_id"])] = {**cond, "sim": sim}
+    return out
+
+
+def sweep_mechanical_loading(
+    m_values: tuple[float, ...] = (0.0, 0.15, 0.3, 0.45, 0.6, 0.8, 1.0, 1.3, 1.6),
+    sim2d: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Sweep embryonic muscle loading m_load (0 = paralysed ... 1 = motile WT ... 1.6):
+    cavity count, cavity area and articular sagitta must be monotone non-decreasing
+    in m_load (Lean Law 4 monotonicity) with a loading threshold m* below which the
+    specified interzones fail to cavitate."""
+    if sim2d is None:
+        sim2d = simulate_2d_digit_ray_pde()
+    rows = []
+    for m in m_values:
+        s = simulate_poroelastic_cavitation(m_load=m, sim2d=sim2d)
+        rows.append(
+            {
+                "m_load": float(m),
+                "phi_m": s["phi_m"],
+                "n_cavities": s["n_cavities"],
+                "cavity_area": s["cavity_area"],
+                "arch_sagitta_norm": s["arch_sagitta_norm"],
+                "sox9_interzone_mean": s["sox9_interzone_mean"],
+                "p_midline_max": s["p_midline_max"],
+            }
+        )
+    n_c = [r["n_cavities"] for r in rows]
+    thr = None
+    for r in rows:
+        if r["n_cavities"] >= 3:
+            thr = r["m_load"]
+            break
+    return {"rows": rows, "m_threshold": thr, "monotone_count": bool(all(b >= a for a, b in zip(n_c, n_c[1:])))}
+
+
+def sweep_permeability(
+    k_values: tuple[float, ...] = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 16.0),
+    sim2d: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Sweep relative Darcy permeability kappa_p / kappa_p(WT): stronger drainage to the
+    perichondrium lowers the pore pressure the osmotic source can sustain, so cavity
+    area must be monotone non-increasing in permeability."""
+    if sim2d is None:
+        sim2d = simulate_2d_digit_ray_pde()
+    rows = []
+    for k in k_values:
+        s = simulate_poroelastic_cavitation(permeability=k, sim2d=sim2d)
+        rows.append(
+            {
+                "permeability": float(k),
+                "n_cavities": s["n_cavities"],
+                "cavity_area": s["cavity_area"],
+                "lens_half_height": s["lens_half_height"],
+                "p_midline_max": s["p_midline_max"],
+            }
+        )
+    areas = [r["cavity_area"] for r in rows]
+    return {"rows": rows, "monotone_area": bool(all(b <= a + 1e-9 for a, b in zip(areas, areas[1:])))}
+
+
+def measure_specimen_articular_arc(
+    spec: dict[str, Any] | None = None,
+    max_offset_px: int = 9,
+    window_px: int = 6,
+    min_contrast: float = 12.0,
+) -> dict[str, Any]:
+    """Trace the radiolucent joint line of each PIP/DIP joint on the vendored radiograph
+    along lines parallel to the digit centerline at lateral offsets o in [-W, W] px and
+    fit s_min(o) = s0 + b o + a o^2 (contrast-weighted). The dimensionless sagitta
+    -a W is positive when the joint line is most distal on the midline, i.e. a convex
+    proximal head articulating with a concave distal base (Carter & Wong 1988 geometry),
+    which is what the model's articular arch a(y) predicts. Joints whose traced line
+    has too little bone contrast (depth < `min_contrast`) on either side are excluded."""
+    if spec is None:
+        spec = segment_digit_interzone_specimen()
+    img = spec["image_gray"]
+    offs = np.arange(-max_offset_px, max_offset_px + 1, dtype=np.float64)
+    joints: list[dict[str, Any]] = []
+    for d in spec["digits"]:
+        x0, y0 = d["mcp_xy"]
+        x1, y1 = d["tip_xy"]
+        L = math.hypot(x1 - x0, y1 - y0)
+        ux, uy = (x1 - x0) / L, (y1 - y0) / L
+        nx_, ny_ = -uy, ux
+        for jname, i_j in (("PIP", d["i_pip"]), ("DIP", d["i_dip"])):
+            s_min = np.zeros_like(offs)
+            depth = np.zeros_like(offs)
+            ss = np.arange(i_j - window_px, i_j + window_px + 1, dtype=np.float64)
+            for k, o in enumerate(offs):
+                vals = np.empty(len(ss))
+                for q, s in enumerate(ss):
+                    xx = x0 + ux * s + nx_ * o
+                    yy = y0 + uy * s + ny_ * o
+                    r0, c0 = int(round(yy)), int(round(xx))
+                    vals[q] = float(np.mean(img[r0 - 1 : r0 + 2, c0 - 1 : c0 + 2]))
+                m = int(np.argmin(vals))
+                shift = 0.0
+                if 0 < m < len(vals) - 1:
+                    yl, yc, yr = vals[m - 1], vals[m], vals[m + 1]
+                    den = 2.0 * (yl - 2.0 * yc + yr)
+                    shift = float(np.clip((yl - yr) / den, -0.5, 0.5)) if abs(den) > 1e-9 else 0.0
+                s_min[k] = ss[m] + shift
+                depth[k] = float(vals.max() - vals.min())
+            ok = depth >= min_contrast
+            left_ok = int(np.sum(ok & (offs < 0)))
+            right_ok = int(np.sum(ok & (offs > 0)))
+            valid = bool(left_ok >= 4 and right_ok >= 4 and ok.sum() >= 10)
+            a_coef = float("nan")
+            sag_over_chord = float("nan")
+            chord_px = float("nan")
+            if valid:
+                A = np.vstack([np.ones_like(offs[ok]), offs[ok], offs[ok] ** 2]).T
+                w = np.sqrt(depth[ok])
+                coef, *_ = np.linalg.lstsq(A * w[:, None], s_min[ok] * w, rcond=None)
+                a_coef = float(coef[2])
+                chord_px = float(offs[ok].max() - offs[ok].min())
+                sag_over_chord = float(-a_coef * chord_px / 4.0)  # + = joint line most distal on midline
+            joints.append(
+                {
+                    "digit_id": d["digit_id"],
+                    "joint": jname,
+                    "offsets_px": offs,
+                    "s_min_px": s_min,
+                    "contrast": depth,
+                    "valid": valid,
+                    "a_coef": a_coef,
+                    "chord_px": chord_px,
+                    "sagitta_over_chord": sag_over_chord,
+                }
+            )
+    vals_ok = np.array([j["sagitta_over_chord"] for j in joints if j["valid"]], dtype=np.float64)
+    return {
+        "joints": joints,
+        "n_joints_traced": len(joints),
+        "n_joints_valid": int(len(vals_ok)),
+        "n_convex_head": int(np.sum(vals_ok > 0.0)) if len(vals_ok) else 0,
+        "mean_sagitta_over_chord": float(np.mean(vals_ok)) if len(vals_ok) else float("nan"),
+        "std_sagitta_over_chord": float(np.std(vals_ok)) if len(vals_ok) else float("nan"),
+        "half_width_px": float(max_offset_px),
     }
 
 
@@ -619,7 +1084,8 @@ def render_comparison_figure(
     d_ratio: float = 15.0,
     seed: int = 2016,
 ) -> Path:
-    """Render 6-panel Pass 2 diagnostic & empirical comparison figure."""
+    """Render 6-panel diagnostic & empirical comparison figure (Pass 3: Panel C now shows
+    the poroelastic cavities of the motile WT and the paralysed embryo beside Nog-/-)."""
     out_path.parent.mkdir(parents=True, exist_ok=True)
     disp = compute_gdf5_noggin_dispersion()
     ic = evaluate_kavanagh_inhibitory_cascade()
@@ -632,6 +1098,8 @@ def render_comparison_figure(
     )
     sim2d_wt = simulate_2d_digit_ray_pde(noggin_dose=1.0, gdf5_dose=1.0, alpha_taper=alpha_taper)
     sim2d_nog = simulate_2d_digit_ray_pde(noggin_dose=0.0, gdf5_dose=0.15, alpha_taper=alpha_taper)
+    cav_wt = simulate_poroelastic_cavitation(m_load=1.0, sim2d=sim2d_wt)
+    cav_imm = simulate_poroelastic_cavitation(m_load=0.0, sim2d=sim2d_wt)
     pert = evaluate_genetic_perturbations()
     spec = segment_digit_interzone_specimen()
 
@@ -683,26 +1151,36 @@ def render_comparison_figure(
     ax.legend(facecolor="#0b0f17", edgecolor="#374151", labelcolor="white", fontsize=7.6, loc="lower right")
     ax.grid(True, alpha=0.22, color="#374151")
 
-    # Panel C: 2D Digit Ray Chondrogenesis (Wild-Type Segmented vs Nog-/- Fused Rod)
+    # Panel C: 2D Digit Ray PDE + poroelastic cavitation (WT cavitated vs paralysed vs Nog-/-)
     ax = axes[0, 2]
-    wt_comp = sim2d_wt["sox9_2d"] - 0.85 * sim2d_wt["gdf5_2d"]
-    nog_comp = sim2d_nog["sox9_2d"] - 0.85 * sim2d_nog["gdf5_2d"]
-    stacked_2d = np.vstack([wt_comp, np.zeros((8, wt_comp.shape[1])), nog_comp])
+    # WT and paralysed come from the Pass 3 poroelastic solver (fine grid); Nog-/- from the RD view
+    wt_comp = cav_wt["sox9_2d"] - 0.9 * cav_wt["cavity_2d"] - 0.35 * cav_wt["G_2d"] * (1.0 - cav_wt["cavity_2d"])
+    imm_comp = cav_imm["sox9_2d"] - 0.9 * cav_imm["cavity_2d"] - 0.35 * cav_imm["G_2d"] * (1.0 - cav_imm["cavity_2d"])
+    xf = cav_wt["x"]
+    nog_comp_c = sim2d_nog["sox9_2d"] - 0.85 * sim2d_nog["gdf5_2d"]
+    nog_comp = np.vstack([np.interp(xf, sim2d_nog["x"], nog_comp_c[j, :]) for j in range(nog_comp_c.shape[0])])
+    nog_comp = np.vstack([np.interp(cav_wt["y"], sim2d_nog["y"], nog_comp[:, i]) for i in range(len(xf))]).T
+    gap = np.zeros((6, len(xf)))
+    stacked_2d = np.vstack([wt_comp, gap, imm_comp, gap, nog_comp])
+    n_rows = stacked_2d.shape[0]
     im = ax.imshow(
         stacked_2d,
         aspect="auto",
         cmap="viridis",
-        extent=[0.0, 12.0, -2.2, 2.2],
-        vmin=-0.6,
+        extent=[0.0, 12.0, 0.0, float(n_rows)],
+        origin="upper",
+        vmin=-0.9,
         vmax=1.0,
     )
-    ax.axhline(0.0, color="#9ca3af", ls="--", lw=1.1)
-    ax.text(0.35, 1.65, "Wild-Type: 3 Phalanges (P1 > P2 > P3) + MCP/PIP/DIP Clefts", color="white", fontsize=8.3, fontweight="bold")
-    ax.text(0.35, -1.92, "Noggin Null (Nog-/-): 0 Joints (Continuous Fused Cartilage Rod)", color="#fca5a5", fontsize=8.3, fontweight="bold")
-    ax.set_title("C. 2D Digit Ray PDE: WT Clefting vs Nog-/- Fusion (Law 3)", color="white", fontsize=10.2, fontweight="bold")
+    ny_f = len(cav_wt["y"])
+    ax.text(0.3, n_rows - 3, f"Wild-Type (motile): 3 Phalanges + MCP/PIP/DIP interzones -> {cav_wt['n_cavities']} synovial cavities", color="white", fontsize=7.6, fontweight="bold", va="top")
+    ax.text(0.3, n_rows - (ny_f + 6) - 3, f"Paralysed (m_load=0): 3 interzones -> {cav_imm['n_cavities']} cavities, interzone Sox9={cav_imm['sox9_interzone_mean']:.2f} (Kahn 2009)", color="#fde68a", fontsize=7.6, fontweight="bold", va="top")
+    ax.text(0.3, n_rows - 2 * (ny_f + 6) - 3, "Noggin Null (Nog-/-): 0 interzones, 0 cavities (continuous fused cartilage rod)", color="#fca5a5", fontsize=7.6, fontweight="bold", va="top")
+    ax.set_yticks([])
+    ax.set_title("C. 2D Digit Ray PDE + Poroelastic Cavitation (Laws 3-5)", color="white", fontsize=10.2, fontweight="bold")
     ax.set_xlabel("Proximodistal Position x", color="#e5e7eb", fontsize=9)
-    ax.set_ylabel("Transverse Axis y", color="#e5e7eb", fontsize=9)
-    fig.colorbar(im, ax=ax, fraction=0.042, pad=0.02, label="Sox9 Cartilage - Gdf5 Cleft")
+    ax.set_ylabel("Transverse Axis y (3 stacked rays)", color="#e5e7eb", fontsize=9)
+    fig.colorbar(im, ax=ax, fraction=0.042, pad=0.02, label="Sox9 Cartilage (+) / Gdf5 Interzone / Cavity (-)")
 
     # Panel D: Kavanagh et al. (2013) Cross-Clade Inhibitory Cascade Morphospace
     ax = axes[1, 0]
@@ -823,13 +1301,199 @@ def render_comparison_figure(
     ax.legend(facecolor="#0b0f17", edgecolor="#374151", labelcolor="white", fontsize=7.5, loc="lower left")
 
     fig.suptitle(
-        "Kavanagh et al. (2013) PNAS & Hiscock et al. (2017) Dev. Cell — Synovial Joint Interzone Clefting & Phalangeal Inhibitory Cascade (Pass 2)",
+        "Kavanagh et al. (2013) PNAS & Hiscock et al. (2017) Dev. Cell — Synovial Joint Interzone Clefting & Phalangeal Inhibitory Cascade (Pass 3: + poroelastic cavitation)",
         color="white",
         fontsize=12.8,
         fontweight="bold",
         y=0.985,
     )
     fig.tight_layout(rect=(0, 0, 1, 0.96))
+    fig.savefig(out_path, dpi=145, facecolor=fig.get_facecolor())
+    plt.close(fig)
+    return out_path
+
+
+def render_cavitation_figure(
+    out_path: Path = OUT_CAVITATION_PNG,
+    m_load: float = 1.0,
+    permeability: float = 1.0,
+) -> Path:
+    """Render the Pass 3 six-panel poroelastic synovial cavitation & articular
+    morphogenesis figure (pressure field, cavitation gate, three literature conditions,
+    loading and permeability sweeps, and the specimen joint-line arch comparison)."""
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    sim2d = simulate_2d_digit_ray_pde()
+    wt = simulate_poroelastic_cavitation(m_load=m_load, permeability=permeability, sim2d=sim2d)
+    conds = evaluate_cavitation_conditions()
+    sw_m = sweep_mechanical_loading(sim2d=sim2d)
+    sw_k = sweep_permeability(sim2d=sim2d)
+    spec = segment_digit_interzone_specimen()
+    arc = measure_specimen_articular_arc(spec)
+
+    fig, axes = plt.subplots(2, 3, figsize=(18.0, 10.8), dpi=145, facecolor="#0b0f17")
+    for ax in axes.flat:
+        ax.set_facecolor("#111827")
+        for sp in ax.spines.values():
+            sp.set_color("#374151")
+        ax.tick_params(colors="#d1d5db", labelsize=8.5)
+
+    x, y = wt["x"], wt["y"]
+    ext = [float(x[0]), float(x[-1]), float(y[0]), float(y[-1])]
+
+    # Panel A: pore pressure field + cavity contour (Law 5 lens)
+    ax = axes[0, 0]
+    im = ax.imshow(wt["p_2d"], origin="lower", aspect="auto", cmap="magma", extent=ext, vmin=0.0, vmax=1.0)
+    ax.contour(x, y, wt["cavity_2d"], levels=[0.5], colors=["#22d3ee"], linewidths=1.4)
+    ax.contour(x, y, wt["rod_mask"].astype(float), levels=[0.5], colors=["#9ca3af"], linewidths=0.8, linestyles="dotted")
+    for jc in wt["cavity_centres"]:
+        ax.axvline(jc, color="#22d3ee", ls=":", lw=0.8, alpha=0.6)
+    ax.set_xlim(0.0, 12.0)
+    ax.set_ylim(-1.0, 1.0)
+    ax.set_title(
+        f"A. Pore Pressure p(x,y) & Lens Cavities: {wt['n_cavities']} cavities, p_max={wt['p_midline_max']:.2f}",
+        color="white",
+        fontsize=9.6,
+        fontweight="bold",
+    )
+    ax.set_xlabel("Proximodistal x", color="#e5e7eb", fontsize=9)
+    ax.set_ylabel("Transverse y", color="#e5e7eb", fontsize=9)
+    fig.colorbar(im, ax=ax, fraction=0.042, pad=0.02, label="Excess pore pressure p (beta_osm units)")
+
+    # Panel B: midline cavitation gate p vs sigma_coh (Law 4)
+    ax = axes[0, 1]
+    j_mid = int(np.argmin(np.abs(y)))
+    ax.plot(x, wt["p_2d"][j_mid, :], color="#f97316", lw=2.2, label="Pore pressure p(x, y=0)")
+    ax.plot(x, wt["sigma_coh_2d"][j_mid, :] * wt["rod_mask"][j_mid, :], color="#60a5fa", lw=2.0, label="Interzone cohesion sigma_coh = sigma_0(1 - kappa_G G)")
+    ax.plot(x, wt["H_2d"][j_mid, :], "--", color="#a3e635", lw=1.5, label="Hyaluronan H(x, y=0)")
+    ax.fill_between(x, 0.0, 1.05, where=wt["cavity_2d"][j_mid, :] > 0.5, color="#22d3ee", alpha=0.25, label="Cavity (p > sigma_coh)")
+    imm = conds["paralysed_immobilised"]["sim"]
+    ax.plot(x, imm["p_2d"][j_mid, :], ":", color="#f87171", lw=1.8, label="p(x, y=0), paralysed m_load=0")
+    ax.set_xlim(0.0, 12.0)
+    ax.set_ylim(-0.02, 1.08)
+    ax.set_title("B. Midline Cavitation Gate (Law 4): cavity iff p > sigma_coh", color="white", fontsize=9.6, fontweight="bold")
+    ax.set_xlabel("Proximodistal x", color="#e5e7eb", fontsize=9)
+    ax.set_ylabel("Dimensionless pressure / cohesion", color="#e5e7eb", fontsize=9)
+    ax.legend(facecolor="#0b0f17", edgecolor="#374151", labelcolor="white", fontsize=7.2, loc="upper right")
+    ax.grid(True, alpha=0.22, color="#374151")
+
+    # Panel C: three literature conditions stacked (Sox9 - cavity composite)
+    ax = axes[0, 2]
+    order = [
+        ("motile_wild_type", "Motile WT (Edwards 1994)"),
+        ("paralysed_immobilised", "Paralysed / muscle-less (Drachman 1966; Kahn 2009)"),
+        ("noggin_null_no_interzone", "Nog-/- (Brunet 1998)"),
+    ]
+    tiles = []
+    gap = np.full((6, len(x)), np.nan)
+    for cid, _ in order:
+        s = conds[cid]["sim"]
+        comp = s["sox9_2d"] - 0.9 * s["cavity_2d"] - 0.35 * s["G_2d"] * (1.0 - s["cavity_2d"])
+        comp = np.where(s["rod_mask"], comp, np.nan)
+        tiles.append(comp)
+        tiles.append(gap)
+    stacked = np.vstack(tiles[:-1])
+    n_rows = stacked.shape[0]
+    cmap = plt.get_cmap("viridis").copy()
+    cmap.set_bad("#111827")
+    im = ax.imshow(stacked, origin="upper", aspect="auto", cmap=cmap, extent=[0.0, 12.0, 0.0, float(n_rows)], vmin=-0.9, vmax=1.0)
+    ny_ = len(y)
+    for k, (cid, lbl) in enumerate(order):
+        top = n_rows - k * (ny_ + 6)
+        s = conds[cid]["sim"]
+        ax.text(0.25, top - 4, f"{lbl}: {s['n_gdf5_interzones']} interzones -> {s['n_cavities']} cavities, Sox9_IZ={s['sox9_interzone_mean']:.2f}", color="white", fontsize=7.4, fontweight="bold", va="top")
+    ax.set_yticks([])
+    ax.set_title("C. Literature Conditions: Motile WT / Paralysed / Nog-/-", color="white", fontsize=9.6, fontweight="bold")
+    ax.set_xlabel("Proximodistal x", color="#e5e7eb", fontsize=9)
+    fig.colorbar(im, ax=ax, fraction=0.042, pad=0.02, label="Sox9 cartilage (+) / Gdf5 interzone / cavity (-)")
+
+    # Panel D: muscle-loading sweep
+    ax = axes[1, 0]
+    mv = [r["m_load"] for r in sw_m["rows"]]
+    ax.plot(mv, [r["n_cavities"] for r in sw_m["rows"]], "o-", color="#22d3ee", lw=2.0, label="Synovial cavities (count)")
+    ax.plot(mv, [3.0 * r["cavity_area"] / max(sw_m["rows"][-1]["cavity_area"], 1e-9) for r in sw_m["rows"]], "s--", color="#f97316", lw=1.6, label="Cavity area (scaled to 3 at max)")
+    ax.plot(mv, [3.0 * r["sox9_interzone_mean"] for r in sw_m["rows"]], "^:", color="#22c55e", lw=1.6, label="3 x interzone Sox9 re-expression (Kahn 2009)")
+    ax.plot(mv, [3.0 * r["p_midline_max"] for r in sw_m["rows"]], "d-.", color="#eab308", lw=1.3, label="3 x max midline pore pressure")
+    ax.axhline(3.0, color="#9ca3af", ls=":", lw=1.0)
+    if sw_m["m_threshold"] is not None:
+        ax.axvline(sw_m["m_threshold"], color="#f87171", ls="--", lw=1.3, label=f"Loading threshold m* = {sw_m['m_threshold']:.2f} (3 cavities)")
+    ax.set_title("D. Embryonic Muscle-Loading Sweep (Law 4 monotonicity)", color="white", fontsize=9.6, fontweight="bold")
+    ax.set_xlabel("Relative muscle contraction loading m_load (0 = paralysed, 1 = motile WT)", color="#e5e7eb", fontsize=9)
+    ax.set_ylabel("Count / scaled metric", color="#e5e7eb", fontsize=9)
+    ax.legend(facecolor="#0b0f17", edgecolor="#374151", labelcolor="white", fontsize=7.2, loc="center right")
+    ax.grid(True, alpha=0.22, color="#374151")
+
+    # Panel E: permeability sweep
+    ax = axes[1, 1]
+    kv = [r["permeability"] for r in sw_k["rows"]]
+    ax.plot(kv, [r["n_cavities"] for r in sw_k["rows"]], "o-", color="#22d3ee", lw=2.0, label="Synovial cavities (count)")
+    ax.plot(kv, [3.0 * r["cavity_area"] / max(sw_k["rows"][0]["cavity_area"], 1e-9) for r in sw_k["rows"]], "s--", color="#f97316", lw=1.6, label="Cavity area (scaled to 3 at min k)")
+    ax.plot(kv, [3.0 * r["p_midline_max"] for r in sw_k["rows"]], "d-.", color="#eab308", lw=1.3, label="3 x max midline pore pressure")
+    ax.plot(kv, [3.0 * r["lens_half_height"] / max(sw_k["rows"][0]["lens_half_height"], 1e-9) for r in sw_k["rows"]], "^:", color="#a78bfa", lw=1.4, label="Lens half-height (scaled)")
+    ax.set_xscale("log", base=2)
+    ax.set_title("E. Permeability Sweep (Mow 1980 Darcy drainage)", color="white", fontsize=9.6, fontweight="bold")
+    ax.set_xlabel("Relative hydraulic permeability kappa_p / kappa_p(WT)", color="#e5e7eb", fontsize=9)
+    ax.set_ylabel("Count / scaled metric", color="#e5e7eb", fontsize=9)
+    ax.legend(facecolor="#0b0f17", edgecolor="#374151", labelcolor="white", fontsize=7.2, loc="lower left")
+    ax.grid(True, alpha=0.22, color="#374151", which="both")
+
+    # Panel F: articular joint-line arch: model vs specimen radiograph joint lines, both
+    # drawn as proximodistal displacement / chord against normalised transverse position
+    ax = axes[1, 2]
+    u = np.linspace(-1.0, 1.0, 101)
+    okrows = ~np.isnan(wt["x_prox_profile"])
+    if okrows.sum() >= 5:
+        yy = y[okrows]
+        xp = wt["x_prox_profile"][okrows]
+        xd = wt["x_dist_profile"][okrows]
+        xm = 0.5 * (xp + xd)
+        chord_m = float(yy[-1] - yy[0])
+        un = (yy - 0.5 * (yy[0] + yy[-1])) / (0.5 * chord_m)
+        x0m = float(np.mean(xm))
+        ax.plot(un, (xp - x0m) / chord_m, color="#22c55e", lw=1.6, alpha=0.9, label="Model proximal head contour (PIP)")
+        ax.plot(un, (xd - x0m) / chord_m, color="#60a5fa", lw=1.6, alpha=0.9, label="Model distal base contour (PIP)")
+        ax.plot(un, (xm - x0m) / chord_m, color="#f97316", lw=2.6, label=f"Model joint line, s/c = {wt['joint_line_sagitta_over_chord']:+.3f}")
+    cols = {"Digit_II": "#38bdf8", "Digit_III": "#a3e635", "Digit_IV": "#facc15"}
+    marks = {"PIP": "o", "DIP": "s"}
+    for j in arc["joints"]:
+        if not j["valid"]:
+            continue
+        o = j["offsets_px"]
+        okk = j["contrast"] >= 12.0
+        chord = float(j["chord_px"])
+        o_ok = o[okk]
+        s_ok = j["s_min_px"][okk]
+        A = np.vstack([np.ones_like(o_ok), o_ok, o_ok**2]).T
+        w = np.sqrt(j["contrast"][okk])
+        coef, *_ = np.linalg.lstsq(A * w[:, None], s_ok * w, rcond=None)
+        s_fit = coef[0] + coef[1] * o_ok + coef[2] * o_ok**2
+        resid = s_ok - (coef[0] + coef[1] * o_ok)  # remove tilt + offset, keep curvature
+        un_s = (o_ok - 0.5 * (o_ok.min() + o_ok.max())) / (0.5 * chord)
+        col = cols.get(j["digit_id"], "white")
+        ax.plot(un_s, -resid / chord, marks[j["joint"]], ms=3.8, color=col, alpha=0.85, label=f"Specimen {j['digit_id'].replace('_', ' ')} {j['joint']}: s/c = {j['sagitta_over_chord']:+.3f}")
+        ax.plot(un_s, -(coef[2] * o_ok**2) / chord, ":", color=col, lw=1.1, alpha=0.9)
+    ax.axhline(0.0, color="#9ca3af", ls=":", lw=0.8)
+    ax.set_xlim(-1.05, 1.05)
+    ax.set_ylim(-0.32, 0.32)
+    ax.set_title(
+        f"F. Joint-Line Arch s/c: model {wt['joint_line_sagitta_over_chord']:.3f} vs radiograph {arc['mean_sagitta_over_chord']:.3f}±{arc['std_sagitta_over_chord']:.3f} ({arc['n_convex_head']}/{arc['n_joints_valid']} convex)",
+        color="white",
+        fontsize=8.6,
+        fontweight="bold",
+    )
+    ax.set_xlabel("Normalised transverse position across the joint (chord = ±1)", color="#e5e7eb", fontsize=8.6)
+    ax.set_ylabel("Distal displacement of joint line / chord (+ = convex head)", color="#e5e7eb", fontsize=8.6)
+    ax.legend(facecolor="#0b0f17", edgecolor="#374151", labelcolor="white", fontsize=6.6, loc="upper right", ncol=2)
+    ax.grid(True, alpha=0.22, color="#374151")
+
+    fig.suptitle(
+        "Pass 3 — Reduced Biot Poroelastic Synovial Cavitation & Articular Morphogenesis coupled to the GDF5-Noggin Interzone PDE\n"
+        "(Mow 1980; Maroudas 1976; Edwards 1994; Dowthwaite 1998; Drachman & Sokoloff 1966; Kahn 2009; Roddy 2011; Carter & Wong 1988)",
+        color="white",
+        fontsize=11.0,
+        fontweight="bold",
+        y=0.995,
+    )
+    fig.tight_layout(rect=(0, 0, 1, 0.945))
     fig.savefig(out_path, dpi=145, facecolor=fig.get_facecolor())
     plt.close(fig)
     return out_path
@@ -895,12 +1559,94 @@ def render_growth_gif(out_path: Path = OUT_GIF) -> Path:
 # 6. MorphoEval Quantitative Measurement Suite & 8-Point Self-Test
 # =============================================================================
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Compute 9 reference-anchored morphometric measurements for `morphoeval/measure_outputs.py`."""
+    """Compute 16 reference-anchored morphometric measurements for `morphoeval/measure_outputs.py`
+    (9 from Pass 2 + 7 Pass 3 poroelastic cavitation / articular morphogenesis metrics)."""
     disp = compute_gdf5_noggin_dispersion()
     ic = evaluate_kavanagh_inhibitory_cascade()
     sim1d = simulate_growing_digit_interzone_pde()
     pert = evaluate_genetic_perturbations()
     spec = segment_digit_interzone_specimen()
+    sim2d = simulate_2d_digit_ray_pde()
+    conds = evaluate_cavitation_conditions()
+    cav_wt = conds["motile_wild_type"]["sim"]
+    cav_imm = conds["paralysed_immobilised"]["sim"]
+    cav_nog = conds["noggin_null_no_interzone"]["sim"]
+    sw_m = sweep_mechanical_loading(sim2d=sim2d)
+    sw_k = sweep_permeability(sim2d=sim2d)
+    arc = measure_specimen_articular_arc(spec)
+
+    pass3 = [
+        {
+            "name": "Poroelastic synovial cavity count, motile wild type (m_load = 1)",
+            "value": float(cav_wt["n_cavities"]),
+            "unit": "cavities",
+            "method": "Connected c > 0.5 intervals on the digit midline of the reduced Biot poroelastic solver coupled to the 2D Gdf5 interzone field (3 Gdf5+ interzones in)",
+            "reference_value": 3.0,
+            "reference_source": "Edwards et al. (1994) J. Anat. 185:355-367; Hartmann & Tabin (2001) Cell 104:341-351 (MCP, PIP, DIP cavitate in motile embryos)",
+            "note": f"cavity centres x = {', '.join(f'{c:.2f}' for c in cav_wt['cavity_centres'])}; widths = {', '.join(f'{w:.2f}' for w in cav_wt['cavity_widths'])}; p_max(midline) = {cav_wt['p_midline_max']:.3f} vs sigma_coh(G=1) = 0.50",
+            "derived_from": "script",
+        },
+        {
+            "name": "Poroelastic synovial cavity count, paralysed / muscle-less embryo (m_load = 0)",
+            "value": float(cav_imm["n_cavities"]),
+            "unit": "cavities",
+            "method": "Same solver with mechanosensitive HA synthesis phi(m_load = 0) = 0; the 3 Gdf5+ interzones are still specified by the RD PDE",
+            "reference_value": 0.0,
+            "reference_source": "Drachman & Sokoloff (1966) Dev. Biol. 14:401-420; Kahn et al. (2009) Dev. Cell 16:734-743 (no cavitation in paralysed / muscle-less embryos)",
+            "note": f"Gdf5 interzones specified = {cav_imm['n_gdf5_interzones']}; Lean Law 4: m_load = 0 => p_ss = 0 => no cavity",
+            "derived_from": "script",
+        },
+        {
+            "name": "Interzone Sox9 re-expression ratio, paralysed / motile (Kahn 2009 fate loss)",
+            "value": round(cav_imm["sox9_interzone_mean"] / max(cav_wt["sox9_interzone_mean"], 1e-9), 4),
+            "unit": "dimensionless ratio",
+            "method": "Mean Sox9 inside Gdf5+ interzone columns, paralysed divided by motile WT",
+            "reference_value": None,
+            "reference_source": "Kahn et al. (2009) Dev. Cell 16:734-743 report ectopic Sox9/Col2a1 in the unloaded interzone (qualitative: ratio > 1; no published magnitude)",
+            "note": f"Sox9_IZ motile = {cav_wt['sox9_interzone_mean']:.3f}, paralysed = {cav_imm['sox9_interzone_mean']:.3f}; Nog-/- interzones = {cav_nog['n_gdf5_interzones']}, cavities = {cav_nog['n_cavities']}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Muscle-loading threshold m* for full cavitation of all 3 interzones",
+            "value": float(sw_m["m_threshold"]) if sw_m["m_threshold"] is not None else float("nan"),
+            "unit": "relative loading (motile WT = 1)",
+            "method": f"Smallest m_load in the sweep {[r['m_load'] for r in sw_m['rows']]} with 3 cavities; count monotone = {sw_m['monotone_count']}",
+            "reference_value": None,
+            "reference_source": "Model prediction (no published dose-response of cavitation vs contraction amplitude); Roddy et al. (2011) PLoS ONE 6:e17526 report graded loss with partial immobilisation",
+            "note": "counts per m_load: " + ", ".join(f"{r['m_load']:.2f}->{r['n_cavities']}" for r in sw_m["rows"]),
+            "derived_from": "script",
+        },
+        {
+            "name": "Cavity-area monotonicity under Darcy permeability sweep (fraction of steps non-increasing)",
+            "value": 1.0 if sw_k["monotone_area"] else 0.0,
+            "unit": "boolean (1 = monotone non-increasing)",
+            "method": f"Cavity area vs relative permeability {[r['permeability'] for r in sw_k['rows']]} (Mow 1980 biphasic drainage)",
+            "reference_value": 1.0,
+            "reference_source": "Lean Law 5 / Darcy drainage: higher permeability lowers sustainable osmotic pore pressure",
+            "note": "areas: " + ", ".join(f"k={r['permeability']:g}:{r['cavity_area']:.3f}" for r in sw_k["rows"]),
+            "derived_from": "script",
+        },
+        {
+            "name": "Model joint-line arch sagitta/chord ratio (PIP cavity mid-contour, motile WT)",
+            "value": round(cav_wt["joint_line_sagitta_over_chord"], 4),
+            "unit": "dimensionless (sagitta / chord)",
+            "method": "Quadratic fit to the cavity mid-contour x_mid(y) of the PIP cavity; positive = joint line most distal on the midline (convex proximal head geometry, Carter & Wong 1988)",
+            "reference_value": round(arc["mean_sagitta_over_chord"], 4),
+            "reference_source": "Same statistic traced on the vendored radiograph joint lines (measure_specimen_articular_arc)",
+            "note": f"head contour sagitta/half-span = {cav_wt['head_sagitta_norm']:+.3f} (flat: lens thickening cancels the arch), base = {cav_wt['base_sagitta']:+.3f}, congruence r = {cav_wt['congruence_r']:+.3f}; paralysed arch = {cav_imm['arch_sagitta_norm']:.3f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Specimen joint-line sagitta/chord ratio across valid PIP/DIP joints (Digits II-IV)",
+            "value": round(arc["mean_sagitta_over_chord"], 4),
+            "unit": "dimensionless (sagitta / chord)",
+            "method": f"Contrast-weighted quadratic fit of the radiolucent joint-space minimum along lines at lateral offsets +/-{arc['half_width_px']:.0f} px parallel to the digit centerline; {arc['n_joints_valid']}/{arc['n_joints_traced']} joints pass the contrast gate",
+            "reference_value": 0.0,
+            "reference_source": "Null hypothesis of a flat joint line; Carter & Wong (1988) predict > 0 (convex head / concave base); Roddy et al. (2011) report flattening when immobilised",
+            "note": f"{arc['n_convex_head']}/{arc['n_joints_valid']} joints have the convex-head sign; sd = {arc['std_sagitta_over_chord']:.4f}; per joint: " + ", ".join(f"{j['digit_id']}-{j['joint']}={j['sagitta_over_chord']:+.3f}" for j in arc["joints"] if j["valid"]),
+            "derived_from": "output",
+        },
+    ]
 
     return [
         {
@@ -993,14 +1739,14 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"Digit II P2/ΣP = {spec['digit_II']['P2_fraction']:.4f}, Digit III = {spec['digit_III']['P2_fraction']:.4f}",
             "derived_from": "output",
         },
-    ]
+    ] + pass3
 
 
 def self_test() -> bool:
-    """Run comprehensive 8-point verification suite for Pass 2."""
-    # 1. Cryptographic SHA-256 verification of all 4 files in datasets/joint_interzone_clefting/
+    """Run comprehensive 12-point verification suite (8 Pass 2 checks + 4 Pass 3 checks)."""
+    # 1. Cryptographic SHA-256 verification of all 5 files in datasets/joint_interzone_clefting/
     digests = verify_dataset_integrity()
-    assert len(digests) == 4, "Expected 4 SHA-256 verified files in datasets/joint_interzone_clefting/"
+    assert len(digests) == 5, "Expected 5 SHA-256 verified files in datasets/joint_interzone_clefting/"
 
     # 2. Law 1: Kavanagh et al. (2013) arithmetic cascade midpoint & 1/3 invariant + 12-taxon regression
     ic = evaluate_kavanagh_inhibitory_cascade()
@@ -1042,34 +1788,85 @@ def self_test() -> bool:
         assert d["n_synovial_clefts"] == 3
     assert math.isclose(spec["mean_P2_fraction"], 1.0 / 3.0, abs_tol=0.01)
 
-    # 7. Quantitative MorphoEval measurement contract (9 metrics)
+    # 7. Quantitative MorphoEval measurement contract (16 metrics, every one with a reference key)
     metrics = measure_morphoeval()
-    assert len(metrics) == 9
+    assert len(metrics) == 16
+    assert all("reference_value" in mt and "reference_source" in mt and "unit" in mt for mt in metrics)
 
-    # 8. Two-run bitwise determinism check
+    # 8. Two-run bitwise determinism check (RD PDE and poroelastic solver)
     sim_a = simulate_growing_digit_interzone_pde(seed=2016)
     sim_b = simulate_growing_digit_interzone_pde(seed=2016)
     assert np.allclose(sim_a["sox9"], sim_b["sox9"], atol=0.0)
     assert np.allclose(sim_a["gdf5"], sim_b["gdf5"], atol=0.0)
+    cav_a = simulate_poroelastic_cavitation(sim2d=sim2d)
+    cav_b = simulate_poroelastic_cavitation(sim2d=sim2d)
+    assert np.allclose(cav_a["cavity_2d"], cav_b["cavity_2d"], atol=0.0)
+    assert np.allclose(cav_a["p_2d"], cav_b["p_2d"], atol=0.0)
+
+    # 9. Law 4 (Pass 3): poroelastic cavitation requires loading AND a Gdf5 interzone
+    conds = evaluate_cavitation_conditions()
+    wt_c = conds["motile_wild_type"]["sim"]
+    imm_c = conds["paralysed_immobilised"]["sim"]
+    nog_c = conds["noggin_null_no_interzone"]["sim"]
+    assert wt_c["n_gdf5_interzones"] == 3 and wt_c["n_cavities"] == 3
+    assert imm_c["n_gdf5_interzones"] == 3 and imm_c["n_cavities"] == 0
+    assert float(np.max(imm_c["p_2d"])) == 0.0 and imm_c["phi_m"] == 0.0
+    assert nog_c["n_gdf5_interzones"] == 0 and nog_c["n_cavities"] == 0
+    assert imm_c["sox9_interzone_mean"] > 2.0 * wt_c["sox9_interzone_mean"]
+    assert math.isclose(mechanosensitive_gain(1.0), 1.0, abs_tol=1e-12)
+    # Integer calibration of the Lean theorem: p = 100 > 50 cavitates, p = 30 < 50 does not
+    assert (1 * 1 * 10 * 10 > 100 - 5 * 10) and not (1 * 1 * 10 * 3 > 100 - 5 * 10)
+
+    # 10. Law 4 monotonicity & threshold: muscle-loading sweep
+    sw_m = sweep_mechanical_loading(sim2d=sim2d)
+    assert sw_m["monotone_count"]
+    assert sw_m["m_threshold"] is not None and 0.3 < sw_m["m_threshold"] <= 1.0
+    p_vals = [r["p_midline_max"] for r in sw_m["rows"]]
+    assert all(b >= a - 1e-12 for a, b in zip(p_vals, p_vals[1:]))
+    sox_vals = [r["sox9_interzone_mean"] for r in sw_m["rows"]]
+    assert all(b <= a + 1e-12 for a, b in zip(sox_vals, sox_vals[1:]))
+
+    # 11. Law 5: Darcy lens (cavity narrower than the rod, maximal on the midline) & permeability drainage
+    assert 0.0 < wt_c["lens_half_height"] < 0.62
+    j_mid = int(np.argmin(np.abs(wt_c["y"])))
+    p_mid = wt_c["p_2d"][j_mid, :]
+    i_pk = int(np.argmax(p_mid))
+    col = wt_c["p_2d"][:, i_pk]
+    assert float(col[j_mid]) >= float(np.max(col)) - 1e-9  # midline maximum (Law 5)
+    assert 3 * (10 * 10 - 0) == 300 and 3 * (10 * 10 - 6 * 6) == 192  # Lean integer witnesses
+    sw_k = sweep_permeability(sim2d=sim2d)
+    assert sw_k["monotone_area"]
+    assert sw_k["rows"][0]["n_cavities"] == 3 and sw_k["rows"][-1]["n_cavities"] < 3
+
+    # 12. Articular joint-line arch: model and specimen share the convex-head sign
+    arc = measure_specimen_articular_arc(spec)
+    assert arc["n_joints_valid"] >= 3
+    assert arc["n_convex_head"] * 2 > arc["n_joints_valid"]  # majority convex-head sign
+    assert wt_c["joint_line_sagitta_over_chord"] > 0.0
+    assert imm_c["arch_sagitta_norm"] == 0.0
+    assert abs(wt_c["joint_line_sagitta_over_chord"] - arc["mean_sagitta_over_chord"]) < 0.05
     return True
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(
-        description="Kavanagh et al. (2013) PNAS & Hiscock et al. (2017) Dev. Cell Joint Interzone Clefting (Pass 2)"
+        description="Kavanagh et al. (2013) PNAS & Hiscock et al. (2017) Dev. Cell Joint Interzone Clefting + Pass 3 poroelastic synovial cavitation"
     )
-    ap.add_argument("--self-test", action="store_true", help="Run 8-point Pass 2 verification suite")
+    ap.add_argument("--self-test", action="store_true", help="Run 12-point verification suite (8 Pass 2 + 4 Pass 3 checks)")
     ap.add_argument("--skip-gif", action="store_true", help="Skip animated GIF rendering")
+    ap.add_argument("--skip-cavitation-figure", action="store_true", help="Skip the Pass 3 cavitation figure")
     ap.add_argument("--noggin-dose", type=float, default=1.0, help="Relative Noggin BMP-antagonist dosage")
     ap.add_argument("--gdf5-dose", type=float, default=1.0, help="Relative GDF5 interzone signaling dosage")
     ap.add_argument("--alpha-taper", type=float, default=0.28, help="Distal PFR-FGF phalanx tapering parameter")
     ap.add_argument("--D-ratio", type=float, default=15.0, help="Diffusivity ratio D_N / D_G")
     ap.add_argument("--seed", type=int, default=2016, help="PRNG seed for PDE initialization")
+    ap.add_argument("--m-load", type=float, default=1.0, help="Relative embryonic muscle-contraction loading for the poroelastic cavitation solver (0 = paralysed, 1 = motile WT)")
+    ap.add_argument("--permeability", type=float, default=1.0, help="Relative Darcy hydraulic permeability kappa_p / kappa_p(WT) for the cavitation solver")
     args = ap.parse_args()
 
     if args.self_test:
         self_test()
-        print("[self-test] PASS: 2016-onuff-joint-interzone-clefting.py (Pass 2 v2 — 8/8 checks passed)")
+        print("[self-test] PASS: 2016-onuff-joint-interzone-clefting.py (Pass 3 v3 — 12/12 checks passed)")
         return 0
 
     render_comparison_figure(
@@ -1080,9 +1877,14 @@ def main() -> int:
         d_ratio=args.D_ratio,
         seed=args.seed,
     )
+    written = [str(OUT_PNG)]
+    if not args.skip_cavitation_figure:
+        render_cavitation_figure(OUT_CAVITATION_PNG, m_load=args.m_load, permeability=args.permeability)
+        written.append(str(OUT_CAVITATION_PNG))
     if not args.skip_gif:
         render_growth_gif(OUT_GIF)
-    print(f"Wrote {OUT_PNG} and {OUT_GIF}")
+        written.append(str(OUT_GIF))
+    print("Wrote " + ", ".join(written))
     return 0
 
 

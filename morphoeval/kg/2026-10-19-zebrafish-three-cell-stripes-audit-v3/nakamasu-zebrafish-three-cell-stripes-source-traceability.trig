@@ -1,0 +1,112 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-nakamasu-zebrafish-three-cell-stripes> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-nakamasu-zebrafish-three-cell-stripes-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-nakamasu-zebrafish-three-cell-stripes-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Nakamasu et al. (2009) 3-variable zebrafish pigment-cell reaction-diffusion network + Volkening-Sandstede iridophore S/L agents on a growing flank, laser-ablation polarity & leopard (cx41.8) spot-to-stripe morphospace — Source and data traceability: 94/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "All 11 sources carry DOIs in the module docstring, the audit and `paper_citations.bib` (+7 entries); the new `iridophore_ontogeny_reference.json` records what each source was used for and declares its approximations; the two garbled candidate titles in `scout_manifest.json` were corrected and the correction is recorded in the file; all five dataset files are SHA-256 pinned and verified fail-closed at run time (L107-141). Deductions: the stripe-count table is an assessor reading of published descriptions rather than data with a page/figure pin (-4); the Parichy 2009 stage SL anchors are cited without page numbers (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-source-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-source-traceability-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-source-traceability-4> ;
+        pk:hasScore "0.94"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2009-nakamasu-zebrafish-three-cell-stripes.py L107–L141" ;
+        dct:description "EXPECTED_SHA256 pins for 5 files (v2 pins), verify_dataset_sha256 fail-closed" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/3aaa03d/2009-nakamasu-zebrafish-three-cell-stripes.py#L107-L141> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/zebrafish_three_cell_stripes/iridophore_ontogeny_reference.json L1–L51" ;
+        dct:description "7 sources with DOIs and used_for statements; confidence_note" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/3aaa03d/datasets/zebrafish_three_cell_stripes/iridophore_ontogeny_reference.json#L1-L51> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-source-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "datasets/zebrafish_three_cell_stripes/paper_citations.bib L45–L121" ;
+        dct:description "7 Pass 3 BibTeX entries with DOIs" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/3aaa03d/datasets/zebrafish_three_cell_stripes/paper_citations.bib#L45-L121> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nakamasu-zebrafish-three-cell-stripes-source-traceability-4> a pk:EvidenceItem ;
+        rdfs:label "datasets/zebrafish_three_cell_stripes/scout_manifest.json L1–L52" ;
+        dct:description "Corrected titles for Watanabe 2006 and Yamaguchi 2007 with pass3_correction note" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/3aaa03d/datasets/zebrafish_three_cell_stripes/scout_manifest.json#L1-L52> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Slot 007 Pass 3 autonomous loop assessor; Passes 1-2 assessed by Gemini 4 Argon)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/dvdy.22113>,
+            <https://doi.org/10.1006/bulm.1999.0131>,
+            <https://doi.org/10.1038/ncb2955>,
+            <https://doi.org/10.1038/s41467-018-05629-z>,
+            <https://doi.org/10.1038/sj.embor.7400757>,
+            <https://doi.org/10.1073/pnas.0607790104>,
+            <https://doi.org/10.1073/pnas.0808622106>,
+            <https://doi.org/10.1098/rsif.2015.0812>,
+            <https://doi.org/10.1126/science.1212821>,
+            <https://doi.org/10.1242/dev.096719>,
+            <https://doi.org/10.1371/journal.pgen.1003561> .
+    <https://doi.org/10.1002/dvdy.22113> dct:date "2009"^^xsd:gYear ;
+        dct:title "Normal table of postembryonic zebrafish development: staging by externally visible anatomy of the living fish" .
+    <https://doi.org/10.1006/bulm.1999.0131> dct:date "1999"^^xsd:gYear ;
+        dct:title "Reaction and diffusion on growing domains: scenarios for robust pattern formation" .
+    <https://doi.org/10.1038/ncb2955> dct:date "2014"^^xsd:gYear ;
+        dct:title "Proliferation, dispersal and patterned aggregation of iridophores in the skin prefigure striped colouration of zebrafish" .
+    <https://doi.org/10.1038/s41467-018-05629-z> dct:date "2018"^^xsd:gYear ;
+        dct:title "Iridophores as a source of robustness in zebrafish stripes and variability in Danio patterns" .
+    <https://doi.org/10.1038/sj.embor.7400757> dct:date "2006"^^xsd:gYear ;
+        dct:title "Spot pattern of leopard Danio is caused by mutation in the zebrafish connexin41.8 gene" .
+    <https://doi.org/10.1073/pnas.0607790104> dct:date "2007"^^xsd:gYear ;
+        dct:title "Pattern regulation in the stripe of zebrafish suggests an underlying dynamic and autonomous mechanism" .
+    <https://doi.org/10.1073/pnas.0808622106> dct:date "2009"^^xsd:gYear ;
+        dct:title "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns" .
+    <https://doi.org/10.1098/rsif.2015.0812> dct:date "2015"^^xsd:gYear ;
+        dct:title "Modelling stripe formation in zebrafish: an agent-based approach" .
+    <https://doi.org/10.1126/science.1212821> dct:date "2012"^^xsd:gYear ;
+        dct:title "Pigment pattern formation by contact-dependent depolarization" .
+    <https://doi.org/10.1242/dev.096719> dct:date "2013"^^xsd:gYear ;
+        dct:title "Iridophores and their interactions with other chromatophores are required for stripe formation in zebrafish" .
+    <https://doi.org/10.1371/journal.pgen.1003561> dct:date "2013"^^xsd:gYear ;
+        dct:title "Interactions with iridophores and the tissue environment required for patterning melanophores and xanthophores during zebrafish adult pigment stripe formation" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Nakamasu et al. (2009) 3-variable zebrafish pigment-cell reaction-diffusion network + Volkening-Sandstede iridophore S/L agents on a growing flank, laser-ablation polarity & leopard (cx41.8) spot-to-stripe morphospace — Source and data traceability 94/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T05:50:52Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-nakamasu-zebrafish-three-cell-stripes-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

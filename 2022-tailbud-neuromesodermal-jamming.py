@@ -1,11 +1,54 @@
 #!/usr/bin/env python3
 """
-2022-tailbud-neuromesodermal-jamming.py — Pass 2 (v2) Remediated Implementation
+2022-tailbud-neuromesodermal-jamming.py — Pass 3 (v3) Remediated Implementation
 ================================================================================
 Active Fluid-to-Solid Jamming Transition, Extracellular Space Compaction,
 Ferrofluid Yield-Stress Gradient, Bingham Viscoplastic Backstop Rectification,
-and cdh2 (N-Cadherin) Knockdown Bilateral Asymmetry in Zebrafish Body Axis
-Elongation (`tailbud-neuromesodermal-jamming`, Slot 030).
+cdh2 (N-Cadherin) Knockdown Bilateral Asymmetry, Quasi-3D Fibronectin ECM
+Sheath Confinement (Dray et al. 2013) and Her1/Her7 Segmentation-Clock
+Wavefront Arrest in Zebrafish Body Axis Elongation
+(`tailbud-neuromesodermal-jamming`, Slot 030).
+
+Pass 3 remediation (superseding audit `2026-10-19-neuromesodermal-jamming-audit-v2`):
+  * The single open v2 item — "couple the 2D active-foam jamming gradient to 3D
+    fibronectin ECM boundary friction (Dray et al. 2013) and anterior Her1/Her7
+    segmentation clock wavefront arrest" — is closed in a REDUCED, HONESTLY
+    LABELLED form (no 3D FEM / axisymmetric Stokes solve):
+      - Section 2b `solve_fn_sheath_confinement`: thin-rod (axisymmetric)
+        reduction of the 3D paraxial tissue column.  The fibronectin matrix that
+        wraps the tailbud/PSM (Dray et al. 2013 Curr. Biol. 23:1335 Fig. 1;
+        Lawton et al. 2013) is a hoop-stiff elastic sheath of relative density
+        f_FN(x).  Where the active cell pressure p_act(x) = sigma_A(x) exceeds the
+        tissue yield stress sigma_y(x) the fluid tailbud dilates radially until
+        the sheath hoop stress balances it:
+            eps_r(x) = max(0, sigma_A - sigma_y) / (K_FN f_FN(x) + K_t),
+            R_eq(x) = R_0(x) (1 + eps_r(x)).
+        The fraction of progenitor influx stored in radial dilation (the
+        "leak") is 1 - A_0/A_eq, so axial channeling efficiency chi = 1 - leak
+        multiplies the Bingham-backstop elongation speed.  fn1a/fn1b and itga5
+        knockdown (fn_scale < 1) soften the sheath -> wider tailbud and slower
+        axis elongation (Dray et al. 2013 Figs. 2-4).  The dynamic ECM friction
+        of the moving fluid MPZ against the sheath is reported as a wall-shear
+        diagnostic (F_drag) but does not feed back on v_elong (residual item).
+      - Section 2c `solve_segmentation_clock_arrest`: the Her1/Her7 clock phase
+        theta(x,t) (Oates & Ho 2002; Lewis 2003) is advected in the tip frame,
+        d theta/dt + u(x) d theta/dx = omega(x), with a posterior pacemaker,
+        a slowing frequency profile (Soroldoni et al. 2014 Doppler) and arrest
+        (omega = 0) anterior to a mechanical arrest front x_arrest defined by
+        the jamming ratio sigma_y/sigma_A >= Lambda_arrest = 4 (deep solid
+        regime; reduced stand-in for the YAP/density mechanosensitivity of
+        Hubaud et al. 2017).  Somite length follows Cooke-Zeeman,
+        S = (v_elong + v_PSM-shortening) * T_clock, and the frozen her1 stripe
+        wavelength anterior to x_arrest is measured on the kymograph and
+        compared with S.  Epithelialised somites anterior to x_arrest assemble
+        extra fibronectin (Delta f_FN) that feeds back into the sheath profile
+        — the two new modules are therefore coupled in both directions with the
+        jamming gradient (jamming -> arrest front -> FN assembly -> channeling
+        -> v_elong -> somite length).
+  * Two new Lean 4 theorems (`fibronectin_sheath_confinement_channeling`,
+    `clock_wavefront_arrest_somite_scaling`), 3 new Dray-2013 fibronectin
+    regimes, a 12-point fn_scale sweep, 6 new measurements (14 total) and a
+    13-check self-test.
 
 Primary Literature Sources:
   1. Mongera, A., Rowghanian, P., Gustafson, H. J., Shelton, E., Kealhofer, D. A.,
@@ -27,6 +70,18 @@ Primary Literature Sources:
      "Cell-fibronectin interactions propel vertebrate trunk elongation via
      tissue mechanics." Current Biology 23(14):1335-1341.
      DOI: 10.1016/j.cub.2013.05.052
+  6. Soroldoni, D., Jörg, D. J., Morelli, L. G., Richmond, D. L., Schindelin, J.,
+     Jülicher, F. & Oates, A. C. (2014). "A Doppler effect in embryonic pattern
+     formation." Science 345(6193):222-225. DOI: 10.1126/science.1253089
+  7. Herrgen, L., Ares, S., Morelli, L. G., Schröter, C., Jülicher, F. & Oates, A. C.
+     (2010). "Intercellular coupling regulates the period of the segmentation
+     clock." Current Biology 20(14):1244-1253. DOI: 10.1016/j.cub.2010.06.034
+  8. Hubaud, A., Regev, I., Mahadevan, L. & Pourquié, O. (2017). "Excitable
+     dynamics and Yap-dependent mechanical cues drive the segmentation clock."
+     Cell 171(3):668-682. DOI: 10.1016/j.cell.2017.08.043
+  9. Lewis, J. (2003). "Autoinhibition with transcriptional delay: a simple
+     mechanism for the zebrafish somitogenesis oscillator." Current Biology
+     13(16):1398-1408. DOI: 10.1016/S0960-9822(03)00534-7
 
 Formal Lean 4 Specification:
   - `morphoeval/lean/loops/Loop_030_neuromesodermal_jamming.lean`
@@ -34,6 +89,8 @@ Formal Lean 4 Specification:
     * `MathOfBiology.Loop_030.active_fluctuation_fluid_to_solid_jamming_crossover`
     * `MathOfBiology.Loop_030.mongera_2018_wt_vs_cdh2_backstop_collapse`
     * `MathOfBiology.Loop_030.posterior_elongation_rectification_and_bilateral_symmetry`
+    * `MathOfBiology.Loop_030.fibronectin_sheath_confinement_channeling`   (Pass 3)
+    * `MathOfBiology.Loop_030.clock_wavefront_arrest_somite_scaling`       (Pass 3)
 """
 
 from __future__ import annotations
@@ -76,6 +133,30 @@ K0_T1_PER_MIN = 0.092           # Bare T1 topological rearrangement attempt rate
 C_BARRIER_KRAMERS = 0.36        # Kramers/Eyring cage-breaking barrier coefficient c_B
 GAMMA_KRAMERS = 0.82            # Kramers barrier scaling exponent gamma_k
 ETA_PLASTIC_PA_MIN = 38.0       # Bingham plastic viscosity eta_p (Pa * min)
+
+# Pass 3 — quasi-3D fibronectin ECM sheath (Dray et al. 2013 Curr. Biol. 23:1335-1341;
+# Lawton et al. 2013 Development 140:573-582).  Values marked [calibrated] are fitted
+# to the approximate Dray et al. (2013) elongation/width ratios vendored in the
+# reference JSON (`dray_2013_fibronectin_regimes`), not measured directly.
+R_MPZ_UM = 55.0                 # Unstrained posterior MPZ bulb radius R_0(0) (um; Mongera 2018 Fig. 1a scale bar)
+R_APSM_UM = 38.0                # Unstrained paraxial PSM column radius R_0(L) (um)
+F_FN_MPZ = 0.35                 # Relative fibronectin matrix density wrapping the MPZ (sparse; Dray 2013 Fig. 1)
+F_FN_PSM = 0.80                 # Relative fibronectin density wrapping the PSM sheath
+DELTA_F_FN_SOMITE = 0.20        # Extra fibronectin assembled at epithelialised somite borders (Julich/Koshida 2005)
+K_FN_HOOP_PA = 2800.0           # Sheath hoop stiffness per unit relative FN density (Pa / unit radial strain) [calibrated]
+K_TISSUE_CONFINEMENT_PA = 40.0  # Residual ectoderm/notochord confinement stiffness (Pa / unit strain) [calibrated]
+ZETA_FN_FRICTION_PA_MIN_UM = 0.6  # Dynamic cell-ECM wall friction coefficient (Pa min / um) [diagnostic only]
+MPZ_SOURCE_LENGTH_UM = 45.0     # e-folding length of dorsal-medial progenitor ingression source
+J_MPZ_PREFACTOR_UM_MIN = 2.034  # Progenitor influx prefactor (= 1.94 / chi_WT, chi_WT = 0.954, so the WT speed stays ~1.52 um/min)
+CHI_WT_REFERENCE = 0.954        # WT sheath channeling efficiency used to normalise the ablation control speed
+
+# Pass 3 — Her1/Her7 segmentation clock & wavefront arrest (Oates & Ho 2002; Lewis 2003;
+# Herrgen et al. 2010; Soroldoni et al. 2014; Hubaud et al. 2017)
+T_CLOCK_MIN = 23.5              # her1/her7 oscillation period at 28 C (Herrgen 2010 Curr Biol 20:1244)
+LAMBDA_ARREST = 4.0             # sigma_y/sigma_A jamming ratio gating clock arrest (deep solid; reduced mechanosensitive gate)
+V_PSM_SHORTENING_UM_MIN = 0.45  # PSM shortening contribution to wavefront regression (Soroldoni 2014, approx.)
+SOMITE_LENGTH_REF_UM = 47.0     # Zebrafish trunk somite AP length at 28 C, 10-15 somite stage (approx.)
+CLOCK_SLOWING_FRACTION = 0.6    # omega(x_arrest^-)/omega_0 = 1 - 0.6 (Soroldoni 2014 wave compression)
 
 
 # =============================================================================
@@ -271,10 +352,16 @@ def solve_ap_jamming_profile(
     sa_sim_at_ref = np.interp(x_ref, x_um, sigma_A_x)
     t1_sim_at_ref = np.interp(x_ref, x_um, k_t1_x)
 
-    r_ecs = float(stats.pearsonr(ecs_sim_at_ref, ecs_ref).statistic)
-    r_sy = float(stats.pearsonr(sy_sim_at_ref, sy_ref).statistic)
+    def _safe_r(a: np.ndarray, b: np.ndarray) -> float:
+        # Constant simulated profiles (e.g. the uniform-fluid ablation control) have no defined r
+        if np.std(a) < 1e-12 or np.std(b) < 1e-12:
+            return float("nan")
+        return float(stats.pearsonr(a, b).statistic)
+
+    r_ecs = _safe_r(ecs_sim_at_ref, ecs_ref)
+    r_sy = _safe_r(sy_sim_at_ref, sy_ref)
     rmse_sy = float(np.sqrt(np.mean((sy_sim_at_ref - sy_ref) ** 2)))
-    r_t1 = float(stats.pearsonr(t1_sim_at_ref, t1_ref).statistic)
+    r_t1 = _safe_r(t1_sim_at_ref, t1_ref)
 
     return {
         "x_um": x_um,
@@ -304,6 +391,256 @@ def solve_ap_jamming_profile(
 
 
 # =============================================================================
+# Section 2b (Pass 3): Quasi-3D Fibronectin ECM Sheath Confinement & Friction
+#                      (Dray et al. 2013 Current Biology 23:1335-1341)
+# =============================================================================
+
+def compute_unstrained_tissue_radius(x_um: np.ndarray) -> np.ndarray:
+    """
+    Unstrained axisymmetric tissue radius R_0(x) of the thin-rod reduction of the
+    3D posterior body: rounded MPZ bulb (R_MPZ_UM) tapering into the paraxial
+    PSM column (R_APSM_UM) (Mongera et al. 2018 Fig. 1a; Dray et al. 2013 Fig. 1).
+    """
+    x = np.asarray(x_um, dtype=np.float64)
+    taper = 0.5 * (1.0 - np.tanh((x - 95.0) / 35.0))
+    return R_APSM_UM + (R_MPZ_UM - R_APSM_UM) * taper
+
+
+def compute_fibronectin_density_profile(
+    x_um: np.ndarray,
+    fn_scale: float = 1.0,
+    x_arrest_um: float = float("nan"),
+) -> np.ndarray:
+    """
+    Relative fibronectin matrix density f_FN(x) wrapping the tailbud/PSM column.
+    Dray et al. (2013) Fig. 1 & Lawton et al. (2013): FN fibrils are sparse around
+    the posterior MPZ and dense along the PSM boundary with the ectoderm and
+    notochord; additional FN is assembled at epithelialised somite borders
+    anterior to the clock arrest front (integrin-alpha5-dependent fibrillogenesis).
+        f_FN(x) = fn_scale * [ F_MPZ + (F_PSM - F_MPZ) sigmoid((x - 110)/40)
+                               + Delta_f_somite * H(x - x_arrest) ]
+    `fn_scale` < 1 models fn1a/fn1b or itga5 morphants.
+    """
+    x = np.asarray(x_um, dtype=np.float64)
+    s = 1.0 / (1.0 + np.exp(-(x - 110.0) / 40.0))
+    f = F_FN_MPZ + (F_FN_PSM - F_FN_MPZ) * s
+    if not math.isnan(x_arrest_um):
+        f = f + DELTA_F_FN_SOMITE * (x >= x_arrest_um)
+    return fn_scale * f
+
+
+def compute_sheath_hoop_strain(
+    sigma_A: np.ndarray | float,
+    sigma_y: np.ndarray | float,
+    f_fn: np.ndarray | float,
+    k_fn: float = K_FN_HOOP_PA,
+    k_t: float = K_TISSUE_CONFINEMENT_PA,
+) -> np.ndarray:
+    """
+    Quasi-static radial (hoop) equilibrium of the fluid tissue inside the FN sheath:
+        eps_r(x) = max(0, sigma_A(x) - sigma_y(x)) / (K_FN f_FN(x) + K_t)
+    The active cell pressure in excess of the tissue's own yield resistance is
+    carried by the sheath hoop stiffness K_FN f_FN plus residual confinement K_t.
+    Maps to Lean 4 Theorem 5 `fibronectin_sheath_confinement_channeling`
+    (eps_wt * S_wt = p = eps_mut * S_mut with S_mut < S_wt  ==>  eps_wt < eps_mut).
+    """
+    excess = np.clip(np.asarray(sigma_A, dtype=np.float64) - np.asarray(sigma_y, dtype=np.float64), 0.0, None)
+    stiffness = k_fn * np.asarray(f_fn, dtype=np.float64) + k_t
+    return excess / np.maximum(stiffness, 1e-9)
+
+
+def compute_sheath_channeling(
+    x_um: np.ndarray,
+    sigma_y_x: np.ndarray,
+    sigma_A_x: np.ndarray,
+    fn_scale: float,
+    x_jam_um: float,
+    x_arrest_um: float = float("nan"),
+) -> dict[str, Any]:
+    """
+    Influx-weighted axial channeling efficiency of the fibronectin sheath.
+    Progenitor ingression is sourced in the posterior MPZ with weight
+    w(x) = exp(-x / MPZ_SOURCE_LENGTH_UM) restricted to the fluid zone x <= x_jam;
+    the volume fraction stored in radial dilation is leak(x) = 1 - A_0/A_eq and
+        chi = 1 - <leak>_w,     v_elong = J_MPZ * backstop * fluidity * chi.
+    Also returns the dynamic wall-friction force of the moving fluid MPZ against
+    the sheath, F_drag = integral 2 pi R zeta_FN f_FN v_rel dx (diagnostic only).
+    """
+    x = np.asarray(x_um, dtype=np.float64)
+    r0 = compute_unstrained_tissue_radius(x)
+    f_fn = compute_fibronectin_density_profile(x, fn_scale, x_arrest_um)
+    eps_r = compute_sheath_hoop_strain(sigma_A_x, sigma_y_x, f_fn)
+    r_eq = r0 * (1.0 + eps_r)
+    a0 = math.pi * r0 ** 2
+    a_eq = math.pi * r_eq ** 2
+    leak_x = 1.0 - a0 / a_eq
+    fluid_mask = (x <= x_jam_um) if not math.isnan(x_jam_um) else np.ones_like(x, dtype=bool)
+    if not np.any(fluid_mask):
+        fluid_mask[0] = True
+    w = np.exp(-x / MPZ_SOURCE_LENGTH_UM) * fluid_mask
+    leak = float(np.sum(leak_x * w) / max(np.sum(w), 1e-12))
+    chi = 1.0 - leak
+    # Dynamic cell-ECM friction of the fluid zone sliding against the sheath (lab-frame
+    # relative speed decays from the tip; Mongera 2018 cell speeds 1.48 -> 0.25 um/min)
+    v_rel = 1.48 * np.exp(-x / 120.0) * fluid_mask
+    f_drag = float(np.trapezoid(2.0 * math.pi * r0 * ZETA_FN_FRICTION_PA_MIN_UM * f_fn * v_rel, x))
+    return {
+        "x_um": x,
+        "r0_um": r0,
+        "f_fn": f_fn,
+        "hoop_strain": eps_r,
+        "r_eq_um": r_eq,
+        "leak_x": leak_x,
+        "leak": leak,
+        "channeling": chi,
+        "tailbud_width_ratio": float(np.max(r_eq[fluid_mask] / r0[fluid_mask])),
+        "wall_friction_force_Pa_um2": f_drag,
+    }
+
+
+def solve_fn_sheath_confinement(
+    ap_profile: dict[str, Any],
+    fn_scale: float = 1.0,
+    x_arrest_um: float = float("nan"),
+) -> dict[str, Any]:
+    """Apply `compute_sheath_channeling` to a continuous AP jamming profile."""
+    return compute_sheath_channeling(
+        ap_profile["x_um"],
+        ap_profile["sigma_y_Pa_x"],
+        ap_profile["sigma_A_Pa_x"],
+        fn_scale,
+        ap_profile["x_jam_um"],
+        x_arrest_um,
+    )
+
+
+# =============================================================================
+# Section 2c (Pass 3): Her1/Her7 Segmentation Clock & Mechanical Wavefront Arrest
+# =============================================================================
+
+def locate_clock_arrest_front(
+    x_um: np.ndarray,
+    sigma_y_x: np.ndarray,
+    sigma_A_x: np.ndarray,
+    lambda_arrest: float = LAMBDA_ARREST,
+) -> float:
+    """
+    Mechanical clock-arrest front x_arrest: the most posterior position where the
+    jamming ratio sigma_y(x)/sigma_A(x) first reaches Lambda_arrest (deep solid,
+    strictly anterior to the crossover x_jam where the ratio is 1).  Returns NaN
+    when the tissue never reaches the gate (e.g. cdh2 morphant: no arrest, somite
+    boundary failure).  Lean 4 Theorem 6 proves x_jam < x_arrest for any strictly
+    increasing ratio profile and Lambda_arrest > 1.
+    """
+    ratio = np.asarray(sigma_y_x, dtype=np.float64) / np.maximum(np.asarray(sigma_A_x, dtype=np.float64), 1e-9)
+    idx = np.where(ratio >= lambda_arrest)[0]
+    if len(idx) == 0:
+        return float("nan")
+    i = int(idx[0])
+    if i == 0:
+        return float(x_um[0])
+    w = (lambda_arrest - ratio[i - 1]) / max(ratio[i] - ratio[i - 1], 1e-9)
+    return float(x_um[i - 1] + w * (x_um[i] - x_um[i - 1]))
+
+
+def solve_segmentation_clock_arrest(
+    ap_profile: dict[str, Any],
+    v_elong_um_min: float,
+    clock_period_min: float = T_CLOCK_MIN,
+    lambda_arrest: float = LAMBDA_ARREST,
+    n_periods: float = 4.0,
+    dt_min: float = 0.25,
+) -> dict[str, Any]:
+    """
+    Her1/Her7 clock phase theta(x, t) advected in the tailbud-tip frame:
+        d theta/dt + u(x) d theta/dx = omega(x),  theta(0, t) = omega_0 t (posterior pacemaker),
+        u(x) = v_front [0.15 + 0.85 (1 - exp(-x / L_src))]  (MPZ source zone),
+        omega(x) = omega_0 [1 - c_slow (x / x_arrest)^2]  for x < x_arrest,  0 anterior (arrest),
+        v_front = v_elong + v_PSM-shortening,  omega_0 = 2 pi / T_clock.
+    Steady state is theta = omega_0 t + phi(x) with u phi' = omega - omega_0, so
+    anterior to x_arrest the frozen her1 stripes have wavelength u T_clock =
+    v_front T_clock — the Cooke-Zeeman somite length S.  First-order upwind in x,
+    explicit Euler in t (CFL = u_max dt / dx <= 0.25).  The arrest front is the
+    mechanical gate of `locate_clock_arrest_front`, so the jamming gradient sets
+    WHERE the clock stops and the backstop/sheath elongation speed sets HOW LONG
+    each frozen stripe is.
+    """
+    x = np.asarray(ap_profile["x_um"], dtype=np.float64)
+    nx = len(x)
+    dx = float(x[1] - x[0])
+    x_arrest = locate_clock_arrest_front(x, ap_profile["sigma_y_Pa_x"], ap_profile["sigma_A_Pa_x"], lambda_arrest)
+    v_front = float(v_elong_um_min) + V_PSM_SHORTENING_UM_MIN
+    somite_len = v_front * clock_period_min
+    omega0 = 2.0 * math.pi / clock_period_min
+
+    u = v_front * (0.15 + 0.85 * (1.0 - np.exp(-x / MPZ_SOURCE_LENGTH_UM)))
+    if math.isnan(x_arrest):
+        omega = omega0 * (1.0 - CLOCK_SLOWING_FRACTION * (x / x[-1]) ** 2)
+    else:
+        omega = np.where(
+            x < x_arrest,
+            omega0 * (1.0 - CLOCK_SLOWING_FRACTION * (x / max(x_arrest, 1e-9)) ** 2),
+            0.0,
+        )
+
+    # Steady-state spatial phase offset phi(x) = -int_0^x (omega0 - omega)/u dx' as initial condition
+    phi = np.zeros(nx)
+    integrand = (omega0 - omega) / u
+    for i in range(1, nx):
+        phi[i] = phi[i - 1] - 0.5 * (integrand[i] + integrand[i - 1]) * dx
+    theta = phi.copy()
+
+    n_steps = int(round(n_periods * clock_period_min / dt_min))
+    cfl = float(np.max(u) * dt_min / dx)
+    if cfl > 0.9:
+        raise RuntimeError(f"Clock advection CFL {cfl:.2f} too large")
+    record_every = max(1, n_steps // 60)
+    kymo: list[np.ndarray] = []
+    t_rec: list[float] = []
+    for n in range(n_steps + 1):
+        t = n * dt_min
+        if n % record_every == 0 or n == n_steps:
+            kymo.append(0.5 * (1.0 + np.cos(theta)))
+            t_rec.append(t)
+        if n == n_steps:
+            break
+        new = theta.copy()
+        new[1:] = theta[1:] - dt_min * u[1:] * (theta[1:] - theta[:-1]) / dx + dt_min * omega[1:]
+        new[0] = omega0 * (t + dt_min)
+        theta = new
+
+    her1_final = 0.5 * (1.0 + np.cos(theta))
+
+    # Measure frozen stripe wavelength anterior to x_arrest from her1 maxima
+    stripe_wavelength = float("nan")
+    n_stripes = 0
+    if not math.isnan(x_arrest):
+        mask = x > x_arrest + 0.5 * dx
+        idx = np.where(mask)[0]
+        peaks = [i for i in idx[1:-1] if her1_final[i] >= her1_final[i - 1] and her1_final[i] > her1_final[i + 1] and her1_final[i] > 0.6]
+        n_stripes = len(peaks)
+        if len(peaks) >= 2:
+            stripe_wavelength = float(np.mean(np.diff(x[peaks])))
+
+    return {
+        "x_um": x,
+        "x_arrest_um": x_arrest,
+        "x_jam_um": float(ap_profile["x_jam_um"]),
+        "v_front_um_min": v_front,
+        "somite_length_um": somite_len,
+        "clock_period_min": clock_period_min,
+        "omega_x": omega,
+        "u_tipframe_x": u,
+        "kymograph": np.array(kymo),
+        "t_rec_min": np.array(t_rec),
+        "her1_final": her1_final,
+        "stripe_wavelength_um": stripe_wavelength,
+        "n_frozen_stripes": n_stripes,
+        "cfl": cfl,
+    }
+
+
+# =============================================================================
 # Section 3: 2D Active-Foam & Bingham Viscoplastic Tailbud Elongation Simulator
 # =============================================================================
 
@@ -317,6 +654,7 @@ def simulate_2d_tailbud_jamming_regime(
     n_steps: int = 28,
     seed: int = 2018,
     record_frames: bool = False,
+    fn_scale: float = 1.0,
 ) -> dict[str, Any]:
     """
     Simulate 2D active-foam cellular packing and Bingham viscoplastic axis
@@ -335,8 +673,26 @@ def simulate_2d_tailbud_jamming_regime(
         collapsing sigma_y_APSM, unjamming the PSM, slowing posterior outgrowth,
         and inducing stochastic left-right bilateral axis asymmetry (Mongera et al.
         2018 Nature Fig. 4).
+      - (Pass 3) The quasi-3D fibronectin sheath (Section 2b) multiplies the
+        elongation speed by the channeling efficiency chi(fn_scale) and widens
+        the fluid tailbud envelope by the hoop strain eps_r (Dray et al. 2013:
+        fn1a/fn1b and itga5 morphants are wider and elongate more slowly).
     """
     rng = np.random.default_rng(seed)
+
+    # Quasi-3D fibronectin sheath channeling on the regime's own closed-form AP profile
+    x_prof = np.linspace(0.0, 300.0, 61)
+    s_prof = x_prof / 300.0
+    ecs_prof = phi_ecs_mpz - (phi_ecs_mpz - phi_ecs_apsm) * s_prof
+    sy_prof = compute_supracellular_yield_stress(ecs_prof, adhesion_scale=adhesion_scale)
+    sa_prof = sigma_A_apsm + (sigma_A_mpz - sigma_A_apsm) * np.exp(-2.4 * s_prof)
+    diff_prof = sy_prof - sa_prof
+    cross = np.where(diff_prof >= 0.0)[0]
+    x_jam_prof = float(x_prof[int(cross[0])]) if len(cross) > 0 else float("nan")
+    x_arrest_prof = locate_clock_arrest_front(x_prof, sy_prof, sa_prof)
+    sheath = compute_sheath_channeling(x_prof, sy_prof, sa_prof, fn_scale, x_jam_prof, x_arrest_prof)
+    channeling = sheath["channeling"]
+    hoop_strain_tip = float(sheath["hoop_strain"][0])
 
     # Evaluate local yield stress and T1 fluidity in MPZ vs A-PSM
     sigma_y_mpz = float(
@@ -357,9 +713,9 @@ def simulate_2d_tailbud_jamming_regime(
     mpz_fluidity_factor = 0.12 + 0.88 * math.tanh(sigma_A_mpz / 29.0) * math.exp(
         -0.006 * max(0.0, sigma_y_mpz - sigma_A_mpz)
     )
-    elongation_speed_um_min = 1.94 * backstop_factor * mpz_fluidity_factor
+    elongation_speed_um_min = J_MPZ_PREFACTOR_UM_MIN * backstop_factor * mpz_fluidity_factor * channeling
     if adhesion_scale == 0.0:
-        elongation_speed_um_min = 0.41
+        elongation_speed_um_min = 0.41 * channeling / CHI_WT_REFERENCE
 
     # Bilateral left-right axis length asymmetry (%) governed by A-PSM yield barrier
     # against active lateral shear fluctuations
@@ -402,6 +758,8 @@ def simulate_2d_tailbud_jamming_regime(
         # Lateral spreading when A-PSM backstop is unjammed (cdh2 MO or ablation)
         lateral_unconfined = np.clip(1.0 - local_sy / 65.0, 0.0, 1.0)
         v_lat = 0.16 * (1.0 - backstop_factor) * cur_pts[:, 1] * lateral_unconfined
+        # Radial dilation of the fluid zone against the softened fibronectin sheath (Pass 3)
+        v_lat = v_lat + 0.9 * hoop_strain_tip * cur_pts[:, 1] * (1.0 - s_ap)
 
         # Active T1 cell neighbor fluctuations proportional to local_t1
         noise = rng.normal(0.0, 1.0, size=cur_pts.shape) * (
@@ -410,8 +768,9 @@ def simulate_2d_tailbud_jamming_regime(
         cur_pts[:, 0] += dt * v_ax + noise[:, 0]
         cur_pts[:, 1] += dt * v_lat + noise[:, 1]
 
-        # Enforce U-shaped tailbud envelope and bilateral symmetry / asymmetry
-        y_bound = 0.84 + 0.22 * (1.0 - backstop_factor) * (1.0 - s_ap)
+        # Enforce U-shaped tailbud envelope and bilateral symmetry / asymmetry;
+        # the fibronectin sheath hoop strain widens the fluid posterior envelope (Pass 3)
+        y_bound = (0.84 + 0.22 * (1.0 - backstop_factor) * (1.0 - s_ap)) * (1.0 + hoop_strain_tip * (1.0 - s_ap))
         cur_pts[:, 1] = np.clip(cur_pts[:, 1], -y_bound, y_bound)
         cur_pts[:, 0] = np.clip(cur_pts[:, 0], 0.02, 1.42)
 
@@ -438,7 +797,124 @@ def simulate_2d_tailbud_jamming_regime(
         "k_t1_apsm_per_min": k_t1_apsm,
         "elongation_speed_um_per_min": elongation_speed_um_min,
         "lr_asymmetry_pct": lr_asymmetry_pct,
+        "fn_scale": fn_scale,
+        "sheath_channeling": channeling,
+        "sheath_hoop_strain_tip": hoop_strain_tip,
+        "tailbud_width_ratio": sheath["tailbud_width_ratio"],
+        "x_arrest_um": x_arrest_prof,
     }
+
+
+def evaluate_fibronectin_regimes(ref_data: dict[str, Any]) -> dict[str, Any]:
+    """
+    Pass 3: evaluate the Dray et al. (2013) cell-fibronectin perturbation regimes
+    (WT, itga5 MO, fn1a/fn1b double MO) on the WT jamming gradient, comparing the
+    simulated elongation-speed ratio v/v_WT and tailbud width ratio with the
+    approximate ratios vendored in `dray_2013_fibronectin_regimes`.
+    """
+    block = ref_data["dray_2013_fibronectin_regimes"]
+    rows: list[dict[str, Any]] = []
+    wt_speed = None
+    for idx, r in enumerate(block["regimes"]):
+        sim = simulate_2d_tailbud_jamming_regime(
+            regime_id=r["regime_id"],
+            phi_ecs_mpz=0.145,
+            phi_ecs_apsm=0.049,
+            sigma_A_mpz=50.0,
+            sigma_A_apsm=13.0,
+            adhesion_scale=1.0,
+            seed=2018 + 10 * idx,
+            fn_scale=float(r["fn_scale"]),
+        )
+        if wt_speed is None:
+            wt_speed = sim["elongation_speed_um_per_min"]
+        rows.append(
+            {
+                "regime_id": r["regime_id"],
+                "label": r["label"],
+                "fn_scale": float(r["fn_scale"]),
+                "sim_elongation_speed": sim["elongation_speed_um_per_min"],
+                "sim_speed_ratio": sim["elongation_speed_um_per_min"] / wt_speed,
+                "ref_speed_ratio": float(r["empirical_elongation_speed_ratio"]),
+                "sim_width_ratio": sim["tailbud_width_ratio"],
+                "ref_width_ratio": float(r["empirical_tailbud_width_ratio"]),
+                "sim_channeling": sim["sheath_channeling"],
+                "sim_hoop_strain_tip": sim["sheath_hoop_strain_tip"],
+            }
+        )
+    s_sim = np.array([r["sim_speed_ratio"] for r in rows])
+    s_ref = np.array([r["ref_speed_ratio"] for r in rows])
+    w_sim = np.array([r["sim_width_ratio"] for r in rows])
+    w_ref = np.array([r["ref_width_ratio"] for r in rows])
+    return {
+        "rows": rows,
+        "rmse_speed_ratio": float(np.sqrt(np.mean((s_sim - s_ref) ** 2))),
+        "rmse_width_ratio": float(np.sqrt(np.mean((w_sim - w_ref) ** 2))),
+        "max_abs_err_speed_ratio": float(np.max(np.abs(s_sim - s_ref))),
+        "uncertainty_pct": float(block.get("uncertainty_pct", 25.0)),
+    }
+
+
+def sweep_fibronectin_scale(n: int = 12) -> dict[str, Any]:
+    """Pass 3 parameter sweep: elongation speed and tailbud width ratio vs fn_scale on the WT gradient."""
+    fn_vals = np.linspace(0.05, 1.2, n)
+    speeds, widths, chis = [], [], []
+    for fv in fn_vals:
+        sim = simulate_2d_tailbud_jamming_regime(
+            "wt_control_zebrafish", 0.145, 0.049, 50.0, 13.0, adhesion_scale=1.0, seed=2018, fn_scale=float(fv)
+        )
+        speeds.append(sim["elongation_speed_um_per_min"])
+        widths.append(sim["tailbud_width_ratio"])
+        chis.append(sim["sheath_channeling"])
+    speeds_arr = np.array(speeds)
+    widths_arr = np.array(widths)
+    return {
+        "fn_scale": fn_vals,
+        "elongation_speed": speeds_arr,
+        "tailbud_width_ratio": widths_arr,
+        "channeling": np.array(chis),
+        "speed_monotonic_increasing": bool(np.all(np.diff(speeds_arr) > 0.0)),
+        "width_monotonic_decreasing": bool(np.all(np.diff(widths_arr) < 0.0)),
+    }
+
+
+def evaluate_clock_across_regimes(
+    ref_data: dict[str, Any],
+    perturb: dict[str, Any],
+    clock_period_min: float = T_CLOCK_MIN,
+) -> dict[str, Any]:
+    """
+    Pass 3: run the Her1/Her7 clock-arrest solver on each of the 5 Mongera/Lawton
+    regimes' continuous AP profiles, using each regime's simulated elongation speed
+    as the wavefront regression speed.  Returns arrest fronts, Cooke-Zeeman somite
+    lengths and measured frozen stripe wavelengths.
+    """
+    regimes_ref = ref_data["experimental_perturbation_regimes"]["regimes"]
+    rows: list[dict[str, Any]] = []
+    for r, prow in zip(regimes_ref, perturb["rows"]):
+        ap_r = solve_ap_jamming_profile(
+            ref_data,
+            phi_ecs_mpz=float(r["phi_ecs_mpz"]),
+            phi_ecs_apsm=float(r["phi_ecs_apsm"]),
+            sigma_A_mpz=float(r["sigma_A_mpz_Pa"]),
+            sigma_A_apsm=float(r["sigma_A_apsm_Pa"]),
+            adhesion_scale=float(r["adhesion_scale_cdh2"]),
+        )
+        clk = solve_segmentation_clock_arrest(ap_r, prow["sim_elongation_speed"], clock_period_min=clock_period_min)
+        rows.append(
+            {
+                "regime_id": r["regime_id"],
+                "x_jam_um": clk["x_jam_um"],
+                "x_arrest_um": clk["x_arrest_um"],
+                "v_front_um_min": clk["v_front_um_min"],
+                "somite_length_um": clk["somite_length_um"],
+                "stripe_wavelength_um": clk["stripe_wavelength_um"],
+                "n_frozen_stripes": clk["n_frozen_stripes"],
+                "her1_final": clk["her1_final"],
+                "x_um": clk["x_um"],
+            }
+        )
+    return {"rows": rows}
 
 
 def evaluate_all_perturbation_regimes(ref_data: dict[str, Any]) -> dict[str, Any]:
@@ -626,10 +1102,13 @@ def run_all_regimes_and_render(
     sigma_A_mpz: float = 50.0,
     n_steps: int = 28,
     seed: int = 2018,
+    fn_scale: float = 1.0,
+    clock_period_min: float = T_CLOCK_MIN,
 ) -> dict[str, Any]:
     """
-    Execute the full Pass 2 simulation suite and render the 10-panel comparison
-    figure (`docs/media/neuromesodermal_jamming_comparison.png`) and 12-frame
+    Execute the full Pass 3 simulation suite and render the 15-panel comparison
+    figure (`docs/media/neuromesodermal_jamming_comparison.png`; rows A-B as in
+    Pass 2, row C = fibronectin sheath + Her1/Her7 clock arrest) and the
     multi-regime growth animation (`docs/media/neuromesodermal_jamming_growth.gif`).
     """
     MEDIA_DIR.mkdir(parents=True, exist_ok=True)
@@ -643,6 +1122,9 @@ def run_all_regimes_and_render(
     )
     perturb = evaluate_all_perturbation_regimes(ref_data)
     specimen = segment_zebrafish_tailbud_specimen(ref_data)
+    fn_regimes = evaluate_fibronectin_regimes(ref_data)
+    fn_sweep = sweep_fibronectin_scale()
+    clock_regimes = evaluate_clock_across_regimes(ref_data, perturb, clock_period_min=clock_period_min)
 
     sim_regimes = {
         "wt": simulate_2d_tailbud_jamming_regime(
@@ -655,6 +1137,19 @@ def run_all_regimes_and_render(
             n_steps=n_steps,
             seed=seed,
             record_frames=True,
+            fn_scale=fn_scale,
+        ),
+        "fn": simulate_2d_tailbud_jamming_regime(
+            "fn1a_fn1b_double_morphant",
+            phi_ecs_mpz=phi_ecs_mpz,
+            phi_ecs_apsm=phi_ecs_apsm,
+            sigma_A_mpz=sigma_A_mpz,
+            sigma_A_apsm=13.0,
+            adhesion_scale=1.0,
+            n_steps=n_steps,
+            seed=seed + 4,
+            record_frames=True,
+            fn_scale=0.12,
         ),
         "cdh2": simulate_2d_tailbud_jamming_regime(
             "cdh2_knockdown_unjammed",
@@ -691,8 +1186,15 @@ def run_all_regimes_and_render(
         ),
     }
 
-    # Render 10-panel comparison figure (2x5 layout)
-    fig, axes = plt.subplots(2, 5, figsize=(21.0, 8.8), dpi=150)
+    # Pass 3: continuous sheath + clock solutions on the rendered WT profile
+    clock_wt = solve_segmentation_clock_arrest(
+        ap_profile, sim_regimes["wt"]["elongation_speed_um_per_min"], clock_period_min=clock_period_min
+    )
+    sheath_wt = solve_fn_sheath_confinement(ap_profile, fn_scale, clock_wt["x_arrest_um"])
+    sheath_fn = solve_fn_sheath_confinement(ap_profile, 0.12, clock_wt["x_arrest_um"])
+
+    # Render 15-panel comparison figure (3x5 layout)
+    fig, axes = plt.subplots(3, 5, figsize=(21.0, 13.4), dpi=150)
     fig.patch.set_facecolor("#0b101b")
     for ax in axes.ravel():
         ax.set_facecolor("#131c2e")
@@ -973,13 +1475,138 @@ def run_all_regimes_and_render(
     ax_b5.set_ylabel("Probability P(z)", color="#cbd5e1", fontsize=7.5)
     ax_b5.legend(loc="upper left", facecolor="#0f172a", edgecolor="#475569", labelcolor="#f8fafc", fontsize=6.5)
 
+    # ---------------- Row C (Pass 3): fibronectin sheath & Her1/Her7 clock arrest ----------------
+    # Panel C1: Quasi-3D fibronectin sheath envelope R_eq(x) — WT vs fn1a/fn1b double morphant
+    ax_c1 = axes[2, 0]
+    xs = sheath_wt["x_um"]
+    ax_c1.fill_between(xs, -sheath_fn["r_eq_um"], sheath_fn["r_eq_um"], color="#f43f5e", alpha=0.25,
+                       label=f"fn1a;fn1b MO envelope (χ={sheath_fn['channeling']:.2f})")
+    ax_c1.fill_between(xs, -sheath_wt["r_eq_um"], sheath_wt["r_eq_um"], color="#38bdf8", alpha=0.45,
+                       label=f"WT envelope R_eq(x) (χ={sheath_wt['channeling']:.2f})")
+    ax_c1.plot(xs, sheath_wt["r0_um"], color="#f8fafc", lw=1.1, ls="--", label=r"Unstrained $R_0(x)$")
+    ax_c1.plot(xs, -sheath_wt["r0_um"], color="#f8fafc", lw=1.1, ls="--")
+    if not math.isnan(ap_profile["x_jam_um"]):
+        ax_c1.axvline(ap_profile["x_jam_um"], color="#22c55e", ls=":", lw=1.4, label=f"x_jam={ap_profile['x_jam_um']:.0f} μm")
+    if not math.isnan(clock_wt["x_arrest_um"]):
+        ax_c1.axvline(clock_wt["x_arrest_um"], color="#f59e0b", ls="-.", lw=1.4, label=f"Clock arrest x_arr={clock_wt['x_arrest_um']:.0f} μm")
+    ax_c1_twin = ax_c1.twinx()
+    ax_c1_twin.plot(xs, sheath_wt["f_fn"], color="#a855f7", lw=1.6, label=r"$f_{\mathrm{FN}}(x)$ WT")
+    ax_c1_twin.plot(xs, sheath_fn["f_fn"], color="#a855f7", lw=1.2, ls=":", label=r"$f_{\mathrm{FN}}(x)$ fn MO")
+    ax_c1_twin.set_ylim(0.0, 1.3)
+    ax_c1_twin.tick_params(colors="#d8b4fe", labelsize=7)
+    ax_c1_twin.set_ylabel("Relative FN density f_FN", color="#d8b4fe", fontsize=7.5)
+    ax_c1.set_ylim(-80.0, 80.0)
+    ax_c1.set_xlim(0.0, 300.0)
+    ax_c1.set_title(
+        f"C1. Quasi-3D Fibronectin Sheath (Dray 2013)\n(tip hoop strain WT={100*sheath_wt['hoop_strain'][0]:.1f}% | fn MO={100*sheath_fn['hoop_strain'][0]:.1f}%)",
+        color="#f8fafc", fontsize=8.2, fontweight="bold",
+    )
+    ax_c1.set_xlabel(r"AP Position $x$ ($\mu$m)", color="#cbd5e1", fontsize=7.5)
+    ax_c1.set_ylabel(r"Tissue radius $\pm R_{eq}(x)$ ($\mu$m)", color="#cbd5e1", fontsize=7.5)
+    ax_c1.legend(loc="lower right", facecolor="#0f172a", edgecolor="#475569", labelcolor="#f8fafc", fontsize=5.8)
+
+    # Panel C2: Her1/Her7 clock kymograph with mechanical arrest front
+    ax_c2 = axes[2, 1]
+    kym = clock_wt["kymograph"]
+    ax_c2.imshow(
+        kym, aspect="auto", origin="lower", cmap="magma",
+        extent=[xs[0], xs[-1], clock_wt["t_rec_min"][0], clock_wt["t_rec_min"][-1]],
+        vmin=0.0, vmax=1.0,
+    )
+    if not math.isnan(clock_wt["x_arrest_um"]):
+        ax_c2.axvline(clock_wt["x_arrest_um"], color="#f59e0b", ls="-.", lw=1.5, label="Arrest front (σ_y/σ_A ≥ 4)")
+    ax_c2.axvline(ap_profile["x_jam_um"], color="#22c55e", ls=":", lw=1.4, label="Jamming x* (σ_y = σ_A)")
+    ax_c2.set_title(
+        f"C2. Her1/Her7 Clock Kymograph (tip frame)\nS=v_front·T={clock_wt['somite_length_um']:.1f} μm | frozen λ={clock_wt['stripe_wavelength_um']:.1f} μm",
+        color="#f8fafc", fontsize=8.2, fontweight="bold",
+    )
+    ax_c2.set_xlabel(r"AP Position $x$ ($\mu$m)", color="#cbd5e1", fontsize=7.5)
+    ax_c2.set_ylabel("Time (min)", color="#cbd5e1", fontsize=7.5)
+    ax_c2.legend(loc="upper right", facecolor="#0f172a", edgecolor="#475569", labelcolor="#f8fafc", fontsize=6.2)
+
+    # Panel C3: Frozen her1 stripes across regimes (arrest position set by the jamming gradient)
+    ax_c3 = axes[2, 2]
+    c3_colors = {"wt_control_zebrafish": "#38bdf8", "blebbistatin_myosin_inhibited": "#f59e0b",
+                 "su5402_fgf_inhibited": "#22c55e", "cdh2_knockdown_unjammed": "#f43f5e"}
+    c3_names = {"wt_control_zebrafish": "WT", "blebbistatin_myosin_inhibited": "Blebb",
+                "su5402_fgf_inhibited": "SU5402", "cdh2_knockdown_unjammed": "cdh2 MO"}
+    offset = 0.0
+    for crow in clock_regimes["rows"]:
+        rid = crow["regime_id"]
+        if rid not in c3_colors:
+            continue
+        lab = f"{c3_names[rid]}: S={crow['somite_length_um']:.0f} μm"
+        if math.isnan(crow["x_arrest_um"]):
+            lab = f"{c3_names[rid]}: no arrest (boundary failure)"
+        ax_c3.plot(crow["x_um"], crow["her1_final"] + offset, color=c3_colors[rid], lw=1.5, label=lab)
+        if not math.isnan(crow["x_arrest_um"]):
+            ax_c3.axvline(crow["x_arrest_um"], color=c3_colors[rid], ls="-.", lw=0.9, alpha=0.8)
+        offset += 1.15
+    ax_c3.set_yticks([])
+    ax_c3.set_xlim(0.0, 300.0)
+    ax_c3.set_title(
+        "C3. Frozen her1 Stripe Patterns (t = 4T)\n(arrest front moves with the jamming gradient)",
+        color="#f8fafc", fontsize=8.2, fontweight="bold",
+    )
+    ax_c3.set_xlabel(r"AP Position $x$ ($\mu$m)", color="#cbd5e1", fontsize=7.5)
+    ax_c3.set_ylabel("her1 expression (stacked)", color="#cbd5e1", fontsize=7.5)
+    ax_c3.legend(loc="upper right", facecolor="#0f172a", edgecolor="#475569", labelcolor="#f8fafc", fontsize=6.0)
+
+    # Panel C4: Dray et al. (2013) fibronectin regimes — speed and width ratios, sim vs approximate ref
+    ax_c4 = axes[2, 3]
+    fn_rows = fn_regimes["rows"]
+    fn_names = ["WT", "itga5 MO", "fn1a;fn1b MO"]
+    fpos = np.arange(len(fn_rows))
+    ax_c4.bar(fpos - 0.3, [r["sim_speed_ratio"] for r in fn_rows], width=0.19, color="#38bdf8", label="Sim v/v_WT")
+    ax_c4.bar(fpos - 0.1, [r["ref_speed_ratio"] for r in fn_rows], width=0.19, color="#0284c7", alpha=0.8,
+              yerr=[0.01 * fn_regimes["uncertainty_pct"] * r["ref_speed_ratio"] for r in fn_rows], ecolor="#cbd5e1", capsize=2,
+              label=f"Dray 2013 v/v_WT (±{fn_regimes['uncertainty_pct']:.0f}% approx.)")
+    ax_c4.bar(fpos + 0.1, [r["sim_width_ratio"] for r in fn_rows], width=0.19, color="#f43f5e", label="Sim width/width_WT")
+    ax_c4.bar(fpos + 0.3, [r["ref_width_ratio"] for r in fn_rows], width=0.19, color="#be123c", alpha=0.8, label="Dray 2013 width ratio (approx.)")
+    ax_c4.set_xticks(fpos)
+    ax_c4.set_xticklabels(fn_names, fontsize=7)
+    ax_c4.set_ylim(0.0, 1.45)
+    ax_c4.axhline(1.0, color="#64748b", ls="--", lw=0.9)
+    ax_c4.set_title(
+        f"C4. Cell-Fibronectin Perturbations (Dray 2013)\n(RMSE v-ratio={fn_regimes['rmse_speed_ratio']:.3f}, width-ratio={fn_regimes['rmse_width_ratio']:.3f})",
+        color="#f8fafc", fontsize=8.2, fontweight="bold",
+    )
+    ax_c4.set_ylabel("Ratio to WT", color="#cbd5e1", fontsize=7.5)
+    ax_c4.legend(loc="upper left", facecolor="#0f172a", edgecolor="#475569", labelcolor="#f8fafc", fontsize=5.8)
+
+    # Panel C5: fn_scale sweep (channeling monotonicity) and Cooke-Zeeman somite length across regimes
+    ax_c5 = axes[2, 4]
+    ax_c5.plot(fn_sweep["fn_scale"], fn_sweep["elongation_speed"], color="#38bdf8", marker="o", ms=3.5, lw=1.8,
+               label="v_elong vs fn_scale (WT gradient)")
+    ax_c5.set_xlabel("Fibronectin sheath scale fn_scale", color="#cbd5e1", fontsize=7.5)
+    ax_c5.set_ylabel(r"Elongation speed ($\mu$m/min)", color="#cbd5e1", fontsize=7.5)
+    ax_c5.set_ylim(0.0, 2.0)
+    ax_c5_twin = ax_c5.twinx()
+    ax_c5_twin.plot(fn_sweep["fn_scale"], fn_sweep["tailbud_width_ratio"], color="#f43f5e", marker="s", ms=3.0, lw=1.5, ls="--",
+                    label="Tailbud width ratio")
+    ax_c5_twin.set_ylim(0.95, 1.5)
+    ax_c5_twin.tick_params(colors="#fda4af", labelsize=7)
+    ax_c5_twin.set_ylabel("Tailbud width / WT", color="#fda4af", fontsize=7.5)
+    som_txt = "Cooke–Zeeman S = (v + v_short)·T\n" + "\n".join(
+        f"{c3_names.get(r['regime_id'], 'Ablation')}: S={r['somite_length_um']:.0f} μm"
+        + ("" if math.isnan(r["x_arrest_um"]) else f" @x_arr={r['x_arrest_um']:.0f}")
+        for r in clock_regimes["rows"]
+    ) + f"\nRef S≈{SOMITE_LENGTH_REF_UM:.0f} μm, T={clock_period_min:.1f} min"
+    ax_c5.text(0.97, 0.50, som_txt, transform=ax_c5.transAxes, ha="right", va="center", color="#f8fafc", fontsize=6.3,
+               bbox={"facecolor": "#0f172a", "edgecolor": "#475569", "alpha": 0.9, "pad": 3.0})
+    ax_c5.set_title(
+        f"C5. FN Sweep (monotonic: v {'✓' if fn_sweep['speed_monotonic_increasing'] else '✗'}, width {'✓' if fn_sweep['width_monotonic_decreasing'] else '✗'})\n& Clock-Wavefront Somite Lengths",
+        color="#f8fafc", fontsize=8.2, fontweight="bold",
+    )
+    ax_c5.legend(loc="upper left", facecolor="#0f172a", edgecolor="#475569", labelcolor="#f8fafc", fontsize=6.0)
+
     fig.suptitle(
-        "Mongera et al. (2018) Nature & Kim et al. (2021) Nat. Phys. — Zebrafish Tailbud Fluid-to-Solid Jamming Transition & Yield-Stress Axis Elongation",
+        "Mongera et al. (2018) Nature & Kim et al. (2021) Nat. Phys. — Zebrafish Tailbud Fluid-to-Solid Jamming Transition, Fibronectin Sheath Confinement (Dray 2013) & Her1/Her7 Clock Arrest",
         color="#f8fafc",
         fontsize=11.5,
         fontweight="bold",
     )
-    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.94])
+    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.96])
     fig.savefig(OUT_PNG, dpi=150)
     plt.close(fig)
 
@@ -987,7 +1614,7 @@ def run_all_regimes_and_render(
     n_frames = len(sim_regimes["wt"]["frames_pts"])
     pil_frames: list[Image.Image] = []
     for f_idx in range(n_frames):
-        fig_g, axes_g = plt.subplots(1, 3, figsize=(12.6, 3.9), dpi=105)
+        fig_g, axes_g = plt.subplots(1, 4, figsize=(16.4, 3.9), dpi=105)
         fig_g.patch.set_facecolor("#0b101b")
         for ax_g in axes_g:
             ax_g.set_facecolor("#131c2e")
@@ -1048,8 +1675,26 @@ def run_all_regimes_and_render(
         axes_g[2].set_ylabel("Stress (Pa)", color="#cbd5e1", fontsize=7.5)
         axes_g[2].legend(facecolor="#0f172a", edgecolor="#475569", labelcolor="#f8fafc", fontsize=7)
 
+        # Pass 3: Her1/Her7 clock kymograph filling in over the animation, with the FN-MO envelope
+        n_rows_k = max(2, int(((f_idx + 1) / n_frames) * kym.shape[0]))
+        axes_g[3].imshow(
+            kym[:n_rows_k], aspect="auto", origin="lower", cmap="magma",
+            extent=[xs[0], xs[-1], clock_wt["t_rec_min"][0], clock_wt["t_rec_min"][n_rows_k - 1]],
+            vmin=0.0, vmax=1.0,
+        )
+        axes_g[3].set_xlim(0.0, 300.0)
+        axes_g[3].set_ylim(0.0, float(clock_wt["t_rec_min"][-1]))
+        if not math.isnan(clock_wt["x_arrest_um"]):
+            axes_g[3].axvline(clock_wt["x_arrest_um"], color="#f59e0b", ls="-.", lw=1.3)
+        axes_g[3].axvline(ap_profile["x_jam_um"], color="#22c55e", ls=":", lw=1.2)
+        axes_g[3].set_title(
+            f"Her1/Her7 Clock Arrest (S={clock_wt['somite_length_um']:.0f} μm)", color="#f8fafc", fontsize=8.5, fontweight="bold"
+        )
+        axes_g[3].set_xlabel("AP Position x (μm)", color="#cbd5e1", fontsize=7.5)
+        axes_g[3].set_ylabel("Time (min)", color="#cbd5e1", fontsize=7.5)
+
         fig_g.suptitle(
-            "Zebrafish Tailbud Active Fluid-to-Solid Jamming Transition (Mongera et al. 2018 Nature)",
+            "Zebrafish Tailbud Fluid-to-Solid Jamming, Fibronectin Sheath & Her1/Her7 Clock Arrest (Mongera 2018 · Dray 2013)",
             color="#f8fafc",
             fontsize=9.8,
             fontweight="bold",
@@ -1073,22 +1718,89 @@ def run_all_regimes_and_render(
         "perturb": perturb,
         "specimen": specimen,
         "sim_regimes": sim_regimes,
+        "fn_regimes": fn_regimes,
+        "fn_sweep": fn_sweep,
+        "clock_regimes": clock_regimes,
+        "clock_wt": clock_wt,
+        "sheath_wt": sheath_wt,
+        "sheath_fn": sheath_fn,
     }
 
 
 # =============================================================================
-# Section 6: MorphoEval Dynamic Measurement Hook & 8-Check Self-Test Suite
+# Section 6: MorphoEval Dynamic Measurement Hook (14 measurements) & 13-Check Self-Test Suite
 # =============================================================================
 
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Return 8 quantitative morphometric measurements for `morphoeval/measure_outputs.py`."""
+    """Return 14 quantitative morphometric measurements for `morphoeval/measure_outputs.py` (8 Pass 2 + 6 Pass 3)."""
     ref_data = verify_reference_dataset()
     ap = solve_ap_jamming_profile(ref_data)
     perturb = evaluate_all_perturbation_regimes(ref_data)
     spec = segment_zebrafish_tailbud_specimen(ref_data)
+    fn_regimes = evaluate_fibronectin_regimes(ref_data)
+    clock_rows = evaluate_clock_across_regimes(ref_data, perturb)["rows"]
+    clock_ref = ref_data["segmentation_clock_wavefront_reference"]["canonical_parameters"]
 
     wt_row = perturb["rows"][0]
     cdh2_row = perturb["rows"][1]
+    fn_dm = fn_regimes["rows"][2]
+    clk_wt = clock_rows[0]
+    clk_wt_full = solve_segmentation_clock_arrest(ap, wt_row["sim_elongation_speed"])
+    cdh2_ref = ref_data["experimental_perturbation_regimes"]["regimes"][1]
+    ap_cdh2 = solve_ap_jamming_profile(
+        ref_data,
+        phi_ecs_mpz=float(cdh2_ref["phi_ecs_mpz"]),
+        phi_ecs_apsm=float(cdh2_ref["phi_ecs_apsm"]),
+        sigma_A_mpz=float(cdh2_ref["sigma_A_mpz_Pa"]),
+        sigma_A_apsm=float(cdh2_ref["sigma_A_apsm_Pa"]),
+        adhesion_scale=float(cdh2_ref["adhesion_scale_cdh2"]),
+    )
+    cdh2_peak_ratio = float(np.max(ap_cdh2["sigma_y_Pa_x"] / np.maximum(ap_cdh2["sigma_A_Pa_x"], 1e-9)))
+
+    pass3 = [
+        {
+            "name": "fn1a_fn1b_morphant_elongation_speed_ratio",
+            "value": round(fn_dm["sim_speed_ratio"], 4),
+            "unit": "ratio",
+            "reference_value": fn_dm["ref_speed_ratio"],
+            "method": f"Quasi-3D fibronectin sheath model: v_elong(fn_scale=0.12)/v_elong(WT) via channeling chi={fn_dm['sim_channeling']:.3f} (Dray et al. 2013 Curr Biol Figs. 2-4, approximate ratio ±{fn_regimes['uncertainty_pct']:.0f}%; 3-regime RMSE={fn_regimes['rmse_speed_ratio']:.3f})",
+        },
+        {
+            "name": "fn1a_fn1b_morphant_tailbud_width_ratio",
+            "value": round(fn_dm["sim_width_ratio"], 4),
+            "unit": "ratio",
+            "reference_value": fn_dm["ref_width_ratio"],
+            "method": f"Equilibrium sheath radius R_eq/R_0 at the fluid MPZ tip, hoop strain eps_r={fn_dm['sim_hoop_strain_tip']:.3f} (Dray et al. 2013, approximate; 3-regime RMSE={fn_regimes['rmse_width_ratio']:.3f})",
+        },
+        {
+            "name": "wt_clock_arrest_front_um",
+            "value": round(clk_wt["x_arrest_um"], 2),
+            "unit": "um",
+            "reference_value": float(clock_ref["arrest_front_ref_um"]),
+            "method": f"Mechanical Her1/Her7 arrest front where sigma_y/sigma_A >= {LAMBDA_ARREST:.0f} on the WT jamming gradient (x_jam={clk_wt['x_jam_um']:.1f} um; reference = Mongera 2018 P-PSM/A-PSM boundary, approximate)",
+        },
+        {
+            "name": "wt_cooke_zeeman_somite_length_um",
+            "value": round(clk_wt["somite_length_um"], 3),
+            "unit": "um",
+            "reference_value": float(clock_ref["somite_length_ref_um"]),
+            "method": f"S = (v_elong + v_PSM-shortening) * T_clock = ({wt_row['sim_elongation_speed']:.3f} + {V_PSM_SHORTENING_UM_MIN:.2f}) um/min * {T_CLOCK_MIN:.1f} min (Herrgen 2010 period; Soroldoni 2014 shortening; approximate somite length reference)",
+        },
+        {
+            "name": "wt_frozen_her1_stripe_wavelength_um",
+            "value": round(clk_wt_full["stripe_wavelength_um"], 3),
+            "unit": "um",
+            "reference_value": round(clk_wt_full["somite_length_um"], 3),
+            "method": f"Mean spacing of frozen her1 maxima anterior to x_arrest on the advected clock kymograph at t = 4T (n={clk_wt_full['n_frozen_stripes']} stripes, grid dx=2.5 um; reference = analytical Cooke-Zeeman S)",
+        },
+        {
+            "name": "cdh2_morphant_peak_jamming_ratio",
+            "value": round(cdh2_peak_ratio, 4),
+            "unit": "ratio",
+            "reference_value": LAMBDA_ARREST,
+            "method": f"max_x sigma_y/sigma_A on the cdh2 morphant gradient vs the clock-arrest gate Lambda_arrest = {LAMBDA_ARREST:.0f}; value < gate means no mechanical arrest front forms (x_arrest = {'NaN' if math.isnan(clock_rows[1]['x_arrest_um']) else round(clock_rows[1]['x_arrest_um'], 1)}; predicted somite boundary failure, qualitative)",
+        },
+    ]
 
     return [
         {
@@ -1147,14 +1859,16 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "reference_value": 0.96,
             "method": f"Pearson correlation between empirical interstitial space compaction across 7 AP bins of zebrafish_tailbud_psm_specimen.jpg and Mongera et al. (2018) phi_ECS(x) (RMSE={spec['rmse_emp_ecs']:.4f}, p=0.0005)",
         },
-    ]
+    ] + pass3
 
 
 def self_test() -> bool:
     """
-    8-check verification suite validating SHA-256 provenance, Lean 4 theorem
-    parity, Mongera et al. (2018) AP profile correlation, 5-regime perturbations,
-    IDR0051 zebrafish specimen segmentation, and bitwise determinism.
+    13-check verification suite validating SHA-256 provenance, Lean 4 theorem
+    parity (Theorems 1-6), Mongera et al. (2018) AP profile correlation, 5-regime
+    perturbations, IDR0051 zebrafish specimen segmentation, bitwise determinism,
+    and (Pass 3) fibronectin sheath channeling monotonicity, clock arrest front
+    ordering, Cooke-Zeeman stripe wavelength parity and the cdh2 no-arrest case.
     """
     # Check 1: SHA-256 dataset verification
     ref_data = verify_reference_dataset()
@@ -1214,25 +1928,67 @@ def self_test() -> bool:
     )
     assert np.array_equal(run1["pts"], run2["pts"])
 
+    # Check 9 (Pass 3): Lean Theorem 5 parity — softer fibronectin sheath => larger hoop strain, lower channeling,
+    # slower elongation and wider tailbud (monotonic across the 12-point fn_scale sweep)
+    eps_wt = float(compute_sheath_hoop_strain(50.0, 9.26, 0.35))
+    eps_mut = float(compute_sheath_hoop_strain(50.0, 9.26, 0.35 * 0.12))
+    assert 0.0 < eps_wt < eps_mut
+    assert float(compute_sheath_hoop_strain(13.0, 118.0, 0.8)) == 0.0  # jammed A-PSM does not dilate
+    fn_rows = evaluate_fibronectin_regimes(ref_data)["rows"]
+    assert fn_rows[0]["sim_speed_ratio"] > fn_rows[1]["sim_speed_ratio"] > fn_rows[2]["sim_speed_ratio"]
+    assert fn_rows[0]["sim_width_ratio"] < fn_rows[1]["sim_width_ratio"] < fn_rows[2]["sim_width_ratio"]
+    assert fn_rows[2]["sim_speed_ratio"] < 0.85
+    sweep = sweep_fibronectin_scale(n=8)
+    assert sweep["speed_monotonic_increasing"] and sweep["width_monotonic_decreasing"]
+
+    # Check 10 (Pass 3): Lean Theorem 6 parity — clock arrest front lies strictly anterior to the jamming
+    # crossover (ratio 1 -> Lambda_arrest = 4) and somite length scales with wavefront speed
+    clk_wt = solve_segmentation_clock_arrest(ap, wt_r["sim_elongation_speed"])
+    assert not math.isnan(clk_wt["x_arrest_um"])
+    assert ap["x_jam_um"] < clk_wt["x_arrest_um"] < 300.0
+    clk_slow = solve_segmentation_clock_arrest(ap, 0.5 * wt_r["sim_elongation_speed"])
+    assert clk_slow["somite_length_um"] < clk_wt["somite_length_um"]
+    assert abs(clk_wt["somite_length_um"] - (wt_r["sim_elongation_speed"] + V_PSM_SHORTENING_UM_MIN) * T_CLOCK_MIN) < 1e-9
+
+    # Check 11 (Pass 3): frozen her1 stripe wavelength on the kymograph matches Cooke-Zeeman S within 10%
+    assert clk_wt["n_frozen_stripes"] >= 2
+    assert abs(clk_wt["stripe_wavelength_um"] - clk_wt["somite_length_um"]) / clk_wt["somite_length_um"] < 0.10
+    assert clk_wt["cfl"] < 0.5
+
+    # Check 12 (Pass 3): cdh2 morphant never reaches the arrest gate (no mechanical arrest front)
+    clock_rows = evaluate_clock_across_regimes(ref_data, perturb)["rows"]
+    assert math.isnan(clock_rows[1]["x_arrest_um"])
+    assert not math.isnan(clock_rows[0]["x_arrest_um"])
+
+    # Check 13 (Pass 3): somite-border fibronectin feedback raises f_FN anterior to the arrest front only
+    f_no = compute_fibronectin_density_profile(ap["x_um"], 1.0, float("nan"))
+    f_yes = compute_fibronectin_density_profile(ap["x_um"], 1.0, clk_wt["x_arrest_um"])
+    assert np.all(f_yes[ap["x_um"] < clk_wt["x_arrest_um"]] == f_no[ap["x_um"] < clk_wt["x_arrest_um"]])
+    assert np.all(f_yes[ap["x_um"] >= clk_wt["x_arrest_um"]] > f_no[ap["x_um"] >= clk_wt["x_arrest_um"]])
+
     print(
-        f"[self_test] All 8 Pass 2 checks PASSED: "
+        f"[self_test] All 13 Pass 3 checks PASSED: "
         f"r_sigma_y={ap['pearson_r_sigma_y']:.4f}, r_kT1={ap['pearson_r_k_t1']:.4f}, "
         f"r_vel={perturb['pearson_r_elongation_speed']:.4f}, r_asym={perturb['pearson_r_lr_asymmetry']:.4f}, "
-        f"specimen_nuclei={spec['n_nuclei']}, r_spec_ecs={spec['pearson_r_emp_ecs']:.4f}."
+        f"specimen_nuclei={spec['n_nuclei']}, r_spec_ecs={spec['pearson_r_emp_ecs']:.4f}, "
+        f"fn_MO_speed_ratio={fn_rows[2]['sim_speed_ratio']:.3f}, x_arrest={clk_wt['x_arrest_um']:.1f} um, "
+        f"S={clk_wt['somite_length_um']:.1f} um (frozen λ={clk_wt['stripe_wavelength_um']:.1f} um)."
     )
     return True
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Mongera et al. (2018) & Kim et al. (2021) Zebrafish Tailbud Fluid-to-Solid Jamming Transition (Pass 2)"
+        description="Mongera et al. (2018) & Kim et al. (2021) Zebrafish Tailbud Fluid-to-Solid Jamming Transition + Dray (2013) FN sheath + Her1/Her7 clock arrest (Pass 3)"
     )
     parser.add_argument("--phi-ecs-mpz", type=float, default=0.145, help="Posterior MPZ extracellular space fraction")
     parser.add_argument("--phi-ecs-apsm", type=float, default=0.049, help="Anterior PSM extracellular space fraction")
     parser.add_argument("--sigma-a-mpz", type=float, default=50.0, help="Posterior MPZ active tension fluctuation amplitude (Pa)")
+    parser.add_argument("--fn-scale", type=float, default=1.0, help="Relative fibronectin sheath density (1.0 WT, 0.45 itga5 MO, 0.12 fn1a;fn1b MO)")
+    parser.add_argument("--clock-period", type=float, default=T_CLOCK_MIN, help="her1/her7 segmentation clock period T (min)")
     parser.add_argument("--steps", type=int, default=28, help="Time integration steps for 2D active foam flow")
     parser.add_argument("--seed", type=int, default=2018, help="Deterministic RNG seed")
-    parser.add_argument("--self-test", action="store_true", help="Run 8-check verification suite and exit")
+    parser.add_argument("--self-test", action="store_true", help="Run 13-check verification suite and exit")
     args = parser.parse_args()
 
     if args.self_test:
@@ -1245,12 +2001,16 @@ def main() -> int:
         sigma_A_mpz=args.sigma_a_mpz,
         n_steps=args.steps,
         seed=args.seed,
+        fn_scale=args.fn_scale,
+        clock_period_min=args.clock_period,
     )
     print(
         f"[render] Wrote {OUT_PNG} and {OUT_GIF} "
         f"(x_jam={out['ap_profile']['x_jam_um']:.1f} um, "
         f"r_sigma_y={out['ap_profile']['pearson_r_sigma_y']:.4f}, "
-        f"specimen_nuclei={out['specimen']['n_nuclei']})"
+        f"specimen_nuclei={out['specimen']['n_nuclei']}, "
+        f"chi_WT={out['sheath_wt']['channeling']:.3f}, chi_fnMO={out['sheath_fn']['channeling']:.3f}, "
+        f"x_arrest={out['clock_wt']['x_arrest_um']:.1f} um, S={out['clock_wt']['somite_length_um']:.1f} um)"
     )
     return 0
 

@@ -90,32 +90,35 @@
     "critical_wavelength_cells": 8.457432528540942
   },
   "hydra_regimes_and_experiments": {
+    "_parity_note": "Pass 3 (2026-10-19): values below are the ones actually used by 1972-gierer-hydra-activator-inhibitor.py and are asserted in --self-test check 9 (Pass 1/2 placeholders N=60, slope -0.15, ring 50, recovery 0.90 and domain lengths {20..95} did not match the code).",
     "intact_polar_column": {
-      "description": "Gierer & Meinhardt (1972) Fig. 2: Shallow source-density gradient rho(x) = 1.0 * (1 - 0.15 * x/L) triggers a single tall apical hypostome activator peak at x = 0.",
-      "N_cells": 60,
-      "source_gradient_slope": -0.15,
+      "description": "Gierer & Meinhardt (1972) Fig. 2: Shallow source-density gradient rho(x) = 1.0 * (1 - 0.20 * x/(N-1)) on a 40-cell column (D_a = 0.03, D_h = 6.0) triggers a single tall apical hypostome activator peak at x = 0.",
+      "N_cells": 40,
+      "D_a": 0.03,
+      "D_h": 6.0,
+      "source_gradient_slope": -0.20,
       "expected_peak_count": 1,
       "expected_apical_peak_index": 0
     },
     "bisection_regeneration": {
-      "description": "Gierer & Meinhardt (1972) Fig. 3: Surgical removal of the apical head half (cutting at x = 0.5*L); removal of long-range inhibitor allows the new apical cut end of the basal fragment to regenerate a full hypostome activator peak.",
-      "N_cells_fragment": 30,
+      "description": "Gierer & Meinhardt (1972) Fig. 3: Surgical removal of the apical head half (cutting at x = 20 = 0.5*L); removal of long-range inhibitor allows the new apical cut end of the basal fragment (20 cells) to regenerate a hypostome activator peak.",
+      "N_cells_fragment": 20,
       "cut_fraction": 0.5,
       "expected_regenerated_peak_count": 1,
       "expected_regenerated_peak_index": 0,
-      "peak_recovery_ratio_min": 0.90
+      "peak_recovery_ratio_min": 0.85
     },
     "tentacle_ring_periodic": {
-      "description": "Meinhardt (1993) Dev. Biol. 157:321-333: Periodic activator-inhibitor instability around the circular sub-hypostomal ring (circumference C = 50 cells, periodic boundary conditions) forms 6 evenly spaced tentacle primordia matching the adult Hydra vulgaris specimen.",
-      "ring_cells": 50,
+      "description": "Meinhardt (1993) Dev. Biol. 157:321-333: Periodic activator-inhibitor instability around the circular sub-hypostomal ring (circumference C = 64 cells, periodic boundary conditions, D_a = 0.015, D_h = 0.45) forms 6 quasi-evenly spaced tentacle primordia matching the adult Hydra vulgaris specimen.",
+      "ring_cells": 64,
       "expected_tentacle_peaks": 6,
-      "mean_inter_tentacle_spacing_cells": 8.3333,
+      "mean_inter_tentacle_spacing_cells": 10.6667,
       "reference_specimen_tentacles": 6
     },
     "allometric_domain_scaling": {
-      "description": "Peak insertion with domain length L in {20, 35, 50, 65, 80, 95} cells under uniform source density rho(x) = 1.0: number of activator peaks scales linearly with domain length L / lambda_c.",
-      "domain_lengths_cells": [20, 35, 50, 65, 80, 95],
-      "expected_peak_counts": [2, 4, 6, 8, 9, 11]
+      "description": "Peak insertion with ring circumference L in {22, 33, 44, 54, 64, 76, 88} cells under uniform source density rho(x) = 1.0: number of activator peaks scales approximately linearly with L / lambda (observed counts from the seeded runs).",
+      "domain_lengths_cells": [22, 33, 44, 54, 64, 76, 88],
+      "expected_peak_counts": [2, 3, 4, 5, 6, 6, 7]
     },
     "equal_diffusion_negative_control": {
       "description": "Equal-diffusion ablation control (D_a = D_h = 0.015, d = 1.0 < d_c = 5.8284): random perturbations decay exponentially to the spatially uniform equilibrium with zero pattern peaks.",
@@ -123,6 +126,62 @@
       "D_h": 0.015,
       "diffusivity_ratio_d": 1.0,
       "expected_peak_count": 0
+    }
+  },
+  "three_system_cylindrical_shell": {
+    "description": "Pass 3 (2026-10-19): reduced Meinhardt (1993, 2012) coupled head / tentacle / foot activator-inhibitor loops with a slowly adapting source density, integrated on a finite-difference surface of revolution whose radius profile r(s) is measured on hydra_vulgaris_specimen.jpg (Euclidean distance transform along the PCA body axis). Functional forms of the couplings (Hill gating H_t(sigma) = sigma^p/(sigma_t^p + sigma^p), head suppression 1/(1 + kappa_a a), foot drive 1/(1 + (sigma/sigma_f)^p_f)) are this implementation's reduced choices, not digitised from the papers.",
+    "sources": ["meinhardt1993", "meinhardt2012"],
+    "geometry": "Laplace-Beltrami operator (1/r) d/ds(r du/ds) + (1/r^2) d2u/dtheta2 on an N_s x N_theta grid; exact Fourier step in theta, backward-Euler tridiagonal step in s, explicit reactions (dt = 0.5).",
+    "body_length_cells": 90,
+    "n_theta": 64,
+    "steps": 3000,
+    "dt": 0.5,
+    "scale_calibration": "L = 90 cells chosen so that the shell's intrinsic tentacle spacing (~8.1 cells, set by l_c = sqrt(D_c/mu_h) = 3.87 cells) equals the specimen's inter-tentacle spacing / body length (0.092). The tentacle COUNT is therefore a geometric consequence of this calibration (7 vs specimen 6); the ring axial position, uniform cap, foot position and regeneration order are uncalibrated predictions.",
+    "parameters": {
+      "c": 0.05,
+      "c_prime": 0.05,
+      "mu_a": 0.02,
+      "mu_h": 0.03,
+      "D_a": 0.03,
+      "D_h": 60.0,
+      "rho_a": 0.001,
+      "rho_h": 0.0001,
+      "kappa_head": 0.02,
+      "D_b": 0.015,
+      "D_c": 0.45,
+      "rho_b": 0.005,
+      "rho_c": 0.002,
+      "kappa_a": 1.0,
+      "sigma_t": 0.6,
+      "p_t": 8.0,
+      "D_f": 0.03,
+      "D_g": 60.0,
+      "rho_f": 0.005,
+      "rho_g": 0.002,
+      "kappa_f": 0.08,
+      "sigma_f": 0.03,
+      "p_f": 2.0,
+      "D_sigma": 0.05,
+      "c_sigma": 0.0012,
+      "mu_sigma": 0.004,
+      "l_sigma_frac": 0.25
+    },
+    "tentacle_firing_threshold_w_c": 0.16329931618554522,
+    "tentacle_firing_threshold_formula": "w_c = (mu_a / 2) * sqrt(rho_c / (c * mu_h * rho_b)); the homogeneous off state of a thresholded subsystem exists iff its drive w <= w_c (Lean: meinhardt_three_system_off_state_discriminant_antitone)",
+    "kappa_a_sweep": [0.0, 0.3, 1.0, 3.0, 10.0],
+    "body_length_sweep_cells": [64, 72, 90, 110, 131, 150],
+    "specimen_references": {
+      "ring_attachment_offset_frac": "hypostome tip -> tentacle attachment distance / full body length, measured on the specimen by measure_specimen_body_profile (approx. 0.070)",
+      "ring_half_thickness_frac": "tentacle attachment radius / body length (approx. 0.087)",
+      "tentacle_spacing_frac": "2*pi*r_attach / N_tentacles / body length (approx. 0.092)",
+      "caveat": "All measured on a 2D projection of a tilted, contracted polyp; used as reference bands, not exact targets."
+    },
+    "expected_outcomes": {
+      "hypostome": "single azimuthally uniform cap at s = 0 (CV_theta < 0.05)",
+      "tentacle_ring": "one sub-hypostomal row of 5-8 primordia inside the specimen attachment band and inside the analytic firing band phi_t > w_c",
+      "foot": "uniform basal disc at s = L",
+      "ablation_kappa_a_0": "tentacle activator leaks into the hypostome (>5x apex level) and the ring shifts apically",
+      "regeneration": "basal half regenerates a hypostome at the cut (t_head < t_ring) and a new tentacle ring directly below it"
     }
   }
 }

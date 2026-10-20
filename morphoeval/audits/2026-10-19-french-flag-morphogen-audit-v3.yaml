@@ -1,0 +1,352 @@
+# MorphoEval audit — Wolpert (1969) French Flag Positional Information, Tickle-Wolpert (1975) ZPA Duplication,
+# Ben-Zvi-Barkai (2010) Scaling & (Pass 3) 2D AER-FGF / ZPA-Shh Limb Bud Paddle, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `1969-wolpert-french-flag-morphogen.py` (1752 lines; 11 self-test checks; 16 measurements)
+# after the remediation of the single open v2 finding in the instrumented loop
+# `morphoeval/runs/2026-10-19-french-flag-morphogen-loop-pass3`, superseding
+# `2026-10-19-french-flag-morphogen-audit-v2` (91.1 consensus).
+#   - Primary assessor: Claude Fable 5.1 (same agent that built the remediation; scores are deliberately
+#     conservative and every evidence line was re-read against the file at commit 469bf3c)
+#   - Second assessor block retained from v2 for continuity of the dual-assessor protocol; no fresh blinded
+#     second score was obtained in this round (see `checkpoint.note`).
+#
+# What Pass 3 changed (closing the v2 remediation item "extend the 1D ZPA solver to a 2D PD x AP paddle
+# coupling AER FGF8 outgrowth with posterior ZPA Shh"):
+#   1. New Section 3b (L443-799): explicit finite-difference solver on a paddle-shaped mask (dx = 12.5 um,
+#      W = 500 um, elliptical 150 um cap) for F (AER FGF) and S (ZPA Shh) with the Laufer (1994) /
+#      Niswander (1994) feedback (Shh production needs FGF; Shh boosts posterior AER FGF), AER-driven
+#      distal apposition growth dL/dt = v_max <F>_PZ/(<F>_PZ + K_g) (progress-zone model), zero-flux
+#      boundaries, and a verification mode in which a non-growing rectangle reproduces the 1D cosh steady
+#      state (RMSE 2.4e-3, zero cross-column spread).
+#   2. Empirical comparisons added: Tickle (1981) graft dose series (+0/+1/+2/+3 digits at graft strength
+#      0/0.10/0.35/1.0 -> 4/4), Saunders (1948)/Summerbell (1974) AER excision at HH18/20/22/24/26
+#      (stylopod/zeugopod/zeugopod/autopod/autopod -> 5/5, Spearman rho = 1.0), Niswander (1994) Shh
+#      collapse after AER removal (<= 0.06 % of the pre-excision peak after 3 h), Laufer (1994) posterior
+#      AER FGF asymmetry (P/A = 1.56 in WT, 1.00 with a symmetric graft).
+#   3. Pass 2 defect fixed: the 1D attenuated graft produced the non-biological sequence 4-3-2-3 via an ad
+#      hoc half-domain split; a morphogen-valley digit reader (`extract_digit_sequence`, L347-378) shared by
+#      the 1D and 2D readouts now yields Tickle's 4-3-2-2-3 and a new weak-graft regime 4-3-2-2.
+#   4. Dataset: `limb_bud_2d_aer_zpa_reference.json` (SHA-256 locked, ordinal references with caveats), 7
+#      new BibTeX entries (DOIs/PMIDs verified against Crossref / PubMed), README updated.
+#   5. Lean 4: 7 new theorems (0 sorry) in Loop_011 (2D stencil balance and 1D reduction, Shh-FGF
+#      quiescence, truncation monotonicity, segment order, dose monotonicity); 4 new laws registered.
+#   6. Figure: 6 -> 9 panels (G: 2D WT paddle, H: graft dose series, I: AER excision truncation); new GIF
+#      `french_flag_morphogen_limb2d.gif`; CLI --limb-vmax / --limb-feedback-gain / --limb-lambda-shh /
+#      --limb-hours; self-test 7 -> 11 checks; default render 17 s.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated
+# probabilities). Line numbers refer to the files at commit 469bf3c. The overall score moves 91.1 -> 90.3:
+# the v2 item is closed, but the new 2D layer exposes a next layer of defects (tuned, unsourced Michaelis
+# constants; a 5x compressed developmental clock; a prescribed rather than emergent paddle geometry with
+# fixed AP width; ordinal rather than quantitative truncation references; and a specimen that is still a
+# whole-egg photograph rather than a limb bud), which the v2 scores for specimen-match and model-fidelity
+# had not priced in.
+
+audit:
+  id: 2026-10-19-french-flag-morphogen-audit-v3
+  supersedes_audit_id: 2026-10-19-french-flag-morphogen-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (primary, Pass 3 remediation + re-score)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor of v2; not re-run in Pass 3)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/11
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 469bf3c
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) re-score of `1969-wolpert-french-flag-morphogen.py` after the remediation loop
+      `2026-10-19-french-flag-morphogen-loop-pass3` (isolated telemetry). The working tree at 469bf3c
+      carries the remediated script (1752 lines, 11 self-test checks, 16 measurements), the extended
+      Lean module (12 theorems, 0 sorry, verified with `lean`), the extended math registry (8 laws), the
+      new SHA-256-locked reference table and the regenerated PNG / GIFs. No fresh blinded second-assessor
+      score was obtained in this round; the second_assessor block is carried from v2 for protocol
+      continuity and the primary scores below are deliberately conservative.
+
+references:
+  wolpert1969:
+    title: "Positional information and the spatial pattern of cellular differentiation"
+    authors: "Wolpert L"
+    venue: "Journal of Theoretical Biology 25(1):1-47 (1969)"
+    doi: 10.1016/S0022-5193(69)80016-0
+  crick1970:
+    title: "Diffusion in embryogenesis"
+    authors: "Crick F"
+    venue: "Nature 225(5231):420-422 (1970)"
+    doi: 10.1038/225420a0
+  tickle1975:
+    title: "Positional signalling and specification of digits in chick limb morphogenesis"
+    authors: "Tickle C, Summerbell D, Wolpert L"
+    venue: "Nature 254(5497):199-202 (1975)"
+    doi: 10.1038/254199a0
+  riddle1993:
+    title: "Sonic hedgehog mediates the polarizing activity of the ZPA"
+    authors: "Riddle RD, Johnson RL, Laufer E, Tabin C"
+    venue: "Cell 75(7):1401-1416 (1993)"
+    doi: 10.1016/0092-8674(93)90626-2
+  benzvi2010:
+    title: "Scaling of morphogen gradients by an expansion-repression integral feedback control"
+    authors: "Ben-Zvi D, Barkai N"
+    venue: "PNAS 107(15):6924-6929 (2010)"
+    doi: 10.1073/pnas.0912734107
+  saunders1948:
+    title: "The proximo-distal sequence of origin of the parts of the chick wing and the role of the ectoderm"
+    authors: "Saunders JW Jr"
+    venue: "Journal of Experimental Zoology 108(3):363-403 (1948)"
+    doi: 10.1002/jez.1401080304
+  summerbell1973:
+    title: "Positional information in chick limb morphogenesis"
+    authors: "Summerbell D, Lewis JH, Wolpert L"
+    venue: "Nature 244(5417):492-496 (1973)"
+    doi: 10.1038/244492a0
+  summerbell1974:
+    title: "A quantitative analysis of the effect of excision of the AER from the chick limb-bud"
+    authors: "Summerbell D"
+    venue: "Journal of Embryology and Experimental Morphology 32(3):651-660 (1974); PMID 4463222"
+    url: https://pubmed.ncbi.nlm.nih.gov/4463222/
+  tickle1981:
+    title: "The number of polarizing region cells required to specify additional digits in the developing chick wing"
+    authors: "Tickle C"
+    venue: "Nature 289(5795):295-298 (1981)"
+    doi: 10.1038/289295a0
+  laufer1994:
+    title: "Sonic hedgehog and Fgf-4 act through a signaling cascade and feedback loop to integrate growth and patterning of the developing limb bud"
+    authors: "Laufer E, Nelson CE, Johnson RL, Morgan BA, Tabin C"
+    venue: "Cell 79(6):993-1003 (1994)"
+    doi: 10.1016/0092-8674(94)90030-2
+  niswander1994:
+    title: "A positive feedback loop coordinates growth and patterning in the vertebrate limb"
+    authors: "Niswander L, Jeffrey S, Martin GR, Tickle C"
+    venue: "Nature 371(6498):609-612 (1994)"
+    doi: 10.1038/371609a0
+  crossley1996:
+    title: "Roles for FGF8 in the induction, initiation, and maintenance of chick limb development"
+    authors: "Crossley PH, Minowada G, MacArthur CA, Martin GR"
+    venue: "Cell 84(1):127-136 (1996)"
+    doi: 10.1016/S0092-8674(00)80999-X
+
+simulations:
+  - id: wolpert-french-flag-morphogen
+    name: "Wolpert (1969) French Flag positional information, Tickle-Wolpert (1975) chick limb ZPA digit duplication, Ben-Zvi-Barkai (2010) scaling & 2D AER-FGF / ZPA-Shh limb bud paddle"
+    organism: "Chick embryo (Gallus gallus domesticus) wing bud & embryonic blastoderm"
+    script: 1969-wolpert-french-flag-morphogen.py
+    output: docs/media/french_flag_morphogen_comparison.png
+    extra_outputs:
+      - docs/media/french_flag_morphogen_growth.gif
+      - docs/media/french_flag_morphogen_limb2d.gif
+    status: evaluated
+    source_refs:
+      - wolpert1969
+      - crick1970
+      - tickle1975
+      - riddle1993
+      - benzvi2010
+      - saunders1948
+      - summerbell1973
+      - summerbell1974
+      - tickle1981
+      - laufer1994
+      - niswander1994
+      - crossley1996
+    supersedes_audit_id: 2026-10-19-french-flag-morphogen-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Wolpert (1969): positional information read from a monotone morphogen gradient against thresholds gives size-invariant French-Flag proportions under linear source-sink diffusion; Crick (1970): synthesis-diffusion-degradation gives lambda = sqrt(D/k) and the positional-error law sigma_x = sigma_c / |dc/dx|"
+        - "Tickle, Summerbell & Wolpert (1975) and Tickle (1981): a posterior ZPA specifies wing digits 2-3-4; an anterior graft gives the mirror duplication 4-3-2-2-3-4, and the digit specified next to a weaker graft advances 2 -> 3 -> 4 with polarizing-cell number; Riddle et al. (1993): Shh mediates ZPA activity"
+        - "Saunders (1948) and Summerbell (1974): AER removal arrests outgrowth and truncates the limb at a level that is progressively more distal the later the excision; Summerbell, Lewis & Wolpert (1973): proximo-distal values are laid down by time spent in the distal progress zone"
+        - "Laufer et al. (1994) and Niswander et al. (1994): Shh in the ZPA and Fgf4 in the posterior AER maintain each other (Shh lost after AER removal, rescued by FGF4 bead; ectopic anterior Fgf4 after a ZPA graft); Crossley et al. (1996): Fgf8 is expressed along the whole ridge"
+        - "Ben-Zvi & Barkai (2010): an expander produced where morphogen is low scales the decay length with domain size"
+      reconstructed_in_script:
+        - "1D linear source-sink and SDD solvers (analytic + explicit PDE, RMSE 7.6e-6), 6-stage growth-scaling sweep with expansion-repression, 5-regime 1D ZPA suite (wild type, full / attenuated / weak anterior graft, ablation) read by a morphogen-valley digit rule, 400-trial Monte Carlo positional-error test, radial segmentation of the vendored 72 h embryo photograph"
+        - "Pass 3: explicit 2D finite-difference solver for FGF and Shh on a growing paddle mask (dx = 12.5 um) with zero-flux boundaries, Michaelis-form Shh<->FGF feedback, AER-driven distal apposition growth, graft dose series, AER excision at five stages, ZPA ablation, a rectangle verification against the 1D cosh steady state, 8 new reference-anchored measurements and 7 new Lean 4 theorems"
+      transfer_boundary:
+        - "The 2D model is a reduced phenomenological coupling: the production rates s_F, s_S, feedback gain g_S and half-saturations K_S, K_FS, K_g are tuned so that wild-type FGF ~ 1 and L_final ~ 660 um, not taken from any paper; the developmental clock is compressed (12 h of model time spans HH18 -> HH28, ~5x faster than in ovo) while keeping tau_relax << tau_growth"
+        - "The paddle geometry is prescribed (fixed AP width 500 um, elliptical 150 um cap); the AER is the distal-facing rim row and the ZPA is the posterior-margin mesenchyme within 120 um of the rim by construction, so their positions are inputs, not emergent; new lattice rows appear with zero concentration (no proliferation field)"
+        - "Digit identity is read from the instantaneous distal Shh concentration against the Pass 2 thresholds normalised to the wild-type peak; the proximo-distal segment is read from the truncation fraction of the wild-type length via a 1/3-2/3 trisection, and the Saunders / Summerbell comparison is to an ordinal stage -> segment summary (+/- 1 stage between studies), not to digitised truncation data"
+        - "The specimen is a whole-egg 72 h embryo photograph whose radial area-vasculosa profile is used as a proxy gradient; no limb bud image or Shh / Fgf in situ is compared with the 2D output"
+      does_not_claim:
+        - "Digit condensation or Turing-type periodicity, temporal integration of Shh exposure (Harfe 2004), a dorsoventral axis or 3D geometry, measured growth curves of the chick wing bud, quantitative Fgf4 / Shh expression levels, or a mechanistic derivation of AER and ZPA position"
+    summary: >-
+      Pass 3 (v3) evaluation of `1969-wolpert-french-flag-morphogen.py` (90.3/100; v2 91.1, v1 41.2). The
+      single v2 remediation item is closed: Section 3b adds a 2D proximo-distal x anteroposterior paddle on
+      which AER FGF (`dF/dt = D lap F - k_F F + s_F AER (1 + g_S S/(S+K_S))`) drives distal apposition
+      growth (`dL/dt = v_max <F>_PZ/(<F>_PZ+K_g)`) and ZPA Shh production requires FGF
+      (`dS/dt = D lap S - k_S S + s_S [ZPA] F/(F+K_FS)`). The 2D readouts reproduce Tickle (1975/1981)
+      4-3-2 and 4-3-2-2-3-4 with a 4/4 dose series, Saunders (1948) / Summerbell (1974) stage-dependent
+      truncation 5/5 (rho = 1.0, mean post-excision overshoot 15 um), Niswander (1994) Shh collapse after AER
+      removal (<= 0.06 %) and Laufer (1994) posterior AER FGF asymmetry (1.56 -> 1.00 with a symmetric
+      graft); the stencil is verified against the 1D cosh solution (RMSE 2.4e-3). A Pass 2 defect was fixed
+      (attenuated graft 4-3-2-3 -> 4-3-2-2-3 via a morphogen-valley digit reader). The scores are held
+      slightly below v2 because the new layer is a tuned, time-compressed, geometrically prescribed reduction
+      validated against ordinal references, and the specimen is still not a limb bud; these are listed as
+      the Pass 4 remediation items.
+    scores:
+      model-fidelity:
+        value: 92
+        rationale: >-
+          Everything scored in v2 is intact (linear source-sink L148-152, analytic and PDE SDD L155-238 with
+          RMSE 7.6e-6, expansion-repression scaling L268-340, Crick positional-error law L805-838). Pass 3
+          adds the requested 2D PD x AP coupling: zero-flux masked 5-point stencil (L547-555), Shh<->FGF
+          feedback and AER-driven growth (L624-639) and a rectangle verification that reproduces the 1D cosh
+          steady state to 2.4e-3 with zero cross-column spread (L696-718), backed by `sdd_2d_steady_state_balance`,
+          `sdd_2d_reduces_to_1d_interior`, `shh_fgf_feedback_aer_ablation_quiescence` and
+          `aer_excision_truncation_monotone` in Lean. The 1D attenuated-graft defect of v2 (4-3-2-3, an ad hoc
+          split keyed on c_ant >= 0.8) is replaced by one valley rule (L347-378) that yields Tickle's
+          sequence. Deductions: the 2D production rates, feedback gain and the three half-saturations are
+          tuned so that FGF ~ 1 and L_final ~ 660 um rather than taken from any source (L472-494) (-3); the
+          developmental clock is compressed 5x (T_s = 12 h for HH18 -> HH28, L488-489, L467-470) (-2); AER and
+          ZPA positions are geometric inputs and new rows are born at zero concentration, so there is no
+          proliferation field and the ZPA 'follows the tip' by construction (L501-544) (-2); digit identity is
+          instantaneous concentration, not exposure (L728-731) (-1).
+        evidence:
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [547, 555], note: "Zero-flux masked 5-point Laplacian used for both species", supports: true}
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [614, 639], note: "Explicit update: FGF source with Shh boost, Shh source gated by F/(F+K_FS), progress-zone growth law, mask rebuilt as L crosses a grid line", supports: true}
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [696, 718], note: "Rectangle + clamped AER verification against cosh(y/lambda_F)/cosh(L/lambda_F); RMSE 2.4e-3, column spread 0", supports: true}
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [347, 378], note: "Morphogen-valley digit reader shared by the 1D (L381-441) and 2D readouts; replaces the v2 half split", supports: true}
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [472, 494], note: "LIMB2D_DEFAULTS: s_F, s_S, g_S, K_S, K_FS, K_g, v_max are tuned constants without a literature source (deduction)", supports: false}
+          - {file: morphoeval/lean/loops/Loop_011_french_flag_morphogen.lean, lines: [137, 228], note: "7 new machine-checked theorems for the 2D stencil, feedback quiescence, truncation monotonicity, segment order and dose monotonicity (lean exit 0, 0 sorry)", supports: true}
+      specimen-match:
+        value: 86
+        rationale: >-
+          The SHA-256-locked 72 h embryo photograph is still segmented and overlaid with concentric French-Flag
+          rings (Panels E-F, L844-929; r = 0.9963), and the digit-count comparisons with Tickle's wings remain
+          exact in 1D and now in 2D (Panels C, G, H). The new 2D output is a recognisable limb bud paddle with
+          a posterior-distal Shh domain and a ridge-wide FGF field, and the GIF shows wild type, a duplicated
+          bud and an AER-excised stump side by side. Deductions, now priced in more strictly than in v2: the
+          specimen is a whole-egg photo whose area vasculosa is a proxy, not a morphogen gradient, and it is
+          not a limb bud, so nothing in Panels G-I is compared with a real wing bud image, an Shh / Fgf in situ
+          or Saunders' or Summerbell's own figures (-8); the paddle outline is a prescribed mask with fixed AP
+          width, so its shape cannot be credited as a morphological match (-4); the anterior-graft bud grows
+          longer (687 um, HH29) rather than broader, unlike duplicated wings (-2).
+        evidence:
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [844, 929], note: "Specimen ROI, organizer detection, radial SDD fit (r = 0.9963) and ring radii — unchanged from v2", supports: true}
+          - {file: docs/media/french_flag_morphogen_comparison.png, lines: [0, 0], note: "Panels E-F specimen overlay; Panel G 2D paddle with Shh field, FGF contours, AER/ZPA and 4-3-2 digit bar; Panel H dose series; Panel I truncation", supports: true}
+          - {file: docs/media/french_flag_morphogen_limb2d.gif, lines: [0, 0], note: "13 frames: wild type, anterior graft (grows to 687 um) and AER excised at HH22 (stump at 387 um)", supports: true}
+          - {file: docs/media/french_flag_morphogen_growth.gif, lines: [0, 0], note: "18-frame HH18->HH28 growth animation (unscaled SDD vs expansion-repression French Flag), regenerated unchanged in content from v2", supports: true}
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [501, 544], note: "Paddle geometry is prescribed (W = 500 um fixed, elliptical cap); no limb-bud image is compared with it (deduction)", supports: false}
+      parameter-expressivity:
+        value: 91
+        rationale: >-
+          v2 sweeps retained (6 growth stages L268-340, 5 Monte Carlo thresholds L805-838, now 5 1D ZPA regimes
+          L381-441). Pass 3 adds two monotone sweeps that visibly control the predicted feature: graft strength
+          0 / 0.10 / 0.35 / 1.0 adds 0 / 1 / 2 / 3 digits (Panel H) and AER excision stage HH18 -> HH26 moves
+          the truncation from stylopod to autopod with rho = 1.0 (Panel I); `--limb-vmax`, `--limb-feedback-gain`,
+          `--limb-lambda-shh` and `--limb-hours` expose the 2D parameters (L1721-1724) and are wired into
+          render_outputs (L1730-1745). Deductions: the feedback gain g_S and the half-saturations are not swept
+          or shown, so the figure does not demonstrate what the Shh -> Fgf4 loop changes beyond the single P/A
+          ratio (-5); the AP width and ZPA geometry are not parameters (-4).
+        evidence:
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [733, 750], note: "Graft dose loop over 0.10 / 0.35 / 1.0 with extra-digit count and P/A FGF ratio", supports: true}
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [753, 774], note: "AER excision sweep over HH18..HH26, truncation fraction, segment, Spearman rho and strict monotonicity", supports: true}
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [1721, 1724], note: "CLI: --limb-vmax, --limb-feedback-gain, --limb-lambda-shh, --limb-hours", supports: true}
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [1240, 1261], note: "Panel H renders the dose series; no panel sweeps g_S or the K constants (deduction)", supports: false}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          `measure_morphoeval()` (L1431-1627) now returns 16 reference-anchored measurements: the 8 v2 metrics
+          plus 2D wild-type digit count 3/3, 2D full-graft count 6/6, Tickle (1981) dose matches 4/4,
+          Saunders/Summerbell segment matches 5/5, truncation-stage rho 1.0/1.0, Shh remaining after AER
+          removal 5.7e-4 (ref 0), wild-type AER FGF P/A 1.56 (ref 1.0 null) and the 2D-vs-cosh RMSE 2.4e-3
+          (ref 0). Deductions: four of the new references are ordinal or null baselines (segment table with a
+          +/- 1-stage caveat, dose levels chosen to span the classes, reference 0 for Shh loss, reference 1.0
+          for an asymmetry that is only qualitatively > 1), so they test ordering rather than magnitude (-6);
+          no measurement compares the paddle's shape or L(t) with measured bud dimensions (-4).
+        evidence:
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [1459, 1540], note: "8 Pass 3 measurements with reference_value / reference_source / note", supports: true}
+          - {file: datasets/french_flag_morphogen/limb_bud_2d_aer_zpa_reference.json, lines: [1, 103], note: "Ordinal references with explicit caveats (stage->segment, dose classes, feedback null baselines)", supports: true}
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [1511, 1530], note: "Shh-loss and P/A measurements use reference 0 and 1.0 baselines — ordinal, not quantitative (deduction)", supports: false}
+      source-traceability:
+        value: 95
+        rationale: >-
+          All 12 sources carry DOIs (Summerbell 1974 a PMID, verified against PubMed) in the module docstring,
+          `paper_citations.bib` (12 entries) and the dataset README; the four dataset artefacts are SHA-256
+          locked and verified fail-closed at every run (L97-129), including the new reference table; the
+          registry YAML lists the new input. Deductions: no digitised data from Saunders, Summerbell or Tickle
+          (1981) are vendored — the reference table is an ordinal summary written for this loop (-3); Summerbell
+          (1974) has no DOI and the PubMed record is the only resolvable identifier (-2).
+        evidence:
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [97, 129], note: "EXPECTED_SHA256 for 4 artefacts incl. limb_bud_2d_aer_zpa_reference.json; verify_dataset_integrity raises on mismatch", supports: true}
+          - {file: datasets/french_flag_morphogen/paper_citations.bib, lines: [56, 133], note: "7 Pass 3 BibTeX entries with DOIs verified via Crossref (titles, volumes, pages) and PMID 4463222", supports: true}
+          - {file: datasets/french_flag_morphogen/README.md, lines: [25, 31], note: "Item 5 documents the new table, its SHA-256 and the caveat that the stage clock is approximate", supports: true}
+      code-traceability:
+        value: 92
+        rationale: >-
+          The module docstring maps each solver to its source and Lean theorem (L1-67, Pass 3 block L48-66);
+          the Section 3b header states every equation, boundary condition, readout and the clock compression
+          (L443-470); function docstrings cite Saunders / Summerbell / Tickle / Laufer / Niswander at the point
+          of use (L558-576, L696-699, L721-727); the registry YAML (laws 5-8) pins Lean loci and code loci.
+          Deductions: the Michaelis forms and the specific constants in LIMB2D_DEFAULTS have no equation-level
+          citation (they are a modelling choice, stated as such but untraced) (-5); the 1/3-2/3 PD trisection
+          is attributed to the progress-zone model but is not an equation of Summerbell-Lewis-Wolpert (1973) (-3).
+        evidence:
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [48, 66], note: "Pass 3 docstring block: sources, equations and the four Lean theorem names", supports: true}
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [443, 470], note: "Section 3b header: equations, geometry, readouts, clock compression and non-claims", supports: true}
+          - {file: morphoeval/math_kg_loops/wolpert-french-flag-morphogen.yaml, lines: [108, 174], note: "Laws 5-8 registered with lean_locus and code_locus", supports: true}
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [686, 693], note: "PD trisection attributed to the progress-zone model without an equation citation (deduction)", supports: false}
+      repro-package:
+        value: 91
+        rationale: >-
+          `--self-test` now runs 11 checks (L1630-1705): SHA-256 of 4 artefacts, 1D PDE convergence, ER scaling,
+          the full Tickle dose series in 1D, Monte Carlo bitwise reproducibility, specimen segmentation, 2D
+          stencil verification, 2D digit / dose / asymmetry readouts, truncation monotonicity and Shh collapse,
+          bitwise determinism of the 2D solver (no RNG), and the 16-measurement contract; the default render
+          takes 17 s and the self-test 44 s; the CLI documents all parameters (L1708-1750). Deductions: no lock
+          file pins the numpy / scipy / matplotlib / Pillow versions recorded in this audit (-5); when
+          `~/.matplotlib` is not writable the run emits font-cache warnings and writes a temporary cache, which
+          the script does not control via MPLCONFIGDIR (-2); the GIF palettes are quantised from the last frame,
+          so byte-identity across Pillow versions is not guaranteed (-2).
+        evidence:
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [1630, 1705], note: "11-check deterministic self_test() incl. 2D determinism (check 10) and 16-measurement contract (check 11)", supports: true}
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [1708, 1750], note: "argparse CLI with all 1D and 2D parameters and three output paths", supports: true}
+          - {file: 1969-wolpert-french-flag-morphogen.py, lines: [1341, 1344], note: "GIF palette quantised from the final frame; Pillow-version dependent bytes (deduction)", supports: false}
+    remediation:
+      - >-
+        1969-wolpert-french-flag-morphogen.py:472-494 and 624-625 — s_F, s_S, g_S, K_S, K_FS and K_g are tuned so
+        that wild-type AER FGF ~ 1 and L_final ~ 660 um; none is sourced. Add a rendered sensitivity sweep over
+        g_S in {0, 0.5, 1, 2} and K_FS in {0.03, 0.1, 0.3} showing which readouts (P/A ratio, Shh collapse time,
+        L_final) depend on them, and state the identifiability of each constant in the ledger.
+      - >-
+        1969-wolpert-french-flag-morphogen.py:488-489 (T_s = 12 h) with the header at 467-470 — the developmental
+        clock is compressed ~5x relative to HH18 -> HH28 in ovo. Replace the explicit scheme by an implicit / ADI
+        step so the run can use the real ~60 h at the same cost, and compare L(t) with measured wing-bud lengths
+        per HH stage instead of the linear 48 um/stage clock (HH_STAGE_LENGTHS_UM, L496-498).
+      - >-
+        1969-wolpert-french-flag-morphogen.py:501-544 — the paddle has a fixed AP width (W = 500 um) and the AER /
+        ZPA sets are placed geometrically, so the anterior-graft bud lengthens (687 um, HH29) rather than broadens
+        as duplicated wings do (Tickle 1975). Add AP widening driven by the FGF field (or by the digit count) and
+        let the ZPA position follow Shh-high mesenchyme rather than a fixed 60 x 120 um box.
+      - >-
+        1969-wolpert-french-flag-morphogen.py:753-774 and datasets/french_flag_morphogen/limb_bud_2d_aer_zpa_reference.json
+        — the Saunders / Summerbell comparison is to an ordinal stage -> segment summary with a +/- 1-stage caveat.
+        Vendor digitised truncation data (fraction of humerus / radius-ulna / carpals / digits present per excision
+        stage from Summerbell 1974) and score the model's truncation fraction against it quantitatively.
+      - >-
+        1969-wolpert-french-flag-morphogen.py:728-731 and 347-378 — 2D digit identity is read from the instantaneous distal Shh
+        concentration normalised to the wild-type peak; Harfe et al. (2004) show that digit identity integrates
+        Shh exposure over time. Add a cumulative-exposure readout and report whether the dose series and the
+        duplication survive it.
+      - >-
+        datasets/french_flag_morphogen/french_flag_specimen.jpg and 1969-wolpert-french-flag-morphogen.py:844-930 — the
+        only specimen is a whole-egg 72 h embryo whose area vasculosa is used as a proxy gradient; nothing in Panels
+        G-I is compared with a wing bud. Vendor a CC-licensed HH20-HH24 chick wing bud image (ideally an Shh or Fgf8
+        in situ) and compare the paddle outline (aspect ratio, cap curvature) and the Shh domain extent with it.

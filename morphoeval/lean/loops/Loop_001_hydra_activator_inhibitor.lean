@@ -87,4 +87,114 @@ theorem gierer_meinhardt_lateral_inhibition_instability :
     gm_fourier_det 2 3 1 30 1 = -21 := by
   decide
 
+
+-- ============================================================================
+-- Pass 3 — Meinhardt (1993, 2012) coupled three-system model on the 3D shell
+-- ============================================================================
+
+-- ----------------------------------------------------------------------------
+-- Law 4 (`gierer-hydra-activator-inhibitor-4`):
+-- Firing threshold of a thresholded activator-inhibitor subsystem (basal inhibitor production)
+-- ----------------------------------------------------------------------------
+/-- A Meinhardt subsystem with drive `w`, autocatalysis `w (c b^2 / c_i + rho_act)`, decay
+    `mu b`, inhibitor `c' b^2 - mu_inh c_i + rho_inh` has a homogeneous "off" state iff the
+    small-`b` quadratic `(w c mu_inh / rho_inh) b^2 - mu b + w rho_act = 0` has real roots,
+    i.e. iff its discriminant `mu^2 rho_inh - 4 w^2 c mu_inh rho_act ≥ 0`
+    (`w ≤ w_c = (mu/2) sqrt(rho_inh / (c mu_inh rho_act))`). In truncated natural-number
+    arithmetic the discriminant is antitone in the drive: a larger drive (higher source density,
+    weaker head-activator suppression) can only move a subsystem closer to firing, never away.
+    This is what pins the tentacle ring to the band `phi_t(s) > w_c` in the Python shell model. -/
+def meinhardt_off_state_disc (mu w c mu_inh rho_act rho_inh : Nat) : Nat :=
+  mu * mu * rho_inh - 4 * w * w * c * mu_inh * rho_act
+
+theorem meinhardt_three_system_off_state_discriminant_antitone
+    (mu c mu_inh rho_act rho_inh w₁ w₂ : Nat) (h : w₁ ≤ w₂) :
+    meinhardt_off_state_disc mu w₂ c mu_inh rho_act rho_inh ≤
+      meinhardt_off_state_disc mu w₁ c mu_inh rho_act rho_inh := by
+  unfold meinhardt_off_state_disc
+  apply Nat.sub_le_sub_left
+  apply Nat.mul_le_mul _ (Nat.le_refl rho_act)
+  apply Nat.mul_le_mul _ (Nat.le_refl mu_inh)
+  apply Nat.mul_le_mul _ (Nat.le_refl c)
+  apply Nat.mul_le_mul _ h
+  exact Nat.mul_le_mul (Nat.le_refl 4) h
+
+/-- Integer instance with the canonical shell coefficients ×1000 (`c = 50, μ_inh = 30,
+    ρ_act = 5, ρ_inh = 2`; `w_c` is invariant under a common rescaling of the five coefficients)
+    and `μ` additionally ×10 (`μ = 200`) so that the drive is measured in tenths: the off state
+    exists at `w = 0.1` (discriminant 50000 > 0) but not at `w = 0.2` (truncated to 0), bracketing
+    `w_c = 0.1633` returned by the Python `three_system_firing_threshold`. -/
+theorem meinhardt_three_system_threshold_instance :
+    meinhardt_off_state_disc 200 1 50 30 5 2 = 50000 ∧
+    meinhardt_off_state_disc 200 2 50 30 5 2 = 0 := by
+  decide
+
+-- ----------------------------------------------------------------------------
+-- Law 5 (`gierer-hydra-activator-inhibitor-5`):
+-- Tentacle drive: promoted by source density, suppressed by the head activator
+-- ----------------------------------------------------------------------------
+/-- Integer-scaled tentacle drive `phi_t = sigma * K / (K + a)` (the Python factor
+    `H_t(sigma) / (1 + kappa_a a)` with `K = 1/kappa_a` scaled to a natural number):
+    monotone in the source density `sigma` and antitone in the head activator `a`.
+    Hence tentacle activation is maximal where the source density is highest but the head
+    activator is low — the sub-hypostomal border (Meinhardt 1993). -/
+def meinhardt_tentacle_drive (sigma K a : Nat) : Nat :=
+  sigma * K / (K + a)
+
+theorem meinhardt_tentacle_drive_monotone (K a σ₁ σ₂ a₁ a₂ σ : Nat)
+    (hσ : σ₁ ≤ σ₂) (ha : a₁ ≤ a₂) :
+    meinhardt_tentacle_drive σ₁ K a ≤ meinhardt_tentacle_drive σ₂ K a ∧
+    meinhardt_tentacle_drive σ (K + 1) a₂ ≤ meinhardt_tentacle_drive σ (K + 1) a₁ := by
+  unfold meinhardt_tentacle_drive
+  constructor
+  · exact Nat.div_le_div_right (Nat.mul_le_mul hσ (Nat.le_refl K))
+  · apply Nat.div_le_div_left
+    · omega
+    · omega
+
+-- ----------------------------------------------------------------------------
+-- Law 6 (`gierer-hydra-activator-inhibitor-6`):
+-- Head–foot exclusion through the source density
+-- ----------------------------------------------------------------------------
+/-- The head drive is the source density itself (`sigma`), the foot drive is
+    `K / (K + sigma^2)` (Python: `1 / (1 + (sigma/sigma_f)^2)`). They are anti-monotone: raising
+    the source density can never favour the head and the foot at the same time, so the two
+    structures segregate to opposite ends of the body column (Meinhardt 2012: the foot forms at
+    the position of lowest source density). -/
+def meinhardt_foot_drive (K sigma : Nat) : Nat :=
+  K / (K + sigma * sigma)
+
+theorem meinhardt_head_foot_source_density_exclusion (K σ₁ σ₂ : Nat) (h : σ₁ ≤ σ₂) :
+    σ₁ ≤ σ₂ ∧ meinhardt_foot_drive (K + 1) σ₂ ≤ meinhardt_foot_drive (K + 1) σ₁ := by
+  unfold meinhardt_foot_drive
+  constructor
+  · exact h
+  · apply Nat.div_le_div_left
+    · exact Nat.add_le_add_left (Nat.mul_le_mul h h) (K + 1)
+    · omega
+
+-- ----------------------------------------------------------------------------
+-- Law 7 (`gierer-hydra-activator-inhibitor-7`):
+-- Finite-difference Laplace–Beltrami operator on the surface of revolution
+-- ----------------------------------------------------------------------------
+/-- Row stencil of the shell Laplacian used by `CylindricalShellGrid`:
+    axial part `r_{i+1/2} (u_{i+1} - u_i) - r_{i-1/2} (u_i - u_{i-1})` (later divided by `r_i`)
+    and circumferential part `u_{j+1} + u_{j-1} - 2 u_j` (later divided by `r_i^2`).
+    Both annihilate constant fields for every radius profile, so the operator conserves the
+    homogeneous Gierer–Meinhardt state exactly and the thresholds above are not shifted by the
+    tapering geometry. -/
+def shell_axial_stencil (r_plus r_minus u_up u u_down : Int) : Int :=
+  r_plus * (u_up - u) - r_minus * (u - u_down)
+
+def shell_circumferential_stencil (u_next u u_prev : Int) : Int :=
+  u_next + u_prev - 2 * u
+
+theorem cylindrical_shell_laplacian_annihilates_constants (r_plus r_minus u : Int) :
+    shell_axial_stencil r_plus r_minus u u u = 0 ∧
+    shell_circumferential_stencil u u u = 0 := by
+  constructor
+  · simp [shell_axial_stencil]
+  · unfold shell_circumferential_stencil
+    omega
+
 end MathOfBiology.Loop_001

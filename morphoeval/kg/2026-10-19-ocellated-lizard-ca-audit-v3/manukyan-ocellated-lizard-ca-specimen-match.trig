@@ -1,0 +1,88 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-manukyan-ocellated-lizard-ca> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-manukyan-ocellated-lizard-ca-specimen-match> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-manukyan-ocellated-lizard-ca-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Manukyan et al. (2017) Nature hexagonal skin-scale border thickness reduction & outer-totalistic cellular automaton — 3D skin-volume reaction-diffusion (Pass 3) — Morphological realism / specimen match: 82/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Panels E-H of `docs/media/ocellated_lizard_ca_comparison.png` show the SHA-256-pinned Timon lepidus photograph with the dorsal ROI, the segmented 182-scale lattice (82 green / 100 black, Ashman D 2.56), and green/black neighbour histograms of the 3D PDE, the CA, the specimen and the vendored reference side by side; Panel A's depth-averaged 3D field is a labyrinth of monochromatic scales with green fraction 0.45 that resembles the dorsal mosaic, and the new `ocellated_lizard_ca_3d_volume.png` shows the scale cores as islands above the thin borders. Deductions: the segmentation imposes a fixed 13 x 14 hexagonal lattice on the ROI (L993-1007) instead of detecting scale centres, so the specimen neighbour statistics (modal n_g = 3, <n_g> = 2.60) inherit registration error (-8); the 3D PDE's modal n_g is 2 whereas the specimen's and the CA's is 3, so the PDE pattern has thinner chains than the lizard (-5); the photograph is an oblique whole-animal view and the ROI is not orthorectified (-3); no side-by-side with Manukyan's own Fig. 2/3 panels (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:evidenceAgainst "2015-manukyan-ocellated-lizard-ca.py L993–L1007: Scale sites are lattice positions (r+0.5)dy, (c+0.5)dx + offset, not detected scale centres <https://github.com/fractastical/morpholib/blob/bd54e11/2015-manukyan-ocellated-lizard-ca.py#L993-L1007>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-specimen-match-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-specimen-match-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-specimen-match-3> ;
+        pk:hasScore "0.82"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "docs/media/ocellated_lizard_ca_comparison.png (generated output)" ;
+        dct:description "12-panel figure: A 3D depth-averaged field P=0.17 vs 1.0; E specimen + ROI; F segmented lattice N=182; G/H neighbour histograms PDE/CA/specimen/reference; I x-z voxel section; J 3D vs 2D; K growth; L dispersion — docs/media/ocellated_lizard_ca_comparison.png: rendered output of 2015-manukyan-ocellated-lizard-ca.py at bd54e11, image/png, 1020793 B, 2573×1887 px, artifact_sha256 f3a39c7c6dedb783fd81cb698c652481d6057844e19017873d6e0f82d7c76b4e (sha256 f3a39c7c6dedb783fd81cb698c652481d6057844e19017873d6e0f82d7c76b4e), spec_fingerprint 46cc2c30ccba89108a6a17ed5177834284431b172cd845c2faca9279833944dd" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "docs/media/ocellated_lizard_ca_3d_volume.png (generated output)" ;
+        dct:description "z-slices and x-z section of the 3D activator volume at P=0.17 showing 2-voxel borders below 12-voxel scale cores — docs/media/ocellated_lizard_ca_3d_volume.png: rendered output of 2015-manukyan-ocellated-lizard-ca.py at bd54e11, image/png, 92854 B, 2405×421 px, artifact_sha256 7748b451813d7d5df5c4a24f0c217eb876eb5c1985aa0713b869a390f7c229c5 (sha256 7748b451813d7d5df5c4a24f0c217eb876eb5c1985aa0713b869a390f7c229c5), spec_fingerprint 46cc2c30ccba89108a6a17ed5177834284431b172cd845c2faca9279833944dd" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-specimen-match-3> a pk:EvidenceItem ;
+        rdfs:label "2015-manukyan-ocellated-lizard-ca.py L967–L1047" ;
+        dct:description "Specimen segmentation: DoG-normalised green index sampled on a fixed 13x14 hexagonal lattice (L993-1007), 55th-percentile threshold, Ashman D, hex neighbour statistics" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/bd54e11/2015-manukyan-ocellated-lizard-ca.py#L967-L1047> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Slot 009 Pass 3 autonomous loop assessor; v2 assessor was Gemini 4 Argon)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/376765a0>,
+            <https://doi.org/10.1038/nature22031>,
+            <https://doi.org/10.1038/s41467-021-22525-1>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1103/PhysRevX.13.041011> .
+    <https://doi.org/10.1038/376765a0> dct:date "1995"^^xsd:gYear ;
+        dct:title "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus" .
+    <https://doi.org/10.1038/nature22031> dct:date "2017"^^xsd:gYear ;
+        dct:title "A living mesoscopic cellular automaton made of skin scales" .
+    <https://doi.org/10.1038/s41467-021-22525-1> dct:date "2021"^^xsd:gYear ;
+        dct:title "Reaction-diffusion in a growing 3D domain of skin scales generates a discrete cellular automaton" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The chemical basis of morphogenesis" .
+    <https://doi.org/10.1103/PhysRevX.13.041011> dct:date "2023"^^xsd:gYear ;
+        dct:title "Simple Reaction-Diffusion Modeling Predicts Inconspicuous Neighborhood-Dependent Color Subclustering of Lizard Scales" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Manukyan et al. (2017) Nature hexagonal skin-scale border thickness reduction & outer-totalistic cellular automaton — 3D skin-volume reaction-diffusion (Pass 3) — Morphological realism / specimen match 82/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T06:26:47Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-manukyan-ocellated-lizard-ca-specimen-match> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

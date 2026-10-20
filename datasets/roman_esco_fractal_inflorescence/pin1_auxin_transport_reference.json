@@ -1,0 +1,68 @@
+{
+  "dataset_id": "roman_esco_pin1_auxin_transport_v1",
+  "added_in": "Pass 3 (2026-10-19-roman-esco-fractal-inflorescence-audit-v3)",
+  "title": "Reduced cell-based PIN1 polar auxin transport model on the epidermal (L1) mesh of the curd dome — parameters, geometry and literature anchors",
+  "model_sources": [
+    {
+      "citation": "Jönsson H, Heisler MG, Shapiro BE, Meyerowitz EM, Mjolsness E (2006) PNAS 103(5):1633-1638",
+      "doi": "10.1073/pnas.0509839103",
+      "role": "Up-the-gradient PIN1 allocation P_ij = P_tot * A_j / (kappa + sum_k A_k) and the auxin balance dA_i/dt = c - d A_i + D sum_j (A_j - A_i) + T sum_j (P_ji A_j - P_ij A_i) on a cellular template of the shoot apex; emergent spiral phyllotaxis with divergence near 137.5 deg"
+    },
+    {
+      "citation": "Smith RS, Guyomarc'h S, Mandel T, Reinhardt D, Kuhlemeier C, Prusinkiewicz P (2006) PNAS 103(5):1301-1306",
+      "doi": "10.1073/pnas.0510457103",
+      "role": "Primordia as auxin sinks on a growing apex; threshold-triggered initiation in the peripheral zone; cells advected outward by growth and produced in the central zone"
+    },
+    {
+      "citation": "Reinhardt D, Pesce E-R, Stieger P, Mandel T, Baltensperger K, Bennett M, Traas J, Friml J, Kuhlemeier C (2003) Nature 426:255-260",
+      "doi": "10.1038/nature02081",
+      "role": "PIN1-dependent polar auxin transport is required for primordium initiation: pin1 mutants and NPA-treated apices form naked pin inflorescences (the T = 0 ablation reference, expected initiation ratio 0)"
+    },
+    {
+      "citation": "Douady S, Couder Y (1992) Physical Review Letters 68(13):2098-2101",
+      "doi": "10.1103/PhysRevLett.68.2098",
+      "role": "Hofmeister-rule inhibitory-field dynamics: new primordia appear in the largest free gap of the initiation ring; initiation rate scales with the ring perimeter, r_p(R) = k R"
+    },
+    {
+      "citation": "Smyth DR, Bowman JL, Meyerowitz EM (1990) The Plant Cell 2(8):755-767",
+      "doi": "10.1105/tpc.2.8.755",
+      "role": "Golden divergence angle 137.5 deg of spiral phyllotaxis in Arabidopsis (reference for the emergent divergence angle)"
+    }
+  ],
+  "geometries": {
+    "cauliflower_dome_h_over_r": 0.56,
+    "romanesco_cone_h_over_r": 1.48,
+    "note": "Both the hemispherical Cauliflower dome and the Romanesco cone are represented as cones of the matching H/R; cone half-angle alpha = atan(R/H). Cells are uniformly distributed over the cone surface so that the cell count scales with pi * R * sqrt(R^2 + H^2)."
+  },
+  "model_parameters": {
+    "transport_T": 10.0,
+    "diffusion_D": 0.5,
+    "production_c": 0.6,
+    "decay_d": 0.6,
+    "kappa": 1.0,
+    "central_zone_frac_of_slant": 0.30,
+    "initiation_ring_width_frac_of_slant": 0.10,
+    "initiation_threshold_rel_to_homogeneous_steady_state": 2.2,
+    "sink_rate": 8.0,
+    "sink_radius_dome_radii": 0.26,
+    "surface_growth_rate": 0.06,
+    "dt": 0.01,
+    "t_end": 120.0,
+    "t_burn_in": 30.0,
+    "cell_spacing_dome_radii": 0.055,
+    "dome_radii_swept": [0.8, 1.0, 1.2],
+    "note": "Dimensionless; chosen so that the inhibitory (sink) diameter is ~3-4 times smaller than the initiation-ring circumference at R = 1 (the regime in which Douady-Couder / Smith et al. models produce spiral phyllotaxis). They are not fitted to any Brassica measurement."
+  },
+  "coupling_to_plastochron_law": {
+    "statement": "r_p(R) = k R (perimeter scaling) with meristem growth R(tau) = R0 + v_r tau gives r_p(tau)/r_p(R0) = 1 + (k / r_p(R0)) v_r tau, i.e. Law-2 beta = (k / r_p(R0)) * v_r",
+    "lean_theorem": "MathOfBiology.Loop_040.hofmeister_perimeter_plastochron_acceleration",
+    "v_r_source": "radial_expansion_rate_v_r = 0.16 in roman_esco_fractal_inflorescence_reference.json (Pass 1 vendored value, not traced to a specific figure of Azpeitia et al. 2021)",
+    "reference_beta_romanesco": 0.085
+  },
+  "limitations": [
+    "Not a continuum finite-element solve of PIN1 transport on the curved manifold; cells are discrete points with k-NN (k = 6) adjacency rebuilt every 20 steps as they are advected.",
+    "The hemispherical dome is approximated by a cone of equal H/R.",
+    "Sink fields are isotropic Gaussians in 3D Euclidean distance, not geodesic distance on the surface.",
+    "Emergent divergence angles scatter (MAD ~ 10-25 deg) because of the jittered mesh and discrete threshold initiation; the model is not tuned for angular precision."
+  ]
+}

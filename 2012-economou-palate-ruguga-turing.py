@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-2012-economou-palate-ruguga-turing.py — Pass 2 (v2) Remediated Implementation
+2012-economou-palate-ruguga-turing.py — Pass 3 (v3) Remediated Implementation
 ==============================================================================
 Faithful mathematical, reaction-diffusion PDE, growth-zone intercalation,
-surgical/pharmacological perturbation, and morphometric reproduction of:
+surgical/pharmacological perturbation, chemo-mechanical ridge elevation, and
+morphometric reproduction of:
 
   1. Economou AD, Ohazama A, Porntaveetus T, Sharpe PT, Kondo S, Basson MA,
      Gritli-Linde A, Cobourne MT, Green JBA (2012).
@@ -53,6 +54,28 @@ Mathematical & Mechanistic Architecture (Linked to Lean 4 `MathOfBiology.Loop_00
     growth zone severs H_r8, immediately releasing net activation (a_net > 0) to
     trigger ruga bifurcation and ectopic spots, whereas a sagittal cut parallel
     to the AP axis preserves parallel transverse stripes.
+
+  - Law 4 (`MathOfBiology.Loop_008.economou_ridge_plate_stiffness_monotone` and
+    `MathOfBiology.Loop_008.economou_ridge_elevation_in_phase`) — Pass 3 addition:
+    The palatal epithelium is treated as a thin Kirchhoff plate (bending stiffness
+    kappa, in-plane tension T) resting on a Winkler mesenchymal foundation (k_f),
+    loaded by an active epithelial thickening / apical-constriction stress
+    beta * f(A) with f(A) = max(A - A_th, 0) (only FGF/SHH-high epithelium thickens).
+    In the quasi-static limit the mid-surface elevation h(x, y) satisfies
+      kappa * Lap^2 h - T * Lap h + k_f * h = beta * f(A),
+    whose Fourier/DCT transfer stiffness S(q^2) = kappa q^4 + T q^2 + k_f is
+    >= k_f > 0 and monotone non-decreasing in q^2. Hence h_q = beta f_q / S(q^2)
+    preserves the sign of the chemical forcing (ridge crests sit on the FGF/SHH
+    stripes, zero crest/stripe phase offset) and low-pass-filters it (the Turing
+    wavelength lambda_c is transferred to the morphological ridge spacing, and the
+    ridge amplitude falls monotonically with kappa and k_f). An optional mechanical
+    feedback chi_m * (h - <h>) on the FGF equation closes the chemo-mechanical loop.
+
+    HONEST SCOPE NOTE: this is a reduced 2.5D plate-on-foundation model solved
+    exactly on the finite-difference grid (DCT-II eigen-solver, Neumann edges),
+    NOT a 3D finite-element simulation of epithelial invagination; the residual
+    (3D FEM with large-deflection / nonlinear growth) is carried as an open
+    Pass 4 remediation item in the audit.
 """
 
 from __future__ import annotations
@@ -78,12 +101,17 @@ REF_JSON = DATASET_DIR / "palate_ruguga_turing_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "palate_rugae_specimen.jpg"
 SCOUT_JSON = DATASET_DIR / "scout_manifest.json"
 BIB_FILE = DATASET_DIR / "paper_citations.bib"
+MECH_JSON = DATASET_DIR / "palate_ridge_mechanics_reference.json"
 
 OUT_PNG = ROOT / "docs" / "media" / "palate_ruguga_turing_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "palate_ruguga_turing_growth.gif"
+OUT_MECH_PNG = ROOT / "docs" / "media" / "palate_ruguga_turing_ridge_mechanics.png"
 
 # Cryptographic SHA-256 Registry for `datasets/palate_ruguga_turing/`
 EXPECTED_SHA256: dict[str, str] = {
+    "datasets/palate_ruguga_turing/palate_ridge_mechanics_reference.json": (
+        "2e673658c9722aeb89d2ef2065ab270d3d8e34b80efa5e684f97a08ef7f545de"
+    ),
     "datasets/palate_ruguga_turing/palate_ruguga_turing_reference.json": (
         "e76e670dd50c86fe02037a01dbc87eeb30a3c4970f4f2a2d2e5771894dbaf815"
     ),
@@ -111,7 +139,7 @@ def sha256_file(path: Path) -> str:
 
 
 def verify_dataset_integrity() -> dict[str, str]:
-    """Verify SHA-256 digests of all 4 vendored files in datasets/palate_ruguga_turing/."""
+    """Verify SHA-256 digests of all 5 vendored files in datasets/palate_ruguga_turing/."""
     computed: dict[str, str] = {}
     for rel, expected in EXPECTED_SHA256.items():
         p = ROOT / rel
@@ -128,6 +156,12 @@ def load_reference_data() -> dict[str, Any]:
     """Load and cryptographically verify `palate_ruguga_turing_reference.json`."""
     verify_dataset_integrity()
     return json.loads(REF_JSON.read_text(encoding="utf-8"))
+
+
+def load_mechanics_reference() -> dict[str, Any]:
+    """Load and cryptographically verify `palate_ridge_mechanics_reference.json` (Pass 3)."""
+    verify_dataset_integrity()
+    return json.loads(MECH_JSON.read_text(encoding="utf-8"))
 
 
 # =============================================================================
@@ -338,6 +372,147 @@ def simulate_1d_palatal_transect(
     }
 
 
+# =============================================================================
+# 3b. Pass 3 — Quasi-Static Kirchhoff Epithelial Plate on a Winkler Mesenchymal
+#     Foundation (Chemo-Mechanical Ridge Elevation, Law 4)
+# =============================================================================
+# Dimensionless defaults (elevation h in units of the resting epithelial thickness
+# h_0; lengths in the same AP units as L_ap = 29). Provenance and the modelling
+# assumptions behind each value are recorded in
+# `datasets/palate_ruguga_turing/palate_ridge_mechanics_reference.json`.
+PLATE_KAPPA_DEFAULT = 0.05    # bending stiffness kappa (E h_0^3 / 12(1 - nu^2), scaled)
+PLATE_TENSION_DEFAULT = 0.20  # in-plane epithelial tension T
+PLATE_KFOUND_DEFAULT = 1.00   # Winkler mesenchymal foundation stiffness k_f
+PLATE_BETA_DEFAULT = 1.00     # active thickening / apical-constriction stress gain beta
+PLATE_ATH_DEFAULT = 0.00      # FGF/SHH activity threshold A_th for epithelial thickening
+MECH_FEEDBACK_EVERY = 25      # RD steps between quasi-static elastic re-equilibrations
+
+
+def plate_transfer_stiffness(
+    q2: np.ndarray | float,
+    kappa: float = PLATE_KAPPA_DEFAULT,
+    tension: float = PLATE_TENSION_DEFAULT,
+    k_found: float = PLATE_KFOUND_DEFAULT,
+) -> np.ndarray | float:
+    """Mechanical transfer stiffness S(q^2) = kappa q^4 + T q^2 + k_f of the
+    quasi-static Kirchhoff plate on a Winkler foundation. S >= k_f > 0 and S is
+    monotone non-decreasing in q^2 (Lean 4 `economou_ridge_plate_stiffness_monotone`),
+    so h_q = beta f_q / S(q^2) is a sign-preserving low-pass filter of the chemical
+    forcing (Landau & Lifshitz, Theory of Elasticity, Sec. 11-12; Winkler foundation)."""
+    return kappa * q2 * q2 + tension * q2 + k_found
+
+
+def solve_quasi_static_plate(
+    forcing: np.ndarray,
+    dx: float,
+    dy: float,
+    kappa: float = PLATE_KAPPA_DEFAULT,
+    tension: float = PLATE_TENSION_DEFAULT,
+    k_found: float = PLATE_KFOUND_DEFAULT,
+) -> dict[str, Any]:
+    """Exactly solve the finite-difference quasi-static plate equation
+        kappa * Lap_h^2 h - T * Lap_h h + k_f * h = forcing
+    on the (nx, ny) grid with zero-flux (Neumann / sliding-edge) boundaries via the
+    DCT-II eigen-decomposition of the 5-point Laplacian (eigenvalues
+    lam_k = (2 - 2 cos(pi k / n)) / dx^2 >= 0). The solution is the exact algebraic
+    inverse of the discrete operator (verified to ~1e-10 in `self_test` check 9).
+    Returns h, the -Laplacian eigenvalue field, and the discrete residual operator."""
+    from scipy import fft as sfft
+
+    nx, ny = forcing.shape
+    F = sfft.dctn(forcing, type=2, norm="ortho")
+    lam_x = (2.0 - 2.0 * np.cos(np.pi * np.arange(nx) / nx)) / (dx * dx)
+    lam_y = (2.0 - 2.0 * np.cos(np.pi * np.arange(ny) / ny)) / (dy * dy)
+    lam = lam_x[:, None] + lam_y[None, :]
+    S = plate_transfer_stiffness(lam, kappa=kappa, tension=tension, k_found=k_found)
+    h = sfft.idctn(F / S, type=2, norm="ortho")
+    return {"h": h, "neg_laplacian_eigen": lam, "stiffness_spectrum": S}
+
+
+def discrete_neumann_laplacian(u: np.ndarray, dx: float, dy: float) -> np.ndarray:
+    """5-point Laplacian with zero-flux (edge-replicate) boundaries, matching the
+    DCT-II eigenbasis used in `solve_quasi_static_plate`."""
+    ux = np.pad(u, ((1, 1), (0, 0)), mode="edge")
+    uy = np.pad(u, ((0, 0), (1, 1)), mode="edge")
+    return (ux[2:, :] - 2.0 * u + ux[:-2, :]) / (dx * dx) + (uy[:, 2:] - 2.0 * u + uy[:, :-2]) / (dy * dy)
+
+
+def plate_operator_residual(
+    h: np.ndarray,
+    forcing: np.ndarray,
+    dx: float,
+    dy: float,
+    kappa: float = PLATE_KAPPA_DEFAULT,
+    tension: float = PLATE_TENSION_DEFAULT,
+    k_found: float = PLATE_KFOUND_DEFAULT,
+) -> float:
+    """Max-norm residual |kappa Lap^2 h - T Lap h + k_f h - forcing| of a candidate
+    plate solution (used to certify the DCT solver against the FD operator)."""
+    lap_h = discrete_neumann_laplacian(h, dx, dy)
+    bilap_h = discrete_neumann_laplacian(lap_h, dx, dy)
+    res = kappa * bilap_h - tension * lap_h + k_found * h - forcing
+    return float(np.max(np.abs(res)))
+
+
+def active_thickening_forcing(
+    A: np.ndarray,
+    beta: float = PLATE_BETA_DEFAULT,
+    A_th: float = PLATE_ATH_DEFAULT,
+) -> np.ndarray:
+    """Active epithelial thickening / apical-constriction load beta * max(A - A_th, 0):
+    only FGF/SHH-high (Shh-expressing, placode-like) epithelium thickens, which is why
+    morphological ridges are narrower than the sinusoidal Turing mode (duty cycle < 0.5)."""
+    return beta * np.maximum(A - A_th, 0.0)
+
+
+def measure_ridge_morphometrics(
+    h: np.ndarray,
+    ap_A: np.ndarray,
+    peaks_ap: np.ndarray,
+    shelf_iy: int,
+    dx: float,
+    lambda_ap: float,
+) -> dict[str, Any]:
+    """Ridge-elevation morphometrics along the palatal shelf transect:
+      - n_ridges_mech: number of elevated crests in h(x, y_shelf)
+      - crest_phase_offset_lambda: mean |x_crest - x_nearest_Shh_peak| / lambda (0 = in phase)
+      - ridge_duty_cycle: mean crest FWHM / mean crest spacing (peak_widths at half prominence)
+      - ridge_amplitude: max(h) - min(h) along the transect (units of h_0)"""
+    ridge_profile = h[:, shelf_iy]
+    amp = float(np.max(ridge_profile) - np.min(ridge_profile))
+    if amp <= 1e-12:
+        return {
+            "ridge_profile": ridge_profile,
+            "ridge_peaks": np.array([], dtype=int),
+            "n_ridges_mech": 0.0,
+            "crest_phase_offset_lambda": float("nan"),
+            "ridge_duty_cycle": float("nan"),
+            "ridge_amplitude": 0.0,
+        }
+    ridge_peaks, _ = signal.find_peaks(ridge_profile, distance=8, prominence=0.15 * amp)
+    if len(ridge_peaks) > 0 and len(peaks_ap) > 0:
+        x_crest = ridge_peaks.astype(np.float64) * dx
+        x_shh = peaks_ap.astype(np.float64) * dx
+        offs = np.array([np.min(np.abs(x_shh - xc)) for xc in x_crest])
+        phase_offset = float(np.mean(offs) / max(lambda_ap, 1e-9))
+    else:
+        phase_offset = float("nan")
+    if len(ridge_peaks) >= 2:
+        widths, _, _, _ = signal.peak_widths(ridge_profile, ridge_peaks, rel_height=0.5)
+        spacing = float(np.mean(np.diff(ridge_peaks)))
+        duty = float(np.mean(widths) / max(spacing, 1e-9))
+    else:
+        duty = float("nan")
+    return {
+        "ridge_profile": ridge_profile,
+        "ridge_peaks": ridge_peaks,
+        "n_ridges_mech": float(len(ridge_peaks)),
+        "crest_phase_offset_lambda": phase_offset,
+        "ridge_duty_cycle": duty,
+        "ridge_amplitude": amp,
+    }
+
+
 def simulate_2d_palatal_growth_zone_pde(
     nx: int = 128,
     ny: int = 44,
@@ -353,6 +528,11 @@ def simulate_2d_palatal_growth_zone_pde(
     D_A: float = 0.2,
     D_H: float = 5.0,
     seed: int = 2012,
+    kappa: float = PLATE_KAPPA_DEFAULT,
+    tension: float = PLATE_TENSION_DEFAULT,
+    k_found: float = PLATE_KFOUND_DEFAULT,
+    beta_act: float = PLATE_BETA_DEFAULT,
+    chi_mech: float = 0.0,
 ) -> dict[str, Any]:
     """Simulate the 2D mammalian palatal shelf FGF-SHH reaction-diffusion PDE with
     anteroposterior growth-zone elongation anterior to ruga 8 and surgical/drug
@@ -367,6 +547,14 @@ def simulate_2d_palatal_growth_zone_pde(
         mediolateral mode instability (ruga bifurcation, Y-splits, and ectopic spots).
       - `incision_mode == "fgf10_bead"`: exogenous FGF10 bead / Spry2-/-;Spry4+/-
         hyperactivation creating high-density ectopic rugae and local repulsion.
+
+    Pass 3 chemo-mechanical coupling (Law 4): the FGF/SHH sheet drives a quasi-static
+    Kirchhoff epithelial plate on a Winkler mesenchymal foundation,
+        kappa Lap^2 h - T Lap h + k_f h = beta_act * max(A - A_th, 0),
+    re-equilibrated every `MECH_FEEDBACK_EVERY` steps; when `chi_mech > 0` the
+    elevated/thickened epithelium feeds back on mesenchymal FGF
+    (dA/dt += chi_mech * (h - <h>)), closing the chemo-mechanical loop. The final
+    elevation field `ridge_h` and its morphometrics are returned alongside A, H.
     """
     x = np.linspace(0.0, L_ap, nx)
     y = np.linspace(-0.5 * W_ml, 0.5 * W_ml, ny)
@@ -374,6 +562,7 @@ def simulate_2d_palatal_growth_zone_pde(
     dx = L_ap / float(nx - 1)
     dy = W_ml / float(ny - 1)
     rng = np.random.default_rng(seed)
+    plate_kw = {"kappa": kappa, "tension": tension, "k_found": k_found}
 
     if abs(D_H - D_A) <= 1e-6:
         A_zero = np.zeros((nx, ny), dtype=np.float64)
@@ -382,6 +571,8 @@ def simulate_2d_palatal_growth_zone_pde(
             "y": y,
             "X": X,
             "Y": Y,
+            "dx": dx,
+            "dy": dy,
             "A": A_zero,
             "H": A_zero,
             "ap_profile_A": np.zeros(nx),
@@ -392,6 +583,15 @@ def simulate_2d_palatal_growth_zone_pde(
             "bifurcation_index": 0.0,
             "corr_AH_2d": 0.0,
             "snapshots_2d": [(0.0, A_zero, A_zero), (n_steps * dt, A_zero, A_zero)],
+            "ridge_h": A_zero,
+            "ridge_profile": np.zeros(nx),
+            "ridge_peaks": np.array([], dtype=int),
+            "n_ridges_mech": 0.0,
+            "crest_phase_offset_lambda": float("nan"),
+            "ridge_duty_cycle": float("nan"),
+            "ridge_amplitude": 0.0,
+            "lambda_ap": float("nan"),
+            "plate_params": dict(plate_kw, beta_act=beta_act, chi_mech=chi_mech),
         }
 
     disp = compute_dispersion_curve(a_11=a_11, a_12=a_12, a_21=a_21, a_22=a_22, D_A=D_A, D_H=D_H)
@@ -439,8 +639,12 @@ def simulate_2d_palatal_growth_zone_pde(
     snap_steps = {0, 350, 750, 1200, 1750, n_steps - 1}
     cut_ix = int(0.60 * nx)
     cut_iy = ny // 2
+    h_mech = np.zeros((nx, ny), dtype=np.float64)
 
     for step in range(n_steps):
+        # Quasi-static elastic re-equilibration of the epithelial plate (Law 4)
+        if chi_mech > 0.0 and step % MECH_FEEDBACK_EVERY == 0:
+            h_mech = solve_quasi_static_plate(active_thickening_forcing(A, beta=beta_act), dx, dy, **plate_kw)["h"]
         # Progressive anteroposterior growth-zone activation envelope from E12.0 to E15.5:
         # Pioneer ruga 8 is at the posterior end (x near L_ap), while the anterior shelf
         # and ruga-8 growth zone progressively elongate and mature across development
@@ -477,6 +681,10 @@ def simulate_2d_palatal_growth_zone_pde(
 
         dA = a_11 * A - a_12 * H - (A**3) + D_A * lap_A
         dH = a_21 * A - a_22 * H + D_H * lap_H
+        if chi_mech > 0.0:
+            # Mechanical feedback: thickened / elevated epithelium sustains the FGF-expressing
+            # mesenchymal condensation beneath each ruga (closes the chemo-mechanical loop)
+            dA = dA + chi_mech * (h_mech - np.mean(h_mech))
 
         A = A + dt * dA
         H = H + dt * dH
@@ -497,11 +705,19 @@ def simulate_2d_palatal_growth_zone_pde(
     bifurcation_idx = float(np.clip(1.0 - anisotropy, 0.0, 1.0))
     r_ah_2d, _ = stats.pearsonr(A.ravel(), H.ravel())
 
+    # Law 4: final quasi-static epithelial ridge elevation driven by the FGF/SHH stripes
+    forcing = active_thickening_forcing(A, beta=beta_act)
+    h_mech = solve_quasi_static_plate(forcing, dx, dy, **plate_kw)["h"]
+    lambda_ap = float(np.mean(np.diff(peaks_ap)) * dx) if len(peaks_ap) >= 2 else float("nan")
+    ridge = measure_ridge_morphometrics(h_mech, ap_A, peaks_ap, shelf_iy, dx, lambda_ap)
+
     return {
         "x": x,
         "y": y,
         "X": X,
         "Y": Y,
+        "dx": dx,
+        "dy": dy,
         "A": A,
         "H": H,
         "ap_profile_A": ap_A,
@@ -512,6 +728,85 @@ def simulate_2d_palatal_growth_zone_pde(
         "bifurcation_index": bifurcation_idx,
         "corr_AH_2d": float(r_ah_2d),
         "snapshots_2d": snapshots_2d,
+        "ridge_h": h_mech,
+        "ridge_forcing": forcing,
+        "shelf_iy": shelf_iy,
+        "lambda_ap": lambda_ap,
+        "plate_params": dict(plate_kw, beta_act=beta_act, chi_mech=chi_mech),
+        **ridge,
+    }
+
+
+def evaluate_ridge_mechanics_sweeps(
+    seed: int = 2012,
+    kappa: float = PLATE_KAPPA_DEFAULT,
+    k_found: float = PLATE_KFOUND_DEFAULT,
+    chi_mech: float = 0.0,
+) -> dict[str, Any]:
+    """Pass 3 chemo-mechanical parameter sweeps on the wild-type elongating palate
+    (Law 4; `palate_ridge_mechanics_reference.json` -> `parameter_sweeps`):
+      1. Bending-stiffness sweep (kappa, one-way coupling, same FGF/SHH field): ridge
+         amplitude must fall monotonically (Spearman rho = -1) while the ridge count stays
+         locked to the 9 Shh stripes (wavelength transfer).
+      2. Foundation-stiffness sweep (k_f): same monotone attenuation.
+      3. Mechanical-feedback sweep (chi_mech, two-way coupling, RD re-run): ridge count must
+         stay at 9 and the ridge amplitude must be non-decreasing in chi_mech.
+    Also returns the analytic transfer function G(q) = 1 / S(q^2) on a wavenumber grid."""
+    mech = load_mechanics_reference()
+    sweeps = mech["parameter_sweeps"]
+    wt = simulate_2d_palatal_growth_zone_pde(seed=seed, kappa=kappa, k_found=k_found, chi_mech=chi_mech)
+    dx, dy = wt["dx"], wt["dy"]
+    forcing = wt["ridge_forcing"]
+
+    def _one_way(kappa_i: float, k_found_i: float) -> dict[str, Any]:
+        h = solve_quasi_static_plate(forcing, dx, dy, kappa=kappa_i, tension=PLATE_TENSION_DEFAULT, k_found=k_found_i)["h"]
+        r = measure_ridge_morphometrics(h, wt["ap_profile_A"], wt["peaks_ap"], wt["shelf_iy"], dx, wt["lambda_ap"])
+        q_ap = 2.0 * math.pi / wt["lambda_ap"]
+        return {
+            "n_ridges_mech": r["n_ridges_mech"],
+            "ridge_amplitude": r["ridge_amplitude"],
+            "ridge_duty_cycle": r["ridge_duty_cycle"],
+            "crest_phase_offset_lambda": r["crest_phase_offset_lambda"],
+            "transfer_gain_at_q_ap": float(1.0 / plate_transfer_stiffness(q_ap * q_ap, kappa=kappa_i, k_found=k_found_i)),
+        }
+
+    kappa_vals = [float(v) for v in sweeps["kappa_bending_stiffness"]["values"]]
+    kf_vals = [float(v) for v in sweeps["k_found_foundation_stiffness"]["values"]]
+    chi_vals = [float(v) for v in sweeps["chi_mech_feedback"]["values"]]
+
+    kappa_rows = [dict(kappa=k, **_one_way(k, k_found)) for k in kappa_vals]
+    kf_rows = [dict(k_found=kf, **_one_way(kappa, kf)) for kf in kf_vals]
+
+    chi_rows: list[dict[str, Any]] = []
+    for chi in chi_vals:
+        s = simulate_2d_palatal_growth_zone_pde(seed=seed, kappa=kappa, k_found=k_found, chi_mech=chi)
+        chi_rows.append(
+            {
+                "chi_mech": chi,
+                "n_rugae_2d": s["n_rugae_2d"],
+                "n_ridges_mech": s["n_ridges_mech"],
+                "ridge_amplitude": s["ridge_amplitude"],
+                "corr_AH_2d": s["corr_AH_2d"],
+                "crest_phase_offset_lambda": s["crest_phase_offset_lambda"],
+            }
+        )
+
+    rho_kappa, _ = stats.spearmanr(kappa_vals, [r["ridge_amplitude"] for r in kappa_rows])
+    rho_kf, _ = stats.spearmanr(kf_vals, [r["ridge_amplitude"] for r in kf_rows])
+    chi_amp = np.array([r["ridge_amplitude"] for r in chi_rows])
+
+    q_grid = np.linspace(0.0, 4.0, 401)
+    return {
+        "wt": wt,
+        "kappa_rows": kappa_rows,
+        "k_found_rows": kf_rows,
+        "chi_rows": chi_rows,
+        "spearman_rho_kappa": float(rho_kappa),
+        "spearman_rho_k_found": float(rho_kf),
+        "chi_amplitude_nondecreasing": bool(np.all(np.diff(chi_amp) >= -1e-12)),
+        "q_grid": q_grid,
+        "transfer_gain": 1.0 / plate_transfer_stiffness(q_grid * q_grid),
+        "q_ap": 2.0 * math.pi / wt["lambda_ap"],
     }
 
 
@@ -589,7 +884,13 @@ def segment_palate_rugae_specimen(
         mean_sp = float(np.mean(spacings_px))
         std_sp = float(np.std(spacings_px, ddof=1))
         cv_sp = std_sp / max(mean_sp, 1e-9)
+        # Pass 3: ridge crest duty cycle (FWHM / spacing) of the real rugae, the
+        # specimen-side counterpart of the simulated plate-elevation duty cycle
+        widths_px, _, _, _ = signal.peak_widths(ap_smooth, peaks, rel_height=0.5)
+        duty = float(np.mean(widths_px) / max(mean_sp, 1e-9))
         return {
+            "ridge_fwhm_px": widths_px,
+            "ridge_duty_cycle": duty,
             "box_xyxy": box_xyxy,
             "ap_y_px": np.arange(y0, y1, dtype=np.float64),
             "ap_profile": ap_smooth,
@@ -671,13 +972,20 @@ def render_comparison_figure(
         cmap="magma",
         shading="gouraud",
     )
+    # Pass 3: overlay the quasi-static epithelial ridge crests (Law 4 plate elevation h)
+    comp_h = np.zeros_like(wt_2d["ridge_h"])
+    comp_h[:, :half_ny] = cor_2d["ridge_h"][:, :half_ny]
+    comp_h[:, half_ny:] = wt_2d["ridge_h"][:, half_ny:]
+    h_lvl = float(np.min(comp_h) + 0.6 * (np.max(comp_h) - np.min(comp_h)))
+    ax_a.contour(wt_2d["X"], wt_2d["Y"], comp_h, levels=[h_lvl], colors="white", linewidths=0.9, alpha=0.9)
+    ax_a.plot([], [], color="white", lw=0.9, label=f"Ridge Crests h>60% (N={int(wt_2d['n_ridges_mech'])}, Δφ={wt_2d['crest_phase_offset_lambda']:.3f}λ)")
     ax_a.axhline(0.0, color="#38bdf8", lw=1.4, ls="--", label="Midline Raphe / Split View")
     ax_a.axvline(17.5, color="#facc15", lw=1.3, ls=":", label="Ruga-8 Growth Zone / Coronal Cut")
     cbar = fig.colorbar(pcm, ax=ax_a, fraction=0.042, pad=0.03)
     cbar.set_label("FGF/SHH Rugae Activity", color="white", fontsize=8)
     cbar.ax.tick_params(colors="#9ca3af", labelsize=7)
     ax_a.set_title(
-        f"A. 2D Palate PDE: Top=WT ({int(wt_2d['n_rugae_2d'])} Rugae) | Bottom=Coronal Cut Bifurcation",
+        f"A. 2D Palate PDE + Plate Ridges: Top=WT ({int(wt_2d['n_rugae_2d'])} Rugae) | Bottom=Coronal Cut",
         color="white",
         fontsize=9.8,
         fontweight="bold",
@@ -873,7 +1181,7 @@ def render_comparison_figure(
     ax_f.legend(loc="lower left", facecolor="#0b0f17", edgecolor="#374151", labelcolor="white", fontsize=6.8)
 
     fig.suptitle(
-        "Economou et al. (2012) Nature Genetics — Mammalian Palate Rugae Growth-Zone Turing Morphospace (v2)",
+        "Economou et al. (2012) Nature Genetics — Mammalian Palate Rugae Growth-Zone Turing Morphospace (v3, chemo-mechanical)",
         color="white",
         fontsize=13,
         fontweight="bold",
@@ -884,25 +1192,189 @@ def render_comparison_figure(
     return out_path
 
 
+def render_ridge_mechanics_figure(
+    out_path: Path = OUT_MECH_PNG,
+    seed: int = 2012,
+    sweeps: dict[str, Any] | None = None,
+    specimen: dict[str, Any] | None = None,
+    mech_overrides: dict[str, float] | None = None,
+) -> Path:
+    """Render the Pass 3 chemo-mechanical ridge-elevation figure
+    (`docs/media/palate_ruguga_turing_ridge_mechanics.png`, Law 4):
+      A. 3D surface of the quasi-static epithelial elevation h(x, y) (wild type)
+      B. Shelf transect: FGF A(x), SHH 3H(x), ridge elevation h(x) with crest/stripe phase offset
+      C. Transfer gain G(q) = 1/S(q^2) with q_ap marked, and the kappa / k_f amplitude sweeps
+      D. Ridge crest duty cycle: simulated plate ridges vs the segmented specimen rugae,
+         plus the chi_mech two-way-coupling sweep
+      E. Elevation map: WT (top half) vs coronal cut (bottom half)
+      F. Equal-diffusion ablation control (flat epithelium, 0 ridges)"""
+    mo = mech_overrides or {}
+    sw = sweeps or evaluate_ridge_mechanics_sweeps(seed=seed, **mo)
+    spec = specimen or segment_palate_rugae_specimen()
+    wt = sw["wt"]
+    cor = simulate_2d_palatal_growth_zone_pde(incision_mode="coronal", seed=seed + 2, **mo)
+    ctrl = simulate_2d_palatal_growth_zone_pde(D_A=0.2, D_H=0.2, seed=seed + 5, **mo)
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig = plt.figure(figsize=(17.0, 10.2), dpi=150, facecolor="#0b0f17")
+    gs = fig.add_gridspec(2, 3, hspace=0.36, wspace=0.28)
+
+    # A. 3D ridge elevation surface
+    ax_a = fig.add_subplot(gs[0, 0], projection="3d", facecolor="#111827")
+    ax_a.plot_surface(wt["X"], wt["Y"], wt["ridge_h"], cmap="magma", rstride=2, cstride=1, linewidth=0, antialiased=True)
+    ax_a.set_title(
+        f"A. Quasi-Static Epithelial Ridge Elevation h(x,y)\n(Kirchhoff plate, κ={wt['plate_params']['kappa']}, k_f={wt['plate_params']['k_found']}; N={int(wt['n_ridges_mech'])} ridges)",
+        color="white",
+        fontsize=9.2,
+        fontweight="bold",
+    )
+    ax_a.set_xlabel("AP x", color="white", fontsize=7.5)
+    ax_a.set_ylabel("ML y", color="white", fontsize=7.5)
+    ax_a.set_zlabel("h / h₀", color="white", fontsize=7.5)
+    ax_a.tick_params(colors="#9ca3af", labelsize=6.5)
+    ax_a.view_init(elev=38, azim=-62)
+    ax_a.set_box_aspect((2.6, 1.0, 0.7))
+
+    # B. Shelf transect with crests
+    ax_b = fig.add_subplot(gs[0, 1], facecolor="#111827")
+    x = wt["x"]
+    ax_b.plot(x, wt["ap_profile_A"], color="#38bdf8", lw=2.0, label="Mesenchymal FGF A(x)")
+    ax_b.plot(x, 3.0 * wt["ap_profile_H"], "--", color="#f43f5e", lw=1.7, label="Epithelial SHH 3H(x)")
+    ax_b.plot(x, wt["ridge_profile"], color="#facc15", lw=2.4, label=f"Ridge elevation h(x) (duty={wt['ridge_duty_cycle']:.3f})")
+    ax_b.scatter(x[wt["ridge_peaks"]], wt["ridge_profile"][wt["ridge_peaks"]], color="white", edgecolors="#facc15", s=40, zorder=5, label=f"Crests (Δφ={wt['crest_phase_offset_lambda']:.3f} λ)")
+    for pk in wt["peaks_ap"]:
+        ax_b.axvline(x[pk], color="#38bdf8", lw=0.6, ls=":", alpha=0.7)
+    ax_b.set_title("B. Shelf Transect: Ridge Crests on FGF/SHH Stripes", color="white", fontsize=10, fontweight="bold")
+    ax_b.set_xlabel("Anteroposterior Position x", color="white", fontsize=8.5)
+    ax_b.set_ylabel("Activity / Elevation", color="white", fontsize=8.5)
+    ax_b.tick_params(colors="#9ca3af", labelsize=8)
+    ax_b.grid(True, alpha=0.22, color="#374151")
+    ax_b.legend(loc="lower right", facecolor="#0b0f17", edgecolor="#374151", labelcolor="white", fontsize=6.8)
+
+    # C. Transfer gain + stiffness sweeps
+    ax_c = fig.add_subplot(gs[0, 2], facecolor="#111827")
+    ax_c.plot(sw["q_grid"], sw["transfer_gain"], color="#a78bfa", lw=2.2, label="G(q) = 1 / (κq⁴ + Tq² + k_f)")
+    ax_c.axvline(sw["q_ap"], color="#facc15", lw=1.3, ls="--", label=f"q_ap = {sw['q_ap']:.2f} (λ_ap = {2 * math.pi / sw['q_ap']:.2f})")
+    ax_c.set_xlabel("Wavenumber q", color="white", fontsize=8.5)
+    ax_c.set_ylabel("Mechanical transfer gain G(q)", color="#a78bfa", fontsize=8.5)
+    ax_c.tick_params(colors="#9ca3af", labelsize=8)
+    ax_c.grid(True, alpha=0.22, color="#374151")
+    ax_c2 = ax_c.twinx()
+    ax_c2.semilogx([r["kappa"] for r in sw["kappa_rows"]], [r["ridge_amplitude"] for r in sw["kappa_rows"]], "o-", color="#f97316", lw=1.8, label=f"Ridge amp vs κ (ρ={sw['spearman_rho_kappa']:+.2f})")
+    ax_c2.semilogx([r["k_found"] for r in sw["k_found_rows"]], [r["ridge_amplitude"] for r in sw["k_found_rows"]], "s--", color="#22c55e", lw=1.8, label=f"Ridge amp vs k_f (ρ={sw['spearman_rho_k_found']:+.2f})")
+    ax_c2.set_ylabel("Ridge amplitude (h/h₀)   [κ, k_f on log axis]", color="#f97316", fontsize=8)
+    ax_c2.tick_params(colors="#9ca3af", labelsize=7.5)
+    h1, l1 = ax_c.get_legend_handles_labels()
+    h2, l2 = ax_c2.get_legend_handles_labels()
+    ax_c.legend(h1 + h2, l1 + l2, loc="upper right", facecolor="#0b0f17", edgecolor="#374151", labelcolor="white", fontsize=6.8)
+    ax_c.set_title("C. Low-Pass Transfer & Stiffness Attenuation", color="white", fontsize=10, fontweight="bold")
+
+    # D. Duty-cycle comparison + chi sweep
+    ax_d = fig.add_subplot(gs[1, 0], facecolor="#111827")
+    labels = ["Sinusoid\n(Turing mode)", "Plate ridges\n(sim, WT)", "Specimen\nleft shelf", "Specimen\nright shelf"]
+    vals = [0.5, wt["ridge_duty_cycle"], spec["left_shelf"]["ridge_duty_cycle"], spec["right_shelf"]["ridge_duty_cycle"]]
+    cols = ["#6b7280", "#facc15", "#38bdf8", "#f43f5e"]
+    ax_d.bar(np.arange(4), vals, color=cols, alpha=0.9)
+    for i, v in enumerate(vals):
+        ax_d.text(i, v + 0.012, f"{v:.3f}", color="white", ha="center", fontsize=8)
+    ax_d.set_xticks(np.arange(4))
+    ax_d.set_xticklabels(labels, color="white", fontsize=7.6)
+    ax_d.set_ylim(0, 1.0)
+    ax_d.set_ylabel("Crest duty cycle FWHM / spacing", color="white", fontsize=8.5)
+    ax_d.tick_params(colors="#9ca3af", labelsize=8)
+    ax_d.grid(True, axis="y", alpha=0.22, color="#374151")
+    ax_d2 = ax_d.inset_axes([0.47, 0.64, 0.50, 0.32], facecolor="#0b0f17")
+    ax_d2.plot([r["chi_mech"] for r in sw["chi_rows"]], [r["ridge_amplitude"] for r in sw["chi_rows"]], "o-", color="#f97316", lw=1.6)
+    ax_d2.set_title(f"χ_m feedback sweep (rugae={int(sw['chi_rows'][-1]['n_rugae_2d'])} ∀χ)", color="white", fontsize=6.8)
+    ax_d2.set_xlabel("χ_m", color="white", fontsize=6.5)
+    ax_d2.set_ylabel("ridge amp", color="white", fontsize=6.5)
+    ax_d2.tick_params(colors="#9ca3af", labelsize=6)
+    ax_d.set_title("D. Crest Duty Cycle: Sim vs Specimen", color="white", fontsize=10, fontweight="bold")
+
+    # E. Elevation map WT vs coronal
+    ax_e = fig.add_subplot(gs[1, 1], facecolor="#111827")
+    half_ny = wt["ridge_h"].shape[1] // 2
+    comp_h = np.zeros_like(wt["ridge_h"])
+    comp_h[:, :half_ny] = cor["ridge_h"][:, :half_ny]
+    comp_h[:, half_ny:] = wt["ridge_h"][:, half_ny:]
+    pcm = ax_e.pcolormesh(wt["X"], wt["Y"], comp_h, cmap="cividis", shading="gouraud")
+    ax_e.axhline(0.0, color="#38bdf8", lw=1.2, ls="--")
+    ax_e.axvline(17.5, color="#facc15", lw=1.2, ls=":")
+    cb = fig.colorbar(pcm, ax=ax_e, fraction=0.042, pad=0.03)
+    cb.set_label("h / h₀", color="white", fontsize=8)
+    cb.ax.tick_params(colors="#9ca3af", labelsize=7)
+    ax_e.set_title(
+        f"E. h Map: Top=WT ({int(wt['n_ridges_mech'])} ridges) | Bottom=Coronal ({int(cor['n_ridges_mech'])}, fragmented)",
+        color="white",
+        fontsize=9.2,
+        fontweight="bold",
+    )
+    ax_e.set_xlabel("Anteroposterior Axis x", color="white", fontsize=8.5)
+    ax_e.set_ylabel("Mediolateral Shelf y", color="white", fontsize=8.5)
+    ax_e.tick_params(colors="#9ca3af", labelsize=7.5)
+
+    # F. Equal-diffusion control: flat epithelium
+    ax_f = fig.add_subplot(gs[1, 2], facecolor="#111827")
+    pcm_f = ax_f.pcolormesh(ctrl["X"], ctrl["Y"], ctrl["ridge_h"], cmap="cividis", shading="gouraud", vmin=float(np.min(comp_h)), vmax=float(np.max(comp_h)))
+    cb_f = fig.colorbar(pcm_f, ax=ax_f, fraction=0.042, pad=0.03)
+    cb_f.set_label("h / h₀ (same scale as E)", color="white", fontsize=8)
+    cb_f.ax.tick_params(colors="#9ca3af", labelsize=7)
+    ax_f.set_title(
+        f"F. D_A=D_H Control: Flat Epithelium ({int(ctrl['n_ridges_mech'])} ridges)",
+        color="white",
+        fontsize=9.6,
+        fontweight="bold",
+    )
+    ax_f.set_xlabel("Anteroposterior Axis x", color="white", fontsize=8.5)
+    ax_f.set_ylabel("Mediolateral Shelf y", color="white", fontsize=8.5)
+    ax_f.tick_params(colors="#9ca3af", labelsize=7.5)
+
+    fig.suptitle(
+        "Economou et al. (2012) — Pass 3 Chemo-Mechanical Palatal Ridge Elevation (Kirchhoff plate on Winkler foundation; reduced 2.5D, not 3D FEM)",
+        color="white",
+        fontsize=12,
+        fontweight="bold",
+        y=0.985,
+    )
+    fig.savefig(out_path, dpi=150, bbox_inches="tight", facecolor=fig.get_facecolor())
+    plt.close(fig)
+    return out_path
+
+
 def render_growth_gif(
     out_path: Path = OUT_GIF,
     seed: int = 2012,
 ) -> Path:
-    """Render Pass 2 co-evolving 2-panel animated GIF of 2D palatal growth-zone
-    sequential ruga intercalation (`8 -> 1..7b`) and in-phase 1D FGF/SHH profiles."""
+    """Render Pass 3 co-evolving 3-panel animated GIF of 2D palatal growth-zone
+    sequential ruga intercalation (`8 -> 1..7b`), the quasi-static epithelial ridge
+    elevation h(x, y) it drives (Law 4), and in-phase 1D FGF/SHH profiles."""
     sim2d = simulate_2d_palatal_growth_zone_pde(seed=seed)
     sim1d = simulate_1d_palatal_transect(seed=seed)
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     frames: list[Image.Image] = []
     n_frames = min(len(sim2d["snapshots_2d"]), len(sim1d["snapshots"]))
+    h_frames = [
+        solve_quasi_static_plate(active_thickening_forcing(A2), sim2d["dx"], sim2d["dy"])["h"]
+        for _, A2, _ in sim2d["snapshots_2d"][:n_frames]
+    ]
+    h_vmax = max(float(np.max(h)) for h in h_frames) or 1.0
 
     for idx in range(n_frames):
         t2, A2, _ = sim2d["snapshots_2d"][idx]
         t1, A1, H1 = sim1d["snapshots"][idx]
 
-        fig = plt.figure(figsize=(10.4, 4.5), dpi=105, facecolor="#0b0f17")
-        gs = fig.add_gridspec(1, 2, width_ratios=[1.15, 1.0], wspace=0.26)
+        fig = plt.figure(figsize=(14.2, 4.5), dpi=105, facecolor="#0b0f17")
+        gs = fig.add_gridspec(1, 3, width_ratios=[1.15, 1.15, 1.0], wspace=0.28)
+
+        ax_h = fig.add_subplot(gs[0, 1], facecolor="#111827")
+        ax_h.pcolormesh(sim2d["X"], sim2d["Y"], h_frames[idx], cmap="cividis", vmin=0.0, vmax=h_vmax, shading="gouraud")
+        ax_h.set_title(f"Epithelial Ridge Elevation h(x,y) (Kirchhoff plate, t={t2:.2f})", color="white", fontsize=9.4, fontweight="bold")
+        ax_h.set_xlabel("Anteroposterior Axis x (R1 → R8)", color="white", fontsize=8)
+        ax_h.set_ylabel("Mediolateral Axis y", color="white", fontsize=8)
+        ax_h.tick_params(colors="#9ca3af", labelsize=7)
+
+        ax2 = fig.add_subplot(gs[0, 2], facecolor="#111827")
 
         ax1 = fig.add_subplot(gs[0, 0], facecolor="#111827")
         ax1.pcolormesh(
@@ -924,7 +1396,6 @@ def render_growth_gif(
         ax1.set_ylabel("Mediolateral Axis y", color="white", fontsize=8)
         ax1.tick_params(colors="#9ca3af", labelsize=7)
 
-        ax2 = fig.add_subplot(gs[0, 1], facecolor="#111827")
         x = sim1d["x"]
         ax2.plot(x, A1, color="#38bdf8", lw=2.2, label="Mesenchymal FGF A(x)")
         ax2.plot(x, 3.0 * H1, "--", color="#f43f5e", lw=1.9, label="Epithelial SHH 3H(x)")
@@ -953,20 +1424,77 @@ def render_growth_gif(
 
 
 # =============================================================================
-# 6. MorphoEval Quantitative Measurement Suite & 8-Point Self-Test
+# 6. MorphoEval Quantitative Measurement Suite & 11-Point Self-Test
 # =============================================================================
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Compute 9 reference-anchored morphometric measurements for `morphoeval/measure_outputs.py`."""
+    """Compute 14 reference-anchored morphometric measurements for `morphoeval/measure_outputs.py`
+    (9 carried from Pass 2 + 5 Pass 3 chemo-mechanical ridge-elevation measurements)."""
     disp = compute_dispersion_curve()
     sim1d = simulate_1d_palatal_transect()
     seq_eval = evaluate_sequential_ruga_intercalation()
     pert = evaluate_surgical_and_drug_perturbations()
     specimen = segment_palate_rugae_specimen()
+    mech = evaluate_ridge_mechanics_sweeps()
 
     wt_p = pert["wild_type_intact_palate"]
     cor_p = pert["coronal_cut_bifurcation_spots"]
     left_s = specimen["left_shelf"]
     right_s = specimen["right_shelf"]
+    wt_m = mech["wt"]
+    kappa_locked = [r["kappa"] for r in mech["kappa_rows"] if r["n_ridges_mech"] == 9.0]
+
+    mech_measurements = [
+        {
+            "name": "Mechanical ridge count from quasi-static epithelial plate elevation (WT)",
+            "value": round(wt_m["n_ridges_mech"], 2),
+            "unit": "ridges",
+            "method": f"Crest count of h(x, y_shelf) from kappa Lap^2 h - T Lap h + k_f h = beta max(A,0) solved exactly by DCT-II (kappa={wt_m['plate_params']['kappa']}, T={wt_m['plate_params']['tension']}, k_f={wt_m['plate_params']['k_found']})",
+            "reference_value": 9.0,
+            "reference_source": "Economou et al. (2012) Nature Genetics 44:348-351 Fig. 1a (9 morphological rugae = 9 Shh stripes); palate_ridge_mechanics_reference.json empirical_targets.wild_type_ridge_count",
+            "note": f"Coronal cut: {cor_p['sim2d']['n_ridges_mech']:.0f} fragmented ridges; equal-diffusion control: {pert['equal_diffusion_ablation_control']['sim2d']['n_ridges_mech']:.0f} ridges (flat epithelium)",
+            "derived_from": "script",
+        },
+        {
+            "name": "Ridge crest to Shh stripe phase offset (WT, fraction of ruga wavelength)",
+            "value": round(wt_m["crest_phase_offset_lambda"], 4),
+            "unit": "fraction of lambda_ap",
+            "method": f"Mean |x_crest - x_nearest_FGF/SHH_peak| / lambda_ap along the shelf transect (lambda_ap={wt_m['lambda_ap']:.3f})",
+            "reference_value": 0.0,
+            "reference_source": "Economou et al. (2012) Fig. 1 (Shh expression confined to the epithelium of each morphological ruga); Lean 4 economou_ridge_elevation_in_phase (sign-preserving transfer)",
+            "note": f"Max offset across kappa sweep = {max(r['crest_phase_offset_lambda'] for r in mech['kappa_rows']):.4f} lambda",
+            "derived_from": "script",
+        },
+        {
+            "name": "Ridge crest duty cycle FWHM/spacing: simulated plate ridges vs segmented specimen rugae",
+            "value": round(wt_m["ridge_duty_cycle"], 4),
+            "unit": "FWHM / spacing",
+            "method": "scipy.signal.peak_widths(rel_height=0.5) / mean crest spacing on the simulated h(x) transect; same estimator applied to the sigma=8 px DoG profile of the specimen shelves",
+            "reference_value": round(left_s["ridge_duty_cycle"], 4),
+            "reference_source": "palate_rugae_specimen.jpg left shelf (Wikimedia Commons File:Palatum_horse.JPG, CC BY-SA 3.0); right shelf and sinusoid (0.5) given in note",
+            "note": f"Specimen right shelf duty = {right_s['ridge_duty_cycle']:.4f}; pure sinusoidal Turing mode = 0.5000; Equus adult vs Mus embryo and DoG smoothing make this a qualitative comparison",
+            "derived_from": "output",
+        },
+        {
+            "name": "Ridge amplitude monotonic attenuation with bending stiffness kappa (Spearman rho)",
+            "value": round(mech["spearman_rho_kappa"], 4),
+            "unit": "Spearman rho",
+            "method": f"Spearman rank correlation of ridge amplitude vs kappa over {[r['kappa'] for r in mech['kappa_rows']]} (one-way coupling, same FGF/SHH field)",
+            "reference_value": -1.0,
+            "reference_source": "Lean 4 economou_ridge_plate_stiffness_monotone (S(q^2) non-decreasing in kappa and q^2 => G = 1/S non-increasing); palate_ridge_mechanics_reference.json parameter_sweeps",
+            "note": f"k_f sweep rho = {mech['spearman_rho_k_found']:+.4f}; ridge count locked at 9 for kappa in {kappa_locked}, merges to {int(mech['kappa_rows'][-1]['n_ridges_mech'])} at kappa={mech['kappa_rows'][-1]['kappa']}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Two-way chemo-mechanical feedback robustness: WT rugae count across chi_mech sweep",
+            "value": round(float(np.mean([r["n_rugae_2d"] for r in mech["chi_rows"]])), 2),
+            "unit": "rugae (mean over chi_mech sweep)",
+            "method": f"RD re-run with dA/dt += chi_mech (h - <h>) re-equilibrated every {MECH_FEEDBACK_EVERY} steps for chi_mech in {[r['chi_mech'] for r in mech['chi_rows']]}",
+            "reference_value": 9.0,
+            "reference_source": "Economou et al. (2012) Fig. 1a (9 wild-type rugae); feedback must not destroy the Turing count",
+            "note": f"Ridge amplitude non-decreasing in chi_mech: {mech['chi_amplitude_nondecreasing']} ({mech['chi_rows'][0]['ridge_amplitude']:.4f} -> {mech['chi_rows'][-1]['ridge_amplitude']:.4f}); r(FGF,SHH) stays {mech['chi_rows'][-1]['corr_AH_2d']:+.4f}",
+            "derived_from": "script",
+        },
+    ]
 
     return [
         {
@@ -1059,14 +1587,14 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"right shelf CV = {right_s['cv_spacing']:.4f}",
             "derived_from": "output",
         },
-    ]
+    ] + mech_measurements
 
 
 def self_test() -> bool:
-    """Run comprehensive 8-point verification suite for Pass 2."""
-    # 1. Cryptographic SHA-256 verification of all 4 dataset files
+    """Run comprehensive 11-point verification suite for Pass 3 (8 Pass 2 checks + 3 Law 4 checks)."""
+    # 1. Cryptographic SHA-256 verification of all 5 dataset files
     digests = verify_dataset_integrity()
-    assert len(digests) == 4, "Expected 4 SHA-256 verified files in datasets/palate_ruguga_turing/"
+    assert len(digests) == 5, "Expected 5 SHA-256 verified files in datasets/palate_ruguga_turing/"
 
     # 2. Law 1: Homogeneous stability & diffusion-driven Turing dispersion inversion vs equal-diffusion control
     disp = compute_dispersion_curve()
@@ -1109,27 +1637,67 @@ def self_test() -> bool:
     assert spec["right_shelf"]["n_rugae_detected"] == 16
     assert 0.05 < spec["left_shelf"]["cv_spacing"] < 0.25
 
-    # 8. Two-run bitwise determinism check
+    # 8. Two-run bitwise determinism check (1D RD and 2D RD + plate elevation)
     run_a = simulate_1d_palatal_transect(seed=2012)
     run_b = simulate_1d_palatal_transect(seed=2012)
     assert np.allclose(run_a["A"], run_b["A"], atol=0.0)
+    wt_a = pert["wild_type_intact_palate"]["sim2d"]
+    wt_b = simulate_2d_palatal_growth_zone_pde(seed=2012)
+    assert np.array_equal(wt_a["ridge_h"], wt_b["ridge_h"]), "2D plate elevation must be bitwise deterministic"
+
+    # 9. Law 4a: DCT-II plate solver is the exact inverse of the discrete Kirchhoff/Winkler operator
+    rng = np.random.default_rng(8)
+    f_rand = rng.standard_normal((128, 44))
+    dx_t, dy_t = 29.0 / 127.0, 9.0 / 43.0
+    sol = solve_quasi_static_plate(f_rand, dx_t, dy_t)
+    assert plate_operator_residual(sol["h"], f_rand, dx_t, dy_t) < 1e-9, "Plate solver residual too large"
+    q2_grid = np.linspace(0.0, 16.0, 33)
+    S_grid = plate_transfer_stiffness(q2_grid)
+    assert np.all(S_grid >= PLATE_KFOUND_DEFAULT) and np.all(np.diff(S_grid) >= 0.0), "S(q^2) must be >= k_f and monotone"
+
+    # 10. Law 4b: ridge crests sit on the FGF/SHH stripes (9 ridges, phase offset < 0.05 lambda),
+    #     crests narrower than a sinusoid, and the equal-diffusion control stays flat
+    assert wt_a["n_ridges_mech"] == 9.0, f"Expected 9 mechanical ridges, got {wt_a['n_ridges_mech']}"
+    assert wt_a["crest_phase_offset_lambda"] < 0.05
+    assert 0.25 < wt_a["ridge_duty_cycle"] < 0.5
+    assert pert["equal_diffusion_ablation_control"]["sim2d"]["n_ridges_mech"] == 0.0
+    assert pert["equal_diffusion_ablation_control"]["sim2d"]["ridge_amplitude"] == 0.0
+    assert pert["coronal_cut_bifurcation_spots"]["sim2d"]["n_ridges_mech"] < wt_a["n_ridges_mech"]
+    assert 0.25 < spec["left_shelf"]["ridge_duty_cycle"] < 0.6
+
+    # 11. Law 4c: monotone stiffness attenuation (kappa, k_f) with wavelength transfer, and
+    #     two-way feedback robustness (count stays 9, amplitude non-decreasing in chi_mech)
+    mech = evaluate_ridge_mechanics_sweeps(seed=2012)
+    assert mech["spearman_rho_kappa"] == -1.0 and mech["spearman_rho_k_found"] == -1.0
+    assert all(r["n_ridges_mech"] == 9.0 for r in mech["kappa_rows"] if r["kappa"] <= 0.1)
+    assert all(r["n_ridges_mech"] == 9.0 for r in mech["k_found_rows"])
+    assert all(r["n_rugae_2d"] == 9.0 and r["n_ridges_mech"] == 9.0 for r in mech["chi_rows"])
+    assert mech["chi_amplitude_nondecreasing"]
+    assert all(r["crest_phase_offset_lambda"] < 0.05 for r in mech["kappa_rows"] + mech["k_found_rows"] + mech["chi_rows"])
 
     meas = measure_morphoeval()
-    assert len(meas) == 9
+    assert len(meas) == 14
     print(
-        f"[self_test] 2012-economou-palate-ruguga-turing.py (v2) PASSED all 8 checks "
+        f"[self_test] 2012-economou-palate-ruguga-turing.py (v3) PASSED all 11 checks "
         f"(lambda_c={disp['lambda_c']:.4f}, r_AH=+{sim1d['corr_AH']:.4f}, "
         f"WT rugae={pert['wild_type_intact_palate']['n_rugae_sim']:.1f}, "
         f"Coronal bifurcation={pert['coronal_cut_bifurcation_spots']['bifurcation_index_sim']:.3f}, "
-        f"Specimen L/R rugae={spec['left_shelf']['n_rugae_detected']}/{spec['right_shelf']['n_rugae_detected']})."
+        f"Specimen L/R rugae={spec['left_shelf']['n_rugae_detected']}/{spec['right_shelf']['n_rugae_detected']}, "
+        f"plate ridges={wt_a['n_ridges_mech']:.0f}, crest offset={wt_a['crest_phase_offset_lambda']:.4f} lambda, "
+        f"duty sim/spec={wt_a['ridge_duty_cycle']:.3f}/{spec['left_shelf']['ridge_duty_cycle']:.3f}, "
+        f"rho_kappa={mech['spearman_rho_kappa']:+.2f})."
     )
     return True
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--self-test", action="store_true", help="Run 8-point Pass 2 verification suite")
+    ap.add_argument("--self-test", action="store_true", help="Run 11-point Pass 3 verification suite")
     ap.add_argument("--skip-gif", action="store_true", help="Skip animated GIF rendering")
+    ap.add_argument("--skip-mechanics-figure", action="store_true", help="Skip the Pass 3 ridge-mechanics figure")
+    ap.add_argument("--kappa", type=float, default=None, help=f"Override epithelial plate bending stiffness kappa (default {PLATE_KAPPA_DEFAULT})")
+    ap.add_argument("--k-found", type=float, default=None, help=f"Override Winkler mesenchymal foundation stiffness k_f (default {PLATE_KFOUND_DEFAULT})")
+    ap.add_argument("--chi-mech", type=float, default=None, help="Override two-way mechanical feedback gain chi_mech (default 0.0 = one-way coupling)")
     ap.add_argument("--a11", type=float, default=None, help="Override FGF self-activation rate a_11")
     ap.add_argument("--a12", type=float, default=None, help="Override SHH -> FGF inhibition rate a_12")
     ap.add_argument("--a21", type=float, default=None, help="Override FGF -> SHH induction rate a_21")
@@ -1155,8 +1723,16 @@ def main() -> int:
         }.items()
         if v is not None
     }
+    mech_overrides = {
+        k: v
+        for k, v in {"kappa": args.kappa, "k_found": args.k_found, "chi_mech": args.chi_mech}.items()
+        if v is not None
+    }
     png = render_comparison_figure(OUT_PNG, overrides=overrides, seed=args.seed)
     print(f"[render] Wrote {png}")
+    if not args.skip_mechanics_figure:
+        mech_png = render_ridge_mechanics_figure(OUT_MECH_PNG, seed=args.seed, mech_overrides=mech_overrides)
+        print(f"[render] Wrote {mech_png}")
     if not args.skip_gif:
         gif = render_growth_gif(OUT_GIF, seed=args.seed)
         print(f"[render] Wrote {gif}")

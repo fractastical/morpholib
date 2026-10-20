@@ -84,4 +84,83 @@ theorem lauschke_2013_phase_wave_velocity_scaling (lambda_ratio T_osc c : Int) :
   rw [Int.mul_assoc lambda_ratio c T_osc, Int.mul_comm c T_osc]
   omega
 
+/-! ### Pass 3 additions (2026-10-19, audit v3)
+
+  Laws 4-6 formalise the two mechanisms added in the Pass 3 remediation of
+  `2014-lauschke-ex-vivo-scaling-mPSM.py`:
+    * an explicit FGF/Wnt source-sink signalling gradient on the shrinking
+      mPSM disc whose half-maximum length scales with the residual radius
+      (Law 4), driving a dynamic relaxation of the Notch phase-wave wavelength
+      (Law 5; Lauschke et al. 2013 Fig. 4, Beaupeux & Francois 2016);
+    * a disordered cell-reaggregation lattice of Kuramoto-Sakaguchi phase
+      oscillators (Tsiairis & Aulehla 2016; Kuramoto 1984) in which target-wave
+      pacemakers emerge at local frequency maxima and the fastest pacemaker
+      wins (Law 6). -/
+
+/-- Law 4 (`lauschke-ex-vivo-scaling-mPSM-4`):
+    FGF/Wnt source-sink signalling gradient on the active mPSM disc.
+    In the diffusion-dominated (sink-controlled) limit the quasi-static
+    profile with a central source `W(0) = W_0` and a peripheral sink
+    `W(R) = 0` is linear, `W(r) = W_0 * (R - r) / R`; in scaled integer units
+    the unnormalised profile is `W_0 * (R - r)`. -/
+def source_sink_gradient (W0 R r : Int) : Int :=
+  W0 * (R - r)
+
+/-- Theorem 4 (`lauschke_2013_fgf_wnt_gradient_scale_covariance`):
+    Scaling the residual mPSM radius `R` and the sampling position `r` by the
+    same factor `k` scales the source-sink signalling profile by `k`, so the
+    position of any iso-concentration level set (e.g. the half-maximum length
+    `l_half = R / 2`) is proportional to `R`: the gradient shrinks with the
+    tissue (the "shrinking FGF/Wnt gradient" that drives wavelength adaptation). -/
+theorem lauschke_2013_fgf_wnt_gradient_scale_covariance (W0 k R r : Int) :
+    source_sink_gradient W0 (k * R) (k * r) = k * source_sink_gradient W0 R r := by
+  dsimp [source_sink_gradient]
+  rw [← Int.mul_sub, Int.mul_left_comm]
+
+/-- Law 5 (`lauschke-ex-vivo-scaling-mPSM-5`):
+    Dynamic wavelength adaptation `d lambda / dt = -(lambda - c * l_half(t)) / tau`.
+    Discretised with step `h / M` (`0 <= h <= M`), the wavelength error
+    `e_n = lambda_n - lambda_target` obeys `M * e_{n+1} = (M - h) * e_n`. -/
+def wavelength_adaptation_error_step (M h e : Int) : Int :=
+  (M - h) * e
+
+/-- Theorem 5 (`lauschke_2013_wavelength_adaptation_contraction`):
+    For any relaxation step `0 <= h <= M` the scaled wavelength error after
+    one adaptation step is no larger in magnitude than before it, so the Notch
+    phase-wave wavelength relaxes monotonically toward the target set by the
+    instantaneous FGF/Wnt gradient length (and the total phase span toward
+    `Phi_0`). -/
+theorem lauschke_2013_wavelength_adaptation_contraction (M h e : Int)
+    (h0 : 0 ≤ h) (hM : h ≤ M) :
+    Int.natAbs (wavelength_adaptation_error_step M h e) ≤ Int.natAbs (M * e) := by
+  dsimp [wavelength_adaptation_error_step]
+  rw [Int.natAbs_mul, Int.natAbs_mul]
+  apply Nat.mul_le_mul_right
+  have h1 : 0 ≤ M - h := Int.sub_nonneg_of_le hM
+  have h2 : 0 ≤ M := Int.le_trans h0 hM
+  have h3 : M - h ≤ M := Int.sub_le_self M h0
+  have := Int.natAbs_of_nonneg h1
+  have := Int.natAbs_of_nonneg h2
+  omega
+
+/-- Law 6 (`lauschke-ex-vivo-scaling-mPSM-6`):
+    Kuramoto (1984) target-wave dispersion relation for the nonlinear phase
+    diffusion equation `theta_t = omega + D lap theta + beta |grad theta|^2`
+    that is the continuum limit of the Kuramoto-Sakaguchi reaggregate lattice:
+    a pacemaker with frequency excess `beta * k^2` emits a target wave of
+    wavenumber `k`. -/
+def target_wave_frequency_excess (beta k : Nat) : Nat :=
+  beta * k * k
+
+/-- Theorem 6 (`tsiairis_2016_pacemaker_dispersion_monotone`):
+    The dispersion relation is monotone in `k`: a faster pacemaker emits a
+    shorter (larger-`k`) target wave, which is why, in the disordered
+    reaggregate lattice, the local frequency maximum with the largest excess
+    entrains its neighbours and the slower foci are progressively eliminated
+    (Tsiairis & Aulehla 2016 multiple-foci consolidation). -/
+theorem tsiairis_2016_pacemaker_dispersion_monotone (beta k1 k2 : Nat) (h : k1 ≤ k2) :
+    target_wave_frequency_excess beta k1 ≤ target_wave_frequency_excess beta k2 := by
+  dsimp [target_wave_frequency_excess]
+  exact Nat.mul_le_mul (Nat.mul_le_mul_left beta h) h
+
 end MathOfBiology.Loop_026

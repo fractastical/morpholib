@@ -118,4 +118,97 @@ theorem diazcuadros_2023_metabolic_nad_period_scaling
   · exact Int.mul_lt_mul_of_pos_right h_etc_wt h_omega
   · exact Int.mul_lt_mul_of_pos_right h_wt_lbnox h_omega
 
+/-- Law 4 (`diaza-human-somite-organoid-clock-4`, Pass 3):
+    Lewis (2003) / Herrgen et al. (2010) DLL1-Notch delay coupling on a hexagonal
+    PSM lattice with DAPT gating of Notch-dependent HES7 synthesis.
+    `neighbour_mean_delta k d` is the mean Delta level seen by a cell whose `k`
+    neighbours all carry level `d`; `hex_lattice_edge_count n` counts the
+    undirected edges of a 6-regular (periodic) hexagonal lattice of `n` cells;
+    `notch_gated_synthesis alpha eps s2` is the HES7 synthesis rate
+    `alpha * (1 - eps + 2 eps S)` in integer percent units
+    (`eps` in percent, `s2 = 200 S` in percent, so `s2 = 100` is the
+    physiological operating point `S = 1/2` and `s2 = 0` is DAPT, `S = 0`). -/
+def neighbour_mean_delta (k d : Nat) : Nat :=
+  (k * d) / k
+
+def hex_lattice_edge_count (n : Nat) : Nat :=
+  (6 * n) / 2
+
+def notch_gated_synthesis (alpha eps s2 : Nat) : Nat :=
+  alpha * (100 - eps + eps * s2 / 100)
+
+/-- Theorem 4 (`lewis_herrgen_notch_coupling_mean_field_dapt_gating`):
+    (i) mean-field reduction — in the homogeneous in-phase state every cell's
+    neighbour-mean Delta equals its own Delta level (`k * d / k = d` for `k > 0`),
+    so the synchronised lattice obeys the single self-coupled DDE;
+    (ii) a 6-regular hexagonal lattice of `n` cells has exactly `3 n` edges;
+    (iii) at the physiological operating point (`s2 = 100`, `eps ≤ 100`) the
+    gated synthesis equals the uncoupled rate `alpha * 100`, and
+    (iv) DAPT (`s2 = 0`) strictly lowers HES7 synthesis below the uncoupled rate
+    for any positive coupling depth `0 < eps ≤ 100` and `0 < alpha`. -/
+theorem lewis_herrgen_notch_coupling_mean_field_dapt_gating
+    (k d n alpha eps : Nat)
+    (h_k : 0 < k)
+    (h_alpha : 0 < alpha)
+    (h_eps_pos : 0 < eps)
+    (h_eps_le : eps ≤ 100) :
+    neighbour_mean_delta k d = d ∧
+    hex_lattice_edge_count n = 3 * n ∧
+    notch_gated_synthesis alpha eps 100 = alpha * 100 ∧
+    notch_gated_synthesis alpha eps 0 < notch_gated_synthesis alpha eps 100 := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · dsimp [neighbour_mean_delta]
+    exact Nat.mul_div_cancel_left d h_k
+  · dsimp [hex_lattice_edge_count]
+    omega
+  · dsimp [notch_gated_synthesis]
+    have h1 : eps * 100 / 100 = eps := Nat.mul_div_cancel eps (by decide)
+    rw [h1]
+    congr 1
+    omega
+  · dsimp [notch_gated_synthesis]
+    have h1 : eps * 100 / 100 = eps := Nat.mul_div_cancel eps (by decide)
+    rw [h1]
+    apply Nat.mul_lt_mul_of_pos_left _ h_alpha
+    omega
+
+/-- Law 5 (`diaza-human-somite-organoid-clock-5`, Pass 3):
+    Yamanaka et al. (2023) Matrigel-embedded elastic boundary force on an
+    axioloid somite rosette. The ECM shell stiffness scales with the Matrigel
+    volume fraction, `matrigel_stiffness kappa phi = kappa * phi`, and the
+    restoring force on a cell at radius `r` outside a shell of radius `R` is
+    `matrigel_boundary_force kappa phi r R = kappa * phi * (r - R)`; natural-number
+    truncated subtraction encodes `max (0, r - R)`, so the force vanishes inside
+    the shell. -/
+def matrigel_stiffness (kappa phi : Nat) : Nat :=
+  kappa * phi
+
+def matrigel_boundary_force (kappa phi r R : Nat) : Nat :=
+  matrigel_stiffness kappa phi * (r - R)
+
+/-- Theorem 5 (`yamanaka_2023_matrigel_boundary_force_scaling`):
+    (i) without Matrigel (`phi = 0`) the boundary force is identically zero
+    (non-embedded axioloids receive no ECM confinement);
+    (ii) inside the shell (`r ≤ R`) the force is zero for any Matrigel fraction;
+    (iii) outside the shell (`R < r`) the force increases strictly with the
+    Matrigel fraction (`phi1 < phi2`) for any positive stiffness coefficient. -/
+theorem yamanaka_2023_matrigel_boundary_force_scaling
+    (kappa phi phi1 phi2 r_in r_out R : Nat)
+    (h_kappa : 0 < kappa)
+    (h_inside : r_in ≤ R)
+    (h_outside : R < r_out)
+    (h_phi : phi1 < phi2) :
+    matrigel_boundary_force kappa 0 r_out R = 0 ∧
+    matrigel_boundary_force kappa phi r_in R = 0 ∧
+    matrigel_boundary_force kappa phi1 r_out R < matrigel_boundary_force kappa phi2 r_out R := by
+  refine ⟨?_, ?_, ?_⟩
+  · simp [matrigel_boundary_force, matrigel_stiffness]
+  · dsimp [matrigel_boundary_force, matrigel_stiffness]
+    rw [Nat.sub_eq_zero_of_le h_inside]
+    simp
+  · dsimp [matrigel_boundary_force, matrigel_stiffness]
+    have h_gap : 0 < r_out - R := Nat.sub_pos_of_lt h_outside
+    have h_stiff : kappa * phi1 < kappa * phi2 := Nat.mul_lt_mul_of_pos_left h_phi h_kappa
+    exact Nat.mul_lt_mul_of_pos_right h_stiff h_gap
+
 end MathOfBiology.Loop_028

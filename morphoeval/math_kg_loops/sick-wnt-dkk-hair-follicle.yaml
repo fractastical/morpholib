@@ -11,12 +11,21 @@ model_spec:
     mu_h: 0.03
     rho_w_wt: 0.001
     rho_h_wt: 0.0
-    kappa_wt: 0.04
-    D_w: 0.01
-    D_h: 0.40
-    diffusivity_ratio_d: 40.0
+    # Pass 3 parity fix: the Pass 2 registration carried kappa_wt=0.04, D_w=0.01, D_h=0.40, d=40 which
+    # disagreed with the vendored JSON `canonical_parameters` and the script defaults (kappa=0.02, D_w=0.015, D_h=0.45, d=30).
+    kappa_wt: 0.02
+    D_w: 0.015
+    D_h: 0.45
+    diffusivity_ratio_d: 30.0
     critical_diffusivity_ratio_dc: 5.8284271247461903
     seed: 2006
+  dermal_condensate_model_pass3:
+    fgf20_pde: "df/dt = D_f Lap3(f) - mu_f f + s_f S(x,y) delta_{z=0}"
+    bmp4_pde: "db/dt = D_b Lap3(b) - mu_b b + s_b rho"
+    mesenchyme_pde: "drho/dt = D_rho Lap3(rho) - chi_f div(m grad f) + chi_b div(m grad b),  m = rho (1 - rho/rho_max)"
+    hair_peg_ode: "dz_i/dt = v_peg clip((e_i - e_thr)/(rho_max - e_thr), 0, 1)"
+    grid: "42 x 42 x 12 slab, lateral periodic, zero-flux in z; dt = 0.25, 3200 steps"
+    parameters: {D_f: 0.25, mu_f: 0.04, s_f: 0.5, D_b: 0.12, mu_b: 0.05, s_b: 0.03, D_rho: 0.05, chi_f: 0.25, chi_b: 0.4, rho_0: 1.0, rho_max: 4.0, e_thr: 1.6, v_peg: 0.03}
   inputs:
     - datasets/wnt_dkk_hair_follicle/wnt_dkk_hair_follicle_reference.json
     - datasets/wnt_dkk_hair_follicle/hair_follicle_placode_specimen.jpg
@@ -27,7 +36,7 @@ equations:
     formula: "∂w/∂t = ρ_w + c_w w^2 / [h(1 + κ w^2)] - μ_w w + D_w ∇^2 w,   ∂h/∂t = ρ_h + c_h w^2 - μ_h h + D_h ∇^2 h;   (w_*, h_*) = ((c_w/c_h)(μ_h/μ_w), (c_w/c_h)(μ_h/μ_w)^2)"
     lean_decl: "MathOfBiology.Loop_006.wnt_activator_num_residual"
     lean_theorem: "MathOfBiology.Loop_006.wnt_dkk_homogeneous_steady_state"
-    lean_locus: "morphoeval/lean/loops/Loop_006_wnt_dkk_hair_follicle.lean#L12-L33"
+    lean_locus: "morphoeval/lean/loops/Loop_006_wnt_dkk_hair_follicle.lean#L14-L34"
     lean_code: |
       def wnt_activator_num_residual (w h_scaled mu_h : Int) : Int :=
         (w * w) * mu_h - w * h_scaled
@@ -40,12 +49,12 @@ equations:
     variables: "w(x,t): epidermal WNT activator concentration; h(x,t): extracellular DKK1/DKK2 inhibitor concentration; κ: autocatalytic saturation; μ_w, μ_h: turnover rates"
     role: "Establishes the exact algebraic homogeneous epidermal steady state of the WNT/DKK reaction kinetics prior to Turing-Meinhardt symmetry breaking"
     source_citation: "Sick et al. (2006) Science 314(5804):1447-1450; Gierer & Meinhardt (1972) Kybernetik 12:30-39"
-    code_locus: "2002-sick-wnt-dkk-hair-follicle.py#L120-L210"
+    code_locus: "2002-sick-wnt-dkk-hair-follicle.py#L169-L249"
   - law_name: "Sick et al. (2006) Equal-Diffusion Epidermal Stability & Dkk1 Blockade Theorem"
     formula: "tr(J_0) = μ_w - μ_h < 0  (μ_h > μ_w),   det(J_0) = μ_w μ_h > 0;   D_w = D_h = D ⟹ det(J_0 - q D I) = (Dq)^2 + Dq(μ_h - μ_w) + μ_w μ_h > 0  ∀ q ≥ 0"
     lean_decl: "MathOfBiology.Loop_006.wnt_dkk_equal_diff_det"
     lean_theorem: "MathOfBiology.Loop_006.wnt_dkk_equal_diffusion_stable"
-    lean_locus: "morphoeval/lean/loops/Loop_006_wnt_dkk_hair_follicle.lean#L36-L58"
+    lean_locus: "morphoeval/lean/loops/Loop_006_wnt_dkk_hair_follicle.lean#L37-L59"
     lean_code: |
       def wnt_dkk_equal_diff_neg_trace (d_mu D q : Nat) : Nat :=
         (d_mu + 1) + 2 * D * q
@@ -59,12 +68,12 @@ equations:
     variables: "J_0: homogeneous WNT/DKK reaction Jacobian; q = k^2: squared spatial wavenumber; D: equal diffusivity"
     role: "Proves that faster DKK turnover (μ_h > μ_w) stabilizes the epidermis against uniform oscillations and that equal diffusion (D_w = D_h) or excess Dkk1 expression prevents hair follicle placode initiation"
     source_citation: "Sick et al. (2006) Science 314:1447-1450; Andl et al. (2002) Dev. Cell 2(5):643-653"
-    code_locus: "2002-sick-wnt-dkk-hair-follicle.py#L212-L310"
+    code_locus: "2002-sick-wnt-dkk-hair-follicle.py#L171-L249,L598-L652"
   - law_name: "Sick et al. (2006) Rapidly Diffusing DKK Instability & Secondary Wave Insertion Theorem"
     formula: "det_J(q) = (D_w q - μ_w)(D_h q + μ_h) + 2 μ_w μ_h < 0  ⟺  d = D_h / D_w > d_c = (√2 + 1)^2 ≈ 5.8284"
     lean_decl: "MathOfBiology.Loop_006.wnt_dkk_fourier_det"
     lean_theorem: "MathOfBiology.Loop_006.wnt_dkk_follicle_spacing_instability"
-    lean_locus: "morphoeval/lean/loops/Loop_006_wnt_dkk_hair_follicle.lean#L61-L82"
+    lean_locus: "morphoeval/lean/loops/Loop_006_wnt_dkk_hair_follicle.lean#L61-L84"
     lean_code: |
       def wnt_dkk_fourier_det (mu_w mu_h D_w D_h q : Int) : Int :=
         (D_w * q - mu_w) * (D_h * q + mu_h) + 2 * mu_w * mu_h
@@ -75,7 +84,68 @@ equations:
           wnt_dkk_fourier_det 2 3 1 10 1 = -1 ∧
           wnt_dkk_fourier_det 2 3 1 40 1 = -31 := by
         decide
-    variables: "d = D_h / D_w: DKK-to-WNT diffusivity ratio (d = 40); d_c = (√2 + 1)^2 ≈ 5.8284: critical Turing threshold; q = k^2: unstable spatial mode"
-    role: "Proves that rapidly diffusing extracellular DKK1/DKK2 (d = 40 > d_c) drives det_J(q) < 0, generating regular primary hair follicle placodes and inter-follicular secondary wave insertion upon domain expansion"
+    variables: "d = D_h / D_w: DKK-to-WNT diffusivity ratio (canonical d = 30; Lean instance d = 40); d_c = (√2 + 1)^2 ≈ 5.8284: critical Turing threshold; q = k^2: unstable spatial mode"
+    role: "Proves that rapidly diffusing extracellular DKK1/DKK2 (d = 30 > d_c) drives det_J(q) < 0, generating regular primary hair follicle placodes and inter-follicular secondary wave insertion upon domain expansion"
     source_citation: "Sick et al. (2006) Science 314(5804):1447-1450 Figs. 1-4"
-    code_locus: "2002-sick-wnt-dkk-hair-follicle.py#L312-L460"
+    code_locus: "2002-sick-wnt-dkk-hair-follicle.py#L341-L441"
+  - law_name: "Epidermally Instructed Dermal Condensation — Epidermis-Free Dermal FGF20/BMP4 Chemotaxis Subsystem Stability (Pass 3)"
+    formula: "M(q) = [[-D_ρ q, -χ_b m_0 q], [s_b, -(D_b q + μ_b)]],  m_0 = ρ_0 (1 - ρ_0/ρ_max);   -tr M = (D_ρ + D_b) q + μ_b > 0,   det M = D_ρ q (D_b q + μ_b) + χ_b m_0 s_b q ≥ 0  ∀ q ≥ 0"
+    lean_decl: "MathOfBiology.Loop_006.dermal_det"
+    lean_theorem: "MathOfBiology.Loop_006.dermal_subsystem_instructed_stable"
+    lean_locus: "morphoeval/lean/loops/Loop_006_wnt_dkk_hair_follicle.lean#L87-L114"
+    lean_code: |
+      def dermal_neg_trace (D_rho D_b mu_b q : Nat) : Nat :=
+        (D_rho + D_b) * q + (mu_b + 1)
+      def dermal_det (D_rho D_b mu_b chi_b m0 s_b q : Nat) : Nat :=
+        D_rho * q * (D_b * q + mu_b) + chi_b * m0 * s_b * q
+      theorem dermal_subsystem_instructed_stable (D_rho D_b mu_b chi_b m0 s_b q : Nat) :
+          dermal_neg_trace D_rho D_b mu_b q ≥ 1 ∧
+          dermal_det D_rho D_b mu_b chi_b m0 s_b q ≥ chi_b * m0 * s_b * q := by
+        simp [dermal_neg_trace, dermal_det]
+        omega
+    variables: "ρ(x,y,z,t): dermal mesenchymal density; b: BMP4; χ_b: BMP4 chemorepulsion sensitivity; D_ρ, D_b: diffusivities; μ_b, s_b: BMP4 turnover and dermal production; q = k^2"
+    role: "Proves that without the epidermal FGF20 cue the dermal subsystem cannot condense spontaneously, so every dermal condensate in the model is instructed by an epidermal WNT placode (Fgf20-null: 0 DCs, Huh et al. 2013)"
+    source_citation: "Huh et al. (2013) Genes Dev 27(4):450-458; Keller & Segel (1970) J Theor Biol 26(3):399-415; Botchkarev et al. (1999) Nat Cell Biol 1(3):158-164"
+    code_locus: "2002-sick-wnt-dkk-hair-follicle.py#L726-L768"
+  - law_name: "Keller-Segel (1970) Chemotactic Aggregation Threshold — Autonomous Comparison for the Dermal FGF20 Response (Pass 3)"
+    formula: "det_KS(q) = D_ρ q (D_f q + μ_f) - χ_f m_0 s_f q < 0  ⟺  χ_f m_0 s_f > D_ρ (D_f q + μ_f)"
+    lean_decl: "MathOfBiology.Loop_006.ks_fourier_det"
+    lean_theorem: "MathOfBiology.Loop_006.keller_segel_fourier_det_sign"
+    lean_locus: "morphoeval/lean/loops/Loop_006_wnt_dkk_hair_follicle.lean#L116-L145"
+    lean_code: |
+      def ks_fourier_det (D_rho D_f mu_f chi_f m0 s_f q : Int) : Int :=
+        D_rho * q * (D_f * q + mu_f) - chi_f * m0 * s_f * q
+      theorem keller_segel_fourier_det_sign :
+          ks_fourier_det 5 25 4 25 75 50 1 < 0 ∧
+          ks_fourier_det 5 25 4 0 75 50 1 = 145 ∧
+          ks_fourier_det 5 25 4 25 75 50 0 = 0 ∧
+          ks_fourier_det 1 1 1 1 1 1 1 = 1 := by
+        decide
+      theorem ks_det_neg_of_supercritical (q A B : Nat) (hq : 0 < q) (h : A < B) :
+          (q * A : Int) - q * B < 0 := by
+        have := Nat.mul_lt_mul_of_pos_left h hq
+        omega
+    variables: "χ_f: FGF20 chemotactic sensitivity (0.25; swept over {0, 0.1, 0.15, 0.2, 0.25}); D_f, μ_f, s_f: FGF20 diffusivity, turnover, source; m_0 = ρ_0 (1 - ρ_0/ρ_max) = 0.75"
+    role: "Formalises the sign of the Keller-Segel Fourier determinant used in compute_dermal_linear_stability(): chemotaxis-null (χ_f = 0) is stable, canonical χ_f is supercritical, and the q = 0 mass mode is neutral (mass conservation)"
+    source_citation: "Keller & Segel (1970) J Theor Biol 26(3):399-415; Painter & Hillen (2002) Can Appl Math Q 10(4):501-543; Glover et al. (2017) PLoS Biol 15(7):e2002117"
+    code_locus: "2002-sick-wnt-dkk-hair-follicle.py#L726-L768"
+  - law_name: "Hair Peg Downgrowth Monotonicity & Closed Form (Paus et al. 1999 ordinal staging, Pass 3)"
+    formula: "z_{n+1} = z_n + v  ⟹  z_n ≤ z_{n+1}  ∧  z_n = n v"
+    lean_decl: "MathOfBiology.Loop_006.hair_peg_depth"
+    lean_theorem: "MathOfBiology.Loop_006.hair_peg_depth_monotone"
+    lean_locus: "morphoeval/lean/loops/Loop_006_wnt_dkk_hair_follicle.lean#L147-L169"
+    lean_code: |
+      def hair_peg_depth (v : Nat) : Nat → Nat
+        | 0 => 0
+        | n + 1 => hair_peg_depth v n + v
+      theorem hair_peg_depth_monotone (v n : Nat) :
+          hair_peg_depth v n ≤ hair_peg_depth v (n + 1) := by
+        simp [hair_peg_depth]
+      theorem hair_peg_depth_closed_form (v n : Nat) : hair_peg_depth v n = n * v := by
+        induction n with
+        | zero => simp [hair_peg_depth]
+        | succ k ih => simp [hair_peg_depth, ih, Nat.succ_mul]
+    variables: "z_n: hair peg depth of one placode after n dermal time steps; v = dt · v_peg · clip(·) ≥ 0: per-step downgrowth increment slaved to the dermal condensate density beneath the placode"
+    role: "Guarantees that the per-placode peg-depth recurrence in simulate_dermal_condensate_3d() is non-decreasing in time (self-test check 11) and linear in the saturated regime, consistent with the ordinal placode -> hair germ -> hair peg progression"
+    source_citation: "Paus et al. (1999) J Invest Dermatol 113(4):523-532; Huh et al. (2013) Genes Dev 27(4):450-458"
+    code_locus: "2002-sick-wnt-dkk-hair-follicle.py#L771-L925"

@@ -18,6 +18,13 @@ model_spec:
     - datasets/bmp_sox9_wnt_digits/sox9_limb_digits_specimen.jpg
     - datasets/bmp_sox9_wnt_digits/scout_manifest.json
     - datasets/bmp_sox9_wnt_digits/paper_citations.bib
+    - datasets/bmp_sox9_wnt_digits/limb_bud_outgrowth_fem_reference.json
+    - datasets/bmp_sox9_wnt_digits/paper_citations_pass3.bib
+  pass3_fem:
+    element: "P1 linear triangle, lumped mass, implicit diffusion, explicit reaction, conservative ALE update"
+    mesh: "nr=26 x ntheta=96 polar fan (2496 nodes, 4750 triangles), r_prox=4.2, R0=5.0 -> R1=8.4, theta_max=0.38*pi"
+    growth_law: "R(t) = min(R1, R0 exp(g t)), g=0.015, T=60, dt=0.02"
+    fgf_mode: "scaled (D ∝ (r/R(t))^2); alternatives material, none"
 equations:
   - law_name: "Raspopovic et al. (2014) Reduced 2-Diffuser Jacobian Determinant Cancellation & Indirect Self-Activation Law"
     formula: "J_eff = [[-μ_B - k_bs k_sb / μ_S, +k_bs k_sw / μ_S], [-k_ws k_sb / μ_S, +k_ws k_sw / μ_S - μ_W]];  det(-J_3) = μ_S det(J_eff) = μ_S μ_B μ_W + k_bs k_sb μ_W - k_ws k_sw μ_B"
@@ -74,3 +81,58 @@ equations:
     role: "Proves why Sox9 pre-cartilage digit condensations form strictly out of phase (180° anti-correlated) with both Bmp and Wnt interdigital signaling domains, while Bmp and Wnt co-localize in the interdigits"
     source_citation: "Raspopovic et al. (2014) Science 345:566-570 Fig. 2E-F & p. 567"
     code_locus: "2014-raspopovic-bmp-sox9-wnt-digits.py#L220-L340"
+
+  # ---------------------------------------------------------------------------
+  # Pass 3 (moving-boundary P1 finite-element limb-bud outgrowth mesh) — Laws 4-6
+  # ---------------------------------------------------------------------------
+  - law_name: "Crampin-Gaffney-Maini (1999) Growth-Dilution Shift of the Raspopovic Turing Dispersion Relation"
+    formula: "Lagrangian growth with div(u) = ρ ≥ 0 adds -ρ c to every species: J_eff -> J_eff - ρ I;  Δ_ρ(q^2) = (D_B q^2 + ρ - J_BB)(D_W q^2 + ρ - J_WW) - J_BW J_WB ≥ Δ_0(q^2),  tr(J_eff) - 2ρ < 0;  Δ_0(4) = -1.003 < 0 but Δ_1.0(4) = +0.477 > 0  ⇒  σ_eff = σ(q) - ρ, patterning iff ρ < σ_max = 0.2608"
+    lean_decl: "MathOfBiology.Loop_016.turing_disp_det_dilution"
+    lean_theorem: "MathOfBiology.Loop_016.raspopovic_growth_dilution_stabilises_turing_mode"
+    lean_locus: "morphoeval/lean/loops/Loop_016_bmp_sox9_wnt_digits.lean#L120-L133"
+    lean_code: |
+      def turing_disp_det_dilution (J_BB J_BW J_WB J_WW D_B D_W q2 rho : Int) : Int :=
+        (D_B * q2 + rho - J_BB) * (D_W * q2 + rho - J_WW) - J_BW * J_WB
+      theorem raspopovic_growth_dilution_stabilises_turing_mode (rho : Int) (h_rho : 0 ≤ rho) :
+          turing_disp_det_dilution (-570) 396 (-500) 290 250 25 4 0 = -100300 ∧
+          turing_disp_det_dilution (-570) 396 (-500) 290 250 25 4 100 = 47700 ∧
+          turing_disp_det_dilution (-570) 396 (-500) 290 250 25 4 rho ≥
+            turing_disp_det_dilution (-570) 396 (-500) 290 250 25 4 0 ∧
+          (-570 + 290 : Int) - 2 * rho ≤ -280
+    variables: "ρ = div(u): dilution rate of the growing Lagrangian domain; Δ_ρ(q^2): dispersion determinant with dilution; σ_eff(ρ) = σ(q) - ρ: effective Turing growth rate"
+    role: "Fixes how fast the limb bud may grow out while the Bmp-Sox9-Wnt network still patterns: the discrete lumped-mass update M(t+dt) c(t+dt) = M(t)[c + dt f(c)] on the moving FEM mesh realises exp(-ρ dt) exactly, and the measured 1D dilution sweep gives slope -1.000 and threshold ρ_c = 0.265 vs σ_max = 0.2608"
+    source_citation: "Crampin EJ, Gaffney EA, Maini PK (1999) Bull Math Biol 61:1093-1120 (doi:10.1006/bulm.1999.0131) Eq. (2.4); Raspopovic et al. (2014) Science 345:566-570 Fig. 4 growing-domain simulations"
+    code_locus: "2014-raspopovic-bmp-sox9-wnt-digits.py#L781-L957"
+    code_locus_secondary: "2014-raspopovic-bmp-sox9-wnt-digits.py#L1033-L1085 (evaluate_growth_dilution_sweep); conservative ALE update at #L883-L886 inside simulate_growing_limb_bud_fem"
+
+  - law_name: "Sequential Digit Addition — Admissible Sox9 Ray Count is Monotone in the Distal Arc Length"
+    formula: "N_rays(L_arc) = ⌊L_arc / λ_AER⌋;  L_1 ≤ L_2  ⇒  N(L_1) ≤ N(L_2);  λ_AER = 4: L = 12, 16, 20, 24 ⇒ N = 3, 4, 5, 6"
+    lean_decl: "MathOfBiology.Loop_016.admissible_ray_count"
+    lean_theorem: "MathOfBiology.Loop_016.raspopovic_ray_count_monotone_in_arc_length"
+    lean_locus: "morphoeval/lean/loops/Loop_016_bmp_sox9_wnt_digits.lean#L146-L152"
+    lean_code: |
+      def admissible_ray_count (L lam_aer : Nat) : Nat := L / lam_aer
+      theorem raspopovic_ray_count_monotone_in_arc_length (L1 L2 lam_aer : Nat) (h : L1 ≤ L2) :
+          admissible_ray_count L1 lam_aer ≤ admissible_ray_count L2 lam_aer ∧
+          admissible_ray_count 12 4 = 3 ∧ admissible_ray_count 16 4 = 4 ∧
+          admissible_ray_count 20 4 = 5 ∧ admissible_ray_count 24 4 = 6
+    variables: "L_arc = 2 θ_max R(t): distal handplate arc length at the AER; λ_AER: Turing wavelength at the AER; N_rays: number of Sox9 rays that fit along the arc"
+    role: "Discrete law behind the 3 -> 4 -> 5 sequential ray addition observed on the moving-boundary mesh and the final-arc sweep (slope dN/dL = 0.225 vs 1/λ = 0.250, Spearman ρ = 0.97); the Sheth et al. (2012) digit-number-vs-width observation"
+    source_citation: "Sheth et al. (2012) Science 338:1476-1480; Raspopovic et al. (2014) Science Fig. 4; Crampin et al. (1999) mode insertion on growing domains"
+    code_locus: "2014-raspopovic-bmp-sox9-wnt-digits.py#L1088-L1120"
+    code_locus_secondary: "2014-raspopovic-bmp-sox9-wnt-digits.py#L915-L923 (addition_events in simulate_growing_limb_bud_fem)"
+
+  - law_name: "AER-Anchored Wavelength Modulation Keeps Radial Sox9 Rays Unbranched (Self-Similar Ray Count)"
+    formula: "λ(r, t) = λ_AER · r / R(t)  (D ∝ (r/R(t))^2, σ_max invariant)  ⇒  2θ r / λ(r) = 2θ R / λ_AER independent of r;  cross-multiplied: (2θ r)(λ_AER R) = (2θ R)(λ_AER r)"
+    lean_decl: "MathOfBiology.Loop_016.raspopovic_scaled_gradient_ray_count_invariant"
+    lean_theorem: "MathOfBiology.Loop_016.raspopovic_scaled_gradient_ray_count_invariant"
+    lean_locus: "morphoeval/lean/loops/Loop_016_bmp_sox9_wnt_digits.lean#L166-L168"
+    lean_code: |
+      theorem raspopovic_scaled_gradient_ray_count_invariant (theta2 r R lam_aer : Int) :
+          (theta2 * r) * (lam_aer * R) = (theta2 * R) * (lam_aer * r) := by
+        ac_rfl
+    variables: "θ: fan half-angle; r: radial (proximodistal) position; R(t): current AER radius; λ_AER: wavelength at the AER"
+    role: "Explains why the distal FGF / Hoxd gradient of Raspopovic et al. (2014) Fig. 4 keeps the digit rays unbranched on the widening autopod: with the gradient (fgf_mode=scaled) the FEM bifurcation range is 0 in 3/3 seeds, without it (fgf_mode=none) rays merge/split (range up to 2)"
+    source_citation: "Raspopovic et al. (2014) Science 345:566-570 Fig. 4A-D & p. 569; Sheth et al. (2012) Science 338:1476-1480"
+    code_locus: "2014-raspopovic-bmp-sox9-wnt-digits.py#L850-L856"
+    code_locus_secondary: "2014-raspopovic-bmp-sox9-wnt-digits.py#L1123-L1139 (evaluate_fgf_modulation_ablation)"

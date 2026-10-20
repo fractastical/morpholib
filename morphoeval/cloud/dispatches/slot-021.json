@@ -21,5 +21,73 @@
   "slot_index": 21,
   "slug": "clock-and-wavefront",
   "target_script": "1976-cooke-clock-and-wavefront.py",
-  "delta": 32.0
+  "delta": 32.0,
+  "pass3_run_id": "2026-10-19-clock-and-wavefront-loop-pass3",
+  "pass3_audit_id": "2026-10-19-clock-and-wavefront-audit-v3",
+  "audit_v3": "morphoeval/audits/2026-10-19-clock-and-wavefront-audit-v3.yaml",
+  "pass3_score": 90.3,
+  "pass3_dims": {
+    "model-fidelity": 91,
+    "specimen-match": 87,
+    "parameter-expressivity": 92,
+    "morphometric-validation": 91,
+    "source-traceability": 93,
+    "code-traceability": 91,
+    "repro-package": 91
+  },
+  "pass2_dims": {
+    "model-fidelity": 93,
+    "specimen-match": 87,
+    "parameter-expressivity": 89,
+    "morphometric-validation": 90,
+    "source-traceability": 93,
+    "code-traceability": 91,
+    "repro-package": 90
+  },
+  "pass3_completed_at": "2026-10-20T07:50:59Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_kg_dir": "morphoeval/kg/2026-10-19-clock-and-wavefront-audit-v3",
+  "pass3_quick_gate": 100,
+  "pass3_remediation_closed": [
+    "Couple the 1D Thom-Zeeman cusp wavefront to a 2D vertex-model paraxial mesoderm sheet to simulate epithelial rosette cleft rotation -> simulate_vertex_sheet_segmentation() (1976-cooke-clock-and-wavefront.py L640-876): Farhadifar (2007) vertex sheet, 360 cells, posterior(-1)->anterior(+1) half-somite cleft tension; cleft angle 28.2 -> 10.3 deg (dLambda=0 control 27.3; SEM specimen 7.9), tortuosity 1.30 -> 1.03, 12 clefts at 100.0 um. Reduced: no T1 transitions / rosette apical constriction (carried to Pass 4).",
+    "Integrate spatial FGF8/Wnt3a vs Retinoic Acid reaction-diffusion bistability (Goldbeter et al. 2007) to derive wavefront velocity v endogenously from posterior tailbud elongation -> simulate_cusp_clock_wavefront(wavefront_mode='fgf_ra') + fgf_ra_bistability_scan() (L266-633): reduced two-variable Goldbeter toggle driven by Dubrulle & Pourquie (2004) fgf8 mRNA decay behind the elongating tailbud; v_front = 2.22222 vs v_tb = 2.2222 um/min (R^2 = 1.000), S = 100.13 um, N = 40; v_tb sweep S RMSE 0.09 um; FGF8 bead -> 0.70x adjacent somites (Dubrulle 2001). Reduced: Cyp26/Raldh2 lumped, constants tuned (carried to Pass 4)."
+  ],
+  "pass3_remediation_open": [
+    "L136-148, L266-336: implement the published Goldbeter (2007) kinetics with explicit Cyp26/Raldh2 and parameter values; reproduce its hysteresis figure quantitatively",
+    "L765-876: add T1 transitions and an apical-constriction/rosette energy; model the 90-deg Xenopus somite cell-block rotation",
+    "L883-976 + clock_and_wavefront_reference.json:30-41: specimen has no um scale and is chick; vendor a scale-calibrated Xenopus somite micrograph and compare S_obs (um) to S_sim",
+    "L125-132: pin SHA-256 of fgf_ra_vertex_reference.json and clock_and_wavefront_reference.json in EXPECTED_SHA256",
+    "L1141-1149: replace the directional FGF8-bead reference with a digitised Dubrulle (2001) / Goldbeter (2007) somite-size ratio",
+    "L150-161, L800-825: sweep dLambda over [0, 1.5] for monotonicity; calibrate the vertex relaxation schedule to a physical time scale",
+    "L944-958: replace the luminance-minimum cleft-angle fit with an edge-traced boundary and report mean +/- sd for both rows"
+  ],
+  "pass3_lean_theorems_added": [
+    "goldbeter_2007_front_velocity_equals_tailbud_elongation",
+    "endogenous_front_somite_length",
+    "compartments_length",
+    "meinhardt_1986_half_somite_cleft_count",
+    "farhadifar_2007_cleft_tension_selectivity"
+  ],
+  "lean_theorems_verified_pass3": 8,
+  "pass3_self_test": "PASSED (6 groups, 13 measurements, ~5 s)",
+  "pass3_artifacts": [
+    "1976-cooke-clock-and-wavefront.py",
+    "morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean",
+    "morphoeval/math_kg_loops/cooke-clock-and-wavefront.yaml",
+    "datasets/clock_and_wavefront/fgf_ra_vertex_reference.json",
+    "datasets/clock_and_wavefront/README.md",
+    "datasets/clock_and_wavefront/paper_citations.bib",
+    "docs/media/clock_and_wavefront_comparison.png",
+    "docs/media/clock_and_wavefront_vertex_sheet.png",
+    "docs/media/clock_and_wavefront_growth.gif",
+    "docs/media/clock_and_wavefront_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-clock-and-wavefront-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-clock-and-wavefront-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-clock-and-wavefront-audit-v3/",
+    "morphoeval/runs/2026-10-19-clock-and-wavefront-loop-pass3.{yaml,csv,md,trig,events.jsonl,ledger.jsonl}",
+    "morphoeval/cloud/dispatches/slot-021.json"
+  ],
+  "signed_nanopubs_count_total": 30
 }

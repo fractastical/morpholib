@@ -1,0 +1,354 @@
+# MorphoEval audit — Sick et al. (2006) Science & Andl et al. (2002) WNT/DKK Hair Follicle Spacing Morphogenesis, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `2002-sick-wnt-dkk-hair-follicle.py` (v3, 1768 lines; 12 self-test checks; 13 measurements)
+# after the remediation round of the instrumented loop `morphoeval/runs/2026-10-19-wnt-dkk-hair-follicle-loop-pass3`,
+# superseding `2026-10-19-wnt-dkk-hair-follicle-audit-v2` (91.9 consensus; 94/91/90/92/95/92/92).
+#   - Primary assessor: Claude Fable 5.1 (Cursor agent, Pass 3 builder + assessor; same checkpoint, line numbers
+#     verified against the file as it is at commit 64526a0 + this working tree).
+#   - Second assessor: none ran in Pass 3 (single-assessor round; the v2 second-assessor block is retained for
+#     provenance but no second score is claimed).
+#
+# What Pass 3 changed (the single open v2 remediation item + defects exposed while doing it):
+#   1. CLOSED — "Couple the 2D epidermal WNT/DKK sheet to a 3D dermal condensate mesenchymal chemotaxis
+#      (FGF20/BMP4) model to simulate hair peg downgrowth": Section 3b (L654-L969) adds a 42x42x12 dermal slab
+#      (lateral periodic, zero-flux in depth) beneath the WT placode field. FGF20 is sourced by the placodes at
+#      z = 0 (L835), BMP4 is produced by the dermis (L836), mesenchymal density follows Keller-Segel chemotaxis
+#      with volume filling through a conservative face-flux scheme (`chemotactic_divergence_3d`, L707-L723), and
+#      each placode carries a hair-peg depth ODE slaved to the dermal condensate (DC) beneath it (L847). Genotypes:
+#      WT 15/15 DCs (mean lateral offset 0.41 px), Fgf20-null 0 DCs / 0 downgrowth, chemotaxis-null 0 DCs, 5x BMP4
+#      excess 0 DCs; 5-point chi_f sweep monotone (r = 0.913); mesenchymal mass drift 0.0; epidermis-free dermal
+#      subsystem linearly stable for all q (instructed, not spontaneous, condensation). Row D of the figure and a
+#      15-frame Phase 3 GIF segment render it. Six new measurements, four new self-test checks (9-12), CLI --chi-f.
+#      Honest reduction (stated in code, README and here): planar epidermis as a source term, one-way coupling,
+#      scalar peg depth, ordinal Paus (1999) stages as a model convention — NOT a deforming-tissue FEM.
+#   2. FOUND + FIXED — the Pass 2 placode counter (`ndi.label` without the periodic seam) double-counted
+#      seam-straddling placodes: the headline "16 WT placodes = 16 specimen placodes" was 14 seam-aware threshold
+#      components (one a fused touching pair) + 2 seam duplicates. Placodes are now periodic local WNT maxima
+#      (`label_periodic_2d`, `periodic_centroids_2d`, L456-L507; L551-L552): WT 15, K14-Wnt 30 (was 32 in code,
+#      22 in docstring/JSON), enlarged 10 (was 12), area +38.5% (was +45%). JSON, docstrings and self-test updated;
+#      the invented "2.0" K14-Wnt reference ratio is withdrawn (reference_value null, L1584-L1586).
+#   3. FOUND + FIXED — parameter parity: `math_kg_loops` yaml carried kappa 0.04, D_w 0.01, D_h 0.40, d 40 and the
+#      dataset README D_w 0.01 / D_h 0.40 / d 40, disagreeing with the JSON and the script (0.02, 0.015, 0.45, 30).
+#   4. Lean 4: 3 new laws (`dermal_subsystem_instructed_stable`, `keller_segel_fourier_det_sign` +
+#      `ks_det_neg_of_supercritical`, `hair_peg_depth_monotone` + `hair_peg_depth_closed_form`), 0 sorrys,
+#      `lean` exit 0, registered in `morphoeval/math_kg_loops/sick-wnt-dkk-hair-follicle.yaml` (6 equations).
+#   5. Seven references appended to `paper_citations.bib` (SHA-256 re-pinned in the script and the JSON).
+#
+# Net effect on the score: DOWN, 91.9 -> 85.9. The remediation item is closed, but doing it exposed that the
+# Pass 2 specimen-match and morphometric headline rested on a counting artifact, that the K14-Wnt regime is a
+# confounded multi-parameter change, and that the vendored specimen (a Gad1 in situ of vibrissa placodes) is a
+# loose stand-in for Sick et al.'s pelage pattern (NN-spacing CV 0.086 PDE vs 0.323 specimen). Those are now
+# listed as Pass 4 remediation items rather than hidden behind a matching integer.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated
+# probabilities). Line numbers refer to the files in this working tree (checkpoint 64526a0 + Pass 3 edits).
+
+audit:
+  id: 2026-10-19-wnt-dkk-hair-follicle-audit-v3
+  supersedes_audit_id: 2026-10-19-wnt-dkk-hair-follicle-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Pass 3 primary assessor; MorphoEval rubric)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (v2 independent rubric baseline; did not re-score in Pass 3)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 64526a0
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) remediated evaluation of `2002-sick-wnt-dkk-hair-follicle.py`
+      superseding `2026-10-19-wnt-dkk-hair-follicle-audit-v2` in the isolated loop
+      `2026-10-19-wnt-dkk-hair-follicle-loop-pass3` (HEAD 64526a0 plus this slot's
+      uncommitted Pass 3 edits; `--self-test` 12/12 in ~30 s, full render ~50 s).
+
+references:
+  sick2006:
+    title: "WNT and DKK determine hair follicle spacing through a reaction-diffusion mechanism"
+    authors: "Sick S, Reinker S, Timmer J, Schlake T"
+    venue: "Science 314(5804):1447-1450 (2006)"
+    doi: 10.1126/science.1130088
+  andl2002:
+    title: "WNT signals are required for the initiation of hair follicle development"
+    authors: "Andl T, Reddy ST, Gaddapara T, Millar SE"
+    venue: "Developmental Cell 2(5):643-653 (2002)"
+    doi: 10.1016/S1534-5807(02)00167-3
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12(1):30-39 (1972)"
+    doi: 10.1007/BF00289234
+  maddox2004:
+    title: "Dynamic expression of a glutamate decarboxylase gene in multiple non-neural tissues during mouse development"
+    authors: "Maddox DM, Condie BG"
+    venue: "BMC Developmental Biology 4:4 (2004)"
+    doi: 10.1186/1471-213X-4-4
+  kellersegel1970:
+    title: "Initiation of slime mold aggregation viewed as an instability"
+    authors: "Keller EF, Segel LA"
+    venue: "Journal of Theoretical Biology 26(3):399-415 (1970)"
+    doi: 10.1016/0022-5193(70)90092-5
+  huh2013:
+    title: "Fgf20 governs formation of primary and secondary dermal condensations in developing hair follicles"
+    authors: "Huh SH, Narhi K, Lindfors PH, Haara O, Yang L, Ornitz DM, Mikkola ML"
+    venue: "Genes & Development 27(4):450-458 (2013)"
+    doi: 10.1101/gad.198945.112
+  glover2017:
+    title: "Hierarchical patterning modes orchestrate hair follicle morphogenesis"
+    authors: "Glover JD, Wells KL, Matthaus F, Painter KJ, Ho W, Riddell J, Johansson JA, Ford MJ, Jahoda CAB, Klika V, Mort RL, Headon DJ"
+    venue: "PLoS Biology 15(7):e2002117 (2017)"
+    doi: 10.1371/journal.pbio.2002117
+  botchkarev1999:
+    title: "Noggin is a mesenchymally derived stimulator of hair-follicle induction"
+    authors: "Botchkarev VA, Botchkareva NV, Roth W, Nakamura M, Chen LH, Herzog W, Lindner G, McMahon JA, Peters C, Lauster R, McMahon AP, Paus R"
+    venue: "Nature Cell Biology 1(3):158-164 (1999)"
+    doi: 10.1038/11078
+  mou2006:
+    title: "Generation of the primary hair follicle pattern"
+    authors: "Mou C, Jackson B, Schneider P, Overbeek PA, Headon DJ"
+    venue: "Proceedings of the National Academy of Sciences USA 103(24):9075-9080 (2006)"
+    doi: 10.1073/pnas.0600825103
+  paus1999:
+    title: "A comprehensive guide for the recognition and classification of distinct stages of hair follicle morphogenesis"
+    authors: "Paus R, Muller-Rover S, van der Veen C, Maurer M, Eichmuller S, Ling G, Hofmann U, Foitzik K, Mecklenburg L, Handjiski B"
+    venue: "Journal of Investigative Dermatology 113(4):523-532 (1999)"
+    doi: 10.1046/j.1523-1747.1999.00740.x
+  painter2002:
+    title: "Volume-filling and quorum-sensing in models for chemosensitive movement"
+    authors: "Painter KJ, Hillen T"
+    venue: "Canadian Applied Mathematics Quarterly 10(4):501-543 (2002)"
+    url: https://www.math.ualberta.ca/~thillen/paper/Painter-Hillen.pdf
+
+simulations:
+  - id: sick-wnt-dkk-hair-follicle
+    name: "Sick et al. (2006) & Andl et al. (2002) WNT/DKK reaction-diffusion hair follicle spacing, secondary wave insertion, transgenic phenotypes & (Pass 3) 3D dermal condensate FGF20/BMP4 chemotaxis with hair peg downgrowth"
+    organism: "Embryonic mouse (Mus musculus) epidermal hair follicle placode lattice with dermal condensate formation and hair peg downgrowth; K14-Wnt / Dkk1 / Fgf20-null / BMP4-excess genotypes"
+    script: 2002-sick-wnt-dkk-hair-follicle.py
+    output: docs/media/wnt_dkk_hair_follicle_comparison.png
+    extra_outputs:
+      - docs/media/wnt_dkk_hair_follicle_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-wnt-dkk-hair-follicle-audit-v2
+    source_refs:
+      - sick2006
+      - andl2002
+      - gierer1972
+      - maddox2004
+      - kellersegel1970
+      - huh2013
+      - glover2017
+      - botchkarev1999
+      - mou2006
+      - paus1999
+      - painter2002
+    claim_boundary:
+      reported_in_source:
+        - "Sick et al. (2006): WNT (short-range activator) and DKK (long-range inhibitor) form a Turing/Meinhardt reaction-diffusion pair that sets pelage follicle spacing; K14-Dkk1 overexpression reduces/abolishes follicles, altered WNT/DKK balance enlarges or crowds placodes, and a secondary follicle wave inserts between primary follicles as the skin grows"
+        - "Andl et al. (2002): ectopic Dkk1 blocks follicle initiation (no placodes)"
+        - "Huh et al. (2013): placode-derived FGF20 is required for primary and secondary dermal condensates; Fgf20-null placodes form but do not progress"
+        - "Glover et al. (2017): dermal cells aggregate directly beneath placodes by directed migration toward placode FGF20"
+        - "Botchkarev et al. (1999), Mou et al. (2006): BMP4 inhibits follicle induction / dermal condensation; Noggin/EDA antagonise it"
+        - "Paus et al. (1999): ordinal morphological stages placode -> hair germ (with DC) -> hair peg"
+      reconstructed_in_script:
+        - "Saturating Gierer-Meinhardt WNT/DKK PDE with exact steady state, Jacobian and d_c = (sqrt2+1)^2; 1D primary wave -> 2x expansion -> secondary insertion (4 -> 8); 2D WT / K14-Wnt / enlarged / Dkk1 / equal-diffusion regimes; Dkk1 dosage and domain-length sweeps; optical-density segmentation of the vendored specimen"
+        - "(Pass 3) 3D dermal slab beneath the WT placode field: FGF20 sourced at z = 0 by the placodes, BMP4 produced by the dermis, Keller-Segel chemotaxis with volume filling in conservative face-flux form, per-placode hair-peg depth ODE, WT / Fgf20-null / chemotaxis-null / BMP4-excess genotypes, chi_f sweep, dermal linear stability, seam-aware placode counting"
+      transfer_boundary:
+        - "All parameters are dimensionless and chosen to produce the qualitative regimes; none of D_w, D_h, mu, rho, kappa, D_f, mu_f, chi_f, chi_b, D_rho, v_peg is traced to a measured value or to Sick et al.'s SOM parameter table"
+        - "The vendored specimen is a Gad1 whole-mount in situ of E12.5-E13.5 vibrissa/hair placodes (Maddox & Condie 2004), not a pelage pattern from Sick et al.; the PDE lattice (15 placodes, NN-spacing CV 0.086) and the specimen (16 segmented placodes, CV 0.323) agree in count only approximately and disagree in regularity"
+        - "The K14-Wnt regime changes D_w, D_h and kappa together with rho_w, so it is a 'denser lattice' preset rather than a pure WNT-overexpression perturbation"
+        - "The dermal coupling is one-way (placodes -> dermis); the epidermis stays planar and peg downgrowth is a scalar depth per placode; stage thresholds 25%/50% of slab depth are a model convention"
+      does_not_claim:
+        - "A deforming epithelial interface or tissue mechanics of invagination, DC -> epidermis feedback (DC-derived Noggin/FGF), follicle-type specification by DC size, calibration of slab depth or peg depth to micrometres, or numerical parity with Sick et al.'s own simulation parameters"
+    summary: >-
+      Pass 3 (v3) evaluation of `2002-sick-wnt-dkk-hair-follicle.py` (85.9/100, down 6.0 from 91.9 in Pass 2).
+      The single open Pass 2 item is closed: a 42x42x12 dermal FGF20/BMP4 Keller-Segel chemotaxis slab is
+      coupled beneath the WT placode lattice, forms one dermal condensate under each of the 15 placodes (mean
+      lateral offset 0.41 px), drives hair-peg downgrowth to 67% of slab depth in WT, and reproduces the
+      Fgf20-null (0 DCs, placodes persist, no downgrowth), chemotaxis-null and BMP4-excess suppressions; the
+      scheme conserves mass exactly, the chi_f sweep is monotone, and three new Lean 4 laws cover the dermal
+      stability, the Keller-Segel threshold and peg monotonicity. The score falls because the remediation exposed
+      that Pass 2's headline specimen match (16 = 16) was a seam double-counting artifact (true count 15 periodic
+      maxima / 14 components), that the K14-Wnt regime is a confounded preset, that the invented 2.0 density
+      reference had no source, and that the specimen regularity (CV 0.323) does not match the PDE lattice
+      (CV 0.086). These are now stated in the code, the JSON and the measurements rather than hidden.
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >-
+          The WNT/DKK core is still faithful: saturating activator-inhibitor PDEs with the exact unsaturated steady
+          state, Jacobian, d_c = (sqrt2+1)^2 and dispersion (L171-L249), 1D primary -> secondary insertion
+          (L341-L397), 2D regimes (L509-L652). Pass 3 adds the requested dermal dimension as a reduced but
+          mechanistic model: FGF20 sourced by placodes, dermally produced BMP4, Keller-Segel chemotaxis with volume
+          filling in conservative form, peg depth slaved to the DC (L654-L969), with a correct linear analysis
+          showing condensation is epidermally instructed (L726-L768; Lean Law 4). Deductions: the coupling is one-way
+          and the epidermis never deforms (-4); the K14-Wnt regime changes D_w, D_h and kappa together with rho_w
+          (L600-L603) so the 'overexpression' phenotype is not a single-parameter perturbation (-4); BMP4 is produced
+          uniformly in proportion to rho with no interfollicular-epidermal source (L836) and the FGF20 source
+          S(x,y) is a thresholded, rescaled w rather than a modelled Fgf20 transcriptional response (L806-L807)
+          (-3); no parameter is taken from Sick et al.'s SOM table and the dermal constants are hand-tuned (-3).
+        evidence:
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [171, 249], note: "Exact WNT/DKK steady state, Jacobian J_0, d_c = (sqrt2+1)^2 and dispersion Re sigma(k) for d = 30, d_c and d = 1", supports: true}
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [699, 723], note: "7-point slab Laplacian (periodic x,y / zero-flux z) and conservative face-flux chemotactic divergence with volume-filling mobility m = rho(1 - rho/rho_max)", supports: true}
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [826, 848], note: "Time loop: FGF20 source at z = 0 (L835), dermal BMP4 production (L836), chemotaxis up f / down b (L837-L841), per-placode peg ODE (L847)", supports: true}
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [726, 768], note: "Linearised dermal subsystem (-tr, det >= 0 for all q) and autonomous Keller-Segel comparison; matches Lean Laws 4-5", supports: true}
+          - {file: morphoeval/lean/loops/Loop_006_wnt_dkk_hair_follicle.lean, lines: [87, 169], note: "Laws 4-6: dermal_subsystem_instructed_stable, keller_segel_fourier_det_sign + ks_det_neg_of_supercritical, hair_peg_depth_monotone + closed_form (lean exit 0, 0 sorrys)", supports: true}
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [600, 603], note: "K14-Wnt 'overexpression' preset also changes kappa 0.02 -> 0.015, D_w 0.015 -> 0.008, D_h 0.45 -> 0.32: confounded, not a pure rho_w perturbation", supports: false}
+      specimen-match:
+        value: 80
+        rationale: >-
+          Panels B1-B3 and C1 are visually distinct and the segmented specimen with its Delaunay graph is
+          shown side by side with the PDE lattice; row D now shows the 3D condensates, an x-z section with
+          pegs and the genotype downgrowth curves, and the GIF carries a 15-frame Phase 3. Deductions: the Pass
+          2 claim that the WT lattice 'matches the 16 segmented placodes' was a seam-duplication artifact — the
+          corrected count is 15 periodic maxima (14 components) and, more importantly, the nearest-neighbour
+          spacing regularity disagrees (CV 0.086 PDE vs 0.323 specimen) (-8); the specimen is a Gad1 in situ of
+          vibrissa/hair placodes (Maddox & Condie 2004), not Sick et al.'s pelage pattern, so the comparison is a
+          stand-in (-5); row D has no histological or live-imaging reference image (Huh 2013 / Glover 2017 /
+          Paus 1999) beside the model, so DC shape, depth and peg morphology are judged against nothing (-5);
+          the saturated 'ringing' regime (B3) shows plateaus, not the annular rings described in the text (-2).
+        evidence:
+          - {file: docs/media/wnt_dkk_hair_follicle_comparison.png, lines: [0, 0], note: "12-panel figure: B1 WT lattice (N = 15), C1 Mus musculus specimen segmentation (N = 16) with Delaunay graph, D1 3D DC voxels + pegs, D2 x-z section, D3 downgrowth curves", supports: true}
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [974, 1042], note: "Optical-density segmentation of the vendored specimen; 16 placodes, NN 70.86 +- 22.92 px, CV 0.3234", supports: true}
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [456, 507], note: "Seam-aware labelling and circular-mean centroids added in Pass 3; placodes now periodic local maxima (L551-L552)", supports: true}
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [1570, 1579], note: "WT count 15 vs specimen 16 and CV 0.086 vs 0.323 reported in the measurement note — regularity does not match", supports: false}
+          - {file: datasets/wnt_dkk_hair_follicle/wnt_dkk_hair_follicle_reference.json, lines: [57, 70], note: "Specimen is Gad1 in situ of E12.5-E13.5 vibrissa/hair placodes (Maddox & Condie 2004), not a pelage follicle pattern", supports: false}
+      parameter-expressivity:
+        value: 86
+        rationale: >-
+          Three real sweeps behave monotonically: Dkk1 dosage rho_h in {0, 0.004, 0.01, 0.02, 0.05, 0.12} gives
+          15, 15, 15, 14, 0, 0 placodes (L616-L631, self-test asserts monotone non-increasing), domain length L in
+          [20..80] gives r = 0.985 (L400-L441), and the new FGF20 chemotactic sensitivity chi_f in
+          {0, 0.1, 0.15, 0.2, 0.25} gives 0, 13, 15, 15, 15 DCs and peg depth 0 -> 0.665 (monotone, r = 0.913)
+          (L928-L969). CLI exposes --cw --ch --mu-w --mu-h --Dw --Dh --seed --chi-f (L1728-L1737). Deductions: the
+          five epidermal genotypes are multi-parameter presets rather than single-axis sweeps (L600-L611) (-6);
+          bmp4_scale is evaluated at one point (5x) with no sweep, so the BMP4 axis is not shown to be monotone
+          (L943) (-4); v_peg, e_thr and Z are not exposed and their effect on the stage histogram is unexplored (-4).
+        evidence:
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [616, 631], note: "6-point ectopic Dkk1 dosage sweep", supports: true}
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [928, 969], note: "4 dermal genotypes + 5-point chi_f sweep with Pearson r and monotonicity flag", supports: true}
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [1728, 1737], note: "CLI flags incl. new --chi-f", supports: true}
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [943, 943], note: "BMP4 excess evaluated only at bmp4_scale = 5.0; no sweep", supports: false}
+      morphometric-validation:
+        value: 84
+        rationale: >-
+          `measure_morphoeval()` (L1457-L1609) now returns 13 measurements with units, methods and sources: d_c,
+          w_*, secondary doubling ratio, WT count vs specimen, K14-Wnt ratio, Dkk1/equal-diffusion count, domain
+          scaling r, and six dermal quantities (DC/placode ratio 1.0 vs Huh 2013; Fgf20-null + chemotaxis-null
+          DC count 0; DC-placode offset 0.41 px vs 0; Fgf20-null/WT peg ratio 0; chi_f sweep r; mass drift 0).
+          Deductions: the only quantitative specimen comparison (NN-spacing CV) disagrees and is reported in a
+          note rather than as its own measurement with a pass/fail band (-5); the K14-Wnt ratio now carries no
+          reference because the Pass 2 '2.0' was unsourced (-3); the Fgf20-null peg ratio 0 and the DC/placode
+          ratio 1.0 are partly by construction (no FGF20 -> no gradient -> no DC) rather than independent
+          validation (-4); WT peg depth 67% of slab has no empirical reference (-4).
+        evidence:
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [1457, 1609], note: "13 measurements with reference_value/source; 6 dermal measurements added in Pass 3 (L1479-L1538)", supports: true}
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [1580, 1589], note: "K14-Wnt ratio reference_value set to null with explanation (Sick et al. report no numeric ratio)", supports: true}
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [1510, 1519], note: "Peg-depth ratio Fgf20-null/WT = 0 vs reference 0 — satisfied largely by construction", supports: false}
+      source-traceability:
+        value: 94
+        rationale: >-
+          Eleven sources with DOIs (one URL) in the docstring (L88-L95), `paper_citations.bib` (now 11 entries,
+          SHA-256 re-pinned at L136-L139 and in the JSON) and `wnt_dkk_hair_follicle_reference.json` (sources
+          block L5-L56, dermal block L174-L215); the specimen's Wikimedia URL, licence and ROI are recorded;
+          runtime verification fails closed (L144-L160) and self-test check 2 asserts JSON-to-code parity for both
+          the WNT/DKK and the dermal parameters (L1625-L1640, L1690-L1691). Pass 3 fixed the README/math_kg
+          parameter disagreement. Deductions: Painter & Hillen (2002) has no DOI (-2); the specimen provenance
+          notes the Wikimedia file but not the figure/panel of the BMC paper it came from (-2); the dermal
+          parameters cite papers for mechanism but none for values (-2).
+        evidence:
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [129, 160], note: "EXPECTED_SHA256 (bib re-pinned 7843d2b7...) and fail-closed runtime verification", supports: true}
+          - {file: datasets/wnt_dkk_hair_follicle/wnt_dkk_hair_follicle_reference.json, lines: [174, 215], note: "dermal_condensate_model block: equations, parameters, genotype expectations, sources", supports: true}
+          - {file: datasets/wnt_dkk_hair_follicle/paper_citations.bib, lines: [44, 120], note: "7 references appended in Pass 3 (Keller & Segel, Huh, Glover, Botchkarev, Mou, Paus, Painter & Hillen)", supports: true}
+          - {file: datasets/wnt_dkk_hair_follicle/README.md, lines: [12, 13], note: "D_w/D_h/d corrected to 0.015/0.45/30 (Pass 2 README said 0.01/0.40/40)", supports: true}
+      code-traceability:
+        value: 90
+        rationale: >-
+          Every modelling block carries an equation/figure citation: the docstring maps the WNT/DKK PDEs, the
+          secondary-wave law and the transgenic regimes to Sick et al. figures and the new Section 3b to Huh
+          2013 / Glover 2017 / Botchkarev 1999 / Mou 2006 / Paus 1999 / Keller-Segel 1970 (L654-L677); function
+          docstrings restate the equations; the six Lean laws are named in the docstring and registered with
+          updated code loci in the math KG yaml. Deductions: Pass 2 shipped a docstring claiming 22 K14-Wnt
+          placodes while the code produced 32 — fixed now, but it shows the numeric claims in prose are not
+          generated from the run (-4); stage thresholds 0.25/0.5 (L888-L891) and the DC registration radius 2.5
+          px (L873) are uncited conventions (-3); the FGF20 source normalisation (L806-L807) has no stated
+          biological rationale (-3).
+        evidence:
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [38, 95], note: "Docstring sections 2b and 4 map the dermal equations, Lean laws and Pass 3 sources", supports: true}
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [654, 677], note: "Section 3b header: equations with biological attribution and the honest-reduction statement", supports: true}
+          - {file: morphoeval/math_kg_loops/sick-wnt-dkk-hair-follicle.yaml, lines: [1, 151], note: "6 equations with lean_theorem, lean_locus and code_locus (loci re-verified against the current file); Pass 3 parity fix noted at L12-L14", supports: true}
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [888, 891], note: "Ordinal stage thresholds at 25%/50% of slab depth are a model convention without a cited morphological criterion", supports: false}
+      repro-package:
+        value: 91
+        rationale: >-
+          Deterministic (`seed = 2006`, RNG passed through all solvers), 12-check self-test (L1615-L1723)
+          including SHA-256 locks, JSON parity, 2D and 3D bitwise determinism (L1674-L1680), the new dermal
+          checks 9-12, and monotonicity assertions; default invocation regenerates both artefacts (PNG 2227x2484,
+          GIF 45 frames) in ~50 s; environment recorded above. Deductions: no requirements lock is vendored with
+          the script and the audit's environment block is the only pin (-4); without MPLCONFIGDIR the first run
+          builds a font cache outside the repo (-2); the self-test re-runs the full 2D + 3D suite (~30 s) rather
+          than a reduced smoke grid, which is fine but undocumented (-3).
+        evidence:
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [1615, 1723], note: "12-check self_test(): SHA-256, parity, 4->8 insertion, 2D genotypes, Dkk1 sweep monotone, domain scaling, specimen 16, 2D+3D determinism, dermal checks 9-12", supports: true}
+          - {file: 2002-sick-wnt-dkk-hair-follicle.py, lines: [1404, 1442], note: "Phase 3 GIF frames (dermal x-z section + upper-dermal density) appended; GIF written by the default invocation", supports: true}
+          - {file: docs/media/wnt_dkk_hair_follicle_growth.gif, lines: [0, 0], note: "45-frame GIF (15 primary + 15 secondary + 15 dermal Phase 3 frames)", supports: true}
+    remediation:
+      - >-
+        2002-sick-wnt-dkk-hair-follicle.py:600-603 — the K14-Wnt 'overexpression' preset changes kappa (0.02 -> 0.015),
+        D_w (0.015 -> 0.008) and D_h (0.45 -> 0.32) together with rho_w, so the 2.0x density is a lattice-scale
+        preset, not a WNT-overexpression perturbation. Add a pure rho_w sweep at fixed D_w/D_h/kappa (and a
+        c_w sweep) and report how placode count, area and NN spacing respond; keep the preset only as a labelled
+        'compressed-scale' control.
+      - >-
+        2002-sick-wnt-dkk-hair-follicle.py:974-1042 and 1570-1579 — the vendored specimen is a Gad1 in situ of
+        vibrissa/hair placodes (Maddox & Condie 2004) and its NN-spacing CV (0.323) does not match the PDE lattice
+        (0.086); count equality (15 vs 16) is not a meaningful specimen metric on an arbitrary 42-cell domain.
+        Vendor a pelage-pattern image (or digitise Sick et al. 2006 Fig. 2A/2C placode centroids), compare the
+        NN-spacing distributions scale-free (spacing/lambda, CV, KS statistic) as a first-class measurement with a
+        pass band, and state the vibrissa image as a secondary control.
+      - >-
+        2002-sick-wnt-dkk-hair-follicle.py:771-925 (peg ODE at 847, stage thresholds at 888-891) — the dermal
+        coupling is one-way and the hair peg is a scalar depth with ordinal stage cut-offs at 25%/50% of a 12-layer
+        slab. Replace the scalar with an epidermal invagination field (phase-field or level-set interface driven by
+        the DC), add DC -> epidermis feedback (DC-derived Noggin/FGF maintaining the placode), and calibrate slab
+        depth and peg length to micrometres from Paus et al. (1999) / Huh et al. (2013) sections so the stage
+        histogram is testable rather than conventional.
+      - >-
+        2002-sick-wnt-dkk-hair-follicle.py:678-696 and 726-768 — all dermal constants (D_f, mu_f, s_f, D_b, mu_b, s_b,
+        D_rho, chi_f, chi_b, v_peg) are hand-tuned dimensionless values with mechanism citations but no value
+        provenance. Pin at least fibroblast speed / DC formation time to Glover et al. (2017) live-imaging data and
+        the FGF20 range to Huh et al. (2013), record them in the JSON with units, and derive the dimensionless
+        groups from them.
+      - >-
+        2002-sick-wnt-dkk-hair-follicle.py:836 and 943 — BMP4 is produced uniformly in proportion to rho (no
+        interfollicular-epidermal or DC-localised source) and the BMP4 axis is evaluated at a single 5x point.
+        Add a spatially structured BMP source (interfollicular epidermis as in Mou et al. 2006) and a bmp4_scale
+        sweep showing monotone suppression of DC count / peg depth, with a Noggin rescue control (Botchkarev 1999).
+      - >-
+        2002-sick-wnt-dkk-hair-follicle.py:847, 860 and 867-876 — e_thr = 1.6 is used both as the peg-ODE onset (847) and as
+        the DC segmentation threshold (860), and the DC-placode registration radius 2.5 px is arbitrary; the DC/placode
+        ratio 1.0 and Fgf20-null = 0 are therefore partly by construction. Decouple detection (e.g. Otsu on the
+        upper-dermal density) from the dynamics threshold and report sensitivity of N_DC and offset to both.
+      - >-
+        docs/media/wnt_dkk_hair_follicle_comparison.png row D — no reference image (Huh 2013 Fig. 1 DC sections,
+        Glover 2017 live-imaging aggregation, or a Paus 1999 stage panel) is shown beside the model, so the
+        condensate shape, depth (centre of mass 0.41 layers) and peg morphology are judged against nothing;
+        vendor a CC-licensed DC/hair-germ section and segment it as was done for Panel C1.

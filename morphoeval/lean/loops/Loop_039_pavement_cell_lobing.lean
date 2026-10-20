@@ -115,4 +115,106 @@ theorem sapala_2018_mutant_lobeyness_collapse (P_hull A_cell k_rop A_lobe A_inde
     have hpos : 0 < k_rop * A_lobe := Int.mul_pos hk hA
     omega
 
+
+-- ============================================================================
+-- Law 4 (`runions-pavement-cell-lobing-4`, Pass 3):
+-- Pressurized Periclinal Membrane Inscribed-Disk Deflection Bound
+-- ============================================================================
+/-- The outer periclinal wall of a turgid pavement cell is modelled (Pass 3 reduced
+    shell) as a Föppl membrane of uniform tension `T` under pressure `P`, clamped on the
+    anticlinal walls: `-T ∇²z = P`.  On a disk of squared radius `R_sq` the closed-form
+    solution is `z(r) = P (R² - r²) / (4T)`; `disk_membrane_deflection_4T P R_sq r_sq`
+    is `4T z(r)` (the tension factor is cleared so everything stays in `Int`).
+    The theorem proves (1) the bulge is maximal at the centre, (2) it is non-negative
+    inside the disk, and (3) the bulge of the LEC disk of a puzzle cell
+    (`puzzle_lec_radius_sq r0_sq = r0_sq`) is strictly smaller than that of the
+    equal-area isotropic cell (`isotropic_radius_sq N r0_sq = N * r0_sq`, `N ≥ 2`).
+    Since the maximum principle gives `z_max(Ω) ≥ z_max(LEC disk)` for any footprint Ω
+    containing its LEC disk, pinning `R_LEC` is what bounds the periclinal bulge. -/
+def disk_membrane_deflection_4T (P R_sq r_sq : Int) : Int :=
+  P * (R_sq - r_sq)
+
+theorem sapala_2018_pressurized_membrane_inscribed_disk_bound (P R_sq r_sq N r0_sq : Int)
+    (hP : 0 < P) (hr : 0 ≤ r_sq) (hrR : r_sq ≤ R_sq) (hN : N ≥ 2) (hr0 : 0 < r0_sq) :
+    disk_membrane_deflection_4T P R_sq r_sq ≤ disk_membrane_deflection_4T P R_sq 0 ∧
+    0 ≤ disk_membrane_deflection_4T P R_sq r_sq ∧
+    disk_membrane_deflection_4T P (puzzle_lec_radius_sq r0_sq) 0 <
+      disk_membrane_deflection_4T P (isotropic_radius_sq N r0_sq) 0 := by
+  refine ⟨?_, ?_, ?_⟩
+  · simp [disk_membrane_deflection_4T, Int.mul_sub]
+    have h1 : 0 ≤ P * r_sq := Int.mul_nonneg (Int.le_of_lt hP) hr
+    omega
+  · simp [disk_membrane_deflection_4T]
+    exact Int.mul_nonneg (Int.le_of_lt hP) (by omega)
+  · simp [disk_membrane_deflection_4T, puzzle_lec_radius_sq, isotropic_radius_sq]
+    have h2 : 1 * r0_sq < N * r0_sq := Int.mul_lt_mul_of_pos_right (by omega) hr0
+    have h3 : r0_sq < N * r0_sq := by omega
+    exact Int.mul_lt_mul_of_pos_left h3 hP
+
+
+-- ============================================================================
+-- Law 5 (`runions-pavement-cell-lobing-5`, Pass 3):
+-- Depth-Resolved Anticlinal Wall Buckling: Outward Monotonicity & Wavenumber Ordering
+-- ============================================================================
+/-- A Fourier mode of wavenumber `k` of the lateral deflection of a prestressed anticlinal
+    wall strip satisfies `δ'' = k² δ` through the wall depth.  Discretised with layer
+    spacing `Δζ` and `κ = k² Δζ²`, clamped at the inner periclinal face (`δ_0 = 0`) with
+    unit forcing slope (`δ_1 = a > 0`), the mode obeys the three-term recurrence
+    `δ_{j+2} = (2 + κ) δ_{j+1} - δ_j` (`depth_mode κ a`). -/
+def depth_mode (κ a : Int) : Nat → Int
+  | 0 => 0
+  | 1 => a
+  | n + 2 => (2 + κ) * depth_mode κ a (n + 1) - depth_mode κ a n
+
+/-- Lobe amplitude grows strictly and monotonically from the clamped inner periclinal
+    face toward the outer periclinal junction for every `κ ≥ 0`: the undulation is
+    confined toward the outer face, never re-emerging at depth. -/
+theorem anticlinal_depth_mode_monotone_outward (κ a : Int) (hκ : 0 ≤ κ) (ha : 0 < a) :
+    ∀ n : Nat, depth_mode κ a n < depth_mode κ a (n + 1) ∧ 0 < depth_mode κ a (n + 1) := by
+  intro n
+  induction n with
+  | zero =>
+    simp [depth_mode]
+    exact ha
+  | succ k ih =>
+    obtain ⟨h1, h2⟩ := ih
+    have hk : 0 ≤ κ * depth_mode κ a (k + 1) := Int.mul_nonneg hκ (Int.le_of_lt h2)
+    have e : depth_mode κ a (k + 1 + 1) =
+        2 * depth_mode κ a (k + 1) + κ * depth_mode κ a (k + 1) - depth_mode κ a k := by
+      show (2 + κ) * depth_mode κ a (k + 1) - depth_mode κ a k = _
+      rw [Int.add_mul]
+    rw [e]
+    constructor <;> omega
+
+/-- A larger wavenumber (`κ' ≥ κ`, i.e. a shorter lobe wavelength) grows at least as fast
+    from the inner face: after normalising both modes to the same outer-face amplitude,
+    the short-wavelength mode is therefore attenuated at least as strongly at every depth.
+    (Harmonics of the 24.5 µm lobe mode are confined closer to the outer periclinal face.) -/
+theorem anticlinal_depth_mode_wavenumber_comparison (κ κ' a : Int)
+    (hκ : 0 ≤ κ) (hκκ' : κ ≤ κ') (ha : 0 < a) :
+    ∀ n : Nat, depth_mode κ a n ≤ depth_mode κ' a n ∧
+      depth_mode κ a (n + 1) - depth_mode κ a n ≤
+        depth_mode κ' a (n + 1) - depth_mode κ' a n := by
+  intro n
+  induction n with
+  | zero => simp [depth_mode]
+  | succ k ih =>
+    obtain ⟨h1, h2⟩ := ih
+    have hpos := anticlinal_depth_mode_monotone_outward κ a hκ ha k
+    have hd1 : depth_mode κ a (k + 1) ≤ depth_mode κ' a (k + 1) := by omega
+    have hm1 : κ * depth_mode κ a (k + 1) ≤ κ' * depth_mode κ a (k + 1) :=
+      Int.mul_le_mul_of_nonneg_right hκκ' (Int.le_of_lt hpos.2)
+    have hm2 : κ' * depth_mode κ a (k + 1) ≤ κ' * depth_mode κ' a (k + 1) :=
+      Int.mul_le_mul_of_nonneg_left hd1 (by omega)
+    have e1 : depth_mode κ a (k + 1 + 1) =
+        2 * depth_mode κ a (k + 1) + κ * depth_mode κ a (k + 1) - depth_mode κ a k := by
+      show (2 + κ) * depth_mode κ a (k + 1) - depth_mode κ a k = _
+      rw [Int.add_mul]
+    have e2 : depth_mode κ' a (k + 1 + 1) =
+        2 * depth_mode κ' a (k + 1) + κ' * depth_mode κ' a (k + 1) - depth_mode κ' a k := by
+      show (2 + κ') * depth_mode κ' a (k + 1) - depth_mode κ' a k = _
+      rw [Int.add_mul]
+    rw [e1, e2]
+    exact ⟨hd1, by omega⟩
+
 end MathOfBiology.Loop_039

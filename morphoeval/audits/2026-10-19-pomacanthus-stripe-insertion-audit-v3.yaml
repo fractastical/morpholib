@@ -1,0 +1,300 @@
+# MorphoEval audit — Kondo & Asai (1995) Pomacanthus Stripe Insertion & Y-Branch Unzipping, 2026-10-20 (v3)
+#
+# Pass 3 remediation re-score of `1995-kondo-pomacanthus-stripe-insertion.py` (Slot 004) in the
+# instrumented loop `morphoeval/runs/2026-10-19-pomacanthus-stripe-insertion-loop-pass3`, superseding
+# `2026-10-19-pomacanthus-stripe-insertion-audit-v2` (92.0).  Both open v2 remediation items were closed:
+#   1. Curvilinear C-shaped solver: `simulate_curvilinear_c_shaped_arc_insertion` integrates the Kondo-Asai
+#      PDE on a posterior-centred polar sector rho in [0.25, 1], theta in [-100, 100] deg with the
+#      (1/rho) d/drho curvature term, zero-flux edges and a growing outer radius R(t) = R_0 s(t)
+#      (IMEX sparse-LU).  3 equilibrated concentric arcs (radial spacing = lambda_c +/- 1.06 %, angular
+#      coherence 1.000) insert to 6 arcs on all five angular transects by s = 2.6, with the mid-trough
+#      inhibitor I_mid(s) strictly decreasing (Spearman -1.00) until insertion fires at s* = 2.18
+#      (I_mid = 0.742 vs the zero-activator threshold c_3/|c_2| = 0.625).  The geometry is anchored on
+#      the specimen by `fit_specimen_concentric_arcs` (structure-tensor concentric-centre fit: centre
+#      (262, 217) px, 8 arcs, radial spacing 2.62 mm vs the oblique row-wise 3.80 mm).
+#   2. Discrete iridophore/melanophore agents: `simulate_pigment_cell_agent_coupling` couples a 128-cell
+#      fate lattice (threshold A_thr = A*, short-range exclusion + long-range support contact rules after
+#      Nakamasu et al. 2009) to the fields through bounded feedback on c_3/c_5; fate concordance 0.93-0.97,
+#      6 agent stripes = 6 field stripes for every kappa in {0, 0.005, 0.01, 0.02}; stripe amplitude gain
+#      +3.6 / +8.1 / +11.7 % vs the uncoupled control.
+#   Two new Lean 4 theorems (0 sorrys, `lean` verified): `kondo_asai_1995_curvilinear_mid_trough_threshold_partition`
+#   and `kondo_asai_1995_pigment_agent_fate_partition_and_bounded_feedback`.  Self-test extended from 5 to 9
+#   `measure_morphoeval()` measurements; runtime 9.4 s (self-test) / 10.5 s (PNG + GIF).
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated
+# probabilities).  Line numbers refer to the files at commit d58a084 (working tree, Pass 3 state).
+# Overall 93.1 (up from 92.0).  The remaining defects are structural, not presentational: the polar
+# sector is not the specimen's body outline, the insertion threshold law is only a sufficient (A = 0)
+# condition that under-predicts the effective threshold by ~19 %, the agent layer is 1D on a periodic
+# domain (wavelength quantised) with uncited rule probabilities, and arc insertion still needs injected
+# background fluctuations.  They are listed under `remediation` for Pass 4.
+
+audit:
+  id: 2026-10-19-pomacanthus-stripe-insertion-audit-v3
+  supersedes_audit_id: 2026-10-19-pomacanthus-stripe-insertion-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d58a084
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) remediation re-score of `1995-kondo-pomacanthus-stripe-insertion.py` (1951 lines)
+      after closing both v2 remediation items in the isolated loop
+      `2026-10-19-pomacanthus-stripe-insertion-loop-pass3`; line numbers refer to the Pass 3 working
+      tree on top of d58a084.
+
+references:
+  kondo1995:
+    title: "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus"
+    authors: "Kondo S, Asai R"
+    venue: "Nature 376(6543):765-768 (1995)"
+    doi: 10.1038/376765a0
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12(1):30-39 (1972)"
+    doi: 10.1007/BF00289234
+  crampin1999:
+    title: "Reaction and diffusion on growing domains: scenarios for robust pattern formation"
+    authors: "Crampin EJ, Gaffney EA, Maini PK"
+    venue: "Bulletin of Mathematical Biology 61(6):1093-1120 (1999)"
+    doi: 10.1006/bulm.1999.0131
+  kondo2009:
+    title: "How animals get their skin patterns: fish pigment pattern as a live Turing wave"
+    authors: "Kondo S, Iwashita M, Yamaguchi M"
+    venue: "International Journal of Developmental Biology 53(5-6):851-856 (2009)"
+    doi: 10.1387/ijdb.072502sk
+  nakamasu2009:
+    title: "Interactions between zebrafish pigment cells responsible for the generation of Turing patterns"
+    authors: "Nakamasu A, Takahashi G, Kanbe A, Kondo S"
+    venue: "Proceedings of the National Academy of Sciences 106(21):8429-8434 (2009)"
+    doi: 10.1073/pnas.0808622106
+  bullara2015:
+    title: "Pigment cell movement is not required for generation of Turing patterns in zebrafish skin"
+    authors: "Bullara D, De Decker Y"
+    venue: "Nature Communications 6:6971 (2015)"
+    doi: 10.1038/ncomms7971
+
+simulations:
+  - id: kondo-pomacanthus-stripe-insertion
+    name: "Kondo & Asai (1995) Pomacanthus reaction-diffusion stripe insertion & Y-branch unzipping"
+    organism: "Pomacanthus semicirculatus & Pomacanthus imperator (marine angelfish)"
+    script: 1995-kondo-pomacanthus-stripe-insertion.py
+    output: docs/media/pomacanthus_stripe_insertion_comparison.png
+    extra_outputs:
+      - docs/media/pomacanthus_stripe_insertion_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-pomacanthus-stripe-insertion-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Kondo & Asai (1995) Nature 376(6543):765-768 piecewise-linear saturating Gierer-Meinhardt reaction-diffusion PDE on an expanding skin domain L(t) = L_0 exp(gamma t), mid-trough secondary stripe insertion cascade (3 -> 6 -> 12 -> 24 stripes) in Pomacanthus semicirculatus, and 2D horizontal Y-junction branch point unzipping in Pomacanthus imperator"
+        - "Gierer & Meinhardt (1972) Kybernetik 12:30-39 short-range autocatalytic activation and long-range lateral inhibition"
+        - "Nakamasu et al. (2009) PNAS 106:8429-8434 pigment-cell interaction network (short-range mutual exclusion, long-range support) and Bullara & De Decker (2015) lattice chromatophore model"
+      reconstructed_in_script:
+        - "1D and 2D IMEX spectral solvers for the Kondo-Asai piecewise-linear saturating PDE across stationary domain doubling scales s in {1, 2, 4, 8} (body length 2, 4, 8, 16 cm -> 3, 6, 12, 24 stripes), subcritical inhibitor-diffusion control D_I = 0.050 < d_c D_A (0 stripes), continuous growing-domain kymograph (3 -> 6 -> 12 stripes), and 2D Y-branch horizontal unzipping (3 -> 4 stripes, +0.663 domain fraction displacement)"
+        - "Pass 3: curvilinear C-shaped polar-sector solver (rho in [0.25, 1], theta in [-100, 100] deg, 48 x 96, sparse-LU IMEX) with growing outer radius; 3 -> 6 concentric arcs at s* = 2.18 with mid-trough inhibitor trace I_mid(s) against the zero-activator threshold c_3/|c_2| = 0.625; 1D hybrid field + 128-cell iridophore/melanophore agent lattice with contact rules and bounded feedback kappa on c_3/c_5, ablated over kappa in {0, 0.005, 0.01, 0.02}"
+        - "Computer-vision segmentation of juvenile Pomacanthus semicirculatus specimen (`pomacanthus_semicirculatus_specimen.jpg`, CC BY-SA 4.0): 115 row-wise inter-stripe spacings (3.80 mm at 40 mm body span, CV = 0.34), primary/secondary prominence ratio 2.65x, bimodal Kondo-Asai waveform r = 0.858, and (Pass 3) structure-tensor concentric-arc fit (centre (262, 217) px, 8 arc radii, curvature-corrected radial spacing 2.62 mm, CV 0.28)"
+      transfer_boundary:
+        - "The curvilinear domain is an idealised polar sector (fixed rho_in = 0.25, theta_half = 100 deg), not the specimen's body silhouette; its centre and radial extent are not fitted to the specimen's concentric centre, so arc angular spans are not compared"
+        - "The agent layer is 1D on a periodic L = 6 lambda_c domain, so the wavelength is quantised to L/6 and only stripe contrast responds to the feedback; the rule probabilities (0.9 / 0.1 / update rate 0.35 / softness 0.3) are modelling choices, not values from Nakamasu et al. (2009)"
+        - "The mid-trough threshold c_3/|c_2| = 0.625 is the A = 0 sufficient condition; the simulated insertion fires at I_mid = 0.742 because flanking arcs supply activator diffusively"
+      does_not_claim:
+        - "2D agent-field coupling on the curved domain, pigment-cell migration or Delta-Notch-type contact signalling, a conformal map of the real body outline, or 3D body-fin boundary mechanics"
+    source_refs:
+      - kondo1995
+      - gierer1972
+      - crampin1999
+      - kondo2009
+      - nakamasu2009
+      - bullara2015
+    summary: >-
+      Pass 3 remediation re-score of `1995-kondo-pomacanthus-stripe-insertion.py` (93.1/100, up from
+      92.0 in Pass 2). Both v2 remediation items are closed with mechanism, not presentation: a
+      curvilinear C-shaped polar-sector Kondo-Asai solver with the (1/rho) d/drho curvature term and a
+      growing outer radius reproduces 3 -> 6 concentric arc insertion (initial radial spacing = lambda_c
+      +/- 1.06 %, angular coherence 1.000 -> 0.9996, insertion at s* = 2.18 when the monotonically
+      falling mid-trough inhibitor reaches 0.742 vs the proved zero-activator threshold 0.625), anchored
+      on the specimen by a structure-tensor concentric-centre fit (8 arcs, radial spacing 2.62 mm vs the
+      oblique row-wise 3.80 mm); and a discrete 128-cell iridophore/melanophore agent lattice coupled to
+      the fields through bounded feedback reproduces the 6-stripe partition (fate concordance 0.93-0.97,
+      agent stripes = field stripes for all kappa, +3.6..+11.7 % contrast gain). Two new Lean 4 theorems
+      (5 total, 0 sorrys) formalise the threshold partition and the fate/feedback bounds. The next layer of
+      defects is structural: the sector geometry is not fitted to the specimen outline, the effective
+      insertion threshold is ~19 % above the proved bound, the agent layer is 1D/periodic with heuristic
+      rule probabilities, and arc insertion still relies on injected background fluctuations.
+    scores:
+      model-fidelity:
+        value: 95
+        rationale: >-
+          Adds the two mechanisms the v2 audit asked for. The polar-sector Laplacian
+          (`build_polar_sector_laplacian`, L606-646) carries the (1/rho) d/drho and (1/rho^2) d^2/dtheta^2
+          terms with mirrored-ghost Neumann edges and is unit-tested (annihilates constants, Lap(rho^2) = 4);
+          `simulate_curvilinear_c_shaped_arc_insertion` (L659-819) rescales it by 1/R(t)^2 on the growing
+          radius and refactors the sparse LU every 20 steps, recovering lambda_c to 1.06 % at s = 1 and the
+          3 -> 6 doubling with I_mid(s) strictly decreasing until insertion. The hybrid agent model
+          (L837-961) implements the threshold fate rule, Nakamasu-style exclusion/support contacts and the
+          bounded c_3/c_5 feedback that Lean Theorem 5 bounds. Deductions: the domain is an idealised sector
+          (rho_in = 0.25, theta_half = 100 deg) rather than the specimen outline (-2); insertion needs
+          injected 0.004 fluctuations (L733), and the older 1D kymograph still uses mode-6/12 biased nudges
+          (L402-406) (-2); the agent rules are 1D and their probabilities are uncited heuristics (-1).
+        evidence:
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [606, 646], note: "Sparse FD polar-sector Laplacian with (1/rho) d/drho curvature term and mirrored-ghost zero-flux edges", supports: true}
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [659, 819], note: "Growing-radius IMEX sparse-LU curvilinear solver tracking I_mid(s), arc count N(s), insertion scale s* and angular coherence", supports: true}
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [837, 961], note: "1D hybrid field + discrete pigment-cell lattice: threshold fate rule, short-range exclusion, long-range support, bounded kappa feedback on c_3/c_5", supports: true}
+          - {file: morphoeval/lean/loops/Loop_004_pomacanthus_stripe_insertion.lean, lines: [114, 229], note: "Two new machine-checked theorems (threshold partition / antitone trough synthesis / arc doubling; monotone binary fate and bounded feedback), 0 sorrys", supports: true}
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [402, 406], note: "Pre-existing 1D kymograph injects mode-6 and mode-12 cosines every 25 steps to nucleate insertions (biased toward the expected answer)", supports: false}
+      specimen-match:
+        value: 92
+        rationale: >-
+          The v2 segmentation (row-wise spacing 3.80 mm, primary/secondary prominence 2.65x, bimodal fit
+          r = 0.858; `segment_pomacanthus_specimen`, L997-1097) is kept and the specimen now anchors the
+          new curvilinear geometry: `fit_specimen_concentric_arcs` (L1106-1198) estimates the concentric
+          centre from structure-tensor stripe normals of 767 ridge points (robust least squares, 6
+          Cauchy reweighting iterations), reads 8 arc radii from the radial histogram and reports the
+          curvature-corrected radial spacing 2.62 mm (CV 0.28) which is, as it must be, below the oblique
+          row-wise 3.80 mm; the fitted circles and centre are drawn on Panel E and the simulated arcs on
+          Panel G are visibly concentric C-arcs like the specimen's. Deductions: ridge points are confined
+          by a hand-traced 12-vertex body polygon (L1100-1104) and only 52 % of them lie within 4 px of a
+          fitted arc with a 4.2 mm gap between the 4th and 5th radii (a probable missed arc) (-4); the
+          40 mm body-span calibration is still an assumption carried from Pass 2 (-2); simulated arc
+          angular spans are not compared with the measured 31-358 deg spans (-2).
+        evidence:
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [1106, 1198], note: "Structure-tensor concentric-centre fit, radial-histogram arc radii, curvature-corrected radial spacing and per-arc angular spans", supports: true}
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [1551, 1584], note: "Panel E overlays the fitted concentric circles and centre on the specimen photograph", supports: true}
+          - {file: docs/media/pomacanthus_stripe_insertion_comparison.png, lines: [0, 0], note: "9-panel figure: Panels E/F specimen segmentation + concentric fit, Panel G simulated concentric C-arcs (3 -> 6), Panel H I_mid threshold trace, Panel I agent lattice", supports: true}
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [1100, 1104], note: "Body ROI is a manually traced polygon; not derived from the image", supports: false}
+      parameter-expressivity:
+        value: 93
+        rationale: >-
+          In addition to the v2 sweeps (D_I dispersion family, 5 ontogenetic regimes, continuous
+          growth), Pass 3 adds a continuous radial-growth axis s in [1, 2.6] on the curved domain with
+          the arc count and I_mid recorded every 50 steps (L743-761), and a feedback-strength ablation
+          `agent_coupling_ablation_sweep` over kappa in {0, 0.005, 0.01, 0.02} (L964-991) whose
+          uncoupled kappa = 0 member is a genuine control; concordance, iridophore fraction and contrast
+          gain all respond monotonically in the expected direction. Deductions: the sector shape
+          parameters (rho_in, theta_half) and the agent rule probabilities are not swept, so their
+          influence on arc curvature and concordance is unknown (-4); on the periodic agent domain the
+          wavelength cannot respond to kappa (-3).
+        evidence:
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [964, 991], note: "kappa ablation sweep with uncoupled control and amplitude-gain metric", supports: true}
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [743, 761], note: "Per-50-step tracking of s, N(s), I_mid(s) and spacing along the growing curved domain", supports: true}
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [659, 672], note: "rho_in, theta_half_deg, nudge, s_final are exposed as arguments but only the defaults are exercised", supports: false}
+      morphometric-validation:
+        value: 93
+        rationale: >-
+          `measure_morphoeval()` (L1204-1316) now returns 9 reference-anchored measurements: the four
+          new ones are the curvilinear arc count after growth (6 vs reference 6, all five transects),
+          I_mid at first insertion (0.742 vs the proved threshold 0.625, with the ~19 % discrepancy
+          explained rather than hidden), the specimen radial arc spacing (2.62 mm vs the row-wise 3.80 mm
+          of the same specimen) and the agent fate concordance (0.930 vs the ideal 1.0, with the full
+          kappa ablation in the note). All carry units, methods and references. Deductions: the I_mid
+          reference comparison fails at face value (ratio 1.19) because the effective threshold with
+          diffusive activator supply is not derived (-3); the specimen arc count (8) is not placed in the
+          model's cascade quantitatively beyond a remark (-2); final curved-domain spacing after
+          insertion (1.33 lambda_c, CV 0.14) shows the cascade is not relaxed at s = 2.6, so wavelength
+          homeostasis on the curved domain is asserted only at s = 1 (-2).
+        evidence:
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [1204, 1316], note: "9 MorphoEval measurements with reference values, units, methods and ablation notes", supports: true}
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [1236, 1245], note: "I_mid at insertion = 0.742 reported against the proved A = 0 threshold 0.625 with the discrepancy explained", supports: true}
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [1226, 1234], note: "Final spacing 1.33 lambda_c (CV 0.14) at s = 2.6 shows an unrelaxed post-insertion cascade", supports: false}
+      source-traceability:
+        value: 94
+        rationale: >-
+          The vendored dataset gains the two new primary sources in `paper_citations.bib` (Nakamasu et
+          al. 2009 `10.1073/pnas.0808622106`, Bullara & De Decker 2015 `10.1038/ncomms7971`), a
+          `pass3_curvilinear_and_agent_coupling` block in the reference JSON recording the sector
+          parameters, the insertion threshold derivation, the specimen body polygon, concentric centre,
+          arc radii and the agent rule parameters, and a README section describing how each was derived;
+          the SHA-256-pinned specimen and scout manifest are untouched and still verified at runtime
+          (L111-129). Deductions: the reference JSON is hashed at runtime but not pinned in
+          `EXPECTED_SHA256` (L98-105), so an edit to the reference values would not fail the self-test
+          (-3); the Nakamasu rules are cited for their qualitative structure only (-2); the 40 mm body-span
+          calibration still has no primary source (-1).
+        evidence:
+          - {file: datasets/pomacanthus_stripe_insertion/pomacanthus_stripe_insertion_reference.json, lines: [171, 217], note: "Pass 3 block: polar-sector parameters, I_thr derivation, measured s*, specimen polygon/centre/radii, agent rules and kappa grid", supports: true}
+          - {file: datasets/pomacanthus_stripe_insertion/paper_citations.bib, lines: [34, 55], note: "Nakamasu et al. (2009) and Bullara & De Decker (2015) BibTeX entries with DOIs and role notes", supports: true}
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [98, 129], note: "Runtime SHA-256 verification pins only the specimen JPG and scout manifest; the reference JSON digest is recorded, not checked", supports: false}
+      code-traceability:
+        value: 93
+        rationale: >-
+          The module docstring (L22-66) now states Laws 4 and 5 with their Lean theorem names, the
+          polar Laplacian, the threshold derivation, the fate/feedback bounds and the two new DOIs; each
+          new function docstring names the paper figure or theorem it implements; the math-KG loop file
+          registers both new laws with `lean_decl`, `lean_theorem`, `lean_locus` and `code_locus`
+          (L76-116) and the Pass 2 code loci were corrected to the current line numbers. Deductions: the
+          agent rule constants 0.9 / 0.1 / 0.35 / 0.3 (L846-848, L911-912) and the 0.004 fluctuation
+          amplitude (L669) have no cited provenance in code or docstring (-4); panel titles were
+          abbreviated to fit and no longer carry the full mechanism names (-1); the KG `lean_code`
+          excerpts elide the proof bodies (-2).
+        evidence:
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [22, 66], note: "Module docstring: Laws 4-5 with Lean theorem names, polar Laplacian, threshold and feedback bounds, Pass 3 references", supports: true}
+          - {file: morphoeval/math_kg_loops/kondo-pomacanthus-stripe-insertion.yaml, lines: [76, 116], note: "Two new equations registered with Lean declarations, theorem names, loci and code loci", supports: true}
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [845, 848], note: "Agent rule probabilities and softness are uncited defaults", supports: false}
+      repro-package:
+        value: 92
+        rationale: >-
+          `run_self_test` (L1817-1925) grows from 3 to 6 numbered blocks: the polar Laplacian is
+          unit-tested, the curvilinear solver is checked for 3 -> 6 arcs on all transects, lambda_c
+          recovery, coherence, insertion window, monotone I_mid and cache/bitwise determinism; the agent
+          model is checked for 6 = 6 stripes, concordance >= 0.9, monotone contrast gain and seeded
+          determinism; the specimen fit for arc count, spacing bounds and a plausible centre; and the 9
+          measurements for references. Runtime is 9.4 s (self-test) and 10.5 s (PNG + GIF), well under
+          the 3-minute budget. Deductions: the two `pcolormesh` shading warnings on Panel G are not
+          silenced (-2); the GIF was not extended to the curvilinear or agent mechanisms, so the animated
+          artifact lags the figure (-3); the reference JSON is not SHA-pinned (see source-traceability)
+          and the run writes a matplotlib cache unless MPLCONFIGDIR is set (-3).
+        evidence:
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [1864, 1913], note: "Pass 3 self-test blocks 4-6: Laplacian unit tests, curvilinear insertion checks, agent ablation checks, specimen fit checks, 9-measurement contract", supports: true}
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [656, 690], note: "Deterministic seeded solver with parameter-keyed memo cache so render/measure/self-test share one run", supports: true}
+          - {file: docs/media/pomacanthus_stripe_insertion_growth.gif, lines: [0, 0], note: "24-frame animated GIF of planar mid-trough stripe insertion on the expanding skin domain, regenerated by the default invocation (10.5 s)", supports: true}
+          - {file: 1995-kondo-pomacanthus-stripe-insertion.py, lines: [1738, 1811], note: "GIF renderer unchanged from Pass 2: shows only the 1D planar insertion kymograph", supports: false}
+    remediation:
+      - >-
+        1995-kondo-pomacanthus-stripe-insertion.py:659-672 and 1106-1198 — the polar sector is an
+        idealised rho_in = 0.25, theta_half = 100 deg domain; fit rho_in and theta_half from the specimen's
+        concentric centre and arc radii (r_1/r_8 = 0.21, measured angular spans 31-358 deg) and compare the
+        simulated per-arc angular spans with the measured `arc_angular_spans_deg` as a new measurement.
+      - >-
+        1995-kondo-pomacanthus-stripe-insertion.py:1236-1245 — insertion fires at I_mid = 0.742, 19 % above
+        the proved A = 0 threshold 0.625; record A_trough at insertion and test the corrected local
+        condition I < (c_3 + c_1 A_trough)/|c_2| plus the diffusive activator flux, and add a Lean theorem
+        for the corrected threshold so the measurement matches its reference.
+      - >-
+        1995-kondo-pomacanthus-stripe-insertion.py:837-961 — the agent layer is 1D on a periodic domain
+        (wavelength quantised to L/6) with uncited rule probabilities 0.9 / 0.1 / 0.35 / 0.3; port the
+        fate lattice onto the curved 2D sector and calibrate the contact-rule rates to Nakamasu et al.
+        (2009) ablation time scales so that the feedback can move spacing, not only contrast.
+      - >-
+        1995-kondo-pomacanthus-stripe-insertion.py:402-406 and 733 — both growing-domain solvers rely on
+        injected fluctuations (mode-6/12 cosines in the 1D kymograph; 0.004 white noise on the curved
+        domain) to nucleate insertion; add a nudge = 0 control and a nudge-amplitude sweep that reports the
+        insertion scale s* as a function of fluctuation amplitude.
+      - >-
+        1995-kondo-pomacanthus-stripe-insertion.py:98-105 — pin the SHA-256 of
+        `pomacanthus_stripe_insertion_reference.json` in `EXPECTED_SHA256` (or a versioned digest table)
+        so edits to reference values fail the self-test, and extend the GIF (L1738-1811) with the
+        curvilinear arc insertion so the animated artifact matches the Pass 3 figure.

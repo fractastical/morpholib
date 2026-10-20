@@ -1,0 +1,81 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-economou-palate-ruguga-turing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-economou-palate-ruguga-turing-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-economou-palate-ruguga-turing-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Economou et al. (2012) FGF10/FGF7-SHH activator-inhibitor Turing stripe mechanism at mammalian palatal growth zones, coupled to quasi-static epithelial plate ridge elevation — MorphoEval overall 91.2/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Pass 3 (v3) evaluation of `2012-economou-palate-ruguga-turing.py` (91.2 / 100, down 1.2 from 92.4 in Pass 2). The single v2 remediation item is closed in a reduced, explicitly labelled form: the FGF/SHH Turing sheet now drives a quasi-static Kirchhoff epithelial plate on a Winkler mesenchymal foundation (exact DCT-II solve, residual 5.8e-14), producing 9 elevated ridges whose crests sit on the Shh stripes (phase offset 0.023 wavelength), whose duty cycle (0.423) is narrower than a sinusoid and comparable to the segmented specimen rugae (0.493 / 0.444), whose amplitude falls monotonically with bending and foundation stiffness (Spearman -1.00) while the ridge count stays locked to the Turing count, and which vanishes in the equal-diffusion control. Two machine-checked Lean 4 theorems formalise the transfer-stiffness bound and monotonicity and the sign preservation. The remediation also exposed two older defects that this audit now penalises: perturbation phenotypes seeded through initial conditions, and a grid-vs-dispersion wavelength mismatch caused by the dx_eff rescaling; together with the uncalibrated plate constants, the one-way default coupling and self-referential reference values they form the Pass 4 list. Overall 91.2/100 (faithfulness 90.6, reproducibility 92.6); rubric morphoeval 0.1.0; checkpoint commit d58a084; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 88, Morphological realism / specimen match 92, Parameter expressivity 90, Morphometric validation 92, Source and data traceability 93, Code-to-model traceability 93, Reproducibility package 92. Output judged: docs/media/palate_ruguga_turing_comparison.png: rendered output of 2012-economou-palate-ruguga-turing.py at d58a084, image/png, 898727 B, 2222×1464 px, artifact_sha256 716777da0d6ff0938c1e277351c739fbfbed969691b961cf0e467f02ef0dce32 (sha256 716777da0d6ff0938c1e277351c739fbfbed969691b961cf0e467f02ef0dce32), spec_fingerprint 14f358af9d03b3980dc4c8f810f623b9c4299743ce9b93b063da6d1923819d25. Dual provenance: spec_fingerprint: 14f358af9d03b3980dc4c8f810f623b9c4299743ce9b93b063da6d1923819d25; artifact_sha256: 716777da0d6ff0938c1e277351c739fbfbed969691b961cf0e467f02ef0dce32; input_dataset_sha256: {datasets/palate_ruguga_turing/palate_ridge_mechanics_reference.json=2e673658c9722aeb..., datasets/palate_ruguga_turing/palate_rugae_specimen.jpg=a38f6c053ffe9048..., datasets/palate_ruguga_turing/palate_ruguga_turing_reference.json=e76e670dd50c86fe..., datasets/palate_ruguga_turing/paper_citations.bib=fd020997fb3c2db0..., datasets/palate_ruguga_turing/scout_manifest.json=f0a345a5c9039e78...}. Supersedes audit: 2026-10-19-palate-ruguga-turing-audit-v2. Claim boundary: reported_in_source: Economou et al. (2012): mesenchymal FGF10/FGF7 (activator) and epithelial SHH (inhibitor) form a Turing reaction-diffusion system at the rugae growth zone anterior to ruga 8; rugae are added sequentially 8 -> 1..7b as the palate elongates; a coronal explant cut across the growth zone yields bifurcations / spots whereas a sagittal cut preserves stripes; cyclopamine broadens and FGF10 beads / Spry2-/-;Spry4+/- compact the pattern; Shh expression marks each morphological ruga (Fig. 1) | Pantalacci et al. (2008), Welsh & O'Brien (2009): staging of sequential ruga addition in the RGZ anterior to ruga 8 | Turing (1952): diffusion-driven instability of a two-component activator-inhibitor system | Landau & Lifshitz (1986): equilibrium equation of a thin elastic plate and its bending stiffness; reconstructed_in_script: 2x2 Jacobian and dispersion relation with lambda_c = 3.2221; 1D and 2D RD solvers with growth-zone envelope; 9-stage L/lambda_c intercalation count; 6-condition perturbation suite; DoG segmentation of the specimen shelves (15 / 16 rugae); Pass 3: quasi-static Kirchhoff plate on a Winkler foundation driven by beta max(A, 0), solved exactly by DCT-II, optional chi_m feedback, ridge count / phase-offset / duty-cycle morphometrics, kappa / k_f / chi_m sweeps, 2 Lean 4 theorems on the transfer stiffness; transfer_boundary: The plate constants kappa = 0.05, T = 0.2, k_f = 1, beta = 1 are dimensionless modelling assumptions (no offline-verifiable measurement of embryonic palatal epithelial stiffness); only the sign-preservation, wavelength-transfer and monotone-attenuation predictions are scored, not ridge heights in micrometres | The specimen is an adult horse palate photograph; its duty cycle (0.49 / 0.44) is compared qualitatively with the simulated mouse-embryo ridges (0.42) after the same peak_widths estimator; DoG smoothing broadens the specimen crests | The 2D RD solver integrates on a rescaled x spacing dx_eff = dx (q / 1.24), so the realised grid wavelength (3.37) differs from the dispersion lambda_c (3.22) that Panels B / D use; the plate solver uses the physical dx; does_not_claim: A 3D finite-element simulation of epithelial invagination with large deflections or nonlinear growth; calibrated ridge heights; emergence of the coronal-cut / bead / cyclopamine phenotypes from identical initial conditions (they are seeded by condition-specific initial patterns at L606-633); mechanics-dependent phenotypes compared with a published mechanical perturbation." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: 2012-economou-palate-ruguga-turing.py:1515, 1545, 1585 — reference values 0.96 (in-phase r), 0.4695 (coronal bifurcation index) and 0.1843 (specimen CV) are eyeballed or self-referential. Replace them with values digitised from Economou 2012 Figs. 2-3 (or relabel the measurement as a self-consistency check with reference_value: null) so `morphoeval/measure_outputs.py` does not report a trivially perfect match.",
+            "remediation needed: 2012-economou-palate-ruguga-turing.py:338, 598-600, 619, 631 — `dx_eff = dx * (q / 1.24)` rescales the x Laplacian so the integrated wavelength (lambda_ap = 3.37) is not the dispersion lambda_c = 3.22 used by Panels B and D, and the Pass 3 plate solver (physical dx, L709-712) now exposes the mismatch (q_ap = 1.87 vs q_c = 1.95). Integrate on the physical grid (choose nx / dt for stability) so the RD, dispersion and plate share one coordinate system, and re-pin lambda references.",
+            "remediation needed: 2012-economou-palate-ruguga-turing.py:383-388 and datasets/palate_ruguga_turing/palate_ridge_mechanics_reference.json:38-45 — kappa, T, k_f, beta are dimensionless assumptions. Calibrate them to a measured ridge height / spacing aspect ratio digitised from histological sections of E15.5 mouse rugae (Economou 2012 Fig. 1 or Pantalacci 2008 sections) and report ridge amplitude in micrometres with that source pinned; carry the residual of the original item (3D finite-element invagination with large deflection and nonlinear growth) explicitly as out of scope unless implemented.",
+            "remediation needed: 2012-economou-palate-ruguga-turing.py:468-513 — crest detection uses `distance=8` and `prominence=0.15 * amplitude` without citation, and the kappa >= 0.2 merge to 7 ridges depends on that prominence. Derive the crest threshold from the specimen estimator (same relative prominence as the DoG segmentation) and report the ridge count's sensitivity to it.",
+            "remediation needed: 2012-economou-palate-ruguga-turing.py:606-633 — the coronal-cut, FGF10-bead and cyclopamine phenotypes are seeded by condition-specific initial conditions (mediolateral cos modulation and q_gz at L606-615, q_high and bead halo at L616-627, q_cyc at L628-633). Start every condition from the same noisy initial field and let the incision barrier (L669-676), the bead source term and the reduced a_12 produce the phenotype, then re-measure the bifurcation index and counts; downgrade the claims if they do not emerge.",
+            "remediation needed: 2012-economou-palate-ruguga-turing.py:645-647, 684-688 and 1726-1734 — two-way coupling is off by default (chi_mech = 0) and the mechanics overrides reach only the mechanics figure. Make a calibrated chi_m the default once item 3 is done, route --kappa / --k-found / --chi-mech into the comparison figure and the perturbation suite, and add a mechanics-dependent phenotype (e.g. softened epithelium -> broader / fused rugae) compared against a published mechanical or ECM perturbation." ;
+        pk:hasScore "0.912"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary, Pass 3 remediation + re-score) + MorphoEval Dual-Rubric Assessor" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/8> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.ydbio.2009.09.028>,
+            <https://doi.org/10.1038/ng.1090>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1186/1471-213X-8-116>,
+            <https://www.sciencedirect.com/book/9780080570693/theory-of-elasticity> .
+    <https://doi.org/10.1016/j.ydbio.2009.09.028> dct:date "2009"^^xsd:gYear ;
+        dct:title "Signaling integration in the rugae growth zone directs anteroposterior palatal outgrowth" .
+    <https://doi.org/10.1038/ng.1090> dct:date "2012"^^xsd:gYear ;
+        dct:title "Periodic stripe formation by a Turing mechanism operating at growth zones in the mammalian palate" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The chemical basis of morphogenesis" .
+    <https://doi.org/10.1186/1471-213X-8-116> dct:date "2008"^^xsd:gYear ;
+        dct:title "Patterning of palatal rugae through sequential addition reveals an anterior/posterior boundary in palatal development" .
+    <https://www.sciencedirect.com/book/9780080570693/theory-of-elasticity> dct:date "1986"^^xsd:gYear ;
+        dct:title "Theory of Elasticity (Course of Theoretical Physics, Vol. 7), 3rd edition — Secs. 11-14, equilibrium of thin plates" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Economou et al. (2012) FGF10/FGF7-SHH activator-inhibitor Turing stripe mechanism at mammalian palatal growth zones, coupled to quasi-static epithelial plate ridge elevation — MorphoEval overall 91.2/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T10:12:25Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-economou-palate-ruguga-turing-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/8>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-economou-palate-ruguga-turing> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

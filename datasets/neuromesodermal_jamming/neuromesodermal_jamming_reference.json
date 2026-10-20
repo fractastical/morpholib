@@ -30,6 +30,26 @@
         "id": "dray2013",
         "citation": "Dray N, Lawton A, Nandi A, Julicher F, Emonet T, Holley SA (2013). Cell-fibronectin interactions propel vertebrate trunk elongation via tissue mechanics. Current Biology 23(14):1335-1341.",
         "doi": "10.1016/j.cub.2013.05.052"
+      },
+      {
+        "id": "soroldoni2014",
+        "citation": "Soroldoni D, Jorg DJ, Morelli LG, Richmond DL, Schindelin J, Julicher F, Oates AC (2014). A Doppler effect in embryonic pattern formation. Science 345(6193):222-225.",
+        "doi": "10.1126/science.1253089"
+      },
+      {
+        "id": "herrgen2010",
+        "citation": "Herrgen L, Ares S, Morelli LG, Schroter C, Julicher F, Oates AC (2010). Intercellular coupling regulates the period of the segmentation clock. Current Biology 20(14):1244-1253.",
+        "doi": "10.1016/j.cub.2010.06.034"
+      },
+      {
+        "id": "hubaud2017",
+        "citation": "Hubaud A, Regev I, Mahadevan L, Pourquie O (2017). Excitable dynamics and Yap-dependent mechanical cues drive the segmentation clock. Cell 171(3):668-682.",
+        "doi": "10.1016/j.cell.2017.08.043"
+      },
+      {
+        "id": "lewis2003",
+        "citation": "Lewis J (2003). Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator. Current Biology 13(16):1398-1408.",
+        "doi": "10.1016/S0960-9822(03)00534-7"
       }
     ],
     "specimens": {
@@ -53,7 +73,7 @@
       },
       "paper_citations": {
         "file": "datasets/neuromesodermal_jamming/paper_citations.bib",
-        "sha256": "d68afd1715fd7fcf85a531f8b6a792c73b5067343b14e40635265341de5b7ce1"
+        "sha256": "8ad03bd2db94cb2f873b85d69476d7643b51d39ce5a008036ee4308bf06e00fd"
       }
     }
   },
@@ -245,5 +265,70 @@
         "empirical_lr_asymmetry_pct": 12.4
       }
     ]
+  },
+  "fibronectin_sheath_governing_equations": {
+    "section": "Pass 3 reduced quasi-3D (thin-rod, axisymmetric) fibronectin ECM sheath model after Dray et al. (2013) Current Biology 23:1335-1341 Figs. 1-4 and Lawton et al. (2013) Development 140:573-582; NOT a 3D finite-element or Stokes solve",
+    "fibronectin_density_profile": "f_FN(x) = fn_scale * [F_MPZ + (F_PSM - F_MPZ) * sigmoid((x - 110 um)/40 um) + Delta_f_somite * H(x - x_arrest)]",
+    "sheath_hoop_equilibrium": "eps_r(x) = max(0, sigma_A(x) - sigma_y(x)) / (K_FN * f_FN(x) + K_t);  R_eq(x) = R_0(x) * (1 + eps_r(x))",
+    "axial_channeling_efficiency": "chi = 1 - < 1 - A_0/A_eq >_w over the fluid zone x <= x_jam with influx weight w(x) = exp(-x / L_src);  v_elong = J_MPZ * backstop * fluidity * chi",
+    "dynamic_wall_friction_diagnostic": "F_drag = integral_0^{x_jam} 2 pi R_0(x) zeta_FN f_FN(x) v_rel(x) dx  (reported, not fed back)",
+    "canonical_parameters": {
+      "R_mpz_um": 55.0,
+      "R_apsm_um": 38.0,
+      "f_fn_mpz_relative": 0.35,
+      "f_fn_psm_relative": 0.80,
+      "delta_f_fn_somite_relative": 0.20,
+      "K_FN_hoop_stiffness_Pa_per_strain": 2800.0,
+      "K_tissue_confinement_Pa_per_strain": 40.0,
+      "zeta_fn_friction_Pa_min_per_um": 0.6,
+      "mpz_source_length_um": 45.0,
+      "calibration_note": "K_FN and K_t are calibrated so that the WT tip hoop strain is ~4% and the fn1a/fn1b double-morphant speed ratio approaches the approximate Dray et al. (2013) value; they are not independently measured sheath moduli."
+    }
+  },
+  "dray_2013_fibronectin_regimes": {
+    "section": "Dray et al. (2013) Current Biology 23:1335-1341 Figs. 2-4 (fn1a/fn1b double morphants, itga5 morphants) — APPROXIMATE ratios digitised from the published bar charts / text; treat as order-of-magnitude anchors with the stated uncertainty",
+    "approximate_digitization": true,
+    "uncertainty_pct": 25.0,
+    "regimes": [
+      {
+        "regime_id": "fn_wt_control",
+        "label": "Wild-type fibronectin sheath (fn_scale = 1.0)",
+        "fn_scale": 1.0,
+        "empirical_elongation_speed_ratio": 1.0,
+        "empirical_tailbud_width_ratio": 1.0
+      },
+      {
+        "regime_id": "itga5_morphant",
+        "label": "itga5 (integrin alpha5) morphant — partial loss of cell-fibronectin adhesion (fn_scale = 0.45)",
+        "fn_scale": 0.45,
+        "empirical_elongation_speed_ratio": 0.82,
+        "empirical_tailbud_width_ratio": 1.08
+      },
+      {
+        "regime_id": "fn1a_fn1b_double_morphant",
+        "label": "fn1a;fn1b double morphant — near-complete loss of fibronectin matrix (fn_scale = 0.12)",
+        "fn_scale": 0.12,
+        "empirical_elongation_speed_ratio": 0.70,
+        "empirical_tailbud_width_ratio": 1.20
+      }
+    ]
+  },
+  "segmentation_clock_wavefront_reference": {
+    "section": "Her1/Her7 segmentation clock and wavefront arrest coupled to the jamming gradient (Oates & Ho 2002; Lewis 2003 Curr Biol 13:1398; Herrgen et al. 2010 Curr Biol 20:1244; Soroldoni et al. 2014 Science 345:222; Hubaud et al. 2017 Cell 171:668)",
+    "clock_phase_advection_law": "d theta/dt + u(x) d theta/dx = omega(x),  theta(0,t) = omega_0 t,  omega(x) = omega_0 [1 - c_slow (x/x_arrest)^2] for x < x_arrest and 0 anterior (arrest)",
+    "mechanical_arrest_gate": "x_arrest = min{ x : sigma_y(x)/sigma_A(x) >= Lambda_arrest },  Lambda_arrest = 4 (deep solid; x_jam < x_arrest)",
+    "cooke_zeeman_somite_length": "S = v_front * T_clock,  v_front = v_elong + v_PSM_shortening",
+    "canonical_parameters": {
+      "clock_period_T_min_at_28C": 23.5,
+      "clock_period_source": "Herrgen et al. (2010) wild-type somitogenesis period at 28 C (Schroter et al. 2008 Dev Dyn 237:545 report 23-24 min); Lewis (2003) used ~30 min",
+      "lambda_arrest": 4.0,
+      "clock_slowing_fraction_c_slow": 0.6,
+      "v_psm_shortening_um_per_min": 0.45,
+      "v_psm_shortening_note": "approximate: PSM shortens by ~210 um over ~20 somite cycles (Soroldoni et al. 2014 Fig. 1), 210 / (20 * 23.5 min)",
+      "somite_length_ref_um": 47.0,
+      "somite_length_note": "approximate trunk somite AP length at the 10-15 somite stage, 28 C (45-50 um range)",
+      "arrest_front_ref_um": 180.0,
+      "arrest_front_note": "P-PSM/A-PSM boundary of the Mongera et al. (2018) profile (x = 180 um, sigma_y/sigma_A = 4.7) taken as the approximate position where the tissue is fully solid and the determination front lies"
+    }
   }
 }

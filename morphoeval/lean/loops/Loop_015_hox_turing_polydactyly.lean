@@ -109,4 +109,67 @@ theorem sheth_fan_autopod_proximodistal_mode_selection :
     in_fan_autopod_band 2 4 5 3 = true := by
   decide
 
+
+-- ============================================================================
+-- Law 4 (`sheth-hox-turing-polydactyly-4`, Pass 3):
+-- Digit Number = Autopod Width / Turing Wavelength on an AER-Grown Autopod
+-- ============================================================================
+
+/-- Number of digit wavelengths that fit on a distal autopod arc of width `L`
+    (micrometres) at Turing wavelength `lam` (micrometres): `N = L / lam`
+    (natural-number floor division). On the AER-grown fan `L = Theta * R(T)`
+    is set by FGF8-driven outgrowth while `lam = lam(H)` is set by distal Hox dose. -/
+def digit_wavelengths (L lam : Nat) : Nat :=
+  L / lam
+
+/-- Theorem 4 (`sheth_growing_autopod_digit_number_law`):
+    (1) at fixed wavelength, a wider AER-grown autopod never carries fewer digit
+        wavelengths (`L1 ≤ L2 → N(L1) ≤ N(L2)`): AER ablation (smaller `L`) can only
+        reduce digit number (Summerbell 1974 ordering);
+    (2) at fixed width, a shorter Hox-tuned wavelength never carries fewer
+        (`0 < lam1 ≤ lam2 → N(lam2) ≤ N(lam1)`): the Sheth et al. (2012) allelic series;
+    (3) instances at the constant 2500 um autopod: `2500/500 = 5` (WT),
+        `2500/357 = 7` (Gli3 null), `2500/178 = 14` (triple null), and the early
+        AER-ablated WT arc `1365/500 = 2`. -/
+theorem sheth_growing_autopod_digit_number_law (L1 L2 L lam1 lam2 : Nat)
+    (hL : L1 ≤ L2) (hlam : lam1 ≤ lam2) (hpos : 0 < lam1) :
+    digit_wavelengths L1 lam1 ≤ digit_wavelengths L2 lam1 ∧
+    digit_wavelengths L lam2 ≤ digit_wavelengths L lam1 ∧
+    digit_wavelengths 2500 500 = 5 ∧
+    digit_wavelengths 2500 357 = 7 ∧
+    digit_wavelengths 2500 178 = 14 ∧
+    digit_wavelengths 1365 500 = 2 := by
+  unfold digit_wavelengths
+  exact ⟨Nat.div_le_div_right hL, Nat.div_le_div_left hlam hpos, rfl, rfl, rfl, rfl⟩
+
+
+-- ============================================================================
+-- Law 5 (`sheth-hox-turing-polydactyly-5`, Pass 3):
+-- Growth-Dilution Shift of the Turing Modal Eigenvalue (Crampin et al. 1999)
+-- ============================================================================
+
+/-- On a growing domain with local area dilation rate `g` the linearised
+    reaction-diffusion Jacobian becomes `J_k - g I`, so every modal eigenvalue
+    shifts by `-g`: `sigma_g(k) = sigma(k) - g` (integers scaled by 100 in the
+    numerical instances below). -/
+def dilution_shifted_eigenvalue (sigma g : Int) : Int :=
+  sigma - g
+
+/-- Theorem 5 (`sheth_growth_dilution_turing_threshold`):
+    for any modal growth rate `sigma` (Turing-unstable when `sigma > 0`),
+    (1) moderate AER-driven dilution `g < sigma` leaves the mode growing, so
+        digits condense during outgrowth;
+    (2) fast growth `g ≥ sigma` quenches it (Crampin, Gaffney & Maini 1999);
+    (3) AER regression (`g = 0`) restores the full fixed-domain rate `sigma`;
+    (4) instance from the script: `sigma_max = 4.49`, `g_rim = 1.95` → `449 - 195 = 254 > 0`,
+        whereas a hypothetical `g = 5.00` gives `449 - 500 < 0`. -/
+theorem sheth_growth_dilution_turing_threshold (sigma g : Int) :
+    (g < sigma → dilution_shifted_eigenvalue sigma g > 0) ∧
+    (g ≥ sigma → dilution_shifted_eigenvalue sigma g ≤ 0) ∧
+    dilution_shifted_eigenvalue sigma 0 = sigma ∧
+    dilution_shifted_eigenvalue 449 195 > 0 ∧
+    dilution_shifted_eigenvalue 449 500 < 0 := by
+  unfold dilution_shifted_eigenvalue
+  omega
+
 end MathOfBiology.Loop_015

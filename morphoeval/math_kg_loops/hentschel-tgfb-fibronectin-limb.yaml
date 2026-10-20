@@ -16,10 +16,23 @@ model_spec:
   L_AP_um: 1150.0
   fa_stages: [3.0, 6.0, 11.0, 18.0]
   seed: 2004
+  R_max_volume_filling: 2.0
+  ggh_cellular_potts:
+    J_R1R1: 14.0
+    J_R2R2: 2.0
+    J_R1R2: 11.0
+    J_cellM: 16.0
+    T: 10.0
+    lambda_V: 6.0
+    V_T_px: 25
+    mu_F: 10.0
+    mcs_micromass: 150
+    mcs_wing_bud: 300
   inputs:
     - datasets/tgfb_fibronectin_limb/tgfb_fibronectin_limb_reference.json
     - datasets/tgfb_fibronectin_limb/chick_limb_chondrogenesis_specimen.jpg
     - datasets/tgfb_fibronectin_limb/scout_manifest.json
+    - datasets/tgfb_fibronectin_limb/kiskowski_ggh_cpm_reference.json
 equations:
   - law_name: "Equal-Diffusion (D_a = D_i) & Anti-Fibronectin No-Haptotaxis (chi_F = 0) Negative Controls"
     formula: "tr(J_0) < 0 ∧ det(J_0) > 0 ∧ D_a = D_i = D ≥ 1 ∧ χ_F = 0 ⟹ ∀ q = k^2 ≥ 0, tr(J_k) < 0 ∧ det(J_k) > 0 ∧ σ_R(q; χ_F=0) = -D_R q - r_R < 0"
@@ -43,7 +56,7 @@ equations:
     variables: "c_a: activator TGF-beta concentration; c_i: FGF-dependent inhibitor concentration; R: mesenchymal cell density; χ_F: fibronectin haptotactic sensitivity; D_R: cell random motility"
     role: "Proves that equal morphogen diffusivities abolish the TGF-beta chemical prepattern and that blocking fibronectin haptotaxis (χ_F = 0, e.g. anti-fibronectin antibody or RGD peptide) abolishes mesenchymal cell condensation"
     source_citation: "Hentschel, Glimm, Glazier & Newman (2004) Proc. R. Soc. B 271(1549):1713-1722 Eqs. (2.1)-(3.6); Kiskowski et al. (2004) Dev. Biol. 271(2):372-387"
-    code_locus: "2004-hentschel-tgfb-fibronectin-limb.py#L120-L225"
+    code_locus: "2004-hentschel-tgfb-fibronectin-limb.py#L185-L266"
   - law_name: "AER-FGF Zonation & Proximodistal 1 -> 2 -> 3 -> 4 Skeletal Mode Transition"
     formula: "∂_t c_a = f_a(c_FGF) c_a + f_i c_i - c_a^3 + D_a ∇^2 c_a;  m^2(f_a) = (D_i f_a + D_a g_i) / (2 D_a D_i) = f_a - 2 ∈ {1^2, 2^2, 3^2, 4^2}"
     lean_decl: "MathOfBiology.Loop_014.hentschel_mode_sq"
@@ -64,7 +77,7 @@ equations:
     variables: "c_FGF(z): distal AER fibroblast growth factor concentration; f_a(c_FGF) ∈ {3, 6, 11, 18}: FGF-modulated TGF-beta self-activation rate; m ∈ {1, 2, 3, 4}: anteroposterior skeletal condensation count"
     role: "Proves that proximodistal AER-FGF zonation monotonically increases the unstable anteroposterior wavenumber across stylopod (m=1 humerus), zeugopod (m=2 radius+ulna), chick wing autopod (m=3 digits II-IV), and hindlimb/exogenous-TGF-beta autopod (m=4 digits I-IV)"
     source_citation: "Hentschel, Glimm, Glazier & Newman (2004) Proc. R. Soc. B 271(1549):1713-1722 Eqs. (3.1)-(3.12) & Figs. 2-4"
-    code_locus: "2004-hentschel-tgfb-fibronectin-limb.py#L230-L390"
+    code_locus: "2004-hentschel-tgfb-fibronectin-limb.py#L271-L536"
   - law_name: "Fibronectin Haptotactic Positive-Feedback Amplification & Micromass Spot/Stripe Morphospace"
     formula: "∂_t F = k_F c_a^+ R_2 - γ_F F,  ∂_t R = D_R ∇^2 R - χ_F ∇·(R ∇F) + r_R R(1 - R);  J_hapto(q) = (χ_F S_F - D_R) q > 0 for χ_F S_F > D_R"
     lean_decl: "MathOfBiology.Loop_014.hapto_net_flux"
@@ -86,4 +99,44 @@ equations:
     variables: "F(x,z,t): extracellular matrix fibronectin concentration; R_2(c_a,R): FGF/TGF-beta-differentiated prechondrogenic cell density; χ_F S_F: effective haptotactic sensitivity"
     role: "Proves that positive feedback between TGF-beta-stimulated fibronectin secretion and upward mesenchymal haptotaxis amplifies prechondrogenic cell condensations above random cell diffusion and governs the 2D micromass nodular-spot vs labyrinthine-stripe morphospace"
     source_citation: "Hentschel et al. (2004) Proc. R. Soc. B 271:1713-1722 Eqs. (2.4)-(2.9); Kiskowski et al. (2004) Dev. Biol. 271:372-387; Miura & Shiota (2000) Dev. Dyn. 217:241-249"
-    code_locus: "2004-hentschel-tgfb-fibronectin-limb.py#L395-L530"
+    code_locus: "2004-hentschel-tgfb-fibronectin-limb.py#L271-L644"
+  - law_name: "Glazier-Graner-Hogeweg Differential-Adhesion Sorting Condition (Pass 3 discrete cell lattice)"
+    formula: "H = Σ_<ij> J(τ_i, τ_j)(1 - δ_{σ_i σ_j}) + λ_V Σ_σ (v_σ - V_T)^2;  2 J_ld > J_ll + J_dd ⟹ ΔH_swap = (J_ll + J_dd) - 2 J_ld < 0;  (14, 2, 11) ⟹ ΔH_swap = -6;  J_ll = J_dd = J_ld ⟹ ΔH_swap = 0"
+    lean_decl: "MathOfBiology.Loop_014.ggh_sorting_swap_dH"
+    lean_theorem: "MathOfBiology.Loop_014.ggh_differential_adhesion_sorting_condition"
+    lean_locus: "morphoeval/lean/loops/Loop_014_tgfb_fibronectin_limb.lean#L131-L163"
+    lean_code: |
+      def ggh_hetero_surface_tension2 (J_ll J_dd J_ld : Int) : Int := 2 * J_ld - J_ll - J_dd
+      def ggh_sorting_swap_dH (J_ll J_dd J_ld : Int) : Int := (J_ll + J_dd) - 2 * J_ld
+      theorem ggh_differential_adhesion_sorting_condition (J_ll J_dd J_ld J : Int)
+          (hsort : 2 * J_ld > J_ll + J_dd) :
+          ggh_sorting_swap_dH J_ll J_dd J_ld < 0 ∧
+          ggh_hetero_surface_tension2 J_ll J_dd J_ld > 0 ∧
+          ggh_sorting_swap_dH 14 2 11 = -6 ∧
+          ggh_hetero_surface_tension2 14 2 11 = 6 ∧
+          ggh_sorting_swap_dH J J J = 0 ∧
+          ggh_hetero_surface_tension2 J J J = 0 := by
+        unfold ggh_sorting_swap_dH ggh_hetero_surface_tension2; omega
+    variables: "σ_i: cell index at lattice site i; τ: cell type (R1 mesenchyme, R2 TGF-beta-activated prechondrogenic, M medium); J_ll = J_R1R1 = 14, J_dd = J_R2R2 = 2, J_ld = J_R1R2 = 11, J_cM = 16 (Graner & Glazier 1992); λ_V = 6 volume-constraint stiffness; V_T = 25 px target cell area"
+    role: "Proves that the Graner-Glazier contact energies give a positive heterotypic surface tension so R2 prechondrogenic cells sort into compact condensations inside the continuum TGF-beta prepattern, and that the no-differential-adhesion ablation (equal J) removes the sorting drive — the mechanism behind the WT > DA-only > haptotaxis-only > ablation condensation-index ordering and the WT < ablation heterotypic boundary fraction in simulate_ggh_cellular_potts_condensation"
+    source_citation: "Graner F, Glazier JA (1992) Phys. Rev. Lett. 69(13):2013-2016 doi:10.1103/PhysRevLett.69.2013; Glazier JA, Graner F (1993) Phys. Rev. E 47(3):2128-2154 doi:10.1103/PhysRevE.47.2128; Kiskowski et al. (2004) Dev. Biol. 271:372-387; Chaturvedi et al. (2005) J. R. Soc. Interface 2:237-253"
+    code_locus: "2004-hentschel-tgfb-fibronectin-limb.py#L649-L862"
+  - law_name: "Metropolis Haptotactic Acceptance in the Coupled GGH Cell Lattice (Pass 3)"
+    formula: "ΔH = ΔH_adh + ΔH_vol - μ_F (F(target) - F(source));  P_accept = 1 if ΔH ≤ 0 else exp(-ΔH/T);  μ_F dF ≥ ΔH_adh + ΔH_vol ⟹ ΔH ≤ 0 (accepted w.p. 1);  μ_F = 0 ⟹ ΔH = ΔH_adh + ΔH_vol"
+    lean_decl: "MathOfBiology.Loop_014.ggh_total_dH"
+    lean_theorem: "MathOfBiology.Loop_014.ggh_metropolis_haptotaxis_acceptance"
+    lean_locus: "morphoeval/lean/loops/Loop_014_tgfb_fibronectin_limb.lean#L166-L191"
+    lean_code: |
+      def ggh_total_dH (dH_adh dH_vol mu_F dF : Int) : Int := dH_adh + dH_vol - mu_F * dF
+      theorem ggh_metropolis_haptotaxis_acceptance (dH_adh dH_vol mu_F dF : Int)
+          (hmu : mu_F ≥ 1) (hdF : dF ≥ 1) (hpen : dH_adh + dH_vol ≤ mu_F * dF) :
+          ggh_total_dH dH_adh dH_vol mu_F dF ≤ 0 ∧
+          ggh_total_dH dH_adh dH_vol 0 dF = dH_adh + dH_vol ∧
+          ggh_total_dH dH_adh dH_vol mu_F dF < ggh_total_dH dH_adh dH_vol 0 dF := by
+        unfold ggh_total_dH
+        have hpos : mu_F * dF ≥ 1 * 1 := Int.mul_le_mul hmu hdF (by omega) (by omega)
+        omega
+    variables: "F(x): cell-deposited fibronectin on the lattice (dF/dt = k_F c_a^+ R_2^disc - γ_F F); dF = F(target) - F(source) for a copy attempt; μ_F = 10 haptotaxis copy-energy strength; ΔH_adh, ΔH_vol: adhesion and volume-constraint energy changes; T = 10 Metropolis temperature"
+    role: "Proves the acceptance logic of the haptotaxis copy-energy term coupling the discrete cells to the continuum-derived fibronectin field: up-gradient extensions with sufficient haptotactic gain are accepted deterministically, and the anti-fibronectin ablation μ_F = 0 reduces the model to adhesion + volume dynamics (the da_only regime); the discrete counterpart of the continuum haptotactic flux law (Law 3)"
+    source_citation: "Savill NJ, Hogeweg P (1997) J. Theor. Biol. 184(3):229-235 doi:10.1006/jtbi.1996.0237; Graner & Glazier (1992) PRL 69:2013 (Metropolis rule); Kiskowski et al. (2004) Dev. Biol. 271:372-387 (cell-fibronectin coupling)"
+    code_locus: "2004-hentschel-tgfb-fibronectin-limb.py#L786-L824"

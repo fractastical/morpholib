@@ -1,0 +1,73 @@
+{
+  "metadata": {
+    "dataset_id": "manukyan-2017-ocellated-lizard-ca-skin-volume-v1",
+    "title": "Pass 3 reference notes for the 3D skin-volume reaction-diffusion model and its depth-averaged (thin-film) reduction used by 2015-manukyan-ocellated-lizard-ca.py",
+    "created": "2026-10-20",
+    "created_by": "Slot 009 Pass 3 autonomous remediation loop (2026-10-19-ocellated-lizard-ca-loop-pass3)",
+    "sources": [
+      {
+        "id": "fofonjka2021",
+        "citation": "Fofonjka A, Milinkovitch MC (2021). Reaction-diffusion in a growing 3D domain of skin scales generates a discrete cellular automaton. Nature Communications 12:2433.",
+        "doi": "10.1038/s41467-021-22525-1",
+        "used_for": "Premise that reaction-diffusion in a 3D skin domain whose thickness is reduced at inter-scale borders (thick scale centres, thin borders) discretizes the continuous Turing pattern into scale-level states; the 3D domain in the paper is a reconstructed skin geometry, which is NOT vendored here."
+      },
+      {
+        "id": "manukyan2017",
+        "citation": "Manukyan L, Montandon SA, Fofonjka A, Smirnov S, Milinkovitch MC (2017). A living mesoscopic cellular automaton made of skin scales. Nature 544(7649):173-179.",
+        "doi": "10.1038/nature22031",
+        "used_for": "Border thickness reduction factor P = h_border / h_interior ~ 0.17 and the mesoscopic premise that the reaction-diffusion wavelength exceeds the scale size (Fig. 4)."
+      },
+      {
+        "id": "turing1952",
+        "citation": "Turing AM (1952). The chemical basis of morphogenesis. Philosophical Transactions of the Royal Society of London B 237(641):37-72.",
+        "doi": "10.1098/rstb.1952.0012",
+        "used_for": "Linear stability conditions tr J < 0, det J > 0, d f_u + g_v > 2 sqrt(d det J) and the critical diffusivity ratio d_c."
+      }
+    ]
+  },
+  "three_d_skin_volume_model": {
+    "status": "closest honest reduced version of the Pass 2 remediation item; NOT a micro-CT finite-element mesh",
+    "domain": "Omega = {(x, y, z) : 0 <= z < h(x, y)}, h = h_interior inside hexagonal scale cores, h = P * h_interior on inter-scale border pixels (stepped thickness)",
+    "governing_equations": "du/dt = F(u, v) + D_u Laplacian u ; dv/dt = G(u, v) + D_v Laplacian v in Omega, with zero-flux (Neumann) boundaries on the epidermal surface, the basal lamina and the vertical steps between thick and thin skin; periodic laterally",
+    "discretization": {
+      "scheme": "finite-volume voxels; face conductance 1 iff both voxels are skin; explicit lateral diffusion; implicit vertical diffusion (vectorized Thomas / tridiagonal solve) so dz can be refined without a stability penalty",
+      "lateral_grid_px": [60, 60],
+      "scale_lattice": [12, 12],
+      "scale_pitch_px": 5.0,
+      "h_interior_voxels": 12,
+      "dz_px": 0.2,
+      "h_interior_px": 2.4,
+      "h_border_voxels_by_P": {"0.0": 0, "0.08": 1, "0.17": 2, "0.45": 5, "1.0": 12},
+      "P_effective_by_P": {"0.0": 0.0, "0.08": 0.0833, "0.17": 0.1667, "0.45": 0.4167, "1.0": 1.0},
+      "dt": 0.006,
+      "steps": 6000,
+      "stability_constraint": "explicit lateral: dt < 1 / (4 D_v) = 0.00656 at lambda_c = 25 px, d = 20"
+    },
+    "kinetics": {
+      "form": "activator-inhibitor kinetics linearized about (u*, v*) = (0.50, 0.50) with cubic activator saturation: F = 0.50 (u - 0.5) - 0.75 (v - 0.5) - 1.25 (u - 0.5)^3 ; G = 0.82 (u - 0.5) - 0.65 (v - 0.5)",
+      "jacobian": {"f_u": 0.5, "f_v": -0.75, "g_u": 0.82, "g_v": -0.65, "trace": -0.15, "det": 0.29},
+      "critical_diffusivity_ratio_d_c": 7.0,
+      "diffusivity_ratio_d": 20.0,
+      "turing_wavelength_px": 25.0,
+      "turing_wavelength_in_scale_pitches": 5.0,
+      "why_five_pitches": "the first zero-flux mode of an isolated ~4 px scale interior (k_1 = pi / 4 = 0.785 px^-1) must lie above the unstable band k_max ~ 1.9 k_c = 0.48 px^-1 so that an insulated scale cannot pattern internally; this is the mesoscopic premise of Manukyan et al. (2017) Fig. 4",
+      "caveat": "these are NOT the Methods parameters of Manukyan et al. (2017); the clipped-linear canonical set vendored in ocellated_lizard_ca_reference.json is kept for traceability but has d_c = 23.57 > its stated d = 20 and is therefore not Turing-unstable as vendored (open Pass 4 item)"
+    }
+  },
+  "thin_film_reduction": {
+    "depth_averaged_equation": "d ubar/dt = F(ubar, vbar) + (1 / h(x)) div( h(x) D_u grad ubar ) ; d vbar/dt = G(ubar, vbar) + (1 / h(x)) div( h(x) D_v grad vbar )",
+    "finite_volume_form": "face conductance between columns i, j = min(h_i, h_j) * D (shared face area); column capacity = h_i",
+    "validity": "h_interior << lambda_c (here h_interior = 2.4 px vs lambda_c = 25 px); measured by the vertical non-uniformity RMS of the 3D solution",
+    "expected_scale_state_agreement": 1.0,
+    "relation_to_pass2_model": "the Pass 2 variant D(x) = P * D on border pixels with unit capacity has the same border conductance but the wrong (unit) border capacity, and additionally applied an artificial per-scale averaging step (homog_rate = 0.28 (1 - P)) after every PDE step; both are removed in Pass 3 (the diffusivity variant is retained only as a comparison, border_model='diffusivity')",
+    "lean_theorems": [
+      "MathOfBiology.Loop_009.thin_film_depth_average_recovers_uniform_column",
+      "MathOfBiology.Loop_009.voxel_face_conductance_ratio_equals_thickness_ratio"
+    ]
+  },
+  "residual_gap_for_pass_4": [
+    "No micro-CT or confocal skin-scale mesh is vendored: the 3D domain is a stepped-thickness voxel skin on a 5 px scale pitch (border area fraction 0.36, far larger than real inter-scale border area), not the reconstructed geometry of Fofonjka & Milinkovitch (2021).",
+    "No domain growth: Fofonjka & Milinkovitch (2021) integrate on a growing domain; the Pass 3 volume is static.",
+    "Kinetics are a phenomenological Kondo-Asai-type set, not the Methods parameters of Manukyan et al. (2017)."
+  ]
+}

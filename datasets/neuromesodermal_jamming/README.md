@@ -26,9 +26,21 @@ Reference parameters, formal active-foam rigidity-percolation and Bingham viscop
    \]
    The high yield stress of the solid A-PSM acts as an internal mechanical backstop that rectifies mass addition in the fluid MPZ into unidirectional posterior elongation (\(v_{\text{elong}} \approx 1.52\ \mu\text{m/min}\)) while preserving left-right bilateral symmetry. Knockdown of N-cadherin (*cdh2*) expands \(\phi_{\text{ECS}}\) above \(\phi_{\text{ECS,crit}}\), unjamming the PSM, collapsing the mechanical backstop, slowing elongation (\(0.78\ \mu\text{m/min}\)), and inducing left-right body-axis asymmetry.
 
+4. **(Pass 3) Quasi-3D Fibronectin ECM Sheath Confinement & Axial Channeling Law** (after Dray et al. 2013, *Current Biology* 23:1335–1341; Lawton et al. 2013):
+   \[
+   \varepsilon_r(x) = \frac{\max(0,\ \sigma_A(x) - \sigma_y(x))}{K_{FN}\, f_{FN}(x) + K_t}, \qquad R_{eq}(x) = R_0(x)\,(1 + \varepsilon_r(x)), \qquad \chi = 1 - \Big\langle 1 - \tfrac{A_0}{A_{eq}} \Big\rangle_{w,\ x \le x_{jam}}, \qquad v_{\text{elong}} \propto \chi
+   \]
+   Thin-rod (axisymmetric) reduction of the 3D fibronectin boundary: the fibronectin matrix wrapping the tailbud/PSM (\(f_{FN}\): sparse around the MPZ, dense along the PSM, extra at epithelialised somite borders) is a hoop-stiff sheath. Where active cell pressure exceeds the tissue yield stress the fluid MPZ dilates until the sheath balances it; the volume stored in radial dilation is lost to axis elongation. *fn1a;fn1b* and *itga5* morphants (`fn_scale` = 0.12, 0.45) are wider and elongate more slowly. **Not** a 3D FEM/Stokes solve; \(K_{FN}\), \(K_t\) are calibrated (see `fibronectin_sheath_governing_equations.canonical_parameters.calibration_note`), and the Dray et al. ratios in `dray_2013_fibronectin_regimes` are approximate digitisations (±25 %).
+
+5. **(Pass 3) Her1/Her7 Clock Advection, Mechanical Wavefront Arrest & Cooke–Zeeman Somite Length** (Oates & Ho 2002; Lewis 2003; Herrgen et al. 2010; Soroldoni et al. 2014; Hubaud et al. 2017):
+   \[
+   \partial_t \theta + u(x)\, \partial_x \theta = \omega(x), \qquad \omega(x) = \omega_0\Big[1 - c_{slow}\big(\tfrac{x}{x_{arr}}\big)^2\Big]\,\mathbb{1}_{x<x_{arr}}, \qquad x_{arr} = \min\{x : \sigma_y/\sigma_A \ge \Lambda_{arr}\}, \qquad S = (v_{\text{elong}} + v_{short})\, T_{clock}
+   \]
+   The jamming ratio gates where the clock arrests (strictly anterior to the fluid-to-solid crossover, \(x_{jam} < x_{arr}\)), the backstop/sheath elongation speed sets the frozen her1 stripe wavelength (\(T_{clock} = 23.5\) min at 28 °C; WT model \(S = 46.2\ \mu\text{m}\) vs ≈47 µm reference; *cdh2* morphants never reach the gate → no arrest front), and arrested somites assemble fibronectin that feeds back into the sheath profile.
+
 ## Vendored Files & Cryptographic Digests
 
 - `scout_manifest.json` — OpenAlex + Wikimedia Commons literature & specimen scout dossier (`5770ebf01ff6d270833f332b1aaa6b74d65624310c14e308356239ab3963d813`)
-- `neuromesodermal_jamming_reference.json` — Formal active-foam jamming equations, Mongera et al. (2018) AP spatial profiles, and 5-regime perturbation dataset
+- `neuromesodermal_jamming_reference.json` — Formal active-foam jamming equations, Mongera et al. (2018) AP spatial profiles, 5-regime perturbation dataset, and (Pass 3) `fibronectin_sheath_governing_equations`, `dray_2013_fibronectin_regimes` (approximate) and `segmentation_clock_wavefront_reference` blocks
 - `zebrafish_tailbud_psm_specimen.jpg` — Lightsheet fluorescence micrograph of the *Danio rerio* posterior tailbud neuromesodermal progenitor zone (MPZ), bilateral presomitic mesoderm (PSM), and central notochord from Open Microscopy Image Data Resource study `idr0051` / Dray & Lawton et al. (2013) (`e987d8b6218b96461c1213f9a11d20fb5d6585c6074608bf060c16edf725d500`, CC BY 4.0)
-- `paper_citations.bib` — BibTeX citations for Mongera et al. (2018), Kim et al. (2021), Lawton et al. (2013), Serwane et al. (2017), and Dray et al. (2013) (`d68afd1715fd7fcf85a531f8b6a792c73b5067343b14e40635265341de5b7ce1`)
+- `paper_citations.bib` — BibTeX citations for Mongera et al. (2018), Kim et al. (2021), Lawton et al. (2013), Serwane et al. (2017), Dray et al. (2013), and (Pass 3) Soroldoni et al. (2014), Herrgen et al. (2010), Hubaud et al. (2017), Lewis (2003) (`8ad03bd2db94cb2f873b85d69476d7643b51d39ce5a008036ee4308bf06e00fd`)

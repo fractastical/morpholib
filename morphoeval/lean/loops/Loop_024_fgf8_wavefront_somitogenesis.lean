@@ -86,4 +86,88 @@ theorem dubrulle_2001_fgf8_bead_somite_pair_conservation (v_g T_c delta_x : Int)
   dsimp [perturbed_somite_length]
   omega
 
+/-! ## Pass 3 additions (2026-10-19, remediation of audit v2)
+
+    3. Goldbeter, A., Gonze, D. & Pourquie, O. (2007). "Sharp developmental
+       thresholds defined through bistability by antagonistic gradients of
+       retinoic acid and FGF signaling." Developmental Dynamics 236(6):1495-1508.
+       DOI: 10.1002/dvdy.21193
+-/
+
+/-- Law 4a (`dubrulle-fgf8-wavefront-somitogenesis-4`):
+    Goldbeter et al. (2007) RA -| FGF -> Cyp26 -| RA mutual inhibition.
+    The sign of a feedback loop is the product of the signs of its edges. The
+    loop RA -| FGF (sign -s₁) and FGF -> Cyp26 -| RA (net sign -s₂, since the
+    activation of Cyp26 composed with Cyp26-catalysed RA degradation is inhibitory)
+    has loop gain `(-s₁) * (-s₂)`. -/
+def feedback_loop_sign (e₁ e₂ : Int) : Int :=
+  e₁ * e₂
+
+/-- Theorem 4a (`goldbeter_2007_double_negative_loop_is_positive`):
+    A double-negative loop built from two inhibitory edges of strengths `s₁, s₂ > 0`
+    is a positive feedback loop (loop gain `s₁ * s₂ > 0`), the structural
+    prerequisite for the bistability reported by Goldbeter et al. (2007). -/
+theorem goldbeter_2007_double_negative_loop_is_positive (s₁ s₂ : Int)
+    (h₁ : 0 < s₁) (h₂ : 0 < s₂) :
+    feedback_loop_sign (-s₁) (-s₂) = s₁ * s₂ ∧ 0 < feedback_loop_sign (-s₁) (-s₂) := by
+  constructor
+  · simp [feedback_loop_sign, Int.neg_mul_neg]
+  · simp only [feedback_loop_sign, Int.neg_mul_neg]
+    exact Int.mul_pos h₁ h₂
+
+/-- Law 4b: hysteretic (bistable) determination switch along the PSM.
+    `x_lo < x_hi` are the two saddle-node positions (posterior reverse-switch
+    `x_lo = x_SN_hi` and anterior forward-switch `x_hi = x_SN_lo` in the script's
+    tailbud-distance coordinate). A cell at position `x` is in the high-FGF state
+    (`true`) if `x ≤ x_lo`, in the high-RA state (`false`) if `x ≥ x_hi`, and keeps
+    its previous state `prev` strictly inside the bistable window. -/
+def hysteretic_state (x_lo x_hi x : Int) (prev : Bool) : Bool :=
+  if x ≤ x_lo then true else if x_hi ≤ x then false else prev
+
+/-- Theorem 4b (`goldbeter_2007_hysteretic_switch_memory`):
+    Strictly inside the bistable window the cell state is history-dependent
+    (memory): a cell advected anteriorly from the tailbud (`prev = true`) stays
+    high-FGF, while a cell re-entering the window from the anterior high-RA state
+    (`prev = false`, e.g. after an FGF8 bead is removed) stays high-RA. Hence the
+    forward determination front sits at the anterior saddle-node `x_hi` and the
+    reverse switch at the posterior saddle-node `x_lo`, and the two differ by the
+    full window `x_hi - x_lo > 0`. -/
+theorem goldbeter_2007_hysteretic_switch_memory (x_lo x_hi x : Int)
+    (hlo : x_lo < x) (hhi : x < x_hi) :
+    hysteretic_state x_lo x_hi x true = true ∧
+    hysteretic_state x_lo x_hi x false = false ∧
+    hysteretic_state x_lo x_hi x_hi true = false ∧
+    hysteretic_state x_lo x_hi x_lo false = true ∧
+    0 < x_hi - x_lo := by
+  have h1 : ¬ (x ≤ x_lo) := by omega
+  have h2 : ¬ (x_hi ≤ x) := by omega
+  have h3 : ¬ (x_hi ≤ x_lo) := by omega
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · simp [hysteretic_state, h1, h2]
+  · simp [hysteretic_state, h1, h2]
+  · simp [hysteretic_state, h3]
+  · simp [hysteretic_state]
+  · omega
+
+/-- Law 5 (`dubrulle-fgf8-wavefront-somitogenesis-5`):
+    Dubrulle & Pourquie (2004) cell-autonomous `fgf8` mRNA bookkeeping in the
+    log₂ domain: starting from `L0 = log₂ m₀`, first-order decay over a time
+    `τ` lowers the level by `D = k_d τ / ln 2` half-lives and each cell division
+    halves the inherited mRNA, lowering it by exactly one unit. -/
+def log2_fgf8_level (L0 D n : Int) : Int :=
+  L0 - D - n
+
+/-- Theorem 5 (`dubrulle_2004_division_dilution_is_one_half_life`):
+    (i) decay and division compose additively (the order of decay intervals and
+    divisions along a cell's history is irrelevant), and (ii) one division is
+    worth exactly one half-life of decay, so the effective decay rate of a
+    dividing lineage is `k_d + ln 2 / T_div`. -/
+theorem dubrulle_2004_division_dilution_is_one_half_life (L0 D₁ D₂ n₁ n₂ : Int) :
+    log2_fgf8_level (log2_fgf8_level L0 D₁ n₁) D₂ n₂ =
+      log2_fgf8_level L0 (D₁ + D₂) (n₁ + n₂) ∧
+    log2_fgf8_level L0 D₁ (n₁ + 1) = log2_fgf8_level L0 (D₁ + 1) n₁ := by
+  constructor
+  · dsimp [log2_fgf8_level]; omega
+  · dsimp [log2_fgf8_level]; omega
+
 end MathOfBiology.Loop_024

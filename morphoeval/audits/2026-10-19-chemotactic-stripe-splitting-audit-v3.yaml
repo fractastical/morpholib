@@ -1,0 +1,277 @@
+# MorphoEval audit — Painter, Maini & Othmer (1999) Pomacanthus Turing-chemotaxis stripe doubling
+# & Keller-Segel rippling, 2026-10-20 (v3, Pass 3)
+#
+# Pass 3 post-remediation evaluation of `1999-painter-chemotactic-stripe-splitting.py` (Slot 005)
+# superseding `2026-10-19-chemotactic-stripe-splitting-audit-v2` in
+# `2026-10-19-chemotactic-stripe-splitting-loop-pass3`.
+#
+# Pass 2 remediation items closed in this pass:
+#   (1) "Extend the 2D chemotactic PDE to a growing curved surface to model vertebrate skin and fish
+#       pigment stripe bifurcations alongside bacterial rippling."
+#       -> `simulate_pomacanthus_growing_surface` (L703-856): the ACTUAL PNAS 1999 Pomacanthus system
+#          (Kondo-Asai Turing morphogens + chemotactic iridophores) integrated on a uniformly growing
+#          surface of revolution (line / cylinder K = 0 / spindle K != 0) via a Laplace-Beltrami
+#          eigenbasis solver with Crampin-Gaffney-Maini dilution; reproduces Kondo & Asai's 3 -> 6 -> 12
+#          stripe doubling on the flat flank (doubling scale ratio 2.03) and exposes sequential
+#          insertion (3 -> 6 -> 8) on the curved spindle.
+#   (2) "Couple cell density n(x,t) to an explicit extracellular slime-trail orientation tensor for
+#       Myxococcus xanthus social gliding motility."
+#       -> `simulate_slime_trail_ks` / `evaluate_slime_trail_hysteresis` (L891-1022): nematic trail
+#          tensor Q with mobility M = I + aQ on both D_n and chi; Lean Law 6 predicts chi_c(m) = 4.22,
+#          verified by a hysteresis test (ridges held at chi = 4.4 < 4.5 with trails, lost without).
+#
+# Source correction made in this pass: DOI 10.1073/pnas.96.10.5549 is "Stripe formation in juvenile
+# Pomacanthus explained by a generalized Turing mechanism with chemotaxis" (PMID 10318921). Passes 1-2
+# cited a non-existent title and attributed a generic Keller-Segel system to it; the Keller-Segel
+# laws are now re-attributed (Keller & Segel 1970; Painter & Hillen 2011; Crampin et al. 1999;
+# Ermentrout 1991) and the PNAS 1999 model is implemented for the first time (Laws 4-5).
+
+audit:
+  id: 2026-10-19-chemotactic-stripe-splitting-audit-v3
+  supersedes_audit_id: 2026-10-19-chemotactic-stripe-splitting-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 4d5512d
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) post-remediation evaluation of `1999-painter-chemotactic-stripe-splitting.py`
+      after the isolated 12-step remediation loop `2026-10-19-chemotactic-stripe-splitting-loop-pass3`
+      (`--self-test` 108 s, default render 92 s on the evaluation machine).
+
+references:
+  painter1999:
+    title: "Stripe formation in juvenile Pomacanthus explained by a generalized Turing mechanism with chemotaxis"
+    authors: "Painter KJ, Maini PK, Othmer HG"
+    venue: "Proceedings of the National Academy of Sciences USA 96(10):5549-5554 (1999); PMID 10318921, PMC21897"
+    doi: 10.1073/pnas.96.10.5549
+  keller1970:
+    title: "Initiation of slime mold aggregation viewed as an instability"
+    authors: "Keller EF, Segel LA"
+    venue: "Journal of Theoretical Biology 26(3):399-415 (1970)"
+    doi: 10.1016/0022-5193(70)90092-5
+  myerscough1992:
+    title: "Analysis of propagating pattern in a chemotaxis system"
+    authors: "Myerscough MR, Murray JD"
+    venue: "Bulletin of Mathematical Biology 54(1):77-94 (1992)"
+    doi: 10.1007/BF02458621
+  painter2011:
+    title: "Spatio-temporal chaos in a chemotaxis model"
+    authors: "Painter KJ, Hillen T"
+    venue: "Physica D: Nonlinear Phenomena 240(4-5):363-375 (2011)"
+    doi: 10.1016/j.physd.2010.09.011
+  kondo1995:
+    title: "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus"
+    authors: "Kondo S, Asai R"
+    venue: "Nature 376(6543):765-768 (1995)"
+    doi: 10.1038/376765a0
+  crampin1999:
+    title: "Reaction and diffusion on growing domains: Scenarios for robust pattern formation"
+    authors: "Crampin EJ, Gaffney EA, Maini PK"
+    venue: "Bulletin of Mathematical Biology 61(6):1093-1120 (1999)"
+    doi: 10.1006/bulm.1999.0131
+  ermentrout1991:
+    title: "Stripes or spots? Nonlinear effects in bifurcation of reaction-diffusion equations on the square"
+    authors: "Ermentrout B"
+    venue: "Proceedings of the Royal Society of London A 434(1891):413-417 (1991)"
+    doi: 10.1098/rspa.1991.0100
+  balagam2015:
+    title: "Mechanism for collective cell alignment in Myxococcus xanthus bacteria"
+    authors: "Balagam R, Igoshin OA"
+    venue: "PLoS Computational Biology 11(8):e1004474 (2015)"
+    doi: 10.1371/journal.pcbi.1004474
+
+simulations:
+  - id: painter-chemotactic-stripe-splitting
+    name: "Painter, Maini & Othmer (1999) Pomacanthus Turing-chemotaxis stripe doubling on a growing curved flank & Keller-Segel rippling with slime-trail tensor"
+    organism: "Pomacanthus semicirculatus juvenile pigment stripes (model target) & Myxococcus xanthus rippling cell populations (specimen)"
+    script: 1999-painter-chemotactic-stripe-splitting.py
+    output: docs/media/chemotactic_stripe_splitting_comparison.png
+    extra_outputs:
+      - docs/media/chemotactic_stripe_splitting_growth.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Painter, Maini & Othmer (1999) PNAS 96(10):5549-5554 Eqs. (1)-(3): Kondo-Asai piecewise-linear Turing morphogens u, v with chemotactic iridophores n, chi(u) = chi_0/(k+u)^2, chi_0 < 0, on an exponentially growing domain L(t) = 11 exp(1e-4 t) (Fig. 3: 3-peak juvenile pattern; Fig. 1 / Kondo & Asai 1995: 3 -> 6 -> 12 stripes at 2, 6, 12 months)"
+        - "Keller & Segel (1970) J. Theor. Biol. 26:399-415 chemotactic flux cross-diffusion -div(n chi(c) grad(c)) and its linear instability; Crampin, Gaffney & Maini (1999) growing-domain dilution and mode doubling; Ermentrout (1991) stripe-vs-spot selection"
+        - "Balagam & Igoshin (2015) trail-following alignment of gliding M. xanthus cells"
+      reconstructed_in_script:
+        - "PNAS 1999 Fig. 3 system integrated on a uniformly growing surface of revolution (1D line, cylinder K = 0, spindle K lambda_c^2 = 0.69) with a Laplace-Beltrami eigenbasis solver, fully implicit diffusion + Jacobian + 2r dilution, explicit clipped kinetics and chemotactic flux; stripe counts 3 -> 6 -> 12 on flat flanks (doubling scale ratio 2.03), 3 -> 6 -> 8 on the spindle; chi_0 sweep over two orders of magnitude"
+        - "Generic Keller-Segel chemotaxis-logistic 1D/2D IMEX pseudospectral solvers (stationary s in {1, 2, 4, 8}, subcritical control chi = 3.0, growing-domain kymograph 1 -> 2 -> 4, 2D cubic stripes vs quadratic spots) and a slime-trail nematic tensor Q with mobility M = I + aQ tested by a chi-drop hysteresis protocol (grow at 6.2, hold at 4.0 / 4.4)"
+        - "Computer-vision segmentation of the Myxococcus xanthus specimen (`chemotactic_pattern_specimen.jpg`, CC BY-SA 4.0): 4 fruiting-body spot aggregates and 362 rippling stripe spacings (74.10 um mean wavelength via the 500 um = 125 px scale bar)"
+      transfer_boundary:
+        - "The PNAS 1999 iridophore model is compared against Kondo & Asai's stripe COUNTS (3, 6, 12) only; no Pomacanthus photograph is vendored, so curvature-dependent stripe geometry is not validated against a fish specimen"
+        - "The Keller-Segel rippling model and slime-trail tensor are mapped to M. xanthus rippling ridges; the tensor is a continuum closure, not an agent-based trail model"
+      does_not_claim:
+        - "Reproduction of PNAS 1999 Fig. 4-5 anisotropic 2D growth (1.8e-4 / 2.2e-4) or Fig. 8 Lengyel-Epstein adult stripe-to-spot transition"
+        - "Individual-cell C-signal contact-reversal mechanics or 3D fruiting-body stalk elevation"
+    source_refs:
+      - painter1999
+      - keller1970
+      - myerscough1992
+      - painter2011
+      - kondo1995
+      - crampin1999
+      - ermentrout1991
+      - balagam2015
+    summary: >-
+      Pass 3 post-remediation evaluation of `1999-painter-chemotactic-stripe-splitting.py`
+      (92.5/100, up from 91.3/100 in Pass 2). Both Pass 2 remediation items are closed: the
+      actual PNAS 1999 Pomacanthus model (Kondo-Asai Turing morphogens + chemotactic iridophores,
+      Fig. 3 parameters, linear analysis tr J = -0.01, det J = 0.005, h = 0.00458, k_c^2 = 3.2714,
+      lambda_c = 3.4739, Neumann modes {5, 6, 7} in band, mode 6 -> 3 stripes) is integrated on a
+      uniformly growing surface of revolution and reproduces Kondo & Asai's 3 -> 6 -> 12 stripe
+      doubling on flat flanks (line and cylinder; 6 at s = 2.18, 12 at s = 4.44, ratio 2.03) while
+      the curved spindle (K lambda_c^2 = 0.69) inserts stripes sequentially (3 -> 6 -> 8), and the
+      Keller-Segel rippling cell flux is coupled to a slime-trail nematic order tensor whose Lean-
+      proved threshold shift chi_c(m) = 4.22 lies inside the observed hysteresis bracket (4.0, 4.4)
+      (ridge amplitude 0.46 with trails vs 0.16 without at chi = 4.4). The seed-paper title and the
+      attribution of the Keller-Segel laws were corrected across script, datasets, Lean and KG YAML;
+      the SHA-pinned `scout_manifest.json` still carries the wrong title and is disclosed. 13
+      reference-anchored measurements, 7 machine-checked Lean 4 theorems (0 sorrys), 9-panel figure
+      and 3-row GIF. Residual defects: imposed 6.2/3.8 x/y anisotropy in the 2D KS stripe regime,
+      spindle deviation from the doubling law, iridophore contrast 1.7x the quasi-static estimate,
+      and no Pomacanthus specimen image.
+    scores:
+      model-fidelity:
+        value: 95
+        rationale: >-
+          For the first time implements the actual PNAS 1999 model: `PMO_PARAMS`/`pmo_kinetics`
+          (L546-574, clipped Kondo-Asai kinetics with (u*, v*) = (3, 2.5) verified in the self-test),
+          `pmo_turing_stability` (L575-615) reproducing the Turing conditions and three-stripe mode
+          selection, and `simulate_pomacanthus_growing_surface` (L703-856) on a growing surface of
+          revolution with metric g = s^2 g_0, Laplace-Beltrami eigenbasis (`_surface_eigenbasis`,
+          L639-665), conservative chemotactic divergence (L666-683) and 2r morphogen dilution. The
+          slime-trail tensor (`simulate_slime_trail_ks`, L891-997) adds a nematic closure with
+          mobility on both D_n and chi. 7 Lean theorems (0 sorrys) cover Laws 1-6. Deductions:
+          the 2D KS stripe regime (`simulate_2d_stripe_vs_spot`, L466-541) still imposes a 6.2/3.8
+          x/y chemotactic anisotropy to obtain stripes (disclosed in the docstring L478-483 and
+          Panel D label) rather than deriving it from the trail tensor; the Fig. 4 anisotropic
+          RC/DV growth and Fig. 8 Lengyel-Epstein transition are not implemented.
+        evidence:
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [546, 615], note: "PNAS 1999 Fig. 3 parameters, clipped Kondo-Asai kinetics and Turing linear analysis (tr, det, h, k_c^2, lambda_c, Neumann band, mode 6 -> 3 stripes)", supports: true}
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [703, 856], note: "Growing surface-of-revolution solver: eigenbasis fully implicit diffusion + Jacobian + dilution, explicit clip nonlinearity and chemotactic flux, stripe counting and doubling-scale detection", supports: true}
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [880, 1022], note: "Slime-trail nematic tensor Q, mobility M = I + aQ, Law-6 threshold chi_c(m) and chi-drop hysteresis protocol", supports: true}
+          - {file: morphoeval/lean/loops/Loop_005_chemotactic_stripe_splitting.lean, lines: [119, 224], note: "Laws 4-6: painter_1999_pomacanthus_turing_instability, pomacanthus_three_stripe_mode_selection, kondo_asai_stripe_doubling_mode_selection, slime_trail_anisotropic_mobility_lowers_chemotactic_threshold (lean OK, 0 sorrys)", supports: true}
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [478, 483], note: "Docstring discloses that the 2D stripe regime imposes a 6.2/3.8 x/y chemotactic anisotropy (not derived from the trail tensor)", supports: false}
+      specimen-match:
+        value: 90
+        rationale: >-
+          The Myxococcus xanthus specimen is still SHA-256-verified and segmented
+          (`segment_chemotactic_specimen`, L1023-1120: 4 fruiting bodies, 362 ridge spacings,
+          74.10 um mean wavelength, Panels E-F). The new Pomacanthus model is matched to
+          Kondo & Asai's vendored stripe-count table (3 / 6 / 12 at 2 / 6 / 12 months,
+          `pomacanthus_stripe_doubling_reference.json`) and the flat-flank run reproduces all
+          three counts (Panel G annotations), which is a genuine new quantitative specimen match.
+          Deductions: no Pomacanthus photograph is vendored, so curvature-dependent stripe
+          geometry (Panel H) is not validated against a fish; the spindle reaches 8 not 12 stripes.
+        evidence:
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [1023, 1120], note: "Automated CV segmentation of 500 um scale bar, 4 fruiting-body spot aggregates and rippling stripe spacings", supports: true}
+          - {file: datasets/chemotactic_stripe_splitting/pomacanthus_stripe_doubling_reference.json, lines: [1, 112], note: "Kondo & Asai (1995) 3 -> 6 -> 12 stripe-doubling table, PNAS 1999 Fig. 3/4/5/8 parameters and Pass 3 curved-surface expectations", supports: true}
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [1521, 1596], note: "Panels G-H: iridophore kymograph with Kondo-Asai stripe-count annotations and cylinder-vs-spindle unrolled surfaces", supports: true}
+          - {file: docs/media/chemotactic_stripe_splitting_comparison.png, lines: [0, 0], note: "9-panel synthesis figure: specimen segmentation (E-F), Pomacanthus growing-flank stripe doubling (G-H), slime-trail hysteresis (I)", supports: true}
+      parameter-expressivity:
+        value: 93
+        rationale: >-
+          Beyond the Pass 2 regimes (s in {1, 2, 4, 8}, chi in {0, 3, 4.5, 6}, 2D stripes vs
+          spots), Pass 3 adds three surface profiles (`_surface_profile`, L616-638: line, cylinder,
+          spindle with tunable taper), a chi_0 sweep over two orders of magnitude
+          (`pomacanthus_chi0_sweep`, L857-879: contrast 0.018 / 0.201 / 5.86), and a 2 x 2
+          trail-strength x hold-chi hysteresis grid (`evaluate_slime_trail_hysteresis`, L998-1022).
+          Deduction: anisotropic RC/DV growth rates (PNAS 1999 Fig. 4) are stored in the dataset
+          but not exposed as a solver parameter.
+        evidence:
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [616, 638], note: "Surface-of-revolution profiles (cylinder K = 0, spindle K != 0) with taper parameter and Gaussian curvature", supports: true}
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [857, 879], note: "chi_0 sensitivity sweep (-1e-5, -1e-4, -1e-3)", supports: true}
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [998, 1022], note: "Trail-strength x hold-chi hysteresis grid with Law-6 predicted threshold", supports: true}
+      morphometric-validation:
+        value: 92
+        rationale: >-
+          `measure_morphoeval()` (L1121-1299) returns 13 reference-anchored measurements: the 5
+          Pass 2 quantities (re-attributed) plus initial stripe count (3 vs 3), cylinder final
+          count (12 vs 12), doubling scale ratio (2.03 vs 2.0), spindle final count (8 vs 12,
+          reported as a curvature effect), iridophore contrast vs quasi-static flux-balance
+          estimate (0.201 vs 0.117, ratio 1.73), chi_0 Spearman monotonicity (1.0), Law-6 threshold
+          vs hysteresis bracket midpoint (4.22 vs 4.2) and trail/isotropic amplitude ratio (2.95 vs
+          null 1.0). Deductions: the contrast measurement is an order-of-magnitude check only
+          (the cells are not quasi-static during splitting), and the spindle count disagrees
+          with its reference by 4 stripes.
+        evidence:
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [1121, 1299], note: "13 quantitative MorphoEval measurements with analytical / Kondo-Asai references, Spearman and RMSE statistics", supports: true}
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [1253, 1262], note: "Iridophore contrast exceeds the quasi-static flux-balance estimate by 1.73x (same-order agreement only)", supports: false}
+      source-traceability:
+        value: 94
+        rationale: >-
+          The seed-paper title is corrected to the real PNAS 1999 title (PMID 10318921) in the
+          module docstring (L1-100), `paper_citations.bib` (now 8 DOIs incl. Kondo & Asai 1995,
+          Crampin et al. 1999, Ermentrout 1991, Balagam & Igoshin 2015), the dataset README and
+          both reference JSONs; the new `pomacanthus_stripe_doubling_reference.json` is
+          SHA-256-verified at runtime (`verify_dataset_integrity`, L137-156, 4 digests). Deduction:
+          the SHA-pinned `scout_manifest.json` (pinned in the reference JSON) still carries the
+          non-existent title and cannot be corrected without breaking its pin; this is disclosed
+          but remains a traceability defect inherited from Pass 1.
+        evidence:
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [137, 172], note: "Runtime SHA-256 verification of 4 dataset artifacts and loader for the new Pomacanthus reference JSON", supports: true}
+          - {file: datasets/chemotactic_stripe_splitting/paper_citations.bib, lines: [1, 91], note: "Corrected PNAS 1999 title with PMID/PMCID plus Kondo & Asai 1995, Crampin et al. 1999, Ermentrout 1991, Balagam & Igoshin 2015", supports: true}
+          - {file: datasets/chemotactic_stripe_splitting/chemotactic_stripe_splitting_reference.json, lines: [1, 12], note: "Correction note re-attributing the Keller-Segel system away from PNAS 1999", supports: true}
+          - {file: datasets/chemotactic_stripe_splitting/README.md, lines: [5, 14], note: "Disclosure that the SHA-pinned scout_manifest.json still carries the superseded title", supports: false}
+      code-traceability:
+        value: 93
+        rationale: >-
+          Module docstring (L1-100) maps model families (A: PNAS 1999 Sections 5-6; B: generic
+          Keller-Segel Sections 2-4, 7) to Laws 1-6 and the 7 Lean theorems; the math KG loop
+          YAML registers 6 equations with current `lean_locus` and `code_locus` line ranges and a
+          `source_correction` field. Deduction: two Lean theorem names retain their Pass 1
+          `painter_1999_` prefix although the laws are now attributed to Keller-Segel (kept for KG
+          continuity, documented in the YAML).
+        evidence:
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [1, 100], note: "Module docstring: corrected citation, Pass 3 correction note, model families A/B and Laws 1-6 with Lean theorem names", supports: true}
+          - {file: morphoeval/math_kg_loops/painter-chemotactic-stripe-splitting.yaml, lines: [1, 160], note: "6 registered equations with Lean declarations, theorem names, line loci, code loci and source re-attribution", supports: true}
+          - {file: morphoeval/math_kg_loops/painter-chemotactic-stripe-splitting.yaml, lines: [57, 69], note: "Law 2 theorem keeps the legacy 'painter_1999' prefix despite re-attribution to Keller-Segel", supports: false}
+      repro-package:
+        value: 92
+        rationale: >-
+          Deterministic RNG (`seed=1999`), memoised simulations (`_memo`, L119-123) so the
+          self-test and render share runs, and an extended `--self-test` (`run_self_test`,
+          L1744-1849) that checks 4 SHA-256 digests, the corrected title, Turing quantities to
+          1e-12, exact stripe sequences 3 -> 6 -> 12 on line and cylinder, bitwise determinism of
+          the surface solver (`atol=0.0`), contrast ratio bounds, chi_0 monotonicity, Law-6
+          threshold inside the hysteresis bracket and 13 measurements. Deductions: default render
+          (92 s) and self-test (108 s) are within the 3-minute budget but the cylinder/spindle
+          runs (~30 s each at nx = 256) make the suite slow, and nx = 128 silently degrades the
+          second doubling (documented in the solver docstring L729-733) so resolution is a hidden
+          correctness parameter.
+        evidence:
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [1744, 1849], note: "Deterministic --self-test suite: digests, Turing analysis, 3 -> 6 -> 12 sequences, determinism, trail hysteresis, 13 measurements", supports: true}
+          - {file: 1999-painter-chemotactic-stripe-splitting.py, lines: [729, 733], note: "Solver docstring: nx = 256 required, nx = 128 degrades the second doubling to 6 -> 8 (resolution-sensitive result)", supports: false}
+          - {file: docs/media/chemotactic_stripe_splitting_growth.gif, lines: [0, 0], note: "24-frame GIF with new third row: Pomacanthus iridophores on the growing spindle flank", supports: true}
+    remediation:
+      - "`simulate_2d_stripe_vs_spot` (1999-painter-chemotactic-stripe-splitting.py L466-541) still obtains 2D stripes by imposing a 6.2/3.8 x/y chemotactic anisotropy (docstring L478-483): replace it with the slime-trail mobility tensor of `simulate_slime_trail_ks` (L891-997) so stripe orientation emerges from Q, and compare ridge spacing against the 74.1 um specimen wavelength."
+      - "`simulate_pomacanthus_growing_surface` (L703-856) uses uniform isotropic growth; expose the PNAS 1999 Fig. 4 anisotropic rostro-caudal / dorso-ventral growth rates (1.8e-4 / 2.2e-4, stored in `pomacanthus_stripe_doubling_reference.json` `fig4_parameters_2d`) as separate metric scale factors s_X(t), s_theta(t) and reproduce the Fig. 5 stripe break-up on the 3.8 x 1.9 domain."
+      - "The spindle profile reaches 8 stripes at s = 5.2 against the Kondo-Asai 12 (measurement 9, L1243-1252): sweep `taper` and `C_0` in `_surface_profile` (L616-638) to quantify the critical curvature K lambda_c^2 at which synchronous doubling breaks down, and add a Lean statement bounding the metric-gradient term rho'/rho relative to k_c."
+      - "Iridophore contrast is 1.73x the quasi-static flux-balance estimate (measurement 10, L1253-1262) because n is advected during the 6 -> 12 split at s = 4.44: add a relaxation-time measurement (hold the domain after the last split until contrast settles) so the Boltzmann estimate becomes a true bound."
+      - "`verify_dataset_integrity` (L137-156) pins `scout_manifest.json` (SHA 4b4e20a9...) which still carries the non-existent title 'Stripe and spotilihood in chemotactic pattern formation': issue a `scout_manifest_v2.json` with the corrected title and PMID, pin it, and mark the v1 manifest as superseded in `chemotactic_stripe_splitting_reference.json` (L44-47)."

@@ -1,0 +1,115 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-onuff-joint-interzone-clefting> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-onuff-joint-interzone-clefting-model-fidelity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-onuff-joint-interzone-clefting-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Kavanagh et al. (2013) phalangeal Inhibitory Cascade & Hiscock et al. (2017) BMP-GDF5-Noggin synovial joint interzone segmentation, with Pass 3 reduced Biot poroelastic synovial cavitation — Model fidelity to source: 86/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credited: the GDF5-Noggin dispersion (L194-242) and the Kavanagh cascade laws (L245-285) are exact; the new poroelastic solver (L566-791) implements a recognisable reduced Biot storage equation S dp/dt = kappa lap(p) + gamma(beta H - p) with Dirichlet drainage, a mechanosensitive HA source and a cohesion threshold, and its steady-state gate and Darcy lens are proved in Lean (Laws 4-5). Deductions: the 1D \"Turing-wavefront\" PDE does not select its own wavelength — joint positions are pre-computed `joint_targets` injected as Gaussian sources and the bp/bp PIP fusion is an `if idx_j == 1: continue` (L334-349, L364-373), so the dispersion relation is verified beside, not inside, the PDE (-6); the solid skeleton is rigid (no u-p coupling, effective stress or volumetric strain), so \"poroelastic\" is a storage equation (-4); the articular arch is an imposed parametric rule and the interzone identity is a Hill transform chosen to make the DIP cavitate (L631-640) (-3); the Kahn reversion factor 0.85 (L666) is a phenomenological constant (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "2016-onuff-joint-interzone-clefting.py L334–L373: Joint positions are pre-computed `joint_targets` and the brachypodism PIP fusion is hard-coded; the RD PDE does not self-organise the pattern <https://github.com/fractastical/morpholib/blob/d58a084/2016-onuff-joint-interzone-clefting.py#L334-L373>",
+            "2016-onuff-joint-interzone-clefting.py L631–L640: Articular arch a(y) is an imposed Carter-Wong rule and the interzone identity is a Hill transform (K_identity = 0.30) rather than an emergent mechanical outcome <https://github.com/fractastical/morpholib/blob/d58a084/2016-onuff-joint-interzone-clefting.py#L631-L640>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-onuff-joint-interzone-clefting-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-onuff-joint-interzone-clefting-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-onuff-joint-interzone-clefting-model-fidelity-3> ;
+        pk:hasScore "0.86"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-onuff-joint-interzone-clefting-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2016-onuff-joint-interzone-clefting.py L194–L242" ;
+        dct:description "Exact 2x2 GDF5-Noggin dispersion relation with integer witnesses matching Lean Law 2" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2016-onuff-joint-interzone-clefting.py#L194-L242> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-onuff-joint-interzone-clefting-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2016-onuff-joint-interzone-clefting.py L566–L663" ;
+        dct:description "Reduced Biot storage-equation cavitation solver: HA source, Darcy pressure diffusion with p = 0 outside the rod, cohesion threshold, irreversible cavity phase field" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2016-onuff-joint-interzone-clefting.py#L566-L663> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-onuff-joint-interzone-clefting-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_018_joint_interzone_clefting.lean L107–L193" ;
+        dct:description "Laws 4-5: cavitation gate (m_load = 0 or gdf5 = 0 -> no cavity; monotone in loading) and Darcy lens midline maximum, 0 sorrys, verified with `lean`" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/morphoeval/lean/loops/Loop_018_joint_interzone_clefting.lean#L107-L193> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 018 Pass 3 Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/18> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/jor.1100060604>,
+            <https://doi.org/10.1016/0012-1606(66)90022-4>,
+            <https://doi.org/10.1016/S0092-8674(01)00222-7>,
+            <https://doi.org/10.1016/j.devcel.2009.04.013>,
+            <https://doi.org/10.1016/j.devcel.2017.04.021>,
+            <https://doi.org/10.1038/260808a0>,
+            <https://doi.org/10.1038/368639a0>,
+            <https://doi.org/10.1073/pnas.1315213110>,
+            <https://doi.org/10.1115/1.3138202>,
+            <https://doi.org/10.1126/science.280.5368.1455>,
+            <https://doi.org/10.1177/002215549804600509>,
+            <https://doi.org/10.1371/journal.pone.0017526>,
+            <https://pubmed.ncbi.nlm.nih.gov/7961140/> .
+    <https://doi.org/10.1002/jor.1100060604> dct:date "1988"^^xsd:gYear ;
+        dct:title "The role of mechanical loading histories in the development of diarthrodial joints" .
+    <https://doi.org/10.1016/0012-1606(66)90022-4> dct:date "1966"^^xsd:gYear ;
+        dct:title "The role of movement in embryonic joint development" .
+    <https://doi.org/10.1016/S0092-8674(01)00222-7> dct:date "2001"^^xsd:gYear ;
+        dct:title "Wnt-14 plays a pivotal role in inducing synovial joint formation in the developing appendicular skeleton" .
+    <https://doi.org/10.1016/j.devcel.2009.04.013> dct:date "2009"^^xsd:gYear ;
+        dct:title "Muscle contraction is necessary to maintain joint progenitor cell fate" .
+    <https://doi.org/10.1016/j.devcel.2017.04.021> dct:date "2017"^^xsd:gYear ;
+        dct:title "On the formation of digits and joints during limb development" .
+    <https://doi.org/10.1038/260808a0> dct:date "1976"^^xsd:gYear ;
+        dct:title "Balance between swelling pressure and collagen tension in normal and degenerate cartilage" .
+    <https://doi.org/10.1038/368639a0> dct:date "1994"^^xsd:gYear ;
+        dct:title "Limb alterations in brachypodism mice due to mutations in a new member of the TGF-beta superfamily" .
+    <https://doi.org/10.1073/pnas.1315213110> dct:date "2013"^^xsd:gYear ;
+        dct:title "Developmental bias in the evolution of phalanges" .
+    <https://doi.org/10.1115/1.3138202> dct:date "1980"^^xsd:gYear ;
+        dct:title "Biphasic creep and stress relaxation of articular cartilage in compression: theory and experiments" .
+    <https://doi.org/10.1126/science.280.5368.1455> dct:date "1998"^^xsd:gYear ;
+        dct:title "Noggin, cartilage morphogenesis, and joint formation in the mammalian skeleton" .
+    <https://doi.org/10.1177/002215549804600509> dct:date "1998"^^xsd:gYear ;
+        dct:title "An essential role for the interaction between hyaluronan and hyaluronan binding proteins during joint development" .
+    <https://doi.org/10.1371/journal.pone.0017526> dct:date "2011"^^xsd:gYear ;
+        dct:title "Mechanical influences on morphogenesis of the knee joint revealed through morphological, molecular and computational analysis of immobilised embryos" .
+    <https://pubmed.ncbi.nlm.nih.gov/7961140/> dct:date "1994"^^xsd:gYear ;
+        dct:title "The formation of human synovial joint cavities: a possible role for hyaluronan and CD44 in altered interzone cohesion" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Kavanagh et al. (2013) phalangeal Inhibitory Cascade & Hiscock et al. (2017) BMP-GDF5-Noggin synovial joint interzone segmentation, with Pass 3 reduced Biot poroelastic synovial cavitation — Model fidelity to source 86/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T07:28:22Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-onuff-joint-interzone-clefting-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/18> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

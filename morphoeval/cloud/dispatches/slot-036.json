@@ -18,11 +18,11 @@
   "quick_gate_v2": 100,
   "lean_module": "morphoeval/lean/loops/Loop_036_microtubule_stress_meristem.lean",
   "lean_verified": true,
-  "lean_theorems_verified": 3,
+  "lean_theorems_verified": 5,
   "lean_sorrys": 0,
   "signed_nanopubs_v1": 10,
   "signed_nanopubs_v2": 10,
-  "signed_nanopubs_count": 20,
+  "signed_nanopubs_count": 30,
   "overall_trusty_uri_v1": "https://w3id.org/np/RAO6lyz8lbSLavpIh1Qxq-_NgI7aXCoNMIdGxXiPs1Z80",
   "overall_trusty_uri_v2": "https://w3id.org/np/RAIoYkkHzjJ6sM5NN4aoMkX62zx2NBMghbsQV_PKF7TqE",
   "status": "completed",
@@ -31,5 +31,60 @@
   "slot_index": 36,
   "slug": "microtubule-stress-meristem",
   "target_script": "2008-hamant-microtubule-stress-meristem.py",
-  "delta": 39.4
+  "delta": 39.4,
+  "pass3_run_id": "2026-10-19-microtubule-stress-meristem-loop-pass3",
+  "pass3_audit_id": "2026-10-19-microtubule-stress-meristem-audit-v3",
+  "audit_v3": "morphoeval/audits/2026-10-19-microtubule-stress-meristem-audit-v3.yaml",
+  "pass3_score": 71.0,
+  "pass3_score_delta_vs_pass2": -22.4,
+  "pass3_dims": {
+    "model-fidelity": 70,
+    "specimen-match": 64,
+    "parameter-expressivity": 72,
+    "morphometric-validation": 60,
+    "source-traceability": 84,
+    "code-traceability": 76,
+    "repro-package": 86
+  },
+  "pass3_completed_at": "2026-10-20T09:50:37Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "overall_trusty_uri_v3": "https://w3id.org/np/RAwGV0Bp_hpMra4Oonl16yPXA7SBjg9tyTomZG9oDH4CY",
+  "signed_nanopubs_v3": 10,
+  "pass3_remediation_closed": [
+    "Couple the 2D/3D epidermal shell stress tensor and katanin CMT feedback directly to PIN1 auxin efflux carrier co-alignment (Heisler et al. 2010) on a growing cellular vertex mesh with topological T1/cell-division events -- closed in reduced form: 2D L1 vertex mesh (L1VertexTissue L509-985, simulate_l1_vertex_patch L1020-1156); divisions along sigma_1 with Errera fallback; T1 implemented (apply_t1 L922-965, verify_t1_transition_topology L1228-1265) but disabled by default because plant walls are cemented; 3D shell mesh NOT implemented"
+  ],
+  "pass3_remediation_open": [
+    "2008-hamant-microtubule-stress-meristem.py:1397-1405 with 412-432 \u2014 the 'Bozorg stress cue vs strain-cue correlation' measurement reports emp_r, a literal 0.991 / -0.415 copied from the reference JSON, and the 5-condition sweep's S_pred / depth / cos^2 are closed-form fits (strain-cue and oryzalin rows are pure constants). Replace both with values computed on the vertex mesh (e.g. correlation between the mesh CMT director field and the shell sigma_1 field under stress vs strain cue; crease depth from an out-of-plane buckling or curvature proxy) or delete the measurements and the r = 0.9992 panel title.",
+    "2008-hamant-microtubule-stress-meristem.py:509-606 and 1046-1047 \u2014 the mesh is planar; the saddle's K < 0 enters only as boundary pre-strain (76:12 MPa -> 0.19:0.03 strain). Embed the vertex positions on a parametrised surface (sphere cap for the dome, hyperbolic paraboloid for the boundary, cylinder for the stem), apply turgor as a normal load and recover the in-plane stress from the shell equilibrium so that Law 1's Gaussian-curvature inversion is tested on the mesh rather than imposed.",
+    "2008-hamant-microtubule-stress-meristem.py:1137-1155 and 1451-1478 \u2014 the Bozorg stress-vs-strain discrimination does not emerge: strain-cue ablation gives circumferential CMTs (0.968) like the stress cue (0.985), and the saddle strain-cue S (0.49) barely differs from WT (0.57). Implement growth-strain (not elastic wall strain) as the strain cue \u2014 the rate tensor of rest-length creep per cell \u2014 which is what Bozorg et al. show becomes perpendicular to the stiffened direction under feedback.",
+    "2008-hamant-microtubule-stress-meristem.py:1206-1212 and Panel I \u2014 dome WT S = 0.42 vs reference 0.082 (zone RMSE 0.24): growth-induced cell-scale stress anisotropy (0.31) under an isotropic boundary drives CMT order the dome should not have. Add a cell-scale averaging length or an anisotropy threshold below which S collapses (Hamant 2008 reports isotropic CMTs in the CZ), and sweep it so the dome / saddle contrast becomes a tested prediction.",
+    "2008-hamant-microtubule-stress-meristem.py:288-355 and Panel A title \u2014 `build_2d_meristem_fem_field` is a sum of Gaussians; rename it (`build_2d_meristem_anisotropy_sketch`) and retitle Panel A, or replace it with a real 2D membrane solve on the cross-section profile.",
+    "2008-hamant-microtubule-stress-meristem.py:1438 and 1447 \u2014 specimen coherency and area-fraction measurements use reference_value = value. Either digitise a published coherency value (e.g. Sampathkumar 2014 Fig. 2 anisotropy) or mark reference_value null and let measure_outputs report 'no reference recorded'.",
+    "datasets/microtubule_stress_meristem/pin1_cmt_coalignment_reference.json:70-118 \u2014 figure numbers for Heisler 2010 and Louveaux 2016 are unverified and the thresholds are ordinal. Verify against the PDFs and digitise at least one quantitative distribution (Heisler 2010 PIN1-vs-CMT angle histogram; Louveaux 2016 division-angle vs stress histogram) so the co-alignment and division measurements get numeric references.",
+    "2008-hamant-microtubule-stress-meristem.py:519-530 and 1993-2032 \u2014 expose E_shell, k_wall, K_A, beta_pin, kappa_cmt and phi_wall on the CLI, add a `--sweep PARAM:lo:hi:n` over them with a rendered panel, and add a `--seed` sweep so the self-test thresholds (0.70, 0.66) are shown to hold across seeds rather than sitting just below one seed's values."
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_036.heisler_pin1_cmt_coalignment_under_anisotropic_wall_tension",
+    "MathOfBiology.Loop_036.louveaux_vertex_mesh_division_preserves_euler_characteristic"
+  ],
+  "pass3_self_test": "14/14 PASS",
+  "pass3_artifacts": [
+    "morphoeval/audits/2026-10-19-microtubule-stress-meristem-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-microtubule-stress-meristem-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-microtubule-stress-meristem-audit-v3/REPORT.md",
+    "morphoeval/kg/2026-10-19-microtubule-stress-meristem-audit-v3/signed/",
+    "morphoeval/runs/2026-10-19-microtubule-stress-meristem-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-microtubule-stress-meristem-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-microtubule-stress-meristem-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-microtubule-stress-meristem-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-microtubule-stress-meristem-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-microtubule-stress-meristem-loop-pass3.ledger.jsonl",
+    "docs/media/microtubule_stress_meristem_comparison.png",
+    "docs/media/microtubule_stress_meristem_growth.gif",
+    "docs/media/microtubule_stress_meristem_vertex_pin1.gif",
+    "docs/media/microtubule_stress_meristem_telemetry_pass3.png",
+    "datasets/microtubule_stress_meristem/pin1_cmt_coalignment_reference.json"
+  ],
+  "pass3_status": "completed"
 }

@@ -24,6 +24,31 @@
         "id": "yamanaka2023",
         "citation": "Yamanaka Y, Hamidi S, Yoshioka-Kobayashi K, Munira S, Sunadome K, Zhang Y, Kurokawa Y, Ericsson R, Mieda A, Thompson JL, Kerwin J, Lisgo S, Yamamoto T, Moris N, Martinez-Arias A, Tsujimura T, Alev C (2023). Reconstituting human somitogenesis in vitro. Nature 614(7948):509-520.",
         "doi": "10.1038/s41586-022-05649-2"
+      },
+      {
+        "id": "matsuda2020recapitulating",
+        "citation": "Matsuda M, Yamanaka Y, Uemura M, Osawa M, Saito MK, Nagahashi A, Nishio M, Guo L, Ikegawa S, Sakurai S, Kihara S, Maurissen TL, Nakamura M, Matsumoto T, Yoshitomi H, Ikeya M, Kawakami N, Yamamoto T, Woltjen K, Ebisuya M, Toguchida J, Alev C (2020). Recapitulating the human segmentation clock with pluripotent stem cells. Nature 580(7801):124-129.",
+        "doi": "10.1038/s41586-020-2144-9"
+      },
+      {
+        "id": "lewis2003",
+        "citation": "Lewis J (2003). Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator. Current Biology 13(16):1398-1408.",
+        "doi": "10.1016/S0960-9822(03)00534-7"
+      },
+      {
+        "id": "riedelkruse2007",
+        "citation": "Riedel-Kruse IH, Müller C, Oates AC (2007). Synchrony dynamics during initiation, failure, and rescue of the segmentation clock. Science 317(5846):1911-1915.",
+        "doi": "10.1126/science.1142538"
+      },
+      {
+        "id": "herrgen2010",
+        "citation": "Herrgen L, Ares S, Morelli LG, Schröter C, Jülicher F, Oates AC (2010). Intercellular coupling regulates the period of the segmentation clock. Current Biology 20(14):1244-1253.",
+        "doi": "10.1016/j.cub.2010.06.034"
+      },
+      {
+        "id": "sanakimatsumiya2022",
+        "citation": "Sanaki-Matsumiya M, Matsuda M, Gritti N, Nakaki F, Sharpe J, Trivedi V, Ebisuya M (2022). Periodic formation of epithelial somites from human pluripotent stem cells. Nature Communications 13:2325.",
+        "doi": "10.1038/s41467-022-29967-1"
       }
     ],
     "specimens": {
@@ -35,10 +60,22 @@
         "source_url": "https://commons.wikimedia.org/wiki/File:Aves_Neural_tube_and_somites_in_chick_embryo.jpg",
         "width_px": 736,
         "height_px": 572,
-        "ap_roi_x_px": [130, 550],
-        "upper_somite_row_y_px": [208, 252],
-        "lower_somite_row_y_px": [312, 356],
-        "neural_tube_y_px": [260, 298],
+        "ap_roi_x_px": [
+          130,
+          550
+        ],
+        "upper_somite_row_y_px": [
+          208,
+          252
+        ],
+        "lower_somite_row_y_px": [
+          312,
+          356
+        ],
+        "neural_tube_y_px": [
+          260,
+          298
+        ],
         "empirical_somite_metrics": {
           "upper_row_somite_count": 8,
           "lower_row_somite_count": 8,
@@ -46,7 +83,7 @@
           "lower_row_mean_spacing_px": 47.14,
           "bilateral_mean_spacing_px": 47.14,
           "upper_row_spacing_cv": 0.1965,
-          "lower_row_spacing_cv": 0.2010,
+          "lower_row_spacing_cv": 0.201,
           "bilateral_symmetry_ratio": 0.9969
         }
       },
@@ -231,6 +268,109 @@
         "t_half_p_min": 40.0,
         "somite_budding_period_min": 300.0
       }
+    ]
+  },
+  "notch_coupled_hexagonal_lattice_dapt_washout": {
+    "section": "Pass 3 (Law 4 diaza-human-somite-organoid-clock-4). Lewis (2003); Riedel-Kruse et al. (2007); Herrgen et al. (2010); Matsuda et al. (2020) Nature 580:124-129; Diaz-Cuadros et al. (2020)",
+    "lattice": {
+      "type": "odd-r offset hexagonal, non-periodic tissue boundary",
+      "n_rows": 12,
+      "n_cols": 12,
+      "n_cells": 144,
+      "interior_degree": 6,
+      "cell_diameter_um": 12.0
+    },
+    "coupling_equations": {
+      "neighbour_mean_delta": "D_bar_i(t) = (1/k_i) * sum_{j in N6(i)} D_j(t)",
+      "notch_activation": "S_i(t) = D_bar_i(t - tau_c)^h / (K_D^h + D_bar_i(t - tau_c)^h),  h = 2,  K_D = <D> over one single-cell cycle",
+      "hes7_mrna_dde": "dm_i/dt = alpha_m * gate_i / (1 + (p_i(t - tau_tx,i) / (K * gate_i))^n) - delta_m,i * m_i,  gate_i = (1 - eps) + 2 eps S_i",
+      "dll1_dde": "dD_i/dt = alpha_D / (1 + (p_i(t - tau_tx,i) / K)^n) - delta_D,i * D_i,  alpha_D = alpha_m,  t_half_D = 1.5 t_half_p",
+      "dapt": "gamma-secretase block: NICD absent, gate_i = b = 0.10 (Notch-independent basal HES7 promoter activity) -> oscillation collapse",
+      "mean_field_reduction": "homogeneous in-phase state: D_bar_i = D_i, lattice == single self-coupled DDE (Lean theorem lewis_herrgen_notch_coupling_mean_field_dapt_gating)"
+    },
+    "default_parameters": {
+      "eps_notch": 0.25,
+      "tau_c_fraction_of_period": 0.8,
+      "tau_c_min": 240.0,
+      "hill_notch": 2.0,
+      "dapt_basal_fraction": 0.1,
+      "cell_autonomous_tempo_cv": 0.05,
+      "seed": 2019
+    },
+    "protocol_min": {
+      "coupled_from_random_phases": [
+        0.0,
+        1500.0
+      ],
+      "dapt": [
+        1500.0,
+        1800.0
+      ],
+      "washout": [
+        1800.0,
+        3600.0
+      ]
+    },
+    "in_phase_stability_scan": {
+      "method": "8x8 lattice started synchronised, 5 % tempo CV, R after 6 cycles >= 0.85",
+      "stable_tau_c_fraction_window": [
+        0.625,
+        0.95
+      ],
+      "note": "delayed coupling theory (Morelli 2009 / Herrgen 2010): in-phase stability depends on tau_c / T; tau_c has not been measured in human PSM and is assumed to scale with species tempo"
+    },
+    "empirical_anchors": {
+      "dapt_washout_synchronisation": {
+        "source": "matsuda2020recapitulating",
+        "observation": "a DAPT pulse followed by washout synchronises HES7 oscillations across the hPSC-derived PSM culture (qualitative anchor; R = 1 ideal)"
+      },
+      "notch_inhibition_desynchronisation": {
+        "source": "riedelkruse2007",
+        "observation": "Notch inhibition (DAPT) desynchronises neighbouring segmentation clock cells; synchrony recovers after washout over several cycles (zebrafish)"
+      },
+      "coupling_delay_period": {
+        "source": "herrgen2010",
+        "observation": "intercellular coupling with delay tau_c modulates the collective period relative to the cell-autonomous period (zebrafish, tau_c ~ 21 min for T ~ 30 min)"
+      },
+      "human_period": {
+        "source": "diazcuadros2020",
+        "T_osc_min": 300.0,
+        "sd_min": 18.0
+      }
+    }
+  },
+  "matrigel_embedded_rosette_mechanics": {
+    "section": "Pass 3 (Law 5 diaza-human-somite-organoid-clock-5). Yamanaka et al. (2023) Nature 614:509-520; Sanaki-Matsumiya et al. (2022) Nat Commun 13:2325",
+    "model": "reduced 2D overdamped cell-centre model of one axioloid somite cross-section (24 cells, r_c = 6 um) inside an elastic Matrigel shell (R_M = 28 um); not a 3D FEM",
+    "forces": {
+      "matrigel_boundary": "F_M,i = -kappa * phi * max(0, |x_i - c| - R_M) * r_hat_i,  kappa = 0.01 min^-1 per %",
+      "ecm_polarity_cue": "d n_i/dt ∝ rho_pol * f(phi) * contact_i * (-r_hat_i - n_i),  f(phi) = phi^2 / (phi^2 + 4^2)",
+      "epithelialisation": "d e_i/dt = k_epi f(phi) contact_i (1 - e_i) + junctional spread - k_de e_i",
+      "apical_constriction": "F_ac,i = -k_ac * sum_j e_i e_j (a_i - a_j),  a_i = x_i + r_c n_i",
+      "cell_cell": "soft-disc repulsion (d < 2 r_c) and cadherin adhesion (2 r_c <= d < 2.8 r_c); mesenchymal motility ∝ (1 - e_i)"
+    },
+    "matrigel_sweep_pct": [
+      0.0,
+      1.0,
+      2.5,
+      5.0,
+      10.0,
+      20.0
+    ],
+    "empirical_anchors": {
+      "matrigel_required": {
+        "source": "yamanaka2023",
+        "observation": "axioloids embedded in 10 % Matrigel (with retinoic acid) form epithelial somites with apical-basal polarity; non-embedded aggregates do not epithelialise (qualitative; no published rosette order parameter)"
+      },
+      "somitoid_epithelial_somites": {
+        "source": "sanakimatsumiya2022",
+        "observation": "Matrigel-embedded human somitoids form periodic epithelial somites"
+      }
+    },
+    "caveats": [
+      "kappa (Matrigel stiffness per %) is not calibrated to rheological measurements of Matrigel",
+      "polarisation and constriction rate constants are phenomenological",
+      "2D cross-section only"
     ]
   }
 }

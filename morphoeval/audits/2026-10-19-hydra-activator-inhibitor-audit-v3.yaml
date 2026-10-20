@@ -1,0 +1,324 @@
+# MorphoEval audit — Gierer & Meinhardt (1972) / Meinhardt (1993, 2012) Hydra Activator-Inhibitor Morphogenesis, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `1972-gierer-hydra-activator-inhibitor.py` (2,047 lines, 14 self-test checks) after the
+# remediation of the single open v2 finding in the instrumented loop
+# `morphoeval/runs/2026-10-19-hydra-activator-inhibitor-loop-pass3`, superseding
+# `2026-10-19-hydra-activator-inhibitor-audit-v2` (91.6). Same protocol as Passes 1-2; the primary assessor
+# re-read every cited line of the CURRENT file (commit 4d5512d) before scoring.
+#
+# What Pass 3 changed (the v2 remediation item: "extend the 1D column and ring to a coupled 3D cylindrical
+# shell with separate head-, tentacle- and foot-activator loops (Meinhardt 1993, 2012)"):
+#   1. `measure_specimen_body_profile` (L695-785): the vendored Hydra vulgaris photograph now supplies the
+#      body-column radius profile r(s) (distance transform along the PCA axis from the hypostome tip to the
+#      basal disc), the tentacle-attachment ring (offset 0.070 of body length, half-thickness 0.081) and the
+#      inter-tentacle spacing / body length (0.084).
+#   2. `CylindricalShellGrid` (L827-886): Laplace-Beltrami operator of the specimen-shaped surface of
+#      revolution on a 90 x 64 finite-difference grid — exact Fourier step in theta (row-dependent symbol
+#      -D k_n^2 / r_i^2), backward-Euler tridiagonal step in s, unconditionally stable (D_h = D_g = 60).
+#   3. `simulate_three_system_shell` (L925-978): reduced Meinhardt (1993) head / tentacle / foot
+#      Gierer-Meinhardt loops with basal inhibitor production (firing threshold w_c = 0.1633,
+#      `three_system_firing_threshold` L808-825), tentacle drive H_t(sigma)/(1 + kappa_a a) (L913-918),
+#      foot drive 1/(1 + (sigma/sigma_f)^2) (L920-923) and a source density raised by the head activator.
+#   4. Experiments (L1049-1186): kappa_a sweep incl. the kappa_a = 0 ablation, body-length sweep,
+#      amputation at L/2 with regeneration timeline; 7 new measurements (L1712-1783), self-test 8 -> 14
+#      checks (L1922-1992), CLI flags --shell-length / --shell-steps / --kappa-a (L2008-2010).
+#   5. Provenance fixes exposed by the remediation: the reference JSON's `hydra_regimes_and_experiments`
+#      block did NOT match the code in Pass 2 (N = 60 vs 40, slope -0.15 vs -0.20, ring 50 vs 64,
+#      recovery 0.90 vs 0.85, domain lengths {20..95} vs {22..88}) and is now in parity and asserted;
+#      the v2 docstring quoted CV = 0.0442 and std = 1.48e-6 where the code produces 0.070 and 1.8e-15;
+#      the v2 environment block listed numpy 2.4.2 / scipy 1.17.0 / matplotlib 3.10.8 / Pillow 12.1.1
+#      whereas the venv actually has numpy 2.5.4 / scipy 1.16.3 / matplotlib 3.10.7 / Pillow 12.0.0.
+#   6. Five new Lean 4 theorems (0 sorrys, `lean` exit 0) in `Loop_001_hydra_activator_inhibitor.lean`
+#      L96-198, registered in `math_kg_loops/gierer-hydra-activator-inhibitor.yaml` (7 laws).
+#
+# Scores below: overall 89.5 (down from 91.6). The decrease is deliberate: the remediation delivered the
+# requested mechanism in a reduced, declared form, but it also exposed that (a) the Pass 2 JSON/doc/env
+# provenance was partly wrong, (b) the 1D ring's "6 tentacles" rested on an undeclared circumference
+# calibration (N_ring = 64) just as the shell's scale now rests on a declared one, and (c) the three-system
+# couplings are this script's functional forms, not Meinhardt's appendix equations. Remaining findings are
+# listed under `remediation` with line pins.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated
+# probabilities). Line numbers refer to the files at commit 4d5512d (working tree of this loop).
+
+audit:
+  id: 2026-10-19-hydra-activator-inhibitor-audit-v3
+  supersedes_audit_id: 2026-10-19-hydra-activator-inhibitor-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (primary, Pass 3 builder+assessor) + MorphoEval Dual-Rubric Assessor"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric baseline)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 4d5512d
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) remediated evaluation of `1972-gierer-hydra-activator-inhibitor.py`
+      superseding `2026-10-19-hydra-activator-inhibitor-audit-v2` in closed loop
+      `2026-10-19-hydra-activator-inhibitor-loop-pass3`. Environment versions are the ones
+      actually installed in ./venv (the v2 block was wrong). `--self-test` passes 14/14 in
+      ~35 s; the default render takes ~53 s (15-panel PNG 2227x3037 + 60-frame GIF).
+
+references:
+  gierer1972:
+    title: "A theory of biological pattern formation"
+    authors: "Gierer A, Meinhardt H"
+    venue: "Kybernetik 12(1):30-39 (1972)"
+    doi: 10.1007/BF00289234
+  meinhardt1974:
+    title: "Applications of a theory of biological pattern formation based on lateral inhibition"
+    authors: "Meinhardt H, Gierer A"
+    venue: "Journal of Cell Science 15(2):321-346 (1974)"
+    doi: 10.1242/jcs.15.2.321
+  meinhardt1993:
+    title: "A model for pattern formation of hypostome, tentacles, and foot in hydra: how to form structures close to each other, how to form them at a distance"
+    authors: "Meinhardt H"
+    venue: "Developmental Biology 157(2):321-333 (1993)"
+    doi: 10.1006/dbio.1993.1138
+  meinhardt2012:
+    title: "Modeling pattern formation in hydra: a route to understanding essential steps in development"
+    authors: "Meinhardt H"
+    venue: "International Journal of Developmental Biology 56(6-8):447-462 (2012)"
+    doi: 10.1387/ijdb.113483hm
+
+simulations:
+  - id: gierer-hydra-activator-inhibitor
+    name: "Gierer & Meinhardt (1972) & Meinhardt (1993, 2012) Hydra vulgaris activator-inhibitor morphogenesis, head regeneration, tentacle ring & coupled three-system 3D shell"
+    organism: "Freshwater cnidarian polyp (Hydra vulgaris): apical hypostome polarity, surgical head regeneration, sub-hypostomal tentacle ring and basal foot on a specimen-shaped body shell"
+    script: 1972-gierer-hydra-activator-inhibitor.py
+    output: docs/media/hydra_activator_inhibitor_comparison.png
+    extra_outputs:
+      - docs/media/hydra_activator_inhibitor_growth.gif
+    status: evaluated
+    source_refs:
+      - gierer1972
+      - meinhardt1974
+      - meinhardt1993
+      - meinhardt2012
+    supersedes_audit_id: 2026-10-19-hydra-activator-inhibitor-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Gierer & Meinhardt (1972) Eqs. (15a)-(15b): short-range autocatalytic activator a^2/h with long-range inhibitor; a shallow source gradient yields a single apical peak (Fig. 2); removing the apical half lets the basal fragment regenerate a peak at its cut end (Fig. 3)"
+        - "Meinhardt (1993): hypostome, tentacles and foot are generated by separate activator-inhibitor systems coupled through a slowly adapting source density; tentacle activation requires a high source density and is locally suppressed by the head activator (so tentacles form at the border of the hypostome); the foot forms where the source density is lowest; fragments regenerate a hypostome and a new tentacle ring"
+        - "Meinhardt (2012): review of the same three-system scheme including size-dependent and regeneration behaviour"
+      reconstructed_in_script:
+        - "Exact homogeneous steady state, Jacobian, d_c = (sqrt(2)+1)^2 and dispersion relation; 1D polar column (N = 40) with apical dominance; surgical bisection with 87.4 % head recovery; periodic 64-cell tentacle ring (6 peaks) with equal-diffusion control, diffusivity-ratio and domain-length sweeps; computer-vision segmentation of the vendored specimen (6 tentacles)"
+        - "Pass 3: the specimen's body-column radius profile, tentacle-attachment ring and inter-tentacle spacing; a finite-difference Laplace-Beltrami shell (90 x 64) on that surface of revolution; reduced head / tentacle / foot Gierer-Meinhardt loops with basal inhibitor production (analytic firing threshold w_c = 0.1633) and a head-raised source density; kappa_a sweep with kappa_a = 0 ablation, body-length sweep, amputation at L/2 with head/ring regeneration timeline; 14 quantitative measurements"
+      transfer_boundary:
+        - "The three-system couplings (Hill gating sigma^8/(0.6^8 + sigma^8), suppression 1/(1 + kappa_a a), foot drive 1/(1 + (sigma/0.03)^2), sigma dynamics c_sigma a - mu_sigma (sigma - sigma_0)) and all coefficients are this script's reduced choices calibrated to reproduce the qualitative Meinhardt (1993) layout; they are not digitised from the paper's appendix equations"
+        - "The shell body length L = 90 cells is a declared scale calibration (model tentacle spacing ~8.1 cells vs specimen spacing 0.084 of body length), so the tentacle COUNT (7 vs specimen 6) is a geometric consequence, not an independent prediction; the ring axial offset (0.111 vs 0.070 +- 0.081), uniform hypostome cap, basal foot and head-before-ring regeneration order are uncalibrated predictions"
+        - "The 1D ring (N_ring = 64, lambda ~10.7 cells, 6 peaks) and the shell ring (lambda ~8.1 cells) use the same D_b, D_c but select different wavelengths; the 1D '6 tentacles' therefore also rests on an (undeclared in v2) circumference calibration"
+        - "Specimen references are measured on a 2D projection of a tilted, contracted polyp and used as bands, not exact targets; there is one specimen and one seed"
+      does_not_claim:
+        - "A finite-element mesh, wound closure or tissue remodelling (the regenerated head on the wide cut surface is a localised spot, CV_theta = 0.95, not a cap), Meinhardt's tentacle-before-hypostome regeneration order (the model gives t_head < t_ring), the foot -> source-density negative feedback, budding, or a quantitative size series for tentacle number"
+    summary: >-
+      Pass 3 (v3) evaluation of `1972-gierer-hydra-activator-inhibitor.py` (89.5/100, down 2.1 from
+      91.6 in Pass 2). The v2 remediation item is closed in a reduced, honestly labelled form: the 1D
+      column and ring are now accompanied by a coupled head / tentacle / foot activator-inhibitor
+      model on a finite-difference surface of revolution whose radius profile is measured on the
+      vendored Hydra vulgaris specimen. The shell reproduces an azimuthally uniform hypostome cap
+      (CV_theta = 0.002), one sub-hypostomal tentacle ring of 7 primordia at s/L = 0.111 (specimen
+      attachment band 0.070 +- 0.081; 6 tentacles), a uniform basal foot (head-foot separation
+      0.99 L), a monotone basal shift of the ring with the head->tentacle suppression kappa_a
+      (Spearman rho = 1.0) with tentacle activator leaking into the hypostome when kappa_a = 0
+      (x~15), a monotone increase of tentacle number with body size (rho = 0.97), and after
+      amputation at L/2 a regenerated hypostome (98 %) followed by a new ring below it. The
+      remediation also exposed and fixed provenance defects that v2 had not caught (JSON regimes
+      block, docstring statistics, environment versions), and the remaining gaps are structural:
+      reduced coupling forms, declared scale calibration, no FEM / remodelling, head-first
+      regeneration, model-internal reference values for some new measurements.
+    scores:
+      model-fidelity:
+        value: 91
+        rationale: >-
+          The Gierer & Meinhardt (1972) part is unchanged and exact: steady state, Jacobian,
+          d_c = (sqrt(2)+1)^2, dispersion (L187-268), 1D column / bisection / ring (L298-533),
+          backed by 3 Lean theorems. Pass 3 adds the requested mechanism: three coupled
+          activator-inhibitor loops plus source density on a 3D surface of revolution with the
+          correct Laplace-Beltrami operator (L827-886, L925-978), each loop given a stable off state
+          by basal inhibitor production so that the tentacle band and the foot are placed by an
+          analytic threshold w_c (L808-825) that the self-test verifies against the simulated band
+          (L1964-1965). Deductions: the coupling functions and all 20 coefficients in
+          THREE_SYSTEM_PARAMS (L788-799) are the script's reduced forms, cited to Meinhardt (1993)
+          only qualitatively, not the paper's appendix equations (-4); the shell is finite-difference
+          with fixed geometry, not the finite-element shell the v2 item asked for (-2); the foot ->
+          source-density feedback of Meinhardt's scheme is absent and the sigma equation relaxes to a
+          prescribed exp(-4s/L) profile (-2); Meinhardt's tentacle-first regeneration is not
+          reproduced because tentacle gating requires sigma to rise under the new head first (-1).
+        evidence:
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [187, 268], note: "Exact Gierer-Meinhardt homogeneous steady state, Jacobian J_0, d_c = (sqrt(2)+1)^2 and dispersion sigma(k) (unchanged from v2)", supports: true}
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [827, 886], note: "CylindricalShellGrid: Laplace-Beltrami (1/r) d_s(r d_s) + (1/r^2) d_theta^2 with exact Fourier theta step and backward-Euler tridiagonal s step", supports: true}
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [925, 978], note: "simulate_three_system_shell: head (a,h), tentacle (b,c), foot (f,g) loops with basal inhibitor production and source density sigma raised by a", supports: true}
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [788, 799], note: "THREE_SYSTEM_PARAMS: 20 coefficients and Hill constants chosen by this implementation, not digitised from Meinhardt (1993)", supports: false}
+          - {file: morphoeval/lean/loops/Loop_001_hydra_activator_inhibitor.lean, lines: [96, 198], note: "5 new Lean 4 theorems (firing-threshold discriminant antitone + instance, tentacle-drive monotonicity, head-foot exclusion, shell Laplacian conserves constants); 0 sorrys", supports: true}
+      specimen-match:
+        value: 87
+        rationale: >-
+          The rendered figure now puts the model and the specimen side by side at three levels:
+          the segmented photograph with its 6 tentacles and body axis (Panel C1), the azimuthal
+          luminance profile vs the 1D ring (C2), and in Pass 3 a 3D shell whose silhouette IS the
+          specimen's radius profile, coloured by the three activators (D1), with the unrolled map
+          showing the tentacle ring inside the specimen's attachment band (D2) and the ring position
+          plotted against that band under the kappa_a sweep (E1). The hypostome cap is azimuthally
+          uniform and the foot sits at the basal disc as in the animal. Deductions: the shell gives 7
+          tentacle primordia where the specimen has 6, and the body length that makes the spacing
+          match is a calibration (L800, L1733-1742) (-5); the ring offset 0.111 is inside but not at
+          the centre of the specimen band 0.070 +- 0.081 (-2); the regenerated hypostome on the wide
+          cut surface is a spot (CV_theta 0.95, E3) unlike the dome of a regenerating polyp (-3); a
+          single specimen photographed obliquely supplies all references, and the attachment radius
+          (23 px) comes from a 0.98 tissue-fraction threshold rather than an anatomical landmark (-3).
+        evidence:
+          - {file: docs/media/hydra_activator_inhibitor_comparison.png, lines: [0, 0], note: "Panels C1/D1/D2/E1/E3: specimen segmentation, specimen-shaped 3D shell with red cap / cyan 7-spot ring / green foot, unrolled map with the specimen attachment band, regeneration map", supports: true}
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [695, 785], note: "measure_specimen_body_profile: tip/basal-disc walk, distance-transform radius profile r(s), attachment radius (tissue fraction < 0.98), spacing / body length", supports: true}
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [1403, 1467], note: "Panel D1 3D surface of revolution from grid.surface_xyz() and Panel D2 unrolled map with specimen attachment band", supports: true}
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [800, 805], note: "SHELL_DEFAULT_LENGTH_CELLS = 90 is the declared scale calibration; the resulting 7 tentacles vs 6 on the specimen is a mismatch", supports: false}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          Pass 2 sweeps remain (diffusivity ratio across d_c, domain length). Pass 3 adds two sweeps
+          of genuine three-system parameters with monotone, verified effects: the head->tentacle
+          suppression kappa_a in {0, 0.3, 1, 3, 10} shifts the ring centroid basally
+          (0.072 -> 0.122 L, Spearman rho = 1.00) and the kappa_a = 0 ablation lets tentacle
+          activator leak into the hypostome (L1123-1144, Panel E1); the body length L in
+          {64..150} raises the tentacle number 5 -> 10 (rho = 0.97, Panel E2); --shell-length,
+          --shell-steps and --kappa-a are exposed on the CLI (L2008-2010). Deductions: the kappa_a
+          effect on ring position is small (0.05 L over three decades) because the tentacle
+          inhibitor already excludes the apex (-4); the count sweep jumps 5 -> 7 and never
+          produces the specimen's 6 (-3); the tentacle-inhibitor range D_c, the most obvious
+          "number of tentacles" knob, is not swept in the shell (in prototyping it changed amplitude
+          but not count), so what controls the count is geometry, not kinetics, and this is not
+          shown (-3); sigma_t, p_t and sigma_f (which set the ring and foot positions) have no
+          sweep or CLI flag (-2).
+        evidence:
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [1123, 1144], note: "kappa_a sweep incl. ablation; Spearman of ring centroid vs kappa_a", supports: true}
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [1146, 1166], note: "Body-length sweep L in {64,72,90,110,131,150}: tentacle count, spacing and Spearman", supports: true}
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [2008, 2010], note: "CLI flags --shell-length / --shell-steps / --kappa-a wired into render_outputs()", supports: true}
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [788, 799], note: "sigma_t, p_t, sigma_f, D_c fixed in THREE_SYSTEM_PARAMS without sweep or CLI exposure", supports: false}
+      morphometric-validation:
+        value: 89
+        rationale: >-
+          `measure_morphoeval()` (L1691-1856) now returns 14 measurements. The 7 Pass 2 metrics
+          keep their literature / specimen references; the 7 new shell metrics include three with
+          genuine specimen references (ring offset 0.111 vs 0.070 +- 0.081, tentacle count 7 vs 6,
+          spacing 0.091 vs 0.084 of body length) and an analytic-vs-simulated consistency check
+          (ring inside the phi_t > w_c band). Deductions: four new metrics carry model-internal or
+          trivially satisfied reference values — the foot reference (L-1)/L (L1748), the ablation
+          reference = the default run's own leak (L1758), the Spearman references 1.0 (L1768) and the
+          regeneration recovery reference 1.0 (L1778) — so they validate internal behaviour, not
+          biology (-6); the spacing agreement is the calibration target, not a validation (-2); no
+          uncertainty across seeds or specimens is reported for any shell metric (-3).
+        evidence:
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [1712, 1783], note: "7 new shell measurements with units, methods, reference values and notes (incl. the declared calibration and the spot-head limitation)", supports: true}
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [981, 1046], note: "analyze_shell_pattern: head CV_theta, ring rows/peaks/spacing CV/offset/circumference, foot, apex leak, analytic firing band", supports: true}
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [1744, 1783], note: "Foot, ablation, Spearman and regeneration measurements use model-internal reference values rather than literature or specimen numbers", supports: false}
+      source-traceability:
+        value: 92
+        rationale: >-
+          All four DOIs resolve and are repeated in the bib, README and JSON; the specimen, scout
+          manifest and bib stay SHA-256 pinned (L147-176) and the reference JSON's digest is recorded
+          by the measurement sidecar. Pass 3 fixed a real defect: the JSON `hydra_regimes_and_experiments`
+          block had never matched the code and is now in parity and asserted in self-test check 9
+          (L1922-1943), and the new `three_system_cylindrical_shell` block pins every shell parameter
+          and the firing threshold. Deductions: the reference JSON is still not in EXPECTED_SHA256
+          (only hashed, L169-172), so it can drift silently between runs (-3); the Pass 3 three-system
+          forms cite Meinhardt (1993) and (2012) without page or equation numbers (-3); the
+          `expected_peak_counts` of the domain sweep are now the observed outputs written back into
+          the JSON (tautological parity) (-2).
+        evidence:
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [147, 176], note: "EXPECTED_SHA256 for specimen / scout / bib with runtime verification; reference JSON hashed but not pinned", supports: true}
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [1922, 1943], note: "Self-test check 9: JSON-to-code parity for the 1D regimes and every THREE_SYSTEM_PARAMS entry, firing threshold and sweep lists", supports: true}
+          - {file: datasets/hydra_activator_inhibitor/hydra_activator_inhibitor_reference.json, lines: [92, 187], note: "Corrected regimes block (with parity note) and new three_system_cylindrical_shell block with parameters, calibration statement, specimen references and expected outcomes", supports: true}
+          - {file: datasets/hydra_activator_inhibitor/README.md, lines: [27, 55], note: "Pass 3 section documenting geometry, operator, loops, declared calibration and Lean theorems", supports: true}
+      code-traceability:
+        value: 90
+        rationale: >-
+          The module docstring (L1-131) maps every section to its equations and figures, including
+          a new §2b that writes out the three-system equations, the operator, the analytic threshold
+          and what the shell does and does not reproduce; every shell function carries a docstring
+          naming its role; the math KG now registers 7 laws with Lean and code loci that were
+          re-pinned to the current line numbers. Deductions: the three-system coupling functions
+          cite Meinhardt (1993) by section title ("how to form structures close to each other") rather
+          than equation (-4); the kappa_head saturation, Hill exponents and the `1e-5..250` clipping
+          are untraced numerical choices (-3); the Pass 2 docstring statistics were stale until this
+          pass (now corrected), which shows the docstring is not generated from the measurements (-3).
+        evidence:
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [27, 113], note: "Docstring §2 Lean theorem list and §2b three-system shell equations, operator, threshold and reproduced features", supports: true}
+          - {file: morphoeval/math_kg_loops/gierer-hydra-activator-inhibitor.yaml, lines: [95, 187], note: "Laws 4-7 registered with lean_decl/lean_theorem/lean_locus/lean_code and code_locus pinned to the current file", supports: true}
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [913, 923], note: "tentacle_drive / foot_drive docstrings state the functional form and its purpose but cite no equation of Meinhardt (1993)", supports: false}
+      repro-package:
+        value: 92
+        rationale: >-
+          Deterministic seed 1972 throughout; 14-check `--self-test` (L1862-2001) including bitwise
+          determinism of both the 1D solver and the shell solver (FFT + banded solve, L1986-1990),
+          JSON parity, analytic-threshold consistency and every Pass 3 behaviour; CLI documented in
+          argparse; render ~53 s and self-test ~35 s on the pinned venv whose versions are now
+          recorded correctly in this audit. Deductions: no requirements lock file is shipped for this
+          script (-3); the README invocation notes in the dataset describe the model but not the CLI
+          flags or runtimes (-2); `measure_morphoeval()` re-runs the whole ~40 s shell set, and
+          self-test and render each run it again, so a full Pass costs ~2 min of recomputation
+          without caching (-2); matplotlib emits a font-cache warning unless MPLCONFIGDIR is set (-1).
+        evidence:
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [1862, 2001], note: "14-check self_test() covering SHA-256, parity, 1D regimes, specimen, shell, sweeps, regeneration and determinism", supports: true}
+          - {file: 1972-gierer-hydra-activator-inhibitor.py, lines: [1986, 1990], note: "Bitwise determinism of the shell solver (two 200-step runs compared with np.array_equal)", supports: true}
+          - {file: docs/media/hydra_activator_inhibitor_growth.gif, lines: [0, 0], note: "60-frame GIF: Phase 1 intact column + ring, Phase 2 bisection regeneration, Phase 3 shell development and fragment regeneration", supports: true}
+    remediation:
+      - >-
+        1972-gierer-hydra-activator-inhibitor.py:788-799 and 913-923 — THREE_SYSTEM_PARAMS and the coupling
+        functions tentacle_drive / foot_drive are this implementation's reduced forms (Hill gating
+        sigma^8/(0.6^8+sigma^8), suppression 1/(1+kappa_a a), foot 1/(1+(sigma/0.03)^2)). Digitise Meinhardt
+        (1993) appendix equations (incl. the foot -> source-density negative feedback) and either implement
+        them or tabulate term-by-term where the reduced form departs, with equation numbers in the docstrings
+        and in math_kg_loops.
+      - >-
+        1972-gierer-hydra-activator-inhibitor.py:800 and 1733-1742 — SHELL_DEFAULT_LENGTH_CELLS = 90 is a
+        scale calibration against the specimen's spacing / body length, and the shell still yields 7 tentacles
+        vs 6 while the 1D ring (N_ring = 64, L433-470) selects a different wavelength (10.7 vs 8.1 cells) with
+        the same D_b, D_c. Derive one absolute scale (um per cell) from the specimen's body length and tentacle
+        spacing, use it for BOTH the ring and the shell, and add a D_c sweep on the shell so the audit can see
+        whether kinetics or geometry sets the count.
+      - >-
+        1972-gierer-hydra-activator-inhibitor.py:1049-1095 — the regenerated head on the wide, un-remodelled cut
+        surface is a localised spot (CV_theta = 0.95) and the model regenerates head before ring (t_head = 450
+        < t_ring = 1050), contrary to Meinhardt's (1993) tentacle-first prediction. Add wound closure (taper the
+        fragment tip radius over time) and a tentacle gating that does not require sigma to rise under the new
+        head, then test the regeneration order explicitly.
+      - >-
+        1972-gierer-hydra-activator-inhibitor.py:1744-1783 — four new measurements use model-internal reference
+        values ((L-1)/L for the foot, the default run's own leak for the ablation, 1.0 for the Spearman and
+        recovery metrics). Replace them with literature values (e.g. foot/peduncle position and tentacle number
+        vs body size from a Hydra size series) or label them explicitly as internal consistency checks in the
+        measurement names.
+      - >-
+        1972-gierer-hydra-activator-inhibitor.py:169-172 — the reference JSON is hashed at runtime but not pinned
+        in EXPECTED_SHA256, so the parity block can drift silently; pin it (update the digest when the JSON
+        changes) and have measure_outputs report a mismatch.
+      - >-
+        1972-gierer-hydra-activator-inhibitor.py:695-785 — specimen references depend on hand-set thresholds
+        (tissue fraction 0.98, +0.5 px distance tolerance, 28 deg basal sector) measured on one obliquely
+        photographed polyp; report their sensitivity (vary the thresholds, add a second CC-licensed specimen)
+        and propagate the resulting band widths into the shell measurements.
+      - >-
+        1972-gierer-hydra-activator-inhibitor.py:1146-1166 and 1740 — the body-length sweep count skips 6
+        (5 -> 7) and all shell results come from a single seed; report tentacle count and ring offset across
+        >= 5 seeds and a finer L grid so the specimen's 6 is bracketed with an uncertainty, not a single run.

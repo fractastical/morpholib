@@ -110,4 +110,94 @@ theorem jonsson_2006_up_gradient_instability_and_npa_collapse (z_D T P_i c1_a0 :
   · simp [mode_instability_gain]
     omega
 
+
+-- ============================================================================
+-- Law 4 (`jonsson-auxin-pin1-meristem-4`, Pass 3):
+-- Jönsson et al. (2006) Explicit PIN1 Exocytosis / Endocytosis Trafficking Kinetics
+-- and their Quasi-Steady-State (QSS) Membrane Allocation
+-- ============================================================================
+/-- Jönsson et al. (2006) PNAS model PIN1 membrane cycling explicitly as first-order
+    exocytosis from a cytosolic (endosomal) pool `P_cyt` onto wall `j` at rate
+    `k_exo * f(a_j)` and uniform endocytosis at rate `k_endo`:
+      `dP_ij/dt = k_exo * f_j * P_cyt - k_endo * P_ij`,   `P_cyt + ∑_j P_ij = P_tot`.
+    Clearing the partition denominator `Z = k_endo + k_exo * (f_1 + f_2 + f_3)`, the
+    steady-state membrane allocation numerator is `M_j = k_exo * f_j * P_tot` and the
+    cytosolic numerator is `C = k_endo * P_tot`. This theorem proves that:
+    1. `C + M_1 + M_2 + M_3 = P_tot * Z` — the kinetic steady state conserves the total
+       cellular PIN1 pool (membrane + cytosol), generalising Law 1 to finite trafficking rates.
+    2. `k_endo * M_j = k_exo * f_j * C` — exocytosis onto wall `j` exactly balances
+       endocytosis from wall `j` (the ODE right-hand side vanishes), i.e. `(M_j, C)` is a
+       genuine fixed point of the trafficking kinetics.
+    3. `f_j > f_k ⇒ M_j > M_k` — up-the-gradient polarity survives finite trafficking rates.
+    4. `k_exo = 0 ⇒ M_j = 0` — blocking exocytosis (brefeldin A, Geldner et al. 2001 Nature)
+       internalises all PIN1 (`P_cyt = P_tot`), abolishing membrane polarity.
+    In the limit `k_endo → 0` the allocation `M_j / Z → f_j / ∑_k f_k`, recovering the
+    instantaneous Boltzmann law of Law 1. -/
+def pin1_membrane_qss_num (k_exo f_j P_tot : Int) : Int :=
+  k_exo * f_j * P_tot
+
+def pin1_cytosol_qss_num (k_endo P_tot : Int) : Int :=
+  k_endo * P_tot
+
+def pin1_trafficking_partition (k_exo k_endo f1 f2 f3 : Int) : Int :=
+  k_endo + k_exo * (f1 + f2 + f3)
+
+theorem jonsson_2006_pin1_trafficking_qss (k_exo k_endo f1 f2 f3 f_j f_k P_tot : Int)
+    (hk : k_exo > 0) (hP : P_tot > 0) (hf : f_j > f_k) :
+    pin1_cytosol_qss_num k_endo P_tot + pin1_membrane_qss_num k_exo f1 P_tot +
+        pin1_membrane_qss_num k_exo f2 P_tot + pin1_membrane_qss_num k_exo f3 P_tot =
+      P_tot * pin1_trafficking_partition k_exo k_endo f1 f2 f3 ∧
+    k_endo * pin1_membrane_qss_num k_exo f_j P_tot =
+      k_exo * f_j * pin1_cytosol_qss_num k_endo P_tot ∧
+    pin1_membrane_qss_num k_exo f_j P_tot > pin1_membrane_qss_num k_exo f_k P_tot ∧
+    pin1_membrane_qss_num 0 f_j P_tot = 0 := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · simp only [pin1_cytosol_qss_num, pin1_membrane_qss_num, pin1_trafficking_partition,
+      Int.mul_add]
+    ac_rfl
+  · simp only [pin1_cytosol_qss_num, pin1_membrane_qss_num]
+    ac_rfl
+  · simp only [pin1_membrane_qss_num]
+    have h1 : k_exo * f_j > k_exo * f_k := Int.mul_lt_mul_of_pos_left hf hk
+    exact Int.mul_lt_mul_of_pos_right h1 hP
+  · simp [pin1_membrane_qss_num]
+
+
+-- ============================================================================
+-- Law 5 (`jonsson-auxin-pin1-meristem-5`, Pass 3):
+-- Mitchison (1980/1981) With-the-Flux Canalization Winner-Take-All Law
+-- (subepidermal provascular strand formation; Bayer et al. 2009 Genes Dev)
+-- ============================================================================
+/-- In the with-the-flux canalization hypothesis (Mitchison 1980 Proc. R. Soc. B; 1981 Phil.
+    Trans. R. Soc. B; Feugier et al. 2005 J. Theor. Biol.; Bayer et al. 2009 Genes Dev.) the
+    exocytosis targeting function of a subepidermal cell is a superlinear function of the
+    auxin efflux `J_ij` already passing through wall `j`, modelled here by the quadratic
+    feedback `Φ(J) = J * J`. For two competing efflux walls with `J_1 > J_2 ≥ 0`:
+    1. `Φ(J_1) - Φ(J_2) = (J_1 - J_2) * (J_1 + J_2)` — the feedback difference factorises
+       through the flux asymmetry;
+    2. `Φ(J_1) > Φ(J_2)` — the wall already carrying more flux receives strictly more PIN1,
+       so the initial asymmetry grows (winner-take-all canalization into a single file);
+    3. for any positive feedback gain `α > 0`, the PIN1 allocation difference drive
+       `α * (Φ(J_1) - Φ(J_2))` is strictly positive, so a symmetric two-branch split
+       (`P_1 = P_2`) is linearly unstable and the strand narrows. -/
+def flux_feedback_quadratic (J : Int) : Int :=
+  J * J
+
+theorem mitchison_1980_canalization_winner_take_all (J1 J2 alpha : Int)
+    (h2 : J2 ≥ 0) (h : J1 > J2) (ha : alpha > 0) :
+    flux_feedback_quadratic J1 - flux_feedback_quadratic J2 = (J1 - J2) * (J1 + J2) ∧
+    flux_feedback_quadratic J1 > flux_feedback_quadratic J2 ∧
+    alpha * (flux_feedback_quadratic J1 - flux_feedback_quadratic J2) > 0 := by
+  have hfact : flux_feedback_quadratic J1 - flux_feedback_quadratic J2 = (J1 - J2) * (J1 + J2) := by
+    simp only [flux_feedback_quadratic, Int.sub_mul, Int.mul_add]
+    have hc : J2 * J1 = J1 * J2 := Int.mul_comm J2 J1
+    omega
+  have hd : J1 - J2 > 0 := by omega
+  have hs : J1 + J2 > 0 := by omega
+  have hpos : (J1 - J2) * (J1 + J2) > 0 := Int.mul_pos hd hs
+  refine ⟨hfact, ?_, ?_⟩
+  · omega
+  · rw [hfact]
+    exact Int.mul_pos ha hpos
+
 end MathOfBiology.Loop_032

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-2014-raspopovic-bmp-sox9-wnt-digits.py — Pass 2 (v2) Remediated Implementation
+2014-raspopovic-bmp-sox9-wnt-digits.py — Pass 3 (v3) Remediated Implementation
 ==============================================================================
 Faithful mathematical, reaction-diffusion PDE, and morphometric reproduction of:
 
@@ -22,6 +22,37 @@ Faithful mathematical, reaction-diffusion PDE, and morphometric reproduction of:
      "Tbx2 terminates Shh/Fgf signaling in the developing mouse limb bud by
       direct repression of Gremlin1." PLoS Genetics 9(4):e1003467.
      DOI: 10.1371/journal.pgen.1003467
+  Pass 3 growing-domain sources:
+  5. Crampin EJ, Gaffney EA, Maini PK (1999). "Reaction and diffusion on growing
+     domains: Scenarios for robust pattern formation." Bull Math Biol 61(6):1093-1120.
+     DOI: 10.1006/bulm.1999.0131
+  6. Boehm B, Westerberg H, Lesnicar-Pucko G, Raja S, Rautschka M, Cotterell J,
+     Swoger J, Sharpe J (2010). "The role of spatially controlled cell proliferation
+     in limb bud morphogenesis." PLoS Biology 8(7):e1000420.
+     DOI: 10.1371/journal.pbio.1000420
+  7. Marcon L, Arques CG, Torres MS, Sharpe J (2011). "A computational clonal
+     analysis of the developing mouse limb bud." PLoS Comput Biol 7(2):e1001071.
+     DOI: 10.1371/journal.pcbi.1001071
+  8. Shubin NH, Alberch P (1986). "A morphogenetic approach to the origin and
+     basic organization of the tetrapod limb." Evolutionary Biology 20:319-387.
+     DOI: 10.1007/978-1-4615-6983-1_6
+
+Pass 3 remediation (closes the single v2 item "couple the 2D polar-fan solver to a
+moving-boundary finite-element limb-bud outgrowth mesh"):
+  Section 3b implements a genuine P1 (linear-triangle) finite-element solver for the
+  3-node network on a Lagrangian / ALE limb-bud fan mesh whose distal boundary (the
+  AER) moves outward, R(t) = min(R_1, R_0 exp(g t)). Diffusion is integrated
+  implicitly with the stiffness matrix re-assembled on the deformed mesh; the
+  conservative lumped-mass update  M(t+dt) c(t+dt) = M(t) [c(t) + dt f(c)]  realises the
+  Crampin-Gaffney-Maini growth-dilution term -(div u) c exactly at the discrete level.
+  The distal AER-FGF / Hoxd gradient enters as the wavelength modulation
+  lambda(r, t) = lambda_AER * r / R(t) (ligand diffusivities D ∝ (r / R(t))^2, which
+  leaves sigma_max invariant), with `--fgf-mode none|material|scaled` for ablation.
+  HONEST REDUCTION: the mesh is a prescribed polar fan with uniform radial stretch
+  (no proliferation field, no realistic bud outline, no dorsoventral axis); the
+  F -> D mapping is a modelling choice (it is the unique modulation that keeps the
+  Turing growth rate fixed while scaling the wavelength with the arc), not an
+  equation of Raspopovic et al. (2014); the pattern starts from unbiased noise.
 
 Mathematical & Mechanistic Architecture (Linked to Lean 4 `MathOfBiology.Loop_016`):
 -----------------------------------------------------------------------------------
@@ -48,6 +79,25 @@ Mathematical & Mechanistic Architecture (Linked to Lean 4 `MathOfBiology.Loop_01
     and Wnt (-k_ws*S) by Sox9 enforces delta_B / delta_S < 0 and delta_W / delta_S < 0,
     so Sox9 pre-cartilage digit condensations form strictly out of phase (180 deg
     anti-correlated, corr(S, B) ~ -1, corr(S, W) ~ -1) with interdigital Bmp and Wnt.
+
+  - Law 4 (`MathOfBiology.Loop_016.raspopovic_growth_dilution_stabilises_turing_mode`):
+    On a growing domain with velocity divergence rho = div(u) >= 0 the Jacobian becomes
+    J_eff - rho*I (Crampin et al. 1999); Delta_rho(q^2) >= Delta_0(q^2) for all rho >= 0
+    and tr(J_eff) - 2 rho < 0, so outgrowth only stabilises: the unstable mode at q^2 = 4
+    (Delta_0 = -1.003) is suppressed once rho exceeds sigma_max = 0.26 (Delta_1.0 = +0.477).
+    Realised by `evaluate_growth_dilution_sweep()` (slope d sigma_eff / d rho = -1).
+
+  - Law 5 (`MathOfBiology.Loop_016.raspopovic_ray_count_monotone_in_arc_length`):
+    The admissible ray count floor(L_arc / lambda_AER) is monotone in the distal arc
+    length, so outgrowth adds rays sequentially (3 -> 4 -> 5 on the moving mesh) and the
+    final-arc sweep L = 12, 16, 20, 24 gives 3, 4, 5, 6 rays. Realised by
+    `evaluate_final_arc_sweep()`.
+
+  - Law 6 (`MathOfBiology.Loop_016.raspopovic_scaled_gradient_ray_count_invariant`):
+    With lambda(r) = lambda_AER * r / R the local ray count 2 theta r / lambda(r) is
+    independent of r, so AER-anchored wavelength modulation keeps the radial Sox9 rays
+    unbranched (bifurcation range 0), whereas the unmodulated fan branches distally.
+    Realised by `evaluate_fgf_modulation_ablation()`.
 """
 
 from __future__ import annotations
@@ -62,23 +112,30 @@ from typing import Any
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import matplotlib.tri as mtri
 import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
-from scipy import signal, stats
+from scipy import signal, sparse, stats
+from scipy.sparse.linalg import splu
 
 ROOT = Path(__file__).resolve().parent
 DATASET_DIR = ROOT / "datasets" / "bmp_sox9_wnt_digits"
 REF_JSON = DATASET_DIR / "bmp_sox9_wnt_digits_reference.json"
+FEM_REF_JSON = DATASET_DIR / "limb_bud_outgrowth_fem_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "sox9_limb_digits_specimen.jpg"
 SCOUT_JSON = DATASET_DIR / "scout_manifest.json"
 BIB_FILE = DATASET_DIR / "paper_citations.bib"
+BIB_FILE_PASS3 = DATASET_DIR / "paper_citations_pass3.bib"
 
 OUT_PNG = ROOT / "docs" / "media" / "bmp_sox9_wnt_digits_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "bmp_sox9_wnt_digits_growth.gif"
 
 # Cryptographic SHA-256 Registry for `datasets/bmp_sox9_wnt_digits/`
 EXPECTED_SHA256: dict[str, str] = {
+    "datasets/bmp_sox9_wnt_digits/limb_bud_outgrowth_fem_reference.json": (
+        "3db7c9493f12c2b38c0c5297274b79e91e32581ca967424bc38653f941298157"
+    ),
     "datasets/bmp_sox9_wnt_digits/bmp_sox9_wnt_digits_reference.json": (
         "c0444b665610be2e360451aabdf3fe73b546cfa987474001233e1463296f1c57"
     ),
@@ -90,6 +147,9 @@ EXPECTED_SHA256: dict[str, str] = {
     ),
     "datasets/bmp_sox9_wnt_digits/paper_citations.bib": (
         "88ff32a60b56706048f01c9b1bf0b7143f692cbca07f1b25b2bbc3e6804a536c"
+    ),
+    "datasets/bmp_sox9_wnt_digits/paper_citations_pass3.bib": (
+        "eab1e111424c9ac1312abcf015c4d99922538957a0326a59e2005bc3490e3998"
     ),
 }
 
@@ -106,7 +166,7 @@ def sha256_file(path: Path) -> str:
 
 
 def verify_dataset_integrity() -> dict[str, str]:
-    """Verify SHA-256 digests of all 4 vendored files in datasets/bmp_sox9_wnt_digits/."""
+    """Verify SHA-256 digests of all 6 vendored files in datasets/bmp_sox9_wnt_digits/."""
     computed: dict[str, str] = {}
     for rel, expected in EXPECTED_SHA256.items():
         p = ROOT / rel
@@ -119,10 +179,25 @@ def verify_dataset_integrity() -> dict[str, str]:
     return computed
 
 
+_REF_CACHE: dict[str, Any] = {}
+
+
 def load_reference_data() -> dict[str, Any]:
     """Load and cryptographically verify `bmp_sox9_wnt_digits_reference.json`."""
-    verify_dataset_integrity()
-    return json.loads(REF_JSON.read_text(encoding="utf-8"))
+    if "ref" not in _REF_CACHE:
+        verify_dataset_integrity()
+        _REF_CACHE["ref"] = json.loads(REF_JSON.read_text(encoding="utf-8"))
+    return _REF_CACHE["ref"]
+
+
+def load_fem_reference_data() -> dict[str, Any]:
+    """Load and cryptographically verify the Pass 3 growing-domain reference table
+    `limb_bud_outgrowth_fem_reference.json` (analytic sigma_max / lambda_c anchors,
+    final-arc sweep expectations, dilution threshold, modulation-mode definitions)."""
+    if "fem" not in _REF_CACHE:
+        verify_dataset_integrity()
+        _REF_CACHE["fem"] = json.loads(FEM_REF_JSON.read_text(encoding="utf-8"))
+    return _REF_CACHE["fem"]
 
 
 # =============================================================================
@@ -592,6 +667,479 @@ def evaluate_pharmacological_perturbations(seed: int = 2014) -> dict[str, dict[s
 
 
 # =============================================================================
+# 3b. Moving-Boundary P1 Finite-Element Limb-Bud Outgrowth Mesh (Pass 3)
+# =============================================================================
+# Geometry: a polar-fan handplate in material coordinates (xi, eta) in [0,1] x [-1,1]
+# mapped to physical coordinates r = r_prox + (R(t) - r_prox) xi, theta = theta_max eta.
+# The distal boundary R(t) = min(R_1, R_0 exp(g t)) is the AER; growth is a uniform
+# radial stretch of the Lagrangian mesh (Boehm et al. 2010 found a proliferation
+# gradient alone insufficient for bud shape; the uniform stretch is the declared
+# reduction).  All four boundaries are zero-flux (natural FEM boundary condition).
+# Length unit: lambda_c(q_c = 1.57) = 4.00 (Raspopovic et al. 2014 baseline), so a
+# distal arc of 2 theta_max R_1 = 20.06 admits floor(20.06 / 4.00) = 5 Sox9 rays.
+FEM_DEFAULTS: dict[str, float] = {
+    "nr": 26,
+    "ntheta": 96,
+    "T": 60.0,
+    "dt": 0.02,
+    "R0": 5.0,
+    "R1": 8.4,
+    "r_prox": 4.2,
+    "theta_max": 0.38 * math.pi,
+    "growth_rate": 0.015,
+    "noise_amp": 0.01,
+    "reassemble_every": 4,
+}
+FEM_COARSE: dict[str, float] = {"nr": 18, "ntheta": 72, "dt": 0.02, "reassemble_every": 6}
+_FEM_CACHE: dict[tuple, dict[str, Any]] = {}
+
+
+def build_limb_bud_fem_mesh(nr: int, ntheta: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Structured material mesh (xi, eta) of the handplate split into 2 (nr-1)(ntheta-1)
+    linear triangles. Returns (xi, eta, triangles) with node index i*ntheta + j."""
+    xi = np.linspace(0.0, 1.0, nr)
+    eta = np.linspace(-1.0, 1.0, ntheta)
+    XI, ETA = np.meshgrid(xi, eta, indexing="ij")
+    idx = np.arange(nr * ntheta).reshape(nr, ntheta)
+    a = idx[:-1, :-1].ravel()
+    b = idx[1:, :-1].ravel()
+    c = idx[1:, 1:].ravel()
+    d = idx[:-1, 1:].ravel()
+    tris = np.concatenate([np.stack([a, b, c], 1), np.stack([a, c, d], 1)], 0)
+    return XI.ravel(), ETA.ravel(), tris
+
+
+def limb_bud_fan_coordinates(
+    xi: np.ndarray, eta: np.ndarray, R_t: float, r_prox: float, theta_max: float
+) -> tuple[np.ndarray, np.ndarray]:
+    """Lagrangian map of the material mesh onto the current fan with AER radius R_t."""
+    r = r_prox + (R_t - r_prox) * xi
+    th = theta_max * eta
+    return np.stack([r * np.cos(th), r * np.sin(th)], 1), r
+
+
+def assemble_p1_fem(
+    coords: np.ndarray, tris: np.ndarray, D_elem: np.ndarray
+) -> tuple[np.ndarray, sparse.csc_matrix, np.ndarray]:
+    """Assemble the lumped mass vector M_i = sum_e |e|/3 and the P1 stiffness matrix
+    K_ij = sum_e D_e |e| (grad phi_i . grad phi_j) on the current (deformed) mesh.
+    Standard linear-triangle formulas: grad phi_i = ((y_j - y_k), (x_k - x_j)) / det."""
+    p0, p1, p2 = coords[tris[:, 0]], coords[tris[:, 1]], coords[tris[:, 2]]
+    det = (p1[:, 0] - p0[:, 0]) * (p2[:, 1] - p0[:, 1]) - (p2[:, 0] - p0[:, 0]) * (p1[:, 1] - p0[:, 1])
+    area = 0.5 * np.abs(det)
+    ys = np.stack([p0[:, 1], p1[:, 1], p2[:, 1]], 1)
+    xs = np.stack([p0[:, 0], p1[:, 0], p2[:, 0]], 1)
+    j, k = [1, 2, 0], [2, 0, 1]
+    bg = (ys[:, j] - ys[:, k]) / det[:, None]
+    cg = (xs[:, k] - xs[:, j]) / det[:, None]
+    n = coords.shape[0]
+    M = np.zeros(n)
+    np.add.at(M, tris.ravel(), np.repeat(area / 3.0, 3))
+    Ke = (D_elem * area)[:, None, None] * (bg[:, :, None] * bg[:, None, :] + cg[:, :, None] * cg[:, None, :])
+    rows = np.repeat(tris, 3, axis=1).ravel()
+    cols = np.tile(tris, (1, 3)).ravel()
+    K = sparse.coo_matrix((Ke.ravel(), (rows, cols)), shape=(n, n)).tocsc()
+    return M, K, area
+
+
+def lumped_mass_only(coords: np.ndarray, tris: np.ndarray) -> np.ndarray:
+    """Lumped mass vector alone (cheap per-step update of the moving mesh)."""
+    p0, p1, p2 = coords[tris[:, 0]], coords[tris[:, 1]], coords[tris[:, 2]]
+    det = (p1[:, 0] - p0[:, 0]) * (p2[:, 1] - p0[:, 1]) - (p2[:, 0] - p0[:, 0]) * (p1[:, 1] - p0[:, 1])
+    M = np.zeros(coords.shape[0])
+    np.add.at(M, tris.ravel(), np.repeat(0.5 * np.abs(det) / 3.0, 3))
+    return M
+
+
+def count_sox9_rays(row: np.ndarray, amp: float, frac: float = 0.35) -> int:
+    """Number of connected Sox9-positive segments (S > frac * amp after a 1-node
+    Gaussian smooth) along one angular row of the mesh; marginal half-rays count."""
+    if amp <= 1e-9:
+        return 0
+    sm = ndi.gaussian_filter1d(row, 1.0, mode="nearest")
+    pos = sm > frac * amp
+    d = np.diff(pos.astype(int))
+    return int(pos[0]) + int(np.sum(d == 1))
+
+
+def ray_theta_centres(row: np.ndarray, eta: np.ndarray, amp: float, frac: float = 0.35) -> list[float]:
+    """Angular (eta in [-1,1]) centres of the Sox9-positive segments of one row."""
+    sm = ndi.gaussian_filter1d(row, 1.0, mode="nearest")
+    pos = sm > frac * amp
+    centres: list[float] = []
+    start = None
+    for i, p in enumerate(pos):
+        if p and start is None:
+            start = i
+        if (not p or i == len(pos) - 1) and start is not None:
+            end = i if p else i - 1
+            centres.append(float(np.mean(eta[start : end + 1])))
+            start = None
+    return centres
+
+
+def simulate_growing_limb_bud_fem(
+    nr: int | None = None,
+    ntheta: int | None = None,
+    T: float | None = None,
+    dt: float | None = None,
+    R0: float | None = None,
+    R1: float | None = None,
+    r_prox: float | None = None,
+    theta_max: float | None = None,
+    growth_rate: float | None = None,
+    fgf_mode: str = "scaled",
+    seed: int = 2014,
+    noise_amp: float | None = None,
+    reassemble_every: int | None = None,
+    n_snapshots: int = 8,
+) -> dict[str, Any]:
+    """Integrate the 3-node Bmp-Sox9-Wnt network on the moving-boundary P1 FEM
+    limb-bud mesh (Pass 3 remediation of the v2 polar-fan solver).
+
+    Scheme (per step, dt):
+      S_new = (M_old / M_new) * (S + dt f_S)                       (D_S = 0, pure ALE dilution)
+      (M_new + dt D_X K_new) X_new = M_old (X + dt f_X),  X in {B, W}   (implicit diffusion)
+    where M is the lumped mass of the mesh *before/after* the growth increment. The
+    ratio M_old / M_new is the discrete Crampin-Gaffney-Maini dilution factor
+    exp(-div(u) dt) (Lean Law 4); the stiffness matrix is re-assembled on the deformed
+    mesh every `reassemble_every` steps.
+
+    FGF / Hoxd wavelength modulation (`fgf_mode`):
+      "scaled"   : D_e = D (r_e / R(t))^2  -> lambda(r,t) = lambda_AER r / R(t), the AER-
+                   anchored gradient that scales with the bud (default; Lean Law 6)
+      "material" : D_e = D (r_e / R_1)^2   -> cell-intrinsic (Hox-like) material gradient
+      "none"     : D_e = D                 -> unmodulated fan (ablation; rays bifurcate)
+    Initial condition: unbiased Gaussian noise (no mode seeding)."""
+    cfg = dict(FEM_DEFAULTS)
+    for key, val in {
+        "nr": nr, "ntheta": ntheta, "T": T, "dt": dt, "R0": R0, "R1": R1, "r_prox": r_prox,
+        "theta_max": theta_max, "growth_rate": growth_rate, "noise_amp": noise_amp,
+        "reassemble_every": reassemble_every,
+    }.items():
+        if val is not None:
+            cfg[key] = val
+    if fgf_mode not in ("scaled", "material", "none"):
+        raise ValueError("fgf_mode must be one of 'scaled', 'material', 'none'")
+    key = (tuple(sorted((k, float(v)) for k, v in cfg.items())), fgf_mode, int(seed), int(n_snapshots))
+    if key in _FEM_CACHE:
+        return _FEM_CACHE[key]
+
+    ref = load_reference_data()
+    p = ref["governing_equations"]["baseline_parameters"]
+    mu_S, mu_B, mu_W = float(p["mu_S"]), float(p["mu_B"]), float(p["mu_W"])
+    k_sb, k_sw, k_bs, k_ws = float(p["k_sb"]), float(p["k_sw"]), float(p["k_bs"]), float(p["k_ws"])
+    D_B, D_W = float(p["D_B"]), float(p["D_W"])
+
+    nr_i, nth_i = int(cfg["nr"]), int(cfg["ntheta"])
+    dt_f, T_f = float(cfg["dt"]), float(cfg["T"])
+    R0_f, R1_f, rp, thm = float(cfg["R0"]), float(cfg["R1"]), float(cfg["r_prox"]), float(cfg["theta_max"])
+    g = float(cfg["growth_rate"])
+    n_steps = int(round(T_f / dt_f))
+    reasm = int(cfg["reassemble_every"])
+
+    xi, eta, tris = build_limb_bud_fem_mesh(nr_i, nth_i)
+    eta_row = np.linspace(-1.0, 1.0, nth_i)
+    n = xi.size
+    rng = np.random.default_rng(seed)
+    S = float(cfg["noise_amp"]) * rng.standard_normal(n)
+    B = float(cfg["noise_amp"]) * rng.standard_normal(n)
+    W = float(cfg["noise_amp"]) * rng.standard_normal(n)
+    cent_xi = xi[tris].mean(1)
+
+    def diffusivity_scale(R_t: float) -> np.ndarray:
+        r_e = rp + (R_t - rp) * cent_xi
+        if fgf_mode == "scaled":
+            return (r_e / R_t) ** 2
+        if fgf_mode == "material":
+            return (r_e / R1_f) ** 2
+        return np.ones_like(r_e)
+
+    coords, _ = limb_bud_fan_coordinates(xi, eta, R0_f, rp, thm)
+    M_old, K, _ = assemble_p1_fem(coords, tris, diffusivity_scale(R0_f))
+    luB = splu((sparse.diags(M_old) + dt_f * D_B * K).tocsc())
+    luW = splu((sparse.diags(M_old) + dt_f * D_W * K).tocsc())
+
+    snap_steps = set(np.linspace(0, n_steps - 1, n_snapshots).astype(int).tolist())
+    snapshots: list[dict[str, Any]] = []
+    timeline: list[dict[str, float]] = []
+    record_every = max(1, n_steps // 60)
+    area_initial = float(M_old.sum())
+    R_t = R0_f
+    for step in range(n_steps):
+        t = (step + 1) * dt_f
+        R_t = min(R1_f, R0_f * math.exp(g * t))
+        coords, _ = limb_bud_fan_coordinates(xi, eta, R_t, rp, thm)
+        if step % reasm == 0:
+            M_new, K, _ = assemble_p1_fem(coords, tris, diffusivity_scale(R_t))
+            luB = splu((sparse.diags(M_new) + dt_f * D_B * K).tocsc())
+            luW = splu((sparse.diags(M_new) + dt_f * D_W * K).tocsc())
+        else:
+            M_new = lumped_mass_only(coords, tris)
+
+        fS = -mu_S * S + k_sb * B - k_sw * W - S**3
+        fB = -k_bs * S - mu_B * B
+        fW = -k_ws * S - mu_W * W
+        S = M_old * (S + dt_f * fS) / M_new
+        B = luB.solve(M_old * (B + dt_f * fB))
+        W = luW.solve(M_old * (W + dt_f * fW))
+        M_old = M_new
+
+        if step % record_every == 0 or step == n_steps - 1:
+            Sg = S.reshape(nr_i, nth_i)
+            amp = float(np.max(np.abs(S)))
+            n_rays = count_sox9_rays(Sg[-1], amp) if amp > 0.1 else 0
+            timeline.append(
+                {
+                    "t": t,
+                    "R": R_t,
+                    "L_arc": 2.0 * thm * R_t,
+                    "n_rays_distal": float(n_rays),
+                    "amplitude": amp,
+                    "ray_eta": ray_theta_centres(Sg[-1], eta_row, amp) if amp > 0.1 else [],
+                }
+            )
+        if step in snap_steps:
+            snapshots.append({"t": t, "R": R_t, "coords": coords.copy(), "S": S.copy(), "tris": tris})
+
+    Sg = S.reshape(nr_i, nth_i)
+    amp = float(np.max(np.abs(S)))
+    row_counts = [count_sox9_rays(Sg[i], amp) for i in range(nr_i)]
+    patterned_rows = [c for c in row_counts if c > 0]
+    bifurcation_range = (max(patterned_rows) - min(patterned_rows)) if patterned_rows else 0
+    r_sb, _ = stats.pearsonr(S, B)
+    r_sw, _ = stats.pearsonr(S, W)
+
+    # Sequential addition events and where the newest ray appeared (|eta| > 0.6 = margin)
+    counts_t = [tl["n_rays_distal"] for tl in timeline]
+    addition_events: list[dict[str, float]] = []
+    for i in range(1, len(timeline)):
+        if counts_t[i] > counts_t[i - 1] and counts_t[i - 1] > 0:
+            prev = np.array(timeline[i - 1]["ray_eta"])
+            new = np.array(timeline[i]["ray_eta"])
+            if len(prev) and len(new):
+                dmin = np.array([np.min(np.abs(prev - e)) for e in new])
+                newest = float(new[int(np.argmax(dmin))])
+                addition_events.append({"t": timeline[i]["t"], "L_arc": timeline[i]["L_arc"], "eta": newest})
+
+    result = {
+        "config": cfg,
+        "fgf_mode": fgf_mode,
+        "seed": seed,
+        "xi": xi,
+        "eta": eta,
+        "tris": tris,
+        "coords": coords,
+        "S": S,
+        "B": B,
+        "W": W,
+        "S_grid": Sg,
+        "eta_row": eta_row,
+        "row_counts": row_counts,
+        "n_rays_distal": float(row_counts[-1]),
+        "n_rays_proximal": float(row_counts[0]),
+        "bifurcation_range": float(bifurcation_range),
+        "corr_SB_fem": float(r_sb),
+        "corr_SW_fem": float(r_sw),
+        "amplitude": amp,
+        "timeline": timeline,
+        "snapshots": snapshots,
+        "addition_events": addition_events,
+        "n_nodes": int(n),
+        "n_triangles": int(len(tris)),
+        "area_initial": area_initial,
+        "area_final": float(M_old.sum()),
+        "L_arc_final": 2.0 * thm * R_t,
+        "L_arc_initial": 2.0 * thm * R0_f,
+        "t_growth_end": (math.log(R1_f / R0_f) / g) if g > 0 else 0.0,
+    }
+    _FEM_CACHE[key] = result
+    return result
+
+
+def verify_fem_against_dispersion(modes: tuple[int, ...] = (8, 10, 12)) -> dict[str, Any]:
+    """Verification of the P1 FEM solver on a static 20 x 2 rectangle:
+      (a) K x^2 = -2 M on interior nodes (exact for P1 on the quadratic),
+      (b) total lumped mass = domain area,
+      (c) the growth rate of a seeded cos(q x) eigenmode (q = n pi / 20) measured over
+          2 time units matches the analytic 3-node dispersion Re sigma(q),
+      (d) a pure ALE growth step (no reaction, no diffusion) conserves sum_i M_i c_i."""
+    ref = load_reference_data()
+    p = ref["governing_equations"]["baseline_parameters"]
+    J3, _ = build_jacobians(
+        float(p["mu_S"]), float(p["mu_B"]), float(p["mu_W"]),
+        float(p["k_sb"]), float(p["k_sw"]), float(p["k_bs"]), float(p["k_ws"]),
+    )
+    D_B, D_W = float(p["D_B"]), float(p["D_W"])
+    Lx, Ly, nx, ny = 20.0, 2.0, 81, 9
+    x = np.linspace(0.0, Lx, nx)
+    y = np.linspace(0.0, Ly, ny)
+    X, Y = np.meshgrid(x, y, indexing="ij")
+    idx = np.arange(nx * ny).reshape(nx, ny)
+    a, b, c, d = idx[:-1, :-1].ravel(), idx[1:, :-1].ravel(), idx[1:, 1:].ravel(), idx[:-1, 1:].ravel()
+    tris = np.concatenate([np.stack([a, b, c], 1), np.stack([a, c, d], 1)], 0)
+    coords = np.stack([X.ravel(), Y.ravel()], 1)
+    M, K, _ = assemble_p1_fem(coords, tris, np.ones(len(tris)))
+
+    interior = (coords[:, 0] > 1.0) & (coords[:, 0] < Lx - 1.0) & (coords[:, 1] > 0.3) & (coords[:, 1] < Ly - 0.3)
+    lap_quadratic = (K @ (coords[:, 0] ** 2)) / M
+    stiffness_err = float(np.max(np.abs(lap_quadratic[interior] + 2.0)))
+    mass_err = abs(float(M.sum()) - Lx * Ly) / (Lx * Ly)
+
+    dt, n_steps = 0.005, 400
+    luB = splu((sparse.diags(M) + dt * D_B * K).tocsc())
+    luW = splu((sparse.diags(M) + dt * D_W * K).tocsc())
+    rows: list[dict[str, float]] = []
+    for nmode in modes:
+        q = nmode * math.pi / Lx
+        Mq = J3 - q * q * np.diag([0.0, D_B, D_W])
+        vals, vecs = np.linalg.eig(Mq)
+        i_dom = int(np.argmax(vals.real))
+        sig = float(vals.real[i_dom])
+        v = vecs[:, i_dom].real
+        v = v / np.linalg.norm(v)
+        mode = np.cos(q * coords[:, 0])
+        S, Bv, Wv = 1e-3 * v[0] * mode, 1e-3 * v[1] * mode, 1e-3 * v[2] * mode
+        a0 = float(np.max(np.abs(S)))
+        for _ in range(n_steps):
+            fS = -float(p["mu_S"]) * S + float(p["k_sb"]) * Bv - float(p["k_sw"]) * Wv - S**3
+            fB = -float(p["k_bs"]) * S - float(p["mu_B"]) * Bv
+            fW = -float(p["k_ws"]) * S - float(p["mu_W"]) * Wv
+            S = S + dt * fS
+            Bv = luB.solve(M * (Bv + dt * fB))
+            Wv = luW.solve(M * (Wv + dt * fW))
+        sig_fem = math.log(float(np.max(np.abs(S))) / a0) / (n_steps * dt)
+        rows.append({"n": float(nmode), "q": q, "sigma_analytic": sig, "sigma_fem": sig_fem,
+                     "rel_error": abs(sig_fem - sig) / max(abs(sig), 1e-9)})
+
+    # (d) pure ALE growth: M_new c_new = M_old c_old  =>  total mass conserved
+    rng = np.random.default_rng(7)
+    c_old = rng.random(coords.shape[0])
+    coords_grown = coords * np.array([1.37, 1.11])
+    M_new = lumped_mass_only(coords_grown, tris)
+    c_new = M * c_old / M_new
+    mass_rel_err = abs(float(np.sum(M_new * c_new)) - float(np.sum(M * c_old))) / float(np.sum(M * c_old))
+
+    return {
+        "stiffness_quadratic_error": stiffness_err,
+        "mass_area_rel_error": mass_err,
+        "modes": rows,
+        "max_sigma_rel_error": float(max(r["rel_error"] for r in rows)),
+        "ale_mass_conservation_rel_error": mass_rel_err,
+        "ale_area_ratio": float(M_new.sum() / M.sum()),
+    }
+
+
+def evaluate_growth_dilution_sweep(
+    rhos: tuple[float, ...] = (0.0, 0.1, 0.2, 0.3, 0.4),
+) -> dict[str, Any]:
+    """Measure the effective growth rate sigma_eff(rho) of the q_c eigenmode when the
+    Crampin-Gaffney-Maini dilution term -rho c acts on all three species (fixed
+    domain, 1D, seeded mode, linear regime), and compare with the Lean Law 4
+    prediction sigma_eff = sigma_max - rho (slope -1, threshold rho_c = sigma_max)."""
+    ref = load_reference_data()
+    p = ref["governing_equations"]["baseline_parameters"]
+    disp = compute_dispersion_curve()
+    J3, _ = build_jacobians()
+    D_B, D_W = float(p["D_B"]), float(p["D_W"])
+    L, nx = 20.0, 161
+    x = np.linspace(0.0, L, nx)
+    dx = L / (nx - 1)
+    q = 10.0 * math.pi / L  # n = 10 half-waves -> q = 1.571 = q_c
+    Mq = J3 - q * q * np.diag([0.0, D_B, D_W])
+    vals, vecs = np.linalg.eig(Mq)
+    i_dom = int(np.argmax(vals.real))
+    sigma_q = float(vals.real[i_dom])
+    v = vecs[:, i_dom].real
+    v = v / np.linalg.norm(v)
+    dt, n_steps = 0.002, 1000
+    rows: list[dict[str, float]] = []
+    for rho in rhos:
+        mode = np.cos(q * x)
+        S, B, W = 1e-3 * v[0] * mode, 1e-3 * v[1] * mode, 1e-3 * v[2] * mode
+        a0 = float(np.max(np.abs(S)))
+        for _ in range(n_steps):
+            B_pad = np.pad(B, 1, mode="edge")
+            W_pad = np.pad(W, 1, mode="edge")
+            lap_B = (B_pad[2:] - 2.0 * B_pad[1:-1] + B_pad[:-2]) / (dx * dx)
+            lap_W = (W_pad[2:] - 2.0 * W_pad[1:-1] + W_pad[:-2]) / (dx * dx)
+            dS = -float(p["mu_S"]) * S + float(p["k_sb"]) * B - float(p["k_sw"]) * W - S**3 - rho * S
+            dB = -float(p["k_bs"]) * S - float(p["mu_B"]) * B + D_B * lap_B - rho * B
+            dW = -float(p["k_ws"]) * S - float(p["mu_W"]) * W + D_W * lap_W - rho * W
+            S, B, W = S + dt * dS, B + dt * dB, W + dt * dW
+        a1 = float(np.max(np.abs(S)))
+        rows.append({"rho": rho, "sigma_eff": math.log(a1 / a0) / (n_steps * dt), "sigma_pred": sigma_q - rho})
+    rho_arr = np.array([r["rho"] for r in rows])
+    sig_arr = np.array([r["sigma_eff"] for r in rows])
+    slope, intercept, r_val, _, _ = stats.linregress(rho_arr, sig_arr)
+    rho_c_measured = -intercept / slope if slope != 0 else float("nan")
+    return {
+        "rows": rows,
+        "slope": float(slope),
+        "intercept": float(intercept),
+        "r": float(r_val),
+        "rho_c_measured": float(rho_c_measured),
+        "sigma_max_analytic": float(disp["sigma_max"]),
+        "sigma_q_analytic": sigma_q,
+        "max_abs_error": float(np.max(np.abs(sig_arr - np.array([r["sigma_pred"] for r in rows])))),
+    }
+
+
+def evaluate_final_arc_sweep(
+    arcs: tuple[float, ...] = (12.0, 16.0, 20.0, 24.0, 28.0), seed: int = 2014
+) -> dict[str, Any]:
+    """Final distal arc length sweep on the moving mesh (coarse resolution): the
+    distal ray count should follow the Lean Law 5 integer law floor(L_arc / 4) =
+    3, 4, 5, 6, 7 (lambda_AER = lambda_c = 4.002 rounded to the integer unit used in
+    the Lean statement). R_1 = L_arc / (2 theta_max); R_0 = 0.6 R_1; r_prox = R_1 / 2
+    (self-similar fans). Reports exact matches, Spearman rho, monotonicity and the
+    regression slope d N / d L_arc (reference 1 / lambda_AER)."""
+    disp = compute_dispersion_curve()
+    lam = float(disp["lambda_c"])
+    thm = float(FEM_DEFAULTS["theta_max"])
+    rows: list[dict[str, float]] = []
+    for L in arcs:
+        R1 = L / (2.0 * thm)
+        res = simulate_growing_limb_bud_fem(
+            R1=R1, R0=0.6 * R1, r_prox=0.5 * R1, fgf_mode="scaled", seed=seed, n_snapshots=2, **FEM_COARSE
+        )
+        rows.append({"L_arc": L, "n_rays": res["n_rays_distal"], "expected": float(math.floor(L / 4.0 + 1e-9)),
+                     "bifurcation_range": res["bifurcation_range"]})
+    n_sim = np.array([r["n_rays"] for r in rows])
+    n_exp = np.array([r["expected"] for r in rows])
+    L_arr = np.array([r["L_arc"] for r in rows])
+    rho_s, _ = stats.spearmanr(n_sim, L_arr)
+    slope, _, _, _, _ = stats.linregress(L_arr, n_sim)
+    return {
+        "rows": rows,
+        "lambda_AER": lam,
+        "exact_matches": int(np.sum(n_sim == n_exp)),
+        "spearman_rho_vs_arc": float(rho_s),
+        "slope_rays_per_length": float(slope),
+        "monotone": bool(np.all(np.diff(n_sim) >= 0)),
+    }
+
+
+def evaluate_fgf_modulation_ablation(
+    seeds: tuple[int, ...] = (2014, 2015, 2016)
+) -> dict[str, Any]:
+    """Ablation of the AER-anchored wavelength modulation (Lean Law 6) across seeds at
+    coarse resolution: distal ray count and radial bifurcation range for
+    fgf_mode in {scaled, material, none}."""
+    out: dict[str, Any] = {}
+    for mode in ("scaled", "material", "none"):
+        runs = [simulate_growing_limb_bud_fem(fgf_mode=mode, seed=s, n_snapshots=2, **FEM_COARSE) for s in seeds]
+        out[mode] = {
+            "n_rays_distal": [r["n_rays_distal"] for r in runs],
+            "bifurcation_range": [r["bifurcation_range"] for r in runs],
+            "mean_bifurcation_range": float(np.mean([r["bifurcation_range"] for r in runs])),
+            "fraction_five_rays": float(np.mean([r["n_rays_distal"] == 5.0 for r in runs])),
+            "corr_SB": [r["corr_SB_fem"] for r in runs],
+        }
+    return out
+
+
+# =============================================================================
 # 4. Computer-Vision Segmentation of Real Biological Specimen Image
 # =============================================================================
 def segment_sox9_limb_specimen(
@@ -701,10 +1249,12 @@ def segment_sox9_limb_specimen(
 # =============================================================================
 def render_comparison_figure(
     out_path: Path = OUT_PNG,
-    overrides: dict[str, float] | None = None,
+    overrides: dict[str, Any] | None = None,
     seed: int = 2014,
 ) -> Path:
-    """Render Pass 2 6-panel synthesis figure (`docs/media/bmp_sox9_wnt_digits_comparison.png`)."""
+    """Render the Pass 3 9-panel synthesis figure (`docs/media/bmp_sox9_wnt_digits_comparison.png`).
+    Panels A, G, H, I are new in Pass 3 (moving-boundary FEM limb bud, outgrowth sequence,
+    FGF-modulation ablation, final-arc sweep); B gains the growth-dilution curves."""
     ovr = overrides or {}
     ref = load_reference_data()
     p = ref["governing_equations"]["baseline_parameters"]
@@ -715,60 +1265,86 @@ def render_comparison_figure(
     D_B = float(p["D_B"])
     D_W = (D_B / float(ovr["D_ratio"])) if "D_ratio" in ovr else float(p["D_W"])
     fgf_scale = float(ovr.get("fgf_scale", 1.0))
+    growth_rate = float(ovr.get("growth_rate", FEM_DEFAULTS["growth_rate"]))
+    fgf_mode = str(ovr.get("fgf_mode", "scaled"))
 
     disp = compute_dispersion_curve(k_bs=k_bs, k_sb=k_sb, k_sw=k_sw, D_B=D_B, D_W=D_W)
     sim1d = simulate_1d_distal_arc(k_bs=k_bs, k_sb=k_sb, k_sw=k_sw, D_B=D_B, D_W=D_W, seed=seed)
-    sim2d = simulate_2d_autopod_pde(seed=seed)
+    fem = simulate_growing_limb_bud_fem(growth_rate=growth_rate, fgf_mode=fgf_mode, seed=seed)
+    fem_none = simulate_growing_limb_bud_fem(growth_rate=growth_rate, fgf_mode="none", seed=seed)
+    fem_ver = verify_fem_against_dispersion()
+    dil = evaluate_growth_dilution_sweep()
+    arc = evaluate_final_arc_sweep(seed=seed)
+    abl = evaluate_fgf_modulation_ablation()
     fgf_sweep = evaluate_fgf_hox_wavelength_scaling(fgf_scale=fgf_scale)
     pert = evaluate_pharmacological_perturbations(seed=seed)
     specimen = segment_sox9_limb_specimen()
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    fig = plt.figure(figsize=(16.8, 10.6), dpi=150, facecolor="#0b0f17")
-    gs = fig.add_gridspec(2, 3, hspace=0.33, wspace=0.26)
+    fig = plt.figure(figsize=(16.8, 15.6), dpi=150, facecolor="#0b0f17")
+    gs = fig.add_gridspec(3, 3, left=0.05, right=0.985, top=0.955, bottom=0.045, hspace=0.40, wspace=0.26)
+
+    def tripcolor_fem(ax, res, title, show_rays=True):
+        tri = mtri.Triangulation(res["coords"][:, 0], res["coords"][:, 1], res["tris"])
+        vmax = max(0.3, float(np.max(np.abs(res["S"]))))
+        pc = ax.tripcolor(tri, res["S"], shading="gouraud", cmap="magma", vmin=-vmax, vmax=vmax)
+        ax.triplot(tri, color="#9ca3af", lw=0.12, alpha=0.35)
+        try:
+            ax.tricontour(tri, res["B"], levels=[0.06], colors=["#38bdf8"], linewidths=0.9, linestyles="--")
+        except (ValueError, RuntimeError):
+            pass
+        if show_rays:
+            Sg = res["S_grid"]
+            cent = ray_theta_centres(Sg[-1], res["eta_row"], res["amplitude"])
+            thm = float(res["config"]["theta_max"])
+            R_f = float(res["config"]["R1"])
+            for e in cent:
+                ax.plot(1.03 * R_f * math.cos(thm * e), 1.03 * R_f * math.sin(thm * e), "o",
+                        color="#f43f5e", mec="white", ms=5.5, zorder=5)
+        ax.set_aspect("equal", adjustable="box")
+        ax.set_title(title, color="white", fontsize=9.6, fontweight="bold")
+        ax.set_xlabel("Proximodistal Axis x (AER / FGF →)", color="white", fontsize=8.5)
+        ax.set_ylabel("Anteroposterior Axis y", color="white", fontsize=8.5)
+        ax.tick_params(colors="#9ca3af", labelsize=7.5)
+        return pc
 
     # -------------------------------------------------------------------------
-    # Panel A: 2D Fan-Shaped Embryonic Autopod PDE (5 Radial Sox9 Digit Rays)
+    # Panel A: Moving-Boundary P1 FEM Limb-Bud Outgrowth Mesh (Final State)
     # -------------------------------------------------------------------------
     ax_a = fig.add_subplot(gs[0, 0], facecolor="#111827")
-    pcm = ax_a.pcolormesh(
-        sim2d["X_cart"],
-        sim2d["Y_cart"],
-        sim2d["S"],
-        cmap="magma",
-        shading="gouraud",
-    )
-    ax_a.contour(
-        sim2d["X_cart"],
-        sim2d["Y_cart"],
-        sim2d["B"],
-        levels=[0.06],
-        colors=["#38bdf8"],
-        linewidths=1.1,
-        linestyles="--",
+    pcm = tripcolor_fem(
+        ax_a,
+        fem,
+        f"A. Moving-Boundary FEM Limb Bud ({int(fem['n_rays_distal'])} Rays, "
+        f"Bifurc.={int(fem['bifurcation_range'])})",
     )
     cbar = fig.colorbar(pcm, ax=ax_a, fraction=0.042, pad=0.03)
-    cbar.set_label("Sox9 Expression S(r, θ)", color="white", fontsize=8)
+    cbar.set_label("Sox9 Expression S(x, t_final)", color="white", fontsize=8)
     cbar.ax.tick_params(colors="#9ca3af", labelsize=7)
-    ax_a.set_aspect("equal", adjustable="box")
-    ax_a.set_title(
-        f"A. 2D Fan Autopod PDE ({int(sim2d['n_digits_2d'])} Radial Sox9 Digits, r_SB={sim2d['corr_SB_2d']:.3f})",
-        color="white",
-        fontsize=10.2,
-        fontweight="bold",
+    ax_a.text(
+        0.0, -0.20,
+        f"P1 FEM: {fem['n_nodes']} nodes / {fem['n_triangles']} tris, R: {fem['config']['R0']:.1f}→{fem['config']['R1']:.1f} "
+        f"(g={fem['config']['growth_rate']:.3f}, L_arc {fem['L_arc_initial']:.1f}→{fem['L_arc_final']:.1f})\n"
+        f"fgf_mode='{fem['fgf_mode']}': λ(r,t)=λ_AER·r/R(t); noise IC; r_SB={fem['corr_SB_fem']:.3f}, r_SW={fem['corr_SW_fem']:.3f}; "
+        f"σ_FEM/σ(q_c) err {fem_ver['modes'][1]['rel_error']*100:.1f}%",
+        transform=ax_a.transAxes, color="#e5e7eb", fontsize=6.4, va="top",
+        bbox=dict(facecolor="#0b0f17", edgecolor="#374151", alpha=0.85, pad=2.5),
     )
-    ax_a.set_xlabel("Proximodistal Axis x (FGF Gradient →)", color="white", fontsize=8.5)
-    ax_a.set_ylabel("Anteroposterior Axis y", color="white", fontsize=8.5)
-    ax_a.tick_params(colors="#9ca3af", labelsize=7.5)
 
     # -------------------------------------------------------------------------
-    # Panel B: 3-Node vs Reduced 2-Diffuser J_eff Dispersion & D=0 Control
+    # Panel B: 3-Node vs Reduced 2-Diffuser J_eff Dispersion, D=0 Control & Growth Dilution
     # -------------------------------------------------------------------------
     ax_b = fig.add_subplot(gs[0, 1], facecolor="#111827")
     qg = disp["q_grid"]
     ax_b.plot(qg, disp["sigma3"], color="#f43f5e", lw=2.3, label="3-Node BSW Re(σ(q)) (D_S=0)")
     ax_b.plot(qg, disp["sigma2"], "--", color="#38bdf8", lw=1.9, label="Reduced 2-Diffuser J_eff")
     ax_b.plot(qg, disp["sigma_nodiff"], "-.", color="#9ca3af", lw=1.6, label="No-Diffusion Control (D=0)")
+    for rho_d, col in ((0.1, "#fb923c"), (dil["sigma_max_analytic"], "#a3e635")):
+        ax_b.plot(qg, disp["sigma3"] - rho_d, ":", color=col, lw=1.5,
+                  label=f"Growth dilution ρ={rho_d:.2f}: Re σ(q) − ρ (Lean Law 4)")
+    ax_b.scatter([disp["q_c"]] * len(dil["rows"]),
+                 [r["sigma_eff"] for r in dil["rows"]], s=22, color="white", zorder=6,
+                 label=f"1D measured σ_eff(ρ) at q_c (slope {dil['slope']:.3f}, ρ_c={dil['rho_c_measured']:.3f})")
     ax_b.axhline(0.0, color="white", lw=0.8, ls=":")
     ax_b.axvline(
         disp["q_c"],
@@ -778,9 +1354,9 @@ def render_comparison_figure(
         label=f"q_c={disp['q_c']:.2f} (λ_c={disp['lambda_c']:.2f})",
     )
     ax_b.set_title(
-        f"B. Turing Dispersion Without Self-Activation (det J_eff={disp['det_Jeff']:.2f})",
+        f"B. Turing Dispersion + Growth Dilution (det J_eff={disp['det_Jeff']:.2f})",
         color="white",
-        fontsize=10.2,
+        fontsize=9.6,
         fontweight="bold",
     )
     ax_b.set_xlabel("Spatial Wavenumber q", color="white", fontsize=8.5)
@@ -811,7 +1387,7 @@ def render_comparison_figure(
     ax_c.set_title(
         f"C. Out-of-Phase Digit vs Interdigit Profiles (r_BW=+{sim1d['corr_BW']:.3f})",
         color="white",
-        fontsize=10.2,
+        fontsize=9.6,
         fontweight="bold",
     )
     ax_c.set_xlabel("Distal Autopod Arc Position s", color="white", fontsize=8.5)
@@ -857,9 +1433,9 @@ def render_comparison_figure(
     ax_d.set_xlabel("Relative Distal FGF / Hoxd Modulation", color="white", fontsize=8.5)
     ax_d.set_ylabel("Turing Digit Wavelength λ", color="white", fontsize=8.5)
     ax_d.set_title(
-        f"D. FGF/Hox Wavelength & Digit Count Scaling (RMSE={fgf_sweep['rmse_lambda']:.3f})",
+        f"D. FGF/Hox Wavelength & Digit Scaling (RMSE={fgf_sweep['rmse_lambda']:.3f})",
         color="white",
-        fontsize=10.2,
+        fontsize=9.6,
         fontweight="bold",
     )
     ax_d.tick_params(colors="#9ca3af", labelsize=8)
@@ -889,9 +1465,9 @@ def render_comparison_figure(
     ax_e.set_ylim(0, 7.2)
     ax_e.set_ylabel("Sox9 Digit Condensations N_digits", color="white", fontsize=8.5)
     ax_e.set_title(
-        "E. Pharmacological & Genetic Perturbations (LDN/CHIR/IWP2/Hox)",
+        "E. Pharmacological & Genetic Perturbations",
         color="white",
-        fontsize=10.2,
+        fontsize=9.6,
         fontweight="bold",
     )
     ax_e.tick_params(colors="#9ca3af", labelsize=8)
@@ -932,7 +1508,7 @@ def render_comparison_figure(
     ax_f.set_title(
         f"F. Specimen E12.5 Sox9 WISH (WT N={wt_o['n_digits_detected']} vs Tbx2-/- N={mut_l['n_digits_detected']})",
         color="white",
-        fontsize=10.2,
+        fontsize=9.6,
         fontweight="bold",
     )
     ax_f.set_xlabel("Mouse Limb Autopod ROI X (px, CC BY 4.0)", color="white", fontsize=8.5)
@@ -940,12 +1516,103 @@ def render_comparison_figure(
     ax_f.tick_params(colors="#9ca3af", labelsize=7.5)
     ax_f.legend(loc="lower left", facecolor="#0b0f17", edgecolor="#374151", labelcolor="white", fontsize=7.0)
 
+    # -------------------------------------------------------------------------
+    # Panel G: Outgrowth Sequence on the Moving Mesh (4 snapshots) + Ray-Count Timeline
+    # -------------------------------------------------------------------------
+    gs_g = gs[2, 0].subgridspec(2, 2, hspace=0.42, wspace=0.18)
+    snaps = fem["snapshots"]
+    pick = [int(round(f)) for f in np.linspace(len(snaps) * 0.35, len(snaps) - 1, 4)]
+    pick = sorted(set(min(max(i, 0), len(snaps) - 1) for i in pick))
+    while len(pick) < 4:
+        pick.insert(0, max(0, pick[0] - 1))
+    R1 = float(fem["config"]["R1"])
+    thm = float(fem["config"]["theta_max"])
+    vmax_g = max(0.3, float(np.max(np.abs(snaps[-1]["S"]))))
+    for k_i, si in enumerate(pick):
+        axg = fig.add_subplot(gs_g[k_i // 2, k_i % 2], facecolor="#111827")
+        sn = snaps[si]
+        tri = mtri.Triangulation(sn["coords"][:, 0], sn["coords"][:, 1], sn["tris"])
+        axg.tripcolor(tri, sn["S"], shading="gouraud", cmap="magma", vmin=-vmax_g, vmax=vmax_g)
+        axg.triplot(tri, color="#9ca3af", lw=0.1, alpha=0.3)
+        axg.set_xlim(0.85 * float(fem["config"]["r_prox"]), 1.06 * R1)
+        axg.set_ylim(-1.05 * R1 * math.sin(thm), 1.05 * R1 * math.sin(thm))
+        axg.set_aspect("equal", adjustable="datalim")
+        tl_near = min(fem["timeline"], key=lambda d: abs(d["t"] - sn["t"]))
+        axg.set_title(
+            f"t={sn['t']:.0f}  R={sn['R']:.2f}  L_arc={2 * thm * sn['R']:.1f}  N={int(tl_near['n_rays_distal'])}",
+            color="white", fontsize=7.2,
+        )
+        axg.tick_params(colors="#9ca3af", labelsize=6)
+        if k_i == 0:
+            axg.text(
+                -0.18, 1.42,
+                f"G. Outgrowth Sequence on the Moving Mesh (growth ends t={fem['t_growth_end']:.1f};\n"
+                f"ray additions at L_arc = {', '.join(f'{e['L_arc']:.1f}' for e in fem['addition_events']) or 'n/a'})",
+                transform=axg.transAxes, color="white", fontsize=9.6, fontweight="bold", va="bottom",
+            )
+
+    # -------------------------------------------------------------------------
+    # Panel H: FGF / Hoxd Wavelength-Modulation Ablation (fgf_mode='none') — Bifurcating Rays
+    # -------------------------------------------------------------------------
+    ax_h = fig.add_subplot(gs[2, 1], facecolor="#111827")
+    tripcolor_fem(
+        ax_h,
+        fem_none,
+        f"H. Ablation: No FGF/Hox Modulation ({int(fem_none['n_rays_distal'])} Distal vs "
+        f"{int(fem_none['n_rays_proximal'])} Proximal Rays)",
+    )
+    abl_txt = "\n".join(
+        f"{m:8s}: rays {'/'.join(str(int(v)) for v in abl[m]['n_rays_distal'])}, "
+        f"bifurc. range {'/'.join(str(int(v)) for v in abl[m]['bifurcation_range'])} "
+        f"(mean {abl[m]['mean_bifurcation_range']:.2f}), P(5 rays)={abl[m]['fraction_five_rays']:.2f}"
+        for m in ("scaled", "material", "none")
+    )
+    ax_h.text(
+        0.02, 0.03, "3-seed coarse-mesh ablation (Lean Law 6):\n" + abl_txt,
+        transform=ax_h.transAxes, color="#e5e7eb", fontsize=6.3, va="bottom", family="monospace",
+        bbox=dict(facecolor="#0b0f17", edgecolor="#374151", alpha=0.85, pad=2.5),
+    )
+
+    # -------------------------------------------------------------------------
+    # Panel I: Final Distal Arc Sweep (Sequential Ray Addition Law) + FEM Verification
+    # -------------------------------------------------------------------------
+    ax_i = fig.add_subplot(gs[2, 2], facecolor="#111827")
+    arcs_x = np.array([r["L_arc"] for r in arc["rows"]])
+    ax_i.bar(arcs_x - 0.7, [r["expected"] for r in arc["rows"]], width=1.4, color="#f43f5e", alpha=0.85,
+             label="Lean Law 5: ⌊L_arc / λ_AER⌋ (λ_AER=4)")
+    ax_i.bar(arcs_x + 0.7, [r["n_rays"] for r in arc["rows"]], width=1.4, color="#38bdf8", alpha=0.85,
+             label=f"FEM distal rays (slope {arc['slope_rays_per_length']:.3f} vs 1/λ={1 / arc['lambda_AER']:.3f})")
+    L_line = np.linspace(arcs_x.min() - 2, arcs_x.max() + 2, 200)
+    ax_i.plot(L_line, L_line / arc["lambda_AER"], "--", color="#facc15", lw=1.4, label="L_arc / λ_c (continuous)")
+    tl_L = np.array([d["L_arc"] for d in fem["timeline"]])
+    tl_N = np.array([d["n_rays_distal"] for d in fem["timeline"]])
+    ax_i.step(tl_L[tl_N > 0], tl_N[tl_N > 0], where="post", color="#34d399", lw=1.6,
+              label="Default run: N(t) vs L_arc(t) (growth-coupled)")
+    ax_i.set_xlabel("Final Distal Arc Length L_arc (λ_c units)", color="white", fontsize=8.5)
+    ax_i.set_ylabel("Distal Sox9 Ray Count", color="white", fontsize=8.5)
+    ax_i.set_title(
+        f"I. Arc-Length Sweep (ρ_s={arc['spearman_rho_vs_arc']:.2f}, "
+        f"exact {arc['exact_matches']}/{len(arc['rows'])})",
+        color="white", fontsize=9.6, fontweight="bold",
+    )
+    ax_i.tick_params(colors="#9ca3af", labelsize=8)
+    ax_i.grid(True, alpha=0.22, color="#374151")
+    ax_i.legend(loc="upper left", facecolor="#0b0f17", edgecolor="#374151", labelcolor="white", fontsize=6.8)
+    ax_i.text(
+        0.98, 0.04,
+        f"FEM verification (static 20×2 rectangle):\nK·x² = −2M err {fem_ver['stiffness_quadratic_error']:.1e}; "
+        f"ΣM = area err {fem_ver['mass_area_rel_error']:.1e}\nσ_FEM vs σ(q): max rel err {fem_ver['max_sigma_rel_error']*100:.1f}% "
+        f"(q_c: {fem_ver['modes'][1]['rel_error']*100:.1f}%)\nALE mass conservation err {fem_ver['ale_mass_conservation_rel_error']:.1e}",
+        transform=ax_i.transAxes, color="#e5e7eb", fontsize=6.4, ha="right", va="bottom",
+        bbox=dict(facecolor="#0b0f17", edgecolor="#374151", alpha=0.85, pad=2.5),
+    )
+
     fig.suptitle(
-        "Raspopovic et al. (2014) Science — Bmp-Sox9-Wnt 3-Node Turing Digit Patterning Morphospace (v2)",
+        "Raspopovic et al. (2014) Science — Bmp-Sox9-Wnt 3-Node Turing Digit Patterning on a Moving-Boundary FEM Limb Bud (v3)",
         color="white",
         fontsize=13,
         fontweight="bold",
-        y=0.975,
+        y=0.985,
     )
     fig.savefig(out_path, dpi=150, bbox_inches="tight", facecolor=fig.get_facecolor())
     plt.close(fig)
@@ -956,40 +1623,43 @@ def render_growth_gif(
     out_path: Path = OUT_GIF,
     seed: int = 2014,
 ) -> Path:
-    """Render Pass 2 co-evolving 2-panel animated GIF of 2D fan-shaped autopod radial
-    Sox9 digit ray emergence and out-of-phase distal arc profiles."""
-    sim2d = simulate_2d_autopod_pde(seed=seed)
+    """Render the Pass 3 co-evolving 2-panel animated GIF: the moving-boundary FEM
+    limb bud growing out (mesh drawn, Sox9 rays emerging) beside the 1D out-of-phase
+    distal arc profiles."""
+    fem = simulate_growing_limb_bud_fem(seed=seed)
     sim1d = simulate_1d_distal_arc(seed=seed)
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     frames: list[Image.Image] = []
-    n_frames = min(len(sim2d["snapshots_2d"]), len(sim1d["snapshots"]))
+    snaps = fem["snapshots"]
+    n_frames = len(snaps)
+    R1 = float(fem["config"]["R1"])
+    thm = float(fem["config"]["theta_max"])
+    vmax = max(0.3, float(np.max(np.abs(snaps[-1]["S"]))))
 
     for idx in range(n_frames):
-        t2, S2, B2, _ = sim2d["snapshots_2d"][idx]
-        t1, S1, B1, W1 = sim1d["snapshots"][idx]
+        sn = snaps[idx]
+        t1, S1, B1, W1 = sim1d["snapshots"][min(idx, len(sim1d["snapshots"]) - 1)]
 
         fig = plt.figure(figsize=(10.2, 4.5), dpi=105, facecolor="#0b0f17")
         gs = fig.add_gridspec(1, 2, width_ratios=[1.1, 1.0], wspace=0.26)
 
         ax1 = fig.add_subplot(gs[0, 0], facecolor="#111827")
-        ax1.pcolormesh(
-            sim2d["X_cart"],
-            sim2d["Y_cart"],
-            S2,
-            cmap="magma",
-            vmin=-0.55,
-            vmax=0.55,
-            shading="gouraud",
-        )
+        tri = mtri.Triangulation(sn["coords"][:, 0], sn["coords"][:, 1], sn["tris"])
+        ax1.tripcolor(tri, sn["S"], shading="gouraud", cmap="magma", vmin=-vmax, vmax=vmax)
+        ax1.triplot(tri, color="#9ca3af", lw=0.12, alpha=0.35)
+        ax1.set_xlim(0.0, 1.05 * R1)
+        ax1.set_ylim(-1.05 * R1 * math.sin(thm), 1.05 * R1 * math.sin(thm))
         ax1.set_aspect("equal", adjustable="box")
+        tl_near = min(fem["timeline"], key=lambda d: abs(d["t"] - sn["t"]))
         ax1.set_title(
-            f"2D Embryonic Autopod Sox9 Digit Rays (t={t2:.2f})",
+            f"Moving-Boundary FEM Limb Bud (t={sn['t']:.1f}, R={sn['R']:.2f}, "
+            f"L_arc={2 * thm * sn['R']:.1f}, N={int(tl_near['n_rays_distal'])})",
             color="white",
-            fontsize=9.8,
+            fontsize=9.2,
             fontweight="bold",
         )
-        ax1.set_xlabel("Proximodistal Axis x", color="white", fontsize=8)
+        ax1.set_xlabel("Proximodistal Axis x (AER →)", color="white", fontsize=8)
         ax1.set_ylabel("Anteroposterior Axis y", color="white", fontsize=8)
         ax1.tick_params(colors="#9ca3af", labelsize=7)
 
@@ -1026,16 +1696,120 @@ def render_growth_gif(
 # 6. MorphoEval Quantitative Measurement Suite & 8-Point Self-Test
 # =============================================================================
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Compute 9 reference-anchored morphometric measurements for `morphoeval/measure_outputs.py`."""
+    """Compute 18 reference-anchored morphometric measurements for `morphoeval/measure_outputs.py`
+    (9 carried from Pass 2 + 9 Pass 3 moving-boundary FEM measurements)."""
     disp = compute_dispersion_curve()
     sim1d = simulate_1d_distal_arc()
     sim2d = simulate_2d_autopod_pde()
     fgf = evaluate_fgf_hox_wavelength_scaling()
     pert = evaluate_pharmacological_perturbations()
     specimen = segment_sox9_limb_specimen()
+    fem = simulate_growing_limb_bud_fem()
+    fem_none = simulate_growing_limb_bud_fem(fgf_mode="none")
+    fem_ver = verify_fem_against_dispersion()
+    dil = evaluate_growth_dilution_sweep()
+    arc = evaluate_final_arc_sweep()
+    abl = evaluate_fgf_modulation_ablation()
+    fem_ref = load_fem_reference_data()
+    exp = fem_ref["expected_outcomes"]
 
     wt_o = specimen["wt_sox9_panel_O"]
     mut_l = specimen["polydactyl_col2a1_panel_L"]
+    n_margin_events = sum(1 for e in fem["addition_events"] if abs(e["eta"]) > 0.6)
+    frac_margin = (n_margin_events / len(fem["addition_events"])) if fem["addition_events"] else 0.0
+
+    pass3 = [
+        {
+            "name": "Moving-boundary FEM limb bud distal Sox9 ray count (fgf_mode=scaled, noise IC)",
+            "value": fem["n_rays_distal"],
+            "unit": "digits",
+            "method": f"Connected Sox9-positive segments along the distal (AER) row of the P1 FEM mesh ({fem['n_nodes']} nodes, {fem['n_triangles']} triangles) after outgrowth R {fem['config']['R0']:.1f}->{fem['config']['R1']:.1f}, T={fem['config']['T']:.0f}",
+            "reference_value": float(exp["wild_type_distal_ray_count"]["value"]),
+            "reference_source": "Raspopovic et al. (2014) Science 345:566-570 Fig. 1 & 4B (pentadactyly); limb_bud_outgrowth_fem_reference.json",
+            "note": f"proximal row = {fem['n_rays_proximal']:.0f}; 3-seed coarse-mesh P(5 rays) = {abl['scaled']['fraction_five_rays']:.2f}; r(Sox9,Bmp) = {fem['corr_SB_fem']:.4f}, r(Sox9,Wnt) = {fem['corr_SW_fem']:.4f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "FEM radial ray bifurcation range with AER-anchored FGF/Hox wavelength modulation",
+            "value": fem["bifurcation_range"],
+            "unit": "rays (max - min row count)",
+            "method": "Range of per-row Sox9 segment counts over all patterned rows of the final mesh (0 = every ray runs unbranched from wrist to AER)",
+            "reference_value": float(exp["bifurcation_range_with_modulation"]["value"]),
+            "reference_source": "Raspopovic et al. (2014) Science Fig. 4: with the distal FGF/Hoxd gradient the Sox9 stripes stay unbranched (qualitative); Lean Law 6 raspopovic_scaled_gradient_ray_count_invariant",
+            "note": f"ablation fgf_mode=none (same seed, fine mesh): range = {fem_none['bifurcation_range']:.0f} ({fem_none['n_rays_proximal']:.0f} proximal -> {fem_none['n_rays_distal']:.0f} distal); 3-seed coarse means scaled/material/none = {abl['scaled']['mean_bifurcation_range']:.2f}/{abl['material']['mean_bifurcation_range']:.2f}/{abl['none']['mean_bifurcation_range']:.2f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "P1 FEM dispersion verification: relative error of sigma_FEM vs analytic Re sigma(q_c)",
+            "value": round(fem_ver["modes"][1]["rel_error"], 4),
+            "unit": "relative error",
+            "method": "Seeded cos(q x) eigenmode on a static 20 x 2 P1 mesh (dt=0.005, 2 time units); growth rate from ln(amplitude ratio) compared with the 3x3 dispersion eigenvalue",
+            "reference_value": 0.0,
+            "reference_source": "Analytic dispersion relation of Raspopovic et al. (2014) Eqs. S1-S6 (Lean Law 2); tolerance 0.05 in limb_bud_outgrowth_fem_reference.json",
+            "note": f"max over q = {{8,10,12}}pi/20: {fem_ver['max_sigma_rel_error']:.4f}; K x^2 = -2M interior error {fem_ver['stiffness_quadratic_error']:.1e}; sum(M) = area error {fem_ver['mass_area_rel_error']:.1e}",
+            "derived_from": "script",
+        },
+        {
+            "name": "ALE lumped-mass growth step: relative mass-conservation error",
+            "value": float(fem_ver["ale_mass_conservation_rel_error"]),
+            "unit": "relative error",
+            "method": f"Pure growth step (no reaction, no diffusion) with M_new c_new = M_old c_old on a mesh stretched by {fem_ver['ale_area_ratio']:.3f}x in area; |sum(M_new c_new) - sum(M_old c_old)| / sum(M_old c_old)",
+            "reference_value": 0.0,
+            "reference_source": "Crampin, Gaffney & Maini (1999) Bull Math Biol 61:1093-1120 Eq. (2.4) dilution term -(div u) c; discrete form is exact",
+            "note": "the same update realises the dilution factor exp(-div(u) dt) in simulate_growing_limb_bud_fem",
+            "derived_from": "script",
+        },
+        {
+            "name": "Growth-dilution slope d sigma_eff / d rho of the q_c Turing mode",
+            "value": round(dil["slope"], 4),
+            "unit": "dimensionless",
+            "method": f"1D seeded q_c mode with dilution term -rho c on all species, rho in {{0, 0.1, 0.2, 0.3, 0.4}}; linear regression of measured growth rates (r = {dil['r']:.6f})",
+            "reference_value": float(fem_ref["analytic_anchors"]["dilution_slope_dsigma_drho"]),
+            "reference_source": "Lean Law 4 raspopovic_growth_dilution_stabilises_turing_mode: J_eff - rho I shifts every eigenvalue by -rho (Crampin et al. 1999)",
+            "note": f"measured threshold rho_c = {dil['rho_c_measured']:.4f} vs analytic sigma_max = {dil['sigma_max_analytic']:.4f}; max |sigma_eff - (sigma - rho)| = {dil['max_abs_error']:.4f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Growth-dilution patterning threshold rho_c (dilution rate at which the q_c mode is neutral)",
+            "value": round(dil["rho_c_measured"], 4),
+            "unit": "1/time",
+            "method": "Zero crossing of the regression sigma_eff(rho) from the 1D dilution sweep",
+            "reference_value": float(fem_ref["analytic_anchors"]["dilution_threshold_rho_c"]),
+            "reference_source": "sigma_max of the Raspopovic et al. (2014) baseline dispersion relation (0.2608); Lean Law 4 integer instance rho = 1.00 restores Delta > 0",
+            "note": f"default FEM run uses g = {fem['config']['growth_rate']:.3f} (area dilution < 0.1 at all times), well below rho_c",
+            "derived_from": "script",
+        },
+        {
+            "name": "Final-arc sweep slope dN_rays / dL_arc on the moving mesh",
+            "value": round(arc["slope_rays_per_length"], 4),
+            "unit": "rays per lambda_c-unit length",
+            "method": f"Coarse-mesh FEM runs with final distal arc L_arc in {{{', '.join(f'{r['L_arc']:.0f}' for r in arc['rows'])}}} (self-similar fans, fgf_mode=scaled); regression of the distal ray count on L_arc",
+            "reference_value": round(1.0 / arc["lambda_AER"], 4),
+            "reference_source": "Lean Law 5 raspopovic_ray_count_monotone_in_arc_length: N = floor(L_arc / lambda_AER); Sheth et al. (2012) Science 338:1476 digit number scales with autopod width",
+            "note": f"counts {', '.join(f'{r['n_rays']:.0f}' for r in arc['rows'])} vs floor law {', '.join(f'{r['expected']:.0f}' for r in arc['rows'])}: exact {arc['exact_matches']}/{len(arc['rows'])}, Spearman rho = {arc['spearman_rho_vs_arc']:.3f}, monotone = {arc['monotone']}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Sequential ray-addition events during/after outgrowth on the moving mesh",
+            "value": float(len(fem["addition_events"])),
+            "unit": "events",
+            "method": "Increments of the distal ray count N(t) after patterning onset (amplitude > 0.1) in the default run",
+            "reference_value": float(exp["sequential_addition_events_default_run"]["value"]),
+            "reference_source": "Analytic admissible-count increase floor(L_final / 4) - floor(L_onset / 4) (Lean Law 5); Crampin et al. (1999) mode insertion on growing domains",
+            "note": f"events at L_arc = {', '.join(f'{e['L_arc']:.1f}' for e in fem['addition_events']) or 'none'}; growth ends t = {fem['t_growth_end']:.1f}, onset t = {next((d['t'] for d in fem['timeline'] if d['amplitude'] > 0.1), float('nan')):.1f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Fraction of ray-addition events at the handplate margins (|eta| > 0.6)",
+            "value": round(frac_margin, 4),
+            "unit": "fraction",
+            "method": "Angular position of the newest Sox9 ray at each addition event of the default run (margin = outer 40 % of the fan half-angle)",
+            "reference_value": 1.0,
+            "reference_source": "Shubin & Alberch (1986) Evol Biol 20:319-387 digital arch: the marginal digits (digit I last) condense after the central ones (qualitative)",
+            "note": f"{n_margin_events}/{len(fem['addition_events'])} events marginal; positions eta = {', '.join(f'{e['eta']:+.2f}' for e in fem['addition_events']) or 'n/a'} — the fan model inserts new rays in the interior, which does NOT match the reported order (declared Pass 4 defect)",
+            "derived_from": "script",
+        },
+    ]
 
     return [
         {
@@ -1128,14 +1902,16 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"condensation area fraction = {wt_o['condensation_area_fraction']:.4f}",
             "derived_from": "output",
         },
-    ]
+    ] + pass3
 
 
 def self_test() -> bool:
-    """Run comprehensive 8-point verification suite for Pass 2."""
-    # 1. Cryptographic SHA-256 verification of all 4 dataset files
+    """Run the 12-point verification suite (8 Pass 2 checks + 4 Pass 3 FEM checks)."""
+    # 1. Cryptographic SHA-256 verification of all 6 dataset files
     digests = verify_dataset_integrity()
-    assert len(digests) == 4, "Expected 4 SHA-256 verified files in datasets/bmp_sox9_wnt_digits/"
+    assert len(digests) == 6, "Expected 6 SHA-256 verified files in datasets/bmp_sox9_wnt_digits/"
+    fem_ref = load_fem_reference_data()
+    assert fem_ref["analytic_anchors"]["lean_law_4"].endswith("raspopovic_growth_dilution_stabilises_turing_mode")
 
     # 2. Law 1: Reduced 2-diffuser Jacobian determinant cancellation & indirect self-activation
     ref = load_reference_data()
@@ -1192,26 +1968,72 @@ def self_test() -> bool:
     run_b = simulate_1d_distal_arc(seed=2014)
     assert np.allclose(run_a["S"], run_b["S"], atol=0.0)
 
+    # 9. P1 FEM verification: exact stiffness on quadratics, mass = area, dispersion match, ALE mass conservation
+    ver = verify_fem_against_dispersion()
+    assert ver["stiffness_quadratic_error"] < 1e-9, "P1 stiffness must reproduce the Laplacian of x^2 exactly"
+    assert ver["mass_area_rel_error"] < 1e-12
+    tol = float(fem_ref["expected_outcomes"]["fem_sigma_rel_error_tolerance"])
+    assert ver["max_sigma_rel_error"] < tol, f"FEM growth rate deviates from Re sigma(q) by > {tol}"
+    assert ver["ale_mass_conservation_rel_error"] < float(fem_ref["expected_outcomes"]["ale_mass_conservation_tolerance"])
+
+    # 10. Moving-boundary FEM limb bud: 5 unbranched rays from noise, out-of-phase ligands,
+    #     growth-coupled ray addition, and the modulation ablation branching more than the default
+    fem = simulate_growing_limb_bud_fem(seed=2014)
+    assert fem["n_rays_distal"] == 5.0, f"expected 5 distal rays, got {fem['n_rays_distal']}"
+    assert fem["bifurcation_range"] == 0.0, "AER-anchored modulation must keep rays unbranched (Lean Law 6)"
+    assert fem["corr_SB_fem"] < -0.95 and fem["corr_SW_fem"] < -0.95
+    assert fem["L_arc_final"] > fem["L_arc_initial"] and fem["area_final"] > fem["area_initial"]
+    assert len(fem["addition_events"]) >= 1, "ray count must increase sequentially on the growing mesh"
+    fem_none = simulate_growing_limb_bud_fem(seed=2014, fgf_mode="none")
+    assert fem_none["bifurcation_range"] >= fem["bifurcation_range"]
+    abl = evaluate_fgf_modulation_ablation()
+    assert abl["scaled"]["mean_bifurcation_range"] <= abl["none"]["mean_bifurcation_range"]
+    assert abl["scaled"]["fraction_five_rays"] >= abl["none"]["fraction_five_rays"]
+
+    # 11. Lean Law 4 / Law 5 realisations: dilution slope -1 with threshold at sigma_max; arc sweep monotone
+    dil = evaluate_growth_dilution_sweep()
+    assert abs(dil["slope"] + 1.0) < 0.02, f"dilution slope {dil['slope']} != -1"
+    assert abs(dil["rho_c_measured"] - dil["sigma_max_analytic"]) < 0.02
+    assert dil["rows"][0]["sigma_eff"] > 0.0 and dil["rows"][-1]["sigma_eff"] < 0.0
+    arc = evaluate_final_arc_sweep()
+    assert arc["monotone"] and arc["spearman_rho_vs_arc"] > 0.9
+    assert abs(arc["slope_rays_per_length"] - 1.0 / arc["lambda_AER"]) < 0.08
+
+    # 12. FEM bitwise determinism (fresh, uncached second integration: distinct snapshot key)
+    fem_b = simulate_growing_limb_bud_fem(seed=2014, n_snapshots=9)
+    assert np.allclose(fem_b["S"], fem["S"], atol=0.0) and np.allclose(fem_b["coords"], fem["coords"], atol=0.0)
+
     meas = measure_morphoeval()
-    assert len(meas) == 9
+    assert len(meas) == 18
     print(
-        f"[self_test] 2014-raspopovic-bmp-sox9-wnt-digits.py (v2) PASSED all 8 checks "
+        f"[self_test] 2014-raspopovic-bmp-sox9-wnt-digits.py (v3) PASSED all 12 checks "
         f"(lambda_c={disp['lambda_c']:.4f}, r_SB={sim1d['corr_SB']:.4f}, r_SW={sim1d['corr_SW']:.4f}, "
         f"FGF r={fgf['pearson_r_lambda']:.4f}, WT specimen digits={spec['wt_sox9_panel_O']['n_digits_detected']}, "
-        f"Mutant digits={spec['polydactyl_col2a1_panel_L']['n_digits_detected']})."
+        f"Mutant digits={spec['polydactyl_col2a1_panel_L']['n_digits_detected']}, "
+        f"FEM rays={fem['n_rays_distal']:.0f} bifurc={fem['bifurcation_range']:.0f} "
+        f"sigma_FEM err={ver['modes'][1]['rel_error']*100:.1f}% dilution slope={dil['slope']:.3f} "
+        f"arc slope={arc['slope_rays_per_length']:.3f})."
     )
     return True
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--self-test", action="store_true", help="Run 8-point Pass 2 verification suite")
+    ap.add_argument("--self-test", action="store_true", help="Run the 12-point Pass 3 verification suite")
     ap.add_argument("--skip-gif", action="store_true", help="Skip animated GIF rendering")
     ap.add_argument("--k-bs", type=float, default=None, help="Override Sox9 -> Bmp repression rate k_bs")
     ap.add_argument("--k-sb", type=float, default=None, help="Override Bmp -> Sox9 activation rate k_sb")
     ap.add_argument("--k-sw", type=float, default=None, help="Override Wnt -> Sox9 repression rate k_sw")
     ap.add_argument("--D-ratio", type=float, default=None, help="Override diffusivity ratio D_B / D_W")
     ap.add_argument("--fgf-scale", type=float, default=None, help="Override distal FGF wavelength modulation scale")
+    ap.add_argument(
+        "--growth-rate", type=float, default=None,
+        help=f"Moving-boundary FEM outgrowth rate g in R(t)=min(R1, R0 exp(g t)) (default {FEM_DEFAULTS['growth_rate']})",
+    )
+    ap.add_argument(
+        "--fgf-mode", choices=["scaled", "material", "none"], default=None,
+        help="FEM wavelength modulation: scaled (AER-anchored, default), material (Hox-like), none (ablation)",
+    )
     ap.add_argument("--seed", type=int, default=2014, help="Deterministic RNG seed (default: 2014)")
     args = ap.parse_args()
 
@@ -1227,6 +2049,8 @@ def main() -> int:
             "k_sw": args.k_sw,
             "D_ratio": args.D_ratio,
             "fgf_scale": args.fgf_scale,
+            "growth_rate": args.growth_rate,
+            "fgf_mode": args.fgf_mode,
         }.items()
         if v is not None
     }

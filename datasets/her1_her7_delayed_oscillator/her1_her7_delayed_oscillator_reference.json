@@ -30,7 +30,8 @@
       "zebrafish_somites_specimen": {
         "file": "datasets/her1_her7_delayed_oscillator/zebrafish_somites_specimen.jpg",
         "sha256": "8b80971796cb29e290c10886c0026092bc30f3f624d2a75fa72f9aaf05187d5f",
-        "species": "Danio rerio / Vertebrate embryo dorsal scanning electron micrograph showing central neural tube, presomitic mesoderm, and bilateral segmented somite metameres",
+        "species": "Vertebrate embryo dorsal scanning electron micrograph showing central neural tube, presomitic mesoderm, and bilateral segmented somite metameres",
+        "species_note_pass3": "The Wikimedia Commons source title identifies this micrograph as a CHICK (Gallus gallus) embryo, not Danio rerio. It is used as a cross-species proxy for vertebrate somite metamerism; no zebrafish her1 in situ / PSM image is vendored yet (carried as a Pass 4 remediation item). The file name 'zebrafish_somites_specimen.jpg' is retained because its SHA-256 is pinned.",
         "license": "CC BY 4.0",
         "source_url": "https://commons.wikimedia.org/wiki/File:Aves_Neural_tube_and_somites_in_chick_embryo.jpg",
         "width_px": 736,
@@ -61,7 +62,8 @@
     "protein_dde": "dp(t)/dt = a * m(t - T_p) - b * p(t)",
     "mrna_dde": "dm(t)/dt = k / (1 + (p(t - T_m) / p_0)^n) - c * m(t)",
     "total_delay_invariance": "T_tot = T_m + T_p  (time-shift p_tilde(t) = p(t + T_p) reduces the DDE system to a single lumped delay T_tot)",
-    "hopf_critical_delay_condition": "T_tot > T_crit, where T_crit = sqrt((omega^2 + b^2)*(omega^2 + c^2)) -> sustained limit-cycle oscillation for T_m + T_p > T_crit (~4.62 min)",
+    "hopf_critical_delay_condition": "T_tot > T_crit, where T_crit solves (omega^2 + b^2)*(omega^2 + c^2) = K_loop^2 and omega*T_crit = pi - arctan(omega/b) - arctan(omega/c) around the fixed point (m*, p*); for the canonical parameters T_crit = 7.54 min (computed in 2003-lewis-her1-her7-delayed-oscillator.py; the '~4.62 min' quoted in the v1/v2 dataset was not derived from this linearization and has been retired)",
+    "box1_period_law_caveat": "The Box 1 law T_osc = 2*(T_m + T_p + ln2/b + ln2/c) is an approximation; the RK4 DDE integration with the canonical parameters gives 33.6 min (12% above 30.0 min).",
     "oscillation_period_law": "T_osc = 2 * (T_m + T_p + tau_half_p + tau_half_m) ~ 2 * (T_m + T_p + ln(2)/b + ln(2)/c) ~ 30.0 min",
     "deltac_notch_intercellular_coupling": "dm_i(t)/dt = k * [ (1 - eps_N) + eps_N * (p_delta_neighbor(t - T_N) / p_delta0)^m_N / (1 + (p_delta_neighbor(t - T_N) / p_delta0)^m_N) ] / (1 + (p_i(t - T_m) / p_0)^n) - c * m_i(t)",
     "canonical_zebrafish_parameters_28C": {
@@ -85,6 +87,7 @@
   },
   "lewis_2003_experimental_perturbations": {
     "source": "Lewis (2003) Current Biology 13:1398-1408 Table 1, Box 1 & Figs. 2-6; Giudicelli et al. (2007) PLoS Biology 5:e150; Herrgen et al. (2010) Current Biology 20:1244-1253",
+    "predicted_period_min_caveat": "predicted_period_min values are TABULATED Box 1 estimates written when the dataset assumed T_crit ~ 4.62 min; they are not computed by the script. With the computed T_crit = 7.54 min the her7_fast_feedback_branch regime (T_tot = 6.3 min) is Hopf-subcritical and the model predicts a damped clock (0.0 min). The script reports tabulated, Box-1-computed and RK4-DDE periods side by side (Pass 3).",
     "regimes": [
       {
         "regime_id": "wildtype_her1_her7_coupled",
@@ -157,5 +160,58 @@
         "intact_anterior_somites": 0
       }
     ]
+  },
+  "schroter_2012_dimer_truth_table": {
+    "source": "Schroter C, Ares S, Morelli LG, Isakova A, Koo B-K, Julicher F, Oates AC (2012) PLoS Biology 10(7):e1001364, Figs. 2-3 (yeast two-hybrid dimerization and EMSA DNA binding of Her1, Her7 and Hes6 bHLH dimers) and Figs. 5-7 (hes6 expression gradient and genetic interactions)",
+    "encoding_note": "Hand-encoded binary DNA-binding matrix (1 = repressive DNA-binding dimer, 0 = non-binding). The paper reports binding qualitatively; dissociation constants are not tabulated there, so K_dim_her1_her1 and K_dim_her7_hes6 below are reduced model parameters of this repository.",
+    "dna_binding": {
+      "her1_her1": 1,
+      "her7_hes6": 1,
+      "her1_her7": 0,
+      "her1_hes6": 0,
+      "her7_her7": 0,
+      "hes6_hes6": 0
+    },
+    "repression_functional": "Rep = [Her1:Her1]/K_11 + [Her7:Hes6]/K_76 with [A:B] = A*B (fast mass-action dimerization); her1, her7 and deltaC transcription = k * G_N(NICD) / (1 + Rep(t - T_m,gene)/P_0)",
+    "hes6_gradient": "Hes6 is non-oscillating and graded along the PSM (posterior-high): Hes6(x) = H_ant + (H_post - H_ant) * x / (n_cols - 1), column 0 = anterior",
+    "predicted_direction": "posterior (Hes6-high) cells are repressed through the short-delay Her7:Hes6 loop and cycle faster; anterior (Hes6-low) cells rely on the long-delay Her1 homodimer loop and cycle slower; hes6-null tissue is AP-uniform at the her1-only period"
+  },
+  "lattice_model_parameters": {
+    "description": "Pass 3 2D multicellular her1/her7/deltaC DDE lattice (simulate_her1_her7_lattice) with delayed DeltaC translation and NICD cleavage kinetics; 7 delayed state variables per cell, Heun method-of-steps, Langevin mRNA noise. Values must match LATTICE_DEFAULTS in the script (asserted by --self-test).",
+    "n_rows": 8,
+    "n_cols": 24,
+    "dt_min": 0.05,
+    "t_max_min": 450.0,
+    "T_m1_min": 9.5,
+    "T_p1_min": 2.8,
+    "T_m7_min": 4.6,
+    "T_p7_min": 1.7,
+    "T_mD_min": 16.0,
+    "T_pD_min": 20.5,
+    "T_N_min": 2.0,
+    "a": 4.5, "b": 0.23, "c": 0.23, "k1": 33.0, "k7": 33.0,
+    "k_D": 33.0, "a_D": 4.5, "b_D": 0.23, "c_D": 0.23,
+    "k_N": 0.7, "b_N": 0.35, "K_D": 600.0, "N_0": 1.0, "h": 3.0,
+    "P_0_dimer": 40.0,
+    "K_dim_her1_her1": 400.0,
+    "K_dim_her7_hes6": 150.0,
+    "eps_N_wt": 0.9,
+    "hes6_posterior": 40.0,
+    "hes6_anterior": 4.0,
+    "noise": 1.0,
+    "delay_heterogeneity": 0.07,
+    "provenance": {
+      "her1_her7_delays": "slow/fast-branch delays of lewis_2003_experimental_perturbations (her1: 9.5 + 2.8 min; her7: 4.6 + 1.7 min)",
+      "deltaC_delays": "long-gene estimates of the kind used by Lewis (2003) for the coupled-cell simulations (approximate; T_mD = 16.0 min, T_pD = 20.5 min)",
+      "T_N_k_N_b_N_K_D_N_0_h": "reduced NICD cleavage/trafficking kinetics of this repository (not tabulated in the sources)",
+      "noise_heterogeneity": "calibrated so that the eps_N = 0 lattice keeps 5-7 anterior cycles coherent (Lewis 2003 Figs. 5-6; seeds 2003/7/11 give 7/7/5)"
+    },
+    "expected_outputs_seed_2003": {
+      "wt_late_mean_R_col": 0.67,
+      "notch_mutant_intact_anterior_cycles": 7,
+      "wt_anterior_period_min": 40.8,
+      "wt_posterior_period_min": 38.6,
+      "hes6_sweep_period_min_at_levels_0_to_90": [41.2, 40.6, 40.05, 39.3, 38.3, 37.55, 36.35]
+    }
   }
 }

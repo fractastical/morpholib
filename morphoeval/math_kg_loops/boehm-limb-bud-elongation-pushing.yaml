@@ -22,7 +22,7 @@ equations:
     variables: "s(x): volumetric proliferation source rate (h^-1); eps_PD, eps_AP, eps_DV: principal strain rates along Proximo-Distal, Antero-Posterior, and Dorso-Ventral axes"
     role: "Proves that any purely isotropic proliferation source term s(x) partitions volumetric expansion equally across PD, AP, and DV axes with identically zero deviatoric PD elongation rate, explaining why Model I yields bulbous expansion (L_PD/W_AP approx 1.07)"
     source_citation: "Boehm et al. (2010) PLoS Biology 8(7):e1000420 Eqs. (3)-(9), Fig. 4; Morishita & Iwasa (2008) Bull. Math. Biol. 70:1957-1978"
-    code_locus: "2015-boehm-limb-bud-elongation-pushing.py#L128-L199"
+    code_locus: "2015-boehm-limb-bud-elongation-pushing.py#L163-L240"
   - law_name: Gros et al. (2010) & Boehm et al. (2010) Wnt5a/JNK Oriented Cell Division Stress & AER-FGF8 Velocity Gradient Elongation Law
     formula: "sigma_active = zeta * (n otimes n - (1/3) I);  3*(eps_PD - eps_AP) = 3*zeta + 3*chi_FGF*G_FGF > 0,  tr(sigma_active) = 0"
     lean_decl: MathOfBiology.Loop_017.strain_rate_pd_3x
@@ -39,7 +39,7 @@ equations:
     variables: "zeta: Wnt5a/JNK-polarized oriented cell division and convergent-extension active stress coefficient; chi_fgf: AER-FGF8/MAPK chemotactic sensitivity; G_fgf: distal FGF8 gradient"
     role: "Proves that traceless active stress from Wnt5a-oriented cell division/intercalation and distal AER-FGF8 velocity bias strictly increase the PD-to-AP aspect ratio while conserving volumetric continuity, and that Wnt5a ablation reduces PD elongation"
     source_citation: "Boehm et al. (2010) PLoS Biology 8(7):e1000420 Figs. 7-8, Fig. S8; Gros et al. (2010) Current Biology 20(22):1993-2004 Figs. 1-6; Kicheva & Briscoe (2010) PLoS Biology 8(7):e1000421"
-    code_locus: "2015-boehm-limb-bud-elongation-pushing.py#L205-L461"
+    code_locus: "2015-boehm-limb-bud-elongation-pushing.py#L244-L506"
   - law_name: Boehm et al. (2010) Dual-Label IddU/BrdU Cell-Cycle Invariance, Reynolds Insensitivity & Inverse-Optimization Bound
     formula: "T_c(x) = T_i * (N_total / L_cells) in [11 h, 25 h];  s_opt_distal (0.54 h^-1) > 8 * s_emp_max (0.063 h^-1);  Delta L_PD(Re in [10^-6, 10^-1]) in [3.4%, 11.8%] < 42.2%"
     lean_decl: MathOfBiology.Loop_017.net_growth_rate_x1000
@@ -61,4 +61,49 @@ equations:
     variables: "tc_distal_aer_h (11 h), tc_proximal_core_h (25 h): empirical IddU/BrdU cell cycle times; sd_compaction_x1000 (0.017 h^-1): cell density compaction rate; s_inverse_opt_distal_x1000 (0.54 h^-1): Hooke-Jeeves inverse-optimized distal growth rate"
     role: "Establishes the quantitative gap (>8x) between empirical BrdU/IddU proliferation rates and the theoretical isotropic rates needed to match limb elongation, proves Reynolds-number insensitivity across 5 orders of magnitude, and orders all 5 experimental regimes"
     source_citation: "Boehm et al. (2010) PLoS Biology 8(7):e1000420 Eqs. (1)-(2), (8)-(9), Figs. 3, 6, 9, S3"
-    code_locus: "2015-boehm-limb-bud-elongation-pushing.py#L464-L571"
+    code_locus: "2015-boehm-limb-bud-elongation-pushing.py#L509-L617"
+  - law_name: Boehm et al. (2010) 3D Stokes Growth System — Closed-Form Verification Oracles for the P1-P1 Tetrahedral FEM (Pass 3)
+    formula: "-nabla p + mu nabla^2 v + nabla . sigma_active + f = 0, nabla . v = s;  oracle (a): v = (s/3) x, p = 2 mu s/3 => nabla . v = s, (-p I + 2 mu eps) n = 0;  oracle (b): sigma_active = -2 mu zeta (n n - I/3), v = zeta (2x/3, -y/3, -z/3), p = 0 => nabla . v = 0, (2 mu eps + sigma_active) = 0"
+    lean_decl: MathOfBiology.Loop_017.dilation_traction_3x
+    lean_theorem: MathOfBiology.Loop_017.stokes_growth_oracles_are_exact
+    lean_locus: morphoeval/lean/loops/Loop_017_limb_bud_elongation_pushing.lean#L149-L183
+    lean_code: |-
+      def dilation_div_3x (s : Int) : Int := s + s + s
+      def dilation_traction_3x (mu s p3 : Int) : Int := -p3 + 2 * mu * s
+      def extensile_total_stress_pd_3x (mu zeta : Int) : Int := 2 * mu * (2 * zeta) + (-(2 * mu * (2 * zeta)))
+      def extensile_total_stress_ap_3x (mu zeta : Int) : Int := 2 * mu * (-zeta) + (-(2 * mu * (-zeta)))
+      def extensile_div_3x (zeta : Int) : Int := 2 * zeta + (-zeta) + (-zeta)
+      theorem stokes_growth_oracles_are_exact (mu s zeta : Int) :
+          dilation_div_3x s = 3 * s ∧
+          dilation_traction_3x mu s (2 * mu * s) = 0 ∧
+          extensile_div_3x zeta = 0 ∧
+          extensile_total_stress_pd_3x mu zeta = 0 ∧
+          extensile_total_stress_ap_3x mu zeta = 0
+    variables: "mu: tissue dynamic viscosity (2 mu = 1 so active gains are strain rates in h^-1); s: volumetric proliferation source; zeta: extensile Wnt5a/JNK oriented-division stress gain; eps: strain-rate tensor; n = e_PD"
+    role: "Fixes the two exact Stokes growth solutions (uniform dilation; uniaxial extensile response to a traceless active stress) against which the P1-P1 Brezzi-Pitkaranta tetrahedral solver `assemble_stokes_p1p1` / `solve_stokes_growth` is verified to round-off (max relative error 8e-14 in `fem_manufactured_solution_errors`, self_test Check 10); both are linear in x and therefore exactly representable by P1 elements"
+    source_citation: "Boehm et al. (2010) PLoS Biology 8(7):e1000420 Eqs. (3)-(5), (10)-(11) (Navier-Stokes growth model, Fig. 2G tetrahedral FEM); Dillon & Othmer (1999) J. Theor. Biol. 197:295-330 (viscous limb-bud continuum)"
+    code_locus: "2015-boehm-limb-bud-elongation-pushing.py#L802-L984"
+  - law_name: Lagrangian/ALE Volume Budget of the 3D FEM — Proliferation vs OPT Volume Gap and Flank Influx Closure (Pass 3)
+    formula: "V1 = V0 + int int s dV dt + A_flank * v_in * T;  v_in = 0 => V1 - V0 = int int s dV dt;  V_OPT(St1)/V_OPT(St0) = 0.914/0.551 = 1.659 > V_prolif/V0 = 1.123 => deficit 0.295 mm^3 (~1/3 of V1) requires v_in* ~ 60 um/h"
+    lean_decl: MathOfBiology.Loop_017.volume_after_growth
+    lean_theorem: MathOfBiology.Loop_017.flank_influx_volume_budget
+    lean_locus: morphoeval/lean/loops/Loop_017_limb_bud_elongation_pushing.lean#L185-L238
+    lean_code: |-
+      def volume_after_growth (v0 source a_flank v_in t : Int) : Int :=
+        v0 + source + a_flank * v_in * t
+      def opt_volume_st0_x1000 : Int := 551
+      def opt_volume_st1_x1000 : Int := 914
+      def fem_prolif_volume_st1_x1000 : Int := 619
+      theorem flank_influx_volume_budget (v0 source a_flank t v1 v2 : Int)
+          (hA : a_flank > 0) (hT : t > 0) (hv : v1 < v2) :
+          volume_after_growth v0 source a_flank 0 t = v0 + source ∧
+          volume_after_growth v0 source a_flank v2 t - volume_after_growth v0 source a_flank v1 t
+            = a_flank * (v2 - v1) * t ∧
+          volume_after_growth v0 source a_flank v1 t < volume_after_growth v0 source a_flank v2 t ∧
+          opt_volume_st1_x1000 > fem_prolif_volume_st1_x1000 ∧
+          fem_prolif_volume_st1_x1000 > opt_volume_st0_x1000 ∧
+          opt_volume_st1_x1000 - fem_prolif_volume_st1_x1000 = 295
+    variables: "V0, V1: limb-bud volumes at St0 (E11.0) and St1 (E11.25); source = int int s dV dt: integrated IddU/BrdU proliferation; A_flank: flank cross-section area; v_in: body-wall inflow velocity through the fixed flank plane; T = 6 h"
+    role: "Proves the volume budget that `simulate_limb_bud_fem_3d` reports as `volume_balance_ratio` (= 1 within 0.7% for the pinned flank) and that makes the flank-influx sweep of `evaluate_fem_regimes_and_influx` monotone, so the OPT volume ratio is reached at a unique v_in*; the integer inequalities encode the measured proliferation-vs-OPT volume gap (1.123 vs 1.659) that the active-stress Model II cannot close and that forces its AP/DV contraction"
+    source_citation: "Boehm et al. (2010) PLoS Biology 8(7):e1000420 Fig. 2 (OPT volumes 0.551 -> 0.914 mm^3), Figs. 6D & 9C (inverse-optimisation growth-rate paradox); Kicheva & Briscoe (2010) PLoS Biology 8(7):e1000421"
+    code_locus: "2015-boehm-limb-bud-elongation-pushing.py#L989-L1222"

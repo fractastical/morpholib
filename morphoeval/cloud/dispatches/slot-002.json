@@ -14,10 +14,64 @@
   "quick_gate_score": 100,
   "lean_verified": true,
   "signed_nanopubs_count": 20,
-  "status": "completed",
+  "status": "pass3_completed",
   "completed_at": "2026-10-19T23:59:30Z",
   "slot_index": 2,
   "slug": "limit-cycle-turing",
   "target_script": "1979-schnakenberg-limit-cycle-turing.py",
-  "delta": 45.7
+  "delta": 45.7,
+  "pass3_run_id": "2026-10-19-limit-cycle-turing-loop-pass3",
+  "pass3_audit_id": "2026-10-19-limit-cycle-turing-audit-v3",
+  "pass3_score": 89.8,
+  "pass3_dims": {
+    "model-fidelity": 93,
+    "specimen-match": 85,
+    "parameter-expressivity": 91,
+    "morphometric-validation": 88,
+    "source-traceability": 93,
+    "code-traceability": 92,
+    "repro-package": 92
+  },
+  "pass3_delta_vs_pass2": -0.4,
+  "pass3_quick_gate_score": 100,
+  "pass3_completed_at": "2026-10-20T05:49:10Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_self_test_checks": 16,
+  "pass3_measurements": 18,
+  "pass3_remediation_closed": [
+    "Extend the 2D Schnakenberg solver to curved hemispherical mound geometries to model 3D Dictyostelium culmination stalk elongation. -> closed as a surface (2-manifold) reduction: simulate_schnakenberg_hemisphere (Laplace-Beltrami S^2 cap, no-flux equator, exact exp(dt D L_m) propagators), run_mound_radius_sweep (l_dom vs l*(R), spots vs hexagonal packing, R_min = 0.1297), simulate_growing_stalk (Crampin-Gaffney-Maini uniform growth, ring-count kymograph); Lean Law 4 schnakenberg_sphere_turing_band",
+    "Incorporate explicit extracellular phosphodiesterase degradation kinetics to compare minimal 2-species Schnakenberg limit cycles against the 3-variable Martiel-Goldbeter cAMP relay model. -> closed: first-order sink with generalized Hopf curve (1+kappa)^3 (b-a) = (a+b)^3 (Lean Law 5 schnakenberg_pde_hopf_shift), Michaelis-Menten sink with closed-form equilibrium and analytical vs numerical Hopf onset (0.12486 vs 0.12487), simulate_martiel_goldbeter + run_mg_pde_rate_sweep (k_e window 2-7 min^-1, T = 10.68 min at 5.4 min^-1 vs ~7 min anchor), pulse-shape comparison (duty 0.044 vs 0.182, waveform r = 0.78)"
+  ],
+  "pass3_remediation_open": [
+    "1979-schnakenberg-limit-cycle-turing.py:153,1007-1016 - calibrate mound/stalk radii and length to the specimen's 32.9 px sorus diameter and stalk length; add px-per-unit scale to D1/D3",
+    "1979-schnakenberg-limit-cycle-turing.py:158-176,612-638 - re-read Martiel-Goldbeter Table I and period from the paper / digitise one gamma(t) trace; replace the approximate 7 min anchor with a tabulated value + uncertainty (current T = 10.68 min)",
+    "1979-schnakenberg-limit-cycle-turing.py:450-492 - derive d_c(a,b,k_e,K_m) and run planar + hemispherical solvers with k_pde > 0 (spatial consequence of PDE degradation)",
+    "1979-schnakenberg-limit-cycle-turing.py:1007-1084 - apical (tip) growth with moving boundary and a Fourier/zero-crossing stalk wavelength estimate instead of the heuristic ring count (3 vs 4.25)",
+    "1979-schnakenberg-limit-cycle-turing.py:917-941,967-1004 - Gauss-Legendre spherical-harmonic quadrature, power fraction in l*, l*+-1, converged (>=1500-step) radius sweep",
+    "morphoeval/lean/loops/Loop_002_limit_cycle_turing.lean:97-110 - prove det_J(18, l(l+1)) > 0 for all l >= 3 in general (currently by instance at l = 0..3)"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_002.schnakenberg_sphere_turing_band",
+    "MathOfBiology.Loop_002.schnakenberg_pde_hopf_shift"
+  ],
+  "pass3_lean_verified": true,
+  "pass3_lean_theorems_total": 5,
+  "pass3_artifacts": [
+    "1979-schnakenberg-limit-cycle-turing.py",
+    "morphoeval/lean/loops/Loop_002_limit_cycle_turing.lean",
+    "morphoeval/math_kg_loops/schnakenberg-limit-cycle-turing.yaml",
+    "datasets/limit_cycle_turing/pass3_curved_geometry_pde_reference.json",
+    "datasets/limit_cycle_turing/README.md",
+    "datasets/limit_cycle_turing/paper_citations.bib",
+    "docs/media/limit_cycle_turing_comparison.png",
+    "docs/media/limit_cycle_turing_growth.gif",
+    "docs/media/limit_cycle_turing_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-limit-cycle-turing-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-limit-cycle-turing-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-limit-cycle-turing-audit-v3/ (10 signed nanopubs, REPORT.md, .ttl)",
+    "morphoeval/runs/2026-10-19-limit-cycle-turing-loop-pass3.{yaml,csv,md,trig,events.jsonl,ledger.jsonl}",
+    "morphoeval/cloud/dispatches/slot-002.json"
+  ]
 }

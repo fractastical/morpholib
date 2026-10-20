@@ -1,0 +1,81 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-manukyan-ocellated-lizard-ca> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-manukyan-ocellated-lizard-ca-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-manukyan-ocellated-lizard-ca-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Manukyan et al. (2017) Nature hexagonal skin-scale border thickness reduction & outer-totalistic cellular automaton — 3D skin-volume reaction-diffusion (Pass 3) — MorphoEval overall 83.6/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Pass 3 closes the single v2 remediation item in its honest reduced form: the script now integrates the reaction-diffusion system in a genuine 3D voxel skin volume with thinned inter-scale borders (`integrate_skin_volume_pde_3d`), compares it with its depth-averaged thin-film 2D reduction (90.3 % scale-state agreement, RMS 0.118, vertical non-uniformity 2.2e-2 at P = 0.17), and removes the artificial per-scale averaging that produced the v2 result. With the physics alone, the P = 0.17 skin volume discretises into bimodal scale states (inter/intra std ratio 14.7, Ashman D 4.88) versus 3.29 / 4.04 for continuum skin, insulated scales (P = 0) do not pattern, equal diffusion (d = 1) is quenched, and the P sweep is monotone (rho = -1). Linear stability analysis exposes that the vendored canonical parameter set is not Turing-unstable (d_c = 23.57 > 20). Overall weighted score 83.6 / 100, down from 91.9: the v2 scores credited the averaging hack, a leaky border band, un-provenanced histogram and parameter tables and a lattice-imposed segmentation; the remaining gaps (paper kinetics, micro-CT geometry and growth, scale-centre detection, CA rule derived from the PDE) are listed for Pass 4. Overall 83.6/100 (faithfulness 82.1, reproducibility 86.9); rubric morphoeval 0.1.0; checkpoint commit bd54e11; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 82, Morphological realism / specimen match 82, Parameter expressivity 86, Morphometric validation 80, Source and data traceability 84, Code-to-model traceability 86, Reproducibility package 90. Output judged: docs/media/ocellated_lizard_ca_comparison.png: rendered output of 2015-manukyan-ocellated-lizard-ca.py at bd54e11, image/png, 1020793 B, 2573×1887 px, artifact_sha256 f3a39c7c6dedb783fd81cb698c652481d6057844e19017873d6e0f82d7c76b4e (sha256 f3a39c7c6dedb783fd81cb698c652481d6057844e19017873d6e0f82d7c76b4e), spec_fingerprint 46cc2c30ccba89108a6a17ed5177834284431b172cd845c2faca9279833944dd. Dual provenance: spec_fingerprint: 46cc2c30ccba89108a6a17ed5177834284431b172cd845c2faca9279833944dd; artifact_sha256: f3a39c7c6dedb783fd81cb698c652481d6057844e19017873d6e0f82d7c76b4e; input_dataset_sha256: {datasets/ocellated_lizard_ca/ocellated_lizard_ca_reference.json=53832b76e25303a6..., datasets/ocellated_lizard_ca/scout_manifest.json=e5bca2d8766b49e7..., datasets/ocellated_lizard_ca/skin_volume_reference.json=dc8da9f0b72dad3a..., datasets/ocellated_lizard_ca/timon_lepidus_specimen.jpg=bc8e149849e6729d...}. Supersedes audit: 2026-10-19-ocellated-lizard-ca-audit-v2. Claim boundary: reported_in_source: Manukyan et al. (2017): skin thickness at inter-scale borders is reduced to P = h_border/h_interior ~ 0.17; a Kondo-Asai reaction-diffusion system on this geometry homogenises within scales and reduces to a hexagonal outer-totalistic cellular automaton whose adult neighbour histogram peaks at n_g = 3 (Figs. 2-4) | Fofonjka & Milinkovitch (2021): reaction-diffusion in a growing 3D skin-scale domain with thin inter-scale borders generates the discrete cellular automaton | Turing (1952): diffusion-driven instability requires tr J < 0, det J > 0, d f_u + g_v > 2 sqrt(d det J); reconstructed_in_script: A genuine 3D finite-volume voxel reaction-diffusion solver on a stepped-thickness skin volume (12 interior voxels, dz = 0.2 px, h_border = round(P*12)) with zero-flux surfaces and an implicit vertical solve; its depth-averaged thin-film 2D reduction (1/h) div(h D grad u) with min(h_i, h_j) D face conductances; a leak-proof hexagonal scale geometry; Turing linear stability (d_c, k_c, lambda_c, unstable band) for the script kinetics and for the vendored canonical set; a 5-regime P sweep in 3D and 2D; insulated / equal-diffusion / continuum controls; the stochastic hexagonal outer-totalistic CA; chromatic segmentation of 182 dorsal scales on a SHA-256-pinned Timon lepidus photograph; 16 measurements and 14 self-test checks; transfer_boundary: The 3D domain is a stepped voxel skin on a 5 px scale pitch (border area fraction 0.36, no domain growth), not the micro-CT-derived finite-element geometry of Fofonjka & Milinkovitch (2021); the reaction kinetics (f_u = 0.50, f_v = -0.75, g_u = 0.82, g_v = -0.65, cubic 1.25) are a phenomenological Kondo-Asai-type set, not the Methods parameters of Manukyan et al. (2017) | The CA transition probabilities and adult histogram targets in ocellated_lizard_ca_reference.json carry no digitisation provenance to a specific figure/table; the 'canonical' clipped-linear parameter set in the same file is not Turing-unstable at its stated d = 20 (d_c = 23.57) and is not used by the solvers | The specimen comparison samples a fixed 13 x 14 hexagonal lattice over the dorsal ROI rather than detecting scale centres, so neighbour statistics inherit lattice-registration error; does_not_claim: Reproduction of the paper's exact PDE parameters, a micro-CT skin mesh, domain growth, derivation of the CA flip probabilities from the PDE time series, or a neighbour-histogram match to Manukyan Fig. 3 beyond the vendored target vectors." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: 2015-manukyan-ocellated-lizard-ca.py:1398-1407 and 1518-1527 — the reference values 3.5 (discretization ratio) and 4.0 pitches (lambda_c) are assessor-chosen anchors; replace with values measured on Manukyan Fig. 4 / Fofonjka 2021 or mark them explicitly as self-consistency targets in the measurement schema.",
+            "remediation needed: 2015-manukyan-ocellated-lizard-ca.py:1672-1700 — lambda_c, nz, dz, dt and the PDE step count are module constants; expose them on the CLI and add a rendered gallery of depth-averaged fields along the P sweep (Panel D shows only summary curves).",
+            "remediation needed: 2015-manukyan-ocellated-lizard-ca.py:276-278 and 1418-1427 with ocellated_lizard_ca_reference.json:75-90 — the CA flip probabilities and adult histogram targets are vendored tables without digitisation provenance, and the 3D PDE histogram peaks at n_g = 2 (L1 0.34 to the CA). Estimate p(flip | n_g) from the PDE time series as Manukyan et al. did, compare the derived rule with the vendored table, and cite the figure each target vector is digitised from.",
+            "remediation needed: 2015-manukyan-ocellated-lizard-ca.py:326-341 and datasets/ocellated_lizard_ca/ocellated_lizard_ca_reference.json:53-70 — the solvers use phenomenological kinetics (f_u = 0.50, f_v = -0.75, g_u = 0.82, g_v = -0.65, cubic 1.25) while the vendored 'canonical' clipped-linear set has d_c = 23.57 > its stated d = 20 and is therefore not Turing-unstable. Digitise the Methods parameters of Manukyan et al. (2017) with provenance (equation/table), fix the vendored set, and run the 3D solver with those kinetics.",
+            "remediation needed: 2015-manukyan-ocellated-lizard-ca.py:739-865 and 135-144 — the 3D domain is a stepped voxel skin on a 5 px pitch (border area fraction 0.36, h_interior = 0.48 pitch, no domain growth), not the micro-CT geometry of Fofonjka & Milinkovitch (2021). Replace the step by a smooth hexagonal-dome thickness profile h(x) at >= 10 px pitch, add the growing domain, and report convergence of the 3D-vs-2D agreement (currently 90.3 %, RMS 0.118 = 33 % of the pattern amplitude at P = 0.17) with h_interior / lambda_c.",
+            "remediation needed: 2015-manukyan-ocellated-lizard-ca.py:993-1010 — `segment_timon_lepidus_specimen` samples a fixed 13 x 14 hexagonal lattice over the dorsal ROI instead of detecting scale centres; replace with blob/watershed detection of individual scales (and orthorectify the ROI) so the specimen neighbour histogram does not inherit lattice-registration error." ;
+        pk:hasScore "0.836"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Slot 009 Pass 3 autonomous loop assessor; v2 assessor was Gemini 4 Argon)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/376765a0>,
+            <https://doi.org/10.1038/nature22031>,
+            <https://doi.org/10.1038/s41467-021-22525-1>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1103/PhysRevX.13.041011> .
+    <https://doi.org/10.1038/376765a0> dct:date "1995"^^xsd:gYear ;
+        dct:title "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus" .
+    <https://doi.org/10.1038/nature22031> dct:date "2017"^^xsd:gYear ;
+        dct:title "A living mesoscopic cellular automaton made of skin scales" .
+    <https://doi.org/10.1038/s41467-021-22525-1> dct:date "2021"^^xsd:gYear ;
+        dct:title "Reaction-diffusion in a growing 3D domain of skin scales generates a discrete cellular automaton" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The chemical basis of morphogenesis" .
+    <https://doi.org/10.1103/PhysRevX.13.041011> dct:date "2023"^^xsd:gYear ;
+        dct:title "Simple Reaction-Diffusion Modeling Predicts Inconspicuous Neighborhood-Dependent Color Subclustering of Lizard Scales" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Manukyan et al. (2017) Nature hexagonal skin-scale border thickness reduction & outer-totalistic cellular automaton — 3D skin-volume reaction-diffusion (Pass 3) — MorphoEval overall 83.6/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T06:26:47Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-manukyan-ocellated-lizard-ca-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-manukyan-ocellated-lizard-ca> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -1,7 +1,7 @@
 sim_id: feugier-carrier-driven-canalization
 math_family: "PIN1 Efflux Carrier Allocation & Intracellular Pool Conservation on Hexagonal Leaf Lamina Lattices"
 model_spec:
-  model: "Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. 236(3):313-325 and Scarpella, Marcos, Friml & Berleth (2006) Genes & Development 20(8):1015-1027 hexagonal leaf lamina auxin-carrier canalization ODEs (dS_i/dt = sigma - mu*S_i - sum_j J_{i->j}, J_{i->j} = P_ij*S_i - P_ji*S_j + D*(S_i - S_j), dP_ij/dt = k_1*Phi(J_{i->j})*P_{i,cyt} - k_2*P_ij with conserved cellular pool P_total = P_{i,cyt} + sum_{j=1}^6 P_ij), comparing winner-take-all open dendritic trees (Phi(J) = J^p, Betti-1 = 0) against saturating Hill allocation + epidermal convergence closed reticulate venation loops (Phi(J) = J^n/(K^n+J^n), Betti-1 > 0)"
+  model: "Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. 236(4):366-375 and Scarpella, Marcos, Friml & Berleth (2006) Genes & Development 20(8):1015-1027 hexagonal leaf lamina auxin-carrier canalization ODEs (dS_i/dt = sigma - mu*S_i - sum_j J_{i->j}, J_{i->j} = P_ij*S_i - P_ji*S_j + D*(S_i - S_j), dP_ij/dt = k_1*Phi(J_{i->j})*P_{i,cyt} - k_2*P_ij with conserved cellular pool P_total = P_{i,cyt} + sum_{j=1}^6 P_ij). Pass 3 adds the emergent growing-blade module: the same ODEs integrated on a Lockhart (1965) yield-threshold-expanding hexagonal blade with marginal cell addition, convergence-point auxin sources (Scarpella et al. 2006) and a Scarpella et al. (2004) irreversible procambial commitment lock, producing sequential 1->2->3->4 vein-order emergence; accelerating Phi(J)=J^2 gives open trees (Betti-1 = 0), accelerating + commitment lock gives closed areoles (Betti-1 >= 1), decelerating Phi(J)=J^2/(1+(J/K)^2) gives Feugier result 2 (no branching). Pass 3 correction of record: the Pass 2 'saturating Hill -> closed loops' claim is NOT a Feugier (2005) result (Feugier reports decelerating Phi -> no branching); loop closure is attributed to Scarpella 2004/2006 and Panels A-B of the comparison figure are templated scaffolds, not emergent output."
   auxin_production_sigma: 0.12
   auxin_degradation_mu: 0.01
   passive_diffusion_D: 0.05
@@ -11,11 +11,33 @@ model_spec:
   power_law_exponent_p: 2.0
   hill_half_saturation_K: 0.35
   seed: 2005
+  growing_blade_module:
+    lattice_rows: 26
+    lattice_cols: 22
+    growth_stage_days: [2.0, 3.5, 5.0, 7.0]
+    lockhart_phi_extensibility: 1.0
+    lockhart_turgor_P: 0.6
+    lockhart_yield_Y0: 0.2
+    lockhart_hardening_kappa: 0.05
+    auxin_production_sigma: 0.005
+    convergence_point_sigma: 0.6
+    auxin_degradation_mu: 0.02
+    passive_diffusion_D: 0.3
+    carrier_exocytosis_k1: 1.0
+    carrier_endocytosis_k2: 0.3
+    total_cellular_carrier_P_total: 6.0
+    decelerating_saturation_K: 1.0
+    P_vein: 1.2
+    P_commit: 1.2
+    tau_commit: 2.0
+    steps_per_stage: 4000
+    dt: 0.05
   inputs:
     - datasets/carrier_driven_canalization/carrier_driven_canalization_reference.json
     - datasets/carrier_driven_canalization/leaf_tip_venation_loops_specimen.jpg
     - datasets/carrier_driven_canalization/scout_manifest.json
     - datasets/carrier_driven_canalization/paper_citations.bib
+    - datasets/carrier_driven_canalization/growing_blade_reference.json
 equations:
   - id: feugier-carrier-driven-canalization-1
     law_name: "Feugier et al. (2005) Hexagonal Intracellular PIN1 Carrier Pool Conservation Law"
@@ -40,11 +62,11 @@ equations:
              membrane_face_rhs k1 k2 Phi6 P_cyt P6) = 0
     variables: "P_{i,cyt}: cytoplasmic PIN1 carrier pool in cell i; P_{ij} (j=1..6): membrane PIN1 carrier density on face j of hexagonal cell i; P_{total}: conserved total cellular carrier pool; k_1, k_2: exocytosis and endocytosis rates; Φ(J_{i→j}): flux-dependent carrier recruitment function"
     role: "Proves exact state and rate conservation of total intracellular + membrane PIN1 efflux carriers across all 6 faces of each hexagonal leaf lamina cell, creating resource competition among faces for cytoplasmic PIN1 vesicles"
-    source_citation: "Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. 236(3):313-325 Eqs. 4-6"
-    code_locus: "2005-feugier-carrier-driven-canalization.py#L104-L227"
+    source_citation: "Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. 236(4):366-375 Eqs. 4-6"
+    code_locus: "2005-feugier-carrier-driven-canalization.py#L160-L279"
 
   - id: feugier-carrier-driven-canalization-2
-    law_name: "Feugier et al. (2005) & Scarpella et al. (2006) Winner-Take-All Open Tree vs Saturating Co-Polarized Closed Loop Law"
+    law_name: "Feugier et al. (2005) Winner-Take-All Open Tree vs Saturating Co-Polarized Face Law (Pass 3 note: the closed-loop attribution to Feugier is withdrawn; loop closure is Scarpella 2004/2006 commitment)"
     formula: "P_2 dP_1/dt - P_1 dP_2/dt = k_1 P_{cyt} (ΔS)^2 P_1 P_2 (P_1 - P_2) (Model A, Φ(J)=J^2, open tree β_1=0)  vs  k_1 Φ_{max} P_{cyt} (P_2 - P_1) (Model B, Φ(J)=J^n/(K^n+J^n)→Φ_{max}, bipolar loop closure β_1>0)"
     lean_decl: "MathOfBiology.Loop_035.model_a_quadratic_face_rhs"
     lean_theorem: "MathOfBiology.Loop_035.feugier_2005_winner_take_all_vs_saturating_bipolar"
@@ -63,16 +85,16 @@ equations:
             P1 * model_b_saturated_face_rhs k1 k2 Phi_max P_cyt P2 =
             k1 * Phi_max * P_cyt * (P2 - P1)
     variables: "P_1, P_2: PIN1 carrier concentrations on two efflux faces of a hexagonal cell; P_{cyt}: shared cytoplasmic PIN1 pool; ΔS: downstream auxin concentration drop; Φ_{max}: saturated Hill exocytosis ceiling; β_1 = E - V + C: venation graph Betti-1 loop count"
-    role: "Proves why non-saturating superlinear exocytosis (Φ(J) = J^2) forces winner-take-all polarization onto a single efflux face per cell—forbidding loop connections and producing strictly open dendritic trees (β_1 = 0)—whereas saturating Hill exocytosis allows two high-flux faces to co-polarize (bipolar PIN1 bridge cells observed by Scarpella et al. 2006), closing reticulate venation loops (β_1 > 0)"
-    source_citation: "Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. 236(3):313-325 Eqs. 7-11 & Figs. 3-7; Scarpella et al. (2006) Genes Dev. 20:1015-1027 Figs. 3-5"
-    code_locus: "2005-feugier-carrier-driven-canalization.py#L230-L362"
+    role: "Proves the two-face competition algebra: non-saturating superlinear exocytosis (Φ(J) = J^2) forces winner-take-all polarization onto a single efflux face per cell (open dendritic trees, β_1 = 0), whereas a saturated exocytosis ceiling lets two high-flux faces co-polarize (bipolar cells). Pass 3 correction: Feugier (2005) reports that decelerating/saturating Φ yields NO branching (the growing-blade `decelerating_no_branching` regime reproduces this, vein fraction -> ~0.9); the bipolar-cell loop closure in the leaf is attributed to Scarpella et al. (2004/2006) procambial commitment, formalised as Law 6. Code loci: templated scaffold #L421-L693, emergent growing-blade regimes #L862-L1076"
+    source_citation: "Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. 236(4):366-375 (PMID 15899502) Eqs. 7-11 & Figs. 3-7 (accelerating -> branching; decelerating -> no branching); Scarpella et al. (2006) Genes Dev. 20:1015-1027 Figs. 3-5 (bipolar PIN1 cells)"
+    code_locus: "2005-feugier-carrier-driven-canalization.py#L862-L1076"
 
   - id: feugier-carrier-driven-canalization-3
     law_name: "Feugier et al. (2005) Directional Carrier-Mediated Auxin Flux Antisymmetry Law"
     formula: "J_{i→j} = P_{ij} S_i - P_{ji} S_j + D(S_i - S_j)  ⇒  J_{i→j} + J_{j→i} = 0  ∧  J_{i→j}(S,S) = (P_{ij} - P_{ji}) S"
     lean_decl: "MathOfBiology.Loop_035.carrier_auxin_flux"
     lean_theorem: "MathOfBiology.Loop_035.feugier_2005_flux_antisymmetry_and_polarity"
-    lean_locus: "morphoeval/lean/loops/Loop_035_carrier_driven_canalization.lean#L112-L125"
+    lean_locus: "morphoeval/lean/loops/Loop_035_carrier_driven_canalization.lean#L112-L124"
     lean_code: |
       def carrier_auxin_flux (P_ij P_ji D S_i S_j : Int) : Int :=
         P_ij * S_i - P_ji * S_j + D * (S_i - S_j)
@@ -81,6 +103,61 @@ equations:
             carrier_auxin_flux P_ji P_ij D S_j S_i = 0 ∧
           carrier_auxin_flux P_ij P_ji D S S = (P_ij - P_ji) * S
     variables: "J_{i→j}: net intercellular auxin flux from hexagonal cell i to neighbor j; P_{ij}, P_{ji}: opposing plasma-membrane PIN1 carrier densities; S_i, S_j: intracellular auxin concentrations; D: passive apoplastic permeability"
-    role: "Proves exact pairwise intercellular auxin flux conservation across every hexagonal cell-wall edge while demonstrating pure carrier-driven polar transport at homogeneous auxin concentration"
-    source_citation: "Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. 236(3):313-325 Eqs. 1-3"
-    code_locus: "2005-feugier-carrier-driven-canalization.py#L365-L625"
+    role: "Proves exact pairwise intercellular auxin flux conservation across every hexagonal cell-wall edge while demonstrating pure carrier-driven polar transport at homogeneous auxin concentration. Code loci: graph topology #L351-L419, growing-blade flux kernel #L933-L1003"
+    source_citation: "Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. 236(4):366-375 Eqs. 1-3"
+    code_locus: "2005-feugier-carrier-driven-canalization.py#L933-L1003"
+
+  - id: feugier-carrier-driven-canalization-4
+    law_name: "Lockhart (1965) Yield-Threshold Biomechanical Blade Growth Law (Pass 3)"
+    formula: "(1/A) dA/dt = φ · max(0, P − Y(t)),   Y(t) = Y_0 + κ t   ⇒   A(t) = A_0 exp(φ[(P − Y_0) t − κ t²/2]) for t ≤ (P − Y_0)/κ, growth arrest thereafter"
+    lean_decl: "MathOfBiology.Loop_035.lockhart_growth_rate"
+    lean_theorem: "MathOfBiology.Loop_035.lockhart_1965_yield_threshold_growth"
+    lean_locus: "morphoeval/lean/loops/Loop_035_carrier_driven_canalization.lean#L139-L163"
+    lean_code: |
+      def lockhart_growth_rate (phi P Y : Int) : Int :=
+        if Y < P then phi * (P - Y) else 0
+      theorem lockhart_1965_yield_threshold_growth (phi P P' Y : Int) (hphi : 0 < phi) :
+          (P ≤ Y → lockhart_growth_rate phi P Y = 0) ∧
+          (Y < P → 0 < lockhart_growth_rate phi P Y) ∧
+          (P ≤ P' → lockhart_growth_rate phi P Y ≤ lockhart_growth_rate phi P' Y)
+    variables: "A: blade area; φ: wall extensibility; P: turgor pressure; Y(t) = Y_0 + κ t: time-hardening wall yield threshold; κ: hardening rate; arrest at t* = (P − Y_0)/κ = 8 DAG with the script defaults (φ = 1.0, P = 0.6, Y_0 = 0.2, κ = 0.05)"
+    role: "Drives the growing hexagonal blade mesh on which the Feugier ODEs are integrated: blade area follows the Lockhart law (closed form A(7)/A(2) = 2.399, Euler check within 1e-3), new marginal cells are born as the allometric blade mask (half-width ∝ g^1.5, half-length ∝ g^0.5) expands, so vein orders emerge sequentially rather than from a prescribed template"
+    source_citation: "Lockhart (1965) J. Theor. Biol. 8(2):264-275 Eq. 1 (doi 10.1016/0022-5193(65)90077-9); Kuchen et al. (2012) Science 335(6072):1092-1096 (growth-field framing)"
+    code_locus: "2005-feugier-carrier-driven-canalization.py#L699-L813"
+
+  - id: feugier-carrier-driven-canalization-5
+    law_name: "Vein-Graph Growth-Event Betti-1 Bookkeeping Law (Pass 3)"
+    formula: "β_1 = E − V + C;  free-end extension (E+1,V+1,C): Δβ_1 = 0;  new seed (E,V+1,C+1): Δβ_1 = 0;  same-component fusion (E+1,V,C): Δβ_1 = +1;  cross-component fusion (E+1,V,C−1): Δβ_1 = 0"
+    lean_decl: "MathOfBiology.Loop_035.betti1"
+    lean_theorem: "MathOfBiology.Loop_035.vein_graph_growth_event_betti1"
+    lean_locus: "morphoeval/lean/loops/Loop_035_carrier_driven_canalization.lean#L180-L187"
+    lean_code: |
+      def betti1 (E V C : Int) : Int := E - V + C
+      theorem vein_graph_growth_event_betti1 (E V C : Int) :
+          betti1 (E + 1) (V + 1) C = betti1 E V C ∧
+          betti1 E (V + 1) (C + 1) = betti1 E V C ∧
+          betti1 (E + 1) V C = betti1 E V C + 1 ∧
+          betti1 (E + 1) V (C - 1) = betti1 E V C
+    variables: "E: strand edges (vein-cell pairs joined by a PIN1 face with P ≥ P_vein); V: vein cells; C: connected components; β_1: closed areole count"
+    role: "Classifies every canalization event during blade growth by its effect on the areole count: only fusion of a freely-ending strand with its own component (Scarpella et al. 2004) closes an areole, which is why the open-tree regime stays at β_1 = 0 across all four stages and the committed regime accumulates β_1 ≥ 1 after the lock activates"
+    source_citation: "Scarpella, Francis & Berleth (2004) Development 131(14):3445-3455 (freely-ending domain fusion); Kang & Dengler (2004) Int. J. Plant Sci. 165(2):231-242 (vein-order hierarchy); standard graph cycle-rank identity"
+    code_locus: "2005-feugier-carrier-driven-canalization.py#L815-L860"
+
+  - id: feugier-carrier-driven-canalization-6
+    law_name: "Scarpella et al. (2004) Irreversible Procambial Commitment Lock Law (Pass 3)"
+    formula: "timer_ij ← (P_ij ≥ P_commit) ? timer_ij + dt : 0;   locked_ij ← locked_ij ∨ (timer_ij ≥ τ_commit);   P_ij ← locked_ij ? max(P_ij, P_commit) : P_ij"
+    lean_decl: "MathOfBiology.Loop_035.commitment_lock"
+    lean_theorem: "MathOfBiology.Loop_035.procambial_commitment_lock_monotone"
+    lean_locus: "morphoeval/lean/loops/Loop_035_carrier_driven_canalization.lean#L201-L217"
+    lean_code: |
+      def commitment_lock (locked : Bool) (P P_commit : Int) : Int :=
+        if locked then (if P < P_commit then P_commit else P) else P
+      theorem procambial_commitment_lock_monotone (P P_commit : Int) :
+          P_commit ≤ commitment_lock true P P_commit ∧
+          P ≤ commitment_lock true P P_commit ∧
+          (P_commit ≤ P → commitment_lock true P P_commit = P) ∧
+          commitment_lock false P P_commit = P
+    variables: "P_ij: membrane PIN1 density on face j of cell i; P_commit: procambial commitment threshold; τ_commit: required sustained-flux duration; locked_ij: irreversible commitment flag (monotone non-decreasing in time)"
+    role: "Formalises the irreversible preprocambial → procambial transition that preserves transient bipolar PIN1 cells as permanent bridges, so closed areoles emerge in the committed regime; predicts and the script confirms a monotone non-increasing β_1(τ_commit) (Spearman ρ = −1.0 over τ ∈ {0.5,1,2,4,8}). Code loci: lock #L998-L1001, sweep #L1078-L1103"
+    source_citation: "Scarpella, Francis & Berleth (2004) Development 131(14):3445-3455 (doi 10.1242/dev.01182); Scarpella et al. (2006) Genes Dev. 20(8):1015-1027 (bipolar PIN1 cells)"
+    code_locus: "2005-feugier-carrier-driven-canalization.py#L998-L1001"

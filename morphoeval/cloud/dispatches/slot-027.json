@@ -19,5 +19,71 @@
   "slot_index": 27,
   "slug": "yap-excitable-segmentation",
   "target_script": "2016-hubaud-yap-excitable-segmentation.py",
-  "delta": 31.1
+  "delta": 31.1,
+  "pass3_run_id": "2026-10-19-yap-excitable-segmentation-loop-pass3",
+  "pass3_audit_id": "2026-10-19-yap-excitable-segmentation-audit-v3",
+  "audit_v3": "morphoeval/audits/2026-10-19-yap-excitable-segmentation-audit-v3.yaml",
+  "pass3_score": 91.8,
+  "pass3_dims": {
+    "model-fidelity": 93,
+    "specimen-match": 88,
+    "parameter-expressivity": 95,
+    "morphometric-validation": 93,
+    "source-traceability": 94,
+    "code-traceability": 91,
+    "repro-package": 92
+  },
+  "pass2_dims": {
+    "model-fidelity": 94,
+    "specimen-match": 89,
+    "parameter-expressivity": 92,
+    "morphometric-validation": 92,
+    "source-traceability": 93,
+    "code-traceability": 91,
+    "repro-package": 91
+  },
+  "pass3_completed_at": "2026-10-20T08:32:53Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_kg_dir": "morphoeval/kg/2026-10-19-yap-excitable-segmentation-audit-v3",
+  "pass3_quick_gate": 100,
+  "pass3_remediation_closed": [
+    "Couple the 2-variable FitzHugh-Nagumo excitable core to an explicit spatial FGF/Wnt gradient decay along the anteroposterior axis to model wavefront arrest of excitable waves into discrete somite clefts. -> Section 4c (fgf_gradient_field / fgf_excitability_gate / fgf_gated_current / wavefront_gate_threshold / simulate_ap_wavefront_arrest / evaluate_wavefront_speed_sweep, L704-952): 1D AP chain, regressing Fgf8 gradient, arrest front g_crit, Mesp2-like frozen-phase switch, 8 stripes S = 101.7 um vs v_wf T = 102.0 um, 0 um anterior pulse leak at gamma_F = 1.6 (802 um at 0.8), v_wf / lambda_F / gamma_F sweeps, uniform-FGF ablation; Lean Theorems 4-5.",
+    "Incorporate explicit substrate-stiffness traction mechanics E_sub -> F-actin -> LATS1/2 -> Y_nuc phosphorylation kinetics (Dupont et al. 2011) alongside intercellular Dll1-Notch phase coupling. -> Section 4d (substrate_tension_index / lats_activity / yap_nuclear_fraction_ss / calibrate_yap_mechanotransduction / evaluate_substrate_stiffness_sweep / simulate_latrunculin_yap_kinetics, L954-1139; RMSE 0.054, E_crit 12.6 kPa, LatA onset 30.8 min) and Section 4b (notch_ligand_presentation / simulate_dll1_notch_ring_synchrony / evaluate_dll1_coupling_sweep, L607-701; Kuramoto R 0.27 -> 0.80); Lean Theorem 6."
+  ],
+  "pass3_remediation_open": [
+    "L447-456: 200-cell ensemble is decorative; pred_frac is a hand-tuned logistic of deterministic I_eff (margin 0.115, width 0.125) - use the ensemble fraction or derive margin/width from sigma_Y / sigma_J.",
+    "reference.json L50-58 + L1173-1214: specimen is a chick embryo SEM filed as mouse_psm_somites_specimen.jpg with no um/px scale - add a correctly named mouse specimen or relabel, record a scale, compare S_model in um.",
+    "L720-748: FGF/Wnt gate g(F) (F_thr 0.15, h 4, gamma_F tuned 0.8 -> 1.6) is phenomenological and uncited - calibrate against an explicit Fgf8/Wnt3a -> Hes7 input and vendor the Dubrulle (2001) gradient profile.",
+    "L750-886: clock is quasi-synchronous across the PSM (slows only within ~50 um of the front) - add a posterior-to-anterior period gradient and measure wave speed / phase-gradient wavelength vs Lauschke (2013).",
+    "L957-965 + L1000-1031: cascade constants and per-regime mechanical inputs are uncited; tension-only cascade cannot reproduce the non-monotonic Y-27632 (0.30) vs high-density mPSM (0.18) pair (RMSE floor 0.054) - vendor Dupont/Wada values, add a density term, pin fitted parameters.",
+    "L621-701: J_max -> Kuramoto R saturates (0.802 at 0.20 vs 0.801 at 0.30) and uses an atan2 phase - use a protophase/Hilbert estimator, average over seeds/heterogeneity, compare with dissociation-reaggregation synchrony data."
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_027.hubaud_2017_clock_wavefront_somite_spacing",
+    "MathOfBiology.Loop_027.hubaud_2017_fgf_wavefront_arrest_criterion",
+    "MathOfBiology.Loop_027.hubaud_2017_yap_mechanotransduction_monotonicity"
+  ],
+  "pass3_lean_theorems_total": 6,
+  "pass3_artifacts": [
+    "2016-hubaud-yap-excitable-segmentation.py",
+    "morphoeval/lean/loops/Loop_027_yap_excitable_segmentation.lean",
+    "morphoeval/math_kg_loops/hubaud-yap-excitable-segmentation.yaml",
+    "datasets/yap_excitable_segmentation/yap_excitable_segmentation_reference.json",
+    "datasets/yap_excitable_segmentation/README.md",
+    "datasets/yap_excitable_segmentation/paper_citations.bib",
+    "docs/media/yap_excitable_segmentation_comparison.png",
+    "docs/media/yap_excitable_segmentation_growth.gif",
+    "docs/media/yap_excitable_segmentation_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-yap-excitable-segmentation-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-yap-excitable-segmentation-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-yap-excitable-segmentation-audit-v3/",
+    "morphoeval/runs/2026-10-19-yap-excitable-segmentation-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-yap-excitable-segmentation-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-yap-excitable-segmentation-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-yap-excitable-segmentation-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-yap-excitable-segmentation-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-yap-excitable-segmentation-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-027.json"
+  ]
 }

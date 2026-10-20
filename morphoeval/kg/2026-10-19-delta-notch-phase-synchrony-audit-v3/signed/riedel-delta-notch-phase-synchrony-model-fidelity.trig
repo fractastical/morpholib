@@ -1,0 +1,130 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAqoLd3c4P47pugIEJRSvyuVo9_vDQ_s6SZsNNefELVgc/> .
+@prefix this: <https://w3id.org/np/RAqoLd3c4P47pugIEJRSvyuVo9_vDQ_s6SZsNNefELVgc> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0092-8674(01)00437-8>,
+            <https://doi.org/10.1016/S1534-5807(02)00409-4>,
+            <https://doi.org/10.1016/j.cub.2010.06.034>,
+            <https://doi.org/10.1038/nature04861>,
+            <https://doi.org/10.1126/science.1142538>,
+            <https://doi.org/10.1126/science.1253089>,
+            <https://doi.org/10.2976/1.3027088> .
+
+    <https://doi.org/10.1016/S0092-8674(01)00437-8> dcterms:date "2001"^^xsd:gYear ;
+        dcterms:title "FGF signaling controls somite boundary position and regulates segmentation clock control of spatiotemporal Hox gene activation" .
+
+    <https://doi.org/10.1016/S1534-5807(02)00409-4> dcterms:date "2003"^^xsd:gYear ;
+        dcterms:title "Mind bomb is a ubiquitin ligase that is essential for efficient activation of Notch signaling by Delta" .
+
+    <https://doi.org/10.1016/j.cub.2010.06.034> dcterms:date "2010"^^xsd:gYear ;
+        dcterms:title "Intercellular coupling regulates the period of the segmentation clock" .
+
+    <https://doi.org/10.1038/nature04861> dcterms:date "2006"^^xsd:gYear ;
+        dcterms:title "Noise-resistant and synchronized oscillation of the segmentation clock" .
+
+    <https://doi.org/10.1126/science.1142538> dcterms:date "2007"^^xsd:gYear ;
+        dcterms:title "Synchrony dynamics during initiation, failure, and rescue of the segmentation clock" .
+
+    <https://doi.org/10.1126/science.1253089> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "A Doppler effect in embryonic pattern formation" .
+
+    <https://doi.org/10.2976/1.3027088> dcterms:date "2009"^^xsd:gYear ;
+        dcterms:title "Delayed coupling theory of vertebrate segmentation" .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-riedel-delta-notch-phase-synchrony> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-riedel-delta-notch-phase-synchrony-model-fidelity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-riedel-delta-notch-phase-synchrony-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Riedel-Kruse et al. (2007) & Morelli et al. (2009) zebrafish Delta-Notch delayed Kuramoto phase synchrony on an advected FGF8/Wnt-graded PSM lattice: kinematic waves, Mib1-gated coupling, emergent DAPT ALD/PRP — Model fidelity to source: 91/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "The lattice equation is now exactly the source model: nearest-neighbour delayed coupling (kappa/z_i) sum_j sin(theta_j(t - tau_c,j) - theta_i) with open AP / periodic lateral boundaries (L501-515), the ad hoc 1.6 kappa_eff sin(psi - theta) term and the 0.35/0.65 blend of Pass 2 are gone, the collective frequency / stiffness solver is unchanged (L213-266) and the kinematic steady state used for initialisation is the Law-4 solution k = (Omega/v)(1 - c) (L432-437); the emergent segmentation period of the lattice (22.18 min WT, 25.00 min DAPT) matches the solver. Deductions: the frequency profile is a single exponential with f_A = 0.5 (L284-319), not Morelli's profile (-3); the per-column delay scaling tau_c(x) omega(x) = const (L413) is a modelling choice introduced to keep the anterior coupling attractive, and Panel B only marks the unscaled point rather than simulating it (-3); Mib1 kinetics are a two-rate linear ODE with unmeasured k_ub, k_endo (L172-173, L495-499) and the DAPT gate is a Hill function with assumed dose/IC50 = 20 and n = 2 (L174-176) (-2); advection is a discrete one-column shift with tailbud seeding from the last column plus 0.05 rad noise (L523-531), with no cell division or PSM shortening (-1)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "2006-riedel-delta-notch-phase-synchrony.py L171–L176: k_ub, k_endo, tau_wash, dose ratio and Hill n are declared reduced constants without measured sources <https://github.com/fractastical/morpholib/blob/d58a084/2006-riedel-delta-notch-phase-synchrony.py#L171-L176>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-riedel-delta-notch-phase-synchrony-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-riedel-delta-notch-phase-synchrony-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-riedel-delta-notch-phase-synchrony-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-riedel-delta-notch-phase-synchrony-model-fidelity-4>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-riedel-delta-notch-phase-synchrony-model-fidelity-5> ;
+        pk:hasScore "0.91"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-riedel-delta-notch-phase-synchrony-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2006-riedel-delta-notch-phase-synchrony.py L501–L515" ;
+        dcterms:description "Pure nearest-neighbour delayed Kuramoto coupling with per-column delay gather (theta_delayed = history[row_idx, col_idx, lat_idx]); no mean-field or instantaneous term" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2006-riedel-delta-notch-phase-synchrony.py#L501-L515> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-riedel-delta-notch-phase-synchrony-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2006-riedel-delta-notch-phase-synchrony.py L284–L319" ;
+        dcterms:description "fgf_wnt_frequency_profile: omega(xi) = omega_0 exp(-xi/lambda_F), lambda_F = L/ln(1/f_A); analytic N_w = (1/S) Int (1 - c) dx" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2006-riedel-delta-notch-phase-synchrony.py#L284-L319> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-riedel-delta-notch-phase-synchrony-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "2006-riedel-delta-notch-phase-synchrony.py L408–L437" ;
+        dcterms:description "Period-scaled per-column delays (L413) and Law-4 kinematic steady-state initialisation (L432-437); Mib1 normalisation kappa_max = kappa_WT / u_ss(1) (L420-425)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2006-riedel-delta-notch-phase-synchrony.py#L408-L437> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-riedel-delta-notch-phase-synchrony-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "2006-riedel-delta-notch-phase-synchrony.py L486–L531" ;
+        dcterms:description "DAPT gate with first-order clearance (L486-494), Mib1 ubiquitination ODE (L495-499), somite-stage clock at Omega(kappa(t)) (L517-522), Lagrangian advection of histories and delta_omega (L523-531)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2006-riedel-delta-notch-phase-synchrony.py#L486-L531> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-riedel-delta-notch-phase-synchrony-model-fidelity-5> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean L119–L226" ;
+        dcterms:description "Three new machine-checked theorems: kinematic phase-lag law, Mib1 gate monotonicity, emergent defect-span invariance (6 theorems total, 0 sorrys)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean#L119-L226> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary, Pass 3 builder+assessor) + MorphoEval Dual-Rubric Assessor" ;
+        dcterms:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "KHDNgoFL8Tkw1P3aln9vx79vbcI7X1z9+LfZsqSgOgTX5d6oaVCxcapu2GszSMOhjR+jTn0Tp1vYnsTW/RecsnOUfU6c90DrEqKpp20DzLrkSYZoaPuh7PuqLfiHt5UyhlVxDKYJIX/V3dhBaBFQY3DOup2SeqcNKMEea9T1ycBj+kpYJpFme1E2I2GU5PutPMFlnmBRUNE4hJT1odryUGFW9B7GB1j7WEb8zRzUtTur3DEo0+gyHrcoWAHYczMYwSDJz1kgj9atMm0p1A+rRsvoq1aXNL9R8ql9do1Kh8bUIrsfIXF+ZM64rWUBcF7uO1iW4iGtssrMHuLhwqprzA==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Riedel-Kruse et al. (2007) & Morelli et al. (2009) zebrafish Delta-Notch delayed Kuramoto phase synchrony on an advected FGF8/Wnt-graded PSM lattice: kinematic waves, Mib1-gated coupling, emergent DAPT ALD/PRP — Model fidelity to source 91/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T08:02:32Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-riedel-delta-notch-phase-synchrony-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

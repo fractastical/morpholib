@@ -1,0 +1,97 @@
+{
+  "metadata": {
+    "dataset_id": "schnakenberg-1979-limit-cycle-turing-pass3-v1",
+    "title": "Pass 3 reference tables: Schnakenberg reaction-diffusion on curved Dictyostelium geometries (hemispherical mound, elongating stalk) and extracellular phosphodiesterase kinetics (Schnakenberg PDE extension, Martiel-Goldbeter 1987 relay)",
+    "slot": 2,
+    "slot_id": "slot-002-limit-cycle-turing",
+    "sim_id": "schnakenberg-limit-cycle-turing",
+    "supersedes": null,
+    "companion_of": "datasets/limit_cycle_turing/limit_cycle_turing_reference.json",
+    "sources": [
+      {
+        "id": "schnakenberg1979",
+        "citation": "Schnakenberg J (1979). Simple chemical reaction systems with limit cycle behaviour. Journal of Theoretical Biology 81(3):389-400.",
+        "doi": "10.1016/0022-5193(79)90042-0"
+      },
+      {
+        "id": "martiel1987",
+        "citation": "Martiel J-L, Goldbeter A (1987). A model based on receptor desensitization for cyclic AMP signaling in Dictyostelium cells. Biophysical Journal 52(5):807-828.",
+        "doi": "10.1016/S0006-3495(87)83275-7",
+        "resolved_via": "https://api.crossref.org/works/10.1016/S0006-3495(87)83275-7 (2026-10-19)"
+      },
+      {
+        "id": "gerisch1974",
+        "citation": "Gerisch G, Hess B (1974). Cyclic-AMP-controlled oscillations in suspended Dictyostelium cells: their relation to morphogenetic cell interactions. Proceedings of the National Academy of Sciences USA 71(5):2118-2122.",
+        "doi": "10.1073/pnas.71.5.2118",
+        "resolved_via": "https://api.crossref.org/works/10.1073/pnas.71.5.2118 (2026-10-19)"
+      },
+      {
+        "id": "crampin1999",
+        "citation": "Crampin EJ, Gaffney EA, Maini PK (1999). Reaction and diffusion on growing domains: scenarios for robust pattern formation. Bulletin of Mathematical Biology 61(6):1093-1120.",
+        "doi": "10.1006/bulm.1999.0131",
+        "resolved_via": "https://api.crossref.org/works/10.1006/bulm.1999.0131 (2026-10-19)"
+      }
+    ],
+    "lean_theorems": [
+      "MathOfBiology.Loop_002.schnakenberg_sphere_turing_band",
+      "MathOfBiology.Loop_002.schnakenberg_pde_hopf_shift"
+    ]
+  },
+  "curved_geometry": {
+    "laplace_beltrami_sphere": {
+      "eigenfunctions": "spherical harmonics Y_l^m",
+      "eigenvalue": "-l (l + 1) / R^2",
+      "ladder_gap": "l(l+1) -> (l+1)(l+2) equals 2 (l + 1)",
+      "hemisphere_boundary": "no-flux at the equator theta = pi/2 (agar contact line); even reflection gives the full-sphere solution"
+    },
+    "turing_point": {"a": 0.10, "b": 0.90, "gamma": 180.0, "d": 18.0},
+    "planar_turing_band_q": {"q_minus": 15.1443, "q_plus": 118.8557, "formula": "roots of d q^2 - gamma (d f_u + g_v) q + gamma^2 det J_0 = 0"},
+    "planar_turing_band_lambda": {"lambda_min": 0.5763, "lambda_max": 1.6146, "lambda_c": 0.941301},
+    "critical_mound_radius": {"R_min": 0.1297, "formula": "sqrt(2 / q_plus)", "meaning": "below R_min no spherical harmonic l >= 1 is unstable; the mound stays homogeneous"},
+    "lean_law4_integer_units": {
+      "note": "Lean q = 10 k^2 / gamma equals l(l+1) when gamma R^2 = 10 (R = sqrt(10/180) = 0.2357)",
+      "det_J(18, l(l+1))": {"l=0": 100, "l=1": -96, "l=2": -56, "l=3": 1084},
+      "unstable_degrees_at_R_0.2357": [1, 2]
+    },
+    "mound_radius_sweep": {
+      "radii": [0.10, 0.20, 0.35, 0.50, 0.75, 1.00, 1.50],
+      "predicted_l_star": [0, 1, 2, 3, 5, 6, 10],
+      "hex_packing_spot_count_formula": "2 pi R^2 / ((sqrt(3)/2) lambda_c^2)",
+      "hex_packing_spot_count": [0.1, 0.3, 1.0, 2.0, 4.6, 8.2, 18.4]
+    },
+    "elongating_stalk": {
+      "R_stalk": 0.08,
+      "azimuthal_mode_1_wavenumber": 12.5,
+      "note": "2 pi R_stalk = 0.503 < lambda_min = 0.576, so azimuthal modes lie above the band and the pattern is axisymmetric rings",
+      "growth": {"L0": 1.0, "L1": 4.0, "law": "L(t) = L0 exp(rho t), uniform growth with dilution -(L'/L) u (Crampin et al. 1999, uniform-growth formulation)"},
+      "expected_final_ring_count_range": [3, 5],
+      "ring_wavelength_must_lie_in": [0.5763, 1.6146]
+    }
+  },
+  "phosphodiesterase_kinetics": {
+    "first_order_extension": {
+      "ode": "du/dtau = a - (1 + kappa) u + u^2 v, dv/dtau = b - u^2 v",
+      "equilibrium": "u_* = (a + b) / (1 + kappa), v_* = b (1 + kappa)^2 / (a + b)^2",
+      "scaled_trace": "(1 + kappa)^3 (b - a) - (a + b)^3",
+      "generalized_hopf_curve": "(1 + kappa)^3 (b - a) = (a + b)^3",
+      "det_J0": "(a + b)^2 / (1 + kappa) > 0",
+      "lean_instance_a1_b9": {"kappa=0": -992, "kappa=4": 0, "kappa=5": 728},
+      "hopf_kappa_at_turing_point_0.1_0.9": 0.07722
+    },
+    "michaelis_menten_extension": {
+      "ode": "du/dtau = a - u + u^2 v - k_e u / (K_m + u), dv/dtau = b - u^2 v",
+      "equilibrium_quadratic": "u_*^2 + (K_m + k_e - a - b) u_* - (a + b) K_m = 0",
+      "hopf_threshold_k_e": {"K_m=0.5": 0.08784, "K_m=1.0": 0.12486, "K_m=2.0": 0.20033},
+      "criticality": "supercritical (limit-cycle amplitude grows continuously from zero at k_e^Hopf)"
+    },
+    "martiel_goldbeter_1987": {
+      "variables": {"rho_T": "fraction of active (non-desensitized) receptor", "beta": "intracellular cAMP (normalized)", "gamma": "extracellular cAMP (normalized)"},
+      "parameters_table_I": {"k1": 0.036, "k2": 0.666, "L1": 10.0, "L2": 0.005, "c": 10.0, "lambda": 0.01, "theta": 0.01, "epsilon": 1.0, "q": 4000.0, "sigma": 0.6, "ki": 1.7, "kt": 0.9, "ke": 5.4, "h": 5.0, "alpha": 3.0},
+      "units": "rate constants in min^-1; k_e = extracellular phosphodiesterase degradation rate",
+      "pde_rate_sweep_min": [1.0, 2.0, 3.0, 4.0, 5.4, 7.0, 9.0, 12.0],
+      "expected_oscillatory_window_min": [2.0, 7.0],
+      "period_at_ke_5.4_min_this_implementation": 10.68,
+      "experimental_period_reference_min": {"value": 7.0, "range": [5.0, 10.0], "source": "gerisch1974 (spontaneous cAMP oscillations in suspended D. discoideum cells)"}
+    }
+  }
+}

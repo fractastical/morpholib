@@ -1,0 +1,74 @@
+{
+  "dataset_id": "economou-2012-palate-ridge-mechanics-v1",
+  "title": "Pass 3 chemo-mechanical ridge-elevation reference for 2012-economou-palate-ruguga-turing.py: quasi-static Kirchhoff epithelial plate on a Winkler mesenchymal foundation driven by the FGF/SHH Turing field",
+  "created_for_audit": "2026-10-19-palate-ruguga-turing-audit-v3",
+  "remediates": "2026-10-19-palate-ruguga-turing-audit-v2 remediation item 1: couple the 2D epithelial-mesenchymal FGF-SHH reaction-diffusion sheet to mechanical epithelial thickening (placode invagination) to simulate 3D palatal ridge elevation",
+  "scope_statement": "Reduced 2.5D model: the epithelial mid-surface elevation h(x, y) is solved as a linear thin plate on an elastic foundation under a chemically prescribed active thickening load. It is solved EXACTLY on the finite-difference grid (DCT-II eigen-solver, zero-flux edges). It is NOT a 3D finite-element simulation of epithelial invagination with large deflections or nonlinear growth; that residual is carried as an open Pass 4 remediation item.",
+  "governing_equation": {
+    "quasi_static_plate": "kappa * Lap^2 h - T * Lap h + k_f * h = beta * max(A - A_th, 0)",
+    "transfer_stiffness": "S(q^2) = kappa * q^4 + T * q^2 + k_f   (S >= k_f > 0, monotone non-decreasing in q^2)",
+    "fourier_solution": "h_q = beta * f_q / S(q^2)   (sign-preserving low-pass filter of the chemical forcing)",
+    "mechanical_feedback": "dA/dt += chi_mech * (h - <h>)   (optional two-way coupling; default chi_mech = 0)",
+    "discrete_laplacian_eigenvalues": "lam_k = (2 - 2 cos(pi k / n)) / dx^2 for the 5-point zero-flux Laplacian (DCT-II basis)",
+    "lean_theorems": [
+      "MathOfBiology.Loop_008.economou_ridge_plate_stiffness_monotone",
+      "MathOfBiology.Loop_008.economou_ridge_elevation_in_phase"
+    ],
+    "sources": [
+      {
+        "id": "landau1986elasticity",
+        "citation": "Landau LD, Lifshitz EM (1986). Theory of Elasticity, 3rd ed. (Course of Theoretical Physics Vol. 7), Pergamon Press, Sec. 11-14 (equilibrium of thin plates; bending stiffness kappa = E h_0^3 / 12 (1 - nu^2)).",
+        "role": "Thin-plate (Kirchhoff) bending equation and bending stiffness definition"
+      },
+      {
+        "id": "economou2012palate",
+        "citation": "Economou AD et al. (2012). Nature Genetics 44(3):348-351. Fig. 1 (Shh in situ marks each morphological ruga), Fig. 2 (explant incisions).",
+        "doi": "10.1038/ng.1090",
+        "role": "Empirical constraint that morphological rugae (epithelial thickenings / ridges) coincide with the Shh stripes, i.e. zero crest-to-stripe phase offset, and that the wild-type mouse palate carries 9 rugae"
+      }
+    ]
+  },
+  "baseline_parameters": {
+    "kappa_bending_stiffness": 0.05,
+    "T_in_plane_tension": 0.20,
+    "k_f_winkler_foundation": 1.00,
+    "beta_active_thickening_gain": 1.00,
+    "A_th_thickening_threshold": 0.00,
+    "chi_mech_feedback_default": 0.0,
+    "re_equilibration_every_steps": 25,
+    "units": "dimensionless: h in units of the resting epithelial thickness h_0; lengths in the AP units of the RD grid (L_ap = 29, 9 rugae => lambda_ap ~ 3.2); the four stiffness/gain constants are modelling choices chosen so that the transfer gain at the ruga wavenumber G(q_ap) = 1 / S(q_ap^2) is O(0.4), not literature measurements",
+    "provenance_note": "No published measurement of mouse palatal epithelial bending stiffness, tension or mesenchymal foundation stiffness was available offline; the values above are dimensionless modelling assumptions and are exposed to the kappa / k_f / chi_mech sweeps below so that their qualitative predictions (sign preservation, wavelength transfer, monotone attenuation) rather than their magnitudes are what the audit scores."
+  },
+  "parameter_sweeps": {
+    "kappa_bending_stiffness": {
+      "values": [0.0125, 0.025, 0.05, 0.1, 0.2, 0.4],
+      "expected": "ridge amplitude strictly decreasing (Spearman rho = -1); ridge count locked at 9 for kappa <= 0.1 (wavelength transfer) and merging to 7 for kappa >= 0.2 (over-stiff epithelium low-pass-merges the two shortest-spaced crests); crest phase offset < 0.03 wavelength throughout"
+    },
+    "k_found_foundation_stiffness": {
+      "values": [0.5, 1.0, 2.0, 4.0],
+      "expected": "ridge amplitude strictly decreasing (Spearman rho = -1); ridge count locked at 9"
+    },
+    "chi_mech_feedback": {
+      "values": [0.0, 0.1, 0.2, 0.3],
+      "expected": "two-way coupling: wild-type ruga count stays 9; ridge amplitude non-decreasing in chi_mech"
+    }
+  },
+  "empirical_targets": {
+    "wild_type_ridge_count": {
+      "value": 9,
+      "unit": "ridges",
+      "source": "Economou et al. (2012) Fig. 1a; Pantalacci et al. (2008) Fig. 1 (rugae 8, 1-7, 7b)"
+    },
+    "crest_to_shh_stripe_phase_offset": {
+      "value": 0.0,
+      "unit": "fraction of ruga wavelength",
+      "source": "Economou et al. (2012) Fig. 1: Shh expression is confined to the epithelium of each morphological ruga"
+    },
+    "specimen_ridge_duty_cycle": {
+      "method": "scipy.signal.peak_widths(rel_height=0.5) on the sigma=8 px smoothed DoG anteroposterior ridge profile of the left (and right) palatal shelf ROI of palate_rugae_specimen.jpg, divided by the mean inter-ruga spacing",
+      "unit": "FWHM / spacing",
+      "source": "datasets/palate_ruguga_turing/palate_rugae_specimen.jpg (Wikimedia Commons File:Palatum_horse.JPG, CC BY-SA 3.0); value is computed at runtime and reported, not pinned",
+      "caveat": "Equus caballus adult specimen vs Mus musculus embryonic model; DoG band-pass filtering and sigma=8 px smoothing broaden the apparent crest width, so the comparison is qualitative (both < 0.5, i.e. crests narrower than a sinusoid)"
+    }
+  }
+}

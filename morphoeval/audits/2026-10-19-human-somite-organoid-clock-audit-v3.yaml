@@ -1,0 +1,336 @@
+# MorphoEval audit — Diaz-Cuadros et al. (2020, 2023) & Matsuda et al. (2020) Human Segmentation Clock, 2026-10-19 (v3)
+#
+# Pass 3 remediation-round re-score of `2019-diaza-human-somite-organoid-clock.py` (Slot 028) in the instrumented
+# loop `morphoeval/runs/2026-10-19-human-somite-organoid-clock-loop-pass3`, superseding
+# `2026-10-19-human-somite-organoid-clock-audit-v2` (91.7).
+#
+# What Pass 3 changed (both open v2 remediation items):
+#   1. Section 4b (L602-1027): the single-cell delayed HES7 TTFL is coupled to intercellular DLL1-Notch delay
+#      signalling on a 12 x 12 odd-r hexagonal PSM lattice (144 cells, 100 interior 6-neighbour cells) with 5 %
+#      cell-autonomous tempo heterogeneity, run through the Matsuda et al. (2020) Nature DAPT pulse-washout
+#      protocol (random phases -> coupled -> DAPT collapse -> washout). Synchrony is the Kuramoto order parameter
+#      of a uniform-rate limit-cycle phase; a coupling-ablated control, a coupling-strength sweep and a Herrgen
+#      (2010) coupling-delay sweep (collective period + in-phase stability) are included.
+#   2. Section 4c (L1030-1176): a reduced 2D overdamped cell-centre model of one axioloid somite cross-section with
+#      an explicit Matrigel elastic boundary force k_M(phi) = kappa * phi, ECM-contact polarisation, epithelialisation
+#      and apical constriction; Matrigel fraction swept 0 -> 20 %.
+#   3. Two new Lean 4 theorems (mean-field reduction / 3N edges / DAPT gating; Matrigel boundary-force scaling),
+#      registered as laws 4-5 in the math KG; 5 new Crossref-verified references; 9 measurements (was 5);
+#      self-test 5 -> 8 blocks with bitwise-determinism checks for the lattice and the rosette.
+#
+# What Pass 3 exposed (reasons the score goes DOWN from 91.7): the 6-regime "validation" in
+# `evaluate_perturbation_series` is circular — each regime's tempo factor lam_eff is hard-coded from the observed
+# period (human WT lam_eff = 300/122; LbNOX and azide lam_eff = (300/122)*(0.41/k_met), where the JSON k_met values
+# 0.54 and 0.31 are themselves 0.41*300/228 and 0.41*300/402), so Pearson r = 0.9999 and RMSE = 2.18 min measure
+# the calibration, not a prediction. The "human" cell is a rescaled mouse cell (tau_tx = 30.5, tau_tl = 13.1 min,
+# t_1/2,p = 38.1 min) rather than the Matsuda (2020) measured human kinetics vendored in the JSON (tau = 51 min,
+# t_1/2,p = 40 min), and the v2 measurement text claiming "tau_total = 51 min" was wrong (now corrected). The
+# specimen is a chick embryo SEM whose "reference" spacing (47.14 px) is the script's own output written back into
+# the JSON. `--tau-human` / `--thalf-human` are dead CLI parameters. The v2 scores of 94/93/92 did not reflect these.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated probabilities).
+# Line numbers refer to the files at commit d58a084 with the Pass 3 working-tree edits applied (script = 1960 lines).
+
+audit:
+  id: 2026-10-19-human-somite-organoid-clock-audit-v3
+  supersedes_audit_id: 2026-10-19-human-somite-organoid-clock-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d58a084
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) remediation-round evaluation of `2019-diaza-human-somite-organoid-clock.py` after closing both
+      Pass 2 remediation items in the isolated loop `2026-10-19-human-somite-organoid-clock-loop-pass3`
+      (DLL1-Notch hexagonal lattice with DAPT pulse-washout; Matrigel elastic-boundary rosette mechanics).
+      Self-test passes in ~14 s; default render ~17 s; `lean` verifies 5 theorems with 0 sorrys.
+
+references:
+  diazcuadros2020:
+    title: "In vitro characterization of the human segmentation clock"
+    authors: "Diaz-Cuadros M, Wagner DE, Budjan C, Hubaud A, Tarazona OA, Donelly S, Michaut A, Al Tanoury Z, Yoshioka-Kobayashi K, Niino Y, Kageyama R, Miyawaki A, Touboul J, Pourquie O"
+    venue: "Nature 580(7801):113-118 (2020)"
+    doi: 10.1038/s41586-019-1885-9
+  matsuda2020:
+    title: "Species-specific oscillation periods of human and mouse segmentation clocks are due to cell autonomous properties of HES7"
+    authors: "Matsuda M, Hayashi H, Garcia-Ojalvo J, Yoshioka-Kobayashi K, Kageyama R, Yamanaka Y, Ikeya M, Toguchida J, Alev C, Ebisuya M"
+    venue: "Science 369(6510):1450-1455 (2020)"
+    doi: 10.1126/science.aba7668
+  diazcuadros2023:
+    title: "Metabolic regulation of species-specific developmental rates"
+    authors: "Diaz-Cuadros M, Miettinen TP, Skinner OS, Sheedy D, Garcia-Cabrera C, Gapon S, Hubaud A, Yellen G, Manalis SR, Oldham WM, Pourquie O"
+    venue: "Nature 613(7944):550-557 (2023)"
+    doi: 10.1038/s41586-022-05574-4
+  yamanaka2023:
+    title: "Reconstituting human somitogenesis in vitro"
+    authors: "Yamanaka Y, Hamidi S, Yoshioka-Kobayashi K, Munira S, Sunadome K, Zhang Y, Kurokawa Y, Ericsson R, Mieda A, Thompson JL, Kerwin J, Lisgo S, Yamamoto T, Moris N, Martinez-Arias A, Tsujimura T, Alev C"
+    venue: "Nature 614(7948):509-520 (2023)"
+    doi: 10.1038/s41586-022-05649-2
+  matsuda2020recapitulating:
+    title: "Recapitulating the human segmentation clock with pluripotent stem cells"
+    authors: "Matsuda M, Yamanaka Y, Uemura M, Osawa M, Saito MK, Nagahashi A, Nishio M, Guo L, Ikegawa S, Sakurai S, Kihara S, Maurissen TL, Nakamura M, Matsumoto T, Yoshitomi H, Ikeya M, Kawakami N, Yamamoto T, Woltjen K, Ebisuya M, Toguchida J, Alev C"
+    venue: "Nature 580(7801):124-129 (2020)"
+    doi: 10.1038/s41586-020-2144-9
+  lewis2003:
+    title: "Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator"
+    authors: "Lewis J"
+    venue: "Current Biology 13(16):1398-1408 (2003)"
+    doi: 10.1016/S0960-9822(03)00534-7
+  riedelkruse2007:
+    title: "Synchrony dynamics during initiation, failure, and rescue of the segmentation clock"
+    authors: "Riedel-Kruse IH, Müller C, Oates AC"
+    venue: "Science 317(5846):1911-1915 (2007)"
+    doi: 10.1126/science.1142538
+  herrgen2010:
+    title: "Intercellular coupling regulates the period of the segmentation clock"
+    authors: "Herrgen L, Ares S, Morelli LG, Schröter C, Jülicher F, Oates AC"
+    venue: "Current Biology 20(14):1244-1253 (2010)"
+    doi: 10.1016/j.cub.2010.06.034
+  sanakimatsumiya2022:
+    title: "Periodic formation of epithelial somites from human pluripotent stem cells"
+    authors: "Sanaki-Matsumiya M, Matsuda M, Gritti N, Nakaki F, Sharpe J, Trivedi V, Ebisuya M"
+    venue: "Nature Communications 13:2325 (2022)"
+    doi: 10.1038/s41467-022-29967-1
+
+simulations:
+  - id: diaza-human-somite-organoid-clock
+    name: "Diaz-Cuadros et al. (2020, 2023) & Matsuda et al. (2020) human pluripotent stem-cell segmentation clock and metabolic tempo scaling model"
+    organism: "Homo sapiens vs Mus musculus (hPSC-derived presomitic mesoderm / axioloid somite organoid)"
+    script: 2019-diaza-human-somite-organoid-clock.py
+    output: docs/media/human_somite_organoid_clock_comparison.png
+    extra_outputs:
+      - docs/media/human_somite_organoid_clock_notch_lattice.png
+      - docs/media/human_somite_organoid_clock_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-human-somite-organoid-clock-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Diaz-Cuadros et al. (2020) Nature 580:113-118: ~5.0 h (300 +/- 18 min) HES7-Achilles oscillations in human pluripotent stem-cell-derived presomitic mesoderm vs ~2.0 h (122 min) in mouse PSM"
+        - "Matsuda et al. (2020) Science 369:1450-1455: species-specific HES7 intron splicing delay and protein/mRNA half-lives, not the hHES7 locus sequence, govern the ~2.5x human slowdown; intronless Hes7 abolishes oscillations"
+        - "Diaz-Cuadros et al. (2023) Nature 613:550-557: mitochondrial ETC activity and cytosolic NAD+/NADH modulate translation rate and clock period (LbNOX acceleration ~228 min, azide/rotenone slowdown ~402 min)"
+        - "Matsuda et al. (2020) Nature 580:124-129: a DAPT pulse followed by washout synchronises HES7 oscillations across hPSC-derived PSM cultures; Riedel-Kruse et al. (2007) Science: Notch inhibition desynchronises segmentation clock cells; Herrgen et al. (2010) Curr. Biol.: delayed intercellular coupling sets the collective period"
+        - "Yamanaka et al. (2023) Nature 614:509-520 and Sanaki-Matsumiya et al. (2022) Nat. Commun. 13:2325: epithelial somite rosettes form only in Matrigel-embedded human axioloids / somitoids (qualitative)"
+      reconstructed_in_script:
+        - "Delayed autoinhibitory HES7 TTFL RK2 DDE solver (mouse WT 122.00 min; rescaled 'human' cell 300.01 min), exact tempo-rescaling collapse across lambda in [1, 3] (max std 2.32e-13 nM), intronless-Hes7 subcritical collapse, and a 6-regime series whose per-regime tempo factors are hard-coded from the observed periods (Pearson r = 0.9999 is a calibration, not a prediction)"
+        - "6-species vertebrate clock allometry (r = 0.9970) from a vendored species table of delays/half-lives, a kinematic (not DDE-derived) axioloid phase-wave kymograph, and bilateral DoG somite segmentation on a chick embryo SEM (47.14 px mean spacing, CV 0.2010)"
+        - "Pass 3: DLL1-Notch delay-coupled HES7 lattice (12 x 12 hex, eps = 0.25, tau_c = 0.8 T, 5 % tempo CV) through the DAPT pulse-washout protocol: R_0 = 0.19 -> R_pre = 0.40 after 5 coupled cycles; DAPT amplitude ratio 0.17; washout reset R = 0.9995; R retained after 6 cycles = 0.85 (coupled) vs 0.21 (coupling-ablated, lost at 3.0 cycles); T_coll = 298.2 min; in-phase stable for tau_c/T in [0.625, 0.95]; T_coll(tau_c) spans 235-417 min; R_end(eps) 0.26 -> 0.96 (eps 0 -> 0.25), 0.88 at 0.35"
+        - "Pass 3: reduced 2D cell-centre Matrigel rosette model: P_rad = -0.08 (0 %) -> 0.99 (10 %), epithelial fraction 0 -> 0.67, aggregate radius 85 -> 28 um, Matrigel sweep Spearman rho = 0.94"
+      transfer_boundary:
+        - "Single-cell / lattice HES7 DDE kinetics are compared with a chick (Gallus gallus) dorsal SEM, not with a human axioloid image; the 47.14 px 'reference' spacing is the script's own measurement recorded in the dataset JSON"
+        - "tau_c = 0.8 T (240 min) is an assumption from delayed-coupling-theory stability, not a human measurement; the DAPT basal promoter fraction b = 0.1 and the competitive-promoter gate (synthesis and threshold both scaled by (1 - eps) + 2 eps S) are modelling reductions"
+        - "Matrigel stiffness kappa = 0.01 min^-1 per % and the polarisation / constriction rate constants are phenomenological; the rosette reference values (P_rad = 1, contrast = 1) are geometric ideals, not measured organoid morphometrics"
+      does_not_claim:
+        - "Prediction of the LbNOX / azide / hHES7-swap periods from independently measured kinetics (they are encoded); 3D actomyosin apical-constriction FEM; Matrigel rheology; measured human Notch coupling delay; Floquet/stability analysis of the coupled DDE beyond the numerical lattice scan"
+    source_refs:
+      - diazcuadros2020
+      - matsuda2020
+      - diazcuadros2023
+      - yamanaka2023
+      - matsuda2020recapitulating
+      - lewis2003
+      - riedelkruse2007
+      - herrgen2010
+      - sanakimatsumiya2022
+    summary: >-
+      Pass 3 closes both v2 remediation items: Section 4b couples the delayed HES7 TTFL to DLL1-Notch delay signalling
+      on a 12 x 12 hexagonal PSM lattice and reproduces the Matsuda (2020) Nature DAPT pulse-washout logic (slow
+      partial synchronisation from random phases, R 0.19 -> 0.40; DAPT collapse; washout reset R ~ 1.00; Notch
+      coupling retains R = 0.85 after 6 cycles vs 0.21 without coupling; collective period 298 min), with Herrgen
+      (2010) coupling-delay and coupling-strength sweeps and an exact mean-field reduction proven in Lean; Section 4c
+      adds a Matrigel elastic boundary force to a reduced 2D rosette model that epithelialises only when embedded
+      (P_rad -0.08 -> 0.99 from 0 % to 10 % Matrigel, Spearman rho 0.94). The overall score nevertheless falls from
+      91.7 to 80.0 because the re-audit exposed that the 6-regime perturbation series is calibrated to the observed
+      periods it is scored against (r = 0.9999 is circular), the 'human' cell is a rescaled mouse cell rather than the
+      vendored Matsuda (2020) human kinetics, the kymograph is kinematic, the specimen is a chick SEM with a
+      self-referential reference value, and two CLI parameters are dead. Those defects are now carried explicitly as
+      Pass 4 remediation items.
+    scores:
+      model-fidelity:
+        value: 80
+        rationale: >-
+          Credit: the HES7 DDE (L189-294) is the Lewis/Matsuda delayed-autorepression form with separate tau_tx /
+          tau_tl and half-life degradation rates; exact tempo-rescaling invariance is implemented and verified
+          (L297-363); the new lattice (L734-947) couples cells through a delayed neighbour-mean DLL1 signal gating
+          HES7 transcription (Lewis 2003 form, competitive-promoter threshold shift), reduces exactly to a single
+          self-coupled DDE in the in-phase state (Lean theorem 4), and reproduces the delayed-coupling-theory result
+          that in-phase synchrony depends on tau_c / T; DAPT is modelled as loss of NICD (basal promoter) and the
+          washout reset follows. The Matrigel model (L1040-1151) implements an explicit elastic boundary force whose
+          scaling is proven in Lean theorem 5. Deductions: the 6-regime series (L402-416) overrides its own generic
+          formula with per-regime lam_eff values taken from the observed periods, so laws 2-3 are illustrated, not
+          implemented as predictive kinetics (-8); the human regime does not use the vendored Matsuda (2020) human
+          parameters (tau = 51, t_1/2,p = 40 min) but a 2.459x rescaled mouse cell (-4); the coupling gate scales
+          both synthesis and repression threshold by the same factor, a reduction not derived from a promoter model,
+          and tau_c = 0.8 T is chosen for stability rather than measured (-3); the rosette polarisation /
+          epithelialisation rules are phenomenological (-3); the kymograph (L549-599) is a kinematic cosine wave
+          unrelated to the DDE (-2).
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [189, 294], note: "RK2 midpoint delayed HES7 mRNA/protein DDE with ln2/t_half degradation and parabolic peak period", supports: true}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [734, 947], note: "DLL1-Notch delay-coupled lattice: heterogeneous delays (L784), competitive-promoter gate and K_eff (L836-837), neighbour mean W @ D (L865), uniform-rate phase and Kuramoto R (L868-869), post-transient collective period (L898)", supports: true}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [989, 1027], note: "Herrgen coupling-delay sweep on the exact mean-field reduction plus 8x8 lattice in-phase stability test", supports: true}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [1040, 1151], note: "Matrigel rosette: k_M = kappa*phi shell force (L1109), ECM-contact polarisation (L1098), apical constriction (L1105), f(phi) Hill cue (L1072)", supports: true}
+          - {file: morphoeval/lean/loops/Loop_028_human_somite_organoid_clock.lean, lines: [121, 212], note: "Theorems 4 (mean-field reduction, 3N edges, DAPT gating) and 5 (Matrigel boundary-force scaling), 0 sorrys", supports: true}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [402, 416], note: "Per-regime lam_eff hard-coded from observed periods (human WT = 300/122; LbNOX/azide = (300/122)*(0.41/k_met)); the 6-regime fit is circular", supports: false}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [608, 623], note: "'Human' cell kinetics = mouse anchor dilated by 300/122 (tau_tx 30.5, tau_tl 13.1, t_1/2,p 38.1 min), not the vendored tau = 51 / t_1/2,p = 40 min", supports: false}
+      specimen-match:
+        value: 72
+        rationale: >-
+          Judged on the regenerated PNGs: Panel E overlays the detected bilateral somite rows on the SEM and the
+          periodicity is visibly matched (Panel F waveform r = 0.48); the new lattice figure shows the expected
+          phenomenology (incoherent -> partially clustered -> collapsed -> reset -> coupled lattice stays ordered
+          while the ablated one scrambles), and Panel I shows a compact radially polarised rosette inside the
+          Matrigel shell against a dispersed unpolarised 0 % aggregate. Deductions: the specimen is a chick embryo
+          SEM (dataset JSON L60), not a human axioloid or any figure from the four source papers, so the human
+          organoid morphology itself is never compared (-12); the rosette and lattice panels are compared with no
+          side-by-side image from Yamanaka (2023) / Matsuda (2020) Nature (-8); the kymograph (Panel D) is a
+          hand-drawn kinematic wave (-4); the rosette is a 24-cell 2D cross-section without a lumen or the
+          multi-somite periodic array of the axioloid (-4).
+        evidence:
+          - {file: docs/media/human_somite_organoid_clock_comparison.png, lines: [0, 0], note: "3x3 figure: A-C clock traces/regimes/allometry, D kinematic kymograph, E-F SEM segmentation and waveform fit, G Kuramoto R through DAPT washout, H tau_c/eps sweeps, I 0 % vs 10 % Matrigel rosette with sweep inset", supports: true}
+          - {file: docs/media/human_somite_organoid_clock_notch_lattice.png, lines: [0, 0], note: "2x4 hex-lattice phase maps, coupled vs coupling-ablated, at pre-DAPT / DAPT end / washout+1 / washout+6 cycles", supports: true}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [1211, 1251], note: "Bilateral DoG somite segmentation of the vendored SEM with bilateral spacing, CV and phase-gated waveform correlation", supports: true}
+          - {file: datasets/human_somite_organoid_clock/human_somite_organoid_clock_reference.json, lines: [56, 89], note: "Specimen is Wikimedia 'Aves Neural tube and somites in chick embryo' (chick, not human organoid); empirical_somite_metrics are the script's own outputs", supports: false}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [549, 599], note: "Axioloid kymograph is a prescribed cos(omega t - phase_lag(x)) wave with hand-set somite boundaries, not DDE output", supports: false}
+      parameter-expressivity:
+        value: 84
+        rationale: >-
+          Four parameters now visibly control the form they should: lambda dilates the period exactly linearly
+          (L297-363); Notch coupling strength eps raises retained synchrony 0.26 -> 0.96 over 0 -> 0.25 (L961-987);
+          the coupling delay tau_c/T switches in-phase stability off below ~0.6 and on above it and modulates the
+          collective period 235 -> 417 min (L989-1027); the Matrigel fraction raises rosette polarity monotonically
+          (Spearman rho 0.94) and shrinks the aggregate 85 -> 28 um (L1153-1176). Deductions: `--tau-human` and
+          `--thalf-human` are parsed but never used (L1931-1932) (-6); the 6 regimes and 6 species are not swept
+          parameters but hard-coded tempo factors (L402-416, L498) (-6); R_end(eps) is non-monotone at eps = 0.35
+          (0.88 < 0.96), so the stated monotone control holds only up to 0.25 (-2); pre-DAPT synchronisation from
+          random phases reaches only R = 0.40 in 5 cycles, and the lattice size / heterogeneity are not swept (-2).
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [961, 987], note: "Coupling-strength sweep eps in {0, 0.05, 0.1, 0.15, 0.25, 0.35} with Spearman rho", supports: true}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [989, 1027], note: "Coupling-delay sweep: mean-field T_coll(tau_c) and lattice in-phase stability window", supports: true}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [1153, 1176], note: "Matrigel sweep 0-20 % with polarity, epithelial fraction, apical convergence, circularity and Spearman rho", supports: true}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [1931, 1936], note: "--tau-human / --thalf-human are never read (dead parameters); --eps-notch / --tau-c-fraction / --matrigel-pct do drive an extra run", supports: false}
+      morphometric-validation:
+        value: 74
+        rationale: >-
+          Nine measurements with units and references are emitted by `measure_morphoeval()` (L1256-1368): period
+          ratio 2.4591 vs 2.459, T_human 300.01 vs 300 +/- 18 min, allometry r 0.997, SEM spacing 47.14 px, lattice R
+          0.85 vs 1.0 ideal (ablated 0.21), T_coll 298.2 vs 300 min, rosette P_rad 0.99 vs 1.0 ideal, Matrigel
+          contrast 1.07 vs 1.0. Deductions: the 6-regime r = 0.9999 / RMSE 2.18 min measurement is circular (the
+          predictions encode the observations, L402-416) (-10); the human period itself is fixed by construction
+          (lam_eff = 300/122) so 300.01 vs 300 validates nothing (-4); the SEM reference value is the script's own
+          output copied into the JSON (-4); the new lattice and rosette references are theoretical ideals (R = 1,
+          P_rad = 1) because the sources report no order parameter (-4); R_post = 0.85 is below the 0.9 line drawn in
+          Panel G and no quantitative resynchronisation time from Matsuda (2020) Nature is compared (-4).
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [1256, 1368], note: "9 measurements with reference values, sources, units and ablation notes (lattice L1328-1346, rosette L1348-1366)", supports: true}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [949, 959], note: "Coupled vs coupling-ablated control sharing the same DAPT reset (delta R = 0.64)", supports: true}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [1298, 1306], note: "6-regime Pearson r measurement reports a calibration as validation (regimes encode observed periods)", supports: false}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [1318, 1326], note: "SEM spacing reference_value 47.14 is the script's own measurement", supports: false}
+      source-traceability:
+        value: 92
+        rationale: >-
+          Nine primary sources with DOIs in the docstring, dataset README, BibTeX and reference JSON; the five Pass 3
+          DOIs and author lists were resolved against Crossref; the specimen and scout manifest are SHA-256 pinned and
+          verified at every run (L145-176); the reference JSON records the Notch-lattice and Matrigel parameter
+          tables with their empirical anchors and caveats (JSON L273-375). Deductions: the reference JSON digest is
+          recomputed but not pinned, so silent edits to the kinetic tables would pass verification (-3); the specimen
+          licence/URL is traceable but it is a chick SEM standing in for a human organoid (-3); the Herrgen tau_c
+          anchor is zebrafish and is only qualitatively transferred (-2).
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [145, 176], note: "EXPECTED_SHA256 pins specimen + scout manifest; verify_dataset_integrity fails closed; reference JSON digest computed, not pinned", supports: true}
+          - {file: datasets/human_somite_organoid_clock/human_somite_organoid_clock_reference.json, lines: [273, 375], note: "Pass 3 Notch-lattice / DAPT protocol and Matrigel mechanics tables with sources, anchors and caveats", supports: true}
+          - {file: datasets/human_somite_organoid_clock/paper_citations.bib, lines: [45, 97], note: "Five Pass 3 BibTeX entries (Matsuda 2020 Nature, Lewis 2003, Riedel-Kruse 2007, Herrgen 2010, Sanaki-Matsumiya 2022), Crossref-verified", supports: true}
+          - {file: datasets/human_somite_organoid_clock/README.md, lines: [34, 51], note: "Laws 4-5 and additional sources documented in the dataset README", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >-
+          The module docstring (L1-106) states laws 1-5 with their Lean theorem names and the papers they come from;
+          Sections 4b/4c carry docstrings tying each term to Lewis (2003), Herrgen (2010), Matsuda (2020) Nature and
+          Yamanaka (2023); the math KG loop file registers laws 4-5 with code loci; Lean theorems 4-5 verify.
+          Deductions: the lam_eff weights 0.82/0.18, exponent 0.38, 0.55/0.45 and 0.65/0.35 (L407, L411, L498) have
+          no source and in practice are overridden by observed-period constants (-8); the rosette rate constants
+          (L1073-1074) and the DAPT basal fraction are uncited choices (-4); the kymograph phase_lag exponent 1.4
+          and amplitude constants are uncited (-2); math KG code loci are section ranges rather than per-equation
+          lines (-2).
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [1, 106], note: "Docstring: 9 sources, Pass 3 remediation statement, laws 1-5 with Lean theorem names", supports: true}
+          - {file: morphoeval/math_kg_loops/diaza-human-somite-organoid-clock.yaml, lines: [128, 207], note: "Laws 4-5 registered with lean_theorem, lean_locus, variables, role, source and code loci", supports: true}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [402, 416], note: "Unsourced tempo-factor weights/exponents overridden by observed-period constants", supports: false}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [1072, 1074], note: "Rosette rate constants and Hill cue are phenomenological and uncited", supports: false}
+      repro-package:
+        value: 88
+        rationale: >-
+          Deterministic (seed 2019) with bitwise two-run checks for the kymograph, the lattice R(t) and the rosette
+          positions; `--self-test` runs 8 blocks in ~14 s and the default render completes in ~17 s; all three media
+          outputs are regenerated by the default invocation; new CLI flags are documented in argparse; the
+          environment is recorded here. Deductions: no requirements lock file is vendored for this script (-4); two
+          dead CLI parameters remain (-3); without MPLCONFIGDIR matplotlib emits a cache warning in this environment
+          (-2); the GIF does not include the new lattice/rosette dynamics (-3).
+        evidence:
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [1830, 1925], note: "Self-test: SHA-256, tempo collapse, determinism (kymograph, lattice, rosette), 6-regime, allometry, specimen, lattice topology, DAPT protocol, sweeps, Matrigel, 9 measurements", supports: true}
+          - {file: 2019-diaza-human-somite-organoid-clock.py, lines: [1927, 1960], note: "CLI with --self-test, --eps-notch, --tau-c-fraction, --matrigel-pct; default run renders PNG, lattice PNG and GIF", supports: true}
+          - {file: docs/media/human_somite_organoid_clock_growth.gif, lines: [0, 0], note: "24-frame GIF regenerated (mouse vs human traces and kinematic wavefront only)", supports: true}
+    remediation:
+      - >-
+        2019-diaza-human-somite-organoid-clock.py:402-416 — `evaluate_perturbation_series` overrides its generic
+        lam_eff with observed-period constants (human WT = 300/122; LbNOX/azide = (300/122)*(0.41/k_met)) and the
+        JSON k_met values (0.54, 0.31) are themselves 0.41*300/T_obs, so Pearson r = 0.9999 (measurement L1298-1307)
+        is circular. Replace with a single predictive mapping from the vendored per-regime (tau_total, t_half_p,
+        t_half_m, k_met) to DDE parameters (e.g. tau_i = tau_total * split, delta = ln2/t_half, alpha scaled by
+        k_met) fitted on mouse WT only, report the out-of-sample RMSE for the other five regimes honestly, and drop
+        the regime-specific branches.
+      - >-
+        2019-diaza-human-somite-organoid-clock.py:608-623 and 1288-1297 — the 'human' cell is the mouse anchor
+        dilated by 300/122 (tau_tx 30.5, tau_tl 13.1, t_1/2,p 38.1, t_1/2,m 35.9 min), not the vendored Matsuda
+        (2020) human kinetics (tau = 51, t_1/2,p = 40, t_1/2,m = 42 min, JSON L123-140). Run the human regime and the
+        Notch lattice from the measured human parameters (re-tuning alpha/K/n once), so that the 300 min period is a
+        prediction rather than a construction, and wire `--tau-human` / `--thalf-human` (L1931-1932, currently dead)
+        into that run.
+      - >-
+        2019-diaza-human-somite-organoid-clock.py:549-599 — `simulate_axioloid_kymograph` is a prescribed
+        cos(omega t - phase_lag(x)) wave with hand-set somite boundaries. Derive the kymograph from the Notch-coupled
+        lattice (Section 4b) with an anteroposterior gradient of cell-autonomous period (or a moving determination
+        front that freezes cells), so Panel D is model output and somite size S = v_wf * T is emergent.
+      - >-
+        datasets/human_somite_organoid_clock/human_somite_organoid_clock_reference.json:56-90 and script 1318-1327 —
+        the specimen is a chick embryo SEM and its reference spacing (47.14 px) is the script's own output. Vendor a
+        CC-licensed human axioloid / somitoid image (e.g. from the Yamanaka 2023 or Sanaki-Matsumiya 2022 open
+        supplementary data) or a digitised somite-size table from those papers, and compare the rosette model's
+        aggregate radius (28 um at 10 %) and the lattice somite size against it.
+      - >-
+        2019-diaza-human-somite-organoid-clock.py:836-837 and 143 — the Notch gate scales synthesis and repression
+        threshold by the same factor and tau_c = 0.8 T is chosen from the stability scan. Derive the gate from an
+        explicit competitive NICD/RBPJ vs HES7 promoter-occupancy model, and sweep tau_c jointly with eps to map the
+        Arnold-tongue-like stability region (Panel H currently shows a single eps slice); report R_end(eps) beyond
+        0.25 where it becomes non-monotone (0.88 at 0.35).
+      - >-
+        2019-diaza-human-somite-organoid-clock.py:1034-1074 — kappa = 0.01 min^-1 per % Matrigel, phi_half = 4 %,
+        and the rosette rate constants are phenomenological. Calibrate kappa to published Matrigel storage moduli
+        versus concentration, extend the rosette to a multi-cell-layer ring with a lumen (or a 2D vertex model) and
+        add a quantitative morphometric (rosette diameter, cell aspect ratio) comparable to axioloid somite sizes.
+      - >-
+        2019-diaza-human-somite-organoid-clock.py:1733-1825 — the GIF still shows only the single-cell traces and the
+        kinematic wavefront; add the lattice phase map through the DAPT protocol and the rosette relaxation so the
+        animated artifact reflects the Pass 3 model, and vendor a requirements lock for this script.

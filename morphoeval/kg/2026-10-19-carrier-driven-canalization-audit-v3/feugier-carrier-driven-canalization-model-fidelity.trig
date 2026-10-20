@@ -1,0 +1,105 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-feugier-carrier-driven-canalization> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-feugier-carrier-driven-canalization-model-fidelity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-feugier-carrier-driven-canalization-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Feugier, Mochizuki & Iwasa (2005) PIN1 efflux carrier canalization on a Lockhart (1965)-growing hexagonal leaf blade with Scarpella et al. (2004/2006) procambial commitment: sequential 1°→4° vein-order emergence, open trees vs closed areoles vs decelerating no-branching — Model fidelity to source: 91/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The emergent growing-blade module (`simulate_growing_blade_canalization`, L862-1076) integrates the Feugier Eqs. 1-6 (flux kernel L933-1003, pool conservation error 0.0, flux antisymmetry error 0.0) on a Lockhart-growing mask (`lockhart_blade_area`, `blade_mask_at_growth_fraction`, L699-813) and reproduces Feugier's own dichotomy — accelerating Phi = J^2 → branching open tree (beta_1 = 0 at all four stages), decelerating Phi = J^2/(1+(J/K)^2) → no discrete branching (vein fraction 0.86) — plus the Scarpella (2004) commitment lock (L998-1001) that converts transient bipolar cells into closed areoles (beta_1 = 4). Debits: Panels A-B still render the Pass 2 shortest-path template (`simulate_hexagonal_venation_models`, L421-693) which is not an emergent result; the commitment lock is switched on by stage index (`commitment_on = ... s_idx >= 1`, L979) rather than by auxin history; the midvein is seeded by an apex convergence point (L948) rather than emerging; growth acts only on the mask (no per-cell expansion, no carrier dilution); emergent 3°/4° strands are 2-3 cells wide in the stage figure, wider than the single-file procambial strands of Scarpella (2006)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "2005-feugier-carrier-driven-canalization.py L421–L693: Panels A-B topology comparison is a shortest-path template relaxed by the ODEs (now labelled as scaffold); still rendered in the main figure and still the source of 2 of the 15 measurements <https://github.com/fractastical/morpholib/blob/d58a084/2005-feugier-carrier-driven-canalization.py#L421-L693>",
+            "2005-feugier-carrier-driven-canalization.py L979–L979: Commitment lock gated by growth-stage index (s_idx >= 1) rather than by an auxin/flux history criterion <https://github.com/fractastical/morpholib/blob/d58a084/2005-feugier-carrier-driven-canalization.py#L979-L979>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-feugier-carrier-driven-canalization-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-feugier-carrier-driven-canalization-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-feugier-carrier-driven-canalization-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-feugier-carrier-driven-canalization-model-fidelity-4> ;
+        pk:hasScore "0.91"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-feugier-carrier-driven-canalization-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2005-feugier-carrier-driven-canalization.py L862–L1076" ;
+        dct:description "Emergent growing-blade canalization: Feugier Eqs. 1-6 on a Lockhart-expanding hexagonal mesh with marginal cell birth, convergence points, and the Scarpella (2004) commitment lock; returns per-stage beta_1, vein orders, pool and antisymmetry residuals" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2005-feugier-carrier-driven-canalization.py#L862-L1076> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-feugier-carrier-driven-canalization-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2005-feugier-carrier-driven-canalization.py L699–L813" ;
+        dct:description "Law 4 Lockhart yield-threshold growth (closed form + Euler witness) and allometric blade mask growth" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2005-feugier-carrier-driven-canalization.py#L699-L813> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-feugier-carrier-driven-canalization-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "2005-feugier-carrier-driven-canalization.py L14–L31" ;
+        dct:description "Pass 3 corrections of record: citation fix, withdrawal of the 'Model B → closed loops' attribution to Feugier, relabelling of the templated scaffold" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2005-feugier-carrier-driven-canalization.py#L14-L31> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-feugier-carrier-driven-canalization-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_035_carrier_driven_canalization.lean L139–L217" ;
+        dct:description "3 new machine-checked Lean 4 theorems (Lockhart yield-threshold growth, growth-event Betti-1 bookkeeping, commitment-lock monotonicity); file verifies with 6 theorems, 0 sorrys" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/morphoeval/lean/loops/Loop_035_carrier_driven_canalization.lean#L139-L217> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 035 Pass 3 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/35> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/0022-5193(65)90077-9>,
+            <https://doi.org/10.1016/j.jtbi.2005.03.017>,
+            <https://doi.org/10.1086/382794>,
+            <https://doi.org/10.1101/gad.1402406>,
+            <https://doi.org/10.1111/j.1365-313X.2005.02581.x>,
+            <https://doi.org/10.1126/science.1214678>,
+            <https://doi.org/10.1242/dev.01182>,
+            <https://doi.org/10.1371/journal.pcbi.1000207> .
+    <https://doi.org/10.1016/0022-5193(65)90077-9> dct:date "1965"^^xsd:gYear ;
+        dct:title "An analysis of irreversible plant cell elongation" .
+    <https://doi.org/10.1016/j.jtbi.2005.03.017> dct:date "2005"^^xsd:gYear ;
+        dct:title "Self-organization of the vascular system in plant leaves: Inter-dependent dynamics of auxin flux and carrier proteins" .
+    <https://doi.org/10.1086/382794> dct:date "2004"^^xsd:gYear ;
+        dct:title "Vein pattern development in adult leaves of Arabidopsis thaliana" .
+    <https://doi.org/10.1101/gad.1402406> dct:date "2006"^^xsd:gYear ;
+        dct:title "Control of leaf vascular patterning by polar auxin transport" .
+    <https://doi.org/10.1111/j.1365-313X.2005.02581.x> dct:date "2005"^^xsd:gYear ;
+        dct:title "Reviewing models of auxin canalization in the context of leaf vein pattern formation in Arabidopsis" .
+    <https://doi.org/10.1126/science.1214678> dct:date "2012"^^xsd:gYear ;
+        dct:title "Generation of leaf shape through early patterns of growth and tissue polarity" .
+    <https://doi.org/10.1242/dev.01182> dct:date "2004"^^xsd:gYear ;
+        dct:title "Stage-specific markers define early steps of procambium development in Arabidopsis leaves and correlate termination of vein formation with mesophyll differentiation" .
+    <https://doi.org/10.1371/journal.pcbi.1000207> dct:date "2008"^^xsd:gYear ;
+        dct:title "Flux-based transport enhancement as a plausible unifying mechanism for auxin transport in meristem development" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Feugier, Mochizuki & Iwasa (2005) PIN1 efflux carrier canalization on a Lockhart (1965)-growing hexagonal leaf blade with Scarpella et al. (2004/2006) procambial commitment: sequential 1°→4° vein-order emergence, open trees vs closed areoles vs decelerating no-branching — Model fidelity to source 91/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T09:46:12Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-feugier-carrier-driven-canalization-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/35> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

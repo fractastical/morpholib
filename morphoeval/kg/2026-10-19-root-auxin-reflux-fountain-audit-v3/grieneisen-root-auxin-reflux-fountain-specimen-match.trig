@@ -1,0 +1,99 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-grieneisen-root-auxin-reflux-fountain> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-grieneisen-root-auxin-reflux-fountain-specimen-match> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-grieneisen-root-auxin-reflux-fountain-specimen-match> a pk:LLMClaimAssessment ;
+        rdfs:label "Grieneisen et al. (2007) Nature & Mähönen et al. (2014) Nature reverse-fountain root tip auxin reflux capacitor solved on a cellular PIN-permeability lattice, with a growing dividing cellular lattice and gravistimulated PIN3/PIN7 bending (Friml 2002, Band 2012) — Morphological realism / specimen match: 88/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The CC BY-SA 4.0 confocal micrograph is still SHA-256-pinned and segmented (`segment_arabidopsis_root_specimen` L763-835: 113 DAPI nuclei, 18.34 +- 0.58 px spacing, apical/proximal density ratio 1.118) and panel I of the figure shows the overlay next to the simulated lattice. Down four points from v2 because no model-predicted quantity is compared against the micrograph beyond the order-of-magnitude meristem cell count (26 simulated vs 32 +- 6 literature; the specimen nuclei count 113 spans 3 panels and is not converted into cells per file), and because the six-regime \"benchmarks\" the model is compared against in panels C-E are Pass-1 synthetic values, now labelled as such in the figure and dataset README." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-specimen-match> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/specimen-match" ;
+        pk:evidenceAgainst "datasets/root_auxin_reflux_fountain/README.md L20–L30: Dataset README disclosing that the six-regime reference-table values are Pass-1 synthetic calibration targets, not digitised paper data <https://github.com/fractastical/morpholib/blob/d58a084/datasets/root_auxin_reflux_fountain/README.md#L20-L30>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-grieneisen-root-auxin-reflux-fountain-specimen-match-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-grieneisen-root-auxin-reflux-fountain-specimen-match-2> ;
+        pk:hasScore "0.88"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-grieneisen-root-auxin-reflux-fountain-specimen-match-1> a pk:EvidenceItem ;
+        rdfs:label "2014-grieneisen-root-auxin-reflux-fountain.py L763–L835" ;
+        dct:description "Dual-channel DAPI nuclear + Alexa Fluor 488 mitotic CV segmentation of the Arabidopsis root meristem confocal micrograph (unchanged from Pass 2)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2014-grieneisen-root-auxin-reflux-fountain.py#L763-L835> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-grieneisen-root-auxin-reflux-fountain-specimen-match-2> a pk:EvidenceItem ;
+        rdfs:label "docs/media/root_auxin_reflux_fountain_comparison.png (generated output)" ;
+        dct:description "9-panel figure: solved WT lattice, ablation regeneration, 6-regime axial profiles, emergent vs synthetic-table QC amplitudes, zone boundaries, growing lattice, bending kinetics, parameter sweeps, confocal specimen overlay — docs/media/root_auxin_reflux_fountain_comparison.png: rendered output of 2014-grieneisen-root-auxin-reflux-fountain.py at d58a084, image/png, 790294 B, 2535×1950 px, artifact_sha256 74eeebaec44a0a577c78fcc9a3d4600c2a24ee895cb7aee80e52214132761d8a (sha256 74eeebaec44a0a577c78fcc9a3d4600c2a24ee895cb7aee80e52214132761d8a), spec_fingerprint 59e5555082b3fc06ab4cbec1acc2a30766a6392b68c0868814d580bd3ce1a15f" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 038 Pass 3 Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/38> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0092-8674(00)81535-4>,
+            <https://doi.org/10.1016/j.cub.2007.02.047>,
+            <https://doi.org/10.1038/415806a>,
+            <https://doi.org/10.1038/nature03184>,
+            <https://doi.org/10.1038/nature06215>,
+            <https://doi.org/10.1038/nature13663>,
+            <https://doi.org/10.1073/pnas.1013145107>,
+            <https://doi.org/10.1073/pnas.1201498109>,
+            <https://doi.org/10.1104/pp.116.4.1515>,
+            <https://doi.org/10.1126/science.1121790> .
+    <https://doi.org/10.1016/S0092-8674(00)81535-4> dct:date "1999"^^xsd:gYear ;
+        dct:title "An auxin-dependent distal organizer of pattern and polarity in the Arabidopsis root" .
+    <https://doi.org/10.1016/j.cub.2007.02.047> dct:date "2007"^^xsd:gYear ;
+        dct:title "Cytokinins determine Arabidopsis root-meristem size by controlling cell differentiation" .
+    <https://doi.org/10.1038/415806a> dct:date "2002"^^xsd:gYear ;
+        dct:title "Lateral relocation of auxin efflux regulator PIN3 mediates tropism in Arabidopsis" .
+    <https://doi.org/10.1038/nature03184> dct:date "2005"^^xsd:gYear ;
+        dct:title "The PIN auxin efflux facilitator network controls growth and patterning in Arabidopsis roots" .
+    <https://doi.org/10.1038/nature06215> dct:date "2007"^^xsd:gYear ;
+        dct:title "Auxin can act as a local morphogen to pattern root tissues" .
+    <https://doi.org/10.1038/nature13663> dct:date "2014"^^xsd:gYear ;
+        dct:title "PLETHORA gradient formation mechanism separates auxin responses" .
+    <https://doi.org/10.1073/pnas.1013145107> dct:date "2010"^^xsd:gYear ;
+        dct:title "Gravity-induced PIN transcytosis for polarization of auxin fluxes in gravity-sensing root cells" .
+    <https://doi.org/10.1073/pnas.1201498109> dct:date "2012"^^xsd:gYear ;
+        dct:title "Root gravitropism is regulated by a transient lateral auxin gradient controlled by a tipping-point mechanism" .
+    <https://doi.org/10.1104/pp.116.4.1515> dct:date "1998"^^xsd:gYear ;
+        dct:title "Analysis of cell division and elongation underlying the developmental acceleration of root growth in Arabidopsis thaliana" .
+    <https://doi.org/10.1126/science.1121790> dct:date "2006"^^xsd:gYear ;
+        dct:title "A molecular framework for plant regeneration" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Grieneisen et al. (2007) Nature & Mähönen et al. (2014) Nature reverse-fountain root tip auxin reflux capacitor solved on a cellular PIN-permeability lattice, with a growing dividing cellular lattice and gravistimulated PIN3/PIN7 bending (Friml 2002, Band 2012) — Morphological realism / specimen match 88/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T10:17:48Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-grieneisen-root-auxin-reflux-fountain-specimen-match> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/38> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

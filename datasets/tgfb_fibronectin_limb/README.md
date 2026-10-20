@@ -28,5 +28,16 @@ Formal SHA-256-locked reference dataset and *Gallus gallus* forelimb skeletal sp
    - SHA-256: `c810bd77e66557c8372e0f5ba74dcb630eb93aecdb7315cc242e4347b6c0d15f`.
 
 4. **`paper_citations.bib`**
-   - BibTeX citations for Hentschel et al. (2004), Kiskowski et al. (2004), Miura & Shiota (2000), Chaturvedi et al. (2005), and Christley et al. (2007).
-   - SHA-256: `b8e9c53f3df00e42ecc78e5b0eeb93512d86676e4e440240fd53c8c05f5d1e3d`.
+   - BibTeX citations for Hentschel et al. (2004), Kiskowski et al. (2004), Miura & Shiota (2000), Chaturvedi et al. (2005), and Christley et al. (2007); Pass 3 adds Graner & Glazier (1992), Glazier & Graner (1993), Savill & Hogeweg (1997), Hillen & Painter (2001), and Tapia & D'Souza (2011).
+   - SHA-256 (Pass 3): `c2be675a1125adf799bc3ddb069c921d55b31b5597154a7efb4e71850d4e42fc`.
+
+5. **`kiskowski_ggh_cpm_reference.json`** (Pass 3)
+   - Parameter and metric table for the Glazier-Graner-Hogeweg cellular Potts cell lattice coupled to the continuum PDE (`simulate_ggh_cellular_potts_condensation`): Graner & Glazier (1992) contact energies $J_{R1R1}=14,\ J_{R2R2}=2,\ J_{R1R2}=11,\ J_{cM}=16$, $T=10$, $\lambda_V=6$, $V_T=25$ px, haptotaxis strength $\mu_F=10$, Monte Carlo step budgets, the Hill-switch cell-state coupling, the discrete fibronectin deposition law, and the discrete-continuum parity metrics (condensation index, heterotypic boundary fraction, $r$ of discrete vs continuum $R_2$, wing-bud compartment counts, `clip_fraction_R`).
+   - Also records the volume-filling haptotaxis form (Hillen & Painter 2001) adopted for the 2D micromass continuum solver and why (Pass 2 solver collapse).
+   - SHA-256: `a7d13368e41d762a9cbf86337e575173a5fde9328cb90865cfb7877791e88a9f`.
+
+## Pass 3 findings recorded here
+
+- The Pass 2 micromass "nodular spots (19.8%) vs labyrinthine stripes (44.8%)" contrast was an artefact of thresholding a chemotactically collapsed field; with volume-filling haptotaxis both haptotactic regimes are labyrinthine bands (islands differ in count and mean size, not in spot/stripe topology).
+- The 1D stage and 2D wing-bud continuum solvers still pin part of $R(x)$ at the clip bounds (reported as `clip_fraction_R` in `measure_morphoeval()`); their condensation *counts* are preserved but their *amplitudes* are not resolved. Carried to Pass 4.
+- The discrete GGH model reproduces the zeugopod (2) and autopod (3) condensations but not the stylopod (1): the stylopod activator peak $c_a^{\max}=0.35$ never crosses the half-maximal Hill switch $K_a=0.60$.

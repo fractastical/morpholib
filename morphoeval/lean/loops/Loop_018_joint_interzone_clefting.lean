@@ -103,4 +103,92 @@ theorem noggin_gdf5_joint_cleft_ablation (gdf5_dose : Nat) :
   · simp [active_synovial_joints]
   · simp [segmented_phalanges, active_synovial_joints]
 
+-- ============================================================================
+-- Law 4 (`onuff-joint-interzone-clefting-4`, Pass 3):
+-- Reduced Biot Poroelastic Synovial Cavitation Gating Law
+-- (Mow et al. 1980 biphasic cartilage; Edwards et al. 1994 & Dowthwaite et al. 1998
+--  hyaluronan-driven loss of interzone cohesion; Drachman & Sokoloff 1966 and
+--  Kahn et al. 2009 immobilisation / muscle-less joint fusion)
+-- ============================================================================
+/-- In the reduced Biot poroelastic cavitation model of
+    `2016-onuff-joint-interzone-clefting.py` (`simulate_poroelastic_cavitation`),
+    Gdf5+ interzone cells (`gdf5`) synthesise hyaluronan at a mechanosensitive rate
+    proportional to embryonic muscle loading (`m_load`); at steady state the HA
+    content is `H_ss = k_H * m_load * gdf5` and the linearised Donnan osmotic
+    pore pressure is `p_ss = beta * H_ss`. The solid interzone cohesion is
+    `sigma_coh = sigma_0 - kappa * gdf5`, and a synovial cavity opens iff
+    `p_ss > sigma_coh`. We prove:
+    1. `m_load = 0` (paralysed / muscle-less embryo) forces `p_ss = 0`, so no cavity
+       opens wherever cohesion is positive, however strong the Gdf5 interzone is
+       (Drachman & Sokoloff 1966; Kahn et al. 2009);
+    2. `gdf5 = 0` (no interzone, e.g. the Noggin null) also forces `p_ss = 0`, so no cavity;
+    3. steady pore pressure is monotone non-decreasing in muscle loading
+       (the `--m-load` sweep is monotone);
+    4. at the wild-type integer calibration (`beta = 1, k_H = 1, m_load = 10,
+       gdf5 = 10, sigma_0 = 100, kappa = 5`, i.e. p = 100 > 50 in hundredths of
+       the dimensionless script units beta_osm = 1, sigma_0 = 1, kappa_G = 0.5)
+       the cavity opens, whereas at `m_load = 3` (p = 30 < 50) it does not. -/
+def ha_steady (k_H m_load gdf5 : Nat) : Nat :=
+  k_H * gdf5 * m_load
+
+def pore_pressure_steady (beta k_H m_load gdf5 : Nat) : Nat :=
+  beta * ha_steady k_H m_load gdf5
+
+def interzone_cohesion (sigma_0 kappa gdf5 : Int) : Int :=
+  sigma_0 - kappa * gdf5
+
+def cavity_opens (p : Nat) (sigma_coh : Int) : Bool :=
+  decide ((p : Int) > sigma_coh)
+
+theorem poroelastic_cavitation_requires_load_and_interzone
+    (beta k_H gdf5 m1 m2 : Nat) (sigma_coh : Int) (hpos : 0 < sigma_coh)
+    (hm : m1 ≤ m2) :
+    pore_pressure_steady beta k_H 0 gdf5 = 0 ∧
+    pore_pressure_steady beta k_H m1 0 = 0 ∧
+    cavity_opens (pore_pressure_steady beta k_H 0 gdf5) sigma_coh = false ∧
+    pore_pressure_steady beta k_H m1 gdf5 ≤ pore_pressure_steady beta k_H m2 gdf5 ∧
+    cavity_opens (pore_pressure_steady 1 1 10 10) (interzone_cohesion 100 5 10) = true ∧
+    cavity_opens (pore_pressure_steady 1 1 3 10) (interzone_cohesion 100 5 10) = false := by
+  refine ⟨?_, ?_, ?_, ?_, by decide, by decide⟩
+  · simp [pore_pressure_steady, ha_steady]
+  · simp [pore_pressure_steady, ha_steady]
+  · simp [cavity_opens, pore_pressure_steady, ha_steady]
+    omega
+  · unfold pore_pressure_steady ha_steady
+    exact Nat.mul_le_mul_left beta (Nat.mul_le_mul_left (k_H * gdf5) hm)
+
+-- ============================================================================
+-- Law 5 (`onuff-joint-interzone-clefting-5`, Pass 3):
+-- Darcy Lens-Cavity Midline Maximum Law
+-- ============================================================================
+/-- With free drainage (`p = 0`) at the perichondrial walls `y = ±W` and a uniform
+    osmotic source `s ≥ 0` across the interzone, the steady 1D Darcy pressure
+    `κ p'' + s = 0` is the parabola `2 κ p(y) = s (W² − y²)`. Writing
+    `darcy_lens_pressure s W y = s * (W*W − y*y)` for the scaled pressure, the
+    pressure (and hence the cavitation drive `p − σ_coh`) is maximal on the digit
+    midline `y = 0` and vanishes at the walls, which is why the simulated synovial
+    cavity nucleates as a transverse lens centred on the ray axis. -/
+def darcy_lens_pressure (s W y : Int) : Int :=
+  s * (W * W - y * y)
+
+theorem darcy_lens_cavity_midline_maximum (s W y : Int) (hs : 0 ≤ s) :
+    darcy_lens_pressure s W y ≤ darcy_lens_pressure s W 0 ∧
+    darcy_lens_pressure s W W = 0 ∧
+    darcy_lens_pressure 3 10 0 = 300 ∧
+    darcy_lens_pressure 3 10 6 = 192 := by
+  refine ⟨?_, ?_, by decide, by decide⟩
+  · unfold darcy_lens_pressure
+    have hyy : 0 ≤ y * y := by
+      rcases Int.le_total 0 y with h | h
+      · exact Int.mul_nonneg h h
+      · exact Int.mul_nonneg_of_nonpos_of_nonpos h h
+    have h1 : W * W - y * y ≤ W * W - 0 * 0 := by
+      generalize W * W = ww
+      generalize y * y = yy at hyy ⊢
+      omega
+    exact Int.mul_le_mul_of_nonneg_left h1 hs
+  · unfold darcy_lens_pressure
+    generalize W * W = ww
+    omega
+
 end MathOfBiology.Loop_018

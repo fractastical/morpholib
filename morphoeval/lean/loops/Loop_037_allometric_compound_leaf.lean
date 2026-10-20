@@ -145,4 +145,82 @@ theorem kierzkowski_2019_rco_compound_leaflet_dissection_enhancement
     Int.mul_pos hTGC hDiff
   omega
 
+-- ============================================================================
+-- Pass 3 (2026-10-20): Hamant et al. (2008) / Sampathkumar et al. (2014)
+-- Microtubule-Reinforced Anisotropic Growth Tensor Partition Law
+-- ============================================================================
+/-- In Hamant et al. (2008) Science 322:1650-1655 and Sampathkumar et al. (2014) eLife 3:e01967,
+    cortical microtubules (and the cellulose microfibrils they guide) reinforce the cell wall along
+    a direction `d`, so that an edge of the cellular lamina making angle `theta` with `d` elongates at
+      `gamma(theta) = g * (1 + a * (2 cos^2 theta - 1))`,
+    where `g > 0` is the isotropic (areal) growth rate and `0 < a < 1` the reinforcement anisotropy.
+    In integer form with unit scale `S` (so `cos^2 theta` ranges over `0 .. S`):
+      `gamma(cos2) = g * (S + a * (2 * cos2 - S))`.
+    The partition law states that the parallel (`cos2 = S`) and perpendicular (`cos2 = 0`) rates
+    satisfy `gamma_par + gamma_perp = 2 g S` (anisotropy redistributes growth, it does not create
+    area) and `gamma_par - gamma_perp = 2 g a S > 0` (strictly more elongation along the
+    reinforcement axis). This is exactly the edge rest-length update used by
+    `GrowingLaminaSpringMesh.run` in `2011-przemyslaw-allometric-compound-leaf.py`. -/
+def anisotropic_growth_rate (g S a cos2 : Int) : Int :=
+  g * (S + a * (2 * cos2 - S))
+
+theorem hamant_2008_microtubule_anisotropic_growth_partition
+    (g S a : Int) (hg : g > 0) (hS : S > 0) (ha : a > 0) :
+    anisotropic_growth_rate g S a S + anisotropic_growth_rate g S a 0 = 2 * g * S ∧
+    anisotropic_growth_rate g S a S - anisotropic_growth_rate g S a 0 = 2 * g * a * S ∧
+    anisotropic_growth_rate g S a S > anisotropic_growth_rate g S a 0 := by
+  -- gamma_par = g * (S + a * S) ; gamma_perp = g * (S - a * S)
+  have hPar : anisotropic_growth_rate g S a S = g * S + g * (a * S) := by
+    show g * (S + a * (2 * S - S)) = g * S + g * (a * S)
+    have h1 : 2 * S - S = S := by omega
+    rw [h1, Int.mul_add]
+  have hPerp : anisotropic_growth_rate g S a 0 = g * S - g * (a * S) := by
+    show g * (S + a * (2 * 0 - S)) = g * S - g * (a * S)
+    have h1 : a * (2 * 0 - S) = -(a * S) := by
+      rw [Int.mul_zero, Int.zero_sub, Int.mul_neg]
+    rw [h1, ← Int.sub_eq_add_neg, Int.mul_sub]
+  have hSum : anisotropic_growth_rate g S a S + anisotropic_growth_rate g S a 0 = 2 * g * S := by
+    rw [hPar, hPerp, Int.mul_assoc 2 g S]
+    omega
+  have hDiff : anisotropic_growth_rate g S a S - anisotropic_growth_rate g S a 0 = 2 * g * a * S := by
+    rw [hPar, hPerp, Int.mul_assoc (2 * g) a S, Int.mul_assoc 2 g (a * S)]
+    omega
+  refine ⟨hSum, hDiff, ?_⟩
+  have haS : a * S > 0 := Int.mul_pos ha hS
+  have hgaS : g * (a * S) > 0 := Int.mul_pos hg haS
+  rw [hPar, hPerp]
+  omega
+
+-- ============================================================================
+-- Pass 3 (2026-10-20): Mitchison (1980) Flux-Canalization Conductance Feedback Law
+-- ============================================================================
+/-- In Mitchison (1980) Proc. R. Soc. Lond. B 207:79-109 (and its auxin-transport reading in
+    Scarpella et al. (2006) Genes Dev 20:1015-1027), the conductance `D` of a cell-cell interface
+    carrying auxin flux `q` is updated by positive flux feedback and first-order decay:
+      `D' = D + dt * (k * q^2 - mu * D)`.
+    With `dt > 0`: whenever the flux-feedback term exceeds the decay term (`k q^2 > mu D`) the
+    conductance strictly increases (the strand canalizes), and at zero flux with `mu > 0, D > 0`
+    it strictly decays (unused interfaces lose conductance). This is the per-edge update of
+    `GrowingLaminaSpringMesh._canalize` that produces the lateral vein strands draining each
+    marginal convergence point into the procambial midvein. -/
+def conductance_update (D dt k mu q : Int) : Int :=
+  D + dt * (k * q * q - mu * D)
+
+theorem mitchison_1980_canalization_conductance_feedback
+    (D dt k mu q : Int) (hdt : dt > 0) (hmu : mu > 0) (hD : D > 0)
+    (hpos : k * q * q > mu * D) :
+    conductance_update D dt k mu q > D ∧ conductance_update D dt k mu 0 < D := by
+  have hGain : k * q * q - mu * D > 0 := by omega
+  have hUp : dt * (k * q * q - mu * D) > 0 := Int.mul_pos hdt hGain
+  have hmuD : mu * D > 0 := Int.mul_pos hmu hD
+  have hDown : dt * (mu * D) > 0 := Int.mul_pos hdt hmuD
+  constructor
+  · show D + dt * (k * q * q - mu * D) > D
+    omega
+  · show D + dt * (k * 0 * 0 - mu * D) < D
+    have h0 : dt * (k * 0 * 0 - mu * D) = -(dt * (mu * D)) := by
+      rw [Int.mul_zero, Int.zero_sub, Int.mul_neg]
+    rw [h0]
+    omega
+
 end MathOfBiology.Loop_037

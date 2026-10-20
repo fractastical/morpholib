@@ -15,10 +15,33 @@ model_spec:
   D_v: 0.02
   D_w: 0.50
   seed: 2009
+  # Pass 3 hybrid continuum-agent growing-flank parameters (simulate_hybrid_iridophore_growth)
+  hybrid:
+    g0: 0.40
+    growth_fraction: 0.80
+    steps: 2400
+    dt: 0.08
+    grid: [64, 64]
+    n_iridophores_init: 96
+    gamma_u: 0.10
+    gamma_v: 0.03
+    gamma_L: 0.02
+    r_SL: 1.0
+    r_LS: 1.0
+    switch_threshold: 0.10
+    step_S: 0.02
+    step_L: 0.25
+    p_div_S: 0.04
+    p_div_L: 0.03
+    rho_ref: 30.0
+    kernel_sigma_y: 0.30
+    kernel_sigma_x: 1.20
   inputs:
     - datasets/zebrafish_three_cell_stripes/zebrafish_three_cell_stripes_reference.json
     - datasets/zebrafish_three_cell_stripes/danio_rerio_specimen.jpg
     - datasets/zebrafish_three_cell_stripes/scout_manifest.json
+    - datasets/zebrafish_three_cell_stripes/paper_citations.bib
+    - datasets/zebrafish_three_cell_stripes/iridophore_ontogeny_reference.json
 equations:
   - law_name: "Nakamasu (2009) Short-Range Melanophore-Xanthophore Mutual Repulsion Saddle Instability"
     formula: "det(J_{uv}) = c_u c_v - b_u a_v < 0  ∧  λ_{anti} = |b_u| - c_u > 0  when  |b_u|, |a_v| > c_u, c_v"
@@ -72,3 +95,61 @@ equations:
     role: "Proves that differential long-range signaling range D_w / D_u = 25 opens a finite stationary Turing band around k_c = 3.4106 (lambda_c = 1.8423), while equal diffusion quenches pattern formation"
     source_citation: "Nakamasu et al. (2009) PNAS 106(21):8429-8434 Fig. 5 & SI Text"
     code_locus: "2009-nakamasu-zebrafish-three-cell-stripes.py#L155-L235"
+  # ---------------------------------------------------------------- Pass 3 laws (hybrid growing flank)
+  - law_name: "Growing-Domain Neumann Mode Insertion Across the Nakamasu Turing Band"
+    formula: "mode cos(n π y / L) ∈ Turing band ⟺ k_min L ≤ n π ≤ k_max L, k ∈ [2.1134, 5.3669];  L = 3.68: n ∈ [3, 6] (n = 4 ↔ 2 stripes);  L = 9.2: n ∈ [7, 15] (n = 10 ↔ 5 stripes);  no n is admissible at both sizes ⟹ isometric growth forces stripe insertion"
+    lean_decl: "MathOfBiology.Loop_007.mode_in_turing_band"
+    lean_theorem: "MathOfBiology.Loop_007.nakamasu_growing_domain_stripe_insertion"
+    lean_locus: "morphoeval/lean/loops/Loop_007_zebrafish_three_cell_stripes.lean#L144-L173"
+    lean_code: |
+      def mode_in_turing_band (n L10 : Int) : Bool :=
+        decide (21134 * L10 ≤ n * 314159 ∧ n * 314159 ≤ 53669 * L10)
+      theorem nakamasu_growing_domain_stripe_insertion :
+          mode_in_turing_band 4 37 = true ∧ mode_in_turing_band 10 37 = false ∧
+          mode_in_turing_band 4 92 = false ∧ mode_in_turing_band 6 92 = false ∧
+          mode_in_turing_band 7 92 = true ∧ mode_in_turing_band 10 92 = true ∧
+          mode_in_turing_band 15 92 = true ∧ mode_in_turing_band 16 92 = false := by decide
+      theorem mode_in_turing_band_scales (n L10 : Int) :
+          mode_in_turing_band (2 * n) (2 * L10) = mode_in_turing_band n L10
+    variables: "n: Neumann cosine mode index (n half-waves ≈ n/2 dark stripes); L: dorsoventral flank height (3.68 juvenile at SL 7.2 mm, 9.2 adult at SL 18 mm); integer scalings k×1e4, π×1e5, L×10"
+    role: "Explains why the 2-stripe juvenile pattern (1D, 1V around X0) cannot persist as a single mode on the adult flank and must insert new stripes (X1D/2D, X1V/2V) during growth; parity-checked in self_test check 9 and the hybrid ontogeny record"
+    source_citation: "Nakamasu et al. (2009) Fig. 5 band; Crampin, Gaffney & Maini (1999) Bull Math Biol 61:1093 (growing-domain mode insertion); Parichy et al. (2009) Dev Dyn 238:2975 stage anchors"
+    code_locus: "2009-nakamasu-zebrafish-three-cell-stripes.py#L612-L621"
+    code_locus_also: "2009-nakamasu-zebrafish-three-cell-stripes.py#L636-L898 (simulate_hybrid_iridophore_growth)"
+  - law_name: "Growth Dilution Preserves Routh-Hurwitz Homogeneous Stability and the Short-Range Saddle"
+    formula: "Lagrangian growing-domain Jacobian J0 − r I, r = 2 g'/g ≥ 0 (isotropic dilution): at r = 0.1, p1 = 2.80 > 0, p2 = 2.16 > 0, p3 = 3.150 > 0, p1 p2 − p3 = 2.898 > 0, det(J_uv) = 0.81 − 2.25 = −1.44 < 0;  p1(r) = p1(0) + 3r"
+    lean_decl: "MathOfBiology.Loop_007.routh_hurwitz_p1"
+    lean_theorem: "MathOfBiology.Loop_007.nakamasu_growth_dilution_preserves_routh_hurwitz"
+    lean_locus: "morphoeval/lean/loops/Loop_007_zebrafish_three_cell_stripes.lean#L176-L205"
+    lean_code: |
+      theorem nakamasu_growth_dilution_preserves_routh_hurwitz :
+          routh_hurwitz_p1 9 9 10 = 28 ∧
+          routh_hurwitz_p2 9 9 10 (-15) 12 (-15) (-6) (-9) 12 = 216 ∧
+          routh_hurwitz_p3 9 9 10 (-15) 12 (-15) (-6) (-9) 12 = 3150 ∧
+          (routh_hurwitz_p1 9 9 10) * (routh_hurwitz_p2 9 9 10 (-15) 12 (-15) (-6) (-9) 12)
+            - (routh_hurwitz_p3 9 9 10 (-15) 12 (-15) (-6) (-9) 12) = 2898 ∧
+          short_range_det_uv 9 9 15 15 = -144 := by decide
+      theorem dilution_raises_p1 (cu cv cw r : Int) (hr : r ≥ 0) :
+          routh_hurwitz_p1 (cu + r) (cv + r) (cw + r) = routh_hurwitz_p1 cu cv cw + 3 * r ∧
+          routh_hurwitz_p1 (cu + r) (cv + r) (cw + r) ≥ routh_hurwitz_p1 cu cv cw
+    variables: "r = 2 g'/g: dilution rate of a uniformly (isotropically) growing 2D domain; the script's maximum is 2·(0.6/153.6)/0.4 = 0.0195 ≪ 0.1; c_u, c_v, c_w each shifted by r"
+    role: "Shows the growing-domain correction (Crampin-Gaffney-Maini 1999) used by the hybrid solver cannot destabilize the homogeneous state nor remove the local (u, v) saddle that drives segregation; parity-checked in self_test check 10 via compute_nakamasu_theory(c_u=0.9, c_v=0.9, c_w=1.0)"
+    source_citation: "Crampin, Gaffney & Maini (1999) Bull Math Biol 61:1093-1120; Nakamasu et al. (2009) SI Text"
+    code_locus: "2009-nakamasu-zebrafish-three-cell-stripes.py#L778-L786"
+    code_locus_also: "2009-nakamasu-zebrafish-three-cell-stripes.py#L1619-L1623 (self-test parity check 10)"
+  - law_name: "Iridophore Dense<->Loose Switching Rule Is Exclusive and Conserves Agents"
+    formula: "S→L iff u − v > θ;  L→S iff v − u > θ;  θ ≥ 0 ⟹ ¬(S→L ∧ L→S);  (s − a + b) + (l + a − b) = s + l"
+    lean_decl: "MathOfBiology.Loop_007.switch_S_to_L"
+    lean_theorem: "MathOfBiology.Loop_007.iridophore_switch_exclusive_and_conservative"
+    lean_locus: "morphoeval/lean/loops/Loop_007_zebrafish_three_cell_stripes.lean#L208-L231"
+    lean_code: |
+      def switch_S_to_L (d θ : Int) : Bool := decide (d > θ)
+      def switch_L_to_S (d θ : Int) : Bool := decide (-d > θ)
+      theorem iridophore_switch_exclusive_and_conservative (d θ s l a b : Int) (hθ : θ ≥ 0) :
+          ¬ (switch_S_to_L d θ = true ∧ switch_L_to_S d θ = true) ∧
+          (s - a + b) + (l + a - b) = s + l
+    variables: "d = u − v: local melanophore excess at the agent position; θ = 0.10: switching threshold; s, l: dense/loose agent counts; a, b: S→L and L→S events per step"
+    role: "Formalizes the reduced Volkening & Sandstede (2018) shape-transition rule used for every agent update: a cell never receives contradictory instructions and switching never creates or destroys iridophores (only proliferation does); parity-checked in self_test check 13"
+    source_citation: "Volkening & Sandstede (2018) Nat Commun 9:3231 (iridophore S/L transitions); Singh et al. (2014) Nat Cell Biol 16:607; Frohnhoefer et al. (2013) Development 140:2997"
+    code_locus: "2009-nakamasu-zebrafish-three-cell-stripes.py#L802-L812"
+    code_locus_also: "2009-nakamasu-zebrafish-three-cell-stripes.py#L814-L832 (motility, proliferation)"

@@ -15,6 +15,19 @@ model_spec:
     - datasets/hox_turing_polydactyly/hox_turing_polydactyly_reference.json
     - datasets/hox_turing_polydactyly/vertebrate_autopod_digits_specimen.jpg
     - datasets/hox_turing_polydactyly/scout_manifest.json
+    - datasets/hox_turing_polydactyly/pass3_aer_growth_reference.json
+  pass3_growth:
+    theta_span_rad: 1.7278759594743862
+    r_prox: 1.0
+    R0: 1.6
+    R_target: 3.6363636363636362
+    l_F: 0.5
+    t_aer_off: 2.4
+    tau_aer: 0.3
+    T_total: 5.0
+    eps_r: 0.05
+    noise_amp: 0.02
+    g_max_calibrated: 1.95
 equations:
   - law_name: "Turing Equal-Diffusion Negative Control (No Digit Patterning for D_u = D_v)"
     formula: "tr(J_0) < 0 ∧ det(J_0) > 0 ∧ D_u = D_v = D ≥ 1 ⟹ ∀ q = k^2 ≥ 0, tr(J_k) = tr(J_0) - 2 D q < 0 ∧ det(J_k) = det(J_0) - D tr(J_0) q + D^2 q^2 > 0"
@@ -72,4 +85,43 @@ equations:
     variables: "r: proximodistal radial coordinate on the fan-shaped limb bud; m: angular digit ray mode number; [k_-^2, k_+^2]: local Turing unstable wavenumber band"
     role: "Proves why the narrow proximal zeugopod (r=1) supports only 2 skeletal condensations (radius/ulna) while excluding 5-to-14 digit modes, whereas the expanded distal autopod fan (r=3) admits the Hox-tuned digit rays"
     source_citation: "Sheth et al. (2012) Science 338(6113):1476-1480 Fig. 3D-F & Fig. 4; Newman & Frisch (1979) Science 205:662-668"
-    code_locus: "2012-sheth-hox-turing-polydactyly.py#L340-L435"
+    code_locus: "2012-sheth-hox-turing-polydactyly.py#L331-L427"
+  - law_name: "Digit Number = Autopod Width / Turing Wavelength on an AER-Grown Autopod (Pass 3)"
+    formula: "N(L, λ) = ⌊L / λ⌋;  L_1 ≤ L_2 ⟹ N(L_1, λ) ≤ N(L_2, λ);  0 < λ_1 ≤ λ_2 ⟹ N(L, λ_2) ≤ N(L, λ_1);  N(2500, 500) = 5, N(2500, 357) = 7, N(2500, 178) = 14, N(1365, 500) = 2 (AER ablated at t = 0.6)"
+    lean_decl: "MathOfBiology.Loop_015.digit_wavelengths"
+    lean_theorem: "MathOfBiology.Loop_015.sheth_growing_autopod_digit_number_law"
+    lean_locus: "morphoeval/lean/loops/Loop_015_hox_turing_polydactyly.lean#L117-L145"
+    lean_code: |
+      def digit_wavelengths (L lam : Nat) : Nat := L / lam
+      theorem sheth_growing_autopod_digit_number_law (L1 L2 L lam1 lam2 : Nat)
+          (hL : L1 ≤ L2) (hlam : lam1 ≤ lam2) (hpos : 0 < lam1) :
+          digit_wavelengths L1 lam1 ≤ digit_wavelengths L2 lam1 ∧
+          digit_wavelengths L lam2 ≤ digit_wavelengths L lam1 ∧
+          digit_wavelengths 2500 500 = 5 ∧
+          digit_wavelengths 2500 357 = 7 ∧
+          digit_wavelengths 2500 178 = 14 ∧
+          digit_wavelengths 1365 500 = 2 := by
+        unfold digit_wavelengths
+        exact ⟨Nat.div_le_div_right hL, Nat.div_le_div_left hlam hpos, rfl, rfl, rfl, rfl⟩
+    variables: "L = Θ R(T) · 2500/(2π) um: final distal autopod arc set by AER-FGF8 outgrowth (R(T) from dR/dt = v(R,t)); λ(H) = 2500/k_c(H) um: Hox-tuned Turing wavelength; N: number of digit wavelengths on the rim"
+    role: "Separates the two control axes of digit number on the growing autopod: AER-driven width (ablation / g_max sweep, Summerbell 1974) and Hox-driven wavelength (Sheth 2012 allelic series); the numerical growing-fan solver reports N_grow against this quasi-static law (slope < 1 = growth-induced wavelength lag)"
+    source_citation: "Sheth et al. (2012) Science 338(6113):1476-1480 Figs. 2-3; Summerbell (1974) J Embryol Exp Morphol 32:651-660; Kondo & Miura (2010) Science 329:1616-1620"
+    code_locus: "2012-sheth-hox-turing-polydactyly.py#L457-L755"
+  - law_name: "Growth-Dilution Shift of the Turing Modal Eigenvalue on a Growing Domain (Pass 3)"
+    formula: "u_t + v·∇u + (∇·v) u = D∇²u + f(u)  ⟹  J_k → J_k − g I,  σ_g(k) = σ(k) − g;  g < σ ⟹ σ_g > 0;  g ≥ σ ⟹ σ_g ≤ 0;  g = 0 (AER regression) ⟹ σ_g = σ;  449 − 195 > 0 (σ_max = 4.49, g_rim = 1.95)"
+    lean_decl: "MathOfBiology.Loop_015.dilution_shifted_eigenvalue"
+    lean_theorem: "MathOfBiology.Loop_015.sheth_growth_dilution_turing_threshold"
+    lean_locus: "morphoeval/lean/loops/Loop_015_hox_turing_polydactyly.lean#L148-L174"
+    lean_code: |
+      def dilution_shifted_eigenvalue (sigma g : Int) : Int := sigma - g
+      theorem sheth_growth_dilution_turing_threshold (sigma g : Int) :
+          (g < sigma → dilution_shifted_eigenvalue sigma g > 0) ∧
+          (g ≥ sigma → dilution_shifted_eigenvalue sigma g ≤ 0) ∧
+          dilution_shifted_eigenvalue sigma 0 = sigma ∧
+          dilution_shifted_eigenvalue 449 195 > 0 ∧
+          dilution_shifted_eigenvalue 449 500 < 0 := by
+        unfold dilution_shifted_eigenvalue; omega
+    variables: "g(r,t) = g_max A(t) exp(−(R−r)/l_F): AER-FGF8 kinematic area dilation rate (∇·v = g); σ(k): fixed-domain modal growth rate; σ_g(k): modal growth rate on the growing domain"
+    role: "Formalizes the dilution term of the growing-domain reaction-diffusion equations: digits can condense during AER outgrowth only while σ_max exceeds the rim dilation rate, and AER regression (g → 0) restores the full Turing rate — the mechanism behind the sequential digit emergence kymograph (Panel K)"
+    source_citation: "Crampin, Gaffney & Maini (1999) Bull Math Biol 61(6):1093-1120; Boehm et al. (2010) PLoS Biol 8(7):e1000420; Sheth et al. (2012) Science 338:1476-1480"
+    code_locus: "2012-sheth-hox-turing-polydactyly.py#L512-L703"

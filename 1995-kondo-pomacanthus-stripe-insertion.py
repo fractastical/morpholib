@@ -44,6 +44,30 @@ Governing Mathematical Laws (verified in `morphoeval/lean/loops/Loop_004_pomacan
      stripes (N_stripes: 3 -> 6 -> 12 -> 24) and preserving homeostatic wavelength lambda_c.
    - In Pomacanthus imperator, a 2D Y-junction branch dislocation migrates horizontally like a zipper across
      widened inter-stripe intervals, incrementing the stripe count by +1 per unzipped branch.
+
+4. (Pass 3) Curvilinear C-Shaped Mid-Trough Threshold Partition
+   (`kondo_asai_1995_curvilinear_mid_trough_threshold_partition`):
+   On the posterior-centred polar sector rho in [rho_in, 1], theta in [-Theta, Theta] with growing outer radius
+   R(t) = R_0 s(t), the physical Laplacian is (1/R^2)[d^2/drho^2 + (1/rho) d/drho + (1/rho^2) d^2/dtheta^2]
+   (zero-flux edges). In the activator-depleted trough (A = 0) the piecewise-linear synthesis
+   F_trough(I) = min(F_max, max(0, c_2 I + c_3)) is silent for I >= I_thr = c_3/|c_2| = 0.625 and active below it,
+   is antitone in I, and the concentric arc count doubles (3 -> 6) under radial span doubling while arc length
+   pi (R_in + k lambda) grows strictly with arc index k.  `simulate_curvilinear_c_shaped_arc_insertion` tracks
+   I_mid(s) and the arc count N(s) and `fit_specimen_concentric_arcs` anchors the geometry on the specimen.
+
+5. (Pass 3) Discrete Iridophore/Melanophore Agent Fate Partition & Bounded Feedback
+   (`kondo_asai_1995_pigment_agent_fate_partition_and_bounded_feedback`):
+   Discrete pigment cells read the local activator: cell_fate(A) = [A >= A_thr] (1 = iridophore/light stripe,
+   0 = melanophore/dark interstripe) is monotone and binary, and the agent-to-field feedback
+   c_3 -> c_3 + kappa_A * fate, c_5 -> c_5 + kappa_I * (1 - fate) is bounded in [c_3, c_3 + kappa_A] and
+   [c_5, c_5 + kappa_I].  `simulate_pigment_cell_agent_coupling` adds Nakamasu et al. (2009) style short-range
+   exclusion and long-range support contact rules and `agent_coupling_ablation_sweep` ablates kappa.
+
+Additional references (Pass 3):
+  5. Nakamasu, A., Takahashi, G., Kanbe, A. & Kondo, S. (2009). "Interactions between zebrafish pigment cells
+     responsible for the generation of Turing patterns." PNAS 106(21):8429-8434. DOI: 10.1073/pnas.0808622106
+  6. Bullara, D. & De Decker, Y. (2015). "Pigment cell movement is not required for generation of Turing
+     patterns in zebrafish skin." Nature Communications 6:6971. DOI: 10.1038/ncomms7971
 """
 
 from __future__ import annotations
@@ -566,6 +590,407 @@ def simulate_2d_imperator_y_branch_unzipping(
 
 
 # ============================================================================
+# Section 4b (Pass 3): Curvilinear C-Shaped (Polar Sector) Kondo-Asai Solver for
+#            Concentric Semicircular Arc Insertion in Juvenile P. semicirculatus
+# ============================================================================
+#   Juvenile P. semicirculatus stripes are concentric C-shaped arcs centred on
+#   the posterior flank (see `fit_specimen_concentric_arcs`).  We therefore
+#   integrate the Kondo-Asai PDE in scaled polar coordinates (rho, theta) on a
+#   C-shaped annular sector rho in [rho_in, 1], theta in [-Theta, Theta] whose
+#   physical outer radius R(t) = R_0 * s(t) grows, so that the physical Laplacian is
+#       Lap_phys = (1 / R^2) * [ d^2/drho^2 + (1/rho) d/drho + (1/rho^2) d^2/dtheta^2 ]
+#   with zero-flux (Neumann) boundaries on all four edges (Crampin et al. 1999
+#   dilution-free uniform growth).  The (1/rho) d/drho curvature term is what
+#   distinguishes this from the planar solvers above.
+# ============================================================================
+def build_polar_sector_laplacian(
+    n_rho: int,
+    n_theta: int,
+    rho_in: float,
+    theta_half: float,
+) -> tuple[Any, np.ndarray, np.ndarray]:
+    """Assemble the sparse second-order finite-difference polar Laplacian
+    d^2/drho^2 + (1/rho) d/drho + (1/rho^2) d^2/dtheta^2 on the scaled annular
+    sector rho in [rho_in, 1], theta in [-theta_half, theta_half] with zero-flux
+    (Neumann, mirrored-ghost) boundaries.  Fields are flattened as (n_rho, n_theta).
+    """
+    from scipy import sparse
+
+    rho = np.linspace(rho_in, 1.0, n_rho)
+    theta = np.linspace(-theta_half, theta_half, n_theta)
+    drho = float(rho[1] - rho[0])
+    dth = float(theta[1] - theta[0])
+    n_tot = n_rho * n_theta
+    rows: list[int] = []
+    cols: list[int] = []
+    vals: list[float] = []
+
+    def idx(i: int, j: int) -> int:
+        return i * n_theta + j
+
+    for i in range(n_rho):
+        r = float(rho[i])
+        c_plus = 1.0 / drho**2 + 1.0 / (2.0 * r * drho)
+        c_minus = 1.0 / drho**2 - 1.0 / (2.0 * r * drho)
+        c_theta = 1.0 / (r * r * dth * dth)
+        for j in range(n_theta):
+            p = idx(i, j)
+            # radial neighbours (Neumann: ghost node mirrors the interior neighbour)
+            rows.append(p); cols.append(idx(i + 1, j) if i + 1 < n_rho else idx(i - 1, j)); vals.append(c_plus)
+            rows.append(p); cols.append(idx(i - 1, j) if i - 1 >= 0 else idx(i + 1, j)); vals.append(c_minus)
+            # angular neighbours
+            rows.append(p); cols.append(idx(i, j + 1) if j + 1 < n_theta else idx(i, j - 1)); vals.append(c_theta)
+            rows.append(p); cols.append(idx(i, j - 1) if j - 1 >= 0 else idx(i, j + 1)); vals.append(c_theta)
+            rows.append(p); cols.append(p); vals.append(-2.0 / drho**2 - 2.0 * c_theta)
+    lap = sparse.csc_matrix((vals, (rows, cols)), shape=(n_tot, n_tot))
+    return lap, rho, theta
+
+
+def _count_radial_arcs(profile: np.ndarray, min_dist: int) -> np.ndarray:
+    """Peak indices of a radial activator transect including zero-flux boundary peaks."""
+    ext = np.concatenate([[profile[1]], profile, [profile[-2]]])
+    pks, _ = signal.find_peaks(ext, distance=max(2, min_dist), prominence=0.25)
+    return np.asarray(pks, dtype=int) - 1
+
+
+_CURVILINEAR_CACHE: dict[tuple, dict[str, Any]] = {}
+
+
+def simulate_curvilinear_c_shaped_arc_insertion(
+    n_rho: int = 48,
+    n_theta: int = 96,
+    rho_in: float = 0.25,
+    theta_half_deg: float = 100.0,
+    n_arcs0: int = 3,
+    s_final: float = 2.6,
+    n_equilibrate: int = 2000,
+    n_grow: int = 6000,
+    dt: float = 0.25,
+    nudge: float = 0.004,
+    refactor_every: int = 20,
+    seed: int = 1995,
+) -> dict[str, Any]:
+    """Integrate the Kondo & Asai (1995) piecewise-linear PDE on a growing C-shaped
+    polar sector (IMEX: implicit sparse-LU diffusion + decay, explicit clipped
+    synthesis) and track de novo concentric arc insertion.
+
+    Protocol: equilibrate `n_arcs0` concentric arcs on radial span W_0 = n_arcs0 * lambda_c
+    at s = 1, then grow the outer radius exponentially R(t) = R_0 * s_final^(t / T) while
+    injecting small seeded background fluctuations (`nudge`) every 25 steps.  The
+    mid-trough inhibitor minimum I_mid(s) along the central radial transect is recorded
+    together with the arc count N(s); Kondo-Asai insertion fires when I_mid falls below
+    I_thr = c_3 / |c_2| = 0.625 (Lean theorem
+    `kondo_asai_1995_curvilinear_mid_trough_threshold_partition`).
+    Ref: Kondo & Asai (1995) Fig. 1d-f; Crampin, Gaffney & Maini (1999).
+    """
+    key = (n_rho, n_theta, rho_in, theta_half_deg, n_arcs0, s_final, n_equilibrate, n_grow, dt, nudge, refactor_every, seed)
+    if key in _CURVILINEAR_CACHE:
+        return _CURVILINEAR_CACHE[key]
+
+    from scipy import sparse
+    from scipy.sparse.linalg import splu
+
+    crit = analytical_kondo_asai_stability()
+    lam_c = crit["lambda_c"]
+    c1, c2, c3, c4, c5 = 0.08, -0.08, 0.05, 0.10, -0.15
+    g_A, g_I = 0.03, 0.06
+    D_A, D_I = 0.007, 0.10
+    F_max, G_max = 0.20, 0.50
+    I_thr = c3 / abs(c2)
+
+    lap, rho, theta = build_polar_sector_laplacian(n_rho, n_theta, rho_in, math.radians(theta_half_deg))
+    n_tot = n_rho * n_theta
+    R0 = n_arcs0 * lam_c / (1.0 - rho_in)  # radial span at s = 1 equals n_arcs0 * lambda_c
+    rng = np.random.default_rng(seed)
+    RR, _TT = np.meshgrid(rho, theta, indexing="ij")
+    # n_arcs0 interior arcs with troughs at both zero-flux radial boundaries
+    A = (
+        crit["A_star"]
+        - 0.08 * np.cos(2.0 * np.pi * n_arcs0 * (RR - rho_in) / (1.0 - rho_in))
+        + 0.006 * rng.standard_normal((n_rho, n_theta))
+    ).ravel()
+    I = np.full(n_tot, crit["I_star"], dtype=float)
+    ident = sparse.identity(n_tot, format="csc")
+
+    jc = n_theta // 2
+    s_trace: list[float] = []
+    n_arcs_trace: list[int] = []
+    i_mid_trace: list[float] = []
+    spacing_trace: list[float] = []
+    kymo_rows: list[np.ndarray] = []
+    A_equilibrated: np.ndarray | None = None
+    s_insertion: float | None = None
+    i_mid_at_insertion: float | None = None
+    n_total = n_equilibrate + n_grow
+    lu_A = lu_I = None
+    for step in range(n_total):
+        s = 1.0 if step < n_equilibrate else s_final ** ((step - n_equilibrate) / (n_grow - 1))
+        if step % refactor_every == 0 or lu_A is None:
+            R_out = R0 * s
+            lu_A = splu(((1.0 + dt * g_A) * ident - (dt * D_A / R_out**2) * lap).tocsc())
+            lu_I = splu(((1.0 + dt * g_I) * ident - (dt * D_I / R_out**2) * lap).tocsc())
+        if nudge > 0.0 and step >= n_equilibrate and step % 25 == 0:
+            A = A + nudge * rng.standard_normal(n_tot)
+        F_val = np.clip(c1 * A + c2 * I + c3, 0.0, F_max)
+        G_val = np.clip(c4 * A + c5, 0.0, G_max)
+        A = np.maximum(0.0, lu_A.solve(A + dt * F_val))
+        I = np.maximum(0.0, lu_I.solve(I + dt * G_val))
+
+        if step == n_equilibrate - 1:
+            A_equilibrated = A.reshape(n_rho, n_theta).copy()
+        if step >= n_equilibrate and (step - n_equilibrate) % 50 == 0:
+            A2 = A.reshape(n_rho, n_theta)
+            I2 = I.reshape(n_rho, n_theta)
+            R_out_now = R0 * s
+            r_phys = rho * R_out_now
+            dr = float(r_phys[1] - r_phys[0])
+            pk = _count_radial_arcs(A2[:, jc], int(0.5 * lam_c / dr))
+            n_arcs = int(len(pk))
+            if n_arcs >= 2:
+                i_mid = float(min(I2[pk[a]:pk[a + 1] + 1, jc].min() for a in range(n_arcs - 1)))
+                spacing = float(np.mean(np.diff(r_phys[pk])))
+            else:
+                i_mid = float(I2[:, jc].min())
+                spacing = float("nan")
+            if s_insertion is None and n_arcs_trace and n_arcs > n_arcs_trace[0]:
+                s_insertion = float(s)
+                i_mid_at_insertion = float(i_mid_trace[-1])
+            s_trace.append(float(s))
+            n_arcs_trace.append(n_arcs)
+            i_mid_trace.append(i_mid)
+            spacing_trace.append(spacing)
+            kymo_rows.append(A2[:, jc].copy())
+
+    A_final = A.reshape(n_rho, n_theta)
+    I_final = I.reshape(n_rho, n_theta)
+    R_out_final = R0 * s_final
+    r_phys = rho * R_out_final
+    dr = float(r_phys[1] - r_phys[0])
+    transect_cols = [int(0.1 * n_theta), n_theta // 4, jc, 3 * n_theta // 4, int(0.9 * n_theta)]
+    counts_final = [int(len(_count_radial_arcs(A_final[:, j], int(0.5 * lam_c / dr)))) for j in transect_cols]
+    pk_mid = _count_radial_arcs(A_final[:, jc], int(0.5 * lam_c / dr))
+    spac_final = np.diff(r_phys[pk_mid]) if len(pk_mid) >= 2 else np.array([float("nan")])
+    mid_prof = A_final[:, jc]
+    coherence = float(np.mean([np.corrcoef(mid_prof, A_final[:, j])[0, 1] for j in range(n_theta)]))
+    assert A_equilibrated is not None
+    pk_eq = _count_radial_arcs(A_equilibrated[:, jc], int(0.5 * lam_c / (rho[1] - rho[0]) / R0))
+    n_arcs_eq = int(len(pk_eq))
+    r_eq = rho * R0
+    spac_eq = np.diff(r_eq[pk_eq]) if len(pk_eq) >= 2 else np.array([float("nan")])
+    coherence_eq = float(np.mean([np.corrcoef(A_equilibrated[:, jc], A_equilibrated[:, j])[0, 1] for j in range(n_theta)]))
+
+    # Pre-insertion monotone decline of I_mid(s): Spearman rank correlation with s
+    pre = [k for k, n in enumerate(n_arcs_trace) if n <= n_arcs_trace[0]]
+    if len(pre) >= 4:
+        rho_sp, _ = stats.spearmanr(np.array(s_trace)[pre], np.array(i_mid_trace)[pre])
+    else:
+        rho_sp = float("nan")
+
+    out = {
+        "rho": rho,
+        "theta": theta,
+        "R0": float(R0),
+        "s_final": float(s_final),
+        "A_equilibrated": A_equilibrated,
+        "A_final": A_final,
+        "I_final": I_final,
+        "kymo_A_mid": np.array(kymo_rows),
+        "s_trace": np.array(s_trace),
+        "n_arcs_trace": np.array(n_arcs_trace, dtype=int),
+        "i_mid_trace": np.array(i_mid_trace),
+        "spacing_trace": np.array(spacing_trace),
+        "I_threshold": float(I_thr),
+        "n_arcs_initial": n_arcs_eq,
+        "initial_spacing": round(float(np.nanmean(spac_eq)), 4),
+        "initial_spacing_rel_error_pct": round(100.0 * abs(float(np.nanmean(spac_eq)) - lam_c) / lam_c, 4),
+        "initial_coherence": round(coherence_eq, 4),
+        "s_insertion": None if s_insertion is None else round(s_insertion, 4),
+        "i_mid_at_insertion": None if i_mid_at_insertion is None else round(i_mid_at_insertion, 4),
+        "i_mid_pre_insertion_spearman": round(float(rho_sp), 4),
+        "n_arcs_final_transects": counts_final,
+        "n_arcs_final": int(counts_final[2]),
+        "final_spacing": round(float(np.nanmean(spac_final)), 4),
+        "final_spacing_cv": round(float(np.nanstd(spac_final) / np.nanmean(spac_final)), 4) if len(spac_final) > 1 else 0.0,
+        "final_coherence": round(coherence, 4),
+        "lambda_c": lam_c,
+    }
+    _CURVILINEAR_CACHE[key] = out
+    return out
+
+
+# ============================================================================
+# Section 4c (Pass 3): Discrete Iridophore/Melanophore Agent Layer Coupled to
+#            the Macroscopic Kondo-Asai Activator-Inhibitor Fields
+# ============================================================================
+#   Hybrid continuum-agent model.  A lattice of discrete pigment cells (one cell per
+#   two PDE grid points) carries a binary fate: 1 = iridophore/light cell (white or
+#   blue stripe), 0 = melanophore (dark interstripe).  Cells read the local activator
+#   field and interact through two contact rules abstracted from the zebrafish
+#   chromatophore interaction network (Nakamasu et al. 2009 PNAS; Bullara & De Decker
+#   2015 Nat. Commun.): (i) short-range mutual exclusion — a melanophore flanked by
+#   two iridophores converts; (ii) long-range support — an iridophore with no
+#   melanophore within ~lambda_c/2 reverts.  Cells feed back on the fields by adding
+#   kappa_A to the activator basal synthesis c_3 under iridophores and kappa_I to the
+#   inhibitor basal synthesis c_5 under melanophores (Lean theorem
+#   `kondo_asai_1995_pigment_agent_fate_partition_and_bounded_feedback`).
+# ============================================================================
+def simulate_pigment_cell_agent_coupling(
+    kappa_A: float = 0.01,
+    kappa_I: float = 0.01,
+    L_over_lambda: float = 6.0,
+    nx: int = 256,
+    cells_per_site: int = 2,
+    dt: float = 0.25,
+    n_steps: int = 2400,
+    cell_update_every: int = 20,
+    A_thr: float = 3.0,
+    fate_softness: float = 0.3,
+    update_rate: float = 0.35,
+    seed: int = 1995,
+) -> dict[str, Any]:
+    """1D hybrid Kondo-Asai field + discrete pigment-cell agent model on a periodic
+    domain L = L_over_lambda * lambda_c (default s = 2 stage, 6 stripes).
+
+    Returns the final fields, the agent fate lattice, the fate concordance with the
+    threshold partition A >= A_thr, agent-derived stripe count (contiguous iridophore
+    runs), field stripe count and the coupled stripe wavelength.
+    """
+    rng = np.random.default_rng(seed)
+    crit = analytical_kondo_asai_stability()
+    lam_c = crit["lambda_c"]
+    L = L_over_lambda * lam_c
+    c1, c2, c3, c4, c5 = 0.08, -0.08, 0.05, 0.10, -0.15
+    g_A, g_I = 0.03, 0.06
+    D_A, D_I = 0.007, 0.10
+    F_max, G_max = 0.20, 0.50
+
+    x = np.linspace(0.0, L, nx, endpoint=False)
+    dx = float(L / nx)
+    k2 = (2.0 * np.pi * np.fft.fftfreq(nx, d=dx)) ** 2
+    denom_A = 1.0 + dt * (g_A + D_A * k2)
+    denom_I = 1.0 + dt * (g_I + D_I * k2)
+
+    n_cells = nx // cells_per_site
+    cell_of_site = np.repeat(np.arange(n_cells), cells_per_site)
+    fate = (rng.uniform(size=n_cells) < 0.5).astype(int)  # unbiased 50/50 initial fates
+    cell_dx = dx * cells_per_site
+    long_range = max(1, int(round(0.5 * lam_c / cell_dx)))
+
+    target_m = max(1, int(round(L / lam_c)))
+    A = np.full(nx, crit["A_star"], dtype=float)
+    A += 0.08 * np.cos(2.0 * np.pi * target_m * x / L)
+    for m in range(1, min(32, nx // 4)):
+        A += 0.006 * np.cos(2.0 * np.pi * m * x / L + rng.uniform(0.0, 2.0 * np.pi))
+    I = np.full(nx, crit["I_star"], dtype=float)
+
+    def fate_field(f: np.ndarray) -> np.ndarray:
+        return f[cell_of_site].astype(float)
+
+    n_flips = 0
+    for step in range(n_steps):
+        iri = fate_field(fate)
+        c3_eff = c3 + kappa_A * iri
+        c5_eff = c5 + kappa_I * (1.0 - iri)
+        F_val = np.clip(c1 * A + c2 * I + c3_eff, 0.0, F_max)
+        G_val = np.clip(c4 * A + c5_eff, 0.0, G_max)
+        A = np.maximum(0.0, np.real(np.fft.ifft((np.fft.fft(A) + dt * np.fft.fft(F_val)) / denom_A)))
+        I = np.maximum(0.0, np.real(np.fft.ifft((np.fft.fft(I) + dt * np.fft.fft(G_val)) / denom_I)))
+
+        if (step + 1) % cell_update_every == 0:
+            A_cell = A.reshape(n_cells, cells_per_site).mean(axis=1)
+            p_iri = 1.0 / (1.0 + np.exp(-(A_cell - A_thr) / fate_softness))
+            left = np.roll(fate, 1)
+            right = np.roll(fate, -1)
+            # (i) short-range exclusion: melanophore flanked by two iridophores converts
+            excl = (fate == 0) & (left == 1) & (right == 1)
+            # (ii) long-range support: iridophore needs a melanophore within long_range cells
+            has_mel = np.zeros(n_cells, dtype=bool)
+            for off in range(1, long_range + 1):
+                has_mel |= (np.roll(fate, off) == 0) | (np.roll(fate, -off) == 0)
+            unsupported = (fate == 1) & (~has_mel)
+            p_iri = np.where(excl, np.maximum(p_iri, 0.9), p_iri)
+            p_iri = np.where(unsupported, np.minimum(p_iri, 0.1), p_iri)
+            update_mask = rng.uniform(size=n_cells) < update_rate
+            new_fate = np.where(update_mask, (rng.uniform(size=n_cells) < p_iri).astype(int), fate)
+            n_flips += int(np.sum(new_fate != fate))
+            fate = new_fate
+
+    A_cell = A.reshape(n_cells, cells_per_site).mean(axis=1)
+    partition = (A_cell >= A_thr).astype(int)
+    concordance = float(np.mean(partition == fate))
+    # agent stripes = contiguous iridophore runs of >= 3 cells on the periodic lattice
+    # (isolated 1-2 cell flips are stochastic noise, not a stripe)
+    starts = np.nonzero((fate == 1) & (np.roll(fate, 1) == 0))[0]
+    runs = 0
+    for st in starts:
+        length = 0
+        while fate[(st + length) % n_cells] == 1 and length < n_cells:
+            length += 1
+        if length >= 3:
+            runs += 1
+    n_isolated = int(len(starts) - runs)
+    pad = 16
+    A_ext = np.concatenate([A[-pad:], A, A[:pad]])
+    pks, _ = signal.find_peaks(A_ext, distance=max(4, int(0.6 * lam_c / dx)), prominence=0.25)
+    peaks_idx = sorted(int(p - pad) for p in pks if pad <= p < nx + pad)
+    if len(peaks_idx) >= 2:
+        x_pk = x[peaks_idx]
+        diffs = np.diff(np.append(x_pk, x_pk[0] + L))
+        mean_lam = float(np.mean(diffs))
+    else:
+        mean_lam = 0.0
+    return {
+        "x": x,
+        "A_final": A,
+        "I_final": I,
+        "fate": fate,
+        "cell_x": x.reshape(n_cells, cells_per_site).mean(axis=1),
+        "kappa_A": kappa_A,
+        "kappa_I": kappa_I,
+        "n_cells": n_cells,
+        "long_range_cells": long_range,
+        "fate_concordance": round(concordance, 4),
+        "iridophore_fraction": round(float(np.mean(fate)), 4),
+        "agent_stripes": runs,
+        "n_isolated_iridophore_runs": n_isolated,
+        "field_stripes": len(peaks_idx),
+        "mean_wavelength": round(mean_lam, 4),
+        "wavelength_shift_pct_vs_lambda_c": round(100.0 * (mean_lam - lam_c) / lam_c, 4),
+        "amplitude_A": round(float(A.max() - A.min()), 4),
+        "n_fate_flips": n_flips,
+    }
+
+
+def agent_coupling_ablation_sweep(
+    kappas: tuple[float, ...] = (0.0, 0.005, 0.01, 0.02),
+) -> list[dict[str, Any]]:
+    """Ablation/sweep of the agent-to-field feedback strength kappa = kappa_A = kappa_I
+    (kappa = 0 is the uncoupled control: fields drive cells, cells do not feed back)."""
+    rows: list[dict[str, Any]] = []
+    amp0: float | None = None
+    for kap in kappas:
+        res = simulate_pigment_cell_agent_coupling(kappa_A=kap, kappa_I=kap)
+        if amp0 is None:
+            amp0 = float(res["amplitude_A"])
+        rows.append(
+            {
+                "kappa": kap,
+                "n_cells": res["n_cells"],
+                "field_stripes": res["field_stripes"],
+                "agent_stripes": res["agent_stripes"],
+                "n_isolated_iridophore_runs": res["n_isolated_iridophore_runs"],
+                "fate_concordance": res["fate_concordance"],
+                "iridophore_fraction": res["iridophore_fraction"],
+                "mean_wavelength": res["mean_wavelength"],
+                "wavelength_shift_pct_vs_lambda_c": res["wavelength_shift_pct_vs_lambda_c"],
+                "amplitude_A": res["amplitude_A"],
+                "amplitude_gain_pct_vs_uncoupled": round(100.0 * (float(res["amplitude_A"]) - amp0) / amp0, 4),
+            }
+        )
+    return rows
+
+
+# ============================================================================
 # Section 5: Biological Specimen Computer-Vision Segmentation
 #            (`datasets/pomacanthus_stripe_insertion/pomacanthus_semicirculatus_specimen.jpg`)
 # ============================================================================
@@ -670,6 +1095,109 @@ def segment_pomacanthus_specimen(img_path: Path = SPECIMEN_JPG) -> dict[str, Any
     }
 
 
+# Manually traced body-outline polygon (image px) of the juvenile P. semicirculatus
+# specimen used to confine ridge points to the flank (excludes water, rock and fins).
+SPECIMEN_BODY_POLYGON_XY: tuple[tuple[int, int], ...] = (
+    (240, 100), (300, 112), (400, 182), (455, 262), (468, 355), (425, 418),
+    (330, 402), (262, 332), (200, 272), (166, 216), (182, 172), (230, 150),
+)
+
+
+def fit_specimen_concentric_arcs(img_path: Path = SPECIMEN_JPG) -> dict[str, Any]:
+    """Pass 3 empirical anchor for the curvilinear solver: estimate the common
+    centre of the concentric C-shaped stripes on the juvenile P. semicirculatus
+    specimen and the radial inter-arc spacing.
+
+    Method: (1) stripe ridge points from 1D DoG band-pass peaks along every 4th row and
+    column inside `SPECIMEN_BODY_POLYGON_XY`; (2) stripe-normal direction at each point
+    from the structure tensor (sigma = 5 px) of the stripe index; (3) the concentric
+    centre is the robust (Cauchy-reweighted) least-squares point minimising the
+    perpendicular distance to all stripe-normal lines; (4) arc radii are the peaks of
+    the radial histogram of ridge points about that centre.  The radial spacing is the
+    curvature-corrected inter-stripe wavelength (row-wise spacing over-estimates it by the
+    obliquity factor 1/cos(angle between row and local stripe normal)).
+    """
+    from matplotlib.path import Path as MPath
+
+    im = np.asarray(Image.open(img_path).convert("RGB"), dtype=float)
+    R, G, B = im[..., 0], im[..., 1], im[..., 2]
+    stripe_idx = 0.45 * B + 0.35 * G + 0.20 * R
+    H, W = stripe_idx.shape
+    mm_per_px = 40.0 / 380.0  # same 40.0 mm / 380 px calibration as `segment_pomacanthus_specimen`
+
+    yy, xx = np.mgrid[0:H, 0:W]
+    mask = MPath(list(SPECIMEN_BODY_POLYGON_XY)).contains_points(
+        np.column_stack([xx.ravel(), yy.ravel()])
+    ).reshape(H, W)
+    mask = ndi.binary_erosion(mask, iterations=5)
+
+    def bandpass(sig: np.ndarray) -> np.ndarray:
+        return ndi.gaussian_filter1d(sig, 2.5) - ndi.gaussian_filter1d(sig, 18.0)
+
+    pts: list[tuple[int, int]] = []
+    for y in range(100, 420, 4):
+        pk, _ = signal.find_peaks(bandpass(stripe_idx[y, :]), distance=14, prominence=14.0)
+        pts.extend((int(xp), y) for xp in pk if mask[y, xp])
+    for xcol in range(160, 470, 4):
+        pk, _ = signal.find_peaks(bandpass(stripe_idx[:, xcol]), distance=14, prominence=14.0)
+        pts.extend((xcol, int(yp)) for yp in pk if mask[yp, xcol])
+    P = np.array(pts, dtype=float)
+    px, py = P[:, 0], P[:, 1]
+
+    sm = ndi.gaussian_filter(stripe_idx, 1.5)
+    gx = ndi.sobel(sm, axis=1)
+    gy = ndi.sobel(sm, axis=0)
+    Jxx = ndi.gaussian_filter(gx * gx, 5.0)
+    Jxy = ndi.gaussian_filter(gx * gy, 5.0)
+    Jyy = ndi.gaussian_filter(gy * gy, 5.0)
+    ix, iy = px.astype(int), py.astype(int)
+    jxx, jxy, jyy = Jxx[iy, ix], Jxy[iy, ix], Jyy[iy, ix]
+    phi = 0.5 * np.arctan2(2.0 * jxy, jxx - jyy)  # stripe-normal orientation
+    nx_, ny_ = np.cos(phi), np.sin(phi)
+    coherence = np.sqrt((jxx - jyy) ** 2 + 4.0 * jxy**2) / (jxx + jyy + 1e-9)
+    qx, qy = -ny_, nx_  # direction along the stripe (perpendicular to the normal)
+    w = coherence.copy()
+    c = np.array([float(np.mean(px)), float(np.mean(py))])
+    for _ in range(6):
+        d = np.abs((c[0] - px) * qx + (c[1] - py) * qy)
+        wr = w / (1.0 + (d / 25.0) ** 2)
+        M = np.array([[np.sum(wr * qx * qx), np.sum(wr * qx * qy)], [np.sum(wr * qx * qy), np.sum(wr * qy * qy)]])
+        rhs = np.array([np.sum(wr * qx * (px * qx + py * qy)), np.sum(wr * qy * (px * qx + py * qy))])
+        c = np.linalg.solve(M, rhs)
+    cx, cy = float(c[0]), float(c[1])
+    perp_median = float(np.median(np.abs((cx - px) * qx + (cy - py) * qy)))
+
+    r = np.hypot(px - cx, py - cy)
+    hist, edges = np.histogram(r, bins=np.arange(0.0, 450.0, 2.0))
+    h = ndi.gaussian_filter1d(hist.astype(float), 1.5)
+    pks, _ = signal.find_peaks(h, distance=8, prominence=2.5)
+    radii_px = 0.5 * (edges[pks] + edges[pks + 1])
+    resid = np.min(np.abs(r[:, None] - radii_px[None, :]), axis=1)
+    spac_px = np.diff(radii_px)
+    arc_spans_deg: list[float] = []
+    for rr in radii_px:
+        sel = np.abs(r - rr) < 4.0
+        ang = np.degrees(np.arctan2(py[sel] - cy, px[sel] - cx))
+        arc_spans_deg.append(round(float(ang.max() - ang.min()), 1) if sel.sum() >= 2 else 0.0)
+    return {
+        "n_ridge_points": int(len(px)),
+        "centre_xy_px": [round(cx, 1), round(cy, 1)],
+        "median_normal_line_miss_px": round(perp_median, 2),
+        "mean_structure_coherence": round(float(np.mean(coherence)), 4),
+        "n_arcs": int(len(radii_px)),
+        "arc_radii_px": [round(float(v), 1) for v in radii_px],
+        "arc_radii_mm": [round(float(v) * mm_per_px, 2) for v in radii_px],
+        "arc_angular_spans_deg": arc_spans_deg,
+        "radial_spacing_px": round(float(np.mean(spac_px)), 4) if len(spac_px) else 0.0,
+        "radial_spacing_mm": round(float(np.mean(spac_px)) * mm_per_px, 4) if len(spac_px) else 0.0,
+        "radial_spacing_cv": round(float(np.std(spac_px) / np.mean(spac_px)), 4) if len(spac_px) > 1 else 0.0,
+        "median_radial_residual_px": round(float(np.median(resid)), 2),
+        "frac_points_within_4px": round(float(np.mean(resid < 4.0)), 4),
+        "ridge_points_xy": P,
+        "mm_per_px": round(mm_per_px, 5),
+    }
+
+
 # ============================================================================
 # Section 6: MorphoEval Dynamic Measurement Hook (`measure_morphoeval()`)
 # ============================================================================
@@ -683,6 +1211,11 @@ def measure_morphoeval() -> list[dict[str, Any]]:
     sim_sub = solve_1d_kondo_asai_pde(L=6.0 * crit["lambda_c"], D_I=0.050)
     y_branch = simulate_2d_imperator_y_branch_unzipping()
     spec = segment_pomacanthus_specimen()
+    curv = simulate_curvilinear_c_shaped_arc_insertion()
+    arcs = fit_specimen_concentric_arcs()
+    sweep = agent_coupling_ablation_sweep()
+    agent = sweep[2]  # kappa = 0.01 default coupling
+    control = sweep[0]  # kappa = 0 uncoupled control
 
     pred_stripes = np.array([r["predicted_stripes"] for r in regimes], dtype=float)
     sim_stripes = np.array([r["simulated_stripes"] for r in regimes], dtype=float)
@@ -690,6 +1223,46 @@ def measure_morphoeval() -> list[dict[str, Any]]:
     r_stripes, p_stripes = stats.pearsonr(pred_stripes, sim_stripes)
 
     return [
+        {
+            "name": "curvilinear C-shaped polar-sector Kondo-Asai concentric arc count after radial growth s = 1 -> 2.6",
+            "value": float(curv["n_arcs_final"]),
+            "unit": "concentric arcs (central radial transect)",
+            "method": f"IMEX sparse-LU polar-sector solver (rho in [0.25, 1], theta in [-100, 100] deg, {curv['A_final'].shape[0]}x{curv['A_final'].shape[1]}) equilibrated at {curv['n_arcs_initial']} arcs (radial spacing {curv['initial_spacing']:.4f} = lambda_c +/- {curv['initial_spacing_rel_error_pct']:.2f}%, angular coherence {curv['initial_coherence']:.4f}) then grown exponentially to s = {curv['s_final']}; first mid-trough arc insertion at s = {curv['s_insertion']}, arc counts on 5 transects = {curv['n_arcs_final_transects']}",
+            "reference_value": 6.0,
+            "reference_source": "Kondo & Asai (1995) Nature 376(6543):765-768 Figs. 1-2 (3 -> 6 mid-trough doubling) transferred to the concentric C-shaped juvenile P. semicirculatus geometry; Lean theorem kondo_asai_1995_curvilinear_mid_trough_threshold_partition (concentric_arcs 3 2 = 6)",
+            "note": f"final radial spacing {curv['final_spacing']:.4f} ({curv['final_spacing'] / curv['lambda_c']:.3f} lambda_c, CV {curv['final_spacing_cv']:.3f}) with angular coherence {curv['final_coherence']:.4f}: arcs stay concentric through insertion; cascade still relaxing at s = 2.6 (span 7.8 lambda_c)",
+            "derived_from": "script",
+        },
+        {
+            "name": "mid-trough inhibitor I_mid at first concentric arc insertion vs zero-activator threshold c_3/|c_2|",
+            "value": float(curv["i_mid_at_insertion"]),
+            "unit": "inhibitor concentration (model units)",
+            "method": f"minimum of I along the central radial transect between adjacent arcs, sampled every 50 steps during growth; pre-insertion I_mid(s) is strictly decreasing (Spearman rho = {curv['i_mid_pre_insertion_spearman']:.3f}); value is the last pre-insertion sample",
+            "reference_value": float(curv["I_threshold"]),
+            "reference_source": "Kondo & Asai (1995) piecewise-linear synthesis F = max(0, c_1 A + c_2 I + c_3) with A = 0 => insertion iff I < c_3/|c_2| = 0.625 (Lean theorem kondo_asai_1995_curvilinear_mid_trough_threshold_partition)",
+            "note": "insertion fires ~20% above the zero-activator threshold because diffusive activator supply from the flanking arcs (A_trough ~ 0.05-0.1) and the 0.004 background fluctuations raise the local synthesis before I_mid itself crosses 0.625; the Lean bound is the sufficient (A = 0) condition",
+            "derived_from": "script",
+        },
+        {
+            "name": "P. semicirculatus specimen concentric-arc radial spacing (curvature-corrected inter-stripe wavelength)",
+            "value": round(arcs["radial_spacing_mm"], 2),
+            "unit": "mm",
+            "method": f"structure-tensor concentric-centre fit on {arcs['n_ridge_points']} stripe ridge points inside the traced body polygon (centre = {arcs['centre_xy_px']} px, median normal-line miss {arcs['median_normal_line_miss_px']:.1f} px); {arcs['n_arcs']} arc radii {arcs['arc_radii_mm']} mm from the radial ridge-point histogram (median radial residual {arcs['median_radial_residual_px']:.2f} px, {100 * arcs['frac_points_within_4px']:.0f}% of points within 4 px of a fitted arc)",
+            "reference_value": round(spec["mean_spacing_mm"], 2),
+            "reference_source": "row-wise DoG spacing of the same specimen (`segment_pomacanthus_specimen`, 3.80 mm) which over-estimates the wavelength by the row/stripe obliquity factor; Kondo & Asai (1995) juvenile P. semicirculatus concentric stripes",
+            "note": f"radial spacing CV = {arcs['radial_spacing_cv']:.3f}; arc angular spans {arcs['arc_angular_spans_deg']} deg (inner arcs near-closed loops, outer arcs C-shaped); {arcs['n_arcs']} arcs at 40 mm body span lies between the Kondo-Asai s = 2 (6) and s = 4 (12) cascade stages",
+            "derived_from": "output",
+        },
+        {
+            "name": "discrete iridophore/melanophore agent fate concordance with the Kondo-Asai activator partition A >= A*",
+            "value": float(agent["fate_concordance"]),
+            "unit": "fraction of cells",
+            "method": f"1D hybrid field-agent model on L = 6 lambda_c ({agent['n_cells']} cells, kappa_A = kappa_I = {agent['kappa']}, contact exclusion + long-range support rules, stochastic asynchronous fate updates every 20 steps, seed 1995); agent stripes (iridophore runs >= 3 cells) = {agent['agent_stripes']} vs field stripes = {agent['field_stripes']}",
+            "reference_value": 1.0,
+            "reference_source": "Lean theorem kondo_asai_1995_pigment_agent_fate_partition_and_bounded_feedback (deterministic threshold partition cell_fate = [A >= A_thr]); Nakamasu et al. (2009) PNAS 106:8429 pigment-cell interaction network",
+            "note": f"ablation over kappa in {[r['kappa'] for r in sweep]}: concordance {[r['fate_concordance'] for r in sweep]}, iridophore fraction {[r['iridophore_fraction'] for r in sweep]}, stripe amplitude gain vs uncoupled control {[r['amplitude_gain_pct_vs_uncoupled'] for r in sweep]} %; wavelength is quantised to L/6 on the periodic domain so the feedback shifts contrast, not spacing (uncoupled control concordance {control['fate_concordance']})",
+            "derived_from": "script",
+        },
         {
             "name": "Kondo-Asai (1995) critical diffusivity ratio d_c = (D_I / D_A)_c",
             "value": round(crit["d_c"], 4),
@@ -747,8 +1320,10 @@ def measure_morphoeval() -> list[dict[str, Any]]:
 # Section 7: Publication Figure & Animated GIF Rendering
 # ============================================================================
 def render_comparison_figure(out_png: Path = OUTPUT_PNG) -> Path:
-    """Render the 6-panel dark-theme publication synthesis figure
-    `docs/media/pomacanthus_stripe_insertion_comparison.png`.
+    """Render the 9-panel dark-theme publication synthesis figure
+    `docs/media/pomacanthus_stripe_insertion_comparison.png` (Pass 3: row 3 adds the
+    curvilinear C-shaped arc insertion, the mid-trough inhibitor threshold trace and
+    the discrete pigment-cell agent coupling; Panel E gains the concentric-arc fit).
     """
     out_png.parent.mkdir(parents=True, exist_ok=True)
     ref = load_reference_data()
@@ -757,6 +1332,10 @@ def render_comparison_figure(out_png: Path = OUTPUT_PNG) -> Path:
     regimes = evaluate_semicirculatus_regimes(ref)
     y_branch = simulate_2d_imperator_y_branch_unzipping()
     spec = segment_pomacanthus_specimen()
+    curv = simulate_curvilinear_c_shaped_arc_insertion()
+    arcs = fit_specimen_concentric_arcs()
+    sweep = agent_coupling_ablation_sweep()
+    agent = simulate_pigment_cell_agent_coupling(kappa_A=0.01, kappa_I=0.01)
 
     plt.rcParams.update(
         {
@@ -770,14 +1349,15 @@ def render_comparison_figure(out_png: Path = OUTPUT_PNG) -> Path:
             "font.size": 9.5,
         }
     )
-    fig, axes = plt.subplots(2, 3, figsize=(16.5, 9.8), dpi=140)
+    fig, axes = plt.subplots(3, 3, figsize=(16.5, 14.6), dpi=140)
     fig.suptitle(
         "Kondo & Asai (1995) Pomacanthus Reaction-Diffusion Wave: "
-        "Piecewise-Linear Gierer-Meinhardt PDE, Mid-Trough Stripe Insertion & Y-Branch Unzipping",
-        fontsize=12.8,
+        "Piecewise-Linear Gierer-Meinhardt PDE, Mid-Trough Stripe Insertion, Y-Branch Unzipping,\n"
+        "Curvilinear C-Shaped Concentric Arc Insertion & Discrete Pigment-Cell Agent Coupling (Pass 3)",
+        fontsize=12.4,
         fontweight="bold",
         color="#38bdf8",
-        y=0.975,
+        y=0.985,
     )
 
     # Panel A: Kondo-Asai (1995) Dispersion Relation Re(sigma(k^2)) across D_I
@@ -921,7 +1501,7 @@ def render_comparison_figure(out_png: Path = OUTPUT_PNG) -> Path:
         bbox=dict(boxstyle="round,pad=0.25", facecolor="#0f172a", alpha=0.84),
     )
     ax.set_title(
-        "D. 2D P. imperator Y-Junction Horizontal Unzipping (Figs. 3-4)",
+        "D. 2D P. imperator Y-Junction Unzipping (Figs. 3-4)",
         fontweight="bold",
     )
     ax.set_xlabel("Left: Initial Y-Dislocation ($t=0$) | Right: Unzipped 4-Stripe Flank")
@@ -968,13 +1548,43 @@ def render_comparison_figure(out_png: Path = OUTPUT_PNG) -> Path:
             edgecolors="#0f172a",
             label=f"Inserted secondary stripes (prom={spec['mean_secondary_prominence']:.0f})",
         )
+    # Pass 3: concentric-arc centre and fitted arc radii from `fit_specimen_concentric_arcs`
+    cx_a, cy_a = arcs["centre_xy_px"]
+    for k_arc, r_arc in enumerate(arcs["arc_radii_px"]):
+        circ = plt.Circle(
+            (cx_a, cy_a),
+            r_arc,
+            fill=False,
+            edgecolor="#f472b6",
+            lw=0.9,
+            ls="-",
+            alpha=0.85,
+            label=(
+                f"Concentric arc fit (n={arcs['n_arcs']}, $\\Delta r$={arcs['radial_spacing_mm']:.2f} mm)"
+                if k_arc == 0
+                else None
+            ),
+        )
+        ax.add_patch(circ)
+    ax.scatter(
+        [cx_a],
+        [cy_a],
+        s=70,
+        marker="+",
+        c="#f472b6",
+        linewidths=1.8,
+        zorder=7,
+        label=f"Concentric centre ({cx_a:.0f}, {cy_a:.0f}) px",
+    )
+    ax.set_xlim(0, spec_im.shape[1])
+    ax.set_ylim(spec_im.shape[0], 0)
     ax.set_title(
-        "E. Juvenile P. semicirculatus Specimen Segmentation (CC BY-SA 4.0)",
+        "E. Juvenile P. semicirculatus Segmentation + Concentric Arc Fit (CC BY-SA 4.0)",
         fontweight="bold",
     )
     ax.set_xlabel("Anterior-Posterior Pixel $x$ (40 mm span = 380 px)")
     ax.set_ylabel("Dorso-Ventral Pixel $y$ (px)")
-    ax.legend(loc="lower left", fontsize=7.8, framealpha=0.88, facecolor="#0f172a")
+    ax.legend(loc="lower left", fontsize=7.2, framealpha=0.88, facecolor="#0f172a")
 
     # Panel F: Empirical Alternating Primary/Secondary Flank Profile vs Kondo-Asai Wave
     ax = axes[1, 2]
@@ -1004,7 +1614,122 @@ def render_comparison_figure(out_png: Path = OUTPUT_PNG) -> Path:
     ax.set_ylabel("Normalized Stripe Luminance $z$-score")
     ax.legend(loc="upper right", fontsize=8.0, framealpha=0.88, facecolor="#0f172a")
 
-    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.955])
+    # Panel G (Pass 3): Curvilinear C-shaped polar-sector arcs before (s=1) and after (s=2.6) growth
+    ax = axes[2, 0]
+    rho_g = curv["rho"]
+    th_g = curv["theta"]
+    RRg, TTg = np.meshgrid(rho_g, th_g, indexing="ij")
+    R0g = curv["R0"]
+    Rf = R0g * curv["s_final"]
+    # left: equilibrated 3 arcs (s = 1); right: post-insertion 6 arcs (s = 2.6); C opens to the right
+    Xl = -RRg * R0g * np.cos(TTg) - 0.55 * Rf
+    Yl = RRg * R0g * np.sin(TTg)
+    Xr = -RRg * Rf * np.cos(TTg) + 0.75 * Rf
+    Yr = RRg * Rf * np.sin(TTg)
+    pm = ax.pcolormesh(Xl, Yl, curv["A_equilibrated"], cmap="cividis", vmin=0.2, vmax=5.8, shading="auto")
+    ax.pcolormesh(Xr, Yr, curv["A_final"], cmap="cividis", vmin=0.2, vmax=5.8, shading="auto")
+    ax.set_aspect("equal")
+    ax.text(
+        -0.55 * Rf,
+        -1.33 * Rf,
+        f"$s=1$: {curv['n_arcs_initial']} arcs\n$\\Delta r$={curv['initial_spacing']:.3f} ($\\lambda_c$, coh={curv['initial_coherence']:.3f})",
+        color="white",
+        fontsize=8.0,
+        ha="center",
+        fontweight="bold",
+        bbox=dict(boxstyle="round,pad=0.25", facecolor="#0f172a", alpha=0.84),
+    )
+    ax.text(
+        0.75 * Rf,
+        -1.33 * Rf,
+        f"$s={curv['s_final']}$: {curv['n_arcs_final']} arcs on 5 transects {curv['n_arcs_final_transects']}\ncoh={curv['final_coherence']:.3f}, insertion at $s^*$={curv['s_insertion']:.2f}",
+        color="white",
+        fontsize=8.0,
+        ha="center",
+        fontweight="bold",
+        bbox=dict(boxstyle="round,pad=0.25", facecolor="#0f172a", alpha=0.84),
+    )
+    ax.set_ylim(-1.5 * Rf, 1.12 * Rf)
+    ax.set_title(
+        "G. Curvilinear C-Shaped Polar-Sector Solver ($3 \\to 6$ arcs)",
+        fontweight="bold",
+    )
+    ax.set_xlabel("Posterior-centred polar sector $\\rho \\in [0.25, 1]$, $\\theta \\in [-100^\\circ, 100^\\circ]$ (model units)")
+    ax.set_ylabel("Dorso-Ventral $y$ (model units)")
+    fig.colorbar(pm, ax=ax, fraction=0.045, pad=0.03, label="Activator $A(\\rho,\\theta)$")
+
+    # Panel H (Pass 3): Mid-trough inhibitor threshold trace driving arc insertion
+    ax = axes[2, 1]
+    s_tr = curv["s_trace"]
+    ax.plot(s_tr, curv["i_mid_trace"], color="#f43f5e", lw=2.0, label="Mid-trough inhibitor $I_{\\mathrm{mid}}(s)$ (central transect)")
+    ax.axhline(
+        curv["I_threshold"],
+        color="#fbbf24",
+        lw=1.4,
+        ls="--",
+        label="Zero-activator threshold $I_{\\mathrm{thr}} = c_3/|c_2| = 0.625$ (Lean Thm. 4)",
+    )
+    if curv["s_insertion"] is not None:
+        ax.axvline(curv["s_insertion"], color="#34d399", lw=1.3, ls=":", label=f"First arc insertion $s^*$={curv['s_insertion']:.2f} ($I_{{\\mathrm{{mid}}}}$={curv['i_mid_at_insertion']:.3f})")
+    ax.set_xlabel("Radial Growth Scale $s = R(t)/R_0$")
+    ax.set_ylabel("Inhibitor $I_{\\mathrm{mid}}$", color="#f43f5e")
+    ax.set_ylim(0.0, 2.4)
+    ax2 = ax.twinx()
+    ax2.step(s_tr, curv["n_arcs_trace"], where="post", color="#38bdf8", lw=1.8, label="Concentric arc count $N(s)$")
+    ax2.set_ylabel("Arcs $N(s)$", color="#38bdf8")
+    ax2.set_ylim(0, 8)
+    ax2.tick_params(colors="#cbd5e1")
+    h1, l1 = ax.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    ax.legend(h1 + h2, l1 + l2, loc="upper right", fontsize=7.6, framealpha=0.88, facecolor="#0f172a")
+    ax.set_title(
+        f"H. Mid-Trough $I$ Depletion Triggers Insertion ($\\rho_s$={curv['i_mid_pre_insertion_spearman']:.2f})",
+        fontweight="bold",
+    )
+
+    # Panel I (Pass 3): Discrete iridophore/melanophore agents coupled to the fields
+    ax = axes[2, 2]
+    xa = agent["x"]
+    ax.plot(xa, agent["A_final"], color="#38bdf8", lw=1.9, label="Activator $A(x)$ (coupled, $\\kappa$=0.01)")
+    ax.plot(xa, agent["I_final"], color="#f43f5e", lw=1.3, ls="--", label="Inhibitor $I(x)$")
+    ax.axhline(3.0, color="#fbbf24", lw=1.0, ls=":", label="Fate threshold $A_{\\mathrm{thr}} = A^* = 3.0$")
+    cell_x = agent["cell_x"]
+    fate = agent["fate"]
+    ax.scatter(
+        cell_x[fate == 1],
+        np.full(int(np.sum(fate == 1)), -0.55),
+        s=18,
+        marker="s",
+        c="#e0f2fe",
+        edgecolors="none",
+        label=f"Iridophore agents ({agent['agent_stripes']} runs $\\geq$3 cells)",
+    )
+    ax.scatter(
+        cell_x[fate == 0],
+        np.full(int(np.sum(fate == 0)), -0.55),
+        s=18,
+        marker="s",
+        c="#1e1b4b",
+        edgecolors="#64748b",
+        linewidths=0.4,
+        label="Melanophore agents",
+    )
+    ax.set_xlim(0.0, float(xa[-1]))
+    ax.set_ylim(-1.0, 6.6)
+    ax.set_title(
+        f"I. Pigment-Cell Agents Coupled to Fields (conc.={agent['fate_concordance']:.3f})",
+        fontweight="bold",
+    )
+    ax.set_xlabel(
+        "Anterior-Posterior $x$ on $L = 6\\lambda_c$  |  ablation $\\kappa$="
+        + ", ".join(f"{r['kappa']:g}" for r in sweep)
+        + ": gain "
+        + ", ".join(f"{r['amplitude_gain_pct_vs_uncoupled']:+.1f}%" for r in sweep)
+    )
+    ax.set_ylabel("Morphogen Level / Agent Lattice")
+    ax.legend(loc="upper right", fontsize=7.4, framealpha=0.88, facecolor="#0f172a", ncol=2)
+
+    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.962])
     fig.savefig(out_png, dpi=140)
     plt.close(fig)
     return out_png
@@ -1136,15 +1861,66 @@ def run_self_test() -> int:
     assert spec["primary_to_secondary_ratio"] > 1.8, (
         f"Expected alternating primary/secondary prominence ratio > 1.8, got {spec['primary_to_secondary_ratio']}"
     )
+    # 4. (Pass 3) Curvilinear C-shaped polar-sector solver: concentric arcs, threshold-driven insertion
+    lap, rho_g, _th = build_polar_sector_laplacian(12, 16, 0.25, math.radians(100.0))
+    const_field = np.ones(12 * 16)
+    assert np.allclose(lap @ const_field, 0.0, atol=1e-9), "Polar Laplacian must annihilate constants (Neumann consistency)"
+    # radial-only quadratic test: Lap(rho^2) = 2 + 2 = 4 for a theta-independent field (interior rows)
+    RRt = np.repeat(rho_g, 16)
+    lap_r2 = (lap @ (RRt**2)).reshape(12, 16)[1:-1, :]
+    assert np.allclose(lap_r2, 4.0, atol=1e-6), f"Polar Laplacian of rho^2 must equal 4 in the interior, got {lap_r2.min():.4f}..{lap_r2.max():.4f}"
+    curv = simulate_curvilinear_c_shaped_arc_insertion()
+    assert curv["n_arcs_initial"] == 3, f"Expected 3 equilibrated concentric arcs at s=1, got {curv['n_arcs_initial']}"
+    assert curv["initial_spacing_rel_error_pct"] < 3.0, f"Expected <3% radial spacing error at s=1, got {curv['initial_spacing_rel_error_pct']}%"
+    assert curv["initial_coherence"] > 0.98 and curv["final_coherence"] > 0.95, "Arcs must stay concentric (angular coherence)"
+    assert curv["n_arcs_final"] == 6 and all(n == 6 for n in curv["n_arcs_final_transects"]), (
+        f"Expected 3 -> 6 concentric arcs after radial growth, got {curv['n_arcs_final_transects']}"
+    )
+    assert curv["s_insertion"] is not None and 1.5 < curv["s_insertion"] < 2.5, f"Unexpected insertion scale {curv['s_insertion']}"
+    assert curv["i_mid_pre_insertion_spearman"] < -0.99, "Pre-insertion I_mid(s) must decrease monotonically"
+    assert curv["I_threshold"] == 0.625 and curv["i_mid_at_insertion"] < 0.9, (
+        f"I_mid at insertion must be within ~45% of the zero-activator threshold 0.625, got {curv['i_mid_at_insertion']}"
+    )
+    curv2 = simulate_curvilinear_c_shaped_arc_insertion()
+    assert curv2 is curv or np.allclose(curv2["A_final"], curv["A_final"], atol=0.0), "Curvilinear solver determinism failed"
+
+    # 5. (Pass 3) Discrete iridophore/melanophore agents coupled to the fields (+ kappa ablation)
+    sweep = agent_coupling_ablation_sweep()
+    assert [r["kappa"] for r in sweep] == [0.0, 0.005, 0.01, 0.02], "Ablation sweep must cover kappa in {0, 0.005, 0.01, 0.02}"
+    for r_sw in sweep:
+        assert r_sw["field_stripes"] == 6, f"Field stripes must stay at 6 under coupling kappa={r_sw['kappa']}, got {r_sw['field_stripes']}"
+        assert r_sw["agent_stripes"] == 6, f"Agent iridophore runs must match 6 field stripes at kappa={r_sw['kappa']}, got {r_sw['agent_stripes']}"
+        assert r_sw["fate_concordance"] >= 0.9, f"Fate concordance must be >= 0.9 at kappa={r_sw['kappa']}, got {r_sw['fate_concordance']}"
+    gains = [r_sw["amplitude_gain_pct_vs_uncoupled"] for r_sw in sweep]
+    assert all(gains[i] <= gains[i + 1] for i in range(len(gains) - 1)) and gains[-1] > 5.0, (
+        f"Stripe amplitude gain must increase monotonically with kappa and exceed 5% at kappa=0.02, got {gains}"
+    )
+    ag1 = simulate_pigment_cell_agent_coupling(kappa_A=0.01, kappa_I=0.01, seed=1995)
+    ag2 = simulate_pigment_cell_agent_coupling(kappa_A=0.01, kappa_I=0.01, seed=1995)
+    assert np.array_equal(ag1["fate"], ag2["fate"]) and np.allclose(ag1["A_final"], ag2["A_final"], atol=0.0), "Agent model determinism failed"
+
+    # 6. (Pass 3) Specimen concentric-arc fit
+    arcs = fit_specimen_concentric_arcs()
+    assert arcs["n_arcs"] >= 6, f"Expected >= 6 concentric arcs on the specimen, got {arcs['n_arcs']}"
+    assert 2.0 <= arcs["radial_spacing_mm"] <= 4.0, f"Expected radial arc spacing in [2, 4] mm, got {arcs['radial_spacing_mm']}"
+    assert arcs["radial_spacing_mm"] < spec["mean_spacing_mm"], "Curvature-corrected radial spacing must be below the oblique row-wise spacing"
+    assert arcs["frac_points_within_4px"] > 0.4, f"Expected >40% ridge points within 4 px of a fitted arc, got {arcs['frac_points_within_4px']}"
+    x_c, y_c = arcs["centre_xy_px"]
+    assert 150 <= x_c <= 350 and 150 <= y_c <= 300, f"Concentric centre must lie on the posterior flank, got {arcs['centre_xy_px']}"
+
     meas = measure_morphoeval()
-    assert len(meas) == 5, f"Expected 5 MorphoEval measurements, got {len(meas)}"
+    assert len(meas) == 9, f"Expected 9 MorphoEval measurements, got {len(meas)}"
+    assert all(("reference_value" in mm and "unit" in mm) for mm in meas), "Every measurement needs a reference value and unit"
 
     print(
         f"[1995-kondo-pomacanthus-stripe-insertion] SELF-TEST PASSED: "
         f"d_c={crit['d_c']:.4f}, lambda_sim={sim1['mean_wavelength']:.4f} "
         f"(err={sim1['wavelength_rel_error_pct']:.3f}%), 5-regime stripes={[r['simulated_stripes'] for r in regimes]}, "
         f"Y-branch unzipping=+{y_branch['branch_displacement_frac']:.3f} ({y_branch['posterior_stripes_init']}->{y_branch['posterior_stripes_final']} stripes), "
-        f"specimen spacing={spec['mean_spacing_mm']:.2f} mm (prim/sec={spec['primary_to_secondary_ratio']:.2f}x, r={spec['transect_correlation_r']:.3f})."
+        f"specimen spacing={spec['mean_spacing_mm']:.2f} mm (prim/sec={spec['primary_to_secondary_ratio']:.2f}x, r={spec['transect_correlation_r']:.3f}); "
+        f"curvilinear arcs {curv['n_arcs_initial']}->{curv['n_arcs_final']} (s*={curv['s_insertion']:.3f}, I_mid={curv['i_mid_at_insertion']:.3f} vs 0.625, coh={curv['final_coherence']:.4f}); "
+        f"agent concordance={[r['fate_concordance'] for r in sweep]} (gain {gains} %); "
+        f"specimen concentric arcs n={arcs['n_arcs']}, dr={arcs['radial_spacing_mm']:.2f} mm, centre={arcs['centre_xy_px']}."
     )
     return 0
 

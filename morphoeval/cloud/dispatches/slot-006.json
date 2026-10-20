@@ -43,5 +43,81 @@
   "slot_index": 6,
   "slug": "wnt-dkk-hair-follicle",
   "target_script": "2002-sick-wnt-dkk-hair-follicle.py",
-  "delta": 36.4
+  "delta": 36.4,
+  "pass3_run_id": "2026-10-19-wnt-dkk-hair-follicle-loop-pass3",
+  "pass3_audit_id": "2026-10-19-wnt-dkk-hair-follicle-audit-v3",
+  "pass3_score": 85.9,
+  "pass3_dims": {
+    "model-fidelity": 86,
+    "specimen-match": 80,
+    "parameter-expressivity": 86,
+    "morphometric-validation": 84,
+    "source-traceability": 94,
+    "code-traceability": 90,
+    "repro-package": 91
+  },
+  "pass2_dims": {
+    "model-fidelity": 94,
+    "specimen-match": 91,
+    "parameter-expressivity": 90,
+    "morphometric-validation": 92,
+    "source-traceability": 95,
+    "code-traceability": 92,
+    "repro-package": 92
+  },
+  "pass3_delta": -6.0,
+  "pass3_completed_at": "2026-10-20T07:21:03Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_quick_gate_score": 100.0,
+  "pass3_self_test_checks": 12,
+  "pass3_measurements": 13,
+  "pass3_remediation_closed": [
+    "Couple the 2D epidermal WNT/DKK reaction-diffusion sheet to a 3D dermal condensate mesenchymal chemotaxis (FGF20/BMP4) model to simulate hair peg downgrowth following placode specification. -> Section 3b of 2002-sick-wnt-dkk-hair-follicle.py (L654-L969): 42x42x12 dermal slab, Keller-Segel FGF20 chemotaxis + BMP4 repulsion with volume filling (chemotactic_divergence_3d L707-L723), simulate_dermal_condensate_3d L771-L925 (peg ODE L847), simulate_dermal_condensate_genotypes L928-L969 (WT 15/15 DCs, Fgf20-null 0, chemotaxis-null 0, BMP4-excess 0, chi_f sweep), compute_dermal_linear_stability L726-L768; honest reduction (planar epidermis, scalar peg) stated in code/README/audit"
+  ],
+  "pass3_defects_found_and_fixed": [
+    "Placode counter used ndi.label without the periodic seam: Pass 2 WT 16 = 14 seam-aware components + 2 duplicates; now periodic local maxima (label_periodic_2d/periodic_centroids_2d L456-L507, L551-L552): WT 15, K14-Wnt 30 (was 32 code / 22 docstring+JSON), enlarged 10 (was 12), area +38.5% (was +45%)",
+    "Unsourced K14-Wnt reference ratio 2.0 withdrawn (reference_value null)",
+    "math_kg yaml (kappa 0.04, D_w 0.01, D_h 0.40, d 40) and dataset README (D_w 0.01, D_h 0.40, d 40) disagreed with JSON/script (0.02, 0.015, 0.45, 30) - corrected"
+  ],
+  "pass3_remediation_open": [
+    "L600-603: K14-Wnt preset changes kappa/D_w/D_h with rho_w - add a pure rho_w (and c_w) sweep at fixed diffusivities",
+    "L974-1042, L1570-1579: vibrissa Gad1 specimen vs pelage pattern; NN CV 0.086 (PDE) vs 0.323 (specimen) - vendor/digitise a pelage specimen and make the scale-free spacing comparison a first-class measurement with a pass band",
+    "L771-925 (847, 888-891): one-way coupling, scalar peg depth, conventional 25%/50% stage cut-offs - epidermal invagination interface, DC->epidermis feedback, micrometre calibration of slab/peg depth",
+    "L678-696, L726-768: dermal constants hand-tuned with no value provenance - pin to Glover 2017 / Huh 2013 measurements",
+    "L836, L943: BMP4 produced uniformly ~rho and evaluated at one 5x point - structured BMP source + bmp4_scale sweep + Noggin rescue",
+    "L847, L860, L867-876: e_thr doubles as peg-onset and DC detection threshold; 2.5 px registration radius arbitrary - decouple detection (Otsu) and report sensitivity",
+    "Figure row D: no reference DC/hair-germ image beside the model - vendor and segment a CC-licensed section"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_006.dermal_subsystem_instructed_stable",
+    "MathOfBiology.Loop_006.keller_segel_fourier_det_sign",
+    "MathOfBiology.Loop_006.ks_det_neg_of_supercritical",
+    "MathOfBiology.Loop_006.hair_peg_depth_monotone",
+    "MathOfBiology.Loop_006.hair_peg_depth_closed_form"
+  ],
+  "pass3_lean_theorems_total": 8,
+  "pass3_lean_sorrys": 0,
+  "pass3_artifacts": [
+    "2002-sick-wnt-dkk-hair-follicle.py",
+    "morphoeval/lean/loops/Loop_006_wnt_dkk_hair_follicle.lean",
+    "morphoeval/math_kg_loops/sick-wnt-dkk-hair-follicle.yaml",
+    "datasets/wnt_dkk_hair_follicle/wnt_dkk_hair_follicle_reference.json",
+    "datasets/wnt_dkk_hair_follicle/paper_citations.bib",
+    "datasets/wnt_dkk_hair_follicle/README.md",
+    "docs/media/wnt_dkk_hair_follicle_comparison.png",
+    "docs/media/wnt_dkk_hair_follicle_growth.gif",
+    "docs/media/wnt_dkk_hair_follicle_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-wnt-dkk-hair-follicle-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-wnt-dkk-hair-follicle-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-wnt-dkk-hair-follicle-audit-v3/",
+    "morphoeval/runs/2026-10-19-wnt-dkk-hair-follicle-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-wnt-dkk-hair-follicle-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-wnt-dkk-hair-follicle-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-wnt-dkk-hair-follicle-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-wnt-dkk-hair-follicle-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-wnt-dkk-hair-follicle-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-006.json"
+  ]
 }

@@ -113,4 +113,83 @@ theorem jaslow_suture_interdigitation_energy_absorption (e0 kappa_100 : Int) :
   refine ⟨?_, by decide, by decide, by decide, by decide, by decide, by decide, by decide⟩
   · simp [jaslow_energy_100]
 
+
+-- ============================================================================
+-- Law 4 (`bailleul-allometric-cranial-sutures-4`, Pass 3):
+-- Strain Mechanotransduction Law alpha(eps_hat) = alpha_unl + (alpha_sag - alpha_unl) * eps_hat
+-- ============================================================================
+/-- Pass 3 remediation (heterogeneous masticatory strain coupling). The osteogenic instability
+    coefficient of the Kuramoto-Sivashinsky front is an affine function of the normalised tensile
+    strain `eps_hat = eps_nn / <eps_nn>_sagittal,ecto` across the suture:
+      `alpha(eps_hat) = alpha_unl + (alpha_sag - alpha_unl) * eps_hat`.
+    In scaled integers (`alpha` x 1000 after dividing by 1000, `eps_1000 = round(1000 * eps_hat)`):
+      `alpha_of_strain(a_unl, a_sag, eps_1000) = 1000 * a_unl + (a_sag - a_unl) * eps_1000`.
+    We prove:
+    1. Zero strain reproduces the Miura et al. (2009) surgical-unloading regime (`1000 * a_unl`,
+       i.e. `alpha = -0.35` for `a_unl = -35`), and unit strain reproduces the adult sagittal regime
+       (`1000 * a_sag`, i.e. `alpha = 1.20` for `a_sag = 120`).
+    2. For any positive gain `a_unl < a_sag`, alpha is strictly increasing in strain (Byron et al. 2004:
+       larger temporalis mass / bite force -> higher sagittal suture fractal dimension).
+    3. The zero crossing lies between `eps_1000 = 225` (alpha < 0, flat) and `226` (alpha > 0, unstable),
+       i.e. `eps_hat_c = 0.2258 = a_unl / (a_unl - a_sag)`. -/
+def alpha_of_strain (a_unl a_sag eps_1000 : Int) : Int :=
+  1000 * a_unl + (a_sag - a_unl) * eps_1000
+
+theorem strain_mechanotransduction_alpha_monotone (a_unl a_sag e1 e2 : Int)
+    (hgain : a_unl < a_sag) (hlt : e1 < e2) :
+    alpha_of_strain a_unl a_sag 0 = 1000 * a_unl ∧
+    alpha_of_strain a_unl a_sag 1000 = 1000 * a_sag ∧
+    alpha_of_strain a_unl a_sag e1 < alpha_of_strain a_unl a_sag e2 ∧
+    alpha_of_strain (-35) 120 0 = -35000 ∧
+    alpha_of_strain (-35) 120 1000 = 120000 ∧
+    alpha_of_strain (-35) 120 225 = -125 ∧
+    alpha_of_strain (-35) 120 226 = 30 ∧
+    alpha_of_strain (-35) 120 0 < 0 ∧
+    alpha_of_strain (-35) 120 1000 > 0 := by
+  refine ⟨?_, ?_, ?_, by decide, by decide, by decide, by decide, by decide, by decide⟩
+  · simp [alpha_of_strain]
+  · unfold alpha_of_strain
+    omega
+  · unfold alpha_of_strain
+    have hpos : 0 < a_sag - a_unl := Int.sub_pos.mpr hgain
+    have hmul : (a_sag - a_unl) * e1 < (a_sag - a_unl) * e2 := Int.mul_lt_mul_of_pos_left hlt hpos
+    omega
+
+
+-- ============================================================================
+-- Law 5 (`bailleul-allometric-cranial-sutures-5`, Pass 3):
+-- Kirchhoff-Love Through-Thickness Strain & Ectocranial > Endocranial Suture Instability
+-- ============================================================================
+/-- Pass 3 remediation (quasi-3D ectocranial-to-endocranial plate thickness). In a Kirchhoff-Love
+    thin shell the strain normal to a suture at through-thickness offset `zeta` from the mid-surface is
+      `eps(zeta) = eps_mem + zeta * kappa`,  `zeta in [-T/2, +T/2]`  (ectocranial `+T/2`, endocranial `-T/2`),
+    where `kappa` is the vault-flattening curvature change produced by inferiorly directed masticatory /
+    nuchal tractions. We prove:
+    1. For any flattening `kappa > 0` and plate half-thickness `t_half > 0`, the ectocranial surface is
+       strictly more tensile than the endocranial surface, and the mid-surface carries the membrane strain.
+    2. With the vendored scaled values (`eps_mem = 450`, `kappa = 183` per mm, `t_half = 3` mm) the
+       ectocranial strain is `999` (eps_hat ~ 1.0, the sagittal normalisation) and the endocranial strain
+       `-99` (compressive), so by Law 4 the ectocranial instability `alpha = 119.845/100 ~ 1.20` strictly
+       exceeds the endocranial `alpha = -0.503`: endocranial sutures remain simpler (flat, `omega(k) <= 0`
+       by Law 2) while ectocranial traces interdigitate. -/
+def through_thickness_strain (eps_mem kappa zeta : Int) : Int :=
+  eps_mem + zeta * kappa
+
+theorem kirchhoff_love_ectocranial_endocranial_ordering (eps_mem kappa t_half : Int)
+    (hk : 0 < kappa) (ht : 0 < t_half) :
+    through_thickness_strain eps_mem kappa 0 = eps_mem ∧
+    through_thickness_strain eps_mem kappa (-t_half) < through_thickness_strain eps_mem kappa t_half ∧
+    through_thickness_strain 450 183 3 = 999 ∧
+    through_thickness_strain 450 183 (-3) = -99 ∧
+    alpha_of_strain (-35) 120 (through_thickness_strain 450 183 3) = 119845 ∧
+    alpha_of_strain (-35) 120 (through_thickness_strain 450 183 (-3)) = -50345 ∧
+    alpha_of_strain (-35) 120 (through_thickness_strain 450 183 (-3)) <
+      alpha_of_strain (-35) 120 (through_thickness_strain 450 183 3) := by
+  refine ⟨?_, ?_, by decide, by decide, by decide, by decide, by decide⟩
+  · simp [through_thickness_strain]
+  · unfold through_thickness_strain
+    have hpos : 0 < t_half * kappa := Int.mul_pos ht hk
+    have hneg : (-t_half) * kappa = -(t_half * kappa) := Int.neg_mul t_half kappa
+    omega
+
 end MathOfBiology.Loop_020

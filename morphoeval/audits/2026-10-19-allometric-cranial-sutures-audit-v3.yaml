@@ -1,0 +1,316 @@
+# MorphoEval audit — Miura et al. (2009) & Jaslow (1990) Cranial Suture Fractal Interdigitation, 2026-10-19 (v3)
+#
+# Pass 3 remediation-round re-score of `2020-bailleul-allometric-cranial-sutures.py` (Slot 020) in the
+# instrumented loop `morphoeval/runs/2026-10-19-allometric-cranial-sutures-loop-pass3`, superseding
+# `2026-10-19-allometric-cranial-sutures-audit-v2` (92.4).
+#
+# What Pass 3 changed (both v2 remediation items closed in reduced, honestly-labelled form):
+#   1. Quasi-3D ectocranial-to-endocranial plate thickness: 5-layer KS/KPZ stack through T = 6 mm with
+#      per-layer alpha_j(x), explicit vertical coupling kappa_z d^2h/dz^2 (Neumann), per-layer D_f/SII,
+#      no-gradient and kappa_z = 0 ablations; the endocranial table is flat (SII 1.00) while the
+#      ectocranial table interdigitates (SII 2.86).
+#   2. Heterogeneous masticatory strain coupling across coronal / sagittal / lambdoid: reduced-order
+#      Kirchhoff-Love thin-shell strain on an analytic ellipsoidal vault (Gaussian temporalis + nuchal
+#      deflection patches, isotropic ICP membrane term), projected onto each suture's in-plane normal
+#      and through-thickness offset, mapped to alpha(s, zeta) by an affine mechanotransduction law whose
+#      two anchors are the vendored unloading (-0.35) and sagittal (1.20) regimes; the KS solver now
+#      treats alpha(x) = alpha_mean + alpha_dev(x) pseudo-spectrally. NOT finite elements (stated in
+#      code, JSON and here).
+#   3. The Pass 2 closed-form tanh morphospace surrogate (a defect v2 scored 92 without noticing) was
+#      replaced by 225 actual simulations; a nuchal : temporalis traction sweep was added.
+#   4. Two new Lean 4 theorems (strain_mechanotransduction_alpha_monotone,
+#      kirchhoff_love_ectocranial_endocranial_ordering), 0 sorrys; self-test 8 -> 14 checks;
+#      measure_morphoeval 6 -> 11 measurements; 4 new DOI-verified secondary references.
+#
+# Why the overall score goes DOWN (92.4 -> 86.5): the remediation exposed defects that v2 credited:
+#   - the 2D "overhanging" trace is a phenomenological construction (std(h)-normalised amplitude plus
+#     hand-coded cascade harmonics locked to h), not a solved bidirectional front (L466-491);
+#   - the reduced strain model does NOT reproduce the lambdoid > sagittal SII ordering for any nuchal
+#     scale in the sweep (SII ratio 0.80-0.88 vs vendored 1.22), although it does reproduce the mean-alpha
+#     ordering; this is reported as a failed comparison, not tuned away;
+#   - the vendored specimen only validates the sagittal suture; coronal, lambdoid and endocranial outputs
+#     have no specimen comparison.
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale. Line numbers refer to
+# the files in the working tree at commit d58a084 after the Pass 3 edits (the script is 1572 lines).
+
+audit:
+  id: 2026-10-19-allometric-cranial-sutures-audit-v3
+  supersedes_audit_id: 2026-10-19-allometric-cranial-sutures-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d58a084
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) remediation-round evaluation of `2020-bailleul-allometric-cranial-sutures.py`
+      (1572 lines, 14 self-test checks, 11 measurements) executed by the Pass 3 remediation agent
+      (Claude Fable 5.1) in the isolated loop `2026-10-19-allometric-cranial-sutures-loop-pass3`;
+      the 12-panel PNG regenerates from the default invocation in ~14 s and the 24-frame GIF is
+      byte-identical to the v2 GIF (SHA-256 27e6d90f...), confirming the five vendored regimes
+      are numerically unchanged by the Pass 3 solver generalisation.
+
+references:
+  miura2009:
+    title: "Mechanism of cranial suture fractal interdigitation"
+    authors: "Miura T, Perlyn CA, Kinboshi M, Ogihara N, Morriss-Kay GM"
+    venue: "Proceedings of the National Academy of Sciences 106(27):11218-11223 (2009)"
+    doi: 10.1073/pnas.0813269106
+  jaslow1990:
+    title: "Mechanical properties of cranial sutures"
+    authors: "Jaslow CR"
+    venue: "Journal of Biomechanics 23(4):313-321 (1990)"
+    doi: 10.1016/0021-9290(90)90059-C
+  khonsari2013:
+    title: "A mathematical model for mechanotransduction at the early steps of suture formation"
+    authors: "Khonsari RH, Olivier J, Vigneaux P, Sanchez S, Tafforeau P, Ahlberg PE, Di Rocco F, Bresch D, Corre P, Ohazama A, Sharpe PT, Calvez V"
+    venue: "Proceedings of the Royal Society B 280(1759):20122670 (2013)"
+    doi: 10.1098/rspb.2012.2670
+  zollikofer2011:
+    title: "A bidirectional interface growth model for cranial interosseous suture morphogenesis"
+    authors: "Zollikofer CPE, Weissmann JD"
+    venue: "Journal of Anatomy 219(2):100-114 (2011)"
+    doi: 10.1111/j.1469-7580.2011.01386.x
+  herring2000:
+    title: "Strain in the braincase and its sutures during function"
+    authors: "Herring SW, Teng S"
+    venue: "American Journal of Physical Anthropology 112(4):575-593 (2000)"
+    doi: "10.1002/1096-8644(200008)112:4%3C575::AID-AJPA10%3E3.0.CO;2-0"  # SICI DOI percent-encoded (< >) so the doi.org IRI serialises as Turtle; raw form in paper_citations.bib
+  byron2004:
+    title: "Effects of increased muscle mass on mouse sagittal suture morphology and mechanics"
+    authors: "Byron CD, Borke J, Yu J, Pashley D, Wingard CJ, Hamrick M"
+    venue: "The Anatomical Record Part A 279A(1):676-684 (2004)"
+    doi: 10.1002/ar.a.20055
+  nicolay2006:
+    title: "Cranial suture complexity in white-tailed deer (Odocoileus virginianus)"
+    authors: "Nicolay CW, Vaders MJ"
+    venue: "Journal of Morphology 267(7):841-849 (2006)"
+    doi: 10.1002/jmor.10445
+  curtis2013:
+    title: "Cranial sutures work collectively to distribute strain throughout the reptile skull"
+    authors: "Curtis N, Jones MEH, Evans SE, O'Higgins P, Fagan MJ"
+    venue: "Journal of the Royal Society Interface 10(86):20130442 (2013)"
+    doi: 10.1098/rsif.2013.0442
+
+simulations:
+  - id: bailleul-allometric-cranial-sutures
+    name: "Miura et al. (2009) & Jaslow (1990) cranial suture fractal interdigitation, Kuramoto-Sivashinsky osteogenic instability, quasi-3D plate layering and reduced-order masticatory strain coupling"
+    organism: "Homo sapiens and Mus musculus coronal, sagittal and lambdoid calvarial skull sutures"
+    script: 2020-bailleul-allometric-cranial-sutures.py
+    output: docs/media/allometric_cranial_sutures_comparison.png
+    extra_outputs:
+      - docs/media/allometric_cranial_sutures_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-allometric-cranial-sutures-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Miura et al. (2009) PNAS 106:11218-11223 fourth-order Kuramoto-Sivashinsky / KPZ osteogenic front instability dh/dt = -alpha*d^2h/dx^2 - beta*d^4h/dx^4 + (v_0/2)*(dh/dx)^2 + eta(x,t) generating self-affine fractal cranial suture interdigitation (D_f ~ 1.30-1.45) and collapse to a flat line under surgical mechanical unloading"
+        - "Jaslow (1990) J. Biomech. 23:313-321 monotonic enhancement of cranial suture bending and impact energy absorption with Suture Interdigitation Index SII = L_arc / L_chord"
+        - "Khonsari et al. (2013) Proc. R. Soc. B 280:20122670 & Zollikofer & Weissmann (2011) J. Anat. 219:100-114 bidirectional normal-front overhang and FGFR2 craniosynostosis fusion"
+        - "Byron et al. (2004) Anat. Rec. 279A:676-684 increased temporalis mass / bite force raises sagittal suture fractal dimension (direction of mechanotransduction only); Herring & Teng (2000) in vivo suture strains are suture-specific and heterogeneous; Curtis et al. (2013) full-skull finite-element suture-strain coupling (precedent, not reproduced)"
+      reconstructed_in_script:
+        - "Pseudo-spectral integrating-factor / ETDRK2 Kuramoto-Sivashinsky + KPZ solver with spatially heterogeneous alpha(x) = alpha_mean + alpha_dev(x) (alpha_dev h_xx evaluated in real space, 2/3 dealiased), a 5-layer ectocranial-to-endocranial stack through T = 6 mm coupled by explicit kappa_z d^2h/dz^2, a continuous flat/infant/overhang blend of the 2D front construction, 5 vendored regimes, a simulated 15x15 (alpha, beta) morphospace, depth ablations (no gradient, kappa_z = 0) and a nuchal : temporalis traction sweep"
+        - "Reduced-order Kirchhoff-Love vault strain field: analytic ellipsoid (90 x 70 x 65 mm), Gaussian temporalis and nuchal normal-deflection patches, isotropic intracranial membrane strain, curvature tensor projected on each suture's in-plane normal, eps_nn(s, zeta) = eps_mem + zeta kappa_nn, affine mechanotransduction alpha(eps_hat) = -0.35 + 1.55 eps_hat anchored on the vendored unloading and sagittal regimes"
+        - "Automated CV calvarial segmentation, sagittal suture midline cleft extraction, SII (2.6791) and 5-scale dyadic box-counting fractal dimension (D_f = 1.2847) on human_sagittal_suture_specimen.jpg; 5 Lean 4 theorems (0 sorrys)"
+      transfer_boundary:
+        - "1D/2D osteogenic front geometry (x(s), y(s)), box-counting D_f, SII and Jaslow bending energy ratio compared against the superior-view human calvarial sagittal suture only; coronal, lambdoid and endocranial outputs are compared against vendored/literature expectations, not against a specimen"
+        - "The strain field is a reduced-order analytic model whose traction magnitudes are stated assumptions; it reproduces the mean-alpha ordering lambdoid > sagittal > coronal but NOT the SII ordering (lambdoid/sagittal SII = 0.885 vs vendored 1.22) for any nuchal scale in [0, 2]"
+        - "The 2D overhanging trace is a phenomenological construction (std(h)-normalised KS shape plus cascade harmonics), so D_f/SII magnitudes are set by that construction rather than by the PDE amplitude"
+      does_not_claim:
+        - "A finite-element solution of masticatory strain on a CT-derived 3D skull mesh, trabecular diploe micro-CT fracture mechanics, membrane equilibrium of a pressurised triaxial ellipsoidal shell, or single-cell scRNA-seq trajectories of Twist1+/Runx2+ suture stem cells"
+    source_refs:
+      - miura2009
+      - jaslow1990
+      - khonsari2013
+      - zollikofer2011
+      - herring2000
+      - byron2004
+      - nicolay2006
+      - curtis2013
+    summary: >-
+      Pass 3 closes both v2 remediation items in reduced, explicitly labelled form and re-scores the
+      script at 86.5/100 (down from 92.4). The solver now integrates a spatially heterogeneous
+      alpha(x) Kuramoto-Sivashinsky/KPZ front in a 5-layer ectocranial-to-endocranial stack
+      (`simulate_cranial_suture_regime`, L505-727) and derives alpha(s, zeta) for the coronal,
+      sagittal and lambdoid sutures from a reduced-order Kirchhoff-Love vault strain field
+      (`calvarial_shell_strain_field`, L346-441) through an affine mechanotransduction law
+      (`strain_to_alpha`, L267-281) formalised by two new Lean 4 theorems. Results: ectocranial
+      sagittal SII 2.863 / D_f 1.339 against a flat endocranial table (SII 1.000; no-gradient null
+      2.81, kappa_z = 0 ablation 1.00), strain-coupled SII coronal 2.161 < lambdoid 2.433 <
+      sagittal 2.748, simulated morphospace Spearman rho(D_f, alpha) = 1.00 and rho(D_f, beta) =
+      -1.00, the five vendored regimes and the GIF numerically unchanged (sagittal D_f 1.3484,
+      SII 2.9181; specimen CV D_f 1.2847, SII 2.6791). The score falls because the round exposed
+      that the 2D overhang trace is a std(h)-normalised phenomenological construction, that the
+      reduced strain model fails the lambdoid > sagittal SII comparison, and that only the sagittal
+      suture is validated against a specimen.
+    scores:
+      model-fidelity:
+        value: 84
+        rationale: >-
+          Credited: the damped KS dispersion and completing-the-square identity (L126-136, L203-262), the
+          pseudo-spectral integrating-factor step with 2/3 dealiasing, the new heterogeneous-alpha treatment
+          (alpha_mean in the exact integrating factor, -alpha_dev(x) h_xx in real space, L616-631), the
+          5-layer through-plate stack with explicit Neumann kappa_z coupling (L634-637), the Kirchhoff-Love
+          eps(zeta) = eps_mem + zeta kappa law and the affine mechanotransduction law anchored on the two
+          vendored regimes (L267-281, L346-441), all with 5 machine-checked Lean theorems; the constant-profile
+          case reduces bitwise to the Pass 2 solver (self-test 9). Deductions: the 2D overhanging front is not a
+          solved bidirectional interface — `construct_osteogenic_front_curve` normalises the KS field by std(h)
+          and adds three hand-coded cascade harmonics and a lobe drive locked to h, so only the shape (not the
+          amplitude) of the PDE solution reaches D_f/SII (L466-491; -8); the vault strain field is Gaussian
+          deflection patches plus an isotropic ICP term, not a shell-equilibrium or finite-element solution,
+          and the lambdoid asterion flanks need an alpha clip of 3.0 to keep the explicit term stable (L322-344,
+          L368, JSON L151; -5); the integrating factor is clipped to [-4, 0.12] and the growth saturation
+          1/(1 + 0.55 var h) and cubic -0.18 h^3 are uncited closures (L619, L629-632; -3).
+        evidence:
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [126, 136], note: "Damped KS dispersion omega(k) = alpha k^2 - beta k^4 - gamma", supports: true}
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [267, 281], note: "Affine strain mechanotransduction law alpha(eps_hat) = alpha_unl + (alpha_sag - alpha_unl) eps_hat anchored on vendored -0.35 and 1.20 (Lean Law 4)", supports: true}
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [346, 441], note: "Reduced-order Kirchhoff-Love vault strain field: Gaussian deflection Hessian, in-plane suture normal projection, eps(zeta) = eps_mem + zeta kappa, sagittal normalisation (Lean Law 5); explicitly NOT FEM", supports: true}
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [616, 637], note: "Heterogeneous alpha_dev(x) h_xx real-space term, dealiased nonlinear step, explicit Neumann kappa_z d^2h/dz^2 layer coupling", supports: true}
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [466, 491], note: "Carried defect: trace amplitude normalised by std(h) and cascade harmonics 0.62/0.34/0.16 hand-coded; D_f/SII are set by this construction, not by the PDE amplitude", supports: false}
+          - {file: morphoeval/lean/loops/Loop_020_allometric_cranial_sutures.lean, lines: [117, 193], note: "Two new Lean 4 theorems (Laws 4 and 5), file verifies with 0 sorrys", supports: true}
+      specimen-match:
+        value: 82
+        rationale: >-
+          Credited: the SHA-256-pinned CC BY-SA human calvaria is segmented, its sagittal suture traced and
+          overlaid (C1), compared waveform-to-waveform (C2) and in box-counting space (B1) with the simulated
+          sagittal suture, and the five regimes are visually distinct (A1, GIF); the new row D shows the
+          ellipsoidal vault with the three suture paths, the heterogeneous alpha(s) profiles and the
+          quasi-3D ecto-to-endo cleft stack with a clearly flatter endocranial table, which is the
+          qualitative anatomy. Deductions: the coronal, lambdoid and endocranial outputs have no specimen
+          counterpart — the vendored photograph shows only the sagittal suture fully in frame (L893-897,
+          L913) (-8); the strain-coupled lambdoid is LESS interdigitated than the sagittal (SII 2.433 vs
+          2.748), opposite to the vendored/literature expectation, so the three-suture rendering does not
+          match adult human morphology in that respect (-6); the vault is an analytic ellipsoid without
+          temporal squama, occipital bun or thickness variation, and the muscle patches are four points (-4).
+        evidence:
+          - {file: docs/media/allometric_cranial_sutures_comparison.png, lines: [0, 0], note: "12-panel figure: C1 specimen CV trace overlay, C2 specimen-vs-simulated waveforms, B1 box-counting overlay, D1 vault + sutures, D2 alpha(s, zeta), D3 layered cleft stack", supports: true}
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [893, 913], note: "Specimen segmentation limited to the sagittal ROI (x 442-526, y 195-535); docstring states coronal/lambdoid are not extractable", supports: true}
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [1143, 1158], note: "Panel C3 now includes strain-coupled coronal and lambdoid bars beside the sagittal and specimen bars; lambdoid < sagittal visible", supports: true}
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [1212, 1242], note: "Panel D3: 5-layer ecto->endo sagittal cleft rendered in 3D with per-layer SII/D_f and ablation values", supports: true}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Credited: the morphospace is now 225 real simulations and is monotone (Spearman rho(D_f, alpha) =
+          1.00, rho(SII, alpha) = 1.00, rho(D_f, beta | unstable) = -1.00, flat half-plane max D_f 1.00;
+          L728-781, self-test 14); the depth ramp alpha_endo_ratio and kappa_z each have an ablation
+          (L814-859); the nuchal : temporalis scale is swept (L861-888); the continuous flat/infant/overhang
+          blend (L498-501) makes intermediate alphas vary smoothly. Deductions: within the sweep the nuchal
+          scale changes the mean-alpha ratio (0.98 -> 1.10) but never flips the SII ordering (0.80-0.88), so
+          the lambdoid-vs-sagittal feature of form is not controllable by the one strain parameter that is
+          exposed (-6); the alpha clip 3.0 and the overhang law 0.68 (alpha/1.2)^0.7 (L284-289) are
+          uncited knobs that shape the response (-4).
+        evidence:
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [728, 781], note: "Simulated 15x15 (alpha, beta) morphospace with Spearman monotonicity diagnostics (replaces the v2 closed-form tanh surrogate)", supports: true}
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [814, 859], note: "Layered depth profile with no-gradient and kappa_z = 0 ablations", supports: true}
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [861, 888], note: "Nuchal traction sweep recording alpha and SII ratios; SII ratio stays < 1 for all scales", supports: false}
+      morphometric-validation:
+        value: 86
+        rationale: >-
+          Credited: 11 measurements each with a reference value, source and note (L1295-1427): sagittal D_f
+          1.3484 vs 1.36, SII 2.9181 vs 2.84, lambdoid D_f 1.3756 vs 1.41, synostosis collapse 1.00, Jaslow
+          amplification 2.687 vs 2.75, specimen CV D_f 1.2847, ecto/endo SII ratio 2.863 vs null 1.0 with
+          ablation values, strain-coupled lambdoid/sagittal SII 0.885 vs vendored 1.22 (a disclosed failure),
+          nuchal crossing scale 0.5, alpha(0) = -0.35 exactly, morphospace rho = 1.00. Deductions: the new
+          references for items 7-9 are a null value (1.0), a vendored expectation (1.22) and a model
+          assumption (1.0) rather than numbers measured on real specimens; no quantified ecto/endo D_f pair
+          from the literature is vendored (-7); the lambdoid/sagittal comparison fails and is only
+          explained qualitatively (-4); Spearman is computed with a ties-unaware argsort (L762, L851) (-3).
+        evidence:
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [1295, 1427], note: "11 reference-anchored measurements incl. ecto/endo SII ratio, strain-coupled SII ratio, nuchal crossing, alpha(0), morphospace Spearman", supports: true}
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [1387, 1396], note: "Strain-coupled lambdoid/sagittal SII 0.885 vs reference 1.22: disclosed mismatch", supports: false}
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [1377, 1386], note: "Ecto/endo SII ratio with depth profile, no-gradient and uncoupled ablations in the note; reference is a null, not a specimen value", supports: true}
+      source-traceability:
+        value: 92
+        rationale: >-
+          Credited: 8 DOIs (4 primary + 4 Pass 3 secondary, each resolved against Crossref before being
+          added) in the bib, dataset README and JSON; the bib SHA-256 was re-pinned after the additions and
+          is verified fail-closed at every run (L107-120); every strain-model constant lives in
+          `calvarial_shell_strain_model` with `not_a_finite_element_model: true`, a `used_for` line per
+          secondary reference and explicit "assumption" wording. Deductions: the ecto-vs-endo expectation
+          cites Nicolay & Vaders (2006) qualitatively without a vendored table value (-4); the ellipsoid
+          semi-axes, plate thickness 6 mm, patch centres and sigma values carry no anatomical source (-4).
+        evidence:
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [107, 120], note: "Runtime SHA-256 verification of the three pinned dataset files including the re-pinned bib", supports: true}
+          - {file: datasets/allometric_cranial_sutures/allometric_cranial_sutures_reference.json, lines: [113, 180], note: "secondary_papers_pass3 with DOIs and used_for; calvarial_shell_strain_model with ellipsoid, layers, mechanotransduction, tractions, sweep and literature_expectations caveat", supports: true}
+          - {file: datasets/allometric_cranial_sutures/paper_citations.bib, lines: [45, 87], note: "Herring & Teng 2000, Byron 2004, Nicolay & Vaders 2006, Curtis 2013 BibTeX entries", supports: true}
+      code-traceability:
+        value: 88
+        rationale: >-
+          Credited: the module docstring maps Laws 1-5 to Lean theorem names and code; `strain_to_alpha`,
+          `calvarial_shell_strain_field`, `construct_osteogenic_front_curve` and
+          `simulate_cranial_suture_regime` docstrings state the equation, the source figure and the honest
+          scope; the math-KG loop file registers all 5 laws with corrected code loci (L1-167). Deductions:
+          the Gaussian-deflection Hessian form, the isotropic ICP membrane term and the overhang law are
+          modelling choices with no cited equation (L284-289, L322-344) (-6); the cascade harmonic
+          coefficients remain uncited (L483-488) (-4); the self-test docstring and panel B1 now say
+          "5 dyadic scales" (the v2 "7-scale" wording was wrong and is fixed) (+0).
+        evidence:
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [1, 44], note: "Docstring: Laws 1-5 with Lean theorem names and the honest scope note", supports: true}
+          - {file: morphoeval/math_kg_loops/bailleul-allometric-cranial-sutures.yaml, lines: [1, 167], note: "5 registered laws with lean_code, loci, variables, roles and sources", supports: true}
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [284, 289], note: "overhang_from_alpha: uncited 0.68 (alpha/1.2)^0.7 closure", supports: false}
+      repro-package:
+        value: 92
+        rationale: >-
+          Credited: cross-process determinism (seed + SHA-256 label offsets, L551-553), bitwise two-run and
+          constant-profile equivalence checks, 14-check `--self-test` in ~3 s, default render in ~14 s with
+          `--skip-gif`/`--seed` flags (L1542-1546), SHA-256 fail-closed inputs, and the GIF regenerating
+          byte-identically to v2 (27e6d90f...). Deductions: no per-script requirements lock (environment is
+          recorded only in this audit) (-5); matplotlib needs a writable MPLCONFIGDIR in sandboxed runs and
+          the invocation notes do not say so (-3).
+        evidence:
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [1432, 1539], note: "14-check deterministic self-test incl. bitwise constant-profile reduction, Lean-law endpoints, depth monotonicity, strain ordering, morphospace monotonicity", supports: true}
+          - {file: 2020-bailleul-allometric-cranial-sutures.py, lines: [1542, 1548], note: "CLI: --self-test, --skip-gif, --seed", supports: true}
+          - {file: docs/media/allometric_cranial_sutures_growth.gif, lines: [0, 0], note: "24-frame GIF byte-identical across Pass 2 and Pass 3 (five regimes unchanged)", supports: true}
+    remediation:
+      - >-
+        2020-bailleul-allometric-cranial-sutures.py:466-491 — `construct_osteogenic_front_curve` normalises
+        the KS field by std(h) (L471, L479, L483) and adds hand-coded cascade harmonics (0.62/0.34/0.16) and a
+        lobe drive, so D_f and SII are set by the construction rather than by the PDE amplitude. Replace with a
+        solved bidirectional interface (Zollikofer & Weissmann 2011 two-front growth or a 2D phase-field
+        level set) whose overhang emerges from normal growth, and let the KS amplitude propagate.
+      - >-
+        2020-bailleul-allometric-cranial-sutures.py:322-344 and 386-389 with
+        datasets/allometric_cranial_sutures/allometric_cranial_sutures_reference.json:135-180 — the vault
+        strain is Gaussian deflection Hessians plus an isotropic ICP term; it fails the lambdoid > sagittal
+        SII comparison (0.885 vs 1.22) for every nuchal scale in the sweep. Implement a thin-shell
+        (Koiter/Kirchhoff-Love) finite-difference or FEM solve with membrane equilibrium on the ellipsoid
+        (or vendor an open CT skull mesh) and re-run the three-suture comparison.
+      - >-
+        2020-bailleul-allometric-cranial-sutures.py:893-913 — only the sagittal suture is extractable from
+        the vendored photograph. Vendor a CC-licensed lateral/posterior view (coronal + lambdoid in frame)
+        and an endocranial view, extend `segment_human_suture_specimen` to arbitrary oriented ROIs, and
+        turn measurements 7-8 into specimen comparisons instead of null/vendored references.
+      - >-
+        datasets/allometric_cranial_sutures/allometric_cranial_sutures_reference.json:151 and
+        2020-bailleul-allometric-cranial-sutures.py:616-631 — the explicit -alpha_dev(x) h_xx term needs an
+        alpha clip of 3.0 for stability and the clip changes the lambdoid mean alpha (2.0 -> 1.06, 3.0 ->
+        1.27). Treat the heterogeneous term implicitly (IMEX / Crank-Nicolson on alpha(x) k^2) so no clip is
+        required, and report the lambdoid profile unclipped.
+      - >-
+        2020-bailleul-allometric-cranial-sutures.py:762-768 and 851-853 — Spearman correlations use a
+        ties-unaware argsort-of-argsort, which is why the depth profile reports -0.90 rather than -1.0 for a
+        monotone profile with two saturated layers. Use `scipy.stats.spearmanr` and add a tie-aware
+        monotonicity test.

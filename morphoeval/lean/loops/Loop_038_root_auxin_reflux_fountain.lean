@@ -130,4 +130,103 @@ theorem mahonen_2014_plethora_meristem_boundary_monotonicity
   · dsimp [meristem_boundary_coord]
     omega
 
+
+-- ============================================================================
+-- Law 4 (`grieneisen-root-auxin-reflux-fountain-4`, Pass 3):
+-- Friml et al. (2002) / Kleine-Vehn et al. (2010) gravistimulated PIN3/PIN7 columella efflux asymmetry
+-- ============================================================================
+/-- After gravistimulation, PIN3/PIN7 relocalise to the new lower membrane of the columella statocytes.
+    The script models this as a biased split of the apolar columella permeability `k_col` into a
+    lower-side share `k_col * (1 + g)` and an upper-side share `k_col * (1 - g)` with asymmetry
+    `0 <= g <= 1` (`build_pin_lattice_operator`). This theorem proves, for `k_col > 0`:
+    1. the split conserves the total lateral permeability `2 k_col` for every `g`;
+    2. for `g > 0` the lower side strictly exceeds the upper side, and the difference equals `2 k_col g`;
+    3. `g = 0` restores the symmetric (vertical root) split;
+    4. the lower-upper difference is strictly monotone in `g` (`g2 > g1 => diff g2 > diff g1`),
+       which is the sine-law input the bending kinetics integrate. -/
+def lower_side_permeability (k_col g : Int) : Int := k_col * (1 + g)
+
+def upper_side_permeability (k_col g : Int) : Int := k_col * (1 - g)
+
+def lateral_efflux_asymmetry (k_col g : Int) : Int :=
+  lower_side_permeability k_col g - upper_side_permeability k_col g
+
+theorem friml_2002_gravistimulated_columella_efflux_asymmetry
+    (k_col g g1 g2 : Int) (hk : k_col > 0) (hg : g > 0) (hmono : g2 > g1) :
+    lower_side_permeability k_col g + upper_side_permeability k_col g = 2 * k_col ∧
+    lower_side_permeability k_col g > upper_side_permeability k_col g ∧
+    lateral_efflux_asymmetry k_col g = 2 * k_col * g ∧
+    lower_side_permeability k_col 0 = upper_side_permeability k_col 0 ∧
+    lateral_efflux_asymmetry k_col g2 > lateral_efflux_asymmetry k_col g1 := by
+  have hdiff : ∀ x : Int, lateral_efflux_asymmetry k_col x = 2 * k_col * x := by
+    intro x
+    simp only [lateral_efflux_asymmetry, lower_side_permeability, upper_side_permeability,
+      Int.mul_add, Int.mul_sub, Int.mul_one, Int.mul_assoc]
+    omega
+  refine ⟨?_, ?_, hdiff g, ?_, ?_⟩
+  · simp only [lower_side_permeability, upper_side_permeability, Int.mul_add, Int.mul_sub, Int.mul_one]
+    omega
+  · have hkg : k_col * g > 0 := Int.mul_pos hk hg
+    simp only [lower_side_permeability, upper_side_permeability, Int.mul_add, Int.mul_sub, Int.mul_one]
+    omega
+  · simp [lower_side_permeability, upper_side_permeability]
+  · rw [hdiff g1, hdiff g2]
+    have h2k : 2 * k_col > 0 := by omega
+    exact Int.mul_lt_mul_of_pos_left hmono h2k
+
+
+-- ============================================================================
+-- Law 5 (`grieneisen-root-auxin-reflux-fountain-5`, Pass 3):
+-- Mähönen et al. (2014) PLETHORA growth-dilution monotonicity
+-- ============================================================================
+/-- In the finite-volume PLETHORA balance of the growing lattice the local steady state of a cell row
+    with auxin-induced synthesis `S = alpha * H(A) > 0`, turnover `gamma > 0` and relative growth
+    (dilution) rate `r >= 0` satisfies `P * (gamma + r) = S`. This theorem proves that a faster-growing
+    (more strongly diluting) row carries strictly less PLETHORA: if `P1 (gamma + r1) = S`,
+    `P2 (gamma + r2) = S` with `r2 > r1 >= 0` and `P1, P2 > 0`, then `P2 < P1`. This is the Mähönen
+    (2014) growth-dilution mechanism by which elongating cells lose PLT and exit the meristem. -/
+def plt_dilution_balance (P gamma r : Int) : Int := P * (gamma + r)
+
+theorem mahonen_2014_plethora_growth_dilution_monotone
+    (P1 P2 gamma r1 r2 S : Int)
+    (_hP1 : P1 > 0) (hP2 : P2 > 0) (hgamma : gamma > 0) (hr1 : r1 ≥ 0) (hr : r2 > r1)
+    (h1 : plt_dilution_balance P1 gamma r1 = S) (h2 : plt_dilution_balance P2 gamma r2 = S) :
+    P2 < P1 := by
+  dsimp [plt_dilution_balance] at h1 h2
+  have hlt : gamma + r1 < gamma + r2 := by omega
+  have hstep : P2 * (gamma + r1) < P2 * (gamma + r2) := Int.mul_lt_mul_of_pos_left hlt hP2
+  have hpos : (0 : Int) ≤ gamma + r1 := by omega
+  have hcmp : P2 * (gamma + r1) < P1 * (gamma + r1) := by
+    rw [h1, ← h2]
+    exact hstep
+  exact Int.lt_of_mul_lt_mul_right hcmp hpos
+
+
+-- ============================================================================
+-- Law 6 (`grieneisen-root-auxin-reflux-fountain-6`, Pass 3):
+-- Explicit mitotic division on the growing cellular lattice
+-- ============================================================================
+/-- `simulate_growing_cellular_lattice` divides a meristematic row of (integer-scaled) length `l` once
+    `l >= 2 * l_birth` into two daughters of length `l / 2` and `l - l / 2`. This theorem proves that the
+    rule (1) conserves the total file length, (2) never produces a daughter shorter than `l_birth`, and
+    (3) increments the cell count by exactly one, for every `l >= 2 l_birth` and `l_birth > 0`. -/
+def daughter_a (l : Int) : Int := l / 2
+
+def daughter_b (l : Int) : Int := l - l / 2
+
+theorem mitotic_division_length_conservation
+    (l l_birth n_cells : Int) (_hb : l_birth > 0) (hl : l ≥ 2 * l_birth) :
+    daughter_a l + daughter_b l = l ∧
+    daughter_a l ≥ l_birth ∧
+    daughter_b l ≥ l_birth ∧
+    (n_cells - 1) + 2 = n_cells + 1 := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · dsimp [daughter_a, daughter_b]
+    omega
+  · dsimp [daughter_a]
+    omega
+  · dsimp [daughter_b]
+    omega
+  · omega
+
 end MathOfBiology.Loop_038

@@ -21,5 +21,76 @@
   "slot_index": 13,
   "slug": "mechanochemical-chondrogenesis",
   "target_script": "1983-oster-mechanochemical-chondrogenesis.py",
-  "delta": 32.9
+  "delta": 32.9,
+  "pass3_run_id": "2026-10-19-mechanochemical-chondrogenesis-loop-pass3",
+  "pass3_audit_id": "2026-10-19-mechanochemical-chondrogenesis-audit-v3",
+  "audit_v3": "morphoeval/audits/2026-10-19-mechanochemical-chondrogenesis-audit-v3.yaml",
+  "pass3_score": 87.1,
+  "pass3_dims": {
+    "model-fidelity": 85,
+    "specimen-match": 86,
+    "parameter-expressivity": 86,
+    "morphometric-validation": 88,
+    "source-traceability": 90,
+    "code-traceability": 88,
+    "repro-package": 90
+  },
+  "pass2_dims": {
+    "model-fidelity": 93,
+    "specimen-match": 88,
+    "parameter-expressivity": 90,
+    "morphometric-validation": 90,
+    "source-traceability": 93,
+    "code-traceability": 91,
+    "repro-package": 90
+  },
+  "pass3_score_delta": -3.6,
+  "pass3_score_note": "Deliberate decrease: v2 had credited a kinematic 2D template as a solver; v3 replaces it with a coupled free-boundary PDE and discloses the solver drift-kernel tau_c discrepancy (1.4397 vs 1.2776), the circular 1D wavelength measurement and the reference-JSON canonical_parameters mismatch.",
+  "pass3_completed_at": "2026-10-20T07:09:34Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_remediation_closed": [
+    "Couple the 2D viscoelastic ECM displacement solver to a moving free-boundary AER outgrowth domain -> _simulate_2d_aer_free_boundary_outgrowth (1983-oster-mechanochemical-chondrogenesis.py L427-628), evaluate_aer_ablation_series (L631-668)",
+    "Hybridize mechanochemical cell traction with Bmp-Sox9-Wnt reaction-diffusion Turing kinetics (Raspopovic 2014) to test synergy -> hybrid_mechanochemical_bsw_jacobian (L717-759), simulate_1d_hybrid_mechanochemical_bsw (L816-902), evaluate_mechanochemical_bsw_synergy (L905-962)"
+  ],
+  "pass3_remediation_open": [
+    "Reconcile the solver drift kernel i k sigma_hat/(E k^2 + s + mu k^2) with the analytic quasi-static kernel (tau_c 1.4397 vs 1.2776, 12.7%) or derive and cite the viscous-correction dispersion relation",
+    "Replace the circular 1D wavelength measurement (seeded m=4 cosine on W = 4 lambda_c) with an unseeded noise-initiated wavelength estimate",
+    "Set the 2D autopod digit number by W_autopod / lambda_c alone (currently inherited partly by bifurcation of zeugopod rods for W_autopod 3.0-4.5 lambda_c); sweep and report the W -> count map",
+    "Reconcile datasets/mechanochemical_chondrogenesis reference JSON canonical_parameters with the script defaults (script_default_parameters) and cite the sources of D_1, D_2, mu, s, r, lambda",
+    "Cite or justify the fixed numerical constants (0.15 viscous offset, 0.18 cubic saturation, peak-detection thresholds 1.15/0.25/0.30) and the fixed free-boundary defaults (aniso_y = 3.0, w_stylopod = 1.4, w_zeugopod = 2.0)",
+    "Extend the hybrid BSW coupling from 1D to the 2D free-boundary paddle and test whether Sox9 feedback alone sets the digit count without the mechanical nucleus seed"
+  ],
+  "pass3_lean_theorems_added": [
+    "oster_maini_1985_aer_front_monotone",
+    "oster_maini_1985_aer_outgrowth_mode_monotone",
+    "saunders_1948_aer_ablation_truncation",
+    "hybrid_mechanochemical_bsw_threshold_lowering",
+    "hybrid_mechanochemical_bsw_synergy_threshold",
+    "hybrid_n_sox9_loop_destabilises_when_gain_exceeds_margin"
+  ],
+  "pass3_lean_theorems_total": 9,
+  "pass3_self_test": "pass (./venv/bin/python3 1983-oster-mechanochemical-chondrogenesis.py --self-test, ~31 s)",
+  "pass3_artifacts": [
+    "1983-oster-mechanochemical-chondrogenesis.py",
+    "morphoeval/lean/loops/Loop_013_mechanochemical_chondrogenesis.lean",
+    "morphoeval/math_kg_loops/oster-mechanochemical-chondrogenesis.yaml",
+    "datasets/mechanochemical_chondrogenesis/README.md",
+    "datasets/mechanochemical_chondrogenesis/mechanochemical_chondrogenesis_reference.json",
+    "datasets/mechanochemical_chondrogenesis/paper_citations.bib",
+    "docs/media/mechanochemical_chondrogenesis_comparison.png",
+    "docs/media/mechanochemical_chondrogenesis_growth.gif",
+    "docs/media/mechanochemical_chondrogenesis_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-mechanochemical-chondrogenesis-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-mechanochemical-chondrogenesis-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-mechanochemical-chondrogenesis-audit-v3/",
+    "morphoeval/kg/2026-10-19-mechanochemical-chondrogenesis-audit-v3/signed/",
+    "morphoeval/runs/2026-10-19-mechanochemical-chondrogenesis-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-mechanochemical-chondrogenesis-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-mechanochemical-chondrogenesis-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-mechanochemical-chondrogenesis-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-mechanochemical-chondrogenesis-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-mechanochemical-chondrogenesis-loop-pass3.ledger.jsonl"
+  ]
 }

@@ -95,4 +95,51 @@ theorem economou_in_phase_and_coronal_cut_release (dA_sq : Int) (hd : dA_sq ≥ 
   unfold fgf_shh_in_phase_product
   omega
 
+-- ============================================================================
+-- Law 4 (`economou-palate-ruguga-turing-4`, Pass 3 chemo-mechanical coupling):
+-- Quasi-Static Kirchhoff Epithelial Plate on a Winkler Mesenchymal Foundation
+-- ============================================================================
+/-- Pass 3 remediation couples the FGF/SHH Turing sheet to epithelial ridge
+    elevation through the quasi-static thin-plate equation
+      `kappa Lap^2 h - T Lap h + k_f h = beta f(A)`,  `f(A) = max(A - A_th, 0)`,
+    whose Fourier/DCT transfer stiffness at squared wavenumber `q2` is
+      `S(q2) = kappa * q2^2 + T * q2 + k_f`.
+    We prove that `S` is bounded below by the foundation stiffness `k_f` and is
+    monotone non-decreasing in `q2` for every non-negative `kappa`, `T`, `k_f`.
+    Consequently the mechanical gain `G = 1 / S` is a low-pass filter: the
+    long-wavelength Turing mode `lambda_c` is transferred to the morphological
+    ridge spacing, and raising `kappa` or `k_f` can only attenuate the ridge
+    amplitude (the kappa / k_f sweeps in the script report Spearman rho = -1). -/
+def plate_stiffness (kappa T kf q2 : Nat) : Nat :=
+  kappa * q2 * q2 + T * q2 + kf
+
+theorem economou_ridge_plate_stiffness_monotone (kappa T kf q2 q2' : Nat) (h : q2 ≤ q2') :
+    plate_stiffness kappa T kf q2 ≤ plate_stiffness kappa T kf q2' ∧
+    kf ≤ plate_stiffness kappa T kf q2 := by
+  unfold plate_stiffness
+  have h1 : kappa * q2 * q2 ≤ kappa * q2' * q2' :=
+    Nat.mul_le_mul (Nat.mul_le_mul (Nat.le_refl kappa) h) h
+  have h2 : T * q2 ≤ T * q2' := Nat.mul_le_mul (Nat.le_refl T) h
+  omega
+
+/-- Sign-preserving ridge elevation: because `S(q2) > 0` (previous theorem with
+    `k_f > 0`), the quasi-static solution `h_q = beta * f_q / S(q2)` carries the
+    sign of the active thickening load `beta * f(A)`. With `beta >= 0` and the
+    rectified load `f >= 0`, the elevation forcing is non-negative wherever the
+    epithelium is FGF/SHH-high and vanishes (`beta * 0 = 0`) in the inter-ruga
+    troughs, so ridge crests sit on the Shh stripes (zero crest/stripe phase
+    offset, Economou et al. 2012 Fig. 1). The concrete values use the script's
+    scaled defaults `kappa = 5`, `T = 20`, `k_f = 100` (x100): the uniform mode
+    `q2 = 0` is resisted by the foundation alone (`S = 100`) while `q2 = 4`
+    gives `S = 260`. -/
+def ridge_load (beta f : Int) : Int :=
+  beta * f
+
+theorem economou_ridge_elevation_in_phase (beta f : Int) (hb : 0 ≤ beta) (hf : 0 ≤ f) :
+    0 ≤ ridge_load beta f ∧
+    ridge_load beta 0 = 0 ∧
+    plate_stiffness 5 20 100 0 = 100 ∧
+    plate_stiffness 5 20 100 4 = 260 := by
+  refine ⟨Int.mul_nonneg hb hf, by simp [ridge_load], by decide, by decide⟩
+
 end MathOfBiology.Loop_008

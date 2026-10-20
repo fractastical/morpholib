@@ -1,0 +1,60 @@
+{
+  "metadata": {
+    "dataset_id": "raspopovic-2014-limb-bud-outgrowth-fem-reference-v1",
+    "title": "Pass 3 reference table for the moving-boundary P1 finite-element limb-bud outgrowth mesh coupled to the Raspopovic et al. (2014) Bmp-Sox9-Wnt network",
+    "created": "2026-10-20",
+    "created_by": "MorphoEval Autonomous Loop slot-016 Pass 3 (Claude Fable 5.1)",
+    "caveat": "Every reference value in this table is either (a) an analytic consequence of the Raspopovic et al. (2014) baseline parameters (dispersion relation, Lean Laws 4-6 in morphoeval/lean/loops/Loop_016_bmp_sox9_wnt_digits.lean) or (b) a qualitative statement reported in the cited papers. No value is a digitised measurement of a limb-bud growth curve; see `not_vendored`.",
+    "not_vendored": [
+      "Measured mouse limb-bud outgrowth kinetics (length vs stage) from Boehm et al. (2010) / Marcon et al. (2011) - the growth law R(t) = min(R1, R0 exp(g t)) is a declared reduction",
+      "A realistic bud outline: the mesh is a polar fan with uniform radial stretch",
+      "The Raspopovic et al. (2014) supplementary growth maps and their FGF/Hox parameter-modulation functions"
+    ],
+    "sources": [
+      {"id": "raspopovic2014", "doi": "10.1126/science.1252960", "role": "3-node network, FGF/Hox wavelength modulation keeps Sox9 stripes unbranched on the growing autopod (Fig. 4)"},
+      {"id": "sheth2012", "doi": "10.1126/science.1226804", "role": "digit number scales with autopod width / Hox-controlled wavelength"},
+      {"id": "crampin1999", "doi": "10.1006/bulm.1999.0131", "role": "reaction-diffusion on growing domains: dilution term -(div u) c, frequency-doubling / sequential mode insertion"},
+      {"id": "boehm2010", "doi": "10.1371/journal.pbio.1000420", "role": "finite-element limb-bud growth model; proliferation gradient alone insufficient for bud shape"},
+      {"id": "marcon2011", "doi": "10.1371/journal.pcbi.1001071", "role": "computational growth map of the mouse limb bud used by Raspopovic et al. (2014) for the growing-domain simulations"},
+      {"id": "shubin1986", "doi": "10.1007/978-1-4615-6983-1_6", "role": "digital arch: marginal digits condense last (qualitative order of digit formation)"}
+    ]
+  },
+  "mesh": {
+    "element": "P1 linear triangle, lumped mass, implicit diffusion, explicit reaction",
+    "material_domain": "(xi, eta) in [0, 1] x [-1, 1]",
+    "physical_map": "r = r_prox + (R(t) - r_prox) xi ; theta = theta_max eta",
+    "boundary_condition": "zero flux on all four edges (natural FEM boundary condition)",
+    "growth_law": "R(t) = min(R1, R0 exp(g t)) ; uniform radial Lagrangian stretch",
+    "defaults": {"nr": 26, "ntheta": 96, "T": 60.0, "dt": 0.02, "R0": 5.0, "R1": 8.4, "r_prox": 4.2, "theta_max_over_pi": 0.38, "growth_rate": 0.015, "noise_amp": 0.01},
+    "length_unit": "lambda_c(q_c = 1.5700) = 4.002 of the Raspopovic et al. (2014) baseline dispersion relation",
+    "distal_arc_final": 20.06,
+    "distal_arc_initial": 11.94
+  },
+  "analytic_anchors": {
+    "sigma_max": 0.2608,
+    "q_c": 1.57,
+    "lambda_c": 4.002,
+    "dilution_threshold_rho_c": 0.2608,
+    "dilution_slope_dsigma_drho": -1.0,
+    "lean_law_4": "MathOfBiology.Loop_016.raspopovic_growth_dilution_stabilises_turing_mode",
+    "lean_law_5": "MathOfBiology.Loop_016.raspopovic_ray_count_monotone_in_arc_length",
+    "lean_law_6": "MathOfBiology.Loop_016.raspopovic_scaled_gradient_ray_count_invariant"
+  },
+  "expected_outcomes": {
+    "wild_type_distal_ray_count": {"value": 5, "source": "raspopovic2014 Fig. 1 & 4B (pentadactyly)", "type": "reported"},
+    "bifurcation_range_with_modulation": {"value": 0, "source": "raspopovic2014 Fig. 4: with the distal FGF/Hox gradient the Sox9 stripes remain unbranched", "type": "reported_qualitative"},
+    "bifurcation_range_without_modulation": {"value": ">= 1", "source": "raspopovic2014 Fig. 4 / supplementary: without the gradient the stripes bifurcate as the arc widens", "type": "reported_qualitative"},
+    "final_arc_sweep": [
+      {"L_arc": 12.0, "expected_rays": 3},
+      {"L_arc": 16.0, "expected_rays": 4},
+      {"L_arc": 20.0, "expected_rays": 5},
+      {"L_arc": 24.0, "expected_rays": 6}
+    ],
+    "final_arc_sweep_source": "floor(L_arc / lambda_AER) with lambda_AER = 4.00 (Lean Law 5); digit number proportional to autopod width is the Sheth et al. (2012) observation",
+    "sequential_addition_events_default_run": {"value": 2, "source": "floor(20.06/4.00) - floor(11.94/4.00) = 5 - 2 admissible insertions, of which the model realises 3 -> 4 -> 5 after onset (analytic)", "type": "analytic"},
+    "fem_sigma_rel_error_tolerance": 0.05,
+    "ale_mass_conservation_tolerance": 1e-12,
+    "out_of_phase_corr_SB": -0.98,
+    "out_of_phase_corr_SW": -0.99
+  }
+}

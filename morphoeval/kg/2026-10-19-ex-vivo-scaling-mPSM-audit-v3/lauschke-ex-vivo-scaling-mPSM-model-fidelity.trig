@@ -1,0 +1,98 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-lauschke-ex-vivo-scaling-mPSM> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-lauschke-ex-vivo-scaling-mPSM-model-fidelity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-lauschke-ex-vivo-scaling-mPSM-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Lauschke, Tsiairis, François & Aulehla (2013) scale-invariant phase-gradient encoding in ex vivo monolayer presomitic mesoderm (mPSM) — Model fidelity to source: 93/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Laws 1-3 are implemented as in Pass 2 (phi = omega_0 t - Phi_0 (r/R)^p, S_n = alpha R_n, R_{n+1} = (1-alpha) R_n, v = (2 pi/Phi_0) R/T_osc; L178-544). Pass 3 adds the mechanism the audit asked for: a quasi-static FGF/Wnt source-sink gradient W = W_0 sinh((R-r)/l_k)/sinh(R/l_k) with the fixed-length exponential alternative (L552-602), a wavelength relaxation ODE toward c_lambda l_half(t) with Phi(t) = 2 pi R/lambda and fixed-window gating S_n = R[1-(1-delta_phi_seg/Phi)^(1/p)] (L605-671), and a Kuramoto-Sakaguchi reaggregate lattice whose continuum limit is Kuramoto's nonlinear phase diffusion equation (L724-931), each with a machine-checked Lean statement (scale covariance, contraction, monotone dispersion). Deductions: c_lambda = (2 pi/Phi_0)/(1/2) and delta_phi_seg = Phi_0[1-(1-alpha)^p] are calibrated so that the adapted fixed point reproduces Phi_0 and alpha exactly, so the invariant is recovered rather than predicted (-3); the gradient is not time-integrated on the moving boundary and l_k = 1e6 um is a placeholder for the sink-dominated limit rather than measured FGF8/Wnt3a D and k (-2); the Sakaguchi lag a = 0.6 rad stands in for a Notch coupling delay without a delay-differential derivation (-2). Net 93 (-1 vs Pass 2: more mechanism, but the new constants are fitted to the law they are meant to explain)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "2014-lauschke-ex-vivo-scaling-mPSM.py L626–L627: c_lambda and delta_phi_seg are set from Phi_0 and alpha, so the adapted state reproduces the law by construction <https://github.com/fractastical/morpholib/blob/d58a084/2014-lauschke-ex-vivo-scaling-mPSM.py#L626-L627>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-lauschke-ex-vivo-scaling-mPSM-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-lauschke-ex-vivo-scaling-mPSM-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-lauschke-ex-vivo-scaling-mPSM-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-lauschke-ex-vivo-scaling-mPSM-model-fidelity-4> ;
+        pk:hasScore "0.93"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-lauschke-ex-vivo-scaling-mPSM-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2014-lauschke-ex-vivo-scaling-mPSM.py L552–L602" ;
+        dct:description "FGF/Wnt source-sink sinh profile (L579) vs fixed-length exponential (L573) and bisection half-length" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2014-lauschke-ex-vivo-scaling-mPSM.py#L552-L602> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-lauschke-ex-vivo-scaling-mPSM-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2014-lauschke-ex-vivo-scaling-mPSM.py L605–L671" ;
+        dct:description "Wavelength relaxation d lambda/dt (L639), Phi(t) = 2 pi R/lambda, fixed-window segment gating (L646); c_lambda and delta_phi_seg calibrated at L626-627" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2014-lauschke-ex-vivo-scaling-mPSM.py#L605-L671> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-lauschke-ex-vivo-scaling-mPSM-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "2014-lauschke-ex-vivo-scaling-mPSM.py L838–L913" ;
+        dct:description "Kuramoto-Sakaguchi lattice update with sin(dtheta - a) + sin a coupling (L873) and correlated frequency disorder (L863)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2014-lauschke-ex-vivo-scaling-mPSM.py#L838-L913> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-lauschke-ex-vivo-scaling-mPSM-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_026_ex_vivo_scaling_mPSM.lean L100–L166" ;
+        dct:description "Laws 4-6: gradient scale covariance, wavelength-adaptation contraction, pacemaker dispersion monotonicity (0 sorrys, verified with lean 4.35.0)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/morphoeval/lean/loops/Loop_026_ex_vivo_scaling_mPSM.lean#L100-L166> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/978-3-642-69689-3>,
+            <https://doi.org/10.1016/j.cell.2016.01.028>,
+            <https://doi.org/10.1038/nature02216>,
+            <https://doi.org/10.1038/nature11804>,
+            <https://doi.org/10.1038/ncb1679>,
+            <https://doi.org/10.1088/1478-3975/13/3/036009> .
+    <https://doi.org/10.1007/978-3-642-69689-3> dct:date "1984"^^xsd:gYear ;
+        dct:title "Chemical Oscillations, Waves, and Turbulence" .
+    <https://doi.org/10.1016/j.cell.2016.01.028> dct:date "2016"^^xsd:gYear ;
+        dct:title "Self-organization of embryonic genetic oscillators into spatiotemporal wave patterns" .
+    <https://doi.org/10.1038/nature02216> dct:date "2004"^^xsd:gYear ;
+        dct:title "fgf8 mRNA decay establishes a gradient that couples axial elongation to patterning in the vertebrate embryo" .
+    <https://doi.org/10.1038/nature11804> dct:date "2013"^^xsd:gYear ;
+        dct:title "Scaling of embryonic patterning based on phase-gradient encoding" .
+    <https://doi.org/10.1038/ncb1679> dct:date "2008"^^xsd:gYear ;
+        dct:title "A beta-catenin gradient links the clock and wavefront systems in mouse embryo segmentation" .
+    <https://doi.org/10.1088/1478-3975/13/3/036009> dct:date "2016"^^xsd:gYear ;
+        dct:title "Positional information from oscillatory phase shifts: insights from in silico evolution" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Lauschke, Tsiairis, François & Aulehla (2013) scale-invariant phase-gradient encoding in ex vivo monolayer presomitic mesoderm (mPSM) — Model fidelity to source 93/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T08:21:12Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-lauschke-ex-vivo-scaling-mPSM-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

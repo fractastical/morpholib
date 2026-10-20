@@ -1,0 +1,349 @@
+# MorphoEval audit — Hentschel, Glimm, Glazier & Newman (2004) Proc. R. Soc. B Dynamical Mechanisms for Skeletal Pattern Formation in the Vertebrate Limb, 2026-10-19 (v3)
+#
+# Pass 3 (remediation round) re-score of `2004-hentschel-tgfb-fibronectin-limb.py` (v3, 1759 lines) after closing the
+# single Pass 2 remediation item (couple the continuum 4-field PDE to a Glazier-Graner-Hogeweg cellular Potts cell
+# lattice as in Kiskowski et al. 2004 / Chaturvedi et al. 2005) in the instrumented loop
+# `morphoeval/runs/2026-10-19-tgfb-fibronectin-limb-loop-pass3`, superseding `2026-10-19-tgfb-fibronectin-limb-audit-v2` (92.6).
+#
+# What Pass 3 changed:
+#   1. New Section 3b (L646-949): `simulate_ggh_cellular_potts_condensation` — GGH Hamiltonian with Graner-Glazier (1992)
+#      contact energies (14/2/11/16), T = 10, lambda_V = 6, V_T = 25 px, Savill-Hogeweg haptotaxis copy energy mu_F = 10,
+#      Metropolis acceptance, checkerboard-parallel stride-3 sub-lattice sweeps; coupled to the continuum through the PDE's
+#      own Hill switch for the R1 -> R2 state (L790-793) and a two-way cell-deposited fibronectin field (L796-798).
+#      `run_cpm_micromass_coupling` (4 regimes: WT, DA-only, haptotaxis-only, full ablation) and `run_cpm_wing_bud_coupling`
+#      (per-compartment discrete condensation counts) feed Panels I-L, 6 new measurements and 6 new self-test checks.
+#   2. Pass 3 exposed that the Pass 2 2D micromass continuum field was chemotactically collapsed (24.4 % of pixels pinned at the
+#      clip bounds, 415 single-pixel "islands"), so its "nodular spots 19.8 % vs stripes 44.8 %" contrast was an artefact; the
+#      solver now uses volume-filling haptotaxis chi_F R (1 - R/2) grad F (Hillen & Painter 2001; L605-606) and reports
+#      `clip_fraction_R`. With the resolved solver BOTH regimes are labyrinthine bands (8 vs 6 islands, 21 % area each).
+#   3. The same diagnostic shows the 1D stage solver pins 100 % of R(x) at the clip bounds for fa = 11 and 18 (52 % at fa = 6)
+#      and the 2D wing solver 19.3 % — the Pass 2 "haptotactic condensation amplitudes", std(R) sweep (Panel G) and
+#      F-R colocalisation r = 0.9997 were set by the clip, not by the PDE. Counts are unchanged; amplitudes are not resolved.
+#      These are disclosed (Panel L, measurement 13, dataset README) and carried to Pass 4, NOT fixed, because applying the
+#      volume-filling form to the 1D solver removes the stylopod m = 1 condensation (std(R) = 0.017 at R_max = 2).
+#   4. Lean Laws 4-5 (`ggh_differential_adhesion_sorting_condition`, `ggh_metropolis_haptotaxis_acceptance`), 0 sorrys;
+#      dataset: `kiskowski_ggh_cpm_reference.json` (SHA-256 pinned), 5 new DOIs in paper_citations.bib, README findings.
+#
+# Net effect: the remediation item is closed (model-fidelity credit) but the deeper defects it exposed pull model-fidelity,
+# specimen-match, parameter-expressivity and morphometric-validation DOWN. Overall 82.6 (v2 92.6).
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale. Line numbers refer to the files at commit 58b898c.
+
+audit:
+  id: 2026-10-19-tgfb-fibronectin-limb-audit-v3
+  supersedes_audit_id: 2026-10-19-tgfb-fibronectin-limb-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Slot 014 Pass 3 autonomous remediation-loop assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 58b898c
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) post-remediation evaluation of `2004-hentschel-tgfb-fibronectin-limb.py` after
+      closing the Pass 2 remediation item in `2026-10-19-tgfb-fibronectin-limb-loop-pass3`.
+      `--self-test` passes 12/12 checks in ~20 s; the default render takes ~12 s and writes the
+      12-panel PNG (SHA-256 f0533eb3...) plus two GIFs. Note: the loop prompt attributes the seed
+      paper to J. Theor. Biol. (10.1016/j.jtbi.2004.01.009); the script, dataset and this audit keep
+      the correct venue, Proc. R. Soc. B 271:1713-1722, doi:10.1098/rspb.2004.2772.
+
+references:
+  hentschel2004:
+    title: "Dynamical mechanisms for skeletal pattern formation in the vertebrate limb"
+    authors: "Hentschel HGE, Glimm T, Glazier JA, Newman SA"
+    venue: "Proceedings of the Royal Society B 271(1549):1713-1722 (2004)"
+    doi: 10.1098/rspb.2004.2772
+  kiskowski2004:
+    title: "A multiscale model for autonomous mesenchymal condensations"
+    authors: "Kiskowski MA, Alber MS, Glimm T, Hentschel HGE, Glazier JA, Newman SA"
+    venue: "Developmental Biology 271(2):372-387 (2004)"
+    doi: 10.1016/j.ydbio.2004.03.038
+  miura2006:
+    title: "Mixed-mode pattern in Doublefoot mutant mouse limb—Turing reaction-diffusion model on a growing domain during limb development"
+    authors: "Miura T, Shiota K, Morriss-Kay G, Maini PK"
+    venue: "Journal of Theoretical Biology 240(4):562-573 (2006)"
+    doi: 10.1016/j.jtbi.2005.10.016
+  chaturvedi2005:
+    title: "On multi-scale modeling of morphogenesis"
+    authors: "Chaturvedi R, Huang C, Kazmierczak B, Schneider T, Izaguirre JA, Glimm T, Hentschel HGE, Glazier JA, Newman SA, Alber MS"
+    venue: "Journal of the Royal Society Interface 2(3):237-253 (2005)"
+    doi: 10.1098/rsif.2005.0033
+  christley2007:
+    title: "Patterning of developmental condensations by turing-type and haptotactic mechanisms in discrete and continuum models"
+    authors: "Christley S, Alber MS, Newman SA"
+    venue: "BMC Systems Biology 1:16 (2007)"
+    doi: 10.1186/1752-0509-1-16
+  graner1992:
+    title: "Simulation of biological cell sorting using a two-dimensional extended Potts model"
+    authors: "Graner F, Glazier JA"
+    venue: "Physical Review Letters 69(13):2013-2016 (1992)"
+    doi: 10.1103/PhysRevLett.69.2013
+  glazier1993:
+    title: "Simulation of the differential adhesion driven rearrangement of biological cells"
+    authors: "Glazier JA, Graner F"
+    venue: "Physical Review E 47(3):2128-2154 (1993)"
+    doi: 10.1103/PhysRevE.47.2128
+  savill1997:
+    title: "Modelling morphogenesis: from single cells to crawling slugs"
+    authors: "Savill NJ, Hogeweg P"
+    venue: "Journal of Theoretical Biology 184(3):229-235 (1997)"
+    doi: 10.1006/jtbi.1996.0237
+  hillen2001:
+    title: "Global existence for a parabolic chemotaxis model with prevention of overcrowding"
+    authors: "Hillen T, Painter K"
+    venue: "Advances in Applied Mathematics 26(4):280-301 (2001)"
+    doi: 10.1006/aama.2001.0721
+  tapia2011:
+    title: "Parallelizing the Cellular Potts Model on graphics processing units"
+    authors: "Tapia JJ, D'Souza RM"
+    venue: "Computer Physics Communications 182(4):857-865 (2011)"
+    doi: 10.1016/j.cpc.2010.12.011
+
+simulations:
+  - id: hentschel-tgfb-fibronectin-limb
+    name: "Hentschel, Glimm, Glazier & Newman (2004) Proc. R. Soc. B / Kiskowski et al. (2004) Dev. Biol. multiscale TGF-beta / FGF-inhibitor reaction-diffusion and fibronectin haptotaxis PDE in developing Gallus gallus limb bud, coupled to a Glazier-Graner-Hogeweg cellular Potts cell lattice"
+    organism: "Gallus gallus domesticus embryonic wing bud & high-density mesenchymal micromass (HH20 stylopod humerus -> HH24 zeugopod radius+ulna -> HH27 autopod digits II-IV)"
+    script: 2004-hentschel-tgfb-fibronectin-limb.py
+    output: docs/media/tgfb_fibronectin_limb_comparison.png
+    extra_outputs:
+      - docs/media/tgfb_fibronectin_limb_growth.gif
+      - docs/media/tgfb_fibronectin_limb_cpm_sorting.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-tgfb-fibronectin-limb-audit-v2
+    source_refs:
+      - hentschel2004
+      - kiskowski2004
+      - miura2006
+      - chaturvedi2005
+      - christley2007
+      - graner1992
+      - glazier1993
+      - savill1997
+      - hillen2001
+      - tapia2011
+    claim_boundary:
+      reported_in_source:
+        - "Hentschel et al. (2004): a 4-field TGF-beta activator / FGF-dependent inhibitor / fibronectin / mesenchymal-cell-density reaction-diffusion-haptotaxis system whose AER-FGF-modulated unstable wavenumber increases proximodistally, giving 1 -> 2 -> 3 skeletal elements"
+        - "Kiskowski et al. (2004): discrete cells on a lattice with a continuous activator/inhibitor prepattern, activated cells deposit fibronectin and bind to it, producing autonomous condensations; Chaturvedi et al. (2005): the same scheme realised in a GGH cellular Potts framework (CompuCell)"
+        - "Graner & Glazier (1992) / Glazier & Graner (1993): differential adhesion with J_dd < J_ld < J_ll < J_cM at T = 10 sorts cells; heterotypic boundary length decreases"
+        - "Miura & Shiota (2000): exogenous TGF-beta2 fuses micromass condensations into bar-like patterns; anti-fibronectin treatment blocks condensation"
+      reconstructed_in_script:
+        - "Linear dispersion of the activator/inhibitor subsystem, 1D and 2D (x, z) pseudo-spectral IMEX integration of the 4-field system with zero-flux boundaries, 2D periodic micromass morphospace with volume-filling haptotaxis, dual negative controls, a GGH cellular Potts lattice coupled through the PDE's Hill switch and a two-way fibronectin field, four GGH regimes plus a wing-bud GGH run, specimen segmentation of a Gallus wing, 14 measurements, 5 Lean 4 theorems"
+      transfer_boundary:
+        - "Kiskowski et al. (2004) is a lattice-cell / biased-random-walk model, not a cellular Potts model; the GGH realisation follows Chaturvedi et al. (2005), as the Pass 2 remediation item requested, and the dataset JSON says so"
+        - "The 1D stage and 2D wing continuum solutions are chemotactically collapsed (clip_fraction_R = 1.00 at fa = 11, 18; 0.52 at fa = 6; 0.193 in 2D): condensation counts are reproduced but amplitudes, std(R) and F-R correlations are clip-determined"
+        - "GGH references are internal (continuum ratio, ablation value, adopted thresholds) because the cited discrete-model papers do not report the metrics used here"
+      does_not_claim:
+        - "A hexagonal nodular-spot micromass regime (both resolved continuum regimes are labyrinthine), a discrete stylopod condensation (GGH gives [0, 2, 3]), quantitative agreement with Kiskowski et al. (2004) condensation sizes, a sequential (exact-volume) cellular Potts update, 3D geometry, limb outgrowth, or cell division"
+    summary: >-
+      Pass 3 (v3) post-remediation evaluation of `2004-hentschel-tgfb-fibronectin-limb.py`
+      (overall weighted score 82.6 / 100, down 10.0 points from 92.6 in Pass 2). The single Pass 2
+      remediation item is closed: Section 3b implements a Glazier-Graner-Hogeweg cellular Potts lattice
+      (Graner-Glazier contact energies 14/2/11/16, T = 10, lambda_V = 6, Savill-Hogeweg haptotaxis
+      mu_F = 10, Metropolis acceptance, checkerboard-parallel sweeps) coupled to the continuum through
+      the PDE's own Hill switch for the R1 -> R2 state and a two-way cell-deposited fibronectin field.
+      On the x3-upsampled WT micromass prepattern the four GGH regimes order as WT 1.355 > DA-only 1.204
+      > haptotaxis-only 1.078 > full ablation 0.969 in condensation index (continuum 1.514), the
+      heterotypic boundary fraction falls from 0.514 (ablation) to 0.293 (WT), the discrete R2 density
+      correlates with the continuum R_2 at r = 0.918 (ablation 0.800), all 1296 cells survive, and on the
+      2D wing bud the lattice forms [0, 2, 3] discrete condensations against the continuum [1, 2, 3].
+      The score falls because Pass 3 also found that the Pass 2 continuum fields were chemotactically
+      collapsed: the micromass "spots vs stripes" contrast (19.8 % vs 44.8 %) was an artefact of
+      thresholding a field with 24 % of pixels pinned at the clip bounds (now fixed with volume-filling
+      haptotaxis; both regimes are labyrinthine), and the 1D stage (100 % pinned at fa = 11, 18) and 2D
+      wing (19.3 % pinned) solvers still are — counts hold, amplitudes do not. Lean Laws 4-5 are
+      machine-checked (0 sorrys); the dataset gains a SHA-256-pinned GGH parameter table and 5 DOIs.
+    scores:
+      model-fidelity:
+        value: 78
+        rationale: >-
+          Credit: the Hentschel et al. (2004) dispersion (L185-266) and the 4-field PDE structure in 1D
+          (L271-418), 2D wing (L421-536) and periodic micromass (L539-644) are the published equations;
+          the new GGH module (L678-862) is a correct Graner-Glazier Hamiltonian (adhesion L811-815,
+          volume L816-817, Savill-Hogeweg haptotaxis L818-819, Metropolis L820) coupled to the continuum
+          through the PDE's own Hill switch (L790-793) and a two-way fibronectin law (L796-798), with
+          the adhesion energy exact within each stride-3 sub-sweep; the micromass solver now uses the
+          Hillen-Painter volume-filling form (L605-606) and reaches a resolved solution (clip fraction
+          0.000). Deductions: the 1D haptotaxis step (L353-365) collapses R(x) onto the two clip levels
+          for fa = 11 and 18 (clip_fraction_R = 1.00; 0.52 at fa = 6) and the 2D wing step (L495-512)
+          pins 19.3 % of R(x, z), so the reported condensation amplitudes, std(R) and the F-R
+          correlation r = 0.9997 are set by np.clip, not by the PDE (-10); the 1D and 2D solvers also
+          carry uncited factors 3.75 * D_R (L335) and 0.40 (L361) and per-zone dt multipliers (L473)
+          that are tuning, not Hentschel (2004) parameters (-4); the GGH volume term uses sub-sweep-stale
+          volumes (L816-817), an acknowledged parallel-CPM approximation never validated against a
+          sequential update (-3); Kiskowski et al. (2004) itself is not a CPM, so the "as in Kiskowski"
+          coupling is a Chaturvedi-style realisation (disclosed, -2); lambda_V = 6 departs from the
+          Graner-Glazier lambda = 1 for cell survival (disclosed in the JSON, -1); the stylopod
+          condensation exists only in the collapsed continuum, not in the discrete model (-2).
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [678, 862], note: "simulate_ggh_cellular_potts_condensation: GGH Hamiltonian, Hill-switch cell state (L790-793), two-way fibronectin deposition (L796-798), adhesion/volume/haptotaxis dH (L811-819), Metropolis acceptance (L820), checkerboard sub-lattices (L770)", supports: true}
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [605, 606], note: "Volume-filling haptotactic sensitivity chi_F R (1 - R/R_max) grad F in the micromass solver (Hillen & Painter 2001); clip fraction now 0.000", supports: true}
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [353, 365], note: "1D haptotaxis step without volume filling and with an uncited 0.40 divergence factor; clip_fraction_R = 1.00 for fa = 11 and 18 — condensation amplitudes are clip-determined", supports: false}
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [495, 512], note: "2D wing haptotaxis loop (180 explicit steps, denom_R without the 3.75 factor); 19.3 % of R(x, z) pinned at the clip bounds, digit condensations are single-pixel lines (Panel B)", supports: false}
+          - {file: morphoeval/lean/loops/Loop_014_tgfb_fibronectin_limb.lean, lines: [131, 191], note: "Lean Laws 4-5: GGH sorting condition 2 J_ld > J_ll + J_dd and Metropolis haptotactic acceptance, 0 sorrys, verified with `lean`", supports: true}
+      specimen-match:
+        value: 76
+        rationale: >-
+          Credit: Panel E/F still segment the SHA-256-locked Gallus wing into 1 / 2 / 3 elements
+          (L1027-1084) and Panel H compares theory, PDE and specimen counts; Panel I shows discrete GGH
+          cells visibly condensing inside the continuum Hill contour and Panel J shows compact discrete
+          zeugopod (2) and autopod (3) condensations at the digit positions, which is the first
+          cell-level morphology in this loop. Deductions: the 1D and 2D wing "condensations" in Panels
+          B and C are one-pixel-wide clip spikes rather than the several-cell-wide condensations of
+          Hentschel Figs. 2-4 or the specimen's bone widths (-8); the micromass morphospace (Panel D) no
+          longer shows a spot vs stripe distinction — both regimes are labyrinthine bands, so the Miura &
+          Shiota (2000) nodular-island phenotype in the dataset is not reproduced (-6); the GGH wing bud
+          forms no stylopod condensation (Panel J: GGH m = 0 vs PDE m = 1 vs specimen 1 humerus) (-4);
+          no side-by-side with a Kiskowski (2004) or Chaturvedi (2005) cell-lattice figure (-3); the
+          GGH sheet dewets into medium holes (Panel I) that have no counterpart in a confluent micromass
+          (-3).
+        evidence:
+          - {file: docs/media/tgfb_fibronectin_limb_comparison.png, lines: [0, 0], note: "12-panel figure: Panels I-L add GGH lattice (cells inside red Hill contour), wing-bud discrete condensations [0, 2, 3], 4-regime kinetics, parity bars; Panels B/C show 1-px clip spikes; Panel D shows two labyrinths", supports: true}
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [1027, 1084], note: "Cross-sectional osteological peak detection across stylopod (1), zeugopod (2), autopod (3) on chick_limb_chondrogenesis_specimen.jpg", supports: true}
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [1287, 1325], note: "Panels I-J: GGH cell types with outlines and continuum Hill(c_a) = 1/2 contour; per-compartment GGH vs PDE counts annotated", supports: true}
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [1163, 1179], note: "Panel D labels now report islands/area for 'WT (thresholded)' vs '+TGF-beta2 (fused)'; no spot regime exists", supports: false}
+      parameter-expressivity:
+        value: 84
+        rationale: >-
+          Credit: the FGF zonation sweep (L955-995) still produces [1, 2, 3, 4]; the four GGH regimes
+          (L865-910) form a genuine 2 x 2 ablation (differential adhesion x haptotaxis) whose
+          condensation index orders monotonically WT > DA-only > haptotaxis-only > ablation and whose
+          heterotypic fraction drops only when differential adhesion is on; new CLI flags `--cpm-mcs`,
+          `--cpm-wing-mcs`, `--mu-F`, `--J-R2R2` (L1737-1740) are resolved at call time (L725-732).
+          Deductions: the Panel G chi_F sweep (L1231-1258) reports std(R) on clip-collapsed fields, so
+          its plateau at 0.76 is the clip ceiling, not a haptotaxis response (-6); the GGH wing-bud
+          count is prepattern-determined — the full ablation also yields [0, 2, 3] (L913-949), so that
+          panel does not test cell behaviour (-4); haptotaxis adds only +0.15 to the condensation index
+          and mu_F was tuned by hand to 10 because mu_F >= 25 fingers cells across the Hill boundary
+          (disclosed in the JSON) — no mu_F sweep is rendered (-4); no T or lambda_V sweep (-2).
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [865, 910], note: "run_cpm_micromass_coupling: WT / DA-only / haptotaxis-only / full-ablation GGH regimes on the x3 prepattern plus continuum condensation index", supports: true}
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [1727, 1755], note: "CLI: --fa, --L-AP-um, --Da, --Di, --chi-F, --k-F, --steps, --seed, --cpm-mcs, --cpm-wing-mcs, --mu-F, --J-R2R2, --self-test", supports: true}
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [1231, 1258], note: "Panel G chi_F sweep uses std(R) of clip-collapsed 1D fields (clip fraction 1.00 at fa = 11)", supports: false}
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [913, 949], note: "run_cpm_wing_bud_coupling counts peaks of the R2 density; ablation gives the same [0, 2, 3] (prepattern-determined)", supports: false}
+      morphometric-validation:
+        value: 80
+        rationale: >-
+          Credit: `measure_morphoeval()` (L1457-1612) now returns 14 measurements, every one with a
+          reference value; the 6 new ones quantify the discrete-continuum parity (condensation index
+          1.355 vs continuum 1.514; heterotypic fraction 0.293 vs ablation 0.514; r(R2 disc, R2 cont)
+          = 0.918 vs ablation 0.800; GGH wing total 5 vs 6) and add two honest failing diagnostics
+          (2D wing clip fraction 0.193 vs 0; resolved micromass 8 vs 6 islands). Deductions: the GGH
+          references are internal — the continuum ratio, the ablation value, an adopted r >= 0.9
+          threshold and the +TGF-beta2 island count — because Kiskowski (2004) / Glazier & Graner (1993)
+          values were not extracted (-8); the Pass 2 measurements 1-7 still report counts and a
+          F-R correlation computed on clip-collapsed fields without flagging them individually (-5);
+          the micromass area fractions (0.21 / 0.21) are no longer compared with the dataset's 25-30 %
+          vs 45-55 % Miura & Shiota ranges because the model cannot reproduce them (-4); no uncertainty
+          (seed replicates) on any GGH metric (-3).
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [1551, 1611], note: "6 Pass 3 measurements: GGH condensation index, heterotypic boundary fraction, discrete-continuum R2 Pearson r, GGH wing compartment total, 2D wing clip fraction, resolved micromass island counts", supports: true}
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [1470, 1549], note: "8 Pass 2 measurements retained (stage counts, 2D total, F-R r, controls, specimen spacing ratio) — counts valid, amplitudes clip-determined", supports: true}
+          - {file: datasets/tgfb_fibronectin_limb/kiskowski_ggh_cpm_reference.json, lines: [42, 49], note: "Metric definitions (condensation index, heterotypic boundary fraction, discrete-continuum r, compartment counts, clip_fraction_R) used by measurements 9-14", supports: true}
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [1572, 1580], note: "r(R2 disc, R2 cont) reference_value 0.9 is an adopted threshold, not a literature value (stated in reference_source)", supports: false}
+      source-traceability:
+        value: 94
+        rationale: >-
+          Vendors 5 SHA-256-pinned files in `datasets/tgfb_fibronectin_limb/` (L129-146, verified
+          fail-closed at L151-162 on every run), including the new `kiskowski_ggh_cpm_reference.json`
+          that records every GGH parameter, its provenance (Graner & Glazier 1992 values vs the
+          lambda_V = 6 departure), the coupling laws, metric definitions and the Kiskowski-vs-CPM
+          attribution; `paper_citations.bib` gains 5 DOIs (Graner 1992, Glazier 1993, Savill 1997,
+          Hillen 2001, Tapia 2011) and the README records the Pass 3 findings. Deductions: Kiskowski
+          (2004) figure/table values are not extracted, so the discrete model has no quantitative
+          literature anchor (-4); the 1D/2D tuning factors (3.75, 0.40, dt multipliers) have no
+          source (-2).
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [129, 162], note: "EXPECTED_SHA256 for 5 dataset files incl. kiskowski_ggh_cpm_reference.json; runtime verification", supports: true}
+          - {file: datasets/tgfb_fibronectin_limb/kiskowski_ggh_cpm_reference.json, lines: [1, 62], note: "GGH parameter/metric table with DOIs, provenance notes and the Kiskowski (lattice model) vs GGH attribution", supports: true}
+          - {file: datasets/tgfb_fibronectin_limb/paper_citations.bib, lines: [55, 113], note: "5 Pass 3 BibTeX entries with DOIs and usage notes", supports: true}
+          - {file: datasets/tgfb_fibronectin_limb/README.md, lines: [31, 43], note: "Pass 3 contents and findings (collapse artefact, stylopod gap)", supports: true}
+      code-traceability:
+        value: 93
+        rationale: >-
+          The module docstring (L1-95) maps the GGH module to Graner & Glazier (1992), Glazier & Graner
+          (1993), Savill & Hogeweg (1997), Chaturvedi (2005) and Tapia & D'Souza (2011) and names the
+          volume-filling source; the function docstring (L698-724) states the Hamiltonian, the copy
+          energy, the acceptance rule, the coupling laws and the parallel approximation; inline comments
+          mark the three coupling steps (L790, L796, L800); the math KG (`hentschel-tgfb-fibronectin-limb.yaml`)
+          registers 5 laws with Lean theorem names, Lean loci and corrected code loci. Deductions: the
+          per-zone dt multipliers (L473), the 3.75 and 0.40 factors and the 180-step haptotaxis loop have
+          no equation citation (-4); the CPM GIF frame step/time mapping (1 MCS = dt_F) is a modelling
+          choice stated only in the JSON (-2); the stale "8-check" wording is gone but Law 2/3 code loci
+          span whole sections rather than equations (-1).
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [1, 95], note: "Module docstring: Sections 3 (GGH coupling, volume filling, clip diagnostic) and 4 (Lean Theorems 1-5)", supports: true}
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [698, 724], note: "GGH docstring: Hamiltonian, haptotaxis copy energy, Metropolis rule, Hill-switch and fibronectin coupling, checkerboard approximation", supports: true}
+          - {file: morphoeval/math_kg_loops/hentschel-tgfb-fibronectin-limb.yaml, lines: [1, 142], note: "5 laws (Laws 4-5 new) with Lean theorems, lean_locus and code_locus", supports: true}
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [473, 473], note: "dt_z per-zone multipliers (3.2 / 1.25 / 0.85) uncited", supports: false}
+      repro-package:
+        value: 90
+        rationale: >-
+          Deterministic RNG (seed 2004 for PDE and GGH), 12-check `--self-test` (L1618-1724) covering
+          SHA-256 of 5 files and GGH-JSON parity, dispersion, stage counts, 2D wing, controls, resolved
+          micromass (clip < 0.01, island fusion), specimen, GGH cell conservation / regime ordering /
+          sorting / parity, GGH wing [0, 2, 3] with the stylopod gap pinned, haptotaxis sign on a ramp,
+          clip diagnostic exposure, 14 measurements with references, and bitwise two-run determinism of
+          both the PDE and the GGH lattice; the self-test runs in ~20 s and the render in ~12 s, well
+          inside the 3-minute budget. Deductions: no requirements lock file for this slot (environment
+          recorded only in the audit) (-4); matplotlib emits a non-writable-cache warning unless
+          MPLCONFIGDIR is set, which the invocation notes do not mention (-2); the dataset README has
+          no run instructions for the new flags (-2); the PNG hash is not asserted by the self-test (-2).
+        evidence:
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [1618, 1724], note: "12-check self_test() incl. GGH regime ordering, sorting, parity, wing [0, 2, 3], ramp sign test, clip diagnostic, 14 measurements, PDE + GGH determinism", supports: true}
+          - {file: 2004-hentschel-tgfb-fibronectin-limb.py, lines: [1737, 1741], note: "CLI flags for GGH MCS budgets, mu_F, J_R2R2 and the 12-check self-test", supports: true}
+          - {file: docs/media/tgfb_fibronectin_limb_cpm_sorting.gif, lines: [0, 0], note: "8-frame GGH sorting GIF regenerated by the default invocation", supports: true}
+    remediation:
+      - >-
+        2004-hentschel-tgfb-fibronectin-limb.py:353-365 and 335 — the 1D haptotaxis step pins 100 % of R(x) at the clip
+        bounds for fa = 11 and 18 (52 % at fa = 6; `clip_fraction_R`), so every reported amplitude, std(R) and F-R
+        correlation is clip-determined. Apply the volume-filling sensitivity already used at L605-606 (or a
+        semi-implicit haptotaxis step with a CFL-limited dt) and re-tune so that the stylopod m = 1 condensation survives
+        (at R_max = 2 it vanishes: std(R) = 0.017, 0 peaks) — without re-tuning, assert clip_fraction_R < 0.01 in check 3.
+      - >-
+        2004-hentschel-tgfb-fibronectin-limb.py:495-512 — the 2D wing haptotaxis loop (explicit flux, denom_R without
+        the 3.75 factor, 180 steps) pins 19.3 % of R(x, z) and renders digits as single-pixel lines in Panel B; stabilise
+        it the same way and replace `_count_compartment_condensations` thresholds (L514-519) with widths measured on the
+        resolved field compared to the specimen bone widths of Panel F.
+      - >-
+        2004-hentschel-tgfb-fibronectin-limb.py:539-644 — with the resolved solver both micromass regimes are labyrinthine
+        (8 vs 6 islands, 0.21 area each), so the Miura & Shiota (2000) nodular-island (25-30 %) vs bar (45-55 %) phenotype
+        recorded in `tgfb_fibronectin_limb_reference.json` is not reproduced; a true spot regime needs the activator
+        kinetics in the hexagon-selecting range (quadratic term dominant near onset) rather than the current threshold
+        shift s_TGFb = -1.10 (L635-637). Implement, then restore the area-fraction comparison to the dataset ranges.
+      - >-
+        2004-hentschel-tgfb-fibronectin-limb.py:913-949 — the GGH wing-bud count is taken from the R2-cell density, which
+        follows the prepattern (the full ablation also gives [0, 2, 3]); and the stylopod forms no discrete condensation
+        because c_a max = 0.35 < K_a = 0.60 (L790-793). Count condensations from the occupancy density (behaviour-
+        dependent) and either make the R1 -> R2 switch graded/probabilistic (matching the continuum R_2 = R Hill(c_a)
+        mass) or raise the stylopod activator so the discrete model reproduces 1 + 2 + 3.
+      - >-
+        2004-hentschel-tgfb-fibronectin-limb.py:1551-1611 — measurements 9-14 use internal references (continuum
+        condensation index, ablation heterotypic fraction, an adopted r >= 0.9 threshold, the +TGF-beta2 island count).
+        Extract quantitative anchors from Kiskowski et al. (2004) (condensation number/size vs cell density, Figs. 4-7)
+        and Glazier & Graner (1993) (boundary-length decay) and add seed-replicate uncertainty to each GGH metric.
+      - >-
+        2004-hentschel-tgfb-fibronectin-limb.py:816-817 and 770 — the checkerboard-parallel sweep evaluates the volume
+        term with sub-sweep-stale cell volumes; validate against a sequential Metropolis update on a small lattice
+        (volume distribution and energy parity) or accept at most one copy per cell per sub-sweep.
+      - >-
+        2004-hentschel-tgfb-fibronectin-limb.py:1231-1258 — Panel G's chi_F sweep plots std(R) of clip-collapsed 1D fields
+        (plateau 0.76 = clip ceiling). Replace with a resolved amplitude metric once item 1 lands, and add a rendered
+        mu_F sweep (0, 5, 10, 25) for the GGH lattice showing the fingering regime disclosed in the JSON.

@@ -1,15 +1,20 @@
 sim_id: runions-pavement-cell-lobing
-math_family: "Coupled ROP2–ROP6 Cross-Inhibitory Cortical Reaction–Diffusion, Turgor-Driven Largest Empty Circle (LEC) Stress Scaling & Sinusoidal Anticlinal Wall Buckling"
+math_family: "Coupled ROP2–ROP6 Cross-Inhibitory Cortical Reaction–Diffusion, Turgor-Driven Largest Empty Circle (LEC) Stress Scaling, Reduced Föppl Pressurized Periclinal Membrane-Shell & Depth-Resolved Anticlinal Wall Buckling"
 model_spec:
-  model: "Sapala et al. (2018) eLife 7:e32794 & Fu et al. (2005) Cell 120:687-700 coupled ROP2-RIC4 / ROP6-RIC1-KTN1 cortical reaction-diffusion across shared anticlinal walls, spring-remodeling puzzle cell lobing growth, and Largest Empty Circle (R_LEC) periclinal turgor stress suppression"
+  model: "Sapala et al. (2018) eLife 7:e32794 & Fu et al. (2005) Cell 120:687-700 coupled ROP2-RIC4 / ROP6-RIC1-KTN1 cortical reaction-diffusion across shared anticlinal walls, compact branched puzzle cell lobing growth, Largest Empty Circle (R_LEC) periclinal turgor stress suppression, and (Pass 3) a reduced Föppl uniform-tension pressurized periclinal membrane solver on the exact 2D footprint plus a prestressed anticlinal wall strip resolving lobe amplitude with depth"
   turgor_pressure_P_MPa: 0.60
   outer_wall_thickness_h_um: 0.30
   neck_half_width_R0_um: 10.8
   cross_inhibition_gamma: 2.10
   trans_wall_coupling_alpha: 1.35
+  cell_wall_youngs_modulus_E_MPa: 300.0
+  cell_wall_poisson_ratio_nu: 0.30
+  pavement_cell_depth_H_um: 15.0
+  inner_face_anchoring_beta: 2.0
   seed: 2018
   inputs:
     - datasets/pavement_cell_lobing/pavement_cell_lobing_reference.json
+    - datasets/pavement_cell_lobing/pavement_cell_shell_depth_reference.json
     - datasets/pavement_cell_lobing/arabidopsis_pavement_cell_specimen.jpg
     - datasets/pavement_cell_lobing/scout_manifest.json
     - datasets/pavement_cell_lobing/paper_citations.bib
@@ -31,7 +36,7 @@ equations:
     variables: "P: turgor pressure (MPa); h: outer periclinal cell wall thickness (um); R_LEC: radius of Largest Empty/Inscribed Circle inside cell contour (um); R_0: bounded neck half-width (um); N = A/(π R_0^2): effective lobe-unit area multiple"
     role: "Proves that puzzle-shaped interdigitation pins the Largest Empty Circle radius R_LEC near the neck half-width R_0 (~11 um) as cell area A grows 10-20x, suppressing outer periclinal wall tensile stress by >3x compared to unlobed isotropic cells"
     source_citation: "Sapala et al. (2018) eLife 7:e32794 Figs. 1-3 & Box 1"
-    code_locus: "2017-runions-pavement-cell-lobing.py#L95-L215"
+    code_locus: "2017-runions-pavement-cell-lobing.py#L215-L527"
 
   - id: runions-pavement-cell-lobing-2
     law_name: "Fu et al. (2005) ROP2–ROP6 Trans-Wall Complementarity & Intercellular Area Conservation Law"
@@ -49,7 +54,7 @@ equations:
     variables: "U(s,t): active cortical ROP2-RIC4 concentration; V(s,t): active cortical ROP6-RIC1-KTN1 concentration; V_opp: opposing cell cortical ROP6 across shared anticlinal wall; δ_lobe: local anticlinal wall displacement"
     role: "Establishes alternating ROP2 (convex lobe outgrowth) and ROP6 (concave neck microtubule bundling) domains in antiphase across shared anticlinal walls while preserving contiguous epidermal tiling without intercellular gaps"
     source_citation: "Fu et al. (2005) Cell 120(5):687-700 Figs. 1-7; Bidhendi et al. (2019) Nature Plants 5:981-992"
-    code_locus: "2017-runions-pavement-cell-lobing.py#L220-L355"
+    code_locus: "2017-runions-pavement-cell-lobing.py#L533-L662"
 
   - id: runions-pavement-cell-lobing-3
     law_name: "Sapala et al. (2018) & Lin et al. (2013) ktn1 / rop2 rop4 Mutant Lobeyness & Solidity Collapse Law"
@@ -69,4 +74,48 @@ equations:
     variables: "L = P_perim / P_hull: pavement cell lobeyness; S = A_cell / A_hull: convex solidity; k_rop: ROP2-ROP6-KTN1 mechanochemical coupling strength; A_lobe: sinusoidal lobe amplitude"
     role: "Proves that loss of ROP2/ROP4 or katanin KTN1/RIC1 microtubule severing collapses lobeyness to L -> 1 and solidity to S -> 1, causing unchecked R_LEC ~ sqrt(A/pi) growth and high periclinal wall tensile stress"
     source_citation: "Sapala et al. (2018) eLife 7:e32794 Fig. 5; Lin et al. (2013) Current Biology 23:290-297"
-    code_locus: "2017-runions-pavement-cell-lobing.py#L360-L470"
+    code_locus: "2017-runions-pavement-cell-lobing.py#L268-L407"
+
+  - id: runions-pavement-cell-lobing-4
+    law_name: "(Pass 3) Pressurized Periclinal Föppl Membrane & Inscribed-Disk Deflection Bound"
+    formula: "-T ∇²z = P on Ω, z = 0 on ∂Ω;  T = T_0 + E h ε̄/(1-ν), ε̄ = ⟨½|∇z|²⟩, T_0 = P H/2;  disk: z(r) = P (R² - r²)/(4T);  z_max(Ω) ≥ P R_LEC²/(4T);  σ_m = T/h, σ_b = 6 T θ̄_edge ℓ_b / h², ℓ_b = sqrt(D/T)"
+    lean_decl: "MathOfBiology.Loop_039.disk_membrane_deflection_4T"
+    lean_theorem: "MathOfBiology.Loop_039.sapala_2018_pressurized_membrane_inscribed_disk_bound"
+    lean_locus: "morphoeval/lean/loops/Loop_039_pavement_cell_lobing.lean#L134-L156"
+    lean_code: |
+      def disk_membrane_deflection_4T (P R_sq r_sq : Int) : Int := P * (R_sq - r_sq)
+      theorem sapala_2018_pressurized_membrane_inscribed_disk_bound (P R_sq r_sq N r0_sq : Int)
+          (hP : 0 < P) (hr : 0 ≤ r_sq) (hrR : r_sq ≤ R_sq) (hN : N ≥ 2) (hr0 : 0 < r0_sq) :
+          disk_membrane_deflection_4T P R_sq r_sq ≤ disk_membrane_deflection_4T P R_sq 0 ∧
+          0 ≤ disk_membrane_deflection_4T P R_sq r_sq ∧
+          disk_membrane_deflection_4T P (puzzle_lec_radius_sq r0_sq) 0 <
+            disk_membrane_deflection_4T P (isotropic_radius_sq N r0_sq) 0
+    variables: "z(x,y): out-of-plane bulge of the outer periclinal wall (um); T: uniform membrane tension (uN/um); T_0 = PH/2: pretension transmitted by the pressurised anticlinal walls of depth H; E, ν: wall Young's modulus and Poisson ratio; ε̄: mean membrane stretch; σ_m: membrane stress; σ_b: clamped-edge bending boundary-layer stress; ℓ_b: bending boundary-layer width; D = E h³/(12(1-ν²))"
+    role: "Reduced (NOT finite-element) 3D periclinal shell: solved by sparse finite differences on the rasterised cell footprint with self-consistent tension and verified against the closed-form disk (z_max rel. err. < 1 %); used to TEST the Sapala et al. (2018) LEC stress proxy — shell stress tracks R_LEC (r = 0.98) but sub-linearly (fitted exponent ≈ 0.51 vs Laplace 1), giving an isotropic/WT stress ratio of ≈ 1.7 instead of the proxy's 3.32"
+    source_citation: "Sapala et al. (2018) eLife 7:e32794 Fig. 3 & Box 1 (LEC stress proxy); Timoshenko & Woinowsky-Krieger (1959) Theory of Plates and Shells (uniformly loaded circular membrane)"
+    code_locus: "2017-runions-pavement-cell-lobing.py#L668-L933"
+
+  - id: runions-pavement-cell-lobing-5
+    law_name: "(Pass 3) Depth-Resolved Anticlinal Wall Buckling: Outward Monotonicity & Wavenumber Ordering"
+    formula: "∂²δ/∂s² + ∂²δ/∂ζ² = 0 on [0,L]×[0,H], δ(s,H) = δ_top(s), T_a ∂δ/∂ζ(s,0) = k_in δ(s,0);  δ̂_k(ζ) = δ̂_k(H) [k cosh(kζ) + β' sinh(kζ)]/[k cosh(kH) + β' sinh(kH)], β' = β/H;  discrete clamped mode δ_{j+2} = (2 + k²Δζ²) δ_{j+1} - δ_j, δ_0 = 0"
+    lean_decl: "MathOfBiology.Loop_039.depth_mode"
+    lean_theorem: "MathOfBiology.Loop_039.anticlinal_depth_mode_monotone_outward"
+    lean_theorems:
+      - "MathOfBiology.Loop_039.anticlinal_depth_mode_monotone_outward"
+      - "MathOfBiology.Loop_039.anticlinal_depth_mode_wavenumber_comparison"
+    lean_locus: "morphoeval/lean/loops/Loop_039_pavement_cell_lobing.lean#L164-L217"
+    lean_code: |
+      def depth_mode (κ a : Int) : Nat → Int
+        | 0 => 0
+        | 1 => a
+        | n + 2 => (2 + κ) * depth_mode κ a (n + 1) - depth_mode κ a n
+      theorem anticlinal_depth_mode_monotone_outward (κ a : Int) (hκ : 0 ≤ κ) (ha : 0 < a) :
+          ∀ n : Nat, depth_mode κ a n < depth_mode κ a (n + 1) ∧ 0 < depth_mode κ a (n + 1)
+      theorem anticlinal_depth_mode_wavenumber_comparison (κ κ' a : Int)
+          (hκ : 0 ≤ κ) (hκκ' : κ ≤ κ') (ha : 0 < a) :
+          ∀ n : Nat, depth_mode κ a n ≤ depth_mode κ' a n ∧
+            depth_mode κ a (n + 1) - depth_mode κ a n ≤ depth_mode κ' a (n + 1) - depth_mode κ' a n
+    variables: "δ(s,ζ): lateral anticlinal wall deflection; s: arc length along the shared wall (L = 196 um); ζ: depth from inner (0) to outer (H) periclinal junction; δ_top(s): ROP2-ROP6 polarity-driven outer-face displacement; β = k_in H/T_a: dimensionless Robin stiffness of the inner face (0 = free, ∞ = clamped); κ = k²Δζ²: discrete squared wavenumber"
+    role: "Resolves the Pass 2 anticlinal buckling with depth: under outer-junction forcing the k = 8 (24.5 um) lobe mode decays to 2.8 % of its outer amplitude at the inner face (β = 2, H = 15 um; e^-1 penetration 4 um), harmonics decay faster, and only depth-distributed forcing (ROP6-RIC1 microtubule bundles spanning the wall) keeps lobes through the full depth (inner/outer 0.70) — a model prediction verified against its analytic solution, not against a specimen"
+    source_citation: "Fu et al. (2005) Cell 120:687-700; Bidhendi et al. (2019) Nature Plants 5:981-992; Armour et al. (2015) Plant Cell 27:2484-2500 (depth context)"
+    code_locus: "2017-runions-pavement-cell-lobing.py#L939-L1158"

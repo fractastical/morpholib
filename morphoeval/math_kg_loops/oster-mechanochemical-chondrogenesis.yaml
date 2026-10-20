@@ -54,7 +54,7 @@ equations:
     variables: "E_eff: ECM elastic restoring modulus; D1_s: diffusive-tethering stabilization coefficient; tau_eff: active mesenchymal cell traction parameter"
     role: "Establishes the critical cell traction bifurcation threshold tau_c above which active cell pulling overcomes ECM elasticity and diffusion to nucleate chondrogenic condensations"
     source_citation: "Oster, Murray & Harris (1983) J. Embryol. Exp. Morph. 78:83-125 Section 3; Oster, Murray & Maini (1985) J. Embryol. Exp. Morph. 89:93-112 Section 2"
-    code_locus: "1983-oster-mechanochemical-chondrogenesis.py#L118-L168"
+    code_locus: "1983-oster-mechanochemical-chondrogenesis.py#L171-L266"
   - id: oster-mechanochemical-chondrogenesis-2
     law_name: "Oster, Murray & Maini (1985) Contact-Inhibited Cell Traction Saturation Law"
     title: "Oster, Murray & Maini (1985) Contact-Inhibited Cell Traction Saturation Law"
@@ -78,7 +78,7 @@ equations:
     variables: "tau: cell traction coefficient; lam: contact-inhibition saturation constant; n: mesenchymal cell density"
     role: "Proves that contact-inhibited cell traction saturates at high cell density, preventing delta-shock blowup and stabilizing smooth cartilage condensations"
     source_citation: "Oster, Murray & Maini (1985) J. Embryol. Exp. Morph. 89:93-112 Eq. (4)"
-    code_locus: "1983-oster-mechanochemical-chondrogenesis.py#L171-L212"
+    code_locus: "1983-oster-mechanochemical-chondrogenesis.py#L171-L190"
   - id: oster-mechanochemical-chondrogenesis-3
     law_name: "Oster, Murray & Maini (1985) Proximo-Distal Limb Branching Mode Law"
     title: "Oster, Murray & Maini (1985) Proximo-Distal Limb Branching Mode Law"
@@ -105,4 +105,70 @@ equations:
     variables: "W: transverse limb bud paddle width; lambda_c: characteristic mechanochemical instability wavelength 2*pi/k_c"
     role: "Governs the proximo-distal transition from 1 focal condensation (stylopod: humerus/femur) to 2 bifurcated elements (zeugopod: radius+ulna / tibia+fibula) to 4-5 digital rays (autopod)"
     source_citation: "Oster, Murray & Maini (1985) J. Embryol. Exp. Morph. 89:93-112 Figs. 4-9; Shubin & Alberch (1986) Evol. Biol. 20:319-387"
-    code_locus: "1983-oster-mechanochemical-chondrogenesis.py#L215-L345"
+    code_locus: "1983-oster-mechanochemical-chondrogenesis.py#L272-L372"
+  # ---- Pass 3 additions (2026-10-19, audit v3) ----
+  - id: oster-mechanochemical-chondrogenesis-4
+    law_name: "Oster, Murray & Maini (1985) / Saunders (1948) AER Free-Boundary Outgrowth Monotonicity Law"
+    title: "AER Free-Boundary Outgrowth Monotonicity & Ablation Truncation Law"
+    formula: "L(t) = L_0 + v_AER * t non-decreasing; W_1 <= W_2 => m(W_1, lambda_c) <= m(W_2, lambda_c); AER removed at t_a => zones with y > L(t_a) never form"
+    latex: "L(t) = L_0 + v_{\\mathrm{AER}} t,\\quad W_1 \\le W_2 \\Rightarrow m(W_1,\\lambda_c) \\le m(W_2,\\lambda_c),\\quad y > L(t_a) \\Rightarrow \\text{truncated}"
+    ascii: "L(t) = L0 + v*t ; W1 <= W2 => W1/lc <= W2/lc ; y > L(t_ablate) => no condensation at y"
+    lean_decl: "MathOfBiology.Loop_013.aer_front"
+    lean_theorem: "MathOfBiology.Loop_013.oster_maini_1985_aer_outgrowth_mode_monotone"
+    lean_theorems_additional:
+      - "MathOfBiology.Loop_013.oster_maini_1985_aer_front_monotone"
+      - "MathOfBiology.Loop_013.saunders_1948_aer_ablation_truncation"
+    lean_file: morphoeval/lean/loops/Loop_013_mechanochemical_chondrogenesis.lean
+    lean_locus: "morphoeval/lean/loops/Loop_013_mechanochemical_chondrogenesis.lean#L100-L135"
+    lean_code: |-
+      def aer_front (L0 v t : Nat) : Nat := L0 + v * t
+      theorem oster_maini_1985_aer_front_monotone (L0 v t1 t2 : Nat) (h : t1 ≤ t2) :
+          aer_front L0 v t1 ≤ aer_front L0 v t2
+      theorem oster_maini_1985_aer_outgrowth_mode_monotone (W1 W2 lambda_c : Nat) (h : W1 ≤ W2) :
+          limb_condensation_mode W1 lambda_c ≤ limb_condensation_mode W2 lambda_c
+      theorem saunders_1948_aer_ablation_truncation (L0 v t_ablate y t : Nat)
+          (h_t : t ≤ t_ablate) (h_y : aer_front L0 v t_ablate < y) :
+          aer_front L0 v t < y
+    lean_declaration: |-
+      theorem oster_maini_1985_aer_outgrowth_mode_monotone (W1 W2 lambda_c : Nat) (h : W1 ≤ W2) :
+          limb_condensation_mode W1 lambda_c ≤ limb_condensation_mode W2 lambda_c
+    variables: "L_0: initial bud length; v_AER: AER outgrowth speed; t_ablate: Saunders (1948) AER-removal time; W(y): paddle width profile; lambda_c: mechanochemical wavelength"
+    role: "Governs the proximo-distal sequence in which condensation modes are laid down behind the moving free-boundary AER in the 2D solver, and the distal truncation produced by AER removal"
+    source_citation: "Oster, Murray & Maini (1985) J. Embryol. Exp. Morph. 89:93-112 Sec. 4; Saunders (1948) J. Exp. Zool. 108:363-403 (10.1002/jez.1401080304); ten Berge et al. (2008) Development 135:3247-3257"
+    code_locus: "1983-oster-mechanochemical-chondrogenesis.py#L377-L669"
+  - id: oster-mechanochemical-chondrogenesis-5
+    law_name: "Hybrid Mechanochemical + Bmp-Sox9-Wnt Synergy Threshold Law"
+    title: "Mechanochemical-Biochemical Synergy Threshold Law (Oster-Murray-Maini x Raspopovic 2014)"
+    formula: "K_hyb = E_eff + D1_s - tau_eff - chi_BSW <= K_mech (chi_BSW >= 0); 0 < K_mech < chi_BSW => K_hyb < 0; det[[-a, b],[c, -mu]] = a*mu - b*c < 0 iff b*c > a*mu"
+    latex: "K_{\\text{hyb}} = K_{\\text{mech}} - \\chi_{\\text{BSW}} \\le K_{\\text{mech}},\\quad 0 < K_{\\text{mech}} < \\chi_{\\text{BSW}} \\Rightarrow K_{\\text{hyb}} < 0"
+    ascii: "K_hyb = K_mech - chi_BSW <= K_mech ; 0 < K_mech < chi_BSW => K_hyb < 0"
+    lean_decl: "MathOfBiology.Loop_013.hybrid_effective_stiffness"
+    lean_theorem: "MathOfBiology.Loop_013.hybrid_mechanochemical_bsw_synergy_threshold"
+    lean_theorems_additional:
+      - "MathOfBiology.Loop_013.hybrid_mechanochemical_bsw_threshold_lowering"
+      - "MathOfBiology.Loop_013.hybrid_n_sox9_loop_destabilises_when_gain_exceeds_margin"
+    lean_file: morphoeval/lean/loops/Loop_013_mechanochemical_chondrogenesis.lean
+    lean_locus: "morphoeval/lean/loops/Loop_013_mechanochemical_chondrogenesis.lean#L137-L183"
+    lean_code: |-
+      def hybrid_effective_stiffness (E_eff D1_s tau_eff chi_bsw : Int) : Int :=
+        mechanochemical_effective_stiffness E_eff D1_s tau_eff - chi_bsw
+      theorem hybrid_mechanochemical_bsw_threshold_lowering (E_eff D1_s tau_eff chi_bsw : Int) (h : 0 ≤ chi_bsw) :
+          hybrid_effective_stiffness E_eff D1_s tau_eff chi_bsw ≤ mechanochemical_effective_stiffness E_eff D1_s tau_eff
+      theorem hybrid_mechanochemical_bsw_synergy_threshold (E_eff D1_s tau_eff chi_bsw : Int)
+          (h_mech_stable : 0 < mechanochemical_effective_stiffness E_eff D1_s tau_eff)
+          (h_gain : mechanochemical_effective_stiffness E_eff D1_s tau_eff < chi_bsw) :
+          0 < mechanochemical_effective_stiffness E_eff D1_s tau_eff ∧
+          hybrid_effective_stiffness E_eff D1_s tau_eff chi_bsw < 0
+      def hybrid_reduced_det (a mu b c : Int) : Int := a * mu - b * c
+      theorem hybrid_n_sox9_loop_destabilises_when_gain_exceeds_margin (a mu b c : Int) (h : a * mu < b * c) :
+          hybrid_reduced_det a mu b c < 0
+    lean_declaration: |-
+      theorem hybrid_mechanochemical_bsw_synergy_threshold (E_eff D1_s tau_eff chi_bsw : Int)
+          (h_mech_stable : 0 < mechanochemical_effective_stiffness E_eff D1_s tau_eff)
+          (h_gain : mechanochemical_effective_stiffness E_eff D1_s tau_eff < chi_bsw) :
+          0 < mechanochemical_effective_stiffness E_eff D1_s tau_eff ∧
+          hybrid_effective_stiffness E_eff D1_s tau_eff chi_bsw < 0
+    variables: "chi_BSW: Sox9-mediated feedback gain (alpha_S * kappa_S loop through the Bmp-Sox9-Wnt network); a = -J_nn: mechanics-only stability margin; b = J_nS: Sox9 -> traction; c = J_Sn: condensation -> Sox9; mu = mu_S: Sox9 clearance"
+    role: "Establishes that coupling the mechanochemical traction instability to Raspopovic (2014) Bmp-Sox9-Wnt kinetics can only lower the critical traction, and defines the synergy window (tau_c,hybrid < tau < tau_c,mech) tested by the 2x2 factorial at tau = 0.85"
+    source_citation: "Raspopovic, Marcon, Russo & Sharpe (2014) Science 345:566-570 (10.1126/science.1252960); Hall & Miyake (2000) BioEssays 22:138-147; Oster, Murray & Maini (1985) Sec. 5"
+    code_locus: "1983-oster-mechanochemical-chondrogenesis.py#L671-L962"

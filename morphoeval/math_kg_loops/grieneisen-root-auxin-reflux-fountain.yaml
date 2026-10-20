@@ -1,24 +1,46 @@
 sim_id: grieneisen-root-auxin-reflux-fountain
-math_family: "2D Anisotropic Vascular–Epidermal Polar PIN1/PIN2/PIN3 Advection-Diffusion Reflux Loop & Quiescent Center (QC) Exponential Capacitor"
+math_family: "Solved 2D Cellular PIN1/PIN2/PIN3 Permeability Transport Lattice (Vascular–Epidermal Reverse-Fountain Reflux Capacitor) with Finite-Volume PLETHORA Zonation, Explicit Mitotic Division on a Growing Lattice, and Gravistimulated PIN3/PIN7 Statocyte Efflux Asymmetry"
 model_spec:
-  model: "Grieneisen, Xu, Marée, Hogeweg & Scheres (2007) Nature 449(7165):1008-1013 and Mähönen et al. (2014) Nature 515(7525):125-129 2D multi-file root apex reverse-fountain auxin reflux capacitor and PLETHORA (PLT1/2) meristem zonality PDEs (∂A_s/∂t = D ∂²A_s/∂z² - v_s ∂A_s/∂z + k_{lat} A_e - μ A_s, ∂A_e/∂t = D ∂²A_e/∂z² + v_e ∂A_e/∂z - k_{lat} A_e - μ A_e, ∂P/∂t = α_{plt} A^n/(K_{aux}^n + A^n) + D_{plt} ∂²P/∂z² - γ_{plt} P), comparing Wild-Type exponential QC capacitor amplification (>100-fold) and shoot-decapitation autonomy against pin2/eir1, lateral-PIN ablation, NPA polar transport blockade, and QC laser-ablation proximal regeneration"
-  apoplastic_diffusion_D_um2_s: 12.0
-  stele_rootward_pin1_velocity_vs_um_s: 1.60
-  epidermal_shootward_pin2_velocity_ve_um_s: 1.20
-  lateral_reflux_rate_klat_s: 0.18
-  basal_auxin_decay_mu_s: 0.0005
-  plt_max_synthesis_rate_alpha_plt: 0.08
+  model: "Grieneisen, Xu, Marée, Hogeweg & Scheres (2007) Nature 449(7165):1008-1013 cellular PIN-permeability reflux model solved as a sparse linear steady state on a 32-row x 9-file lattice (d(V_i A_i)/dt = sum_j [c_ji A_j - c_ij A_i] + sigma V_i - mu V_i A_i, c_ij = D face/dist + p_ij face), coupled to the Mähönen et al. (2014) Nature 515(7525):125-129 PLETHORA finite-volume balance with growth dilution (l_k dP_k/dt = alpha H(A) l_k - (gamma + r_k) l_k P_k + F_{k+1/2} - F_{k-1/2}), a growing cellular lattice with explicit mitotic division (l >= 2 l_birth -> two daughters l/2) and elongation-zone growth, and gravistimulation as a Friml (2002) / Kleine-Vehn (2010) PIN3/PIN7 statocyte efflux split k_col (1 +/- g), g = g_max sin(phi) with a Band (2012) tipping-point reset, driving differential epidermal elongation and tip-angle kinetics. Pass 3 replaces the Pass 2 hard-coded per-regime analytical field (whose QC amplitudes were the reference-table values) with emergent solutions."
+  pass: 3
+  passive_diffusion_D_um2_s: 1.5
+  stele_rootward_pin1_permeability_vs_um_s: 0.80
+  epidermal_shootward_pin2_permeability_ve_um_s: 1.20
+  lateral_inward_pin_permeability_klat_um_s: 0.18
+  columella_apolar_pin347_permeability_kcol_um_s: 0.90
+  basal_auxin_decay_mu_s: 0.0004
+  basal_auxin_biosynthesis_sigma: 0.002
+  shoot_vascular_influx_Jin: 0.25
+  cell_width_um: 15.0
+  radial_files: 9
+  axial_rows_static: 32
+  columella_rows: 3
+  plt_max_synthesis_rate_alpha_plt_per_h: 0.08
+  plt_turnover_gamma_plt_per_h: 0.06
+  plt_intercellular_movement_D_plt_um2_per_h: 800.0
+  plt_auxin_half_saturation_K_aux: 3.0
+  plt_hill_cooperativity_n: 2
   plt_meristem_boundary_threshold_Theta_MZ: 0.36
+  plt_elongation_boundary_threshold_Theta_EZ: 0.14
+  meristem_cell_cycle_h: 17.0
+  daughter_cell_birth_length_um: 7.0
+  elongation_zone_peak_relative_growth_rate_per_h: 0.45
+  mature_cell_length_um: 160.0
+  growing_lattice_domain_cap_um: 720.0
+  statocyte_efflux_asymmetry_g_max: 0.18
+  tipping_point_bending_angle_deg: 40.0
+  elongation_response_lag_tau_h: 0.75
   seed: 2014
   inputs:
     - datasets/root_auxin_reflux_fountain/root_auxin_reflux_fountain_reference.json
+    - datasets/root_auxin_reflux_fountain/root_growth_gravitropism_reference.json
     - datasets/root_auxin_reflux_fountain/arabidopsis_root_meristem_specimen.jpg
     - datasets/root_auxin_reflux_fountain/scout_manifest.json
     - datasets/root_auxin_reflux_fountain/paper_citations.bib
 equations:
   - id: grieneisen-root-auxin-reflux-fountain-1
     law_name: "Grieneisen et al. (2007) Vascular-Epidermal Counter-Current Reflux Conservation Law"
-    formula: "∂A_s/∂t + ∂A_e/∂t = (-∂J_s/∂z + k_{lat} A_e - μ A_s) + (-∂J_e/∂z - k_{lat} A_e - μ A_e) = -∂(J_s + J_e)/∂z - μ(A_s + A_e),   J_{stele}(0) + J_{epidermis}(0) = 0  (μ = 0, J_{in} = 0)"
+    formula: "d(V_i A_i)/dt = Σ_j [c_ji A_j − c_ij A_i] + σ V_i − μ V_i A_i;  with μ = σ = J_in = escape = 0 every column of the operator sums to zero (Σ_i d(V_i A_i)/dt = 0, J_stele + J_epidermis = 0 across the closed tip)"
     lean_decl: "MathOfBiology.Loop_038.stele_reflux_rhs"
     lean_theorem: "MathOfBiology.Loop_038.grieneisen_2007_vascular_epidermal_reflux_conservation"
     lean_locus: "morphoeval/lean/loops/Loop_038_root_auxin_reflux_fountain.lean#L31-L53"
@@ -33,17 +55,17 @@ equations:
             -(dJ_s + dJ_e) - mu * (A_s + A_e) ∧
           stele_reflux_rhs dJ_s k_lat A_e 0 A_s + epidermis_reflux_rhs (-dJ_s) k_lat A_e 0 = 0 ∧
           cross_section_net_flux J_tip (-J_tip) = 0
-    variables: "A_s, A_e: vascular stele and epidermal/cortical auxin concentrations; J_s, J_e: rootward PIN1 stele flux and shootward PIN2 epidermal flux; k_{lat}: inward lateral PIN1/PIN2/PIN3 reflux rate across cortex/endodermis; μ: basal auxin turnover rate"
-    role: "Proves exact internal cancellation of lateral reflux transfer between outer tissues and vascular stele and counter-current flux balance J_{stele} + J_{epidermis} = 0 at a closed root tip boundary, explaining why the root tip reflux capacitor remains self-sustaining after shoot decapitation (J_{in} = 0)"
-    source_citation: "Grieneisen, Xu, Marée, Hogeweg & Scheres (2007) Nature 449(7165):1008-1013 Eqs. 1-4 & Fig. 3"
-    code_locus: "2014-grieneisen-root-auxin-reflux-fountain.py#L107-L191"
+    variables: "A_i: cellular auxin concentration; V_i = l_i w: cell area; c_ij: passive (D·face/dist) plus PIN-permeability (p_ij·face) transport coefficient from cell i to j; σ, μ: biosynthesis and turnover; J_in: shoot vascular influx"
+    role: "Proves the pairwise cancellation of internal transfer terms and hence exact mass conservation of the closed reflux lattice; the script checks it numerically as zero column sums (max |Σ| / max |entry| = 0) of the assembled sparse operator plus a steady-state flux budget on the open operator"
+    source_citation: "Grieneisen, Xu, Marée, Hogeweg & Scheres (2007) Nature 449(7165):1008-1013 Methods & Fig. 3"
+    code_locus: "2014-grieneisen-root-auxin-reflux-fountain.py#L178-L325"
 
   - id: grieneisen-root-auxin-reflux-fountain-2
     law_name: "Grieneisen et al. (2007) Quiescent Center (QC) Reflux Capacitor Amplification vs NPA / Lateral-PIN Ablation Collapse Law"
-    formula: "A_{QC} / A_{shoot} = exp(L / λ_{QC}) ≫ 1  (v_s > 0, v_e > 0, k_{lat} > 0)   vs   A_{QC} / A_{shoot} = 1  (k_{lat} = 0  ∨  v_s = v_e = 0)"
+    formula: "A_QC / A_shoot ≫ 1 emerges from v_s, v_e, k_lat, k_col > 0 (solved: 113.6× at z = 52.5 µm);  k_lat = 0 → A_QC drops to 0.18 × WT;  NPA (all p → 3-5 %) → A_QC / A_shoot = 1.10"
     lean_decl: "MathOfBiology.Loop_038.qc_two_stage_capacitor"
     lean_theorem: "MathOfBiology.Loop_038.grieneisen_2007_qc_capacitor_amplification_vs_collapse"
-    lean_locus: "morphoeval/lean/loops/Loop_038_root_auxin_reflux_fountain.lean#L70-L92"
+    lean_locus: "morphoeval/lean/loops/Loop_038_root_auxin_reflux_fountain.lean#L72-L95"
     lean_code: |
       def qc_two_stage_capacitor (A_shoot v_s v_e k_lat : Int) : Int :=
         A_shoot * (1 + v_s * v_e * k_lat) * (1 + v_s * v_e * k_lat)
@@ -53,17 +75,17 @@ equations:
           qc_two_stage_capacitor A_shoot v_s v_e k_lat > A_shoot ∧
           qc_two_stage_capacitor A_shoot v_s v_e 0 = A_shoot ∧
           qc_two_stage_capacitor A_shoot 0 0 k_lat = A_shoot
-    variables: "A_{QC}: distal Quiescent Center auxin concentration; A_{shoot}: proximal shootward boundary auxin concentration; v_s: rootward stele PIN1 velocity; v_e: shootward epidermal PIN2 velocity; k_{lat}: inward lateral reflux rate; λ_{QC}: effective reflux capacitor decay length"
-    role: "Proves that simultaneous rootward PIN1 advection (v_s > 0), shootward PIN2 advection (v_e > 0), and inward lateral reflux (k_{lat} > 0) strictly amplify distal Quiescent Center auxin concentration above the shoot boundary, whereas lateral PIN ablation (k_{lat} = 0) or NPA global polar transport blockade (v_s = v_e = 0) collapses the capacitor to the unamplified baseline"
+    variables: "A_QC: emergent stele auxin maximum at the QC/columella boundary; A_shoot: top-row stele concentration; v_s, v_e, k_lat, k_col: PIN permeabilities (µm/s)"
+    role: "Qualitative Lean model of the capacitor; the script now produces the amplification, its position and its collapse by solving the operator (Pass 2 hard-coded them)"
     source_citation: "Grieneisen, Xu, Marée, Hogeweg & Scheres (2007) Nature 449(7165):1008-1013 Figs. 1-3"
-    code_locus: "2014-grieneisen-root-auxin-reflux-fountain.py#L195-L335"
+    code_locus: "2014-grieneisen-root-auxin-reflux-fountain.py#L375-L537"
 
   - id: grieneisen-root-auxin-reflux-fountain-3
     law_name: "Mähönen et al. (2014) PLETHORA (PLT1/2) Dosage Gradient & Meristem Boundary Monotonicity Law"
-    formula: "G_2 > G_1 ∧ α_{plt} > 0  ⇒  P(z; G_2) > P(z; G_1)  ∧  z_{MZ}(G_2) > z_{MZ}(G_1)"
+    formula: "l_k dP_k/dt = α H(A_k) l_k − (γ + r_k) l_k P_k + F_{k+1/2} − F_{k−1/2},  H(A) = A²/(K² + A²),  F = D_plt (P_{k+1} − P_k)/d;  z_MZ = top of last row with P ≥ Θ_MZ"
     lean_decl: "MathOfBiology.Loop_038.plethora_axial_dosage"
     lean_theorem: "MathOfBiology.Loop_038.mahonen_2014_plethora_meristem_boundary_monotonicity"
-    lean_locus: "morphoeval/lean/loops/Loop_038_root_auxin_reflux_fountain.lean#L108-L128"
+    lean_locus: "morphoeval/lean/loops/Loop_038_root_auxin_reflux_fountain.lean#L110-L131"
     lean_code: |
       def plethora_axial_dosage (alpha_plt G_reflux beta_decay z : Int) : Int :=
         alpha_plt * G_reflux - beta_decay * z
@@ -76,7 +98,68 @@ equations:
             plethora_axial_dosage alpha_plt G1 beta_decay z ∧
           meristem_boundary_coord alpha_plt G2 Theta_MZ >
             meristem_boundary_coord alpha_plt G1 Theta_MZ
-    variables: "P(z): axial PLETHORA (PLT1/PLT2) transcription factor concentration at distance z from the root tip; G_{reflux}: QC auxin reflux capacitor gain; α_{plt}: auxin-induced PLT synthesis rate; β_{decay}: axial PLT dilution/decay slope; Θ_{MZ}: PLT dosage threshold separating Meristematic Zone from Elongation Zone; z_{MZ}: Meristematic Zone boundary coordinate"
-    role: "Proves that higher reflux capacitor gain G_{reflux} strictly elevates PLETHORA dosage across the root apex and shifts the Meristem-to-Elongation Zone boundary z_{MZ} shootward, explaining progressive meristem shrinkage across WT > decapitated > pin2 > lateral-pin ablation > NPA blockade"
-    source_citation: "Mähönen et al. (2014) Nature 515(7525):125-129 Figs. 1-4; Grieneisen et al. (2007) Nature 449:1008-1013 Fig. 2"
-    code_locus: "2014-grieneisen-root-auxin-reflux-fountain.py#L336-L464"
+    variables: "P_k: PLT dosage of row k; α: synthesis rate (1/h); γ: turnover (1/h); r_k: relative growth (dilution) rate; D_plt: cell-to-cell movement (µm²/h); Θ_MZ, Θ_EZ: zone thresholds"
+    role: "Positions the meristematic and elongation zone boundaries from the solved auxin field; emergent WT z_MZ = 240 µm, decapitated 225, pin2 120, k_lat=0 45, QC-ablation 255 (NPA: PLT saturates everywhere — disclosed disagreement)"
+    source_citation: "Mähönen et al. (2014) Nature 515(7525):125-129 Figs. 1-4"
+    code_locus: "2014-grieneisen-root-auxin-reflux-fountain.py#L330-L372"
+
+  - id: grieneisen-root-auxin-reflux-fountain-4
+    law_name: "Friml et al. (2002) / Kleine-Vehn et al. (2010) Gravistimulated PIN3/PIN7 Columella Efflux Asymmetry Law (Pass 3)"
+    formula: "p_lower = k_col (1 + g),  p_upper = k_col (1 − g),  p_lower + p_upper = 2 k_col,  p_lower − p_upper = 2 k_col g (monotone in g),  g = g_max sin(φ)·[β < β_tip]"
+    lean_decl: "MathOfBiology.Loop_038.lateral_efflux_asymmetry"
+    lean_theorem: "MathOfBiology.Loop_038.friml_2002_gravistimulated_columella_efflux_asymmetry"
+    lean_locus: "morphoeval/lean/loops/Loop_038_root_auxin_reflux_fountain.lean#L147-L176"
+    lean_code: |
+      def lower_side_permeability (k_col g : Int) : Int := k_col * (1 + g)
+      def upper_side_permeability (k_col g : Int) : Int := k_col * (1 - g)
+      def lateral_efflux_asymmetry (k_col g : Int) : Int :=
+        lower_side_permeability k_col g - upper_side_permeability k_col g
+      theorem friml_2002_gravistimulated_columella_efflux_asymmetry
+          (k_col g g1 g2 : Int) (hk : k_col > 0) (hg : g > 0) (hmono : g2 > g1) :
+          lower_side_permeability k_col g + upper_side_permeability k_col g = 2 * k_col ∧
+          lower_side_permeability k_col g > upper_side_permeability k_col g ∧
+          lateral_efflux_asymmetry k_col g = 2 * k_col * g ∧
+          lower_side_permeability k_col 0 = upper_side_permeability k_col 0 ∧
+          lateral_efflux_asymmetry k_col g2 > lateral_efflux_asymmetry k_col g1
+    variables: "k_col: apolar columella PIN3/4/7 permeability; g ∈ [0, 1]: statocyte relocalisation asymmetry; φ: tip inclination from the gravity vector; β: bending angle; β_tip: Band (2012) tipping point"
+    role: "Proves the gravistimulated split conserves columella efflux, strictly favours the lower side for g > 0 and is monotone in g; the solved lattice then yields an EZ lower/upper epidermal auxin ratio of 1.85 at g_max = 0.18 (Spearman ρ = 1.0 over the g sweep) that drives sine-law bending (tipping point reached at 5.55 h vs Band's ≈2 h — disclosed)"
+    source_citation: "Friml et al. (2002) Nature 415(6873):806-809; Kleine-Vehn et al. (2010) PNAS 107(51):22344-22349; Band et al. (2012) PNAS 109(12):4668-4673"
+    code_locus: "2014-grieneisen-root-auxin-reflux-fountain.py#L641-L716"
+
+  - id: grieneisen-root-auxin-reflux-fountain-5
+    law_name: "Mähönen et al. (2014) PLETHORA Growth-Dilution Monotonicity Law (Pass 3)"
+    formula: "P (γ + r) = S  ⇒  r₂ > r₁ ≥ 0 ∧ γ > 0 ∧ P₁, P₂ > 0  ⇒  P₂ < P₁"
+    lean_decl: "MathOfBiology.Loop_038.plt_dilution_balance"
+    lean_theorem: "MathOfBiology.Loop_038.mahonen_2014_plethora_growth_dilution_monotone"
+    lean_locus: "morphoeval/lean/loops/Loop_038_root_auxin_reflux_fountain.lean#L188-L203"
+    lean_code: |
+      def plt_dilution_balance (P gamma r : Int) : Int := P * (gamma + r)
+      theorem mahonen_2014_plethora_growth_dilution_monotone
+          (P1 P2 gamma r1 r2 S : Int)
+          (_hP1 : P1 > 0) (hP2 : P2 > 0) (hgamma : gamma > 0) (hr1 : r1 ≥ 0) (hr : r2 > r1)
+          (h1 : plt_dilution_balance P1 gamma r1 = S) (h2 : plt_dilution_balance P2 gamma r2 = S) :
+          P2 < P1
+    variables: "P: PLT dosage; S = α H(A): auxin-induced synthesis; γ: turnover; r: relative growth rate of the cell row (ln2/T_cycle in the meristem, r_ez (1 − l/l_mature) in the elongation zone)"
+    role: "Formalises the growth-dilution mechanism used by `solve_plethora_gradient` on the growing lattice: elongating rows dilute PLT faster and exit the meristem, which is what positions the EZ/DZ boundary in `simulate_growing_cellular_lattice`"
+    source_citation: "Mähönen et al. (2014) Nature 515(7525):125-129 Figs. 3-4 (growth dilution of PLT proteins)"
+    code_locus: "2014-grieneisen-root-auxin-reflux-fountain.py#L334-L362"
+
+  - id: grieneisen-root-auxin-reflux-fountain-6
+    law_name: "Explicit Mitotic Division Length-Conservation Law of the Growing Cellular Lattice (Pass 3)"
+    formula: "l ≥ 2 l_birth ∧ l_birth > 0  ⇒  ⌊l/2⌋ + (l − ⌊l/2⌋) = l ∧ ⌊l/2⌋ ≥ l_birth ∧ l − ⌊l/2⌋ ≥ l_birth ∧ n_cells → n_cells + 1"
+    lean_decl: "MathOfBiology.Loop_038.daughter_a"
+    lean_theorem: "MathOfBiology.Loop_038.mitotic_division_length_conservation"
+    lean_locus: "morphoeval/lean/loops/Loop_038_root_auxin_reflux_fountain.lean#L213-L229"
+    lean_code: |
+      def daughter_a (l : Int) : Int := l / 2
+      def daughter_b (l : Int) : Int := l - l / 2
+      theorem mitotic_division_length_conservation
+          (l l_birth n_cells : Int) (_hb : l_birth > 0) (hl : l ≥ 2 * l_birth) :
+          daughter_a l + daughter_b l = l ∧
+          daughter_a l ≥ l_birth ∧
+          daughter_b l ≥ l_birth ∧
+          (n_cells - 1) + 2 = n_cells + 1
+    variables: "l: meristematic cell row length; l_birth: daughter length at birth (7 µm); n_cells: number of rows in the file"
+    role: "Guarantees the division rule of `simulate_growing_cellular_lattice` conserves file length and never creates sub-birth-length daughters; the script's self-test checks the same invariants on the 24 h run (23 divisions, 26 meristem cells, min length ≥ l_birth)"
+    source_citation: "Beemster & Baskin (1998) Plant Physiol 116(4):1515-1526 (kinematic cell production); Dello Ioio et al. (2007) Curr Biol 17(8):678-682 (meristem cell number)"
+    code_locus: "2014-grieneisen-root-auxin-reflux-fountain.py#L542-L636"

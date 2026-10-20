@@ -5,8 +5,10 @@ model_spec:
   governing_equations:
     protein_dde: "dp(t)/dt = a * m(t - T_p) - b * p(t)"
     mrna_dde: "dm(t)/dt = k / (1 + (p(t - T_m) / p_0)^n) - c * m(t)"
-    hopf_delay_period_law: "T_tot = T_m + T_p > T_crit (~4.62 min);  T_osc = 2 * (T_m + T_p + ln(2)/b + ln(2)/c) ~ 30.0 min"
+    hopf_delay_period_law: "T_tot = T_m + T_p > T_crit (= 7.54 min computed from the characteristic equation for the canonical parameters);  T_osc = 2 * (T_m + T_p + ln(2)/b + ln(2)/c) ~ 30.0 min (Box 1 approximation; RK4 DDE gives 33.6 min)"
     notch_phase_coupling: "dtheta_i/dt = omega_i + (kappa_N / N_nb) * sum_j sin(theta_j(t - T_N) - theta_i(t)) + xi_i(t)"
+    lattice_nicd_kinetics: "dN_i/dt = k_N * Dbar_i(t - T_N) / (K_D + Dbar_i(t - T_N)) - b_N * N_i;  G_N(N) = (1 - eps_N) + eps_N * N^h / (N_0^h + N^h);  dD_i/dt = a_D * d_i(t - T_pD) - b_D * D_i (Pass 3)"
+    schroter_dimer_truth_table: "Rep_i = [Her1:Her1]_i/K_11 + [Her7:Hes6]_i/K_76, Her1:Her7 / Her1:Hes6 / Her7:Her7 / Hes6:Hes6 non-binding; Hes6 graded posterior-high (Pass 3)"
   canonical_parameters:
     a_per_min: 4.5
     b_per_min: 0.23
@@ -17,7 +19,18 @@ model_spec:
     T_m_min: 7.18
     T_p_min: 1.8
     T_tot_min: 8.98
-    T_crit_min: 4.62
+    T_crit_min: 7.54
+    T_osc_dde_min: 33.62
+    lattice_T_m1_min: 9.5
+    lattice_T_p1_min: 2.8
+    lattice_T_m7_min: 4.6
+    lattice_T_p7_min: 1.7
+    lattice_T_mD_min: 16.0
+    lattice_T_pD_min: 20.5
+    lattice_T_N_min: 2.0
+    lattice_eps_N_wt: 0.9
+    lattice_hes6_anterior: 4.0
+    lattice_hes6_posterior: 40.0
     T_osc_min: 30.0
   inputs:
     - datasets/her1_her7_delayed_oscillator/her1_her7_delayed_oscillator_reference.json
@@ -49,7 +62,7 @@ equations:
     variables: "m(t): her1/her7 mRNA molecules per cell; p(t): Her1/Her7 repressor protein molecules per cell; T_m: transcriptional delay (min); T_p: translational delay (min)"
     role: "Establishes the intracellular delayed negative feedback loop of the zebrafish segmentation clock and proves that stability and period depend only on the sum T_tot = T_m + T_p"
     source_citation: "Lewis (2003) Current Biology 13(16):1398-1408 Eqs. 1-2 & Appendix"
-    code_locus: "2003-lewis-her1-her7-delayed-oscillator.py#L120-L215"
+    code_locus: "2003-lewis-her1-her7-delayed-oscillator.py#L154-L239"
   - id: lewis-her1-her7-delayed-oscillator-2
     law_name: "Lewis (2003) Delay-Driven Oscillation Period & Hopf Bifurcation Law"
     title: "Lewis (2003) Delay-Driven Oscillation Period & Hopf Bifurcation Law"
@@ -70,10 +83,10 @@ equations:
       theorem lewis_2003_oscillation_period_delay_sensitivity (T_m T_p tau_m tau_p delta_Tm : Nat) :
           lewis_oscillation_period (T_m + delta_Tm) T_p tau_m tau_p =
             lewis_oscillation_period T_m T_p tau_m tau_p + 2 * delta_Tm
-    variables: "T_osc: segmentation clock oscillation period (min); T_crit: Hopf bifurcation critical delay threshold (~4.62 min); tau_m, tau_p: mRNA and protein half-life relaxation times (min)"
+    variables: "T_osc: segmentation clock oscillation period (min); T_crit: Hopf bifurcation critical delay threshold (7.54 min computed); tau_m, tau_p: mRNA and protein half-life relaxation times (min)"
     role: "Predicts the ~30 min zebrafish somite clock period from transcriptional/translational delays plus macromolecular half-lives and explains period shifts under intron deletion or Notch delay changes"
     source_citation: "Lewis (2003) Current Biology 13(16):1398-1408 Box 1 & Figs. 2-3; Giudicelli et al. (2007) PLoS Biology 5:e150"
-    code_locus: "2003-lewis-her1-her7-delayed-oscillator.py#L218-L305"
+    code_locus: "2003-lewis-her1-her7-delayed-oscillator.py#L219-L426"
   - id: lewis-her1-her7-delayed-oscillator-3
     law_name: "Lewis (2003) DeltaC-Notch Intercellular Synchronization vs bea/des/aei Mutant Desynchronization Law"
     title: "Lewis (2003) DeltaC-Notch Intercellular Synchronization vs bea/des/aei Mutant Desynchronization Law"
@@ -97,4 +110,63 @@ equations:
     variables: "kappa: intercellular DeltaC-Notch phase-coupling strength; Delta_phi: phase difference between adjacent PSM cells; R_sync: Kuramoto tissue synchronization order parameter"
     role: "Explains how intercellular DeltaC-Notch signaling maintains phase synchrony (R_sync > 0.95) against molecular copy-number noise in wild-type PSM, whereas Notch mutants (bea, des, aei; kappa=0) form 5-7 normal anterior somites before desynchronizing into salt-and-pepper defects"
     source_citation: "Lewis (2003) Current Biology 13(16):1398-1408 Figs. 5-6; Herrgen et al. (2010) Current Biology 20:1244-1253"
-    code_locus: "2003-lewis-her1-her7-delayed-oscillator.py#L308-L410"
+    code_locus: "2003-lewis-her1-her7-delayed-oscillator.py#L429-L522"
+  - id: lewis-her1-her7-delayed-oscillator-4
+    law_name: "Lewis (2003) 2D Multicellular DDE Lattice: Notch-Gated her Transcription with Delayed DeltaC Translation & NICD Cleavage (Pass 3)"
+    title: "Lewis (2003) 2D Multicellular DDE Lattice: Notch-Gated her Transcription with Delayed DeltaC Translation & NICD Cleavage (Pass 3)"
+    formula: "dN_i/dt = k_N * Dbar_i(t - T_N) / (K_D + Dbar_i(t - T_N)) - b_N * N_i;  G_N(N) = (1 - eps_N) + eps_N * N^h / (N_0^h + N^h);  Dbar_i = (D_up + D_down + D_left + D_right) / 4;  dD_i/dt = a_D * d_i(t - T_pD) - b_D * D_i"
+    latex: "\\frac{dN_i}{dt} = k_N \\frac{\\bar D_i(t - T_N)}{K_D + \\bar D_i(t - T_N)} - b_N N_i, \\quad G_N(N) = (1 - \\epsilon_N) + \\epsilon_N \\frac{N^h}{N_0^h + N^h}, \\quad \\bar D_i = \\tfrac{1}{4}\\sum_{j \\in \\mathcal{N}_4(i)} D_j"
+    ascii: "dN_i/dt = k_N * Dbar_i(t - T_N) / (K_D + Dbar_i(t - T_N)) - b_N * N_i; G_N(N) = (1 - eps_N) + eps_N * N^h / (N_0^h + N^h); Dbar_i = mean of 4 von Neumann neighbours' DeltaC protein"
+    lean_decl: "MathOfBiology.Loop_022.notch_transcription_gate"
+    lean_theorem: "MathOfBiology.Loop_022.lewis_2003_notch_gate_mutant_independence"
+    lean_theorems_additional:
+      - "MathOfBiology.Loop_022.deltac_lattice_uniform_neighbour_mean_fixed_point"
+    lean_file: morphoeval/lean/loops/Loop_022_her1_her7_delayed_oscillator.lean
+    lean_locus: "morphoeval/lean/loops/Loop_022_her1_her7_delayed_oscillator.lean#L112-L144"
+    lean_code: |-
+      def notch_transcription_gate (eps_N s : Int) : Int :=
+        (1 - eps_N) + eps_N * s
+      theorem lewis_2003_notch_gate_mutant_independence (s : Int) :
+          notch_transcription_gate 0 s = 1 ∧ notch_transcription_gate 1 s = s
+      def deltac_neighbour_mean (D_up D_down D_left D_right : Nat) : Nat :=
+        (D_up + D_down + D_left + D_right) / 4
+      theorem deltac_lattice_uniform_neighbour_mean_fixed_point (D : Nat) :
+          deltac_neighbour_mean D D D D = D
+    lean_declaration: |-
+      theorem lewis_2003_notch_gate_mutant_independence (s : Int) :
+          notch_transcription_gate 0 s = 1 ∧ notch_transcription_gate 1 s = s
+    variables: "N_i: NICD molecules in cell i; Dbar_i: mean DeltaC protein of the 4 von Neumann neighbours; T_N: Notch binding/gamma-secretase cleavage/nuclear-entry delay (min); T_pD: DeltaC translation+trafficking delay (min); eps_N: Notch-dependent fraction of her transcription (0 in bea/des/aei); K_D, N_0, h: NICD occupancy constants"
+    role: "Extends the 1D phase chain to an explicit 8 x 24 multicellular DDE sheet in which DeltaC protein is translated with delay, cleaved Notch (NICD) gates her1/her7 transcription, and eps_N = 0 reproduces the bea/des/aei loss of coupling (5-7 coherent anterior cycles before salt-and-pepper desynchronisation); a uniform DeltaC field is a fixed point of the coupling"
+    source_citation: "Lewis (2003) Current Biology 13(16):1398-1408 Figs. 5-6 (coupled-cell DDEs); Herrgen et al. (2010) Current Biology 20:1244-1253 (coupling delay sets collective period)"
+    code_locus: "2003-lewis-her1-her7-delayed-oscillator.py#L544-L735"
+  - id: lewis-her1-her7-delayed-oscillator-5
+    law_name: "Schroter et al. (2012) Her1/Her7/Hes6 Dimer DNA-Binding Truth Table on the AP Hes6 Gradient (Pass 3)"
+    title: "Schroter et al. (2012) Her1/Her7/Hes6 Dimer DNA-Binding Truth Table on the AP Hes6 Gradient (Pass 3)"
+    formula: "Rep_i = sum_{(A,B)} B_AB * [A:B]_i / K_AB,  [A:B] = A * B;  B_11 = B_76 = 1, B_17 = B_16 = B_77 = B_66 = 0;  Hes6_i = H_ant + (H_post - H_ant) * x_i / (n_cols - 1);  (w + v) T7 <= w T7 + v T1 <= (w + v) T1"
+    latex: "\\mathrm{Rep}_i = \\frac{[\\mathrm{Her1{:}Her1}]_i}{K_{11}} + \\frac{[\\mathrm{Her7{:}Hes6}]_i}{K_{76}}, \\quad [A{:}B] = A\\,B, \\quad (w+v)\\,T_7 \\le w\\,T_7 + v\\,T_1 \\le (w+v)\\,T_1"
+    ascii: "Rep_i = [Her1:Her1]_i/K_11 + [Her7:Hes6]_i/K_76 (Her1:Her7, Her1:Hes6, Her7:Her7, Hes6:Hes6 non-binding); Hes6 graded posterior-high; weighted loop delay bracketed by the her7 and her1 delays"
+    lean_decl: "MathOfBiology.Loop_022.schroter_dimer_repression"
+    lean_theorem: "MathOfBiology.Loop_022.schroter_2012_dimer_truth_table_repression"
+    lean_theorems_additional:
+      - "MathOfBiology.Loop_022.schroter_2012_hes6_gradient_period_interpolation"
+    lean_file: morphoeval/lean/loops/Loop_022_her1_her7_delayed_oscillator.lean
+    lean_locus: "morphoeval/lean/loops/Loop_022_her1_her7_delayed_oscillator.lean#L146-L190"
+    lean_code: |-
+      def schroter_dimer_repression (B11 B76 B17 B16 B77 B66 p1 p7 h6 : Nat) : Nat :=
+        B11 * (p1 * p1) + B76 * (p7 * h6) + B17 * (p1 * p7) + B16 * (p1 * h6) + B77 * (p7 * p7) + B66 * (h6 * h6)
+      theorem schroter_2012_dimer_truth_table_repression (p1 p7 h6 : Nat) :
+          schroter_dimer_repression 1 1 0 0 0 0 p1 p7 h6 = p1 * p1 + p7 * h6 ∧
+          schroter_dimer_repression 1 1 0 0 0 0 p1 p7 0 = p1 * p1
+      def hes6_weighted_loop_delay (w v T7 T1 : Nat) : Nat :=
+        w * T7 + v * T1
+      theorem schroter_2012_hes6_gradient_period_interpolation (w v T7 T1 : Nat) (h : T7 ≤ T1) :
+          (w + v) * T7 ≤ hes6_weighted_loop_delay w v T7 T1 ∧
+          hes6_weighted_loop_delay w v T7 T1 ≤ (w + v) * T1
+    lean_declaration: |-
+      theorem schroter_2012_dimer_truth_table_repression (p1 p7 h6 : Nat) :
+          schroter_dimer_repression 1 1 0 0 0 0 p1 p7 h6 = p1 * p1 + p7 * h6 ∧
+          schroter_dimer_repression 1 1 0 0 0 0 p1 p7 0 = p1 * p1
+    variables: "p1, p7: Her1, Her7 protein molecules; h6: non-oscillating Hes6 protein (posterior-high AP gradient); B_AB: DNA-binding truth table bit; K_11, K_76: dimer dissociation constants (reduced parameters); T7, T1: her7 (fast) and her1 (slow) loop delays; w, v: Hes6-dependent repression weights"
+    role: "Couples the anterior-to-posterior phase gradient to the dimer composition: Hes6-high posterior cells are repressed through the short-delay Her7:Hes6 loop (faster), Hes6-low anterior cells through the Her1 homodimer loop (slower), hes6-null tissue is AP-uniform at the her1-only period; the lattice AP period gradient is bracketed by the pure-branch periods"
+    source_citation: "Schroter et al. (2012) PLoS Biology 10(7):e1001364 Figs. 2-3 (dimerization and DNA binding), Figs. 5-7 (hes6 gradient, genetic interactions); Giudicelli et al. (2007) PLoS Biology 5:e150 (kinematic waves)"
+    code_locus: "2003-lewis-her1-her7-delayed-oscillator.py#L532-L596,L852-L874"

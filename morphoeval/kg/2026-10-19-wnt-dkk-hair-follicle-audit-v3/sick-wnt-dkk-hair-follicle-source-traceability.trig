@@ -1,0 +1,112 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-sick-wnt-dkk-hair-follicle> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-sick-wnt-dkk-hair-follicle-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-sick-wnt-dkk-hair-follicle-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Sick et al. (2006) & Andl et al. (2002) WNT/DKK reaction-diffusion hair follicle spacing, secondary wave insertion, transgenic phenotypes & (Pass 3) 3D dermal condensate FGF20/BMP4 chemotaxis with hair peg downgrowth — Source and data traceability: 94/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Eleven sources with DOIs (one URL) in the docstring (L88-L95), `paper_citations.bib` (now 11 entries, SHA-256 re-pinned at L136-L139 and in the JSON) and `wnt_dkk_hair_follicle_reference.json` (sources block L5-L56, dermal block L174-L215); the specimen's Wikimedia URL, licence and ROI are recorded; runtime verification fails closed (L144-L160) and self-test check 2 asserts JSON-to-code parity for both the WNT/DKK and the dermal parameters (L1625-L1640, L1690-L1691). Pass 3 fixed the README/math_kg parameter disagreement. Deductions: Painter & Hillen (2002) has no DOI (-2); the specimen provenance notes the Wikimedia file but not the figure/panel of the BMC paper it came from (-2); the dermal parameters cite papers for mechanism but none for values (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-sick-wnt-dkk-hair-follicle-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sick-wnt-dkk-hair-follicle-source-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sick-wnt-dkk-hair-follicle-source-traceability-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-sick-wnt-dkk-hair-follicle-source-traceability-4> ;
+        pk:hasScore "0.94"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sick-wnt-dkk-hair-follicle-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2002-sick-wnt-dkk-hair-follicle.py L129–L160" ;
+        dct:description "EXPECTED_SHA256 (bib re-pinned 7843d2b7...) and fail-closed runtime verification" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/64526a0/2002-sick-wnt-dkk-hair-follicle.py#L129-L160> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sick-wnt-dkk-hair-follicle-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/wnt_dkk_hair_follicle/wnt_dkk_hair_follicle_reference.json L174–L215" ;
+        dct:description "dermal_condensate_model block: equations, parameters, genotype expectations, sources" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/64526a0/datasets/wnt_dkk_hair_follicle/wnt_dkk_hair_follicle_reference.json#L174-L215> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sick-wnt-dkk-hair-follicle-source-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "datasets/wnt_dkk_hair_follicle/paper_citations.bib L44–L120" ;
+        dct:description "7 references appended in Pass 3 (Keller & Segel, Huh, Glover, Botchkarev, Mou, Paus, Painter & Hillen)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/64526a0/datasets/wnt_dkk_hair_follicle/paper_citations.bib#L44-L120> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-sick-wnt-dkk-hair-follicle-source-traceability-4> a pk:EvidenceItem ;
+        rdfs:label "datasets/wnt_dkk_hair_follicle/README.md L12–L13" ;
+        dct:description "D_w/D_h/d corrected to 0.015/0.45/30 (Pass 2 README said 0.01/0.40/40)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/64526a0/datasets/wnt_dkk_hair_follicle/README.md#L12-L13> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Pass 3 primary assessor; MorphoEval rubric)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/BF00289234>,
+            <https://doi.org/10.1016/0022-5193(70)90092-5>,
+            <https://doi.org/10.1016/S1534-5807(02)00167-3>,
+            <https://doi.org/10.1038/11078>,
+            <https://doi.org/10.1046/j.1523-1747.1999.00740.x>,
+            <https://doi.org/10.1073/pnas.0600825103>,
+            <https://doi.org/10.1101/gad.198945.112>,
+            <https://doi.org/10.1126/science.1130088>,
+            <https://doi.org/10.1186/1471-213X-4-4>,
+            <https://doi.org/10.1371/journal.pbio.2002117>,
+            <https://www.math.ualberta.ca/~thillen/paper/Painter-Hillen.pdf> .
+    <https://doi.org/10.1007/BF00289234> dct:date "1972"^^xsd:gYear ;
+        dct:title "A theory of biological pattern formation" .
+    <https://doi.org/10.1016/0022-5193(70)90092-5> dct:date "1970"^^xsd:gYear ;
+        dct:title "Initiation of slime mold aggregation viewed as an instability" .
+    <https://doi.org/10.1016/S1534-5807(02)00167-3> dct:date "2002"^^xsd:gYear ;
+        dct:title "WNT signals are required for the initiation of hair follicle development" .
+    <https://doi.org/10.1038/11078> dct:date "1999"^^xsd:gYear ;
+        dct:title "Noggin is a mesenchymally derived stimulator of hair-follicle induction" .
+    <https://doi.org/10.1046/j.1523-1747.1999.00740.x> dct:date "1999"^^xsd:gYear ;
+        dct:title "A comprehensive guide for the recognition and classification of distinct stages of hair follicle morphogenesis" .
+    <https://doi.org/10.1073/pnas.0600825103> dct:date "2006"^^xsd:gYear ;
+        dct:title "Generation of the primary hair follicle pattern" .
+    <https://doi.org/10.1101/gad.198945.112> dct:date "2013"^^xsd:gYear ;
+        dct:title "Fgf20 governs formation of primary and secondary dermal condensations in developing hair follicles" .
+    <https://doi.org/10.1126/science.1130088> dct:date "2006"^^xsd:gYear ;
+        dct:title "WNT and DKK determine hair follicle spacing through a reaction-diffusion mechanism" .
+    <https://doi.org/10.1186/1471-213X-4-4> dct:date "2004"^^xsd:gYear ;
+        dct:title "Dynamic expression of a glutamate decarboxylase gene in multiple non-neural tissues during mouse development" .
+    <https://doi.org/10.1371/journal.pbio.2002117> dct:date "2017"^^xsd:gYear ;
+        dct:title "Hierarchical patterning modes orchestrate hair follicle morphogenesis" .
+    <https://www.math.ualberta.ca/~thillen/paper/Painter-Hillen.pdf> dct:date "2002"^^xsd:gYear ;
+        dct:title "Volume-filling and quorum-sensing in models for chemosensitive movement" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Sick et al. (2006) & Andl et al. (2002) WNT/DKK reaction-diffusion hair follicle spacing, secondary wave insertion, transgenic phenotypes & (Pass 3) 3D dermal condensate FGF20/BMP4 chemotaxis with hair peg downgrowth — Source and data traceability 94/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T07:19:47Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-sick-wnt-dkk-hair-follicle-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -13,6 +13,16 @@ model_spec:
     - datasets/auxin_canalization_leaf_veins/leaf_venation_canalization_specimen.jpg
     - datasets/auxin_canalization_leaf_veins/scout_manifest.json
     - datasets/auxin_canalization_leaf_veins/paper_citations.bib
+    - datasets/auxin_canalization_leaf_veins/growing_lamina_reference.json
+    - datasets/auxin_canalization_leaf_veins/paper_citations_pass3.bib
+  pass3_growing_lamina:
+    lattice: "hexagonal (even-r offset), 12x11 -> 24x22 -> 48x44 cells over 3 cell-division stages"
+    alpha_flux_gain: 40.0
+    beta_basal_conductance_rate: 0.2
+    gamma_decay_rate: 0.2
+    phi_s_soft_saturation_flux: 1.0
+    sigma0_per_cell_production: 0.01
+    mu_auxin_decay: 0.001
 equations:
   - id: mitchison-canalization-auxin-flux-1
     law_name: "Mitchison (1980) Linear vs Quadratic Flux-Canalization Symmetry Breaking Law"
@@ -74,3 +84,42 @@ equations:
     role: "Guarantees exact pairwise intercellular auxin conservation while enabling polar transport against concentration gradients and governing the Feugier et al. (2005) topological transition between open hierarchical venation trees (β_1 = 0) and closed-areole venation loops (β_1 > 0)"
     source_citation: "Mitchison (1981) Phil. Trans. R. Soc. B 295:461-471 Eqs. 1-5; Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. 236:366-375 Eqs. 1-9 & Figs. 3-7"
     code_locus: "1997-mitchison-canalization-auxin-flux.py#L360-L495"
+
+  - id: mitchison-canalization-auxin-flux-4
+    law_name: "Mitchison (1980) Saturating Flux-Feedback Canalization on a Growing Lamina — Boundedness & Monotonicity Law (Pass 3)"
+    formula: "dD_ij/dt = α |φ_ij|^2 / (1 + φ_ij^2/φ_s^2) + β - γ D_ij;  α φ^2 φ_s^2 ≤ α φ_s^2 (φ_s^2 + φ^2)  (F(φ) ≤ α φ_s^2);  0 ≤ φ_1 ≤ φ_2 ⇒ φ_1^2 (φ_s^2 + φ_2^2) ≤ φ_2^2 (φ_s^2 + φ_1^2)  (F monotone)"
+    lean_decl: "MathOfBiology.Loop_034.saturating_feedback_num"
+    lean_theorem: "MathOfBiology.Loop_034.saturating_canalization_feedback_bounded"
+    lean_theorems_additional:
+      - "MathOfBiology.Loop_034.saturating_canalization_feedback_monotone"
+    lean_locus: "morphoeval/lean/loops/Loop_034_auxin_canalization_leaf_veins.lean#L125-L167"
+    lean_code: |
+      def saturating_feedback_num (alpha phi phis : Int) : Int :=
+        alpha * (phi * phi) * (phis * phis)
+      def saturating_feedback_den (phi phis : Int) : Int :=
+        phis * phis + phi * phi
+      theorem saturating_canalization_feedback_bounded (alpha phi phis : Int) (h : 0 ≤ alpha) :
+          saturating_feedback_num alpha phi phis ≤ alpha * (phis * phis) * saturating_feedback_den phi phis
+      theorem saturating_canalization_feedback_monotone (phi1 phi2 phis : Int)
+          (h0 : 0 ≤ phi1) (h12 : phi1 ≤ phi2) :
+          phi1 * phi1 * saturating_feedback_den phi2 phis ≤ phi2 * phi2 * saturating_feedback_den phi1 phis
+    variables: "φ_ij = D_ij (S_i - S_j): wall flux on the hexagonal cell lattice; φ_s: soft-saturation flux (1.0 = 100 cells' production); α, β, γ as in Law 1; the lamina grows by cell division (4x cells per stage) so the midrib flux grows 4x per stage"
+    role: "Guarantees that the flux feedback stays bounded (F ≤ α φ_s^2) as total lamina production grows with cell number, while preserving the Law 1 winner-take-all ordering (more flux => at least as much reinforcement), which is why a hierarchy of strand orders can be solved across three growth stages without a hard conductance cap turning strands into sheets"
+    source_citation: "Mitchison (1980) Proc. R. Soc. Lond. B 207:79-109 Eqs. 2-3 (feedback form); saturation after Feugier, Mochizuki & Iwasa (2005) J. Theor. Biol. 236:366-375 (saturating carrier response)"
+    code_locus: "1997-mitchison-canalization-auxin-flux.py#L732-L1031"
+
+  - id: mitchison-canalization-auxin-flux-4b
+    law_name: "Sachs (1981) Irreversible Vascular Differentiation Monotonicity Law (Pass 3 ablation)"
+    formula: "d_{t+1} = d_t ∨ [D_ij(t) > D_diff];  d_t = true ⇒ d_{t+1} = true (differentiated wall set is non-decreasing)"
+    lean_decl: "MathOfBiology.Loop_034.differentiation_update"
+    lean_theorem: "MathOfBiology.Loop_034.irreversible_differentiation_monotone"
+    lean_locus: "morphoeval/lean/loops/Loop_034_auxin_canalization_leaf_veins.lean#L173-L178"
+    lean_code: |
+      def differentiation_update (d : Bool) (exceeds : Bool) : Bool :=
+        d || exceeds
+      theorem irreversible_differentiation_monotone (d exceeds : Bool) (h : d = true) :
+          differentiation_update d exceeds = true
+    variables: "d_t: differentiated flag of a cell wall; D_diff = 3 β/γ: differentiation threshold"
+    role: "Formalises the optional irreversibility rule used as an ablation in the growing-lamina solver; the solver shows that irreversibility alone does not close loops (β_1 = 0 in both variants), carrying loop closure forward as an open remediation item"
+    source_citation: "Sachs (1981) Adv. Bot. Res. 9:151-262 (irreversible vascular differentiation); Feugier & Iwasa (2006) J. Theor. Biol. 243:235-244"
+    code_locus: "1997-mitchison-canalization-auxin-flux.py#L804-L824"

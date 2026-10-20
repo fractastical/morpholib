@@ -18,6 +18,14 @@ Formal SHA-256-locked dataset and biological specimen photograph for **Slot 011 
    - Source: [Wikimedia Commons (`File:Embryo in chicken egg (Gallus domesticus) after 72 hours of incubation.jpg`)](https://commons.wikimedia.org/wiki/File:Embryo_in_chicken_egg_(Gallus_domesticus)_after_72_hours_of_incubation.jpg), CC BY 4.0.
    - SHA-256: `7163e90c56e1316e6398849083a6e48955cd20b124a6df7cf2178247cedd0c4f`.
 
-3. **`paper_citations.bib`** — BibTeX citations for Wolpert (1969), Crick (1970), Tickle et al. (1975), Riddle et al. (1993), and Ben-Zvi & Barkai (2010).
+3. **`paper_citations.bib`** — BibTeX citations for Wolpert (1969), Crick (1970), Tickle et al. (1975), Riddle et al. (1993), Ben-Zvi & Barkai (2010), and (Pass 3) Saunders (1948), Summerbell, Lewis & Wolpert (1973), Summerbell (1974), Tickle (1981), Laufer et al. (1994), Niswander et al. (1994), Crossley et al. (1996).
 
 4. **`scout_manifest.json`** — Automated OpenAlex + Wikimedia Commons scouting dossier for Slot 011.
+
+5. **`limb_bud_2d_aer_zpa_reference.json`** (Pass 3, SHA-256 `c34af92f3747bb64ad947b2a81c460709ced113f17eb69f0c565496954939455`) — ordinal / qualitative empirical references for the 2D proximo-distal × anteroposterior wing bud paddle model:
+   - **Saunders (1948) *J. Exp. Zool.* 108:363–403 (`doi:10.1002/jez.1401080304`) & Summerbell (1974) *J. Embryol. Exp. Morphol.* 32:651–660 (PMID 4463222)**: AER excision at HH18/20/22/24/26 truncates the limb at a progressively more distal level (stylopod → zeugopod → autopod), mapped through the progress-zone trisection of Summerbell, Lewis & Wolpert (1973) *Nature* 244:492–496 (`doi:10.1038/244492a0`).
+   - **Tickle (1981) *Nature* 289:295–298 (`doi:10.1038/289295a0`)**: the digit specified next to an anterior polarizing-region graft advances 2 → 3 → 4 with graft strength (`4-3-2` → `4-3-2-2` → `4-3-2-2-3` → `4-3-2-2-3-4`).
+   - **Laufer et al. (1994) *Cell* 79:993–1003 (`doi:10.1016/0092-8674(94)90030-2`) & Niswander et al. (1994) *Nature* 371:609–612 (`doi:10.1038/371609a0`)**: Shh–FGF4 positive feedback loop (Shh lost after AER removal; ectopic anterior Fgf4 after a ZPA graft); Crossley et al. (1996) *Cell* 84:127–136 for ridge-wide Fgf8.
+   - The stage → length clock `L(HH) = 180 + 48 (HH − 18) µm` shared by the 1D scaling sweep and the 2D paddle is an approximation, not a measured growth curve.
+
+The three Pass 1/2 files (`french_flag_morphogen_reference.json`, `french_flag_specimen.jpg`, `scout_manifest.json`) are unchanged and keep their original SHA-256 locks; the script verifies all four locked files at runtime.

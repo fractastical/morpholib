@@ -36,7 +36,7 @@ equations:
     variables: "g_AP1 in {0, 1}: AP1/CAL locus functional dosage; L: LFY concentration; A: AP1/CAL floral commitment level; T: TFL1 shoot meristem identity factor; S: SOC1/AGL24/FUL floral memory factor"
     role: "Proves that loss of AP1/CAL in ap1 cal and Brassica curd mutants abolishes the floral commitment fixed point while preserving transient LFY-induced SOC1 floral memory (bract suppression) and high TFL1 shoot identity, causing recursive inflorescence branching"
     source_citation: "Azpeitia et al. (2021) Science 373(6551):192-197 Figs. 1-2; Prusinkiewicz et al. (2007) Science 316:1452-1456"
-    code_locus: "2021-pringle-roman-esco-fractal-inflorescence.py#L105-L235"
+    code_locus: "2021-pringle-roman-esco-fractal-inflorescence.py#L163-L261"
 
   - id: pringle-roman-esco-fractal-inflorescence-2
     law_name: "Azpeitia et al. (2021) Accelerating Plastochron Quadratic Primordium Accumulation Law"
@@ -55,7 +55,7 @@ equations:
     variables: "Δt(t): plastochron interval between consecutive lateral primordia; r_0 = 1/Δt_0: basal initiation rate; β: plastochron acceleration rate; N(T): cumulative primordia initiated by meristem age T"
     role: "Proves that linear plastochron acceleration β > 0 generates a quadratic surplus of lateral meristems ½ β T² over constant-plastochron cauliflower (β = 0), shifting contact parastichy numbers from (8, 13) to (13, 21)"
     source_citation: "Azpeitia et al. (2021) Science 373(6551):192-197 Figs. 3-4"
-    code_locus: "2021-pringle-roman-esco-fractal-inflorescence.py#L240-L395"
+    code_locus: "2021-pringle-roman-esco-fractal-inflorescence.py#L268-L336"
 
   - id: pringle-roman-esco-fractal-inflorescence-3
     law_name: "Azpeitia et al. (2021) Conical vs Hemispherical Curd Aspect Ratio Amplification Law"
@@ -75,4 +75,47 @@ equations:
     variables: "H(β, T): axial height of meristematic cone; R: basal curd radius; dz: vertical internode displacement per plastochron acceleration unit; β: plastochron acceleration coefficient"
     role: "Proves that conical height and height-to-radius aspect ratio H/R increase strictly monotonically with plastochron acceleration β, transforming a flat hemispherical cauliflower dome (β = 0, H/R ≈ 0.56) into a pointed self-similar Romanesco cone (β = 0.085, H/R ≈ 1.48)"
     source_citation: "Azpeitia et al. (2021) Science 373(6551):192-197 Fig. 4"
-    code_locus: "2021-pringle-roman-esco-fractal-inflorescence.py#L400-L510"
+    code_locus: "2021-pringle-roman-esco-fractal-inflorescence.py#L340-L480"
+    note: "Pass 3 disclosure: H/R(beta) = 0.56 + 10.8235*beta is a PRESCRIBED envelope in the tree generator, not an emergent output; its agreement with the vendored sweep series is a self-consistency check."
+
+  - id: pringle-roman-esco-fractal-inflorescence-4
+    law_name: "Jönsson et al. (2006) Up-the-Gradient PIN1 Auxin Flux Law (Pass 3)"
+    formula: "P_ij = P_tot A_j / (κ + Σ_k A_k),  J_{i→j} = T P_ij A_i  ⇒  two-cell net flux  J_net(a_i, a_j) = a_i a_j (a_j − a_i):  = 0 if a_i = a_j,  > 0 if a_j > a_i (up the gradient),  antisymmetric"
+    lean_decl: "MathOfBiology.Loop_040.pin1_net_flux"
+    lean_theorem: "MathOfBiology.Loop_040.jonsson_2006_up_gradient_pin1_flux"
+    lean_locus: "morphoeval/lean/loops/Loop_040_roman_esco_fractal_inflorescence.lean#L141-L166"
+    lean_code: |
+      def pin1_net_flux (a_i a_j : Int) : Int :=
+        a_i * a_j * (a_j - a_i)
+      theorem jonsson_2006_up_gradient_pin1_flux (a_i a_j : Int)
+          (hi : a_i > 0) (hj : a_j > 0) :
+          pin1_net_flux a_i a_i = 0 ∧
+          (a_i < a_j → pin1_net_flux a_i a_j > 0) ∧
+          (a_j < a_i → pin1_net_flux a_i a_j < 0) ∧
+          pin1_net_flux a_i a_j = - pin1_net_flux a_j a_i
+    variables: "A_i: auxin concentration of epidermal cell i; P_ij: PIN1 efflux carrier on the wall of cell i facing neighbour j; P_tot: total PIN1 per cell; κ: allocation saturation; T: transport coefficient; D: apoplastic diffusion; c, d: auxin production and decay"
+    role: "Proves that linear up-the-gradient PIN1 allocation transports auxin toward the auxin-richer neighbour (destabilising feedback), which is what makes discrete auxin maxima and therefore primordia emerge on the epidermal mesh of the curd dome (`simulate_pin1_auxin_transport`); the T = 0 ablation (Reinhardt et al. 2003 pin1/NPA) removes the maxima"
+    source_citation: "Jönsson et al. (2006) PNAS 103(5):1633-1638; Smith et al. (2006) PNAS 103(5):1301-1306; Reinhardt et al. (2003) Nature 426:255-260"
+    code_locus: "2021-pringle-roman-esco-fractal-inflorescence.py#L587-L777"
+
+  - id: pringle-roman-esco-fractal-inflorescence-5
+    law_name: "Hofmeister / Douady-Couder Perimeter Scaling → Azpeitia (2021) Plastochron Acceleration (PIN1 mesh coupling, Pass 3)"
+    formula: "r_p(R) = k R  (initiation rate ∝ free perimeter of the initiation ring);  R(t) = R_0 + v_r t  ⇒  r_p(t) = k R_0 + (k v_r) t,  i.e. Law-2 r_0 = k R_0,  β = k v_r  (β > 0 ⇔ v_r > 0: Romanesco; β = 0 ⇔ v_r = 0: Cauliflower)"
+    lean_decl: "MathOfBiology.Loop_040.perimeter_rate"
+    lean_theorem: "MathOfBiology.Loop_040.hofmeister_perimeter_plastochron_acceleration"
+    lean_locus: "morphoeval/lean/loops/Loop_040_roman_esco_fractal_inflorescence.lean#L181-L202"
+    lean_code: |
+      def perimeter_rate (k R : Int) : Int :=
+        k * R
+      def meristem_radius (R0 v t : Int) : Int :=
+        R0 + v * t
+      theorem hofmeister_perimeter_plastochron_acceleration (k R0 v t : Int)
+          (hk : k > 0) (ht : t > 0) :
+          perimeter_rate k (meristem_radius R0 v t) = k * R0 + (k * v) * t ∧
+          perimeter_rate k (meristem_radius R0 0 t) = k * R0 ∧
+          (v > 0 → perimeter_rate k (meristem_radius R0 v t) > perimeter_rate k (meristem_radius R0 0 t)) ∧
+          (v > 0 → k * v > 0)
+    variables: "k: emergent initiation rate per unit dome radius measured on the PIN1 mesh (slope of r_p vs R); R_0: initial meristem radius; v_r: radial meristem expansion rate (vendored 0.16); t: meristem age; β: Law-2 plastochron acceleration"
+    role: "Couples the PIN1 epidermal mesh to the 3D meristem-tree plastochron law: the emergent slope k of r_p(R) measured on the mesh (`couple_pin1_mesh_to_plastochron`) and the meristem growth rate v_r determine β = (k / r_p(R_0)) v_r; the script reports β_emergent = 0.289 at the vendored v_r = 0.16 versus the reference 0.085 (implied v_r* = 0.047), an honest mismatch carried to Pass 4"
+    source_citation: "Douady & Couder (1992) Phys. Rev. Lett. 68(13):2098-2101; Azpeitia et al. (2021) Science 373(6551):192-197 Figs. 3-4"
+    code_locus: "2021-pringle-roman-esco-fractal-inflorescence.py#L779-L862"

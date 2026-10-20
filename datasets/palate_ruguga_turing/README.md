@@ -28,3 +28,13 @@ Formal SHA-256-locked dataset and biological specimen image for `2012-economou-p
 
 4. **`paper_citations.bib`**
    - BibTeX entries for Economou et al. (2012), Pantalacci et al. (2008), Welsh & O'Brien (2009), and Turing (1952).
+
+5. **`palate_ridge_mechanics_reference.json`** (Pass 3, audit `2026-10-19-palate-ruguga-turing-audit-v3`)
+   - Chemo-mechanical ridge-elevation reference closing the Pass 2 remediation item (couple the FGF-SHH sheet to mechanical epithelial thickening / ridge elevation). Governing quasi-static Kirchhoff plate on a Winkler mesenchymal foundation,
+     $$\kappa \nabla^4 h - T \nabla^2 h + k_f h = \beta \max(A - A_{th}, 0), \qquad S(q^2) = \kappa q^4 + T q^2 + k_f,$$
+     solved exactly on the finite-difference grid by a DCT-II eigen-solver (zero-flux edges); optional two-way feedback $\partial_t A \mathrel{+}= \chi_m (h - \langle h \rangle)$.
+   - Dimensionless baseline parameters ($\kappa = 0.05$, $T = 0.20$, $k_f = 1.0$, $\beta = 1.0$, $A_{th} = 0$, $\chi_m = 0$) — stated as modelling assumptions, not literature measurements (no offline-verifiable measurement of embryonic palatal epithelial stiffness was available) — plus the $\kappa$ / $k_f$ / $\chi_m$ sweep grids and empirical targets (9 ridges; zero crest-to-*Shh*-stripe phase offset after Economou et al. 2012 Fig. 1; specimen ridge duty cycle measured at runtime on `palate_rugae_specimen.jpg` via `scipy.signal.peak_widths`).
+   - Scope: a reduced 2.5D plate model, **not** a 3D finite-element simulation of epithelial invagination (carried as an open Pass 4 item). Formalised by Lean 4 theorems `MathOfBiology.Loop_008.economou_ridge_plate_stiffness_monotone` and `economou_ridge_elevation_in_phase`.
+   - Thin-plate theory reference: Landau LD, Lifshitz EM (1986) *Theory of Elasticity*, 3rd ed., Pergamon, Secs. 11–14.
+
+All five files are SHA-256-pinned in `EXPECTED_SHA256` of the script and verified at every run (`verify_dataset_integrity`, self-test check 1).

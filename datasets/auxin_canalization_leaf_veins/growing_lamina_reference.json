@@ -1,0 +1,77 @@
+{
+  "dataset_id": "auxin_canalization_leaf_veins_growing_lamina_v3",
+  "title": "Pass 3 reference table — Mitchison (1980) canalization on a growing (cell-dividing) hexagonal leaf lamina",
+  "note": "Parameters are the solver's own (dimensionless, one cell's auxin production per unit time = sigma0); reference values are literature-derived where a source is given and are otherwise explicitly marked as model-internal checks. Nothing here is a digitised figure value of Mitchison (1980).",
+  "solver_parameters": {
+    "alpha_flux_gain": 40.0,
+    "beta_basal_conductance_rate": 0.2,
+    "gamma_decay_rate": 0.2,
+    "exponent_p": 2.0,
+    "phi_s_soft_saturation_flux": 1.0,
+    "D_max_hard_cap": 500.0,
+    "sigma0_per_cell_production": 0.01,
+    "sigma_heterogeneity_fraction": 0.10,
+    "mu_auxin_decay": 0.001,
+    "canalization_threshold_flux_sqrt_beta_over_alpha": 0.0707,
+    "vein_wall_criterion_D_over_D0": 3.0,
+    "irreversible_differentiation_threshold_D_over_D0": 3.0,
+    "dt": 0.1,
+    "growth_stages_rows_cols_steps": [[12, 11, 6000], [24, 22, 8000], [48, 44, 10000]],
+    "lamina_cells_per_stage": [75, 312, 1281],
+    "seed": 1980
+  },
+  "reference_benchmarks": [
+    {
+      "name": "sink_intake_over_production_steady_state",
+      "reference_value": 1.0,
+      "tolerance": 0.07,
+      "source": "Mass balance of Mitchison (1980) Eq. 2 at steady state with mu -> 0 (model-internal check)"
+    },
+    {
+      "name": "nesting_fraction_new_strands_in_old_panels",
+      "reference_value": 1.0,
+      "qualitative": true,
+      "source": "Scarpella, Marcos, Friml & Berleth (2006) Genes Dev. 20:1015-1027, doi:10.1101/gad.1402406; Kang & Dengler (2004) Int. J. Plant Sci. 165:231-242, doi:10.1086/382794 — higher-order veins arise inside areoles bounded by lower-order veins"
+    },
+    {
+      "name": "betti_1_loops_reversible_canalization",
+      "reference_value": 0,
+      "source": "Potential-flow argument (every closed loop contains a flux divide); Feugier & Iwasa (2006) J. Theor. Biol. 243:235-244, doi:10.1016/j.jtbi.2006.05.022 — canalization alone does not close loops"
+    },
+    {
+      "name": "specimen_areole_count",
+      "reference_value": 1843,
+      "source": "segment_leaf_venation_specimen() on the SHA-256-pinned leaf_venation_canalization_specimen.jpg (Pass 2)"
+    },
+    {
+      "name": "specimen_vein_areal_coverage_fraction",
+      "reference_value": 0.416,
+      "source": "segment_leaf_venation_specimen() vein_coverage_fraction on the pinned specimen (includes vein-mask dilation; an upper bound on true vein area fraction)"
+    },
+    {
+      "name": "specimen_secondary_vein_angle_deg",
+      "reference_value": 52.93,
+      "sd": 2.53,
+      "source": "segment_leaf_venation_specimen() structure-tensor orientation (Pass 2); Rolland-Lagan & Prusinkiewicz (2005) Plant J. 44:854-865"
+    },
+    {
+      "name": "vein_to_parenchyma_concentration_ratio",
+      "reference_value": 0.31,
+      "qualitative": true,
+      "source": "Mitchison (1980) Fig. 2 qualitative ordering S_vein < S_par; the numeric 0.31 is the Pass 2 prescribed value, not a digitised datum"
+    },
+    {
+      "name": "sachs_bypass_sink_recovery_fraction",
+      "reference_value": 0.985,
+      "qualitative": true,
+      "source": "Sachs (1981) Adv. Bot. Res. 9:151-262 — vascular continuity is restored around a transverse incision (qualitative); numeric value carried from the Pass 1-2 reference JSON"
+    }
+  ],
+  "known_limitations": [
+    "Hexagonal cellular lattice, not a finite-element mesh; growth is isotropic 2x refinement, not a measured leaf growth field",
+    "Facilitated diffusion (Mitchison 1980), not polar PIN1 carrier allocation (Mitchison 1981 / Feugier et al. 2005); the polar prototype produced circulating vortices on the square lattice and was not shipped",
+    "No loop closure: beta_1 = 0 for the reversible solver and for the irreversible-differentiation ablation, so quaternary areole subdivision is not reproduced",
+    "Strand orientations are quantised by the lattice (~30/60/90 deg), so the branch-angle comparison with the specimen (52.9 deg) is lattice-limited",
+    "Hop-count path tortuosity on the hex lattice is insensitive to lateral deflection (diagonal hops advance sqrt(3)/2 in y), so L_wounded/L_intact ~ 1.0 even with a 6-cell bypass"
+  ]
+}

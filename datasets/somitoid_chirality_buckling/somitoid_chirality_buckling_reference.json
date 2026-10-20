@@ -24,6 +24,36 @@
         "id": "sanaki2022",
         "citation": "Sanaki-Matsumiya M, Matsuda M, Gritti N, Nakaki F, Sharpe J, Trivedi V, Ebisuya M (2022). Periodic formation of epithelial somites from human pluripotent stem cells. Nature Communications 13(1):2325.",
         "doi": "10.1038/s41467-022-29967-1"
+      },
+      {
+        "id": "lewis2003",
+        "citation": "Lewis J (2003). Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator. Current Biology 13(16):1398-1408.",
+        "doi": "10.1016/S0960-9822(03)00534-7",
+        "added_in": "pass3"
+      },
+      {
+        "id": "diazcuadros2020",
+        "citation": "Diaz-Cuadros M, Wagner DE, Budjan C, Hubaud A, Tarazona OA, Donelly S, Michaut A, Al Tanoury Z, Yoshioka-Kobayashi K, Niino Y, Kageyama R, Miyawaki A, Touboul J, Pourquie O (2020). In vitro characterization of the human segmentation clock. Nature 580(7801):113-118.",
+        "doi": "10.1038/s41586-019-1885-9",
+        "added_in": "pass3"
+      },
+      {
+        "id": "matsuda2020",
+        "citation": "Matsuda M, Yamanaka Y, Uemura M, Osawa M, Saito MK, Nagahashi A, Nishio M, Guo L, Ikegawa S, Sakurai S, Kihara S, Maurissen TL, Nakamura M, Matsumoto T, Yoshitomi H, Ikeya M, Kawakami N, Yamamoto T, Woltjen K, Ebisuya M, Toguchida J, Alev C (2020). Recapitulating the human segmentation clock with pluripotent stem cells. Nature 580(7801):124-129.",
+        "doi": "10.1038/s41586-020-2144-9",
+        "added_in": "pass3"
+      },
+      {
+        "id": "cookezeeman1976",
+        "citation": "Cooke J, Zeeman EC (1976). A clock and wavefront model for control of the number of repeated structures during animal morphogenesis. Journal of Theoretical Biology 58(2):455-476.",
+        "doi": "10.1016/S0022-5193(76)80131-2",
+        "added_in": "pass3"
+      },
+      {
+        "id": "gomezgalvez2018",
+        "citation": "Gomez-Galvez P, Vicente-Munuera P, Tagua A, Forja C, Castro AM, Letran M, Valencia-Exposito A, Grima C, Bermudez-Gallardo M, Serrano-Perez-Higueras O, Cavodeassi F, Sotillos S, Martin-Bermudo MD, Marquez A, Buceta J, Escudero LM (2018). Scutoids are a geometrical solution to three-dimensional packing of epithelia. Nature Communications 9:2960.",
+        "doi": "10.1038/s41467-018-05376-1",
+        "added_in": "pass3"
       }
     ],
     "specimens": {
@@ -44,7 +74,8 @@
           "bilateral_mean_spacing_px": 47.1429,
           "bilateral_spacing_cv": 0.2010,
           "mean_rosette_aspect_ratio": 1.184,
-          "cortex_to_lumen_contrast_ratio": 1.412
+          "cortex_to_lumen_contrast_ratio": 1.412,
+          "provenance_note_pass3": "Scout-stage hand counts. The script's DoG segmentation (segment_somite_rosette_specimen) finds upper=8 / lower=10 rosettes, bilateral mean spacing 45.375 px, CV 0.2391 and dome/cleft contrast 1.2315; the two sets have not been reconciled and the discrepancy is carried as an open Pass 4 item rather than silently overwriting either value."
         }
       },
       "scout_manifest": {
@@ -80,6 +111,56 @@
       "gamma_ap_rock_y27632": 0.45,
       "gamma_het_epha4_ephrinb2": 2.35,
       "gamma_hom_psm": 1.0
+    }
+  },
+  "shell_3d_governing_equations": {
+    "added_in": "pass3",
+    "section": "Yamanaka et al. (2023) Figs. 2-3 somitecoel lumen; Gomez-Galvez et al. (2018) Nat Commun 9:2960 scutoid packing",
+    "polyhedral_shell_energy": "E_3D = sum_i [ (K_V/2) (V_i - V_0)^2 + gamma_ap A_ap,i + gamma_bas A_bas,i ] + gamma_lat sum_faces A_lat,ij - P V_lumen",
+    "frustum_cell_geometry": "A_ap,i = Omega_i R_in,i^2, A_bas,i = Omega_i R_out,i^2, V_i = Omega_i (R_out,i^3 - R_in,i^3)/3, A_lat,ij = l_ij (Rbar_out,ij^2 - Rbar_in,ij^2)/2; Omega_i and l_ij from the spherical Voronoi diagram of N_3D Fibonacci-sphere seeds",
+    "uniform_shell_radial_balance": "4 pi gamma_ap - Lambda + rho (4 pi gamma_bas + Lambda) = 2 pi P R_in,  Lambda = gamma_lat sum_ij l_ij / 2,  R_out^3 = R_in^3 + 3 N_3D V_0 / (4 pi)",
+    "equilibrium_lumen_ratio_3d": "rho_3D = R_in/R_out = (Lambda - 4 pi gamma_ap + 2 pi P R_in) / (Lambda + 4 pi gamma_bas)",
+    "laplace_open_shell_bound": "rho_3D < 1  iff  P < 2 (gamma_ap + gamma_bas) / R_in",
+    "scutoid_statement": "Radial frusta share one apical/basal neighbour graph -> scutoid fraction 0; Gomez-Galvez (2018) predicts scutoids only under anisotropic (tubular) curvature or lateral rearrangement, neither of which this reduced model contains",
+    "canonical_parameters": {
+      "N_3D_cells": 96,
+      "cell_volume_V0_um3": 700.0,
+      "K_V_volume_modulus": 0.05,
+      "pressure_units": "gamma_lat / um (gamma_lat = 1 pN/um -> 1 Pa)",
+      "voronoi_polygon_census": {"pentagons": 30, "hexagons": 48, "heptagons": 18, "lateral_faces": 282},
+      "total_angular_edge_length": 66.633
+    },
+    "reference_values": {
+      "cross_section_lumen_ratio_empirical": 0.305,
+      "cross_section_lumen_ratio_source": "Yamanaka et al. (2023) Figs. 2-3 (same empirical ratio used for the 2D law; a cross-section of the 3D shell measures the same R_in/R_out)",
+      "somitocoel_pressure": "not reported in Yamanaka 2023 / Miao 2023 / Adhyapok 2021; P_crit is referenced only to the model-internal Laplace bound"
+    }
+  },
+  "hes7_clock_wavefront": {
+    "added_in": "pass3",
+    "section": "Lewis (2003) Curr Biol 13:1398-1408; Cooke & Zeeman (1976) J Theor Biol 58:455-476; Diaz-Cuadros et al. (2020) Nature 580:113-118; Matsuda et al. (2020) Nature 580:124-129; Yamanaka et al. (2023) Fig. 4 MESP2/RIPPLY2 stripes",
+    "delayed_oscillator": "dm/dt = k / (1 + (p(t - T_m)/p_0)^2) - c m ;  dp/dt = a m(t - T_p) - b p",
+    "lewis_her1_kernel_minutes": {"a": 4.5, "b": 0.23, "c": 0.23, "k": 33.0, "p0": 40.0, "T_m_min": 12.0, "T_p_min": 2.8},
+    "time_scale_rule": "all rates divided and all delays multiplied by time_scale, calibrated so the period equals target_period_h",
+    "target_period_h": 5.0,
+    "target_period_source": "Diaz-Cuadros et al. (2020) and Matsuda et al. (2020): human iPSC-derived PSM HES7 reporter period ~5 h (mouse ~2-2.5 h)",
+    "wavefront_law": "x_wf(t) = v t ; cell j arrested at t_a,j = x_j / v ; segment length S = v T_HES7",
+    "mesp2_rule": "MESP2 induced in arrested cells whose frozen HES7 protein is below the limit-cycle median (NICD high when HES7 low) -> anterior half-segment, EphA4+; MESP2- arrested cells -> posterior half-segment, ephrinB2+",
+    "ripply2_rule": "RIPPLY2 ramps 1 - exp(-(t - t_a - tau_RIPPLY2)/0.5 h) after MESP2; boundary determination t_det when the anterior-most MESP2+ cell crosses RIPPLY2 = 0.5",
+    "boundary_rule": "boundary between an ephrinB2+ anterior neighbour and an EphA4+ posterior neighbour (Adhyapok et al. 2021 heterotypic contact)",
+    "tension_ramps": {
+      "gamma_ap_j(t)": "gamma_bas + (gamma_ap_WT - gamma_bas) (1 - exp(-(t - t_a,j)/tau_ROCK))",
+      "gamma_het_k(t)": "gamma_hom + (gamma_het_WT - gamma_hom) (1 - exp(-(t - t_det,k)/tau_Eph))"
+    },
+    "canonical_parameters": {
+      "psm_cells": 64,
+      "cell_dx_um": 10.0,
+      "wavefront_speed_um_per_h": 20.0,
+      "simulated_time_h": 28.0,
+      "tau_rock_h": 3.0,
+      "tau_eph_h": 1.5,
+      "tau_ripply2_h": 1.0,
+      "parameter_status": "v, tau_ROCK, tau_Eph and tau_RIPPLY2 are model choices (segment ~100 um, MET over ~1 clock period); they are NOT digitised from Yamanaka 2023 and are carried as an open calibration item"
     }
   },
   "somitoid_experimental_regimes": [

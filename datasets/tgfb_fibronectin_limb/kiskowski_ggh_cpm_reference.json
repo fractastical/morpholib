@@ -1,0 +1,62 @@
+{
+  "schema": "morphoeval-slot-014-ggh-cpm-reference-0.1.0",
+  "pass": 3,
+  "purpose": "Parameter and metric reference table for the Glazier-Graner-Hogeweg (GGH) cellular Potts cell lattice that Pass 3 couples to the continuum Hentschel et al. (2004) 4-field reaction-diffusion-haptotaxis PDE in 2004-hentschel-tgfb-fibronectin-limb.py (simulate_ggh_cellular_potts_condensation, run_cpm_micromass_coupling, run_cpm_wing_bud_coupling).",
+  "discrete_cell_scheme": {
+    "source": "Kiskowski MA, Alber MS, Glimm T, Hentschel HGE, Glazier JA, Newman SA (2004) A multiscale model for autonomous mesenchymal condensations. Dev. Biol. 271(2):372-387. doi:10.1016/j.ydbio.2004.03.038",
+    "scheme": "Continuous activator/inhibitor reaction-diffusion prepattern; discrete mesenchymal cells on a lattice; activated cells deposit fibronectin; cells bind to / climb fibronectin; condensations emerge where fibronectin accumulates.",
+    "attribution_note": "Kiskowski et al. (2004) use a lattice cell model with biased random-walk fibronectin binding rather than a cellular Potts Hamiltonian; the GGH/cellular-Potts realisation of the same scheme is the one used by Chaturvedi et al. (2005) J. R. Soc. Interface 2:237-253 (CompuCell) and is what this script implements, as requested by the Pass 2 audit remediation item."
+  },
+  "ggh_hamiltonian": {
+    "source": "Graner F, Glazier JA (1992) Phys. Rev. Lett. 69(13):2013-2016. doi:10.1103/PhysRevLett.69.2013; Glazier JA, Graner F (1993) Phys. Rev. E 47(3):2128-2154. doi:10.1103/PhysRevE.47.2128",
+    "H": "sum_{<i,j> in Moore neighbourhood} J(tau(sigma_i), tau(sigma_j)) (1 - delta(sigma_i, sigma_j)) + lambda_V sum_sigma (v_sigma - V_T)^2",
+    "haptotaxis_copy_energy": "Delta H_hapto = -mu_F (F(target) - F(source)) for the extending cell, +mu_F (F(target) - F(source)) for a retracting cell (Savill NJ, Hogeweg P (1997) J. Theor. Biol. 184(3):229-235. doi:10.1006/jtbi.1996.0237)",
+    "acceptance": "Metropolis: P = 1 if Delta H <= 0 else exp(-Delta H / T)",
+    "update_scheme": "checkerboard-parallel Metropolis over 9 stride-3 sub-lattices (Tapia JJ, D'Souza RM (2011) Comput. Phys. Commun. 182(4):857-865. doi:10.1016/j.cpc.2010.12.011); adhesion energy exact within a sub-sweep, volume term uses sub-sweep-stale volumes"
+  },
+  "contact_energies": {
+    "J_R1R1": 14.0,
+    "J_R2R2": 2.0,
+    "J_R1R2": 11.0,
+    "J_cellM": 16.0,
+    "provenance": "Graner & Glazier (1992) cell-sorting values J_ll = 14 (light-light), J_dd = 2 (dark-dark), J_ld = 11 (light-dark), J_lM = J_dM = 16 (cell-medium); R1 (non-activated mesenchyme) is mapped to 'light', R2 (TGF-beta-activated prechondrogenic) to 'dark'.",
+    "heterotypic_surface_tension_2gamma": 6.0,
+    "sorting_condition": "2 J_R1R2 > J_R1R1 + J_R2R2  (22 > 16)  -> positive heterotypic surface tension (Lean Theorem 4 ggh_differential_adhesion_sorting_condition)"
+  },
+  "monte_carlo": {
+    "T": 10.0,
+    "lambda_V": 6.0,
+    "cell_size_px": 5,
+    "V_T_px": 25,
+    "gap_px": 1,
+    "mcs_micromass": 150,
+    "mcs_wing_bud": 300,
+    "mu_F": 10.0,
+    "dt_F_per_mcs": 0.04,
+    "seed": 2004,
+    "note": "T = 10 and the J matrix are the Graner-Glazier values; lambda_V = 6 (rather than their lambda = 1) is required at V_T = 25 px so that cells do not evaporate; mu_F = 10 was chosen as the largest haptotaxis strength that moves cells without fingering them across the fibronectin boundary (cells stretched across the Hill boundary at mu_F >= 25 lose their R2 state)."
+  },
+  "coupling_to_continuum": {
+    "cell_state": "R2 when the cell-mean Hill fraction c_a^2 / (K_a^2 + c_a^2) > 0.5 (K_a = 0.60), i.e. the same Hill switch as the PDE term R_2 = R Hill(c_a); re-evaluated every MCS",
+    "ecm": "dF/dt = k_F c_a^+ R_2^disc - gamma_F F with k_F = 1.8, gamma_F = 0.65 and R_2^disc the sigma = 1 px Gaussian-smoothed occupancy-weighted Hill density",
+    "prepattern_micromass": "WT 2D micromass continuum c_a - 1.10 Fourier-upsampled x3 (72 -> 216 px) so one condensation wavelength (~36 px) spans ~7 cell diameters",
+    "prepattern_wing_bud": "2D proximodistal wing bud c_a(x, z) on its native 96 x 128 lattice with a frozen medium frame (zero-flux)"
+  },
+  "metrics": {
+    "condensation_index": "mean lattice occupancy inside the Hill > 1/2 mask divided by mean occupancy outside; continuum analogue mean R_in / mean R_out on the same mask (discrete-continuum parity, Christley S, Alber MS, Newman SA (2007) BMC Syst. Biol. 1:16. doi:10.1186/1752-0509-1-16)",
+    "heterotypic_boundary_fraction": "R1|R2 contact length / (R1|R2 + inter-cell R2|R2 contact length); Glazier & Graner (1993) boundary-length sorting metric normalised to [0, 1]; decreases under sorting",
+    "r_R2_discrete_vs_continuum": "Pearson r between the sigma = 2 px smoothed R2-cell occupancy and the continuum R_2 = R Hill(c_a) on the upsampled lattice",
+    "wing_bud_compartment_counts": "peaks of the anteroposterior mean of the discrete R2 density per compartment (same find_peaks rule as the continuum: height 0.22 max, distance nx/8, prominence 0.15 std)",
+    "clip_fraction_R": "fraction of continuum R samples at the clip bounds [0.05, 3.5]; 0 for a resolved haptotaxis solution"
+  },
+  "expected_qualitative_outcomes": {
+    "wt_vs_ablation": "condensation index WT > DA-only > hapto-only > full ablation ~ 1 (differential adhesion dominates in the GGH realisation; haptotaxis adds a smaller increment)",
+    "sorting": "heterotypic boundary fraction WT < no-differential-adhesion ablation (Glazier & Graner 1993)",
+    "wing_bud": "discrete R2 condensations [0, 2, 3] vs continuum [1, 2, 3]: the stylopod activator peak (c_a max = 0.35 < K_a = 0.60) never crosses the half-maximal Hill switch, so the discrete model forms no stylopod condensation; carried as a Pass 4 remediation item"
+  },
+  "volume_filling_haptotaxis": {
+    "source": "Hillen T, Painter K (2001) Adv. Appl. Math. 26(4):280-301. doi:10.1006/aama.2001.0721",
+    "form": "chi_F R (1 - R / R_max) grad F with R_max = 2.0, applied to the 2D micromass continuum solver in Pass 3",
+    "reason": "Pass 2 micromass R saturated at the clip bounds (18% of pixels at 0.05, 6% at 3.5; 415 single-pixel islands); the 'nodular 19.8% vs stripe 44.8%' contrast was an artefact of thresholding the collapsed field"
+  }
+}

@@ -1,6 +1,6 @@
 {
   "dataset_id": "auxin_pin1_phyllotaxis_reference",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "slot": 32,
   "sim_id": "jonsson-auxin-pin1-meristem",
   "script": "2006-jonsson-auxin-pin1-meristem.py",
@@ -30,14 +30,64 @@
         "NPA (1-N-naphthylphthalamic acid) or pin1-1 mutation blocks polar auxin transport (T -> 0), producing a bare pin-formed shoot apex with zero primordia",
         "Localized microapplication of exogenous IAA (indole-3-acetic acid) lanolin paste onto an NPA-treated or pin1 apex induces a single lateral organ primordium at the site of application"
       ]
+    },
+    {
+      "citation": "Geldner N, Friml J, Stierhof Y-D, Jürgens G, Palme K (2001) Auxin transport inhibitors block PIN1 cycling and vesicle trafficking. Nature 413:425-428",
+      "doi": "10.1038/35096571",
+      "key_findings": [
+        "PIN1 cycles continuously between the plasma membrane and endosomal compartments; brefeldin A (BFA) blocks exocytosis and internalises plasma-membrane PIN1 into BFA compartments within 1-2 h (reversible on wash-out)",
+        "Auxin transport inhibitors (TIBA, NPA at high dose) also interfere with PIN1 vesicle trafficking"
+      ]
+    },
+    {
+      "citation": "Paciorek T, Zažímalová E, Ruthardt N, Petrášek J, Stierhof Y-D, Kleine-Vehn J, Morris DA, Emans N, Jürgens G, Geldner N, Friml J (2005) Auxin inhibits endocytosis and promotes its own efflux from cells. Nature 435:1251-1256",
+      "doi": "10.1038/nature03633",
+      "key_findings": [
+        "Auxin inhibits clathrin-dependent endocytosis of PIN proteins, increasing PIN abundance at the plasma membrane and auxin efflux (a candidate cellular mechanism for up-the-gradient PIN1 polarisation)"
+      ]
+    },
+    {
+      "citation": "Bayer EM, Smith RS, Mandel T, Nakayama N, Sauer M, Prusinkiewicz P, Kuhlemeier C (2009) Integration of transport-based models for phyllotaxis and midvein formation. Genes & Development 23:373-384",
+      "doi": "10.1101/gad.497009",
+      "key_equations": [
+        "Epidermal up-the-gradient PIN1 polarisation (Smith/Jönsson 2006) coupled to subepidermal with-the-flux canalization: PIN1 allocation to wall i->j increases with the auxin flux already crossing it, producing a narrow provascular strand from the L1 convergence point to the existing vasculature"
+      ]
+    },
+    {
+      "citation": "Mitchison GJ (1980) A model for vein formation in higher plants. Proceedings of the Royal Society of London B 207:79-109",
+      "doi": "10.1098/rspb.1980.0015",
+      "key_equations": [
+        "Canalization: wall transport capacity increases with the flux through it (superlinear feedback) so that an initially diffuse flux field collapses into discrete single-file channels"
+      ]
+    },
+    {
+      "citation": "Mitchison GJ (1981) The polar transport of auxin and vein patterns in plants. Philosophical Transactions of the Royal Society B 295:461-471",
+      "doi": "10.1098/rstb.1981.0154",
+      "key_findings": [
+        "Polar auxin transport with flux-dependent carrier allocation reproduces vein strand formation and connection to pre-existing vasculature"
+      ]
+    },
+    {
+      "citation": "Feugier FG, Mochizuki A, Iwasa Y (2005) Self-organization of the vascular system in plant leaves: Inter-dependent dynamics of auxin flux and carrier proteins. Journal of Theoretical Biology 236:366-375",
+      "doi": "10.1016/j.jtbi.2005.03.017",
+      "key_equations": [
+        "dP_ij/dt = alpha * Phi(J_ij) - beta * P_ij with Phi(J) = J^n / (K^n + J^n); discrete strands require superlinear feedback (n > 1) and a limited cellular carrier pool"
+      ]
+    },
+    {
+      "citation": "Scarpella E, Marcos D, Friml J, Berleth T (2006) Control of leaf vascular patterning by polar auxin transport. Genes & Development 20:1015-1027",
+      "doi": "10.1101/gad.1402406",
+      "key_findings": [
+        "PIN1::PIN1-GFP marks narrow preprocambial strands (1-2 cells wide) in which PIN1 is polarised along the strand axis toward the pre-existing vasculature"
+      ]
     }
   ],
   "model_parameters": {
-    "basal_production_rho0_au_per_h": 0.10,
+    "basal_production_rho0_au_per_h": 0.1,
     "decay_rate_mu_per_h": 0.05,
     "homogeneous_steady_state_a0_au": 2.0,
     "passive_diffusion_D_per_h": 0.15,
-    "active_transport_T_per_h": 1.20,
+    "active_transport_T_per_h": 1.2,
     "pin1_feedback_exponent_c1_per_au": 1.85,
     "total_membrane_pin1_Pi": 1.0,
     "coordination_number_z": 6,
@@ -46,7 +96,7 @@
     "peripheral_ring_radius_R_PZ_um": 35.0,
     "primordium_initiation_threshold_a_thresh_au": 3.4,
     "critical_feedback_product_c1_a0_crit": 1.75,
-    "operating_feedback_product_c1_a0": 3.70,
+    "operating_feedback_product_c1_a0": 3.7,
     "characteristic_spacing_wavelength_cells": 5.2,
     "characteristic_spacing_um": 36.4
   },
@@ -59,7 +109,10 @@
       "theoretical_divergence_angle_deg": 137.5078,
       "empirical_divergence_angle_mean_deg": 137.5,
       "empirical_divergence_angle_sd_deg": 4.2,
-      "parastichy_pair": [5, 8],
+      "parastichy_pair": [
+        5,
+        8
+      ],
       "primordia_per_node": 1,
       "source": "Smith et al. (2006) PNAS Fig. 3 & Jönsson et al. (2006) PNAS Fig. 4"
     },
@@ -71,7 +124,10 @@
       "theoretical_divergence_angle_deg": 180.0,
       "empirical_divergence_angle_mean_deg": 179.4,
       "empirical_divergence_angle_sd_deg": 3.8,
-      "parastichy_pair": [1, 1],
+      "parastichy_pair": [
+        1,
+        1
+      ],
       "primordia_per_node": 1,
       "source": "Smith et al. (2006) PNAS Fig. 4A (reduced central zone / smaller meristem ring)"
     },
@@ -83,7 +139,10 @@
       "theoretical_divergence_angle_deg": 90.0,
       "empirical_divergence_angle_mean_deg": 90.2,
       "empirical_divergence_angle_sd_deg": 3.5,
-      "parastichy_pair": [2, 2],
+      "parastichy_pair": [
+        2,
+        2
+      ],
       "primordia_per_node": 2,
       "source": "Smith et al. (2006) PNAS Fig. 4B & Jönsson et al. (2006) PNAS Fig. 3"
     },
@@ -95,7 +154,10 @@
       "theoretical_divergence_angle_deg": 120.0,
       "empirical_divergence_angle_mean_deg": 119.8,
       "empirical_divergence_angle_sd_deg": 4.0,
-      "parastichy_pair": [3, 3],
+      "parastichy_pair": [
+        3,
+        3
+      ],
       "primordia_per_node": 3,
       "source": "Smith et al. (2006) PNAS Fig. 4C (enlarged meristem ring / 3 simultaneous peaks)"
     }
@@ -110,7 +172,7 @@
     },
     "npa_pin1_polar_transport_block": {
       "description": "10 uM NPA treatment or pin1-1 loss-of-function mutant (T = 0.0 h^-1, passive diffusion only)",
-      "peak_to_mean_auxin_contrast": 1.00,
+      "peak_to_mean_auxin_contrast": 1.0,
       "primordia_count_in_ring": 0,
       "pin1_convergence_polarity_index": 0.02,
       "phenotype": "Pin-formed bare inflorescence apex lacking lateral organ primordia (Reinhardt et al. 2003 Nature Fig. 1)"
@@ -132,6 +194,56 @@
     "species": "Aeonium tabuliforme (Crassulaceae flat spiral rosette)",
     "license": "CC BY-SA 3.0",
     "expected_divergence_angle_deg": 137.5078,
-    "dominant_parastichy_numbers": [8, 13]
+    "dominant_parastichy_numbers": [
+      8,
+      13
+    ]
+  },
+  "pin1_trafficking_kinetics": {
+    "description": "Explicit PIN1 exocytosis/endocytosis cycling used in Pass 3 (Jönsson et al. 2006 PIN1 cycling; Geldner et al. 2001; Paciorek et al. 2005): dP_ij/dt = k_exo f(a_j) P_cyt_i - k_endo P_ij with P_cyt_i + sum_j P_ij = P_tot",
+    "exocytosis_rate_k_exo_per_h": 3.0,
+    "endocytosis_rate_k_endo_per_h": 1.2,
+    "targeting_function": "f_ij = exp(c_1 (a_j - a_0)) (up-the-gradient exocytosis targeting; QSS reduces to the Boltzmann law as k_endo/(k_exo sum_k f_ik) -> 0)",
+    "auxin_inhibited_endocytosis_variant": {
+      "K_a_au": 2.0,
+      "hill_h": 2.0,
+      "form": "k_endo,ij = k_endo / (1 + (a_j / K_a)^h), uniform exocytosis"
+    },
+    "bfa_block": {
+      "k_exo_under_bfa": 0.0,
+      "onset_h": 10.0,
+      "duration_h": 2.0,
+      "expected_membrane_fraction": "PM(t_BFA) * exp(-k_endo * 2 h) (first-order internalisation)"
+    },
+    "reference_plasma_membrane_fraction_untreated": 0.9,
+    "reference_plasma_membrane_fraction_note": "Qualitative band edge from Geldner 2001 Fig. 1 / Heisler 2005 (PIN1 predominantly at the plasma membrane in untreated cells); not a published quantitative fraction",
+    "reference_endocytosis_vs_exocytosis_polarity_ratio_upper": 1.0
+  },
+  "subepidermal_canalization": {
+    "description": "Quasi-3D (2D vertical slice) with-the-flux canalization of the provascular strand beneath one L1 primordium (Bayer et al. 2009; Mitchison 1980/1981; Feugier et al. 2005). NOT a full 3D meristem.",
+    "slice_lateral_cells_n_x": 15,
+    "slice_depth_cells_n_z": 12,
+    "active_transport_T_c_per_h": 1.2,
+    "passive_diffusion_D_c_per_h": 0.15,
+    "periclinal_source_T_periclinal_per_h": 0.3,
+    "vascular_sink_auxin_au": 0.2,
+    "flux_feedback_hill_n": 2.0,
+    "flux_feedback_half_saturation_K": 1.0,
+    "basal_isotropic_targeting_f0": 0.1,
+    "sweep_hill_n": [
+      1.0,
+      1.5,
+      2.0,
+      2.5,
+      3.0
+    ],
+    "reference_strand_width_cells": 1.0,
+    "reference_strand_width_band_cells": [
+      1,
+      2
+    ],
+    "reference_strand_width_source": "Scarpella et al. (2006) Genes Dev 20:1015-1027 Figs. 1-3 PIN1::PIN1-GFP preprocambial strands; Bayer et al. (2009) Genes Dev 23:373-384 Figs. 3-5 midvein strand",
+    "reference_delivered_fraction": 1.0,
+    "reference_delivered_fraction_note": "Idealised canalization: all L1 efflux conducted to the pre-existing vasculature (Mitchison 1980)"
   }
 }

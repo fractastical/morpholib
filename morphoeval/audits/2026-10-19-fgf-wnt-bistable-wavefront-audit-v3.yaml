@@ -1,0 +1,298 @@
+# MorphoEval audit — Goldbeter, Gonze & Pourquié (2007) / Baker, Schnell & Maini (2006) RA–FGF8/Wnt Bistable Wavefront, 2026-10-20 (v3)
+#
+# Pass 3 re-score of `2012-baker-fgf-wnt-bistable-wavefront.py` (Slot 025) after remediating BOTH open v2
+# findings in the instrumented loop `morphoeval/runs/2026-10-19-fgf-wnt-bistable-wavefront-loop-pass3`,
+# superseding `2026-10-19-fgf-wnt-bistable-wavefront-audit-v2` (91.3).
+#
+# What Pass 3 changed (both v2 remediation items):
+#   1. Lewis (2003) delayed Her1/Hes7 autoinhibition oscillator lattice (`simulate_delayed_her_clock_lattice`,
+#      L526-816) with delayed saturating Notch-Delta coupling between adjacent PSM cells, advected through the
+#      Goldbeter (2007) bistability (clock-competence) window [x(M_2), x(M_1)] = [149.4, 571.4] um
+#      (`bistability_competence_window`, L501-524); the bistable switch is gated by the Her protein peak so
+#      arrest is saltatory (cohorts of cells per clock cycle). Measured T_osc = 92.0 min vs 90 min observed
+#      (Palmeirim 1997), Lewis formula 86.0 min; clock-derived S = v_g*T_osc = 153.3 um vs 150 um; Notch
+#      ablation (eps_N = 0) collapses nearest-neighbour coherence 0.84 -> 0.03 and the saltatory index 0.87 -> 0.42;
+#      T_N = T_osc/2 reproduces Lewis's anti-phase locking (self-test 5).
+#   2. 2D bilateral paraxial mesoderm strips + neural tube (`solve_bilateral_2d_ra_fgf`, L837-1030) with the
+#      Vermot & Pourquié (2005) RA-buffered lateralizing bias b_eff = b_LR*K^h/(K^h + R_ant^h): WT offset 6.3 um
+#      (0.04 somite), VAD offset 149.8 um = 1.00 somite (left delayed), situs inversus and Raldh2-/- mouse flip
+#      the delayed side; 4/4 regimes side-correct, max error 0.04 somites (`evaluate_lr_regimes`, L1118-1164).
+#   3. 6 new reference-anchored measurements (11 total), 7-section self-test, 3x3 figure (Panels G-I new),
+#      bilateral GIF rows, CLI flags --clock-delay/--notch-delay/--notch-coupling/--lr-bias/--situs/--print-pass3,
+#      pinned SHA-256 for the new `fgf_wnt_clock_lr_reference.json`, 3 new Lean 4 theorems (6 total, 0 sorrys),
+#      math_kg equations 4-6, 4 new DOIs.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated probabilities).
+# Line numbers refer to the files in the working tree at the end of the Pass 3 loop (HEAD d58a084 + uncommitted
+# slot-025 changes). Scores below were produced by the Pass 3 loop agent (Claude Fable 5.1); no independent
+# second assessment was run in this pass — see `checkpoint.note`.
+
+audit:
+  id: 2026-10-19-fgf-wnt-bistable-wavefront-audit-v3
+  supersedes: 2026-10-19-fgf-wnt-bistable-wavefront-audit-v2
+  supersedes_audit_id: 2026-10-19-fgf-wnt-bistable-wavefront-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d58a084
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+      lean: "4.35.0"
+    note: >-
+      Pass 3 (v3) post-remediation evaluation of `2012-baker-fgf-wnt-bistable-wavefront.py` after closing both
+      v2 remediation items in the isolated loop `2026-10-19-fgf-wnt-bistable-wavefront-loop-pass3`
+      (git HEAD d58a084; slot-025 files modified in the working tree, uncommitted by design of the
+      multi-slot campaign). The v3 scores were assigned by the Pass 3 loop agent (Claude Fable 5.1 thinking)
+      using the same rubric and the v2 scores as the baseline; the assessor/second_assessor blocks are carried
+      from v2 for provenance continuity and no independent blinded second assessment was executed in this pass.
+
+references:
+  goldbeter2007devcell:
+    title: "Sharp developmental thresholds defined through bistability by antagonistic gradients of retinoic acid and FGF signaling"
+    authors: "Goldbeter A, Gonze D, Pourquie O"
+    venue: "Developmental Cell / Developmental Dynamics 236(6):1495-1508 (2007)"
+    doi: 10.1016/j.devcel.2007.05.015
+  goldbeter2007devdyn:
+    title: "Sharp developmental thresholds defined through bistability by antagonistic gradients of retinoic acid and FGF signaling"
+    authors: "Goldbeter A, Gonze D, Pourquie O"
+    venue: "Developmental Dynamics 236(6):1495-1508 (2007)"
+    doi: 10.1002/dvdy.21193
+  baker2006jtbi:
+    title: "A mathematical investigation of a clock and wavefront model for somitogenesis"
+    authors: "Baker RE, Schnell S, Maini PK"
+    venue: "Journal of Theoretical Biology 239(4):413-429 (2006)"
+    doi: 10.1016/j.jtbi.2005.07.019
+  baker2006devbiol:
+    title: "A clock and wavefront mechanism for somite formation"
+    authors: "Baker RE, Schnell S, Maini PK"
+    venue: "Developmental Biology 293(1):116-126 (2006)"
+    doi: 10.1016/j.ydbio.2006.01.018
+  diezdelcorral2003:
+    title: "Opposing FGF and retinoid pathways control ventral neural pattern, neuronal differentiation, and segmentation during body axis extension"
+    authors: "Diez del Corral R, Olivera-Martinez I, Goriely A, Gale E, Maden M, Storey K"
+    venue: "Neuron 40(1):65-79 (2003)"
+    doi: 10.1016/S0896-6273(03)00565-8
+  vermot2005:
+    title: "Retinoic acid coordinates somitogenesis and left-right patterning in vertebrate embryos"
+    authors: "Vermot J, Pourquie O"
+    venue: "Nature 435(7039):215-220 (2005)"
+    doi: 10.1038/nature03488
+  lewis2003:
+    title: "Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator"
+    authors: "Lewis J"
+    venue: "Current Biology 13(16):1398-1408 (2003)"
+    doi: 10.1016/S0960-9822(03)00534-7
+  palmeirim1997:
+    title: "Avian hairy gene expression identifies a molecular clock linked to vertebrate segmentation and somitogenesis"
+    authors: "Palmeirim I, Henrique D, Ish-Horowicz D, Pourquie O"
+    venue: "Cell 91(5):639-648 (1997)"
+    doi: 10.1016/S0092-8674(00)80451-1
+  dubrulle2001:
+    title: "FGF signaling controls somite boundary position and regulates segmentation clock control of spatiotemporal Hox gene activation"
+    authors: "Dubrulle J, McGrew MJ, Pourquie O"
+    venue: "Cell 106(2):219-232 (2001)"
+    doi: 10.1016/S0092-8674(01)00437-8
+  vermot2005science:
+    title: "Retinoic acid controls the bilateral symmetry of somite formation in the mouse embryo"
+    authors: "Vermot J, Gallego Llamas J, Fraulob V, Niederreither K, Chambon P, Dolle P"
+    venue: "Science 308(5721):563-566 (2005)"
+    doi: 10.1126/science.1108363
+
+simulations:
+  - id: baker-fgf-wnt-bistable-wavefront
+    supersedes_audit_id: 2026-10-19-fgf-wnt-bistable-wavefront-audit-v2
+    name: "Goldbeter, Gonze & Pourquié (2007) / Baker, Schnell & Maini (2006) RA–FGF8/Wnt mutual cross-inhibition bistable determination wavefront in vertebrate somitogenesis, gated by a Lewis (2003) delayed Her1/Hes7 clock lattice on 2D bilateral paraxial mesoderm strips"
+    organism: "Gallus gallus (chick embryo presomitic mesoderm & bilateral paraxial somites)"
+    script: 2012-baker-fgf-wnt-bistable-wavefront.py
+    output: docs/media/fgf_wnt_bistable_wavefront_comparison.png
+    extra_outputs:
+      - docs/media/fgf_wnt_bistable_wavefront_growth.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Goldbeter, Gonze & Pourquie (2007) Dev. Cell / Dev. Dyn. 236:1495-1508 mutual cross-inhibition + CYP26A1 RA-degradation PDEs producing an S-shaped hysteresis curve [M_1, M_2], an all-or-none determination front switch, and (Fig. 10) a bistability window that must span at least one segment so the clock can time the arrest"
+        - "Baker, Schnell & Maini (2006) J. Theor. Biol. 239:413-429 & Diez del Corral et al. (2003) Neuron 40:65-79 opposing Vitamin A Deficiency (VAD) anterior front shift vs exogenous RA / SU5402 posterior front shift"
+        - "Lewis (2003) Curr. Biol. 13:1398-1408 delayed autoinhibition her1/her7 oscillator (Eqs. 1-3, period ~ 2(T_m + T_p + 1/b + 1/c)), Notch-Delta synchronisation of adjacent cells and anti-phase locking at half-period coupling delay (Fig. 4); Palmeirim et al. (1997) Cell 91:639-648 90-min chick c-hairy1 period"
+        - "Vermot & Pourquie (2005) Nature 435:215-220 and Vermot et al. (2005) Science 308:563-566: RA buffers a lateralizing bias so WT somites form bilaterally in synchrony, whereas VAD / disulfiram chick (left delayed) and Raldh2-/- mouse (right delayed) show a one-somite left-right desynchronisation that reverses under situs inversus"
+      reconstructed_in_script:
+        - "Analytical inverse hysteresis S-curve M(F) solver extracting lower saddle-node M_1 = 1.0254 nM and upper saddle-node M_2 = 3.3038 nM (Delta_M = 2.2784 nM)"
+        - "1D coupled RA-FGF8/Wnt reaction-diffusion PDE solver along the 1000 um chick PSM demonstrating 22.2x sharpening of the determination front (Delta_x_front = 16.22 um vs lambda_M = 360.67 um) at x_front = 571.46 um"
+        - "150-cell delayed Her1/Hes7 DDE lattice with delayed saturating Notch-Delta input, advected at v_g through the competence window [149.4, 571.4] um; cells arrest only at a Her protein peak -> saltatory cohort arrest (T_osc = 92.0 min, S = v_g*T_osc = 153.3 um, nearest-neighbour coherence 0.84 vs 0.03 Notch-ablated, saltatory index 0.87 vs 0.42)"
+        - "2D (x, y) RA-FGF8/Wnt reaction-diffusion solve on left strip + neural tube + right strip (1500 x 500 um) with RA-buffered lateralizing bias; WT Delta_x_LR = 6.3 um (0.04 somite), VAD 149.8 um (1.00 somite, left delayed), situs inversus and Raldh2-/- mouse right delayed; v_sc buffering sweep monotone"
+        - "5-regime somite perturbation evaluator (Pearson r = 0.9999, RMSE = 0.81 um) plus bilateral dorsal somite row segmentation on chick_ra_fgf_somites_specimen.jpg (48.47 px mean spacing)"
+      transfer_boundary:
+        - "1D anteroposterior chick presomitic mesoderm axis mapped to dorsal vertebrate SEM somite rows; the 2D bilateral strip geometry (strip half-width 250 um, neural tube half-width 80 um) is derived from the specimen's two somite-row pixel offsets"
+        - "Lewis (2003) zebrafish her1 rate constants (a, b, c, k, p_0) reused with chick-scale transcription delay T_m = 31.5 min to reach the 90-min chick period"
+      does_not_claim:
+        - "Full 3D mesenchymal-to-epithelial somite rosette mechanics"
+        - "Explicit deltaC mRNA/protein kinetics: Notch-Delta coupling is a delayed saturating readout of neighbour her1 transcript with K_D = k/(2c) (Lewis publishes no numeric value)"
+        - "A molecular origin for the lateralizing bias b_LR = 0.727: it is a calibrated free parameter fitted to the one-somite VAD lag, buffered by anterior RA through a Hill law"
+    source_refs:
+      - goldbeter2007devcell
+      - goldbeter2007devdyn
+      - baker2006jtbi
+      - baker2006devbiol
+      - diezdelcorral2003
+      - vermot2005
+      - lewis2003
+      - palmeirim1997
+      - dubrulle2001
+      - vermot2005science
+    summary: >-
+      Pass 3 post-remediation evaluation of `2012-baker-fgf-wnt-bistable-wavefront.py` (92.0/100, up from
+      91.3/100 in Pass 2). Both v2 remediation items are closed: (1) the Goldbeter-Pourquié bistable switch
+      is now gated by a Lewis (2003) delayed Her1/Hes7 autoinhibition oscillator lattice with delayed
+      saturating Notch-Delta coupling (T_osc = 92.0 min vs 90 min observed, Lewis closed form 86.0 min;
+      clock-derived S = 153.3 um vs 150 um; competence window 2.81 segments >= 1 as Goldbeter Fig. 10
+      requires; Notch ablation collapses nearest-neighbour coherence 0.84 -> 0.03 and the saltatory index
+      0.87 -> 0.42, cohorts 127 um vs 47 um; T_N = T_osc/2 anti-phase), and (2) the 1D PSM is extended to 2D
+      bilateral paraxial strips with an RA-buffered lateralizing bias (WT offset 0.04 somite, VAD 1.00 somite
+      left-delayed, situs inversus / Raldh2-/- right-delayed; 4/4 regimes side-correct, max error 0.04
+      somites). The remediation also exposed the next layer of defects, carried below: the saltatory cohorts
+      are irregular (segment-length CV 0.69 vs ~0.05 observed), the 2D wild-type front (509 um) does not
+      coincide with the 1D front (571 um) because of the transverse neural-tube coupling, b_LR is a fitted
+      constant, the 1D solver's 1000 um domain clips the VAD front, and the DeltaC pathway is reduced to a
+      transcript readout. 11 reference-anchored measurements, 7-section self-test, 6 Lean 4 theorems (0 sorrys).
+    scores:
+      model-fidelity:
+        value: 93
+        rationale: >-
+          Keeps the faithful Goldbeter, Gonze & Pourquié (2007) cross-inhibition + CYP26A1 PDE system and
+          hysteresis S-curve (L191-296, L297-435) and adds the two mechanisms the v2 audit asked for with the
+          papers' own equations: Lewis (2003) Eqs. 1-3 delayed autoinhibition DDE per PSM cell with
+          published rate constants, delayed saturating Notch-Delta input and Lewis's own random gene-release
+          initial condition (L526-816; T_osc = 92.0 min vs 90 observed; in-phase at T_N = T_osc, anti-phase
+          at T_osc/2 as in Lewis Fig. 4C-D), and the 2D bilateral reaction-diffusion extension with the
+          Vermot & Pourquié RA-buffering law (L819-1030; VAD offset matches the analytic law to < 1 um).
+          Score moves 94 -> 93 because the coupling exposed a structural defect: clock-gated arrest yields
+          irregular cohorts (segment-length CV 0.69, L799, vs ~0.05 in chick) and the 2D WT front sits at
+          509 um vs 571 um in 1D because the neural-tube factor (L866, L903) perturbs the strips transversely;
+          the DeltaC branch is a reduced readout (L452-453, L636). 6 Lean 4 theorems (0 sorrys) cover Laws 1-6.
+        evidence:
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [191, 296], note: "CYP26A1 Hill induction C(F), quasi-steady RA nullcline R*(F) and analytical inverse hysteresis S-curve M(F) with saddle-node extraction", supports: true}
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [297, 435], note: "1D coupled RA-FGF8/Wnt reaction-diffusion PDE solver, branch-switch front and 10-90% sharpening", supports: true}
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [436, 524], note: "Lewis (2003) published parameters, period formula 2(T + 1/b + 1/c), sustained-oscillation conditions and Goldbeter Fig. 10 competence window [x(M_2), x(M_1)]", supports: true}
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [526, 816], note: "Delayed Her1/Hes7 DDE lattice with delayed saturating Notch-Delta coupling, advection through the competence window, protein-peak-gated bistable arrest, cohort detection, synchrony and saltatory index", supports: true}
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [819, 1030], note: "RA-buffered lateralizing bias b_eff and 2D bilateral strips + neural tube reaction-diffusion solver with left/right branch-switch fronts and analytic offset law", supports: true}
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [799, 802], note: "segment_length_cv = 0.69 and saltatory_index are reported honestly; the CV exposes irregular cohort sizes (new remediation item)", supports: false}
+          - {file: morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean, lines: [24, 105], note: "Laws 1-3 (CYP26 steady balance, hysteresis window positivity, opposing VAD/RA symmetry) carried from v2, 0 sorrys", supports: true}
+          - {file: morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean, lines: [107, 187], note: "New Laws 4-6: lewis_2003_delayed_oscillator_period, goldbeter_2007_saltatory_cohort_additivity, vermot_2005_ra_buffered_lr_symmetry (verified with lean 4.35.0, 0 sorrys)", supports: true}
+      specimen-match:
+        value: 89
+        rationale: >-
+          Vendors and SHA-256-verifies the CC BY 4.0 dorsal avian/vertebrate embryo SEM and segments both
+          bilateral paraxial somite rows (`segment_chick_ra_fgf_specimen`, L1299-1372; 8 upper / 9 lower
+          somites, bilateral mean spacing 48.47 px, CV 0.20, Panels E-F). Pass 3 now uses the specimen's
+          two somite-row pixel offsets to set the 2D strip / neural-tube geometry
+          (`bilateral_geometry` in `fgf_wnt_clock_lr_reference.json`) and the wild-type 2D prediction
+          (0.04-somite left-right offset) is consistent with the bilaterally synchronous rows seen in the
+          specimen; the GIF now shows left/right ribbons. The specimen still carries no scale bar, no
+          genotype and no clock readout, so the delayed-clock and VAD predictions are compared only to
+          literature values, not to this image (+1 only).
+        evidence:
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [1299, 1372], note: "Bilateral dorsal somite DoG peak & inter-somitic cleft segmentation on chick_ra_fgf_somites_specimen.jpg", supports: true}
+          - {file: datasets/fgf_wnt_bistable_wavefront/fgf_wnt_clock_lr_reference.json, lines: [1, 181], note: "bilateral_geometry derived from the specimen's two somite-row pixel offsets; LR regimes carry observed sides and somite lags", supports: true}
+          - {file: docs/media/fgf_wnt_bistable_wavefront_comparison.png, lines: [0, 0], note: "3x3 synthesis figure: Panels E-F specimen segmentation and waveform fit; Panel H 2D bilateral VAD front offset; visually confirmed", supports: true}
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [1909, 2025], note: "GIF with WT left/right and VAD left/right ribbons; the VAD left ribbon lags by the 2D offset", supports: true}
+      parameter-expressivity:
+        value: 94
+        rationale: >-
+          Beyond the 5 RA/FGF regimes, Pass 3 adds a clock-delay sweep against Lewis's closed form
+          (`sweep_clock_delay`, L1032-1061), a Notch-coupling ablation (`ablate_notch_coupling`, L1063-1088),
+          an RA-buffering sweep across v_sc (`sweep_lr_buffering`, L1090-1116, monotone in the self-test) and
+          a 4-regime left-right evaluator including situs inversus and the Raldh2-/- mouse
+          (`evaluate_lr_regimes`, L1118-1164). New CLI flags --clock-delay, --notch-delay, --notch-coupling,
+          --lr-bias, --situs and --print-pass3 (L2168-2213) drive the new solvers and print a JSON summary.
+          Deduction: the pre-existing --v-sc/--vg/--Tc/--seed flags are consumed only by --print-pass3; the
+          default figure/GIF render still ignores them (L2213-2218).
+        evidence:
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [1032, 1164], note: "Clock-delay sweep, Notch ablation, LR buffering sweep and 4-regime LR evaluator", supports: true}
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [1167, 1296], note: "5-regime RA/FGF8 perturbation evaluator and bistable somitogenesis simulator (carried from v2)", supports: true}
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [2157, 2221], note: "CLI: six new Pass 3 flags and --print-pass3 JSON summary; --v-sc/--vg/--Tc/--seed not wired into the default render", supports: false}
+      morphometric-validation:
+        value: 93
+        rationale: >-
+          `measure_morphoeval()` (L1375-1595) now yields 11 reference-anchored measurements (5 carried + 6
+          new): T_osc = 92.0 min vs 90 min (Palmeirim 1997), S = v_g*T_osc = 153.3 um vs 150 um, Notch
+          nearest-neighbour coherence 0.84 vs 0.03 ablated, competence window 2.81 segments vs the >= 1
+          Goldbeter Fig. 10 criterion, 2D VAD LR offset 149.8 um vs 150 um analytic / one somite, and
+          N_LR = 1.00 vs 1.0 observed with 4/4 sides correct (mean abs error 0.012 somites). Deduction: the
+          cohort-level segment length (mean 127 um, SD 88 um over 13 core cohorts) is far noisier than the
+          observed 150 +/- 8 um, so the saltatory-arrest metric validates the mechanism qualitatively, not
+          the segment-size distribution; the WT 2D offset differs by grid (6.3 vs 6.5 um).
+        evidence:
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [1375, 1398], note: "5 carried measurements: hysteresis window, front position/sharpening, S_VAD, 5-regime Pearson r, specimen spacing", supports: true}
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [1399, 1595], note: "6 new Pass 3 measurements with reference values, units and sources (clock period, clock-derived S, Notch coherence, competence window, 2D VAD LR offset, 4-regime N_LR)", supports: true}
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [715, 760], note: "Cohort detection by a 0.5*T consecutive-cell arrest-time threshold; yields irregular cohort extents (SD 88 um)", supports: false}
+      source-traceability:
+        value: 94
+        rationale: >-
+          `datasets/fgf_wnt_bistable_wavefront/` now vendors `fgf_wnt_clock_lr_reference.json` (Lewis 2003
+          parameters and period table, competence window, Vermot & Pourquié LR law and 4 regimes, bilateral
+          geometry) with its SHA-256 pinned in `EXPECTED_SHA256` (L131-146) and verified at runtime
+          (`verify_dataset_integrity`, L148-172); `paper_citations.bib` and `README.md` add Lewis 2003,
+          Palmeirim 1997, Dubrulle 2001 and Vermot et al. 2005 Science (10 DOIs total). Where a constant is
+          not published (Notch K_D, L452-453) or is fitted (b_LR = 0.727, L821, L839) the code says so.
+          Deduction: b_LR, K_buf and h_buf remain calibrated constants without a cited molecular source.
+        evidence:
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [131, 172], note: "Pinned SHA-256 digests for specimen, scout manifest and the new clock/LR reference JSON; runtime verification", supports: true}
+          - {file: datasets/fgf_wnt_bistable_wavefront/fgf_wnt_clock_lr_reference.json, lines: [1, 181], note: "Lewis (2003) published parameters, period table, competence window, Vermot & Pourquie LR law, 4 LR regimes with sources", supports: true}
+          - {file: datasets/fgf_wnt_bistable_wavefront/paper_citations.bib, lines: [1, 109], note: "10 BibTeX entries incl. Lewis 2003, Palmeirim 1997, Dubrulle 2001, Vermot et al. 2005 Science", supports: true}
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [819, 836], note: "ra_lr_buffering_factor: b_LR = 0.727, K_buf = 1.0 nM, h = 4 are calibrated to the one-somite VAD lag, not sourced", supports: false}
+      code-traceability:
+        value: 92
+        rationale: >-
+          Module docstring (L1-103) enumerates Governing Laws 1-5 with the Lean theorem names and the 9
+          references; Sections 3b-3d carry per-function docstrings citing Lewis (2003) equations and figures
+          and Vermot & Pourquié (2005); `morphoeval/math_kg_loops/baker-fgf-wnt-bistable-wavefront.yaml`
+          registers 6 equations with refreshed code loci and Lean loci (L1-205). Deduction: Panel B is rendered
+          on a 1500 um domain while the measurements use the 1000 um default (L1610-1616), a disclosed but
+          non-obvious split.
+        evidence:
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [1, 103], note: "Module docstring: references 1-9, Governing Laws 1-5 with Lean theorem names", supports: true}
+          - {file: morphoeval/math_kg_loops/baker-fgf-wnt-bistable-wavefront.yaml, lines: [1, 205], note: "Math KG loop spec: 6 equations, Lean declarations, refreshed code loci", supports: true}
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [1610, 1616], note: "Panel B uses L_psm_um = 1500 to avoid clipping the VAD front; measurements keep the 1000 um default", supports: false}
+      repro-package:
+        value: 92
+        rationale: >-
+          Deterministic (`seed=2012`) 7-section `--self-test` (`run_self_test`, L2028-2155): 4 dataset
+          digests, saddle-node thresholds, CYP26-null ablation, 22x sharpening, bitwise two-run determinism,
+          VAD + RA symmetry, constitutive-FGF control, clock period within 15% of the Lewis formula and 10%
+          of 90 min, zero forced arrests, competence window >= 1 segment, Notch ablation coherence and
+          saltatory-index drops, anti-phase at T_N = 45 min, 2D bilateral WT < 0.15 and VAD ~ 1.0 somite,
+          situs sign flip, 4/4 regimes, monotone buffering sweep, >= 11 measurements. Default render
+          (3x3 PNG + GIF) completes in ~6 s. Deduction: no pinned requirements file for the exact
+          numpy/scipy versions in `checkpoint.environment`.
+        evidence:
+          - {file: 2012-baker-fgf-wnt-bistable-wavefront.py, lines: [2028, 2155], note: "7-section deterministic self-test incl. Pass 3 clock, Notch ablation, 2D bilateral and LR-regime assertions", supports: true}
+          - {file: docs/media/fgf_wnt_bistable_wavefront_growth.gif, lines: [0, 0], note: "Animated GIF with bilateral WT/VAD left-right ribbons (VAD left lags by one somite)", supports: true}
+    remediation:
+      - "Saltatory cohorts are irregular: segment_length_cv = 0.69 (`simulate_delayed_her_clock_lattice`, L799) vs ~0.05 observed (150 +/- 8 um), and cohort boundaries come from a 0.5*T consecutive-cell arrest-time threshold (L715-760). Add a Mesp2/Tbx6 boundary-determination step or phase-wave prepattern so each clock cycle arrests a regular ~12-cell cohort."
+      - "2D wild-type front x = 509.5 um (`solve_bilateral_2d_ra_fgf`, L837-1030) vs 571.5 um in 1D: the neural-tube factor 0.3 (L866, L903) couples transversely into the strips. Calibrate neural-tube boundary conditions / transverse diffusion so the strip midline front reproduces the 1D front, and make the WT offset grid-independent (6.3 um at nx=181 vs 6.5 um at nx=201)."
+      - "b_LR = 0.727, K_buf = 1.0 nM, h_buf = 4 (`ra_lr_buffering_factor`, L819-836; default in L839) are fitted to the one-somite VAD lag. Derive b_eff from a Nodal/Pitx2 or left-right fgf8 expression asymmetry readout with a cited magnitude."
+      - "Unify domain length: the 1D solver default L_psm_um = 1000 (L298) clips the VAD front at x = 1000 um, so Panel B had to use 1500 um (L1610-1616) while measurements keep 1000 um. Use one domain for solver, measurements and figure."
+      - "Notch-Delta coupling is a delayed saturating readout of neighbour her1 transcript with K_D = k/(2c) = 71.74 (L452-453, L636). Implement Lewis (2003) explicit deltaC mRNA/protein equations and derive the coupling constant from them."
+      - "Wire --v-sc/--vg/--Tc/--seed (and the new Pass 3 flags) into the default figure/GIF render (`main`, L2157-2221); currently only --print-pass3 consumes them."

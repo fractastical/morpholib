@@ -1,0 +1,87 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-runions-pavement-cell-lobing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-runions-pavement-cell-lobing-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-runions-pavement-cell-lobing-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Sapala et al. (2018) & Fu et al. (2005) ROP2-ROP6 interdigitated puzzle-shaped pavement cell lobing, Largest Empty Circle (LEC) turgor stress scaling, reduced pressurized periclinal membrane-shell and depth-resolved anticlinal wall buckling — MorphoEval overall 85.2/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Pass 3 (v3) evaluation of `2017-runions-pavement-cell-lobing.py` (overall weighted score 85.2/100, down from 93.1 in v2). The single v2 remediation item is closed in reduced form: a finite-difference Foppl pressurised periclinal membrane on the exact footprint (disk-verified to 0.9 %, inscribed-disk bound 18/18) and a depth-resolved prestressed anticlinal strip (FD vs modal 1.2 %, beta sweep, forcing ablation), both backed by 3 new machine-checked Lean 4 theorems (6 total, 0 sorrys). The remediation also exposed and fixed a v2 defect — the WT polygon was a 417 x 22 um ribbon — and exposed an unresolved one: the script's own mechanics predicts a 1.73x isotropic/WT periclinal stress ratio with sigma ~ R_LEC^0.51, not the Laplace proxy's 3.32x (exponent 1) that it still headlines. WT R_LEC plateau 11.39 um (ref 11.4; r = 0.986, RMSE 0.26 um), mature S = 0.655 (ref 0.68), L = 1.734 (ref 1.62), ktn1 L = 1.111 (ref 1.11), specimen S = 0.720 (10 cells). Overall 85.2/100 (faithfulness 83.4, reproducibility 89.3); rubric morphoeval 0.1.0; checkpoint commit d58a084; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0, scikit-image 0.26.0, lean 4.35.0. Dimension assessments: Model fidelity to source 85, Morphological realism / specimen match 80, Parameter expressivity 88, Morphometric validation 84, Source and data traceability 92, Code-to-model traceability 88, Reproducibility package 88. Output judged: docs/media/pavement_cell_lobing_comparison.png: rendered output of 2017-runions-pavement-cell-lobing.py at d58a084, image/png, 1197589 B, 2548×2351 px, artifact_sha256 c89ce769b8d1c86fc6395d1c4f9079b12b12f151c80d748245912b3c8001b8b1 (sha256 c89ce769b8d1c86fc6395d1c4f9079b12b12f151c80d748245912b3c8001b8b1), spec_fingerprint f1dc5c3feb4438b1986765273ee431fd638fbb88651110897b910ebc0100ae0a. Dual provenance: spec_fingerprint: f1dc5c3feb4438b1986765273ee431fd638fbb88651110897b910ebc0100ae0a; artifact_sha256: c89ce769b8d1c86fc6395d1c4f9079b12b12f151c80d748245912b3c8001b8b1; input_dataset_sha256: {datasets/pavement_cell_lobing/arabidopsis_pavement_cell_specimen.jpg=4b7c1062f6ebfd6e..., datasets/pavement_cell_lobing/paper_citations.bib=b5d0bb17859e8dd0..., datasets/pavement_cell_lobing/pavement_cell_lobing_reference.json=de4e6daab5eae4a0..., datasets/pavement_cell_lobing/pavement_cell_shell_depth_reference.json=6d1aac5a29095651..., datasets/pavement_cell_lobing/scout_manifest.json=72c917ec10ac1a55...}. Supersedes audit: 2026-10-19-pavement-cell-lobing-audit-v2. Claim boundary: reported_in_source: Sapala et al. (2018) eLife 7:e32794: outer periclinal cell wall tensile stress in pressurised FEM cell templates increases with the Largest Empty Circle radius (thin-wall proxy sigma_max ~ P R_LEC / h, Box 1 & Fig. 3); interdigitated puzzle lobing pins R_LEC near ~11.4 um as cell area expands to 4500 um^2 whereas isotropic polygonal/mutant cells grow as sqrt(A/pi) | Fu et al. (2005) Cell 120:687-700 & Lin et al. (2013) Curr Biol 23:290-297: antagonistic cortical ROP2-RIC4 (actin lobe outgrowth) and ROP6-RIC1-KTN1 (katanin-mediated microtubule neck bundling) polarisation in antiphase across shared anticlinal cell walls; lobeyness collapse in rop2 rop4 RNAi and ktn1/ric1 mutants | Armour et al. (2015) Plant Cell 27:2484-2500: lobe formation involves differential growth of periclinal and anticlinal walls in 3D (depth context; no amplitude-vs-depth table is used here); reconstructed_in_script: Exact 2D Euclidean Distance Transform R_LEC and ConvexHull solidity/lobeyness across A in [250, 4500] um^2 for a compact branched WT puzzle construction (band + alternating staggered finger lobes; aspect 2.6 at 4500 um^2), unlobed isotropic cells, ktn1/ric1 and rop2 rop4 mutants, and parallel-file monocot epidermis | 196-node periodic anticlinal boundary coupled ROP2-RIC4 / ROP6-RIC1-KTN1 reaction-diffusion PDE integrator (intracortical r = -0.9899, trans-wall r = 0.9998, 24.5 um lobe wavelength, exact intercellular area conservation) | (Pass 3) Reduced Foppl uniform-tension pressurised periclinal membrane solve -T lap(z) = P on the rasterised footprint with self-consistent tension T = T0 + E h eps/(1-nu), T0 = P H / 2, verified against the closed-form disk (0.9 %) and the inscribed-disk bound (18/18), used to TEST the LEC stress proxy: Pearson r(sigma_m, R_LEC) = 0.982 but fitted exponent 0.51 and isotropic/WT ratio 1.73 vs the proxy's 3.32 | (Pass 3) Depth-resolved anticlinal wall strip: outer-junction forcing by the ROP2-ROP6 wall displacement, Robin inner face (beta sweep 0 .. clamped), sparse FD Laplace solve vs modal closed form (1.2 %), dominant k = 8 mode inner/outer gain 0.028 (e^-1 penetration 4 um of H = 15 um), depth-distributed-forcing ablation (inner/outer 0.70) | Automated DoG + zero-compactness watershed segmentation of 10 interlocking puzzle cells from the SHA-256-locked Arabidopsis leaf epidermis micrograph (mean S = 0.720, min S = 0.626; mean L = 1.316 in this environment vs 1.506 recorded by v2); transfer_boundary: The periclinal 'shell' is a uniform-tension membrane with an analytic clamped-edge bending boundary layer on the 2D footprint, not a bending-coupled 3D finite-element shell; E = 300 MPa, nu = 0.3, H = 15 um and T0 = PH/2 are order-of-magnitude assumptions (flagged in the vendored JSON), so the absolute stresses (34 vs 59 MPa) and the 1.73x ratio are model-conditional | The depth law (sinh/cosh modal attenuation) is a prediction of a prestressed-strip model verified against its own analytic solution; the inner-face anchoring beta = 2 is a modelling choice and no depth-resolved specimen measurement is vendored | The WT footprint is a deterministic geometric construction whose constants (lobe half-width 0.62 r_t, tip 1.25x, pitch 3.0 r_t, band fraction polynomial) were tuned to the vendored benchmark series, not grown by the spring-remodelling simulator of Sapala et al. (2018); the ROP2-ROP6 PDE does not feed the polygon; does_not_claim: Full 3D finite-element shell modelling of dome deflection coupled to anticlinal wall growth anisotropy, discrete microtubule stochastics, or any digitised amplitude-vs-depth measurement from confocal stacks." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: 2017-runions-pavement-cell-lobing.py:1164-1271 with morphoeval/audits/2026-10-19-pavement-cell-lobing-audit-v2.measurements.yaml:29-31 — specimen lobeyness changed from 1.506 (v2 record) to 1.316 in the current environment with unchanged code. Pin a requirements lock for the slot, record scikit-image/scipy versions in the measurement provenance, and make the contour lobeyness robust (fixed physical smoothing length rather than 1.2 px).",
+            "remediation needed: 2017-runions-pavement-cell-lobing.py:1394, 1400 and 1676-1683 — Panel D empirical bars and several reference values are duplicated literals rather than read from the SHA-256-pinned reference JSON. Read every reference value from the JSON so the pin actually protects the comparison.",
+            "remediation needed: 2017-runions-pavement-cell-lobing.py:1774-1798 and datasets/pavement_cell_lobing/pavement_cell_shell_depth_reference.json: the depth attenuation (inner/outer 0.028 at beta = 2) is validated only against its own analytic solution; beta, H and the forcing hypothesis are unconstrained. Vendor a depth-resolved measurement (e.g. lobe amplitude at the outer vs inner periclinal plane from Armour et al. 2015 confocal stacks or Sapala et al. 2018 3D templates) and score inner/outer against it; the distributed-forcing variant (0.70) vs junction-only (0.028) is a 25x spread that data could discriminate.",
+            "remediation needed: 2017-runions-pavement-cell-lobing.py:349-407 (constants at 355-370, 376) — the WT footprint is a deterministic band-plus-capsule construction with 12 lobes at maturity (reference 7.8 +/- 1.6) and near-featureless early stages (L = 1.004 / 1.075 vs 1.08 / 1.21); the ROP2-ROP6 PDE (533-662) never feeds it. Grow the polygon from the RD wall displacement (or a spring-remodelling step as in Sapala et al. 2018 Fig. 4) so lobe number, pitch and amplitude are emergent, and report lobe count as a measurement against 7.8 +/- 1.6.",
+            "remediation needed: 2017-runions-pavement-cell-lobing.py:753, 798-808 — T0 = PH/2 is a slab heuristic and the clamped-edge bending stress (80 MPa for the mature WT cell) exceeds the membrane stress (34 MPa) yet is reported only as a diagnostic; the bending boundary layer ell_b = 0.29 um is below the grid spacing. Resolve the boundary layer (biharmonic term with a graded mesh or an analytic matched asymptotic) and derive T0 from a pressurised anticlinal-wall force balance on the actual footprint perimeter.",
+            "remediation needed: 2017-runions-pavement-cell-lobing.py:888-889, 919-920 and 1677-1683 — the reduced Foppl membrane gives sigma_m ~ R_LEC^0.51 and an isotropic/WT ratio of 1.73 at 4500 um^2 while the script still headlines the Laplace proxy's 3.32x (Panels A/E titles, measurement `isotropic_vs_puzzle_stress_reduction_ratio`). Either (a) add a shell preset whose bending stiffness and pretension reproduce the Sapala FEM regime (or show by an E/H/T0 sweep that no reduced-model parameter does), or (b) relabel the 3.32x as the pressure-vessel proxy throughout and promote the shell ratio to the headline." ;
+        pk:hasScore "0.852"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 039 Pass 3 Assessor; remediation executed by Claude Fable 5.1)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/39> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://archive.org/details/TheoryOfPlatesAndShells>,
+            <https://doi.org/10.1016/j.cell.2004.12.026>,
+            <https://doi.org/10.1016/j.cub.2013.01.022>,
+            <https://doi.org/10.1038/s41477-019-0500-2>,
+            <https://doi.org/10.1105/tpc.114.126664>,
+            <https://doi.org/10.7554/eLife.01967>,
+            <https://doi.org/10.7554/eLife.32794> .
+    <https://archive.org/details/TheoryOfPlatesAndShells> dct:date "1959"^^xsd:gYear ;
+        dct:title "Theory of Plates and Shells (2nd ed.)" .
+    <https://doi.org/10.1016/j.cell.2004.12.026> dct:date "2005"^^xsd:gYear ;
+        dct:title "Arabidopsis Interdigitating Cell Growth Requires Two Antagonistic Pathways with Opposing Action on Cell Morphogenesis" .
+    <https://doi.org/10.1016/j.cub.2013.01.022> dct:date "2013"^^xsd:gYear ;
+        dct:title "Rho GTPase Signaling Activates Microtubule Severing to Promote Lobe Outgrowth in Arabidopsis Pavement Cells" .
+    <https://doi.org/10.1038/s41477-019-0500-2> dct:date "2019"^^xsd:gYear ;
+        dct:title "Mechanical stress initiates and sustains the morphogenesis of wavy leaf epidermal cells" .
+    <https://doi.org/10.1105/tpc.114.126664> dct:date "2015"^^xsd:gYear ;
+        dct:title "Differential Growth in Periclinal and Anticlinal Walls during Lobe Formation in Arabidopsis Cotyledon Pavement Cells" .
+    <https://doi.org/10.7554/eLife.01967> dct:date "2014"^^xsd:gYear ;
+        dct:title "Subcellular and supracellular mechanical stress prescribes cytoskeleton behavior in Arabidopsis cotyledon pavement cells" .
+    <https://doi.org/10.7554/eLife.32794> dct:date "2018"^^xsd:gYear ;
+        dct:title "Why plants make puzzle cells, and how their shape emerges" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Sapala et al. (2018) & Fu et al. (2005) ROP2-ROP6 interdigitated puzzle-shaped pavement cell lobing, Largest Empty Circle (LEC) turgor stress scaling, reduced pressurized periclinal membrane-shell and depth-resolved anticlinal wall buckling — MorphoEval overall 85.2/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T10:21:46Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-runions-pavement-cell-lobing-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/39>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-runions-pavement-cell-lobing> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

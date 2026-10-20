@@ -1,0 +1,279 @@
+# MorphoEval Pass 3 (v3) Audit — Grieneisen, Xu, Marée, Hogeweg & Scheres (2007) Nature & Mähönen et al. (2014) Nature
+# Reverse-Fountain Root Tip Auxin Reflux Capacitor, Growing Dividing Cellular Lattice & Gravistimulated PIN3/PIN7 Bending, 2026-10-20 (v3)
+#
+# Pass 3 post-remediation evaluation of `2014-grieneisen-root-auxin-reflux-fountain.py` (Slot 038)
+# superseding `2026-10-19-root-auxin-reflux-fountain-audit-v2` in `2026-10-19-root-auxin-reflux-fountain-loop-pass3`:
+#   - Primary assessor: Claude Fable 5.1 — 91.5 / 100 (DOWN from 93.2 / 100 in v2; -1.7 overall)
+#
+# WHAT CHANGED AND WHY THE SCORE WENT DOWN
+#   - Pass 2 did not solve the Grieneisen transport equations: `simulate_2d_root_reflux_lattice` assembled an analytical
+#     field whose per-regime QC amplification (142.5/124.8/58.4/11.2/1.35/96.2) was hard-coded to the reference-table
+#     values, so the v2 "Pearson r = 1.0 / 0.9929" was circular. Those table values are Pass-1 SYNTHETIC calibration
+#     targets, not digitised paper values. Pass 3 replaces the construction with a solved sparse cellular PIN-permeability
+#     steady-state operator; every regime is now emergent and the agreement with the synthetic table is reported honestly
+#     (log-amplitude r = 0.919; 6-regime z_MZ r = -0.331 because the NPA regime saturates PLT instead of collapsing it).
+#   - The v2 remediation item is closed in REDUCED form: a growing 9-file cellular lattice with explicit mitotic division
+#     (`simulate_growing_cellular_lattice`) and gravistimulated PIN3/PIN7 statocyte asymmetry with Sachs sine-law bending
+#     and a Band (2012) tipping-point reset (`simulate_gravitropic_bending`). It is NOT a vertex/CPM mechanics solver.
+#   - specimen-match and morphometric-validation drop because (a) the confocal specimen still contributes only nuclear
+#     statistics with no model-predicted quantity compared against it, and (b) three disclosed disagreements remain
+#     (tipping point 5.55 h vs ~2 h; growth 82 um/h vs ~180 um/h; NPA z_MZ saturates). model-fidelity drops 2 points
+#     because the growth/bending mechanics are reduced, not the requested vertex/CPM.
+#   - source-/code-traceability and repro-package rise slightly: 10 DOI-verified references, 5 SHA-256-pinned files,
+#     6 Lean theorems (3 new) with line-pinned loci in the docstring and KG yaml, 14-check self-test, 16 measurements.
+
+audit:
+  id: 2026-10-19-root-auxin-reflux-fountain-audit-v3
+  supersedes: 2026-10-19-root-auxin-reflux-fountain-audit-v2
+  supersedes_audit_id: 2026-10-19-root-auxin-reflux-fountain-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 038 Pass 3 Assessor)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/38
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d58a084
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) evaluation of `2014-grieneisen-root-auxin-reflux-fountain.py` after
+      completing the Pass 3 remediation in `2026-10-19-root-auxin-reflux-fountain-loop-pass3`
+      (solved cellular PIN-permeability operator, growing dividing lattice, gravistimulated
+      PIN3/PIN7 bending). Environment versions read from the repo `venv` at audit time.
+
+references:
+  grieneisen2007:
+    title: "Auxin can act as a local morphogen to pattern root tissues"
+    authors: "Grieneisen VA, Xu J, Marée AFM, Hogeweg P, Scheres B"
+    venue: "Nature 449(7165):1008-1013 (2007)"
+    doi: 10.1038/nature06215
+  mahonen2014:
+    title: "PLETHORA gradient formation mechanism separates auxin responses"
+    authors: "Mähönen AP, ten Tusscher K, Siligato R, Smetana O, Díaz-Triviño S, Salojärvi J, Wachsman G, Prasad K, Heidstra R, Scheres B"
+    venue: "Nature 515(7525):125-129 (2014)"
+    doi: 10.1038/nature13663
+  blilou2005:
+    title: "The PIN auxin efflux facilitator network controls growth and patterning in Arabidopsis roots"
+    authors: "Blilou I, Xu J, Wildwater M, Willemsen V, Paponov I, Friml J, Heidstra R, Aida M, Palme K, Scheres B"
+    venue: "Nature 433(7021):39-44 (2005)"
+    doi: 10.1038/nature03184
+  sabatini1999:
+    title: "An auxin-dependent distal organizer of pattern and polarity in the Arabidopsis root"
+    authors: "Sabatini S, Beis D, Wolkenfelt H, Murfett J, Guilfoyle T, Malamy J, Benfey P, Leyser O, Bechtold N, Weisbeek P, Scheres B"
+    venue: "Cell 99(5):463-472 (1999)"
+    doi: 10.1016/S0092-8674(00)81535-4
+  friml2002:
+    title: "Lateral relocation of auxin efflux regulator PIN3 mediates tropism in Arabidopsis"
+    authors: "Friml J, Wiśniewska J, Benková E, Mendgen K, Palme K"
+    venue: "Nature 415(6873):806-809 (2002)"
+    doi: 10.1038/415806a
+  band2012:
+    title: "Root gravitropism is regulated by a transient lateral auxin gradient controlled by a tipping-point mechanism"
+    authors: "Band LR, Wells DM, Larrieu A, Sun J, Middleton AM, French AP, Brunoud G, Sato EM, Wilson MH, Péret B, Oliva M, Swarup R, Sairanen I, Parry G, Ljung K, Beeckman T, Garibaldi JM, Estelle M, Owen MR, Vissenberg K, Hodgman TC, Pridmore TP, King JR, Vernoux T, Bennett MJ"
+    venue: "Proceedings of the National Academy of Sciences USA 109(12):4668-4673 (2012)"
+    doi: 10.1073/pnas.1201498109
+  kleinevehn2010:
+    title: "Gravity-induced PIN transcytosis for polarization of auxin fluxes in gravity-sensing root cells"
+    authors: "Kleine-Vehn J, Ding Z, Jones AR, Tasaka M, Morita MT, Friml J"
+    venue: "Proceedings of the National Academy of Sciences USA 107(51):22344-22349 (2010)"
+    doi: 10.1073/pnas.1013145107
+  beemster1998:
+    title: "Analysis of cell division and elongation underlying the developmental acceleration of root growth in Arabidopsis thaliana"
+    authors: "Beemster GTS, Baskin TI"
+    venue: "Plant Physiology 116(4):1515-1526 (1998)"
+    doi: 10.1104/pp.116.4.1515
+  delloioio2007:
+    title: "Cytokinins determine Arabidopsis root-meristem size by controlling cell differentiation"
+    authors: "Dello Ioio R, Linhares FS, Scacchi E, Casamitjana-Martinez E, Heidstra R, Costantino P, Sabatini S"
+    venue: "Current Biology 17(8):678-682 (2007)"
+    doi: 10.1016/j.cub.2007.02.047
+  xu2006:
+    title: "A molecular framework for plant regeneration"
+    authors: "Xu J, Hofhuis H, Heidstra R, Sauer M, Friml J, Scheres B"
+    venue: "Science 311(5759):385-388 (2006)"
+    doi: 10.1126/science.1121790
+
+simulations:
+  - id: grieneisen-root-auxin-reflux-fountain
+    supersedes_audit_id: 2026-10-19-root-auxin-reflux-fountain-audit-v2
+    name: "Grieneisen et al. (2007) Nature & Mähönen et al. (2014) Nature reverse-fountain root tip auxin reflux capacitor solved on a cellular PIN-permeability lattice, with a growing dividing cellular lattice and gravistimulated PIN3/PIN7 bending (Friml 2002, Band 2012)"
+    organism: "Arabidopsis thaliana (primary root apex: vascular stele, pericycle/endodermis, cortex, epidermis/lateral root cap, quiescent center, and columella statocytes)"
+    script: 2014-grieneisen-root-auxin-reflux-fountain.py
+    output: docs/media/root_auxin_reflux_fountain_comparison.png
+    extra_outputs:
+      - docs/media/root_auxin_reflux_fountain_growth.gif
+    status: evaluated
+    claim_boundary:
+      reported_in_source:
+        - "Grieneisen, Xu, Marée, Hogeweg & Scheres (2007) Nature 449:1008-1013 cellular root apex reverse-fountain auxin reflux loop (rootward PIN1 stele permeability v_s, apolar columella PIN3/PIN4/PIN7 redistribution k_col, shootward PIN2 epidermal/LRC permeability v_e, inward lateral reflux k_lat on epidermis/cortex/endodermis) generating a >100-fold Quiescent Center auxin maximum that persists after shoot decapitation and regenerates proximally after QC laser ablation (Xu et al. 2006)"
+        - "Mähönen et al. (2014) Nature 515:125-129 slow auxin-induced PLETHORA synthesis, cell-to-cell movement, and growth dilution creating an axial PLT dosage gradient whose thresholds Theta_MZ = 0.36 and Theta_EZ = 0.14 position the meristematic, elongation and differentiation zones"
+        - "Friml et al. (2002) Nature 415:806-809 and Kleine-Vehn et al. (2010) PNAS 107:22344 gravity-induced lateral relocation of PIN3/PIN7 in columella statocytes producing a lower/upper lateral auxin asymmetry; Band et al. (2012) PNAS 109:4668 transient lateral auxin gradient dissipating at a ~40 degree tipping point"
+        - "Beemster & Baskin (1998) Plant Physiol 116:1515 cell division and elongation kinetics of the Arabidopsis root (cell cycle ~17-18 h, mature cortical cell ~160 um); Dello Ioio et al. (2007) Curr Biol 17:678 meristem cortical cell number ~30"
+      reconstructed_in_script:
+        - "Solved steady-state cellular PIN-permeability transport operator on a 32-row x 9-file lattice (`build_pin_lattice_operator`, `solve_cellular_auxin_steady_state`) with Law 1 counter-current flux and closed-operator mass conservation verified on the real operator (column-sum error < 1e-12); all six regimes EMERGENT: WT 113.6x shoot concentration at z = 52.5 um, shoot decapitation retaining 92.5 %, pin2 (v_e = 0) 0.46x WT, lateral-PIN ablation k_lat = 0 collapsing to 0.18x WT, NPA 1.10x shoot, QC laser ablation + Xu (2006) respecification regenerating the maximum at 112.5 um (+60 um)"
+        - "Mähönen (2014) PLETHORA finite-volume solver on variable-length rows with meristem dilution ln2/17 h folded into turnover (`solve_plethora_gradient`, `zone_boundaries`): WT z_MZ = 240 um, z_EZ = 390 um; decap 225, pin2 120, k_lat = 0 45, NPA 480 (saturated, disclosed disagreement), ablation 255 um"
+        - "Growing 9-file cellular lattice with explicit mitotic division of PLETHORA-high cells at 2 x birth length and auxin-independent elongation of PLETHORA-intermediate cells (`simulate_growing_cellular_lattice`): 23 divisions in 10 h, 26 meristem cells (ref 32 +- 6), 82 um/h growth (ref 180 +- 80, disclosed low), 0.958 cells/h/file (ref 1.5 +- 0.7)"
+        - "Gravistimulation as a g-biased PIN3/PIN7 statocyte efflux split k_col(1 +- g) on the central columella files with Sachs sine law g = g_max sin(phi), auxin-inhibited epidermal elongation and a curvature integral with Band (2012) tipping-point reset at 40 degrees (`simulate_gravitropic_bending`): lateral auxin ratio 1.85 (ref 2.0 +- 0.7), tipping point reached at 5.55 h (ref 2 +- 1 h, disclosed slow), pin3 bending-rate fraction 0.52 (ref 0.5 +- 0.25)"
+        - "Empirical CV segmentation of the 3-panel Arabidopsis root meristem confocal micrograph (`arabidopsis_root_meristem_specimen.jpg`, CC BY-SA 4.0, 1527x513 px): N = 113 DAPI nuclei, spacing 18.34 +- 0.58 px SE, apical/proximal nuclear density ratio 1.118 (unchanged from Pass 2)"
+      transfer_boundary:
+        - "Rectangular cellular compartments with uniform row lengths across the 9 files; growth and bending are reduced kinematic models (no wall mechanics, no vertex/CPM), and the Pass-1 reference-table six-regime values are synthetic calibration targets, not digitised paper data"
+      does_not_claim:
+        - "Vertex or Cellular Potts wall mechanics, cell-wall viscoplasticity, 3D curvature, quantitative reproduction of digitised Grieneisen (2007) or Mähönen (2014) figure data, or quantitative model-to-micrograph matching beyond order-of-magnitude meristem cell number"
+    source_refs:
+      - grieneisen2007
+      - mahonen2014
+      - blilou2005
+      - sabatini1999
+      - friml2002
+      - band2012
+      - kleinevehn2010
+      - beemster1998
+      - delloioio2007
+      - xu2006
+    summary: >-
+      Pass 3 (v3) evaluation of `2014-grieneisen-root-auxin-reflux-fountain.py` (overall
+      weighted score 91.5/100, down from 93.2/100 in v2). The v2 field was assembled from
+      hard-coded reference-table amplitudes (circular r = 1.0); Pass 3 solves the Grieneisen
+      cellular PIN-permeability operator as a sparse linear steady state so that all six regimes
+      are emergent (WT 113.6x at z = 52.5 um, decapitation retention 0.925, k_lat = 0 0.18x WT,
+      NPA 1.10x, QC ablation regenerating at 112.5 um), feeds it to the Mähönen PLETHORA
+      finite-volume solver (WT z_MZ = 240 um, z_EZ = 390 um), and closes the v2 remediation
+      item in reduced form with a growing dividing cellular lattice (23 divisions, 26 meristem
+      cells, 82 um/h) and gravistimulated PIN3/PIN7 statocyte asymmetry driving sine-law bending
+      with a Band (2012) tipping-point reset (lateral ratio 1.85, tipping at 5.55 h, pin3 0.52x).
+      Six Lean 4 theorems (3 new) verify the laws; 16 reference-anchored measurements, a 14-check
+      self-test, 10 DOI-verified references and 5 SHA-256-pinned dataset files back the package.
+      Disagreements with literature anchors (tipping point ~2.8x too slow, growth rate ~2x too
+      low, NPA z_MZ saturating instead of collapsing) are disclosed rather than tuned away.
+    scores:
+      model-fidelity:
+        value: 92
+        rationale: >-
+          The Grieneisen (2007) cellular PIN-permeability reflux model is now actually solved
+          (`build_pin_lattice_operator` L178-288 assembles the sparse operator with rootward
+          stele, shootward epidermal, inward lateral and apolar columella permeabilities, passive
+          exchange, turnover and the shoot source; `solve_cellular_auxin_steady_state` L291-295),
+          the Mähönen (2014) PLETHORA solver runs on variable-length rows with growth dilution
+          (`solve_plethora_gradient` L334-362), the growing lattice divides cells explicitly
+          (`simulate_growing_cellular_lattice` L542-636) and gravistimulation is a g-biased
+          statocyte efflux split (L253-263) feeding sine-law bending (`simulate_gravitropic_bending`
+          L641-716). Six machine-checked Lean 4 theorems (0 sorrys) cover the laws. Two points
+          below v2 because the v2 remediation asked for vertex/CPM mechanics and the delivered
+          growth/bending are reduced kinematic models with uniform row lengths and an imposed
+          40 degree tipping point.
+        evidence:
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [178, 288], note: "Sparse cellular PIN-permeability steady-state operator (Grieneisen 2007) with g-biased PIN3/PIN7 statocyte split at L253-263 and QC/columella respecification for ablation", supports: true}
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [334, 372], note: "Mähönen (2014) PLETHORA finite-volume Helmholtz / implicit-Euler solver on variable-length rows and zone_boundaries thresholds Theta_MZ / Theta_EZ", supports: true}
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [542, 636], note: "Growing cellular lattice with explicit mitotic division at 2 x birth length, PLT-gated elongation and mature-row shedding", supports: true}
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [641, 716], note: "Gravistimulated bending: Sachs sine law, auxin-inhibited epidermal elongation with first-order lag, curvature integral and Band (2012) tipping-point reset; reduced kinematics, not vertex/CPM", supports: true}
+          - {file: morphoeval/lean/loops/Loop_038_root_auxin_reflux_fountain.lean, lines: [31, 229], note: "6 Lean 4 theorems: reflux conservation, QC capacitor vs collapse, PLT boundary monotonicity, gravistimulated efflux asymmetry (L147-176), PLT growth-dilution monotonicity (L188-203), mitotic division length conservation (L213-229); 0 sorrys", supports: true}
+      specimen-match:
+        value: 88
+        rationale: >-
+          The CC BY-SA 4.0 confocal micrograph is still SHA-256-pinned and segmented
+          (`segment_arabidopsis_root_specimen` L763-835: 113 DAPI nuclei, 18.34 +- 0.58 px
+          spacing, apical/proximal density ratio 1.118) and panel I of the figure shows the
+          overlay next to the simulated lattice. Down four points from v2 because no
+          model-predicted quantity is compared against the micrograph beyond the order-of-magnitude
+          meristem cell count (26 simulated vs 32 +- 6 literature; the specimen nuclei count 113
+          spans 3 panels and is not converted into cells per file), and because the six-regime
+          "benchmarks" the model is compared against in panels C-E are Pass-1 synthetic values,
+          now labelled as such in the figure and dataset README.
+        evidence:
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [763, 835], note: "Dual-channel DAPI nuclear + Alexa Fluor 488 mitotic CV segmentation of the Arabidopsis root meristem confocal micrograph (unchanged from Pass 2)", supports: true}
+          - {file: docs/media/root_auxin_reflux_fountain_comparison.png, lines: [0, 0], note: "9-panel figure: solved WT lattice, ablation regeneration, 6-regime axial profiles, emergent vs synthetic-table QC amplitudes, zone boundaries, growing lattice, bending kinetics, parameter sweeps, confocal specimen overlay", supports: true}
+          - {file: datasets/root_auxin_reflux_fountain/README.md, lines: [20, 30], note: "Dataset README disclosing that the six-regime reference-table values are Pass-1 synthetic calibration targets, not digitised paper data", supports: false}
+      parameter-expressivity:
+        value: 94
+        rationale: >-
+          Six perturbation regimes are generated by parameter changes to a single solved operator
+          (`run_six_perturbation_regimes` L471-537: J_in = 0, v_e = 0, k_lat = 0, uniform NPA
+          permeabilities, ablated rows), four monotone parameter sweeps with Spearman statistics
+          (`parameter_sweeps` L721-757: k_lat -> QC maximum, v_e -> z_MZ, D -> QC maximum, g ->
+          lateral ratio) are rendered in panel H, and the CLI exposes `--D`, `--vs`, `--ve`,
+          `--klat`, `--alpha-plt` (L1369-1374). The pin3 bending comparison re-runs the bending
+          model with g_max halved.
+        evidence:
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [471, 537], note: "Six-regime perturbation sweep on the solved operator with log-amplitude Pearson, z_MZ Pearson/Spearman and axial-profile statistics", supports: true}
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [721, 757], note: "Four parameter sweeps (k_lat, v_e, D, g) with Spearman monotonicity of QC maximum, z_MZ and lateral ratio", supports: true}
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [1367, 1383], note: "CLI flags --D, --vs, --ve, --klat, --alpha-plt forwarded to the solver", supports: true}
+      morphometric-validation:
+        value: 89
+        rationale: >-
+          `measure_morphoeval()` (L841-1038) returns 16 measurements, each with a reference value,
+          unit and uncertainty: flux-conservation error, WT QC amplification, log-amplitude r over
+          six regimes (0.919), decapitation retention (0.925), ablation peak shift, WT z_MZ (240 um),
+          six-regime z_MZ r (-0.331, with the 5-regime r > 0.9 excluding NPA reported alongside),
+          three growing-lattice metrics against Beemster & Baskin / Dello Ioio anchors, three
+          gravitropism metrics against Friml / Band anchors, and three specimen metrics. Four points
+          below v2 because the comparisons are now honest: the six-regime z_MZ correlation is
+          negative, the tipping point is 2.8x slower than Band (2012), the growth rate is ~2x
+          below the literature anchor, and the regime benchmarks remain synthetic.
+        evidence:
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [841, 1038], note: "16 reference-anchored measurements with uncertainty; disagreements (NPA z_MZ, tipping time, growth rate) reported rather than tuned", supports: true}
+          - {file: datasets/root_auxin_reflux_fountain/root_growth_gravitropism_reference.json, lines: [1, 30], note: "Approximate literature anchors with wide uncertainties for growth and gravitropism metrics; provenance_note states they are not digitised statistics", supports: true}
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [934, 947], note: "six_regime_meristem_boundary_pearson_r = -0.331 against the synthetic table (NPA saturates PLT); honest negative result", supports: false}
+      source-traceability:
+        value: 95
+        rationale: >-
+          `datasets/root_auxin_reflux_fountain/` now carries 10 BibTeX entries with DOIs resolved
+          against doi.org / Crossref on 2026-10-20 (4 Pass-1 + 6 Pass-3: Friml 2002, Band 2012,
+          Kleine-Vehn 2010, Beemster & Baskin 1998, Dello Ioio 2007, Xu 2006), a new
+          `root_growth_gravitropism_reference.json` with explicit provenance notes, and the
+          README distinguishes literature-anchored defaults from calibration choices and discloses
+          the synthetic benchmarks. All 5 files are SHA-256-verified at runtime
+          (`verify_dataset_integrity` L149-161).
+        evidence:
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [107, 161], note: "EXPECTED_SHA256 table for 5 dataset files and runtime verification", supports: true}
+          - {file: datasets/root_auxin_reflux_fountain/paper_citations.bib, lines: [1, 111], note: "10 BibTeX entries with verified DOIs", supports: true}
+          - {file: datasets/root_auxin_reflux_fountain/README.md, lines: [1, 40], note: "Primary literature, file hashes, literature-anchored vs calibration parameter status and disclosed disagreements", supports: true}
+      code-traceability:
+        value: 94
+        rationale: >-
+          The module docstring (L1-74) states what changed in Pass 3 and why, maps each law to
+          its paper figure, to the Lean theorem with line range, and to the implementing function;
+          every section header names the law it implements; the KG yaml
+          `morphoeval/math_kg_loops/grieneisen-root-auxin-reflux-fountain.yaml` carries six
+          equations with `lean_locus` and `code_locus` line pins checked against the current file.
+        evidence:
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [1, 74], note: "Honesty note on the Pass 2 construction, reduced-form statement, and law-to-paper-to-Lean-to-function mapping with line pins", supports: true}
+          - {file: morphoeval/math_kg_loops/grieneisen-root-auxin-reflux-fountain.yaml, lines: [1, 165], note: "Six equations with lean_locus and code_locus pins, five SHA-256 inputs and Pass 3 parameters", supports: true}
+      repro-package:
+        value: 94
+        rationale: >-
+          `run_self_test()` (L1274-1364) executes 14 deterministic checks in ~3 s: SHA-256
+          integrity of 5 files, Law 1 on the real operator, emergent capacitor hierarchy,
+          decapitation autonomy, ablation shift, PLT zonality ordering (NPA excluded and
+          disclosed), growing-lattice divisions and bounds, division-rule invariants, lateral
+          ratio monotone in g and symmetric at g = 0, bending reaching the tipping point and
+          gradient dissipation, pin3 slowing, sweep monotonicity, specimen segmentation and
+          16-metric determinism. Default run regenerates the PNG and 25-frame GIF in ~6 s;
+          `lean` on the loop file exits 0.
+        evidence:
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [1274, 1364], note: "14-check deterministic self-test suite", supports: true}
+          - {file: 2014-grieneisen-root-auxin-reflux-fountain.py, lines: [1044, 1271], note: "render_outputs producing the 9-panel PNG and growth + bending GIF", supports: true}
+    remediation:
+      - "Replace the Pass-1 synthetic six-regime benchmark table in `datasets/root_auxin_reflux_fountain/root_auxin_reflux_fountain_reference.json` with values digitised from Grieneisen et al. (2007) Fig. 2-3 and Mähönen et al. (2014) Fig. 1-2, and re-score `six_regime_relative_qc_amplitude_log_pearson_r` / `six_regime_meristem_boundary_pearson_r` (`run_six_perturbation_regimes`, 2014-grieneisen-root-auxin-reflux-fountain.py L471-537) against those data."
+      - "Add an auxin-overload / PLT growth-arrest response to the NPA regime so that uniform sigma/mu auxin does not saturate PLETHORA induction (`solve_plethora_gradient`, L334-362; `simulate_2d_root_reflux_lattice` NPA branch, L375-468) and the NPA z_MZ collapses as reported by Blilou et al. (2005) instead of reaching the domain length."
+      - "Speed up the gravitropic kinetics toward the Band (2012) ~2 h tipping point by making the tipping angle emergent from the lateral auxin gradient rather than imposed (`BETA_TIP_DEG`, `simulate_gravitropic_bending`, L641-716) and by calibrating `TAU_GROWTH_RESP_H` and the epidermal elongation response against measured curvature time courses."
+      - "Replace the uniform-row rectangular lattice with per-file cell lengths and a vertex-model wall-mechanics solver so that division and elongation are mechanically coupled across files (`simulate_growing_cellular_lattice`, L542-636), closing the remaining vertex/CPM part of the v2 remediation item."

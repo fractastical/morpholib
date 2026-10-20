@@ -139,4 +139,100 @@ theorem iddu_brdu_cell_cycle_invariance_and_inverse_opt_bound :
      pd_elong_permille_model_i_re_max - pd_elong_permille_model_i_re_min < 90) := by
   decide
 
+/-! ## Pass 3 — 3D tetrahedral Stokes FEM on the OPT visual hull
+
+The Pass 3 remediation solves the Stokes growth system
+`-∇p + μ∇²v + ∇·σ_active + f = 0`, `∇·v = s` on a P1 tetrahedral mesh of the limb bud.
+Theorem 4 fixes the two closed-form solutions the solver is verified against; Theorem 5 fixes
+the Lagrangian/ALE volume budget that exposes the proliferation-vs-OPT volume gap. -/
+
+/-- Scaled (×3) divergence of the uniform dilation field `v = (s/3)(x, y, z)`:
+    `3 ∇·v = s + s + s`. -/
+def dilation_div_3x (s : Int) : Int := s + s + s
+
+/-- Scaled (×3) normal traction `3 (−p + 2μ ε_nn)` of the dilation field with `ε_nn = s/3`
+    and the pressure `3p = 2 μ s`: `−3p + 2 μ s`. -/
+def dilation_traction_3x (mu s p3 : Int) : Int := -p3 + 2 * mu * s
+
+/-- Scaled (×3) diagonal of the total stress `2μ ε + σ_active` for the uniaxial extensile response
+    `3 ε = ζ (2, −1, −1)` to the active stress `3 σ_active = −2μ ζ (2, −1, −1)` (p = 0). -/
+def extensile_total_stress_pd_3x (mu zeta : Int) : Int := 2 * mu * (2 * zeta) + (-(2 * mu * (2 * zeta)))
+def extensile_total_stress_ap_3x (mu zeta : Int) : Int := 2 * mu * (-zeta) + (-(2 * mu * (-zeta)))
+def extensile_div_3x (zeta : Int) : Int := 2 * zeta + (-zeta) + (-zeta)
+
+/-- Theorem 4 (`stokes_growth_oracles_are_exact`, Pass 3):
+    The two manufactured Stokes solutions used by `fem_manufactured_solution_errors` are exact:
+    (1) uniform dilation `v = (s/3) x` has divergence `s` (3 ∇·v = 3 s);
+    (2) with `3p = 2μ s` it is traction-free, `−p + 2μ s/3 = 0`;
+    (3) the extensile response `3 ε = ζ(2, −1, −1)` to `3 σ_active = −2μ ζ (2, −1, −1)` is
+        divergence-free (volume-conserving, matching Theorem 2's traceless stress) and
+    (4) its total stress `2μ ε + σ_active` vanishes along PD and AP/DV, so the surface is traction-free
+        with `p = 0`.  Hence a P1 element (linear velocity, constant pressure) represents both exactly,
+        and the FEM must reproduce them to round-off — the acceptance test in `self_test` Check 10. -/
+theorem stokes_growth_oracles_are_exact (mu s zeta : Int) :
+    dilation_div_3x s = 3 * s ∧
+    dilation_traction_3x mu s (2 * mu * s) = 0 ∧
+    extensile_div_3x zeta = 0 ∧
+    extensile_total_stress_pd_3x mu zeta = 0 ∧
+    extensile_total_stress_ap_3x mu zeta = 0 := by
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · dsimp [dilation_div_3x]; omega
+  · dsimp [dilation_traction_3x]; omega
+  · dsimp [extensile_div_3x]; omega
+  · dsimp [extensile_total_stress_pd_3x]; omega
+  · dsimp [extensile_total_stress_ap_3x]; omega
+
+/-- Lagrangian/ALE 6 h volume budget of the 3D FEM (volumes in 10⁻³ mm³ = 10⁶ µm³, flank area in
+    10⁻³ mm², velocity in µm/h, time in h): `V1 = V0 + S + A_flank * v_in * T`, where `S` is the
+    integrated proliferation source `∫∫ s dV dt`. -/
+def volume_after_growth (v0 source a_flank v_in t : Int) : Int :=
+  v0 + source + a_flank * v_in * t
+
+/-- Reference-table OPT volumes (Boehm et al. 2010 Fig. 2): 0.551 → 0.914 mm³. -/
+def opt_volume_st0_x1000 : Int := 551
+def opt_volume_st1_x1000 : Int := 914
+/-- FEM proliferation-only 6 h volume ratio ≈ 1.123 applied to the St0 OPT volume (0.551 mm³). -/
+def fem_prolif_volume_st1_x1000 : Int := 619
+
+/-- Theorem 5 (`flank_influx_volume_budget`, Pass 3):
+    (1) with the flank pinned (`v_in = 0`) the volume gain is exactly the integrated source — the FEM
+        `volume_balance_ratio` diagnostic; (2) the budget is additive and linear in `v_in`, so the
+        volume-closure sweep of `evaluate_fem_regimes_and_influx` is monotone in `v_in` whenever
+        `A_flank > 0`, `T > 0`; (3) the OPT table demands `V1 = 914 > 619`, i.e. the measured
+        IddU/BrdU source (×1.123) leaves a positive volume deficit (`914 − 619 = 295 > 0`, ~1/3 of the
+        St1 volume) that only a flank influx (or a corrected OPT table) can supply. -/
+theorem flank_influx_volume_budget (v0 source a_flank t v1 v2 : Int)
+    (hA : a_flank > 0) (hT : t > 0) (hv : v1 < v2) :
+    volume_after_growth v0 source a_flank 0 t = v0 + source ∧
+    volume_after_growth v0 source a_flank v2 t - volume_after_growth v0 source a_flank v1 t
+      = a_flank * (v2 - v1) * t ∧
+    volume_after_growth v0 source a_flank v1 t < volume_after_growth v0 source a_flank v2 t ∧
+    opt_volume_st1_x1000 > fem_prolif_volume_st1_x1000 ∧
+    fem_prolif_volume_st1_x1000 > opt_volume_st0_x1000 ∧
+    opt_volume_st1_x1000 - fem_prolif_volume_st1_x1000 = 295 := by
+  have hAT : a_flank * t > 0 := Int.mul_pos hA hT
+  have hdiff : v2 - v1 > 0 := by omega
+  have hpos : a_flank * t * (v2 - v1) > 0 := Int.mul_pos hAT hdiff
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
+  · dsimp [volume_after_growth]; omega
+  · dsimp [volume_after_growth]
+    have h1 : a_flank * v2 * t = a_flank * t * v2 := by
+      rw [Int.mul_assoc, Int.mul_comm v2 t, ← Int.mul_assoc]
+    have h2 : a_flank * v1 * t = a_flank * t * v1 := by
+      rw [Int.mul_assoc, Int.mul_comm v1 t, ← Int.mul_assoc]
+    have h3 : a_flank * (v2 - v1) * t = a_flank * t * (v2 - v1) := by
+      rw [Int.mul_assoc, Int.mul_comm (v2 - v1) t, ← Int.mul_assoc]
+    have h4 : a_flank * t * (v2 - v1) = a_flank * t * v2 - a_flank * t * v1 := Int.mul_sub _ _ _
+    omega
+  · dsimp [volume_after_growth]
+    have h1 : a_flank * v2 * t = a_flank * t * v2 := by
+      rw [Int.mul_assoc, Int.mul_comm v2 t, ← Int.mul_assoc]
+    have h2 : a_flank * v1 * t = a_flank * t * v1 := by
+      rw [Int.mul_assoc, Int.mul_comm v1 t, ← Int.mul_assoc]
+    have h4 : a_flank * t * (v2 - v1) = a_flank * t * v2 - a_flank * t * v1 := Int.mul_sub _ _ _
+    omega
+  · decide
+  · decide
+  · decide
+
 end MathOfBiology.Loop_017

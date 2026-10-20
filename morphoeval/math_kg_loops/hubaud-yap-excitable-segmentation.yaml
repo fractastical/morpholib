@@ -16,7 +16,11 @@ model_spec:
     I_basal: 0.82
     gamma_YAP: 0.80
     u_hopf_abs: 0.967470929795826
-    D_u_um2_per_min: 18.0
+    D_u_um2_per_min: 24.0
+    gamma_F: 1.60
+    lambda_F_um: 350.0
+    v_wf_um_per_min: 0.70
+    J_max: 0.15
   inputs:
     - datasets/yap_excitable_segmentation/yap_excitable_segmentation_reference.json
     - datasets/yap_excitable_segmentation/mouse_psm_somites_specimen.jpg
@@ -51,7 +55,7 @@ equations:
     variables: "u: fast activator (Notch / LuVeLu Lfng-Venus / Hes7 activity); v: slow negative-feedback recovery variable; f(u) = u - u^3/3: cubic fast nullcline nonlinearity"
     role: "Defines the N-shaped folded cubic nullcline knees at u = +/- 1 that separate monostable excitable quiescence (|u^*| > 1) from autonomous relaxation oscillations (|u^*| < 1)"
     source_citation: "Hubaud, Regev, Mahadevan & Pourquie (2017) Cell 171(3):668-682 Fig. 3 & STAR Methods"
-    code_locus: "2016-hubaud-yap-excitable-segmentation.py#L120-L210"
+    code_locus: "2016-hubaud-yap-excitable-segmentation.py#L171-L256"
   - id: hubaud-yap-excitable-segmentation-2
     law_name: "Hubaud et al. (2017) Supercritical Hopf Stability Boundary vs Quiescent Branch Law"
     title: "Hubaud et al. (2017) Supercritical Hopf Stability Boundary vs Quiescent Branch Law"
@@ -77,7 +81,7 @@ equations:
     variables: "u^*: nullcline intersection fixed point; epsilon = tau_u / tau_v: fast-slow timescale ratio (0.08); b: slow recovery damping parameter (0.8)"
     role: "Proves that the fixed point is unstable (Tr J > 0, autonomous limit cycle) on the middle branch |u^*| < sqrt(1 - epsilon*b) and stable (Tr J < 0, excitable quiescent) on the outer branches |u^*| >= 1"
     source_citation: "Hubaud, Regev, Mahadevan & Pourquie (2017) Cell 171(3):668-682 Figs. 3-4 & STAR Methods"
-    code_locus: "2016-hubaud-yap-excitable-segmentation.py#L215-L310"
+    code_locus: "2016-hubaud-yap-excitable-segmentation.py#L204-L380"
   - id: hubaud-yap-excitable-segmentation-3
     law_name: "Hubaud et al. (2017) YAP Mechanotransduction Excitability Gating & Latrunculin A Rescue Law"
     title: "Hubaud et al. (2017) YAP Mechanotransduction Excitability Gating & Latrunculin A Rescue Law"
@@ -105,4 +109,89 @@ equations:
     variables: "I_eff: net excitability current; Y_nuc: nuclear YAP translocation fraction [0, 1]; J_Dll1: Notch-Dll1 intercellular coupling input; gamma_YAP: YAP excitability threshold gain"
     role: "Proves that inhibiting nuclear YAP (Latrunculin A, Y-27632 Rockout, soft substrate, Yap1 KO) raises I_eff across the Hopf threshold to ignite autonomous Hes7/Lfng oscillations, whereas Yap5SA locks quiescence"
     source_citation: "Hubaud, Regev, Mahadevan & Pourquie (2017) Cell 171(3):668-682 Figs. 4-6"
-    code_locus: "2016-hubaud-yap-excitable-segmentation.py#L315-L420"
+    code_locus: "2016-hubaud-yap-excitable-segmentation.py#L191-L498"
+  # ---------------------------------------------------------------------------
+  # Pass 3 (audit 2026-10-19-yap-excitable-segmentation-audit-v3) extensions
+  # ---------------------------------------------------------------------------
+  - id: hubaud-yap-excitable-segmentation-4
+    law_name: "Cooke & Zeeman (1976) Clock-and-Wavefront Somite Spacing Law"
+    title: "Cooke & Zeeman (1976) Clock-and-Wavefront Somite Spacing Law"
+    formula: "x_wf(t) = x_wf0 + v_wf * t,  x_wf(t0 + (n+1) T) - x_wf(t0 + n T) = v_wf * T"
+    latex: "x_{wf}(t) = x_{wf0} + v_{wf}\\,t, \\quad x_{wf}(t_0 + (n+1)T) - x_{wf}(t_0 + nT) = v_{wf}\\,T"
+    ascii: "x_wf(t) = x_wf0 + v_wf * t, x_wf(t0 + (n+1) T) - x_wf(t0 + n T) = v_wf * T"
+    lean_decl: "MathOfBiology.Loop_027.wavefront_position"
+    lean_theorem: "MathOfBiology.Loop_027.hubaud_2017_clock_wavefront_somite_spacing"
+    lean_file: morphoeval/lean/loops/Loop_027_yap_excitable_segmentation.lean
+    lean_locus: "morphoeval/lean/loops/Loop_027_yap_excitable_segmentation.lean#L110-L129"
+    lean_code: |-
+      def wavefront_position (x_wf0 v_wf t : Int) : Int :=
+        x_wf0 + v_wf * t
+      theorem hubaud_2017_clock_wavefront_somite_spacing (x_wf0 v_wf t0 T n : Int) :
+          wavefront_position x_wf0 v_wf (t0 + (n + 1) * T) -
+            wavefront_position x_wf0 v_wf (t0 + n * T) = v_wf * T
+    lean_declaration: |-
+      theorem hubaud_2017_clock_wavefront_somite_spacing (x_wf0 v_wf t0 T n : Int) :
+          wavefront_position x_wf0 v_wf (t0 + (n + 1) * T) -
+            wavefront_position x_wf0 v_wf (t0 + n * T) = v_wf * T
+    variables: "x_wf: anteroposterior position of the determination front; v_wf: axis-elongation / wavefront regression speed (um/min); T: segmentation-clock period (min); n: clock cycle index"
+    role: "Proves that successive arrests of the excitable clock at the regressing FGF/Wnt determination front freeze the phase exactly S = v_wf T apart, the spacing of the Mesp2-like somite stripes measured in simulate_ap_wavefront_arrest and the slope of the v_wf sweep"
+    source_citation: "Cooke & Zeeman (1976) J Theor Biol 58(2):455-476, DOI 10.1016/S0022-5193(76)80131-2; Hubaud et al. (2017) Cell 171:668-682 Fig. 7"
+    code_locus: "2016-hubaud-yap-excitable-segmentation.py#L704-L952"
+  - id: hubaud-yap-excitable-segmentation-5
+    law_name: "Dubrulle et al. (2001) FGF/Wnt-Gated Wavefront Arrest Criterion"
+    title: "Dubrulle et al. (2001) FGF/Wnt-Gated Wavefront Arrest Criterion"
+    formula: "F(x,t) = min(1, exp(-(x_tb(t) - x)/lambda_F)),  g(F) = F^h/(F_thr^h + F^h),  I_eff = I_post - gamma_F (g_max - g);  arrested <=> gamma_F (g_max - g) > I_post - I_H"
+    latex: "I_{\\text{eff}} = I_{\\text{post}} - \\gamma_F\\,(g_{\\max} - g(F)), \\quad I_{\\text{eff}} < I_H \\iff \\gamma_F (g_{\\max} - g) > I_{\\text{post}} - I_H"
+    ascii: "I_eff = I_post - gamma_F * (g_max - g(F)); I_eff < I_H <=> gamma_F * (g_max - g) > I_post - I_H; front advances v_wf * dt independent of the decay offset d"
+    lean_decl: "MathOfBiology.Loop_027.fgf_gated_current"
+    lean_theorem: "MathOfBiology.Loop_027.hubaud_2017_fgf_wavefront_arrest_criterion"
+    lean_file: morphoeval/lean/loops/Loop_027_yap_excitable_segmentation.lean
+    lean_locus: "morphoeval/lean/loops/Loop_027_yap_excitable_segmentation.lean#L131-L160"
+    lean_code: |-
+      def fgf_gated_current (I_post gamma_F g_max g : Int) : Int :=
+        I_post - gamma_F * (g_max - g)
+      theorem hubaud_2017_fgf_wavefront_arrest_criterion
+          (I_post gamma_F g_max g I_H x_tb0 v_wf t dt d : Int) :
+          (fgf_gated_current I_post gamma_F g_max g < I_H ↔
+            I_post - I_H < gamma_F * (g_max - g)) ∧
+          ((wavefront_position x_tb0 v_wf (t + dt) - d) -
+            (wavefront_position x_tb0 v_wf t - d) = v_wf * dt)
+    lean_declaration: |-
+      theorem hubaud_2017_fgf_wavefront_arrest_criterion
+          (I_post gamma_F g_max g I_H x_tb0 v_wf t dt d : Int) :
+          (fgf_gated_current I_post gamma_F g_max g < I_H ↔
+            I_post - I_H < gamma_F * (g_max - g)) ∧
+          ((wavefront_position x_tb0 v_wf (t + dt) - d) -
+            (wavefront_position x_tb0 v_wf t - d) = v_wf * dt)
+    variables: "F: Fgf8/Wnt3a signal (posterior-high exponential, decay length lambda_F); g(F): Hill gate; gamma_F: FGF/Wnt excitability gain; I_post: tail-bud excitability current; I_H: lower Hopf current; d: fixed decay distance from tail bud to front"
+    role: "Defines the determination front as the locus where FGF/Wnt loss exceeds the Hopf margin (wavefront_gate_threshold, g_crit) and proves that the front regresses at v_wf regardless of lambda_F, so lambda_F sets PSM length but not somite spacing (lambda_F sweep in evaluate_wavefront_speed_sweep)"
+    source_citation: "Dubrulle, McGrew & Pourquie (2001) Cell 106(2):219-232, DOI 10.1016/S0092-8674(01)00437-8; Hubaud et al. (2017) Cell 171:668-682"
+    code_locus: "2016-hubaud-yap-excitable-segmentation.py#L707-L748"
+  - id: hubaud-yap-excitable-segmentation-6
+    law_name: "Dupont et al. (2011) / Wada et al. (2011) YAP Mechanotransduction Nuclear-Fraction Monotonicity Law"
+    title: "Dupont et al. (2011) / Wada et al. (2011) YAP Mechanotransduction Nuclear-Fraction Monotonicity Law"
+    formula: "T(E,A) = [E^hE/(E50^hE + E^hE)] [A/(A50 + A)] rho_actin c_ROCK,  L(T) = 1/(1 + (T/T_L)^m),  Y_n = r_n/(1 + r_n + r_p),  r_n = r0 (1 + alpha_T T),  r_p = kappa_LATS L(T)"
+    latex: "Y_n = \\frac{r_n}{1 + r_n + r_p}, \\quad r_n = r_0(1 + \\alpha_T T), \\quad r_p = \\kappa_{\\text{LATS}}\\,L(T), \\quad \\partial Y_n/\\partial r_n > 0, \\; \\partial Y_n/\\partial r_p < 0"
+    ascii: "Y_n = r_n / (1 + r_n + r_p); r_n1 < r_n2 => r_n1 (1 + r_n2 + r_p) < r_n2 (1 + r_n1 + r_p); r_p1 < r_p2 => r_n (1 + r_n + r_p1) < r_n (1 + r_n + r_p2)"
+    lean_decl: "MathOfBiology.Loop_027.yap_nuclear_denominator"
+    lean_theorem: "MathOfBiology.Loop_027.hubaud_2017_yap_mechanotransduction_monotonicity"
+    lean_file: morphoeval/lean/loops/Loop_027_yap_excitable_segmentation.lean
+    lean_locus: "morphoeval/lean/loops/Loop_027_yap_excitable_segmentation.lean#L162-L199"
+    lean_code: |-
+      def yap_nuclear_denominator (r_n r_p : Int) : Int :=
+        1 + r_n + r_p
+      theorem hubaud_2017_yap_mechanotransduction_monotonicity
+          (r_n1 r_n2 r_n r_p r_p1 r_p2 : Int)
+          (h_rp : 0 ≤ r_p) (h_lt : r_n1 < r_n2) (h_rn : 0 < r_n) (h_p : r_p1 < r_p2) :
+          r_n1 * yap_nuclear_denominator r_n2 r_p < r_n2 * yap_nuclear_denominator r_n1 r_p ∧
+          r_n * yap_nuclear_denominator r_n r_p1 < r_n * yap_nuclear_denominator r_n r_p2
+    lean_declaration: |-
+      theorem hubaud_2017_yap_mechanotransduction_monotonicity
+          (r_n1 r_n2 r_n r_p r_p1 r_p2 : Int)
+          (h_rp : 0 ≤ r_p) (h_lt : r_n1 < r_n2) (h_rn : 0 < r_n) (h_p : r_p1 < r_p2) :
+          r_n1 * yap_nuclear_denominator r_n2 r_p < r_n2 * yap_nuclear_denominator r_n1 r_p ∧
+          r_n * yap_nuclear_denominator r_n r_p1 < r_n * yap_nuclear_denominator r_n r_p2
+    variables: "T: F-actin/stress-fibre tension index in [0,1] from substrate stiffness E_sub (kPa), spreading area A_cell (um^2), F-actin content rho_actin (Latrunculin A) and ROCK contractility c_ROCK (Y-27632); L(T): LATS1/2 activity; r_n: tension-driven nuclear import/export ratio; r_p: LATS phosphorylation/dephosphorylation ratio; Y_n: nuclear YAP fraction feeding Law 3"
+    role: "Proves (cross-multiplied, division-free) that the steady-state nuclear YAP fraction rises with tension-driven import and falls with LATS phosphorylation, so softer substrates, smaller spreading area, Latrunculin A and Y-27632 all lower Y_nuc toward Y_crit and ignite the clock (calibrate_yap_mechanotransduction, evaluate_substrate_stiffness_sweep, simulate_latrunculin_yap_kinetics)"
+    source_citation: "Dupont et al. (2011) Nature 474(7350):179-183, DOI 10.1038/nature10137; Wada et al. (2011) Development 138(18):3907-3914, DOI 10.1242/dev.070987; Hubaud et al. (2017) Cell 171:668-682 Figs. 4-6"
+    code_locus: "2016-hubaud-yap-excitable-segmentation.py#L954-L1139"

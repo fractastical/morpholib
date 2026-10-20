@@ -1,0 +1,304 @@
+# MorphoEval audit — Newman & Frisch (1979) Science Dynamics of Skeletal Pattern Formation in Developing Chick Limb, 2026-10-19 (v3)
+#
+# Pass 3 (remediation round) re-score of `1979-newman-limb-chondrogenesis-turing.py` (v3, 1982 lines) after closing the
+# single Pass 2 remediation item ("couple the 2D proximodistal chick wing bud Turing solver to a 3D moving-boundary
+# finite-element mesh driven by spatially graded FGF8 mitogenic proliferation beneath the AER") in the instrumented loop
+# `morphoeval/runs/2026-10-19-limb-chondrogenesis-turing-loop-pass3`, superseding `2026-10-19-limb-chondrogenesis-turing-audit-v2` (92.3).
+#
+# What Pass 3 changed:
+#   1. New Section 4b (L562-1217): `integrate_newman_3d_moving_boundary_pde` — 3D box [0,L_AP]x[0,L_DV]x[0,L(t)] whose distal
+#      boundary advances at the FGF8-driven outgrowth velocity. PD axis = Lagrangian P1 finite elements (nodes advected with
+#      a(z) = int S dz, lumped mass, dilution -S u, h-refinement by bisection, L1045-1100); AP = DCT-II (Neumann), DV = DST-II
+#      (Dirichlet ectodermal inhibition) spectral Galerkin; fully implicit coupled step via block-Thomas 2x2 (L773-794) + exact
+#      cubic substep. FGF8 F = F_AER exp(-(L-z)/lambda_F(t)), Hill-2 proliferation S(F) (L797-803), hyaluronidase clock
+#      lambda_F(t) = lambda_0 exp(-t/tau_H) fitted to Table 1 (tau_H = 37.0 h, max |rel err| 4.6 %, L639-665). Three zones
+#      (apical refractory / active progress zone / frozen record); the active-zone kinetics use the paper's 3D Helmholtz
+#      relation with k_PD^2 = lowest eigenvalue of the ACTUAL discrete PD operator (L668-692) and fu from bisection (L695-770).
+#      Output: 3D record [1, 2, 3] (6 elements, DV core purity 0.99), L_PD(24 h) = 250.2 um, L_PD(48 h) = 128.6 um,
+#      Summerbell (1974) excision-time series t_exc = 0/8/16/24/32/40 h -> 1/1/3/3/3/6 elements, S_max and lambda_F0 sweeps.
+#   2. Lean Laws 4-6 (`newman_helmholtz_3d_mode_bound`, `fgf8_progress_zone_depth_independent_of_aer_output`,
+#      `fgf8_hill_proliferation_monotone`), 0 sorrys; `fgf8_moving_boundary_reference.json` (SHA-256 pinned, sourced constants
+#      separated from model assumptions); 9 new DOIs in paper_citations.bib; Panels I-L + 7 GIF frames; 6 new measurements
+#      (8 -> 14); 6 new self-test checks (8 -> 14); 5 new CLI flags.
+#   3. What the remediation EXPOSED (not fixed, carried to Pass 4): (a) the element count is set by the hyaluronidase clock,
+#      not by growth — the S_max = 0 run (zero outgrowth) still yields [1, 2, 3] (L1204-1209), so the moving boundary changes
+#      element LENGTHS but pattern selection is not growth-sensitive; (b) the Table 1 map m(L_PD) (L186-191) is still an
+#      empirical input and the m-increment joint/interzone event is an imposed field reset (L1006-1012); (c) the AP/DV
+#      cross-section is spectral on a box, not a FEM mesh of the paddle-shaped bud (header L567-600); (d) after excision the
+#      kinetics are held by rule (L991-997) rather than by an explicit distal cell-death zone.
+#
+# Net effect: the item is closed in a reduced, honestly scoped form; model-fidelity is held flat (3D moving boundary and
+# operator-consistent kinetics gained; growth/pattern decoupling and imposed joints exposed), the other six dimensions move
+# up modestly. Overall 93.8 (93.85 unrounded; v2 92.3). Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale.
+# Line numbers refer to the working-tree files at checkpoint commit d58a084 (the prompt's 469bf3c had advanced by the time
+# of this audit). Note: the Newman & Frisch DOI is 10.1126/science.462174 (verified; 10.1126/science.472739 is a different paper).
+
+audit:
+  id: 2026-10-19-limb-chondrogenesis-turing-audit-v3
+  supersedes_audit_id: 2026-10-19-limb-chondrogenesis-turing-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Slot 012 Pass 3 autonomous remediation-loop assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d58a084
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) post-remediation evaluation of `1979-newman-limb-chondrogenesis-turing.py`
+      after closing the single Pass 2 remediation item in
+      `2026-10-19-limb-chondrogenesis-turing-loop-pass3` (Step 5 FGF8-graded moving-boundary
+      3D wing bud; self-test 14/14 in ~50 s; default render ~51 s). The checkpoint commit is
+      the working-tree HEAD at audit time (d58a084); the slot's Pass 3 changes are uncommitted
+      per the shared-tree isolation rules.
+
+references:
+  newman1979:
+    title: "Dynamics of skeletal pattern formation in developing chick limb"
+    authors: "Newman SA, Frisch HL"
+    venue: "Science 205(4407):662-668 (1979)"
+    doi: 10.1126/science.462174
+  saunders1948:
+    title: "The proximo-distal sequence of origin of the parts of the chick wing and the role of the ectoderm"
+    authors: "Saunders JW"
+    venue: "Journal of Experimental Zoology 108(3):363-403 (1948)"
+    doi: 10.1002/jez.1401080304
+  summerbell1973:
+    title: "Positional information in chick limb morphogenesis"
+    authors: "Summerbell D, Lewis JH, Wolpert L"
+    venue: "Nature 244(5417):492-496 (1973)"
+    doi: 10.1038/244492a0
+  hentschel2004:
+    title: "Dynamical mechanisms for skeletal pattern formation in the vertebrate limb"
+    authors: "Hentschel HGE, Glimm T, Glazier JA, Newman SA"
+    venue: "Proceedings of the Royal Society B 271(1549):1713-1722 (2004)"
+    doi: 10.1098/rspb.2004.2772
+  stewart2017:
+    title: "The evolutionary origin of digit patterning"
+    authors: "Stewart TA, Bhat R, Newman SA"
+    venue: "EvoDevo 8(1):21 (2017)"
+    doi: 10.1186/s13227-017-0084-8
+  crampin1999:
+    title: "Reaction and diffusion on growing domains: scenarios for robust pattern formation"
+    authors: "Crampin EJ, Gaffney EA, Maini PK"
+    venue: "Bulletin of Mathematical Biology 61(6):1093-1120 (1999)"
+    doi: 10.1006/bulm.1999.0131
+  zhu2010:
+    title: "Bare bones pattern formation: a core regulatory network in varying geometries reproduces major features of vertebrate limb development and evolution"
+    authors: "Zhu J, Zhang Y-T, Alber MS, Newman SA"
+    venue: "PLoS ONE 5(5):e10892 (2010)"
+    doi: 10.1371/journal.pone.0010892
+  boehm2010:
+    title: "The role of spatially controlled cell proliferation in limb bud morphogenesis"
+    authors: "Boehm B, Westerberg H, Lesnicar-Pucko G, Raja S, Rautschka M, Cotterell J, Swoger J, Sharpe J"
+    venue: "PLoS Biology 8(7):e1000420 (2010)"
+    doi: 10.1371/journal.pbio.1000420
+  sun2002:
+    title: "Functions of FGF signalling from the apical ectodermal ridge in limb development"
+    authors: "Sun X, Mariani FV, Martin GR"
+    venue: "Nature 418(6897):501-508 (2002)"
+    doi: 10.1038/nature00902
+  toole1972:
+    title: "Hyaluronate turnover during chondrogenesis in the developing chick limb and axial skeleton"
+    authors: "Toole BP"
+    venue: "Developmental Biology 29(3):321-329 (1972)"
+    doi: 10.1016/0012-1606(72)90071-1
+  solursh1984:
+    title: "Ectoderm as a determinant of early tissue pattern in the limb bud"
+    authors: "Solursh M"
+    venue: "Cell Differentiation 15(1):17-24 (1984)"
+    doi: 10.1016/0045-6039(84)90025-3
+  summerbell1974:
+    title: "A quantitative analysis of the effect of excision of the AER from the chick limb-bud"
+    authors: "Summerbell D"
+    venue: "Journal of Embryology and Experimental Morphology 32(3):651-660 (1974)"
+    doi: 10.1242/dev.32.3.651
+  summerbell1976:
+    title: "A descriptive study of the rate of elongation and differentiation of the skeleton of the developing chick wing"
+    authors: "Summerbell D"
+    venue: "Journal of Embryology and Experimental Morphology 35(2):241-260 (1976)"
+    doi: 10.1242/dev.35.2.241
+  summerbell1977:
+    title: "Reduction of the rate of outgrowth, cell density, and cell division following removal of the apical ectodermal ridge of the chick limb-bud"
+    authors: "Summerbell D"
+    venue: "Journal of Embryology and Experimental Morphology 40(1):1-21 (1977)"
+    doi: 10.1242/dev.40.1.1
+
+simulations:
+  - id: newman-limb-chondrogenesis-turing
+    name: "Newman & Frisch (1979) Science 3D Helmholtz/Turing standing-wave eigenmodes and proximodistal 1 -> 2 -> 3 skeletal chondrogenesis in developing Gallus gallus wing bud"
+    organism: "Gallus gallus domesticus embryonic wing bud (HH20 stylopod humerus -> HH24 zeugopod radius+ulna -> HH27 autopod digits II-IV)"
+    script: 1979-newman-limb-chondrogenesis-turing.py
+    output: docs/media/limb_chondrogenesis_turing_comparison.png
+    extra_outputs:
+      - docs/media/limb_chondrogenesis_turing_growth.gif
+    status: evaluated
+    source_refs:
+      - newman1979
+      - saunders1948
+      - summerbell1973
+      - hentschel2004
+      - stewart2017
+      - crampin1999
+      - zhu2010
+      - boehm2010
+      - sun2002
+      - toole1972
+      - solursh1984
+      - summerbell1974
+      - summerbell1976
+      - summerbell1977
+    summary: >-
+      Pass 3 (v3) post-remediation evaluation of `1979-newman-limb-chondrogenesis-turing.py`
+      (overall weighted score: 93.8 / 100 (93.85 unrounded), up +1.5 from 92.3 / 100 in Pass 2). The single Pass 2
+      remediation item is closed in a reduced, explicitly scoped form: Section 4b adds a 3D
+      moving-boundary wing bud whose proximodistal axis is a Lagrangian P1 finite-element mesh
+      advected by FGF8-graded Hill-2 proliferation beneath the AER (dilution, h-refinement,
+      moving distal boundary), with DCT-II/DST-II spectral Galerkin anteroposterior/dorsoventral
+      cross-sections, a one-parameter hyaluronidase clock fitted to Newman & Frisch Table 1
+      (tau_H = 37.0 h, max |rel err| 4.6 %), three FGF8 zones (apical refractory / active
+      progress zone / frozen record), active-zone Turing kinetics from the paper's 3D Helmholtz
+      relation using the lowest eigenvalue of the actual discrete PD operator, and AER-excision
+      and parameter sweeps. The intact run deposits a 3D skeletal record of [1, 2, 3] elements
+      (DV core-mode purity 0.99, record AP spacing ratio 1.484 vs 1.5 theory / 1.407 specimen),
+      reproduces L_PD(24 h) = 250.2 um (Table 1: 250) and L_PD(48 h) = 128.6 um (Table 1: 140),
+      and the Summerbell (1974) excision-time series 1/1/3/3/3/6 elements for t_exc =
+      0/8/16/24/32/40 h. Six Lean 4 theorems (3 new) are machine-checked with 0 sorrys. The
+      remediation also exposed that the element count is set by the clock rather than by growth
+      (S_max = 0 still gives [1, 2, 3]), that the Table 1 mode map and the joint reset remain
+      imposed, and that the cross-section is a spectral box rather than a FEM paddle; these are
+      carried as Pass 4 items and model-fidelity is held flat rather than raised.
+    scores:
+      model-fidelity:
+        value: 94
+        rationale: >-
+          Retains the exact Newman & Frisch (1979) Eqs. (1)-(7) dispersion relation
+          (`compute_newman_dispersion`, L161-271) and the 1D/2D nonlinear DCT-II IMEX solvers
+          (L274-468). Pass 3 adds the requested 3D moving boundary (L847-1152): Lagrangian P1
+          FEM in z with advection a(z) = int S dz, dilution and bisection refinement
+          (L1045-1108), a moving distal boundary, DST-II Dirichlet dorsal/ventral ectoderm
+          (L898), active-zone kinetics with k_PD^2 from the actual discrete PD operator
+          (L668-692) and fu chosen by bisection so the fastest linear mode is exactly
+          m^2 + k_DV^2 + k_PD^2 (L695-770), plus three new Lean theorems (Helmholtz budget,
+          FGF8 window depth, Hill-2 monotonicity). It is held at 94 rather than raised because
+          the remediation exposed structural limits: (i) pattern selection is not
+          growth-sensitive — the S_max = 0 sweep run (zero outgrowth) still yields [1, 2, 3]
+          (L1204-1209), so the moving boundary sets element lengths only; (ii) the Table 1
+          map m(L_PD) (L186-191) is still an empirical input and the m-increment
+          joint/interzone is an imposed field reset (L1006-1012); (iii) the AP/DV
+          cross-section is spectral on a box (header L567-600), not a FEM mesh of the
+          paddle-shaped bud; (iv) post-excision kinetics are held by rule (L991-997).
+        evidence:
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [847, 1152], note: "3D moving-boundary solver: Lagrangian P1 FEM in z (advection, dilution, bisection), DCT-II/DST-II spectral x/y, three FGF8 zones, deposition of the record at the advancing front, block-Thomas implicit step", supports: true}
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [668, 770], note: "k_PD^2 from the lowest eigenvalue of the discrete active-zone PD operator (Dirichlet ghosts) and fu by bisection to the Helmholtz target q* = m^2 + k_DV^2 + k_PD^2", supports: true}
+          - {file: morphoeval/lean/loops/Loop_012_limb_chondrogenesis_turing.lean, lines: [114, 214], note: "Pass 3 Lean Laws 4-6 (Helmholtz AP mode budget, FGF8 window depth independent of AER output, Hill-2 strict monotonicity), 0 sorrys, `lean` exits 0", supports: true}
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [186, 191], note: "Table 1 mode map m(L_PD) thresholds 375/190/125 um remain an empirical input to the kinetics (not derived from hyaluronate -> D_eff)", supports: false}
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [1006, 1012], note: "Joint/interzone on m increment is an imposed reset of the active + apical field to noise (documented, not emergent)", supports: false}
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [1204, 1209], note: "S_max sweep: S = 0 (no outgrowth) still produces [1, 2, 3] — element count is clock-set, growth-insensitive", supports: false}
+      specimen-match:
+        value: 92
+        rationale: >-
+          Same SHA-256-locked Gallus gallus wing skeleton specimen and cross-sectional
+          segmentation (1 humerus; radius + ulna 38.0 px; digits II-IV 27.0 px, ratio 1.4074;
+          `segment_chick_wing_specimen`, L1222-1284; Panels E-F). Pass 3 adds a second,
+          independent comparison: the frozen 3D record's compartment counts [1, 2, 3] and its
+          zeugopod-to-autopod AP spacing ratio 1.484 (Panel J, L1514-1535) are set against the
+          specimen's [1, 2, 3] and 1.407 and the cosine-mode theory 1.5 (measurement 14). The
+          specimen is still a single adult osteological photograph (no HH-staged embryonic
+          Alcian-blue series), so the stage-resolved L_PD(t) and excision-time predictions are
+          validated against Table 1 / Summerbell numbers rather than against imagery.
+        evidence:
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [1222, 1284], note: "Cross-sectional osteological peak detection across stylopod (1), zeugopod (2), autopod (3) on chick_wing_skeleton_specimen.jpg", supports: true}
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [1514, 1535], note: "Panel J: 3D record u_rec(x, y_mid, z) with detected compartments, DV core purity and AP spacings compared with the specimen ratio", supports: true}
+          - {file: docs/media/limb_chondrogenesis_turing_comparison.png, lines: [0, 0], note: "12-panel synthesis figure (A-H Pass 2; I growth kinematics vs Table 1, J 3D record, K excision-time series vs Saunders/Summerbell, L FGF8 zones)", supports: true}
+      parameter-expressivity:
+        value: 95
+        rationale: >-
+          Keeps the 4-stage L_PD sweep, 3-step AER series and dual negative controls
+          (L471-559) and adds: the Summerbell (1974) excision-time sweep at 6 excision times
+          resumed from shared snapshots (`run_aer_excision_time_sweep`, L1165-1192), an
+          S_max x {0, 0.5, 1, 1.5, 2} outgrowth sweep (0/306/612/919/1226 um, strictly
+          monotone) and a lambda_F0 x {0.6, 0.8, 1.0, 1.2} element-count sweep (9/10/6/6
+          elements) (`run_fgf8_parameter_sweep`, L1194-1217), per-run overrides via `params`,
+          `S_max_per_h`, `lambda_scale`, `nx`, `ny`, `continue_from` (L847-856), and five new
+          CLI flags `--S-max-per-h`, `--L-DV-um`, `--eta-threshold`, `--t-end-h`,
+          `--tau-FGF-h` (L1959-1963) on top of the nine Pass 2 flags.
+        evidence:
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [1165, 1217], note: "Excision-time sweep (6 times) and S_max / lambda_F0 parameter sweeps on the moving-boundary model", supports: true}
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [1947, 1979], note: "CLI: nine Pass 2 flags plus five Pass 3 moving-boundary flags that override FGF8_GROWTH_DEFAULTS for the default render", supports: true}
+      morphometric-validation:
+        value: 93
+        rationale: >-
+          `measure_morphoeval()` (L1671-1836) now reports 14 reference-backed measurements:
+          the 8 Pass 2 items (unchanged values) plus 3D record total elements 6 vs 6,
+          L_PD(24 h) 250.2 vs 250 um, L_PD(48 h) 128.6 vs 140 um (-8.1 %, the 3-point clock
+          fit's residual), excision at 0 h -> 1 vs 1, excision at 24 h -> 3 vs 3, and record
+          AP spacing ratio 1.484 vs 1.5. The L_PD(48 h) miss and the fact that the excision
+          series is partly a consequence of the imposed m-map timing keep this below the
+          mid-90s.
+        evidence:
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [1671, 1836], note: "14 measurements (8 Pass 2 + 6 Pass 3: 3D record total, L_PD(24 h), L_PD(48 h), excision 0 h, excision 24 h, record spacing ratio) with reference values and sources", supports: true}
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [639, 665], note: "Hyaluronidase clock fit to Table 1 (tau_H = 37.0 h) — L_PD(48 h) = 128.6 um vs 140 um reference is an 8 % residual of the one-parameter exponential", supports: false}
+      source-traceability:
+        value: 96
+        rationale: >-
+          Five SHA-256-pinned dataset files (`EXPECTED_SHA256`, L109-125; the Pass 2 specimen
+          and JSON digests are unchanged) including the new
+          `fgf8_moving_boundary_reference.json`, which traces every `FGF8_GROWTH_DEFAULTS`
+          constant to a source or labels it a model assumption and is read back in the
+          self-test (L1885-1892, L1930); `paper_citations.bib` extended from 5 to 14 DOIs;
+          dataset README documents the Pass 3 additions. All 14 reference DOIs in this audit
+          resolve to the cited works (the Newman & Frisch DOI 10.1126/science.462174 was
+          re-verified).
+        evidence:
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [109, 157], note: "Runtime SHA-256 verification of all 5 files in datasets/limb_chondrogenesis_turing/ and loader for the Pass 3 provenance JSON", supports: true}
+          - {file: datasets/limb_chondrogenesis_turing/fgf8_moving_boundary_reference.json, lines: [1, 66], note: "Provenance of the FGF8 clock, thresholds, proliferation, geometry, excision rule and numerics — sourced constants separated from model assumptions", supports: true}
+          - {file: datasets/limb_chondrogenesis_turing/paper_citations.bib, lines: [56, 155], note: "9 Pass 3 BibTeX entries (Crampin 1999, Zhu 2010, Boehm 2010, Sun 2002, Toole 1972, Solursh 1984, Summerbell 1974/1976/1977)", supports: true}
+      code-traceability:
+        value: 95
+        rationale: >-
+          Module docstring (L1-93) maps the Pass 3 model and Lean Theorems 4-6 to their
+          sources; the Section 4b header (L562-600) is an explicit honest-scope statement
+          listing what is and is not a finite-element / paddle-outline model; function
+          docstrings cite Hentschel 2004, Zhu 2010, Sun 2002, Boehm 2010, Summerbell 1974/1977
+          and Rowe & Fallon 1982 at the point of use; the Math KG spec now registers 6 laws
+          with Lean loci and code loci (`newman-limb-chondrogenesis-turing.yaml`, L1-143).
+        evidence:
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [1, 93], note: "Module docstring: Pass 3 item 4 (FGF8 moving boundary) and Lean Theorems 4-6", supports: true}
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [562, 600], note: "Honest-scope header of Section 4b (box geometry, spectral x/y, imposed joint reset, Table 1 m-map still an input, excision rule)", supports: true}
+          - {file: morphoeval/math_kg_loops/newman-limb-chondrogenesis-turing.yaml, lines: [82, 143], note: "Three Pass 3 law entries with lean_code, lean_locus and code_locus", supports: true}
+      repro-package:
+        value: 95
+        rationale: >-
+          `--self-test` (L1839-1944) now runs 14 deterministic checks (8 Pass 2 + clock fit,
+          kinetics target/band, FGF8 window independence + Hill monotonicity, 3D record
+          [1, 2, 3] with L_PD(24/48 h) tolerances, excision series vs pinned provenance,
+          sweep monotonicity) in ~50 s; the default render (12-panel PNG + 11-frame GIF) takes
+          ~51 s; all Pass 3 runs are seeded (seed 1979, per-joint derived seeds) and cached
+          (`_RUN_CACHE`, L1154) so render and measurements share one integration.
+        evidence:
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [1839, 1944], note: "14-check self_test() including bitwise determinism and the six Pass 3 checks", supports: true}
+          - {file: 1979-newman-limb-chondrogenesis-turing.py, lines: [1154, 1162], note: "Run cache shared by render, measurements and self-test (one intact-AER 3D integration per process)", supports: true}
+    remediation:
+      - "Make proximodistal mode selection growth-sensitive: derive the Table 1 map m(L_PD) (L186-191) and the active-zone fu (L695-770) from a hyaluronate density field (Toole 1972) advected and diluted on the same Lagrangian mesh instead of thresholds on L_PD, so that the S_max = 0 run (L1204-1209) no longer yields [1, 2, 3] with zero outgrowth."
+      - "Replace the imposed joint/interzone reset on m increment (L1006-1012) with an emergent interzone: e.g. a Gdf5/Wnt9a-type inhibitor released where the deposited record saturates, or the mechanical clefting of Loop 018, and verify that the 1 -> 2 -> 3 compartments still separate."
+      - "Replace the DCT-II/DST-II spectral box cross-section (L898-907, header L567-600) with an unstructured 3D P1 finite-element mesh on a paddle-shaped bud outline with anteroposterior widening (Zhu et al. 2010 geometries), keeping the moving distal boundary."
+      - "Replace the post-excision kinetics-hold rule (L991-997) with an explicit distal cell-death zone (Rowe & Fallon 1982, ~200 um) and FGF8 bead rescue (Niswander et al. 1993) so the Summerbell (1974) series and partial rescue are predicted rather than rule-driven."
+      - "Reduce the L_PD(48 h) residual (128.6 vs 140 um, L639-665) by fitting the hyaluronidase clock to a dense Summerbell (1976) elongation series rather than three Table 1 points, and report the fit's confidence interval in measurement 10."

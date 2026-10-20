@@ -24,6 +24,16 @@
         "id": "beaupeux2016",
         "citation": "Beaupeux M, Francois P (2016). Positional information from oscillatory phase shifts: insights from in silico evolution. Physical Biology 13(3):036009.",
         "doi": "10.1088/1478-3975/13/3/036009"
+      },
+      {
+        "id": "kuramoto1984",
+        "citation": "Kuramoto Y (1984). Chemical Oscillations, Waves, and Turbulence. Springer Series in Synergetics 19, Berlin.",
+        "doi": "10.1007/978-3-642-69689-3"
+      },
+      {
+        "id": "dubrulle2004",
+        "citation": "Dubrulle J, Pourquie O (2004). fgf8 mRNA decay establishes a gradient that couples axial elongation to patterning in the vertebrate embryo. Nature 427(6973):419-422.",
+        "doi": "10.1038/nature02216"
       }
     ],
     "specimens": {
@@ -75,6 +85,61 @@
       "canonical_default_radius_R0_um": 300.0,
       "n_oscillation_cycles": 8,
       "dapt_notch_inhibition_coupling_factor": 0.0
+    }
+  },
+  "pass3_mechanistic_parameters": {
+    "section": "Pass 3 (audit v3) extensions: FGF/Wnt-gradient-driven wavelength adaptation (Lauschke et al. 2013 Fig. 4; Aulehla et al. 2008; Beaupeux & Francois 2016; Dubrulle & Pourquie 2004) and the Tsiairis & Aulehla (2016) disordered cell-reaggregation lattice",
+    "fgf_wnt_signaling_gradient": {
+      "source_sink_scaling": "D W'' - k W = 0 on [0, R(t)], W(0) = W_0, W(R(t)) = 0  =>  W = W_0 sinh((R - r)/l_k) / sinh(R/l_k); for l_k = sqrt(D/k) >> R the profile is linear W_0 (1 - r/R) and l_half = R/2 (exponent d ln l_half / d ln R = 1)",
+      "fixed_length_exponential": "W = W_0 exp(-r / l_k), l_half = l_k ln 2 independent of R(t) (exponent 0); mechanistic non-scaling control",
+      "l_k_scaling_um": 1000000.0,
+      "l_k_fixed_um": 252.0,
+      "note": "The quasi-static approximation assumes the morphogen relaxation time (1/k, R^2/D) is short relative to T_osc = 140 min; the gradient is not time-integrated in the script."
+    },
+    "wavelength_adaptation": {
+      "equation": "d lambda / dt = -(lambda - c_lambda * l_half(t)) / tau_lambda,  c_lambda = (2*pi/Phi_0) / (1/2),  Phi(t) = 2*pi R(t) / lambda(t)",
+      "segment_gating": "S_n = R(t_n) [1 - (1 - delta_phi_seg / Phi(t_n))^(1/p)],  delta_phi_seg = Phi_0 [1 - (1 - alpha)^p] = 0.9144 rad",
+      "tau_lambda_default_min": 35.0,
+      "tau_lambda_sweep_min": [5.0, 35.0, 70.0, 280.0, "inf"],
+      "dt_min": 0.5,
+      "expected_default_results": {
+        "Phi_mean_rad": 6.1253,
+        "Phi_relative_error": 0.0251,
+        "emergent_alpha_cycle_8": 0.1103,
+        "frozen_wavelength_alpha_cycle_8": 0.5601,
+        "fixed_gradient_mean_segment_um": 39.48,
+        "fixed_gradient_segment_cv": 0.0319
+      }
+    },
+    "tsiairis_2016_reaggregate_lattice": {
+      "equation": "d theta_i/dt = omega_i + (K / n_i) sum_j [sin(theta_j - theta_i - a) + sin a],  omega_i = omega_0 (1 + eta xi_i)",
+      "continuum_limit": "theta_t = omega + D lap theta + beta |grad theta|^2, D = K cos(a) d^2/4, beta = K sin(a) d^2/4 (Kuramoto 1984); pacemaker frequency excess Delta omega = beta k^2",
+      "aggregate_radius_um": 250.0,
+      "cell_spacing_um": 12.0,
+      "position_jitter_fraction": 0.45,
+      "coupling_radius_mult": 1.65,
+      "n_cells": 1577,
+      "K_rad_per_min": 0.5,
+      "eta": 0.25,
+      "phase_lag_a_rad": 0.6,
+      "frequency_correlation_length_um": 40.0,
+      "initial_phase_von_mises_kappa": 1.0,
+      "n_cycles": 14,
+      "dt_min": 1.0,
+      "seed": 2016,
+      "K_sweep": [0.0, 0.25, 0.5, 1.0],
+      "eta_sweep": [0.0, 0.1, 0.25, 0.4],
+      "pacemaker_detection": "least-squares local phase gradient per cell; inward flux of the unit phase-lead vectors within rho = 30 um > 0.6 after non-maximum suppression (2 rho); cells with |grad theta| < 2e-3 rad/um carry no direction; neighbourhood coherence > 0.5 required",
+      "expected_default_results": {
+        "pacemaker_counts_by_cycle": {"1": 5, "2": 4, "3": 3, "4": 3, "6": 3, "8": 3, "10": 1, "12": 1, "13": 1, "14": 1},
+        "early_median_cycles_1_3": 4,
+        "late_median_cycles_12_14": 1,
+        "final_local_coherence": 0.9446,
+        "K0_final_local_coherence": 0.0036,
+        "eta0_final_local_coherence": 1.0,
+        "dominant_pacemaker_to_frequency_maximum_um": 17.7
+      },
+      "qualitative_reference": "Tsiairis & Aulehla (2016) Cell 164:656-667: dissociated, randomised PSM cells reaggregated in culture re-synchronise LuVeLu oscillations and self-organise multiple de novo wave foci (target patterns); the paper reports several foci per aggregate, not a fixed count, so the script's reference is the lower bound >= 2 and the single-dominant-pacemaker end state follows Kuramoto (1984)."
     }
   },
   "lauschke_2013_explant_scaling_series": {

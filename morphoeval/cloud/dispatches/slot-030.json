@@ -8,5 +8,57 @@
   "status": "completed",
   "pass1_score": 54.1,
   "pass2_score": 91.4,
-  "delta": 37.3
+  "delta": 37.3,
+  "pass3_run_id": "2026-10-19-neuromesodermal-jamming-loop-pass3",
+  "pass3_audit_id": "2026-10-19-neuromesodermal-jamming-audit-v3",
+  "audit_v3": "morphoeval/audits/2026-10-19-neuromesodermal-jamming-audit-v3.yaml",
+  "pass3_score": 90.0,
+  "pass3_dims": {
+    "model-fidelity": 90,
+    "specimen-match": 88,
+    "parameter-expressivity": 91,
+    "morphometric-validation": 89,
+    "source-traceability": 92,
+    "code-traceability": 92,
+    "repro-package": 92
+  },
+  "pass3_delta_vs_pass2": -1.4,
+  "pass3_completed_at": "2026-10-20T08:52:00Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_kg_dir": "morphoeval/kg/2026-10-19-neuromesodermal-jamming-audit-v3",
+  "pass3_remediation_closed": [
+    "Couple the 2D active-foam tailbud jamming gradient to 3D fibronectin ECM boundary friction (Dray et al. 2013) and anterior Her1/Her7 segmentation clock wavefront arrest -> closed in reduced form: (a) quasi-3D thin-rod fibronectin sheath with hoop equilibrium eps_r = max(0, sigma_A - sigma_y)/(K_FN f_FN + K_t), equilibrium radius R_eq(x), influx-weighted channeling chi multiplying the Bingham-backstop elongation speed, 3 Dray-2013 FN regimes (fn1a;fn1b MO v/v_WT 0.79 vs ~0.70, width 1.24 vs ~1.20), 12-point fn_scale sweep and a diagnostic wall-friction force (compute_unstrained_tissue_radius / compute_fibronectin_density_profile / compute_sheath_hoop_strain / compute_sheath_channeling L398-514; simulate_2d_tailbud_jamming_regime L683-695, L716, L773; evaluate_fibronectin_regimes L808-855; sweep_fibronectin_scale L858-878; Lean Theorem 5); (b) Her1/Her7 clock phase advected in the tip frame with a mechanical arrest gate sigma_y/sigma_A >= 4 (x_arrest = 161 um > x_jam = 81 um), Cooke-Zeeman somite length S = (v_elong + v_short) T = 46.2 um (ref ~47), frozen stripe wavelength 46.2 um on the kymograph, per-regime arrest fronts (cdh2: none) and somite-border FN feedback into the sheath (locate_clock_arrest_front L521-543; solve_segmentation_clock_arrest L546-640; evaluate_clock_across_regimes L881-917; Lean Theorem 6). Residual (friction feedback, true axisymmetric Stokes/Bingham solve, FGF-defined front) carried to Pass 4."
+  ],
+  "pass3_remediation_open": [
+    "L452-499, L485-486: channeling is a transient stored-volume argument and the computed ECM wall friction F_drag never feeds back on v_elong -> axisymmetric thin-film Stokes/Bingham solve with a fibronectin traction boundary condition",
+    "L146-147 + reference.json L269-315: K_FN/K_t calibrated to approximate Dray 2013 ratios (itga5 misses 0.95 vs 0.82) -> digitise Dray Fig. 2/4 with panel pins and uncertainties, anchor the sheath modulus to a measured stiffness",
+    "L521-543, L156: Lambda_arrest = 4 is an uncited gate -> couple x_arrest to an FGF8/Wnt determination-front threshold and compare with her1 in situ / Soroldoni 2014 wave data",
+    "L546-640: phase-oscillator clock with uncited u(x) floor and c_slow (L576, L159); stripe-wavelength check (L615-623) is circular with S -> Lewis 2003 her1/her7 DDE through the same advection, validated against staged somite lengths",
+    "L716-728: elongation law is a calibrated product (prefactor, tanh fluidity, ablation special-case) with hard-coded blebbistatin/SU5402 L-R asymmetry overrides -> derive v_elong and asymmetry from the 2D simulator kinematics and drop the overrides",
+    "L1478-1601: row C has no specimen -> vendor a CC-licensed fibronectin immunostain and a her1 in situ / Soroldoni wave image, segment them, add measurements; render the fn1a;fn1b 2D regime (L1142-1153) as a spatial panel"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_030.fibronectin_sheath_confinement_channeling",
+    "MathOfBiology.Loop_030.clock_wavefront_arrest_somite_scaling"
+  ],
+  "pass3_lean_verified": true,
+  "pass3_self_test": "13/13 passed",
+  "pass3_artifacts": [
+    "2022-tailbud-neuromesodermal-jamming.py",
+    "morphoeval/lean/loops/Loop_030_neuromesodermal_jamming.lean",
+    "morphoeval/math_kg_loops/tailbud-neuromesodermal-jamming.yaml",
+    "datasets/neuromesodermal_jamming/neuromesodermal_jamming_reference.json",
+    "datasets/neuromesodermal_jamming/paper_citations.bib",
+    "datasets/neuromesodermal_jamming/README.md",
+    "docs/media/neuromesodermal_jamming_comparison.png",
+    "docs/media/neuromesodermal_jamming_growth.gif",
+    "docs/media/neuromesodermal_jamming_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-neuromesodermal-jamming-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-neuromesodermal-jamming-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-neuromesodermal-jamming-audit-v3/ (10 signed nanopubs, REPORT.md, ttl, published.json)",
+    "morphoeval/runs/2026-10-19-neuromesodermal-jamming-loop-pass3.{yaml,csv,md,trig,events.jsonl,ledger.jsonl}",
+    "morphoeval/cloud/dispatches/slot-030.json"
+  ]
 }

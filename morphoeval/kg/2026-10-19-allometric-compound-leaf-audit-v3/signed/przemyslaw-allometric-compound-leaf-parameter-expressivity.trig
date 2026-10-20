@@ -1,0 +1,122 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAtdFUGPYnxSnn9GEnpyh-R1AUttBg6AWoCqvxwiqBrUU/> .
+@prefix this: <https://w3id.org/np/RAtdFUGPYnxSnn9GEnpyh-R1AUttBg6AWoCqvxwiqBrUU> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-przemyslaw-allometric-compound-leaf> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-przemyslaw-allometric-compound-leaf-parameter-expressivity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-przemyslaw-allometric-compound-leaf-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Bilsborough et al. (2011), Barkoulas et al. (2008), Vlad et al. (2014) & Kierzkowski et al. (2019) growing leaf margin PIN1-Auxin-CUC2-RCO feedback loop: emergent integrated-contour dissection, growing cellular spring-lattice lamina with Mitchison-canalized veins and microtubule-anisotropic growth, and Cardamine hirsuta specimen segmentation — Parameter expressivity: 74/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "Sweeps 6 genotypes x 4 developmental stages (`simulate_genotype_morphospace`, L524-647), a 5 x 6 eta x growth-duration grid (`sweep_eta_growth_duration`, L1186-1215; monotone in eta, ceiling 0.427) and four lamina runs including a microtubule-anisotropy ablation (`simulate_lamina_mesh_morphospace`, L1138-1177); `GrowingLaminaSpringMesh.__init__` exposes 22 physical parameters (L693-724). The CLI (L2021-2046) now actually forwards --beta/--gamma-cuc2/--k-a to `render_outputs` (in v2 they were parsed and ignored) and adds --mesh-steps, --no-mesh, --print-measurements. Deductions: `measure_morphoeval` and the self-test ignore the CLI PDE parameters (-8); none of the mesh parameters (a_vein, canal_k, canal_mu, h) is reachable from the CLI (-8); the number of lateral pairs per genotype is hard-wired (L546, L1153-1156) rather than emerging from lambda_c (-10)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:evidenceAgainst "2011-przemyslaw-allometric-compound-leaf.py L1153–L1156: Lateral pair counts (2 for At, 3 for Ch, 0 for cuc2-1) are hard-wired per genotype, not derived from the critical wavelength <https://github.com/fractastical/morpholib/blob/d58a084/2011-przemyslaw-allometric-compound-leaf.py#L1153-L1156>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-przemyslaw-allometric-compound-leaf-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-przemyslaw-allometric-compound-leaf-parameter-expressivity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-przemyslaw-allometric-compound-leaf-parameter-expressivity-3> ;
+        pk:hasScore "0.74"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-przemyslaw-allometric-compound-leaf-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2011-przemyslaw-allometric-compound-leaf.py L1186–L1215" ;
+        dcterms:description "sweep_eta_growth_duration: 30 emergent contour runs over eta in {0, 0.21, 0.42, 0.62, 0.88} x growth_scale in {0.5 .. 3.0}; reports max_ID and eta-monotonicity" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2011-przemyslaw-allometric-compound-leaf.py#L1186-L1215> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-przemyslaw-allometric-compound-leaf-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2011-przemyslaw-allometric-compound-leaf.py L1138–L1177" ;
+        dcterms:description "simulate_lamina_mesh_morphospace: At WT, Ch WT, cuc2-1 and Ch WT with anisotropy_on=False (MT ablation)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2011-przemyslaw-allometric-compound-leaf.py#L1138-L1177> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-przemyslaw-allometric-compound-leaf-parameter-expressivity-3> a pk:EvidenceItem ;
+        rdfs:label "2011-przemyslaw-allometric-compound-leaf.py L2021–L2046" ;
+        dcterms:description "CLI: --beta/--gamma-cuc2/--k-a forwarded to render_outputs; --mesh-steps, --no-mesh, --print-measurements" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2011-przemyslaw-allometric-compound-leaf.py#L2021-L2046> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 037 Pass 3 Assessor)" ;
+        dcterms:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1016/j.cell.2019.05.011> dcterms:date "2019"^^xsd:gYear ;
+        dcterms:title "A growth-based framework for leaf shape development and diversity" .
+
+    <https://doi.org/10.1038/ng.189> dcterms:date "2008"^^xsd:gYear ;
+        dcterms:title "A developmental framework for dissected leaf formation in the Arabidopsis relative Cardamine hirsuta" .
+
+    <https://doi.org/10.1073/pnas.1015162108> dcterms:date "2011"^^xsd:gYear ;
+        dcterms:title "Model for the regulation of Arabidopsis thaliana leaf margin development" .
+
+    <https://doi.org/10.1098/rspb.1980.0015> dcterms:date "1980"^^xsd:gYear ;
+        dcterms:title "A model for vein formation in higher plants" .
+
+    <https://doi.org/10.1101/gad.1402406> dcterms:date "2006"^^xsd:gYear ;
+        dcterms:title "Control of leaf vascular patterning by polar auxin transport" .
+
+    <https://doi.org/10.1126/science.1165594> dcterms:date "2008"^^xsd:gYear ;
+        dcterms:title "Developmental patterning by mechanical signals in Arabidopsis" .
+
+    <https://doi.org/10.1126/science.1248384> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "Leaf shape evolution through duplication, regulatory diversification, and loss of a homeobox gene" .
+
+    <https://doi.org/10.7554/eLife.01967> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "Subcellular and supracellular mechanical stress prescribes cytoskeleton behavior in Arabidopsis cotyledon pavement cells" .
+
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/37> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.cell.2019.05.011>,
+            <https://doi.org/10.1038/ng.189>,
+            <https://doi.org/10.1073/pnas.1015162108>,
+            <https://doi.org/10.1098/rspb.1980.0015>,
+            <https://doi.org/10.1101/gad.1402406>,
+            <https://doi.org/10.1126/science.1165594>,
+            <https://doi.org/10.1126/science.1248384>,
+            <https://doi.org/10.7554/eLife.01967> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "bLG3eXAfu1j2MT6oBgER+mZNqTTSoad67WpyC31t6HKK1OtR+qVN91iY9al3wl213Yo+QelUt1NZXxgGRkRehlodR1CZwjPl+aUGnSVZpSyCoKci6C7fyzAapJwLjEOu5cSyopBFtMM13A6gPcWn6imgLwFmY2x2inkoEptv2xPZvH5v1AcaIoYHXDVj2YPfjZG14a4v54+uNYDT95cpaAXPAA+sNzghXZOJafL9RmOcrlbVpFtw+PGzigUYSZksewG9VxB/OQOs/xxHO5hrGh1B7Hry32wYu/qOyRmoWMvbGrdN4Lq1nU1VJ3O70Fbi9+XfHjkj3KBsyd4usndWXw==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Bilsborough et al. (2011), Barkoulas et al. (2008), Vlad et al. (2014) & Kierzkowski et al. (2019) growing leaf margin PIN1-Auxin-CUC2-RCO feedback loop: emergent integrated-contour dissection, growing cellular spring-lattice lamina with Mitchison-canalized veins and microtubule-anisotropic growth, and Cardamine hirsuta specimen segmentation — Parameter expressivity 74/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T10:21:53Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-przemyslaw-allometric-compound-leaf-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/37> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

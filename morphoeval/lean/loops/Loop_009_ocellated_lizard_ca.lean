@@ -103,4 +103,76 @@ theorem manukyan_outer_totalistic_ca_labyrinth_fixed_point :
     manukyan_ca_step 0 1 = 1 := by
   decide
 
+
+-- ============================================================================
+-- Law 4 (`manukyan-ocellated-lizard-ca-4`, Pass 3):
+-- Thin-Film Depth Average of a Skin Column (3D voxel skin -> 2D reduction)
+-- ============================================================================
+
+/-- Depth-integrated morphogen mass of a vertically uniform skin column of
+    height `h` voxels holding concentration `c` in every voxel: `h * c`. -/
+def column_mass (h c : Nat) : Nat :=
+  h * c
+
+/-- Depth average `ubar = (sum_z u) / h` of a skin column of height `h` with
+    integrated mass `m` (integer model of `(1/h) * sum_z u`). -/
+def depth_average (h m : Nat) : Nat :=
+  m / h
+
+/-- Theorem 4 (`thin_film_depth_average_recovers_uniform_column`):
+    (1) For any skin column of positive height `h` that is vertically uniform at
+        concentration `c`, the depth average recovers `c` exactly —
+        the identity that makes the 3D voxel field and its 2D depth-averaged
+        reduction coincide wherever the field is vertically uniform
+        (`vertical_nonuniformity_rms = 0`).
+    (2) Column mass is monotone in thickness: a thinned border column
+        (`h_border ≤ h_interior`) holds no more morphogen than an interior
+        column at the same concentration, so the border has the smaller
+        capacity `h(x)` in `(1/h) div(h D grad u)`. -/
+theorem thin_film_depth_average_recovers_uniform_column
+    (h_interior h_border c : Nat) (hpos : 0 < h_interior) (hle : h_border ≤ h_interior) :
+    depth_average h_interior (column_mass h_interior c) = c ∧
+    column_mass h_border c ≤ column_mass h_interior c := by
+  unfold depth_average column_mass
+  exact ⟨Nat.mul_div_cancel_left c hpos, Nat.mul_le_mul_right c hle⟩
+
+
+-- ============================================================================
+-- Law 5 (`manukyan-ocellated-lizard-ca-5`, Pass 3):
+-- Finite-Volume Face Conductance Between Skin Columns Equals Shared Face Area
+-- ============================================================================
+
+/-- Depth-integrated diffusive conductance of the voxel face shared by two
+    adjacent skin columns of heights `h_i`, `h_j` (in voxels) with diffusivity `D`:
+    only the `min h_i h_j` voxel pairs that are both skin conduct, so the
+    conductance is `min h_i h_j * D` (zero-flux on the exposed step). -/
+def face_conductance (h_i h_j D : Nat) : Nat :=
+  min h_i h_j * D
+
+/-- Theorem 5 (`voxel_face_conductance_ratio_equals_thickness_ratio`):
+    For an interior column of height `h_interior` and a border column of height
+    `h_border < h_interior` (e.g. 12 and 2 voxels for *Timon lepidus* `P = 0.17`):
+    (1) The interior-border face conductance is `h_border * D` and the
+        interior-interior face conductance is `h_interior * D`.
+    (2) Their ratio equals the thickness ratio `h_border / h_interior`
+        independently of `D` (cross-multiplied form).
+    (3) An insulated border (`h_border = 0`) has zero conductance, decoupling scales.
+    (4) For any positive diffusivity the thinned border face conducts strictly
+        less than an interior face — the 3D voxel analogue of Lean Theorem 2. -/
+theorem voxel_face_conductance_ratio_equals_thickness_ratio
+    (h_interior h_border D : Nat) (hlt : h_border < h_interior) (hD : 0 < D) :
+    face_conductance h_interior h_border D = h_border * D ∧
+    face_conductance h_interior h_interior D = h_interior * D ∧
+    face_conductance h_interior h_border D * h_interior =
+      face_conductance h_interior h_interior D * h_border ∧
+    face_conductance h_interior 0 D = 0 ∧
+    face_conductance h_interior h_border D < face_conductance h_interior h_interior D := by
+  unfold face_conductance
+  have hmin : min h_interior h_border = h_border := Nat.min_eq_right (Nat.le_of_lt hlt)
+  have hself : min h_interior h_interior = h_interior := Nat.min_self h_interior
+  have hzero : min h_interior 0 = 0 := Nat.min_eq_right (Nat.zero_le h_interior)
+  rw [hmin, hself, hzero]
+  refine ⟨rfl, rfl, ?_, by simp, Nat.mul_lt_mul_of_pos_right hlt hD⟩
+  ac_rfl
+
 end MathOfBiology.Loop_009

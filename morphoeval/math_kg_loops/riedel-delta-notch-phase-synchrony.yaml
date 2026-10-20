@@ -1,24 +1,40 @@
 sim_id: riedel-delta-notch-phase-synchrony
 math_family: Coupled Delayed Kuramoto Somite Field
 model_spec:
-  model: "Riedel-Kruse, Müller & Oates (2007) Science / Morelli et al. (2009) HFSP J. delayed Kuramoto phase-oscillator lattice dtheta_i(t)/dt = omega_0 + (kappa/z)*sum_j sin(theta_j(t - tau_c) - theta_i(t)) + xi_i(t), collective frequency shift Omega = omega_0 - kappa*sin(Omega*tau_c), linear stability stiffness kappa_eff = kappa*cos(Omega*tau_c) > 0, Kuramoto order parameter R(t), and Anterior Limit of Defects (ALD) / Posterior Rescue Point (PRP) DAPT pulse-chase dynamics"
+  model: "Riedel-Kruse, Müller & Oates (2007) Science / Morelli et al. (2009) HFSP J. delayed Kuramoto phase-oscillator PSM lattice dtheta_i(t)/dt = omega_i + (kappa(t)/z_i)*sum_j sin(theta_j(t - tau_c,j) - theta_i(t)) + xi_i(t) on an advected AP x lateral lattice with a tailbud-anchored FGF8/Wnt frequency profile omega(x) (kinematic phase waves), Mib1-ubiquitination-gated coupling kappa(t) = kappa_max*u(t)*g(t), collective frequency shift Omega = omega_0 - kappa*sin(Omega*tau_c), linear stability stiffness kappa_eff = kappa*cos(Omega*tau_c) > 0, Kuramoto order parameter R(t), and emergent Anterior Limit of Defects (ALD) / Posterior Rescue Point (PRP) DAPT pulse-chase dynamics (Pass 3)"
   governing_equations:
-    delayed_kuramoto_lattice: "dtheta_i(t)/dt = omega_0 + (kappa / z) * sum_{j in N(i)} sin(theta_j(t - tau_c) - theta_i(t)) + xi_i(t)"
+    delayed_kuramoto_lattice: "dtheta_i(t)/dt = omega_i + (kappa(t) / z_i) * sum_{j in N(i)} sin(theta_j(t - tau_c,j) - theta_i(t)) + xi_i(t)"
     collective_frequency_shift: "Omega = omega_0 - kappa * sin(Omega * tau_c),  T_sync = 2 * pi / Omega"
     linear_stability_criterion: "kappa_eff = kappa * cos(Omega * tau_c) > 0"
     ald_prp_pulse_chase_laws: "R(t) = |(1/N)*sum_j exp(i*theta_j(t))|;  ALD(s_in) = s_in + Delta_n_ALD,  PRP(s_out) = s_out + Delta_n_PRP"
+    kinematic_wave_law: "omega(xi) = omega_0 * exp(-xi/lambda_F);  k(x) = (Omega/v) * (1 - omega(x)/omega_0);  N_w = (1/S) * Int_0^L (1 - omega/omega_0) dx;  tau_c(x) * omega(x) = tau_c * omega_0"
+    mib1_ubiquitination_gate: "du/dt = k_ub*M*(1 - u) - k_endo*u;  u_ss = k_ub M/(k_ub M + k_endo);  kappa(t) = kappa_max*u(t)*g(t);  g = 1/(1 + (C_DAPT/IC50)^n)"
+    emergent_defect_span: "ALD = s_cross + Delta_n_det;  PRP = s_recross + Delta_n_det;  PRP - ALD = s_recross - s_cross"
   canonical_parameters:
     T_0_min: 25.0
     omega_0_rad_per_min: 0.251327
     kappa_per_min: 0.070
     tau_c_min: 20.5
-    Omega_rad_per_min: 0.2896
-    T_sync_min: 21.70
-    kappa_eff_per_min: 0.0566
-    D_phi_rad2_per_min: 0.0042
+    Omega_rad_per_min: 0.283333
+    T_sync_min: 22.176
+    kappa_eff_per_min: 0.062255
+    D_phi_rad2_per_min: 0.003
+    sigma_omega_rad_per_min: 0.014
     R_crit: 0.50
-    Delta_n_ALD_somites: 5.5
-    Delta_n_PRP_somites: 5.5
+    Delta_n_det_somites: 2.5
+    Delta_n_ALD_analytic_somites: 5.5
+    Delta_n_PRP_analytic_somites: 5.5
+    f_anterior: 0.5
+    L_psm_somite_lengths: 6.0
+    cells_per_somite: 4
+    n_lateral_cells: 12
+    k_ub_per_min: 0.08
+    k_endo_per_min: 0.02
+    kappa_max_per_min: 0.0875
+    tau_wash_min: 8.0
+    dapt_dose_over_ic50: 20.0
+    dapt_hill_n: 2.0
+  canonical_parameter_note: "Pass 3 corrected Omega / T_sync / kappa_eff to the self-consistent root (the Pass 1-2 values 0.2896 / 21.70 / 0.0566 were not roots of Omega = omega_0 - kappa*sin(Omega*tau_c)); D_phi and sigma_omega are calibrated to the Riedel-Kruse (2007) ALD data."
   inputs:
     - datasets/delta_notch_phase_synchrony/delta_notch_phase_synchrony_reference.json
     - datasets/delta_notch_phase_synchrony/zebrafish_psm_synchrony_specimen.jpg
@@ -33,7 +49,7 @@ equations:
     lean_decl: "MathOfBiology.Loop_023.delayed_kuramoto_collective_frequency"
     lean_theorem: "MathOfBiology.Loop_023.riedel_2007_collective_frequency_shift_and_dapt_limit"
     lean_file: morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean
-    lean_locus: "morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean#L27-L53"
+    lean_locus: "morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean#L28-L56"
     lean_code: |-
       def delayed_kuramoto_collective_frequency (omega_0 kappa sin_delay_phase : Int) : Int :=
         omega_0 - kappa * sin_delay_phase
@@ -49,7 +65,7 @@ equations:
     variables: "theta_i(t): clock phase of PSM cell i; omega_0: intrinsic single-cell frequency (rad/min); kappa: Delta-Notch coupling strength (min^-1); tau_c: intercellular signaling time delay (min); Omega: synchronized collective frequency (rad/min)"
     role: "Determines how delayed intercellular Delta-Notch signaling shifts the collective segmentation clock frequency Omega relative to the autonomous cellular rhythm omega_0"
     source_citation: "Riedel-Kruse et al. (2007) Science 317:1911-1915 Eq. 1; Morelli et al. (2009) HFSP J. 3:55-66 Eqs. 1-3"
-    code_locus: "2006-riedel-delta-notch-phase-synchrony.py#L120-L215"
+    code_locus: "2006-riedel-delta-notch-phase-synchrony.py#L213-L276"
   - id: riedel-delta-notch-phase-synchrony-2
     law_name: "Morelli (2009) Delayed Coupling Linear Stability Stiffness Criterion"
     title: "Morelli (2009) Delayed Coupling Linear Stability Stiffness Criterion"
@@ -59,7 +75,7 @@ equations:
     lean_decl: "MathOfBiology.Loop_023.delayed_kuramoto_effective_stiffness"
     lean_theorem: "MathOfBiology.Loop_023.morelli_2009_in_phase_stability_vs_antiphase_instability"
     lean_file: morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean
-    lean_locus: "morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean#L55-L79"
+    lean_locus: "morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean#L58-L84"
     lean_code: |-
       def delayed_kuramoto_effective_stiffness (kappa cos_delay_phase : Int) : Int :=
         kappa * cos_delay_phase
@@ -75,7 +91,7 @@ equations:
     variables: "kappa_eff: effective linear restoring stiffness of in-phase synchronization (min^-1); Omega*tau_c: dimensionless delay phase product (rad)"
     role: "Establishes the linear stability boundary separating stable in-phase synchronization (cos(Omega*tau_c) > 0) from anti-phase checkerboard desynchronization (cos(Omega*tau_c) < 0)"
     source_citation: "Morelli et al. (2009) HFSP J. 3:55-66 Eqs. 4-5; Herrgen et al. (2010) Current Biology 20:1244-1253"
-    code_locus: "2006-riedel-delta-notch-phase-synchrony.py#L218-L320"
+    code_locus: "2006-riedel-delta-notch-phase-synchrony.py#L213-L276"
   - id: riedel-delta-notch-phase-synchrony-3
     law_name: "Riedel-Kruse (2007) Kuramoto Order Parameter, Anterior Limit of Defects (ALD) & Posterior Rescue Point (PRP) Law"
     title: "Riedel-Kruse (2007) Kuramoto Order Parameter, Anterior Limit of Defects (ALD) & Posterior Rescue Point (PRP) Law"
@@ -85,7 +101,7 @@ equations:
     lean_decl: "MathOfBiology.Loop_023.anterior_limit_of_defects"
     lean_theorem: "MathOfBiology.Loop_023.riedel_2007_ald_prp_pulse_chase_window_invariance"
     lean_file: morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean
-    lean_locus: "morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean#L81-L108"
+    lean_locus: "morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean#L86-L116"
     lean_code: |-
       def anterior_limit_of_defects (s_in Delta_n_ALD : Nat) : Nat :=
         s_in + Delta_n_ALD
@@ -105,4 +121,107 @@ equations:
     variables: "R(t): Kuramoto phase coherence order parameter; s_in: somite stage of DAPT Notch blockade onset; s_out: somite stage of DAPT washout; ALD: Anterior Limit of Defects; PRP: Posterior Rescue Point"
     role: "Predicts the ~5.5-somite delay between DAPT Notch blockade and segmentation failure (ALD) and the ~5.5-somite recovery lag between DAPT washout and posterior segmentation rescue (PRP)"
     source_citation: "Riedel-Kruse et al. (2007) Science 317:1911-1915 Figs. 1-4"
-    code_locus: "2006-riedel-delta-notch-phase-synchrony.py#L322-L465"
+    code_locus: "2006-riedel-delta-notch-phase-synchrony.py#L563-L604"
+  - id: riedel-delta-notch-phase-synchrony-4
+    law_name: "Morelli (2009) Kinematic Phase-Wave Law for an Advected FGF8/Wnt Frequency Profile"
+    title: "Morelli (2009) Kinematic Phase-Wave Law for an Advected FGF8/Wnt Frequency Profile"
+    formula: "omega(xi) = omega_0 * exp(-xi/lambda_F);  k(x) = (Omega/v) * (1 - omega(x)/omega_0);  N_w = (1/S) * Int_0^L (1 - omega/omega_0) dx"
+    latex: "\\omega(\\xi) = \\omega_0 e^{-\\xi/\\lambda_F}, \\quad k(x) = \\frac{\\Omega}{v}\\Big(1 - \\frac{\\omega(x)}{\\omega_0}\\Big), \\quad N_w = \\frac{1}{S}\\int_0^L \\Big(1 - \\frac{\\omega}{\\omega_0}\\Big) dx"
+    ascii: "omega(xi) = omega_0 * exp(-xi/lambda_F); k(x) = (Omega/v) * (1 - omega(x)/omega_0); N_w = (1/S) * Int_0^L (1 - omega/omega_0) dx"
+    lean_decl: "MathOfBiology.Loop_023.kinematic_phase_lag"
+    lean_theorem: "MathOfBiology.Loop_023.morelli_2009_kinematic_wave_phase_lag_law"
+    lean_file: morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean
+    lean_locus: "morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean#L119-L150"
+    lean_code: |-
+      def kinematic_phase_lag (Omega omega_eff dt : Int) : Int :=
+        (Omega - omega_eff) * dt
+      theorem morelli_2009_kinematic_wave_phase_lag_law
+          (Omega omega_1 omega_2 dt dt_1 dt_2 : Int) (h_omega : omega_1 ≤ omega_2) (h_dt : 0 ≤ dt) :
+          kinematic_phase_lag Omega Omega dt = 0 ∧
+          kinematic_phase_lag Omega omega_2 dt ≤ kinematic_phase_lag Omega omega_1 dt ∧
+          kinematic_phase_lag Omega omega_1 dt_1 + kinematic_phase_lag Omega omega_1 dt_2 =
+            kinematic_phase_lag Omega omega_1 (dt_1 + dt_2)
+    lean_declaration: |-
+      theorem morelli_2009_kinematic_wave_phase_lag_law
+          (Omega omega_1 omega_2 dt dt_1 dt_2 : Int) (h_omega : omega_1 ≤ omega_2) (h_dt : 0 ≤ dt) :
+          kinematic_phase_lag Omega Omega dt = 0 ∧
+          kinematic_phase_lag Omega omega_2 dt ≤ kinematic_phase_lag Omega omega_1 dt ∧
+          kinematic_phase_lag Omega omega_1 dt_1 + kinematic_phase_lag Omega omega_1 dt_2 =
+            kinematic_phase_lag Omega omega_1 (dt_1 + dt_2)
+    variables: "omega(x): FGF8/Wnt-slaved autonomous frequency profile (rad/min); xi: distance from the tailbud (somite lengths); lambda_F: gradient decay length; v = S/T_seg: anterior cell flow speed; k(x): local phase wave number; N_w: number of kinematic waves across the PSM of length L"
+    role: "Couples the delayed Kuramoto lattice to an advecting FGF8/Wnt frequency gradient so that posterior->anterior kinematic phase waves emerge, slow toward the determination front, and vanish for a uniform profile"
+    source_citation: "Morelli et al. (2009) HFSP J. 3:55-66 (frequency profile & kinematic waves); Dubrulle et al. (2001) Cell 106:219-232 (FGF8 gradient); Soroldoni et al. (2014) Science 345:222-225 (wave kinematics)"
+    code_locus: "2006-riedel-delta-notch-phase-synchrony.py#L284-L319"
+    code_locus_secondary: "2006-riedel-delta-notch-phase-synchrony.py#L432-L437 (kinematic steady state), #L523-L531 (advection), #L606-L613 (N_w morphometrics)"
+  - id: riedel-delta-notch-phase-synchrony-5
+    law_name: "Itoh (2003) Mind bomb (Mib1) DeltaC Ubiquitination Coupling Gate"
+    title: "Itoh (2003) Mind bomb (Mib1) DeltaC Ubiquitination Coupling Gate"
+    formula: "du/dt = k_ub*M*(1 - u) - k_endo*u;  u_ss = k_ub M/(k_ub M + k_endo);  kappa(t) = kappa_max*u(t)*g(t);  g = 1/(1 + (C_DAPT/IC50)^n)"
+    latex: "\\frac{du}{dt} = k_{ub} M (1 - u) - k_{endo} u, \\quad u_{ss} = \\frac{k_{ub} M}{k_{ub} M + k_{endo}}, \\quad \\kappa(t) = \\kappa_{\\max} u(t) g(t)"
+    ascii: "du/dt = k_ub*M*(1 - u) - k_endo*u; u_ss = k_ub M/(k_ub M + k_endo); kappa(t) = kappa_max*u(t)*g(t); g = 1/(1 + (C_DAPT/IC50)^n)"
+    lean_decl: "MathOfBiology.Loop_023.mib1_ubiquitinated_numerator"
+    lean_theorem: "MathOfBiology.Loop_023.itoh_2003_mib1_ubiquitination_gate_monotone"
+    lean_file: morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean
+    lean_locus: "morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean#L152-L191"
+    lean_code: |-
+      def mib1_ubiquitinated_numerator (k_ub M : Nat) : Nat :=
+        k_ub * M
+      def mib1_ubiquitinated_denominator (k_ub k_endo M : Nat) : Nat :=
+        k_ub * M + k_endo
+      theorem itoh_2003_mib1_ubiquitination_gate_monotone
+          (k_ub k_endo M_1 M_2 : Nat) (h : M_1 ≤ M_2) :
+          mib1_ubiquitinated_numerator k_ub 0 = 0 ∧
+          mib1_ubiquitinated_numerator k_ub M_1 ≤ mib1_ubiquitinated_denominator k_ub k_endo M_1 ∧
+          mib1_ubiquitinated_numerator k_ub M_1 * mib1_ubiquitinated_denominator k_ub k_endo M_2 ≤
+            mib1_ubiquitinated_numerator k_ub M_2 * mib1_ubiquitinated_denominator k_ub k_endo M_1
+    lean_declaration: |-
+      theorem itoh_2003_mib1_ubiquitination_gate_monotone
+          (k_ub k_endo M_1 M_2 : Nat) (h : M_1 ≤ M_2) :
+          mib1_ubiquitinated_numerator k_ub 0 = 0 ∧
+          mib1_ubiquitinated_numerator k_ub M_1 ≤ mib1_ubiquitinated_denominator k_ub k_endo M_1 ∧
+          mib1_ubiquitinated_numerator k_ub M_1 * mib1_ubiquitinated_denominator k_ub k_endo M_2 ≤
+            mib1_ubiquitinated_numerator k_ub M_2 * mib1_ubiquitinated_denominator k_ub k_endo M_1
+    variables: "u: Mib1-ubiquitinated signalling-competent DeltaC fraction; M: Mib1 E3-ligase activity (1 WT, 0 mib^ta52b); k_ub, k_endo: ubiquitination and endocytic turnover rates (min^-1); g: gamma-secretase (DAPT) cleavage gate; kappa_max: coupling at full ubiquitination"
+    role: "Makes the Delta-Notch coupling strength a dynamical variable: mib null abolishes coupling like DAPT, hypomorphs reduce kappa_eff monotonically, and coupling restoration after Mib1 induction or DAPT washout proceeds with finite kinetics"
+    source_citation: "Itoh et al. (2003) Dev Cell 4:67-82; Riedel-Kruse et al. (2007) Science 317:1911-1915 (DAPT washout, mib/aei/des/bea mutants)"
+    code_locus: "2006-riedel-delta-notch-phase-synchrony.py#L322-L354"
+    code_locus_secondary: "2006-riedel-delta-notch-phase-synchrony.py#L420-L425 (kappa_max normalisation), #L486-L499 (DAPT gate + Mib1 ODE in the loop)"
+  - id: riedel-delta-notch-phase-synchrony-6
+    law_name: "Riedel-Kruse (2007) Emergent Defect-Span Law (ALD/PRP from R_crit crossings)"
+    title: "Riedel-Kruse (2007) Emergent Defect-Span Law (ALD/PRP from R_crit crossings)"
+    formula: "ALD = s_cross + Delta_n_det;  PRP = s_recross + Delta_n_det;  PRP - ALD = s_recross - s_cross"
+    latex: "\\mathrm{ALD} = s_{\\mathrm{cross}} + \\Delta n_{\\mathrm{det}}, \\quad \\mathrm{PRP} = s_{\\mathrm{recross}} + \\Delta n_{\\mathrm{det}}, \\quad \\mathrm{PRP} - \\mathrm{ALD} = s_{\\mathrm{recross}} - s_{\\mathrm{cross}}"
+    ascii: "ALD = s_cross + Delta_n_det; PRP = s_recross + Delta_n_det; PRP - ALD = s_recross - s_cross"
+    lean_decl: "MathOfBiology.Loop_023.emergent_anterior_limit_of_defects"
+    lean_theorem: "MathOfBiology.Loop_023.riedel_2007_emergent_defect_span_independent_of_determination_lag"
+    lean_file: morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean
+    lean_locus: "morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean#L193-L226"
+    lean_code: |-
+      def emergent_anterior_limit_of_defects (s_cross Delta_n_det : Nat) : Nat :=
+        s_cross + Delta_n_det
+      def emergent_posterior_rescue_point (s_recross Delta_n_det : Nat) : Nat :=
+        s_recross + Delta_n_det
+      theorem riedel_2007_emergent_defect_span_independent_of_determination_lag
+          (s_cross s_recross Delta_n_det d : Nat) (h : s_cross ≤ s_recross) :
+          emergent_posterior_rescue_point s_recross Delta_n_det -
+            emergent_anterior_limit_of_defects s_cross Delta_n_det = s_recross - s_cross ∧
+          s_cross ≤ emergent_anterior_limit_of_defects s_cross Delta_n_det ∧
+          emergent_anterior_limit_of_defects s_cross (Delta_n_det + d) =
+            emergent_anterior_limit_of_defects s_cross Delta_n_det + d ∧
+          emergent_posterior_rescue_point s_recross (Delta_n_det + d) =
+            emergent_posterior_rescue_point s_recross Delta_n_det + d
+    lean_declaration: |-
+      theorem riedel_2007_emergent_defect_span_independent_of_determination_lag
+          (s_cross s_recross Delta_n_det d : Nat) (h : s_cross ≤ s_recross) :
+          emergent_posterior_rescue_point s_recross Delta_n_det -
+            emergent_anterior_limit_of_defects s_cross Delta_n_det = s_recross - s_cross ∧
+          s_cross ≤ emergent_anterior_limit_of_defects s_cross Delta_n_det ∧
+          emergent_anterior_limit_of_defects s_cross (Delta_n_det + d) =
+            emergent_anterior_limit_of_defects s_cross Delta_n_det + d ∧
+          emergent_posterior_rescue_point s_recross (Delta_n_det + d) =
+            emergent_posterior_rescue_point s_recross Delta_n_det + d
+    variables: "s_cross: somite stage at which the determination-front lateral Kuramoto R first falls below R_crit; s_recross: stage at which it first recovers above R_crit after washout/restoration; Delta_n_det: determination-to-boundary maturation lag (2.5 somites)"
+    role: "Replaces the hard-coded ALD = s_in + 5.5 / PRP = s_out + 5.5 of Pass 2 by an emergent read-out of the simulated coherence trajectory, whose defective span is independent of the maturation lag"
+    source_citation: "Riedel-Kruse et al. (2007) Science 317:1911-1915 Figs. 2-4 (R_crit threshold model of ALD and PRP)"
+    code_locus: "2006-riedel-delta-notch-phase-synchrony.py#L544-L557"
+    code_locus_secondary: "2006-riedel-delta-notch-phase-synchrony.py#L563-L604 (emergent ALD/PRP, analytic comparison, somite_R)"

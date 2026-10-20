@@ -1,0 +1,133 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RA9l-RTpwx6E5LOydbzefAR6NArzCAtdrhJMHlpYSMJEY/> .
+@prefix this: <https://w3id.org/np/RA9l-RTpwx6E5LOydbzefAR6NArzCAtdrhJMHlpYSMJEY> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-boehm-limb-bud-elongation-pushing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-boehm-limb-bud-elongation-pushing-model-fidelity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-boehm-limb-bud-elongation-pushing-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Boehm et al. (2010) & Gros et al. (2010) vertebrate limb bud oriented cell division & Wnt5a/FGF8 pushing vs proliferation-gradient hypothesis — Model fidelity to source: 84/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "Section 5 now implements the governing equations of Boehm et al. (2010) Eqs. (3)-(5)/(10)-(11) in 3D: P1-P1 stabilised Stokes with distributed source, traceless extensile oriented-division stress integrated by parts, AER-FGF8 body force, traction-free ectoderm and flank Dirichlet/ALE plane (`assemble_stokes_p1p1`/`solve_stokes_growth`, L878-955), verified to round-off against two closed-form oracles (L957-984; Lean Theorem 4) with a Lagrangian RK2 volume budget closed to 0.5 % (L989-1095; Lean Theorem 5); the Model I conclusion of the paper is reproduced parameter-free (+5.21 % PD, band 3.4-11.8 %). Scored down from 94 because (a) the Pass 2 solver that v2 credited as a \"continuum artificial-compressibility Stokes velocity solver\" is a boundary-advection model with Pass-2-fitted coefficients (0.352, 0.560, 0.580, ...) uncoupled from the Poisson field (`simulate_limb_bud_regime`, L336-360 disclosure), and it still produces Panels C-J and 8 of 20 measurements; (b) viscosity/Reynolds dependence exists only as the phenomenological `re_factor` (L270-273), so the \"5-decade Re insensitivity\" is not a property of the solved physics; (c) the active-stress Model II solved faithfully contracts AP/DV against the data, which the file reports rather than hides (L1145-1222)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "2015-boehm-limb-bud-elongation-pushing.py L270–L273: Reynolds dependence of the 2D model is a phenomenological re_factor = 0.52 + 0.24 (log Re + 6); the 3D Stokes FEM is Re-independent <https://github.com/fractastical/morpholib/blob/d58a084/2015-boehm-limb-bud-elongation-pushing.py#L270-L273>",
+            "2015-boehm-limb-bud-elongation-pushing.py L336–L360: Disclosure that the Pass 2 2D model is a calibrated boundary-advection model, not coupled to the Poisson solver; still drives Panels C-J <https://github.com/fractastical/morpholib/blob/d58a084/2015-boehm-limb-bud-elongation-pushing.py#L336-L360>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-boehm-limb-bud-elongation-pushing-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-boehm-limb-bud-elongation-pushing-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-boehm-limb-bud-elongation-pushing-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-boehm-limb-bud-elongation-pushing-model-fidelity-4> ;
+        pk:hasScore "0.84"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-boehm-limb-bud-elongation-pushing-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2015-boehm-limb-bud-elongation-pushing.py L722–L743" ;
+        dcterms:description "Section 5 header: governing 3D Stokes growth system, BCs, stabilisation, honest scope statement (visual hull, structured mesh)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2015-boehm-limb-bud-elongation-pushing.py#L722-L743> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-boehm-limb-bud-elongation-pushing-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2015-boehm-limb-bud-elongation-pushing.py L878–L984" ;
+        dcterms:description "P1-P1 Brezzi-Pitkaranta Stokes assembly, flank constraints, sparse solve, and two manufactured-solution oracles (max rel. error 8.2e-14)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2015-boehm-limb-bud-elongation-pushing.py#L878-L984> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-boehm-limb-bud-elongation-pushing-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "2015-boehm-limb-bud-elongation-pushing.py L989–L1095" ;
+        dcterms:description "Lagrangian RK2 3D growth with ALE flank inflow plane and mesh-measured volume budget (balance ratio 1.005)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2015-boehm-limb-bud-elongation-pushing.py#L989-L1095> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-boehm-limb-bud-elongation-pushing-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_017_limb_bud_elongation_pushing.lean L149–L238" ;
+        dcterms:description "Lean Theorems 4 (Stokes oracles exact) and 5 (flank-influx volume budget, OPT vs proliferation volume inequality); file compiles with 0 sorrys" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/morphoeval/lean/loops/Loop_017_limb_bud_elongation_pushing.lean#L149-L238> .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 017 Pass 2 Assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1006/jtbi.1998.0876> dcterms:date "1999"^^xsd:gYear ;
+        dcterms:title "A mathematical model for outgrowth and spatial patterning of the vertebrate limb bud" .
+
+    <https://doi.org/10.1007/978-3-663-14169-3_2> dcterms:date "1984"^^xsd:gYear ;
+        dcterms:title "On the stabilization of finite element approximations of the Stokes equations" .
+
+    <https://doi.org/10.1007/s11538-008-9334-y> dcterms:date "2008"^^xsd:gYear ;
+        dcterms:title "Growth based morphogenesis of vertebrate limb bud" .
+
+    <https://doi.org/10.1016/j.cub.2010.09.063> dcterms:date "2010"^^xsd:gYear ;
+        dcterms:title "WNT5A/JNK and FGF/MAPK pathways regulate the cellular events shaping the vertebrate limb bud" .
+
+    <https://doi.org/10.1109/34.273735> dcterms:date "1994"^^xsd:gYear ;
+        dcterms:title "A visual hull approach to the reconstruction of 3D shape from silhouettes" .
+
+    <https://doi.org/10.1242/dev.046987> dcterms:date "2010"^^xsd:gYear ;
+        dcterms:title "Oriented cell division in the primitive streak contributes to vertebrate axis extension and limb bud initiation" .
+
+    <https://doi.org/10.1371/journal.pbio.1000420> dcterms:date "2010"^^xsd:gYear ;
+        dcterms:title "The role of spatially controlled cell proliferation in limb bud morphogenesis" .
+
+    <https://doi.org/10.1371/journal.pbio.1000421> dcterms:date "2010"^^xsd:gYear ;
+        dcterms:title "Limbs made to measure" .
+
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/17> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1006/jtbi.1998.0876>,
+            <https://doi.org/10.1007/978-3-663-14169-3_2>,
+            <https://doi.org/10.1007/s11538-008-9334-y>,
+            <https://doi.org/10.1016/j.cub.2010.09.063>,
+            <https://doi.org/10.1109/34.273735>,
+            <https://doi.org/10.1242/dev.046987>,
+            <https://doi.org/10.1371/journal.pbio.1000420>,
+            <https://doi.org/10.1371/journal.pbio.1000421>,
+            <https://www.osti.gov/biblio/14115> .
+
+    <https://www.osti.gov/biblio/14115> dcterms:date "1999"^^xsd:gYear ;
+        dcterms:title "How to subdivide pyramids, prisms, and hexahedra into tetrahedra" .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "tcIY67Hfcq5LFVPsnFJaC0fOPri8m3Ga0XvPDNF1pxt6Xer/OJqOyZYTSyagVLjhftCyr4dwpFgYH0Bd8VCf8TqRYuUeVwbwf7oE4AEzSUEtpYdsAjvxmxxVEmXdXpTMq7rNJKOfz/wH7TmFfrkVTSFjQrw2O25hIweraJ9ViVm/O+8MCORT3G9ubovu5y92SW9H5gRkf193zbE/eBV4QmHt2Ix7hTthGxPsjTbt+y9UYvIyLepz3PiXz2SZkOPH6qtGZ1VgxLqDwMEquu47KI6XiT8x/DsD/6xAyS+w3Vr1nDObRFZOxhnxGAa2CJTtpAqbG7Vdqh4DnR7aNt/CFA==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Boehm et al. (2010) & Gros et al. (2010) vertebrate limb bud oriented cell division & Wnt5a/FGF8 pushing vs proliferation-gradient hypothesis — Model fidelity to source 84/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T07:35:45Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-boehm-limb-bud-elongation-pushing-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/17> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

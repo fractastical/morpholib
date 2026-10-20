@@ -1,11 +1,38 @@
 #!/usr/bin/env python3
 """
-2017-runions-pavement-cell-lobing.py — Pass 2 Remediated Mechanochemical Simulation
+2017-runions-pavement-cell-lobing.py — Pass 3 Remediated Mechanochemical Simulation
 Sapala, Runions, Prusinkiewicz, Smith et al. (2018) eLife 7:e32794 &
 Fu, Gu, Zheng, Wasteneys & Yang (2005) Cell 120(5):687-700
 ROP2–ROP6 Interdigitated Puzzle-Shaped Pavement Cells, Largest Empty Circle (LEC)
-Turgor Stress Reduction & Anticlinal Wall Buckling in Arabidopsis thaliana
+Turgor Stress Reduction, Reduced 3D Pressurized Periclinal Shell Deflection &
+Depth-Resolved Anticlinal Wall Buckling in Arabidopsis thaliana
 (Slot 039: `runions-pavement-cell-lobing`).
+
+Pass 3 remediation (closes the single Pass 2 item "couple the 2D polygon network to a
+3D pressurized periclinal shell solver resolving anticlinal buckling with depth") in a
+REDUCED, HONESTLY-LABELLED form — this is NOT a full 3D finite-element shell model:
+  * Section 3b `solve_pressurized_periclinal_shell` — finite-difference solve of the
+    Föppl uniform-tension pressurized membrane  -T ∇²z = P  on the exact rasterised
+    2D pavement cell footprint with z = 0 on the anticlinal walls (Dirichlet), tension
+    T = T_0 + E h ε̄/(1-ν) made self-consistent with the mean membrane stretch
+    ε̄ = ⟨½|∇z|²⟩, plus an analytic clamped-edge bending boundary layer
+    ℓ_b = sqrt(D/T), D = E h³/(12(1-ν²)).  Verified against the closed-form disk
+    solution z(r) = P (R² - r²)/(4T) and the inscribed-disk comparison bound
+    z_max ≥ P R_LEC²/(4T) (Lean 4 Law 4).  It is used to TEST, not assume, the Sapala
+    et al. (2018) LEC stress proxy σ_max ∝ P R_LEC/(2h) across WT, isotropic and ktn1
+    footprints at 6 area stages.
+  * Section 3c `simulate_anticlinal_wall_depth_buckling` — the anticlinal wall is a
+    prestressed vertical strip (s, ζ) ∈ [0, L] × [0, H] forced at the outer periclinal
+    junction ζ = H by the ROP2–ROP6 polarity-driven displacement δ_top(s) and anchored
+    at the inner periclinal junction ζ = 0 by a Robin condition T_a ∂δ/∂ζ = k_in δ
+    (β = k_in H / T_a: 0 = free, ∞ = clamped flat).  Each Fourier mode k attenuates
+    with depth as [k cosh(kζ) + β' sinh(kζ)] / [k cosh(kH) + β' sinh(kH)], so short
+    wavelengths are confined to the outer face (Lean 4 Law 5).  The sparse 2D
+    finite-difference Laplace solve is cross-checked against this modal closed form.
+  Residual (carried as an open Pass 4 item): no bending-coupled 3D shell FEM, no
+  anticlinal-wall growth anisotropy, and no vendored depth-resolved confocal
+  measurement of lobe amplitude vs depth — the depth law is a model prediction
+  verified against its own analytic solution, not against a specimen.
 
 Mathematical Model & Formal Lean 4 Traceability
 -----------------------------------------------
@@ -44,6 +71,32 @@ Mathematical Model & Formal Lean 4 Traceability
      causing R_LEC to grow unchecked along the isotropic sqrt(A / π) trajectory.
    - Formal Lean 4 theorem: `MathOfBiology.Loop_039.sapala_2018_mutant_lobeyness_collapse`
      (`morphoeval/lean/loops/Loop_039_pavement_cell_lobing.lean#L99-L116`).
+
+4. (Pass 3) Reduced Pressurized Periclinal Membrane-Shell & Inscribed-Disk Bound
+   (Sapala et al. 2018 eLife 7:e32794 Fig. 3 FEM stress-vs-LEC relation; Föppl membrane):
+     -T ∇²z = P  on Ω (cell footprint),  z = 0 on ∂Ω (anticlinal walls)
+     T = T_0 + E h ε̄ / (1 - ν),   ε̄ = (1/A) ∫_Ω ½ |∇z|² dA,   T_0 = P H / 2
+     σ_m = T / h,   σ_b,edge = 6 T θ_edge ℓ_b / h²,   ℓ_b = sqrt(D / T)
+   - Closed-form disk: z(r) = P (R² - r²) / (4T), z_max = P R² / (4T).
+   - Comparison principle: for any footprint containing the LEC disk of radius R_LEC,
+     z_max(Ω) ≥ P R_LEC² / (4T), so pinning R_LEC bounds the periclinal bulge.
+   - In the large-stretch (bulge-test) regime this gives T ∝ (E h P² R²)^(1/3), i.e.
+     σ ∝ R^(2/3) — SUB-linear in R_LEC — whereas the Laplace proxy is linear; the
+     script reports the fitted exponent rather than assuming either.
+   - Formal Lean 4 theorem: `MathOfBiology.Loop_039.sapala_2018_pressurized_membrane_inscribed_disk_bound`
+     (`morphoeval/lean/loops/Loop_039_pavement_cell_lobing.lean#L134-L156`).
+
+5. (Pass 3) Depth-Resolved Anticlinal Wall Buckling (prestressed vertical strip):
+     ∂²δ/∂s² + ∂²δ/∂ζ² = 0  on [0, L] × [0, H],  δ(s, H) = δ_top(s),
+     T_a ∂δ/∂ζ|_{ζ=0} = k_in δ(s, 0)   (β = k_in H / T_a)
+     δ̂_k(ζ) = δ̂_k(H) [k cosh(kζ) + β' sinh(kζ)] / [k cosh(kH) + β' sinh(kH)],  β' = β / H
+   - With a clamped inner face (β → ∞) the discrete mode satisfies
+     δ_{j+1} = (2 + k²Δζ²) δ_j - δ_{j-1}, δ_0 = 0, which is strictly increasing in j
+     (lobe amplitude grows monotonically from inner to outer periclinal face) and grows
+     faster for larger k (short wavelengths attenuate faster with depth).
+   - Formal Lean 4 theorems: `MathOfBiology.Loop_039.anticlinal_depth_mode_monotone_outward`,
+     `MathOfBiology.Loop_039.anticlinal_depth_mode_wavenumber_comparison`
+     (`morphoeval/lean/loops/Loop_039_pavement_cell_lobing.lean#L164-L217`).
 """
 
 from __future__ import annotations
@@ -62,7 +115,9 @@ from matplotlib.patches import Circle
 import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
+from scipy import sparse
 from scipy import stats
+from scipy.sparse.linalg import spsolve
 from scipy.spatial import ConvexHull
 from skimage.measure import find_contours, regionprops
 from skimage.segmentation import watershed
@@ -73,6 +128,7 @@ REF_JSON_PATH = DATASET_DIR / "pavement_cell_lobing_reference.json"
 SPECIMEN_PATH = DATASET_DIR / "arabidopsis_pavement_cell_specimen.jpg"
 BIB_PATH = DATASET_DIR / "paper_citations.bib"
 SCOUT_PATH = DATASET_DIR / "scout_manifest.json"
+SHELL_REF_JSON_PATH = DATASET_DIR / "pavement_cell_shell_depth_reference.json"
 
 OUT_PNG = ROOT / "docs" / "media" / "pavement_cell_lobing_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "pavement_cell_lobing_growth.gif"
@@ -80,8 +136,10 @@ OUT_GIF = ROOT / "docs" / "media" / "pavement_cell_lobing_growth.gif"
 EXPECTED_SHA256: dict[str, str] = {
     "pavement_cell_lobing_reference.json": "de4e6daab5eae4a02ba7a100a69ee2fb4a1dfb68b495adef4e7de884cbce0f92",
     "arabidopsis_pavement_cell_specimen.jpg": "4b7c1062f6ebfd6e792fac017e39d7c011eaf6f8db2c9e492b6a82519088d7b8",
-    "paper_citations.bib": "e5d0ea8ec26365c9476196f98cf8337dc37f31b9ae902d8c8535ded00e87d983",
+    "paper_citations.bib": "b5d0bb17859e8dd092e6013dc334aa1484ffaaf2049a81f48833456637ab61f7",
     "scout_manifest.json": "72c917ec10ac1a5568a3ee380d1fb8cc82c116278eb040ad37029b0203dad240",
+    # Pass 3: reduced periclinal shell + anticlinal depth parameter table (pinned below after creation)
+    "pavement_cell_shell_depth_reference.json": "6d1aac5a29095651eaa46058b4c86684cd9701c7c5b04d793dfde4bece3de00d",
 }
 
 
@@ -89,7 +147,7 @@ EXPECTED_SHA256: dict[str, str] = {
 # 1. Dataset Integrity & Reference Loading
 # --------------------------------------------------------------------------- #
 def verify_dataset_integrity() -> dict[str, str]:
-    """Verify SHA-256 checksums of all 4 vendored files in `datasets/pavement_cell_lobing/`."""
+    """Verify SHA-256 checksums of all 5 vendored files in `datasets/pavement_cell_lobing/`."""
     computed: dict[str, str] = {}
     for fname, expected_hash in EXPECTED_SHA256.items():
         fpath = DATASET_DIR / fname
@@ -108,6 +166,12 @@ def load_reference_data() -> dict[str, Any]:
     """Load the SHA-256-verified reference JSON."""
     verify_dataset_integrity()
     return json.loads(REF_JSON_PATH.read_text(encoding="utf-8"))
+
+
+def load_shell_reference_data() -> dict[str, Any]:
+    """Load the SHA-256-verified Pass 3 periclinal shell / anticlinal depth parameter table."""
+    verify_dataset_integrity()
+    return json.loads(SHELL_REF_JSON_PATH.read_text(encoding="utf-8"))
 
 
 # --------------------------------------------------------------------------- #
@@ -211,9 +275,10 @@ def generate_puzzle_cell_polygon(
     Construct a 2D pavement cell contour following Sapala et al. (2018) spring-remodeling
     lobe-neck morphogenesis across cell area growth A in [250, 4500] um^2:
       - `WT`: as cell area exceeds π R_0^2 (~366 um^2), ROP2-RIC4 / ROP6-RIC1-KTN1
-        domains pinch the cell core into an elongated sinuous backbone with N(A) = 6..8
-        interdigitated lobes while pinning the central channel and lobe-neck half-width
-        around R_0 ≈ 10.8 um (so R_LEC plateaus at ~11.4 um).
+        domains grow alternating, staggered finger lobes (bulbous tips) off a central
+        band whose half-width ≈ R_0 sets the neck width, so R_LEC plateaus at ~11.4 um
+        while the footprint stays compact (aspect ≈ 2.6, ~142 x 55 um at 4500 um^2;
+        Pass 3 construction, see `_generate_wt_branched_puzzle_polygon`).
       - `ktn1` or `rop2_rop4`: loss of katanin microtubule severing or ROP2/ROP4 signaling
         collapses lobe amplitude (k_rop -> 0.08-0.14), yielding nearly isotropic polygonal
         cells where R_LEC grows ~ sqrt(A / π).
@@ -260,29 +325,85 @@ def generate_puzzle_cell_polygon(
         pts *= math.sqrt(target_area_um2 / max(area_now, 1e-9))
         return pts
 
-    # Wild-Type (WT Col-0) puzzle cell:
-    # Combines (1) elongation along sinuous backbone and (2) deep alternating ROP2 lobes
-    # and ROP6/KTN1 neck constrictions that pin the interior inscribed circle R_LEC(A)
-    # to the Sapala et al. (2018) asymptotic neck plateau (~11.4 um at A = 4500 um^2).
-    r_target = R0_um * (1.0556 - 0.352 * math.exp(-(target_area_um2 - 250.0) / 780.0))
-    lobe_rel = 0.09 + 0.258 * (m ** 0.72)
-    rad_wave = 1.0 + lobe_rel * np.cos(7.0 * s_param) + 0.16 * lobe_rel * np.sin(5.0 * s_param)
-    aspect = max(1.22, math.sqrt(target_area_um2 / (math.pi * (r_target ** 2))) * 0.92)
-    x_mod = aspect * rad_wave * np.cos(s_param)
-    y_mod = (1.0 / aspect) * rad_wave * np.sin(s_param)
+    # Wild-Type (WT Col-0) puzzle cell (Pass 3 construction).
+    # The Pass 2 construction pinned R_LEC by stretching a 7-lobe sinusoid into a ribbon of
+    # aspect 18.7 (417 x 22 um at A = 4500 um^2) -- a monocot-like file cell, not a puzzle
+    # cell (defect exposed by the Pass 3 shell solver, Panel G).  Pass 3 replaces it with a
+    # compact branched construction that pins R_LEC the way Sapala et al. (2018) describe:
+    # a central band of half-width r_t (the LEC-setting neck width) carrying alternating,
+    # staggered finger lobes of half-width 0.62 r_t (bulbous tips 1.25x) at a pitch of
+    # 3.0 r_t, so no lobe or junction admits an inscribed circle larger than the band.
+    # Band area fraction f_band(m) = 0.95 - 0.85 m + 0.50 m^2 (lobes take over with
+    # maturity); r_t is corrected iteratively so the exact EDT R_LEC meets r_target.
+    return _generate_wt_branched_puzzle_polygon(target_area_um2, R0_um=R0_um, maturity=m)
 
-    pts = np.column_stack([x_mod, y_mod])
-    area_now, _ = polygon_area_and_perimeter(pts)
-    pts *= math.sqrt(target_area_um2 / max(area_now, 1e-9))
 
-    # Area-preserving spring-neck relaxation along the minor axis to pin R_LEC to r_target
-    for _ in range(6):
-        rn = compute_exact_lec_from_polygon(pts, grid_res=220)["R_LEC_um"]
-        if abs(rn - r_target) < 0.03:
+def _capsule_mask(gx: np.ndarray, gy: np.ndarray, x0: float, y0: float, x1: float, y1: float, half_w: float) -> np.ndarray:
+    """Boolean raster of a capsule (segment (x0,y0)-(x1,y1) dilated by `half_w`)."""
+    vx, vy = x1 - x0, y1 - y0
+    L2 = vx * vx + vy * vy
+    t = np.clip(((gx - x0) * vx + (gy - y0) * vy) / max(L2, 1e-9), 0.0, 1.0)
+    return (gx - (x0 + t * vx)) ** 2 + (gy - (y0 + t * vy)) ** 2 <= half_w * half_w
+
+
+def _generate_wt_branched_puzzle_polygon(
+    target_area_um2: float,
+    R0_um: float = 10.8,
+    maturity: float = 1.0,
+    lobe_half_width_frac: float = 0.62,
+    lobe_tip_frac: float = 1.25,
+    lobe_pitch_frac: float = 3.0,
+    lobe_length_modulation: float = 0.08,
+    dx_um: float = 0.35,
+    n_points: int = 480,
+    max_iter: int = 4,
+) -> np.ndarray:
+    """
+    Compact branched WT puzzle-cell footprint: central band (half-width r_t) + alternating
+    staggered finger lobes with bulbous tips; r_t is iterated so the exact EDT R_LEC equals the
+    Sapala et al. (2018) target r_target(A) = R0 (1.0556 - 0.352 exp(-(A - 250)/780)).
+    Deterministic (no RNG).  Returns an `(n_points, 2)` closed contour in um, exact area A.
+    """
+    A = float(target_area_um2)
+    m = float(maturity)
+    r_target = R0_um * (1.0556 - 0.352 * math.exp(-(A - 250.0) / 780.0))
+    f_band = 0.95 - 0.85 * m + 0.50 * m * m
+    r_t = r_target
+    pts = None
+    for _ in range(max_iter):
+        A_band = f_band * A
+        ell_c = max((A_band - math.pi * r_t ** 2) / (2.0 * r_t), 0.0)
+        n_side = max(1, int(round(ell_c / (lobe_pitch_frac * r_t)))) if m > 0.05 else 1
+        n_lobes = 2 * n_side if m > 0.3 else 1
+        w_l = lobe_half_width_frac * r_t
+        A_lobe = max(A - A_band, 0.0) / max(n_lobes, 1)
+        ell_l = A_lobe / (2.0 * w_l)
+        ext = ell_c / 2.0 + r_t + ell_l + lobe_tip_frac * w_l + 3.0
+        xs = np.arange(-ext, ext, dx_um)
+        gx, gy = np.meshgrid(xs, xs)
+        mask = _capsule_mask(gx, gy, -ell_c / 2.0, 0.0, ell_c / 2.0, 0.0, r_t)
+        for j in range(n_lobes):
+            side = 1.0 if j % 2 == 0 else -1.0
+            k = j // 2
+            ns = n_side if n_lobes > 1 else 1
+            xj = -ell_c / 2.0 + (k + 0.5) * ell_c / ns
+            Lj = ell_l * (1.0 + lobe_length_modulation * math.cos(1.9 * j + 0.6))
+            x1, y1 = xj, side * (0.5 * r_t + Lj)
+            mask |= _capsule_mask(gx, gy, xj, side * 0.3 * r_t, x1, y1, w_l)
+            mask |= (gx - x1) ** 2 + (gy - y1) ** 2 <= (lobe_tip_frac * w_l) ** 2
+        c = max(find_contours(mask.astype(float), 0.5), key=len)
+        cxy = np.column_stack([np.interp(c[:, 1], np.arange(len(xs)), xs), np.interp(c[:, 0], np.arange(len(xs)), xs)])
+        cxy = np.column_stack(
+            [ndi.gaussian_filter1d(cxy[:, 0], 3.0, mode="wrap"), ndi.gaussian_filter1d(cxy[:, 1], 3.0, mode="wrap")]
+        )
+        idx = np.linspace(0, len(cxy) - 1, n_points, endpoint=False).astype(int)
+        pts = cxy[idx]
+        area_now, _ = polygon_area_and_perimeter(pts)
+        pts *= math.sqrt(A / max(area_now, 1e-9))
+        lec = compute_exact_lec_from_polygon(pts, grid_res=220)["R_LEC_um"]
+        if abs(lec - r_target) < 0.05:
             break
-        scale_y = float(np.clip((r_target / max(rn, 1e-6)) ** 0.55, 0.82, 1.22))
-        pts[:, 1] *= scale_y
-        pts[:, 0] /= scale_y
+        r_t *= (r_target / max(lec, 1e-6)) ** 0.8
     return pts
 
 
@@ -320,6 +441,7 @@ def simulate_puzzle_cell_area_scaling(
     ktn1_L_list, ktn1_S_list = [], []
     rop2_L_list, rop2_S_list = [], []
     wt_polygons: list[np.ndarray] = []
+    ktn1_polygons: list[np.ndarray] = []
     wt_lec_Meta: list[dict[str, float]] = []
 
     for A in areas:
@@ -343,6 +465,7 @@ def simulate_puzzle_cell_area_scaling(
         ktn1_lec.append(lec_ktn["R_LEC_um"])
         ktn1_L_list.append(morph_ktn["lobeyness_L"])
         ktn1_S_list.append(morph_ktn["solidity_S"])
+        ktn1_polygons.append(pts_ktn)
 
         # 4. rop2 rop4 RNAi mutant
         pts_rop = generate_puzzle_cell_polygon(A, genotype="rop2_rop4", R0_um=R0)
@@ -395,6 +518,7 @@ def simulate_puzzle_cell_area_scaling(
         "rop2_lobeyness_L": np.array(rop2_L_list, dtype=float),
         "rop2_solidity_S": np.array(rop2_S_list, dtype=float),
         "wt_polygons": wt_polygons,
+        "ktn1_polygons": ktn1_polygons,
         "wt_lec_meta": wt_lec_Meta,
         "wt_lec_pearson_r": float(r_wt_vs_ref),
         "wt_lec_p_value": float(p_wt_vs_ref),
@@ -539,6 +663,502 @@ def simulate_rop2_rop6_cortical_rd(
 
 
 # --------------------------------------------------------------------------- #
+# 3b. (Pass 3) Reduced 3D Pressurized Periclinal Membrane-Shell Solver
+# --------------------------------------------------------------------------- #
+def rasterize_polygon_mask(pts: np.ndarray, dx: float, pad_cells: int = 2) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Rasterise a closed 2D polygon `(N, 2)` onto an isotropic cell-centred grid of spacing `dx`
+    (ray-casting point-in-polygon).  Returns `(inside_mask[ny, nx], xs, ys)`; the grid carries
+    `pad_cells` rows/columns of guaranteed-outside cells on every side so Dirichlet z = 0
+    anticlinal-wall conditions are enforced by the mask alone.
+    """
+    xmin, ymin = np.min(pts, axis=0)
+    xmax, ymax = np.max(pts, axis=0)
+    x0 = float(xmin) - pad_cells * dx
+    y0 = float(ymin) - pad_cells * dx
+    nx = int(math.ceil((float(xmax) - x0) / dx)) + pad_cells + 1
+    ny = int(math.ceil((float(ymax) - y0) / dx)) + pad_cells + 1
+    xs = x0 + (np.arange(nx) + 0.5) * dx
+    ys = y0 + (np.arange(ny) + 0.5) * dx
+    gx, gy = np.meshgrid(xs, ys)
+
+    vx, vy = pts[:, 0], pts[:, 1]
+    vx_next, vy_next = np.roll(vx, -1), np.roll(vy, -1)
+    inside = np.zeros((ny, nx), dtype=bool)
+    for k in range(len(pts)):
+        y_k, y_n = vy[k], vy_next[k]
+        x_k, x_n = vx[k], vx_next[k]
+        cond = (y_k > gy) != (y_n > gy)
+        if np.any(cond):
+            x_int = x_k + (gy[cond] - y_k) * (x_n - x_k) / (y_n - y_k + 1e-15)
+            inside[cond] ^= gx[cond] < x_int
+    return inside, xs, ys
+
+
+def _dirichlet_laplacian(inside: np.ndarray, dx: float) -> tuple[sparse.csr_matrix, np.ndarray]:
+    """5-point finite-difference Laplacian on the `inside` nodes with homogeneous Dirichlet exterior."""
+    ny, nx = inside.shape
+    idx = -np.ones((ny, nx), dtype=np.int64)
+    n_in = int(inside.sum())
+    idx[inside] = np.arange(n_in)
+    iy, ix = np.nonzero(inside)
+    rows = [np.arange(n_in)]
+    cols = [np.arange(n_in)]
+    vals = [np.full(n_in, -4.0 / dx ** 2)]
+    for dy_, dx_ in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+        jy, jx = iy + dy_, ix + dx_
+        ok = (jy >= 0) & (jy < ny) & (jx >= 0) & (jx < nx)
+        nb = np.full(n_in, -1, dtype=np.int64)
+        nb[ok] = idx[jy[ok], jx[ok]]
+        has = nb >= 0
+        rows.append(np.arange(n_in)[has])
+        cols.append(nb[has])
+        vals.append(np.full(int(has.sum()), 1.0 / dx ** 2))
+    lap = sparse.csr_matrix(
+        (np.concatenate(vals), (np.concatenate(rows), np.concatenate(cols))), shape=(n_in, n_in)
+    )
+    return lap, idx
+
+
+def solve_pressurized_periclinal_shell(
+    pts: np.ndarray,
+    P_MPa: float,
+    h_um: float,
+    E_MPa: float = 300.0,
+    nu: float = 0.30,
+    H_um: float = 15.0,
+    T0_uN_per_um: float | None = None,
+    r_lec_um: float | None = None,
+    dx_um: float | None = None,
+    self_consistent: bool = True,
+    fixed_T_uN_per_um: float | None = None,
+    max_iter: int = 60,
+    tol: float = 1e-7,
+) -> dict[str, Any]:
+    """
+    Reduced 3D pressurised periclinal wall solver (Pass 3; NOT a finite-element shell).
+
+    Solves the Föppl uniform-tension membrane equation  -T ∇²z = P  on the rasterised cell
+    footprint Ω with z = 0 on the anticlinal walls ∂Ω (the walls act as rigid supports of the
+    outer periclinal wall), with the membrane tension made self-consistent with the mean
+    stretch of the bulged wall:
+        T = T_0 + E h ε̄ / (1 - ν),     ε̄ = (1/A) ∫_Ω ½ |∇z|² dA,     T_0 = P H / 2.
+    Units: µm, MPa (= µN/µm²), tension in µN/µm.  Reports the maximal bulge z_max, the
+    membrane stress σ_m = T/h, the clamped-edge bending boundary-layer stress
+    σ_b = 6 T θ_edge ℓ_b / h² with ℓ_b = sqrt(D/T) (reported separately because the
+    boundary layer ℓ_b ≈ 0.3 µm is below the grid spacing), and the inscribed-disk lower
+    bound z_disk = P R_LEC² / (4T) (Lean 4 Law 4).  `fixed_T_uN_per_um` disables the
+    tension update so the solver can be verified against the closed-form disk solution.
+    """
+    T0 = float(T0_uN_per_um if T0_uN_per_um is not None else 0.5 * P_MPa * H_um)
+    xmin, ymin = np.min(pts, axis=0)
+    xmax, ymax = np.max(pts, axis=0)
+    min_dim = float(min(xmax - xmin, ymax - ymin))
+    dx = float(dx_um if dx_um is not None else max(min_dim / 96.0, 0.30))
+
+    inside, xs, ys = rasterize_polygon_mask(pts, dx)
+    lap, idx = _dirichlet_laplacian(inside, dx)
+    n_in = int(inside.sum())
+    area_um2 = n_in * dx * dx
+
+    lap_csc = lap.tocsc()
+    rhs_unit = -np.ones(n_in)  # ∇²z = -P/T  ->  lap z = -(P/T) * 1
+    z_unit = spsolve(lap_csc, rhs_unit)  # solution of ∇²w = -1 ; z = (P/T) w  (linear in P/T)
+
+    w2d = np.zeros_like(inside, dtype=float)
+    w2d[inside] = z_unit
+    wy, wx = np.gradient(w2d, dx, dx)
+    grad_sq_unit = float(np.mean((wx[inside] ** 2 + wy[inside] ** 2)))  # ⟨|∇w|²⟩
+
+    # Self-consistent tension: T = T0 + (E h/(1-ν)) * ½ (P/T)² ⟨|∇w|²⟩
+    if fixed_T_uN_per_um is not None:
+        T = float(fixed_T_uN_per_um)
+        n_iter = 0
+    else:
+        T = max(T0, 1e-6)
+        n_iter = 0
+        for n_iter in range(1, max_iter + 1):
+            eps_mean = 0.5 * (P_MPa / T) ** 2 * grad_sq_unit
+            T_new = T0 + E_MPa * h_um * eps_mean / (1.0 - nu)
+            T_next = 0.5 * T + 0.5 * T_new
+            if abs(T_next - T) / max(T, 1e-12) < tol or not self_consistent:
+                T = T_next
+                break
+            T = T_next
+
+    scale = P_MPa / T
+    z2d = w2d * scale
+    z_max = float(np.max(z2d))
+    iy_max, ix_max = np.unravel_index(int(np.argmax(z2d)), z2d.shape)
+    eps_mean = 0.5 * scale ** 2 * grad_sq_unit
+
+    # Mean edge slope from the divergence theorem (exact for the Poisson problem):
+    #   ∮ ∂z/∂n ds = ∫ ∇²z dA = -(P/T) A  ->  θ̄_edge = (P/T) A / Perimeter   (= P R/(2T) on a disk)
+    _, perim_um = polygon_area_and_perimeter(pts)
+    theta_edge_mean = scale * area_um2 / max(perim_um, 1e-9)
+    # One-sided FD slope at nodes adjacent to the Dirichlet boundary (diagnostic only; O(dx))
+    inside_eroded = ndi.binary_erosion(inside)
+    edge = inside & ~inside_eroded
+    theta_edge_fd_max = float(np.max(np.abs(z2d[edge]))) / dx if np.any(edge) else 0.0
+
+    D_bend = E_MPa * h_um ** 3 / (12.0 * (1.0 - nu ** 2))
+    ell_b = math.sqrt(D_bend / max(T, 1e-12))
+    sigma_membrane = T / h_um
+    # Clamped-edge bending boundary layer (upper-bound diagnostic: real wall junctions are compliant)
+    sigma_edge_bending = 6.0 * T * theta_edge_mean * ell_b / (h_um ** 2)
+
+    if r_lec_um is None:
+        r_lec_um = compute_exact_lec_from_polygon(pts, grid_res=220)["R_LEC_um"]
+    z_disk_lower_bound = P_MPa * r_lec_um ** 2 / (4.0 * T)
+
+    return {
+        "z_um": z2d,
+        "inside": inside,
+        "xs_um": xs,
+        "ys_um": ys,
+        "dx_um": dx,
+        "n_nodes": n_in,
+        "area_um2": float(area_um2),
+        "T_uN_per_um": float(T),
+        "T0_uN_per_um": T0,
+        "iterations": int(n_iter),
+        "z_max_um": z_max,
+        "z_max_xy_um": (float(xs[ix_max]), float(ys[iy_max])),
+        "mean_strain": float(eps_mean),
+        "theta_edge_rad": float(theta_edge_mean),
+        "theta_edge_fd_max_rad": theta_edge_fd_max,
+        "perimeter_um": float(perim_um),
+        "ell_b_um": float(ell_b),
+        "sigma_membrane_MPa": float(sigma_membrane),
+        "sigma_edge_bending_MPa": float(sigma_edge_bending),
+        "R_LEC_um": float(r_lec_um),
+        "z_disk_lower_bound_um": float(z_disk_lower_bound),
+        "inscribed_disk_bound_satisfied": bool(z_max >= 0.97 * z_disk_lower_bound),
+    }
+
+
+def simulate_periclinal_shell_scaling(
+    scaling: dict[str, Any],
+    shell_ref: dict[str, Any] | None = None,
+    P_MPa: float | None = None,
+    h_um: float | None = None,
+    E_MPa: float | None = None,
+    H_um: float | None = None,
+) -> dict[str, Any]:
+    """
+    Run the reduced pressurised periclinal shell solver on the WT puzzle, isotropic disk and
+    ktn1 mutant footprints at all 6 area stages (18 solves) and TEST the Sapala et al. (2018)
+    LEC stress proxy: Pearson r and a log-log power-law exponent of σ_shell vs R_LEC, the
+    shell-derived isotropic/WT stress ratio at A = 4500 µm² (vs the Laplace-law 3.32), the
+    closed-form disk verification error, and the inscribed-disk comparison bound.
+    """
+    if shell_ref is None:
+        shell_ref = load_shell_reference_data()
+    sh = shell_ref["periclinal_membrane_shell"]
+    P = float(P_MPa if P_MPa is not None else sh["turgor_pressure_P_MPa"])
+    h = float(h_um if h_um is not None else sh["outer_wall_thickness_h_um"])
+    E = float(E_MPa if E_MPa is not None else sh["cell_wall_youngs_modulus_E_MPa"])
+    nu = float(sh["cell_wall_poisson_ratio_nu"])
+    H = float(H_um if H_um is not None else sh["pavement_cell_depth_H_um"])
+
+    areas = scaling["areas_um2"]
+    rows: list[dict[str, Any]] = []
+    wt_solutions: list[dict[str, Any]] = []
+    iso_solutions: list[dict[str, Any]] = []
+    for i, A in enumerate(areas):
+        pts_wt = scaling["wt_polygons"][i]
+        sol_wt = solve_pressurized_periclinal_shell(
+            pts_wt, P, h, E_MPa=E, nu=nu, H_um=H, r_lec_um=float(scaling["wt_lec_meta"][i]["R_LEC_um"])
+        )
+        wt_solutions.append(sol_wt)
+        rows.append({"genotype": "WT", "area_um2": float(A), "R_LEC_um": sol_wt["R_LEC_um"], **{k: sol_wt[k] for k in ("z_max_um", "T_uN_per_um", "sigma_membrane_MPa", "sigma_edge_bending_MPa", "mean_strain", "inscribed_disk_bound_satisfied", "z_disk_lower_bound_um")}})
+
+        r_iso = math.sqrt(float(A) / math.pi)
+        pts_iso = generate_puzzle_cell_polygon(float(A), genotype="isotropic")
+        sol_iso = solve_pressurized_periclinal_shell(pts_iso, P, h, E_MPa=E, nu=nu, H_um=H, r_lec_um=r_iso)
+        iso_solutions.append(sol_iso)
+        rows.append({"genotype": "isotropic", "area_um2": float(A), "R_LEC_um": r_iso, **{k: sol_iso[k] for k in ("z_max_um", "T_uN_per_um", "sigma_membrane_MPa", "sigma_edge_bending_MPa", "mean_strain", "inscribed_disk_bound_satisfied", "z_disk_lower_bound_um")}})
+
+        pts_ktn = scaling["ktn1_polygons"][i]
+        sol_ktn = solve_pressurized_periclinal_shell(pts_ktn, P, h, E_MPa=E, nu=nu, H_um=H, r_lec_um=float(scaling["ktn1_R_LEC_um"][i]))
+        rows.append({"genotype": "ktn1", "area_um2": float(A), "R_LEC_um": sol_ktn["R_LEC_um"], **{k: sol_ktn[k] for k in ("z_max_um", "T_uN_per_um", "sigma_membrane_MPa", "sigma_edge_bending_MPa", "mean_strain", "inscribed_disk_bound_satisfied", "z_disk_lower_bound_um")}})
+
+    r_lec_all = np.array([r["R_LEC_um"] for r in rows])
+    sigma_all = np.array([r["sigma_membrane_MPa"] for r in rows])
+    r_sig_lec, p_sig_lec = stats.pearsonr(sigma_all, r_lec_all)
+    slope, intercept = np.polyfit(np.log(r_lec_all), np.log(sigma_all), 1)
+    laplace_sigma_all = P * r_lec_all / (2.0 * h)
+    r_shell_vs_laplace, _ = stats.pearsonr(sigma_all, laplace_sigma_all)
+
+    wt_sigma = np.array([s["sigma_membrane_MPa"] for s in wt_solutions])
+    iso_sigma = np.array([s["sigma_membrane_MPa"] for s in iso_solutions])
+    wt_zmax = np.array([s["z_max_um"] for s in wt_solutions])
+    iso_zmax = np.array([s["z_max_um"] for s in iso_solutions])
+
+    # Closed-form disk verification at fixed tension (linear Poisson problem): z_max = P R² / (4T)
+    R_ver = math.sqrt(4500.0 / math.pi)
+    T_ver = 10.0
+    pts_ver = generate_puzzle_cell_polygon(4500.0, genotype="isotropic", n_angles=720)
+    sol_ver = solve_pressurized_periclinal_shell(pts_ver, P, h, E_MPa=E, nu=nu, H_um=H, r_lec_um=R_ver, dx_um=R_ver / 80.0, fixed_T_uN_per_um=T_ver)
+    z_analytic = P * R_ver ** 2 / (4.0 * T_ver)
+    disk_rel_err = abs(sol_ver["z_max_um"] - z_analytic) / z_analytic
+    theta_analytic = P * R_ver / (2.0 * T_ver)
+    strain_analytic = P ** 2 * R_ver ** 2 / (16.0 * T_ver ** 2)
+    strain_rel_err = abs(sol_ver["mean_strain"] - strain_analytic) / strain_analytic
+
+    # Large-stretch bulge-test asymptote (T0 -> 0): T^3 = E h P² ⟨|∇w|²⟩/(2(1-ν)) -> σ ∝ R^(2/3)
+    return {
+        "P_MPa": P, "h_um": h, "E_MPa": E, "nu": nu, "H_um": H,
+        "rows": rows,
+        "wt_solutions": wt_solutions,
+        "iso_solutions": iso_solutions,
+        "wt_sigma_shell_MPa": wt_sigma,
+        "iso_sigma_shell_MPa": iso_sigma,
+        "wt_z_max_um": wt_zmax,
+        "iso_z_max_um": iso_zmax,
+        "shell_stress_reduction_factor_4500": float(iso_sigma[-1] / wt_sigma[-1]),
+        "laplace_stress_reduction_factor_4500": float(scaling["stress_reduction_factor_4500"]),
+        "sigma_vs_lec_pearson_r": float(r_sig_lec),
+        "sigma_vs_lec_p_value": float(p_sig_lec),
+        "sigma_vs_lec_power_exponent": float(slope),
+        "sigma_vs_lec_power_prefactor": float(math.exp(intercept)),
+        "sigma_shell_vs_laplace_pearson_r": float(r_shell_vs_laplace),
+        "disk_zmax_rel_err": float(disk_rel_err),
+        "disk_strain_rel_err": float(strain_rel_err),
+        "disk_theta_edge_fd": float(sol_ver["theta_edge_rad"]),
+        "disk_theta_edge_analytic": float(theta_analytic),
+        "inscribed_disk_bound_fraction": float(np.mean([r["inscribed_disk_bound_satisfied"] for r in rows])),
+        "wt_mature_ell_b_um": float(wt_solutions[-1]["ell_b_um"]),
+        "wt_mature_sigma_edge_bending_MPa": float(wt_solutions[-1]["sigma_edge_bending_MPa"]),
+    }
+
+
+# --------------------------------------------------------------------------- #
+# 3c. (Pass 3) Depth-Resolved Anticlinal Wall Buckling (prestressed vertical strip)
+# --------------------------------------------------------------------------- #
+def anticlinal_depth_mode_gain(k: np.ndarray, zeta: float, H_um: float, beta: float | None, forcing: str) -> np.ndarray:
+    """
+    Depth transfer function g_k(ζ) = δ̂_k(ζ) / δ̂_k(H) of the prestressed anticlinal strip for
+    wavenumbers `k` (rad/µm; k[0] = 0 is the DC mode), inner-face Robin stiffness β (None =
+    clamped) and two forcing hypotheses:
+      - `outer_junction`: Laplace ∇²δ = 0, Dirichlet δ(s, H) = δ_top(s) (ROP/actin forcing acts
+        only at the outer periclinal junction):
+            g_k = [k cosh(kζ) + β' sinh(kζ)] / [k cosh(kH) + β' sinh(kH)],  g_0 = (1 + β'ζ)/(1 + β'H)
+      - `distributed`: Poisson ∇²δ = -f_k with the forcing uniform through depth (ROP6-RIC1
+        microtubule bundles span the whole anticlinal wall), free top ∂δ/∂ζ(H) = 0, Robin bottom:
+            δ_k(ζ) = f_k/k² [1 + A_k cosh(kζ) + B_k sinh(kζ)],  B_k = β'/(k + β' coth(kH)),
+            A_k = -B_k coth(kH);  normalised by δ_k(H).  (Clamped: 1 - cosh(k(H-ζ))/cosh(kH).)
+    """
+    k = np.asarray(k, dtype=float)
+    g = np.zeros_like(k)
+    kk = k[1:]
+    # Overflow-stable exponential forms (0 <= zeta <= H): every exponent below is <= 0
+    e_zm = np.exp(kk * (zeta - H_um))        # e^{k(ζ-H)}
+    e_zp = np.exp(-kk * (zeta + H_um))       # e^{-k(ζ+H)}
+    e_2H = np.exp(-2.0 * kk * H_um)          # e^{-2kH}
+    e_H = np.exp(-kk * H_um)                 # e^{-kH}
+    e_z = np.exp(-kk * zeta)                 # e^{-kζ}
+    e_2Hz = np.exp(-kk * (2.0 * H_um - zeta))  # e^{-k(2H-ζ)}
+    if forcing == "outer_junction":
+        if beta is None:
+            g[1:] = (e_zm - e_zp) / (1.0 - e_2H)                       # sinh(kζ)/sinh(kH)
+            g[0] = zeta / H_um
+        else:
+            bp = beta / H_um
+            g[1:] = (kk * (e_zm + e_zp) + bp * (e_zm - e_zp)) / (kk * (1.0 + e_2H) + bp * (1.0 - e_2H))
+            g[0] = (1.0 + bp * zeta) / (1.0 + bp * H_um)
+    elif forcing == "distributed":
+        if beta is None:
+            num = 1.0 - (e_z + e_2Hz) / (1.0 + e_2H)                   # 1 - cosh(k(H-ζ))/cosh(kH)
+            den = 1.0 - 2.0 * e_H / (1.0 + e_2H)                       # 1 - 1/cosh(kH)
+        else:
+            bp = beta / H_um
+            coth = (1.0 + e_2H) / (1.0 - e_2H)
+            B = bp / (kk + bp * coth)
+            num = 1.0 - B * (e_z + e_2Hz) / (1.0 - e_2H)               # 1 - B cosh(k(H-ζ))/sinh(kH)
+            den = 1.0 - B * 2.0 * e_H / (1.0 - e_2H)                   # 1 - B / sinh(kH)
+        g[1:] = num / den
+        g[0] = 0.0  # no static DC solution for a free-top uniformly forced strip; mean(δ_top) ~ 0 by area conservation
+    else:
+        raise ValueError(f"Unknown forcing mode: {forcing}")
+    return g
+
+
+def anticlinal_depth_modal_solution(
+    delta_top: np.ndarray,
+    L_um: float,
+    H_um: float,
+    zeta_um: np.ndarray,
+    beta: float | None,
+    forcing: str = "outer_junction",
+) -> np.ndarray:
+    """
+    Closed-form Fourier-mode depth field δ[len(zeta), len(delta_top)] of the prestressed anticlinal
+    wall strip whose outer-face profile equals `delta_top(s)` (see `anticlinal_depth_mode_gain`).
+    """
+    n_s = len(delta_top)
+    k = 2.0 * np.pi * np.fft.rfftfreq(n_s, d=L_um / n_s)  # rad/um
+    dhat = np.fft.rfft(delta_top)
+    out = np.zeros((len(zeta_um), n_s))
+    for j, z in enumerate(zeta_um):
+        g = anticlinal_depth_mode_gain(k, float(z), H_um, beta, forcing)
+        out[j] = np.fft.irfft(dhat * g, n=n_s)
+    return out
+
+
+def simulate_anticlinal_wall_depth_buckling(
+    rd_sim: dict[str, Any],
+    shell_ref: dict[str, Any] | None = None,
+    H_um: float | None = None,
+    beta: float | None = 2.0,
+    n_z: int | None = None,
+) -> dict[str, Any]:
+    """
+    Depth-resolved anticlinal wall buckling (Pass 3).  The ROP2–ROP6 polarity-driven
+    displacement δ_top(s) from `simulate_rop2_rop6_cortical_rd` forces the outer periclinal
+    junction (ζ = H) of a prestressed vertical wall strip; the inner periclinal junction
+    (ζ = 0) is anchored by a Robin condition of dimensionless stiffness β.  Solves the 2D
+    Laplace problem by sparse finite differences (periodic in s, Dirichlet at ζ = H, ghost-node
+    Robin at ζ = 0), cross-checks it against the modal closed form, and reports the
+    depth-attenuation profile a(ζ) = rms_s δ(s, ζ) / rms_s δ_top, the inner/outer and
+    mid-depth amplitude ratios, the dominant-mode (k = 8) vs first-harmonic (k = 16) attenuation,
+    and a β sweep (free -> clamped).
+    """
+    if shell_ref is None:
+        shell_ref = load_shell_reference_data()
+    dp = shell_ref["anticlinal_wall_depth_buckling"]
+    H = float(H_um if H_um is not None else dp["wall_depth_H_um"])
+    nz = int(n_z if n_z is not None else dp["n_depth_layers"])
+    L = float(rd_sim["L_wall_um"])
+    delta_top = np.asarray(rd_sim["wall_disp_um"], dtype=float)
+    n_s = len(delta_top)
+    ds = L / n_s
+    dz = H / (nz - 1)
+    zeta = np.linspace(0.0, H, nz)
+
+    # --- sparse FD solve. Unknown rows j = j0..nz-2 (row nz-1 is the Dirichlet top;
+    #     in the clamped limit row 0 is the known zero Dirichlet inner face, so j0 = 1) ---
+    bp = (beta / H) if beta is not None else None
+    j0 = 1 if bp is None else 0
+    n_rows = (nz - 1) - j0
+    n_unk = n_rows * n_s
+
+    rows_l: list[np.ndarray] = []
+    cols_l: list[np.ndarray] = []
+    vals_l: list[np.ndarray] = []
+    rhs = np.zeros(n_unk)
+    ii = np.arange(n_s)
+    for r in range(n_rows):
+        j = r + j0
+        base = r * n_s + ii
+        # along-wall periodic second difference
+        rows_l += [base, base, base]
+        cols_l += [base, r * n_s + (ii + 1) % n_s, r * n_s + (ii - 1) % n_s]
+        vals_l += [np.full(n_s, -2.0 / ds ** 2), np.full(n_s, 1.0 / ds ** 2), np.full(n_s, 1.0 / ds ** 2)]
+        # through-depth second difference
+        if j == 0:
+            # Robin ghost node at the inner face: δ_{-1} = δ_1 - 2 dz β' δ_0
+            rows_l += [base, base]
+            cols_l += [base, base + n_s]
+            vals_l += [np.full(n_s, (-2.0 - 2.0 * dz * bp) / dz ** 2), np.full(n_s, 2.0 / dz ** 2)]
+        else:
+            rows_l += [base]
+            cols_l += [base]
+            vals_l += [np.full(n_s, -2.0 / dz ** 2)]
+            if r - 1 >= 0:
+                rows_l += [base]
+                cols_l += [base - n_s]
+                vals_l += [np.full(n_s, 1.0 / dz ** 2)]
+            # (else: lower neighbour is the clamped δ = 0 inner face -> no contribution)
+            if r + 1 < n_rows:
+                rows_l += [base]
+                cols_l += [base + n_s]
+                vals_l += [np.full(n_s, 1.0 / dz ** 2)]
+            else:
+                rhs[base] -= delta_top / dz ** 2  # Dirichlet top row
+    A_mat = sparse.csr_matrix((np.concatenate(vals_l), (np.concatenate(rows_l), np.concatenate(cols_l))), shape=(n_unk, n_unk)).tocsc()
+    sol = spsolve(A_mat, rhs)
+    blocks = [sol.reshape(n_rows, n_s), delta_top[None, :]]
+    if j0 == 1:
+        blocks.insert(0, np.zeros((1, n_s)))
+    field_fd = np.vstack(blocks)
+
+    field_modal = anticlinal_depth_modal_solution(delta_top, L, H, zeta, beta, "outer_junction")
+    fd_vs_modal_rel_err = float(np.linalg.norm(field_fd - field_modal) / max(np.linalg.norm(field_modal), 1e-12))
+
+    rms_top = float(np.sqrt(np.mean(delta_top ** 2)))
+    atten = np.sqrt(np.mean(field_modal ** 2, axis=1)) / max(rms_top, 1e-12)
+    j_mid = int(np.argmin(np.abs(zeta - 0.5 * H)))
+
+    # Ablation: forcing distributed through the wall depth (ROP6-RIC1 microtubule bundles span
+    # the anticlinal wall) instead of acting only at the outer periclinal junction
+    field_dist = anticlinal_depth_modal_solution(delta_top, L, H, zeta, beta, "distributed")
+    atten_dist = np.sqrt(np.mean(field_dist ** 2, axis=1)) / max(rms_top, 1e-12)
+
+    # Per-mode attenuation at mid depth for the dominant lobe mode and its first harmonic
+    k_dom = int(rd_sim["dominant_lobe_count"])
+
+    def mode_gain(m: int, z: float, forcing: str = "outer_junction") -> float:
+        k_arr = np.array([0.0, 2.0 * np.pi * m / L])
+        return float(anticlinal_depth_mode_gain(k_arr, z, H, beta, forcing)[1])
+
+    g_dom_mid = mode_gain(k_dom, 0.5 * H)
+    g_harm_mid = mode_gain(2 * k_dom, 0.5 * H)
+    g_dom_inner = mode_gain(k_dom, 0.0)
+    g_dom_mid_dist = mode_gain(k_dom, 0.5 * H, "distributed")
+
+    # Penetration depth: depth below the outer face at which a(ζ) falls to e^-1 of the top value
+    below = H - zeta
+
+    def penetration(a: np.ndarray) -> float:
+        idx_e = np.nonzero(a <= math.exp(-1.0))[0]
+        return float(below[idx_e[-1]]) if len(idx_e) else float("inf")
+
+    # β sweep from free to clamped, for both forcing hypotheses
+    sweep: list[dict[str, Any]] = []
+    for b in dp["inner_face_anchoring_beta_sweep"]:
+        b_val = None if b == "clamped" else float(b)
+        f = anticlinal_depth_modal_solution(delta_top, L, H, zeta, b_val, "outer_junction")
+        a = np.sqrt(np.mean(f ** 2, axis=1)) / max(rms_top, 1e-12)
+        f2 = anticlinal_depth_modal_solution(delta_top, L, H, zeta, b_val, "distributed")
+        a2 = np.sqrt(np.mean(f2 ** 2, axis=1)) / max(rms_top, 1e-12)
+        sweep.append(
+            {
+                "beta": b,
+                "atten_profile": a,
+                "inner_over_outer": float(a[0]),
+                "mid_over_outer": float(a[j_mid]),
+                "atten_profile_distributed": a2,
+                "inner_over_outer_distributed": float(a2[0]),
+                "mid_over_outer_distributed": float(a2[j_mid]),
+            }
+        )
+
+    return {
+        "H_um": H, "L_um": L, "beta": beta, "zeta_um": zeta, "s_um": rd_sim["s_um"],
+        "field_fd_um": field_fd, "field_modal_um": field_modal, "field_distributed_um": field_dist,
+        "fd_vs_modal_rel_err": fd_vs_modal_rel_err,
+        "atten_profile": atten,
+        "atten_profile_distributed": atten_dist,
+        "inner_over_outer": float(atten[0]),
+        "mid_over_outer": float(atten[j_mid]),
+        "inner_over_outer_distributed": float(atten_dist[0]),
+        "mid_over_outer_distributed": float(atten_dist[j_mid]),
+        "dominant_mode_k": k_dom,
+        "dominant_mode_mid_gain": g_dom_mid,
+        "first_harmonic_mid_gain": g_harm_mid,
+        "dominant_mode_inner_gain": g_dom_inner,
+        "dominant_mode_mid_gain_distributed": g_dom_mid_dist,
+        "harmonic_to_dominant_mid_ratio": float(g_harm_mid / max(g_dom_mid, 1e-12)),
+        "penetration_depth_um": penetration(atten),
+        "penetration_depth_distributed_um": penetration(atten_dist),
+        "beta_sweep": sweep,
+        "sweep_inner_over_outer": [s["inner_over_outer"] for s in sweep],
+        "sweep_inner_over_outer_distributed": [s["inner_over_outer_distributed"] for s in sweep],
+    }
+
+
+# --------------------------------------------------------------------------- #
 # 4. Empirical SEM Specimen Segmentation (`arabidopsis_pavement_cell_specimen.jpg`)
 # --------------------------------------------------------------------------- #
 def segment_arabidopsis_pavement_specimen(
@@ -658,8 +1278,10 @@ def render_comparison_figure(
     rd_sim: dict[str, Any],
     spec: dict[str, Any],
     out_png: Path = OUT_PNG,
+    shell: dict[str, Any] | None = None,
+    depth: dict[str, Any] | None = None,
 ) -> Path:
-    """Render the 6-panel dark-mode synthesis figure (`pavement_cell_lobing_comparison.png`)."""
+    """Render the 9-panel dark-mode synthesis figure (`pavement_cell_lobing_comparison.png`); panels G-I are the Pass 3 reduced shell / depth results."""
     out_png.parent.mkdir(parents=True, exist_ok=True)
     plt.rcParams.update(
         {
@@ -675,13 +1297,15 @@ def render_comparison_figure(
         }
     )
 
-    fig, axes = plt.subplots(2, 3, figsize=(18.2, 11.2), dpi=140)
+    n_rows_fig = 3 if (shell is not None and depth is not None) else 2
+    fig, axes = plt.subplots(n_rows_fig, 3, figsize=(18.2, 5.6 * n_rows_fig), dpi=140)
     fig.suptitle(
-        "Sapala et al. (2018) eLife & Fu et al. (2005) Cell — ROP2–ROP6 Puzzle Cell Lobing & Largest Empty Circle (LEC) Turgor Stress Scaling",
-        fontsize=13.2,
+        "Sapala et al. (2018) eLife & Fu et al. (2005) Cell — ROP2–ROP6 Puzzle Cell Lobing & LEC Turgor Stress Scaling\n"
+        "Pass 3: Reduced Pressurized Periclinal Membrane-Shell (G, H) & Depth-Resolved Anticlinal Wall Buckling (I)",
+        fontsize=12.4,
         fontweight="bold",
         color="#f0f6fc",
-        y=0.98,
+        y=0.992,
     )
 
     # Panel A: Largest Empty Circle Radius R_LEC(A) & Outer Wall Stress Across Genotypes
@@ -735,8 +1359,8 @@ def render_comparison_figure(
     )
     ax_b.add_patch(iso_circle)
     ax_b.set_aspect("equal")
-    ax_b.set_xlim(-68, 68)
-    ax_b.set_ylim(-48, 48)
+    ax_b.set_xlim(-80, 80)
+    ax_b.set_ylim(-50, 50)
     ax_b.set_xlabel(r"$x$ ($\mu\mathrm{m}$)")
     ax_b.set_ylabel(r"$y$ ($\mu\mathrm{m}$)")
     ax_b.set_title("B. Mature Puzzle Cell vs Unlobed Circle LEC & Convex Hull", fontweight="bold")
@@ -827,7 +1451,100 @@ def render_comparison_figure(
         fontweight="bold",
     )
 
-    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.955])
+    if n_rows_fig == 3:
+        # Panel G: Reduced pressurised periclinal shell bulge z(x, y) of the mature WT cell vs equal-area disk
+        ax_g = axes[2, 0]
+        sol_wt = shell["wt_solutions"][-1]
+        sol_iso = shell["iso_solutions"][-1]
+        zmax_plot = max(sol_wt["z_max_um"], sol_iso["z_max_um"])
+        z_wt_plot = np.where(sol_wt["inside"], sol_wt["z_um"], np.nan)
+        xs_w, ys_w = sol_wt["xs_um"], sol_wt["ys_um"]
+        im_g = ax_g.pcolormesh(xs_w, ys_w, z_wt_plot, cmap="magma", vmin=0.0, vmax=zmax_plot, shading="nearest")
+        pts_wt_c = np.vstack([pts_wt, pts_wt[0]])
+        ax_g.plot(pts_wt_c[:, 0], pts_wt_c[:, 1], color="#3fb950", lw=1.4)
+        ax_g.add_patch(Circle((lec_wt["center_x_um"], lec_wt["center_y_um"]), lec_wt["R_LEC_um"], facecolor="none", edgecolor="#f2cc60", ls="--", lw=1.5))
+        ax_g.set_aspect("equal")
+        ax_g.set_xlim(float(xs_w.min()), float(xs_w.max()))
+        ax_g.set_ylim(float(ys_w.min()) - 22.0, float(ys_w.max()) + 22.0)
+        ax_g.set_xlabel(r"$x$ ($\mu\mathrm{m}$)")
+        ax_g.set_ylabel(r"$y$ ($\mu\mathrm{m}$)")
+        ax_g.set_title(
+            f"G. Föppl Membrane Bulge $z(x,y)$: WT $z_{{max}}$={sol_wt['z_max_um']:.2f} µm (LEC bound {sol_wt['z_disk_lower_bound_um']:.2f}) vs Disk {sol_iso['z_max_um']:.1f} µm",
+            fontweight="bold",
+            fontsize=8.2,
+        )
+        cb = fig.colorbar(im_g, ax=ax_g, fraction=0.030, pad=0.02)
+        cb.set_label(r"Bulge $z$ ($\mu\mathrm{m}$)", color="#e6edf3")
+        plt.setp(plt.getp(cb.ax.axes, "yticklabels"), color="#8b949e")
+        # Inset: equal-area isotropic disk on the same colour scale
+        ax_gi = ax_g.inset_axes([0.72, 0.02, 0.27, 0.40])
+        ax_gi.set_facecolor("#0d1117")
+        z_iso_plot = np.where(sol_iso["inside"], sol_iso["z_um"], np.nan)
+        ax_gi.pcolormesh(sol_iso["xs_um"], sol_iso["ys_um"], z_iso_plot, cmap="magma", vmin=0.0, vmax=zmax_plot, shading="nearest")
+        ax_gi.add_patch(Circle((0.0, 0.0), scaling["iso_R_LEC_um"][-1], facecolor="none", edgecolor="#ff7b72", ls=":", lw=1.2))
+        ax_gi.set_aspect("equal")
+        ax_gi.set_xticks([])
+        ax_gi.set_yticks([])
+        ax_gi.set_title(f"Isotropic disk, same A\nz_max={sol_iso['z_max_um']:.1f} µm", fontsize=6.6, color="#e6edf3")
+        ax_g.text(
+            0.01, 0.97,
+            f"-T∇²z = P, z = 0 on anticlinal walls; T = T₀ + Ehε̄/(1-ν)\n"
+            f"WT: T={sol_wt['T_uN_per_um']:.2f} µN/µm, σ_m={sol_wt['sigma_membrane_MPa']:.1f} MPa | Disk: T={sol_iso['T_uN_per_um']:.2f}, σ_m={sol_iso['sigma_membrane_MPa']:.1f} MPa\n"
+            f"Reduced Föppl membrane on the 2D footprint — NOT a 3D FEM shell",
+            transform=ax_g.transAxes, fontsize=6.8, color="#e6edf3", va="top",
+            bbox=dict(facecolor="#0d1117", edgecolor="#30363d", alpha=0.85),
+        )
+
+        # Panel H: Shell membrane stress vs R_LEC across genotypes/areas — TEST of the Laplace LEC proxy
+        ax_h = axes[2, 1]
+        rows_sh = shell["rows"]
+        mk = {"WT": ("s", "#3fb950", "WT puzzle (6 areas)"), "isotropic": ("o", "#ff7b72", "Isotropic disk"), "ktn1": ("^", "#d2a8ff", r"$\mathit{ktn1}$ mutant")}
+        for g_name, (m_, c_, lab_) in mk.items():
+            rr = [r for r in rows_sh if r["genotype"] == g_name]
+            ax_h.scatter([r["R_LEC_um"] for r in rr], [r["sigma_membrane_MPa"] for r in rr], marker=m_, color=c_, s=48, label=lab_, zorder=4)
+        r_grid = np.linspace(6.0, 40.0, 100)
+        ax_h.plot(r_grid, shell["P_MPa"] * r_grid / (2.0 * shell["h_um"]), color="#f2cc60", ls="--", lw=1.8, label=r"Laplace proxy $\sigma = P R_{LEC}/(2h)$ (exponent 1)")
+        ax_h.plot(r_grid, shell["sigma_vs_lec_power_prefactor"] * r_grid ** shell["sigma_vs_lec_power_exponent"], color="#58a6ff", lw=2.0, label=f"Shell fit $\\sigma \\propto R^{{{shell['sigma_vs_lec_power_exponent']:.2f}}}$ (r={shell['sigma_vs_lec_pearson_r']:.3f})")
+        ax_h.plot(r_grid, 0.0 * r_grid + shell["P_MPa"] * shell["H_um"] / (2.0 * shell["h_um"]), color="#8b949e", ls=":", lw=1.2, label=r"Pretension floor $T_0/h = PH/(2h)$")
+        ax_h.set_xlabel(r"Largest Empty Circle Radius $R_{\mathrm{LEC}}$ ($\mu\mathrm{m}$)")
+        ax_h.set_ylabel(r"Periclinal membrane stress $\sigma_m = T/h$ (MPa)")
+        ax_h.set_title(
+            f"H. Shell Stress vs LEC: iso/WT ratio {shell['shell_stress_reduction_factor_4500']:.2f}x (Laplace {shell['laplace_stress_reduction_factor_4500']:.2f}x)",
+            fontweight="bold",
+            fontsize=9.0,
+        )
+        ax_h.grid(True, linestyle="--", alpha=0.35)
+        ax_h.legend(loc="upper left", fontsize=7.4, framealpha=0.88)
+
+        # Panel I: Depth-resolved anticlinal wall buckling δ(s, ζ) + attenuation profiles (β sweep, two forcing hypotheses)
+        ax_i = axes[2, 2]
+        fld = depth["field_modal_um"]
+        vmax_d = float(np.max(np.abs(fld))) + 1e-9
+        im_i = ax_i.pcolormesh(depth["s_um"], depth["zeta_um"], fld, cmap="RdBu_r", vmin=-vmax_d, vmax=vmax_d, shading="nearest")
+        ax_i.set_xlabel(r"Anticlinal wall arc length $s$ ($\mu\mathrm{m}$)")
+        ax_i.set_ylabel(r"Depth $\zeta$ ($\mu\mathrm{m}$): 0 = inner, H = outer periclinal junction")
+        ax_i.set_title(
+            f"I. Depth-Resolved Anticlinal Buckling (β={depth['beta']}, inner/outer={depth['inner_over_outer']:.3f}, FD-vs-modal err={depth['fd_vs_modal_rel_err']:.1e})",
+            fontweight="bold",
+            fontsize=8.4,
+        )
+        cb_i = fig.colorbar(im_i, ax=ax_i, fraction=0.035, pad=0.02)
+        cb_i.set_label(r"Wall deflection $\delta$ ($\mu\mathrm{m}$)", color="#e6edf3")
+        plt.setp(plt.getp(cb_i.ax.axes, "yticklabels"), color="#8b949e")
+        ax_in = ax_i.inset_axes([0.60, 0.08, 0.37, 0.50])
+        ax_in.set_facecolor("#0d1117")
+        sweep_cols = ["#ff7b72", "#f0883e", "#f2cc60", "#58a6ff", "#d2a8ff"]
+        for sw, c_ in zip(depth["beta_sweep"], sweep_cols):
+            ax_in.plot(sw["atten_profile"], depth["zeta_um"], color=c_, lw=1.5, label=f"β={sw['beta']}")
+            ax_in.plot(sw["atten_profile_distributed"], depth["zeta_um"], color=c_, lw=1.1, ls=":")
+        ax_in.set_xlabel("a(ζ) = rms δ(ζ)/rms δ_top", fontsize=6.6)
+        ax_in.set_ylabel("ζ (µm)", fontsize=6.6)
+        ax_in.tick_params(labelsize=6.0)
+        ax_in.set_xlim(0.0, 1.05)
+        ax_in.grid(True, linestyle="--", alpha=0.3)
+        ax_in.legend(fontsize=5.6, loc="upper left", framealpha=0.8, title="solid: outer-junction forcing\ndotted: depth-distributed", title_fontsize=5.4)
+
+    fig.tight_layout(rect=[0.0, 0.0, 1.0, 0.962])
     fig.savefig(out_png, dpi=140)
     plt.close(fig)
     return out_png
@@ -837,18 +1554,24 @@ def render_growth_gif(
     scaling: dict[str, Any],
     rd_sim: dict[str, Any],
     out_gif: Path = OUT_GIF,
+    depth: dict[str, Any] | None = None,
 ) -> Path:
-    """Render an animated GIF of puzzle-cell expansion + LEC pinning and ROP2–ROP6 anticlinal wall buckling."""
+    """Render an animated GIF of puzzle-cell expansion + LEC pinning, ROP2–ROP6 anticlinal wall buckling, and (Pass 3) its depth-resolved profile."""
     out_gif.parent.mkdir(parents=True, exist_ok=True)
     snaps = rd_sim["snapshots"]
     s_um = rd_sim["s_um"]
     areas_anim = np.linspace(250.0, 4500.0, len(snaps))
+    n_panels = 3 if depth is not None else 2
+    if depth is not None:
+        zeta_g = depth["zeta_um"]
+        vmax_g = max(float(np.max(np.abs(snap["wall_disp_um"]))) for snap in snaps) + 1e-9
 
     frames: list[Image.Image] = []
     for idx_f, (A_val, snap) in enumerate(zip(areas_anim, snaps)):
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10.6, 4.8), dpi=100)
+        fig, axs = plt.subplots(1, n_panels, figsize=(5.3 * n_panels, 4.8), dpi=100)
+        ax1, ax2 = axs[0], axs[1]
         fig.patch.set_facecolor("#0d1117")
-        for ax in (ax1, ax2):
+        for ax in axs:
             ax.set_facecolor("#161b22")
 
         pts = generate_puzzle_cell_polygon(float(A_val), genotype="WT")
@@ -870,8 +1593,8 @@ def render_growth_gif(
         iso_patch = Circle((0.0, 0.0), r_iso, facecolor="none", edgecolor="#ff7b72", ls=":", lw=1.6, label=f"R_iso = {r_iso:.1f} um")
         ax1.add_patch(iso_patch)
         ax1.set_aspect("equal")
-        ax1.set_xlim(-68, 68)
-        ax1.set_ylim(-48, 48)
+        ax1.set_xlim(-80, 80)
+        ax1.set_ylim(-50, 50)
         ax1.set_title(f"Puzzle Cell Growth (A = {A_val:.0f} um^2)", color="#f0f6fc", fontsize=10)
         ax1.set_xlabel("x (um)", color="#e6edf3")
         ax1.set_ylabel("y (um)", color="#e6edf3")
@@ -886,6 +1609,14 @@ def render_growth_gif(
         ax2.set_xlabel("Anticlinal Wall s (um)", color="#e6edf3")
         ax2.set_ylabel("Activity / Deflection", color="#e6edf3")
         ax2.legend(loc="upper right", fontsize=7.8)
+
+        if depth is not None:
+            ax3 = axs[2]
+            fld = anticlinal_depth_modal_solution(snap["wall_disp_um"], depth["L_um"], depth["H_um"], zeta_g, depth["beta"], "outer_junction")
+            ax3.pcolormesh(s_um, zeta_g, fld, cmap="RdBu_r", vmin=-vmax_g, vmax=vmax_g, shading="nearest")
+            ax3.set_title(f"Anticlinal Wall Depth Profile δ(s, ζ) (β={depth['beta']})", color="#f0f6fc", fontsize=10)
+            ax3.set_xlabel("Anticlinal Wall s (um)", color="#e6edf3")
+            ax3.set_ylabel("Depth ζ (um; H = outer face)", color="#e6edf3")
 
         fig.tight_layout()
         fig.canvas.draw()
@@ -908,11 +1639,22 @@ def render_growth_gif(
 # 6. MorphoEval Quantitative Measurements (`measure_morphoeval`)
 # --------------------------------------------------------------------------- #
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Compute 9 reference-anchored morphometric measurements with uncertainty, p-values, and mutant controls."""
+    """Compute 17 reference-anchored measurements (9 from Pass 2 + 8 Pass 3 shell/depth measurements) with uncertainty, p-values, and controls."""
     ref_data = load_reference_data()
+    shell_ref = load_shell_reference_data()
     scaling = simulate_puzzle_cell_area_scaling(ref_data)
     rd_sim = simulate_rop2_rop6_cortical_rd(ref_data, seed=2018)
     spec = segment_arabidopsis_pavement_specimen(SPECIMEN_PATH)
+    shell = simulate_periclinal_shell_scaling(scaling, shell_ref)
+    depth = simulate_anticlinal_wall_depth_buckling(rd_sim, shell_ref, beta=float(shell_ref["anticlinal_wall_depth_buckling"]["inner_face_anchoring_beta_default"]))
+    k_dom = depth["dominant_mode_k"]
+    H = depth["H_um"]
+    L = depth["L_um"]
+    beta_default = depth["beta"]
+    # Analytic reference for the dominant-mode inner/outer gain under outer-junction forcing
+    k_d = 2.0 * np.pi * k_dom / L
+    bp = beta_default / H
+    g_inner_analytic = k_d / (k_d * math.cosh(k_d * H) + bp * math.sinh(k_d * H))
 
     return [
         {
@@ -921,7 +1663,7 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "unit": "um",
             "reference_value": 11.4,
             "reference_source": "Sapala et al. (2018) eLife 7:e32794 Figs. 2-3 (mature wild-type Arabidopsis pavement cell R_LEC plateau ~ 11.4 ± 1.1 um at A = 4500 um^2)",
-            "method": f"Exact 2D Euclidean Distance Transform inscribed circle on spring-remodeled WT puzzle polygon (RMSE across 6 area stages = {scaling['wt_lec_rmse_um']:.3f} um)",
+            "method": f"Exact 2D Euclidean Distance Transform inscribed circle on the compact branched WT puzzle polygon (RMSE across 6 area stages = {scaling['wt_lec_rmse_um']:.3f} um)",
         },
         {
             "name": "wt_lec_area_scaling_pearson_r",
@@ -987,77 +1729,188 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "reference_source": "Sapala et al. (2018) eLife 7:e32794 & File:Arabidopsis-epiderm-stomata.jpg (Wikimedia Commons CC BY-SA 3.0)",
             "method": f"DoG + zero-compactness watershed segmentation of N = {spec['cell_count']} puzzle cells on 1280x960 SEM micrograph (mean S = {spec['mean_solidity_S']:.3f} ± {spec['sd_solidity_S']:.3f}, min S = {spec['min_solidity_S']:.3f}, calibrated R_LEC = {spec['calibrated_r_lec_um']:.2f} um)",
         },
+        # ---- Pass 3: reduced pressurised periclinal membrane-shell solver ----
+        {
+            "name": "shell_disk_closed_form_zmax_rel_err",
+            "value": round(float(shell["disk_zmax_rel_err"]), 5),
+            "unit": "fraction",
+            "reference_value": 0.0,
+            "reference_source": "Closed-form uniformly loaded circular membrane z_max = P R^2 / (4T) (Timoshenko & Woinowsky-Krieger 1959); solver verification, not a specimen comparison",
+            "method": f"Finite-difference Dirichlet Poisson solve on the rasterised A = 4500 um^2 disk at fixed T = 10 uN/um, dx = R/80 (z_max rel. err. {shell['disk_zmax_rel_err']:.2e}; mean-strain rel. err. {shell['disk_strain_rel_err']:.2e} vs P^2 R^2 / (16 T^2))",
+        },
+        {
+            "name": "shell_inscribed_disk_lower_bound_fraction",
+            "value": round(float(shell["inscribed_disk_bound_fraction"]), 4),
+            "unit": "fraction",
+            "reference_value": 1.0,
+            "reference_source": "Maximum-principle comparison bound z_max(Omega) >= P R_LEC^2 / (4T) for every footprint containing its LEC disk (Lean 4 Law 4, `sapala_2018_pressurized_membrane_inscribed_disk_bound`)",
+            "method": f"Fraction of {len(shell['rows'])} (genotype x area) shell solutions whose z_max >= 0.97 x P R_LEC^2/(4T) (WT mature z_max = {shell['wt_solutions'][-1]['z_max_um']:.3f} um vs bound {shell['wt_solutions'][-1]['z_disk_lower_bound_um']:.3f} um)",
+        },
+        {
+            "name": "shell_stress_vs_lec_pearson_r",
+            "value": round(float(shell["sigma_vs_lec_pearson_r"]), 4),
+            "unit": "r",
+            "reference_value": 1.0,
+            "reference_source": "Sapala et al. (2018) eLife 7:e32794 Fig. 3 & Box 1: FEM maximal periclinal wall stress increases with the Largest Empty Circle radius (LEC proposed as the shape predictor of stress)",
+            "method": f"Pearson r between Foppl membrane stress sigma_m = T/h and R_LEC across {len(shell['rows'])} WT / isotropic / ktn1 footprints at 6 area stages (p = {shell['sigma_vs_lec_p_value']:.2e}); E = {shell['E_MPa']:.0f} MPa, nu = {shell['nu']:.2f}, H = {shell['H_um']:.0f} um, T0 = PH/2",
+        },
+        {
+            "name": "shell_stress_vs_lec_power_exponent",
+            "value": round(float(shell["sigma_vs_lec_power_exponent"]), 4),
+            "unit": "dimensionless",
+            "reference_value": 1.0,
+            "reference_source": "Sapala et al. (2018) Box 1 thin-walled pressure-vessel proxy sigma_max = P R_LEC / (2h) (exponent 1); Foppl large-stretch asymptote predicts 2/3 (bulge-test scaling T^3 ~ E h P^2 R^2 / 16)",
+            "method": f"Log-log least-squares slope of sigma_m vs R_LEC over {len(shell['rows'])} solutions (prefactor {shell['sigma_vs_lec_power_prefactor']:.2f} MPa um^-b); sub-linear because the pretension floor T0/h = {shell['P_MPa'] * shell['H_um'] / (2 * shell['h_um']):.1f} MPa and the 2/3 bulge scaling both flatten sigma(R)",
+        },
+        {
+            "name": "shell_isotropic_vs_wt_stress_ratio_4500um2",
+            "value": round(float(shell["shell_stress_reduction_factor_4500"]), 3),
+            "unit": "ratio",
+            "reference_value": 3.32,
+            "reference_source": "Sapala et al. (2018) eLife 7:e32794 Box 1 Laplace-proxy ratio 75.7 MPa / 22.8 MPa = 3.32 at A = 4500 um^2",
+            "method": f"Reduced shell sigma_m(isotropic disk) / sigma_m(WT puzzle) = {shell['iso_sigma_shell_MPa'][-1]:.2f} / {shell['wt_sigma_shell_MPa'][-1]:.2f} MPa; bulge z_max {shell['iso_z_max_um'][-1]:.2f} vs {shell['wt_z_max_um'][-1]:.2f} um; clamped-edge bending diagnostic (upper bound) WT {shell['wt_mature_sigma_edge_bending_MPa']:.0f} MPa with ell_b = {shell['wt_mature_ell_b_um']:.2f} um",
+        },
+        # ---- Pass 3: depth-resolved anticlinal wall buckling ----
+        {
+            "name": "anticlinal_depth_fd_vs_modal_rel_err",
+            "value": round(float(depth["fd_vs_modal_rel_err"]), 5),
+            "unit": "fraction",
+            "reference_value": 0.0,
+            "reference_source": "Closed-form Fourier-mode solution g_k(zeta) = [k cosh(k zeta) + beta' sinh(k zeta)] / [k cosh(kH) + beta' sinh(kH)] of the prestressed strip (solver verification)",
+            "method": f"Relative L2 error of the sparse 2D finite-difference Laplace solve ({len(depth['zeta_um'])} depth layers x {len(depth['s_um'])} arc nodes, periodic in s, Dirichlet outer face, Robin inner face beta = {beta_default}) vs the modal closed form",
+        },
+        {
+            "name": "anticlinal_dominant_mode_inner_over_outer_gain",
+            "value": round(float(depth["dominant_mode_inner_gain"]), 5),
+            "unit": "dimensionless",
+            "reference_value": round(float(g_inner_analytic), 5),
+            "reference_source": f"Analytic k = {k_dom} (lambda = {L / k_dom:.1f} um) inner-face gain k / [k cosh(kH) + beta' sinh(kH)] at H = {H:.0f} um, beta = {beta_default}; NO depth-resolved empirical lobe-amplitude data vendored (open item)",
+            "method": f"Dominant-mode depth gain under outer-junction forcing (mid-depth gain {depth['dominant_mode_mid_gain']:.4f}; first harmonic k = {2 * k_dom} mid-depth gain {depth['first_harmonic_mid_gain']:.4f}, i.e. {depth['harmonic_to_dominant_mid_ratio']:.3f}x the dominant mode); e^-1 penetration depth {depth['penetration_depth_um']:.1f} um of H = {H:.0f} um",
+        },
+        {
+            "name": "anticlinal_inner_over_outer_rms_distributed_vs_junction_forcing",
+            "value": round(float(depth["inner_over_outer_distributed"]), 4),
+            "unit": "dimensionless",
+            "reference_value": round(float(depth["inner_over_outer"]), 4),
+            "reference_source": "Ablation control: same beta and delta_top under outer-junction-only forcing (model-internal reference; Armour et al. 2015 Plant Cell 27:2484 motivates depth-distributed anticlinal wall forcing but reports no amplitude-vs-depth table)",
+            "method": f"rms_s delta(s, 0) / rms_s delta_top with the ROP6-RIC1 forcing distributed uniformly through depth (free outer face, Robin inner face beta = {beta_default}); penetration depth {depth['penetration_depth_distributed_um']:.1f} um vs {depth['penetration_depth_um']:.1f} um; beta sweep inner/outer (junction) = {[round(v, 3) for v in depth['sweep_inner_over_outer']]}, (distributed) = {[round(v, 3) for v in depth['sweep_inner_over_outer_distributed']]}",
+        },
     ]
 
 
 # --------------------------------------------------------------------------- #
-# 7. Deterministic 8-Point Self-Test Suite (`--self-test`)
+# 7. Deterministic 13-Point Self-Test Suite (`--self-test`)
 # --------------------------------------------------------------------------- #
 def run_self_test() -> int:
-    """Run 8 deterministic verification checks covering SHA-256 integrity, Lean 4 laws, PDEs, mutants, and CV segmentation."""
-    print("[self-test] 1/8 Verifying SHA-256 dataset integrity...")
+    """Run 13 deterministic verification checks covering SHA-256 integrity, Lean 4 laws 1-5, PDEs, mutants, CV segmentation, and the Pass 3 shell/depth solvers."""
+    n_checks = 13
+    print(f"[self-test] 1/{n_checks} Verifying SHA-256 dataset integrity...")
     hashes = verify_dataset_integrity()
-    assert len(hashes) == 4, f"Expected 4 verified dataset hashes, got {len(hashes)}"
+    assert len(hashes) == 5, f"Expected 5 verified dataset hashes, got {len(hashes)}"
 
-    print("[self-test] 2/8 Verifying Sapala et al. (2018) LEC stress suppression across area growth (Lean 4 Law 1)...")
+    print(f"[self-test] 2/{n_checks} Verifying Sapala et al. (2018) LEC stress suppression across area growth (Lean 4 Law 1)...")
     ref = load_reference_data()
+    shell_ref = load_shell_reference_data()
     scaling = simulate_puzzle_cell_area_scaling(ref)
     assert scaling["wt_R_LEC_um"][-1] < 13.0, f"WT R_LEC failed to plateau: {scaling['wt_R_LEC_um'][-1]}"
     assert scaling["iso_R_LEC_um"][-1] > 35.0
     assert scaling["stress_reduction_factor_4500"] > 3.0
     assert scaling["wt_lec_pearson_r"] > 0.96
 
-    print("[self-test] 3/8 Verifying ROP2–ROP6 cortical reaction-diffusion & trans-wall conservation (Lean 4 Law 2)...")
+    print(f"[self-test] 3/{n_checks} Verifying ROP2–ROP6 cortical reaction-diffusion & trans-wall conservation (Lean 4 Law 2)...")
     rd_sim = simulate_rop2_rop6_cortical_rd(ref, seed=2018)
     assert rd_sim["intracortical_rop2_rop6_r"] < -0.85, f"Expected strong ROP2-ROP6 anticorrelation, got {rd_sim['intracortical_rop2_rop6_r']}"
     assert rd_sim["trans_wall_rop2A_rop6B_r"] > 0.85, f"Expected strong trans-wall complementarity, got {rd_sim['trans_wall_rop2A_rop6B_r']}"
     assert rd_sim["area_conservation_err_um2"] < 1e-9
     assert 20.0 <= rd_sim["dominant_wavelength_um"] <= 30.0
 
-    print("[self-test] 4/8 Verifying ktn1/ric1 & rop2 rop4 mutant lobeyness collapse (Lean 4 Law 3)...")
+    print(f"[self-test] 4/{n_checks} Verifying ktn1/ric1 & rop2 rop4 mutant lobeyness collapse (Lean 4 Law 3)...")
     assert scaling["ktn1_lobeyness_L"][-1] < 1.18 < scaling["wt_lobeyness_L"][-1]
     assert scaling["rop2_lobeyness_L"][-1] < 1.12
     assert scaling["ktn1_solidity_S"][-1] > 0.86 > scaling["wt_solidity_S"][-1]
 
-    print("[self-test] 5/8 Verifying monocot narrow parallel-file R_LEC bound...")
+    print(f"[self-test] 5/{n_checks} Verifying monocot narrow parallel-file R_LEC bound...")
     assert scaling["mono_R_LEC_um"][-1] <= 12.0, f"Monocot file R_LEC exceeded neck bound: {scaling['mono_R_LEC_um'][-1]}"
 
-    print("[self-test] 6/8 Verifying Arabidopsis leaf epidermis SEM specimen segmentation...")
+    print(f"[self-test] 6/{n_checks} Verifying Arabidopsis leaf epidermis SEM specimen segmentation...")
     spec = segment_arabidopsis_pavement_specimen(SPECIMEN_PATH)
     assert spec["cell_count"] >= 8, f"Expected >=8 segmented puzzle cells, got {spec['cell_count']}"
     assert 0.60 <= spec["mean_solidity_S"] <= 0.76
     assert spec["mean_lobeyness_L"] >= 1.30
 
-    print("[self-test] 7/8 Verifying measure_morphoeval() contract (9 reference-anchored metrics)...")
-    meas = measure_morphoeval()
-    assert len(meas) == 9
-    for m in meas:
-        assert m.get("value") is not None and m.get("reference_value") is not None
+    print(f"[self-test] 7/{n_checks} Verifying reduced periclinal shell solver against the closed-form disk (Pass 3)...")
+    shell = simulate_periclinal_shell_scaling(scaling, shell_ref)
+    assert shell["disk_zmax_rel_err"] < 0.03, f"Disk z_max FD error too large: {shell['disk_zmax_rel_err']}"
+    assert shell["disk_strain_rel_err"] < 0.03, f"Disk mean-strain FD error too large: {shell['disk_strain_rel_err']}"
+    # Linear Poisson scaling: fixed-T solution is exactly proportional to P/T
+    pts_d = generate_puzzle_cell_polygon(1000.0, genotype="isotropic")
+    s1 = solve_pressurized_periclinal_shell(pts_d, 0.6, 0.3, fixed_T_uN_per_um=5.0, r_lec_um=1.0)
+    s2 = solve_pressurized_periclinal_shell(pts_d, 1.2, 0.3, fixed_T_uN_per_um=10.0, r_lec_um=1.0)
+    assert abs(s1["z_max_um"] - s2["z_max_um"]) < 1e-9
 
-    print("[self-test] 8/8 Verifying bitwise determinism across independent runs...")
+    print(f"[self-test] 8/{n_checks} Verifying inscribed-disk comparison bound z_max >= P R_LEC^2/(4T) on all footprints (Lean 4 Law 4)...")
+    assert shell["inscribed_disk_bound_fraction"] == 1.0, f"Comparison bound violated: {shell['inscribed_disk_bound_fraction']}"
+    assert all(r["T_uN_per_um"] > r_["T0_uN_per_um"] for r, r_ in zip(shell["rows"][:1], shell["wt_solutions"][:1]))
+
+    print(f"[self-test] 9/{n_checks} Verifying shell stress tracks R_LEC and WT puzzle lobing lowers periclinal stress (Pass 3 test of the LEC proxy)...")
+    assert shell["sigma_vs_lec_pearson_r"] > 0.90, f"Shell stress poorly tracks LEC: {shell['sigma_vs_lec_pearson_r']}"
+    assert shell["shell_stress_reduction_factor_4500"] > 1.5
+    assert 0.3 < shell["sigma_vs_lec_power_exponent"] < 1.0, f"Unexpected sigma(R_LEC) exponent {shell['sigma_vs_lec_power_exponent']}"
+    assert np.all(np.diff(shell["iso_sigma_shell_MPa"]) > 0.0)  # monotone with disk radius
+    assert float(np.ptp(shell["wt_sigma_shell_MPa"][2:])) < 0.15 * float(shell["wt_sigma_shell_MPa"][-1])  # WT plateau
+
+    print(f"[self-test] 10/{n_checks} Verifying depth-resolved anticlinal buckling FD solve vs modal closed form (Pass 3)...")
+    depth = simulate_anticlinal_wall_depth_buckling(rd_sim, shell_ref, beta=2.0)
+    assert depth["fd_vs_modal_rel_err"] < 0.03, f"FD vs modal mismatch: {depth['fd_vs_modal_rel_err']}"
+    depth_c = simulate_anticlinal_wall_depth_buckling(rd_sim, shell_ref, beta=None)
+    assert depth_c["fd_vs_modal_rel_err"] < 0.03 and depth_c["inner_over_outer"] == 0.0
+    depth_f = simulate_anticlinal_wall_depth_buckling(rd_sim, shell_ref, beta=0.0)
+    assert depth_f["fd_vs_modal_rel_err"] < 0.03
+
+    print(f"[self-test] 11/{n_checks} Verifying depth-mode monotonicity, wavenumber ordering and beta-sweep ordering (Lean 4 Law 5)...")
+    assert np.all(np.diff(depth_c["atten_profile"]) > -1e-12), "Clamped attenuation profile must increase outward"
+    assert depth["first_harmonic_mid_gain"] < depth["dominant_mode_mid_gain"], "Shorter wavelengths must attenuate faster with depth"
+    sw = depth["sweep_inner_over_outer"]
+    assert all(sw[i] >= sw[i + 1] - 1e-12 for i in range(len(sw) - 1)), f"inner/outer must decrease from free to clamped: {sw}"
+    assert depth["inner_over_outer_distributed"] > depth["inner_over_outer"], "Depth-distributed forcing must penetrate deeper than junction-only forcing"
+
+    print(f"[self-test] 12/{n_checks} Verifying measure_morphoeval() contract (17 reference-anchored metrics)...")
+    meas = measure_morphoeval()
+    assert len(meas) == 17, f"Expected 17 measurements, got {len(meas)}"
+    for m in meas:
+        assert m.get("value") is not None and m.get("reference_value") is not None and m.get("unit")
+
+    print(f"[self-test] 13/{n_checks} Verifying bitwise determinism across independent runs...")
     rd_sim2 = simulate_rop2_rop6_cortical_rd(ref, seed=2018)
     assert np.allclose(rd_sim["U_A"], rd_sim2["U_A"], atol=0.0)
     assert np.allclose(rd_sim["V_A"], rd_sim2["V_A"], atol=0.0)
+    shell2 = simulate_periclinal_shell_scaling(scaling, shell_ref)
+    assert shell2["wt_sigma_shell_MPa"].tolist() == shell["wt_sigma_shell_MPa"].tolist()
 
-    print("[self-test] ALL 8 CHECKS PASSED.")
+    print(f"[self-test] ALL {n_checks} CHECKS PASSED.")
     return 0
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--self-test", action="store_true", help="Run 8-check deterministic self-test suite and exit")
+    ap.add_argument("--self-test", action="store_true", help="Run 13-check deterministic self-test suite and exit")
     ap.add_argument("--turgor-P", type=float, default=None, help="Override turgor pressure P (MPa)")
     ap.add_argument("--wall-h", type=float, default=None, help="Override outer periclinal wall thickness h (um)")
     ap.add_argument("--neck-R0", type=float, default=None, help="Override puzzle neck half-width R0 (um)")
     ap.add_argument("--gamma-cross", type=float, default=None, help="Override ROP2-ROP6 mutual inhibition gamma")
     ap.add_argument("--alpha-wall", type=float, default=None, help="Override trans-wall coupling alpha")
     ap.add_argument("--seed", type=int, default=2018, help="Deterministic RNG seed")
+    # Pass 3 reduced shell / depth parameters
+    ap.add_argument("--shell-E", type=float, default=None, help="(Pass 3) Override cell wall Young's modulus E (MPa) of the periclinal membrane-shell")
+    ap.add_argument("--wall-depth-H", type=float, default=None, help="(Pass 3) Override anticlinal wall depth H (um) used for T0 = PH/2 and the depth strip")
+    ap.add_argument("--inner-anchoring-beta", type=str, default=None, help="(Pass 3) Inner periclinal junction Robin stiffness beta = k_in H / T_a (float, or 'clamped')")
     args = ap.parse_args(argv)
 
     if args.self_test:
         return run_self_test()
 
     ref_data = load_reference_data()
+    shell_ref = load_shell_reference_data()
     scaling = simulate_puzzle_cell_area_scaling(
         ref_data,
         P_MPa=args.turgor_P,
@@ -1072,8 +1925,25 @@ def main(argv: list[str] | None = None) -> int:
     )
     spec = segment_arabidopsis_pavement_specimen(SPECIMEN_PATH)
 
-    png_path = render_comparison_figure(scaling, rd_sim, spec, OUT_PNG)
-    gif_path = render_growth_gif(scaling, rd_sim, OUT_GIF)
+    shell = simulate_periclinal_shell_scaling(
+        scaling, shell_ref, P_MPa=args.turgor_P, h_um=args.wall_h, E_MPa=args.shell_E, H_um=args.wall_depth_H
+    )
+    if args.inner_anchoring_beta is None:
+        beta = float(shell_ref["anticlinal_wall_depth_buckling"]["inner_face_anchoring_beta_default"])
+    elif args.inner_anchoring_beta.lower() == "clamped":
+        beta = None
+    else:
+        beta = float(args.inner_anchoring_beta)
+    depth = simulate_anticlinal_wall_depth_buckling(rd_sim, shell_ref, H_um=args.wall_depth_H, beta=beta)
+
+    print(
+        f"[2017-runions-pavement-cell-lobing] shell: sigma_vs_LEC r={shell['sigma_vs_lec_pearson_r']:.4f}, exponent={shell['sigma_vs_lec_power_exponent']:.3f}, "
+        f"iso/WT stress ratio={shell['shell_stress_reduction_factor_4500']:.3f} (Laplace {shell['laplace_stress_reduction_factor_4500']:.3f}), "
+        f"disk z_max err={shell['disk_zmax_rel_err']:.2e}; depth: inner/outer={depth['inner_over_outer']:.4f} (distributed {depth['inner_over_outer_distributed']:.4f}), "
+        f"FD-vs-modal err={depth['fd_vs_modal_rel_err']:.2e}, penetration={depth['penetration_depth_um']:.1f} um"
+    )
+    png_path = render_comparison_figure(scaling, rd_sim, spec, OUT_PNG, shell=shell, depth=depth)
+    gif_path = render_growth_gif(scaling, rd_sim, OUT_GIF, depth=depth)
     print(f"[2017-runions-pavement-cell-lobing] Wrote {png_path.relative_to(ROOT)} and {gif_path.relative_to(ROOT)}")
     return 0
 

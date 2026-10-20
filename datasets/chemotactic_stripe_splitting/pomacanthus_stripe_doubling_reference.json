@@ -1,0 +1,112 @@
+{
+  "metadata": {
+    "dataset_id": "painter-1999-pomacanthus-stripe-doubling-v1",
+    "title": "Painter, Maini & Othmer (1999) PNAS 96(10):5549-5554 Pomacanthus growing-domain Turing + chemotaxis model: Fig. 3/4/8 parameter sets and the Kondo & Asai (1995) 3 -> 6 -> 12 stripe-doubling table",
+    "added_in": "Pass 3 remediation (2026-10-19) of slot-005-chemotactic-stripe-splitting",
+    "correction_note": "The seed DOI 10.1073/pnas.96.10.5549 resolves to 'Stripe formation in juvenile Pomacanthus explained by a generalized Turing mechanism with chemotaxis' (PMID 10318921, PMCID PMC21897). Passes 1-2 and the SHA-256-pinned scout_manifest.json cite it under the non-existent title 'Stripe and spotilihood in chemotactic pattern formation'; that title is superseded by this file.",
+    "sources": [
+      {
+        "id": "painter1999",
+        "citation": "Painter KJ, Maini PK, Othmer HG (1999). Stripe formation in juvenile Pomacanthus explained by a generalized Turing mechanism with chemotaxis. Proceedings of the National Academy of Sciences USA 96(10):5549-5554.",
+        "doi": "10.1073/pnas.96.10.5549",
+        "pmid": "10318921",
+        "pmcid": "PMC21897"
+      },
+      {
+        "id": "kondo1995",
+        "citation": "Kondo S, Asai R (1995). A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus. Nature 376:765-768.",
+        "doi": "10.1038/376765a0"
+      },
+      {
+        "id": "crampin1999",
+        "citation": "Crampin EJ, Gaffney EA, Maini PK (1999). Reaction and diffusion on growing domains: scenarios for robust pattern formation. Bulletin of Mathematical Biology 61(6):1093-1120.",
+        "doi": "10.1006/bulm.1999.0131"
+      }
+    ]
+  },
+  "governing_equations": {
+    "section": "PNAS 1999 Eqs. (1)-(4), Fig. 2 schematic",
+    "morphogens": "du/dt = D_u Lap(u) + f(u,v) - (r_1 + r_2) u ;  dv/dt = D_v Lap(v) + g(u,v) - (r_1 + r_2) v   (fixed-domain form with growth dilution)",
+    "iridophores": "dn/dt = D_n Lap(n) - div( n chi(u) grad(u) ) ;  chi(u) = chi_0 / (k + u)^2 ;  chi_0 < 0 (u is a repellent)",
+    "cell_dilution": "none: PNAS 1999 assumes all cell types proliferate at the tissue growth rate so the total cell density stays constant",
+    "growth_law": "L_i(t) = L_i(0) exp(r_i t), uniform dilation about the centre",
+    "boundary_conditions": "zero flux for cells and morphogens",
+    "kinetics_fig3": {
+      "f": "clip(0.08 u - 0.08 v + 0.05, 0, 0.18) - 0.03 u",
+      "g": "clip(0.1 u - 0.15, 0, 0.5) - 0.06 v",
+      "source": "Kondo & Asai (1995) piecewise-linear kinetics; PNAS 1999 Fig. 3 caption (the PMC caption text reads 'g(u,v) = 0.1u - 0.15 - 0.06', the dropped factor is v)",
+      "homogeneous_steady_state": {"u_star": 3.0, "v_star": 2.5},
+      "jacobian": [[0.05, -0.08], [0.1, -0.06]]
+    }
+  },
+  "fig3_parameters_1d": {
+    "D_u": 0.007,
+    "D_v": 0.1,
+    "D_n": 0.0005,
+    "chi_0": -0.0001,
+    "k": 1.0,
+    "L_0": 11.0,
+    "growth_rate": 0.0001,
+    "initial_conditions": "+/- 0.5 % random perturbation of the morphogen steady state; uniform cells n(x,0) = 1",
+    "stated_result": "parameters selected to give rise to the three-peak pattern corresponding to the three juvenile stripes (Fig. 1a); peak doubling of u is rapid, cell-density stripes insert gradually",
+    "linear_analysis_derived_here": {
+      "trace_J": -0.01,
+      "det_J": 0.005,
+      "h_DvFu_plus_DuGv": 0.00458,
+      "turing_condition_h2_gt_4DuDvDet": "0.00458^2 = 2.098e-5 > 4 * 0.007 * 0.1 * 0.005 = 1.4e-5",
+      "k2_critical": 3.2714285714285714,
+      "k2_band": [1.3847945965669815, 5.158062546290162],
+      "lambda_critical": 3.4738506831781866,
+      "L0_over_lambda_c": 3.166,
+      "neumann_half_wave_modes_in_band_at_L0": [5, 6, 7],
+      "selected_half_wave_mode": 6,
+      "predicted_initial_stripes": 3
+    }
+  },
+  "fig4_parameters_2d": {
+    "initial_domain_RC_x_DV": [1.9, 0.95],
+    "growth_rate_RC": 0.00018,
+    "growth_rate_DV": 0.00022,
+    "snapshot_times_u": [1000, 5000, 9000, 13000],
+    "snapshot_times_n": [12000, 14000, 16000, 18000],
+    "grid": "101 x 101 ADI",
+    "note": "Reproduced here on a surface of revolution with isotropic growth r = 1e-4 (Fig. 3 rate) and circumference C_0 = 1.9 (same lowest transverse wavenumber as the 0.95 zero-flux DV extent); the 20 % RC/DV growth anisotropy of Fig. 4 is not reproduced (open remediation item)."
+  },
+  "fig5_breakup": {
+    "initial_domain": [3.8, 1.9],
+    "stated_result": "stripes become wavy and eventually convoluted on the larger domain (cf. Chaetodontoplus duboulayi); larger growth rates can suppress patterning entirely"
+  },
+  "fig8_lengyel_epstein_adult_transition": {
+    "k1": 10.0,
+    "k2": 17.6,
+    "D_u": 0.01,
+    "D_v": 2.0,
+    "D_n": 5.0e-5,
+    "chi_0": 2.5e-5,
+    "initial_domain": [1.58, 1.58],
+    "growth": "logistic (exponential then saturating)",
+    "stated_result": "stripe doubling during growth followed by breakup into spots as the domain approaches its final size (juvenile -> adult P. semicirculatus)",
+    "note": "not reproduced in this script (open remediation item)"
+  },
+  "kondo_asai_1995_pomacanthus_semicirculatus": {
+    "section": "Kondo & Asai (1995) Nature 376:765-768; reproduced as PNAS 1999 Fig. 1 (a) 2 months, (b) 6 months, (c) 12 months",
+    "observation": "juvenile P. semicirculatus carry three vertical white stripes; as the body grows new stripes insert between the existing ones so that the inter-stripe spacing is maintained, 3 -> 6 -> 12",
+    "stripe_doubling_table": [
+      {"stage": "a", "age_months": 2, "vertical_stripes": 3, "relative_body_length": 1.0},
+      {"stage": "b", "age_months": 6, "vertical_stripes": 6, "relative_body_length": 2.0},
+      {"stage": "c", "age_months": 12, "vertical_stripes": 12, "relative_body_length": 4.0}
+    ],
+    "doubling_law": "N(s) = 3 s for body-length scale s in {1, 2, 4}; stripe number doubles when body length doubles because the spacing is conserved",
+    "estimated_growth_rates_cm_per_hr": {"rostro_caudal": 1.85e-4, "dorso_ventral": 2.2e-4, "source": "PNAS 1999 'Model Development' estimates from Fig. 1"},
+    "note": "relative_body_length is the model-side scale factor s implied by spacing conservation, not a measured length; Kondo & Asai report sizes only qualitatively in the sources consulted"
+  },
+  "curved_surface_extension_pass3": {
+    "surface": "surface of revolution rho(x) about the rostro-caudal axis; metric ds^2 = (1 + rho'^2) dx^2 + rho^2 dtheta^2; Laplace-Beltrami Lap_g f = (1/(rho w)) d_x(rho/w d_x f) + (1/rho^2) d_theta^2 f, w = sqrt(1 + rho'^2)",
+    "profiles": {
+      "cylinder": "rho = C_0 / 2pi (Gaussian curvature K = 0; flat-rectangle control with periodic DV)",
+      "spindle": "rho(X) = rho_max [0.3 + 0.7 sin(pi X)] (K = -rho'' / (rho (1 + rho'^2)^2) > 0 at mid-body)"
+    },
+    "uniform_growth": "g(t) = s(t)^2 g_0, s = exp(r t): Lap_g = Lap_g0 / s^2, morphogen dilution 2 r (Crampin, Gaffney & Maini 1999), cells undiluted (PNAS 1999 assumption)",
+    "expected_stripe_sequence_at_s": {"1.15": 3, "2.3": 6, "4.6": 12}
+  }
+}

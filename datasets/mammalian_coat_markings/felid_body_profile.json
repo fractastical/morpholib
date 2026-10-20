@@ -1,0 +1,66 @@
+{
+  "metadata": {
+    "dataset_id": "murray-1981-mammalian-coat-markings-felid-body-profile-v1",
+    "title": "Parametric felid body-of-revolution surface profile for the Pass 3 P1 finite-element Laplace-Beltrami solver",
+    "added_in": "Pass 3 (2026-10-19-mammalian-coat-markings-audit-v3)",
+    "honesty_statement": "This is NOT a photogrammetric body scan. It is a parametric surrogate surface of revolution whose axial radius profile is interpolated from the control knots below. The knots encode approximate adult Panthera pardus proportions (head-body length, tail length, torso depth, tail base and tip radii) and are intended to be replaced by a triangulated photogrammetric mesh in a later pass. All quantities are dimensionless ratios of the head-body length (HBL).",
+    "sources": [
+      {
+        "id": "stein2013",
+        "citation": "Stein AB, Hayssen V (2013). Panthera pardus (Carnivora: Felidae). Mammalian Species 45(900):30-48.",
+        "doi": "10.1644/900.1",
+        "used_for": "Approximate adult head-body length (about 0.9-1.9 m) and tail length (about 0.6-1.1 m) ranges; tail/HBL ratio ~0.7 adopted here."
+      },
+      {
+        "id": "dziuk1988",
+        "citation": "Dziuk G (1988). Finite elements for the Beltrami operator on arbitrary surfaces. In: Partial Differential Equations and Calculus of Variations, Lecture Notes in Mathematics 1357:142-155. Springer.",
+        "doi": "10.1007/BFb0082865",
+        "used_for": "P1 (linear) surface finite-element discretization of the Laplace-Beltrami operator on a triangulated surface."
+      },
+      {
+        "id": "pinkall1993",
+        "citation": "Pinkall U, Polthier K (1993). Computing discrete minimal surfaces and their conjugates. Experimental Mathematics 2(1):15-36.",
+        "doi": "10.1080/10586458.1993.10504266",
+        "used_for": "Cotangent-weight formula for the P1 stiffness matrix: K_ij = -(cot alpha_ij + cot beta_ij) / 2."
+      },
+      {
+        "id": "dziuk2013",
+        "citation": "Dziuk G, Elliott CM (2013). Finite element methods for surface PDEs. Acta Numerica 22:289-396.",
+        "doi": "10.1017/S0962492913000056",
+        "used_for": "Lumped-mass surface FEM and implicit-in-diffusion time stepping for reaction-diffusion on surfaces."
+      },
+      {
+        "id": "liu2006",
+        "citation": "Liu RT, Liaw SS, Maini PK (2006). Two-stage Turing model for generating pigment patterns on the leopard and the jaguar. Physical Review E 74(1):011914.",
+        "doi": "10.1103/PhysRevE.74.011914",
+        "used_for": "Two-stage protocol: the saturated Stage-1 spot field is the initial condition of a Stage-2 integration on the grown (adult) domain."
+      }
+    ]
+  },
+  "surface_of_revolution": {
+    "coordinate_system": "Axis x runs from the neck (x = 0) through the torso to the tail tip; r(x) is the local radius. Both are in units of the head-body length HBL; the mesh is scaled so that the Stage-1 (cub) critical Turing wavelength lambda_c is 1 mesh unit.",
+    "head_body_length_in_cub_wavelengths": 22.0,
+    "tail_length_over_hbl": 0.70,
+    "profile_knots_x_over_hbl": [0.00, 0.08, 0.22, 0.65, 0.86, 1.00, 1.70],
+    "profile_knots_r_over_hbl": [0.055, 0.085, 0.100, 0.100, 0.070, 0.020, 0.004],
+    "profile_smoothing_sigma_samples": 2.0,
+    "torso_axial_window_x_over_hbl": [0.22, 0.65],
+    "tail_axial_window_x_over_hbl": [1.00, 1.70],
+    "notes": "Torso radius 0.10 HBL (chest depth ~0.2 HBL), tail base radius 0.020 HBL and tail tip radius 0.004 HBL (about 1 cm diameter on a 1.3 m leopard) are assumed adult proportions, not measured on the specimen; the tail taper is linear in x between the base and tip knots. In cub-wavelength units (HBL = 22) the tail runs from r = 0.44 to r = 0.088, straddling both Murray thresholds: r_crit = 1/sqrt(k_+^2 - k_c^2) = 0.29 (fastest-growing mode becomes the m = 0 ring) and r_excl = 1/k_+ = 0.14 (circumference < lambda_+: every m >= 1 mode, including the axially uniform n = 0 longitudinal-stripe mode, leaves the Turing band)."
+  },
+  "two_stage_growth": {
+    "growth_factor_default": 2.0,
+    "growth_factor_sweep": [1.0, 1.5, 2.0, 3.0],
+    "protocol": "Stage 1 integrates the Thomas kinetics on the cub body (geometry scaled by 1/G, i.e. lumped mass scaled by 1/G^2 with scale-invariant cotangent stiffness) to a saturated spot pre-pattern; Stage 2 continues from that field on the adult body (G = growth_factor) so that each Stage-1 spot is G times larger than the adult wavelength and reorganizes into a ring/rosette.",
+    "annularity_index_definition": "Fraction of Stage-1 spot cores whose Stage-2 rim value exceeds the Stage-2 core value (rim = core-component vertices with a neighbour outside the component)."
+  },
+  "specimen_scale_estimates": {
+    "file": "datasets/mammalian_coat_markings/panthera_pardus_specimen.jpg",
+    "view": "Three-quarter frontal walking pose; the torso is foreshortened and the tail is curled and only partly visible, so the body profile cannot be reconstructed photogrammetrically from this single image.",
+    "torso_depth_px_estimate": 140,
+    "torso_depth_px_estimate_note": "Approximate vertical extent of the torso (back to belly) near image x = 400, estimated by eye on the 640 x 427 px image; uncertainty about +/- 15 px.",
+    "individual_marking_nn_spacing_px_from_v2": 7.4,
+    "markings_per_torso_depth_estimate": 18.9,
+    "tail_roi_caveat": "The v2 tail ROI [410, 115, 560, 225] in mammalian_coat_markings_reference.json covers mostly the back/hindquarters and background grass; the tail is curled near x = 470-530, y = 200-240."
+  }
+}

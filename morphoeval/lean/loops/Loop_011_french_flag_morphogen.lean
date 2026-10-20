@@ -125,4 +125,105 @@ theorem benzvi_barkai_2010_expander_scaling_invariance (x lam0 s : Nat) :
     (s * x) * lam0 = x * (s * lam0) := by
   ac_rfl
 
+
+-- ============================================================================
+-- 5. Pass 3 — 2D Proximo-Distal x Anteroposterior Paddle: AER-FGF / ZPA-Shh
+--    (Saunders 1948; Summerbell 1974; Tickle 1981; Laufer 1994; Niswander 1994)
+-- ============================================================================
+
+/-- Discrete 2D zero-flux Synthesis-Diffusion-Degradation residual on the paddle lattice
+    (5-point stencil, `n` = number of in-mask neighbours, so missing neighbours impose
+    zero flux): `R = D * (sum_nb - n * c_mid) - k_deg * c_mid`. -/
+def sdd_residual_2d (D k_deg n sum_nb c_mid : Int) : Int :=
+  D * (sum_nb - n * c_mid) - k_deg * c_mid
+
+/-- Theorem 5a (`sdd_2d_steady_state_balance`):
+    Whenever the in-mask neighbour sum satisfies `D * sum_nb = (n * D + k_deg) * c_mid`
+    (the masked 2D counterpart of the 1D balance of Theorem 2a), the 2D residual
+    vanishes — the condition used by `verify_limb2d_against_1d_cosh`, where every
+    column of a non-growing rectangle must reduce to the 1D cosh steady state. -/
+theorem sdd_2d_steady_state_balance (D k_deg n sum_nb c_mid : Int)
+    (h_bal : D * sum_nb = n * (D * c_mid) + k_deg * c_mid) :
+    sdd_residual_2d D k_deg n sum_nb c_mid = 0 := by
+  unfold sdd_residual_2d
+  rw [Int.mul_sub, Int.mul_left_comm D n c_mid, h_bal]
+  omega
+
+/-- Theorem 5b (`sdd_2d_reduces_to_1d_interior`):
+    For an interior lattice cell (`n = 4`) whose two lateral neighbours equal the
+    centre value (a profile that is constant along the anteroposterior axis), the 2D
+    residual collapses to the 1D residual of Theorem 2a in the proximo-distal pair. -/
+theorem sdd_2d_reduces_to_1d_interior (D k_deg c_prox c_mid c_dist : Int) :
+    sdd_residual_2d D k_deg 4 (c_prox + c_dist + c_mid + c_mid) c_mid =
+      sdd_residual D k_deg c_prox c_mid c_dist := by
+  unfold sdd_residual_2d sdd_residual
+  have h : c_prox + c_dist + c_mid + c_mid - 4 * c_mid = c_prox + c_dist - 2 * c_mid := by omega
+  rw [h]
+
+/-- ZPA Shh production under the Laufer (1994) / Niswander (1994) feedback loop:
+    `s_S * F / (F + K_FS)` in saturating (Michaelis) form — production needs AER FGF. -/
+def shh_production (s_S F K_FS : Nat) : Nat :=
+  s_S * F / (F + K_FS)
+
+/-- Theorem 5c (`shh_fgf_feedback_aer_ablation_quiescence`):
+    After AER excision the FGF field decays to `F = 0`, so ZPA Shh production is
+    identically zero for every production rate `s_S` and half-saturation `K_FS`
+    (the Niswander 1994 loss of Shh after AER removal); with no production, every
+    position is sub-threshold (`french_flag_zone 0 T1 T2 = 0`). -/
+theorem shh_fgf_feedback_aer_ablation_quiescence (s_S K_FS T1 T2 : Nat)
+    (hT1 : 0 < T1) (hT2 : 0 < T2) :
+    shh_production s_S 0 K_FS = 0 ∧ french_flag_zone 0 T1 T2 = 0 := by
+  constructor
+  · simp [shh_production]
+  · unfold french_flag_zone
+    have h1 : ¬ (T1 ≤ 0) := by omega
+    have h2 : ¬ (T2 ≤ 0) := by omega
+    simp [h1, h2]
+
+/-- Progress-zone outgrowth halted by AER excision (Saunders 1948; Summerbell 1974;
+    Summerbell-Lewis-Wolpert 1973): with outgrowth rate `v` per unit time until the
+    excision time `t_exc`, the final proximo-distal length is `L0 + v * t_exc`. -/
+def truncated_length (L0 v t_exc : Nat) : Nat :=
+  L0 + v * t_exc
+
+/-- Theorem 5d (`aer_excision_truncation_monotone`):
+    The later the AER is excised (`t1 ≤ t2`), the longer (more distal) the truncated
+    limb: `truncated_length L0 v t1 ≤ truncated_length L0 v t2`.  This is the
+    monotone stage -> truncation-level relation of Summerbell (1974) that the 2D
+    paddle reproduces with Spearman rho = 1 across HH18-HH26. -/
+theorem aer_excision_truncation_monotone (L0 v t1 t2 : Nat) (h : t1 ≤ t2) :
+    truncated_length L0 v t1 ≤ truncated_length L0 v t2 := by
+  unfold truncated_length
+  exact Nat.add_le_add_left (Nat.mul_le_mul_left v h) L0
+
+/-- Theorem 5e (`progress_zone_segment_order`):
+    Under the progress-zone trisection of the wild-type length `L_wt = 3 * k`, a
+    truncation level below `k` lies in the stylopod band, one in `[k, 2k)` in the
+    zeugopod band and one at or above `2k` in the autopod band; the bands are ordered
+    and disjoint, so a monotone truncation level yields a monotone segment sequence. -/
+theorem progress_zone_segment_order (k L1 L2 : Nat) (h12 : L1 ≤ L2)
+    (h1 : L1 < k) (h2 : 2 * k ≤ L2) :
+    L1 < k ∧ k ≤ 2 * k ∧ 2 * k ≤ L2 ∧ L1 < L2 := by
+  omega
+
+/-- Number of digit identity classes (2, 3, 4) reached by a morphogen level `c` next to
+    an anterior ZPA graft (Tickle 1975 thresholds `T2 ≤ T3 ≤ T4`). -/
+def digit_classes_reached (c T4 T3 T2 : Nat) : Nat :=
+  (if T2 ≤ c then 1 else 0) + (if T3 ≤ c then 1 else 0) + (if T4 ≤ c then 1 else 0)
+
+/-- Theorem 5f (`tickle_1981_graft_dose_digit_monotone`):
+    Increasing the graft strength (`c ≤ c'`) can only increase the number of digit
+    classes specified next to the graft — the Tickle (1981) dose series
+    `4-3-2`, `4-3-2-2`, `4-3-2-2-3`, `4-3-2-2-3-4` (+0, +1, +2, +3 digits). -/
+theorem tickle_1981_graft_dose_digit_monotone (c c' T4 T3 T2 : Nat) (h : c ≤ c') :
+    digit_classes_reached c T4 T3 T2 ≤ digit_classes_reached c' T4 T3 T2 := by
+  unfold digit_classes_reached
+  have a2 : (if T2 ≤ c then 1 else 0) ≤ (if T2 ≤ c' then 1 else 0) := by
+    split <;> split <;> omega
+  have a3 : (if T3 ≤ c then 1 else 0) ≤ (if T3 ≤ c' then 1 else 0) := by
+    split <;> split <;> omega
+  have a4 : (if T4 ≤ c then 1 else 0) ≤ (if T4 ≤ c' then 1 else 0) := by
+    split <;> split <;> omega
+  omega
+
 end MathOfBiology.Loop_011

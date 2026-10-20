@@ -1,14 +1,16 @@
 sim_id: bailleul-allometric-cranial-sutures
 math_family: Cranial Suture Fractal Interdigitation & Kuramoto-Sivashinsky / KPZ Osteogenic Front Instability
 model_spec:
-  model: Miura et al. (2009) PNAS 106:11218-11223 & Jaslow (1990) J. Biomech. 23:313-321 fourth-order Kuramoto-Sivashinsky / KPZ osteogenic front instability and 2D bidirectional overhanging suture morphogenesis across infant, adult sagittal, adult lambdoid, unloaded, and FGFR2 craniosynostotic sutures
-  kuramoto_sivashinsky_kpz_pde: "dh/dt = -alpha * d^2h/dx^2 - beta * d^4h/dx^4 + (v_0 / 2) * (dh/dx)^2 - gamma * h + eta(x, t)"
+  model: Miura et al. (2009) PNAS 106:11218-11223 & Jaslow (1990) J. Biomech. 23:313-321 fourth-order Kuramoto-Sivashinsky / KPZ osteogenic front instability and 2D bidirectional overhanging suture morphogenesis across infant, adult sagittal, adult lambdoid, unloaded, and FGFR2 craniosynostotic sutures; Pass 3 adds spatially heterogeneous alpha(x) from a reduced-order Kirchhoff-Love calvarial vault strain field and a quasi-3D ectocranial-to-endocranial plate-thickness layering
+  kuramoto_sivashinsky_kpz_pde: "dh/dt = -alpha(x, z) * d^2h/dx^2 - beta * d^4h/dx^4 + (v_0 / 2) * (dh/dx)^2 - gamma * h + kappa_z * d^2h/dz^2 + eta(x, z, t)"
+  strain_mechanotransduction_law: "alpha(eps_hat) = alpha_unl + (alpha_sag - alpha_unl) * eps_hat;   eps_hat = eps_nn / <eps_nn>_sagittal,ecto;   eps_hat_c = alpha_unl / (alpha_unl - alpha_sag) = 0.2258"
+  kirchhoff_love_through_thickness_law: "eps_nn(s, zeta) = eps_mem + zeta * kappa_nn(s),   zeta in [-T/2, +T/2],   kappa_nn = -n^T Hess(w) n"
   linear_dispersion_relation: "omega(k) = alpha * k^2 - beta * k^4 - gamma;   k_max = sqrt(alpha / (2 * beta));   omega_max = alpha^2 / (4 * beta) - gamma"
   suture_interdigitation_and_fractal_scaling: "SII = L_arc / L_chord >= 1.0;   N(epsilon) ~ epsilon^(-D_f);   S(k) ~ k^(-(5 - 2 * D_f))"
   jaslow_bending_energy_law: "E_bend(SII) = E_0 * (1 + kappa_J * (SII - 1.0))"
   parameters:
     domain_length_mm: 64.0
-    n_grid_1d: 256
+    n_grid_1d: 512
     alpha_sagittal: 1.20
     beta_sagittal: 0.60
     v0_nonlinear: 0.85
@@ -19,6 +21,12 @@ model_spec:
     alpha_unloaded_null: -0.35
     alpha_fgfr2_apert_synostosis: -0.60
     jaslow_kappa_energy: 0.72
+    plate_thickness_mm: 6.0
+    n_layers: 5
+    vertical_coupling_kappa_z: 0.60
+    intracranial_membrane_strain_rel: 0.45
+    alpha_unloaded: -0.35
+    ellipsoid_semi_axes_mm: [90.0, 70.0, 65.0]
     seed: 2020
   inputs:
     - datasets/allometric_cranial_sutures/allometric_cranial_sutures_reference.json
@@ -52,7 +60,7 @@ equations:
     variables: "q = k^2 >= 0: squared spatial wavenumber along the suture midline; alpha > 0: BMP4/FGF2 + tensile strain osteogenic front instability coefficient; beta > 0: fourth-order surface-tension / curvature smoothing coefficient"
     role: "Proves that the fourth-order Kuramoto-Sivashinsky osteogenic dispersion relation selects a unique most-unstable interdigitation wavenumber q_max = alpha/(2*beta) with strictly positive peak growth rate omega_max = alpha^2/(4*beta) > 0"
     source_citation: "Miura et al. (2009) PNAS 106(27):11218-11223 Figs. 2-4; Zollikofer & Weissmann (2011) J. Anat. 219:100-114"
-    code_locus: "2020-bailleul-allometric-cranial-sutures.py#L85-L185"
+    code_locus: "2020-bailleul-allometric-cranial-sutures.py#L126-L262"
   - law_name: "Mechanical Unloading & FGFR2 Apert Craniosynostosis Flat Suture Stability Law"
     formula: "alpha <= 0, beta >= 0, gamma >= 0, q = k^2 >= 0  ==>  omega(q) = alpha * q - beta * q^2 - gamma <= 0"
     lean_decl: "MathOfBiology.Loop_020.ks_damped_dispersion"
@@ -74,7 +82,7 @@ equations:
     variables: "alpha <= 0: stabilized osteogenic front under surgical mechanical unloading or FGFR2 gain-of-function craniosynostosis; gamma >= 0: mesenchymal confinement damping"
     role: "Proves that removing tensile mechanical strain (Miura et al. 2009 unloading experiment) or premature osteoblast differentiation in FGFR2 craniosynostosis (alpha <= 0) makes all spatial Fourier modes decay (omega(q) <= 0), collapsing the suture into a flat or fused line (D_f -> 1.0, SII -> 1.0)"
     source_citation: "Miura et al. (2009) PNAS 106:11218-11223 Fig. 5; Khonsari et al. (2013) Proc. R. Soc. B 280:20122670"
-    code_locus: "2020-bailleul-allometric-cranial-sutures.py#L188-L320"
+    code_locus: "2020-bailleul-allometric-cranial-sutures.py#L505-L727"
   - law_name: "Jaslow (1990) Suture Interdigitation Index (SII) & Bending Energy Absorption Hierarchy Law"
     formula: "SII = L_arc / L_chord >= 1.0;   E_bend(SII) = E_0 * (1 + kappa_J * (SII - 1.0));   SII_lambdoid > SII_sagittal > SII_infant > SII_fused = 1.0"
     lean_decl: "MathOfBiology.Loop_020.jaslow_energy_100"
@@ -97,4 +105,63 @@ equations:
     variables: "SII = L_arc / L_chord: ratio of interdigitated suture arc length to straight midline chord length; E_0: flat-suture baseline bending energy; kappa_J = 0.72: Jaslow (1990) interdigitation energy absorption slope"
     role: "Establishes that fractal interdigitation amplifies dynamic impact and bending energy absorption monotonically across fused FGFR2 craniosynostosis (SII=1.00) < neonatal infant suture (SII=1.06) < adult sagittal suture (SII=2.84) < adult lambdoid suture (SII=3.48)"
     source_citation: "Jaslow (1990) J. Biomech. 23(4):313-321 Figs. 2-5; Miura et al. (2009) PNAS 106:11218-11223"
-    code_locus: "2020-bailleul-allometric-cranial-sutures.py#L322-L445"
+    code_locus: "2020-bailleul-allometric-cranial-sutures.py#L138-L201"
+  - law_name: "Strain Mechanotransduction Law: Osteogenic Instability alpha as an Affine Function of Normalised Tensile Suture Strain (Pass 3)"
+    formula: "alpha(eps_hat) = alpha_unl + (alpha_sag - alpha_unl) * eps_hat;   alpha(0) = alpha_unl = -0.35 (Miura 2009 unloading);   alpha(1) = alpha_sag = 1.20;   d alpha / d eps_hat = alpha_sag - alpha_unl > 0"
+    lean_decl: "MathOfBiology.Loop_020.alpha_of_strain"
+    lean_theorem: "MathOfBiology.Loop_020.strain_mechanotransduction_alpha_monotone"
+    lean_locus: "morphoeval/lean/loops/Loop_020_allometric_cranial_sutures.lean#L117-L157"
+    lean_code: |
+      def alpha_of_strain (a_unl a_sag eps_1000 : Int) : Int :=
+        1000 * a_unl + (a_sag - a_unl) * eps_1000
+      theorem strain_mechanotransduction_alpha_monotone (a_unl a_sag e1 e2 : Int)
+          (hgain : a_unl < a_sag) (hlt : e1 < e2) :
+          alpha_of_strain a_unl a_sag 0 = 1000 * a_unl ∧
+          alpha_of_strain a_unl a_sag 1000 = 1000 * a_sag ∧
+          alpha_of_strain a_unl a_sag e1 < alpha_of_strain a_unl a_sag e2 ∧
+          alpha_of_strain (-35) 120 0 = -35000 ∧
+          alpha_of_strain (-35) 120 1000 = 120000 ∧
+          alpha_of_strain (-35) 120 225 = -125 ∧
+          alpha_of_strain (-35) 120 226 = 30 ∧
+          alpha_of_strain (-35) 120 0 < 0 ∧
+          alpha_of_strain (-35) 120 1000 > 0 := by
+        refine ⟨?_, ?_, ?_, by decide, by decide, by decide, by decide, by decide, by decide⟩
+        · simp [alpha_of_strain]
+        · unfold alpha_of_strain
+          omega
+        · unfold alpha_of_strain
+          have hpos : 0 < a_sag - a_unl := Int.sub_pos.mpr hgain
+          have hmul : (a_sag - a_unl) * e1 < (a_sag - a_unl) * e2 := Int.mul_lt_mul_of_pos_left hlt hpos
+          omega
+    variables: "eps_hat: tensile strain normal to the suture divided by the ectocranial sagittal mean (dimensionless); alpha_unl = -0.35: vendored unloaded-null instability; alpha_sag = 1.20: vendored adult sagittal instability; eps_hat_c = 0.2258: zero crossing below which omega(k) <= 0 (Law 2)"
+    role: "Couples the reduced-order masticatory strain tensor to the KS osteogenic instability so that alpha(s, zeta) is spatially heterogeneous along each suture and through the plate; reproduces the unloading and sagittal regimes as its two anchor points and is strictly monotone (Byron et al. 2004 direction)"
+    source_citation: "Miura et al. (2009) PNAS 106:11218-11223 Fig. 5 (unloading); Byron et al. (2004) Anat. Rec. 279A:676-684; Herring & Teng (2000) Am. J. Phys. Anthropol. 112:575-593"
+    code_locus: "2020-bailleul-allometric-cranial-sutures.py#L267-L441"
+  - law_name: "Kirchhoff-Love Through-Thickness Strain & Ectocranial > Endocranial Suture Instability Law (Pass 3)"
+    formula: "eps_nn(s, zeta) = eps_mem + zeta * kappa_nn(s), zeta in [-T/2, +T/2];   kappa_nn > 0, T > 0  ==>  eps_nn(+T/2) > eps_nn(-T/2)  ==>  alpha_ecto > alpha_endo (by Law 4)"
+    lean_decl: "MathOfBiology.Loop_020.through_thickness_strain"
+    lean_theorem: "MathOfBiology.Loop_020.kirchhoff_love_ectocranial_endocranial_ordering"
+    lean_locus: "morphoeval/lean/loops/Loop_020_allometric_cranial_sutures.lean#L159-L193"
+    lean_code: |
+      def through_thickness_strain (eps_mem kappa zeta : Int) : Int :=
+        eps_mem + zeta * kappa
+      theorem kirchhoff_love_ectocranial_endocranial_ordering (eps_mem kappa t_half : Int)
+          (hk : 0 < kappa) (ht : 0 < t_half) :
+          through_thickness_strain eps_mem kappa 0 = eps_mem ∧
+          through_thickness_strain eps_mem kappa (-t_half) < through_thickness_strain eps_mem kappa t_half ∧
+          through_thickness_strain 450 183 3 = 999 ∧
+          through_thickness_strain 450 183 (-3) = -99 ∧
+          alpha_of_strain (-35) 120 (through_thickness_strain 450 183 3) = 119845 ∧
+          alpha_of_strain (-35) 120 (through_thickness_strain 450 183 (-3)) = -50345 ∧
+          alpha_of_strain (-35) 120 (through_thickness_strain 450 183 (-3)) <
+            alpha_of_strain (-35) 120 (through_thickness_strain 450 183 3) := by
+        refine ⟨?_, ?_, by decide, by decide, by decide, by decide, by decide⟩
+        · simp [through_thickness_strain]
+        · unfold through_thickness_strain
+          have hpos : 0 < t_half * kappa := Int.mul_pos ht hk
+          have hneg : (-t_half) * kappa = -(t_half * kappa) := Int.neg_mul t_half kappa
+          omega
+    variables: "eps_mem = 0.45: isotropic intracranial-pressure membrane strain (normalised); kappa_nn: vault-flattening curvature change along the in-plane suture normal from Gaussian muscle deflection patches; zeta: through-thickness offset, ectocranial +T/2 = +3 mm, endocranial -T/2 = -3 mm (T = 6 mm)"
+    role: "Gives the quasi-3D plate layering its depth law: the ectocranial table is the most tensile and most unstable layer and the endocranial table is compressive (alpha ~ -0.50, flat by Law 2), so endocranial sutures remain simpler than ectocranial traces in the 5-layer KS stack coupled by kappa_z d^2h/dz^2"
+    source_citation: "Nicolay & Vaders (2006) J. Morphol. 267:841-849 (ecto vs endo suture complexity, qualitative); Curtis et al. (2013) J. R. Soc. Interface 10:20130442 (FEM precedent, not reproduced); Herring & Teng (2000)"
+    code_locus: "2020-bailleul-allometric-cranial-sutures.py#L346-L441,L505-L727,L814-L859"

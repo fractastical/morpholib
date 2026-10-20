@@ -19,10 +19,60 @@
   "math_spec": "morphoeval/math_kg_loops/boehm-limb-bud-elongation-pushing.yaml",
   "outputs": [
     "docs/media/limb_bud_elongation_pushing_comparison.png",
+    "docs/media/limb_bud_elongation_pushing_fem3d.png",
     "docs/media/limb_bud_elongation_pushing_growth.gif"
   ],
   "slot_index": 17,
   "slug": "limb-bud-elongation-pushing",
   "target_script": "2015-boehm-limb-bud-elongation-pushing.py",
-  "delta": 36.5
+  "delta": 36.5,
+  "pass3_run_id": "2026-10-19-limb-bud-elongation-pushing-loop-pass3",
+  "pass3_audit_id": "2026-10-19-limb-bud-elongation-pushing-audit-v3",
+  "pass3_audit": "morphoeval/audits/2026-10-19-limb-bud-elongation-pushing-audit-v3.yaml",
+  "pass3_score": 89.1,
+  "pass3_dims": {
+    "model-fidelity": 84,
+    "specimen-match": 86,
+    "parameter-expressivity": 92,
+    "morphometric-validation": 90,
+    "source-traceability": 94,
+    "code-traceability": 93,
+    "repro-package": 94
+  },
+  "pass3_completed_at": "2026-10-20T07:36:30Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_remediation_closed": [
+    "Extend the 2D mid-plane pressure-Poisson solver to an unstructured 3D tetrahedral finite-element mesh imported directly from Optical Projection Tomography iso-surfaces. [closed in reduced form: reconstruct_opt_visual_hull L759-800 (visual hull of the specimen's two orthogonal OPT iso-surface silhouettes), build_structured_tet_mesh L802-868 (structured prism-split P1 tets, not Delaunay), assemble_stokes_p1p1/solve_stokes_growth L878-955, simulate_limb_bud_fem_3d L989-1095; true OPT voxel import + unstructured mesher carried to Pass 4]"
+  ],
+  "pass3_remediation_open": [
+    "True OPT voxel iso-surface import + unstructured Delaunay/advancing-front mesher replacing reconstruct_opt_visual_hull (L759-800) and build_structured_tet_mesh (L802-868); needs new SHA-locked OPT dataset file",
+    "AP/DV sign failure of the faithfully solved active-stress Model II (evaluate_fem_regimes_and_influx L1145-1222: AP -10.9 %, DV -14.5 % vs OPT +12 %, +1 %): DV/AP-partitioned sigma_active and joint (k_zeta, k_chi, v_in) fit to PD+AP+DV (calibrate_fem_active_rates L1109-1143)",
+    "Retire or re-couple the calibrated Pass 2 2D reduced model simulate_limb_bud_regime (L336-506), uncoupled from solve_continuum_pressure_velocity_field (L244-334); phenomenological re_factor (L270-273) is the sole source of the Re-insensitivity metric",
+    "Re-verify SHA-locked OPT volumes 0.551->0.914 mm^3 and H_DV 580 um (reference.json) against specimen hull H_DV 926 um (L759-800) and paper text; dataset v2 if wrong",
+    "Wnt5a-/- under-predicted out of sample 11.97 % vs 18.5 % (measure_morphoeval L1873-1881); test w(x) weighting / residual chi in simulate_limb_bud_fem_3d (L989-1095) against Gros 2010 AR data"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_017.stokes_growth_oracles_are_exact",
+    "MathOfBiology.Loop_017.flank_influx_volume_budget"
+  ],
+  "pass3_artifacts": [
+    "2015-boehm-limb-bud-elongation-pushing.py",
+    "morphoeval/lean/loops/Loop_017_limb_bud_elongation_pushing.lean",
+    "morphoeval/math_kg_loops/boehm-limb-bud-elongation-pushing.yaml",
+    "datasets/limb_bud_elongation_pushing/README.md",
+    "docs/media/limb_bud_elongation_pushing_comparison.png",
+    "docs/media/limb_bud_elongation_pushing_fem3d.png",
+    "docs/media/limb_bud_elongation_pushing_growth.gif",
+    "docs/media/limb_bud_elongation_pushing_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-limb-bud-elongation-pushing-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-limb-bud-elongation-pushing-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-limb-bud-elongation-pushing-audit-v3/",
+    "morphoeval/runs/2026-10-19-limb-bud-elongation-pushing-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-limb-bud-elongation-pushing-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-limb-bud-elongation-pushing-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-limb-bud-elongation-pushing-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-limb-bud-elongation-pushing-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-limb-bud-elongation-pushing-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-017.json"
+  ]
 }

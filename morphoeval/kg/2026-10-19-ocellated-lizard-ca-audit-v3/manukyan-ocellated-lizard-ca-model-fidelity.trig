@@ -1,0 +1,95 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-manukyan-ocellated-lizard-ca> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-manukyan-ocellated-lizard-ca-model-fidelity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-manukyan-ocellated-lizard-ca-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Manukyan et al. (2017) Nature hexagonal skin-scale border thickness reduction & outer-totalistic cellular automaton — 3D skin-volume reaction-diffusion (Pass 3) — Model fidelity to source: 82/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The code now implements the mechanism the papers describe: reaction-diffusion in a 3D skin volume whose thickness drops to P h_interior at scale borders (`integrate_skin_volume_pde_3d`, L739-865: voxel mask z < h(x,y), skin-skin face conductances, zero-flux steps, implicit Thomas vertical solve L720-736), the depth-averaged reduction with the correct h-weighted conductance and capacity (L616-717), a border definition through which all inter-scale flux passes (L450-536), and the mesoscopic premise that lambda_c = 5 pitches exceeds the scale so isolated scales cannot pattern (L325-443, measured: insulated inter std 5e-3, intra std 8e-9). The v2 averaging hack is gone and the paper's qualitative result emerges from the geometry alone (P = 0.17 ratio 14.7 vs continuum 3.29). Deductions: the kinetics are a phenomenological set, not Manukyan's Methods parameters (L326-341) (-6); the domain is a stepped voxel skin without growth, not the 3D geometry of Fofonjka & Milinkovitch (-5); the CA flip probabilities are vendored tables rather than derived from the PDE as the paper does (L276-278) (-4); the PDE neighbour histogram peaks at n_g = 2, not 3 (L1 to CA 0.34) (-3)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "2015-manukyan-ocellated-lizard-ca.py L326–L341: Script kinetics constants 0.50/-0.75/0.82/-0.65/1.25 are phenomenological (Kondo-Asai-type), not the Methods parameters of Manukyan et al. (2017) <https://github.com/fractastical/morpholib/blob/bd54e11/2015-manukyan-ocellated-lizard-ca.py#L326-L341>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-model-fidelity-4> ;
+        pk:hasScore "0.82"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2015-manukyan-ocellated-lizard-ca.py L739–L865" ;
+        dct:description "3D voxel skin-volume reaction-diffusion solver: stepped thickness mask, skin-skin face conductances, zero-flux surfaces, explicit lateral + implicit vertical (Thomas) diffusion, depth average and vertical non-uniformity" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/bd54e11/2015-manukyan-ocellated-lizard-ca.py#L739-L865> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2015-manukyan-ocellated-lizard-ca.py L616–L717" ;
+        dct:description "Depth-averaged thin-film 2D reduction (1/h) div(h D grad u) with min(h_i,h_j) D face conductance and capacity h; v2 diffusivity variant retained only for comparison; no per-scale averaging" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/bd54e11/2015-manukyan-ocellated-lizard-ca.py#L616-L717> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "2015-manukyan-ocellated-lizard-ca.py L325–L443" ;
+        dct:description "Turing linear stability: Jacobian, d_c, k_c, lambda_c, unstable band; D_u chosen so lambda_c = 25 px = 5 pitches; canonical JSON set analysed" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/bd54e11/2015-manukyan-ocellated-lizard-ca.py#L325-L443> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_009_ocellated_lizard_ca.lean L109–L176" ;
+        dct:description "Lean Theorems 4-5 (depth average of a uniform column; face conductance ratio = thickness ratio, insulation at h_b = 0), 0 sorrys, verified with `lean`" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/bd54e11/morphoeval/lean/loops/Loop_009_ocellated_lizard_ca.lean#L109-L176> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Slot 009 Pass 3 autonomous loop assessor; v2 assessor was Gemini 4 Argon)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/376765a0>,
+            <https://doi.org/10.1038/nature22031>,
+            <https://doi.org/10.1038/s41467-021-22525-1>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1103/PhysRevX.13.041011> .
+    <https://doi.org/10.1038/376765a0> dct:date "1995"^^xsd:gYear ;
+        dct:title "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus" .
+    <https://doi.org/10.1038/nature22031> dct:date "2017"^^xsd:gYear ;
+        dct:title "A living mesoscopic cellular automaton made of skin scales" .
+    <https://doi.org/10.1038/s41467-021-22525-1> dct:date "2021"^^xsd:gYear ;
+        dct:title "Reaction-diffusion in a growing 3D domain of skin scales generates a discrete cellular automaton" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The chemical basis of morphogenesis" .
+    <https://doi.org/10.1103/PhysRevX.13.041011> dct:date "2023"^^xsd:gYear ;
+        dct:title "Simple Reaction-Diffusion Modeling Predicts Inconspicuous Neighborhood-Dependent Color Subclustering of Lizard Scales" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Manukyan et al. (2017) Nature hexagonal skin-scale border thickness reduction & outer-totalistic cellular automaton — 3D skin-volume reaction-diffusion (Pass 3) — Model fidelity to source 82/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T06:26:47Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-manukyan-ocellated-lizard-ca-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

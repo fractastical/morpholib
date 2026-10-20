@@ -1,0 +1,96 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-riedel-delta-notch-phase-synchrony> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-riedel-delta-notch-phase-synchrony-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-riedel-delta-notch-phase-synchrony-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Riedel-Kruse et al. (2007) & Morelli et al. (2009) zebrafish Delta-Notch delayed Kuramoto phase synchrony on an advected FGF8/Wnt-graded PSM lattice: kinematic waves, Mib1-gated coupling, emergent DAPT ALD/PRP — Source and data traceability: 90/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Seven primary sources with DOIs in the docstring (L6-37), `paper_citations.bib` and the reference JSON `metadata.sources` (L7-43 of the JSON); the specimen and scout manifest are SHA-256 pinned and verified fail-closed (L146-153, L183-201); the reference JSON now carries a `pass3_kinematic_wave_and_mib1_mechanisms` block (JSON L100-139) stating every reduced constant and which are calibrated, and its stale canonical Omega / T_sync / kappa_eff were corrected and are asserted by the self-test (L1289-1294). Deductions: the reference JSON is hashed but not pinned in EXPECTED_SHA256 (L146-153, L197-200), so a silent edit of the regime table would pass (-3); the specimen was mislabelled as zebrafish for two passes and its true provenance was only recovered from the Wikimedia title (-4); Soroldoni (2014) and Morelli (2009) wave data are cited but not vendored, so the \"1-2 waves\" anchor is a prose statement (-3)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:evidenceAgainst "2006-riedel-delta-notch-phase-synchrony.py L146–L153: EXPECTED_SHA256 pins the specimen and scout manifest only; the reference JSON is hashed at run time but not pinned <https://github.com/fractastical/morpholib/blob/d58a084/2006-riedel-delta-notch-phase-synchrony.py#L146-L153>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-riedel-delta-notch-phase-synchrony-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-riedel-delta-notch-phase-synchrony-source-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-riedel-delta-notch-phase-synchrony-source-traceability-3> ;
+        pk:hasScore "0.9"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-riedel-delta-notch-phase-synchrony-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2006-riedel-delta-notch-phase-synchrony.py L6–L37" ;
+        dct:description "Seven primary sources with DOIs incl. Itoh 2003, Dubrulle 2001, Soroldoni 2014" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2006-riedel-delta-notch-phase-synchrony.py#L6-L37> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-riedel-delta-notch-phase-synchrony-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/delta_notch_phase_synchrony/delta_notch_phase_synchrony_reference.json L100–L139" ;
+        dct:description "pass3_kinematic_wave_and_mib1_mechanisms block: laws, sources, rate constants, calibration statement" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/datasets/delta_notch_phase_synchrony/delta_notch_phase_synchrony_reference.json#L100-L139> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-riedel-delta-notch-phase-synchrony-source-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "datasets/delta_notch_phase_synchrony/delta_notch_phase_synchrony_reference.json L86–L91" ;
+        dct:description "Canonical Omega / T_sync / kappa_eff corrected to 0.283333 / 22.176 / 0.062255 with a note on the Pass 1-2 error" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/datasets/delta_notch_phase_synchrony/delta_notch_phase_synchrony_reference.json#L86-L91> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary, Pass 3 builder+assessor) + MorphoEval Dual-Rubric Assessor" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0092-8674(01)00437-8>,
+            <https://doi.org/10.1016/S1534-5807(02)00409-4>,
+            <https://doi.org/10.1016/j.cub.2010.06.034>,
+            <https://doi.org/10.1038/nature04861>,
+            <https://doi.org/10.1126/science.1142538>,
+            <https://doi.org/10.1126/science.1253089>,
+            <https://doi.org/10.2976/1.3027088> .
+    <https://doi.org/10.1016/S0092-8674(01)00437-8> dct:date "2001"^^xsd:gYear ;
+        dct:title "FGF signaling controls somite boundary position and regulates segmentation clock control of spatiotemporal Hox gene activation" .
+    <https://doi.org/10.1016/S1534-5807(02)00409-4> dct:date "2003"^^xsd:gYear ;
+        dct:title "Mind bomb is a ubiquitin ligase that is essential for efficient activation of Notch signaling by Delta" .
+    <https://doi.org/10.1016/j.cub.2010.06.034> dct:date "2010"^^xsd:gYear ;
+        dct:title "Intercellular coupling regulates the period of the segmentation clock" .
+    <https://doi.org/10.1038/nature04861> dct:date "2006"^^xsd:gYear ;
+        dct:title "Noise-resistant and synchronized oscillation of the segmentation clock" .
+    <https://doi.org/10.1126/science.1142538> dct:date "2007"^^xsd:gYear ;
+        dct:title "Synchrony dynamics during initiation, failure, and rescue of the segmentation clock" .
+    <https://doi.org/10.1126/science.1253089> dct:date "2014"^^xsd:gYear ;
+        dct:title "A Doppler effect in embryonic pattern formation" .
+    <https://doi.org/10.2976/1.3027088> dct:date "2009"^^xsd:gYear ;
+        dct:title "Delayed coupling theory of vertebrate segmentation" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Riedel-Kruse et al. (2007) & Morelli et al. (2009) zebrafish Delta-Notch delayed Kuramoto phase synchrony on an advected FGF8/Wnt-graded PSM lattice: kinematic waves, Mib1-gated coupling, emergent DAPT ALD/PRP — Source and data traceability 90/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T08:02:32Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-riedel-delta-notch-phase-synchrony-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

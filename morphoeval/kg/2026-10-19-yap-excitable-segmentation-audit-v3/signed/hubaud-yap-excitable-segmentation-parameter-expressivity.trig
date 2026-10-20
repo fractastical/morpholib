@@ -1,0 +1,127 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAdYmrhdlVpcidNeQy_k9UPLC0DMEQNDPwHUkMYM9DAfI/> .
+@prefix this: <https://w3id.org/np/RAdYmrhdlVpcidNeQy_k9UPLC0DMEQNDPwHUkMYM9DAfI> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-hubaud-yap-excitable-segmentation> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-hubaud-yap-excitable-segmentation-parameter-expressivity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-hubaud-yap-excitable-segmentation-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Hubaud, Regev, Mahadevan & Pourquié (2017) excitable FitzHugh-Nagumo segmentation clock gated by YAP mechanotransduction, with FGF/Wnt clock-and-wavefront arrest and stiffness-LATS-YAP kinetics (Pass 3) — Parameter expressivity: 95/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "Every new morphospace parameter is swept and behaves monotonically as claimed: v_wf -> S linearly (5 points, slope 144.8 min = T, r 0.99998), lambda_F -> PSM length (407 / 571 / 735 um vs analytic 410 / 574 / 737) with S unchanged, gamma_F -> anterior pulse leak (802 um at 0.8, 0 um at >= 1.2), uniform FGF -> 0 stripes, E_sub -> Y_nuc monotone with E_crit inside the Dupont bracket, J_max -> Kuramoto R (0.27 -> 0.80, Spearman 0.94), plus the v2 Y_nuc bifurcation sweep and 6-regime suite. New CLI flags --v-wf, --lambda-F and --E-sub expose the two mechanisms. Deductions: the J_max -> R relation is not strictly monotone (it saturates: 0.802 at 0.20 vs 0.801 at 0.30; Spearman 0.94) and the ring uses a tau_v CV fixed at 0.04 (-3); the sweeps are reported as numbers and one scatter panel, without rendered stripe patterns along the v_wf sweep (-2)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-hubaud-yap-excitable-segmentation-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-hubaud-yap-excitable-segmentation-parameter-expressivity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-hubaud-yap-excitable-segmentation-parameter-expressivity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-hubaud-yap-excitable-segmentation-parameter-expressivity-4> ;
+        pk:hasScore "0.95"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-hubaud-yap-excitable-segmentation-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2016-hubaud-yap-excitable-segmentation.py L888–L952" ;
+        dcterms:description "v_wf, lambda_F and gamma_F sweeps with regression slope, Cooke-Zeeman relative error, PSM length and wave-penetration per value" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2016-hubaud-yap-excitable-segmentation.py#L888-L952> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-hubaud-yap-excitable-segmentation-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2016-hubaud-yap-excitable-segmentation.py L1033–L1057" ;
+        dcterms:description "160-point stiffness sweep and log-interpolated E_crit" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2016-hubaud-yap-excitable-segmentation.py#L1033-L1057> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-hubaud-yap-excitable-segmentation-parameter-expressivity-3> a pk:EvidenceItem ;
+        rdfs:label "2016-hubaud-yap-excitable-segmentation.py L687–L701" ;
+        dcterms:description "J_max coupling sweep with Spearman rank correlation of the final order parameter" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2016-hubaud-yap-excitable-segmentation.py#L687-L701> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-hubaud-yap-excitable-segmentation-parameter-expressivity-4> a pk:EvidenceItem ;
+        rdfs:label "2016-hubaud-yap-excitable-segmentation.py L2018–L2042" ;
+        dcterms:description "CLI: --v-wf / --lambda-F one-off wavefront run and --E-sub cascade prediction" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2016-hubaud-yap-excitable-segmentation.py#L2018-L2042> .
+
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dcterms:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "maUoeQMHyprdZsKoRwB1tBMlySeA5FvFYkcuwFHtc//7wFityo/lEzybEob4fld9DBTAPUNlRZK55USy0VPAbdXptlVWoSJ6kBg7+8rNVuUr7I77P/KGkRY+wOIxyml/cz2aree8r5wy6840uoyGLzx7fe8Q+qafrTASJJbj7CHt6m2r+Br4FpMWwXjQAg+fWOZnDYvaQKwQLOC9aK54oYBIFghKCRzohNNjixQ9lp0GFGXnnwZLf8YU2q28yJvPbHq2kIKaSgtPple0O8xWg2dT/6xIgzDxZJBbBqN0hgosLc+f87oUpbUeon+PTvoCzX6xnaRtJozkIi5P4ZBzPg==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Hubaud, Regev, Mahadevan & Pourquié (2017) excitable FitzHugh-Nagumo segmentation clock gated by YAP mechanotransduction, with FGF/Wnt clock-and-wavefront arrest and stiffness-LATS-YAP kinetics (Pass 3) — Parameter expressivity 95/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T08:30:41Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-hubaud-yap-excitable-segmentation-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1016/S0006-3495(61)86902-6> dcterms:date "1961"^^xsd:gYear ;
+        dcterms:title "Impulses and physiological states in theoretical models of nerve membrane" .
+
+    <https://doi.org/10.1016/S0022-5193(76)80131-2> dcterms:date "1976"^^xsd:gYear ;
+        dcterms:title "A clock and wavefront model for control of the number of repeated structures during animal morphogenesis" .
+
+    <https://doi.org/10.1016/S0092-8674(01)00437-8> dcterms:date "2001"^^xsd:gYear ;
+        dcterms:title "FGF signaling controls somite boundary position and regulates segmentation clock control of spatiotemporal Hox gene activation" .
+
+    <https://doi.org/10.1016/j.cell.2017.08.043> dcterms:date "2017"^^xsd:gYear ;
+        dcterms:title "Excitable dynamics and Yap-dependent mechanical cues drive the segmentation clock" .
+
+    <https://doi.org/10.1038/nature07020> dcterms:date "2008"^^xsd:gYear ;
+        dcterms:title "Control of segment number in vertebrate embryos" .
+
+    <https://doi.org/10.1038/nature10137> dcterms:date "2011"^^xsd:gYear ;
+        dcterms:title "Role of YAP/TAZ in mechanotransduction" .
+
+    <https://doi.org/10.1038/nature11804> dcterms:date "2013"^^xsd:gYear ;
+        dcterms:title "Scaling of embryonic patterning based on phase-gradient encoding" .
+
+    <https://doi.org/10.1242/dev.070987> dcterms:date "2011"^^xsd:gYear ;
+        dcterms:title "Hippo pathway regulation by cell morphology and stress fibers" .
+
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0006-3495(61)86902-6>,
+            <https://doi.org/10.1016/S0022-5193(76)80131-2>,
+            <https://doi.org/10.1016/S0092-8674(01)00437-8>,
+            <https://doi.org/10.1016/j.cell.2017.08.043>,
+            <https://doi.org/10.1038/nature07020>,
+            <https://doi.org/10.1038/nature10137>,
+            <https://doi.org/10.1038/nature11804>,
+            <https://doi.org/10.1242/dev.070987> .
+}
+

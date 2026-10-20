@@ -5,7 +5,7 @@
   "proposed_sim_id": "haupaix-avian-plumage-somite-stripes",
   "branch_name": "morphoeval/loop-010-avian-plumage-somite-stripes",
   "agent_id": "slot-010-autonomous-loop",
-  "status": "completed",
+  "status": "pass3_completed",
   "dispatched_at": "2026-10-20T00:27:00Z",
   "completed_at": "2026-10-20T00:35:30Z",
   "run_id": "2026-10-19-avian-plumage-somite-stripes-loop",
@@ -43,5 +43,67 @@
   "slot_index": 10,
   "slug": "avian-plumage-somite-stripes",
   "target_script": "2018-haupaix-avian-plumage-somite-stripes.py",
-  "delta": 44.2
+  "delta": 44.2,
+  "pass3_run_id": "2026-10-19-avian-plumage-somite-stripes-loop-pass3",
+  "pass3_audit_id": "2026-10-19-avian-plumage-somite-stripes-audit-v3",
+  "pass3_score": 80.9,
+  "pass3_dims": {
+    "model-fidelity": 78,
+    "specimen-match": 76,
+    "parameter-expressivity": 84,
+    "morphometric-validation": 80,
+    "source-traceability": 82,
+    "code-traceability": 86,
+    "repro-package": 90
+  },
+  "pass3_delta_vs_pass2": -11.3,
+  "pass3_quick_gate_score": 100,
+  "pass3_completed_at": "2026-10-20T06:19:32Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_self_test_checks": 12,
+  "pass3_measurements": 14,
+  "pass3_checkpoint_commit": "469bf3c",
+  "pass3_remediation_closed": [
+    "Couple the 2D somite-Agouti reaction-diffusion solver to individual 3D cylindrical feather follicle progenitor niches following Lin et al. (2013) to resolve intra-feather barbule chevrons alongside body-wide stripes. -> closed as a reduced geometric + threshold model: build_feather_follicle_lattice (L574-656; 9-row/period hexagonal lattice whose ring niches sample u(x,y)), niche_feather_type / niche_yellow_pulse_duty (L545-572; Haupaix 2018 agouti-dose yellow-pulse law, feather type b / y / fully pheomelanic), simulate_follicle_niche_cylinder (L659-724; 3D cylinder opened into the (ell, s) sheet with chevron edge s_0 + k|ell|), run_chevron_pitch_sweep + run_agouti_dose_mutant_panel (L727-773; RB/WT/Fa = 2/4/6 yellow rows vs Haupaix Fig. 3B 2/4/5-6); Panels I-L; Lean Laws 4-5. Residual (no barb-ridge mechanics, pulp diffusion, regeneration cycle; a, k, dose multipliers fitted) carried to Pass 4."
+  ],
+  "pass3_remediation_open": [
+    "2018-haupaix-avian-plumage-somite-stripes.py:286-289 vs reference JSON governing_pde - solver is a cubic-saturating linearisation, JSON/docstring write rational Gierer-Meinhardt kinetics; integrate the rational form or rewrite the JSON",
+    "2018-haupaix-avian-plumage-somite-stripes.py:339-361, 452-488 - species widths from analytic Gaussian threshold (sigma_eff = 1.13 sigma) and dose axis from a fitted exponential; PDE's own quail yellow fraction is 0.35 not 0.448; derive both from PDE + lattice",
+    "datasets/avian_plumage_somite_stripes/avian_plumage_somite_stripes_reference.json galliform_species_panel, agouti_bead_perturbation_regimes - mm widths, Lambda = 0.95 mm and 'bead' regimes have no published source (flagged); replace with the paper's midline distances, row counts and digitised Fig. 3C / fig. S6 band lengths; re-pin",
+    "2018-haupaix-avian-plumage-somite-stripes.py:534-542, 659-724 - a = 0.20, k = 0.35 and dose multipliers 0.60 / 2.80 are fitted and Fawn saturates (>= 2.5 gives 6 rows); calibrate against digitised band lengths and Lin fig. S9 chevron angles; derive k from (v_z, r_f, omega) via barb-ridge displacement",
+    "2018-haupaix-avian-plumage-somite-stripes.py:574-656 - lattice y-fraction 0.444 vs body pigment-map 0.35 (9-row vs 80-row quantisation); resolve and tighten self-test check 10 to < 0.03",
+    "2018-haupaix-avian-plumage-somite-stripes.py:1410 - --species flag parsed but unused; wire or remove",
+    "2018-haupaix-avian-plumage-somite-stripes.py:395-449 - reverse chimeras and alpha_donor = 0.94 are extrapolations; Haupaix report quail somites -> pheasant hosts (+ neural-tube control) only",
+    "morphoeval/lean/loops/Loop_010_avian_plumage_somite_stripes.lean:132-157 - Theorem 4 treats k as free; add k = v_z/(r_f omega) link and bar limit; Theorem 5 duty-formula monotonicity needs reals (Mathlib) - out of reach in core Lean",
+    "datasets/avian_plumage_somite_stripes/scout_manifest.json - not re-audited; check for old citations, add PMIDs for Lin 2013 / Bailleul 2019, vendor or digitise one paper figure for side-by-side specimen match"
+  ],
+  "pass3_citation_corrections": [
+    "Haupaix et al. (2018) title corrected to 'The periodic coloration in birds forms through a prepattern of somite origin' (PMID 30237324)",
+    "Inaba et al. (2019) corrected from non-existent Science 363:eaaw1969 to PNAS 116(14):6884-6890, doi:10.1073/pnas.1816107116 (PMID 30886106)"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_010.ring_niche_chevron_geometry",
+    "MathOfBiology.Loop_010.agouti_pulse_duration_feather_type"
+  ],
+  "pass3_lean_verified": true,
+  "pass3_lean_theorems_total": 5,
+  "pass3_lean_sorrys": 0,
+  "pass3_artifacts": [
+    "2018-haupaix-avian-plumage-somite-stripes.py",
+    "morphoeval/lean/loops/Loop_010_avian_plumage_somite_stripes.lean",
+    "morphoeval/math_kg_loops/haupaix-avian-plumage-somite-stripes.yaml",
+    "datasets/avian_plumage_somite_stripes/avian_plumage_somite_stripes_reference.json (re-pinned 4cbeeca0...)",
+    "datasets/avian_plumage_somite_stripes/paper_citations.bib (re-pinned 368cf682...)",
+    "datasets/avian_plumage_somite_stripes/README.md",
+    "docs/media/avian_plumage_somite_stripes_comparison.png",
+    "docs/media/avian_plumage_somite_stripes_growth.gif",
+    "docs/media/avian_plumage_somite_stripes_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-avian-plumage-somite-stripes-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-avian-plumage-somite-stripes-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-avian-plumage-somite-stripes-audit-v3/ (10 signed nanopubs, REPORT.md, .ttl, published.json)",
+    "morphoeval/runs/2026-10-19-avian-plumage-somite-stripes-loop-pass3.{yaml,csv,md,trig,events.jsonl,ledger.jsonl}",
+    "morphoeval/cloud/dispatches/slot-010.json"
+  ]
 }

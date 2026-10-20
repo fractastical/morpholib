@@ -1,5 +1,5 @@
 sim_id: cooke-clock-and-wavefront
-math_family: Clock-and-Wavefront Somite Segmentation (Kinematic Phase-Gating & Thom-Zeeman Cusp Catastrophe)
+math_family: Clock-and-Wavefront Somite Segmentation (Kinematic Phase-Gating, Thom-Zeeman Cusp Catastrophe, Goldbeter FGF8/RA Bistable Front & Farhadifar Vertex Sheet)
 model_spec:
   model: "Cooke & Zeeman (1976) clock-and-wavefront somite segmentation S = v * T_c, N = L / (v * T_c), and Thom-Zeeman cusp catastrophe wavefront dchi/dt = -(chi^3 - a(x,t)*chi - b_osc(x,t))/tau_chi"
   governing_equations:
@@ -7,16 +7,32 @@ model_spec:
     somite_number: "N = L / (v * T_c)"
     size_invariance: "v = L / T_total => N = T_total / T_c"
     cusp_wavefront_ode: "tau_chi * dchi/dt = -(chi^3 - tanh((v*t - x)/sigma_w)*chi - (b_0 + A_c*cos(2*pi*t/T_c - k_phi*x)))"
+    fgf8_mrna_gradient: "M_F(x,t) = exp(-(x_tb(t) - x)/lambda_F), x_tb(t) = x_tb0 + v_tb*t, lambda_F = v_tb / k_dM  (Dubrulle & Pourquie 2004)"
+    fgf_ra_toggle: "tau_FR dF/dt = alpha_F*M_F*K^n/(K^n + R^n) - F;  tau_FR dR/dt = alpha_R*K^n/(K^n + F^n) - R  (Goldbeter et al. 2007, reduced)"
+    endogenous_front: "a(x,t) = tanh((R - F)/kappa_a); x_w(t) = x_tb(t) - lambda_F*ln(1/M_lo)  =>  dx_w/dt = v_tb"
+    vertex_energy: "E = sum_c [K_A/2 (A_c - A_0)^2 + Gamma/2 P_c^2] + sum_e Lambda_e l_e;  Lambda_e = Lambda_0 + dLambda*[chi_ant < 0 < chi_post]  (Farhadifar et al. 2007)"
   canonical_parameters:
     L_normal_mm: 4.0
     L_miniature_mm: 2.4
     T_c_min: 45.0
     T_total_min: 1800.0
     N_invariant: 40
+    alpha_F: 3.0
+    alpha_R: 3.0
+    K_RF: 1.0
+    K_FR: 1.0
+    n_hill: 4
+    tau_FR_min: 12.0
+    k_dM_per_min: 0.0074
+    Lambda_0: 0.12
+    Gamma: 0.04
+    delta_Lambda_cleft: 0.9
+    cell_pitch_um: 20.0
   inputs:
     - datasets/clock_and_wavefront/clock_and_wavefront_reference.json
     - datasets/clock_and_wavefront/somite_embryo_specimen.jpg
     - datasets/clock_and_wavefront/scout_manifest.json
+    - datasets/clock_and_wavefront/fgf_ra_vertex_reference.json
 equations:
   - id: cooke-clock-and-wavefront-1
     law_name: "Cooke & Zeeman (1976) Somite Wavelength Law"
@@ -27,7 +43,7 @@ equations:
     lean_decl: "MathOfBiology.Loop_021.somite_length"
     lean_theorem: "MathOfBiology.Loop_021.cooke_zeeman_1976_wavelength_period_scaling"
     lean_file: morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean
-    lean_locus: "morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean#L18-L41"
+    lean_locus: "morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean#L20-L42"
     lean_code: |-
       def somite_length (v T_c : Nat) : Nat := v * T_c
       theorem cooke_zeeman_1976_wavelength_period_scaling (k v T_c : Nat) :
@@ -40,7 +56,7 @@ equations:
     variables: "S: anteroposterior somite length (um); v: determination wavefront regression velocity (um/min); T_c: intracellular segmentation clock period (min)"
     role: "Determines the spatial period S of serially repeated somite blocks from wavefront velocity v and oscillator period T_c"
     source_citation: "Cooke & Zeeman (1976) J. Theor. Biol. 58(2):455-476 Sections 2-3"
-    code_locus: "1976-cooke-clock-and-wavefront.py#L88-L108"
+    code_locus: "1976-cooke-clock-and-wavefront.py#L208-L223"
   - id: cooke-clock-and-wavefront-2
     law_name: "Cooke (1975) & Cooke-Zeeman (1976) Embryo Size-Invariance Scaling Law"
     title: "Cooke (1975) & Cooke-Zeeman (1976) Embryo Size-Invariance Scaling Law"
@@ -50,7 +66,7 @@ equations:
     lean_decl: "MathOfBiology.Loop_021.segmented_axis_length"
     lean_theorem: "MathOfBiology.Loop_021.cooke_1975_miniature_embryo_size_invariance"
     lean_file: morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean
-    lean_locus: "morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean#L25-L54"
+    lean_locus: "morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean#L44-L55"
     lean_code: |-
       def segmented_axis_length (N v T_c : Nat) : Nat := N * somite_length v T_c
       theorem cooke_1975_miniature_embryo_size_invariance (scale N v_0 T_c : Nat) :
@@ -63,7 +79,7 @@ equations:
     variables: "N: total somite number; L: anteroposterior body axis length (mm); scale: embryo size reduction ratio; T_total: total segmentation duration (min)"
     role: "Proves that proportional scaling of wavefront velocity v with body length L preserves total somite count N ~ 40 in surgically reduced Xenopus embryos"
     source_citation: "Cooke (1975) Nature 254:196-199 Table 1; Cooke & Zeeman (1976) J. Theor. Biol. 58(2):455-476 Section 4"
-    code_locus: "1976-cooke-clock-and-wavefront.py#L115-L142"
+    code_locus: "1976-cooke-clock-and-wavefront.py#L230-L259"
   - id: cooke-clock-and-wavefront-3
     law_name: "Thom-Zeeman Cusp Catastrophe Wavefront Bifurcation"
     title: "Thom-Zeeman Cusp Catastrophe Wavefront Bifurcation"
@@ -73,7 +89,7 @@ equations:
     lean_decl: "MathOfBiology.Loop_021.cusp_catastrophe_residual"
     lean_theorem: "MathOfBiology.Loop_021.zeeman_1976_cusp_wavefront_bifurcation"
     lean_file: morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean
-    lean_locus: "morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean#L56-L70"
+    lean_locus: "morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean#L57-L70"
     lean_code: |-
       def cusp_catastrophe_residual (chi a b : Int) : Int := chi * chi * chi - a * chi - b
       theorem zeeman_1976_cusp_wavefront_bifurcation :
@@ -88,4 +104,57 @@ equations:
     variables: "chi: cellular determination/adhesion state; a(x,t): wavefront unfolding parameter; b_osc(x,t): clock-modulated asymmetry parameter"
     role: "Converts smooth anterior-posterior wavefront progression into sharp, discrete inter-somitic boundary clefts gated by the segmentation clock phase"
     source_citation: "Cooke & Zeeman (1976) J. Theor. Biol. 58(2):455-476 Figs. 2-4"
-    code_locus: "1976-cooke-clock-and-wavefront.py#L145-L246"
+    code_locus: "1976-cooke-clock-and-wavefront.py#L358-L606"
+  - id: cooke-clock-and-wavefront-4
+    law_name: "Goldbeter-Gonze-Pourquie (2007) FGF8/RA Bistable Determination Front Driven by Tailbud Elongation"
+    title: "Goldbeter-Gonze-Pourquie (2007) FGF8/RA Bistable Determination Front Driven by Tailbud Elongation"
+    formula: "M_F = exp(-(x_tb(t) - x)/lambda_F), x_tb = x_tb0 + v_tb t; tau_FR dF/dt = alpha_F M_F K^n/(K^n+R^n) - F; tau_FR dR/dt = alpha_R K^n/(K^n+F^n) - R; x_w(t) = x_tb(t) - lambda_F ln(1/M_lo) => dx_w/dt = v_tb"
+    latex: "x_w(t) = x_{tb}(t) - \\lambda_F \\ln\\frac{1}{M_{lo}}, \\qquad \\frac{dx_w}{dt} = v_{tb}, \\qquad S = v_{tb} T_c"
+    ascii: "x_w(t) = x_tb0 + v_tb*t - D  =>  x_w(t2) - x_w(t1) = v_tb*(t2 - t1) for every D"
+    lean_decl: "MathOfBiology.Loop_021.determination_front"
+    lean_theorem: "MathOfBiology.Loop_021.goldbeter_2007_front_velocity_equals_tailbud_elongation"
+    lean_file: morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean
+    lean_locus: "morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean#L75-L110"
+    lean_code: |-
+      def tailbud_position (x_tb0 v_tb t : Int) : Int := x_tb0 + v_tb * t
+      def determination_front (x_tb0 v_tb D t : Int) : Int := tailbud_position x_tb0 v_tb t - D
+      theorem goldbeter_2007_front_velocity_equals_tailbud_elongation (x_tb0 v_tb D t₁ t₂ : Int) :
+          determination_front x_tb0 v_tb D t₂ - determination_front x_tb0 v_tb D t₁ = v_tb * (t₂ - t₁)
+      theorem endogenous_front_somite_length (x_tb0 v_tb D t T_c : Int) :
+          determination_front x_tb0 v_tb D (t + T_c) - determination_front x_tb0 v_tb D t = v_tb * T_c
+    lean_declaration: |-
+      theorem goldbeter_2007_front_velocity_equals_tailbud_elongation (x_tb0 v_tb D t₁ t₂ : Int) :
+          determination_front x_tb0 v_tb D t₂ - determination_front x_tb0 v_tb D t₁ = v_tb * (t₂ - t₁)
+    variables: "F: FGF8 protein; R: retinoic acid; M_F: fgf8 mRNA (tailbud = 1); x_tb: tailbud position; v_tb: axis elongation speed; lambda_F = v_tb/k_dM: mRNA decay length; M_lo: lower saddle-node of the toggle; D = lambda_F ln(1/M_lo): front offset"
+    role: "Derives the Cooke-Zeeman wavefront velocity v endogenously from posterior tailbud elongation through the FGF/RA bistable switch, replacing the prescribed kinematic front; the cusp unfolding parameter a and commitment mobility m are read off the toggle state"
+    source_citation: "Goldbeter, Gonze & Pourquie (2007) Dev. Dyn. 236(6):1495-1508; Dubrulle & Pourquie (2004) Nature 427:419-422; Dubrulle, McGrew & Pourquie (2001) Cell 106:219-232 (FGF8 bead)"
+    code_locus: "1976-cooke-clock-and-wavefront.py#L266-L633"
+    code_locus_detail: "toggle scan L266-L350; coupled solver L428-L494; front-velocity fit L567-L606; v_tb sweep L609-L633"
+  - id: cooke-clock-and-wavefront-5
+    law_name: "Anterior/Posterior Half-Somite Cleft Rule & Farhadifar (2007) Vertex-Model Paraxial Mesoderm Sheet"
+    title: "Anterior/Posterior Half-Somite Cleft Rule & Farhadifar (2007) Vertex-Model Paraxial Mesoderm Sheet"
+    formula: "E = sum_c [K_A/2 (A_c - A_0)^2 + Gamma/2 P_c^2] + sum_e Lambda_e l_e;  Lambda_e = Lambda_0 + dLambda [chi_ant = -1 and chi_post = +1];  2N half-somite compartments => N somites, N-1 clefts"
+    latex: "E = \\sum_c \\Bigl[\\tfrac{K_A}{2}(A_c - A_0)^2 + \\tfrac{\\Gamma}{2}P_c^2\\Bigr] + \\sum_e \\Lambda_e \\ell_e, \\qquad \\Lambda_e = \\Lambda_0 + \\Delta\\Lambda\\,[\\chi_{ant} < 0 < \\chi_{post}]"
+    ascii: "count_clefts(compartments(N+1)) = N;  count_intra(compartments(N+1)) = N+1;  edge_tension(-1, +1) = Lambda_0 + dLambda, all other interfaces = Lambda_0"
+    lean_decl: "MathOfBiology.Loop_021.compartments"
+    lean_theorem: "MathOfBiology.Loop_021.meinhardt_1986_half_somite_cleft_count"
+    lean_file: morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean
+    lean_locus: "morphoeval/lean/loops/Loop_021_clock_and_wavefront.lean#L113-L192"
+    lean_code: |-
+      def compartments : Nat → List Int
+        | 0 => []
+        | n + 1 => 1 :: (-1) :: compartments n
+      theorem meinhardt_1986_half_somite_cleft_count (N : Nat) :
+          count_clefts (compartments (N + 1)) = N ∧ count_intra (compartments (N + 1)) = N + 1
+      def edge_tension (Lambda_0 dLambda : Nat) (ant post : Int) : Nat :=
+        if ant = -1 ∧ post = 1 then Lambda_0 + dLambda else Lambda_0
+      theorem farhadifar_2007_cleft_tension_selectivity (Lambda_0 dLambda : Nat) :
+          edge_tension Lambda_0 dLambda (-1) 1 = Lambda_0 + dLambda ∧ edge_tension Lambda_0 dLambda 1 (-1) = Lambda_0 ∧ ...
+    lean_declaration: |-
+      theorem meinhardt_1986_half_somite_cleft_count (N : Nat) :
+          count_clefts (compartments (N + 1)) = N ∧
+          count_intra (compartments (N + 1)) = N + 1
+    variables: "A_c, P_c: cell area and perimeter; A_0: preferred area; K_A, Gamma, Lambda_0: area elasticity, contractility, line tension (Farhadifar case I: 0.12, 0.04); dLambda: extra tension on posterior->anterior interfaces; chi_ant, chi_post: half-somite states of the two cells sharing an edge"
+    role: "Couples the 1D cusp field to a 2D vertex-model sheet: only posterior(-1)->anterior(+1) interfaces are loaded, so the sheet forms N somite blocks with clefts that rotate toward the mediolateral axis and straighten (cleft angle 28 -> 10 deg; tortuosity 1.30 -> 1.03)"
+    source_citation: "Farhadifar et al. (2007) Curr. Biol. 17:2095-2104; Bi et al. (2015) Nat. Phys. 11:1074-1079; Saga & Takeda (2001) Nat. Rev. Genet. 2:835-845; Meinhardt (1986) Models of segmentation, in Somites in Developing Embryos (NATO ASI 118)"
+    code_locus: "1976-cooke-clock-and-wavefront.py#L640-L876"

@@ -15,6 +15,8 @@ model_spec:
     - datasets/limb_chondrogenesis_turing/limb_chondrogenesis_turing_reference.json
     - datasets/limb_chondrogenesis_turing/chick_wing_skeleton_specimen.jpg
     - datasets/limb_chondrogenesis_turing/scout_manifest.json
+    - datasets/limb_chondrogenesis_turing/fgf8_moving_boundary_reference.json
+    - datasets/limb_chondrogenesis_turing/paper_citations.bib
 equations:
   - law_name: "Turing Equal-Diffusion / Hyaluronate-Excess Negative Control (No Chondrogenesis for D_u = D_v)"
     formula: "tr(J_0) < 0 ∧ det(J_0) > 0 ∧ D_u = D_v = D ≥ 1 ⟹ ∀ q = k^2 ≥ 0, tr(J_k) = tr(J_0) - 2 D q < 0 ∧ det(J_k) = det(J_0) - D tr(J_0) q + D^2 q^2 > 0"
@@ -77,3 +79,65 @@ equations:
     role: "Proves the monotonic proximodistal skeletal truncation series observed upon surgical AER removal at HH20 (1 element: humerus only), HH24 (3 elements: humerus + radius/ulna), vs intact AER (6 elements: 1 + 2 + 3)"
     source_citation: "Saunders (1948) J. Exp. Zool. 108:363-403; Summerbell, Lewis & Wolpert (1973) Nature 244:492-496; Newman & Frisch (1979) Science 205:662-668"
     code_locus: "1979-newman-limb-chondrogenesis-turing.py#L365-L445"
+  # ---------------- Pass 3 (FGF8-graded moving-boundary 3D wing bud) ---------------- #
+  - law_name: "3D Helmholtz Mode Budget k_c^2 = k_AP^2 + k_DV^2 + k_PD^2 (Progress-Zone Mode Selection)"
+    formula: "m^2 = k_c^2 - k_DV^2 - k_PD^2;  k_c1 ≤ k_c2 ∧ k_PD2 ≤ k_PD1 ⟹ m_1^2 ≤ m_2^2 (strict for k_c1 < k_c2);  k_PD^2 ↑ at fixed k_c ⟹ m^2 ↓"
+    lean_decl: "MathOfBiology.Loop_012.helmholtz_ap_mode_sq"
+    lean_theorem: "MathOfBiology.Loop_012.newman_helmholtz_3d_mode_bound"
+    lean_locus: "morphoeval/lean/loops/Loop_012_limb_chondrogenesis_turing.lean#L120-L150"
+    lean_code: |
+      def helmholtz_ap_mode_sq (kc_sq kDV_sq kPD_sq : Int) : Int := kc_sq - kDV_sq - kPD_sq
+      theorem newman_helmholtz_3d_mode_bound (kc1 kc2 kDV kPD1 kPD2 : Int)
+          (hkc : kc1 ≤ kc2) (hPD : kPD2 ≤ kPD1) :
+          helmholtz_ap_mode_sq kc1 kDV kPD1 + kDV + kPD1 = kc1 ∧
+          helmholtz_ap_mode_sq kc1 kDV kPD1 ≤ helmholtz_ap_mode_sq kc2 kDV kPD2 ∧
+          (kc1 < kc2 → helmholtz_ap_mode_sq kc1 kDV kPD1 < helmholtz_ap_mode_sq kc2 kDV kPD2) ∧
+          (kPD1 < kPD1 + 1 → helmholtz_ap_mode_sq kc1 kDV (kPD1 + 1) < helmholtz_ap_mode_sq kc1 kDV kPD1) := by
+        unfold helmholtz_ap_mode_sq; omega
+    variables: "k_c^2: critical (fastest-growing) squared wavenumber of the active-zone kinetics; k_DV^2 = (π/L_DV)^2: single dorsoventral core hump; k_PD^2: lowest eigenvalue of the discrete P1 proximodistal operator on the active zone (≈ (π/L_PD)^2); m^2: anteroposterior mode energy"
+    role: "Fixes the kinetics of the moving-boundary active zone: fu is chosen by bisection so that the fastest-growing linear mode is exactly m^2 + k_DV^2 + k_PD^2 with k_PD^2 taken from the actual FEM operator (Dirichlet at the condensed front and at the FGF8-refractory apical boundary); the theorem states why a shrinking zone needs rising f_u to climb 1 -> 2 -> 3 [code loci: discrete_pd_eigenvalue + newman_3d_zone_kinetics; applied per step in the zone-kinetics block of integrate_newman_3d_moving_boundary_pde (L979-L1004)]"
+    source_citation: "Newman & Frisch (1979) Science 205(4407):662-668 Eq. (4) & Table 1; Crampin, Gaffney & Maini (1999) Bull. Math. Biol. 61:1093-1120 (mode selection on growing domains)"
+    code_locus: "1979-newman-limb-chondrogenesis-turing.py#L668-L770"
+  - law_name: "FGF8 Progress-Zone Depth Is Set By The FGF8 Range (Hyaluronidase Clock), Not By AER Output"
+    formula: "F(z) = F_AER exp(-(L - z)/λ_F);  L_PD = z(F_ap) - z(F_thr) = λ_F (ln F_ap - ln F_thr) ∀ F_AER, L;  L_PD(2 λ_F) = 2 L_PD(λ_F);  λ_F(t) = λ_0 e^{-t/τ_H} (τ_H = 37.0 h fitted to Table 1: 500/250/140 μm)"
+    lean_decl: "MathOfBiology.Loop_012.fgf8_progress_zone_depth"
+    lean_theorem: "MathOfBiology.Loop_012.fgf8_progress_zone_depth_independent_of_aer_output"
+    lean_locus: "morphoeval/lean/loops/Loop_012_limb_chondrogenesis_turing.lean#L153-L185"
+    lean_code: |
+      def fgf8_threshold_position (L lam lnF_AER lnF_thr : Int) : Int := L - lam * (lnF_AER - lnF_thr)
+      def fgf8_progress_zone_depth (L lam lnF_AER lnF_ap lnF_exit : Int) : Int :=
+        fgf8_threshold_position L lam lnF_AER lnF_ap - fgf8_threshold_position L lam lnF_AER lnF_exit
+      theorem fgf8_progress_zone_depth_independent_of_aer_output
+          (L L' lam lnF_AER lnF_AER' lnF_ap lnF_exit : Int) :
+          fgf8_progress_zone_depth L lam lnF_AER lnF_ap lnF_exit = lam * (lnF_ap - lnF_exit) ∧
+          fgf8_progress_zone_depth L lam lnF_AER lnF_ap lnF_exit =
+            fgf8_progress_zone_depth L' lam lnF_AER' lnF_ap lnF_exit ∧
+          fgf8_progress_zone_depth L (2 * lam) lnF_AER lnF_ap lnF_exit =
+            2 * fgf8_progress_zone_depth L lam lnF_AER lnF_ap lnF_exit := by
+        unfold fgf8_progress_zone_depth fgf8_threshold_position
+        refine ⟨?_, ?_, ?_⟩ <;> (simp only [Int.mul_sub, Int.mul_assoc]; omega)
+    variables: "F_AER(t): AER FGF8 output (1 intact, exp(-(t-t_exc)/τ_FGF) after excision); λ_F(t): FGF8 range; F_ap = 0.5, F_thr = 0.1: apical / exit thresholds; L_PD(t) = λ_F ln 5: active progress-zone depth; τ_H: hyaluronidase clock"
+    role: "Justifies the moving-boundary design: the Table 1 depth series is driven by a shrinking FGF8 RANGE (one-parameter clock fitted to 3 points, max |rel err| 4.6 %) while AER output only sets the outgrowth velocity; after AER excision the kinetics are held and the zones sweep distally (Summerbell 1974 series 1, 1, 3, 3, 3, 6) [code loci: fit_hyaluronidase_clock; _fgf8_profile (L797-L803); zones + excision inside integrate_newman_3d_moving_boundary_pde (L847-L1152); run_aer_excision_time_sweep (L1165-L1192)]"
+    source_citation: "Newman & Frisch (1979) Table 1; Toole (1972) Dev. Biol. 29:321-329; Hentschel et al. (2004) Proc. R. Soc. B 271:1713-1722; Zhu et al. (2010) PLoS ONE 5:e10892; Summerbell (1974) J. Embryol. Exp. Morphol. 32:651-660; Summerbell (1977) J. Embryol. Exp. Morphol. 40:1-21"
+    code_locus: "1979-newman-limb-chondrogenesis-turing.py#L639-L665"
+  - law_name: "Hill-2 FGF8 Mitogenic Response Is Strictly Monotone (Graded Proliferation Drives The Moving Boundary)"
+    formula: "S(F) = S_max F^2 / (K^2 + F^2);  0 < K ∧ F_1 < F_2 ⟹ F_1^2 (K^2 + F_2^2) < F_2^2 (K^2 + F_1^2) ⟺ S(F_1) < S(F_2);  v_tip = ∫_0^L S(F(z)) dz"
+    lean_decl: "MathOfBiology.Loop_012.hill2_cross_lhs"
+    lean_theorem: "MathOfBiology.Loop_012.fgf8_hill_proliferation_monotone"
+    lean_locus: "morphoeval/lean/loops/Loop_012_limb_chondrogenesis_turing.lean#L188-L213"
+    lean_code: |
+      def hill2_cross_lhs (K F1 F2 : Nat) : Nat := F1 * F1 * (K * K + F2 * F2)
+      def hill2_cross_rhs (K F1 F2 : Nat) : Nat := F2 * F2 * (K * K + F1 * F1)
+      theorem fgf8_hill_proliferation_monotone (K F1 F2 : Nat) (hK : 0 < K) (h12 : F1 < F2) :
+          hill2_cross_lhs K F1 F2 < hill2_cross_rhs K F1 F2 := by
+        unfold hill2_cross_lhs hill2_cross_rhs
+        have hsq : F1 * F1 < F2 * F2 := Nat.mul_self_lt_mul_self h12
+        have hKK : 0 < K * K := Nat.mul_pos hK hK
+        rw [Nat.mul_add, Nat.mul_add]
+        have h1 : F1 * F1 * (K * K) < F2 * F2 * (K * K) := Nat.mul_lt_mul_of_pos_right hsq hKK
+        have h2 : F1 * F1 * (F2 * F2) = F2 * F2 * (F1 * F1) := Nat.mul_comm _ _
+        omega
+    variables: "S_max = ln2/12 h^-1: cell-cycle-limited proliferation ceiling; K = 0.3: half-saturation FGF8 fraction; F: local FGF8 fraction; a(z) = ∫_0^z S dz': Lagrangian tissue velocity advecting the P1 nodes; v_tip: moving-boundary speed"
+    role: "Guarantees that the FGF8 gradient produces a monotonically graded proliferation field beneath the AER, so outgrowth is fastest distally and the S_max sweep (0, 0.5, 1, 1.5, 2 x) yields strictly increasing 48 h outgrowth (0, 306, 612, 919, 1226 μm) while the element count is set by the clock, not by growth [code loci: _hill_proliferation; FGF8_GROWTH_DEFAULTS (L617-L636); run_fgf8_parameter_sweep (L1194-L1217)] "
+    source_citation: "Sun, Mariani & Martin (2002) Nature 418:501-508; Boehm et al. (2010) PLoS Biol. 8:e1000420; Summerbell (1976) J. Embryol. Exp. Morphol. 35:241-260"
+    code_locus: "1979-newman-limb-chondrogenesis-turing.py#L801-L803"

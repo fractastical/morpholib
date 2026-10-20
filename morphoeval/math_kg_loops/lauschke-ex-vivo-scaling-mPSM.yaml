@@ -14,6 +14,16 @@ model_spec:
     alpha: 0.11
     p_exponent: 1.35
     R0_series_um: [150.0, 250.0, 350.0, 450.0]
+    tau_lambda_min: 35.0
+    l_k_scaling_um: 1000000.0
+    l_k_fixed_um: 252.0
+    reagg_K_rad_per_min: 0.5
+    reagg_eta: 0.25
+    reagg_phase_lag_rad: 0.6
+    reagg_corr_len_um: 40.0
+    reagg_kappa_init: 1.0
+    reagg_n_cells: 1577
+    reagg_seed: 2016
   inputs:
     - datasets/ex_vivo_scaling_mPSM/ex_vivo_scaling_mPSM_reference.json
     - datasets/ex_vivo_scaling_mPSM/mouse_mpsm_somites_specimen.jpg
@@ -44,7 +54,7 @@ equations:
     variables: "S_n: newly specified concentric segment width at cycle n (um); R(t_n): residual unsegmented mPSM radius (um); alpha: dimensionless proportional scaling slope (0.11)"
     role: "Establishes linear scale-invariance of embryonic segment size with residual tissue radius via a constant 2*pi total phase span across the active mPSM"
     source_citation: "Lauschke, Tsiairis, Francois & Aulehla (2013) Nature 493(7430):101-105 Figs. 2-4"
-    code_locus: "2014-lauschke-ex-vivo-scaling-mPSM.py#L105-L175"
+    code_locus: "2014-lauschke-ex-vivo-scaling-mPSM.py#L178-L269"
   - id: lauschke-ex-vivo-scaling-mPSM-2
     law_name: "Lauschke et al. (2013) Geometric Residual mPSM Radius Progression & Conservation Law"
     title: "Lauschke et al. (2013) Geometric Residual mPSM Radius Progression & Conservation Law"
@@ -68,7 +78,7 @@ equations:
     variables: "R_n: residual mPSM radius at cycle n (um); R_0: initial mPSM explant radius (um); S_n: n-th concentric segment width (um)"
     role: "Governs the inward periphery-to-center geometric contraction of the active mPSM domain and exact radial conservation across successive segmentation cycles"
     source_citation: "Lauschke, Tsiairis, Francois & Aulehla (2013) Nature 493(7430):101-105 Figs. 1-3"
-    code_locus: "2014-lauschke-ex-vivo-scaling-mPSM.py#L178-L245"
+    code_locus: "2014-lauschke-ex-vivo-scaling-mPSM.py#L275-L372"
   - id: lauschke-ex-vivo-scaling-mPSM-3
     law_name: "Lauschke et al. (2013) Radial Notch Phase-Wave Velocity Scaling Law"
     title: "Lauschke et al. (2013) Radial Notch Phase-Wave Velocity Scaling Law"
@@ -90,4 +100,73 @@ equations:
     variables: "v_wave(t): radial LuVeLu Notch phase-wave propagation speed (um/min); lambda(t): effective radial phase wavelength (um); T_osc: central pacemaker clock period (140 min)"
     role: "Explains why LuVeLu Notch oscillation waves propagate faster in larger mPSM explants and decelerate as R(t) shrinks while maintaining a 2*pi phase span"
     source_citation: "Lauschke, Tsiairis, Francois & Aulehla (2013) Nature 493(7430):101-105 Fig. 4"
-    code_locus: "2014-lauschke-ex-vivo-scaling-mPSM.py#L248-L325"
+    code_locus: "2014-lauschke-ex-vivo-scaling-mPSM.py#L378-L544"
+  # ---- Pass 3 (audit v3) additions ----
+  - id: lauschke-ex-vivo-scaling-mPSM-4
+    law_name: "FGF/Wnt Source-Sink Signalling Gradient Scale Covariance (shrinking gradient on the active mPSM)"
+    title: "FGF/Wnt Source-Sink Signalling Gradient Scale Covariance"
+    formula: "D W'' - k W = 0, W(0) = W_0, W(R) = 0  =>  W = W_0 sinh((R - r)/l_k)/sinh(R/l_k);  l_k >> R: W = W_0 (1 - r/R), l_half = R/2;  W(k R, k r) = k W(R, r) (scaled units)"
+    latex: "D W'' - kW = 0,\\ W(0)=W_0,\\ W(R)=0 \\Rightarrow W(r) = W_0 \\frac{\\sinh((R-r)/\\ell_k)}{\\sinh(R/\\ell_k)};\\quad \\ell_k \\gg R:\\ W = W_0\\left(1-\\frac{r}{R}\\right),\\ \\ell_{1/2} = \\frac{R}{2}"
+    ascii: "W(r) = W_0 sinh((R - r)/l_k)/sinh(R/l_k); l_k >> R: W = W_0 (1 - r/R), l_half = R/2 (exponent d ln l_half / d ln R = 1); fixed-length control W = W_0 exp(-r/l_k), l_half = l_k ln 2 (exponent 0)"
+    lean_decl: "MathOfBiology.Loop_026.source_sink_gradient"
+    lean_theorem: "MathOfBiology.Loop_026.lauschke_2013_fgf_wnt_gradient_scale_covariance"
+    lean_file: morphoeval/lean/loops/Loop_026_ex_vivo_scaling_mPSM.lean
+    lean_locus: "morphoeval/lean/loops/Loop_026_ex_vivo_scaling_mPSM.lean#L100-L118"
+    lean_code: |-
+      def source_sink_gradient (W0 R r : Int) : Int :=
+        W0 * (R - r)
+      theorem lauschke_2013_fgf_wnt_gradient_scale_covariance (W0 k R r : Int) :
+          source_sink_gradient W0 (k * R) (k * r) = k * source_sink_gradient W0 R r
+    lean_declaration: |-
+      theorem lauschke_2013_fgf_wnt_gradient_scale_covariance (W0 k R r : Int) :
+          source_sink_gradient W0 (k * R) (k * r) = k * source_sink_gradient W0 R r
+    variables: "W(r,t): FGF/Wnt signalling level (W_0 at the central source, 0 at the peripheral determination-front sink); l_k = sqrt(D/k): diffusion-decay length (um); l_half: half-maximum length of the gradient (um)"
+    role: "Supplies the shrinking FGF/Wnt gradient of Lauschke et al. (2013) Fig. 4 whose length scales with the residual mPSM radius and drives wavelength adaptation; the fixed-length exponential gradient (Dubrulle & Pourquie 2004) is the mechanistic non-scaling control"
+    source_citation: "Lauschke, Tsiairis, Francois & Aulehla (2013) Nature 493(7430):101-105 Fig. 4; Aulehla et al. (2008) Nat Cell Biol 10:186-193; Dubrulle & Pourquie (2004) Nature 427:419-422"
+    code_locus: "2014-lauschke-ex-vivo-scaling-mPSM.py#L552-L602"
+  - id: lauschke-ex-vivo-scaling-mPSM-5
+    law_name: "Dynamic Notch Phase-Wave Wavelength Adaptation to the FGF/Wnt Gradient Length"
+    title: "Dynamic Notch Phase-Wave Wavelength Adaptation to the FGF/Wnt Gradient Length"
+    formula: "d lambda/dt = -(lambda - c_lambda l_half(t))/tau_lambda;  Phi(t) = 2 pi R(t)/lambda(t);  phi(r,t) = omega_0 t - Phi(t) (r/R(t))^p;  S_n = R(t_n)[1 - (1 - delta_phi_seg/Phi(t_n))^(1/p)], delta_phi_seg = Phi_0[1 - (1 - alpha)^p];  discrete error step M e_{n+1} = (M - h) e_n"
+    latex: "\\frac{d\\lambda}{dt} = -\\frac{\\lambda - c_\\lambda \\ell_{1/2}(t)}{\\tau_\\lambda},\\quad \\Phi(t) = \\frac{2\\pi R(t)}{\\lambda(t)},\\quad S_n = R(t_n)\\left[1 - \\left(1 - \\frac{\\delta\\phi_{\\rm seg}}{\\Phi(t_n)}\\right)^{1/p}\\right]"
+    ascii: "d lambda/dt = -(lambda - c_lambda*l_half(t))/tau_lambda; Phi(t) = 2*pi*R(t)/lambda(t); S_n = R(t_n)*[1 - (1 - delta_phi_seg/Phi(t_n))^(1/p)]"
+    lean_decl: "MathOfBiology.Loop_026.wavelength_adaptation_error_step"
+    lean_theorem: "MathOfBiology.Loop_026.lauschke_2013_wavelength_adaptation_contraction"
+    lean_file: morphoeval/lean/loops/Loop_026_ex_vivo_scaling_mPSM.lean
+    lean_locus: "morphoeval/lean/loops/Loop_026_ex_vivo_scaling_mPSM.lean#L120-L144"
+    lean_code: |-
+      def wavelength_adaptation_error_step (M h e : Int) : Int :=
+        (M - h) * e
+      theorem lauschke_2013_wavelength_adaptation_contraction (M h e : Int)
+          (h0 : 0 ≤ h) (hM : h ≤ M) :
+          Int.natAbs (wavelength_adaptation_error_step M h e) ≤ Int.natAbs (M * e)
+    lean_declaration: |-
+      theorem lauschke_2013_wavelength_adaptation_contraction (M h e : Int)
+          (h0 : 0 ≤ h) (hM : h ≤ M) :
+          Int.natAbs (wavelength_adaptation_error_step M h e) ≤ Int.natAbs (M * e)
+    variables: "lambda(t): Notch phase-wave wavelength (um); tau_lambda: adaptation time (35 min default, inf = frozen ablation); Phi(t): dynamic total phase span (rad); delta_phi_seg: peripheral gating window (0.9144 rad); alpha = S_n/R(t_n): emergent scaling ratio"
+    role: "Closes the Pass 2 remediation item: the 2*pi phase span and alpha = 0.11 are recovered dynamically from the shrinking FGF/Wnt gradient (mean Phi = 6.125 rad, alpha_8 = 0.1103 at tau_lambda = T_osc/4) and lost when adaptation is frozen (alpha_8 = 0.560) or the gradient has fixed length (constant 39.5 um segments)"
+    source_citation: "Lauschke, Tsiairis, Francois & Aulehla (2013) Nature 493(7430):101-105 Fig. 4; Beaupeux & Francois (2016) Phys Biol 13:036009"
+    code_locus: "2014-lauschke-ex-vivo-scaling-mPSM.py#L605-L717"
+  - id: lauschke-ex-vivo-scaling-mPSM-6
+    law_name: "Kuramoto-Sakaguchi Reaggregate Lattice & Target-Wave Pacemaker Dispersion (Tsiairis & Aulehla 2016)"
+    title: "Kuramoto-Sakaguchi Reaggregate Lattice & Target-Wave Pacemaker Dispersion"
+    formula: "d theta_i/dt = omega_i + (K/n_i) sum_j [sin(theta_j - theta_i - a) + sin a], omega_i = omega_0 (1 + eta xi_i);  continuum: theta_t = omega + D lap theta + beta |grad theta|^2, D = K cos(a) d^2/4, beta = K sin(a) d^2/4;  pacemaker excess Delta omega = beta k^2 (monotone in k)"
+    latex: "\\dot\\theta_i = \\omega_i + \\frac{K}{n_i}\\sum_j\\left[\\sin(\\theta_j-\\theta_i-a)+\\sin a\\right],\\quad \\theta_t = \\omega + D\\nabla^2\\theta + \\beta|\\nabla\\theta|^2,\\quad \\Delta\\omega = \\beta k^2"
+    ascii: "dtheta_i/dt = omega_i + (K/n_i) sum_j [sin(theta_j - theta_i - a) + sin a]; Delta omega = beta k^2"
+    lean_decl: "MathOfBiology.Loop_026.target_wave_frequency_excess"
+    lean_theorem: "MathOfBiology.Loop_026.tsiairis_2016_pacemaker_dispersion_monotone"
+    lean_file: morphoeval/lean/loops/Loop_026_ex_vivo_scaling_mPSM.lean
+    lean_locus: "morphoeval/lean/loops/Loop_026_ex_vivo_scaling_mPSM.lean#L146-L166"
+    lean_code: |-
+      def target_wave_frequency_excess (beta k : Nat) : Nat :=
+        beta * k * k
+      theorem tsiairis_2016_pacemaker_dispersion_monotone (beta k1 k2 : Nat) (h : k1 ≤ k2) :
+          target_wave_frequency_excess beta k1 ≤ target_wave_frequency_excess beta k2
+    lean_declaration: |-
+      theorem tsiairis_2016_pacemaker_dispersion_monotone (beta k1 k2 : Nat) (h : k1 ≤ k2) :
+          target_wave_frequency_excess beta k1 ≤ target_wave_frequency_excess beta k2
+    variables: "theta_i: LuVeLu phase of cell i; omega_i: intrinsic frequency (omega_0 = 2 pi / 140 min, relative heterogeneity eta = 0.25, correlation length 40 um); K: Notch coupling (0.5 rad/min); a: Sakaguchi phase lag (0.6 rad); beta k^2: frequency excess of a pacemaker emitting wavenumber k"
+    role: "Closes the Pass 2 remediation item: 1577 cells on a jittered hexagonal disc self-organise median 4 de novo target-wave pacemakers (cycles 1-3) that consolidate to 1 at the local frequency maximum (cycles 12-14); K = 0 stays incoherent, eta = 0 synchronises with no pacemaker"
+    source_citation: "Tsiairis & Aulehla (2016) Cell 164(4):656-667 Figs. 2-4; Kuramoto (1984) Chemical Oscillations, Waves, and Turbulence, Springer, Ch. 5-6"
+    code_locus: "2014-lauschke-ex-vivo-scaling-mPSM.py#L724-L931"

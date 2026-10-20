@@ -22,9 +22,20 @@ Reference parameters, formal advection-decay PDE equations, experimental perturb
    \]
    Implanting an ectopic FGF8-soaked bead in the PSM transiently shifts \(x^*\) anteriorly (\(\Delta x^* > 0\)), producing compressed small somites anterior to the bead followed by a compensatory large somite posterior to the bead once the wavefront sweeps past the bead; conversely, FGFR1 inhibition via SU5402 shifts \(x^*\) posteriorly (\(\Delta x^* < 0\)), producing enlarged somites.
 
+## Pass 3 Additions (2026-10-19, remediation of audit v2)
+
+4. **Goldbeter, Gonze & Pourquié (2007) RA / FGF8 mutual-inhibition bistable switch** (`pass3_goldbeter_2007_ra_fgf8_bistable_switch` in the reference JSON):
+   \[
+   \dot F = v_F\, m(x)\,\frac{K_I^n}{K_I^n + RA^n} - k_F F,\quad
+   \dot X = v_X\,\frac{F^n}{K_A^n + F^n} - k_X X,\quad
+   \dot{RA} = v_R - k_R\,RA - k_C\,\frac{X\,RA}{K_C + RA}
+   \]
+   The double-negative loop RA ⊣ FGF → Cyp26 ⊣ RA is bistable for tailbud-derived *fgf8* mRNA input \(m \in [m_{SN,lo}, m_{SN,hi}] = [0.184, 0.546]\); a PSM cell advected from the tailbud stays on the high-FGF branch until the saddle-node at \(x_{SN} = \lambda_m \ln(m_0/m_{SN,lo}) = 610\,\mu\)m, giving a hysteretic front (cell-trajectory switch at 720 µm, 90→10 % transition width 198 µm vs 792 µm for the graded threshold). **The dimensionless parameter values are this repository's bistable-regime choice, not the published table.**
+5. **Cell-autonomous *fgf8* mRNA dilution by tailbud progenitor division** (`pass3_2d_cell_strip_division_dilution`): one division equals one half-life of decay (\(\log_2 m = \log_2 m_0 - D - n\)); the periodic exported level is \(m_{exit} = (k_s/k_d)(1-e^{-k_d T_{div}})/(2-e^{-k_d T_{div}})\) and removing division at fixed transcription shifts the front anteriorly by \(\Delta x_{dil} = \lambda_m \ln[(2-e^{-k_d T_{div}})/(1-e^{-k_d T_{div}})] = 271\,\mu\)m at \(T_{div}=480\) min. Realised in a 2D cell-based strip (8 rows × 10 µm cells, self-renewing progenitor pool, lognormal cell cycle, binomial-like mRNA partitioning, juxtacrine FGF8 smoothing σ = 25 µm, per-row somite boundaries at clock ticks). Known simplifications: PSM cells do not divide, all elongation comes from progenitor division (no cell-motility contribution, Bénazéraf et al. 2010), and rows are coupled only through FGF8 smoothing.
+
 ## Vendored Files & Cryptographic Digests
 
 - `scout_manifest.json` — OpenAlex + Wikimedia Commons literature & specimen scout dossier (`a38a686592f1ffd0bb211b7de4f084d692b0bf29b88ddcd9231846cc99f7d392`)
-- `fgf8_wavefront_somitogenesis_reference.json` — Formal advection-decay parameters and Dubrulle et al. (2001, 2004) 5-regime perturbation dataset
+- `fgf8_wavefront_somitogenesis_reference.json` — Formal advection-decay parameters, Dubrulle et al. (2001, 2004) 5-regime perturbation dataset, and (Pass 3) the Goldbeter (2007) switch parameters and 2D cell-strip reference outputs (not SHA-pinned at runtime; the specimen and scout manifest are)
 - `chick_somite_psm_specimen.jpg` — Dorsal scanning electron micrograph of a vertebrate/avian embryo showing the central neural tube, presomitic mesoderm, and bilateral segmented somite rows (`8b80971796cb29e290c10886c0026092bc30f3f624d2a75fa72f9aaf05187d5f`, CC BY 4.0, Wikimedia Commons)
-- `paper_citations.bib` — BibTeX citations for Dubrulle et al. (2001), Dubrulle & Pourquié (2004), Baker et al. (2006), and Goldbeter et al. (2007)
+- `paper_citations.bib` — BibTeX citations for Dubrulle et al. (2001), Dubrulle & Pourquié (2004), Baker et al. (2006), Goldbeter et al. (2007), and (Pass 3) Bénazéraf et al. (2010)

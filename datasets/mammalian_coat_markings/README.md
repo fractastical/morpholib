@@ -24,3 +24,6 @@ Formal SHA-256-locked dataset and biological specimen photograph for `1981-murra
    - SHA-256: `28eabc9cf247b03e2720b1cc457536d2da82b199e8686cd930cd9f373afabdab`.
 
 4. **`paper_citations.bib`** — BibTeX entries for Murray (1981), Thomas (1975), Murray (1988), and Liu, Liaw & Maini (2006).
+
+5. **`felid_body_profile.json`** (Pass 3) — parametric felid body-of-revolution profile $r(x)$ (7 knots, head–body length $= 22\,\lambda_c$, tail tapering to $0.004$ HBL) used by the P1 surface-finite-element Laplace–Beltrami solver (`integrate_thomas_fem_surface_pde`), with the Liu–Liaw–Maini growth-factor defaults, the specimen torso-depth scale estimate (18.9 markings per torso depth), and an explicit honesty statement: this is **not** a photogrammetric body scan but a hand-set surface of revolution informed by Stein et al. (2013) *Panthera pardus* body-proportion ranges.
+   - SHA-256: `65978462afc1b9e7ce359a717383b5118722a2db06d853913a7aa5041c74a9f6`.

@@ -1,22 +1,46 @@
 sim_id: glimm-avian-feather-bud-hexagonal
-math_family: Coupled Keller-Segel Dermal Chemotaxis + FGF20/BMP4 Lateral Inhibition + EDA Traveling Competence Wave (Glimm et al. 2014 & Ho et al. 2019)
+math_family: Keller-Segel Dermal Chemotaxis + FGF20/BMP Lateral Inhibition behind a Geodesic EDA Competence Wave on a Curved Monge-Patch Skin Surface with Density-Threshold Tract Boundaries (Painter, Ho & Headon 2018; Ho et al. 2019; Bausch et al. 2003)
+provenance_note: >
+  Pass 3 (2026-10-20): the Pass 1-2 seed citation "Glimm, Bhat & Newman (2014) Dev. Biol. 395:139-149"
+  does not exist (Crossref resolves the cited DOIs to unrelated papers). The chemotaxis model is
+  Painter, Ho & Headon (2018) J. Theor. Biol. 437:225-238; the competence wave, density threshold and
+  tract phenotypes are Ho et al. (2019) PLOS Biol. 17:e3000132. The sim_id and file name keep the
+  historical "glimm" token only for audit-chain continuity.
 model_spec:
-  model: Glimm, Bhat & Newman (2014) Dev. Biol. 395:139-149 & Ho et al. (2019) PLoS Biol. 17:e3000132 avian feather bud hexagonal array traveling competence wave
-  dermal_cell_density_pde: "dn/dt = D_n * Lap(n) - chi * div(n * grad(c)) + r_n * n * (1 - n / K_n)"
-  fgf20_chemoattractant_pde: "dc/dt = D_c * Lap(c) + s_w(x, t) * alpha_c * n^2 / ((1 + beta_b * b) * (1 + kappa_c * n^2)) - mu_c * c"
-  bmp4_inhibitor_pde: "db/dt = D_b * Lap(b) + s_w(x, t) * alpha_b * n^2 - mu_b * b"
-  eda_competence_wavefront: "s_w(x, t) = 0.5 * (1 + tanh((v_w * t + x_0 - |x|) / xi_w))"
+  model: Painter, Ho & Headon (2018) J. Theor. Biol. 437:225-238 Keller-Segel chemotaxis + Ho et al. (2019) PLoS Biol. 17:e3000132 EDA competence wave and mesenchymal density threshold, solved on a 3D trunk-and-limb-bud Monge patch z = h(u, v) (Pass 3)
+  surface_metric: "g_ij = delta_ij + h_i h_j,  det g = 1 + h_u^2 + h_v^2,  K = (h_uu h_vv - h_uv^2) / det^2"
+  laplace_beltrami: "Lap_g f = (1 / sqrt g) d_i (sqrt g g^{ij} d_j f)   (conservative face-flux discretisation)"
+  dermal_cell_density_pde: "dn/dt = D_n * Lap_g(n) - chi * div_g(n * grad_g(c)) + r_n * n * (1 - n / K_n)"
+  fgf20_chemoattractant_pde: "dc/dt = D_c * Lap_g(c) + s_w(u, v, t) * alpha_c * n^2 / ((1 + beta_b * b) * (1 + kappa_c * n^2)) - mu_c * c"
+  bmp4_inhibitor_pde: "db/dt = D_b * Lap_g(b) + s_w(u, v, t) * alpha_b * n^2 - mu_b * b"
+  geodesic_eda_competence_wave: "|grad_g T| = 1 from each tract initiation line;  s_w = 0.5 * (1 + tanh((v_w (t - t_0) - T) / xi_w))"
+  density_threshold_competence: "pattern where s_w >= 1/2 and n_0(u, v) (1 + gamma t) >= n_crit;  n_0 = n_base + A exp(-T / L)"
+  nucleation_rule: "random sequential adsorption of inhibitory disks r_inh = 0.92 lambda_y (3D chordal distance) inside the band that became competent at the current step; primary row at spacing lambda_y along the initiation line; disabled for chi < chi_c"
   parameters:
     D_n: 0.025
     D_c: 0.04
     D_b: 0.45
     chi_wt: 0.24
-    chi_critical: 0.05
+    chi_critical: 0.054
     r_n: 0.08
     K_n: 2.0
     lambda_y_um: 280.0
+    lambda_y_grid: 12.0
+    r_inh_over_lambda_y: 0.92
     row_spacing_dx_um: 242.4871130596428
     wave_speed_vw: 0.22
+    n_crit_control: 1.0
+    n_crit_fc_cheda1: 0.7424
+    n_crit_ecto_d2: 1.4848
+    n_base: 0.30
+    L_dens_grid: 34.0
+    density_growth_per_step: 0.0015
+    mtx_density_scale: 0.8
+    curved_grid: [256, 184]
+    limb_sigma: 22.0
+    limb_height_default: 30.0
+    limb_height_sweep: [0.0, 15.0, 30.0, 45.0]
+    curvature_threshold_K: 0.0004
     seed: 2018
   inputs:
     - datasets/avian_feather_bud_hexagonal/avian_feather_bud_hexagonal_reference.json
@@ -24,11 +48,11 @@ model_spec:
     - datasets/avian_feather_bud_hexagonal/scout_manifest.json
     - datasets/avian_feather_bud_hexagonal/paper_citations.bib
 equations:
-  - law_name: "Glimm et al. (2014) & Ho et al. (2019) Keller-Segel / FGF20 Dermal Chemotactic Instability vs. Scaleless (sc/sc) Stability"
+  - law_name: "Painter, Ho & Headon (2018) Keller-Segel / FGF20 Dermal Chemotactic Instability vs. Scaleless (sc/sc) Stability"
     formula: "det_KS(q) = (D_n q + r_n)(D_c q + μ_c) - χ n_0 f_c q < 0  (χ > χ_c),   det_KS(q)|_{χ=0} = (D_n q + r_n)(D_c q + μ_c) > 0  ∀ q > 0"
     lean_decl: "MathOfBiology.Loop_019.keller_segel_fgf20_det"
     lean_theorem: "MathOfBiology.Loop_019.keller_segel_fgf20_chemotactic_instability"
-    lean_locus: "morphoeval/lean/loops/Loop_019_avian_feather_bud_hexagonal.lean#L12-L46"
+    lean_locus: "morphoeval/lean/loops/Loop_019_avian_feather_bud_hexagonal.lean#L29-L48"
     lean_code: |
       def keller_segel_fgf20_det (D_n r_n D_c mu_c chi n_0 f_c q : Int) : Int :=
         (D_n * q + r_n) * (D_c * q + mu_c) - chi * n_0 * f_c * q
@@ -46,14 +70,14 @@ equations:
         · simp [scaleless_neg_trace]; omega
         · simp [scaleless_pos_det]
     variables: "n(x,t): dermal mesenchymal cell density; c(x,t): FGF20 chemoattractant; χ: chemotactic sensitivity; D_n, D_c: diffusivities; q = k^2: squared spatial wavenumber"
-    role: "Proves that supercritical FGF20 chemotaxis (χ > χ_c) drives spontaneous dermal mesenchymal condensation (det_KS < 0), whereas FGF20 loss in the scaleless (sc/sc) mutant or Latrunculin motility blockade (χ = 0) guarantees uniform dermal stability (det_KS > 0)"
-    source_citation: "Glimm, Bhat & Newman (2014) Dev. Biol. 395:139-149; Ho et al. (2019) PLoS Biol. 17(2):e3000132"
-    code_locus: "2018-glimm-avian-feather-bud-hexagonal.py#L120-L220"
-  - law_name: "Glimm et al. (2014) & Ho et al. (2019) Equilateral Row-to-Row Half-Phase Offset & 6-Equidistant Nearest-Neighbor Theorem"
+    role: "Proves that supercritical FGF20 chemotaxis (χ > χ_c) drives spontaneous dermal mesenchymal condensation (det_KS < 0), whereas FGF20 loss in the scaleless (sc/sc) mutant or Latrunculin motility blockade (χ = 0) guarantees uniform dermal stability (det_KS > 0). In the Pass 3 code the same χ_c gates the nucleation rule (chi < CHI_CRITICAL => no primordia)."
+    source_citation: "Painter, Ho & Headon (2018) J. Theor. Biol. 437:225-238 Section 2-3; Ho et al. (2019) PLoS Biol. 17(2):e3000132 Fig 1C, S5 Fig"
+    code_locus: "2018-glimm-avian-feather-bud-hexagonal.py#L167-L229"
+  - law_name: "Equilateral Row-to-Row Half-Phase Offset & 6-Equidistant Nearest-Neighbor Theorem (Ho et al. 2019 Fig 3B lattice)"
     formula: "d_diag^2 = (Δx)^2 + (λ_y / 2)^2 = λ_y^2  ⟺  4(Δx)^2 = 3 λ_y^2  ⟺  Δx = (√3 / 2) λ_y ≈ 0.8660 λ_y"
     lean_decl: "MathOfBiology.Loop_019.scaled_inter_row_diag_dist_sq"
     lean_theorem: "MathOfBiology.Loop_019.hexagonal_row_offset_equidistance"
-    lean_locus: "morphoeval/lean/loops/Loop_019_avian_feather_bud_hexagonal.lean#L45-L68"
+    lean_locus: "morphoeval/lean/loops/Loop_019_avian_feather_bud_hexagonal.lean#L63-L74"
     lean_code: |
       def scaled_inter_row_diag_dist_sq (dx_sq ly_sq : Int) : Int :=
         4 * dx_sq + ly_sq
@@ -64,15 +88,15 @@ equations:
           scaled_inter_row_diag_dist_sq dx_sq ly_sq = scaled_intra_row_dist_sq ly_sq := by
         simp [scaled_inter_row_diag_dist_sq, scaled_intra_row_dist_sq]
         omega
-    variables: "λ_y: longitudinal intra-row feather bud spacing; Δy = λ_y / 2: BMP4-pinned half-period phase offset; Δx: mediolateral inter-row spacing"
-    role: "Proves that when BMP4 lateral inhibition pins each successive mediolateral row at half-period offset Δy = λ_y / 2 and spacing Δx = (√3/2) λ_y, all 6 nearest neighbors (2 intra-row and 4 diagonal inter-row) lie at identical distance λ_y, forming a crystalline 60° hexagonal array"
-    source_citation: "Glimm, Bhat & Newman (2014) Dev. Biol. 395:139-149 Figs. 2-4; Ho et al. (2019) PLoS Biol. 17:e3000132 Fig. 3B"
-    code_locus: "2018-glimm-avian-feather-bud-hexagonal.py#L222-L320"
+    variables: "λ_y: longitudinal intra-row feather bud spacing; Δy = λ_y / 2: inhibitor-pinned half-period phase offset; Δx: mediolateral inter-row spacing"
+    role: "Proves that when lateral inhibition pins each successive mediolateral row at half-period offset Δy = λ_y / 2 and spacing Δx = (√3/2) λ_y, all 6 nearest neighbours lie at identical distance λ_y (60° hexagonal array). Used by the primary-row / inhibitory-disk nucleation geometry and by the flat-sheet P_6 = 1.0 control."
+    source_citation: "Ho et al. (2019) PLoS Biol. 17:e3000132 Fig 3B, Fig 2A; Painter, Ho & Headon (2018) J. Theor. Biol. 437:225-238 Fig 5"
+    code_locus: "2018-glimm-avian-feather-bud-hexagonal.py#L231-L312"
   - law_name: "Ho et al. (2019) & Bailleul et al. (2019) Traveling Competence Wave Hexagonal Fidelity Enhancement Theorem"
     formula: "P_6(v_opt) = 100 - d_min > P_6(v → ∞) = 100 - (d_min + d_gain)  (d_gain ≥ 1);   P_6(v_opt) = 92% > P_6(v → ∞) = 50%"
     lean_decl: "MathOfBiology.Loop_019.hexagonal_p6_opt_pct"
     lean_theorem: "MathOfBiology.Loop_019.traveling_wave_hexagonal_fidelity_advantage"
-    lean_locus: "morphoeval/lean/loops/Loop_019_avian_feather_bud_hexagonal.lean#L71-L97"
+    lean_locus: "morphoeval/lean/loops/Loop_019_avian_feather_bud_hexagonal.lean#L89-L103"
     lean_code: |
       def hexagonal_p6_opt_pct (d_min : Nat) : Nat :=
         100 - d_min
@@ -86,7 +110,73 @@ equations:
         refine ⟨?_, by decide, by decide⟩
         simp [hexagonal_p6_opt_pct, hexagonal_p6_simul_pct]
         omega
-    variables: "v_w: mediolateral EDA competence wave speed; P_6: percentage of 6-coordinated hexagonal Voronoi polygons; d_min: intrinsic defect floor; d_gain: simultaneous-nucleation grain-boundary defect penalty"
-    role: "Proves that sequential row-by-row competence propagation at v_w = v_opt suppresses 5-7 grain-boundary defects and achieves strictly higher hexagonal Voronoi fidelity P_6 than simultaneous global competence (v_w → ∞, exogenous Fc-chEDA1/FGF flooding)"
-    source_citation: "Ho et al. (2019) PLoS Biol. 17(2):e3000132 Figs. 1C, 3, 4; Bailleul et al. (2019) PLoS Biol. 17(10):e3000448"
-    code_locus: "2018-glimm-avian-feather-bud-hexagonal.py#L322-L490"
+    variables: "v_w: mediolateral EDA competence wave speed; P_6: percentage of 6-coordinated Voronoi polygons; d_min: intrinsic defect floor; d_gain: simultaneous-nucleation grain-boundary defect penalty"
+    role: "Proves that sequential row-by-row competence propagation achieves strictly higher hexagonal fidelity P_6 than simultaneous whole-tract competence (Ho 2019 Fig 2D: ~75 % vs ~50 % six-sided Voronoi cells, control vs Latrunculin-paused explants). Pass 3 corrects the attribution: the simultaneous regime is the Latrunculin-pause/release experiment, not Fc-chEDA1."
+    source_citation: "Ho et al. (2019) PLoS Biol. 17(2):e3000132 Fig 2B-D, Fig 4; Bailleul et al. (2019) PLoS Biol. 17(10):e3000448"
+    code_locus: "2018-glimm-avian-feather-bud-hexagonal.py#L844-L912"
+  - law_name: "Euler / Gauss-Bonnet Disclination Charge of a Closed Triangulated Primordium Lattice (Bausch et al. 2003)"
+    formula: "Σ_i (6 - z_i) = 6V - Σ z_i = 6(V - E + F) = 6χ   (3F = 2E, Σ z_i = 2E);   sphere: n_5 - n_7 = 12"
+    lean_decl: "MathOfBiology.Loop_019.disclination_charge"
+    lean_theorem: "MathOfBiology.Loop_019.euler_disclination_charge"
+    lean_theorem_corollary: "MathOfBiology.Loop_019.sphere_pentagon_excess"
+    lean_locus: "morphoeval/lean/loops/Loop_019_avian_feather_bud_hexagonal.lean#L119-L133"
+    lean_code: |
+      def disclination_charge (V sum_z : Int) : Int :=
+        6 * V - sum_z
+      theorem euler_disclination_charge (V E F sum_z : Int)
+          (h_faces : 3 * F = 2 * E) (h_degrees : sum_z = 2 * E) :
+          disclination_charge V sum_z = 6 * (V - E + F) := by
+        simp [disclination_charge]
+        omega
+      theorem sphere_pentagon_excess (n5 n6 n7 E F : Int)
+          (h_faces : 3 * F = 2 * E)
+          (h_degrees : 5 * n5 + 6 * n6 + 7 * n7 = 2 * E)
+          (h_euler : (n5 + n6 + n7) - E + F = 2) :
+          n5 - n7 = 12 := by
+        omega
+    variables: "V, E, F: vertices (primordia), edges, triangular faces of the Delaunay lattice; z_i: coordination number; χ: Euler characteristic; n_5, n_7: five- and seven-coordinated primordia"
+    role: "Proves that Gaussian curvature forces 5-/7-coordinated defects into the hexagonal feather lattice independent of the primordium positions: on the curved limb-bud flanks the humeral and femoral tracts must dislocate. Checked numerically by sphere_topological_charge_check() (charge 12 on a Fibonacci sphere) and used by curvature_defect_analysis() to localise 5-7 pairs where |K| > K_thr."
+    source_citation: "Bausch et al. (2003) Science 299(5613):1716-1718; Ho et al. (2019) PLoS Biol. 17:e3000132 Fig 1B (tracts on the curved trunk and limbs)"
+    code_locus: "2018-glimm-avian-feather-bud-hexagonal.py#L437-L546"
+  - law_name: "Isochrone Row-Count Dislocation Lemma on a Curved Tract"
+    formula: "L_1 + λ ≤ L_2  ⟹  ⌊L_1 / λ⌋ + 1 ≤ ⌊L_2 / λ⌋"
+    lean_decl: "MathOfBiology.Loop_019.isochrone_primordium_count"
+    lean_theorem: "MathOfBiology.Loop_019.isochrone_row_count_dislocation"
+    lean_locus: "morphoeval/lean/loops/Loop_019_avian_feather_bud_hexagonal.lean#L147-L156"
+    lean_code: |
+      def isochrone_primordium_count (L lam : Nat) : Nat :=
+        L / lam
+      theorem isochrone_row_count_dislocation (L1 L2 lam : Nat)
+          (h_pos : 0 < lam) (h_longer : L1 + lam ≤ L2) :
+          isochrone_primordium_count L1 lam + 1 ≤ isochrone_primordium_count L2 lam := by
+        simp only [isochrone_primordium_count]
+        have h1 : (L1 + lam) / lam = L1 / lam + 1 := Nat.add_div_right L1 h_pos
+        have h2 : (L1 + lam) / lam ≤ L2 / lam := Nat.div_le_div_right h_longer
+        omega
+    variables: "L_1, L_2: arc lengths of successive geodesic isochrones of the EDA competence wave; λ: inhibitory-disk spacing (λ_y); ⌊L/λ⌋: number of primordia a row can hold"
+    role: "Proves that where the surface metric stretches successive isochrones by at least one period (limb-bud flank), the later row must carry an extra primordium — a terminating row = 5-7 dislocation. isochrone_row_count_check() verifies the lemma on the simulated isochrones (0 violations) and reports the number of row-count jumps on flat vs curved surfaces."
+    source_citation: "Ho et al. (2019) PLoS Biol. 17:e3000132 Fig 1B, 4C-D; Bausch et al. (2003) Science 299:1716-1718"
+    code_locus: "2018-glimm-avian-feather-bud-hexagonal.py#L795-L842"
+  - law_name: "Monge-Patch Metric Determinant (well-posedness of the surface Laplace-Beltrami operator)"
+    formula: "g = [[1 + h_u², h_u h_v], [h_u h_v, 1 + h_v²]],  det g = (1 + p)(1 + q) - s² = 1 + p + q ≥ 1  (p = h_u², q = h_v², s² = p q)"
+    lean_decl: "MathOfBiology.Loop_019.monge_metric_det"
+    lean_theorem: "MathOfBiology.Loop_019.monge_metric_determinant"
+    lean_locus: "morphoeval/lean/loops/Loop_019_avian_feather_bud_hexagonal.lean#L169-L182"
+    lean_code: |
+      def monge_metric_det (p q s_sq : Nat) : Nat :=
+        (1 + p) * (1 + q) - s_sq
+      theorem monge_metric_determinant (p q s_sq : Nat) (h_cross : s_sq = p * q) :
+          monge_metric_det p q s_sq = 1 + p + q ∧ 1 ≤ monge_metric_det p q s_sq := by
+        subst h_cross
+        have h_expand : (1 + p) * (1 + q) = 1 + p + q + p * q := by
+          simp [Nat.add_mul, Nat.mul_add, Nat.one_mul, Nat.mul_one]
+          omega
+        constructor
+        · simp only [monge_metric_det]
+          omega
+        · simp only [monge_metric_det]
+          omega
+    variables: "h(u, v): skin height field of the Monge patch; p = h_u², q = h_v², s = h_u h_v: metric coefficients"
+    role: "Proves the induced metric of the trunk-and-limb-bud surface is never degenerate (det g ≥ 1), so sqrt(det g), g^{ij} and the Laplace-Beltrami / surface-chemotaxis operators implemented in build_embryo_trunk_surface() and surface_div_grad() are well defined everywhere."
+    source_citation: "Painter, Ho & Headon (2018) J. Theor. Biol. 437:225-238 (PDE system); standard differential geometry of Monge patches"
+    code_locus: "2018-glimm-avian-feather-bud-hexagonal.py#L314-L399"

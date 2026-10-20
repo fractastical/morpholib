@@ -7,6 +7,9 @@ model_spec:
     fgf_wnt_pde: "dF/dt = D_F * d^2F/dx^2 + k_s * M(x) * K_I^n / (K_I^n + R^n) - k_dF * F,  M(x) = M_0 * exp(-x / lambda_M)"
     inverse_hysteresis_scurve: "M(F) = (k_dF * F / k_s) * (1 + (v_sc / (K_I * (k_d2 + k_d1 * C(F))))^n)"
     bistable_somite_law: "S_n = v_g * T_c - Delta_x_front_n;  Delta_x_front << lambda_M"
+    lewis_delayed_clock_dde: "dm_j/dt = k * N_j(t) / (1 + (p_j(t - T_m) / p0)^2) - c * m_j;  dp_j/dt = a * m_j(t - T_p) - b * p_j;  N_j(t) = 1 - eps_N + eps_N * <m_nb(t - T_N)> / (K_D + <m_nb(t - T_N)>);  T_osc ~ 2 * (T_m + T_p + 1/b + 1/c)"
+    clock_gated_saltatory_arrest: "cell j arrests when x_j(t) in [x_M2, x_M1] and p_j(t) peaks; cohorts of n cells arrest per clock cycle, S = n * a"
+    bilateral_lr_buffering: "b_eff = b_LR * K_buf^h / (K_buf^h + R_ant^h);  v_sc,L/R = v_sc * (1 -/+ b_eff);  Delta_x_LR = x_front,L - x_front,R = 2 * lambda_F * atanh-type offset ~ lambda_F * ln((1 + b_eff) / (1 - b_eff))"
   canonical_parameters:
     v_sc_nM_per_min: 0.25
     k_d1_per_min: 1.0
@@ -21,10 +24,26 @@ model_spec:
     M2_nM: 3.3038
     x_front_um: 571.61
     S0_um: 150.0
+    lewis_a_per_min: 4.5
+    lewis_b_per_min: 0.23
+    lewis_c_per_min: 0.23
+    lewis_k_per_min: 33.0
+    lewis_p0: 40.0
+    T_m_min: 31.5
+    T_p_min: 2.8
+    T_notch_min: 90.0
+    eps_notch: 0.8
+    K_D_mrna: 71.74
+    b_LR: 0.727
+    K_buf_nM: 1.0
+    h_buf: 4
+    R_ant_wt_nM: 2.5
+    R_ant_vad_nM: 0.8
   inputs:
     - datasets/fgf_wnt_bistable_wavefront/fgf_wnt_bistable_wavefront_reference.json
     - datasets/fgf_wnt_bistable_wavefront/chick_ra_fgf_somites_specimen.jpg
     - datasets/fgf_wnt_bistable_wavefront/scout_manifest.json
+    - datasets/fgf_wnt_bistable_wavefront/fgf_wnt_clock_lr_reference.json
 equations:
   - id: baker-fgf-wnt-bistable-wavefront-1
     law_name: "Goldbeter, Gonze & Pourquie (2007) CYP26A1-Mediated RA Degradation Reaction-Diffusion Law"
@@ -35,7 +54,7 @@ equations:
     lean_decl: "MathOfBiology.Loop_025.ra_cyp26_kinetic_residual"
     lean_theorem: "MathOfBiology.Loop_025.goldbeter_2007_ra_cyp26_steady_balance"
     lean_file: morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean
-    lean_locus: "morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean#L25-L53"
+    lean_locus: "morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean#L24-L52"
     lean_code: |-
       def ra_cyp26_kinetic_residual (v_sc k_d1 C_F k_d2 R : Int) : Int :=
         v_sc - (k_d1 * C_F + k_d2) * R
@@ -51,7 +70,7 @@ equations:
     variables: "R(x,t): anterior Retinoic Acid concentration (nM); F(x,t): posterior FGF8/Wnt signaling (nM); C(F): CYP26A1 Hill activation; v_sc: RALDH2 RA synthesis rate (nM/min); k_d1, k_d2: CYP26A1 and basal RA degradation rates (min^-1)"
     role: "Couples posterior FGF8/Wnt signaling to CYP26A1-mediated enzymatic clearance of anterior Retinoic Acid in the presomitic mesoderm"
     source_citation: "Goldbeter, Gonze & Pourquie (2007) Dev. Cell / Dev. Dyn. 236(6):1495-1508 Eqs. 1-4"
-    code_locus: "2012-baker-fgf-wnt-bistable-wavefront.py#L115-L215"
+    code_locus: "2012-baker-fgf-wnt-bistable-wavefront.py#L189-L222"
   - id: baker-fgf-wnt-bistable-wavefront-2
     law_name: "Goldbeter, Gonze & Pourquie (2007) Saddle-Node Bistable Hysteresis S-Curve Law"
     title: "Goldbeter, Gonze & Pourquie (2007) Saddle-Node Bistable Hysteresis S-Curve Law"
@@ -61,7 +80,7 @@ equations:
     lean_decl: "MathOfBiology.Loop_025.hysteresis_window_width"
     lean_theorem: "MathOfBiology.Loop_025.goldbeter_2007_hysteresis_window_width"
     lean_file: morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean
-    lean_locus: "morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean#L55-L78"
+    lean_locus: "morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean#L54-L79"
     lean_code: |-
       def hysteresis_window_width (M_1 M_2 : Nat) : Nat :=
         M_2 - M_1
@@ -77,7 +96,7 @@ equations:
     variables: "M(F): inverse steady-state fgf8 mRNA concentration as a function of FGF8 protein F; M_1, M_2: lower and upper saddle-node bifurcation thresholds (nM); K_I: Hill inhibition constant for RA repression of fgf8 translation"
     role: "Establishes the bistable hysteresis loop [M_1, M_2] that converts a shallow exponential fgf8 mRNA gradient into an ultra-sharp all-or-none determination front switch (Delta_x_front << lambda_M)"
     source_citation: "Goldbeter, Gonze & Pourquie (2007) Dev. Cell / Dev. Dyn. 236(6):1495-1508 Figs. 2-4"
-    code_locus: "2012-baker-fgf-wnt-bistable-wavefront.py#L220-L315"
+    code_locus: "2012-baker-fgf-wnt-bistable-wavefront.py#L223-L290"
   - id: baker-fgf-wnt-bistable-wavefront-3
     law_name: "Baker, Schnell & Maini (2006) / Goldbeter et al. (2007) Opposing RA-FGF Wavefront Shift & Somite Scaling Law"
     title: "Baker, Schnell & Maini (2006) / Goldbeter et al. (2007) Opposing RA-FGF Wavefront Shift & Somite Scaling Law"
@@ -87,7 +106,7 @@ equations:
     lean_decl: "MathOfBiology.Loop_025.bistable_somite_length"
     lean_theorem: "MathOfBiology.Loop_025.baker_2006_ra_fgf_opposing_somite_shift"
     lean_file: morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean
-    lean_locus: "morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean#L80-L103"
+    lean_locus: "morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean#L81-L105"
     lean_code: |-
       def bistable_somite_length (v_g T_c delta_x : Int) : Int :=
         v_g * T_c - delta_x
@@ -105,4 +124,82 @@ equations:
     variables: "S_n: anteroposterior somite length (um); v_g: posterior tailbud elongation velocity (um/min); T_c: segmentation clock period (min); delta_x: determination front shift induced by VAD / exogenous RA / SU5402 / FGF8 bead (um)"
     role: "Predicts compressed somites when the bistable front shifts anteriorly under Vitamin A Deficiency (VAD) or ectopic FGF8 beads, and enlarged somites when the front shifts posteriorly under exogenous RA or SU5402"
     source_citation: "Baker, Schnell & Maini (2006) J. Theor. Biol. 239:413-429 & Goldbeter et al. (2007) Dev. Dyn. 236:1495-1508 Figs. 5-7"
-    code_locus: "2012-baker-fgf-wnt-bistable-wavefront.py#L320-L435"
+    code_locus: "2012-baker-fgf-wnt-bistable-wavefront.py#L1165-L1292"
+  - id: baker-fgf-wnt-bistable-wavefront-4
+    law_name: "Lewis (2003) Delayed Her1/Hes7 Autoinhibition Oscillator Period Law"
+    title: "Lewis (2003) Delayed Her1/Hes7 Autoinhibition Oscillator Period Law"
+    formula: "dm/dt = k * f(p(t - T_m)) * N(t) - c * m;  dp/dt = a * m(t - T_p) - b * p;  f(p) = 1 / (1 + (p/p0)^2);  T_osc ~ 2 * (T_m + T_p + 1/b + 1/c)"
+    latex: "\\frac{dm}{dt} = \\frac{k\\,N(t)}{1 + (p(t-T_m)/p_0)^2} - c\\,m, \\quad \\frac{dp}{dt} = a\\,m(t-T_p) - b\\,p, \\quad T_{\\text{osc}} \\approx 2\\left(T_m + T_p + \\tfrac{1}{b} + \\tfrac{1}{c}\\right)"
+    ascii: "dm/dt = k * N(t) / (1 + (p(t-T_m)/p0)^2) - c * m; dp/dt = a * m(t-T_p) - b * p; T_osc ~ 2*(T_m + T_p + 1/b + 1/c)"
+    lean_decl: "MathOfBiology.Loop_025.lewis_delayed_oscillator_period"
+    lean_theorem: "MathOfBiology.Loop_025.lewis_2003_delayed_oscillator_period"
+    lean_file: morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean
+    lean_locus: "morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean#L107-L134"
+    lean_code: |-
+      def lewis_delayed_oscillator_period (T d : Nat) : Nat :=
+        2 * (T + d)
+      theorem lewis_2003_delayed_oscillator_period (T d delta_T : Nat) :
+          lewis_delayed_oscillator_period (T + delta_T) d =
+            lewis_delayed_oscillator_period T d + 2 * delta_T ∧
+          2 * T ≤ lewis_delayed_oscillator_period T d ∧
+          lewis_delayed_oscillator_period 34 8 = 84
+    lean_declaration: |-
+      theorem lewis_2003_delayed_oscillator_period (T d delta_T : Nat) :
+          lewis_delayed_oscillator_period (T + delta_T) d =
+            lewis_delayed_oscillator_period T d + 2 * delta_T ∧
+          2 * T ≤ lewis_delayed_oscillator_period T d ∧
+          lewis_delayed_oscillator_period 34 8 = 84
+    variables: "m_j(t), p_j(t): her1/hes7 mRNA and protein in PSM cell j; T_m, T_p: transcription and translation delays (min); a, b, c, k, p0: Lewis (2003) rate constants; N_j(t): delayed saturating Notch-Delta input from adjacent cells with delay T_N and strength eps_N; T_osc: clock period (min)"
+    role: "Supplies the delayed negative-feedback segmentation clock whose protein peaks gate the bistable RA-FGF switch inside the competence window, producing saltatory cohort arrest; Notch-Delta coupling synchronises neighbouring cells (in-phase at T_N ~ T_osc, anti-phase at T_N ~ T_osc/2)"
+    source_citation: "Lewis, J. (2003) Current Biology 13:1398-1408 Eqs. 1-3, Fig. 2 & Fig. 4; chick period from Palmeirim et al. (1997) Cell 91:639-648"
+    code_locus: "2012-baker-fgf-wnt-bistable-wavefront.py#L434-L812"
+  - id: baker-fgf-wnt-bistable-wavefront-5
+    law_name: "Goldbeter, Gonze & Pourquie (2007) / Lewis (2003) Clock-Gated Saltatory Cohort Arrest Additivity Law"
+    title: "Goldbeter, Gonze & Pourquie (2007) / Lewis (2003) Clock-Gated Saltatory Cohort Arrest Additivity Law"
+    formula: "cell j arrests when x_j(t) in [x(M_2), x(M_1)] and p_j peaks;  cohort k spans S = n * a;  extent(k+1) - extent(k) = n * a"
+    latex: "x_{\\text{arrest}}(k) = k\\,(n\\,a), \\quad x_{\\text{arrest}}(k+1) - x_{\\text{arrest}}(k) = n\\,a = S, \\quad n = 1 \\Rightarrow \\text{continuous arrest}"
+    ascii: "extent(k) = k * (n * a); extent(k+1) - extent(k) = n * a = S; n = 1 -> continuous (ablated) arrest"
+    lean_decl: "MathOfBiology.Loop_025.cohort_axial_extent"
+    lean_theorem: "MathOfBiology.Loop_025.goldbeter_2007_saltatory_cohort_additivity"
+    lean_file: morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean
+    lean_locus: "morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean#L136-L159"
+    lean_code: |-
+      def cohort_axial_extent (n a k : Int) : Int :=
+        k * (n * a)
+      theorem goldbeter_2007_saltatory_cohort_additivity (n a k : Int) :
+          cohort_axial_extent n a (k + 1) - cohort_axial_extent n a k = n * a ∧
+          cohort_axial_extent 1 a (k + 1) - cohort_axial_extent 1 a k = a
+    lean_declaration: |-
+      theorem goldbeter_2007_saltatory_cohort_additivity (n a k : Int) :
+          cohort_axial_extent n a (k + 1) - cohort_axial_extent n a k = n * a ∧
+          cohort_axial_extent 1 a (k + 1) - cohort_axial_extent 1 a k = a
+    variables: "n: cells per arrest cohort; a: PSM cell spacing (um); k: clock cycle index; S = n * a: segment length (um); x(M_1), x(M_2): axial positions of the saddle-node thresholds bounding the bistability (clock-competence) window"
+    role: "Formalises Goldbeter et al. (2007) Fig. 10: the bistable switch must stay competent for at least one clock cycle so that the clock, not the gradient, times the arrest, yielding discrete somite-scale cohorts; Notch ablation collapses cohorts toward single cells"
+    source_citation: "Goldbeter, Gonze & Pourquie (2007) Dev. Dyn. 236:1495-1508 Fig. 10 & Discussion; Lewis (2003) Current Biology 13:1398-1408"
+    code_locus: "2012-baker-fgf-wnt-bistable-wavefront.py#L499-L523"
+  - id: baker-fgf-wnt-bistable-wavefront-6
+    law_name: "Vermot & Pourquie (2005) Retinoic Acid-Buffered Left-Right Symmetry of the Determination Front"
+    title: "Vermot & Pourquie (2005) Retinoic Acid-Buffered Left-Right Symmetry of the Determination Front"
+    formula: "b_eff = b_LR * K_buf^h / (K_buf^h + R_ant^h);  v_sc,L = v_sc * (1 - b_eff), v_sc,R = v_sc * (1 + b_eff);  Delta_x_LR = (x_0 + b_eff) - (x_0 - b_eff) = 2 * b_eff"
+    latex: "b_{\\text{eff}} = b_{LR}\\frac{K_{\\text{buf}}^h}{K_{\\text{buf}}^h + R_{\\text{ant}}^h}, \\quad \\Delta x_{LR} = (x_0 + b_{\\text{eff}}) - (x_0 - b_{\\text{eff}}) = 2\\,b_{\\text{eff}}"
+    ascii: "b_eff = b_LR * K_buf^h / (K_buf^h + R_ant^h); Delta_x_LR = (x_0 + b_eff) - (x_0 - b_eff) = 2 * b_eff"
+    lean_decl: "MathOfBiology.Loop_025.lr_front_offset"
+    lean_theorem: "MathOfBiology.Loop_025.vermot_2005_ra_buffered_lr_symmetry"
+    lean_file: morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean
+    lean_locus: "morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean#L161-L187"
+    lean_code: |-
+      def lr_front_offset (x_0 b_eff : Int) : Int :=
+        (x_0 + b_eff) - (x_0 - b_eff)
+      theorem vermot_2005_ra_buffered_lr_symmetry (x_0 b_eff : Int) :
+          lr_front_offset x_0 0 = 0 ∧
+          lr_front_offset x_0 b_eff = 2 * b_eff ∧
+          lr_front_offset x_0 (-b_eff) = -(lr_front_offset x_0 b_eff)
+    lean_declaration: |-
+      theorem vermot_2005_ra_buffered_lr_symmetry (x_0 b_eff : Int) :
+          lr_front_offset x_0 0 = 0 ∧
+          lr_front_offset x_0 b_eff = 2 * b_eff ∧
+          lr_front_offset x_0 (-b_eff) = -(lr_front_offset x_0 b_eff)
+    variables: "b_LR: unbuffered lateralizing bias from the embryonic LR cascade; K_buf, h: RA buffering half-saturation (nM) and Hill coefficient; R_ant: anterior RA level (nM; 2.5 WT, 0.8 VAD); x_0: shared wild-type front position (um); Delta_x_LR: left-right determination-front offset (um)"
+    role: "Models the 2D bilateral paraxial mesoderm: anterior RA buffers the lateralizing bias so wild-type somites form synchronously left and right, whereas Raldh2-/- / VAD / disulfiram embryos develop a one-somite left-right desynchronisation whose side flips under situs inversus"
+    source_citation: "Vermot, J., Gallego Llamas, J., Fraulob, V., Niederreither, K., Chambon, P. & Dolle, P. (2005) Science 308:563-566; Vermot & Pourquie (2005) Nature 435:215-220"
+    code_locus: "2012-baker-fgf-wnt-bistable-wavefront.py#L817-L1026"

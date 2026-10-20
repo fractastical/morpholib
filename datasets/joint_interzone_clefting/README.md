@@ -1,29 +1,43 @@
-# `datasets/joint_interzone_clefting/` — Kavanagh et al. (2013) *PNAS* & Hiscock et al. (2017) *Dev. Cell* Synovial Joint Interzone Segmentation & Phalangeal Inhibitory Cascade Dataset
+# `datasets/joint_interzone_clefting/` — Synovial joint interzone clefting & phalangeal Inhibitory Cascade
 
-Formal SHA-256-locked reference dataset and vertebrate autopod radiograph specimen for `2016-onuff-joint-interzone-clefting.py` (Slot 018, `onuff-joint-interzone-clefting`).
+Reference data vendored for `2016-onuff-joint-interzone-clefting.py` (MorphoEval slot 018,
+sim_id `onuff-joint-interzone-clefting`). Every file is SHA-256 pinned in the script's
+`EXPECTED_SHA256` registry and verified fail-closed on each run (`verify_dataset_integrity()`).
 
-## Contents
+| File | Added | Content |
+|---|---|---|
+| `joint_interzone_clefting_reference.json` | Pass 1/2 | Kavanagh et al. (2013) 12-taxon cross-clade phalanx morphospace, BMP-GDF5-Noggin RD baseline parameters, 6 genetic/signalling perturbation conditions, specimen digit-ray annotations |
+| `tetrapod_digit_interzone_specimen.jpg` | Pass 1 | Hand radiograph (Wikimedia Commons `Polydactyly_01_Rhand_AP.jpg`, CC BY-SA 3.0), 552 x 640 px; Digits II-IV segmented into P1/P2/P3 with MCP/PIP/DIP radiolucent clefts. **The subject is juvenile: the physes are open, so a second shallower radiolucent minimum (the growth plate) lies ~10-12 px distal to each joint space.** The SHA-256-pinned specimen must never be removed or replaced. |
+| `scout_manifest.json` | Pass 1 | Scout dossier for the slot |
+| `paper_citations.bib` | Pass 1, extended Pass 3 | BibTeX for all cited sources (Pass 3 appended Drachman & Sokoloff 1966, Kahn 2009, Roddy 2011, Carter & Wong 1988, Edwards 1994, Dowthwaite 1998, Mow 1980, Maroudas 1976) |
+| `synovial_cavitation_reference.json` | Pass 3 | Reduced Biot poroelastic cavitation / articular morphogenesis model: equations, dimensionless baseline parameters, dimensional scaling note, three literature cavitation conditions (motile WT, paralysed / muscle-less, Nog-/-), and the specimen joint-line arch protocol |
 
-1. **`joint_interzone_clefting_reference.json`**
-   - **Kavanagh, Shoval, Winslow, Alon, Leary, Kan & Tabin (2013) *PNAS* 110(45):18190–18195 (`doi:10.1073/pnas.1315213110`)**:
-     - Developmental Inhibitory Cascade (IC) governing proximal-to-distal phalanx lengths $P_1, P_2, P_3, \dots$ along a growing tetrapod digit ray:
-       $$P_n = P_1 \left[1 + (n-1)\frac{A - I}{I}\right] = P_1 + (n-1)\Delta$$
-     - Exact midpoint affine cascade law for triphalangeal digits:
-       $$P_2 = \frac{1}{2}(P_1 + P_3) \iff \frac{P_2}{P_1} = \frac{1}{2} + \frac{1}{2}\frac{P_3}{P_1} \iff \frac{P_2}{P_1 + P_2 + P_3} = \frac{1}{3}$$
-       alongside the asymmetric molar-type inhibitory cascade line $\frac{P_2}{P_1} = \frac{1}{3} + \frac{2}{3}\frac{P_3}{P_1}$ across cursorial, generalist, avian (*Gallus gallus*), and arboreal/grasping tetrapod clades.
-   - **Hiscock, Tschopp & Tabin (2017) *Developmental Cell* 41(5):459–465 (`doi:10.1016/j.devcel.2017.04.021`), Hartmann & Tabin (2001) *Cell* 104:341–351 (`doi:10.1016/S0092-8674(01)00222-7`), Brunet et al. (1998) *Science* 280:1455–1457 (`doi:10.1126/science.280.5368.1455`), and Storm et al. (1994) *Nature* 368:639–643 (`doi:10.1038/368639a0`)**:
-     - Coupled BMP–GDF5–Noggin/Wnt9a reaction-diffusion Turing-wavefront segmentation of the continuous $Sox9^+$ chondrogenic digit rod into discrete phalanges separated by $Gdf5^+ / Wnt9a^+$ synovial joint interzones under a distal phalanx-forming region (PFR) FGF8 growth gradient, plus *Noggin* null (`Nog-/-`) complete joint fusion ($N_{\text{joints}} = 0$) and *Gdf5* brachypodism (`bp/bp`) proximal joint fusion perturbations.
-   - SHA-256: `9acd7913813a1a7b5ee58b9b0ebf1f66bc963890566e7a035c08dfb6bcba6fa1`.
+## Pass 3 additions (2026-10-19, audit v3)
 
-2. **`tetrapod_digit_interzone_specimen.jpg`**
-   - Vertebrate autopod anteroposterior (AP) radiograph exhibiting segmented proximal ($P_1$), middle ($P_2$), and distal ($P_3$) phalanges separated by radiolucent MCP, PIP, and DIP synovial joint interzone clefts across Digits II, III, and IV.
-   - Source: [Wikimedia Commons `File:Polydactyly_01_Rhand_AP.jpg`](https://commons.wikimedia.org/wiki/File:Polydactyly_01_Rhand_AP.jpg) (CC BY-SA 3.0).
-   - SHA-256: `995e43a2a0cf781547dc8f573685a533013cea3502fb2ebbb9c1fc8a6cb14e90`.
+The Pass 2 audit asked for the 2D GDF5-Noggin reaction-diffusion digit ray to be coupled to a
+fluid-poroelastic synovial cavitation and articular morphogenesis solver. The reduced model
+implemented in `simulate_poroelastic_cavitation()` is:
 
-3. **`scout_manifest.json`**
-   - Step 1 (`01_scout`) literature & specimen discovery dossier for Slot 018.
-   - SHA-256: `1ae24e293d2062b2bd117c1b8d3eb74094cd667079a1f5fcae706c4eef1cbcce`.
+- hyaluronan synthesis by Gdf5+ interzone cells at a mechanosensitive rate
+  `dH/dt = k_H phi(m_load) G - delta_H H + D_H lap(H)` (Dowthwaite 1998);
+- Biot storage equation for excess pore pressure with a linearised Donnan osmotic source and free
+  perichondrial drainage `S dp/dt = kappa_p lap(p) + gamma_osm (beta_osm H - p)`, `p = 0` outside
+  the rod (Mow 1980; Maroudas 1976);
+- interzone cohesion `sigma_coh = sigma_0 (1 - kappa_G G)` (Edwards 1994) and an irreversible cavity
+  phase field `dc/dt = r_c max(p - sigma_coh, 0)(1 - c)`;
+- a Carter & Wong (1988) articular arch `a(y) = A_arc phi(m_load)(1 - (y/W)^2)` of the joint line
+  whose sagitta vanishes under immobilisation (Roddy 2011);
+- Kahn (2009) chondrogenic reversion of unloaded interzone cells.
 
-4. **`paper_citations.bib`**
-   - BibTeX citations for Kavanagh et al. (2013), Hiscock et al. (2017), Hartmann & Tabin (2001), Brunet et al. (1998), and Storm et al. (1994).
-   - SHA-256: `4d966fca533780af9267a998b5bfd43ac1a2d443cf05ed85b292f06e9c0a15ba`.
+Both the cavitation gate (`MathOfBiology.Loop_018.poroelastic_cavitation_requires_load_and_interzone`)
+and the Darcy lens law (`MathOfBiology.Loop_018.darcy_lens_cavity_midline_maximum`) are machine-verified
+in `morphoeval/lean/loops/Loop_018_joint_interzone_clefting.lean`.
+
+### Claim boundary
+
+The solver is 2D, one-way coupled (RD -> poroelastic), with a rigid solid skeleton (storage equation
+only; no `u-p` Biot displacement field, effective stress, or capsule). Dimensional embryonic interzone
+poroelastic constants are not available in the cited literature; only adult cartilage scales (Mow 1980,
+Maroudas 1976) are recorded. The specimen joint-line arch is measured on a juvenile radiograph with
++/-9 px lateral offsets; Digit II's distal half has insufficient bone contrast and is excluded by the
+contrast gate.

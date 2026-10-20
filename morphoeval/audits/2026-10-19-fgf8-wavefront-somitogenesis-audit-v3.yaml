@@ -1,0 +1,295 @@
+# MorphoEval audit — Dubrulle & Pourquié (2001, 2004) FGF8 mRNA Decay Wavefront Somitogenesis, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `2003-dubrulle-fgf8-wavefront-somitogenesis.py` (Slot 024, slug `doppler-somite-shortening`)
+# after remediating the two open v2 items in the instrumented loop
+# `morphoeval/runs/2026-10-19-doppler-somite-shortening-loop-pass3`, superseding
+# `2026-10-19-fgf8-wavefront-somitogenesis-audit-v2` (90.9).
+#
+# What Pass 3 changed:
+#   1. Section 3b (L295-L506): Goldbeter, Gonze & Pourquié (2007) RA -| FGF -> Cyp26 -| RA mutual-inhibition switch
+#      driven by the Dubrulle (2004) fgf8 mRNA gradient: analytic elimination of X and RA, steady-state branch scan
+#      with bisection-refined saddle-nodes (m_SN_lo = 0.184, m_SN_hi = 0.546; spatial window 218-610 um), forward
+#      Euler integration along a Lagrangian PSM cell trajectory (hysteretic front x_sw = 720.4 um, 90->10 % width
+#      198 um vs 792 um for the graded threshold, 4.0x sharper) and a reverse (bead re-exposure) trajectory showing
+#      memory (jump back only at m >= 0.675).
+#   2. Section 4b (L616-L900): 2D cell-based paraxial mesoderm strip (8 rows x 10 um cells) fed by a self-renewing
+#      tailbud progenitor pool (80 cells/row, T_div = 480 min, lognormal cycles, N(0.5, 0.04) mRNA partitioning) whose
+#      exported daughters push the column (elongation = progenitor division), with juxtacrine FGF8 smoothing and
+#      per-row somite boundaries at clock ticks; closed forms for the periodic exit level, the dilution-compensated
+#      transcription rate and the dilution front shift; T_div sweep + no-division ablation.
+#   3. 5 new measurements (10 total, all with reference_value), 6 self-test blocks, CLI --t-div/--rows/--sigma-f/
+#      --switch-ka/--print-pass3, Panels G-I in the PNG, 3 new Lean 4 theorems (0 sorry; 6 total), math KG laws 4-5,
+#      dataset JSON/README/bib extended (Bénazéraf et al. 2010 added as the un-modelled elongation mechanism).
+#
+# Scoring is conservative: the Pass 3 work also exposed defects that v2 did not deduct for (hard-coded perturbation
+# shifts in the lab-frame simulator, JSON-stored "predicted" and "observed" regime values whose figure pinpoints are
+# unverified), so several dimensions go DOWN although the model is now richer. Line numbers refer to the files at
+# commit d58a084 after the Pass 3 edits (uncommitted working tree, verified against the current file).
+
+audit:
+  id: 2026-10-19-fgf8-wavefront-somitogenesis-audit-v3
+  supersedes_audit_id: 2026-10-19-fgf8-wavefront-somitogenesis-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d58a084
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) post-remediation evaluation of `2003-dubrulle-fgf8-wavefront-somitogenesis.py`
+      (1624 lines; --self-test passes in ~2 s; default render 3.6 s) in the isolated loop
+      `2026-10-19-doppler-somite-shortening-loop-pass3`. Remediation executed by Claude Fable 5.1
+      (builder); scores below re-use the v2 assessor roster for the supersession chain.
+
+references:
+  dubrulle2001:
+    title: "FGF signaling controls somite boundary position and regulates segmentation clock control of spatiotemporal Hox gene activation"
+    authors: "Dubrulle J, McGrew MJ, Pourquie O"
+    venue: "Cell 106(2):219-232 (2001)"
+    doi: 10.1016/S0092-8674(01)00437-8
+  dubrulle2004:
+    title: "fgf8 mRNA decay establishes a gradient that couples axial elongation to patterning in the vertebrate embryo"
+    authors: "Dubrulle J, Pourquie O"
+    venue: "Nature 427(6973):419-422 (2004)"
+    doi: 10.1038/nature02332
+  baker2006:
+    title: "A clock and wavefront mechanism for somite formation"
+    authors: "Baker RE, Schnell S, Maini PK"
+    venue: "Developmental Biology 293(1):116-126 (2006)"
+    doi: 10.1016/j.ydbio.2006.01.018
+  goldbeter2007:
+    title: "Sharp developmental thresholds defined through bistability by antagonistic gradients of retinoic acid and FGF signaling"
+    authors: "Goldbeter A, Gonze D, Pourquie O"
+    venue: "Developmental Dynamics 236(6):1495-1508 (2007)"
+    doi: 10.1002/dvdy.21193
+  benazeraf2010:
+    title: "A random cell motility gradient downstream of FGF controls elongation of an amniote embryo"
+    authors: "Benazeraf B, Francois P, Baker RE, Denans N, Little CD, Pourquie O"
+    venue: "Nature 466(7303):248-252 (2010)"
+    doi: 10.1038/nature09151
+
+simulations:
+  - id: dubrulle-fgf8-wavefront-somitogenesis
+    name: "Dubrulle & Pourquié (2001, 2004) FGF8 mRNA decay wavefront and determination front positioning in vertebrate somitogenesis, with Goldbeter (2007) RA/FGF8 bistable switch and 2D cell-based PSM strip"
+    organism: "Gallus gallus (chick embryo presomitic mesoderm & paraxial somites)"
+    script: 2003-dubrulle-fgf8-wavefront-somitogenesis.py
+    output: docs/media/fgf8_wavefront_somitogenesis_comparison.png
+    extra_outputs:
+      - docs/media/fgf8_wavefront_somitogenesis_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-fgf8-wavefront-somitogenesis-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Dubrulle & Pourquie (2004) Nature 427:419-422 cell-autonomous fgf8 mRNA decay gradient m(x) = m_0 exp(-k_d x / v_g) generated by tailbud-restricted transcription and axis elongation"
+        - "Dubrulle, McGrew & Pourquie (2001) Cell 106:219-232 determination front threshold positioning x* = (v_g/k_d) ln(m_0/m_crit) and ectopic FGF8 bead / SU5402 somite size perturbations"
+        - "Goldbeter, Gonze & Pourquie (2007) Dev. Dyn. 236:1495-1508 bistability of the RA -| FGF -> Cyp26 -| RA double-negative loop defining a sharp determination threshold"
+      reconstructed_in_script:
+        - "Characteristic-upwind 1D advection-decay PDE solver dm/dt + v_g dm/dx = -k_d m (L2 relative error 0.0009 vs analytical exponential)"
+        - "Lab-frame FGF8 wavefront-gated somite boundary simulator across wild-type, ectopic FGF8 bead (S_ant = 97.5 um, S_post = 202.5 um), SU5402 (S = 215.0 um) and k_d = 0 ablation control (N = 0 somites) - with the perturbation shifts entered as constants, not derived"
+        - "Goldbeter-type 3-variable RA/FGF8/Cyp26 switch coupled to the mRNA gradient: saddle-nodes m_SN_lo = 0.184 / m_SN_hi = 0.546, hysteretic cell-trajectory front x_sw = 720.4 um, transition width 198 um vs 792 um, reverse switch at m = 0.675"
+        - "2D cell-based strip with explicit progenitor division and mRNA partitioning: exported level 0.994 vs closed form 1.000, gradient length 370.5 vs 360.7 um, front 698.8 +/- 7.0 um vs lambda_m ln(m_exit/m_crit) = 694.4 um, S_2D = 148.2 um, dilution shift 276-286 um vs closed form 271 um"
+        - "Bilateral dorsal somite row DoG peak and inter-somitic cleft segmentation on chick_somite_psm_specimen.jpg (48.47 px mean spacing, symmetry ratio 0.9606)"
+      transfer_boundary:
+        - "1D anteroposterior chick presomitic mesoderm axis mapped to dorsal vertebrate SEM somite rows of a Wikimedia specimen whose species is labelled avian/vertebrate, not confirmed as Gallus gallus"
+        - "Goldbeter switch functional forms follow the 2007 paper but the dimensionless parameter values (K_A = 0.18, K_I = 0.6, k_C = 2, n = 4, tau_sw = 10 min) are this script's bistable-regime choice; the switch is evaluated along a 1D cell trajectory and is NOT embedded in the 2D strip"
+        - "2D strip: PSM cells do not divide, all elongation comes from progenitor division (no Benazeraf 2010 motility gradient), rows are coupled only through FGF8 smoothing (no mechanics)"
+      does_not_claim:
+        - "Reproduction of the Goldbeter et al. (2007) parameter table or bifurcation figures; 3D somite epithelialization mechanics; a derivation of the FGF8-bead / SU5402 / electroporation somite-size shifts from the switch dynamics (they remain constants in the lab-frame simulator and the reference JSON)"
+    source_refs:
+      - dubrulle2001
+      - dubrulle2004
+      - baker2006
+      - goldbeter2007
+      - benazeraf2010
+    summary: >-
+      Pass 3 closes both v2 remediation items with the closest honest reduced versions: a Goldbeter-type
+      RA/FGF8/Cyp26 bistable switch coupled to the Dubrulle fgf8 mRNA gradient (Section 3b) that turns the graded
+      threshold into a hysteretic front 4.0x sharper (198 vs 792 um) with a 392 um memory window, and a 2D cell-based
+      PSM strip (Section 4b) with explicit tailbud progenitor division, binomial-like mRNA partitioning and per-row
+      somite boundaries, whose exported level, gradient length, front position and dilution shift match the new
+      closed forms (Law 5) to within cell-quantisation noise. Three Lean 4 theorems (6 total, 0 sorry) pin the loop
+      sign, the hysteresis memory and the one-division-equals-one-half-life identity. The re-score is 86.2 (down
+      from 90.9) because the deeper inspection exposed defects v2 had not deducted for: the lab-frame simulator
+      hard-codes the bead/SU5402 shifts (L566-L584) and the 5-regime validation correlates JSON-stored predicted
+      values with JSON-stored observed values whose figure pinpoints are unverified (L252-L291), the switch
+      parameters are not the paper's, the switch is not embedded in the strip, and the strip's somite-length CV
+      (0.22) is 5x the observed chick value.
+    scores:
+      model-fidelity:
+        value: 86
+        rationale: >-
+          The core Dubrulle (2004) advection-decay PDE and the (2001) threshold law are implemented as published
+          (L154-L235, L2 error 0.0009). Pass 3 adds the Goldbeter (2007) double-negative loop with the paper's
+          functional forms (Hill repression of Fgf8 by RA, Hill induction of Cyp26 by FGF, Michaelis-Menten
+          Cyp26-catalysed RA degradation; L318-L336) and shows genuine bistability (3 roots for m in [0.184, 0.546],
+          monostable high-FGF posteriorly and low-FGF anteriorly, L338-L431), hysteresis along a cell trajectory and
+          the one-division-equals-one-half-life dilution law realised in an explicit cell-based strip (L654-L870).
+          Deductions: the lab-frame somite-train simulator still enters the bead (-52.5/+52.5 um), SU5402 (+65 um) and
+          electroporation (67.5 um) shifts as constants instead of deriving them from a perturbed gradient or the new
+          switch (L566-L584, L271-L274) (-6); the switch parameters are this script's choice, not the 2007 table, and
+          the dynamic front lags the saddle-node by 110 um (slow passage at tau_sw = 10 min) so x_sw = 720 um is
+          tuned-adjacent rather than predicted (-4); the switch is evaluated along one trajectory and not embedded in
+          the 2D strip, whose determination is still the graded threshold on a smoothed field (-3); the strip's
+          progenitor pool has no PSM division and makes all elongation proliferative (-1).
+        evidence:
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [154, 235], note: "Advection-decay PDE solver with analytical exponential check and threshold front x*", supports: true}
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [302, 336], note: "Goldbeter-type RA -| FGF -> Cyp26 -| RA switch RHS; parameters flagged as this script's bistable-regime choice", supports: true}
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [338, 431], note: "Analytic elimination of X and RA, bracketed+bisected steady states, saddle-node refinement and spatial hysteresis window", supports: true}
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [433, 506], note: "Forward and reverse Lagrangian cell-trajectory integration: hysteretic front, 90->10 % width vs lambda ln 9, reverse-switch memory", supports: true}
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [566, 584], note: "Bead/SU5402 somite shifts hard-coded per cycle (s_c = S0 - 52.5 etc.), not derived from the gradient or switch", supports: false}
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [654, 870], note: "2D cell-based strip: progenitor pool with division + partitioning, exported-cell elongation, smoothed FGF8 field, per-row somite ids", supports: true}
+          - {file: morphoeval/lean/loops/Loop_024_fgf8_wavefront_somitogenesis.lean, lines: [97, 171], note: "3 new Lean 4 theorems (loop sign, hysteresis memory, division = one half-life), verified with lean 4.35.0, 0 sorry", supports: true}
+      specimen-match:
+        value: 85
+        rationale: >-
+          Panels D-F still carry the only specimen comparison: the SHA-256-pinned Wikimedia SEM is segmented into
+          two bilateral somite rows (8 and 9 somites, 48.47 px spacing, symmetry 0.9606) and its band-pass profile
+          is compared with a phase-aligned periodic model (r = 0.563). Pass 3 adds a rendered 2D tissue (Panel H)
+          with visibly segmented, mildly jagged somite blocks (boundary roughness 19 um, somite CV 0.22) whose
+          irregularity is of the same order as the specimen's spacing CV (0.20). Deductions: the 2D strip is not
+          compared with the specimen at all - no boundary-straightness or somite-count comparison between Panel H
+          and Panel E (-6); the specimen's species is labelled "avian/vertebrate" and is not confirmed as chick, so
+          the organism claim rests on the Wikimedia title (-4); the profile correlation r = 0.563 is modest and the
+          synthetic wave is fitted in phase and wavelength to the specimen itself (-5).
+        evidence:
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [907, 978], note: "Bilateral DoG peak/cleft segmentation and phase-aligned periodicity fit on chick_somite_psm_specimen.jpg", supports: true}
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [1329, 1357], note: "Panel H renders the 2D cell strip with per-row somite boundaries and fronts but has no overlay/comparison with the SEM rows", supports: false}
+          - {file: docs/media/fgf8_wavefront_somitogenesis_comparison.png, lines: [0, 0], note: "9-panel figure: specimen segmentation (E), periodicity fit (F), 2D strip (H) visually inspected after render", supports: true}
+          - {file: datasets/fgf8_wavefront_somitogenesis/fgf8_wavefront_somitogenesis_reference.json, lines: [30, 52], note: "Specimen metadata: species string hedged as avian/vertebrate SEM from Wikimedia Commons", supports: true}
+      parameter-expressivity:
+        value: 88
+        rationale: >-
+          The (v_g, t_1/2) morphospace, the five experimental regimes and the k_d = 0 control are retained; Pass 3
+          adds a T_div sweep {240, 480, 960, 1920} min with a no-division ablation at fixed transcription whose
+          simulated shifts (342, 286, 280, 278 um) decrease monotonically as the closed form predicts (329, 271,
+          252, 250 um) (L873-L900, Panel I inset), a per-cell switch constant --switch-ka, and CLI flags --t-div,
+          --rows, --sigma-f, --print-pass3 that re-run the Pass 3 models (L1595-L1617). Deductions: K_A, sigma_F and
+          n_rows are exposed but not swept or rendered, so their monotonic control is asserted not shown (-6); the
+          dilution sweep's simulated shifts sit 13-28 um above the closed form at every T_div (systematic, see
+          morphometric-validation) and the inset shows it without comment (-4); the bead strength and SU5402 dose
+          remain non-parametric constants (-2).
+        evidence:
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [873, 900], note: "dilution_shift_sweep: T_div sweep + no-division control at fixed k_s vs closed form", supports: true}
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [1595, 1617], note: "CLI --t-div/--rows/--sigma-f/--switch-ka/--print-pass3 re-run the switch and strip with user parameters", supports: true}
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [1358, 1386], note: "Panel I: cell-based ln m scatter vs analytical lines and the T_div sweep inset (sim vs closed form)", supports: true}
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [1215, 1228], note: "Panel C 2D (v_g, t_1/2) morphospace retained from Pass 2", supports: true}
+      morphometric-validation:
+        value: 83
+        rationale: >-
+          measure_morphoeval() now returns 10 measurements, each with a reference_value, including the hysteretic
+          front (720.4 vs 696.5 um), the bistable window (391.9 um), the 2D front (698.8 +/- 7.0 vs 694.4 um), the 2D
+          somite length (148.2 vs 150 um) and the dilution shift (286 vs 271 um) (L983-L1120), with CV/SD/RMSE
+          dispersion terms. Deductions: the 5-regime Pearson r = 0.9998 correlates `predicted_somite_length_um` read
+          from the reference JSON with `observed_somite_length_um` read from the same JSON (L252-L291, L996-L999),
+          so the headline validation is a table self-correlation, not a comparison of computed output with the paper
+          (-7); two Pass 3 references are internal closed forms (window = lambda ln(m_SN_hi/m_SN_lo); front =
+          lambda ln(m_exit/m_crit) with the simulated m_exit), i.e. consistency checks rather than literature values
+          (-4); the 2D somite CV = 0.22 is 5x the observed chick 6.5/150 = 0.043 and the simulated dilution shifts
+          exceed the closed form by 13-28 um systematically (first-determined-cell offset and smoothing bias), both
+          disclosed in notes but not resolved (-4); no morphometric of the 2D strip is compared with the SEM specimen
+          (-2).
+        evidence:
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [983, 1120], note: "10 measurements with reference values: PDE front, bead/SU5402 somites, 5-regime r, specimen spacing, switch front, bistable window, 2D front, 2D somite, dilution shift", supports: true}
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [252, 291], note: "evaluate_perturbation_regimes: S_pred_um is r['predicted_somite_length_um'] from the JSON; S_calc_um is computed but not used for r/RMSE", supports: false}
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [1037, 1067], note: "2D strip measurements disclose somite CV 0.223 vs observed 0.043 and the +13-28 um sweep bias in notes", supports: true}
+          - {file: datasets/fgf8_wavefront_somitogenesis/fgf8_wavefront_somitogenesis_reference.json, lines: [82, 139], note: "Regime table with observed_somite_length_um / observed_somite_sd_um lacking figure or table pinpoints", supports: false}
+      source-traceability:
+        value: 86
+        rationale: >-
+          Four primary DOIs plus the newly cited Bénazéraf et al. (2010) are in the docstring, the dataset README
+          and paper_citations.bib (L1-L22; datasets/fgf8_wavefront_somitogenesis/paper_citations.bib L1-L55);
+          the specimen and scout manifest are SHA-256 pinned and verified at every run (L111-L142); the reference
+          JSON now records the switch parameters with an explicit provenance flag ("NOT the published parameter
+          table") and the 2D-strip reference outputs with the seed (JSON L141-L193). Deductions: the five
+          "observed" somite lengths and SDs (98.0 +/- 8.0, 201.0 +/- 9.5, 214.0 +/- 10.0, 84.0 +/- 7.5 um) carry no
+          figure/table/page pinpoint in Dubrulle et al. (2001) and could not be verified from the repository, so the
+          validation's ground truth is traceable only to the JSON (-8); the reference JSON itself is not SHA-pinned
+          (only hashed), so its edits are not fail-closed (-3); the Goldbeter equations are cited as "Eqs. 1-3"
+          without verifying the paper's numbering (-3).
+        evidence:
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [111, 142], note: "EXPECTED_SHA256 for specimen and scout manifest; verify_dataset_integrity fails closed on mismatch; reference JSON only hashed", supports: true}
+          - {file: datasets/fgf8_wavefront_somitogenesis/fgf8_wavefront_somitogenesis_reference.json, lines: [141, 193], note: "Pass 3 switch parameters with provenance flag and 2D-strip reference outputs (seed 2003)", supports: true}
+          - {file: datasets/fgf8_wavefront_somitogenesis/paper_citations.bib, lines: [45, 55], note: "Bénazéraf et al. (2010) Nature 466:248-252 added with DOI and the reason for citation", supports: true}
+          - {file: datasets/fgf8_wavefront_somitogenesis/fgf8_wavefront_somitogenesis_reference.json, lines: [82, 139], note: "Observed regime values lack figure/table pinpoints", supports: false}
+      code-traceability:
+        value: 89
+        rationale: >-
+          Every modelling function carries a Law number, the cited paper and the Lean theorem name in its docstring
+          (Laws 1-5 in the module docstring L23-L94; function docstrings at L154, L170, L220, L238, L318, L338,
+          L378, L433, L621, L654, L873), and `morphoeval/math_kg_loops/dubrulle-fgf8-wavefront-somitogenesis.yaml`
+          registers 5 equations with lean_locus and code_locus pointing at the current line ranges (L33-L162).
+          Deductions: the Goldbeter equation numbering is asserted, not verified (-4); the hard-coded 67.5 um
+          electroporation shift (L271-L274) and the 52.5/65 um cycle shifts (L566-L584) cite no equation or figure
+          (-4); Panel H's somite-boundary rendering and the 0.7-row mediolateral smoothing are design choices without
+          a cited basis (-3).
+        evidence:
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [23, 94], note: "Module docstring: Laws 1-5 with equations, papers and Lean theorem names", supports: true}
+          - {file: morphoeval/math_kg_loops/dubrulle-fgf8-wavefront-somitogenesis.yaml, lines: [98, 162], note: "Laws 4-5 registered with lean_code, lean_locus and code_locus matching the current files", supports: true}
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [271, 274], note: "Electroporation delta_x = 67.5 um hard-coded with a comment but no equation/figure citation", supports: false}
+      repro-package:
+        value: 90
+        rationale: >-
+          Deterministic seeds (2003) for both the 1D simulator and the 2D strip with bitwise re-run checks in the
+          self-test (L1497-L1500, L1548-L1550); --self-test extended to 6 blocks covering SHA-256, PDE error,
+          conservation laws, specimen segmentation, switch bistability/monostability/hysteresis/steady-state
+          residuals and strip closed forms (L1485-L1582), passing in ~2 s; default render 3.6 s; the GIF is
+          byte-identical to Pass 2 (SHA-256 0da6319d...). Deductions: no requirements lock or recorded environment
+          beyond the audit's checkpoint block (-4); when run under a read-only HOME matplotlib rebuilds its font
+          cache in a temp dir and warns, which the invocation notes do not mention (-2); the PNG changed layout
+          (2x3 -> 3x3) so Pass 2 artifact hashes no longer apply and no CSV of the measurements is emitted (-4).
+        evidence:
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [1485, 1582], note: "Six-block deterministic self-test incl. Pass 3 switch and strip assertions", supports: true}
+          - {file: 2003-dubrulle-fgf8-wavefront-somitogenesis.py, lines: [1585, 1624], note: "CLI with --self-test, --skip-gif and Pass 3 flags; default invocation renders PNG + GIF", supports: true}
+          - {file: docs/media/fgf8_wavefront_somitogenesis_growth.gif, lines: [0, 0], note: "24-frame GIF, byte-identical across Pass 2 and Pass 3 renders", supports: true}
+    remediation:
+      - >-
+        2003-dubrulle-fgf8-wavefront-somitogenesis.py:566-584 and 271-274 — the lab-frame simulator enters the FGF8-bead
+        (-52.5/+52.5 um), SU5402 (+65 um) and electroporation (67.5 um) front shifts as constants. Derive delta_x* from a
+        Gaussian bead source added to m(x) and from a scaled K_A (SU5402) in the Section 3b switch, and feed the
+        resulting per-cycle shifts into simulate_fgf8_somitogenesis.
+      - >-
+        2003-dubrulle-fgf8-wavefront-somitogenesis.py:252-291 with datasets/fgf8_wavefront_somitogenesis/
+        fgf8_wavefront_somitogenesis_reference.json:82-139 — the 5-regime r = 0.9998 correlates JSON predicted values
+        with JSON observed values whose Dubrulle (2001) figure/table pinpoints are unverified. Use S_calc_um (computed)
+        for r/RMSE and add figure+panel pinpoints (or mark the observed values as reconstructed) for every regime.
+      - >-
+        2003-dubrulle-fgf8-wavefront-somitogenesis.py:302-316 — GOLDBETER_SWITCH_PARAMS are this script's bistable-regime
+        choice. Pin them to the Goldbeter et al. (2007) parameter table, reproduce the paper's bistability diagram as a
+        panel, and report x_sw as a prediction rather than a tuned-adjacent value (current slow-passage lag 110 um).
+      - >-
+        2003-dubrulle-fgf8-wavefront-somitogenesis.py:654-870 — embed the RA/FGF8 switch per cell in the 2D strip
+        (currently a graded threshold on the smoothed field, L771-L779), add PSM cell division and a non-proliferative
+        elongation term (Bénazéraf et al. 2010), and add mediolateral mechanical/community coupling so the somite-length
+        CV (0.223) approaches the observed chick 0.043.
+      - >-
+        2003-dubrulle-fgf8-wavefront-somitogenesis.py:873-900 and 1057-1067 — simulated dilution shifts exceed the
+        closed form by 13-28 um at every T_div (first-determined-cell half-cell offset plus smoothing bias). Correct the
+        front estimator (interpolate the F = m_crit crossing) or include the offset in the closed form, and state the
+        residual in Panel I.
+      - >-
+        2003-dubrulle-fgf8-wavefront-somitogenesis.py:1329-1357 vs 907-978 — Panel H (2D strip) is never compared with
+        the SEM specimen. Add a boundary-straightness / somite-count / spacing-CV comparison between the strip and the
+        segmented specimen rows, and confirm or re-label the specimen species.

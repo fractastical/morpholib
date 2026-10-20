@@ -1,0 +1,341 @@
+# MorphoEval Pass 3 (v3) Audit — Azpeitia et al. (2021) Science & Prusinkiewicz et al. (2007) Science
+# Coupled Floral GRN, PIN1 Auxin-Transport Epidermal Mesh & Accelerating-Plastochron Romanesco Cones, 2026-10-20 (v3)
+#
+# Pass 3 post-remediation evaluation of `2021-pringle-roman-esco-fractal-inflorescence.py` (Slot 040)
+# superseding `2026-10-19-roman-esco-fractal-inflorescence-audit-v2` (93.3) in
+# `2026-10-19-roman-esco-fractal-inflorescence-loop-pass3`.
+#   - Primary assessor: Claude Fable 5.1 — 71.5 / 100 (DOWN from 93.3 in v2; -21.8 overall)
+#
+# Why the score goes DOWN although the single v2 remediation item was closed:
+#   The v2 remediation item (couple the meristem tree to a PIN1 auxin-flux mesh on the dome surface) is
+#   implemented as an honest reduced cell-based model (Jönsson 2006 / Smith 2006 dynamics on a growing
+#   k-NN cell mesh over the cone surface, Lean 4 Laws 4-5).  Doing so required re-reading every
+#   "measurement" of Pass 2, and four of them were surrogates that pinned the reported value to the
+#   reference rather than measuring anything:
+#     (a) `estimate_contact_parastichy_pair` tallied neighbour index differences and then RETURNED
+#         HARD-CODED pairs keyed on beta thresholds (v2 L264-269);
+#     (b) `compute_3d_box_counting_dimension` returned 0.95 x (2.38 + 4.25 beta - 4.4 beta^2) + 0.05 x slope,
+#         a polynomial in beta fitted to the reference series (v2 L428-429);
+#     (c) specimen H/R was multiplied by an unjustified 0.86 and clipped to [1.32, 1.62], and the relief
+#         dimension had +0.52 added and was clipped to [2.64, 2.76] (v2 L520, L570);
+#     (d) the H/R(beta) "validation" compared a prescribed linear envelope against a vendored series that is
+#         itself a linear interpolation between the same two end-points (Pearson r = 1.0 by construction).
+#   Pass 3 replaces (a)-(c) with real measurements and labels (d) a self-consistency check.  The honest values
+#   (raw D_f 1.95 vs 2.71 reference; specimen H/R 1.76 vs 1.48; beta_emergent 0.289 vs 0.085; emergent
+#   divergence 133.9 +/- 25.6 deg) are what the model actually produces, and the scores reflect them.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated
+# probabilities).  Line numbers refer to the files at commit d58a084 (working tree, Pass 3).
+
+audit:
+  id: 2026-10-19-roman-esco-fractal-inflorescence-audit-v3
+  supersedes: 2026-10-19-roman-esco-fractal-inflorescence-audit-v2
+  supersedes_audit_id: 2026-10-19-roman-esco-fractal-inflorescence-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 040 Pass 3 Assessor)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/40
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d58a084
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) evaluation of `2021-pringle-roman-esco-fractal-inflorescence.py` (1532 lines; 12 self-test
+      checks; 14 measurements) after Step 12 -> 5 closed-loop remediation in
+      `2026-10-19-roman-esco-fractal-inflorescence-loop-pass3`.  PNG SHA-256 6a15f43b..., GIF e9bd508b...
+      regenerate deterministically (self-test check 12).
+
+references:
+  azpeitia2021:
+    title: "Cauliflower fractal forms arise from perturbations of floral gene networks"
+    authors: "Azpeitia E, Tichtinsky G, Le Masson M, Serrano-Mislata A, Lucas J, Gregis V, Gimenez C, Prunet N, Farcot E, Kater MM, Bradley D, Madueno F, Godin C, Parcy F"
+    venue: "Science 373(6551):192-197 (2021)"
+    doi: 10.1126/science.abg5935
+  prusinkiewicz2007:
+    title: "Evolution and development of inflorescence architectures"
+    authors: "Prusinkiewicz P, Erasmus Y, Lane B, Harder LD, Coen E"
+    venue: "Science 316(5830):1452-1456 (2007)"
+    doi: 10.1126/science.1140429
+  smyth1990:
+    title: "Early flower development in Arabidopsis"
+    authors: "Smyth DR, Bowman JL, Meyerowitz EM"
+    venue: "The Plant Cell 2(8):755-767 (1990)"
+    doi: 10.1105/tpc.2.8.755
+  kempin1995:
+    title: "Molecular basis of the cauliflower phenotype in Arabidopsis"
+    authors: "Kempin SA, Savidge B, Yanofsky MF"
+    venue: "Science 267(5197):522-525 (1995)"
+    doi: 10.1126/science.7824951
+  kim2004:
+    title: "Fractal analysis of Romanesco and cauliflower curds (as vendored in Pass 1; NOT independently re-verified in Pass 3)"
+    authors: "Kim SH, Kim JH"
+    venue: "Physical Review E 70:046109 (2004)"
+    doi: 10.1103/PhysRevE.70.046109
+  jonsson2006:
+    title: "An auxin-driven polarized transport model for phyllotaxis"
+    authors: "Jönsson H, Heisler MG, Shapiro BE, Meyerowitz EM, Mjolsness E"
+    venue: "Proceedings of the National Academy of Sciences 103(5):1633-1638 (2006)"
+    doi: 10.1073/pnas.0509839103
+  smith2006:
+    title: "A plausible model of phyllotaxis"
+    authors: "Smith RS, Guyomarc'h S, Mandel T, Reinhardt D, Kuhlemeier C, Prusinkiewicz P"
+    venue: "Proceedings of the National Academy of Sciences 103(5):1301-1306 (2006)"
+    doi: 10.1073/pnas.0510457103
+  reinhardt2003:
+    title: "Regulation of phyllotaxis by polar auxin transport"
+    authors: "Reinhardt D, Pesce E-R, Stieger P, Mandel T, Baltensperger K, Bennett M, Traas J, Friml J, Kuhlemeier C"
+    venue: "Nature 426(6964):255-260 (2003)"
+    doi: 10.1038/nature02081
+  douady1992:
+    title: "Phyllotaxis as a physical self-organized growth process"
+    authors: "Douady S, Couder Y"
+    venue: "Physical Review Letters 68(13):2098-2101 (1992)"
+    doi: 10.1103/PhysRevLett.68.2098
+
+simulations:
+  - id: pringle-roman-esco-fractal-inflorescence
+    name: "Azpeitia et al. (2021) TFL1-LFY-AP1/CAL-SOC1 floral GRN perturbation, PIN1 auxin-transport epidermal mesh and accelerating-plastochron Romanesco fractal inflorescence morphogenesis"
+    organism: "Brassica oleracea var. botrytis (Romanesco & Cauliflower curds) and Arabidopsis thaliana (ap1 cal mutant)"
+    script: 2021-pringle-roman-esco-fractal-inflorescence.py
+    output: docs/media/roman_esco_fractal_inflorescence_comparison.png
+    extra_outputs:
+      - docs/media/roman_esco_fractal_inflorescence_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-roman-esco-fractal-inflorescence-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Azpeitia et al. (2021) Science 373:192-197: loss of AP1/CAL in ap1 cal and Brassica curd meristems abolishes floral commitment while transient LFY induction leaves a SOC1/AGL24/FUL 'floral memory' (bract suppression) and high TFL1 shoot identity, so lateral primordia reiterate spiral phyllotaxis across several branching orders; Cauliflower meristems keep a constant plastochron and form a hemispherical curd, Romanesco meristems grow and initiate ever faster (decreasing plastochron), forming conical self-similar curds with higher Fibonacci parastichy numbers"
+        - "Jönsson et al. (2006) and Smith et al. (2006): up-the-gradient PIN1 allocation on a cellular shoot-apex template produces auxin maxima whose threshold-triggered initiation, sink behaviour and outward advection reproduce spiral phyllotaxis near 137.5 deg; Reinhardt et al. (2003): pin1 / NPA apices form no primordia; Douady & Couder (1992): initiation rate scales with the free perimeter of the initiation ring"
+      reconstructed_in_script:
+        - "RK45 solver for a coupled 4-node continuous Hill ODE GRN (WT g_AP1 = 1, ap1 cal / curd g_AP1 = 0, lfy loss-of-function control) with HAND-TUNED coefficients that hit the vendored steady-state targets (the paper's network is logical, not these ODEs)"
+        - "3D 4-order recursive phyllotactic meristem tree with exact quadratic plastochron initiation times N(T) = r0 T + beta T^2/2, a PRESCRIBED linear envelope H/R(beta) = 0.56 + 10.8235 beta, raw area-weighted 3D box-counting D_f, and MEASURED nearest-neighbour contact parastichies on the generated lattice ((8,13) at beta = 0 and (13,21) for beta >= 0.04 on the curd-scale T = 80 lattice; (3,5) on the per-axis T = 20 lattice)"
+        - "Reduced cell-based PIN1 polar auxin transport (Jönsson 2006 allocation, Smith 2006 sinks/threshold/advection) on a growing jittered k-NN epidermal mesh over cones of H/R 0.56 and 1.48 at three dome radii: emergent initiation rate r_p(R) = -0.16 + 0.36 R (r = 0.99), emergent divergence median 133.9 deg (MAD 25.6), PIN1 polarity index 0.57, T = 0 ablation gives 0 initiations; coupling beta_emergent = (k / r_p(R0)) v_r = 0.289 at the vendored v_r = 0.16 (reference 0.085, implied v_r* = 0.047)"
+        - "Excess-green curd segmentation and two fixed-scale LoG floret detections (86 order-2, 421 order-3 cones) on the SHA-256-locked Romanesco specimen photograph, reported RAW: bounding-box H/R 1.76, lambda 0.390, 2.5D relief box slope 2.36"
+      transfer_boundary:
+        - "The vendored `plastochron_beta_sweep_benchmark_series`, `genotype_morphometric_benchmarks`, `radial_expansion_rate_v_r` and internode dz values are Pass 1 interpolations/syntheses anchored on the two Azpeitia et al. (2021) end-points, not tables from the paper; agreement with them is self-consistency, not validation"
+        - "The PIN1 model is a discrete cell mesh with Euclidean (not geodesic) sink fields and a cone approximation of the hemispherical dome; its dimensionless parameters are chosen for the spiral regime, not fitted to Brassica"
+        - "The Kim (2004) D_f ~ 2.71 / 2.38 references were carried from Pass 1 and could not be independently re-verified offline in Pass 3"
+      does_not_claim:
+        - "A continuum finite-element solution of PIN1 auxin transport on the curved meristem manifold; cell division or mechanics; the paper's own logical GRN or L-system; angular precision of the emergent phyllotaxis sufficient to generate Fibonacci parastichies (the coupled tree built from the emergent 133.9 deg angle measures (8,16))"
+    source_refs:
+      - azpeitia2021
+      - prusinkiewicz2007
+      - smyth1990
+      - kempin1995
+      - kim2004
+      - jonsson2006
+      - smith2006
+      - reinhardt2003
+      - douady1992
+    summary: >-
+      Pass 3 (v3) evaluation of `2021-pringle-roman-esco-fractal-inflorescence.py` (overall weighted score
+      71.5/100, down from 93.3 in v2).  The one open v2 item is closed by an honest reduced PIN1 polar auxin
+      transport model on a growing epidermal cell mesh over the cone surface (`build_dome_epidermal_mesh`,
+      `simulate_pin1_auxin_transport`, `couple_pin1_mesh_to_plastochron`), whose emergent perimeter scaling
+      r_p(R) = k R is coupled to Law 2 through beta = k v_r (Lean 4 Laws 4-5, 5 theorems, 0 sorrys).  Coupling
+      exposed that four Pass 2 "measurements" were surrogates pinned to the references (hard-coded parastichy
+      pairs, a polynomial-in-beta D_f, clipped/offset specimen metrics, and a prescribed-vs-interpolated H/R
+      correlation).  With real measurements the model reproduces the (8,13) -> (13,21) parastichy transition on
+      a curd-scale lattice and the pin1/NPA ablation, but its raw D_f is 1.95 (ref 2.71), beta_emergent is 0.289
+      (ref 0.085), the emergent divergence angle is 133.9 +/- 25.6 deg, and the specimen H/R is 1.76 (ref 1.48).
+      Scores now reflect those honest values; the next layer of defects is listed under `remediation`.
+    scores:
+      model-fidelity:
+        value: 72
+        rationale: >-
+          Credited: the quadratic plastochron law N(T) = r0 T + beta T^2/2 is exact (L268-286) and the
+          PIN1 mesh implements the Jönsson (2006) allocation P_ij = P_tot A_j / (kappa + sum A_k) with the
+          correct net-transport term, Smith (2006) threshold initiation / sinks / outward advection and
+          central-zone cell production (L637-777); contact parastichies are now a genuine measurement on the
+          generated lattice (L289-337) and the (8,13) -> (13,21) climb emerges from primordium density; five
+          Lean 4 theorems cover Laws 1-5 (0 sorrys).  Deductions: the GRN is a continuous Hill ODE with 20+
+          hand-tuned coefficients (L198-223) that reproduce vendored steady states, whereas Azpeitia et al.'s
+          network is logical (-8); the curd envelope H/R(beta) = 0.56 + 10.8235 beta is prescribed (L388), so
+          Law 3 is an input, not an output of the growth model (-7); the tree is a point skeleton whose children
+          overlap (child_scale 0.38-0.52 with 20-37 children per parent, L415-440) and whose raw box-count D_f
+          is 1.95 vs 2.71, i.e. the model does not produce a fractal surface of the reported dimension (-6); the
+          PIN1 mesh approximates the hemispherical dome by a cone, uses Euclidean sink distances and is not a
+          FEM solve as the v2 item asked (-5); the coupling constant v_r is vendored, not derived (-2).
+        evidence:
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [637, 777], note: "PIN1 up-the-gradient allocation, net transport term, sink fields, threshold initiation in the peripheral ring, exponential outward advection and apex re-insertion of cells", supports: true}
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [779, 862], note: "Coupling: linear fit r_p(R) on two geometries x three radii, beta_emergent = (k/r_p(R0)) v_r, implied v_r*, pooled divergence statistics, T = 0 ablation", supports: true}
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [289, 337], note: "Contact parastichies measured from nearest-neighbour index differences on the generated lattice (replaces v2's hard-coded return)", supports: true}
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [388, 388], note: "H/R(beta) = 0.56 + 10.823529 beta is prescribed; Law 3 is an input", supports: false}
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [198, 223], note: "Hand-tuned Hill coefficients (2.85, 0.18, 1.95, 2.75, 1.15, 1.85, 2.15, 2.52 ...) not traced to the paper, whose GRN is logical", supports: false}
+          - {file: morphoeval/lean/loops/Loop_040_roman_esco_fractal_inflorescence.lean, lines: [141, 202], note: "Laws 4-5: pin1_net_flux a_i a_j (a_j - a_i) sign theorem and perimeter_rate (R0 + v t) = k R0 + (k v) t coupling theorem, verified with lean 4.35.0", supports: true}
+      specimen-match:
+        value: 64
+        rationale: >-
+          The 9-panel figure shows the specimen photograph with the segmented contour and detected florets
+          (Panel F), the measured (8,13) vs (13,21) lattices side by side (Panel D) and the PIN1 auxin field
+          with emergent primordia (Panel G), so the comparison is visible.  Deductions: the 3D "curds" in Panel
+          C are sparse coloured point clouds, not surfaces, and do not resemble a Romanesco or a Cauliflower
+          curd beyond overall cone vs dome aspect (-12); the specimen's raw silhouette H/R is 1.76 against the
+          model's prescribed 1.48 and no camera-geometry correction is available (-6); the Panel D lattices
+          are planar projections while the photograph shows a conical curd, so parastichy counts are compared
+          across different projections (-5); the PIN1 auxin field (Panel G) shows only the 4 primordia
+          currently on the surface and is not compared with any PIN1/DR5 image (-5); the GIF animates the same
+          point clouds (-4); honest raw reporting of specimen metrics is credited (+4 vs a clipped version).
+        evidence:
+          - {file: docs/media/roman_esco_fractal_inflorescence_comparison.png, lines: [0, 0], note: "Panel F specimen overlay with 86/421 detected cones and raw H/R 1.76; Panel D measured lattices (8,13) vs (13,21); Panel C point clouds do not read as curd surfaces", supports: true}
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [1108, 1127], note: "Panel F renders the specimen with contour, order-2/3 cones and the raw, unclipped metrics in the title", supports: true}
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [1128, 1152], note: "Panel G auxin field with primordia currently on the surface (n = 4 of 25 initiated); no comparison with a PIN1/DR5 micrograph", supports: false}
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [896, 901], note: "Specimen H/R is the raw image-plane bounding-box ratio (1.76); no justified projection correction", supports: true}
+      parameter-expressivity:
+        value: 74
+        rationale: >-
+          beta visibly and monotonically controls primordium count, the (prescribed) H/R envelope, the raw D_f
+          (1.62 -> 2.08, strictly increasing) and the measured parastichy sum (21 -> 34 at beta >= 0.04) across
+          the 6-point sweep (L521-580); the PIN1 transport coefficient T controls patterning (T = 0 ablation:
+          0 initiations, auxin contrast 1.00 vs 3.87) and the dome radius controls the initiation rate linearly
+          on both geometries (r = 0.99); `--pin1-transport`, `--pin1-diffusion`, `--cell-spacing`,
+          `--beta-rom`, `--scale-lambda`, `--max-order`, `--g-ap1` are wired (L1492-1529).  Deductions: `--r0`
+          and `--seed` are parsed but not used (L1486, L1493) (-6); the parastichy sum saturates at 34 for
+          beta in [0.04, 0.11] where the vendored series expects 55 at 0.11 (-5); only T is swept on the PIN1
+          side (no D / sink-radius / growth-rate sweep rendered) (-6); the emergent divergence angle is not a
+          controllable parameter and its scatter breaks the Fibonacci lattice when coupled (-6); the H/R
+          response to beta is prescribed, so its monotonicity is not evidence of model expressivity (-3).
+        evidence:
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [521, 580], note: "6-point beta sweep records N, prescribed H/R, raw D_f, curd-scale and per-axis parastichy sums and their match count against the vendored series (5/6)", supports: true}
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [841, 862], note: "T = 0 ablation on the Romanesco cone and three-radius perimeter scaling on both geometries", supports: true}
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [1484, 1493], note: "CLI flags; --r0 and --seed are parsed but never passed to any solver", supports: false}
+      morphometric-validation:
+        value: 66
+        rationale: >-
+          `measurements_from()` (L1277-1399) reports 14 measurements, each with a unit, a reference value, a
+          literature source and a method string that states what was measured and what was not, including
+          negative controls (lfy, beta = 0, T = 0).  Credited: the parastichy transition is a real measurement
+          that matches the reference (34 vs 34; 5/6 sweep sums), the ablation ratio is 0.0 vs 0 (Reinhardt
+          2003), the GRN steady states hit the vendored targets, the perimeter-scaling slope is measured
+          (r = 0.99).  Deductions: raw D_f 1.95 vs 2.71 (mean sweep bias -0.79) (-8); beta_emergent 0.289 vs
+          0.085 is a 3.4x miss, resolved only by an implied v_r* = 0.047 that is not independently supported
+          (-6); emergent divergence 133.9 deg with MAD 25.6 deg and only 32% of events within +/-15 deg of the
+          golden angle is weak quantitative agreement (-5); the perimeter-scaling normalised slope is 1.81 on
+          the cone / 2.06 on the dome against the 1.0 expected for pure perimeter scaling (-3); the H/R
+          Pearson r = 1.0 measurement is a self-consistency check of a prescribed law against an interpolated
+          series and should not count as validation (-4); specimen H/R 1.76 vs 1.48 (-3); lambda = 0.390 is
+          conditioned by the LoG sigma ratio 7/18 = 0.389 (-5).
+        evidence:
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [1277, 1399], note: "14 measurements with references, units, controls and explicit method disclosures (prescribed / self-consistency / raw / conditioned)", supports: true}
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [482, 518], note: "Raw area-weighted box-count slope over 7 grids; Romanesco 1.95, Cauliflower 1.62 vs references 2.71 / 2.38", supports: false}
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [818, 831], note: "beta_emergent = slope_norm * v_r = 1.81 * 0.16 = 0.289 vs reference 0.085; implied v_r* reported", supports: false}
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [906, 923], note: "lambda_emp from two fixed LoG scales (sigma 7 and 18 px) and NMS windows 17 / 39 px; value 0.390 tracks the sigma ratio 0.389", supports: false}
+      source-traceability:
+        value: 70
+        rationale: >-
+          Nine primary sources with DOIs in the module docstring (L1-93), the audit, `paper_citations.bib` and
+          the two reference JSONs; the specimen and scout manifest are SHA-256 pinned and verified fail-closed
+          at every run (L133-150); the new `pin1_auxin_transport_reference.json` lists every model parameter,
+          its literature anchor and the model's limitations; the Pass 1 `kempin1995` BibTeX entry, which had
+          merged two different Kempin et al. (1995) papers, is corrected.  Deductions: the Kim (2004) Phys. Rev.
+          E 70:046109 entry — the only source of the D_f 2.71 / 2.38 references — could not be re-verified
+          offline and may be mis-cited (-10); `plastochron_beta_sweep_benchmark_series`,
+          `genotype_morphometric_benchmarks`, `radial_expansion_rate_v_r` and the dz values in the Pass 1 JSON
+          are interpolations/syntheses not traced to a figure or table of Azpeitia et al. (2021), and the JSON
+          itself does not say so (the dataset README now does) (-12); the GRN Hill coefficients have no source
+          (-5); the paper's actual meristem-size and plastochron measurements (its Fig. 3 data) are not
+          vendored (-3).
+        evidence:
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [133, 150], note: "Runtime SHA-256 verification of specimen and scout manifest; digests of all 5 dataset files returned", supports: true}
+          - {file: datasets/roman_esco_fractal_inflorescence/pin1_auxin_transport_reference.json, lines: [1, 68], note: "PIN1 model sources (Jönsson 2006, Smith 2006, Reinhardt 2003, Douady & Couder 1992, Smyth 1990) with DOIs, every parameter, the coupling statement and four stated limitations", supports: true}
+          - {file: datasets/roman_esco_fractal_inflorescence/paper_citations.bib, lines: [37, 60], note: "kempin1995 corrected; kim2004 flagged as not re-verified", supports: true}
+          - {file: datasets/roman_esco_fractal_inflorescence/roman_esco_fractal_inflorescence_reference.json, lines: [74, 123], note: "Beta sweep 'benchmark series' with no figure/table citation; values are a linear interpolation between the two end-points", supports: false}
+      code-traceability:
+        value: 82
+        rationale: >-
+          The module docstring maps each law to its equations, its source and its Lean 4 theorem (L1-93); every
+          solver docstring states what it computes, which paper step it follows and — new in Pass 3 — what is
+          prescribed, raw, conditioned or a self-consistency check (L340-356, L482-493, L867-883); the
+          `math_kg_loops` YAML registers Laws 4-5 with lean/code loci.  Deductions: the GRN coefficients at
+          L198-223 carry no citation (-6); the tree geometry constants (0.68/0.52 radial exponents, tilt
+          0.52/0.72, child_scale lambda + 0.14 age_frac, child_t 0.52 + 0.22 age_frac at L429-441) are uncited
+          shape heuristics (-6); the PIN1 parameters are documented as dimensionless choices but the mapping
+          from mesh time to tree time (r0 = 1 per tau) is only in the coupling docstring (-3); Lean
+          `lean_locus` line ranges in the YAML for Laws 1-3 were not re-pinned in Pass 3 (-3).
+        evidence:
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [1, 93], note: "Equation-to-source-to-Lean traceability for Laws 1-5 and the Pass 3 change log", supports: true}
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [340, 356], note: "generate_3d_meristem_tree docstring discloses the prescribed envelope and the emergent-angle coupling", supports: true}
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [429, 441], note: "Uncited geometric heuristics (radial exponents, tilt, child scale/time factors)", supports: false}
+          - {file: morphoeval/math_kg_loops/pringle-roman-esco-fractal-inflorescence.yaml, lines: [81, 121], note: "Laws 4-5 registered with formulas, Lean declarations, loci and roles", supports: true}
+      repro-package:
+        value: 85
+        rationale: >-
+          `--self-test` runs 12 checks in ~26 s (L1410-1489) covering SHA-256 integrity, GRN fates, the
+          monotone raw D_f sweep, the measured parastichy transition on curd and per-axis lattices, raw specimen
+          ranges, PIN1 patterning / polarity / divergence range, the T = 0 ablation, perimeter scaling on both
+          geometries, the coupled tree, the 14-measurement contract and bitwise determinism of the full pipeline
+          (compute_all run twice); the default invocation regenerates PNG and GIF in ~28 s and finishes with the
+          self-test; all RNGs are seeded.  Deductions: `--r0` and `--seed` are inert (-4); no requirements
+          lock file pins the environment (-4); without MPLCONFIGDIR matplotlib writes a font cache outside the
+          repository (-2); the self-test re-runs the whole PIN1 pipeline for the determinism check, doubling
+          runtime (-2); the GIF title text at small font is marginally legible (-3).
+        evidence:
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [1410, 1489], note: "12 deterministic checks incl. PIN1 (7a-d), ablation (8a-b), perimeter scaling (9), coupled tree (10), 14-metric contract (11), determinism (12)", supports: true}
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [1241, 1274], note: "compute_all runs every component once and is shared by measure_morphoeval, run_self_test and main", supports: true}
+          - {file: 2021-pringle-roman-esco-fractal-inflorescence.py, lines: [1486, 1493], note: "--r0 and --seed parsed but inert", supports: false}
+    remediation:
+      - >-
+        2021-pringle-roman-esco-fractal-inflorescence.py:818-831 and datasets/roman_esco_fractal_inflorescence/roman_esco_fractal_inflorescence_reference.json:68 —
+        beta_emergent = (k / r_p(R0)) v_r = 1.81 x 0.16 = 0.289 is 3.4x the reference 0.085; the vendored
+        v_r = 0.16 is untraced and the normalised slope 1.81 exceeds the pure-perimeter value 1.0 because the
+        cell count (and hence initiation sites) scales with surface area.  Vendor the paper's meristem-size vs
+        time data (Azpeitia 2021 Fig. 3) to fix v_r, and make the mesh cell size physical so that k is
+        perimeter- not area-limited.
+      - >-
+        2021-pringle-roman-esco-fractal-inflorescence.py:637-777 and 1252-1255 — emergent divergence 133.9 deg
+        with MAD 25.6 deg (32% within +/-15 deg of golden) is too imprecise to carry Fibonacci parastichies: the
+        coupled tree measures (8,16).  Replace Euclidean sink distances with geodesic distances on the cone,
+        use a structured (hexagonal) L1 mesh with cell division instead of random re-insertion, adopt the Smith
+        (2006) exponential PIN allocation, and target MAD < 10 deg before coupling the angle.
+      - >-
+        2021-pringle-roman-esco-fractal-inflorescence.py:388 and 1312-1327 — H/R(beta) = 0.56 + 10.8235 beta is
+        prescribed and then "validated" (Pearson r = 1.0) against a vendored series that is a linear
+        interpolation of the same end-points.  Derive the envelope from the growth model (H = dz x N(T) with the
+        vendored internode dz values and R(t) = R0 + v_r t) and drop or relabel the r = 1.0 measurement.
+      - >-
+        2021-pringle-roman-esco-fractal-inflorescence.py:415-441 and 482-518 — the 4-order tree is a point
+        skeleton whose children overlap (child_scale 0.38-0.52 with 20-37 children per parent), so its raw
+        box-count D_f is 1.95 (Romanesco) / 1.62 (Cauliflower) against 2.71 / 2.38.  Build an explicit curd
+        surface (union of cones/spheres rendered to a voxel grid) and box-count that surface; independently
+        re-verify or replace the Kim (2004) PRE 70:046109 reference (paper_citations.bib:50-60).
+      - >-
+        2021-pringle-roman-esco-fractal-inflorescence.py:896-923 — specimen H/R 1.76 is a raw image-plane
+        bounding-box ratio with unknown camera elevation, and lambda = 0.390 is conditioned by the fixed LoG
+        scales (7/18 = 0.389) and NMS windows.  Add a second, side-view specimen or a calibrated projection
+        model, and replace the two fixed scales by scale-space LoG with per-blob scale selection so the
+        order-2 / order-3 radii (and lambda) emerge.
+      - >-
+        2021-pringle-roman-esco-fractal-inflorescence.py:163-261 — the GRN is a continuous Hill ODE with
+        uncited hand-tuned coefficients reproducing vendored steady states; Azpeitia et al. (2021) use a
+        logical network.  Implement the paper's logical GRN (or cite a published continuous reduction) and
+        validate against its reported attractor table rather than against Pass 1 target values.
+      - >-
+        2021-pringle-roman-esco-fractal-inflorescence.py:1486 and 1493 — `--r0` and `--seed` are parsed but not
+        wired; either pass them through compute_all (r0 into the plastochron law, seed into
+        compute_3d_box_counting_dimension and the PIN1 mesh) or remove them.
+      - >-
+        datasets/roman_esco_fractal_inflorescence/roman_esco_fractal_inflorescence_reference.json:74-165 —
+        the beta sweep series and genotype benchmarks are Pass 1 interpolations; mark them `synthetic: true`
+        with the interpolation rule inside the JSON (not only in the README) or replace them with values
+        digitised from Azpeitia et al. (2021) Figs. 3-4.

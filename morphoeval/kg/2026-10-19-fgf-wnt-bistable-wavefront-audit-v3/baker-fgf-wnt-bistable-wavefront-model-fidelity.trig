@@ -1,0 +1,125 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-baker-fgf-wnt-bistable-wavefront> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-baker-fgf-wnt-bistable-wavefront-model-fidelity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-baker-fgf-wnt-bistable-wavefront-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Goldbeter, Gonze & Pourquié (2007) / Baker, Schnell & Maini (2006) RA–FGF8/Wnt mutual cross-inhibition bistable determination wavefront in vertebrate somitogenesis, gated by a Lewis (2003) delayed Her1/Hes7 clock lattice on 2D bilateral paraxial mesoderm strips — Model fidelity to source: 93/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Keeps the faithful Goldbeter, Gonze & Pourquié (2007) cross-inhibition + CYP26A1 PDE system and hysteresis S-curve (L191-296, L297-435) and adds the two mechanisms the v2 audit asked for with the papers' own equations: Lewis (2003) Eqs. 1-3 delayed autoinhibition DDE per PSM cell with published rate constants, delayed saturating Notch-Delta input and Lewis's own random gene-release initial condition (L526-816; T_osc = 92.0 min vs 90 observed; in-phase at T_N = T_osc, anti-phase at T_osc/2 as in Lewis Fig. 4C-D), and the 2D bilateral reaction-diffusion extension with the Vermot & Pourquié RA-buffering law (L819-1030; VAD offset matches the analytic law to < 1 um). Score moves 94 -> 93 because the coupling exposed a structural defect: clock-gated arrest yields irregular cohorts (segment-length CV 0.69, L799, vs ~0.05 in chick) and the 2D WT front sits at 509 um vs 571 um in 1D because the neural-tube factor (L866, L903) perturbs the strips transversely; the DeltaC branch is a reduced readout (L452-453, L636). 6 Lean 4 theorems (0 sorrys) cover Laws 1-6." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "2012-baker-fgf-wnt-bistable-wavefront.py L799–L802: segment_length_cv = 0.69 and saltatory_index are reported honestly; the CV exposes irregular cohort sizes (new remediation item) <https://github.com/fractastical/morpholib/blob/d58a084/2012-baker-fgf-wnt-bistable-wavefront.py#L799-L802>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-baker-fgf-wnt-bistable-wavefront-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-baker-fgf-wnt-bistable-wavefront-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-baker-fgf-wnt-bistable-wavefront-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-baker-fgf-wnt-bistable-wavefront-model-fidelity-4>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-baker-fgf-wnt-bistable-wavefront-model-fidelity-5>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-baker-fgf-wnt-bistable-wavefront-model-fidelity-6>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-baker-fgf-wnt-bistable-wavefront-model-fidelity-7> ;
+        pk:hasScore "0.93"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-baker-fgf-wnt-bistable-wavefront-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2012-baker-fgf-wnt-bistable-wavefront.py L191–L296" ;
+        dct:description "CYP26A1 Hill induction C(F), quasi-steady RA nullcline R*(F) and analytical inverse hysteresis S-curve M(F) with saddle-node extraction" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2012-baker-fgf-wnt-bistable-wavefront.py#L191-L296> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-baker-fgf-wnt-bistable-wavefront-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2012-baker-fgf-wnt-bistable-wavefront.py L297–L435" ;
+        dct:description "1D coupled RA-FGF8/Wnt reaction-diffusion PDE solver, branch-switch front and 10-90% sharpening" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2012-baker-fgf-wnt-bistable-wavefront.py#L297-L435> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-baker-fgf-wnt-bistable-wavefront-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "2012-baker-fgf-wnt-bistable-wavefront.py L436–L524" ;
+        dct:description "Lewis (2003) published parameters, period formula 2(T + 1/b + 1/c), sustained-oscillation conditions and Goldbeter Fig. 10 competence window [x(M_2), x(M_1)]" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2012-baker-fgf-wnt-bistable-wavefront.py#L436-L524> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-baker-fgf-wnt-bistable-wavefront-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "2012-baker-fgf-wnt-bistable-wavefront.py L526–L816" ;
+        dct:description "Delayed Her1/Hes7 DDE lattice with delayed saturating Notch-Delta coupling, advection through the competence window, protein-peak-gated bistable arrest, cohort detection, synchrony and saltatory index" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2012-baker-fgf-wnt-bistable-wavefront.py#L526-L816> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-baker-fgf-wnt-bistable-wavefront-model-fidelity-5> a pk:EvidenceItem ;
+        rdfs:label "2012-baker-fgf-wnt-bistable-wavefront.py L819–L1030" ;
+        dct:description "RA-buffered lateralizing bias b_eff and 2D bilateral strips + neural tube reaction-diffusion solver with left/right branch-switch fronts and analytic offset law" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2012-baker-fgf-wnt-bistable-wavefront.py#L819-L1030> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-baker-fgf-wnt-bistable-wavefront-model-fidelity-6> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean L24–L105" ;
+        dct:description "Laws 1-3 (CYP26 steady balance, hysteresis window positivity, opposing VAD/RA symmetry) carried from v2, 0 sorrys" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean#L24-L105> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-baker-fgf-wnt-bistable-wavefront-model-fidelity-7> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean L107–L187" ;
+        dct:description "New Laws 4-6: lewis_2003_delayed_oscillator_period, goldbeter_2007_saltatory_cohort_additivity, vermot_2005_ra_buffered_lr_symmetry (verified with lean 4.35.0, 0 sorrys)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/morphoeval/lean/loops/Loop_025_fgf_wnt_bistable_wavefront.lean#L107-L187> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/dvdy.21193>,
+            <https://doi.org/10.1016/S0092-8674(00)80451-1>,
+            <https://doi.org/10.1016/S0092-8674(01)00437-8>,
+            <https://doi.org/10.1016/S0896-6273(03)00565-8>,
+            <https://doi.org/10.1016/S0960-9822(03)00534-7>,
+            <https://doi.org/10.1016/j.devcel.2007.05.015>,
+            <https://doi.org/10.1016/j.jtbi.2005.07.019>,
+            <https://doi.org/10.1016/j.ydbio.2006.01.018>,
+            <https://doi.org/10.1038/nature03488>,
+            <https://doi.org/10.1126/science.1108363> .
+    <https://doi.org/10.1002/dvdy.21193> dct:date "2007"^^xsd:gYear ;
+        dct:title "Sharp developmental thresholds defined through bistability by antagonistic gradients of retinoic acid and FGF signaling" .
+    <https://doi.org/10.1016/S0092-8674(00)80451-1> dct:date "1997"^^xsd:gYear ;
+        dct:title "Avian hairy gene expression identifies a molecular clock linked to vertebrate segmentation and somitogenesis" .
+    <https://doi.org/10.1016/S0092-8674(01)00437-8> dct:date "2001"^^xsd:gYear ;
+        dct:title "FGF signaling controls somite boundary position and regulates segmentation clock control of spatiotemporal Hox gene activation" .
+    <https://doi.org/10.1016/S0896-6273(03)00565-8> dct:date "2003"^^xsd:gYear ;
+        dct:title "Opposing FGF and retinoid pathways control ventral neural pattern, neuronal differentiation, and segmentation during body axis extension" .
+    <https://doi.org/10.1016/S0960-9822(03)00534-7> dct:date "2003"^^xsd:gYear ;
+        dct:title "Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator" .
+    <https://doi.org/10.1016/j.devcel.2007.05.015> dct:date "2007"^^xsd:gYear ;
+        dct:title "Sharp developmental thresholds defined through bistability by antagonistic gradients of retinoic acid and FGF signaling" .
+    <https://doi.org/10.1016/j.jtbi.2005.07.019> dct:date "2006"^^xsd:gYear ;
+        dct:title "A mathematical investigation of a clock and wavefront model for somitogenesis" .
+    <https://doi.org/10.1016/j.ydbio.2006.01.018> dct:date "2006"^^xsd:gYear ;
+        dct:title "A clock and wavefront mechanism for somite formation" .
+    <https://doi.org/10.1038/nature03488> dct:date "2005"^^xsd:gYear ;
+        dct:title "Retinoic acid coordinates somitogenesis and left-right patterning in vertebrate embryos" .
+    <https://doi.org/10.1126/science.1108363> dct:date "2005"^^xsd:gYear ;
+        dct:title "Retinoic acid controls the bilateral symmetry of somite formation in the mouse embryo" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Goldbeter, Gonze & Pourquié (2007) / Baker, Schnell & Maini (2006) RA–FGF8/Wnt mutual cross-inhibition bistable determination wavefront in vertebrate somitogenesis, gated by a Lewis (2003) delayed Her1/Hes7 clock lattice on 2D bilateral paraxial mesoderm strips — Model fidelity to source 93/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T08:29:59Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-baker-fgf-wnt-bistable-wavefront-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

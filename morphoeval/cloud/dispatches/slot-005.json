@@ -19,5 +19,75 @@
   "target_script": "1999-painter-chemotactic-stripe-splitting.py",
   "pass1_score": 54.0,
   "pass2_score": 91.3,
-  "delta": 37.3
+  "delta": 37.3,
+  "pass3_run_id": "2026-10-19-chemotactic-stripe-splitting-loop-pass3",
+  "pass3_audit_id": "2026-10-19-chemotactic-stripe-splitting-audit-v3",
+  "audit_v3": "morphoeval/audits/2026-10-19-chemotactic-stripe-splitting-audit-v3.yaml",
+  "pass3_score": 92.5,
+  "pass3_dims": {
+    "model-fidelity": 95,
+    "specimen-match": 90,
+    "parameter-expressivity": 93,
+    "morphometric-validation": 92,
+    "source-traceability": 94,
+    "code-traceability": 93,
+    "repro-package": 92
+  },
+  "pass2_dims": {
+    "model-fidelity": 94,
+    "specimen-match": 89,
+    "parameter-expressivity": 90,
+    "morphometric-validation": 91,
+    "source-traceability": 93,
+    "code-traceability": 92,
+    "repro-package": 91
+  },
+  "pass3_delta": 1.2,
+  "pass3_completed_at": "2026-10-20T06:10:18Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_checkpoint_commit": "4d5512d",
+  "pass3_source_correction": "DOI 10.1073/pnas.96.10.5549 is 'Stripe formation in juvenile Pomacanthus explained by a generalized Turing mechanism with chemotaxis' (PMID 10318921); Passes 1-2 cited a non-existent title and attributed a generic Keller-Segel system to it. Corrected in script, datasets, Lean, KG YAML; SHA-pinned scout_manifest.json left unchanged and disclosed.",
+  "pass3_remediation_closed": [
+    "Extend the 2D chemotactic PDE to a growing curved surface to model vertebrate skin and fish pigment stripe bifurcations alongside bacterial rippling -> simulate_pomacanthus_growing_surface (L703-856): actual PNAS 1999 Pomacanthus system on a growing surface of revolution (line / cylinder K=0 / spindle K!=0), Kondo-Asai 3->6->12 reproduced on flat flanks (doubling ratio 2.03), 3->6->8 on the spindle",
+    "Couple cell density n(x,t) to an explicit extracellular slime-trail orientation tensor for Myxococcus xanthus social gliding motility -> simulate_slime_trail_ks / evaluate_slime_trail_hysteresis (L891-1022): nematic Q tensor, mobility M = I + aQ, Law-6 threshold chi_c(m)=4.22 inside observed bracket (4.0, 4.4), amplitude ratio 2.95"
+  ],
+  "pass3_remediation_open": [
+    "simulate_2d_stripe_vs_spot (L466-541) still imposes a 6.2/3.8 x/y chemotactic anisotropy to orient 2D stripes; derive orientation from the slime-trail Q tensor instead and compare ridge spacing to the 74.1 um specimen wavelength",
+    "simulate_pomacanthus_growing_surface (L703-856) uses uniform isotropic growth; expose PNAS 1999 Fig. 4 anisotropic RC/DV growth rates (1.8e-4 / 2.2e-4) as separate metric scale factors and reproduce the Fig. 5 stripe break-up",
+    "Spindle reaches 8 stripes at s=5.2 vs Kondo-Asai 12 (measurement 9, L1243-1252): sweep taper / C_0 in _surface_profile (L616-638) to find the critical curvature K lambda_c^2 for synchronous doubling and add a Lean bound on rho'/rho vs k_c",
+    "Iridophore contrast is 1.73x the quasi-static flux-balance estimate (measurement 10, L1253-1262); add a post-split relaxation hold so the Boltzmann estimate becomes a true bound",
+    "verify_dataset_integrity (L137-156) pins scout_manifest.json with the non-existent title; issue and pin scout_manifest_v2.json with corrected title/PMID and mark v1 superseded in chemotactic_stripe_splitting_reference.json (L44-47)"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_005.painter_1999_pomacanthus_turing_instability",
+    "MathOfBiology.Loop_005.pomacanthus_three_stripe_mode_selection",
+    "MathOfBiology.Loop_005.kondo_asai_stripe_doubling_mode_selection",
+    "MathOfBiology.Loop_005.slime_trail_anisotropic_mobility_lowers_chemotactic_threshold"
+  ],
+  "pass3_lean_verified": "lean loops/Loop_005_chemotactic_stripe_splitting.lean OK, 0 sorrys, 7 theorems total",
+  "pass3_self_test": "PASSED (108 s): stripes line=[3,6,12], cylinder=[3,6,12], spindle=[3,6,8], doubling ratio 2.03, trail chi_c(m)=4.217 in (4.0, 4.4), 13 measurements",
+  "pass3_artifacts": [
+    "1999-painter-chemotactic-stripe-splitting.py",
+    "morphoeval/lean/loops/Loop_005_chemotactic_stripe_splitting.lean",
+    "morphoeval/math_kg_loops/painter-chemotactic-stripe-splitting.yaml",
+    "datasets/chemotactic_stripe_splitting/pomacanthus_stripe_doubling_reference.json",
+    "datasets/chemotactic_stripe_splitting/chemotactic_stripe_splitting_reference.json",
+    "datasets/chemotactic_stripe_splitting/paper_citations.bib",
+    "datasets/chemotactic_stripe_splitting/README.md",
+    "docs/media/chemotactic_stripe_splitting_comparison.png",
+    "docs/media/chemotactic_stripe_splitting_growth.gif",
+    "docs/media/chemotactic_stripe_splitting_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-chemotactic-stripe-splitting-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-chemotactic-stripe-splitting-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-chemotactic-stripe-splitting-audit-v3/",
+    "morphoeval/runs/2026-10-19-chemotactic-stripe-splitting-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-chemotactic-stripe-splitting-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-chemotactic-stripe-splitting-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-chemotactic-stripe-splitting-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-chemotactic-stripe-splitting-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-chemotactic-stripe-splitting-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-005.json"
+  ]
 }

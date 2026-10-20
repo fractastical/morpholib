@@ -32,5 +32,64 @@
   "slot_index": 32,
   "slug": "auxin-pin1-meristem",
   "target_script": "2006-jonsson-auxin-pin1-meristem.py",
-  "delta": 39.0
+  "delta": 39.0,
+  "pass3_run_id": "2026-10-19-auxin-pin1-phyllotaxis-loop-pass3",
+  "pass3_audit_id": "2026-10-19-auxin-pin1-phyllotaxis-audit-v3",
+  "audit_v3": "morphoeval/audits/2026-10-19-auxin-pin1-phyllotaxis-audit-v3.yaml",
+  "pass3_score": 75.9,
+  "pass3_dims": {
+    "model-fidelity": 72,
+    "specimen-match": 74,
+    "parameter-expressivity": 70,
+    "morphometric-validation": 68,
+    "source-traceability": 86,
+    "code-traceability": 80,
+    "repro-package": 90
+  },
+  "pass3_delta_vs_pass2": -16.9,
+  "pass3_completed_at": "2026-10-20T10:19:00Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_kg_dir": "morphoeval/kg/2026-10-19-auxin-pin1-phyllotaxis-audit-v3",
+  "pass3_quick_gate": 100,
+  "pass3_remediation_closed": [
+    "Couple the 2D L1 epidermal dome Auxin-PIN1 simulator to explicit sub-cellular PIN1 exocytosis/endocytosis trafficking kinetics and 3D subepidermal canalization of provascular strands -> closed in reduced form: (a) explicit cytosolic + per-wall membrane PIN1 pools with dP_ij/dt = k_exo f(a_j) P_cyt - k_endo P_ij solved by an exact exponential integrator and coupled into the dome (integrate_pin1_trafficking_exact L238-284, pin1_trafficking_qss_allocation L287-306, simulate_2d_sam_auxin_pin1_phyllotaxis L309-615; regimes explicit/QSS/BFA/auxin-inhibited-endocytosis/fast-cycling in evaluate_pin1_trafficking_regimes L820-886; Lean Law 4 jonsson_2006_pin1_trafficking_qss); (b) quasi-3D (2D vertical slice, 15x12 cells, NOT full 3D) with-the-flux canalization beneath P1 fed by the L1 primordium efflux (simulate_subepidermal_canalization L617-770, sweep_canalization_hill_exponent L773-814; Lean Law 5 mitchison_1980_canalization_winner_take_all): single-file strand (width 1 cell, 97 % delivery), no-feedback ablation 14 cells, Hill sweep Spearman -0.89; residual (true 3D tissue, growth, vendored strand image) carried to Pass 4"
+  ],
+  "pass3_remediation_open": [
+    "L396-415, L506-514: dome primordia seeded at golden-angle targets and auxin relaxed to a prescribed envelope (0.14-weighted transport, 0.38 relaxation) -> implement Jönsson Eq. 1 as published on an advecting peripheral zone so maxima/divergence angles emerge",
+    "L921-960: four phyllotactic regimes are nominal angle + seeded noise / golden placement by construction; Gamma controls nothing -> Douady-Couder / Smith 2006 ring model with Gamma sweep",
+    "L1023-1036: WT ring profile of the NPA/IAA panel is hand-built Gaussians -> integrate the 1D ring Jönsson model from noise on a ring consistent with the 5.2-cell spacing",
+    "L180-184: kappa_4 calibrated so the dispersion peak equals the 5.2-cell reference (measurement #2 circular) -> derive kappa_4 or relabel as calibration and validate against emergent spacing",
+    "L617-770: canalization is one non-growing slice with a uniform Dirichlet sink row -> periodic cylindrical shell / 3D block with localized strand + growth; vendor a PIN1::GFP strand image for image-based width",
+    "reference.json L165-189 + L1573-1580: convergence index 0.84, contrasts 2.68/2.85 and Gamma values lack figure/table pinpoints -> digitise sources or mark model-internal",
+    "L1346-1354: Panel F parastichy overlays are fixed curves -> fit (8,13) parastichies to the 410 detected tips and report the specimen divergence angle",
+    "L476-487 + L1638-1646: endocytosis variant has fixed 8 explicit substeps without a stability guard; BFA measurement reference is the model's own first-order prediction -> adaptive substep / per-cell expm and a digitised Geldner 2001 internalisation time course",
+    "scout_manifest.json L15-16: proposed_dataset_dir / proposed_lean_module name non-existent auxin_pin1_meristem paths -> regenerate/annotate and re-pin"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_032.jonsson_2006_pin1_trafficking_qss",
+    "MathOfBiology.Loop_032.mitchison_1980_canalization_winner_take_all"
+  ],
+  "pass3_lean_theorems_total": 5,
+  "pass3_lean_verified": true,
+  "pass3_lean_sorrys": 0,
+  "pass3_self_test": "13/13 passed",
+  "pass3_measurements": 16,
+  "pass3_artifacts": [
+    "2006-jonsson-auxin-pin1-meristem.py",
+    "morphoeval/lean/loops/Loop_032_auxin_pin1_phyllotaxis.lean",
+    "morphoeval/math_kg_loops/jonsson-auxin-pin1-meristem.yaml",
+    "datasets/auxin_pin1_phyllotaxis/auxin_pin1_phyllotaxis_reference.json",
+    "datasets/auxin_pin1_phyllotaxis/paper_citations.bib",
+    "datasets/auxin_pin1_phyllotaxis/README.md",
+    "docs/media/auxin_pin1_phyllotaxis_comparison.png",
+    "docs/media/auxin_pin1_phyllotaxis_growth.gif",
+    "docs/media/auxin_pin1_phyllotaxis_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-auxin-pin1-phyllotaxis-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-auxin-pin1-phyllotaxis-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-auxin-pin1-phyllotaxis-audit-v3/ (10 signed nanopubs, REPORT.md, ttl, published.json)",
+    "morphoeval/runs/2026-10-19-auxin-pin1-phyllotaxis-loop-pass3.{yaml,csv,md,trig,events.jsonl,ledger.jsonl}",
+    "morphoeval/cloud/dispatches/slot-032.json"
+  ]
 }

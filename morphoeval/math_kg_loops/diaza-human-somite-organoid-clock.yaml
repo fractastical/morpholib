@@ -125,3 +125,83 @@ equations:
     role: "Proves that mitochondrial electron transport chain inhibition (k_ETC < k_WT) slows the human segmentation clock whereas LbNOX-mediated NAD+/NADH elevation (k_LbNOX > k_WT) accelerates clock frequency and shortens period"
     source_citation: "Diaz-Cuadros et al. (2023) Nature 613:550-557 Figs. 1-4"
     code_locus: "2019-diaza-human-somite-organoid-clock.py#L338-L445"
+  - id: diaza-human-somite-organoid-clock-4
+    law_name: "Lewis (2003) / Herrgen et al. (2010) DLL1-Notch Delay Coupling Mean-Field Reduction & DAPT Gating Law (Pass 3)"
+    title: "Lewis (2003) / Herrgen et al. (2010) DLL1-Notch Delay Coupling Mean-Field Reduction & DAPT Gating Law (Pass 3)"
+    formula: "D_bar_i(t) = (1/k_i) sum_{j in N6(i)} D_j(t);  S_i = D_bar_i(t - tau_c)^h / (K_D^h + D_bar_i(t - tau_c)^h);  dm_i/dt = alpha_m [(1 - eps) + 2 eps S_i] / (1 + (p_i(t - tau_tx,i) / (K [(1 - eps) + 2 eps S_i]))^n) - delta_m,i m_i;  in-phase state: k D / k = D  =>  single self-coupled DDE;  DAPT: S_i = 0 => synthesis b alpha_m < alpha_m"
+    latex: "\\bar D_i(t) = \\frac{1}{k_i}\\sum_{j \\in N_6(i)} D_j(t), \\quad S_i = \\frac{\\bar D_i(t-\\tau_c)^h}{K_D^h + \\bar D_i(t-\\tau_c)^h}, \\quad \\frac{dm_i}{dt} = \\frac{\\alpha_m\\,[(1-\\varepsilon) + 2\\varepsilon S_i]}{1 + \\left(p_i(t-\\tau_{tx,i})/(K[(1-\\varepsilon)+2\\varepsilon S_i])\\right)^n} - \\delta_{m,i} m_i"
+    ascii: "D_bar_i = mean_{j in N6(i)} D_j;  S_i = Hill(D_bar_i(t - tau_c));  dm_i/dt = alpha_m * gate(S_i) * rep(p_i(t - tau_tx,i), K * gate(S_i)) - delta_m,i * m_i"
+    lean_decl: "MathOfBiology.Loop_028.neighbour_mean_delta"
+    lean_theorem: "MathOfBiology.Loop_028.lewis_herrgen_notch_coupling_mean_field_dapt_gating"
+    lean_file: morphoeval/lean/loops/Loop_028_human_somite_organoid_clock.lean
+    lean_locus: "morphoeval/lean/loops/Loop_028_human_somite_organoid_clock.lean#L121-L173"
+    lean_code: |-
+      def neighbour_mean_delta (k d : Nat) : Nat :=
+        (k * d) / k
+      def hex_lattice_edge_count (n : Nat) : Nat :=
+        (6 * n) / 2
+      def notch_gated_synthesis (alpha eps s2 : Nat) : Nat :=
+        alpha * (100 - eps + eps * s2 / 100)
+      theorem lewis_herrgen_notch_coupling_mean_field_dapt_gating
+          (k d n alpha eps : Nat)
+          (h_k : 0 < k)
+          (h_alpha : 0 < alpha)
+          (h_eps_pos : 0 < eps)
+          (h_eps_le : eps ≤ 100) :
+          neighbour_mean_delta k d = d ∧
+          hex_lattice_edge_count n = 3 * n ∧
+          notch_gated_synthesis alpha eps 100 = alpha * 100 ∧
+          notch_gated_synthesis alpha eps 0 < notch_gated_synthesis alpha eps 100
+    lean_declaration: |-
+      theorem lewis_herrgen_notch_coupling_mean_field_dapt_gating
+          (k d n alpha eps : Nat)
+          (h_k : 0 < k)
+          (h_alpha : 0 < alpha)
+          (h_eps_pos : 0 < eps)
+          (h_eps_le : eps ≤ 100) :
+          neighbour_mean_delta k d = d ∧
+          hex_lattice_edge_count n = 3 * n ∧
+          notch_gated_synthesis alpha eps 100 = alpha * 100 ∧
+          notch_gated_synthesis alpha eps 0 < notch_gated_synthesis alpha eps 100
+    variables: "D_i: DLL1 ligand level of cell i (nM); k_i <= 6: number of hexagonal neighbours; tau_c: intercellular Notch coupling delay (min, default 0.8 T); S_i: NICD activation (dimensionless); eps: coupling modulation depth (0.25); K_D: Notch half-activation (nM, calibrated to <D> over one cycle); b: Notch-independent basal HES7 promoter activity under DAPT (0.1)"
+    role: "Couples the single-cell HES7 TTFL to its hexagonal neighbours through delayed DLL1-Notch signalling; proves the synchronised lattice reduces exactly to one self-coupled DDE (so the collective period T_coll(tau_c) is a single-cell computation, Herrgen 2010), that the lattice has 3N edges, and that DAPT strictly lowers HES7 synthesis below the uncoupled rate (oscillation collapse before washout re-synchronisation, Matsuda 2020 Nature)"
+    source_citation: "Lewis (2003) Curr. Biol. 13:1398-1408; Riedel-Kruse et al. (2007) Science 317:1911-1915; Herrgen et al. (2010) Curr. Biol. 20:1244-1253; Matsuda et al. (2020) Nature 580:124-129; Diaz-Cuadros et al. (2020) Nature 580:113-118"
+    code_locus: "2019-diaza-human-somite-organoid-clock.py#L601-L1027"
+  - id: diaza-human-somite-organoid-clock-5
+    law_name: "Yamanaka et al. (2023) Matrigel-Embedded Elastic Boundary Force Scaling Law (Pass 3)"
+    title: "Yamanaka et al. (2023) Matrigel-Embedded Elastic Boundary Force Scaling Law (Pass 3)"
+    formula: "k_M(phi) = kappa * phi;  F_M,i = -k_M(phi) * max(0, |x_i - c| - R_M) * r_hat_i;  F_M(phi = 0) = 0;  F_M(|x_i - c| <= R_M) = 0;  phi1 < phi2 => |F_M(phi1)| < |F_M(phi2)| outside the shell"
+    latex: "k_M(\\phi) = \\kappa\\,\\phi, \\qquad \\mathbf F_{M,i} = -k_M(\\phi)\\,\\max(0, |\\mathbf x_i - \\mathbf c| - R_M)\\,\\hat{\\mathbf r}_i"
+    ascii: "k_M = kappa * phi;  F_M = -k_M * max(0, r - R_M) * r_hat"
+    lean_decl: "MathOfBiology.Loop_028.matrigel_boundary_force"
+    lean_theorem: "MathOfBiology.Loop_028.yamanaka_2023_matrigel_boundary_force_scaling"
+    lean_file: morphoeval/lean/loops/Loop_028_human_somite_organoid_clock.lean
+    lean_locus: "morphoeval/lean/loops/Loop_028_human_somite_organoid_clock.lean#L175-L212"
+    lean_code: |-
+      def matrigel_stiffness (kappa phi : Nat) : Nat :=
+        kappa * phi
+      def matrigel_boundary_force (kappa phi r R : Nat) : Nat :=
+        matrigel_stiffness kappa phi * (r - R)
+      theorem yamanaka_2023_matrigel_boundary_force_scaling
+          (kappa phi phi1 phi2 r_in r_out R : Nat)
+          (h_kappa : 0 < kappa)
+          (h_inside : r_in ≤ R)
+          (h_outside : R < r_out)
+          (h_phi : phi1 < phi2) :
+          matrigel_boundary_force kappa 0 r_out R = 0 ∧
+          matrigel_boundary_force kappa phi r_in R = 0 ∧
+          matrigel_boundary_force kappa phi1 r_out R < matrigel_boundary_force kappa phi2 r_out R
+    lean_declaration: |-
+      theorem yamanaka_2023_matrigel_boundary_force_scaling
+          (kappa phi phi1 phi2 r_in r_out R : Nat)
+          (h_kappa : 0 < kappa)
+          (h_inside : r_in ≤ R)
+          (h_outside : R < r_out)
+          (h_phi : phi1 < phi2) :
+          matrigel_boundary_force kappa 0 r_out R = 0 ∧
+          matrigel_boundary_force kappa phi r_in R = 0 ∧
+          matrigel_boundary_force kappa phi1 r_out R < matrigel_boundary_force kappa phi2 r_out R
+    variables: "phi: Matrigel volume fraction (%); kappa: shell stiffness per % Matrigel (0.01 min^-1 per %, uncalibrated); R_M: ECM shell radius (28 um); x_i, c: cell centre and aggregate centroid (um); r_hat_i: outward radial unit vector"
+    role: "Makes the Matrigel embedding an explicit mechanical boundary force in the reduced axioloid rosette model: no force without Matrigel or inside the shell, and strictly stronger confinement with Matrigel fraction, which together with the ECM-contact polarity cue produces the epithelial rosette only in embedded aggregates (Yamanaka 2023; Sanaki-Matsumiya 2022)"
+    source_citation: "Yamanaka et al. (2023) Nature 614:509-520; Sanaki-Matsumiya et al. (2022) Nat. Commun. 13:2325"
+    code_locus: "2019-diaza-human-somite-organoid-clock.py#L1029-L1176"

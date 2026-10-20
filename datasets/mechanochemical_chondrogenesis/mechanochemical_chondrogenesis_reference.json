@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "dataset_id": "oster-murray-1983-1985-mechanochemical-chondrogenesis-v1",
+    "dataset_id": "oster-murray-1983-1985-mechanochemical-chondrogenesis-v2",
     "slot": 13,
     "slot_id": "slot-013-mechanochemical-chondrogenesis",
     "title": "Oster, Murray & Harris (1983) / Oster, Murray & Maini (1985) Mechanochemical Chondrogenesis, Limb Condensation Bifurcation & Salamander Limb Skeleton Dataset",
@@ -24,6 +24,26 @@
         "id": "shubin1986",
         "citation": "Shubin NH, Alberch P (1986). A morphogenetic approach to the origin and basic organization of the tetrapod limb. Evolutionary Biology 20:319-387.",
         "doi": "10.1007/978-1-4615-6983-1_6"
+      },
+      {
+        "id": "saunders1948",
+        "citation": "Saunders JW Jr (1948). The proximo-distal sequence of origin of the parts of the chick wing and the role of the ectoderm. Journal of Experimental Zoology 108(3):363-403.",
+        "doi": "10.1002/jez.1401080304"
+      },
+      {
+        "id": "raspopovic2014",
+        "citation": "Raspopovic J, Marcon L, Russo L, Sharpe J (2014). Digit patterning is controlled by a Bmp-Sox9-Wnt Turing network modulated by morphogen gradients. Science 345(6196):566-570.",
+        "doi": "10.1126/science.1252960"
+      },
+      {
+        "id": "tenberge2008",
+        "citation": "ten Berge D, Brugmann SA, Helms JA, Nusse R (2008). Wnt and FGF signals interact to coordinate growth with cell fate specification during limb development. Development 135(19):3247-3257.",
+        "doi": "10.1242/dev.023176"
+      },
+      {
+        "id": "hall2000",
+        "citation": "Hall BK, Miyake T (2000). All for one and one for all: condensation and the initiation of skeletal development. BioEssays 22(2):138-147.",
+        "doi": "10.1002/(SICI)1521-1878(200002)22:2<138::AID-BIES5>3.0.CO;2-4"
       }
     ],
     "specimens": {
@@ -35,8 +55,14 @@
         "source_url": "https://commons.wikimedia.org/wiki/File:Oedipina_ecuatoriana_(10.7717-peerj.9934)_Fig-13-full.png",
         "width_px": 960,
         "height_px": 781,
-        "forelimb_roi_x_px": [120, 440],
-        "hindlimb_roi_x_px": [580, 920],
+        "forelimb_roi_x_px": [
+          120,
+          440
+        ],
+        "hindlimb_roi_x_px": [
+          580,
+          920
+        ],
         "empirical_branching_metrics": {
           "forelimb_stylopod_count": 1,
           "forelimb_zeugopod_count": 2,
@@ -86,6 +112,28 @@
       "tau_stylopod": 1.48,
       "tau_zeugopod": 1.72,
       "tau_autopod": 2.05
+    },
+    "script_default_parameters": {
+      "note": "Parameters actually used by 1983-oster-mechanochemical-chondrogenesis.py (critical_traction_threshold, dispersion_growth_rate, 1D/2D solvers). They differ from `canonical_parameters` above (which were transcribed at scout time and never adopted by the script); the discrepancy is disclosed in audit v3 and carried as a Pass 4 reconciliation item.",
+      "D_1": 0.28,
+      "D_2": 0.015,
+      "E_eff": 1.0,
+      "mu_visc": 0.25,
+      "s_tether": 0.85,
+      "r_mitotic": 0.32,
+      "N_0": 1.0,
+      "lambda_sat": 0.5,
+      "tau_subcritical": 0.85,
+      "tau_stylopod": 1.55,
+      "tau_zeugopod": 1.72,
+      "tau_autopod_forelimb": 2.02,
+      "tau_autopod_hindlimb": 2.15,
+      "derived": {
+        "k_c": 0.9597,
+        "lambda_c": 6.5472,
+        "tau_c_analytic": 1.2776,
+        "tau_c_solver_drift_kernel": 1.4397
+      }
     }
   },
   "tetrapod_limb_branching_hierarchy_table": {
@@ -138,5 +186,120 @@
         "observed_hindlimb_elements": 5
       }
     ]
+  },
+  "aer_free_boundary_outgrowth_pass3": {
+    "source": "Oster, Murray & Maini (1985) Sec. 4 (AER-maintained recruitment/progress zone); Oster, Murray & Harris (1983) Sec. 5 (ECM anisotropy); Saunders (1948); ten Berge et al. (2008)",
+    "description": "2D coupled cell-ECM PDE on a limb paddle with a moving free-boundary AER front L(t) = L_0 + v_AER t (lengths in units of lambda_c). Traction is suppressed and proliferation maintained in a progress zone of depth d_pz behind the front; chondrogenic competence chi = paddle(x,y) * front(y,t). Only the proximal humeral nucleus (y < L_0) is seeded.",
+    "parameters": {
+      "tau": 2.0,
+      "v_AER": 0.9,
+      "L_0": 1.6,
+      "L_final": 8.3,
+      "L_y": 9.0,
+      "L_x": "(autopod_digits + 2.5)",
+      "d_pz": 0.9,
+      "gate_w": 0.3,
+      "r_pz": 0.5,
+      "noise_pz": 0.004,
+      "t_regress": 8.0,
+      "aniso_y": 3.0,
+      "w_edge": 0.22,
+      "W_stylopod": 1.4,
+      "W_zeugopod": 2.0,
+      "W_autopod": "autopod_digits (4 forelimb / 5 hindlimb)",
+      "zeugopod_ramp": [
+        1.9,
+        3.2
+      ],
+      "autopod_ramp": [
+        5.0,
+        6.3
+      ],
+      "seed_amp": 0.05,
+      "grid": [
+        112,
+        144
+      ],
+      "dt": 0.025,
+      "nt": 3600,
+      "seed": 1983
+    },
+    "zone_probe_rows_lambda_c": {
+      "stylopod": 1.0,
+      "zeugopod": 4.0,
+      "autopod": 7.5
+    },
+    "saunders_1948_ablation_series": {
+      "description": "AER removed at t_ablate stops outgrowth and dissolves the progress zone; later removal leaves more distal segments (Saunders 1948 Figs. 2-9, chick wing stages 18-28 -> progressively more distal truncation levels).",
+      "ablation_times": [
+        0.0,
+        14.0,
+        30.0,
+        "intact"
+      ],
+      "expected_segments_formed": [
+        1,
+        1,
+        2,
+        3
+      ],
+      "expected_hierarchies": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          2,
+          0
+        ],
+        [
+          1,
+          2,
+          4
+        ]
+      ]
+    }
+  },
+  "hybrid_bsw_coupling_pass3": {
+    "source": "Raspopovic et al. (2014) Science 345:566-570 Fig. 2E / Supp. Sec. 1.2 linearised Bmp-Sox9-Wnt kinetics as vendored in datasets/bmp_sox9_wnt_digits/bmp_sox9_wnt_digits_reference.json (Slot 016); Hall & Miyake (2000) for condensation -> Sox9 induction",
+    "bsw_parameters": {
+      "mu_S": 1.0,
+      "mu_B": 1.2,
+      "mu_W": 1.5,
+      "k_sb": 2.5,
+      "k_sw": 2.2,
+      "k_bs": 1.8,
+      "k_ws": 2.0,
+      "D_B": 2.5,
+      "D_W": 0.25
+    },
+    "wavelength_matching": "d_scale = (q_c,BSW / k_c,mech)^2 scales D_B, D_W so the BSW Turing wavelength equals lambda_c",
+    "coupling": {
+      "traction": "tau(S) = tau * max(1 + alpha_S S, 0.05)",
+      "sox9_induction": "dS/dt += kappa_S (n - N_0)",
+      "alpha_S": 0.8,
+      "kappa_S": 0.8,
+      "bsw_gain_g": 0.7,
+      "tau_test": 0.85
+    },
+    "synergy_prediction": {
+      "bsw_only_stable_at_g": 0.7,
+      "tau_c_mechanics_only_solver_kernel": 1.4397,
+      "tau_c_hybrid": 0.3458,
+      "factorial_expected_counts": {
+        "mechanics_only": 0,
+        "bsw_only": 0,
+        "sox9_feedback_only": 0,
+        "hybrid": 4
+      },
+      "expected_phase": "corr(n,S) > 0, corr(S,B) < 0, corr(S,W) < 0 (Raspopovic 2014 Fig. 1-2 out-of-phase Sox9 vs Bmp/Wnt)"
+    }
   }
 }

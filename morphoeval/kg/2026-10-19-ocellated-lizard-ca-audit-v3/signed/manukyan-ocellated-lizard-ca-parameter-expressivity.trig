@@ -1,0 +1,110 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAtXB6kptofgNtDv7ftH0jhNmS2U8-xYFYrqZ0zB7fWNM/> .
+@prefix this: <https://w3id.org/np/RAtXB6kptofgNtDv7ftH0jhNmS2U8-xYFYrqZ0zB7fWNM> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1038/376765a0>,
+            <https://doi.org/10.1038/nature22031>,
+            <https://doi.org/10.1038/s41467-021-22525-1>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1103/PhysRevX.13.041011> .
+
+    <https://doi.org/10.1038/376765a0> dcterms:date "1995"^^xsd:gYear ;
+        dcterms:title "A reaction-diffusion wave on the skin of the marine angelfish Pomacanthus" .
+
+    <https://doi.org/10.1038/nature22031> dcterms:date "2017"^^xsd:gYear ;
+        dcterms:title "A living mesoscopic cellular automaton made of skin scales" .
+
+    <https://doi.org/10.1038/s41467-021-22525-1> dcterms:date "2021"^^xsd:gYear ;
+        dcterms:title "Reaction-diffusion in a growing 3D domain of skin scales generates a discrete cellular automaton" .
+
+    <https://doi.org/10.1098/rstb.1952.0012> dcterms:date "1952"^^xsd:gYear ;
+        dcterms:title "The chemical basis of morphogenesis" .
+
+    <https://doi.org/10.1103/PhysRevX.13.041011> dcterms:date "2023"^^xsd:gYear ;
+        dcterms:title "Simple Reaction-Diffusion Modeling Predicts Inconspicuous Neighborhood-Dependent Color Subclustering of Lizard Scales" .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-manukyan-ocellated-lizard-ca> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-manukyan-ocellated-lizard-ca-parameter-expressivity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-manukyan-ocellated-lizard-ca-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Manukyan et al. (2017) Nature hexagonal skin-scale border thickness reduction & outer-totalistic cellular automaton — 3D skin-volume reaction-diffusion (Pass 3) — Parameter expressivity: 86/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "The border thickness factor P now controls scale-level discretisation monotonically in both the 3D volume and the 2D reduction across the five vendored regimes (3D ratio 29.9 / 14.7 / 5.7 / 3.3 for P = 0.08 / 0.17 / 0.45 / 1.0, Spearman rho = -1.0; P = 0 insulated: no pattern), the diffusivity ratio d switches the Turing instability on/off (d = 1 control inter std 2e-4 vs 0.356), and the P_eff realised at voxel resolution is reported for every regime (`run_border_reduction_sweep`, L901-929; Panel D). CLI flags --P/--d/--seed drive an extra 3D run and --rows/--cols/--steps now reach the CA (L1672-1700; v2 accepted but ignored them). Deductions: lambda_c, nz, dz and the PDE step count are module constants, not CLI parameters (L135-144) (-6); the sweep is shown only as ratio/Ashman curves, with no gallery of fields along P (-5); P = 0.08 and 0.17 are only 1 voxel apart at nz = 12 (-3)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:evidenceAgainst "2015-manukyan-ocellated-lizard-ca.py L135–L144: PDE discretization (lambda_c, nz, dz, dt, steps) are module constants not exposed on the CLI <https://github.com/fractastical/morpholib/blob/bd54e11/2015-manukyan-ocellated-lizard-ca.py#L135-L144>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-parameter-expressivity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-parameter-expressivity-3> ;
+        pk:hasScore "0.86"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2015-manukyan-ocellated-lizard-ca.py L901–L960" ;
+        dcterms:description "5-regime P sweep (3D or 2D) with P_eff, discretization ratio, Ashman D, labyrinth fraction; controls: equal diffusion, continuum P=1, insulated P=0" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/bd54e11/2015-manukyan-ocellated-lizard-ca.py#L901-L960> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2015-manukyan-ocellated-lizard-ca.py L1153–L1176" ;
+        dcterms:description "Panel D: 3D vs 2D discretization ratio and Ashman D vs P on a log axis with control annotations" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/bd54e11/2015-manukyan-ocellated-lizard-ca.py#L1153-L1176> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-manukyan-ocellated-lizard-ca-parameter-expressivity-3> a pk:EvidenceItem ;
+        rdfs:label "2015-manukyan-ocellated-lizard-ca.py L1672–L1700" ;
+        dcterms:description "CLI --P/--d/--seed extra 3D run; --rows/--cols/--steps wired into render_outputs" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/bd54e11/2015-manukyan-ocellated-lizard-ca.py#L1672-L1700> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Slot 009 Pass 3 autonomous loop assessor; v2 assessor was Gemini 4 Argon)" ;
+        dcterms:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "PGIc8/Aqtoy9TpGoqZ29ClCnXZeDVWEtu5uavLWDQt+czggPFASagSXceBrizQfGNPABlSTkrvIyl97Ajgrvx9G9BkhBfar2GlJlp0I/YGILLLbyD+L4shbLIRJm4klIBTdUDixWIflZlK4A7qlmKc8g9bCB5179IXIF1xoIB52tQ0EhqLzVVqPuz9tOHfEY0HTC8OhWOsJ9GdNexWeHQWwVygkPJoaKui4QCPGAyGW/oC7vI3TU5NQKy1M8C2nlxTz5L9mlm4PjR7YwVK3ZVqqqpFMv8dx5f7mUrCYnjIJZJKAH8YPvqON/wq2Vkg0ewscjGYDd6q0ZuPPC1oGQ8Q==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    this: rdfs:label "Manukyan et al. (2017) Nature hexagonal skin-scale border thickness reduction & outer-totalistic cellular automaton — 3D skin-volume reaction-diffusion (Pass 3) — Parameter expressivity 86/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T06:26:47Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-manukyan-ocellated-lizard-ca-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+

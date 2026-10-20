@@ -14,6 +14,18 @@ model_spec:
   arabidopsis_wt_sinus_repression_eta: 0.42
   cardamine_rco_sinus_repression_eta: 0.88
   critical_interpeak_wavelength_lambda_c: 14.0
+  # Pass 3 (2026-10-20) emergent contour integrator + cellular spring-lattice lamina
+  contour_allometric_radial_rate_k: 1.80
+  contour_margin_velocity_gain_kappa_n: 0.50
+  contour_normal_outgrowth_gain_kappa_normal: 0.30
+  mesh_cell_spacing_h: 0.026
+  mesh_vein_axis_anisotropy_a_vein: 0.20
+  mesh_lamina_stress_feedback_anisotropy_a_lamina: 0.0
+  mesh_canalization_k: 60.0
+  mesh_canalization_mu: 0.80
+  mesh_vein_conductance_threshold: 5.0
+  mesh_relaxation_eta: 0.05
+  mesh_relaxation_iterations: 180
   seed: 2011
   inputs:
     - datasets/allometric_compound_leaf/allometric_compound_leaf_reference.json
@@ -42,14 +54,14 @@ equations:
     variables: "A_i: epidermal margin auxin concentration in cell i; C_i: CUC2 transcription factor expression in cell i; K_A: auxin repression half-saturation threshold; γ_{CUC2}: CUC2 promotion strength on PIN1 up-the-gradient polarization; B_j = e^{β A_j}: Boltzmann up-the-gradient auxin weight"
     role: "Proves that transcriptional repression of CUC2 by auxin enforces strict spatial antiphase between auxin tooth peaks (A_{tip} > K_A) and CUC2 sinus maxima (C_{sinus} > C_{tip}), while CUC2 in the sinus flanks amplifies up-the-gradient PIN1 polarization toward nascent auxin maxima"
     source_citation: "Bilsborough et al. (2011) PNAS 108(8):3424-3429 Figs. 1-2 & SI Appendix Eqs. 1-6; Barkoulas et al. (2008) Nat. Genet. 40:1136-1141"
-    code_locus: "2011-przemyslaw-allometric-compound-leaf.py#L105-L240"
+    code_locus: "2011-przemyslaw-allometric-compound-leaf.py#L154-L317"
 
   - id: przemyslaw-allometric-compound-leaf-2
     law_name: "Bilsborough et al. (2011) Smooth Margin Collapse under cuc2 Loss-of-Function or Unrepressed Ectopic CUC2 Law"
     formula: "v_n(s) = G_A(s) (1 - η_{sinus} C(s))  ⇒  v_n(tip) - v_n(sinus) = (G_{tip} - G_{sinus})(1 - η_{sinus} C_{tip}) + G_{sinus} η_{sinus} (C_{sinus} - C_{tip}) = 0  when  (C ≡ 0 ∨ C ≡ C_0) ∧ G_{tip} = G_{sinus}"
     lean_decl: "MathOfBiology.Loop_037.margin_outgrowth_velocity"
     lean_theorem: "MathOfBiology.Loop_037.bilsborough_2011_mutant_smooth_margin_collapse"
-    lean_locus: "morphoeval/lean/loops/Loop_037_allometric_compound_leaf.lean#L81-L97"
+    lean_locus: "morphoeval/lean/loops/Loop_037_allometric_compound_leaf.lean#L80-L97"
     lean_code: |
       def margin_outgrowth_velocity (G_A S_max eta C : Int) : Int :=
         G_A * (S_max - eta * C)
@@ -65,14 +77,14 @@ equations:
     variables: "v_n(s): normal margin outgrowth velocity at arc-length s; G_A(s) = v_0 A(s)^m / (K_g^m + A(s)^m): auxin-promoted growth factor; η_{sinus}: sinus growth repression coefficient; C(s): CUC2 concentration"
     role: "Proves why both cuc2-1 loss-of-function (C = 0) and unrepressed uniform ectopic CUC2 expression (C = C_0 without auxin repression) abolish differential margin outgrowth (v_n(tip) - v_n(sinus) = 0, I_D = 0), collapsing serrated margins into smooth untoothed blades"
     source_citation: "Bilsborough et al. (2011) PNAS 108(8):3424-3429 Figs. 2-4"
-    code_locus: "2011-przemyslaw-allometric-compound-leaf.py#L243-L455"
+    code_locus: "2011-przemyslaw-allometric-compound-leaf.py#L318-L397"
 
   - id: przemyslaw-allometric-compound-leaf-3
     law_name: "Vlad et al. (2014) & Kierzkowski et al. (2019) RCO Sinus Growth Repression Enhances Tooth-to-Leaflet Dissection Depth Index Law"
     formula: "I_D(η) = (R_{tip} - R_{sinus}(η)) / R_{tip},  D(η_{Cardamine}) - D(η_{Arabidopsis}) = T G_{sinus} C_{sinus} (η_{Cardamine} - η_{Arabidopsis}) > 0  for  η_{Cardamine} > η_{Arabidopsis}"
     lean_decl: "MathOfBiology.Loop_037.dissection_depth_numerator"
     lean_theorem: "MathOfBiology.Loop_037.kierzkowski_2019_rco_compound_leaflet_dissection_enhancement"
-    lean_locus: "morphoeval/lean/loops/Loop_037_allometric_compound_leaf.lean#L118-L148"
+    lean_locus: "morphoeval/lean/loops/Loop_037_allometric_compound_leaf.lean#L116-L146"
     lean_code: |
       def tip_radius (R_0 T G_tip S_max : Int) : Int :=
         R_0 + T * G_tip * S_max
@@ -91,4 +103,41 @@ equations:
     variables: "R_{tip}, R_{sinus}(η): radial margin outgrowth at tooth/leaflet tips and sinuses after time T from primordium radius R_0; η_{Arabidopsis}, η_{Cardamine}: sinus growth repression strength without (Arabidopsis) vs with (Cardamine hirsuta) RCO homeobox expression; I_D = (R_{tip} - R_{sinus}) / R_{tip}: tooth-to-leaflet dissection depth index"
     role: "Proves that local RCO sinus growth repression in Cardamine hirsuta (η_{Cardamine} > η_{Arabidopsis}) strictly increases the tooth-to-sinus dissection depth R_{tip} - R_{sinus} without retarding tip outgrowth, transforming shallow Arabidopsis serrations into deeply incised compound leaflets reaching the rachis"
     source_citation: "Vlad et al. (2014) Science 343(6172):780-783 Figs. 1-4; Kierzkowski et al. (2019) Cell 177(6):1405-1418 Figs. 2-6"
-    code_locus: "2011-przemyslaw-allometric-compound-leaf.py#L458-L620"
+    code_locus: "2011-przemyslaw-allometric-compound-leaf.py#L417-L647"
+
+  - id: przemyslaw-allometric-compound-leaf-4
+    law_name: "Hamant et al. (2008) / Sampathkumar et al. (2014) Microtubule-Reinforced Anisotropic Growth Tensor Partition Law"
+    formula: "γ(θ) = g [1 + a (2 cos²θ − 1)]  ⇒  γ_∥ + γ_⊥ = 2g  ∧  γ_∥ − γ_⊥ = 2 g a > 0  (integer form γ(cos2) = g (S + a (2 cos2 − S)) with unit scale S)"
+    lean_decl: "MathOfBiology.Loop_037.anisotropic_growth_rate"
+    lean_theorem: "MathOfBiology.Loop_037.hamant_2008_microtubule_anisotropic_growth_partition"
+    lean_locus: "morphoeval/lean/loops/Loop_037_allometric_compound_leaf.lean#L164-L192"
+    lean_code: |
+      def anisotropic_growth_rate (g S a cos2 : Int) : Int :=
+        g * (S + a * (2 * cos2 - S))
+      theorem hamant_2008_microtubule_anisotropic_growth_partition
+          (g S a : Int) (hg : g > 0) (hS : S > 0) (ha : a > 0) :
+          anisotropic_growth_rate g S a S + anisotropic_growth_rate g S a 0 = 2 * g * S ∧
+          anisotropic_growth_rate g S a S - anisotropic_growth_rate g S a 0 = 2 * g * a * S ∧
+          anisotropic_growth_rate g S a S > anisotropic_growth_rate g S a 0
+    variables: "g: isotropic (areal) growth rate of a lamina element from the screened-Poisson growth field; a ∈ (0,1): cell-wall reinforcement anisotropy set by cortical microtubule/cellulose alignment (a_vein = 0.20 along procambial vein axes); θ: angle between a cell edge and the reinforcement axis d; γ_∥, γ_⊥: edge rest-length growth rates parallel / perpendicular to d"
+    role: "Proves that the anisotropic growth tensor used for every edge of the growing cellular spring-lattice lamina redistributes growth between the vein axis and its normal without changing areal growth (γ_∥ + γ_⊥ = 2g) and strictly favours elongation along the microtubule-reinforced axis (γ_∥ − γ_⊥ = 2ga > 0); mirrored numerically by hamant_partition_identity_error() and switched off in the MT-ablation run"
+    source_citation: "Hamant et al. (2008) Science 322(5908):1650-1655; Sampathkumar et al. (2014) eLife 3:e01967; Kierzkowski et al. (2019) Cell 177(6):1405-1418 (growth-based framework with polarity-aligned anisotropy)"
+    code_locus: "2011-przemyslaw-allometric-compound-leaf.py#L949-L1054"
+
+  - id: przemyslaw-allometric-compound-leaf-5
+    law_name: "Mitchison (1980) Flux-Canalization Conductance Feedback Law (lateral vein differentiation from marginal auxin convergence points)"
+    formula: "q_{ij} = D_{ij}(a_i − a_j),  D'_{ij} = D_{ij} + Δt (k q_{ij}² − μ D_{ij})  ⇒  (k q² > μ D ⇒ D' > D)  ∧  (q = 0, μ > 0, D > 0 ⇒ D' < D)"
+    lean_decl: "MathOfBiology.Loop_037.conductance_update"
+    lean_theorem: "MathOfBiology.Loop_037.mitchison_1980_canalization_conductance_feedback"
+    lean_locus: "morphoeval/lean/loops/Loop_037_allometric_compound_leaf.lean#L206-L224"
+    lean_code: |
+      def conductance_update (D dt k mu q : Int) : Int :=
+        D + dt * (k * q * q - mu * D)
+      theorem mitchison_1980_canalization_conductance_feedback
+          (D dt k mu q : Int) (hdt : dt > 0) (hmu : mu > 0) (hD : D > 0)
+          (hpos : k * q * q > mu * D) :
+          conductance_update D dt k mu q > D ∧ conductance_update D dt k mu 0 < D
+    variables: "a_i: auxin potential at lamina vertex i (unit sources at the boundary vertices nearest each CUC2-flanked convergence peak, sink on the procambial midvein); D_{ij}: cell-cell interface conductance (edge); q_{ij}: auxin flux through the edge; k = 60: flux-feedback gain; μ = 0.80: conductance decay; Δt = 0.25: canalization step; vein edge ⇔ D ≥ 5 D_0"
+    role: "Proves the monotone feedback that turns the sparse-solved auxin flux field into discrete lateral vein strands draining every marginal convergence point into the midvein (4/4 for Arabidopsis WT, 6/6 for Cardamine WT, none in cuc2-1); the vein edges then define the reinforcement axis d of equation 4"
+    source_citation: "Mitchison (1980) Proc. R. Soc. Lond. B 207:79-109; Scarpella, Marcos, Friml & Berleth (2006) Genes Dev 20(8):1015-1027 (marginal convergence points initiate vein strands)"
+    code_locus: "2011-przemyslaw-allometric-compound-leaf.py#L895-L947"

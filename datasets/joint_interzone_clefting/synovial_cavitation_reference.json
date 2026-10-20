@@ -1,0 +1,143 @@
+{
+  "metadata": {
+    "dataset_id": "synovial-cavitation-poroelastic-reference-v1",
+    "title": "Reduced Biot poroelastic synovial cavitation & articular morphogenesis reference table (Pass 3 of onuff-joint-interzone-clefting)",
+    "added_in": "Pass 3 remediation (2026-10-19-joint-interzone-clefting-audit-v3)",
+    "purpose": "Empirical anchors for the fluid-poroelastic synovial cavitation solver `simulate_poroelastic_cavitation()` in 2016-onuff-joint-interzone-clefting.py: which joint-cavitation outcomes are reported in the literature for motile, paralysed/muscle-less, and Noggin-null embryos, and which adult cartilage poroelastic constants the dimensionless model is scaled against.",
+    "sources": [
+      {
+        "id": "drachman1966",
+        "citation": "Drachman DB, Sokoloff L (1966). The role of movement in embryonic joint development. Developmental Biology 14(3):401-420.",
+        "doi": "10.1016/0012-1606(66)90022-4",
+        "finding": "Chick embryos paralysed with decamethonium or botulinum toxin from day 6-7 fail to form synovial joint cavities; the prospective interzone is replaced by continuous cartilage (ankylosis) at the knee, ankle and digits."
+      },
+      {
+        "id": "kahn2009",
+        "citation": "Kahn J, Shwartz Y, Blitz E, Krief S, Sharir A, Breitel DA, Rattenbach R, Relaix F, Maire P, Rountree RB, Kingsley DM, Zelzer E (2009). Muscle contraction is necessary to maintain joint progenitor cell fate. Developmental Cell 16(5):734-743.",
+        "doi": "10.1016/j.devcel.2009.04.013",
+        "finding": "In muscle-less (Pax3 Spd/Spd, Myf5/MyoD) and paralysed (mdg) mouse embryos, elbow/knee/digit joints are specified (Gdf5 lineage present) but fail to cavitate; Gdf5-lineage interzone cells lose their fate and differentiate into Sox9+/Col2a1+ chondrocytes, fusing the elements."
+      },
+      {
+        "id": "roddy2011",
+        "citation": "Roddy KA, Prendergast PJ, Murphy P (2011). Mechanical influences on morphogenesis of the knee joint revealed through morphological, molecular and computational analysis of immobilised embryos. PLoS ONE 6(2):e17526.",
+        "doi": "10.1371/journal.pone.0017526",
+        "finding": "Immobilised chick knee rudiments show reduced/absent cavitation and flattened, less defined articular surfaces (loss of condyle convexity); finite-element analysis localises peak hydrostatic pressure and strain to the prospective articular surfaces in motile embryos."
+      },
+      {
+        "id": "carter1988",
+        "citation": "Carter DR, Wong M (1988). The role of mechanical loading histories in the development of diarthrodial joints. Journal of Orthopaedic Research 6(6):804-816.",
+        "doi": "10.1002/jor.1100060604",
+        "finding": "Mechanobiological rule: intermittent hydrostatic pressure maintains/promotes cartilage and shapes convex-concave congruent articular surfaces; the loading history sets epiphyseal curvature."
+      },
+      {
+        "id": "edwards1994",
+        "citation": "Edwards JC, Wilkinson LS, Jones HM, Soothill P, Henderson KJ, Worrall JG, Pitsillides AA (1994). The formation of human synovial joint cavities: a possible role for hyaluronan and CD44 in altered interzone cohesion. Journal of Anatomy 185(Pt 2):355-367.",
+        "pmid": "7961140",
+        "finding": "Cavitation coincides with local hyaluronan (HA) accumulation and CD44 expression at the presumptive joint line, lowering interzone cell-cell cohesion so that the tissue separates under fluid/osmotic pressure."
+      },
+      {
+        "id": "dowthwaite1998",
+        "citation": "Dowthwaite GP, Edwards JC, Pitsillides AA (1998). An essential role for the interaction between hyaluronan and hyaluronan binding proteins during joint development. Journal of Histochemistry & Cytochemistry 46(5):641-651.",
+        "doi": "10.1177/002215549804600509",
+        "finding": "UDPGD/HA synthesis at the joint line is mechanosensitive; blocking HA-HABP interaction or immobilisation abolishes cavitation."
+      },
+      {
+        "id": "mow1980",
+        "citation": "Mow VC, Kuei SC, Lai WM, Armstrong CG (1980). Biphasic creep and stress relaxation of articular cartilage in compression: theory and experiments. Journal of Biomechanical Engineering 102(1):73-84.",
+        "doi": "10.1115/1.3138202",
+        "finding": "Biphasic (poroelastic) theory of articular cartilage: solid matrix + interstitial fluid with Darcy drag; adult bovine aggregate modulus H_A ~ 0.5-0.9 MPa and hydraulic permeability k ~ 1-8 x 10^-15 m^4 N^-1 s^-1."
+      },
+      {
+        "id": "maroudas1976",
+        "citation": "Maroudas A (1976). Balance between swelling pressure and collagen tension in normal and degenerate cartilage. Nature 260(5554):808-809.",
+        "doi": "10.1038/260808a0",
+        "finding": "Donnan osmotic swelling pressure of adult articular cartilage ~ 0.1-0.25 MPa, balanced by matrix (collagen) tension."
+      }
+    ]
+  },
+  "reduced_model": {
+    "name": "Reduced 2D Biot poroelastic synovial cavitation and Carter-Wong articular morphogenesis solver, one-way coupled to the GDF5-Noggin reaction-diffusion interzone field",
+    "fields": {
+      "G(x,y)": "normalised Gdf5+/Wnt9a+ interzone field from the 2D digit-ray reaction-diffusion PDE (input coupling)",
+      "H(x,y,t)": "hyaluronan (HA) content secreted by interzone cells",
+      "p(x,y,t)": "excess interstitial (pore) fluid pressure",
+      "c(x,y,t)": "synovial cavity phase field in [0, 1]",
+      "a(y)": "articular arch (sagitta) of the joint line, convex proximal head / concave distal base"
+    },
+    "equations": {
+      "ha_synthesis": "dH/dt = k_H * phi(m_load) * G - delta_H * H + D_H * lap(H),  phi(m) = m^2 / (K_m^2 + m^2) / phi(1)  (mechanosensitive UDPGD/HA synthesis; Dowthwaite 1998)",
+      "biot_storage": "S * dp/dt = kappa_p * lap(p) + gamma_osm * (beta_osm * H - p)  inside the rod;  p = 0 on the perichondrial boundary (free drainage; Mow 1980 biphasic, linearised Donnan source; Maroudas 1976)",
+      "cohesion": "sigma_coh = sigma_0 * (1 - kappa_G * G)  (HA/CD44-mediated loss of interzone cohesion; Edwards 1994)",
+      "cavitation": "dc/dt = r_c * max(p - sigma_coh, 0) * (1 - c)  (irreversible tissue separation where pore pressure exceeds cohesion)",
+      "articular_arch": "a(y) = A_arc * phi(m_load) * (1 - (y / W)^2)  (Carter & Wong 1988 hydrostatic-pressure rule; midline convex proximal head and congruent concave distal base)",
+      "chondrogenic_reversion": "Sox9_interzone = 1 - 0.96 * G * (1 - 0.85 * (1 - phi(m_load)))  (Kahn 2009: unloaded Gdf5-lineage cells re-express Sox9/Col2a1)",
+      "steady_state_gate": "p_ss = beta_osm * k_H * phi(m_load) * G / delta_H;  cavity iff p_ss > sigma_0 (1 - kappa_G G)  (Lean theorem MathOfBiology.Loop_018.poroelastic_cavitation_requires_load_and_interzone)",
+      "darcy_lens": "with p = 0 at y = +/-W and uniform source s, kappa p'' + s = 0 gives 2 kappa p(y) = s (W^2 - y^2): maximal on the midline (Lean theorem MathOfBiology.Loop_018.darcy_lens_cavity_midline_maximum)"
+    },
+    "baseline_parameters": {
+      "k_H": 2.0,
+      "delta_H": 2.0,
+      "D_H": 0.004,
+      "K_m": 0.5,
+      "K_identity": 0.30,
+      "S": 1.0,
+      "kappa_p": 0.006,
+      "gamma_osm": 2.0,
+      "beta_osm": 1.0,
+      "sigma_0": 1.0,
+      "kappa_G": 0.5,
+      "r_c": 3.0,
+      "A_arc_over_W": 0.22,
+      "dt": 0.01,
+      "n_steps": 600,
+      "grid_nx_ny": [360, 72],
+      "m_load_wild_type": 1.0,
+      "m_load_immobilised": 0.0,
+      "permeability_wild_type": 1.0
+    },
+    "interzone_identity_note": "G entering the solver is the Hill transform G_RD^4 / (K_identity^4 + G_RD^4) of the RD Gdf5 profile so that each Gdf5+ domain acts as one interzone irrespective of its RD amplitude (the DIP peak of the RD profile is 0.56 of the MCP peak).",
+    "dimensional_scaling_note": "The model is dimensionless. beta_osm = 1 corresponds to the Donnan swelling pressure scale (~0.1-0.25 MPa in adult cartilage, Maroudas 1976); kappa_p = 1 corresponds to k * H_A / (W^2) with adult bovine k ~ 4e-15 m^4/(N s) and H_A ~ 0.7 MPa (Mow 1980). Embryonic interzone values are not available in the cited literature; this is carried as an open remediation item."
+  },
+  "cavitation_outcomes": {
+    "section": "Drachman & Sokoloff (1966); Kahn et al. (2009); Roddy et al. (2011); Brunet et al. (1998)",
+    "conditions": [
+      {
+        "condition_id": "motile_wild_type",
+        "label": "Motile wild-type embryo (muscle contraction present)",
+        "m_load": 1.0,
+        "noggin_dose": 1.0,
+        "gdf5_dose": 1.0,
+        "n_gdf5_interzones_expected": 3,
+        "n_cavities_expected": 3,
+        "articular_surface": "convex proximal head / concave distal base (congruent)",
+        "source_ids": ["edwards1994", "carter1988", "roddy2011"]
+      },
+      {
+        "condition_id": "paralysed_immobilised",
+        "label": "Paralysed / muscle-less embryo (decamethonium, botulinum toxin, Pax3 Spd/Spd)",
+        "m_load": 0.0,
+        "noggin_dose": 1.0,
+        "gdf5_dose": 1.0,
+        "n_gdf5_interzones_expected": 3,
+        "n_cavities_expected": 0,
+        "articular_surface": "flattened, interzone re-chondrified (Sox9+/Col2a1+), elements fused",
+        "source_ids": ["drachman1966", "kahn2009", "roddy2011"]
+      },
+      {
+        "condition_id": "noggin_null_no_interzone",
+        "label": "Noggin null (Nog-/-): no Gdf5+ interzone is specified",
+        "m_load": 1.0,
+        "noggin_dose": 0.0,
+        "gdf5_dose": 0.15,
+        "n_gdf5_interzones_expected": 0,
+        "n_cavities_expected": 0,
+        "articular_surface": "none (continuous cartilage rod)",
+        "source_ids": ["brunet1998"]
+      }
+    ]
+  },
+  "specimen_articular_arc": {
+    "method": "For each PIP/DIP joint of the segmented radiograph digits, the radiolucent joint-space minimum s_min(o) is traced along lines parallel to the digit centerline at lateral offsets o in [-9, 9] px (3x3 mean, window +/-6 px about the centerline cleft); a quadratic s_min(o) = s0 + b o + a o^2 is fitted with contrast weights; the dimensionless sagitta is -a * W_off (W_off = 9 px). Positive = joint line most distal on the midline = convex proximal head / concave distal base (Carter-Wong geometry).",
+    "note": "The vendored specimen is a juvenile hand radiograph with open physes: the deepest radiolucent minimum on the centerline is the joint space, while a shallower second minimum ~10-12 px distal is the epiphyseal growth plate. Digit II's distal half has little bone contrast on the stored centerline, so its DIP measurement is excluded by the contrast gate."
+  }
+}

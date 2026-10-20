@@ -1,0 +1,106 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-wolpert-french-flag-morphogen> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-wolpert-french-flag-morphogen-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-wolpert-french-flag-morphogen-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Wolpert (1969) French Flag positional information, Tickle-Wolpert (1975) chick limb ZPA digit duplication, Ben-Zvi-Barkai (2010) scaling & 2D AER-FGF / ZPA-Shh limb bud paddle — Reproducibility package: 91/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`--self-test` now runs 11 checks (L1630-1705): SHA-256 of 4 artefacts, 1D PDE convergence, ER scaling, the full Tickle dose series in 1D, Monte Carlo bitwise reproducibility, specimen segmentation, 2D stencil verification, 2D digit / dose / asymmetry readouts, truncation monotonicity and Shh collapse, bitwise determinism of the 2D solver (no RNG), and the 16-measurement contract; the default render takes 17 s and the self-test 44 s; the CLI documents all parameters (L1708-1750). Deductions: no lock file pins the numpy / scipy / matplotlib / Pillow versions recorded in this audit (-5); when `~/.matplotlib` is not writable the run emits font-cache warnings and writes a temporary cache, which the script does not control via MPLCONFIGDIR (-2); the GIF palettes are quantised from the last frame, so byte-identity across Pillow versions is not guaranteed (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:evidenceAgainst "1969-wolpert-french-flag-morphogen.py L1341–L1344: GIF palette quantised from the final frame; Pillow-version dependent bytes (deduction) <https://github.com/fractastical/morpholib/blob/469bf3c/1969-wolpert-french-flag-morphogen.py#L1341-L1344>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-wolpert-french-flag-morphogen-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-wolpert-french-flag-morphogen-repro-package-2> ;
+        pk:hasScore "0.91"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-wolpert-french-flag-morphogen-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "1969-wolpert-french-flag-morphogen.py L1630–L1705" ;
+        dct:description "11-check deterministic self_test() incl. 2D determinism (check 10) and 16-measurement contract (check 11)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/469bf3c/1969-wolpert-french-flag-morphogen.py#L1630-L1705> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-wolpert-french-flag-morphogen-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "1969-wolpert-french-flag-morphogen.py L1708–L1750" ;
+        dct:description "argparse CLI with all 1D and 2D parameters and three output paths" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/469bf3c/1969-wolpert-french-flag-morphogen.py#L1708-L1750> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary, Pass 3 remediation + re-score)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/11> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/jez.1401080304>,
+            <https://doi.org/10.1016/0092-8674(93)90626-2>,
+            <https://doi.org/10.1016/0092-8674(94)90030-2>,
+            <https://doi.org/10.1016/S0022-5193(69)80016-0>,
+            <https://doi.org/10.1016/S0092-8674(00)80999-X>,
+            <https://doi.org/10.1038/225420a0>,
+            <https://doi.org/10.1038/244492a0>,
+            <https://doi.org/10.1038/254199a0>,
+            <https://doi.org/10.1038/289295a0>,
+            <https://doi.org/10.1038/371609a0>,
+            <https://doi.org/10.1073/pnas.0912734107>,
+            <https://pubmed.ncbi.nlm.nih.gov/4463222/> .
+    <https://doi.org/10.1002/jez.1401080304> dct:date "1948"^^xsd:gYear ;
+        dct:title "The proximo-distal sequence of origin of the parts of the chick wing and the role of the ectoderm" .
+    <https://doi.org/10.1016/0092-8674(93)90626-2> dct:date "1993"^^xsd:gYear ;
+        dct:title "Sonic hedgehog mediates the polarizing activity of the ZPA" .
+    <https://doi.org/10.1016/0092-8674(94)90030-2> dct:date "1994"^^xsd:gYear ;
+        dct:title "Sonic hedgehog and Fgf-4 act through a signaling cascade and feedback loop to integrate growth and patterning of the developing limb bud" .
+    <https://doi.org/10.1016/S0022-5193(69)80016-0> dct:date "1969"^^xsd:gYear ;
+        dct:title "Positional information and the spatial pattern of cellular differentiation" .
+    <https://doi.org/10.1016/S0092-8674(00)80999-X> dct:date "1996"^^xsd:gYear ;
+        dct:title "Roles for FGF8 in the induction, initiation, and maintenance of chick limb development" .
+    <https://doi.org/10.1038/225420a0> dct:date "1970"^^xsd:gYear ;
+        dct:title "Diffusion in embryogenesis" .
+    <https://doi.org/10.1038/244492a0> dct:date "1973"^^xsd:gYear ;
+        dct:title "Positional information in chick limb morphogenesis" .
+    <https://doi.org/10.1038/254199a0> dct:date "1975"^^xsd:gYear ;
+        dct:title "Positional signalling and specification of digits in chick limb morphogenesis" .
+    <https://doi.org/10.1038/289295a0> dct:date "1981"^^xsd:gYear ;
+        dct:title "The number of polarizing region cells required to specify additional digits in the developing chick wing" .
+    <https://doi.org/10.1038/371609a0> dct:date "1994"^^xsd:gYear ;
+        dct:title "A positive feedback loop coordinates growth and patterning in the vertebrate limb" .
+    <https://doi.org/10.1073/pnas.0912734107> dct:date "2010"^^xsd:gYear ;
+        dct:title "Scaling of morphogen gradients by an expansion-repression integral feedback control" .
+    <https://pubmed.ncbi.nlm.nih.gov/4463222/> dct:date "1974"^^xsd:gYear ;
+        dct:title "A quantitative analysis of the effect of excision of the AER from the chick limb-bud" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Wolpert (1969) French Flag positional information, Tickle-Wolpert (1975) chick limb ZPA digit duplication, Ben-Zvi-Barkai (2010) scaling & 2D AER-FGF / ZPA-Shh limb bud paddle — Reproducibility package 91/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T06:33:59Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-wolpert-french-flag-morphogen-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/11> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

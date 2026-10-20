@@ -1,0 +1,313 @@
+# MorphoEval audit — Sheth et al. (2012) Science Distal Hox/Gli3 Dose Modulation of Turing Digit Wavelength & Polydactyly, 2026-10-19 (v3)
+#
+# Pass 3 post-remediation evaluation of `2012-sheth-hox-turing-polydactyly.py` (v3, 1619 lines; 14 self-test
+# checks; 15 measurements) after closing the single open Pass 2 remediation item in the instrumented loop
+# `morphoeval/runs/2026-10-19-hox-turing-polydactyly-loop-pass3`, superseding
+# `2026-10-19-hox-turing-polydactyly-audit-v2` (92.1).
+#
+# What Pass 3 changed:
+#   1. `integrate_sheth_growing_fan_limb_pde` (L512-703): the fan sector r in [r_prox, R(t)] now grows through an
+#      AER-FGF8 mitogen field M = A(t) exp(-(R-r)/l_F) with prescribed kinematic area dilation g = g_max M, radial
+#      tissue velocity from mass conservation, rim outgrowth dR/dt = v(R,t), Lagrangian material tracers (the
+#      deforming tissue mesh), and the Sheth et al. (2012) reaction-diffusion system in ALE form with the Crampin,
+#      Gaffney & Maini (1999) dilution term -(div v) u, advection relative to the mesh, implicit angular DCT-II
+#      modes on the physical arc Theta r(t) and backward-Euler radial diffusion. g_max is calibrated by Brent root
+#      find so the WT arc reaches 2500 um (L457-488).
+#   2. `run_aer_growth_sweep` (L706-730) and `run_aer_ablation_series` (L733-752): g_max sweep (5 x 2 genotypes) and
+#      AER ablation at t_abl in {0.6, 1.2, 1.8} (Summerbell 1974 ordering) tested against the quasi-static law
+#      N = L(T)/lambda(H).
+#   3. New Panels I-L (L1102-1179), a 2x8 growth-mesh time-lapse PNG (L1181-1239) and 8 growth frames appended to the
+#      GIF (L1241-1264); 7 new measurements (L1315-1386); 6 new self-test checks (L1526-1571); CLI --g-max,
+#      --aer-ablation-time, --growth-only (L1591-1593).
+#   4. Lean 4 Theorems 4-5 (`sheth_growing_autopod_digit_number_law`, `sheth_growth_dilution_turing_threshold`,
+#      Loop_015_hox_turing_polydactyly.lean L117-174, 0 sorrys) registered in the math KG YAML; new pinned dataset
+#      table `pass3_aer_growth_reference.json` and 4 verified DOIs appended to `paper_citations.bib` (re-pinned).
+#
+# What the remediation exposed (scored down where it matters):
+#   - The noise-only growing fan yields N_grow = 3.5 digit wavelengths for WT (law 5.0) and 13.0 for the triple null
+#     (law 14.0): a growth-induced wavelength lag. The Pass 2 fixed-width fan and 1D arc reach exactly 5 / 14 only
+#     because they SEED the target cosine mode (L284, L375-376); the "exact integer mode lock" credited in v2 is
+#     therefore partly an initial-condition artefact.
+#   - Growth is kinematic (prescribed dilation; no constitutive law or stress balance) and digit-ray orientation is
+#     imposed by PD/AP diffusion anisotropy (eps_r = 0.05, L631), not derived from the Fgf/Wnt gradient.
+#   - g_u(H) = 200 f_u + 25 k_c^4 - 4.5 |tr J_kc| (L183) and k_c(H) = 14 - 9H (L179) are closure ansaetze that pin
+#     sigma_max ~ 4.5 and interpolate the allelic series; neither is a parameter of Sheth et al.'s supplement.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale. Line numbers refer to the files
+# at commit 58b898c (working tree of the Pass 3 loop).
+
+audit:
+  id: 2026-10-19-hox-turing-polydactyly-audit-v3
+  supersedes_audit_id: 2026-10-19-hox-turing-polydactyly-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (Slot 015 Pass 3 autonomous loop builder + assessor)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Slot 015 Pass 1-2 assessor; v2 scores carried as the comparison baseline)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 58b898c
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) post-remediation evaluation of `2012-sheth-hox-turing-polydactyly.py`
+      after closing Step 12 of `2026-10-19-hox-turing-polydactyly-loop` in the Pass 3 loop
+      `2026-10-19-hox-turing-polydactyly-loop-pass3`. --self-test 14/14 in ~25 s; default
+      render ~66 s (12-panel PNG, 2x8 growth-mesh PNG, 14-frame GIF).
+
+references:
+  sheth2012:
+    title: "Hox genes regulate digit patterning by controlling the wavelength of a Turing-type mechanism"
+    authors: "Sheth R, Marcon L, Bastida MF, Junco M, Quintana L, Dahn R, Kmita M, Sharpe J, Ros MA"
+    venue: "Science 338(6113):1476-1480 (2012)"
+    doi: 10.1126/science.1226804
+  raspopovic2014:
+    title: "Digit patterning is controlled by a Bmp-Sox9-Wnt Turing network modulated by morphogen gradients"
+    authors: "Raspopovic J, Marcon L, Russo L, Sharpe J"
+    venue: "Science 345(6196):566-570 (2014)"
+    doi: 10.1126/science.1252960
+  newman1979:
+    title: "Dynamics of skeletal pattern formation in developing chick limb"
+    authors: "Newman SA, Frisch HL"
+    venue: "Science 205(4407):662-668 (1979)"
+    doi: 10.1126/science.462174
+  miura2006:
+    title: "Mixed-mode pattern in Doublefoot mutant mouse limb—Turing reaction-diffusion model on a growing domain during limb development"
+    authors: "Miura T, Shiota K, Morriss-Kay G, Maini PK"
+    venue: "Journal of Theoretical Biology 240(4):562-573 (2006)"
+    doi: 10.1016/j.jtbi.2005.10.016
+  crampin1999:
+    title: "Reaction and diffusion on growing domains: scenarios for robust pattern formation"
+    authors: "Crampin EJ, Gaffney EA, Maini PK"
+    venue: "Bulletin of Mathematical Biology 61(6):1093-1120 (1999)"
+    doi: 10.1006/bulm.1999.0131
+  boehm2010:
+    title: "The role of spatially controlled cell proliferation in limb bud morphogenesis"
+    authors: "Boehm B, Westerberg H, Lesnicar-Pucko G, Raja S, Rautschka M, Cotterell J, Swoger J, Sharpe J"
+    venue: "PLoS Biology 8(7):e1000420 (2010)"
+    doi: 10.1371/journal.pbio.1000420
+  summerbell1974:
+    title: "A quantitative analysis of the effect of excision of the AER from the chick limb-bud"
+    authors: "Summerbell D"
+    venue: "Journal of Embryology and Experimental Morphology 32(3):651-660 (1974)"
+    doi: 10.1242/dev.32.3.651
+  kondo2010:
+    title: "Reaction-diffusion model as a framework for understanding biological pattern formation"
+    authors: "Kondo S, Miura T"
+    venue: "Science 329(5999):1616-1620 (2010)"
+    doi: 10.1126/science.1179047
+
+simulations:
+  - id: sheth-hox-turing-polydactyly
+    name: "Sheth et al. (2012) Science distal Hoxa13/Hoxd11-13 + Gli3 dose modulation of Turing digit wavelength on a fan-shaped embryonic autopod, with Pass 3 AER-FGF8 mitogenic outgrowth on a deforming Lagrangian mesh"
+    organism: "Vertebrate embryonic autopod (Mus musculus distal Hox/Gli3 allelic series & postaxial hexadactylous autopod radiograph)"
+    script: 2012-sheth-hox-turing-polydactyly.py
+    output: docs/media/hox_turing_polydactyly_comparison.png
+    extra_outputs:
+      - docs/media/hox_turing_polydactyly_growth.gif
+      - docs/media/hox_turing_polydactyly_growth_mesh.png
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-hox-turing-polydactyly-audit-v2
+    source_refs:
+      - sheth2012
+      - raspopovic2014
+      - newman1979
+      - miura2006
+      - crampin1999
+      - boehm2010
+      - summerbell1974
+      - kondo2010
+    claim_boundary:
+      reported_in_source:
+        - "Sheth et al. (2012): progressive loss of distal Hox (Hoxa13, Hoxd11-13) in a Gli3-null background shrinks the digit period (wavelength) of a Turing-type mechanism, raising digit number from 5 to ~14 at roughly constant autopod width (Figs. 1-3)"
+        - "Crampin, Gaffney & Maini (1999): on a growing domain the reaction-diffusion equations acquire an advection term and a dilution term -(div v) u; patterns lag the fixed-domain wavelength and transition by peak insertion / frequency doubling"
+        - "Boehm et al. (2010): limb bud proliferation is distally biased but a proliferation gradient alone is insufficient to explain bud shape"
+        - "Summerbell (1974): AER excision arrests distal outgrowth; the earlier the excision the more proximal the truncation"
+      reconstructed_in_script:
+        - "Sheth et al. (2012) linear dispersion, k_c(H) and the cubic-saturated two-component PDE on a 1D Neumann arc and a 2D fixed-width polar fan (Pass 2), plus the Pass 3 AER-FGF8 kinematic growing fan in ALE form with dilution, mesh-relative advection, physical-metric angular modes, backward-Euler radial diffusion, Lagrangian tracers, AER regression and ablation, a g_max sweep and the quasi-static digit-number/width law; 6-genotype allelic series; dual negative controls; radiograph digit-ray segmentation; 5 Lean 4 theorems"
+      transfer_boundary:
+        - "Growth is kinematic: g(r,t) is prescribed by the mitogen field and div v = g; no elastic/viscous constitutive law, stress balance or oriented cell behaviour is solved (Boehm et al. 2010 show these matter for shape)"
+        - "Digit-ray (stripe) orientation is imposed by PD/AP diffusion anisotropy D_r = 0.05 D rather than derived from the Fgf/Wnt proximodistal modulation of Raspopovic et al. (2014)"
+        - "k_c(H) = 14 - 9H and g_u(H) = 200 f_u + 25 k_c^4 - 4.5|tr J_kc| are closure ansaetze that interpolate the allelic series and pin sigma_max ~ 4.5; they are not fitted to Sheth et al.'s supplementary parameter values"
+        - "The 1D arc and fixed-width fan solvers seed the target cosine mode (-0.08 cos(n_target s)); only the Pass 3 growing fan evolves from seeded noise alone, and it shows a growth-induced wavelength lag (N_grow = 3.5 WT, 13.0 null vs law 5 / 14)"
+      does_not_claim:
+        - "3D limb bud geometry, cell-level mechanics, Sox9/Bmp/Wnt three-node kinetics, quantitative reproduction of Sheth et al.'s Fig. 2G digit-period measurements (not vendored), or hour-calibrated developmental time"
+    summary: >-
+      Pass 3 (v3) post-remediation evaluation of `2012-sheth-hox-turing-polydactyly.py`
+      (overall weighted score: 91.3 / 100, -0.8 from 92.1 in Pass 2). The single open Pass 2
+      item is closed as an honest reduced version: the 2D polar fan Turing solver is now coupled
+      to a deforming Lagrangian mesh whose distal rim grows under an AER-FGF8 mitogen field with
+      prescribed kinematic dilation, solved in the Crampin-Gaffney-Maini ALE form (dilution,
+      mesh-relative advection, deformed polar metric, backward-Euler radial diffusion). The
+      growing fan reproduces monotone digit addition with Hox loss (N_grow = 3.5, 5.5, 7.5, 13.0
+      for H = 1, 7/9, 5/9, 0), monotone digit number with AER-driven width over a g_max sweep
+      (r = 0.996 against N = L/lambda, slope 0.90), the Summerbell AER-ablation ordering
+      (L = 1365, 1667, 1990, 2500 um), and the growth-dilution threshold sigma_max - g_rim = 2.54
+      > 0 (Lean Theorem 5). The remediation also exposed that the Pass 2 solvers seed their target
+      mode and that the WT growing fan under-counts digits (3.5 vs 5) through a growth-induced
+      wavelength lag; model-fidelity, specimen-match and morphometric-validation are scored down
+      accordingly while traceability and reproducibility rise.
+    scores:
+      model-fidelity:
+        value: 92
+        rationale: >-
+          Retains the exact Sheth et al. (2012) dispersion and cubic PDE (L160-243, L248-328) and adds the
+          growing-domain reaction-diffusion equations in the Crampin, Gaffney & Maini (1999) form with every term
+          present: AER-FGF8 mitogen field and kinematic dilation (L587), radial velocity from mass conservation
+          (L589-591), ALE advection relative to the mesh (L614-622), dilution -g u / -g v folded into the implicit
+          linear operator (L607-610), physical-metric angular modes k_m = pi m / (Theta r(t)) (L606), backward-Euler
+          polar radial diffusion (L631-643), rim outgrowth and Lagrangian tracers (L646-647); the mathematics is
+          backed by Lean Theorems 4-5 (0 sorrys). Deductions: growth is kinematic with no constitutive law or
+          stress balance, so "tissue mechanics" is only partially met (-3); stripe orientation is imposed by
+          eps_r = 0.05 diffusion anisotropy (L631) instead of the Fgf/Wnt gradient of Raspopovic et al. (-2);
+          g_u(H) (L183) and k_c(H) = 14 - 9H (L179) are closure ansaetze not taken from the paper's supplement (-2);
+          the 1D arc and fixed fan seed the target mode (L284, L375-376), which the growing fan shows matters (-1).
+        evidence:
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [160, 243], note: "Sheth et al. (2012) linear Turing dispersion, k_c(H), unstable band and sigma_max; g_u closure ansatz at L183 and k_c(H) = 14 - 9H at L179 are not paper parameters", supports: true}
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [512, 703], note: "Pass 3 ALE growing-fan solver: mitogen field, mass-conservation velocity, mesh-relative upwind advection, implicit dilution, physical-metric DCT modes, backward-Euler radial diffusion, tracers, snapshots", supports: true}
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [457, 488], note: "Outgrowth ODE dR/dt = v(R,t) and Brent calibration of g_max to the 2500 um WT arc", supports: true}
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [284, 284], note: "1D arc seeds -0.08 cos(n_target s): the Pass 2 'exact integer mode lock' is partly an initial-condition artefact (growing fan without seeding gives 3.5 for WT)", supports: false}
+          - {file: morphoeval/lean/loops/Loop_015_hox_turing_polydactyly.lean, lines: [117, 174], note: "Theorems 4 (digit number = width / wavelength, Nat.div monotonicity + instances) and 5 (dilution-shifted eigenvalue sigma - g) verified with lean 4.35.0, 0 sorrys", supports: true}
+      specimen-match:
+        value: 88
+        rationale: >-
+          The radiograph segmentation (Panels E-F, L820-878) and the inter-digit regularity comparison (Panel H)
+          are unchanged and still visible; the new Panels I-J and the growth-mesh PNG show a narrow early bud
+          widening into a fan with radial digit rays splaying from a quiescent wrist zone, which is closer to the
+          morphology of a developing autopod than the Pass 2 fixed paddles, and the triple-null growing fan carries
+          13 thin closely spaced rays as in Sheth et al.'s Fig. 1G. Deductions: the WT growing fan shows 3.5
+          oblique, partly irregular rays rather than 5 straight digits (Panel I; growth lag plus noise-only
+          initiation) (-5); still no side-by-side with Sheth et al.'s own Sox9 in situ panels, only a human
+          radiograph of a different genotype/species (-4); digit rays stop at the sub-Turing wrist gate (L601-603)
+          and never connect to the zeugopod elements (-2); fan edges are straight sector rays, not the rounded
+          AER contour of a real bud (-1).
+        evidence:
+          - {file: docs/media/hox_turing_polydactyly_comparison.png, lines: [0, 0], note: "12-panel figure: Panels E-F-H specimen segmentation visible; Panels I-J AER-grown WT (3.5 oblique rays) and triple-null (13 rays) fans with white material mesh and red AER rim", supports: true}
+          - {file: docs/media/hox_turing_polydactyly_growth_mesh.png, lines: [0, 0], note: "2x8 time-lapse: bud widening from L = 1376 to 2500 um with tracer circles spreading distally; digits appear after AER regression (A -> 0)", supports: true}
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [820, 878], note: "Specimen segmentation of 6 digit rays on the SHA-256-locked radiograph (unchanged from Pass 2)", supports: true}
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [884, 907], note: "_draw_growing_fan: tracer circles/rays and AER rim overlay; the WT panel's 3.5 wavelengths are visibly not pentadactyl", supports: false}
+      parameter-expressivity:
+        value: 93
+        rationale: >-
+          Two new, biologically meaningful control axes are exercised and behave monotonically: AER mitogenic
+          strength g_max (5 values x 2 genotypes, L706-730; L(T) 1410 -> 2947 um and N_grow 2.0 -> 4.5 WT,
+          7.5 -> 15.0 null) and AER ablation time (L733-752; L = 1365, 1667, 1990, 2500 um with N_grow
+          non-decreasing), on top of the Pass 2 Hox dose, diffusivities and kinetic couplings; the growing fan
+          allelic series is strictly monotone in H (self-test check 10, L1536-1542) and the CLI exposes --g-max,
+          --aer-ablation-time and --growth-only (L1591-1593). Deductions: l_F, eps_r, noise_amp, t_aer_off are
+          fixed constants, not swept (-3); N_grow is quantised to half-wavelengths so small parameter changes
+          are invisible (-2); the growth lag means g_max does not map onto the law line (slope 0.90) (-2).
+        evidence:
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [706, 752], note: "run_aer_growth_sweep (g_max in {0.5, 1.0, 1.5, g_cal, 2.5} x H in {1, 0}) and run_aer_ablation_series (t_abl in {0.6, 1.2, 1.8, intact})", supports: true}
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [1544, 1560], note: "Self-test checks 11-12 assert monotone L(T) and non-decreasing N_grow over the sweep and the ablation series for both genotypes", supports: true}
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [1584, 1594], note: "CLI flags including the Pass 3 --g-max, --aer-ablation-time, --growth-only", supports: true}
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [431, 445], note: "GROWTH_* constants (l_F, eps_r, noise_amp, t_aer_off, R0) are fixed and not swept", supports: false}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          `measure_morphoeval()` now returns 15 reference-backed measurements (L1281-1470): the 8 Pass 2 metrics
+          plus the calibrated WT arc (2500.0 vs 2500 um), growing-fan WT and null wavelength counts (3.5 vs 5.0;
+          13.0 vs 13.6), the growing-fan allelic Pearson r vs k_c(H), the width-law Pearson r over 18 runs
+          (0.996, slope 0.90), the AER-ablation arc fraction (0.546) and the dilution margin sigma_max - g_rim
+          (2.54). Deductions: the WT growing-fan count misses its reference by 30 % and is explained rather than
+          resolved (-4); several Pass 3 references are qualitative or model-internal (Summerbell ordering with
+          reference 1.0 = intact control, Crampin threshold 0.0, law r = 1.0) rather than measured specimen values
+          (-4); Sheth et al.'s Fig. 2G digit-period / width data are still not digitised into the dataset (-2).
+        evidence:
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [1315, 1386], note: "7 Pass 3 measurements with reference_value, unit, method, source and note (arc width, N_grow WT/null, allelic r, width-law r + slope, ablation fraction, dilution margin)", supports: true}
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [1388, 1470], note: "8 Pass 2 measurements retained (PDE digit counts, wavelength ratio, inverse-wavelength r, controls, radiograph CV)", supports: true}
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [1364, 1376], note: "AER-ablation measurement uses the intact control (1.0) as reference: Summerbell (1974) stage-vs-truncation values are not vendored", supports: false}
+      source-traceability:
+        value: 95
+        rationale: >-
+          Five dataset files are SHA-256-pinned and verified at import (L109-142), including the new
+          `pass3_aer_growth_reference.json` (parameters, equations, five DOI-bearing sources, honesty note) and
+          the re-pinned `paper_citations.bib` with four appended entries whose DOIs (10.1006/bulm.1999.0131,
+          10.1371/journal.pbio.1000420, 10.1242/dev.32.3.651, 10.1126/science.1179047) were resolved against
+          doi.org during the loop; the dataset README documents the Pass 3 table, outputs and residuals. Deduction:
+          growth constants (R0, l_F, t_aer_off) are modelling choices without a measured limb-bud source (-3);
+          the Summerbell anchor is qualitative (-2).
+        evidence:
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [109, 142], note: "EXPECTED_SHA256 for 5 files incl. pass3_aer_growth_reference.json and the re-pinned bib; fail-closed verify_dataset_sha256", supports: true}
+          - {file: datasets/hox_turing_polydactyly/pass3_aer_growth_reference.json, lines: [1, 80], note: "Pass 3 reference table: sources with DOIs, growth-model equations and parameters, expected behaviours, honesty note", supports: true}
+          - {file: datasets/hox_turing_polydactyly/paper_citations.bib, lines: [45, 89], note: "Four Pass 3 BibTeX entries (Crampin 1999, Boehm 2010, Summerbell 1974, Kondo & Miura 2010)", supports: true}
+          - {file: datasets/hox_turing_polydactyly/README.md, lines: [29, 39], note: "README section 5 and Pass 3 outputs documenting the growth table, SHA-256 digests and residuals", supports: true}
+      code-traceability:
+        value: 93
+        rationale: >-
+          The module docstring (L1-72) now maps the growing-domain equations term by term to Crampin et al.
+          (1999), Boehm et al. (2010) and Summerbell (1974) and lists all five Lean theorems; the solver docstring
+          (L527-551) restates the ALE equations, the zone kinetics and the Lean cross-references; the math KG YAML
+          registers Laws 4-5 with lean_code, code_locus and source citations. Deductions: the g_u closure (L183)
+          remains uncited; GROWTH_* constants (L431-445) carry comments but no source; the choice of the
+          sub-Turing wrist gate f_u = 1.5 / g_u = 1500 (L601-603) is traced only to the Pass 2 negative control (-7).
+        evidence:
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [1, 72], note: "Module docstring: Pass 3 section with equations, sources, honest scope, Theorems 4-5", supports: true}
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [527, 551], note: "Growing-fan solver docstring: kinematics, ALE equations, zone kinetics, Lean cross-references", supports: true}
+          - {file: morphoeval/math_kg_loops/sheth-hox-turing-polydactyly.yaml, lines: [89, 127], note: "Laws 4-5 registered with lean_decl/lean_theorem/lean_locus/lean_code/code_locus", supports: true}
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [179, 183], note: "k_c(H) = 14 - 9H and the g_u closure have no equation-level citation", supports: false}
+      repro-package:
+        value: 93
+        rationale: >-
+          `--self-test` runs 14 deterministic checks in ~25 s (L1476-1580), including bitwise two-run determinism
+          for both the 1D arc and the growing fan with its seeded persistent noise (L1566-1569), SHA-256 verification
+          of 5 inputs, calibration of the 2500 um arc, tracer/rim consistency, monotone sweeps and the ablation
+          ordering; the default render completes in ~66 s and regenerates the PNG, the growth-mesh PNG and the GIF;
+          a memo cache (L447, L555-556, L702) avoids recomputing identical growth runs across render/measure/self-test.
+          Deductions: no slot-level requirements lock (the audit records the venv versions) (-3); determinism of
+          the persistent-noise stream depends on numpy's Generator call order, so a numpy major change could alter
+          N_grow (-2); self-test thresholds for the growth lag (0.6 x law) are loose by construction (-2).
+        evidence:
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [1476, 1580], note: "14-check self_test incl. 6 Pass 3 checks and bitwise determinism of the growing fan", supports: true}
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [447, 447], note: "_GROWTH_CACHE memoisation keyed on all solver parameters", supports: true}
+          - {file: 2012-sheth-hox-turing-polydactyly.py, lines: [1539, 1541], note: "Growth-lag acceptance window 0.6 x law <= N_grow <= law + 0.5 is loose", supports: false}
+    remediation:
+      - >-
+        2012-sheth-hox-turing-polydactyly.py:512-703 and 631 — growth is kinematic (prescribed dilation, div v = g)
+        and digit-ray orientation is imposed by eps_r = 0.05 radial/angular diffusion anisotropy. Replace with a
+        mechanical tissue model (e.g. Stokes/viscous or Morishita-Iwasa elastic growth with an FGF8-driven
+        volumetric source and stress-dependent anisotropy) and derive stripe orientation from a Raspopovic et al.
+        (2014) Fgf/Wnt proximodistal modulation of the kinetics instead of the anisotropy.
+      - >-
+        2012-sheth-hox-turing-polydactyly.py:284 and 375-376 — the 1D arc and the fixed-width fan seed the target
+        cosine mode (-0.08 cos(n_target s), -0.10 cos(k_c s)), so the Pass 2 "exact integer mode lock" [5, 7, 8, 9,
+        11, 14] and the 2 -> 5 / 2 -> 14 fan counts are partly initial-condition artefacts (the noise-only growing
+        fan gives 3.5 WT / 13.0 null). Report noise-only counts for all solvers (with an ensemble over seeds) and
+        move the seeded runs to an explicitly labelled 'mode-locked' control.
+      - >-
+        2012-sheth-hox-turing-polydactyly.py:179-183 — k_c(H) = 14 - 9H and g_u(H) = 200 f_u + 25 k_c^4 - 4.5 |tr J_kc|
+        are closure ansaetze that pin sigma_max ~ 4.5; digitise Sheth et al.'s supplementary parameter table and
+        Fig. 2G digit-period vs autopod-width measurements into datasets/hox_turing_polydactyly/ and fit H -> k_c
+        and the dispersion against them.
+      - >-
+        2012-sheth-hox-turing-polydactyly.py:431-445 — GROWTH_R0 = 1.6, GROWTH_L_F = 0.5, GROWTH_T_AER_OFF = 2.4 and
+        GROWTH_T_TOTAL = 5.0 are unsourced modelling choices in model time; anchor them to Boehm et al. (2010)
+        limb-bud dimensions / proliferation rates and convert model time to hours (E10.5-E12.5), so sigma_max and
+        g_rim become comparable with measured cell-cycle times.
+      - >-
+        2012-sheth-hox-turing-polydactyly.py:706-730 and 1147-1179 — the width-law slope 0.90 (Panel L) mixes
+        growth-rate and final-width effects because the g_max sweep changes both; add a sweep at fixed final L
+        (vary g_max and T jointly) to isolate the Crampin growth lag and test peak insertion explicitly.
+      - >-
+        2012-sheth-hox-turing-polydactyly.py:1364-1376 — the AER-ablation measurement is referenced only to the
+        intact control (1.0) with Summerbell (1974) cited qualitatively; digitise Summerbell's stage-vs-truncation
+        table so the ablation series has quantitative reference values.

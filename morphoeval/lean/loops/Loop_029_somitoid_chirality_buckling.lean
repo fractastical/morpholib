@@ -117,4 +117,98 @@ theorem yamanaka_2023_rock_inhibition_curvature_collapse
   · omega
   · omega
 
+/-! ## Pass 3 additions (remediation of audit v2 items 1 and 2) -/
+
+/-- Law 4 (`yaman-somitoid-chirality-buckling-4`, Pass 3):
+    3D Polyhedral Shell Somitecoel Lumen Pressurization Law.  For the closed
+    shell of radial frustum cells, the radial balance of
+      `E_3D = sum_i [K_V/2 (V_i - V_0)^2 + gamma_ap A_ap,i + gamma_bas A_bas,i]
+             + gamma_lat sum_faces A_lat,ij - P V_lumen`
+    gives the equilibrium lumen ratio
+      `rho_3D = (Lambda - 4 pi gamma_ap + 2 pi P R_in) / (Lambda + 4 pi gamma_bas)`
+    with `Lambda = gamma_lat * sum_ij l_ij / 2`.  The scaled numerator and
+    denominator are encoded over `Int` with `four_pi_gamma_ap = 4 pi gamma_ap`,
+    `four_pi_gamma_bas = 4 pi gamma_bas` and `two_pi_P_Rin = 2 pi P R_in`. -/
+def shell_lumen_numerator (Lam four_pi_gamma_ap two_pi_P_Rin : Int) : Int :=
+  Lam - four_pi_gamma_ap + two_pi_P_Rin
+
+def shell_basal_denominator (Lam four_pi_gamma_bas : Int) : Int :=
+  Lam + four_pi_gamma_bas
+
+/-- Theorem 4 (`yamanaka_2023_shell_lumen_pressurization`):
+    (i) any positive somitecoel lumen pressure strictly raises the 3D
+    equilibrium lumen numerator relative to the unpressurized shell (lumen
+    dilation); (ii) the shell remains closed (`rho_3D < 1`, numerator strictly
+    below denominator) exactly when the pressure term is below the two-surface
+    Laplace bound `2 pi P R_in < 4 pi (gamma_ap + gamma_bas)`; (iii) at zero
+    pressure with positive basal tension the numerator is strictly below the
+    denominator (the 3D analogue of Theorem 1's `R_in^* < R_out^*`). -/
+theorem yamanaka_2023_shell_lumen_pressurization
+    (Lam four_pi_gamma_ap four_pi_gamma_bas two_pi_P_Rin : Int)
+    (h_P : 0 < two_pi_P_Rin)
+    (h_bas : 0 < four_pi_gamma_bas)
+    (h_ap : 0 < four_pi_gamma_ap) :
+    shell_lumen_numerator Lam four_pi_gamma_ap 0 <
+      shell_lumen_numerator Lam four_pi_gamma_ap two_pi_P_Rin ∧
+    (shell_lumen_numerator Lam four_pi_gamma_ap two_pi_P_Rin <
+        shell_basal_denominator Lam four_pi_gamma_bas ↔
+      two_pi_P_Rin < four_pi_gamma_ap + four_pi_gamma_bas) ∧
+    shell_lumen_numerator Lam four_pi_gamma_ap 0 <
+      shell_basal_denominator Lam four_pi_gamma_bas := by
+  dsimp [shell_lumen_numerator, shell_basal_denominator]
+  refine ⟨?_, ?_, ?_⟩
+  · omega
+  · omega
+  · omega
+
+/-- Law 5 (`yaman-somitoid-chirality-buckling-5`, Pass 3):
+    HES7 Clock-Wavefront Arrest & Tension Maturation Gradient Law.  A
+    Cooke-Zeeman determination wavefront moving at speed `v` arrests the HES7
+    oscillator of each cell; one clock period `T` of wavefront travel delimits
+    a segment of length `segment_length v T = v * T`.  After arrest at
+    `t_arrest`, the RhoA/ROCK apical tension (and, after boundary fixation,
+    the EphA4/ephrinB2 boundary tension) ramps with the cell's age
+    `cell_age t t_arrest = t - t_arrest` at slope `k` from baseline
+    `gamma_base` (the linearised early ramp of
+    `gamma_base + Delta (1 - exp(-age / tau))`). -/
+def segment_length (v T : Int) : Int :=
+  v * T
+
+def cell_age (t t_arrest : Int) : Int :=
+  t - t_arrest
+
+def tension_ramp (gamma_base k age : Int) : Int :=
+  gamma_base + k * age
+
+/-- Theorem 5 (`hes7_wavefront_arrest_tension_gradient`):
+    (i) at fixed positive wavefront speed, a longer clock period yields a
+    strictly longer segment (`S = v T` is strictly monotone in `T`);
+    (ii) for two cells arrested at `t_ant < t_post` (anterior first), at any
+    time `t` after both arrests the posterior cell's age is non-negative and
+    the anterior cell is strictly older; and
+    (iii) with a positive ramp slope the anterior cell carries the strictly
+    larger apical/boundary tension: an anterior-to-posterior MET maturation
+    gradient, which is what the live clock coupling feeds into the vertex
+    solver. -/
+theorem hes7_wavefront_arrest_tension_gradient
+    (v T_short T_long t t_ant t_post gamma_base k : Int)
+    (h_v : 0 < v)
+    (h_T : T_short < T_long)
+    (h_order : t_ant < t_post)
+    (h_t : t_post ≤ t)
+    (h_k : 0 < k) :
+    segment_length v T_short < segment_length v T_long ∧
+    (0 ≤ cell_age t t_post ∧ cell_age t t_post < cell_age t t_ant) ∧
+    tension_ramp gamma_base k (cell_age t t_post) <
+      tension_ramp gamma_base k (cell_age t t_ant) := by
+  dsimp [segment_length, cell_age, tension_ramp]
+  refine ⟨?_, ⟨?_, ?_⟩, ?_⟩
+  · exact Int.mul_lt_mul_of_pos_left h_T h_v
+  · omega
+  · omega
+  · have h_age : t - t_post < t - t_ant := by omega
+    have h_mul : k * (t - t_post) < k * (t - t_ant) :=
+      Int.mul_lt_mul_of_pos_left h_age h_k
+    omega
+
 end MathOfBiology.Loop_029

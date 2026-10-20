@@ -42,7 +42,7 @@ equations:
     variables: "m(x,t): intracellular fgf8 mRNA concentration; v_g: posterior tailbud axis elongation velocity (um/min); k_d: fgf8 mRNA decay rate constant (min^-1)"
     role: "Converts temporal intracellular fgf8 mRNA decay in tailbud-derived cells into a steady spatial exponential gradient along the presomitic mesoderm"
     source_citation: "Dubrulle & Pourquie (2004) Nature 427(6973):419-422 Figs. 1-3"
-    code_locus: "2003-dubrulle-fgf8-wavefront-somitogenesis.py#L95-L135"
+    code_locus: "2003-dubrulle-fgf8-wavefront-somitogenesis.py#L154-L213"
   - id: dubrulle-fgf8-wavefront-somitogenesis-2
     law_name: "Dubrulle et al. (2001, 2004) Determination Front Threshold Positioning Law"
     title: "Dubrulle et al. (2001, 2004) Determination Front Threshold Positioning Law"
@@ -70,7 +70,7 @@ equations:
     variables: "x_star: distance from posterior tailbud to determination front (um); m_0: tailbud fgf8 mRNA level; m_crit: permissive FGF threshold for segmentation competence"
     role: "Positions the PSM determination front (somite level -IV/-III boundary) where decaying FGF8 falls below m_crit to unlock Mesp2/cMeso-1 activation"
     source_citation: "Dubrulle, McGrew & Pourquie (2001) Cell 106(2):219-232 Figs. 2-4; Dubrulle & Pourquie (2004) Nature 427:419-422"
-    code_locus: "2003-dubrulle-fgf8-wavefront-somitogenesis.py#L138-L165"
+    code_locus: "2003-dubrulle-fgf8-wavefront-somitogenesis.py#L220-L235"
   - id: dubrulle-fgf8-wavefront-somitogenesis-3
     law_name: "Dubrulle et al. (2001) Ectopic FGF8 Bead & SU5402 Somite Size Perturbation Law"
     title: "Dubrulle et al. (2001) Ectopic FGF8 Bead & SU5402 Somite Size Perturbation Law"
@@ -94,4 +94,69 @@ equations:
     variables: "S_n: anteroposterior length of somite n (um); T_c: segmentation clock period (min); delta_x: transient anterior displacement of determination front by ectopic FGF8 bead (um)"
     role: "Explains why an ectopic FGF8 bead grafted into the PSM produces compressed small somites anterior to the bead followed by an enlarged catch-up somite posterior to the bead while SU5402 produces enlarged somites"
     source_citation: "Dubrulle, McGrew & Pourquie (2001) Cell 106(2):219-232 Figs. 1-3"
-    code_locus: "2003-dubrulle-fgf8-wavefront-somitogenesis.py#L168-L295"
+    code_locus: "2003-dubrulle-fgf8-wavefront-somitogenesis.py#L238-L291"
+  - id: dubrulle-fgf8-wavefront-somitogenesis-4
+    law_name: "Goldbeter, Gonze & Pourquie (2007) RA/FGF8 Mutual-Inhibition Bistable Determination Switch (Pass 3)"
+    title: "Goldbeter, Gonze & Pourquie (2007) RA/FGF8 Mutual-Inhibition Bistable Determination Switch"
+    formula: "dF/dt = v_F m(x) K_I^n/(K_I^n + RA^n) - k_F F;  dX/dt = v_X F^n/(K_A^n + F^n) - k_X X;  dRA/dt = v_R - k_R RA - k_C X RA/(K_C + RA);  bistable for m in [m_SN_lo, m_SN_hi];  hysteretic front x_SN = lambda_m ln(m_0/m_SN_lo)"
+    latex: "\\dot F = v_F\\, m(x)\\frac{K_I^n}{K_I^n+RA^n} - k_F F,\\quad \\dot X = v_X\\frac{F^n}{K_A^n+F^n} - k_X X,\\quad \\dot{RA} = v_R - k_R RA - k_C\\frac{X\\,RA}{K_C+RA};\\quad x_{SN} = \\lambda_m \\ln\\frac{m_0}{m_{SN,lo}}"
+    ascii: "dF/dt = v_F m K_I^n/(K_I^n+RA^n) - k_F F; dX/dt = v_X F^n/(K_A^n+F^n) - k_X X; dRA/dt = v_R - k_R RA - k_C X RA/(K_C+RA); x_SN = lambda_m ln(m_0/m_SN_lo)"
+    lean_decl: "MathOfBiology.Loop_024.hysteretic_state"
+    lean_theorem: "MathOfBiology.Loop_024.goldbeter_2007_hysteretic_switch_memory"
+    lean_theorems:
+      - "MathOfBiology.Loop_024.goldbeter_2007_double_negative_loop_is_positive"
+      - "MathOfBiology.Loop_024.goldbeter_2007_hysteretic_switch_memory"
+    lean_file: morphoeval/lean/loops/Loop_024_fgf8_wavefront_somitogenesis.lean
+    lean_locus: "morphoeval/lean/loops/Loop_024_fgf8_wavefront_somitogenesis.lean#L97-L150"
+    lean_code: |-
+      def feedback_loop_sign (e₁ e₂ : Int) : Int := e₁ * e₂
+      theorem goldbeter_2007_double_negative_loop_is_positive (s₁ s₂ : Int)
+          (h₁ : 0 < s₁) (h₂ : 0 < s₂) :
+          feedback_loop_sign (-s₁) (-s₂) = s₁ * s₂ ∧ 0 < feedback_loop_sign (-s₁) (-s₂)
+      def hysteretic_state (x_lo x_hi x : Int) (prev : Bool) : Bool :=
+        if x ≤ x_lo then true else if x_hi ≤ x then false else prev
+      theorem goldbeter_2007_hysteretic_switch_memory (x_lo x_hi x : Int)
+          (hlo : x_lo < x) (hhi : x < x_hi) :
+          hysteretic_state x_lo x_hi x true = true ∧
+          hysteretic_state x_lo x_hi x false = false ∧
+          hysteretic_state x_lo x_hi x_hi true = false ∧
+          hysteretic_state x_lo x_hi x_lo false = true ∧
+          0 < x_hi - x_lo
+    lean_declaration: |-
+      theorem goldbeter_2007_hysteretic_switch_memory (x_lo x_hi x : Int)
+          (hlo : x_lo < x) (hhi : x < x_hi) :
+          hysteretic_state x_lo x_hi x true = true ∧
+          hysteretic_state x_lo x_hi x false = false ∧
+          hysteretic_state x_lo x_hi x_hi true = false ∧
+          hysteretic_state x_lo x_hi x_lo false = true ∧
+          0 < x_hi - x_lo
+    variables: "F: FGF signaling; X: Cyp26 (RA-degrading enzyme); RA: retinoic acid; m(x): tailbud-derived fgf8 mRNA input (Law 1); K_I, K_A, K_C: half-saturation constants; n: Hill coefficient; m_SN_lo, m_SN_hi: saddle-node inputs bounding the bistable window"
+    role: "Replaces the graded threshold m(x*) = m_crit by a hysteretic bistable switch (double-negative RA -| FGF -> Cyp26 -| RA loop) that sharpens the determination front (transition width 198 um vs 792 um for the graded model) and gives the front memory (reverse switch requires m >= m_SN_hi)"
+    source_citation: "Goldbeter, Gonze & Pourquie (2007) Developmental Dynamics 236(6):1495-1508 (functional forms; parameter values are this script's bistable-regime choice)"
+    code_locus: "2003-dubrulle-fgf8-wavefront-somitogenesis.py#L295-L506"
+  - id: dubrulle-fgf8-wavefront-somitogenesis-5
+    law_name: "Dubrulle & Pourquie (2004) Cell-Autonomous fgf8 mRNA Dilution by Tailbud Progenitor Division (Pass 3)"
+    title: "Dubrulle & Pourquie (2004) Cell-Autonomous fgf8 mRNA Dilution by Tailbud Progenitor Division"
+    formula: "log2 m = log2 m_0 - D - n;  m_exit = (k_s/k_d) (1 - e^(-k_d T_div)) / (2 - e^(-k_d T_div));  Delta_x_dil = lambda_m ln[(2 - e^(-k_d T_div)) / (1 - e^(-k_d T_div))]"
+    latex: "\\log_2 m = \\log_2 m_0 - D - n,\\qquad m_{exit} = \\frac{k_s}{k_d}\\,\\frac{1-e^{-k_d T_{div}}}{2-e^{-k_d T_{div}}},\\qquad \\Delta x_{dil} = \\lambda_m \\ln\\frac{2-e^{-k_d T_{div}}}{1-e^{-k_d T_{div}}}"
+    ascii: "log2 m = log2 m_0 - D - n; m_exit = (k_s/k_d)(1-e^(-k_d T))/(2-e^(-k_d T)); Delta_x_dil = lambda_m ln[(2-e^(-k_d T))/(1-e^(-k_d T))]"
+    lean_decl: "MathOfBiology.Loop_024.log2_fgf8_level"
+    lean_theorem: "MathOfBiology.Loop_024.dubrulle_2004_division_dilution_is_one_half_life"
+    lean_file: morphoeval/lean/loops/Loop_024_fgf8_wavefront_somitogenesis.lean
+    lean_locus: "morphoeval/lean/loops/Loop_024_fgf8_wavefront_somitogenesis.lean#L152-L171"
+    lean_code: |-
+      def log2_fgf8_level (L0 D n : Int) : Int :=
+        L0 - D - n
+      theorem dubrulle_2004_division_dilution_is_one_half_life (L0 D₁ D₂ n₁ n₂ : Int) :
+          log2_fgf8_level (log2_fgf8_level L0 D₁ n₁) D₂ n₂ =
+            log2_fgf8_level L0 (D₁ + D₂) (n₁ + n₂) ∧
+          log2_fgf8_level L0 D₁ (n₁ + 1) = log2_fgf8_level L0 (D₁ + 1) n₁
+    lean_declaration: |-
+      theorem dubrulle_2004_division_dilution_is_one_half_life (L0 D₁ D₂ n₁ n₂ : Int) :
+          log2_fgf8_level (log2_fgf8_level L0 D₁ n₁) D₂ n₂ =
+            log2_fgf8_level L0 (D₁ + D₂) (n₁ + n₂) ∧
+          log2_fgf8_level L0 D₁ (n₁ + 1) = log2_fgf8_level L0 (D₁ + 1) n₁
+    variables: "D: decay drop in half-lives (k_d tau / ln 2); n: number of cell divisions; k_s: tailbud fgf8 transcription rate; T_div: progenitor cell-cycle time; m_exit: post-division level exported into the PSM; Delta_x_dil: anterior front shift when division is removed at fixed k_s"
+    role: "Makes mRNA dilution by tailbud cell division explicit in the 2D cell-based strip (Section 4b): one division equals one half-life of decay, the periodic exported level follows the closed form, and removing division at fixed transcription shifts the front anteriorly by 271 um at T_div = 480 min (simulated 276 um)"
+    source_citation: "Dubrulle & Pourquie (2004) Nature 427(6973):419-422 (cell-autonomous mRNA decay/dilution); closed forms derived in this script"
+    code_locus: "2003-dubrulle-fgf8-wavefront-somitogenesis.py#L616-L900"

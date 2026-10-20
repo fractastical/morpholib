@@ -106,4 +106,75 @@ theorem feugier_2005_polar_flux_conservation (P_ij P_ji D0 S_i S_j S : Int) :
   · dsimp [polar_canalization_flux]
     simp [Int.sub_mul]
 
+-- ============================================================================
+-- Law 4 (`mitchison-canalization-auxin-flux-4`, Pass 3):
+-- Saturating flux-feedback on a growing lamina — boundedness and monotonicity
+-- ============================================================================
+/- Pass 3 growing-lamina solver uses the soft-saturating Mitchison (1980) feedback
+      `F(phi) = alpha * phi^2 / (1 + phi^2 / phi_s^2)`.
+    Clearing the positive denominator `phi_s^2 + phi^2`, the feedback numerator
+    `alpha * phi^2 * phi_s^2` never exceeds `alpha * phi_s^2 * (phi_s^2 + phi^2)`, i.e.
+    `F(phi) <= alpha * phi_s^2` for every flux — this is what lets the midrib flux grow 4x per
+    cell-division stage without the wall conductance diverging (Pass 2 hard cap removed). -/
+/-- Squares of integers are non-negative (helper; core Lean 4 only). -/
+theorem int_mul_self_nonneg (x : Int) : 0 ≤ x * x := by
+  rcases Int.le_total 0 x with hx | hx
+  · exact Int.mul_nonneg hx hx
+  · exact Int.mul_nonneg_of_nonpos_of_nonpos hx hx
+
+def saturating_feedback_num (alpha phi phis : Int) : Int :=
+  alpha * (phi * phi) * (phis * phis)
+
+def saturating_feedback_den (phi phis : Int) : Int :=
+  phis * phis + phi * phi
+
+theorem saturating_canalization_feedback_bounded (alpha phi phis : Int) (h : 0 ≤ alpha) :
+    saturating_feedback_num alpha phi phis ≤ alpha * (phis * phis) * saturating_feedback_den phi phis := by
+  dsimp [saturating_feedback_num, saturating_feedback_den]
+  have h1 : 0 ≤ alpha * (phis * phis) * (phis * phis) :=
+    Int.mul_nonneg (Int.mul_nonneg h (int_mul_self_nonneg phis)) (int_mul_self_nonneg phis)
+  have h2 : alpha * (phis * phis) * (phis * phis + phi * phi) =
+      alpha * (phis * phis) * (phis * phis) + alpha * (phi * phi) * (phis * phis) := by
+    rw [Int.mul_add]
+    simp [Int.mul_comm, Int.mul_left_comm]
+  rw [h2]
+  omega
+
+/-- The saturating feedback is monotone in the flux magnitude: for `0 <= phi1 <= phi2` the
+    cross-multiplied comparison `phi1^2 (phi_s^2 + phi2^2) <= phi2^2 (phi_s^2 + phi1^2)` holds,
+    so a wall carrying more flux always receives at least as much reinforcement — the
+    winner-take-all ordering of Law 1 survives saturation (strand hierarchy is preserved on
+    the growing lamina). -/
+theorem saturating_canalization_feedback_monotone (phi1 phi2 phis : Int)
+    (h0 : 0 ≤ phi1) (h12 : phi1 ≤ phi2) :
+    phi1 * phi1 * saturating_feedback_den phi2 phis ≤ phi2 * phi2 * saturating_feedback_den phi1 phis := by
+  dsimp [saturating_feedback_den]
+  have hsq : phi1 * phi1 ≤ phi2 * phi2 :=
+    Int.mul_le_mul h12 h12 h0 (Int.le_trans h0 h12)
+  have hs : 0 ≤ phis * phis := int_mul_self_nonneg phis
+  have hA : phi1 * phi1 * (phis * phis) ≤ phi2 * phi2 * (phis * phis) :=
+    Int.mul_le_mul_of_nonneg_right hsq hs
+  have e1 : phi1 * phi1 * (phis * phis + phi2 * phi2) =
+      phi1 * phi1 * (phis * phis) + phi1 * phi1 * (phi2 * phi2) := Int.mul_add _ _ _
+  have e2 : phi2 * phi2 * (phis * phis + phi1 * phi1) =
+      phi2 * phi2 * (phis * phis) + phi2 * phi2 * (phi1 * phi1) := Int.mul_add _ _ _
+  have e3 : phi1 * phi1 * (phi2 * phi2) = phi2 * phi2 * (phi1 * phi1) := Int.mul_comm _ _
+  rw [e1, e2, e3]
+  omega
+
+-- ============================================================================
+-- Law 4b (`mitchison-canalization-auxin-flux-4b`, Pass 3):
+-- Irreversible vascular differentiation is monotone (Sachs 1981)
+-- ============================================================================
+/-- The optional irreversible-differentiation rule of the growing-lamina solver updates the
+    differentiated flag as `d' = d || (D > D_diff)`.  Once a wall is differentiated it stays
+    differentiated, whatever the later conductance does: the set of differentiated walls is
+    non-decreasing in time (the ablation shows this alone does not close loops). -/
+def differentiation_update (d : Bool) (exceeds : Bool) : Bool :=
+  d || exceeds
+
+theorem irreversible_differentiation_monotone (d exceeds : Bool) (h : d = true) :
+    differentiation_update d exceeds = true := by
+  simp [differentiation_update, h]
+
 end MathOfBiology.Loop_034

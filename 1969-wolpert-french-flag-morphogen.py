@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """
-1969-wolpert-french-flag-morphogen.py — Pass 2 Remediated Implementation (Slot 011)
+1969-wolpert-french-flag-morphogen.py — Pass 3 Remediated Implementation (Slot 011)
 ===================================================================================
 Wolpert (1969) Positional Information & French Flag Morphogen Gradients,
-Tickle, Summerbell & Wolpert (1975) Chick Limb ZPA Digit Duplication, and
-Ben-Zvi & Barkai (2010) Expansion-Repression Dynamic Scaling.
+Tickle, Summerbell & Wolpert (1975) Chick Limb ZPA Digit Duplication,
+Ben-Zvi & Barkai (2010) Expansion-Repression Dynamic Scaling, and (Pass 3) a
+2D proximo-distal x anteroposterior chick wing bud paddle coupling AER FGF
+outgrowth with posterior ZPA Shh (Saunders 1948; Summerbell, Lewis & Wolpert 1973;
+Summerbell 1974; Tickle 1981; Laufer et al. 1994; Niswander et al. 1994).
 
 Primary Literature & Mathematical Mapping:
   1. Wolpert L (1969). Positional information and the spatial pattern of cellular
@@ -42,6 +45,25 @@ Primary Literature & Mathematical Mapping:
        scale-invariant `1/3 : 1/3 : 1/3` French-Flag proportions across growing
        chick limb stages HH18 (180 um) -> HH28 (660 um) (Lean 4 theorem
        `benzvi_barkai_2010_expander_scaling_invariance`).
+  5. Pass 3 — 2D PD x AP limb bud paddle (Section 3b; `simulate_limb_bud_2d`):
+     - Saunders JW (1948). J. Exp. Zool. 108(3):363-403 (doi:10.1002/jez.1401080304);
+       Summerbell D (1974). J. Embryol. Exp. Morphol. 32(3):651-660 (PMID 4463222);
+       Summerbell D, Lewis JH, Wolpert L (1973). Nature 244:492-496 (doi:10.1038/244492a0).
+       AER-driven distal outgrowth `dL/dt = v_max <F>_PZ / (<F>_PZ + K_g)`; AER excision
+       at a stage halts outgrowth and truncates the limb at a PD level that advances
+       stylopod -> zeugopod -> autopod with the stage of excision (Lean 4 theorem
+       `aer_excision_truncation_monotone`).
+     - Laufer E et al. (1994). Cell 79(6):993-1003 (doi:10.1016/0092-8674(94)90030-2);
+       Niswander L et al. (1994). Nature 371:609-612 (doi:10.1038/371609a0);
+       Crossley PH et al. (1996). Cell 84:127-136 (doi:10.1016/S0092-8674(00)80999-X).
+       Shh-FGF positive feedback: `dS/dt = D lap S - k_S S + s_S [ZPA] F/(F+K_FS)` and
+       `dF/dt = D lap F - k_F F + s_F [AER] (1 + g_S S/(S+K_S))` (Lean 4 theorem
+       `shh_fgf_feedback_aer_ablation_quiescence`); zero-flux 5-point stencil on the
+       paddle mask (Lean 4 theorem `sdd_2d_steady_state_balance`).
+     - Tickle C (1981). Nature 289(5795):295-298 (doi:10.1038/289295a0). The digit next
+       to an anterior graft advances 2 -> 3 -> 4 with graft strength; implemented by the
+       morphogen-valley digit reader `extract_digit_sequence` (Lean 4 theorem
+       `tickle_1981_graft_dose_digit_monotone`).
 """
 
 from __future__ import annotations
@@ -69,6 +91,7 @@ SCOUT_PATH = DATASET_DIR / "scout_manifest.json"
 
 OUT_PNG = ROOT / "docs" / "media" / "french_flag_morphogen_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "french_flag_morphogen_growth.gif"
+OUT_LIMB_GIF = ROOT / "docs" / "media" / "french_flag_morphogen_limb2d.gif"
 
 # Cryptographic SHA-256 locks for vendored reference data & biological specimen
 EXPECTED_SHA256: dict[str, str] = {
@@ -81,7 +104,13 @@ EXPECTED_SHA256: dict[str, str] = {
     "datasets/french_flag_morphogen/scout_manifest.json": (
         "d3bd7cc1c62dd2cb98ded323b71a65884d37fecf4c7c48333fb986b53d6a059e"
     ),
+    # Pass 3: ordinal empirical references for the 2D AER/ZPA paddle (Saunders 1948,
+    # Summerbell 1974, Tickle 1981, Laufer 1994, Niswander 1994)
+    "datasets/french_flag_morphogen/limb_bud_2d_aer_zpa_reference.json": (
+        "c34af92f3747bb64ad947b2a81c460709ced113f17eb69f0c565496954939455"
+    ),
 }
+LIMB2D_REF_PATH = DATASET_DIR / "limb_bud_2d_aer_zpa_reference.json"
 
 
 def verify_dataset_integrity() -> dict[str, str]:
@@ -104,6 +133,12 @@ def load_reference_dataset() -> dict[str, Any]:
     """Load and SHA-256-verify `french_flag_morphogen_reference.json`."""
     verify_dataset_integrity()
     return json.loads(REF_JSON_PATH.read_text(encoding="utf-8"))
+
+
+def load_limb2d_reference() -> dict[str, Any]:
+    """Load and SHA-256-verify the Pass 3 `limb_bud_2d_aer_zpa_reference.json`."""
+    verify_dataset_integrity()
+    return json.loads(LIMB2D_REF_PATH.read_text(encoding="utf-8"))
 
 
 # ============================================================================
@@ -309,6 +344,40 @@ def simulate_domain_growth_scaling(
 # 3. Tickle, Summerbell & Wolpert (1975) Chick Limb ZPA Digit Duplication
 # ============================================================================
 
+def extract_digit_sequence(
+    c_norm: np.ndarray,
+    t4: float = 0.45,
+    t3: float = 0.18,
+    t2: float = 0.05,
+) -> tuple[list[str], np.ndarray]:
+    """Read the posterior -> anterior digit sequence off a normalized Shh profile.
+
+    Digit identity per point (Tickle et al. 1975; Riddle et al. 1993): `4` if
+    `c >= T4`, `3` if `T3 <= c < T4`, `2` if `T2 <= c < T3`, none if `c < T2`.
+    A new digit territory starts (i) whenever the identity changes, or (ii) at an
+    interior strict local minimum of `c` (a morphogen valley between two sources)
+    whose identity is unchanged — two digit-2 territories separated only by a
+    valley above `T2` are therefore counted separately (`4-3-2 | 2-3-4`).  This single
+    rule reproduces the Tickle (1981) dose series `4-3-2`, `4-3-2-2`, `4-3-2-2-3`,
+    `4-3-2-2-3-4` and replaces the Pass 2 ad hoc half-domain split.
+    """
+    c = np.asarray(c_norm, dtype=np.float64)
+    zones = np.zeros(len(c), dtype=int)
+    zones[c >= t2] = 2
+    zones[c >= t3] = 3
+    zones[c >= t4] = 4
+    seq: list[str] = []
+    prev = 0
+    for i, val in enumerate(zones):
+        val = int(val)
+        at_valley = 0 < i < len(c) - 1 and c[i] < c[i - 1] and c[i] <= c[i + 1]
+        if val != prev or (at_valley and val > 0):
+            if val > 0:
+                seq.append(str(val))
+            prev = val
+    return seq, zones
+
+
 def simulate_chick_limb_zpa_regimes(
     length: float = 500.0,
     lam: float = 80.0,
@@ -324,17 +393,21 @@ def simulate_chick_limb_zpa_regimes(
       - Regime 2 (`anterior_zpa_graft_duplication`): Full ZPA graft at anterior margin
         (`c_post=1.0, c_ant=1.0`) -> Mirror-image duplication `['4', '3', '2', '2', '3', '4']`.
       - Regime 3 (`attenuated_anterior_zpa_graft`): Irradiated/attenuated anterior ZPA
-        graft (`c_post=1.0, c_ant=0.35`) -> Partial duplication `['4', '3', '2', '3']`.
-      - Regime 4 (`zpa_ablation_or_cyclopamine`): ZPA excision / Shh blockade
+        graft (`c_post=1.0, c_ant=0.35`) -> Partial duplication `['4', '3', '2', '2', '3']`
+        (Tickle 1981 Nature 289:295-298: the digit specified next to the graft advances
+        2 -> 3 -> 4 with graft strength).
+      - Regime 4 (`weak_anterior_zpa_graft`): Few-cell / strongly irradiated graft
+        (`c_post=1.0, c_ant=0.10`) -> single extra digit `['4', '3', '2', '2']`.
+      - Regime 5 (`zpa_ablation_or_cyclopamine`): ZPA excision / Shh blockade
         (`c_post=0.0, c_ant=0.0`) -> `[]` (0 digits, negative control).
     """
     x = np.linspace(0.0, length, nx)
-    mid = length / 2.0
 
     regimes_spec = [
         ("wild_type_posterior_zpa", 1.0, 0.0),
         ("anterior_zpa_graft_duplication", 1.0, 1.0),
         ("attenuated_anterior_zpa_graft", 1.0, 0.35),
+        ("weak_anterior_zpa_graft", 1.0, 0.10),
         ("zpa_ablation_or_cyclopamine", 0.0, 0.0),
     ]
 
@@ -347,27 +420,11 @@ def simulate_chick_limb_zpa_regimes(
         d_zone[c_prof >= t3] = 3
         d_zone[c_prof >= t4] = 4
 
-        # Extract ordered sequence of contiguous digit territories along posterior -> anterior axis.
-        # For full bilateral duplication where anterior and posterior digit-2 zones meet at the
-        # midline (x = L/2) above T2, split the posterior [0, L/2) and anterior [L/2, L] halves
-        # when both sources are active and symmetric.
-        digits_seq: list[str] = []
-        if c_post > 0.0 and c_ant >= 0.8:
-            # Posterior half [0, L/2] and anterior half [L/2, L]
-            for sub_arr in (d_zone[x <= mid], d_zone[x > mid]):
-                prev = 0
-                for val in sub_arr:
-                    if val != prev:
-                        if val > 0:
-                            digits_seq.append(str(int(val)))
-                        prev = int(val)
-        else:
-            prev = 0
-            for val in d_zone:
-                if val != prev:
-                    if val > 0:
-                        digits_seq.append(str(int(val)))
-                    prev = int(val)
+        # Ordered sequence of contiguous digit territories along the posterior -> anterior
+        # axis.  Pass 3: the Pass 2 ad hoc half-domain split (only for c_ant >= 0.8) is
+        # replaced by the general morphogen-valley rule in `extract_digit_sequence` so that
+        # the attenuated graft follows Tickle (1981): 0.35 -> 4-3-2-2-3 (not 4-3-2-3).
+        digits_seq, _ = extract_digit_sequence(c_prof, t4=t4, t3=t3, t2=t2)
 
         symmetry_err = float(np.max(np.abs(c_prof - c_prof[::-1])))
         results["regimes"][reg_id] = {
@@ -381,6 +438,364 @@ def simulate_chick_limb_zpa_regimes(
         }
 
     return results
+
+
+# ============================================================================
+# 3b. Pass 3 — 2D Proximo-Distal x Anteroposterior Limb Bud Paddle:
+#     AER FGF Outgrowth coupled to Posterior ZPA Shh (Saunders 1948; Summerbell 1974;
+#     Summerbell, Lewis & Wolpert 1973; Laufer et al. 1994; Niswander et al. 1994)
+# ============================================================================
+#
+# Reduced 2D model (stated honestly; see audit v3 `transfer_boundary`):
+#   * Domain: paddle-shaped wing bud on a fixed Cartesian lattice (dx = 12.5 um), AP width
+#     W = 500 um (x = 0 posterior, x = W anterior), PD length L(t) (y = 0 body wall, y = L
+#     tip) with an elliptical distal cap of height r_tip = 150 um.  Cells outside the paddle
+#     are inactive; the 5-point Laplacian drops missing neighbours => zero-flux everywhere.
+#   * AER = distal-facing rim cells (one lattice row thick) running from the posterior to the
+#     anterior margin.  FGF (Fgf8 baseline + Shh-induced Fgf4 component, Laufer 1994;
+#     Niswander 1994; Crossley 1996):
+#       dF/dt = D nabla^2 F - k_F F + s_F * AER(x,y,t) * (1 + g_S * S / (S + K_S))
+#   * ZPA = posterior-margin mesenchyme (x <= 60 um) within 120 um of the rim; Shh production
+#     requires AER FGF (the positive feedback loop):
+#       dS/dt = D nabla^2 S - k_S S + s_S * [ZPA + graft * ZPA_anterior] * F / (F + K_FS)
+#   * Outgrowth by distal apposition (progress-zone model, Summerbell-Lewis-Wolpert 1973):
+#       dL/dt = v_max * <F>_PZ / (<F>_PZ + K_g),   <F>_PZ = mean FGF within 100 um of the rim;
+#     new lattice rows are activated (concentration 0) as L crosses the next grid line.
+#   * Readouts: AP digit identity from the distal (<= 150 um) Shh profile normalised to the
+#     wild-type peak with the Pass 2 thresholds T4/T3/T2 = 0.45/0.18/0.05; PD skeletal segment
+#     from the truncation fraction L_final / L_WT (stylopod < 1/3 <= zeugopod < 2/3 <= autopod).
+#   * The developmental clock is compressed: 12 h of model time spans HH18 (180 um) -> HH28
+#     (~660 um), i.e. ~5x faster than in ovo, while keeping tau_relax = 1/k (400-1000 s) <<
+#     tau_growth so the gradients stay quasi-steady.  No cell proliferation field, no actual
+#     digit condensation (Turing) and no 3D dorsoventral axis are modelled.
+
+LIMB2D_DEFAULTS: dict[str, float] = {
+    "W_um": 500.0,
+    "dx_um": 12.5,
+    "ny": 59,
+    "r_tip_um": 150.0,
+    "D_um2_s": 10.0,
+    "k_F_s": 0.001,        # lambda_F = 100 um
+    "k_S_s": 10.0 / 6400.0,  # lambda_S = 80 um (same as the 1D ZPA solver)
+    "s_F": 0.008,
+    "s_S": 0.006,
+    "g_S": 1.0,
+    "K_S": 0.3,
+    "K_FS": 0.1,
+    "K_g": 0.3,
+    "v_max_um_s": 0.016,
+    "L0_um": 180.0,
+    "T_s": 12.0 * 3600.0,
+    "dt_s": 3.0,
+    "zpa_width_um": 60.0,
+    "zpa_depth_um": 120.0,
+    "pz_depth_um": 100.0,
+    "autopod_depth_um": 150.0,
+}
+
+HH_STAGE_LENGTHS_UM: dict[str, float] = {
+    "HH18": 180.0, "HH20": 276.0, "HH22": 372.0, "HH24": 468.0, "HH26": 564.0, "HH28": 660.0,
+}
+
+
+def build_paddle_geometry(
+    L: float,
+    W: float = 500.0,
+    dx: float = 12.5,
+    ny: int = 59,
+    r_tip: float = 150.0,
+    zpa_width: float = 60.0,
+    zpa_depth: float = 120.0,
+    pz_depth: float = 100.0,
+    rectangular: bool = False,
+) -> dict[str, Any]:
+    """Paddle mask + AER / ZPA / progress-zone index sets for PD length `L` (um)."""
+    nx = int(round(W / dx)) + 1
+    x = np.arange(nx) * dx
+    y = np.arange(ny) * dx
+    X, Y = np.meshgrid(x, y)
+    if rectangular:
+        mask = Y <= L
+    else:
+        rt = min(r_tip, L)
+        base = L - rt
+        half_w = W / 2.0
+        mask = Y <= base
+        ell = ((X - half_w) / half_w) ** 2 + ((Y - base) / max(rt, 1e-9)) ** 2 <= 1.0
+        mask = mask | (ell & (Y > base) & (Y <= L))
+    mask[-1, :] = False  # keep one inactive guard row at the distal lattice edge
+    col_has = mask.any(axis=0)
+    heights = np.where(col_has, ny - 1 - np.argmax(mask[::-1, :], axis=0), -1)
+    rim_dist = heights[None, :] - np.arange(ny)[:, None]  # rows below the rim (>= 0 inside)
+    aer = mask & (rim_dist == 0)
+    zpa_post = mask & (x[None, :] <= zpa_width) & (rim_dist * dx <= zpa_depth)
+    zpa_ant = mask & (x[None, :] >= W - zpa_width) & (rim_dist * dx <= zpa_depth)
+    pz = mask & (rim_dist * dx <= pz_depth)
+    # Padded neighbour-availability masks for the zero-flux 5-point Laplacian
+    mp = np.pad(mask, 1).astype(np.float64)
+    nb = {
+        "up": mp[2:, 1:-1], "down": mp[:-2, 1:-1], "left": mp[1:-1, :-2], "right": mp[1:-1, 2:],
+    }
+    return {
+        "mask": mask, "mask_f": mask.astype(np.float64), "aer": aer.astype(np.float64),
+        "zpa_post": zpa_post.astype(np.float64), "zpa_ant": zpa_ant.astype(np.float64),
+        "pz": pz, "rim_dist": rim_dist, "heights": heights, "x": x, "y": y, "nb": nb,
+        "aer_bool": aer, "nx": nx,
+    }
+
+
+def _masked_laplacian(cp: np.ndarray, nb: dict[str, np.ndarray]) -> np.ndarray:
+    """Zero-flux 5-point Laplacian (units of 1/dx^2 omitted) on a padded field `cp`."""
+    c = cp[1:-1, 1:-1]
+    return (
+        nb["up"] * (cp[2:, 1:-1] - c)
+        + nb["down"] * (cp[:-2, 1:-1] - c)
+        + nb["left"] * (cp[1:-1, :-2] - c)
+        + nb["right"] * (cp[1:-1, 2:] - c)
+    )
+
+
+def simulate_limb_bud_2d(
+    graft_strength: float = 0.0,
+    aer_ablation_L_um: float | None = None,
+    zpa_ablated: bool = False,
+    grow: bool = True,
+    rectangular: bool = False,
+    aer_dirichlet_value: float | None = None,
+    params: dict[str, float] | None = None,
+    snapshot_every_s: float = 3600.0,
+    stop_after_ablation_s: float | None = 3.0 * 3600.0,
+) -> dict[str, Any]:
+    """Explicit finite-difference integration of the coupled AER-FGF / ZPA-Shh system on the
+    growing 2D paddle (see the section header for the equations).
+
+    `graft_strength`      relative Shh production of a second ZPA at the anterior margin
+                          (Tickle 1975/1981 graft; 0 = wild type).
+    `aer_ablation_L_um`   remove the AER (s_F -> 0 for all later times) when L first reaches
+                          this length (Saunders 1948 / Summerbell 1974 excision at a stage).
+    `zpa_ablated`         no Shh production anywhere (negative control).
+    `aer_dirichlet_value` verification mode: AER cells are clamped to this FGF value instead
+                          of producing it (lets a non-growing rectangle be compared with the
+                          1D cosh steady state).
+    """
+    p = dict(LIMB2D_DEFAULTS)
+    if params:
+        p.update(params)
+    W, dx, ny = p["W_um"], p["dx_um"], int(p["ny"])
+    D, k_F, k_S = p["D_um2_s"], p["k_F_s"], p["k_S_s"]
+    dt = p["dt_s"]
+    assert dt <= dx * dx / (4.0 * D), "explicit 2D stability limit violated"
+    alpha = D * dt / (dx * dx)
+    n_steps = int(np.ceil(p["T_s"] / dt))
+
+    def geom(L_now: float) -> dict[str, Any]:
+        return build_paddle_geometry(
+            L_now, W=W, dx=dx, ny=ny, r_tip=p["r_tip_um"], zpa_width=p["zpa_width_um"],
+            zpa_depth=p["zpa_depth_um"], pz_depth=p["pz_depth_um"], rectangular=rectangular,
+        )
+
+    L = float(p["L0_um"])
+    g = geom(L)
+    nx = g["nx"]
+    Fp = np.zeros((ny + 2, nx + 2))
+    Sp = np.zeros((ny + 2, nx + 2))
+    F = Fp[1:-1, 1:-1]
+    S = Sp[1:-1, 1:-1]
+    L_cell = int(L // dx)
+    aer_on = 1.0
+    t_ablation: float | None = None
+    shh_peak_at_ablation: float | None = None
+    L_history: list[tuple[float, float]] = [(0.0, L)]
+    snapshots: list[dict[str, Any]] = []
+    snap_stride = max(int(snapshot_every_s / dt), 1)
+    hist_stride = max(int(600.0 / dt), 1)
+    zpa_gain = 0.0 if zpa_ablated else 1.0
+
+    t = 0.0
+    for step in range(n_steps):
+        if aer_ablation_L_um is not None and aer_on > 0.0 and L >= aer_ablation_L_um:
+            aer_on = 0.0
+            t_ablation = t
+            shh_peak_at_ablation = float(S.max())
+        if aer_dirichlet_value is not None:
+            F[g["aer_bool"]] = aer_dirichlet_value
+        lapF = _masked_laplacian(Fp, g["nb"])
+        lapS = _masked_laplacian(Sp, g["nb"])
+        fgf_src = (p["s_F"] * aer_on) * g["aer"] * (1.0 + p["g_S"] * S / (S + p["K_S"]))
+        shh_src = (p["s_S"] * zpa_gain) * (g["zpa_post"] + graft_strength * g["zpa_ant"]) * (F / (F + p["K_FS"]))
+        if aer_dirichlet_value is not None:
+            fgf_src = fgf_src * 0.0
+        F_new = (F + alpha * lapF - (k_F * dt) * F + dt * fgf_src) * g["mask_f"]
+        S_new = (S + alpha * lapS - (k_S * dt) * S + dt * shh_src) * g["mask_f"]
+        F[...] = np.maximum(F_new, 0.0)
+        S[...] = np.maximum(S_new, 0.0)
+        if aer_dirichlet_value is not None:
+            F[g["aer_bool"]] = aer_dirichlet_value
+        if grow:
+            F_pz = float(F[g["pz"]].mean())
+            L = min(L + dt * p["v_max_um_s"] * F_pz / (F_pz + p["K_g"]), (ny - 2) * dx)
+            if int(L // dx) != L_cell:
+                L_cell = int(L // dx)
+                g = geom(L)
+        t += dt
+        if step % hist_stride == 0:
+            L_history.append((t, L))
+        if step % snap_stride == 0:
+            snapshots.append({"t_s": t, "L_um": L, "F": F.copy(), "S": S.copy(), "mask": g["mask"].copy()})
+        if (
+            stop_after_ablation_s is not None
+            and t_ablation is not None
+            and t - t_ablation >= stop_after_ablation_s
+        ):
+            break
+
+    L_history.append((t, L))
+    snapshots.append({"t_s": t, "L_um": L, "F": F.copy(), "S": S.copy(), "mask": g["mask"].copy()})
+    strip = g["mask"] & (g["rim_dist"] * dx <= p["autopod_depth_um"])
+    S_ap = np.array([S[strip[:, j], j].mean() if strip[:, j].any() else 0.0 for j in range(nx)])
+    F_aer = np.array([F[g["aer_bool"][:, j], j].mean() if g["aer_bool"][:, j].any() else 0.0 for j in range(nx)])
+    return {
+        "params": p,
+        "x_um": g["x"],
+        "y_um": g["y"],
+        "L_final_um": float(L),
+        "t_final_s": float(t),
+        "F": F.copy(),
+        "S": S.copy(),
+        "mask": g["mask"].copy(),
+        "aer": g["aer_bool"].copy(),
+        "zpa_post": g["zpa_post"].astype(bool),
+        "zpa_ant": g["zpa_ant"].astype(bool),
+        "autopod_strip": strip,
+        "S_ap_profile": S_ap,
+        "F_aer_profile": F_aer,
+        "F_max": float(F.max()),
+        "S_max": float(S.max()),
+        "t_ablation_s": t_ablation,
+        "shh_peak_at_ablation": shh_peak_at_ablation,
+        "L_history": np.array(L_history),
+        "snapshots": snapshots,
+    }
+
+
+def hh_stage_from_length(L_um: float) -> float:
+    """Linear HH stage clock used throughout the script: HH18 = 180 um ... HH28 = 660 um."""
+    return 18.0 + (L_um - 180.0) / 48.0
+
+
+def pd_segment_from_fraction(frac: float) -> str:
+    """Progress-zone (Summerbell-Lewis-Wolpert 1973) PD trisection of the final wild-type length:
+    stylopod (humerus) < 1/3 <= zeugopod (radius/ulna) < 2/3 <= autopod (wrist + digits)."""
+    if frac < 1.0 / 3.0:
+        return "stylopod"
+    if frac < 2.0 / 3.0:
+        return "zeugopod"
+    return "autopod"
+
+
+def verify_limb2d_against_1d_cosh(params: dict[str, float] | None = None) -> dict[str, Any]:
+    """Code verification of the 2D stencil: non-growing rectangle, AER row clamped at F = 1,
+    no Shh.  The exact steady state is `F(y) = cosh(y / lambda_F) / cosh(L / lambda_F)`
+    (no-flux body wall at y = 0, Dirichlet rim at y = L), identical in every column."""
+    p = dict(LIMB2D_DEFAULTS)
+    p.update({"W_um": 100.0, "ny": 27, "T_s": 6000.0, "L0_um": 300.0})
+    if params:
+        p.update(params)
+    res = simulate_limb_bud_2d(
+        grow=False, rectangular=True, aer_dirichlet_value=1.0, zpa_ablated=True, params=p,
+        snapshot_every_s=1e12, stop_after_ablation_s=None,
+    )
+    lam_F = float(np.sqrt(p["D_um2_s"] / p["k_F_s"]))
+    col = res["mask"][:, res["mask"].shape[1] // 2]
+    y = res["y_um"][col]
+    L_eff = float(y.max())
+    exact = np.cosh(y / lam_F) / np.cosh(L_eff / lam_F)
+    num = res["F"][col, res["mask"].shape[1] // 2]
+    rmse = float(np.sqrt(np.mean((num - exact) ** 2)))
+    # Every active column must carry the same profile (the problem is 1D in y)
+    rows = np.where(res["mask"], res["F"], np.nan)[col, :]
+    col_spread = float(np.nanmax(np.nanmax(rows, axis=1) - np.nanmin(rows, axis=1)))
+    return {"rmse_vs_cosh": rmse, "lambda_F_um": lam_F, "max_column_spread": col_spread, "y_um": y, "numeric": num, "exact": exact}
+
+
+def run_limb_bud_2d_experiments(params: dict[str, float] | None = None) -> dict[str, Any]:
+    """Pass 3 experimental suite on the 2D paddle:
+      (a) wild type;                               (b) anterior ZPA grafts of strength 0.10 / 0.35 / 1.0
+      (c) AER excision at HH18/20/22/24/26;         (d) ZPA ablation; (e) 1D-cosh code verification.
+    Empirical comparisons: Tickle (1975, 1981) digit sequences and dose series; Saunders (1948)
+    & Summerbell (1974) stage-dependent distal truncation; Laufer (1994) & Niswander (1994)
+    Shh-FGF feedback (Shh loss after AER removal; Shh-dependent posterior AER FGF)."""
+    thr = {"t4": 0.45, "t3": 0.18, "t2": 0.05}
+    wt = simulate_limb_bud_2d(params=params)
+    s_ref = float(wt["S_ap_profile"].max())
+    wt_seq, wt_zones = extract_digit_sequence(wt["S_ap_profile"] / s_ref, **thr)
+
+    grafts: dict[str, dict[str, Any]] = {}
+    for gs in (0.10, 0.35, 1.0):
+        r = simulate_limb_bud_2d(graft_strength=gs, params=params)
+        seq, zones = extract_digit_sequence(r["S_ap_profile"] / s_ref, **thr)
+        n_edge = 3
+        pa_ratio = float(r["F_aer_profile"][:n_edge].mean() / max(r["F_aer_profile"][-n_edge:].mean(), 1e-12))
+        grafts[f"{gs:.2f}"] = {
+            "strength": gs, "result": r, "digit_sequence": seq, "digit_zones": zones,
+            "extra_digits": len(seq) - len(wt_seq), "aer_fgf_post_over_ant": pa_ratio,
+            "profile_mirror_err": float(np.max(np.abs(r["S_ap_profile"] - r["S_ap_profile"][::-1])) / s_ref),
+        }
+    wt_pa_ratio = float(wt["F_aer_profile"][:3].mean() / max(wt["F_aer_profile"][-3:].mean(), 1e-12))
+
+    # Tickle (1981): extra digits specified next to the graft increase 0 -> 1 -> 2 -> 3 with dose
+    dose_strengths = [0.0, 0.10, 0.35, 1.0]
+    dose_extra = [0] + [grafts[f"{gs:.2f}"]["extra_digits"] for gs in (0.10, 0.35, 1.0)]
+    dose_ref = [0, 1, 2, 3]
+    dose_matches = int(sum(int(a == b) for a, b in zip(dose_extra, dose_ref)))
+
+    # Saunders (1948) / Summerbell (1974): AER excision at successive stages
+    ablation_ref = {"HH18": "stylopod", "HH20": "zeugopod", "HH22": "zeugopod", "HH24": "autopod", "HH26": "autopod"}
+    ablations: dict[str, dict[str, Any]] = {}
+    for stage, L_stage in HH_STAGE_LENGTHS_UM.items():
+        if stage not in ablation_ref:
+            continue
+        r = simulate_limb_bud_2d(aer_ablation_L_um=L_stage, params=params)
+        frac = r["L_final_um"] / wt["L_final_um"]
+        seg = pd_segment_from_fraction(frac)
+        shh_pre = r["shh_peak_at_ablation"] or 0.0
+        ablations[stage] = {
+            "stage_L_um": L_stage, "result": r, "L_final_um": r["L_final_um"], "truncation_fraction": float(frac),
+            "overshoot_um": float(r["L_final_um"] - L_stage), "predicted_segment": seg,
+            "reference_segment": ablation_ref[stage], "segment_match": seg == ablation_ref[stage],
+            "shh_peak_before": float(shh_pre), "shh_peak_after": float(r["S_max"]),
+            "shh_remaining_fraction": float(r["S_max"] / shh_pre) if shh_pre > 0 else 0.0,
+        }
+    abl_stages = np.array([float(s[2:]) for s in ablations])
+    abl_final = np.array([ablations[s]["L_final_um"] for s in ablations])
+    rho = float(np.corrcoef(np.argsort(np.argsort(abl_stages)), np.argsort(np.argsort(abl_final)))[0, 1])
+    strictly_monotone = bool(np.all(np.diff(abl_final) > 0.0))
+    segment_matches = int(sum(int(a["segment_match"]) for a in ablations.values()))
+    shh_fracs = [ablations[s]["shh_remaining_fraction"] for s in ablations if s != "HH18"]
+
+    zpa_off = simulate_limb_bud_2d(zpa_ablated=True, params=params)
+    zpa_off_seq, _ = extract_digit_sequence(zpa_off["S_ap_profile"] / s_ref, **thr)
+    verify = verify_limb2d_against_1d_cosh()
+
+    return {
+        "thresholds": thr,
+        "s_ref": s_ref,
+        "wild_type": {"result": wt, "digit_sequence": wt_seq, "digit_zones": wt_zones,
+                      "aer_fgf_post_over_ant": wt_pa_ratio, "stage_final": hh_stage_from_length(wt["L_final_um"])},
+        "grafts": grafts,
+        "dose_strengths": dose_strengths,
+        "dose_extra_digits": dose_extra,
+        "dose_reference_extra_digits": dose_ref,
+        "dose_matches": dose_matches,
+        "ablations": ablations,
+        "ablation_spearman_rho": rho,
+        "ablation_strictly_monotone": strictly_monotone,
+        "ablation_segment_matches": segment_matches,
+        "ablation_segment_total": len(ablations),
+        "shh_remaining_after_aer_removal_max": float(max(shh_fracs)) if shh_fracs else 0.0,
+        "zpa_ablation": {"result": zpa_off, "digit_sequence": zpa_off_seq, "L_final_um": zpa_off["L_final_um"]},
+        "verification": verify,
+    }
 
 
 # ============================================================================
@@ -521,28 +936,33 @@ def segment_gallus_embryo_specimen(specimen_path: Path = SPECIMEN_PATH) -> dict[
 def render_outputs(
     out_png: Path = OUT_PNG,
     out_gif: Path = OUT_GIF,
+    out_limb_gif: Path = OUT_LIMB_GIF,
     D: float = 10.0,
     k_deg: float = 0.0025,
     length: float = 300.0,
     c0: float = 1.0,
     seed: int = 1969,
+    limb2d_params: dict[str, float] | None = None,
 ) -> dict[str, Any]:
-    """Render the 6-panel synthesis figure `docs/media/french_flag_morphogen_comparison.png`
-    and the 24-frame ontogenetic growth + ZPA duplication animation
-    `docs/media/french_flag_morphogen_growth.gif`.
+    """Render the 9-panel synthesis figure `docs/media/french_flag_morphogen_comparison.png`
+    (A-F from Pass 2, G-I the Pass 3 2D AER/ZPA paddle), the 18-frame ontogenetic growth +
+    scaling animation `docs/media/french_flag_morphogen_growth.gif`, and the Pass 3 2D limb bud
+    outgrowth animation `docs/media/french_flag_morphogen_limb2d.gif`.
     """
     out_png.parent.mkdir(parents=True, exist_ok=True)
     out_gif.parent.mkdir(parents=True, exist_ok=True)
+    out_limb_gif.parent.mkdir(parents=True, exist_ok=True)
 
     pde_res = integrate_sdd_pde_1d(length=length, nx=151, D=D, k_deg=k_deg, c0=c0)
     scale_res = simulate_domain_growth_scaling(c0=c0, D0=D, k0=k_deg, L_ref=length)
     zpa_res = simulate_chick_limb_zpa_regimes()
     noise_res = evaluate_positional_precision_noise(c0=c0, lam=pde_res["lambda_um"], seed=seed)
     spec_res = segment_gallus_embryo_specimen()
+    limb2d = run_limb_bud_2d_experiments(params=limb2d_params)
 
-    fig = plt.figure(figsize=(18.0, 11.2), dpi=160)
+    fig = plt.figure(figsize=(18.0, 16.8), dpi=160)
     fig.patch.set_facecolor("#0f172a")
-    gs = fig.add_gridspec(2, 3, hspace=0.34, wspace=0.26, left=0.055, right=0.975, top=0.90, bottom=0.07)
+    gs = fig.add_gridspec(3, 3, hspace=0.36, wspace=0.26, left=0.055, right=0.975, top=0.935, bottom=0.045)
 
     panel_bg = "#1e293b"
     text_fg = "#f8fafc"
@@ -760,15 +1180,168 @@ def render_outputs(
     ax_f.set_ylim(-0.05, 1.08)
     ax_f.legend(loc="upper right", fontsize=7.3, facecolor="#0f172a", edgecolor="#475569", labelcolor=text_fg)
 
+    # ------------------------------------------------------------------------
+    # Pass 3 panels G-I: 2D PD x AP paddle with AER-FGF / ZPA-Shh coupling
+    # ------------------------------------------------------------------------
+    wt2 = limb2d["wild_type"]["result"]
+    thr2 = limb2d["thresholds"]
+    s_ref = limb2d["s_ref"]
+    x2 = wt2["x_um"]
+    y2 = wt2["y_um"]
+    dx2 = float(x2[1] - x2[0])
+    digit_cmap = ListedColormap(["#0f172a", "#64748b", "#f59e0b", "#f43f5e"])  # 0, 2, 3, 4
+
+    def _draw_paddle(ax: plt.Axes, res: dict[str, Any], title: str, zones: np.ndarray | None, show_cbar: bool) -> None:
+        S_img = np.where(res["mask"], res["S"] / s_ref, np.nan)
+        F_img = np.where(res["mask"], res["F"], np.nan)
+        ext = [x2[0] - dx2 / 2, x2[-1] + dx2 / 2, y2[0] - dx2 / 2, y2[-1] + dx2 / 2]
+        im = ax.imshow(S_img, origin="lower", extent=ext, cmap="magma", vmin=0.0, vmax=1.0, aspect="equal", interpolation="nearest")
+        ax.contour(x2, y2, np.nan_to_num(F_img, nan=0.0), levels=[0.1, 0.3, 0.6, 0.9], colors=["#38bdf8"], linewidths=[0.9], alpha=0.95)
+        ay, ax_ = np.where(res["aer"])
+        ax.plot(x2[ax_], y2[ay], "s", color="#22c55e", ms=2.3, label="AER (FGF source)")
+        zy, zx = np.where(res["zpa_post"])
+        ax.plot(x2[zx], y2[zy], ".", color="#f8fafc", ms=1.6, alpha=0.7, label="ZPA (Shh source)")
+        if res["zpa_ant"].any():
+            zy, zx = np.where(res["zpa_ant"])
+            ax.plot(x2[zx], y2[zy], ".", color="#f8fafc", ms=1.6, alpha=0.7)
+        if zones is not None:
+            bar_y = y2[-1] - 2.0 * dx2
+            ax.imshow(zones[None, :], origin="lower", extent=[ext[0], ext[1], bar_y - dx2, bar_y + dx2],
+                      cmap=digit_cmap, vmin=0, vmax=3, aspect="auto", interpolation="nearest")
+        ax.set_title(title, color=text_fg, fontsize=9.6, fontweight="bold", loc="left", pad=6)
+        ax.set_xlim(ext[0], ext[1])
+        ax.set_ylim(ext[2], ext[3])
+        if show_cbar:
+            cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.02)
+            cb.set_label("Shh / Shh_WT,peak", color="#cbd5e1", fontsize=8)
+            cb.ax.yaxis.set_tick_params(color="#cbd5e1", labelsize=7.5)
+            plt.setp(cb.ax.get_yticklabels(), color="#cbd5e1")
+
+    # Panel G: wild-type 2D paddle (Shh field, FGF contours, AER, ZPA, digit readout)
+    ax_g = fig.add_subplot(gs[2, 0])
+    title_g = f"G. 2D PD×AP Paddle (WT, HH{limb2d['wild_type']['stage_final']:.0f}): ZPA Shh + AER FGF → {'-'.join(limb2d['wild_type']['digit_sequence'])}"
+    _style_ax(
+        ax_g,
+        title_g,
+        "Posterior (x=0) → Anterior (x=500 μm)",
+        "Proximal (body wall) → Distal PD axis y (μm)",
+    )
+    ax_g.grid(False)
+    zones_wt = np.where(limb2d["wild_type"]["digit_zones"] == 0, 0, limb2d["wild_type"]["digit_zones"] - 1)
+    _draw_paddle(ax_g, wt2, title_g, zones_wt, show_cbar=True)
+    ax_g.text(
+        0.02, 0.03,
+        "FGF contours 0.1/0.3/0.6/0.9 (cyan)  ·  bar = distal digit identity (grey 2, amber 3, rose 4)\n"
+        f"AER FGF posterior/anterior = {limb2d['wild_type']['aer_fgf_post_over_ant']:.2f} (Shh→Fgf4 feedback; Laufer 1994)",
+        transform=ax_g.transAxes, color="#cbd5e1", fontsize=7.0, va="bottom",
+    )
+    ax_g.legend(loc="upper right", fontsize=7.0, facecolor="#0f172a", edgecolor="#475569", labelcolor=text_fg, markerscale=2.5)
+
+    # Panel H: Tickle (1975, 1981) anterior ZPA graft dose series on the 2D paddle
+    ax_h = fig.add_subplot(gs[2, 1])
+    _style_ax(
+        ax_h,
+        f"H. 2D Anterior ZPA Graft Dose Series — Tickle (1981) match {limb2d['dose_matches']}/4",
+        "Posterior → Anterior x (μm), distal 150 μm strip",
+        "Shh / Shh_WT,peak",
+    )
+    dose_cols = ["#38bdf8", "#a3e635", "#eab308", "#f43f5e"]
+    dose_items = [("0.00", limb2d["wild_type"]["digit_sequence"], wt2["S_ap_profile"])]
+    for key in ("0.10", "0.35", "1.00"):
+        dose_items.append((key, limb2d["grafts"][key]["digit_sequence"], limb2d["grafts"][key]["result"]["S_ap_profile"]))
+    for (key, seq, prof), colr, ref_extra in zip(dose_items, dose_cols, limb2d["dose_reference_extra_digits"]):
+        ax_h.plot(x2, prof / s_ref, "-", color=colr, lw=2.2,
+                  label=f"graft {float(key):.2f} → {'-'.join(seq) if seq else '∅'} (+{len(seq) - 3} digit{'s' if len(seq) - 3 != 1 else ''}; Tickle 1981: +{ref_extra})")
+    ax_h.axhline(thr2["t4"], color="#f43f5e", ls="--", lw=1.0, label="T₄ = 0.45")
+    ax_h.axhline(thr2["t3"], color="#f59e0b", ls="--", lw=1.0, label="T₃ = 0.18")
+    ax_h.axhline(thr2["t2"], color="#94a3b8", ls="--", lw=1.0, label="T₂ = 0.05")
+    ax_h.set_xlim(0, 500.0)
+    ax_h.set_ylim(0, 1.12)
+    ax_h.legend(loc="upper center", fontsize=6.9, ncol=1, facecolor="#0f172a", edgecolor="#475569", labelcolor=text_fg)
+
+    # Panel I: AER excision (Saunders 1948; Summerbell 1974) — outgrowth L(t) and truncation level
+    ax_i = fig.add_subplot(gs[2, 2])
+    _style_ax(
+        ax_i,
+        f"I. AER Excision → PD Truncation (Summerbell 1974 match {limb2d['ablation_segment_matches']}/{limb2d['ablation_segment_total']})",
+        "Model time (h)  [HH18 → HH28 compressed clock]",
+        "Proximo-distal length L(t) (μm)",
+    )
+    L_wt_final = wt2["L_final_um"]
+    ax_i.axhspan(0, L_wt_final / 3.0, color="#1d4ed8", alpha=0.16, label="Stylopod (humerus) < ⅓ L_WT")
+    ax_i.axhspan(L_wt_final / 3.0, 2.0 * L_wt_final / 3.0, color="#f8fafc", alpha=0.08, label="Zeugopod (radius/ulna)")
+    ax_i.axhspan(2.0 * L_wt_final / 3.0, L_wt_final * 1.08, color="#dc2626", alpha=0.14, label="Autopod (wrist + digits)")
+    hist_wt = wt2["L_history"]
+    ax_i.plot(hist_wt[:, 0] / 3600.0, hist_wt[:, 1], "-", color="#38bdf8", lw=2.6, label=f"Wild type → L = {L_wt_final:.0f} μm")
+    abl_cols = ["#fde68a", "#fbbf24", "#f97316", "#ef4444", "#be123c"]
+    for (stage, abl), colr in zip(limb2d["ablations"].items(), abl_cols):
+        h = abl["result"]["L_history"]
+        ax_i.plot(h[:, 0] / 3600.0, h[:, 1], "--", color=colr, lw=1.9,
+                  label=f"AER off @{stage} → {abl['predicted_segment']} (ref: {abl['reference_segment']}){' ✓' if abl['segment_match'] else ' ✗'}")
+        ax_i.plot(h[-1, 0] / 3600.0, h[-1, 1], "o", color=colr, ms=5.5)
+    zh = limb2d["zpa_ablation"]["result"]["L_history"]
+    ax_i.plot(zh[:, 0] / 3600.0, zh[:, 1], ":", color="#94a3b8", lw=1.8, label=f"ZPA ablation → L = {zh[-1, 1]:.0f} μm, 0 digits")
+    ax_i.set_xlim(0, 12.0)
+    ax_i.set_ylim(0, L_wt_final * 1.08)
+    ax_i.text(
+        0.98, 0.03,
+        f"Shh remaining ≤ {limb2d['shh_remaining_after_aer_removal_max']*100:.2f}% of pre-excision peak 3 h after AER removal\n(Niswander 1994: AER FGF required for ZPA Shh)",
+        transform=ax_i.transAxes, color="#cbd5e1", fontsize=6.8, ha="right", va="bottom",
+    )
+    ax_i.legend(loc="upper left", fontsize=6.2, facecolor="#0f172a", edgecolor="#475569", labelcolor=text_fg, handlelength=1.6)
+
     fig.suptitle(
-        "Wolpert (1969) French Flag Positional Information, Tickle–Wolpert (1975) ZPA Duplication & Ben-Zvi–Barkai (2010) Scaling",
+        "Wolpert (1969) French Flag Positional Information, Tickle–Wolpert (1975) ZPA Duplication, Ben-Zvi–Barkai (2010) Scaling\n"
+        "& Pass 3: 2D Proximo-Distal × Anteroposterior Limb Bud with AER-FGF / ZPA-Shh Feedback (Saunders 1948 · Summerbell 1974 · Laufer & Niswander 1994)",
         color=text_fg,
-        fontsize=13.5,
+        fontsize=12.5,
         fontweight="bold",
-        y=0.965,
+        y=0.985,
     )
     fig.savefig(out_png, dpi=160, facecolor=fig.get_facecolor())
     plt.close(fig)
+
+    # Pass 3 GIF: 2D outgrowth of WT vs anterior ZPA graft vs AER excision at HH22
+    limb_frames: list[Image.Image] = []
+    seq_wt = wt2["snapshots"]
+    seq_gr = limb2d["grafts"]["1.00"]["result"]["snapshots"]
+    seq_ab = limb2d["ablations"]["HH22"]["result"]["snapshots"]
+    n_fr = len(seq_wt)
+    ext2 = [x2[0] - dx2 / 2, x2[-1] + dx2 / 2, y2[0] - dx2 / 2, y2[-1] + dx2 / 2]
+    for fi in range(n_fr):
+        f_l, axs = plt.subplots(1, 3, figsize=(9.6, 4.6), dpi=100)
+        f_l.patch.set_facecolor("#0f172a")
+        for ax_, series, ttl in zip(
+            axs,
+            (seq_wt, seq_gr, seq_ab),
+            ("Wild type (posterior ZPA)", "Anterior ZPA graft (1.0)", "AER excised at HH22"),
+        ):
+            snap = series[min(fi, len(series) - 1)]
+            S_img = np.where(snap["mask"], snap["S"] / s_ref, np.nan)
+            F_img = np.nan_to_num(np.where(snap["mask"], snap["F"], np.nan), nan=0.0)
+            ax_.set_facecolor("#0f172a")
+            ax_.imshow(S_img, origin="lower", extent=ext2, cmap="magma", vmin=0, vmax=1.0, aspect="equal", interpolation="nearest")
+            ax_.contour(x2, y2, F_img, levels=[0.1, 0.3, 0.6, 0.9], colors=["#38bdf8"], linewidths=[0.8])
+            ax_.set_title(f"{ttl}\nL = {snap['L_um']:.0f} μm (HH{hh_stage_from_length(snap['L_um']):.0f})", color="#f8fafc", fontsize=8.5)
+            ax_.set_xlim(ext2[0], ext2[1])
+            ax_.set_ylim(ext2[2], ext2[3])
+            ax_.tick_params(colors="#cbd5e1", labelsize=7)
+            for sp in ax_.spines.values():
+                sp.set_color("#475569")
+        axs[0].set_ylabel("PD axis y (μm)", color="#cbd5e1", fontsize=8)
+        axs[1].set_xlabel("AP axis x (μm): posterior → anterior", color="#cbd5e1", fontsize=8)
+        f_l.suptitle(
+            f"2D limb bud paddle — Shh (magma) + FGF contours (cyan) — model t = {seq_wt[fi]['t_s']/3600.0:.1f} h ({fi+1}/{n_fr})",
+            color="#f8fafc", fontsize=9.5, fontweight="bold",
+        )
+        f_l.tight_layout()
+        f_l.canvas.draw()
+        buf = np.asarray(f_l.canvas.buffer_rgba())[:, :, :3].copy()
+        limb_frames.append(Image.fromarray(buf))
+        plt.close(f_l)
+    pal_l = limb_frames[-1].quantize(colors=255, method=Image.Quantize.MEDIANCUT)
+    q_l = [fr.quantize(palette=pal_l, dither=Image.Dither.NONE) for fr in limb_frames]
+    q_l[0].save(out_limb_gif, save_all=True, append_images=q_l[1:], duration=320, loop=0, optimize=True)
 
     # Render 18-frame animated GIF comparing unscaled SDD vs Expansion-Repression scaling + ZPA graft
     frames: list[Image.Image] = []
@@ -847,6 +1420,7 @@ def render_outputs(
         "zpa": zpa_res,
         "noise": noise_res,
         "specimen": spec_res,
+        "limb2d": limb2d,
     }
 
 
@@ -864,6 +1438,8 @@ def measure_morphoeval() -> list[dict[str, Any]]:
     zpa_res = simulate_chick_limb_zpa_regimes()
     noise_res = evaluate_positional_precision_noise()
     spec_res = segment_gallus_embryo_specimen()
+    limb2d = run_limb_bud_2d_experiments()
+    limb_ref = load_limb2d_reference()
 
     ref_sdd = ref["wolpert_1969_french_flag_model"]["sdd_exponential_decay"]
     ref_spec = ref["metadata"]["specimens"]["gallus_gallus_embryo_72h"]
@@ -872,6 +1448,96 @@ def measure_morphoeval() -> list[dict[str, Any]]:
     dup_digits = zpa_res["regimes"]["anterior_zpa_graft_duplication"]["digit_count"]
     abl_digits = zpa_res["regimes"]["zpa_ablation_or_cyclopamine"]["digit_count"]
     er_blue_mean = float(np.mean([r["er_blue"] for r in scale_res["rows"]]))
+
+    wt2 = limb2d["wild_type"]
+    g_full = limb2d["grafts"]["1.00"]
+    abl = limb2d["ablations"]
+    ref_dose = limb_ref["tickle_1981_graft_dose_response"]
+    ref_abl = limb_ref["saunders_1948_summerbell_1974_aer_excision"]
+    ref_fb = limb_ref["laufer_1994_niswander_1994_shh_fgf_feedback"]
+
+    pass3_measurements: list[dict[str, Any]] = [
+        {
+            "name": "2D paddle wild-type distal digit count (posterior ZPA Shh, AER FGF outgrowth)",
+            "value": int(len(wt2["digit_sequence"])),
+            "unit": "digits",
+            "method": "Digit identities from the distal 150 um Shh profile of the 2D PD x AP paddle at the end of outgrowth, thresholds T4/T3/T2 = 0.45/0.18/0.05 of the wild-type peak",
+            "derived_from": "script",
+            "reference_value": 3,
+            "reference_source": "Tickle, Summerbell & Wolpert (1975) Nature 254:199-202 (wing digits 2-3-4)",
+            "note": f"2D wild-type sequence: {'-'.join(wt2['digit_sequence'])}; final L = {wt2['result']['L_final_um']:.1f} um (HH{wt2['stage_final']:.1f})",
+        },
+        {
+            "name": "2D paddle anterior ZPA graft (strength 1.0) mirror-duplication digit count",
+            "value": int(len(g_full["digit_sequence"])),
+            "unit": "digits",
+            "method": "Same readout with a second ZPA of equal strength at the anterior margin of the 2D paddle",
+            "derived_from": "script",
+            "reference_value": 6,
+            "reference_source": "Tickle, Summerbell & Wolpert (1975) Nature 254:199-202; Tickle (1981) Nature 289:295-298 (4-3-2-2-3-4)",
+            "note": f"2D graft sequence: {'-'.join(g_full['digit_sequence'])}; AP mirror error of distal Shh profile = {g_full['profile_mirror_err']:.1e}",
+        },
+        {
+            "name": "Tickle (1981) graft dose series: graft strengths whose extra-digit count matches (0, 0.10, 0.35, 1.0 -> +0, +1, +2, +3)",
+            "value": int(limb2d["dose_matches"]),
+            "unit": "count",
+            "method": "Extra digits specified next to the anterior graft relative to wild type, per relative graft strength, on the 2D paddle",
+            "derived_from": "script",
+            "reference_value": int(len(ref_dose["relative_strength"])),
+            "reference_source": "Tickle (1981) Nature 289:295-298 (digit next to graft advances 2 -> 3 -> 4 with polarizing-cell number)",
+            "note": "Model extra digits " + str(limb2d["dose_extra_digits"]) + " vs reference " + str(limb2d["dose_reference_extra_digits"]),
+        },
+        {
+            "name": "AER excision truncation: stages whose predicted most-distal PD segment matches Saunders (1948) / Summerbell (1974)",
+            "value": int(limb2d["ablation_segment_matches"]),
+            "unit": "count",
+            "method": "AER removed when L reaches the HH18/20/22/24/26 length; final L / L_WT trisected into stylopod / zeugopod / autopod",
+            "derived_from": "script",
+            "reference_value": int(len(ref_abl["stages"])),
+            "reference_source": "Saunders (1948) J Exp Zool 108:363-403; Summerbell (1974) J Embryol Exp Morphol 32:651-660",
+            "note": "; ".join(f"{s}: L={a['L_final_um']:.0f} um ({a['truncation_fraction']:.2f}) -> {a['predicted_segment']} [ref {a['reference_segment']}]" for s, a in abl.items()),
+        },
+        {
+            "name": "AER excision truncation level vs stage of excision, Spearman rho",
+            "value": round(float(limb2d["ablation_spearman_rho"]), 4),
+            "unit": "rho",
+            "method": "Rank correlation between excision stage (HH18..HH26) and final PD length of the 2D paddle",
+            "derived_from": "script",
+            "reference_value": 1.0,
+            "reference_source": "Summerbell (1974) J Embryol Exp Morphol 32:651-660 (truncation progressively more distal with later excision)",
+            "note": f"Strictly monotone: {limb2d['ablation_strictly_monotone']}; mean post-excision overshoot = {np.mean([a['overshoot_um'] for a in abl.values()]):.1f} um",
+        },
+        {
+            "name": "Shh remaining 3 h after AER excision (max over HH20-HH26), fraction of pre-excision peak",
+            "value": round(float(limb2d["shh_remaining_after_aer_removal_max"]), 5),
+            "unit": "fraction",
+            "method": "Peak Shh in the paddle 3 h after s_F -> 0, divided by the peak at the moment of excision (ZPA Shh production requires AER FGF)",
+            "derived_from": "script",
+            "reference_value": float(ref_fb["shh_after_aer_removal_reference_fraction"]),
+            "reference_source": "Niswander, Jeffrey, Martin & Tickle (1994) Nature 371:609-612 (Shh expression lost after AER removal, rescued by FGF4 bead)",
+            "note": "Reference value 0 encodes the qualitative loss of ZPA Shh expression reported after AER removal; the model's residual is set by k_S = 1/640 s^-1",
+        },
+        {
+            "name": "AER FGF posterior/anterior ratio in wild type (Shh-induced posterior Fgf4 component)",
+            "value": round(float(wt2["aer_fgf_post_over_ant"]), 4),
+            "unit": "ratio",
+            "method": "Mean FGF in the 3 posterior-most AER cells over the 3 anterior-most AER cells at the end of wild-type outgrowth",
+            "derived_from": "script",
+            "reference_value": float(ref_fb["wild_type_aer_fgf_posterior_over_anterior_reference"]),
+            "reference_source": "Laufer et al. (1994) Cell 79:993-1003 (Fgf4 restricted to posterior AER, Shh-dependent); ratio > 1 is the qualitative reference, no quantitative value published",
+            "note": f"Anterior ZPA graft (1.0) restores symmetry: ratio = {g_full['aer_fgf_post_over_ant']:.4f} (Laufer 1994: ectopic anterior Fgf4 after ZPA graft)",
+        },
+        {
+            "name": "2D stencil code verification: RMSE of non-growing rectangle with clamped AER vs 1D cosh steady state",
+            "value": round(float(limb2d["verification"]["rmse_vs_cosh"]), 6),
+            "unit": "fraction of c0",
+            "method": "Rectangle W=100 um, L=300 um, AER row clamped at F=1, no growth/Shh; mid-column compared with cosh(y/lambda_F)/cosh(L/lambda_F), lambda_F = 100 um",
+            "derived_from": "script",
+            "reference_value": 0.0,
+            "reference_source": "Crick (1970) Nature 225:420-422 steady state of dc/dt = D d2c/dx2 - k c with no-flux proximal and Dirichlet distal boundary",
+            "note": f"max cross-column spread = {limb2d['verification']['max_column_spread']:.1e} (problem is 1D in y); residual is the half-cell Neumann offset of the dropped-neighbour stencil",
+        },
+    ]
 
     return [
         {
@@ -958,7 +1624,7 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "reference_source": "datasets/french_flag_morphogen/french_flag_morphogen_reference.json",
             "note": f"SDD RMSE = {spec_res['rmse_sdd']:.4f} (vs linear decay RMSE = {spec_res['rmse_linear']:.4f})",
         },
-    ]
+    ] + pass3_measurements
 
 
 def self_test() -> int:
@@ -966,7 +1632,9 @@ def self_test() -> int:
     print("[self-test] 1. Verifying SHA-256 integrity of datasets/french_flag_morphogen/...")
     digests = verify_dataset_integrity()
     ref = load_reference_dataset()
-    assert len(digests) == 3
+    limb_ref = load_limb2d_reference()
+    assert len(digests) == 4
+    assert limb_ref["tickle_1981_graft_dose_response"]["extra_digits"] == [0, 1, 2, 3]
 
     print("[self-test] 2. Verifying 1D SDD PDE convergence to exact analytical cosh steady state...")
     pde = integrate_sdd_pde_1d(length=300.0, nx=151, D=10.0, k_deg=0.0025, c0=1.0)
@@ -984,8 +1652,12 @@ def self_test() -> int:
     assert zpa["regimes"]["wild_type_posterior_zpa"]["digit_sequence"] == ["4", "3", "2"]
     assert zpa["regimes"]["anterior_zpa_graft_duplication"]["digit_sequence"] == ["4", "3", "2", "2", "3", "4"]
     assert zpa["regimes"]["anterior_zpa_graft_duplication"]["mirror_symmetry_max_err"] < 1e-12
-    assert zpa["regimes"]["attenuated_anterior_zpa_graft"]["digit_sequence"] == ["4", "3", "2", "3"]
+    # Tickle (1981) dose series (Pass 3 fix: valley rule instead of the ad hoc half split)
+    assert zpa["regimes"]["attenuated_anterior_zpa_graft"]["digit_sequence"] == ["4", "3", "2", "2", "3"]
+    assert zpa["regimes"]["weak_anterior_zpa_graft"]["digit_sequence"] == ["4", "3", "2", "2"]
     assert zpa["regimes"]["zpa_ablation_or_cyclopamine"]["digit_sequence"] == []
+    # The valley rule must not invent a split on a monotone profile
+    assert extract_digit_sequence(np.exp(-np.linspace(0, 500, 501) / 80.0))[0] == ["4", "3", "2"]
 
     print("[self-test] 5. Verifying positional boundary error propagation sigma_x = (lambda/T)*sigma_c...")
     ns = evaluate_positional_precision_noise(seed=1969)
@@ -998,10 +1670,38 @@ def self_test() -> int:
     assert sp["pearson_r"] > 0.99, f"Expected specimen r > 0.99, got {sp['pearson_r']}"
     assert sp["rmse_sdd"] < sp["rmse_linear"], "Exponential SDD must fit radial profile better than linear decay"
 
-    print("[self-test] 7. Verifying measure_morphoeval() contract...")
+    print("[self-test] 7. Verifying 2D paddle stencil against the 1D cosh steady state (code verification)...")
+    ver = verify_limb2d_against_1d_cosh()
+    assert ver["rmse_vs_cosh"] < 5e-3, f"2D stencil RMSE vs cosh too large: {ver['rmse_vs_cosh']}"
+    assert ver["max_column_spread"] < 1e-12, "rectangle solution must be identical in every column"
+
+    print("[self-test] 8. Verifying 2D paddle digit readout, Tickle (1981) dose series & AER-FGF asymmetry...")
+    ex = run_limb_bud_2d_experiments()
+    assert ex["wild_type"]["digit_sequence"] == ["4", "3", "2"], ex["wild_type"]["digit_sequence"]
+    assert ex["grafts"]["1.00"]["digit_sequence"] == ["4", "3", "2", "2", "3", "4"], ex["grafts"]["1.00"]["digit_sequence"]
+    assert ex["grafts"]["1.00"]["profile_mirror_err"] < 1e-9
+    assert ex["dose_extra_digits"] == [0, 1, 2, 3], ex["dose_extra_digits"]
+    assert ex["wild_type"]["aer_fgf_post_over_ant"] > 1.2, "Shh-induced posterior AER FGF boost missing (Laufer 1994)"
+    assert abs(ex["grafts"]["1.00"]["aer_fgf_post_over_ant"] - 1.0) < 1e-6
+    assert ex["zpa_ablation"]["digit_sequence"] == []
+    assert 640.0 <= ex["wild_type"]["result"]["L_final_um"] <= 690.0, ex["wild_type"]["result"]["L_final_um"]
+
+    print("[self-test] 9. Verifying AER excision truncation (Saunders 1948 / Summerbell 1974) & Shh collapse (Niswander 1994)...")
+    assert ex["ablation_strictly_monotone"] and ex["ablation_spearman_rho"] > 0.999
+    assert ex["ablation_segment_matches"] == ex["ablation_segment_total"] == 5
+    assert all(a["overshoot_um"] < 40.0 for a in ex["ablations"].values()), "outgrowth must stop within 40 um of AER removal"
+    assert ex["shh_remaining_after_aer_removal_max"] < 0.01
+
+    print("[self-test] 10. Verifying bitwise determinism of the 2D paddle solver (no RNG, fixed dt)...")
+    r1 = simulate_limb_bud_2d(params={"T_s": 2.0 * 3600.0})
+    r2 = simulate_limb_bud_2d(params={"T_s": 2.0 * 3600.0})
+    assert np.array_equal(r1["S"], r2["S"]) and np.array_equal(r1["F"], r2["F"]) and r1["L_final_um"] == r2["L_final_um"]
+
+    print("[self-test] 11. Verifying measure_morphoeval() contract...")
     meas = measure_morphoeval()
-    assert len(meas) == 8
-    print("[self-test] ALL 7 VERIFICATION CHECKS PASSED (exit 0).")
+    assert len(meas) == 16
+    assert all("reference_value" in mm and "unit" in mm for mm in meas)
+    print("[self-test] ALL 11 VERIFICATION CHECKS PASSED (exit 0).")
     return 0
 
 
@@ -1017,21 +1717,34 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=1969, help="Deterministic RNG seed")
     ap.add_argument("--output-png", type=str, default=str(OUT_PNG), help="Output comparison PNG path")
     ap.add_argument("--output-gif", type=str, default=str(OUT_GIF), help="Output growth GIF path")
+    ap.add_argument("--output-limb-gif", type=str, default=str(OUT_LIMB_GIF), help="Output 2D limb bud outgrowth GIF path (Pass 3)")
+    ap.add_argument("--limb-vmax", type=float, default=LIMB2D_DEFAULTS["v_max_um_s"], help="2D paddle maximal outgrowth rate v_max (um/s of model time)")
+    ap.add_argument("--limb-feedback-gain", type=float, default=LIMB2D_DEFAULTS["g_S"], help="2D paddle Shh -> AER FGF (Fgf4) feedback gain g_S (0 = no feedback)")
+    ap.add_argument("--limb-lambda-shh", type=float, default=80.0, help="2D paddle Shh decay length lambda_S (um); sets k_S = D / lambda_S^2")
+    ap.add_argument("--limb-hours", type=float, default=LIMB2D_DEFAULTS["T_s"] / 3600.0, help="2D paddle model duration (h of compressed developmental clock)")
     args = ap.parse_args()
 
     if args.self_test:
         return self_test()
 
+    limb_params = {
+        "v_max_um_s": args.limb_vmax,
+        "g_S": args.limb_feedback_gain,
+        "k_S_s": LIMB2D_DEFAULTS["D_um2_s"] / (args.limb_lambda_shh ** 2),
+        "T_s": args.limb_hours * 3600.0,
+    }
     render_outputs(
         out_png=Path(args.output_png),
         out_gif=Path(args.output_gif),
+        out_limb_gif=Path(args.output_limb_gif),
         D=args.D,
         k_deg=args.k,
         length=args.L,
         c0=args.c0,
         seed=args.seed,
+        limb2d_params=limb_params,
     )
-    print(f"[1969-wolpert-french-flag-morphogen] Rendered {args.output_png} and {args.output_gif}")
+    print(f"[1969-wolpert-french-flag-morphogen] Rendered {args.output_png}, {args.output_gif} and {args.output_limb_gif}")
     return 0
 
 

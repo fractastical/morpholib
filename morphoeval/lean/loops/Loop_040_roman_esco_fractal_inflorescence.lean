@@ -124,4 +124,81 @@ theorem azpeitia_2021_conical_aspect_amplification (h0 dz beta1 beta2 T : Int)
       omega
     omega
 
+
+-- ============================================================================
+-- Law 4 (`pringle-roman-esco-fractal-inflorescence-4`, Pass 3):
+-- Jönsson et al. (2006) PNAS Up-the-Gradient PIN1 Auxin Flux Law
+-- ============================================================================
+/-- In the Jönsson et al. (2006) PIN1 transport model the fraction of a cell's PIN1 on the
+    wall facing neighbour `j` is proportional to the neighbour's auxin `a_j`, so for a two-cell
+    system (with the common normalising denominator absorbed into the transport coefficient)
+    the PIN1-mediated flux `i -> j` is `a_i * a_j` weighted by `a_j`, and the flux `j -> i` is
+    `a_j * a_i` weighted by `a_i`.  The net flux from `i` to `j` is therefore
+    `pin1_net_flux a_i a_j = a_i * a_j * (a_j - a_i)`:
+    it vanishes for equal concentrations, is strictly positive when `j` is auxin-richer
+    (auxin flows UP the gradient toward the incipient maximum) and strictly negative otherwise —
+    the destabilising feedback that makes auxin maxima and hence primordia emerge. -/
+def pin1_net_flux (a_i a_j : Int) : Int :=
+  a_i * a_j * (a_j - a_i)
+
+theorem jonsson_2006_up_gradient_pin1_flux (a_i a_j : Int)
+    (hi : a_i > 0) (hj : a_j > 0) :
+    pin1_net_flux a_i a_i = 0 ∧
+    (a_i < a_j → pin1_net_flux a_i a_j > 0) ∧
+    (a_j < a_i → pin1_net_flux a_i a_j < 0) ∧
+    pin1_net_flux a_i a_j = - pin1_net_flux a_j a_i := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · simp [pin1_net_flux]
+  · intro hlt
+    have hprod : 0 < a_i * a_j := Int.mul_pos hi hj
+    have hdiff : 0 < a_j - a_i := by omega
+    exact Int.mul_pos hprod hdiff
+  · intro hlt
+    have hprod : 0 < a_i * a_j := Int.mul_pos hi hj
+    have hdiff : 0 < a_i - a_j := by omega
+    have hpos : 0 < a_i * a_j * (a_i - a_j) := Int.mul_pos hprod hdiff
+    have hneg : a_i * a_j * (a_j - a_i) = -(a_i * a_j * (a_i - a_j)) := by
+      rw [← Int.mul_neg, Int.neg_sub]
+    unfold pin1_net_flux
+    omega
+  · unfold pin1_net_flux
+    have h1 : a_j * a_i = a_i * a_j := Int.mul_comm a_j a_i
+    rw [h1, ← Int.mul_neg, Int.neg_sub]
+
+
+-- ============================================================================
+-- Law 5 (`pringle-roman-esco-fractal-inflorescence-5`, Pass 3):
+-- Hofmeister / Douady-Couder Perimeter Scaling -> Azpeitia (2021) Plastochron
+-- Acceleration Law (PIN1 mesh coupling to Law 2)
+-- ============================================================================
+/-- On the PIN1 epidermal mesh the emergent initiation rate scales with the free perimeter of
+    the initiation ring, `perimeter_rate k R = k * R` (Douady & Couder 1992 Hofmeister rule).
+    If the Romanesco meristem grows linearly, `meristem_radius R0 v t = R0 + v * t`, then the
+    plastochron rate in Azpeitia et al. (2021) Law 2 form is
+    `perimeter_rate k (meristem_radius R0 v t) = k * R0 + (k * v) * t`, i.e.
+    `r_0 = k * R0` and `beta = k * v`.  Hence `beta > 0` exactly when the meristem grows
+    (`v > 0`, Romanesco) and `beta = 0` when it does not (`v = 0`, Cauliflower). -/
+def perimeter_rate (k R : Int) : Int :=
+  k * R
+
+def meristem_radius (R0 v t : Int) : Int :=
+  R0 + v * t
+
+theorem hofmeister_perimeter_plastochron_acceleration (k R0 v t : Int)
+    (hk : k > 0) (ht : t > 0) :
+    perimeter_rate k (meristem_radius R0 v t) = k * R0 + (k * v) * t ∧
+    perimeter_rate k (meristem_radius R0 0 t) = k * R0 ∧
+    (v > 0 → perimeter_rate k (meristem_radius R0 v t) > perimeter_rate k (meristem_radius R0 0 t)) ∧
+    (v > 0 → k * v > 0) := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · simp [perimeter_rate, meristem_radius, Int.mul_add, Int.mul_assoc]
+  · simp [perimeter_rate, meristem_radius]
+  · intro hv
+    simp [perimeter_rate, meristem_radius, Int.mul_add]
+    have h1 : 0 < v * t := Int.mul_pos hv ht
+    have h2 : 0 < k * (v * t) := Int.mul_pos hk h1
+    omega
+  · intro hv
+    exact Int.mul_pos hk hv
+
 end MathOfBiology.Loop_040

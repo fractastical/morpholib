@@ -1,0 +1,88 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-economou-palate-ruguga-turing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-economou-palate-ruguga-turing-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-economou-palate-ruguga-turing-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Economou et al. (2012) FGF10/FGF7-SHH activator-inhibitor Turing stripe mechanism at mammalian palatal growth zones, coupled to quasi-static epithelial plate ridge elevation — Reproducibility package: 92/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Deterministic seeds; self-test grown from 8 to 11 checks (L1593-1690) covering the exact plate solve (residual < 1e-9), S(q^2) bound / monotonicity, crest alignment, control flatness, sweep monotonicity and 2D plate bitwise determinism; `--self-test` runs in ~10 s and the default render in ~9 s; CLI documented in argparse; dataset README updated. Deductions: no requirements lock file for this slot, versions are pinned only in this audit (-4); MPLCONFIGDIR must be set in sandboxed runs or matplotlib falls back to a temp font cache (-2); the comparison PNG is not byte-identical across runs because matplotlib embeds no fixed metadata guard (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-repro-package-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-repro-package-3> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "2012-economou-palate-ruguga-turing.py L1593–L1690" ;
+        dct:description "11-check self_test including plate solver certificate, sweeps and 2D determinism" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2012-economou-palate-ruguga-turing.py#L1593-L1690> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "2012-economou-palate-ruguga-turing.py L1693–L1743" ;
+        dct:description "argparse CLI with mechanics flags and default render order (PNG, mechanics PNG, GIF)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2012-economou-palate-ruguga-turing.py#L1693-L1743> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-repro-package-3> a pk:EvidenceItem ;
+        rdfs:label "docs/media/palate_ruguga_turing_growth.gif (generated output)" ;
+        dct:description "3-panel GIF with the elevation field h(x,y) co-evolving with the FGF/SHH sheet — docs/media/palate_ruguga_turing_growth.gif: rendered output of 2012-economou-palate-ruguga-turing.py at d58a084, image/gif, 1301353 B, 1491×472 px, 6 frames, artifact_sha256 4a9048e4b444777c31f9c003409ba4d40c3b61b5aee48d4c69d553419f586c7f (sha256 4a9048e4b444777c31f9c003409ba4d40c3b61b5aee48d4c69d553419f586c7f), spec_fingerprint 14f358af9d03b3980dc4c8f810f623b9c4299743ce9b93b063da6d1923819d25" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary, Pass 3 remediation + re-score) + MorphoEval Dual-Rubric Assessor" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/8> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.ydbio.2009.09.028>,
+            <https://doi.org/10.1038/ng.1090>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1186/1471-213X-8-116>,
+            <https://www.sciencedirect.com/book/9780080570693/theory-of-elasticity> .
+    <https://doi.org/10.1016/j.ydbio.2009.09.028> dct:date "2009"^^xsd:gYear ;
+        dct:title "Signaling integration in the rugae growth zone directs anteroposterior palatal outgrowth" .
+    <https://doi.org/10.1038/ng.1090> dct:date "2012"^^xsd:gYear ;
+        dct:title "Periodic stripe formation by a Turing mechanism operating at growth zones in the mammalian palate" .
+    <https://doi.org/10.1098/rstb.1952.0012> dct:date "1952"^^xsd:gYear ;
+        dct:title "The chemical basis of morphogenesis" .
+    <https://doi.org/10.1186/1471-213X-8-116> dct:date "2008"^^xsd:gYear ;
+        dct:title "Patterning of palatal rugae through sequential addition reveals an anterior/posterior boundary in palatal development" .
+    <https://www.sciencedirect.com/book/9780080570693/theory-of-elasticity> dct:date "1986"^^xsd:gYear ;
+        dct:title "Theory of Elasticity (Course of Theoretical Physics, Vol. 7), 3rd edition — Secs. 11-14, equilibrium of thin plates" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Economou et al. (2012) FGF10/FGF7-SHH activator-inhibitor Turing stripe mechanism at mammalian palatal growth zones, coupled to quasi-static epithelial plate ridge elevation — Reproducibility package 92/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T10:12:25Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-economou-palate-ruguga-turing-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/8> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

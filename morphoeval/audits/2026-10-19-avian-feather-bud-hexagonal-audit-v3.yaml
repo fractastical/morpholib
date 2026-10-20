@@ -1,0 +1,280 @@
+# MorphoEval audit — Ho et al. (2019) PLOS Biol. & Painter, Ho & Headon (2018) JTB Avian Feather Tract
+# Hexagonal Array on a Curved Trunk-and-Limb Surface, 2026-10-20 (v3, Pass 3)
+#
+# Pass 3 remediation assessment of `2018-glimm-avian-feather-bud-hexagonal.py` (v3, 1544 lines)
+# in closed loop `2026-10-19-avian-feather-bud-hexagonal-loop-pass3`, superseding
+# `2026-10-19-avian-feather-bud-hexagonal-audit-v2` (92.5 / 100).
+#
+# What Pass 3 changed:
+#   1. CLOSED the single v2 remediation item — "couple the 2D planar dorsal tract PDE to curved 3D
+#      trunk-and-limb surface geometry to model tract boundary dislocations between the spinal,
+#      scapular and femoral tracts":
+#      - `build_embryo_trunk_surface` (L314-372): Monge patch z = h(u, v) with a tapering trunk
+#        ridge and four Gaussian limb buds (L/R humeral, L/R femoral); induced metric
+#        g_ij = delta_ij + h_i h_j, sqrt(det g), inverse metric and Gaussian curvature K.
+#      - `surface_div_grad` (L374-399): conservative face-flux Laplace-Beltrami / surface
+#        chemotaxis operator (1/sqrt g) d_i (sqrt g g^{ij} a d_j f).
+#      - `geodesic_arrival_time` (L401-435): Godunov eikonal solver giving the geodesic EDA
+#        competence wave arrival time T from each tract initiation line.
+#      - `simulate_feather_array_on_surface` (L548-749): wave-gated inhibitory-disk nucleation
+#        (3D chordal radius r_inh = 0.92 lambda_y) + Painter 2018 n/c/b PDE relaxation on the
+#        surface, with the Ho 2019 mesenchymal density threshold n_0(u, v)(1 + gamma t) >= n_crit
+#        that produces the bare apteria between the dorsal and lateral tracts.
+#      - `surface_coordination` (L437-512) / `curvature_defect_analysis` (L751-793) /
+#        `isochrone_row_count_check` (L795-842) / `run_curved_surface_suite` (L921-969):
+#        flat three-tract control P_6 = 0.979 (0 five-seven pairs) -> curved P_6 = 0.905
+#        (19 fives, 4 sevens, 7 dislocation pairs), defect fraction 0.222 where |K| > K_thr vs
+#        0.079 where |K| <= K_thr (ratio 2.81), monotone limb-height sweep (pairs 0/1/7/10 for
+#        A_l = 0/15/30/45), 0 isochrone-lemma violations, sphere charge exactly 12.
+#   2. CORRECTED PROVENANCE. The Pass 1-2 seed citation "Glimm, Bhat & Newman (2014) Dev. Biol.
+#      395:139-149" does not exist (Crossref resolves both candidate DOIs to unrelated papers);
+#      Ho et al. (2019)'s title and Michon et al. (2008)'s venue/DOI were also wrong, and the
+#      "simultaneous competence" low-regularity phenotype had been attributed to Fc-chEDA1
+#      instead of the Latrunculin pause/release experiment (Ho Fig 2B/D). All of these are fixed
+#      in the script docstring, bib, reference JSON (`metadata.provenance_corrections`) and
+#      README; the new file hashes are pinned and `--self-test` check 1 rejects the old DOI.
+#      Source-traceability is therefore re-scored DOWN relative to v2.
+#   3. Ho 2019 quantitative anchors replace the invented v2 reference values: six-sided fractions
+#      0.75 / 0.50 (Fig 2D), margin densities 49 / 66 / 98 cells per 100 um (Fig 5C-D) driving
+#      n_crit for Fc-chEDA1 / control / Ecto-D2, MTX density x0.8 and MTX + Ecto-D2 ordering
+#      (Fig 5F). Width ratios are reported as model predictions with `reference_value: null`
+#      because the paper does not tabulate them.
+#   4. Three new machine-checked Lean 4 theorems (Loop_019 Theorems 4-6, 0 sorrys):
+#      `euler_disclination_charge` (+ corollary `sphere_pentagon_excess`),
+#      `isochrone_row_count_dislocation`, `monge_metric_determinant`; registered in
+#      `morphoeval/math_kg_loops/glimm-avian-feather-bud-hexagonal.yaml`.
+#
+# Honest limitation carried into Pass 4: primordium positions are produced by a wave-gated random
+# sequential adsorption rule, NOT emergently by the surface Keller-Segel PDE (the emergent variant
+# was numerically unstable with a centred chemotaxis flux); model-fidelity is scored accordingly.
+
+audit:
+  id: 2026-10-19-avian-feather-bud-hexagonal-audit-v3
+  supersedes_audit_id: 2026-10-19-avian-feather-bud-hexagonal-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + MorphoEval Dual-Rubric Assessor"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric baseline)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d58a084
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 3 (v3) remediated evaluation of `2018-glimm-avian-feather-bud-hexagonal.py`
+      superseding `2026-10-19-avian-feather-bud-hexagonal-audit-v2` in closed loop
+      `2026-10-19-avian-feather-bud-hexagonal-loop-pass3`. The file name and sim_id retain
+      the historical "glimm" token only for audit-chain continuity; the seed paper it
+      referred to does not exist (see references and `metadata.provenance_corrections`).
+
+references:
+  ho2019:
+    title: "Feather arrays are patterned by interacting signalling and cell density waves"
+    authors: "Ho WKW, Freem L, Zhao D, Painter KJ, Woolley TE, Gaffney EA, McGrew MJ, Tzika A, Milinkovitch MC, Schneider P, Drusko A, Matthäus F, Glover JD, Wells KL, Johansson JA, Davey MG, Sang HM, Clinton M, Headon DJ"
+    venue: "PLOS Biology 17(2):e3000132 (2019)"
+    doi: 10.1371/journal.pbio.3000132
+  painter2018:
+    title: "A chemotaxis model of feather primordia pattern formation during avian development"
+    authors: "Painter KJ, Ho W, Headon DJ"
+    venue: "Journal of Theoretical Biology 437:225-238 (2018)"
+    doi: 10.1016/j.jtbi.2017.10.026
+  michon2008:
+    title: "BMP2 and BMP7 play antagonistic roles in feather induction"
+    authors: "Michon F, Forest L, Collomb E, Demongeot J, Dhouailly D"
+    venue: "Development 135(16):2797-2805 (2008)"
+    doi: 10.1242/dev.018341
+  bailleul2019:
+    title: "Symmetry breaking in the embryonic skin triggers directional and sequential plumage patterning"
+    authors: "Bailleul R, Curantz C, Desmarquet-Trin Dinh C, Hidalgo M, Touboul J, Manceau M"
+    venue: "PLOS Biology 17(10):e3000448 (2019)"
+    doi: 10.1371/journal.pbio.3000448
+  bausch2003:
+    title: "Grain boundary scars and spherical crystallography"
+    authors: "Bausch AR, Bowick MJ, Cacciuto A, Dinsmore AD, Hsu MF, Nelson DR, Nikolaides MG, Travesset A, Weitz DA"
+    venue: "Science 299(5613):1716-1718 (2003)"
+    doi: 10.1126/science.1081160
+
+simulations:
+  - id: glimm-avian-feather-bud-hexagonal
+    name: "Ho et al. (2019) & Painter, Ho & Headon (2018) avian feather tracts on a curved trunk-and-limb surface: geodesic EDA competence wave, inhibitory-disk hexagonal packing, density-threshold tract boundaries and curvature-induced 5-7 dislocations"
+    organism: "Embryonic chick (Gallus gallus) dorsal, humeral and femoral feather tracts E6.5-E7.5; Fc-chEDA1 / Ecto-D2 / methotrexate / Latrunculin A / scaleless (FGF20 sc/sc) perturbations"
+    script: 2018-glimm-avian-feather-bud-hexagonal.py
+    output: docs/media/avian_feather_bud_hexagonal_comparison.png
+    extra_outputs:
+      - docs/media/avian_feather_bud_hexagonal_curved_tracts.png
+      - docs/media/avian_feather_bud_hexagonal_growth.gif
+    status: evaluated
+    source_refs:
+      - ho2019
+      - painter2018
+      - michon2008
+      - bailleul2019
+      - bausch2003
+    summary: >-
+      Pass 3 (v3) evaluation of `2018-glimm-avian-feather-bud-hexagonal.py`. The script now
+      solves the Painter, Ho & Headon (2018) dermal chemotaxis + FGF20 / BMP PDE on a 3D
+      Monge-patch trunk with four limb buds (Laplace-Beltrami operator, geodesic eikonal EDA
+      competence wave, 3D chordal inhibitory-disk nucleation, local tangent-plane Delaunay
+      coordination) and adds the Ho et al. (2019) mesenchymal density threshold, so the
+      dorsal, humeral and femoral tracts self-delimit through bare apteria (gap 1.19 lambda)
+      and acquire curvature-induced 5-7 dislocations where the limb buds bend the sheet
+      (flat P_6 = 0.979, 0 pairs -> curved P_6 = 0.905, 7 pairs; defect fraction 0.222 at
+      |K| > K_thr vs 0.079 elsewhere; monotone in limb height; sphere disclination charge 12).
+      The flat-sheet suite reproduces the Ho 2019 ordering: WT wave P_6 = 1.00 vs simultaneous
+      (Latrunculin-paused) 0.69 (paper ~0.75 vs ~0.50); Fc-chEDA1 (n_crit = 49/66) widens the
+      patterned region 1.25x, Ecto-D2 (98/66) narrows it to 0.50x, MTX 0.75x, MTX + Ecto-D2
+      0.26x (< each single treatment); scaleless / Latrunculin give 0 buds. Specimen
+      segmentation of Ho 2019 Fig 3 is unchanged (24 primordia, P_6 = 0.75, +48h/+24h = 2.11x).
+      Provenance was corrected: the Pass 1-2 seed citation (Glimm 2014) is fabricated and has
+      been removed from the bib, JSON, README and docstring; Ho 2019's title and Michon 2008's
+      venue/DOI were fixed; all five DOIs were Crossref-verified. Six Lean 4 theorems
+      (0 sorrys) back the dispersion threshold, hexagonal equidistance, wave fidelity
+      advantage, Euler disclination charge, isochrone row-count dislocation and Monge-metric
+      determinant.
+    scores:
+      model-fidelity:
+        value: 91
+        rationale: >-
+          Implements the Painter, Ho & Headon (2018) Keller-Segel n/c/b system with its exact
+          linear threshold chi_c = 0.0540 (L167-229) and lifts it to a curved skin surface:
+          Monge-patch metric, sqrt(det g), g^{ij} and Gaussian curvature (L314-372), a
+          conservative face-flux Laplace-Beltrami / surface chemotaxis operator (L374-399),
+          a Godunov eikonal geodesic EDA competence wave (L401-435) and the Ho 2019
+          mesenchymal density threshold n_0(1 + gamma t) >= n_crit with n_crit set by the
+          measured margin densities 49 / 66 / 98 cells per 100 um (L548-749). Tract-boundary
+          dislocations between the dorsal and limb tracts are now a mechanistic consequence of
+          curvature (Lean Theorems 4-6; Bausch 2003), closing the v2 remediation item. Scored
+          below v2's 94 because primordium nucleation is a wave-gated inhibitory-disk
+          adsorption rule relaxed by the PDE rather than an emergent PDE instability
+          (`model_boundary_note` in the reference JSON), the eikonal solver uses only the
+          diagonal metric, and the limb-bud geometry is schematic.
+        evidence:
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [167, 229], note: "Painter 2018 dispersion relation, chi_c = 0.0540, equilateral row geometry (Lean Theorems 1-2)", supports: true}
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [314, 435], note: "Monge-patch surface, metric/curvature, conservative Laplace-Beltrami operator and geodesic eikonal competence wave", supports: true}
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [548, 749], note: "Surface simulation: geodesic wave gating, density-threshold competence, 3D inhibitory-disk nucleation, surface PDE relaxation of n/c/b", supports: true}
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [751, 842], note: "Curvature-localised defect analysis and isochrone row-count lemma check", supports: true}
+          - {file: morphoeval/lean/loops/Loop_019_avian_feather_bud_hexagonal.lean, lines: [29, 182], note: "6 machine-checked Lean 4 theorems (0 sorrys): KS instability, hexagonal equidistance, wave fidelity, Euler disclination charge (+ sphere corollary), isochrone dislocation, Monge metric determinant", supports: true}
+          - {file: datasets/avian_feather_bud_hexagonal/avian_feather_bud_hexagonal_reference.json, lines: [1, 259], note: "governing_equations.model_boundary_note states nucleation is not emergent from the PDE; curved_surface_model.limitations lists the diagonal-metric eikonal and schematic limb geometry", supports: false}
+      specimen-match:
+        value: 92
+        rationale: >-
+          Vendors and SHA-256-verifies Ho et al. (2019) PLOS Biology 17(2):e3000132 Fig 3
+          (`chick_feather_bud_hexagonal_specimen.jpg`, CC BY 4.0) and segments it
+          (`segment_feather_tract_specimen`, L971-1025): 24 CTNNB1 / EDA primordia in Panel B
+          ROI [494, 24, 770, 218] with Voronoi / Delaunay coordination P_6 = 0.7500 (9/12
+          interior), P_567 = 1.0, |psi_6| = 0.5265, NN spacing 40.33 +- 7.96 px (CV 0.1974),
+          and the Panel A +24h -> +48h tract expansion 38 / 18 = 2.11x. The comparison figure
+          (Panels G-H, L1172-1190) now sets the specimen against the correct Ho 2019 anchors
+          (P_6 ~0.75 control vs ~0.50 Latrunculin-paused) instead of the invented v2 value
+          0.9167. Held at 92: the curved trunk + limb-bud surface is a schematic Monge patch,
+          not segmented from an embryo image, so the new curved-tract outputs are compared
+          to flat controls and to theory, not to a specimen.
+        evidence:
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [971, 1025], note: "DoG peak segmentation, Voronoi/Delaunay coordination and +48h/+24h expansion on the SHA-256-locked Ho 2019 Fig 3 specimen", supports: true}
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [1172, 1190], note: "Panels G-H: specimen ROIs and Voronoi overlay juxtaposed with model WT P_6", supports: true}
+          - {file: docs/media/avian_feather_bud_hexagonal_comparison.png, lines: [0, 0], note: "12-panel figure with specimen (G), specimen Voronoi (H), flat and curved model lattices, kymograph, sweeps and EDA density-threshold bars", supports: true}
+          - {file: docs/media/avian_feather_bud_hexagonal_curved_tracts.png, lines: [0, 0], note: "Flat vs curved vs curved-simultaneous three-tract lattices with 5-7 dislocation pairs highlighted; no specimen counterpart for the curved geometry", supports: false}
+      parameter-expressivity:
+        value: 94
+        rationale: >-
+          Sweeps: six wave speeds v_w in {0.11, 0.16, 0.22, 1.2, 4.0, 100} (Panel E), seven
+          chemotactic sensitivities chi in {0, 0.01, 0.04, 0.08, 0.14, 0.20, 0.24} crossing
+          chi_c (Panel F), five EDA / density regimes (control, Fc-chEDA1, Ecto-D2, MTX,
+          MTX + Ecto-D2; L844-912, Panel L), and a four-level limb-bud height sweep
+          A_l in {0, 15, 30, 45} on the curved surface (L921-969, Panel K). CLI exposes
+          `--vw --chi --Dn --Dc --Db --n-crit --density-scale --limb-height --steps --seed`
+          plus `--single` (one curved three-tract run printed as JSON) and `--self-test`
+          (L1508-1541). All surface parameters are keyword arguments of
+          `build_embryo_trunk_surface` / `simulate_feather_array_on_surface`.
+        evidence:
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [844, 969], note: "Wave-speed, chi, EDA-density and limb-height sweeps", supports: true}
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [1508, 1541], note: "CLI flags including --n-crit, --density-scale, --limb-height and --single", supports: true}
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [314, 330], note: "Surface geometry parameters (trunk height/sigma/taper, limb height/sigma/offset, humeral/femoral positions, flat switch)", supports: true}
+      morphometric-validation:
+        value: 93
+        rationale: >-
+          `measure_morphoeval()` (L1304-1422) emits 16 measurements with method, reference
+          and uncertainty notes: Delta_x / lambda_y = 0.866, chi_c = 0.054, WT P_6 = 1.00
+          (ref 0.75), simultaneous P_6 = 0.69 (ref 0.50), Fc-chEDA1 width 1.25x, Ecto-D2
+          0.50x, MTX + Ecto-D2 / min(single) = 0.53 (< 1 as in Fig 5F), 0-bud negative
+          controls, specimen count 24 and P_6 = 0.75, curved vs flat three-tract P_6
+          (0.905 vs 0.979), curved/flat-region defect-fraction ratio 2.81 (null 1.0),
+          limb-height sweep pairs 10 at A_l = 45 (0 at A_l = 0), sphere disclination charge
+          12 (exact), isochrone-lemma violations 0, dorsal-femoral apterium gap 1.19 lambda.
+          Three width ratios carry `reference_value: null` because Ho 2019 does not tabulate
+          them (only ordering / significance), and the WT model lattice is noise-free so its
+          P_6 = 1.00 exceeds the paper's ~0.75; both are stated explicitly.
+        evidence:
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [1304, 1422], note: "16 measurements: flat suite, EDA/density suite, specimen, curved-surface defect statistics, topology checks", supports: true}
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [437, 546], note: "Local tangent-plane Delaunay coordination with interior/boundary classification and closed-hull Euler charge check", supports: true}
+          - {file: datasets/avian_feather_bud_hexagonal/avian_feather_bud_hexagonal_reference.json, lines: [1, 259], note: "ho2019_quantitative_anchors lists which quantities the paper reports numerically and which it does not", supports: true}
+      source-traceability:
+        value: 86
+        rationale: >-
+          Dataset `datasets/avian_feather_bud_hexagonal/` is SHA-256-pinned and verified at
+          runtime (`EXPECTED_SHA256` L117-131, `verify_dataset_sha256` L143-155); all five
+          DOIs (Ho 2019, Painter 2018, Michon 2008, Bailleul 2019, Bausch 2003) were
+          Crossref-verified on 2026-10-20 and recorded in the bib, reference JSON, README and
+          docstring; `--self-test` check 1 fails if the fabricated DOI reappears. Scored down
+          from v2's 94 because Passes 1-2 (and audits v1-v2) cited a non-existent seed paper,
+          a wrong Ho 2019 title, a wrong Michon 2008 venue/DOI and invented reference values;
+          `scout_manifest.json` still carries the fabricated seed (left byte-identical to keep
+          its pinned hash and is documented as superseded), and the script file name / sim_id
+          still contain the "glimm" token.
+        evidence:
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [1, 87], note: "Docstring PROVENANCE CORRECTION block naming the fabricated citation and the corrected sources", supports: true}
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [117, 155], note: "SHA-256 registry (new bib / JSON hashes) and runtime verification", supports: true}
+          - {file: datasets/avian_feather_bud_hexagonal/paper_citations.bib, lines: [1, 70], note: "Five Crossref-verified BibTeX entries; Glimm 2014 removed", supports: true}
+          - {file: datasets/avian_feather_bud_hexagonal/README.md, lines: [1, 36], note: "Provenance-correction section, corrected literature list and SHA table", supports: true}
+          - {file: datasets/avian_feather_bud_hexagonal/scout_manifest.json, lines: [1, 58], note: "Unchanged scout dossier still records the non-existent seed paper", supports: false}
+      code-traceability:
+        value: 92
+        rationale: >-
+          Module docstring (L1-87) maps every section to Painter 2018 / Ho 2019 figures and
+          to Lean Theorems 1-6; section banners and function docstrings cite the specific
+          figure or theorem they implement; `morphoeval/math_kg_loops/glimm-avian-feather-bud-hexagonal.yaml`
+          registers six laws with updated `code_locus` and `lean_locus` spans and a
+          `provenance_note`. The GIF / PNG panel titles cite the Ho 2019 figure they
+          emulate. Minor deduction retained for the misleading historical file name.
+        evidence:
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [1, 87], note: "Docstring: governing equations, surface formulation, phenotype table, Lean theorem map, provenance correction", supports: true}
+          - {file: morphoeval/math_kg_loops/glimm-avian-feather-bud-hexagonal.yaml, lines: [1, 182], note: "Six law entries with lean_theorem / lean_locus / code_locus pins", supports: true}
+          - {file: morphoeval/lean/loops/Loop_019_avian_feather_bud_hexagonal.lean, lines: [105, 184], note: "Theorems 4-6 with docstrings tying each statement to the code path it certifies", supports: true}
+      repro-package:
+        value: 94
+        rationale: >-
+          Deterministic (`seed=2018`, bitwise two-run determinism check), 12-check
+          `self_test()` (L1424-1506) covering SHA-256 / provenance, Lean laws 1-6, wave and
+          chi sweeps, EDA density suite ordering, curved-vs-flat defect increase, sphere charge
+          12, isochrone lemma, specimen segmentation and determinism; full run 48 s and
+          self-test 48 s on the reference environment (< 3 min budget). Outputs:
+          12-panel comparison PNG, curved-tract PNG and a 3-panel growth GIF.
+        evidence:
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [1424, 1506], note: "12-check deterministic self_test()", supports: true}
+          - {file: 2018-glimm-avian-feather-bud-hexagonal.py, lines: [1070, 1302], note: "render_outputs(): comparison PNG, curved-tract PNG, growth GIF", supports: true}
+          - {file: docs/media/avian_feather_bud_hexagonal_growth.gif, lines: [0, 0], note: "EDA wave, flat condensates and curved-surface condensates animated side by side", supports: true}
+    remediation:
+      - "Make primordium nucleation emergent: replace the wave-gated inhibitory-disk adsorption rule in `simulate_feather_array_on_surface` by condensation arising from the surface Keller-Segel PDE itself, using an upwind / flux-limited discretisation of div_g(n grad_g c) on the Monge patch (the centred scheme was checkerboard-unstable in Pass 3), and re-derive P_6, tract widths and curvature defects from the emergent condensates."
+      - "Replace the schematic Gaussian limb-bud Monge patch with a surface digitised from a staged chick embryo (e.g. Ho et al. 2019 Fig 1B whole mount or an HH29-30 3D atlas), solve the eikonal equation with the full (off-diagonal) metric, and evaluate per-tract Gauss-Bonnet with the boundary geodesic-curvature term so tract disclination charges can be compared quantitatively, not just by sign."
+      - "Digitise the Ho et al. (2019) Fig 3E / 3G / 5F bar values (S-data) to give the Fc-chEDA1, Ecto-D2 and MTX width ratios real reference values and a calibrated mesenchymal density gradient (n_base, L_dens), and add measured noise so the WT model P_6 lands near the paper's ~0.75 rather than the ideal 1.00."
+      - "Regenerate `scout_manifest.json` from a fresh literature scout so it no longer records the fabricated Glimm 2014 seed (re-pin its SHA-256), and rename the script / sim_id away from the 'glimm' token once the audit chain can be re-keyed."

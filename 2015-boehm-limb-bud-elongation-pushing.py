@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-2015-boehm-limb-bud-elongation-pushing.py — Pass 2 (v2) Remediated Implementation
+2015-boehm-limb-bud-elongation-pushing.py — Pass 3 (v3) Remediated Implementation
 =================================================================================
-Faithful mathematical, continuum viscoelastic/Stokes, and morphometric reproduction of:
+Mathematical, continuum Stokes, 3D finite-element, and morphometric reproduction of:
 
   1. Boehm B, Westerberg H, Lesnicar-Pucko G, Raja S, Reginelli M, Miguez A,
      Briscoe J, Sharpe J (2010).
@@ -54,6 +54,30 @@ Mathematical & Mechanistic Architecture (Linked to Lean 4 `MathOfBiology.Loop_01
     isotropic growth varies by `< 9%` (`3.4%-11.8%`), and Hooke-Jeeves inverse optimization
     proves that matching `St1` by isotropic growth alone requires unphysical distal rates
     (`s_opt = 0.54 h^-1 > 8 * s_emp`, `T_c < 1.5 h`) and negative DV shrinkage across 22.5% of volume.
+
+  - Law 4 (`MathOfBiology.Loop_017.stokes_growth_oracles_are_exact`, Pass 3):
+    The two closed-form Stokes growth solutions used to verify the 3D finite-element solver —
+    uniform dilation `v = (s/3) x, p = 2 mu s / 3` under a uniform source and the uniaxial
+    extensile response `v = zeta (2x/3, -y/3, -z/3), p = 0` to a traceless active stress
+    `-2 mu zeta (n n - I/3)` — satisfy `nabla . v = s` (resp. `0`) and the traction-free
+    condition `sigma_total . n = 0` identically.
+
+  - Law 5 (`MathOfBiology.Loop_017.flank_influx_volume_budget`, Pass 3):
+    In the Lagrangian/ALE growth problem the 6 h volume budget is exactly
+    `V1 - V0 = integral(s) dV dt + A_flank * v_in * T`; with the measured IddU/BrdU source
+    supplying only ~12% and the OPT St0->St1 table demanding +66%, the residual must enter
+    through the flank (v_in* ~ 60 um/h) or the OPT volumes in the reference table are wrong.
+    The theorem fixes the integer-scaled budget identity and the inequality chain
+    `V_prolif < V_OPT` the measurements report.
+
+Two model layers coexist in this file and are labelled as such everywhere:
+  * Sections 2-3: the Pass 2 **2D reduced model** (`simulate_limb_bud_regime`) — a boundary-advection
+    model whose per-axis rate coefficients were calibrated in Pass 2 to the 5-regime reference table;
+    it is NOT coupled to the 2D Poisson field solver of `solve_continuum_pressure_velocity_field`,
+    which is used for visualisation only.  Kept for continuity; its scores in the v3 audit reflect this.
+  * Section 5: the Pass 3 **3D tetrahedral Stokes FEM** (`simulate_limb_bud_fem_3d`) on the visual hull
+    reconstructed from the specimen's own OPT iso-surface silhouettes — the paper's Eqs. (3)-(5)/(10)-(11)
+    solved as written, with two fitted gains (k_zeta, k_chi) and everything else predicted.
 """
 
 from __future__ import annotations
@@ -71,7 +95,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
+from scipy import sparse
 from scipy import stats
+from scipy.sparse.linalg import spsolve
 
 ROOT = Path(__file__).resolve().parent
 DATASET_DIR = ROOT / "datasets" / "limb_bud_elongation_pushing"
@@ -82,6 +108,15 @@ BIB_FILE = DATASET_DIR / "paper_citations.bib"
 
 OUT_PNG = ROOT / "docs" / "media" / "limb_bud_elongation_pushing_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "limb_bud_elongation_pushing_growth.gif"
+OUT_FEM_PNG = ROOT / "docs" / "media" / "limb_bud_elongation_pushing_fem3d.png"
+
+# Pass 3 3D Stokes-FEM constants (Section 5)
+FEM_MU = 0.5                      # dynamic viscosity; 2*mu = 1 so active-stress / body-force gains are strain rates (h^-1)
+FEM_DEFAULT_RES = (14, 3, 10)     # (PD stations, radial rings, angular nodes) -> 466 nodes / 2150 tets
+FEM_FINE_RES = (20, 4, 14)        # convergence check                         -> 1198 nodes / 5978 tets
+FEM_COARSE_RES = (10, 2, 8)       #                                           -> 188 nodes / 744 tets
+FEM_DT_HOURS = 0.5
+OPT_VOLUME_RATIO_ST1_ST0 = 0.914 / 0.551   # Boehm et al. (2010) Fig. 2 OPT volumes (reference table)
 
 EXPECTED_SHA256: dict[str, str] = {
     "datasets/limb_bud_elongation_pushing/limb_bud_elongation_pushing_reference.json": (
@@ -175,7 +210,11 @@ def compute_iddu_brdu_atlas_profile(
         y_c = np.clip(np.asarray(y_ap_norm, dtype=float), -1.0, 1.0)
 
     if uniform_control:
-        tc_h = np.full_like(x_c, 12.1)
+        # Flat control: T_c = 16.5 h everywhere (the regime label in the SHA-256-locked reference
+        # table; s = ln2/16.5 - 0.017 = 0.025 h^-1, i.e. the same mean source as the graded atlas,
+        # so the control isolates the *gradient* and not the total amount of proliferation).
+        # Pass 2 used 12.1 h here, contradicting its own label; corrected in Pass 3.
+        tc_h = np.full_like(x_c, 16.5)
     else:
         # Proximal central core has slowest cycle (25 h), distal sub-AER ridge fastest (11 h)
         ectoderm_boost = 0.08 * (y_c ** 2)
@@ -305,7 +344,13 @@ def simulate_limb_bud_regime(
     n_boundary: int = 128,
 ) -> dict[str, Any]:
     """
-    Simulate 3D-axisymmetric / 2D Lagrangian-Eulerian limb bud morphogenesis across:
+    Pass 2 **2D reduced model** (disclosed in Pass 3): a Lagrangian boundary-advection model in which
+    each boundary point moves with per-axis strain rates (isotropic part proportional to the local
+    IddU/BrdU source; directional part proportional to zeta_ocd * Wnt5a(x) and chi * FGF8(x)) whose
+    numerical coefficients (0.352, 0.560, 0.580, 0.0175, 0.0268, ...) were calibrated in Pass 2 to the
+    5-regime reference table.  It does NOT solve the Stokes equations and is not coupled to
+    `solve_continuum_pressure_velocity_field` (visualisation only).  The physically faithful
+    solver is `simulate_limb_bud_fem_3d` (Section 5).  Benchmarks reproduced:
       (a) the 6-hour E11.0 (St0, L_PD = 1020 um, W_AP = 960 um, H_DV = 580 um) to
           E11.25 (St1, L_PD = 1450 um, W_AP = 1075 um, H_DV = 586 um) OPT benchmark
           of Boehm et al. (2010) Fig. 2 & Fig. 4; and
@@ -674,8 +719,722 @@ def segment_limb_bud_specimen() -> dict[str, Any]:
 
 
 # =============================================================================
-# Section 5. Publication-Grade 10-Panel Figure & Animated Growth GIF Renderer
+# Section 5. Pass 3 — 3D Tetrahedral Stokes FEM on the OPT Visual-Hull Mesh
 # =============================================================================
+# Remediation of the single open Pass 2 item ("extend the 2D mid-plane pressure-Poisson solver
+# to an unstructured 3D tetrahedral finite-element mesh imported from OPT iso-surfaces").
+#
+# Honest scope statement.  The raw OPT voxel volumes of Boehm et al. (2010) are not available
+# in this repository; what IS vendored (and SHA-256-locked) is the paper's Fig. 2 with the
+# St0/St1 iso-surfaces rendered in two orthogonal projections (dorsal AP-PD and posterior
+# DV-PD).  Section 5 therefore (i) reconstructs the 3D St0 and St1 surfaces as the *visual
+# hull* of those two segmented silhouettes (elliptical cross-sections whose AP/DV semi-axes
+# are read off the specimen column by column), (ii) tetrahedralises the St0 hull into a
+# structured prism-split P1 mesh, and (iii) solves the full 3D Stokes growth system of the
+# paper's Eqs. (3)-(5)/(10)-(11) on that mesh in a Lagrangian frame:
+#       -nabla p + mu nabla^2 v + nabla . sigma_active + f_FGF8 = 0,     nabla . v = s(x)
+# with a traction-free ectodermal surface, v_x = v_in on the flank plane (v_in = 0 pins it),
+# extensile Wnt5a/JNK oriented-division stress sigma_active = -2 mu zeta w(x) (n n - I/3),
+# n = e_PD (Lean Law 2), and an AER-FGF8 chemotactic body force f = 2 mu chi dc/dx e_PD.
+# The discretisation is P1-P1 with Brezzi-Pitkaranta pressure stabilisation; two closed-form
+# Stokes solutions (uniform dilation, uniform extensile stress; Lean Theorem 4) are reproduced
+# to machine precision, and the mesh-convergence of the Model I prediction is reported.
+# The residual (true OPT voxel import, an unstructured Delaunay/advancing-front mesher,
+# viscosity-dependent Re behaviour) is carried as a Pass 4 remediation item.
+def _silhouette_half_width_profile(mask: np.ndarray, smooth_px: int = 7) -> dict[str, Any]:
+    """Column-wise half-extent of a segmented silhouette, from the flank column to the tip."""
+    ys, xs = np.where(mask)
+    cols = np.arange(xs.min(), xs.max() + 1)
+    half = np.zeros(len(cols))
+    for i, c in enumerate(cols):
+        yy = np.where(mask[:, c])[0]
+        half[i] = 0.5 * (yy.max() - yy.min() + 1) if yy.size else 0.0
+    i0 = int(np.argmax(half >= 0.5 * half.max()))   # first column with >= 50% of max extent = flank
+    cols, half = cols[i0:], half[i0:]
+    half = ndi.uniform_filter1d(half, smooth_px, mode="nearest")
+    pd_px = float(cols[-1] - cols[0] + 1)
+    return {"u": (cols - cols[0]) / pd_px, "half_px": half, "pd_px": pd_px}
+
+
+def reconstruct_opt_visual_hull(
+    spec_seg: dict[str, Any], l_pd0_um: float = 1020.0, n_stations: int = 64
+) -> dict[str, Any]:
+    """
+    Reconstruct the St0 (E11.0) and St1 (E11.25) limb-bud surfaces as the visual hull of the
+    two orthogonal OPT iso-surface projections segmented from the SHA-256-locked specimen
+    (Boehm et al. 2010 Fig. 2F dorsal AP-PD view and posterior DV-PD view).  Each PD station
+    u in [0, 1] gets an elliptical cross-section with AP semi-axis a(u) (dorsal silhouette)
+    and DV semi-axis b(u) (posterior silhouette).  Pixels are converted to micrometres with a
+    per-view scale fixed by the OPT St0 length L_PD = 1020 um, so St1 lengths/widths are
+    *measured* from the specimen rather than copied from the reference table.
+    """
+    out: dict[str, Any] = {}
+    u_s = np.linspace(0.0, 1.0, n_stations)
+    prof = {
+        stage: {
+            "dorsal": _silhouette_half_width_profile(spec_seg["dorsal_overlay"][f"{stage}_mask"]),
+            "posterior": _silhouette_half_width_profile(spec_seg["posterior_overlay"][f"{stage}_mask"]),
+        }
+        for stage in ("st0", "st1")
+    }
+    scale_d = l_pd0_um / prof["st0"]["dorsal"]["pd_px"]
+    scale_p = l_pd0_um / prof["st0"]["posterior"]["pd_px"]
+    tip = np.sqrt(np.clip(1.0 - u_s ** 12, 0.0, 1.0))   # closes the hull at the AER tip
+    for stage in ("st0", "st1"):
+        d, p = prof[stage]["dorsal"], prof[stage]["posterior"]
+        l_pd = l_pd0_um * d["pd_px"] / prof["st0"]["dorsal"]["pd_px"]
+        a = np.interp(u_s, d["u"], d["half_px"]) * scale_d * tip
+        b = np.interp(u_s, p["u"], p["half_px"]) * scale_p * tip
+        out[stage] = {
+            "u": u_s, "a_ap_um": a, "b_dv_um": b, "l_pd_um": float(l_pd),
+            "w_ap_um": float(2.0 * a.max()), "h_dv_um": float(2.0 * b.max()),
+            "pd_dorsal_px": d["pd_px"], "pd_posterior_px": p["pd_px"],
+            "l_pd_posterior_um": float(l_pd0_um * p["pd_px"] / prof["st0"]["posterior"]["pd_px"]),
+        }
+    out["scale_um_per_px_dorsal"] = float(scale_d)
+    out["scale_um_per_px_posterior"] = float(scale_p)
+    out["st1_st0_pd_ratio"] = out["st1"]["l_pd_um"] / out["st0"]["l_pd_um"]
+    out["st1_st0_ap_ratio"] = out["st1"]["w_ap_um"] / out["st0"]["w_ap_um"]
+    out["st1_st0_dv_ratio"] = out["st1"]["h_dv_um"] / out["st0"]["h_dv_um"]
+    return out
+
+
+def build_structured_tet_mesh(
+    hull_stage: dict[str, Any], n_pd: int = 14, n_rings: int = 3, n_theta: int = 10
+) -> dict[str, Any]:
+    """
+    Tetrahedralise a visual-hull stage into a structured P1 mesh: (n_pd + 1) elliptical
+    cross-sections x (1 centre + n_rings * n_theta nodes) + 1 tip node; every triangular
+    prism between consecutive stations is split into 3 tetrahedra with the min-index
+    diagonal rule (Dompierre et al. 1999), which guarantees face-conforming splits, and the
+    last station is fanned onto the tip.  Returns nodes, positively oriented tets, surface /
+    flank node masks and station/ring bookkeeping.
+    """
+    L = hull_stage["l_pd_um"]
+    u_st = np.linspace(0.0, 0.965, n_pd + 1)
+    per = 1 + n_rings * n_theta
+    pts: list[tuple[float, float, float]] = []
+    station_of: list[int] = []
+    ring_of: list[int] = []
+    for i, u in enumerate(u_st):
+        a = float(np.interp(u, hull_stage["u"], hull_stage["a_ap_um"]))
+        b = float(np.interp(u, hull_stage["u"], hull_stage["b_dv_um"]))
+        x = u * L
+        pts.append((x, 0.0, 0.0)); station_of.append(i); ring_of.append(0)
+        for k in range(1, n_rings + 1):
+            r = k / n_rings
+            for j in range(n_theta):
+                th = 2.0 * np.pi * j / n_theta
+                pts.append((x, r * a * np.cos(th), r * b * np.sin(th)))
+                station_of.append(i); ring_of.append(k)
+    tip = len(pts)
+    pts.append((L, 0.0, 0.0)); station_of.append(n_pd + 1); ring_of.append(n_rings)
+    nodes = np.array(pts, dtype=float)
+    station_arr = np.array(station_of)
+    ring_arr = np.array(ring_of)
+
+    def nid(k: int, j: int) -> int:   # station-0 local id of ring k, angular index j
+        return 0 if k == 0 else 1 + (k - 1) * n_theta + (j % n_theta)
+
+    tris: list[tuple[int, int, int]] = [(nid(0, 0), nid(1, j), nid(1, j + 1)) for j in range(n_theta)]
+    for k in range(1, n_rings):
+        for j in range(n_theta):
+            q = (nid(k, j), nid(k, j + 1), nid(k + 1, j + 1), nid(k + 1, j))
+            tris.append((q[0], q[1], q[2])); tris.append((q[0], q[2], q[3]))
+    tri_arr = np.array(tris)
+    tets: list[tuple[int, int, int, int]] = []
+    for i in range(n_pd):
+        for (a, b, c) in tri_arr + i * per:
+            bot = [int(a), int(b), int(c)]
+            r = int(np.argmin(bot))
+            a0, b0, c0 = bot[r], bot[(r + 1) % 3], bot[(r + 2) % 3]
+            a1, b1, c1 = a0 + per, b0 + per, c0 + per
+            if min(b0, c0, b1, c1) in (b0, c1):
+                tets += [(a0, b0, c0, c1), (a0, b0, c1, b1), (a0, b1, c1, a1)]
+            else:
+                tets += [(a0, b0, c0, b1), (a0, b1, c0, c1), (a0, b1, c1, a1)]
+    for (a, b, c) in tri_arr + n_pd * per:
+        tets.append((int(a), int(b), int(c), tip))
+    tet_arr = np.array(tets, dtype=int)
+    vol6 = np.linalg.det(np.concatenate([np.ones((len(tet_arr), 4, 1)), nodes[tet_arr]], axis=2))
+    flip = vol6 < 0
+    tet_arr[flip] = tet_arr[flip][:, [0, 1, 3, 2]]
+    surface = ring_arr == n_rings
+    flank = station_arr == 0
+    return {
+        "nodes": nodes, "tets": tet_arr, "surface": surface, "flank": flank,
+        "station_of": station_arr, "ring_of": ring_arr, "n_pd": n_pd, "n_rings": n_rings, "n_theta": n_theta,
+    }
+
+
+def p1_tet_geometry(nodes: np.ndarray, tets: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Signed tet volumes and P1 basis gradients G (M, 3, 4) with grad(phi_i) = G[:, :, i]."""
+    A = np.concatenate([np.ones((len(tets), 4, 1)), nodes[tets]], axis=2)
+    vol = np.linalg.det(A) / 6.0
+    C = np.linalg.inv(A)
+    return vol, C[:, 1:4, :]
+
+
+def assemble_stokes_p1p1(
+    nodes: np.ndarray,
+    tets: np.ndarray,
+    s_nodes: np.ndarray,
+    sigma_active_tet: np.ndarray,
+    f_body_tet: np.ndarray,
+    alpha_stab: float = 0.2,
+) -> tuple[sparse.csr_matrix, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Assemble the P1-P1 Brezzi-Pitkaranta stabilised Stokes growth system
+        [ A   B^T ] [u]   [F]      A_{ia,jb} = mu V (delta_ab g_i.g_j + g_{j,a} g_{i,b})
+        [ B  -C   ] [p] = [G]      B_{k,(j,b)} = -(V/4) g_{j,b},   C = (alpha/mu) sum_e h_e^2 V g_k.g_l
+    with F_{ia} = -V sigma_ab g_{i,b} + (V/4) f_a  (active stress integrated by parts; traction-free
+    surface is the natural BC) and G_k = -(V/20)(sum_j s_j + s_k) (consistent P1 source load).
+    """
+    vol, G = p1_tet_geometry(nodes, tets)
+    n = len(nodes)
+    M = len(tets)
+    g = np.transpose(G, (0, 2, 1))                                     # (M,4,3): g[m,i,b] = d_b phi_i
+    gg = np.einsum("mib,mjb->mij", g, g)
+    Ke = FEM_MU * vol[:, None, None, None, None] * (
+        np.einsum("mij,ab->miajb", gg, np.eye(3)) + np.einsum("mja,mib->miajb", g, g)
+    )
+    dof = 3 * tets[:, :, None] + np.arange(3)[None, None, :]           # (M,4,3)
+    rows = np.broadcast_to(dof[:, :, :, None, None], Ke.shape).ravel()
+    cols = np.broadcast_to(dof[:, None, None, :, :], Ke.shape).ravel()
+    A = sparse.coo_matrix((Ke.ravel(), (rows, cols)), shape=(3 * n, 3 * n)).tocsr()
+    Be = -(vol[:, None, None, None] / 4.0) * np.broadcast_to(g[:, None, :, :], (M, 4, 4, 3))
+    brow = np.broadcast_to(tets[:, :, None, None], Be.shape).ravel()
+    bcol = np.broadcast_to(dof[:, None, :, :], Be.shape).ravel()
+    B = sparse.coo_matrix((Be.ravel(), (brow, bcol)), shape=(n, 3 * n)).tocsr()
+    h2 = (6.0 * vol) ** (2.0 / 3.0)
+    Ce = (alpha_stab / FEM_MU) * (h2 * vol)[:, None, None] * gg
+    crow = np.repeat(tets, 4, axis=1).ravel()
+    ccol = np.tile(tets, (1, 4)).ravel()
+    C = sparse.coo_matrix((Ce.ravel(), (crow, ccol)), shape=(n, n)).tocsr()
+    Fe = -vol[:, None, None] * np.einsum("mab,mib->mia", sigma_active_tet, g) + (vol[:, None, None] / 4.0) * f_body_tet[:, None, :]
+    F = np.bincount(dof.ravel(), weights=Fe.ravel(), minlength=3 * n)
+    s_e = s_nodes[tets]
+    Ge = -(vol[:, None] / 20.0) * (s_e.sum(axis=1, keepdims=True) + s_e)
+    Gv = np.bincount(tets.ravel(), weights=Ge.ravel(), minlength=n)
+    S = sparse.bmat([[A, B.T], [B, -C]], format="csr")
+    return S, np.concatenate([F, Gv]), vol, G
+
+
+def fem_flank_constraints(mesh: dict[str, Any]) -> np.ndarray:
+    """Velocity dofs fixed on the flank: v_x on every flank node (pinned / inflow plane), plus the
+    minimal set killing the remaining rigid modes (y,z translation at the flank centre, x-rotation)."""
+    flank = np.where(mesh["flank"])[0]
+    fixed = [3 * int(i) for i in flank]
+    centre = int(flank[mesh["ring_of"][flank] == 0][0])
+    fixed += [3 * centre + 1, 3 * centre + 2]
+    on_y_axis = flank[(np.abs(mesh["nodes"][flank, 2]) < 1e-9) & (mesh["nodes"][flank, 1] > 0)]
+    fixed.append(3 * int(on_y_axis[np.argmax(mesh["nodes"][on_y_axis, 1])]) + 2)
+    return np.array(sorted(set(fixed)), dtype=int)
+
+
+def solve_stokes_growth(
+    nodes: np.ndarray,
+    mesh: dict[str, Any],
+    s_nodes: np.ndarray,
+    sigma_active_tet: np.ndarray,
+    f_body_tet: np.ndarray,
+    fixed_dofs: np.ndarray,
+    fixed_vals: np.ndarray | None = None,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Direct sparse solve of the stabilised Stokes system with Dirichlet velocity dofs eliminated."""
+    S, rhs, vol, _ = assemble_stokes_p1p1(nodes, mesh["tets"], s_nodes, sigma_active_tet, f_body_tet)
+    ndof = S.shape[0]
+    x = np.zeros(ndof)
+    if fixed_vals is not None:
+        x[fixed_dofs] = fixed_vals
+    free = np.setdiff1d(np.arange(ndof), fixed_dofs)
+    rhs_f = rhs[free] - S[free][:, fixed_dofs] @ x[fixed_dofs]
+    x[free] = spsolve(S[free][:, free].tocsc(), rhs_f)
+    n = len(nodes)
+    return x[: 3 * n].reshape(n, 3), x[3 * n:], vol
+
+
+def fem_manufactured_solution_errors(mesh: dict[str, Any]) -> dict[str, float]:
+    """
+    Verify the Stokes FEM against two closed-form solutions (Lean Theorem 4,
+    `MathOfBiology.Loop_017.stokes_growth_oracles_are_exact`):
+      (a) uniform source s, no active stress:  v = (s/3) x,  p = 2 mu s / 3   (traction-free);
+      (b) uniform extensile stress -2 mu zeta (nn - I/3), s = 0:  v = zeta (2x/3, -y/3, -z/3),  p = 0.
+    Both are linear in x, hence exactly representable by P1 — errors must be at round-off.
+    """
+    nodes, tets = mesh["nodes"], mesh["tets"]
+    M, n = len(tets), len(nodes)
+    fixed = fem_flank_constraints(mesh)
+    s0 = 0.03
+    u, p, _ = solve_stokes_growth(nodes, mesh, np.full(n, s0), np.zeros((M, 3, 3)), np.zeros((M, 3)), fixed)
+    u_ex = (s0 / 3.0) * nodes
+    err_u_a = float(np.linalg.norm(u - u_ex) / np.linalg.norm(u_ex))
+    err_p_a = float(np.abs(p - 2.0 * FEM_MU * s0 / 3.0).max() / (2.0 * FEM_MU * s0 / 3.0))
+    z0 = 0.05
+    sig = np.broadcast_to(-2.0 * FEM_MU * z0 * (np.diag([1.0, 0.0, 0.0]) - np.eye(3) / 3.0), (M, 3, 3)).copy()
+    u, p, _ = solve_stokes_growth(nodes, mesh, np.zeros(n), sig, np.zeros((M, 3)), fixed)
+    u_ex = z0 * np.stack([(2.0 / 3.0) * nodes[:, 0], -(1.0 / 3.0) * nodes[:, 1], -(1.0 / 3.0) * nodes[:, 2]], axis=1)
+    err_u_b = float(np.linalg.norm(u - u_ex) / np.linalg.norm(u_ex))
+    err_p_b = float(np.abs(p).max() / (2.0 * FEM_MU * z0))
+    return {
+        "dilation_velocity_rel_l2": err_u_a, "dilation_pressure_rel_max": err_p_a,
+        "extensile_velocity_rel_l2": err_u_b, "extensile_pressure_rel_max": err_p_b,
+        "max_rel_error": max(err_u_a, err_p_a, err_u_b, err_p_b),
+    }
+
+
+_FEM_CACHE: dict[tuple, dict[str, Any]] = {}
+
+
+def simulate_limb_bud_fem_3d(
+    hull: dict[str, Any],
+    regime_id: str = "fem_model_ii_wt",
+    zeta_ocd: float = 1.0,
+    chi_fgf_wnt5a: float = 1.0,
+    k_zeta_per_h: float = 0.0,
+    k_chi_per_h: float = 0.0,
+    flank_influx_um_per_h: float = 0.0,
+    proliferation_gradient_on: bool = True,
+    duration_hours: float = 6.0,
+    dt_hours: float = FEM_DT_HOURS,
+    res: tuple[int, int, int] = FEM_DEFAULT_RES,
+    use_cache: bool = True,
+) -> dict[str, Any]:
+    """
+    Lagrangian 3D Stokes growth simulation on the St0 visual-hull tetrahedral mesh (RK2 midpoint,
+    full re-assembly at every stage).  Mechanisms:
+      * volumetric source s(x) = ln2/T_c(x) - s_d from the IddU/BrdU atlas (nodal, Section 2);
+      * extensile Wnt5a/JNK oriented-division stress  sigma = -2 mu (k_zeta zeta) w(x) (e_PD e_PD - I/3);
+      * AER-FGF8/MAPK chemotactic body force           f = 2 mu (k_chi chi) dc_FGF8/dx e_PD;
+      * flank influx v_x = v_in on the x = 0 plane (ALE: flank nodes are reset to x = 0 after each
+        step so new tissue enters through a fixed body-wall plane; v_in = 0 pins the flank).
+    Returns PD/AP/DV extents, volumes, final nodes, mid-plane pressure and surface-node history.
+    """
+    key = (regime_id, zeta_ocd, chi_fgf_wnt5a, k_zeta_per_h, k_chi_per_h, flank_influx_um_per_h,
+           proliferation_gradient_on, duration_hours, dt_hours, res)
+    if use_cache and key in _FEM_CACHE:
+        return _FEM_CACHE[key]
+    mesh = build_structured_tet_mesh(hull["st0"], *res)
+    tets = mesh["tets"]
+    fixed = fem_flank_constraints(mesh)
+    fixed_vals = np.zeros(len(fixed))
+    fixed_vals[np.isin(fixed, 3 * np.where(mesh["flank"])[0])] = flank_influx_um_per_h
+    nodes = mesh["nodes"].copy()
+    vol0 = p1_tet_geometry(nodes, tets)[0]
+    dev = np.diag([1.0, 0.0, 0.0]) - np.eye(3) / 3.0
+
+    def velocity(nd: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        L = max(float(nd[:, 0].max()), 1.0)
+        a_half = max(float(np.abs(nd[:, 1]).max()), 1.0)
+        u_n = np.clip(nd[:, 0] / L, 0.0, 1.0)
+        y_n = np.clip(nd[:, 1] / a_half, -1.0, 1.0)
+        s_net = compute_iddu_brdu_atlas_profile(u_n, y_n, uniform_control=(not proliferation_gradient_on))["s_net_per_h"]
+        cen = nd[tets].mean(axis=1)
+        uc = np.clip(cen[:, 0] / L, 0.0, 1.0)
+        wnt5a = 0.35 + 0.65 * uc ** 0.85
+        fgf8 = np.exp(-((1.0 - uc) / 0.42) ** 2)
+        dfgf8_dx = fgf8 * 2.0 * (1.0 - uc) / (0.42 ** 2) / L
+        sig = -(2.0 * FEM_MU * k_zeta_per_h * zeta_ocd * wnt5a)[:, None, None] * dev[None]
+        f = np.zeros((len(tets), 3))
+        f[:, 0] = 2.0 * FEM_MU * k_chi_per_h * chi_fgf_wnt5a * dfgf8_dx
+        u, p, vol = solve_stokes_growth(nd, mesh, s_net, sig, f, fixed, fixed_vals)
+        return u, p, s_net, vol
+
+    n_steps = int(round(duration_hours / dt_hours))
+    surf_hist = [nodes[mesh["surface"]].copy()]
+    pd_hist = [float(nodes[:, 0].max())]
+    source_volume = 0.0
+    influx_volume = 0.0
+    p_last = np.zeros(len(nodes))
+    flank_area0 = _flank_area(nodes, mesh)
+    for _ in range(n_steps):
+        v1, p_last, s_net, vol = velocity(nodes)
+        source_volume += dt_hours * float(np.sum(vol * s_net[tets].mean(axis=1)))
+        mid = nodes + 0.5 * dt_hours * v1
+        mid[mesh["flank"], 0] = 0.0
+        v2, _, _, _ = velocity(mid)
+        nodes = nodes + dt_hours * v2
+        if flank_influx_um_per_h > 0.0:
+            # ALE inflow plane: the Lagrangian step translated the flank nodes by ~v_in*dt; resetting them
+            # to x = 0 inserts the swept slab of body-wall tissue.  The inserted volume is measured directly
+            # from the mesh (the first element layer is not exactly prismatic), not assumed = A_flank*v_in*dt.
+            v_before = float(p1_tet_geometry(nodes, tets)[0].sum())
+            nodes[mesh["flank"], 0] = 0.0
+            influx_volume += float(p1_tet_geometry(nodes, tets)[0].sum()) - v_before
+        surf_hist.append(nodes[mesh["surface"]].copy())
+        pd_hist.append(float(nodes[:, 0].max()))
+    vol1 = p1_tet_geometry(nodes, tets)[0]
+    n0 = mesh["nodes"]
+    L0, L1 = float(n0[:, 0].max()), float(nodes[:, 0].max())
+    W0, W1 = float(np.ptp(n0[:, 1])), float(np.ptp(nodes[:, 1]))
+    H0, H1 = float(np.ptp(n0[:, 2])), float(np.ptp(nodes[:, 2]))
+    out = {
+        "regime_id": regime_id,
+        "mesh": mesh,
+        "nodes_final": nodes,
+        "pressure_final": p_last,
+        "surface_history": surf_hist,
+        "pd_history_um": np.array(pd_hist),
+        "pd_elongation_6h_pct": (L1 - L0) / L0 * 100.0,
+        "ap_expansion_6h_pct": (W1 - W0) / W0 * 100.0,
+        "dv_expansion_6h_pct": (H1 - H0) / H0 * 100.0,
+        "aspect_ratio_pd_ap_final": L1 / W1,
+        "volume_ratio": float(vol1.sum() / vol0.sum()),
+        "volume_balance_ratio": float((vol1.sum() - vol0.sum()) / (source_volume + influx_volume)) if (source_volume + influx_volume) > 0 else float("nan"),
+        "source_volume_um3": float(source_volume),
+        "influx_volume_um3": float(influx_volume),
+        "flank_area_um2": float(flank_area0),
+        "flank_influx_effective_um_per_h": float(influx_volume / (flank_area0 * duration_hours)) if duration_hours > 0 else 0.0,
+        "min_tet_volume_um3": float(vol1.min()),
+        "n_nodes": int(len(nodes)),
+        "n_tets": int(len(tets)),
+    }
+    if use_cache:
+        _FEM_CACHE[key] = out
+    return out
+
+
+def _flank_area(nodes: np.ndarray, mesh: dict[str, Any]) -> float:
+    """Discrete area of the flank cross-section: sum of the triangular faces lying in the x = 0 plane."""
+    tets = mesh["tets"]
+    on_flank = mesh["flank"][tets]                     # (M,4) bool
+    sel = on_flank.sum(axis=1) == 3
+    area = 0.0
+    for t, fl in zip(tets[sel], on_flank[sel]):
+        a, b, c = nodes[t[fl]]
+        area += 0.5 * float(np.linalg.norm(np.cross(b - a, c - a)))
+    return area
+
+
+def calibrate_fem_active_rates(hull: dict[str, Any], ref_data: dict[str, Any]) -> dict[str, Any]:
+    """
+    Fit the two active-rate gains of the 3D Stokes model to two benchmark regimes only:
+      k_chi  <- FGF-only regime (zeta = 0, chi = 1) hits its empirical 6 h PD elongation;
+      k_zeta <- Model II WT (zeta = 1, chi = 1) hits 42.2 % with k_chi held fixed.
+    Secant iterations (2 per gain) on the deterministic FEM; the remaining three regimes
+    (Wnt5a-/-, Model I, uniform control) are out-of-sample predictions.
+    """
+    reg = {r["regime_id"]: r for r in ref_data["morphogenetic_perturbation_regimes"]["regimes"]}
+    t_fgf = float(reg["fgf_mapk_motility_only_no_ocd"]["empirical_6h_pd_elongation_pct"])
+    t_wt = float(reg["model_ii_wt_directional_pushing"]["empirical_6h_pd_elongation_pct"])
+
+    def pd_fgf(kc: float) -> float:
+        return simulate_limb_bud_fem_3d(hull, "cal_fgf", 0.0, 1.0, 0.0, kc)["pd_elongation_6h_pct"]
+
+    def pd_wt(kz: float, kc: float) -> float:
+        return simulate_limb_bud_fem_3d(hull, "cal_wt", 1.0, 1.0, kz, kc)["pd_elongation_6h_pct"]
+
+    k0, k1 = 0.0, 0.08
+    f0, f1 = pd_fgf(k0), pd_fgf(k1)
+    for _ in range(2):
+        k2 = k1 + (t_fgf - f1) * (k1 - k0) / (f1 - f0)
+        k0, f0, k1, f1 = k1, f1, k2, pd_fgf(k2)
+    k_chi = k1
+    z0, z1 = 0.0, 0.03
+    g0, g1 = pd_wt(z0, k_chi), pd_wt(z1, k_chi)
+    for _ in range(2):
+        z2 = z1 + (t_wt - g1) * (z1 - z0) / (g1 - g0)
+        z0, g0, z1, g1 = z1, g1, z2, pd_wt(z2, k_chi)
+    return {
+        "k_chi_per_h": float(k_chi), "k_zeta_per_h": float(z1),
+        "fit_residual_fgf_pct": float(f1 - t_fgf), "fit_residual_wt_pct": float(g1 - t_wt),
+        "targets": {"fgf_only_pct": t_fgf, "wt_pct": t_wt},
+    }
+
+
+def evaluate_fem_regimes_and_influx(hull: dict[str, Any], ref_data: dict[str, Any]) -> dict[str, Any]:
+    """
+    Run the Pass 3 3D Stokes-FEM protocol:
+      1. calibrate (k_zeta, k_chi) on WT and FGF-only;
+      2. simulate the 5 reference regimes on the St0 hull mesh (flank pinned, v_in = 0);
+      3. flank-influx volume-closure sweep for Model I (measured proliferation only):
+         find v_in* such that the 6 h volume ratio equals the OPT value 0.914/0.551 = 1.659,
+         and report the PD/AP/DV change it produces;
+      4. mesh-convergence (coarse / default / fine) of the Model I prediction.
+    """
+    cal = calibrate_fem_active_rates(hull, ref_data)
+    kz, kc = cal["k_zeta_per_h"], cal["k_chi_per_h"]
+    regimes_spec = ref_data["morphogenetic_perturbation_regimes"]["regimes"]
+    results: list[dict[str, Any]] = []
+    for rspec in regimes_spec:
+        sim = simulate_limb_bud_fem_3d(
+            hull, "fem_" + rspec["regime_id"],
+            zeta_ocd=float(rspec["zeta_ocd"]), chi_fgf_wnt5a=float(rspec["chi_fgf_wnt5a"]),
+            k_zeta_per_h=kz, k_chi_per_h=kc,
+            proliferation_gradient_on=bool(rspec["proliferation_gradient_on"]),
+        )
+        sim = dict(sim)
+        sim["label"] = rspec["label"]
+        sim["base_regime_id"] = rspec["regime_id"]
+        sim["empirical_6h_pd_elongation_pct"] = float(rspec["empirical_6h_pd_elongation_pct"])
+        sim["empirical_E11_5_aspect_ratio_PD_AP"] = float(rspec["empirical_E11_5_aspect_ratio_PD_AP"])
+        sim["calibrated"] = rspec["regime_id"] in ("model_ii_wt_directional_pushing", "fgf_mapk_motility_only_no_ocd")
+        results.append(sim)
+    sim_pd = np.array([r["pd_elongation_6h_pct"] for r in results])
+    emp_pd = np.array([r["empirical_6h_pd_elongation_pct"] for r in results])
+    r_pd, _ = stats.pearsonr(sim_pd, emp_pd)
+    oos = [r for r in results if not r["calibrated"]]
+    rmse_oos = float(np.sqrt(np.mean([(r["pd_elongation_6h_pct"] - r["empirical_6h_pd_elongation_pct"]) ** 2 for r in oos])))
+
+    # 3. flank-influx volume closure (Model I source only)
+    v_grid = [0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0]
+    sweep = [simulate_limb_bud_fem_3d(hull, "fem_model_i_influx", 0.0, 0.0, 0.0, 0.0, flank_influx_um_per_h=v) for v in v_grid]
+    vols = np.array([s["volume_ratio"] for s in sweep])
+    v_star = float(np.interp(OPT_VOLUME_RATIO_ST1_ST0, vols, v_grid))
+    closure = simulate_limb_bud_fem_3d(hull, "fem_model_i_influx_star", 0.0, 0.0, 0.0, 0.0, flank_influx_um_per_h=v_star)
+
+    # 4. mesh convergence of the Model I prediction
+    conv = {
+        "coarse": simulate_limb_bud_fem_3d(hull, "fem_model_i_conv", 0.0, 0.0, 0.0, 0.0, res=FEM_COARSE_RES),
+        "default": simulate_limb_bud_fem_3d(hull, "fem_model_i_conv", 0.0, 0.0, 0.0, 0.0, res=FEM_DEFAULT_RES),
+        "fine": simulate_limb_bud_fem_3d(hull, "fem_model_i_conv", 0.0, 0.0, 0.0, 0.0, res=FEM_FINE_RES),
+    }
+    mfg = fem_manufactured_solution_errors(build_structured_tet_mesh(hull["st0"], *FEM_DEFAULT_RES))
+    by_id = {r["base_regime_id"]: r for r in results}
+    st0_static = simulate_limb_bud_fem_3d(hull, "fem_st0_static", 0.0, 0.0, 0.0, 0.0, duration_hours=0.0)
+    iou = {
+        "wt_dorsal": silhouette_iou_vs_specimen(by_id["model_ii_wt_directional_pushing"], hull, "dorsal"),
+        "wt_posterior": silhouette_iou_vs_specimen(by_id["model_ii_wt_directional_pushing"], hull, "posterior"),
+        "model_i_dorsal": silhouette_iou_vs_specimen(by_id["model_i_isotropic_proliferation_gradient"], hull, "dorsal"),
+        "model_i_posterior": silhouette_iou_vs_specimen(by_id["model_i_isotropic_proliferation_gradient"], hull, "posterior"),
+        "influx_dorsal": silhouette_iou_vs_specimen(closure, hull, "dorsal"),
+        "influx_posterior": silhouette_iou_vs_specimen(closure, hull, "posterior"),
+        "st0_baseline_dorsal": silhouette_iou_vs_specimen(st0_static, hull, "dorsal"),
+    }
+    return {
+        "calibration": cal,
+        "iou": iou,
+        "regimes": results,
+        "by_id": by_id,
+        "pd_elongation_pearson_r": float(r_pd),
+        "pd_rmse_out_of_sample_pct": rmse_oos,
+        "influx_sweep_v_um_per_h": np.array(v_grid),
+        "influx_sweep_volume_ratio": vols,
+        "influx_sweep_pd_pct": np.array([s["pd_elongation_6h_pct"] for s in sweep]),
+        "influx_sweep_ap_pct": np.array([s["ap_expansion_6h_pct"] for s in sweep]),
+        "influx_sweep_dv_pct": np.array([s["dv_expansion_6h_pct"] for s in sweep]),
+        "influx_v_star_um_per_h": v_star,
+        "influx_closure": closure,
+        "convergence": conv,
+        "convergence_delta_default_fine_pp": abs(conv["fine"]["pd_elongation_6h_pct"] - conv["default"]["pd_elongation_6h_pct"]),
+        "manufactured": mfg,
+    }
+
+
+def silhouette_iou_vs_specimen(sim: dict[str, Any], hull: dict[str, Any], view: str = "dorsal", n_grid: int = 600) -> float:
+    """
+    Intersection-over-union between the dorsal (x, y) [or posterior (x, z)] projection of the
+    final FEM surface and the specimen's St1 visual-hull silhouette, both rasterised on the same
+    micrometre grid (half-width profile along PD vs. per-station extremal surface nodes).
+    """
+    col = 1 if view == "dorsal" else 2
+    nodes = sim["nodes_final"][sim["mesh"]["surface"]]
+    st = sim["mesh"]["station_of"][sim["mesh"]["surface"]]
+    xs, hs = [], []
+    for s in np.unique(st):
+        sel = st == s
+        xs.append(float(nodes[sel, 0].mean()))
+        hs.append(float(np.abs(nodes[sel, col]).max()))
+    xs, hs = np.array(xs), np.array(hs)
+    order = np.argsort(xs)
+    xs, hs = xs[order], hs[order]
+    hs[-1] = 0.0   # tip node
+    h1 = hull["st1"]
+    key = "a_ap_um" if view == "dorsal" else "b_dv_um"
+    x_max = max(xs.max(), h1["l_pd_um"]) * 1.02
+    xg = np.linspace(0.0, x_max, n_grid)
+    sim_h = np.where(xg <= xs.max(), np.interp(xg, xs, hs), 0.0)
+    spec_h = np.where(xg <= h1["l_pd_um"], np.interp(xg / h1["l_pd_um"], h1["u"], h1[key]), 0.0)
+    inter = np.trapezoid(np.minimum(sim_h, spec_h), xg)
+    union = np.trapezoid(np.maximum(sim_h, spec_h), xg)
+    return float(inter / union)
+
+
+# =============================================================================
+# Section 6. Publication-Grade Figures (10-panel comparison + 6-panel FEM) & Growth GIF
+# =============================================================================
+def _fem_dorsal_outline(sim: dict[str, Any], view: str = "dorsal", nodes: np.ndarray | None = None) -> tuple[np.ndarray, np.ndarray]:
+    """Closed (x, +/-h) outline of the FEM surface projected to the dorsal (y) or posterior (z) view."""
+    col = 1 if view == "dorsal" else 2
+    mesh = sim["mesh"]
+    nd = sim["nodes_final"] if nodes is None else nodes
+    surf = nd if nodes is not None and len(nodes) == int(mesh["surface"].sum()) else nd[mesh["surface"]]
+    st = mesh["station_of"][mesh["surface"]]
+    xs, hs = [], []
+    for s in np.unique(st):
+        sel = st == s
+        xs.append(float(surf[sel, 0].mean()))
+        hs.append(float(np.abs(surf[sel, col]).max()))
+    xs, hs = np.array(xs), np.array(hs)
+    o = np.argsort(xs)
+    xs, hs = xs[o], hs[o]
+    hs[-1] = 0.0
+    return np.concatenate([xs, xs[::-1]]), np.concatenate([hs, -hs[::-1]])
+
+
+def _hull_outline(stage: dict[str, Any], view: str = "dorsal") -> tuple[np.ndarray, np.ndarray]:
+    key = "a_ap_um" if view == "dorsal" else "b_dv_um"
+    x = stage["u"] * stage["l_pd_um"]
+    h = stage[key]
+    return np.concatenate([x, x[::-1]]), np.concatenate([h, -h[::-1]])
+
+
+def _style_dark_axis(ax: Any) -> None:
+    ax.set_facecolor("#131b26")
+    for sp in ax.spines.values():
+        sp.set_color("#334155")
+    ax.tick_params(colors="#cbd5e1", labelsize=7.5)
+
+
+def render_fem_figure(
+    hull: dict[str, Any],
+    fem: dict[str, Any],
+    five_regimes: dict[str, Any],
+    out_png: Path = OUT_FEM_PNG,
+) -> None:
+    """Render the 6-panel Pass 3 3D Stokes-FEM figure (K-P)."""
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection  # noqa: WPS433 (lazy import keeps --self-test light)
+
+    out_png.parent.mkdir(parents=True, exist_ok=True)
+    wt = fem["by_id"]["model_ii_wt_directional_pushing"]
+    iso = fem["by_id"]["model_i_isotropic_proliferation_gradient"]
+    closure = fem["influx_closure"]
+    cal = fem["calibration"]
+
+    fig = plt.figure(figsize=(22.0, 9.6), dpi=150)
+    fig.patch.set_facecolor("#0b1017")
+    gs = fig.add_gridspec(2, 3, hspace=0.42, wspace=0.28, left=0.04, right=0.985, top=0.90, bottom=0.07)
+
+    # Panel K: visual hull reconstruction from the two orthogonal specimen silhouettes
+    ax = fig.add_subplot(gs[0, 0]); _style_dark_axis(ax)
+    for stage, col, lw in (("st0", "#94a3b8", 1.6), ("st1", "#38bdf8", 2.0)):
+        h = hull[stage]
+        x = h["u"] * h["l_pd_um"]
+        ax.plot(x, h["a_ap_um"], "-", color=col, lw=lw, label=f"{stage.upper()} AP half-width $a(x)$ (dorsal view)")
+        ax.plot(x, h["b_dv_um"], "--", color=col, lw=lw, label=f"{stage.upper()} DV half-width $b(x)$ (posterior view)")
+    ax.axhline(0.5 * 960.0, color="#f97316", lw=0.9, ls=":", label="OPT table $W_{AP}$/2 = 480 µm")
+    ax.axhline(0.5 * 580.0, color="#facc15", lw=0.9, ls=":", label="OPT table $H_{DV}$/2 = 290 µm")
+    ax.set_title(
+        f"K. Visual hull from specimen silhouettes ($L_{{PD}}$ {hull['st0']['l_pd_um']:.0f}→{hull['st1']['l_pd_um']:.0f} µm, "
+        f"AP ×{hull['st1_st0_ap_ratio']:.3f}, DV ×{hull['st1_st0_dv_ratio']:.3f})",
+        color="#f8fafc", fontsize=8.6, fontweight="bold",
+    )
+    ax.set_xlabel("Proximo-distal position $x$ (µm, flank = 0)", color="#cbd5e1", fontsize=7.5)
+    ax.set_ylabel("Cross-section semi-axis (µm)", color="#cbd5e1", fontsize=7.5)
+    ax.legend(loc="lower left", fontsize=6.2, facecolor="#1e293b", edgecolor="#475569", labelcolor="#f8fafc")
+
+    # Panel L: the tetrahedral mesh (surface triangles of the St0 hull mesh)
+    ax3 = fig.add_subplot(gs[0, 1], projection="3d")
+    ax3.set_facecolor("#131b26")
+    mesh = wt["mesh"]
+    nodes0 = mesh["nodes"]
+    tets = mesh["tets"]
+    faces = np.concatenate([tets[:, [0, 1, 2]], tets[:, [0, 1, 3]], tets[:, [0, 2, 3]], tets[:, [1, 2, 3]]])
+    fs = np.sort(faces, axis=1)
+    _, idx, cnt = np.unique(fs, axis=0, return_index=True, return_counts=True)
+    bfaces = faces[idx[cnt == 1]]
+    pc = Poly3DCollection(nodes0[bfaces], alpha=0.55, facecolor="#1d4ed8", edgecolor="#93c5fd", linewidths=0.35)
+    ax3.add_collection3d(pc)
+    ax3.set_xlim(0, 1500); ax3.set_ylim(-700, 700); ax3.set_zlim(-700, 700)
+    ax3.set_box_aspect((1500, 1400, 1400))
+    ax3.view_init(elev=22, azim=-58)
+    ax3.set_xlabel("PD (µm)", color="#cbd5e1", fontsize=7); ax3.set_ylabel("AP (µm)", color="#cbd5e1", fontsize=7); ax3.set_zlabel("DV (µm)", color="#cbd5e1", fontsize=7)
+    ax3.tick_params(colors="#cbd5e1", labelsize=6)
+    ax3.set_title(
+        f"L. P1 tetrahedral mesh of the St0 hull: {wt['n_nodes']} nodes, {wt['n_tets']} tets, {len(bfaces)} surface faces\n"
+        f"manufactured-solution error {fem['manufactured']['max_rel_error']:.1e}; mesh-convergence Δ = {fem['convergence_delta_default_fine_pp']:.3f} pp",
+        color="#f8fafc", fontsize=8.4, fontweight="bold",
+    )
+
+    # Panel M: WT Stokes solution — nodal pressure + velocity (dorsal projection, |z| small)
+    ax = fig.add_subplot(gs[0, 2]); _style_dark_axis(ax)
+    nd = wt["nodes_final"]
+    p = wt["pressure_final"]
+    disp = (nd - nodes0) / 6.0   # mean velocity over the 6 h window (µm/h)
+    sel = np.abs(nodes0[:, 2]) < 0.34 * hull["st0"]["h_dv_um"]
+    sc = ax.scatter(nd[sel, 0], nd[sel, 1], c=p[sel], cmap="coolwarm", s=16, edgecolors="none")
+    ax.quiver(nd[sel, 0], nd[sel, 1], disp[sel, 0], disp[sel, 1], color="#4ade80", scale=900.0, width=0.0035)
+    ox, oy = _fem_dorsal_outline(wt)
+    ax.plot(ox, oy, "-", color="#38bdf8", lw=1.8, label=f"FEM WT St1 (+{wt['pd_elongation_6h_pct']:.1f}% PD)")
+    hx, hy = _hull_outline(hull["st0"]); ax.plot(hx, hy, "--", color="#94a3b8", lw=1.2, label="Specimen St0 hull")
+    cb = fig.colorbar(sc, ax=ax, fraction=0.045, pad=0.02); cb.ax.tick_params(colors="#cbd5e1", labelsize=6.5)
+    cb.set_label("pressure $p$ (2µ·h$^{-1}$ units)", color="#cbd5e1", fontsize=7)
+    ax.set_xlim(-40, 1600); ax.set_ylim(-760, 760)
+    ax.set_title(
+        f"M. WT Stokes field on the deformed mesh ($k_\\zeta$={cal['k_zeta_per_h']:.4f}, $k_\\chi$={cal['k_chi_per_h']:.4f} h$^{{-1}}$)\n"
+        f"AP {wt['ap_expansion_6h_pct']:+.1f}%, DV {wt['dv_expansion_6h_pct']:+.1f}% vs OPT +12.0% / +1.0%; volume ×{wt['volume_ratio']:.3f}",
+        color="#f8fafc", fontsize=8.4, fontweight="bold",
+    )
+    ax.set_xlabel("PD (µm)", color="#cbd5e1", fontsize=7.5); ax.set_ylabel("AP (µm)", color="#cbd5e1", fontsize=7.5)
+    ax.legend(loc="upper right", fontsize=6.3, facecolor="#1e293b", edgecolor="#475569", labelcolor="#f8fafc")
+
+    # Panel N: 5-regime PD elongation — empirical vs 3D FEM vs 2D reduced model
+    ax = fig.add_subplot(gs[1, 0]); _style_dark_axis(ax)
+    order = [r["base_regime_id"] for r in fem["regimes"]]
+    names = {"model_ii_wt_directional_pushing": "WT\nModel II", "model_i_isotropic_proliferation_gradient": "Model I\nIso",
+             "uniform_proliferation_control": "Uniform\n$T_c$=16.5h", "wnt5a_null_pcp_mutant": "Wnt5a-/-", "fgf_mapk_motility_only_no_ocd": "FGF8\nonly"}
+    xi = np.arange(len(order)); wb = 0.27
+    emp = [fem["by_id"][k]["empirical_6h_pd_elongation_pct"] for k in order]
+    f3 = [fem["by_id"][k]["pd_elongation_6h_pct"] for k in order]
+    r2 = [five_regimes["by_id"][k]["pd_elongation_6h_pct"] for k in order]
+    ax.bar(xi - wb, emp, wb, color="#475569", edgecolor="#94a3b8", label="Empirical (reference table)")
+    bars = ax.bar(xi, f3, wb, color="#38bdf8", edgecolor="#bae6fd", label="3D Stokes FEM (Pass 3)")
+    for b, k in zip(bars, order):
+        if fem["by_id"][k]["calibrated"]:
+            b.set_hatch("///"); b.set_edgecolor("#0b1017")
+    ax.bar(xi + wb, r2, wb, color="#f97316", edgecolor="#fdba74", alpha=0.85, label="2D reduced model (Pass 2)")
+    ax.set_xticks(xi); ax.set_xticklabels([names[k] for k in order], fontsize=7, color="#cbd5e1")
+    ax.set_ylabel("6 h PD elongation (%)", color="#cbd5e1", fontsize=7.5)
+    ax.set_title(
+        f"N. 5 regimes: FEM r = {fem['pd_elongation_pearson_r']:.4f}; hatched = calibrated (2 gains / 2 targets); "
+        f"out-of-sample RMSE = {fem['pd_rmse_out_of_sample_pct']:.2f} pp",
+        color="#f8fafc", fontsize=8.4, fontweight="bold",
+    )
+    ax.legend(loc="upper right", fontsize=6.3, facecolor="#1e293b", edgecolor="#475569", labelcolor="#f8fafc")
+
+    # Panel O: flank-influx volume closure sweep (Model I source only)
+    ax = fig.add_subplot(gs[1, 1]); _style_dark_axis(ax)
+    v = fem["influx_sweep_v_um_per_h"]
+    ax.plot(v, fem["influx_sweep_pd_pct"], "-o", color="#38bdf8", ms=4, lw=2.0, label="PD elongation (%)")
+    ax.plot(v, fem["influx_sweep_ap_pct"], "-s", color="#f97316", ms=4, lw=1.7, label="AP expansion (%)")
+    ax.plot(v, fem["influx_sweep_dv_pct"], "-^", color="#facc15", ms=4, lw=1.7, label="DV expansion (%)")
+    ax.axhline(42.2, color="#38bdf8", lw=0.9, ls=":"); ax.axhline(11.98, color="#f97316", lw=0.9, ls=":"); ax.axhline(1.03, color="#facc15", lw=0.9, ls=":")
+    ax.axvline(fem["influx_v_star_um_per_h"], color="#a855f7", lw=1.4, ls="--", label=f"$v^*$ = {fem['influx_v_star_um_per_h']:.1f} µm/h closes OPT volume ×{OPT_VOLUME_RATIO_ST1_ST0:.3f}")
+    ax2 = ax.twinx()
+    ax2.plot(v, fem["influx_sweep_volume_ratio"], "-d", color="#a855f7", ms=4, lw=1.4)
+    ax2.axhline(OPT_VOLUME_RATIO_ST1_ST0, color="#a855f7", lw=0.9, ls=":")
+    ax2.set_ylabel("6 h volume ratio $V_1/V_0$", color="#d8b4fe", fontsize=7.5); ax2.tick_params(colors="#d8b4fe", labelsize=7)
+    ax.set_xlabel("Flank influx velocity $v_{in}$ (µm/h; measured $s(x)$ only, no active stress)", color="#cbd5e1", fontsize=7.5)
+    ax.set_ylabel("6 h change (%)", color="#cbd5e1", fontsize=7.5)
+    ax.set_title(
+        f"O. Volume closure: proliferation alone gives ×{iso['volume_ratio']:.3f}; at $v^*$ PD {closure['pd_elongation_6h_pct']:+.1f}%, "
+        f"AP {closure['ap_expansion_6h_pct']:+.1f}%, DV {closure['dv_expansion_6h_pct']:+.1f}%",
+        color="#f8fafc", fontsize=8.4, fontweight="bold",
+    )
+    ax.legend(loc="upper left", fontsize=6.3, facecolor="#1e293b", edgecolor="#475569", labelcolor="#f8fafc")
+
+    # Panel P: silhouettes vs the specimen St1 hull
+    ax = fig.add_subplot(gs[1, 2]); _style_dark_axis(ax)
+    hx0, hy0 = _hull_outline(hull["st0"]); ax.plot(hx0, hy0, "--", color="#94a3b8", lw=1.2, label="Specimen St0 hull (IoU vs St1 = "
+                                                                                                f"{fem['iou']['st0_baseline_dorsal']:.3f})")
+    hx1, hy1 = _hull_outline(hull["st1"]); ax.fill(hx1, hy1, color="#22d3ee", alpha=0.18); ax.plot(hx1, hy1, "-", color="#22d3ee", lw=2.0, label="Specimen St1 hull (target)")
+    for sim, col, lab, k in ((iso, "#f97316", "FEM Model I", "model_i_dorsal"), (wt, "#38bdf8", "FEM WT active stress", "wt_dorsal"), (closure, "#4ade80", "FEM Model I + flank influx $v^*$", "influx_dorsal")):
+        ox, oy = _fem_dorsal_outline(sim)
+        ax.plot(ox, oy, "-", color=col, lw=1.9, label=f"{lab} (IoU {fem['iou'][k]:.3f})")
+    ax.set_xlim(-40, 1600); ax.set_ylim(-760, 760)
+    ax.set_title("P. Dorsal silhouettes vs specimen St1 (intersection-over-union)", color="#f8fafc", fontsize=8.6, fontweight="bold")
+    ax.set_xlabel("PD (µm)", color="#cbd5e1", fontsize=7.5); ax.set_ylabel("AP (µm)", color="#cbd5e1", fontsize=7.5)
+    ax.legend(loc="upper right", fontsize=6.3, facecolor="#1e293b", edgecolor="#475569", labelcolor="#f8fafc")
+
+    fig.suptitle(
+        "Pass 3 — 3D tetrahedral Stokes FEM on the OPT visual hull of the Boehm et al. (2010) Fig. 2 specimen:\n"
+        "-∇p + µ∇²v + ∇·σ_active + f_FGF8 = 0,  ∇·v = s(x)  (P1-P1 stabilised, Lagrangian RK2, traction-free ectoderm, flank inflow plane)",
+        color="#f8fafc", fontsize=11.0, fontweight="bold", y=0.985,
+    )
+    fig.savefig(out_png, dpi=150)
+    plt.close(fig)
+
+
 def render_all_outputs(
     ref_data: dict[str, Any],
     five_regimes: dict[str, Any],
@@ -683,10 +1442,14 @@ def render_all_outputs(
     spec_seg: dict[str, Any],
     out_png: Path = OUT_PNG,
     out_gif: Path = OUT_GIF,
+    hull: dict[str, Any] | None = None,
+    fem: dict[str, Any] | None = None,
 ) -> None:
-    """Render the 10-panel Pass 2 comparison figure and 3-panel animated growth GIF."""
+    """Render the 10-panel comparison figure and the 4-panel animated growth GIF (+ FEM figure)."""
     out_png.parent.mkdir(parents=True, exist_ok=True)
     out_gif.parent.mkdir(parents=True, exist_ok=True)
+    if hull is not None and fem is not None:
+        render_fem_figure(hull, fem, five_regimes, out_png=out_png.with_name(out_png.stem.replace("_comparison", "") + "_fem3d.png"))
 
     wt = five_regimes["by_id"]["model_ii_wt_directional_pushing"]
     iso = five_regimes["by_id"]["model_i_isotropic_proliferation_gradient"]
@@ -812,6 +1575,11 @@ def render_all_outputs(
     ax.plot(wnt5a["bx_final"], wnt5a["by_final"], "-", color="#eab308", lw=1.9, label=f"Wnt5a-/- (+{wnt5a['pd_elongation_6h_pct']:.1f}%)")
     ax.plot(fgf_only["bx_final"], fgf_only["by_final"], "-", color="#10b981", lw=1.9, label=f"FGF-Only (+{fgf_only['pd_elongation_6h_pct']:.1f}%)")
     ax.plot(wt["bx_final"], wt["by_final"], "-", color="#38bdf8", lw=2.3, label=f"WT Model II (+{wt['pd_elongation_6h_pct']:.1f}%)")
+    if fem is not None and hull is not None:
+        fx, fy = _fem_dorsal_outline(fem["by_id"]["model_ii_wt_directional_pushing"])
+        ax.plot(fx, fy, ":", color="#e0f2fe", lw=1.4, label=f"3D FEM WT (+{fem['by_id']['model_ii_wt_directional_pushing']['pd_elongation_6h_pct']:.1f}%)")
+        hx1, hy1 = _hull_outline(hull["st1"])
+        ax.plot(hx1, hy1, "-.", color="#22d3ee", lw=1.1, label="Specimen St1 hull")
     ax.set_xlim(-40, 1550)
     ax.set_ylim(-640, 640)
     ax.set_title("F. 5-Regime Contour Hierarchy (E11.25)", color="#f8fafc", fontsize=8.8, fontweight="bold")
@@ -905,8 +1673,8 @@ def render_all_outputs(
     ax.legend(loc="upper left", fontsize=6.3, facecolor="#1e293b", edgecolor="#475569", labelcolor="#f8fafc")
 
     fig.suptitle(
-        "Boehm et al. (2010) PLoS Biol. & Gros et al. (2010) Curr. Biol. — Vertebrate Limb Bud Elongation:\n"
-        "Refutation of Isotropic Proliferation Gradient vs Wnt5a/JNK Oriented Cell Division & AER-FGF8 Velocity Field",
+        "Boehm et al. (2010) PLoS Biol. & Gros et al. (2010) Curr. Biol. — Vertebrate Limb Bud Elongation (Pass 3):\n"
+        "Panels C-J: Pass 2 2D reduced model (calibrated); Panel F also overlays the 3D Stokes-FEM WT and the specimen St1 hull — see *_fem3d.png",
         color="#f8fafc",
         fontsize=11.5,
         fontweight="bold",
@@ -916,7 +1684,8 @@ def render_all_outputs(
     fig.savefig(out_png, dpi=150)
     plt.close(fig)
 
-    # Render 3-panel animated growth GIF across the 25 steps of 6-hour E11.0 -> E11.25 outgrowth
+    # Render animated growth GIF across the 25 steps of 6-hour E11.0 -> E11.25 outgrowth
+    # (3 panels from the 2D reduced model + 1 panel from the 3D Stokes FEM when available)
     frames: list[Image.Image] = []
     n_hist = len(wt["history_xy"])
     frame_indices = np.linspace(0, n_hist - 1, 16, dtype=int)
@@ -924,9 +1693,10 @@ def render_all_outputs(
     pd_wt_pct_hist = (wt["pd_lengths_um"] - wt["pd_lengths_um"][0]) / wt["pd_lengths_um"][0] * 100.0
     pd_wnt_pct_hist = (wnt5a["pd_lengths_um"] - wnt5a["pd_lengths_um"][0]) / wnt5a["pd_lengths_um"][0] * 100.0
     pd_iso_pct_hist = (iso["pd_lengths_um"] - iso["pd_lengths_um"][0]) / iso["pd_lengths_um"][0] * 100.0
+    n_gif_panels = 4 if (fem is not None and hull is not None) else 3
 
     for idx in frame_indices:
-        gf, gaxes = plt.subplots(1, 3, figsize=(13.2, 4.0), dpi=105)
+        gf, gaxes = plt.subplots(1, n_gif_panels, figsize=(4.4 * n_gif_panels, 4.0), dpi=105)
         gf.patch.set_facecolor("#0b1017")
         for gax in gaxes:
             gax.set_facecolor("#131b26")
@@ -977,6 +1747,26 @@ def render_all_outputs(
         gaxes[2].set_ylabel("PD Elongation (%)", color="#cbd5e1", fontsize=8)
         gaxes[2].legend(loc="upper left", fontsize=6.5, facecolor="#1e293b", edgecolor="#475569", labelcolor="#f8fafc")
 
+        # Panel 4: 3D Stokes-FEM dorsal silhouettes vs the specimen St1 hull
+        if n_gif_panels == 4:
+            fwt = fem["by_id"]["model_ii_wt_directional_pushing"]
+            fiso = fem["by_id"]["model_i_isotropic_proliferation_gradient"]
+            finf = fem["influx_closure"]
+            k = int(round(t_6h[idx] / FEM_DT_HOURS))
+            k = min(k, len(fwt["surface_history"]) - 1)
+            hx1, hy1 = _hull_outline(hull["st1"])
+            gaxes[3].fill(hx1, hy1, color="#22d3ee", alpha=0.15)
+            gaxes[3].plot(hx1, hy1, "-", color="#22d3ee", lw=1.4, label="Specimen St1 hull")
+            for sim, col, lab in ((fiso, "#f97316", "FEM Model I"), (fwt, "#38bdf8", "FEM WT active stress"), (finf, "#4ade80", "FEM Model I + influx")):
+                ox, oy = _fem_dorsal_outline(sim, nodes=sim["surface_history"][k])
+                gaxes[3].plot(ox, oy, "-", color=col, lw=2.0, label=lab)
+            gaxes[3].set_xlim(-40, 1600)
+            gaxes[3].set_ylim(-760, 760)
+            gaxes[3].set_title(f"3D Stokes FEM dorsal view (t = {k * FEM_DT_HOURS:.1f} h)", color="#f8fafc", fontsize=9)
+            gaxes[3].set_xlabel("PD Axis ($\\mu$m)", color="#cbd5e1", fontsize=8)
+            gaxes[3].set_ylabel("AP Axis ($\\mu$m)", color="#cbd5e1", fontsize=8)
+            gaxes[3].legend(loc="upper right", fontsize=6.5, facecolor="#1e293b", edgecolor="#475569", labelcolor="#f8fafc")
+
         gf.tight_layout()
         gf.canvas.draw()
         rgba = np.asarray(gf.canvas.buffer_rgba())
@@ -993,18 +1783,153 @@ def render_all_outputs(
 
 
 # =============================================================================
-# Section 6. MorphoEval Measurement Contract & 8-Check Verification Suite
+# Section 7. MorphoEval Measurement Contract & 14-Check Verification Suite
 # =============================================================================
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Compute 8 reference-anchored morphometric and continuum measurements for MorphoEval."""
+    """
+    Compute 20 reference-anchored measurements for MorphoEval: 8 from the Pass 2 2D reduced
+    model + specimen segmentation (kept for continuity, relabelled as 'reduced 2D model') and
+    12 new Pass 3 measurements from the 3D Stokes FEM on the specimen visual hull.
+    """
     ref_data = verify_reference_dataset()
     five_regimes = evaluate_all_five_regimes(ref_data)
     sweeps = run_reynolds_and_2d_parameter_sweeps(ref_data)
     spec_seg = segment_limb_bud_specimen()
+    hull = reconstruct_opt_visual_hull(spec_seg)
+    fem = evaluate_fem_regimes_and_influx(hull, ref_data)
 
     wt = five_regimes["by_id"]["model_ii_wt_directional_pushing"]
     iso = five_regimes["by_id"]["model_i_isotropic_proliferation_gradient"]
     wnt5a = five_regimes["by_id"]["wnt5a_null_pcp_mutant"]
+    fwt = fem["by_id"]["model_ii_wt_directional_pushing"]
+    fiso = fem["by_id"]["model_i_isotropic_proliferation_gradient"]
+    fwnt = fem["by_id"]["wnt5a_null_pcp_mutant"]
+    fclos = fem["influx_closure"]
+    flank_area_mm2 = _flank_area(fwt["mesh"]["nodes"], fwt["mesh"]) * 1e-6
+    v_in_analytic = (OPT_VOLUME_RATIO_ST1_ST0 - fiso["volume_ratio"]) * (p1_tet_geometry(fwt["mesh"]["nodes"], fwt["mesh"]["tets"])[0].sum() * 1e-9) / (flank_area_mm2 * 6.0) * 1e3
+
+    fem_measurements = [
+        {
+            "name": "FEM Stokes manufactured-solution max relative error (uniform dilation & extensile stress oracles)",
+            "value": float(f"{fem['manufactured']['max_rel_error']:.3e}"),
+            "unit": "relative error",
+            "method": "fem_manufactured_solution_errors on the 466-node / 2150-tet St0 hull mesh (P1-P1 Brezzi-Pitkaranta)",
+            "reference_value": 0.0,
+            "reference_source": "Closed-form Stokes solutions v = (s/3) x, p = 2 mu s/3 and v = zeta(2x/3, -y/3, -z/3), p = 0 (Lean Theorem 4)",
+            "note": "Both oracles are linear in x and must be reproduced to round-off by P1 elements",
+            "derived_from": "script",
+        },
+        {
+            "name": "FEM mesh-convergence of Model I PD elongation |default (466 nodes) - fine (1198 nodes)|",
+            "value": round(float(fem["convergence_delta_default_fine_pp"]), 4),
+            "unit": "percentage points",
+            "method": "simulate_limb_bud_fem_3d at FEM_COARSE_RES / FEM_DEFAULT_RES / FEM_FINE_RES",
+            "reference_value": 0.0,
+            "reference_source": "Richardson-type self-convergence (coarse %.3f%%, default %.3f%%, fine %.3f%%)" % tuple(fem["convergence"][k]["pd_elongation_6h_pct"] for k in ("coarse", "default", "fine")),
+            "note": "Discretisation error of the reported FEM morphometrics is below 0.05 pp",
+            "derived_from": "script",
+        },
+        {
+            "name": "FEM Model I 6h PD elongation (measured IddU/BrdU s(x) only, Stokes, pinned flank)",
+            "value": round(float(fiso["pd_elongation_6h_pct"]), 4),
+            "unit": "%",
+            "method": "simulate_limb_bud_fem_3d(zeta=0, chi=0, v_in=0) on the specimen St0 visual-hull mesh — no calibrated parameter",
+            "reference_value": 10.1,
+            "reference_source": "Boehm et al. (2010) PLoS Biology 8:e1000420 Fig. S3 (isotropic FEM at Re = 10^-2; 3.4-11.8% over Re in [1e-6, 1e-1])",
+            "note": f"Parameter-free prediction; AP {fiso['ap_expansion_6h_pct']:+.2f}%, DV {fiso['dv_expansion_6h_pct']:+.2f}% (bulbous), inside the paper's 3.4-11.8% band",
+            "derived_from": "script",
+        },
+        {
+            "name": "FEM Model I 6h volume ratio V(St1)/V(St0) from measured proliferation alone",
+            "value": round(float(fiso["volume_ratio"]), 4),
+            "unit": "V1/V0",
+            "method": "simulate_limb_bud_fem_3d(zeta=0, chi=0) total tetrahedral volume (volume-balance ratio %.4f)" % fiso["volume_balance_ratio"],
+            "reference_value": round(OPT_VOLUME_RATIO_ST1_ST0, 4),
+            "reference_source": "Boehm et al. (2010) Fig. 2 OPT volumes 0.551 -> 0.914 mm^3 (reference table)",
+            "note": "The IddU/BrdU source accounts for only ~12% volume gain vs 66% measured by OPT — the growth-rate paradox the paper's inverse optimisation exposes",
+            "derived_from": "script",
+        },
+        {
+            "name": "FEM Model II WT 6h PD elongation (calibration target: k_zeta fitted)",
+            "value": round(float(fwt["pd_elongation_6h_pct"]), 4),
+            "unit": "%",
+            "method": "simulate_limb_bud_fem_3d(zeta=1, chi=1, k_zeta=%.5f, k_chi=%.5f h^-1)" % (fem["calibration"]["k_zeta_per_h"], fem["calibration"]["k_chi_per_h"]),
+            "reference_value": 42.2,
+            "reference_source": "Boehm et al. (2010) PLoS Biology 8:e1000420 Fig. 2 (1020 um -> 1450 um in 6 h)",
+            "note": "Fitted, not predicted: k_zeta and k_chi are the only two free gains, fitted to WT and FGF-only PD elongation",
+            "derived_from": "script",
+        },
+        {
+            "name": "FEM Model II WT 6h AP width change (out-of-sample)",
+            "value": round(float(fwt["ap_expansion_6h_pct"]), 4),
+            "unit": "%",
+            "method": "simulate_limb_bud_fem_3d WT: ptp(y) of final surface nodes vs St0",
+            "reference_value": 11.98,
+            "reference_source": "Boehm et al. (2010) Fig. 2 OPT W_AP 960 -> 1075 um (reference table); specimen hull AP ratio %.4f" % hull["st1_st0_ap_ratio"],
+            "note": f"Sign disagreement: traceless extensile stress + 12% volume source forces AP/DV contraction (DV {fwt['dv_expansion_6h_pct']:+.2f}% vs +1.0%); the OPT shape change needs volume the measured s(x) does not supply",
+            "derived_from": "script",
+        },
+        {
+            "name": "FEM Wnt5a-/- (zeta=0.12, chi=0.25) 6h PD elongation (out-of-sample)",
+            "value": round(float(fwnt["pd_elongation_6h_pct"]), 4),
+            "unit": "%",
+            "method": "simulate_limb_bud_fem_3d with the calibrated gains and the reference-table mutant parameters",
+            "reference_value": 18.5,
+            "reference_source": "Gros et al. (2010) Current Biology 20:1993-2004 Figs. 1-6 (Wnt5a-/- / JNK-inhibited bulbous bud; reference table)",
+            "note": "Out-of-sample prediction under-shoots by ~6.5 pp; ordering WT > FGF-only > Wnt5a-/- > Model I ~ uniform is preserved",
+            "derived_from": "script",
+        },
+        {
+            "name": "FEM 5-regime 6h PD elongation Pearson r vs empirical (2 of 5 regimes calibrated)",
+            "value": round(float(fem["pd_elongation_pearson_r"]), 4),
+            "unit": "Pearson r",
+            "method": "evaluate_fem_regimes_and_influx (out-of-sample RMSE over the 3 uncalibrated regimes = %.3f pp)" % fem["pd_rmse_out_of_sample_pct"],
+            "reference_value": 1.0,
+            "reference_source": "Boehm et al. (2010) Figs. 4, S8 & Gros et al. (2010) regime table",
+            "note": "Rank order reproduced; magnitudes of the three uncalibrated regimes are 4.3-6.5 pp below the reference values",
+            "derived_from": "script",
+        },
+        {
+            "name": "FEM flank influx velocity v_in* closing the OPT 6h volume gap (Model I source only)",
+            "value": round(float(fem["influx_v_star_um_per_h"]), 3),
+            "unit": "um/h",
+            "method": "linear interpolation of the 9-point v_in sweep [0, 80] um/h to V1/V0 = %.4f" % OPT_VOLUME_RATIO_ST1_ST0,
+            "reference_value": round(float(v_in_analytic), 3),
+            "reference_source": "Analytic estimate (V_OPT - V_prolif) / (A_flank * 6 h) from the reference-table OPT volumes and the mesh flank area %.4f mm^2" % flank_area_mm2,
+            "note": "The OPT volume table implies ~1/3 of the St1 bud volume entered through the flank in 6 h — to be verified against the paper (Pass 4)",
+            "derived_from": "script",
+        },
+        {
+            "name": "FEM Model I + flank influx v_in* 6h PD elongation (no active stress)",
+            "value": round(float(fclos["pd_elongation_6h_pct"]), 4),
+            "unit": "%",
+            "method": "simulate_limb_bud_fem_3d(zeta=0, chi=0, v_in=v_in*) ALE inflow plane",
+            "reference_value": 42.2,
+            "reference_source": "Boehm et al. (2010) Fig. 2 OPT St0 -> St1 (+42.2% PD, +12.0% AP, +1.0% DV)",
+            "note": f"AP {fclos['ap_expansion_6h_pct']:+.2f}%, DV {fclos['dv_expansion_6h_pct']:+.2f}%: volume closure alone reproduces the PD/AP/DV signs that the active-stress WT misses",
+            "derived_from": "script",
+        },
+        {
+            "name": "Specimen St1 dorsal-silhouette IoU: FEM WT active stress vs specimen hull",
+            "value": round(float(fem["iou"]["wt_dorsal"]), 4),
+            "unit": "IoU",
+            "method": "silhouette_iou_vs_specimen(dorsal) — FEM surface projection vs segmented Fig. 2F St1 hull (St0 baseline IoU %.4f)" % fem["iou"]["st0_baseline_dorsal"],
+            "reference_value": 1.0,
+            "reference_source": "Boehm et al. (2010) Fig. 2F St1 dorsal silhouette (mouse_limb_bud_specimen.jpg)",
+            "note": f"Posterior-view IoU {fem['iou']['wt_posterior']:.4f}; Model I IoU {fem['iou']['model_i_dorsal']:.4f}",
+            "derived_from": "specimen",
+        },
+        {
+            "name": "Specimen St1 dorsal-silhouette IoU: FEM Model I + flank influx v_in* vs specimen hull",
+            "value": round(float(fem["iou"]["influx_dorsal"]), 4),
+            "unit": "IoU",
+            "method": "silhouette_iou_vs_specimen(dorsal) for the volume-closure run",
+            "reference_value": 1.0,
+            "reference_source": "Boehm et al. (2010) Fig. 2F St1 dorsal silhouette (mouse_limb_bud_specimen.jpg)",
+            "note": f"Posterior-view IoU {fem['iou']['influx_posterior']:.4f}; best specimen match of the three FEM scenarios",
+            "derived_from": "specimen",
+        },
+    ]
 
     return [
         {
@@ -1087,11 +2012,11 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": "Demonstrates >11x net (>8.5x gross) proliferation gap proving isotropic growth is biologically unrealistic",
             "derived_from": "script",
         },
-    ]
+    ] + fem_measurements
 
 
 def self_test() -> bool:
-    """Execute 8 comprehensive Pass 2 verification checks including bitwise determinism."""
+    """Execute 14 verification checks (8 Pass 2 + 6 Pass 3 FEM) including bitwise determinism."""
     # Check 1: Cryptographic SHA-256 integrity of all 4 dataset files
     ref_data = verify_reference_dataset()
     assert ref_data["metadata"]["dataset_id"] == "boehm-2010-limb-bud-elongation-pushing-v1"
@@ -1140,32 +2065,86 @@ def self_test() -> bool:
     assert seg["posterior_overlay"]["st1_aspect_ratio"] > seg["posterior_overlay"]["st0_aspect_ratio"]
     assert seg["panel_e_st1"]["aspect_ratio"] > seg["panel_d_st0"]["aspect_ratio"]
 
-    # Check 8: Two-run bitwise determinism of measure_morphoeval()
+    # Check 8: Visual hull imported from the specimen is self-consistent with the Pass 2 segmentation
+    hull = reconstruct_opt_visual_hull(seg)
+    assert abs(hull["st0"]["l_pd_um"] - 1020.0) < 1e-9
+    assert 1.30 < hull["st1_st0_pd_ratio"] < 1.40                       # Fig. 2F dorsal: +34-36 %
+    assert abs(hull["st1"]["l_pd_um"] - hull["st1"]["l_pd_posterior_um"]) / hull["st1"]["l_pd_um"] < 0.02  # two views agree on St1 length
+    assert hull["st1_st0_ap_ratio"] > 1.10 and 0.95 < hull["st1_st0_dv_ratio"] < 1.06   # AP widens, DV ~constant
+
+    # Check 9: Structured tet mesh validity (positive volumes, expected counts, conforming prism split)
+    mesh = build_structured_tet_mesh(hull["st0"], *FEM_DEFAULT_RES)
+    vol, _ = p1_tet_geometry(mesh["nodes"], mesh["tets"])
+    n_pd, n_r, n_t = FEM_DEFAULT_RES
+    assert len(mesh["nodes"]) == (n_pd + 1) * (1 + n_r * n_t) + 1 == 466
+    assert len(mesh["tets"]) == 3 * n_pd * (n_t * (2 * n_r - 1)) + n_t * (2 * n_r - 1) == 2150
+    assert bool(np.all(vol > 0.0))
+    faces = np.sort(np.concatenate([mesh["tets"][:, c] for c in ([0, 1, 2], [0, 1, 3], [0, 2, 3], [1, 2, 3])]), axis=1)
+    _, cnt = np.unique(faces, axis=0, return_counts=True)
+    assert bool(np.all(cnt <= 2))                                       # every face shared by at most 2 tets (conforming)
+
+    # Check 10: Stokes FEM reproduces both closed-form oracles (Lean Theorem 4) to round-off
+    mfg = fem_manufactured_solution_errors(mesh)
+    assert mfg["max_rel_error"] < 1e-9
+
+    # Check 11: FEM protocol — volume balance, mesh convergence, Model I inside the paper's band, regime ordering
+    fem = evaluate_fem_regimes_and_influx(hull, ref_data)
+    fby = fem["by_id"]
+    for r in fem["regimes"]:
+        assert abs(r["volume_balance_ratio"] - 1.0) < 0.02 and r["min_tet_volume_um3"] > 0.0
+    assert fem["convergence_delta_default_fine_pp"] < 0.1
+    assert 3.4 <= fby["model_i_isotropic_proliferation_gradient"]["pd_elongation_6h_pct"] <= 11.8
+    assert (
+        fby["model_ii_wt_directional_pushing"]["pd_elongation_6h_pct"]
+        > fby["fgf_mapk_motility_only_no_ocd"]["pd_elongation_6h_pct"]
+        > fby["wnt5a_null_pcp_mutant"]["pd_elongation_6h_pct"]
+        > fby["model_i_isotropic_proliferation_gradient"]["pd_elongation_6h_pct"]
+    )
+    assert abs(fem["calibration"]["fit_residual_wt_pct"]) < 0.1 and abs(fem["calibration"]["fit_residual_fgf_pct"]) < 0.2
+    assert fem["pd_elongation_pearson_r"] > 0.98
+
+    # Check 12: Flank-influx volume closure reaches the OPT volume ratio and improves the specimen match
+    clos = fem["influx_closure"]
+    assert abs(clos["volume_ratio"] - OPT_VOLUME_RATIO_ST1_ST0) < 0.01
+    assert abs(clos["volume_balance_ratio"] - 1.0) < 0.05
+    assert fem["iou"]["influx_dorsal"] > fem["iou"]["wt_dorsal"] > fem["iou"]["model_i_dorsal"] > fem["iou"]["st0_baseline_dorsal"]
+
+    # Check 13: Two-run bitwise determinism of the FEM itself (cache bypassed)
+    f1 = simulate_limb_bud_fem_3d(hull, "det", 1.0, 1.0, 0.03, 0.1, use_cache=False)
+    f2 = simulate_limb_bud_fem_3d(hull, "det", 1.0, 1.0, 0.03, 0.1, use_cache=False)
+    assert np.array_equal(f1["nodes_final"], f2["nodes_final"]) and f1["pd_elongation_6h_pct"] == f2["pd_elongation_6h_pct"]
+
+    # Check 14: Two-run bitwise determinism of measure_morphoeval() (20 measurements)
     m1 = measure_morphoeval()
     m2 = measure_morphoeval()
-    assert m1 == m2 and len(m1) == 8
+    assert m1 == m2 and len(m1) == 20
 
     print(
-        f"[PASS 2 self-test] All 8 checks passed | "
-        f"5-regime PD r={five_reg['pd_elongation_pearson_r']:.4f} (RMSE={five_reg['pd_elongation_rmse_pct']:.2f}%), "
-        f"AR r={five_reg['aspect_ratio_pearson_r']:.4f}, "
-        f"WT E11.5 AR={by_id['model_ii_wt_directional_pushing']['e11_5_aspect_ratio_pd_ap']:.3f} vs "
-        f"Model I AR={by_id['model_i_isotropic_proliferation_gradient']['e11_5_aspect_ratio_pd_ap']:.3f}"
+        f"[PASS 3 self-test] All 14 checks passed | "
+        f"2D reduced model: 5-regime PD r={five_reg['pd_elongation_pearson_r']:.4f} (RMSE={five_reg['pd_elongation_rmse_pct']:.2f}%), "
+        f"AR r={five_reg['aspect_ratio_pearson_r']:.4f} | "
+        f"3D Stokes FEM ({fby['model_ii_wt_directional_pushing']['n_nodes']} nodes/{fby['model_ii_wt_directional_pushing']['n_tets']} tets): "
+        f"oracle err={mfg['max_rel_error']:.1e}, Model I +{fby['model_i_isotropic_proliferation_gradient']['pd_elongation_6h_pct']:.2f}% PD "
+        f"(vol x{fby['model_i_isotropic_proliferation_gradient']['volume_ratio']:.3f}), WT +{fby['model_ii_wt_directional_pushing']['pd_elongation_6h_pct']:.2f}% "
+        f"(AP {fby['model_ii_wt_directional_pushing']['ap_expansion_6h_pct']:+.1f}%), regime r={fem['pd_elongation_pearson_r']:.4f}, "
+        f"v_in*={fem['influx_v_star_um_per_h']:.1f} um/h -> IoU {fem['iou']['influx_dorsal']:.3f} vs WT {fem['iou']['wt_dorsal']:.3f}"
     )
     return True
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Boehm et al. (2010) & Gros et al. (2010) Limb Bud Elongation Continuum Model (Pass 2 v2)"
+        description="Boehm et al. (2010) & Gros et al. (2010) Limb Bud Elongation Continuum Model (Pass 3 v3: 2D reduced model + 3D Stokes FEM)"
     )
     parser.add_argument("--zeta-ocd", type=float, default=1.0, help="Wnt5a/JNK oriented cell division active stress gain")
     parser.add_argument("--chi-fgf", type=float, default=1.0, help="AER-FGF8/MAPK chemotactic velocity gradient gain")
-    parser.add_argument("--reynolds", type=float, default=1e-2, help="Tissue Reynolds number Re in [1e-6, 1e-1]")
+    parser.add_argument("--reynolds", type=float, default=1e-2, help="Tissue Reynolds number Re in [1e-6, 1e-1] (2D reduced model only)")
     parser.add_argument("--hours", type=float, default=6.0, help="Simulated developmental duration in hours")
-    parser.add_argument("--output", type=Path, default=OUT_PNG, help="Output 10-panel comparison PNG path")
+    parser.add_argument("--flank-influx", type=float, default=0.0, help="3D FEM flank inflow velocity v_in (um/h) for the custom CLI run")
+    parser.add_argument("--fem-res", type=int, nargs=3, default=list(FEM_DEFAULT_RES), metavar=("N_PD", "N_RINGS", "N_THETA"), help="3D FEM mesh resolution for the custom CLI run")
+    parser.add_argument("--output", type=Path, default=OUT_PNG, help="Output 10-panel comparison PNG path (the 6-panel FEM PNG is written alongside as *_fem3d.png)")
     parser.add_argument("--gif", type=Path, default=OUT_GIF, help="Output animated growth GIF path")
-    parser.add_argument("--self-test", action="store_true", help="Run 8-check verification suite and exit")
+    parser.add_argument("--self-test", action="store_true", help="Run the 14-check verification suite and exit")
     args = parser.parse_args()
 
     if args.self_test:
@@ -1176,7 +2155,9 @@ def main() -> int:
     five_regimes = evaluate_all_five_regimes(ref_data)
     sweeps = run_reynolds_and_2d_parameter_sweeps(ref_data)
     spec_seg = segment_limb_bud_specimen()
-    if (args.zeta_ocd, args.chi_fgf, args.reynolds, args.hours) != (1.0, 1.0, 1e-2, 6.0):
+    hull = reconstruct_opt_visual_hull(spec_seg)
+    fem = evaluate_fem_regimes_and_influx(hull, ref_data)
+    if (args.zeta_ocd, args.chi_fgf, args.reynolds, args.hours, args.flank_influx, tuple(args.fem_res)) != (1.0, 1.0, 1e-2, 6.0, 0.0, FEM_DEFAULT_RES):
         _ = simulate_limb_bud_regime(
             regime_id="custom_cli",
             zeta_ocd=args.zeta_ocd,
@@ -1184,7 +2165,17 @@ def main() -> int:
             reynolds=args.reynolds,
             duration_hours=args.hours,
         )
-    render_all_outputs(ref_data, five_regimes, sweeps, spec_seg, out_png=args.output, out_gif=args.gif)
+        custom = simulate_limb_bud_fem_3d(
+            hull, "custom_cli_fem", zeta_ocd=args.zeta_ocd, chi_fgf_wnt5a=args.chi_fgf,
+            k_zeta_per_h=fem["calibration"]["k_zeta_per_h"], k_chi_per_h=fem["calibration"]["k_chi_per_h"],
+            flank_influx_um_per_h=args.flank_influx, duration_hours=args.hours, res=tuple(args.fem_res),
+        )
+        print(
+            f"[custom FEM] zeta={args.zeta_ocd} chi={args.chi_fgf} v_in={args.flank_influx} um/h res={tuple(args.fem_res)}: "
+            f"PD {custom['pd_elongation_6h_pct']:+.2f}%, AP {custom['ap_expansion_6h_pct']:+.2f}%, DV {custom['dv_expansion_6h_pct']:+.2f}%, "
+            f"volume x{custom['volume_ratio']:.3f} ({custom['n_nodes']} nodes / {custom['n_tets']} tets)"
+        )
+    render_all_outputs(ref_data, five_regimes, sweeps, spec_seg, out_png=args.output, out_gif=args.gif, hull=hull, fem=fem)
     self_test()
     return 0
 

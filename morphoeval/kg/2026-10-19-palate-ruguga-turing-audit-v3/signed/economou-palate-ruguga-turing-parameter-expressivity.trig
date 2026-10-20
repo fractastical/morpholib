@@ -1,0 +1,110 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAsa_H2tf1BKIP4xLB_PJhVB0Yjiriob31clW-6MeVurs/> .
+@prefix this: <https://w3id.org/np/RAsa_H2tf1BKIP4xLB_PJhVB0Yjiriob31clW-6MeVurs> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-economou-palate-ruguga-turing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-economou-palate-ruguga-turing-parameter-expressivity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-economou-palate-ruguga-turing-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Economou et al. (2012) FGF10/FGF7-SHH activator-inhibitor Turing stripe mechanism at mammalian palatal growth zones, coupled to quasi-static epithelial plate ridge elevation — Parameter expressivity: 90/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "New sweeps behave monotonically and are measured: ridge amplitude vs kappa over 6 values and vs k_f over 4 values both give Spearman rho = -1.00 with crest phase offset < 0.023 lambda throughout; the ridge count stays 9 for kappa <= 0.1 and merges to 7 at kappa >= 0.2 (an honest limit of wavelength transfer, disclosed in the JSON and the measurement note); the chi_m two-way sweep (0, 0.1, 0.2, 0.3) keeps 9 rugae with non-decreasing ridge amplitude (0.155 -> 0.188). CLI exposes --kappa, --k-found, --chi-mech plus the existing reaction / diffusion / growth flags. Deductions: the mechanics flags only act on the mechanics figure, the comparison PNG always uses defaults (L1726-1734) (-3); the reaction parameters a_12 etc. do not continuously control the perturbation morphologies because those are initial-condition templates (L606-633) (-5); T and beta are fixed, not swept (-2)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:evidenceAgainst "2012-economou-palate-ruguga-turing.py L1726–L1734: mech_overrides are routed only to render_ridge_mechanics_figure, not to the comparison figure <https://github.com/fractastical/morpholib/blob/d58a084/2012-economou-palate-ruguga-turing.py#L1726-L1734>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-parameter-expressivity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-parameter-expressivity-3> ;
+        pk:hasScore "0.9"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2012-economou-palate-ruguga-turing.py L740–L810" ;
+        dcterms:description "evaluate_ridge_mechanics_sweeps: kappa, k_f (one-way) and chi_m (RD re-run) sweeps with Spearman statistics and transfer gain" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2012-economou-palate-ruguga-turing.py#L740-L810> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/palate_ruguga_turing/palate_ridge_mechanics_reference.json L38–L52" ;
+        dcterms:description "Sweep grids and expected monotone behaviour, including the kappa >= 0.2 merge" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/datasets/palate_ruguga_turing/palate_ridge_mechanics_reference.json#L38-L52> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-economou-palate-ruguga-turing-parameter-expressivity-3> a pk:EvidenceItem ;
+        rdfs:label "2012-economou-palate-ruguga-turing.py L1697–L1700" ;
+        dcterms:description "--kappa, --k-found, --chi-mech, --skip-mechanics-figure CLI flags" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2012-economou-palate-ruguga-turing.py#L1697-L1700> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (primary, Pass 3 remediation + re-score) + MorphoEval Dual-Rubric Assessor" ;
+        dcterms:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "wdAdi/WdqFp6l7lNEOOOQ0n0D03YPf99zPHmUikh29Ft1ms9YcLgeJIjsmuPVApZXI0ynNLu8mxCZwHJQr/PhIp6ilyRcURlg7UqLBcOxyDQz9sp2IUfv874zYQt2mv+/Q/lqTDSMK1lKcPbUtIo/fSV5OgK/3OMYL1gOEmnrbN2pvohFme2LshAWVwUovBfty7Gcp9Vv9dAr+jO6hNaEIz8UpUTDRwbS2jNbrxSvQoyy/ltwsNP7YyWYnzfy0bjLC8+3wD4fMObOw+62A0JKDqKoBaGA1OJ9B2hoAjceH14teAll329WUXuDGVPTOI+lg4iFOEhwdb50JsHp8xgng==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    this: rdfs:label "Economou et al. (2012) FGF10/FGF7-SHH activator-inhibitor Turing stripe mechanism at mammalian palatal growth zones, coupled to quasi-static epithelial plate ridge elevation — Parameter expressivity 90/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T10:12:25Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-economou-palate-ruguga-turing-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/8> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}
+
+sub1:provenance {
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/8> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.ydbio.2009.09.028>,
+            <https://doi.org/10.1038/ng.1090>,
+            <https://doi.org/10.1098/rstb.1952.0012>,
+            <https://doi.org/10.1186/1471-213X-8-116>,
+            <https://www.sciencedirect.com/book/9780080570693/theory-of-elasticity> .
+
+    <https://doi.org/10.1016/j.ydbio.2009.09.028> dcterms:date "2009"^^xsd:gYear ;
+        dcterms:title "Signaling integration in the rugae growth zone directs anteroposterior palatal outgrowth" .
+
+    <https://doi.org/10.1038/ng.1090> dcterms:date "2012"^^xsd:gYear ;
+        dcterms:title "Periodic stripe formation by a Turing mechanism operating at growth zones in the mammalian palate" .
+
+    <https://doi.org/10.1098/rstb.1952.0012> dcterms:date "1952"^^xsd:gYear ;
+        dcterms:title "The chemical basis of morphogenesis" .
+
+    <https://doi.org/10.1186/1471-213X-8-116> dcterms:date "2008"^^xsd:gYear ;
+        dcterms:title "Patterning of palatal rugae through sequential addition reveals an anterior/posterior boundary in palatal development" .
+
+    <https://www.sciencedirect.com/book/9780080570693/theory-of-elasticity> dcterms:date "1986"^^xsd:gYear ;
+        dcterms:title "Theory of Elasticity (Course of Theoretical Physics, Vol. 7), 3rd edition — Secs. 11-14, equilibrium of thin plates" .
+}
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+

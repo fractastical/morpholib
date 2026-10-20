@@ -1,0 +1,98 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-yaman-somitoid-chirality-buckling> a pk:Claim ;
+        rdfs:label "Yamanaka et al. (2023), Miao et al. (2023) & Adhyapok et al. (2021) epithelial somite rosette vertex mechanics, 3D polyhedral shell lumen pressurization and live HES7 clock-wavefront coupled mesenchymal-to-epithelial transition (MET) model faithfully reproduces Homo sapiens / Mus musculus (in vitro axioloid / somitoid epithelial somite rosettes) morphology" ;
+        dct:description "The simulation script(s) 2021-yaman-somitoid-chirality-buckling.py implement the cited source model as published and produce forms that match real Homo sapiens / Mus musculus (in vitro axioloid / somitoid epithelial somite rosettes) specimens and the source authors' figures. A belief under audit, not a fact: its credibility is the weight of evidence (MorphoEval 0.1.0 overall 89.7/100, audit 2026-10-19-somitoid-chirality-buckling-audit-v3) and the assessments." ;
+        dct:subject <https://github.com/fractastical/morpholib/blob/d58a084/2021-yaman-somitoid-chirality-buckling.py> ;
+        pk:context "script(s): https://github.com/fractastical/morpholib/blob/d58a084/2021-yaman-somitoid-chirality-buckling.py; output: docs/media/somitoid_chirality_buckling_comparison.png; organism: Homo sapiens / Mus musculus (in vitro axioloid / somitoid epithelial somite rosettes); checkpoint commit: https://github.com/fractastical/morpholib/commit/d58a084; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0; spec_fingerprint: c1110cb9038d37a536b327b4b7e47002f40a93acd13d457cf0444c105660f6c4; artifact_sha256: 8d4112473f06311e45765334cca5fb587c718ffbf4fb1a76b844ea598e7313e6; input_dataset_sha256: {datasets/somitoid_chirality_buckling/scout_manifest.json=8326704c93aa8a75..., datasets/somitoid_chirality_buckling/somitoid_chirality_buckling_reference.json=72127bb5b83f59d0..., datasets/somitoid_chirality_buckling/somitoid_rosette_specimen.jpg=8b80971796cb29e2...}; supersedes_audit_id: 2026-10-19-somitoid-chirality-buckling-audit-v2; claim_boundary: [reported_in_source: Yamanaka et al. (2023) Nature 614:509-520 & Miao et al. (2023) Nature 614:500-508: Matrigel ECM embedding and RhoA/ROCK-dependent apical actomyosin constriction drive epithelial somite rosette polarization and central somitecoel lumen formation in human axioloids and somitoids; HES7 oscillations and periodic MESP2/RIPPLY2 stripes precede boundary formation | Adhyapok et al. (2021) Dev. Cell 56:1312-1324: combined apical constriction (gamma_ap > gamma_bas) and EphA4/ephrinB2 heterotypic boundary repulsion (gamma_het > gamma_hom) govern somite rounding and inter-somitic cleft separation | Y-27632 ROCK inhibition or absence of Matrigel abolishes the apico-basal tension differential and prevents polarized epithelial somite rosette morphogenesis | Lewis (2003): a transcriptional-delay autoinhibition loop yields a limit-cycle segmentation oscillator; Diaz-Cuadros et al. (2020) and Matsuda et al. (2020): the human iPSC-PSM HES7 period is ~5 h | Cooke & Zeeman (1976): segment length equals wavefront speed times clock period, S = v T | Gomez-Galvez et al. (2018): scutoids arise from apical/basal Voronoi mismatch under anisotropic (tubular) curvature; a spherical epithelium predicts none; reconstructed_in_script: 2D 32-vertex apico-basal differential interfacial tension relaxation solver for an N=16 wedge-cell somite rosette (WT L_ap/L_bas = 0.3030 vs 0.3030 polygon law, 0.305 empirical), 6-regime perturbation series (Pearson r = 0.9989, RMSE = 0.0154), Eph/ephrin cleft barrier (S_cleft = 0.8189 WT vs 0.0930 KD), 28x28 phase diagram and bilateral specimen segmentation (45.375 px, CV 0.2391) carried from Pass 2 | Pass 3: closed 3D polyhedral shell of 96 spherical-Voronoi frustum cells with volume elasticity, face tensions and -P V_lumen, relaxed over 192 radii and matched to the closed-form Law 4 balance (WT rho_3D = 0.3229 discrete vs 0.3229 analytic; Y-27632 0.7098), a lumen-pressure sweep with saddle-node rupture P_crit = 0.115 gamma_lat/um (Laplace open-shell bound 0.510) and a scutoid topology audit (0 scutoids by construction) | Pass 3: Lewis (2003) HES7 delayed oscillator time-scaled to T = 4.995 h in 64 PSM cells, Cooke-Zeeman wavefront arrest (v = 20 um/h), MESP2 gated by frozen HES7 phase (0.50 of each segment), RIPPLY2 boundary fixation, 5 ephrinB2-|EphA4+ boundaries at S = 100.0 um = v T, exponential RhoA/ROCK gamma_ap(x,t) (tau 3 h) and EphA4/ephrinB2 gamma_het,k(t) (tau 1.5 h) ramps fed live into the vertex, shell and cleft models: S0 0.3428 -> S-III 0.3033 maturation, Y-27632 coupled 0.7013 at every stage, Eph/ephrin KD cleft 0.0930; transfer_boundary: The 2D and 3D laws share the same empirical cross-section ratio 0.305 as their only external anchor; the 3D shell with the 2D-fitted tensions gives 0.323 (6% high) and the tensions were NOT re-fitted for 3D | The clock-coupling constants v, tau_ROCK, tau_Eph, tau_RIPPLY2 are model choices (segment ~100 um, MET over ~1 period); S = v T is therefore an analytical identity check, not a comparison with a digitised somite length; the HES7 period is calibrated to 5 h, so its measurement validates the calibration rather than predicting the period | The HES7 clock is synchronous across the PSM (Cooke-Zeeman limit): no posterior-anterior period gradient, hence no kinematic HES7 waves as seen in axioloids; the coupling is one-way (clock -> tension), with no mechanical feedback on the clock or on MESP2 | The 3D shell cells are radial frusta with 2 DOF each on a fixed Voronoi tessellation: no tangential vertex motion, no T1 transitions, no scutoids; the 0% scutoid result is a construction, consistent with but not a test of Gomez-Galvez (2018) | No somitocoel pressure has been measured in the source papers; P_crit is referenced to the model-internal Laplace bound only; does_not_claim: Full 3D sclerotome/dermomyotome lineage regionalization, scutoid or T1 cell rearrangements, kinematic HES7 phase waves, Notch-mediated clock synchronisation, a TBX6/MESP2/RIPPLY2 gene-network model, mechanical feedback onto the clock, or a quantitative match of the stage-resolved lumen ratios to digitised Yamanaka (2023) / Miao (2023) stage data]" ;
+        pk:derivedFromPaper <https://doi.org/10.1016/S0022-5193(76)80131-2>,
+            <https://doi.org/10.1016/S0960-9822(03)00534-7>,
+            <https://doi.org/10.1016/j.devcel.2021.03.026>,
+            <https://doi.org/10.1038/s41467-018-05376-1>,
+            <https://doi.org/10.1038/s41467-022-29967-1>,
+            <https://doi.org/10.1038/s41586-019-1885-9>,
+            <https://doi.org/10.1038/s41586-020-2144-9>,
+            <https://doi.org/10.1038/s41586-022-05649-2>,
+            <https://doi.org/10.1038/s41586-022-05655-4> ;
+        pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-yaman-somitoid-chirality-buckling-code-traceability>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-yaman-somitoid-chirality-buckling-model-fidelity>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-yaman-somitoid-chirality-buckling-morphometric-validation>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-yaman-somitoid-chirality-buckling-overall>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-yaman-somitoid-chirality-buckling-parameter-expressivity>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-yaman-somitoid-chirality-buckling-repro-package>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-yaman-somitoid-chirality-buckling-source-traceability>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-yaman-somitoid-chirality-buckling-specimen-match> ;
+        pk:weightOfEvidence "0.897"^^xsd:double .
+    <https://github.com/fractastical/morpholib/blob/d58a084/2021-yaman-somitoid-chirality-buckling.py> a schema:SoftwareSourceCode ;
+        rdfs:label "2021-yaman-somitoid-chirality-buckling.py" ;
+        schema:codeRepository <https://github.com/fractastical/morpholib> ;
+        schema:programmingLanguage "Python" ;
+        schema:version "d58a084" .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0022-5193(76)80131-2>,
+            <https://doi.org/10.1016/S0960-9822(03)00534-7>,
+            <https://doi.org/10.1016/j.devcel.2021.03.026>,
+            <https://doi.org/10.1038/s41467-018-05376-1>,
+            <https://doi.org/10.1038/s41467-022-29967-1>,
+            <https://doi.org/10.1038/s41586-019-1885-9>,
+            <https://doi.org/10.1038/s41586-020-2144-9>,
+            <https://doi.org/10.1038/s41586-022-05649-2>,
+            <https://doi.org/10.1038/s41586-022-05655-4> .
+    <https://doi.org/10.1016/S0022-5193(76)80131-2> dct:date "1976"^^xsd:gYear ;
+        dct:title "A clock and wavefront model for control of the number of repeated structures during animal morphogenesis" .
+    <https://doi.org/10.1016/S0960-9822(03)00534-7> dct:date "2003"^^xsd:gYear ;
+        dct:title "Autoinhibition with transcriptional delay: a simple mechanism for the zebrafish somitogenesis oscillator" .
+    <https://doi.org/10.1016/j.devcel.2021.03.026> dct:date "2021"^^xsd:gYear ;
+        dct:title "A mechanical model of early somite segmentation" .
+    <https://doi.org/10.1038/s41467-018-05376-1> dct:date "2018"^^xsd:gYear ;
+        dct:title "Scutoids are a geometrical solution to three-dimensional packing of epithelia" .
+    <https://doi.org/10.1038/s41467-022-29967-1> dct:date "2022"^^xsd:gYear ;
+        dct:title "Periodic formation of epithelial somites from human pluripotent stem cells" .
+    <https://doi.org/10.1038/s41586-019-1885-9> dct:date "2020"^^xsd:gYear ;
+        dct:title "In vitro characterization of the human segmentation clock" .
+    <https://doi.org/10.1038/s41586-020-2144-9> dct:date "2020"^^xsd:gYear ;
+        dct:title "Recapitulating the human segmentation clock with pluripotent stem cells" .
+    <https://doi.org/10.1038/s41586-022-05649-2> dct:date "2023"^^xsd:gYear ;
+        dct:title "Reconstituting human somitogenesis in vitro" .
+    <https://doi.org/10.1038/s41586-022-05655-4> dct:date "2023"^^xsd:gYear ;
+        dct:title "Reconstruction and deconstruction of human somitogenesis in vitro" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Claim: Yamanaka et al. (2023), Miao et al. (2023) & Adhyapok et al. (2021) epithelial somite rosette vertex mechanics, 3D polyhedral shell lumen pressurization and live HES7 clock-wavefront coupled mesenchymal-to-epithelial transition (MET) model is faithful" ;
+        dct:created "2026-10-20T08:38:28Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:Claim ;
+        npx:introduces <https://w3id.org/probknow/resource/claim/morphoeval-yaman-somitoid-chirality-buckling> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/d58a084/2021-yaman-somitoid-chirality-buckling.py>,
+            <https://github.com/fractastical/morpholib/issues/1> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RApE-nGpCMigXqZjeHuYuMJEVTGmTlNTlZl7IcHi_fhdQ/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

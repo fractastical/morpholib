@@ -4,7 +4,7 @@
   "proposed_script": "2012-sheth-hox-turing-polydactyly.py",
   "proposed_sim_id": "sheth-hox-turing-polydactyly",
   "branch_name": "morphoeval/loop-015-hox-turing-polydactyly",
-  "status": "completed",
+  "status": "pass3_completed",
   "completed_at": "2026-10-20T00:13:00Z",
   "run_id": "2026-10-19-hox-turing-polydactyly-loop",
   "pass1_audit": "morphoeval/audits/2026-10-19-hox-turing-polydactyly-audit.yaml",
@@ -16,10 +16,66 @@
   "math_spec": "morphoeval/math_kg_loops/sheth-hox-turing-polydactyly.yaml",
   "outputs": [
     "docs/media/hox_turing_polydactyly_comparison.png",
-    "docs/media/hox_turing_polydactyly_growth.gif"
+    "docs/media/hox_turing_polydactyly_growth.gif",
+    "docs/media/hox_turing_polydactyly_growth_mesh.png"
   ],
   "slot_index": 15,
   "slug": "hox-turing-polydactyly",
   "target_script": "2012-sheth-hox-turing-polydactyly.py",
-  "delta": 44.1
+  "delta": 44.1,
+  "pass3_run_id": "2026-10-19-hox-turing-polydactyly-loop-pass3",
+  "pass3_audit_id": "2026-10-19-hox-turing-polydactyly-audit-v3",
+  "pass3_audit": "morphoeval/audits/2026-10-19-hox-turing-polydactyly-audit-v3.yaml",
+  "pass3_score": 91.3,
+  "pass3_dims": {
+    "model-fidelity": 92,
+    "specimen-match": 88,
+    "parameter-expressivity": 93,
+    "morphometric-validation": 90,
+    "source-traceability": 95,
+    "code-traceability": 93,
+    "repro-package": 93
+  },
+  "pass3_delta_vs_pass2": -0.8,
+  "pass3_quick_gate_score": 100,
+  "pass3_completed_at": "2026-10-20T06:59:30Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_self_test_checks": 14,
+  "pass3_measurements": 15,
+  "pass3_remediation_closed": [
+    "Couple the 2D polar fan-shaped limb bud Turing solver to a deforming tissue-mechanics mesh driven by localized AER-FGF8 mitogenic outgrowth. -> closed as an honest kinematic reduction: integrate_sheth_growing_fan_limb_pde (L512-703; AER-FGF8 mitogen field M = A(t) exp(-(R-r)/l_F), prescribed dilation g = g_max M, mass-conservation radial velocity, rim outgrowth dR/dt = v(R,t), Lagrangian material tracers, Crampin-Gaffney-Maini ALE reaction-diffusion with dilution + mesh-relative advection on the deformed polar metric, backward-Euler radial diffusion), calibrate_aer_outgrowth_rate (L481-488, g_max = 1.95 -> WT arc 2500 um), run_aer_growth_sweep (L706-730), run_aer_ablation_series (L733-752); Panels I-L, growth-mesh PNG, 8 GIF frames; Lean Theorems 4-5; residual (no constitutive law / stress balance, imposed diffusion anisotropy) carried to Pass 4"
+  ],
+  "pass3_remediation_open": [
+    "2012-sheth-hox-turing-polydactyly.py:512-703,631 - replace kinematic dilation with a mechanical tissue model (Stokes/viscous or Morishita-Iwasa elastic growth, FGF8 volumetric source, stress-dependent anisotropy) and derive stripe orientation from a Raspopovic 2014 Fgf/Wnt PD modulation instead of eps_r = 0.05 anisotropy",
+    "2012-sheth-hox-turing-polydactyly.py:284,375-376 - 1D arc and fixed-width fan seed the target cosine mode; report noise-only (seed-ensemble) counts for all solvers and relabel seeded runs as a mode-locked control (growing fan gives 3.5 WT / 13.0 null without seeding)",
+    "2012-sheth-hox-turing-polydactyly.py:179-183 - k_c(H) = 14 - 9H and the g_u closure are ansaetze; digitise Sheth 2012 supplementary parameters and Fig. 2G digit-period vs width data into the dataset and fit against them",
+    "2012-sheth-hox-turing-polydactyly.py:431-445 - anchor GROWTH_R0, GROWTH_L_F, GROWTH_T_AER_OFF, GROWTH_T_TOTAL to Boehm 2010 limb-bud dimensions / proliferation rates and convert model time to hours",
+    "2012-sheth-hox-turing-polydactyly.py:706-730,1147-1179 - add a fixed-final-L sweep (g_max and T jointly) to isolate the Crampin growth lag (slope 0.90) from the width effect and test peak insertion",
+    "2012-sheth-hox-turing-polydactyly.py:1364-1376 - digitise Summerbell 1974 stage-vs-truncation table so the AER-ablation measurement has quantitative reference values instead of the intact control"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_015.sheth_growing_autopod_digit_number_law",
+    "MathOfBiology.Loop_015.sheth_growth_dilution_turing_threshold"
+  ],
+  "pass3_lean_verified": true,
+  "pass3_lean_theorems_total": 5,
+  "pass3_artifacts": [
+    "2012-sheth-hox-turing-polydactyly.py",
+    "morphoeval/lean/loops/Loop_015_hox_turing_polydactyly.lean",
+    "morphoeval/math_kg_loops/sheth-hox-turing-polydactyly.yaml",
+    "datasets/hox_turing_polydactyly/pass3_aer_growth_reference.json",
+    "datasets/hox_turing_polydactyly/paper_citations.bib",
+    "datasets/hox_turing_polydactyly/README.md",
+    "docs/media/hox_turing_polydactyly_comparison.png",
+    "docs/media/hox_turing_polydactyly_growth.gif",
+    "docs/media/hox_turing_polydactyly_growth_mesh.png",
+    "docs/media/hox_turing_polydactyly_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-hox-turing-polydactyly-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-hox-turing-polydactyly-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-hox-turing-polydactyly-audit-v3/ (10 signed nanopubs, REPORT.md, .ttl)",
+    "morphoeval/runs/2026-10-19-hox-turing-polydactyly-loop-pass3.{yaml,csv,md,trig,events.jsonl,ledger.jsonl}",
+    "morphoeval/cloud/dispatches/slot-015.json"
+  ]
 }

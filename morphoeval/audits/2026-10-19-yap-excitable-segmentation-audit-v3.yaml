@@ -1,0 +1,331 @@
+# MorphoEval audit — Hubaud, Regev, Mahadevan & Pourquié (2017) YAP-Gated Excitable Segmentation Clock, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `2016-hubaud-yap-excitable-segmentation.py` (Slot 027) after remediating BOTH open
+# items of the v2 audit in the instrumented loop `morphoeval/runs/2026-10-19-yap-excitable-segmentation-loop-pass3`,
+# superseding `2026-10-19-yap-excitable-segmentation-audit-v2` (91.7).
+#
+# What Pass 3 changed (v2 `remediation` items 1-2):
+#   1. Section 4c (L704-952): a 1D anteroposterior PSM chain of excitable FHN cells is coupled to an explicit
+#      regressing Fgf8/Wnt gradient F(x,t) = min(1, exp(-(x_tb(t) - x)/lambda_F)) through a Hill gate g(F) that
+#      enters I_eff additively (gamma_F (g - 1)); cells arrest where gamma_F (1 - g) exceeds the Hopf margin, the
+#      frozen phase u_arrest(x) is thresholded into a Mesp2-like switch, and 8 discrete stripes emerge with spacing
+#      S = 101.7 um vs the Cooke-Zeeman prediction v_wf T = 102.0 um (CV 0.024). With gamma_F = 1.6 the anterior
+#      cells are non-excitable and the pulses truly arrest at the front (0 um leak), the gamma_F = 0.8 control leaks
+#      802 um. Sweeps: v_wf (slope dS/dv = 144.8 min vs T = 145.7 min, r = 0.99998), lambda_F (PSM length 407 ->
+#      735 um while S is unchanged), gamma_F, and a uniform-FGF ablation (0 stripes).
+#   2. Section 4d (L954-1139): substrate stiffness -> F-actin tension T(E, A, rho_actin, c_ROCK) -> LATS1/2 L(T)
+#      -> three-state YAP (Y_n, Y_p, Y_c) import/export/phosphorylation kinetics -> Y_nuc, calibrated by
+#      least-squares on the five wild-type regimes (RMSE 0.054), predicting E_crit = 12.6 kPa inside the Dupont
+#      (2011) 0.7-40 kPa bracket, and a dynamic Latrunculin A rescue (Y_nuc 0.816 -> 0.179, onset 30.8 min,
+#      period 142.5 min). Section 4b (L607-701): J_Dll1 is now an explicit juxtacrine Dll1-Notch coupling
+#      J_i = J_max mean_j sigma(u_j); a 48-cell ring sweep raises Kuramoto R from 0.27 (J = 0) to 0.80 (J = 0.3).
+#   3. Three new Lean 4 theorems (Loop_027 Theorems 4-6, 0 sorrys, verified with `lean`), six equations in the
+#      math KG, reference JSON extended with both mechanisms and four new DOIs (Cooke & Zeeman 1976, Dubrulle 2001,
+#      Wada 2011, Gomez 2008), self-test extended (11 measurements), 9-panel figure and 3-panel GIF.
+#
+# Scores below are criterion-referenced scores on the rubric's 0-100 scale (not calibrated probabilities), scored
+# only on evidence verified against the files at commit d58a084 (line numbers refer to that state of the working
+# tree). Overall 91.8 (v2 91.7): the remediation items are closed and formally backed, but the round also exposed
+# defects that pull in the other direction (decorative 200-cell ensemble in the 6-regime benchmark, chick specimen
+# filed as mouse without a um scale, phenomenological FGF gate and uncited mechanical constants, no PSM-wide phase
+# gradient), listed under `remediation` for Pass 4.
+
+audit:
+  id: 2026-10-19-yap-excitable-segmentation-audit-v3
+  supersedes_audit_id: 2026-10-19-yap-excitable-segmentation-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (primary) + Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://deepmind.google
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent second assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d58a084
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) post-remediation evaluation of `2016-hubaud-yap-excitable-segmentation.py` (2049 lines;
+      self-test with 11 measurements passes in ~6 s, full render in ~13 s) after closing both v2 remediation
+      items in `2026-10-19-yap-excitable-segmentation-loop-pass3`. Line numbers refer to the remediated
+      working-tree file at commit d58a084.
+
+references:
+  hubaud2017:
+    title: "Excitable dynamics and Yap-dependent mechanical cues drive the segmentation clock"
+    authors: "Hubaud A, Regev I, Mahadevan L, Pourquie O"
+    venue: "Cell 171(3):668-682 (2017)"
+    doi: 10.1016/j.cell.2017.08.043
+  fitzhugh1961:
+    title: "Impulses and physiological states in theoretical models of nerve membrane"
+    authors: "FitzHugh R"
+    venue: "Biophysical Journal 1(6):445-466 (1961)"
+    doi: 10.1016/S0006-3495(61)86902-6
+  lauschke2013:
+    title: "Scaling of embryonic patterning based on phase-gradient encoding"
+    authors: "Lauschke VM, Tsiairis CD, Francois P, Aulehla A"
+    venue: "Nature 493(7430):101-105 (2013)"
+    doi: 10.1038/nature11804
+  dupont2011:
+    title: "Role of YAP/TAZ in mechanotransduction"
+    authors: "Dupont S, Morsut L, Aragona M, Enzo E, Giulitti S, Cordenonsi M, Zanconato F, Le Digabel J, Forcato M, Bicciato S, Elvassore N, Piccolo S"
+    venue: "Nature 474(7350):179-183 (2011)"
+    doi: 10.1038/nature10137
+  cooke1976:
+    title: "A clock and wavefront model for control of the number of repeated structures during animal morphogenesis"
+    authors: "Cooke J, Zeeman EC"
+    venue: "Journal of Theoretical Biology 58(2):455-476 (1976)"
+    doi: 10.1016/S0022-5193(76)80131-2
+  dubrulle2001:
+    title: "FGF signaling controls somite boundary position and regulates segmentation clock control of spatiotemporal Hox gene activation"
+    authors: "Dubrulle J, McGrew MJ, Pourquie O"
+    venue: "Cell 106(2):219-232 (2001)"
+    doi: 10.1016/S0092-8674(01)00437-8
+  wada2011:
+    title: "Hippo pathway regulation by cell morphology and stress fibers"
+    authors: "Wada K, Itoga K, Okano T, Yonemura S, Sasaki H"
+    venue: "Development 138(18):3907-3914 (2011)"
+    doi: 10.1242/dev.070987
+  gomez2008:
+    title: "Control of segment number in vertebrate embryos"
+    authors: "Gomez C, Ozbudak EM, Wunderlich J, Baumann D, Lewis J, Pourquie O"
+    venue: "Nature 454(7202):335-339 (2008)"
+    doi: 10.1038/nature07020
+
+simulations:
+  - id: hubaud-yap-excitable-segmentation
+    name: "Hubaud, Regev, Mahadevan & Pourquié (2017) excitable FitzHugh-Nagumo segmentation clock gated by YAP mechanotransduction, with FGF/Wnt clock-and-wavefront arrest and stiffness-LATS-YAP kinetics (Pass 3)"
+    organism: "Mus musculus (mouse E9.5-E10.5 presomitic mesoderm LuVeLu Lfng-Venus / Hes7 excitable oscillator)"
+    script: 2016-hubaud-yap-excitable-segmentation.py
+    output: docs/media/yap_excitable_segmentation_comparison.png
+    extra_outputs:
+      - docs/media/yap_excitable_segmentation_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-yap-excitable-segmentation-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Hubaud, Regev, Mahadevan & Pourquie (2017) Cell 171:668-682 FitzHugh-Nagumo excitable oscillator model of primary mouse presomitic mesoderm (PSM) cells gated by nuclear YAP mechanotransduction"
+        - "Quiescent excitable state in isolated spread fibronectin PSM cells (high nuclear YAP) rescued into ~140 min autonomous LuVeLu oscillations by Latrunculin A, Y-27632 (Rockout), or Yap1 inhibition, and blocked by constitutively active Yap5SA"
+        - "Cooke & Zeeman (1976) clock-and-wavefront law S = v_wf T; Dubrulle, McGrew & Pourquie (2001) posterior-high fgf8 mRNA gradient regressing with axis elongation and positioning the determination front; Dupont et al. (2011) YAP/TAZ cytoplasmic on ~0.7 kPa and nuclear on ~40 kPa fibronectin hydrogels under Rho/F-actin control; Wada et al. (2011) stress fibres inhibit LATS1/2"
+      reconstructed_in_script:
+        - "Analytical cubic nullcline continuation, Jacobian spectrum, and supercritical Hopf bifurcation diagram across Y_nuc in [0, 1] (|u_H| = 0.9675, Y_crit = 0.6109)"
+        - "RK4 single-cell & ensemble simulations across all 6 Hubaud et al. (2017) perturbation regimes (Pearson r = 0.9976, RMSE = 0.0469) plus subthreshold vs suprathreshold single-pulse excitability"
+        - "2D reaction-diffusion mPSM target-wave PDE solver with Yap5SA constitutive block control and bilateral somite DoG peak segmentation on mouse_psm_somites_specimen.jpg (47.14 px mean spacing, CV = 0.2010)"
+        - "[Pass 3] 1D anteroposterior excitable chain with juxtacrine Dll1-Notch coupling and a regressing Fgf8/Wnt gradient: arrest front g(F) = g_crit, frozen-phase Mesp2-like switch, 8 stripes with S = 101.7 um vs v_wf T = 102.0 um (CV 0.024), 0 um anterior pulse leak at gamma_F = 1.6 (802 um at 0.8), v_wf / lambda_F / gamma_F sweeps and uniform-FGF ablation (0 stripes)"
+        - "[Pass 3] Stiffness -> F-actin tension -> LATS1/2 -> three-state YAP kinetics cascade fitted to the five wild-type regimes (RMSE 0.054), E_crit = 12.6 kPa, dynamic Latrunculin A rescue (onset 30.8 min, period 142.5 min), and a 48-cell Dll1-Notch ring synchrony sweep (Kuramoto R 0.27 -> 0.80)"
+      transfer_boundary:
+        - "Fast-slow 2-variable FitzHugh-Nagumo phenomenological reduction of the Notch/FGF/Wnt/YAP mouse PSM segmentation clock compared with a dorsal chick-embryo somite SEM (Wikimedia 'Aves_Neural_tube_and_somites_in_chick_embryo.jpg', filed as mouse_psm_somites_specimen.jpg) whose px spacing has no um calibration"
+        - "The FGF/Wnt gate acts additively on I_eff (gamma_F (g(F) - 1)) and the determination front is defined by the Hopf margin, which is a reduced reading of Hubaud et al. (2017) Fig. 7 and of the clock-and-wavefront literature, not an equation published in the source paper; the chain is 1D with no cell flow, convergent extension or mediolateral extent"
+        - "The YAP cascade is a lumped ODE keeping both a LATS-dependent branch (Wada 2011) and a LATS-independent tension-driven import branch; Dupont et al. (2011) reported the stiffness response as largely LATS-independent, and the E_50 = 10 kPa, A_50 = 500 um^2, m = 3, k_exp, k_PP, tau_actin constants are modelling choices, not measured values"
+      does_not_claim:
+        - "Explicit molecular transcriptional-translational delay equations for Hes7/Lfng/Axin2, a PSM-wide period/phase gradient (Lauschke 2013 kinematic waves are only reproduced within ~50 um of the front), 3D focal-adhesion traction force microscopy, or the mouse somite AP length beyond an order-of-magnitude anchor (~100 um, Gomez et al. 2008)"
+    source_refs:
+      - hubaud2017
+      - fitzhugh1961
+      - lauschke2013
+      - dupont2011
+      - cooke1976
+      - dubrulle2001
+      - wada2011
+      - gomez2008
+    summary: >-
+      Pass 3 post-remediation evaluation of `2016-hubaud-yap-excitable-segmentation.py` (91.8/100, v2 91.7).
+      Both v2 remediation items are closed: the excitable FHN core is now coupled along a 1D anteroposterior axis
+      to an explicit regressing Fgf8/Wnt gradient through a Hill gate on I_eff, so that the clock arrests at a
+      moving determination front and freezes a Mesp2-like stripe pattern whose spacing (101.7 um) matches the
+      Cooke-Zeeman law v_wf T (102.0 um) across a 5-point v_wf sweep (slope 144.8 min vs T 145.7 min, r 0.99998),
+      with lambda_F controlling PSM length (407-735 um) but not S, gamma_F controlling whether excitable pulses
+      leak anteriorly (802 um at 0.8, 0 um at the default 1.6) and uniform FGF abolishing the stripes; and
+      nuclear YAP is now produced by a substrate-stiffness -> F-actin -> LATS1/2 -> YAP phosphorylation / import
+      cascade calibrated on the five wild-type regimes (RMSE 0.054), predicting E_crit = 12.6 kPa inside the Dupont
+      (2011) 0.7-40 kPa bracket and a dynamic Latrunculin A ignition 30.8 min after F-actin loss, while J_Dll1
+      became an explicit juxtacrine Dll1-Notch coupling that synchronises a heterogeneous ring (R 0.27 -> 0.80).
+      Three new Lean 4 theorems (Theorems 4-6) back the new mathematics (6 total, 0 sorrys). The round also
+      surfaced the next layer of defects: the 200-cell ensemble in the 6-regime benchmark is decorative (the
+      predicted fraction is a hand-tuned logistic of I_eff), the vendored specimen is a chick embryo SEM filed as
+      mouse with no um scale, the FGF gate and several mechanical constants are uncited modelling choices, the
+      cascade cannot reproduce the non-monotonic Y-27632 vs high-density pair, and the PSM clock has no phase
+      gradient outside ~50 um of the front.
+    scores:
+      model-fidelity:
+        value: 93
+        rationale: >-
+          The published FHN fast-slow core, YAP gate and 2D excitable PDE are unchanged and verified (Laws 1-3,
+          L171-604). Pass 3 adds the two missing mechanisms the v2 audit asked for and proves their governing
+          identities in Lean (Theorems 4-6): the regressing exponential Fgf8 gradient (Dubrulle 2001) gating I_eff
+          with an arrest criterion that reproduces S = v_wf T to 0.3% and the analytic front offset to 0.4%
+          (L707-886), and a three-state YAP import/export/phosphorylation cycle whose monotonicity in tension and
+          LATS is proved cross-multiplied (L954-1139). Deductions: the FGF gate gamma_F (g(F) - 1) is additive and
+          phenomenological rather than an Fgf8/Wnt3a/Hes7 circuit, and gamma_F had to be raised from 0.8 to 1.6
+          for the excitable waves to actually arrest at the front, which is a tuned rather than derived number
+          (-3); the 6-regime benchmark's 200-cell ensemble (L447-453) is computed but never used - the predicted
+          oscillating fraction is a logistic of the deterministic I_eff with a hand-set margin 0.115 and width
+          0.125 (L451-456), so the r = 0.9976 reflects two fitted constants rather than ensemble dynamics (-3);
+          the cascade keeps a LATS branch that Dupont (2011) found largely dispensable for the stiffness response
+          (disclosed, -1).
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [171, 284], note: "FHN cubic nullcline, YAP-gated I_eff, equilibrium solver and analytical Hopf thresholds (Laws 1-3), unchanged from v2", supports: true}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [707, 748], note: "Pass 3: Fgf8 gradient F(x,t), Hill gate g(F), FGF-gated current I_eff = I_basal + J + gamma_F (g - 1) - gamma_YAP Y_nuc and g_crit from the Hopf margin (Law 5)", supports: true}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [750, 886], note: "Pass 3: 1D chain with juxtacrine J_i, Laplacian coupling, arrest bookkeeping (u_arrest, Mesp2 switch L821-840), stripe/PSM-length morphometrics and anterior-wave-penetration metric (L849-858)", supports: true}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [968, 1031], note: "Pass 3: tension index T(E, A, rho_actin, c_ROCK), LATS activity, steady-state Y_n = r_n/(1 + r_n + r_p) and least-squares calibration on the five WT regimes (Law 6)", supports: true}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [1059, 1139], note: "Pass 3: dynamic three-state YAP ODE coupled to the FHN cell for the Latrunculin A rescue (onset latency, period)", supports: true}
+          - {file: morphoeval/lean/loops/Loop_027_yap_excitable_segmentation.lean, lines: [110, 199], note: "Theorems 4-6 (clock-wavefront spacing, FGF arrest criterion + front speed independent of lambda_F, YAP nuclear-fraction monotonicity), 0 sorrys, verified with lean 4.35.0", supports: true}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [447, 456], note: "Defect: 200-cell ensemble osc_mask is computed but pred_frac is a hand-tuned logistic of the deterministic I_eff (margin 0.115, width 0.125); the ensemble only feeds a reporting field", supports: false}
+      specimen-match:
+        value: 88
+        rationale: >-
+          Panel F still segments both bilateral somite rows of the vendored SEM (8 + 8 somites, 47.14 px, CV
+          0.201) and Panels G/H now place a generated discrete stripe pattern (8 stripes, S = 101.7 um, CV 0.024)
+          beside it, with the Mesp2-like switch strip, the determination front and the tail bud drawn on the
+          kymograph, so the figure finally shows somite-like periodic clefts emerging from the clock rather than
+          only waves. Deductions: the specimen is a chick embryo SEM (source URL 'Aves_Neural_tube_and_somites_in_
+          chick_embryo.jpg', reference JSON L55) filed as mouse_psm_somites_specimen.jpg, and the v2 audit's
+          'vertebrate' wording hid this - the organism match is a transfer, not a mouse specimen (-6); the specimen
+          spacing is in px with no um calibration, so the 100 um model stripes and the 47 px somites cannot be
+          compared on one scale (-3); the model stripe CV (0.024) is an order of magnitude below the specimen CV
+          (0.201) and the figure does not comment on it (-2); the 1D stripes have no mediolateral shape to compare
+          with the rounded somite blocks (-1).
+        evidence:
+          - {file: docs/media/yap_excitable_segmentation_comparison.png, lines: [0, 0], note: "9-panel figure: A-F as v2 plus G (1D kymograph with front, tail bud, Mesp2 strip and stripe edges), H (Cooke-Zeeman sweep, lambda_F / gamma_F annotations, ablation marker, 100 um anchor), I (Y_nuc(E_sub) with Dupont soft/stiff bands, regime points, LatA and synchrony insets)", supports: true}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [1651, 1684], note: "Panel G renders the stripe pattern and determination front from the same simulate_ap_wavefront_arrest result used by the measurements", supports: true}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [1173, 1214], note: "Bilateral dorsal somite DoG peak & cleft segmentation on the specimen (unchanged from v2)", supports: true}
+          - {file: datasets/yap_excitable_segmentation/yap_excitable_segmentation_reference.json, lines: [50, 58], note: "Defect: specimen source URL identifies a chick embryo SEM, filed under a 'mouse_psm' filename with no um/px scale", supports: false}
+      parameter-expressivity:
+        value: 95
+        rationale: >-
+          Every new morphospace parameter is swept and behaves monotonically as claimed: v_wf -> S linearly
+          (5 points, slope 144.8 min = T, r 0.99998), lambda_F -> PSM length (407 / 571 / 735 um vs analytic 410 /
+          574 / 737) with S unchanged, gamma_F -> anterior pulse leak (802 um at 0.8, 0 um at >= 1.2), uniform
+          FGF -> 0 stripes, E_sub -> Y_nuc monotone with E_crit inside the Dupont bracket, J_max -> Kuramoto R
+          (0.27 -> 0.80, Spearman 0.94), plus the v2 Y_nuc bifurcation sweep and 6-regime suite. New CLI flags
+          --v-wf, --lambda-F and --E-sub expose the two mechanisms. Deductions: the J_max -> R relation is not
+          strictly monotone (it saturates: 0.802 at 0.20 vs 0.801 at 0.30; Spearman 0.94) and the ring uses a tau_v CV fixed at
+          0.04 (-3); the sweeps are reported as numbers and one scatter panel, without rendered stripe patterns
+          along the v_wf sweep (-2).
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [888, 952], note: "v_wf, lambda_F and gamma_F sweeps with regression slope, Cooke-Zeeman relative error, PSM length and wave-penetration per value", supports: true}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [1033, 1057], note: "160-point stiffness sweep and log-interpolated E_crit", supports: true}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [687, 701], note: "J_max coupling sweep with Spearman rank correlation of the final order parameter", supports: true}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [2018, 2042], note: "CLI: --v-wf / --lambda-F one-off wavefront run and --E-sub cascade prediction", supports: true}
+      morphometric-validation:
+        value: 93
+        rationale: >-
+          `measure_morphoeval()` (L1218-1352) now returns 11 reference-anchored measurements: the five v2 ones
+          plus stripe spacing S vs v_wf T and the ~100 um mouse somite anchor, the Cooke-Zeeman slope vs T, the
+          cascade RMSE vs the regime table, E_crit vs the Dupont bracket, the LatA onset latency vs one clock
+          period, and the Kuramoto R vs complete synchrony with an uncoupled control; each carries a unit, method
+          and note with the ablation / sweep numbers. Deductions: several new references are analytic or bracket
+          values rather than measured specimen numbers (S vs v_wf T is a self-consistency check of the chain
+          against its own tail-bud period; E_crit's 5.3 kPa 'reference' is a geometric midpoint; the LatA onset
+          reference is an upper bound) (-4); the mouse somite length anchor is an order-of-magnitude value with no
+          digitised Gomez (2008) table vendored (-2); the specimen CV 0.201 is never contrasted with the model CV
+          0.024 (-1).
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [1290, 1352], note: "Six Pass 3 measurements with reference values, units, sweep/ablation notes (stripe spacing, Cooke-Zeeman slope, cascade RMSE, E_crit, LatA onset, Kuramoto R)", supports: true}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [1225, 1289], note: "Five v2 measurements (Hopf threshold, Y_crit, LatA period, 6-regime r, specimen spacing) retained unchanged", supports: true}
+          - {file: datasets/yap_excitable_segmentation/yap_excitable_segmentation_reference.json, lines: [204, 210], note: "Empirical anchors for the wavefront module: ~100 um mouse somite (Gomez 2008), 142 min clock, implied v_wf 0.704 um/min", supports: true}
+      source-traceability:
+        value: 94
+        rationale: >-
+          Eight primary sources now carry DOIs in the module docstring, the dataset README, paper_citations.bib
+          and the reference JSON (four added in Pass 3: Cooke & Zeeman 1976, Dubrulle 2001, Wada 2011, Gomez 2008);
+          the specimen and scout manifest remain SHA-256 pinned and verified at runtime (L131-162); the new
+          mechanisms' parameters and regime mechanical inputs live in the reference JSON and are loaded by the
+          script rather than hard-coded, and a pre-existing D_u inconsistency (18 vs 24 um^2/min) between the JSON,
+          the math KG and the code was corrected. Deductions: the regime mechanical inputs (E = 40 kPa for
+          fibronectin-coated dishes, A = 2000 / 150 um^2, rho_actin 0.15, c_ROCK 0.25) are modelling assignments
+          without a per-value source (-3); the specimen filename misstates the organism (-2); the reference JSON
+          is not SHA-pinned (digest recorded, not asserted) (-1).
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [1, 53], note: "Eight sources with DOIs and the Pass 3 remediation summary with honest reductions", supports: true}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [131, 162], note: "SHA-256 pins for specimen and scout manifest, fail-closed verification", supports: true}
+          - {file: datasets/yap_excitable_segmentation/yap_excitable_segmentation_reference.json, lines: [181, 245], note: "Pass 3 reference sections: FGF gradient law, gate, arrest criterion, parameters, empirical anchors; YAP cascade equations, honesty note, fixed/fitted parameters, Dupont anchors, per-regime mechanical inputs", supports: true}
+          - {file: datasets/yap_excitable_segmentation/paper_citations.bib, lines: [45, 87], note: "BibTeX entries for Cooke & Zeeman 1976, Dubrulle 2001, Wada 2011, Gomez 2008", supports: true}
+      code-traceability:
+        value: 91
+        rationale: >-
+          Each Pass 3 section header and docstring names the law, the source and the Lean theorem it implements
+          (Sections 4b-4d), the math KG registers six equations with lean_locus and code_locus, and the figure
+          panels, measurements and self-test checks are labelled by law. Deductions: the FGF gate form g(F) =
+          F^h/(F_thr^h + F^h) with F_thr = 0.15, h = 4 and gamma_F = 1.6 is traced to no equation or figure of any
+          cited paper (-4); the mechanical constants E_50 = 10 kPa, A_50 = 500 um^2, m = 3, k_exp = 1/12, k_PP =
+          1/20 and tau_actin = 8 min are declared as module constants without citations (-3); the Kuramoto phase
+          is an atan2 around the fixed point, which is not a protophase correction and is uncited (-1); the
+          ensemble/logistic mismatch at L447-456 is undocumented (-1).
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [53, 104], note: "Laws 1-6 in the module docstring with Lean theorem names and the equations each section implements", supports: true}
+          - {file: morphoeval/math_kg_loops/hubaud-yap-excitable-segmentation.yaml, lines: [116, 197], note: "Equations 4-6 registered with Lean declarations, loci, variables, roles and code loci", supports: true}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [957, 965], note: "Defect: mechanical constants E_50, h_E, A_50, m_L, r0, k_exp, k_PP, tau_actin, overexpression factor declared without source citations", supports: false}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [720, 723], note: "Defect: Hill gate g(F) and its F_thr / h_F defaults are not traced to a published equation", supports: false}
+      repro-package:
+        value: 92
+        rationale: >-
+          Deterministic seeds (2016) throughout, bitwise determinism asserted for both the 2D PDE and the new 1D
+          chain, a least-squares calibration that is deterministic from fixed initial guesses, --self-test with
+          the Pass 3 checks (stripe count, CV, S vs v_wf T, PSM length vs analytic, ablation, sweep slope, lambda_F
+          invariance, wave arrest vs leak control, cascade RMSE, regime states, E_crit bracket, LatA onset, R
+          monotonicity, 11 measurements with reference values) passing in ~6 s, and the default invocation
+          regenerating the PNG and GIF in ~13 s. Deductions: no requirements lock file is vendored for this slot
+          (-4); the GIF/PNG are not asserted byte-identical across runs (only the model arrays are) (-2); the
+          calibration result depends on scipy.optimize internals and is not pinned by a stored fitted-parameter
+          fixture (-2).
+        evidence:
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [1944, 1993], note: "Pass 3 self-test checks: determinism, stripes, Cooke-Zeeman, ablation, sweeps, wave arrest vs leak, cascade, stiffness, LatA kinetics, synchrony, 11 measurements", supports: true}
+          - {file: 2016-hubaud-yap-excitable-segmentation.py, lines: [2010, 2046], note: "CLI entrypoint runs the self-test before rendering; documented flags", supports: true}
+          - {file: docs/media/yap_excitable_segmentation_growth.gif, lines: [0, 0], note: "16-frame, 3-panel GIF (2D mPSM wave, FHN phase plane, 1D clock-and-wavefront growth with FGF gradient, front and accreting stripes)", supports: true}
+    remediation:
+      - >-
+        2016-hubaud-yap-excitable-segmentation.py:447-456 — the 200-cell ensemble (y_samples, j_samples, osc_mask)
+        is computed but `pred_frac` is a logistic of the deterministic I_eff with a hand-set detection margin
+        (0.115) and width (0.125), so the 6-regime Pearson r = 0.9976 reflects two tuned constants rather than
+        ensemble dynamics. Use the ensemble fraction (np.mean(osc_mask), or RK4 on each sampled cell) as the
+        prediction, or derive the margin/width from the ensemble sigma_Y / sigma_J, and report the fit honestly.
+      - >-
+        datasets/yap_excitable_segmentation/yap_excitable_segmentation_reference.json:50-58 and
+        2016-hubaud-yap-excitable-segmentation.py:1173-1214 — the vendored SEM is a chick embryo
+        ('Aves_Neural_tube_and_somites_in_chick_embryo.jpg') filed as mouse_psm_somites_specimen.jpg, with no um
+        per px scale, so neither the organism nor the 100 um stripe spacing can be compared with it. Add a
+        correctly named mouse PSM specimen (or relabel as chick and change the organism claim), record a scale, and
+        compare S_model (um) with the specimen in um.
+      - >-
+        2016-hubaud-yap-excitable-segmentation.py:720-748 — the FGF/Wnt gate g(F) = F^h/(F_thr^h + F^h) with
+        F_thr = 0.15, h = 4 and gamma_F = 1.6 is a phenomenological additive term on I_eff; gamma_F had to be tuned
+        from 0.8 to 1.6 for the excitable pulses to arrest at the front. Replace it with (or calibrate it against)
+        an explicit Fgf8/Wnt3a -> Hes7/Lfng input taken from a cited model, and vendor the Dubrulle (2001) fgf8
+        gradient profile as a fixture.
+      - >-
+        2016-hubaud-yap-excitable-segmentation.py:750-886 — the clock is quasi-synchronous across the PSM and only
+        slows within ~50 um of the front (Panel G), so the Lauschke (2013) phase-gradient / kinematic travelling
+        waves are not reproduced. Add a posterior-to-anterior period gradient (e.g. tau_v(x) or I_eff(x) ramp) and
+        measure the wave speed and phase-gradient wavelength against Lauschke et al. (2013) mPSM values.
+      - >-
+        2016-hubaud-yap-excitable-segmentation.py:957-965 and 1000-1031 — the cascade constants (E_50 = 10 kPa,
+        A_50 = 500 um^2, m = 3, k_exp = 1/12, k_PP = 1/20, tau_actin = 8 min, 2x Yap5SA overexpression) and the
+        per-regime mechanical inputs are uncited modelling assignments, and the tension-only cascade cannot
+        reproduce the non-monotonic Y-27632 (0.30) vs high-density mPSM (0.18) pair (RMSE floor 0.054). Vendor
+        Dupont (2011) / Wada (2011) measured values, add a density / contact-inhibition term, and store the fitted
+        (alpha_T, kappa_LATS, T_L) as a pinned fixture.
+      - >-
+        2016-hubaud-yap-excitable-segmentation.py:687-701 and 621-684 — the J_max -> Kuramoto R sweep is not
+        strictly monotone (it saturates: 0.802 at J_max = 0.20 vs 0.801 at 0.30, Spearman 0.94) and the phase is an atan2 around the fixed point rather
+        than a protophase-corrected phase; use a Hilbert / protophase estimator, average over several seeds and
+        heterogeneity levels, and compare with Riedel-Kruse (2007) or Hubaud (2017) dissociation-reaggregation
+        synchrony data.

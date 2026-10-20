@@ -1,0 +1,131 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RA_Qo_Dd7rwhD78fgTZtHLnDgM7h9scjlVtypl_kCrwxY/> .
+@prefix this: <https://w3id.org/np/RA_Qo_Dd7rwhD78fgTZtHLnDgM7h9scjlVtypl_kCrwxY> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-mitchison-canalization-auxin-flux> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-mitchison-canalization-auxin-flux-model-fidelity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-mitchison-canalization-auxin-flux-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Mitchison (1980, 1981) & Feugier, Mochizuki & Iwasa (2005) with-the-flux auxin canalization: exponent bifurcation, growing hex-lamina canalization (solved), Sachs wound bypass (solved + prescribed), hand-drawn Feugier venation templates, and cleared-leaf specimen segmentation — Model fidelity to source: 72/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "Credited: `HexCanalizationLattice.step` (L808-828) integrates the seed paper's Eq. 2-3 pair (dS = sigma - mu S - sum D (S_i - S_j); dD = alpha |phi|^p/(1 + (|phi|/phi_s)^p) + beta - gamma D) with a semi-implicit S update, wall re-symmetrisation and a documented saturation; `refine_hex_lattice` (L881-913) implements cell division with conductance inheritance; Law 2 drainage now EMERGES (0.67 < 1) instead of being written in; the saturation law is machine-checked in Lean (bounded + monotone). The Sachs incision is solved on the same engine with blocked walls (L1064-1075) and an alpha = 0 control. Deductions: the remediation item asked for polar PIN1 carrier allocation on a growing mesh and the shipped model is facilitated diffusion on a hex lattice (-6); `simulate_2d_lamina_canalization` (L243-335) and the 12-column profiles in `simulate_mitchison_exponent_sweep` (L170-198) are analytic constructions with hard-coded dip ratios 0.3105 / 0.6895 (L195, L295), and the p = 1.4 point uses a special-cased eff_beta = 0.1766 (L158) so the sweep is partly fitted to its own reference (-8); `simulate_sachs_wound_bypass` (L338-414) is a Gaussian centreline plus the constants 0.9852 / 0.0804 (L408-409), still returned and plotted (-4); `simulate_feugier_venation_topologies` (L446-548) solves nothing - V/E/C are typed in (L493, L523) - so Law 3 has no dynamical realisation (-6); the solved growing lamina yields a basal fan of lattice-aligned strands (two stage-1 strands plus parallel secondaries, Panel C of the growing-lamina PNG) rather than a pinnate midrib, and no parameter study shows that the hexagonal anisotropy is not driving it (-4)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "1997-mitchison-canalization-auxin-flux.py L243–L335: simulate_2d_lamina_canalization writes D and S as Gaussian formulas; drainage fraction 0.6895 (L295) is a constant chosen to hit the 0.31 reference - not a solution of the model <https://github.com/fractastical/morpholib/blob/d58a084/1997-mitchison-canalization-auxin-flux.py#L243-L335>",
+            "1997-mitchison-canalization-auxin-flux.py L446–L548: simulate_feugier_venation_topologies hand-draws two graphs; V_open/E_open (L493) and V_closed/E_closed (L523) are literals, no carrier dynamics are integrated <https://github.com/fractastical/morpholib/blob/d58a084/1997-mitchison-canalization-auxin-flux.py#L446-L548>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-mitchison-canalization-auxin-flux-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-mitchison-canalization-auxin-flux-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-mitchison-canalization-auxin-flux-model-fidelity-3> ;
+        pk:hasScore "0.72"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-mitchison-canalization-auxin-flux-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "1997-mitchison-canalization-auxin-flux.py L736–L879" ;
+        dcterms:description "HexCanalizationLattice: Mitchison (1980) Eqs. 2-3 solved on a hex lattice; semi-implicit S (L816), saturating feedback (L820), optional irreversibility (L824), enclosed-region (Betti-1) counter (L854-878)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/1997-mitchison-canalization-auxin-flux.py#L736-L879> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-mitchison-canalization-auxin-flux-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "1997-mitchison-canalization-auxin-flux.py L881–L1034" ;
+        dcterms:description "refine_hex_lattice cell-division inheritance (same-parent walls take max of the parent's two wall conductances, L902-905) and simulate_growing_lamina_venation 3-stage driver with nesting / Betti-1 / angle / mass-balance records (L990-1020)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/1997-mitchison-canalization-auxin-flux.py#L881-L1034> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-mitchison-canalization-auxin-flux-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_034_auxin_canalization_leaf_veins.lean L120–L178" ;
+        dcterms:description "Pass 3 theorems saturating_canalization_feedback_bounded (L131-146), saturating_canalization_feedback_monotone (L148-167), irreversible_differentiation_monotone (L176-178); lean exits 0, 0 sorrys" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/morphoeval/lean/loops/Loop_034_auxin_canalization_leaf_veins.lean#L120-L178> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 034 Pass 3 Assessor)" ;
+        dcterms:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "H5yJOgy6YIIUQjpySL3G1H7JopBJlBU9YwEq4LU/ysr03It/3MZMUB46HzCyR5kAR0XBi3yGKfRgsiv+kY6LThU/qzQSaiQhhNSIkSTSIjijT7nEtPQvPiLqlmrkpzNZmZEDExhU7H6eZszQmKtVwvrE7CFj+Rjzj/2a1u1pF2BW6nSOF4YWU9GKowQoExSpFz+oUTO0hz3HhMDIVT1DWjwP46F7p3xkbZhrQXVhoydaEiHJFn4WHaz/IhPGMkK0Yy4yspJZRruEpFjxQA4m4BBuxBWqb9XNjGsJjd8BnfUbEoSiV2IRuAKQFY+rXJ9nhiyhXgJUyIKcDWbEBDWOHg==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Mitchison (1980, 1981) & Feugier, Mochizuki & Iwasa (2005) with-the-flux auxin canalization: exponent bifurcation, growing hex-lamina canalization (solved), Sachs wound bypass (solved + prescribed), hand-drawn Feugier venation templates, and cleared-leaf specimen segmentation — Model fidelity to source 72/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T09:22:13Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-mitchison-canalization-auxin-flux-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/34> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1016/S0065-2296(08)60351-1> dcterms:date "1981"^^xsd:gYear ;
+        dcterms:title "The Control of the Patterned Differentiation of Vascular Tissues" .
+
+    <https://doi.org/10.1016/j.jtbi.2005.03.017> dcterms:date "2005"^^xsd:gYear ;
+        dcterms:title "Self-organization of vascular systems in plant leaves: Inter-dependent dynamics of auxin flux and carrier proteins" .
+
+    <https://doi.org/10.1016/j.jtbi.2006.05.022> dcterms:date "2006"^^xsd:gYear ;
+        dcterms:title "How canalization can make loops: A new model of reticulated leaf vascular pattern formation" .
+
+    <https://doi.org/10.1086/382794> dcterms:date "2004"^^xsd:gYear ;
+        dcterms:title "Vein pattern development in adult leaves of Arabidopsis thaliana" .
+
+    <https://doi.org/10.1098/rspb.1980.0082> dcterms:date "1980"^^xsd:gYear ;
+        dcterms:title "A model for vein formation in higher plants" .
+
+    <https://doi.org/10.1098/rstb.1981.0081> dcterms:date "1981"^^xsd:gYear ;
+        dcterms:title "The polar transport of auxin and vein pattern in plants" .
+
+    <https://doi.org/10.1101/gad.1402406> dcterms:date "2006"^^xsd:gYear ;
+        dcterms:title "Control of leaf vascular patterning by polar auxin transport" .
+
+    <https://doi.org/10.1111/j.1365-313X.2005.02581.x> dcterms:date "2005"^^xsd:gYear ;
+        dcterms:title "Leaf venation: structure and mechanisms" .
+
+    <https://doi.org/10.1111/nph.12253> dcterms:date "2013"^^xsd:gYear ;
+        dcterms:title "Leaf venation: structure, function, development, evolution, ecology and applications in the past, present and future" .
+
+    <https://doi.org/10.1145/1073204.1073251> dcterms:date "2005"^^xsd:gYear ;
+        dcterms:title "Modeling and visualization of leaf venation patterns" .
+
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/34> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/S0065-2296(08)60351-1>,
+            <https://doi.org/10.1016/j.jtbi.2005.03.017>,
+            <https://doi.org/10.1016/j.jtbi.2006.05.022>,
+            <https://doi.org/10.1086/382794>,
+            <https://doi.org/10.1098/rspb.1980.0082>,
+            <https://doi.org/10.1098/rstb.1981.0081>,
+            <https://doi.org/10.1101/gad.1402406>,
+            <https://doi.org/10.1111/j.1365-313X.2005.02581.x>,
+            <https://doi.org/10.1111/nph.12253>,
+            <https://doi.org/10.1145/1073204.1073251> .
+}
+

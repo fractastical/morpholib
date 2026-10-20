@@ -1,0 +1,97 @@
+{
+  "dataset_id": "microtubule_stress_meristem_pin1_cmt_v1",
+  "title": "Heisler et al. (2010) PLoS Biol. PIN1 polarity / cortical microtubule co-alignment and Louveaux et al. (2016) PNAS stress-oriented division planes — reference thresholds for the Pass 3 L1 cellular vertex-mesh model (Slot 036)",
+  "added_in": "MorphoEval Pass 3 (2026-10-19-microtubule-stress-meristem-audit-v3)",
+  "primary_sources": [
+    {
+      "citation": "Heisler MG, Hamant O, Krupinski P, Uyttewaal M, Ohno C, Jönsson H, Traas J, Meyerowitz EM (2010) PLoS Biology 8(10):e1000516",
+      "doi": "10.1371/journal.pbio.1000516",
+      "role": "Live imaging of PIN1-GFP and microtubule reporters in the Arabidopsis shoot apical meristem showing that PIN1 polarity correlates with cortical microtubule orientation (PIN1-rich membranes lie parallel to the CMT array), that both reorient after single-cell laser ablation (CMTs circumferential, PIN1 polarity directed away from the wound) and after compression, and that the PIN1 response to ablation persists after oryzalin microtubule depolymerisation; proposes that PIN1 accumulates on the plasma membrane adjacent to the most stressed anticlinal wall"
+    },
+    {
+      "citation": "Louveaux M, Julien J-D, Mirabet V, Boudaoud A, Hamant O (2016) Proceedings of the National Academy of Sciences 113(30):E4294-E4303",
+      "doi": "10.1073/pnas.1600677113",
+      "role": "Shows that shoot apical meristem cells, in particular at the organ-meristem boundary, orient their division plane along the direction of maximal tensile stress (parallel to the CMT array / preprophase band), deviating from the Errera shortest-wall rule when stress is anisotropic"
+    },
+    {
+      "citation": "Hamant O, Traas J (2010) New Phytologist 185(2):369-385",
+      "doi": "10.1111/j.1469-8137.2009.03100.x",
+      "role": "Review establishing that plant cells are cemented by the middle lamella and do not undergo neighbour exchange (T1 transitions); topological change in plant tissues arises only from cell division"
+    }
+  ],
+  "vertex_mesh_model_parameters": {
+    "hex_rings_interior": 4,
+    "n_cells_initial": 61,
+    "boundary_coupling": "affine pre-strain of the patch boundary epsilon_i = sigma_i / E_shell from the zone shell stress tensor (sigma_1, sigma_2)",
+    "E_shell_effective_MPa": 400.0,
+    "wall_model": "Hookean anticlinal wall tension T_e = k_e * max(0, l_e / l0_e - 1) with Lockhart creep of rest length l0_e above yield strain",
+    "wall_stiffness_k_wall": 6.0,
+    "periclinal_area_elasticity_K_A": 0.9,
+    "residual_in_plane_turgor_P": 0.15,
+    "cellulose_reinforcement_kappa_cmt": 1.56,
+    "cmt_rotational_diffusion_D_theta": 0.32,
+    "pin1_softmax_gain_beta_pin": 4.0,
+    "pin1_transport_rate_tau_pin": 0.6,
+    "auxin_diffusion_D_aux": 0.05,
+    "auxin_production_rho": 0.1,
+    "auxin_decay_mu": 0.1,
+    "lockhart_wall_extensibility_phi_wall": 0.45,
+    "lockhart_yield_strain_eps_yield": 0.03,
+    "auxin_wall_loosening_gain_k_aux": 0.6,
+    "division_area_threshold_factor": 1.75,
+    "division_stress_anisotropy_threshold": 0.08,
+    "t1_short_edge_threshold": 0.06,
+    "t1_enabled_by_default": false,
+    "time_steps": 160,
+    "dt": 0.05,
+    "seed": 2010036
+  },
+  "reference_thresholds": [
+    {
+      "metric_id": "pin1_wall_vs_cmt_cos2",
+      "description": "<cos^2> of the angle between the PIN1-rich wall axis and the CMT director; PIN1-labelled membranes run parallel to the CMT array (within 30 deg => cos^2 >= 0.75)",
+      "reference_value": 0.75,
+      "reference_kind": "ordinal_threshold_from_qualitative_report",
+      "source": "Heisler et al. (2010) Figs. 2-3",
+      "random_control_value": 0.5
+    },
+    {
+      "metric_id": "pin1_polarity_away_from_wound_fraction",
+      "description": "Fraction of wound-ring cells whose PIN1 polarity vector points away from the ablated cell",
+      "reference_value": 1.0,
+      "reference_kind": "qualitative_direction",
+      "source": "Heisler et al. (2010) Fig. 4 (ablation) and Fig. 6 (persists under oryzalin)",
+      "random_control_value": 0.5
+    },
+    {
+      "metric_id": "wound_ring_cmt_circumferential_cos2",
+      "description": "<cos^2> of the angle between the CMT director and the circumferential direction around the ablated cell",
+      "reference_value": 0.918,
+      "reference_kind": "shared_with_legacy_ablation_ring_benchmark",
+      "source": "Hamant et al. (2008) Fig. 3; Heisler et al. (2010) Fig. 4",
+      "random_control_value": 0.5
+    },
+    {
+      "metric_id": "division_plane_vs_sigma1_cos2",
+      "description": "<cos^2> of the angle between new division walls and the local maximal tensile stress axis in the organ-meristem boundary (aligned within 30 deg => cos^2 >= 0.75)",
+      "reference_value": 0.75,
+      "reference_kind": "ordinal_threshold_from_qualitative_report",
+      "source": "Louveaux et al. (2016) Figs. 2-4",
+      "random_control_value": 0.5
+    },
+    {
+      "metric_id": "euler_characteristic_residual",
+      "description": "|chi_after - chi_before| summed over all division (and T1) events on the vertex mesh; chi = V - E + F",
+      "reference_value": 0,
+      "reference_kind": "exact_invariant",
+      "source": "MathOfBiology.Loop_036.louveaux_vertex_mesh_division_preserves_euler_characteristic"
+    },
+    {
+      "metric_id": "t1_events_in_plant_tissue",
+      "description": "Number of T1 neighbour exchanges applied in the default plant-tissue run (walls cemented by the middle lamella)",
+      "reference_value": 0,
+      "reference_kind": "biological_constraint",
+      "source": "Hamant & Traas (2010) New Phytol. 185:369-385"
+    }
+  ]
+}

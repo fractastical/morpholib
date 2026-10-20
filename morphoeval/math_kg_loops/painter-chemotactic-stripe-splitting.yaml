@@ -1,7 +1,9 @@
 sim_id: painter-chemotactic-stripe-splitting
 math_family: Chemotaxis-Reaction-Diffusion
 model_spec:
-  model: "Painter, Maini & Othmer (1999) Keller-Segel chemotactic-reaction-diffusion stripe splitting & stripe-spot selection"
+  model: "Painter, Maini & Othmer (1999) PNAS 96:5549 'Stripe formation in juvenile Pomacanthus explained by a generalized Turing mechanism with chemotaxis' (Kondo-Asai Turing morphogens + chemotactic iridophores on a growing domain; Pass 3 extended to a growing curved surface of revolution) alongside a generic Keller-Segel chemotaxis-logistic rippling model (Keller & Segel 1970; Painter & Hillen 2011) coupled to a slime-trail nematic orientation tensor"
+  source_correction: "Passes 1-2 cited DOI 10.1073/pnas.96.10.5549 under the non-existent title 'Stripe and spotilihood in chemotactic pattern formation' and attributed the Keller-Segel laws below to it; Pass 3 re-attributes Laws 1-3 to Keller & Segel (1970) / Painter & Hillen (2011) / Crampin, Gaffney & Maini (1999) and adds Laws 4-6 for the actual PNAS 1999 model."
+  # Keller-Segel rippling model (Laws 1-3, 6)
   D_n: 1.0
   D_c: 1.0
   r: 1.0
@@ -11,17 +13,32 @@ model_spec:
   gamma: 4.0
   chi: 6.0
   chi_critical: 4.5
+  # PNAS 1999 Fig. 3 Pomacanthus model (Laws 4-5)
+  pmo_D_u: 0.007
+  pmo_D_v: 0.1
+  pmo_D_n: 0.0005
+  pmo_chi_0: -0.0001
+  pmo_k: 1.0
+  pmo_L_0: 11.0
+  pmo_r_growth: 0.0001
+  pmo_lambda_c: 3.4739
+  surface_profiles: [line, cylinder, spindle]
+  # slime-trail tensor (Law 6)
+  a_trail: 1.6
+  k_Q: 0.5
+  D_Q: 0.1
   seed: 1999
   inputs:
     - datasets/chemotactic_stripe_splitting/chemotactic_stripe_splitting_reference.json
+    - datasets/chemotactic_stripe_splitting/pomacanthus_stripe_doubling_reference.json
     - datasets/chemotactic_stripe_splitting/chemotactic_pattern_specimen.jpg
     - datasets/chemotactic_stripe_splitting/scout_manifest.json
 equations:
-  - law_name: "Keller-Segel-Painter Homogeneous Steady-State & Pure-RD Stability (chi = 0)"
+  - law_name: "Keller-Segel Homogeneous Steady-State & Pure-RD Stability (chi = 0)"
     formula: "tr M(0) = -(r + γ) < 0 ∧ det M(0) = r γ > 0;  χ = 0 ⟹ det M(q) = D_n D_c q^2 + (r D_c + γ D_n) q + r γ > 0 ∀ q ≥ 0"
     lean_decl: "MathOfBiology.Loop_005.ksp_det"
     lean_theorem: "MathOfBiology.Loop_005.ksp_uniform_and_no_chemotaxis_stability"
-    lean_locus: "morphoeval/lean/loops/Loop_005_chemotactic_stripe_splitting.lean#L19-L48"
+    lean_locus: "morphoeval/lean/loops/Loop_005_chemotactic_stripe_splitting.lean#L32-L71"
     lean_code: |
       def ksp_trace (r gamma D_n D_c q : Int) : Int := -(r + gamma) - (D_n + D_c) * q
       def ksp_det (r gamma D_n D_c chi_eff q : Int) : Int :=
@@ -34,14 +51,14 @@ equations:
         unfold ksp_trace ksp_det
         have hq2 : q * q ≥ 0 := Int.mul_nonneg hq hq; omega
     variables: "n_0: carrying capacity; c^* = α n_0 / (γ(1 + β n_0)): steady-state chemoattractant; r: logistic growth rate; γ: chemoattractant decay; D_n, D_c: cell and chemoattractant diffusivities; q = k^2: squared wavenumber"
-    role: "Proves that the homogeneous equilibrium (n^*, c^*) is always stable to uniform perturbations (q = 0) and that without chemotaxis (χ = 0) no spatial pattern instability can arise"
-    source_citation: "Painter, Maini & Othmer (1999) PNAS 96(10):5549-5554 Eqs. (1)-(5); Keller & Segel (1970) J. Theor. Biol. 26(3):399-415"
-    code_locus: "1999-painter-chemotactic-stripe-splitting.py#L118-L185"
-  - law_name: "Painter, Maini & Othmer (1999) Equal-Diffusivity Chemotactic Instability Threshold (χ > χ_c at D_n = D_c)"
+    role: "Proves that the homogeneous equilibrium (n^*, c^*) of the Keller-Segel rippling model is always stable to uniform perturbations (q = 0) and that without chemotaxis (χ = 0) no spatial pattern instability can arise"
+    source_citation: "Keller & Segel (1970) J. Theor. Biol. 26(3):399-415; Painter & Hillen (2011) Physica D 240:363-375 (model form). Generic Keller-Segel result, not a PNAS 1999 result."
+    code_locus: "1999-painter-chemotactic-stripe-splitting.py#L173-L231"
+  - law_name: "Keller-Segel Equal-Diffusivity Chemotactic Instability Threshold (χ > χ_c at D_n = D_c)"
     formula: "D_n = D_c = D ∧ n_0 χ(c^*) s^* > (√(r D_c) + √(γ D_n))^2 ⟹ det M(k_c^2) < 0 at k_c^2 = √(r γ / (D_n D_c))"
     lean_decl: "MathOfBiology.Loop_005.ksp_det"
     lean_theorem: "MathOfBiology.Loop_005.painter_1999_equal_diffusivity_chemotactic_instability"
-    lean_locus: "morphoeval/lean/loops/Loop_005_chemotactic_stripe_splitting.lean#L55-L71"
+    lean_locus: "morphoeval/lean/loops/Loop_005_chemotactic_stripe_splitting.lean#L74-L79"
     lean_code: |
       theorem painter_1999_equal_diffusivity_chemotactic_instability :
           ksp_det 1 4 1 1 8 2 = 2 ∧
@@ -49,14 +66,14 @@ equations:
           ksp_det 1 4 1 1 12 2 = -6 := by
         unfold ksp_det; omega
     variables: "χ: chemotactic sensitivity; χ_c = (√(r D_c) + √(γ D_n))^2 / (n_0 s^*): critical chemotactic threshold; s^* = α / (1 + β n_0)^2: linearized secretion slope; k_c: critical wavenumber"
-    role: "Proves that unlike pure Turing reaction-diffusion systems (which require D_u ≠ D_v), chemotactic cross-diffusion -∇·(n χ ∇c) destabilizes the homogeneous state at equal diffusivities D_n = D_c = 1 whenever χ > χ_c = 4.5 (χ_eff > 9)"
-    source_citation: "Painter, Maini & Othmer (1999) PNAS 96(10):5549-5554 Section 'Pattern Formation in a Chemotaxis Model' Eqs. (3)-(6)"
-    code_locus: "1999-painter-chemotactic-stripe-splitting.py#L135-L210"
-  - law_name: "Painter, Maini & Othmer (1999) Domain-Growth Wavenumber Halving & Stripe-Splitting Cascade"
+    role: "Proves that unlike pure Turing reaction-diffusion systems (which require D_u ≠ D_v), chemotactic cross-diffusion -∇·(n χ ∇c) destabilizes the homogeneous state at equal diffusivities D_n = D_c = 1 whenever χ > χ_c = 4.5 (χ_eff > 9); PNAS 1999 uses this contrast qualitatively to motivate chemotaxis in the Pomacanthus model"
+    source_citation: "Keller & Segel (1970) J. Theor. Biol. 26(3):399-415 linearisation; Painter & Hillen (2011) Physica D 240:363-375. The Lean theorem name retains its Pass 1 'painter_1999' prefix for KG continuity; the law itself is generic Keller-Segel."
+    code_locus: "1999-painter-chemotactic-stripe-splitting.py#L173-L258"
+  - law_name: "Growing-Domain Wavenumber Halving & Keller-Segel Stripe-Splitting Cascade"
     formula: "q_m(s) = m^2 / s^2 ∈ [q_min, q_max] ⟺ q_min s^2 ≤ m^2 ≤ q_max s^2;  s: 1 → 2 → 4 ⟹ m_unstable: 1 → 2 → 4"
     lean_decl: "MathOfBiology.Loop_005.in_chemotactic_band"
     lean_theorem: "MathOfBiology.Loop_005.painter_1999_domain_growth_stripe_splitting_cascade"
-    lean_locus: "morphoeval/lean/loops/Loop_005_chemotactic_stripe_splitting.lean#L78-L98"
+    lean_locus: "morphoeval/lean/loops/Loop_005_chemotactic_stripe_splitting.lean#L90-L108"
     lean_code: |
       def in_chemotactic_band (q_min q_max m s : Nat) : Bool :=
         decide (q_min * s * s ≤ m * m ∧ m * m ≤ q_max * s * s)
@@ -68,6 +85,76 @@ equations:
           in_chemotactic_band 1 3 2 4 = false ∧
           in_chemotactic_band 1 3 4 4 = true := by decide
     variables: "s = L(t)/L_0: domain dilation factor; m: spatial mode number; [q_min, q_max]: unstable chemotactic wavenumber band around q_c"
-    role: "Proves why uniform domain growth stretches existing spatial modes below q_min and sequentially recruits frequency-doubled modes m = 1 → 2 → 4 → 8, driving chemotactic stripe splitting"
-    source_citation: "Painter, Maini & Othmer (1999) PNAS 96(10):5549-5554 Figs. 1-3"
-    code_locus: "1999-painter-chemotactic-stripe-splitting.py#L215-L340"
+    role: "Proves why uniform domain growth stretches existing spatial modes below q_min and sequentially recruits frequency-doubled modes m = 1 → 2 → 4 → 8, driving chemotactic stripe splitting in the Keller-Segel rippling model"
+    source_citation: "Crampin, Gaffney & Maini (1999) Bull. Math. Biol. 61:1093-1120 (mode doubling on growing domains); Kondo & Asai (1995) Nature 376:765 (biological stripe insertion). PNAS 1999 Fig. 3 is the Pomacanthus instance treated in Law 5."
+    code_locus: "1999-painter-chemotactic-stripe-splitting.py#L358-L465"
+  - law_name: "Painter, Maini & Othmer (1999) Pomacanthus Turing Instability & Three-Stripe Mode Selection (Fig. 3 kinetics, L(0) = 11)"
+    formula: "J = [[0.05, -0.08], [0.1, -0.06]] at (u*, v*) = (3, 2.5): tr J = -0.01 < 0, det J = 0.005 > 0, h = D_v f_u + D_u g_v = 0.00458 > 0, h^2 > 4 D_u D_v det J; k_c^2 = h / (2 D_u D_v) = 3.2714, λ_c = 3.4739; Neumann modes m ∈ {5, 6, 7} in band [1.3848, 5.1581] on L = 11, m = 6 closest to k_c ⟹ 3 stripes"
+    lean_decl: "MathOfBiology.Loop_005.turing_h"
+    lean_theorem: "MathOfBiology.Loop_005.painter_1999_pomacanthus_turing_instability"
+    lean_theorem_2: "MathOfBiology.Loop_005.pomacanthus_three_stripe_mode_selection"
+    lean_locus: "morphoeval/lean/loops/Loop_005_chemotactic_stripe_splitting.lean#L119-L170"
+    lean_code: |
+      def turing_trace (fu gv : Int) : Int := fu + gv
+      def turing_det (fu fv gu gv : Int) : Int := fu * gv - fv * gu
+      def turing_h (Du Dv fu gv : Int) : Int := Dv * fu + Du * gv
+      theorem painter_1999_pomacanthus_turing_instability :
+          turing_trace 5 (-6) = -1 ∧
+          turing_det 5 (-8) 10 (-6) = 50 ∧
+          turing_h 7 100 5 (-6) = 458 ∧
+          turing_h 7 100 5 (-6) * turing_h 7 100 5 (-6) > 4 * 7 * 100 * turing_det 5 (-8) 10 (-6) := by
+        unfold turing_trace turing_det turing_h
+        decide
+      def neumann_mode_q (m : Nat) : Nat := m * m * 9870
+      def pomacanthus_band_lo : Nat := 1385 * 121
+      def pomacanthus_band_hi : Nat := 5158 * 121
+      def pomacanthus_q_c : Nat := 3271 * 121
+      theorem pomacanthus_three_stripe_mode_selection :
+          (pomacanthus_band_lo ≤ neumann_mode_q 5 ∧ neumann_mode_q 7 ≤ pomacanthus_band_hi) ∧
+          neumann_mode_q 4 < pomacanthus_band_lo ∧ pomacanthus_band_hi < neumann_mode_q 8 ∧
+          dist_to_qc 6 < dist_to_qc 5 ∧ dist_to_qc 6 < dist_to_qc 7 := by
+        decide
+    variables: "u, v: Kondo-Asai activator/inhibitor morphogens with piecewise-linear (clipped) kinetics f = clip(0.08u - 0.08v + 0.05, 0, 0.18) - 0.03u, g = clip(0.1u - 0.15, 0, 0.5) - 0.06v; D_u = 0.007, D_v = 0.1; m: zero-flux half-wave mode number k = mπ/L; n: chemotactic iridophores with χ(u) = χ_0/(k + u)^2, χ_0 = -1e-4 (slaved to u, do not alter the Turing condition)"
+    role: "Proves that the actual PNAS 1999 Fig. 3 parameter set is a kinetically stable, diffusion-driven-unstable Turing system and that on the juvenile domain L(0) = 11 the half-wave mode m = 6 (three stripes, Fig. 1a) is selected"
+    source_citation: "Painter, Maini & Othmer (1999) PNAS 96(10):5549-5554 Eqs. (1)-(3) and Fig. 3 caption; Kondo & Asai (1995) Nature 376:765-768 (kinetics)"
+    code_locus: "1999-painter-chemotactic-stripe-splitting.py#L546-L615"
+  - law_name: "Kondo-Asai Stripe-Doubling Law on a Uniformly Growing Surface (m = 3s wavelength-preserving mode; 3 → 6 → 12)"
+    formula: "g(t) = s^2 g_0 ⟹ Δ_g = Δ_{g_0}/s^2 ⟹ q_m(s) = m^2/s^2;  m^2 = 9 s^2 ⟺ m = 3 s;  with band [3, 28] (= [k_-^2, k_+^2]/k_c^2 × 9): mode 3 at s = 1, mode 6 at s = 2, mode 12 at s = 4"
+    lean_decl: "MathOfBiology.Loop_005.in_chemotactic_band"
+    lean_theorem: "MathOfBiology.Loop_005.kondo_asai_stripe_doubling_mode_selection"
+    lean_locus: "morphoeval/lean/loops/Loop_005_chemotactic_stripe_splitting.lean#L178-L197"
+    lean_code: |
+      theorem kondo_asai_stripe_doubling_mode_selection (m s : Nat) :
+          (m * m = 9 * (s * s) ↔ m = 3 * s) ∧
+          in_chemotactic_band 3 28 3 1 = true ∧ in_chemotactic_band 3 28 6 1 = false ∧
+          in_chemotactic_band 3 28 3 2 = false ∧ in_chemotactic_band 3 28 6 2 = true ∧
+          in_chemotactic_band 3 28 6 4 = false ∧ in_chemotactic_band 3 28 12 4 = true := by
+        refine ⟨?_, by decide, by decide, by decide, by decide, by decide, by decide⟩
+        have h : 9 * (s * s) = (3 * s) * (3 * s) := by
+          rw [Nat.mul_mul_mul_comm]
+        rw [h]
+        exact Nat.mul_self_inj
+    variables: "s = L(t)/L_0 = e^{rt}: uniform isotropic growth scale of the flank surface (metric g = s^2 g_0, Laplace-Beltrami Δ_g = Δ_{g_0}/s^2); m: number of meridional stripes; morphogen dilution 2r (Crampin-Gaffney-Maini), no cell dilution (PNAS 1999 proliferation assumption); K: Gaussian curvature of the surface of revolution ρ(X)"
+    role: "Proves the wavelength-conserving mode on a uniformly growing surface is exactly m = 3s, i.e. Kondo & Asai's observation that P. semicirculatus stripe number doubles with body length (3 → 6 → 12), and that the PNAS 1999 unstable band selects modes 3, 6, 12 at s = 1, 2, 4. The script realises this on flat (line, cylinder K = 0: 3 → 6 → 12 reproduced, doubling scale ratio 2.03) and curved (spindle K λ_c^2 = 0.69: 3 → 6 → 8, sequential insertion) growing flanks"
+    source_citation: "Kondo & Asai (1995) Nature 376:765-768; Painter, Maini & Othmer (1999) PNAS 96(10):5549-5554 Figs. 1 & 3; Crampin, Gaffney & Maini (1999) Bull. Math. Biol. 61:1093 (growing-domain dilution)"
+    code_locus: "1999-painter-chemotactic-stripe-splitting.py#L616-L879"
+  - law_name: "Slime-Trail Orientation Tensor: Anisotropic Mobility Lowers the Keller-Segel Chemotactic Threshold (χ_c(m) < χ_c)"
+    formula: "M = I + a Q, m = 1 + a S/2 ≥ 1 along the trail director;  χ_eff_c(m) = (√(r D_c) + √(γ m D_n))^2 / m;  m = j^2 ⟹ χ_eff_c = (1 + 2j)^2 / j^2 < 9 ∀ j ≥ 2 (= 9 at j = 1)"
+    lean_decl: "MathOfBiology.Loop_005.ksp_det"
+    lean_theorem: "MathOfBiology.Loop_005.slime_trail_anisotropic_mobility_lowers_chemotactic_threshold"
+    lean_locus: "morphoeval/lean/loops/Loop_005_chemotactic_stripe_splitting.lean#L206-L224"
+    lean_code: |
+      theorem slime_trail_anisotropic_mobility_lowers_chemotactic_threshold (j : Nat) (hj : 2 ≤ j) :
+          (1 + 2 * j) * (1 + 2 * j) < 9 * (j * j) ∧ (1 + 2 * 1) * (1 + 2 * 1) = 9 * (1 * 1) := by
+        refine ⟨?_, by decide⟩
+        have h1 : 2 * j ≤ j * j := Nat.mul_le_mul_right j hj
+        have h2 : (1 + 2 * j) * (1 + 2 * j) = 1 + 4 * j + 4 * (j * j) := by
+          have : 2 * j * (2 * j) = 4 * (j * j) := by
+            rw [Nat.mul_assoc, Nat.mul_left_comm j 2 j, ← Nat.mul_assoc]
+          simp only [Nat.add_mul, Nat.mul_add, Nat.one_mul, Nat.mul_one, this]
+          omega
+        omega
+    variables: "Q: traceless symmetric nematic order tensor of the extracellular slime trails, dQ/dt = k_Q[(n/(1+n))(d d^T - I/2) - Q] + D_Q ΔQ with d = ∇c/|∇c|; S = 2|Q|: scalar order; a: trail-following strength; m = 1 + a S/2: mobility factor along the director applied to both D_n and χ"
+    role: "Proves that coupling the Keller-Segel cell flux to the slime-trail orientation tensor (Myxococcus gliding follows deposited trails) strictly lowers the chemotactic rippling threshold along the director, so ridges grown at χ = 6.2 persist at χ = 4.4 < χ_c = 4.5 with trails (amplitude 0.46) but decay without them (0.16); predicted χ_c(m) = 4.22 lies in the observed onset bracket (4.0, 4.4)"
+    source_citation: "Balagam & Igoshin (2015) PLoS Comput. Biol. 11:e1004474 (trail-following alignment in M. xanthus); Keller & Segel (1970) J. Theor. Biol. 26:399 (threshold)"
+    code_locus: "1999-painter-chemotactic-stripe-splitting.py#L880-L1022"

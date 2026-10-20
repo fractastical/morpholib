@@ -21,5 +21,73 @@
   "slot_index": 31,
   "slug": "magnetic-drop-phyllotaxis",
   "target_script": "1992-douady-magnetic-drop-phyllotaxis.py",
-  "delta": 35.6
+  "delta": 35.6,
+  "pass3_run_id": "2026-10-19-magnetic-drop-phyllotaxis-loop-pass3",
+  "pass3_audit_id": "2026-10-19-magnetic-drop-phyllotaxis-audit-v3",
+  "audit_v3": "morphoeval/audits/2026-10-19-magnetic-drop-phyllotaxis-audit-v3.yaml",
+  "pass3_score": 90.2,
+  "pass3_dims": {
+    "model-fidelity": 92,
+    "specimen-match": 88,
+    "parameter-expressivity": 91,
+    "morphometric-validation": 89,
+    "source-traceability": 90,
+    "code-traceability": 91,
+    "repro-package": 92
+  },
+  "pass2_dims": {
+    "model-fidelity": 93,
+    "specimen-match": 88,
+    "parameter-expressivity": 90,
+    "morphometric-validation": 91,
+    "source-traceability": 94,
+    "code-traceability": 91,
+    "repro-package": 92
+  },
+  "pass3_score_delta": -1.0,
+  "pass3_completed_at": "2026-10-20T09:01:44Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_quick_gate": 100,
+  "pass3_self_test_checks": 14,
+  "pass3_measurements": 18,
+  "pass3_remediation_closed": [
+    "v2 had no open remediation items or supports:false evidence; Pass 3 targets were derived from the weakest v2 dimensions (specimen-match 88, parameter-expressivity 90) and from a line-level re-read of the v2 script",
+    "Imposed (1,1)->(1,2) bifurcation: removed the three hard-coded `G >= 0.85901889 -> 180 deg` short-circuits (v2 L337/L561/L583); emergent threshold measured by bisection on the unclamped map (measure_emergent_pitchfork_threshold, L347-398: 0.8595 vs analytic 0.859019) and the equilibrium diagram's 180-deg branch now uses dynamical_pitchfork_discriminant_sum (L446-454)",
+    "Clipped visual geometry g_vis = clip(G, 0.012, 0.12) that mislabelled Delaunay pairs ((3,5) at G=0.30, (5,8) at G=0.5) and collapsed Row B: true radii r_k = exp(kG) triangulated (simulate_fixed_G_dish L665-689); Row B and GIF drawn in the dish geometry rho = 1 + ln(r/R0) = 1 + kG (render_figures L1338-1367)",
+    "Parastichy definition: Douady & Couder nearest-neighbour contact pair on true positions as primary extractor (extract_contact_parastichy_pair L539-577; 9/10 benchmark rows, Lucas (3,4)@0.11 / (4,7)@0.06), Delaunay census demoted to secondary",
+    "Specimen-match (v2 weakest, 88): reciprocal-lattice inversion of the sub-bin (5,8) log-polar FFT peaks -> alpha_emp = 138.03 deg, G_emp = 0.0308 (log_polar_spiral_spectrum L902-945, invert_reciprocal_lattice_peaks L948-979, segment_conifer_cone_specimen L1037-1161), validated on a synthetic image of the simulated lattice (validate_lattice_inversion_on_simulation L1011-1034: 0.014 deg / 0.06 % error); Panels C2 and D4; N=123 relabelled as DoG detections (~48 lattice-consistent scales) and the rank-sequence failure disclosed",
+    "Parameter-expressivity (v2 second weakest, 90): memory-depth sweep N_mem in {1,2,3,5,8,13,21,45} (run_memory_depth_sweep L816-854, Panel D2, --n-mem CLI) and comparison with the six tabulated PRL 1992 dish regimes (compare_ferrofluid_experimental_regimes L857-891, Panel D3: RMSE 0.141 deg, 6/6 pairs)",
+    "Measurement hygiene: pitchfork_threshold_G_c1_* renamed static_fold_threshold_G_fold_* and dynamical_pitchfork_G_c1_exponential_full_chain added; lucas_branch_divergence_angle_G006 -> _G010 against the table row; Voronoi CV reference 0.14 -> 0 (theoretical) with KS stats in method; hard-coded '137.32 deg' string removed (measure_morphoeval L1581-1738)",
+    "Lean 4: Theorem 4 douady_couder_dynamical_threshold_exceeds_static_fold (D(4,7) = -12646 < 0 < C(4,7), D(5,9) = 23872) and Theorem 5 douady_couder_fibonacci_convergent_window ((5,8) window 135-138.46 deg); registered in morphoeval/math_kg_loops/douady-magnetic-drop-phyllotaxis.yaml with G_fold/G_c1 constants renamed",
+    "Remaining v2 'remediation_Available' items (auxin-transport coupling -> Slot 033; 3D photogrammetric cone datasets) are out of reach for this slot and carried in does_not_claim"
+  ],
+  "pass3_remediation_open": [
+    "1992-douady-magnetic-drop-phyllotaxis.py:446-476 — spiral branches of the equilibrium diagram still labelled by the static Hessian sign while the 180-deg branch uses S_dyn; implement the iterated-map multiplier for regular spirals + Lean witness for (1,2)->(2,3)",
+    "1992-douady-magnetic-drop-phyllotaxis.py:610-620, 347-398 — N_mem = 45 ad-hoc truncation (use dish exit R_max/R0 = 8) and +4.5e-4 finite-iteration bias of the emergent threshold (extrapolate in 1/n_iter)",
+    "datasets/magnetic_drop_phyllotaxis/magnetic_drop_phyllotaxis_reference.json:65-86, 109-125 — re-pin with static_fold_*/dynamical_pitchfork_* keys, G=0.35 pair (1,2)/transitional, detections vs FFT scale count, digitised Fig. 3 dish divergences with uncertainties; add van Iterson (1907) to paper_citations.bib and re-pin (EXPECTED_SHA256 L123-134)",
+    "1992-douady-magnetic-drop-phyllotaxis.py:1369-1380, 1491-1510 — overlay the inverted (alpha_emp, G_emp, chirality -1) lattice and a photo-coordinate rendering of the simulated (5,8) lattice on the photograph; lattice-guided scale segmentation so detections = scales",
+    "1992-douady-magnetic-drop-phyllotaxis.py:797-814 — gamma universality swept only at G=0.06; sweep across the cascade and the linear dish law up to its G_c1 = 3.63",
+    "1992-douady-magnetic-drop-phyllotaxis.py:1113-1130 — cone radial law is linear (R^2 0.977 vs 0.899); add the Archimedean (r, theta) variant of the reciprocal-lattice inversion and report G under both laws"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_031.douady_couder_dynamical_threshold_exceeds_static_fold",
+    "MathOfBiology.Loop_031.douady_couder_fibonacci_convergent_window"
+  ],
+  "pass3_lean_theorems_verified": 5,
+  "pass3_lean_sorry_count": 0,
+  "pass3_artifacts": [
+    "1992-douady-magnetic-drop-phyllotaxis.py (modified)",
+    "morphoeval/lean/loops/Loop_031_magnetic_drop_phyllotaxis.lean (modified, +2 theorems)",
+    "morphoeval/math_kg_loops/douady-magnetic-drop-phyllotaxis.yaml (modified)",
+    "datasets/magnetic_drop_phyllotaxis/README.md (modified, Pass 3 errata + specimen inversion table)",
+    "docs/media/magnetic_drop_phyllotaxis_comparison.png (regenerated, 16 panels)",
+    "docs/media/magnetic_drop_phyllotaxis_growth.gif (regenerated, dish geometry)",
+    "docs/media/magnetic_drop_phyllotaxis_telemetry_pass3.png (new)",
+    "morphoeval/audits/2026-10-19-magnetic-drop-phyllotaxis-audit-v3.yaml (new)",
+    "morphoeval/audits/2026-10-19-magnetic-drop-phyllotaxis-audit-v3.measurements.yaml (new)",
+    "morphoeval/kg/2026-10-19-magnetic-drop-phyllotaxis-audit-v3/ (new, 10 signed nanopubs)",
+    "morphoeval/runs/2026-10-19-magnetic-drop-phyllotaxis-loop-pass3.{yaml,csv,md,trig,events.jsonl,ledger.jsonl} (new)",
+    "morphoeval/cloud/dispatches/slot-031.json (modified)"
+  ]
 }

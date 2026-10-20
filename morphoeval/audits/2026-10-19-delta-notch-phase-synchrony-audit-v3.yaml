@@ -1,0 +1,354 @@
+# MorphoEval audit — Riedel-Kruse et al. (2007) Science / Morelli et al. (2009) HFSP J. Delta-Notch Phase Synchrony, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `2006-riedel-delta-notch-phase-synchrony.py` (1,428 lines, 9 self-test checks) after the
+# remediation of both open v2 findings in the instrumented loop
+# `morphoeval/runs/2026-10-19-delta-notch-phase-synchrony-loop-pass3`, superseding
+# `2026-10-19-delta-notch-phase-synchrony-audit-v2` (91.3). Same protocol as Passes 1-2; the primary assessor
+# re-read every cited line of the CURRENT file (commit d58a084, working tree of this loop) before scoring.
+#
+# What Pass 3 changed (the two v2 remediation items plus the defects their implementation exposed):
+#   1. v2 item "couple the lattice to a spatially advecting FGF8/Wnt frequency gradient -> kinematic phase
+#      waves alongside DAPT washout": the uniform periodic 8x8 lattice is replaced by an anteroposterior x
+#      lateral PSM lattice (24 x 12 cells, 4 cells per somite length, L = 6 S) whose cells (phase histories and
+#      intrinsic frequencies) are advected anteriorly one column per 1/4 segmentation period while a
+#      tailbud-anchored exponential FGF8/Wnt profile omega(x) = omega_0 exp(-xi/lambda_F) (f_A = 0.5) is held in
+#      lattice coordinates (`fgf_wnt_frequency_profile` L284-319, advection L523-531). Kinematic waves emerge
+#      (N_w = 1.58 vs the Law-4 analytic 1.61; anterior wavelength 2.21 S vs 2.00 S), slow toward the front
+#      (Panel G zoom), vanish for a uniform profile (N_w = -0.03) and fade/recover across the DAPT pulse
+#      (Panel G kymograph). The coupling delay had to be scaled with the local period
+#      (tau_c(x) omega(x) = tau_c omega_0, L413) because the fixed 20.5-min delay becomes repulsive
+#      (cos(omega tau_c) < 0) in the slowed anterior PSM — a declared assumption, shown in Panel B.
+#   2. v2 item "explicit Mib1 DeltaC ubiquitination kinetics in kappa(t)": kappa(t) = kappa_max u(t) g(t) with
+#      du/dt = k_ub M (1 - u) - k_endo u (Itoh et al. 2003; `mib1_ubiquitination_steady_state` L322-331,
+#      ODE L495-499) and a gamma-secretase gate g with first-order DAPT clearance after washout (L486-494).
+#      mib1-null (M = 0) desynchronises like early DAPT (late R 0.28, emergent ALD 5.8), the Mib1 dose sweep is
+#      monotone (Panel I inset), and Mib1 restoration at somite 9 rescues with the ubiquitination lag tau_u = 10 min.
+#   3. Defects exposed and fixed: (a) Pass 2's ALD/PRP were hard-coded as s_in + 5.5 / s_out + 5.5 (v2 L326-335),
+#      so its "5-regime validation r = 0.9999" compared the reference JSON's own prediction with the observations
+#      — ALD and PRP are now EMERGENT from the first R_crit crossings of the front lateral order parameter
+#      (L544-554, L563-581; Law 6) and the 5-regime table is re-run over 5 seeds (L661-715); (b) Pass 2's
+#      coupling torque contained an uncited instantaneous mean-field term 1.6 kappa_eff sin(psi - theta) and a
+#      0.35/0.65 local/mean-field blend (v2 L305-307) — removed, the lattice is now the pure nearest-neighbour
+#      delayed Kuramoto model (L501-515); (c) the reference JSON's canonical Omega / T_sync / kappa_eff
+#      (0.2896 / 21.70 / 0.0566) were not roots of the collective-frequency equation — corrected to
+#      0.283333 / 22.176 / 0.062255 and asserted by the self-test (L1289-1294); (d) the somite stage is now
+#      clock-counted at Omega(kappa(t)), so Herrgen et al.'s (2010) DAPT period lengthening (22.18 -> 25.00 min)
+#      is emergent in the somite count (L517-522); (e) the vendored SEM specimen is a CHICK embryo (Wikimedia
+#      "Aves Neural tube and somites in chick embryo"), not Danio rerio — species label corrected in the JSON and
+#      README (file retained, SHA-256-pinned).
+#   4. Three new Lean 4 theorems (0 sorrys, `lean` exit 0) in `Loop_023_delta_notch_phase_synchrony.lean`
+#      L119-226, registered as laws 4-6 in `math_kg_loops/riedel-delta-notch-phase-synchrony.yaml`;
+#      3 new references (Itoh 2003, Dubrulle 2001, Soroldoni 2014) with DOIs in the docstring, bib and JSON.
+#
+# Scores below: overall 86.5 (down from 91.3). The decrease is deliberate: the remediation delivered both
+# requested mechanisms in reduced, declared form and replaced a hard-coded validation with an emergent one, but
+# (a) the specimen used for specimen-match is a chick embryo mislabelled as zebrafish in Passes 1-2 and is still
+# compared only through a fitted sinusoid, (b) the kinematic-wave and Mib1 references are model-internal
+# (analytic law, random-phase floor) rather than digitised data, and (c) three rate constants (D_phi, sigma_omega,
+# tau_wash) are calibrated to the very ALD/PRP data the model is validated against. Remaining findings are
+# listed under `remediation` with line pins.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated
+# probabilities). Line numbers refer to the files at commit d58a084 (working tree of this loop).
+
+audit:
+  id: 2026-10-19-delta-notch-phase-synchrony-audit-v3
+  supersedes_audit_id: 2026-10-19-delta-notch-phase-synchrony-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (primary, Pass 3 builder+assessor) + MorphoEval Dual-Rubric Assessor"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: claude-sonnet-5-5-high
+    label: "Claude Sonnet 5.5 High (independent rubric baseline)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/1
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: d58a084
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) remediated evaluation of `2006-riedel-delta-notch-phase-synchrony.py`
+      superseding `2026-10-19-delta-notch-phase-synchrony-audit-v2` in closed loop
+      `2026-10-19-delta-notch-phase-synchrony-loop-pass3`. Environment versions are the ones
+      actually installed in ./venv (the v2 block listed numpy 2.4.2 / scipy 1.17.0 / matplotlib
+      3.10.8 / Pillow 12.1.1, which are not installed). `--self-test` passes 9/9 in ~4 s; the
+      default render takes ~7 s (9-panel PNG 2436x2044 + 22-frame GIF 940x660).
+
+references:
+  riedelkruse2007:
+    title: "Synchrony dynamics during initiation, failure, and rescue of the segmentation clock"
+    authors: "Riedel-Kruse IH, Muller C, Oates AC"
+    venue: "Science 317(5846):1911-1915 (2007)"
+    doi: 10.1126/science.1142538
+  morelli2009:
+    title: "Delayed coupling theory of vertebrate segmentation"
+    authors: "Morelli LG, Ares S, Herrgen L, Schroter C, Julicher F, Oates AC"
+    venue: "HFSP Journal 3(1):55-66 (2009)"
+    doi: 10.2976/1.3027088
+  herrgen2010:
+    title: "Intercellular coupling regulates the period of the segmentation clock"
+    authors: "Herrgen L, Ares S, Morelli LG, Schroter C, Julicher F, Oates AC"
+    venue: "Current Biology 20(14):1244-1253 (2010)"
+    doi: 10.1016/j.cub.2010.06.034
+  horikawa2006:
+    title: "Noise-resistant and synchronized oscillation of the segmentation clock"
+    authors: "Horikawa K, Ishimatsu K, Yoshimoto E, Kondo S, Takeda H"
+    venue: "Nature 441(7094):719-723 (2006)"
+    doi: 10.1038/nature04861
+  itoh2003:
+    title: "Mind bomb is a ubiquitin ligase that is essential for efficient activation of Notch signaling by Delta"
+    authors: "Itoh M, Kim CH, Palardy G, Oda T, Jiang YJ, Maust D, Yeo SY, Lorick K, Wright GJ, Ariza-McNaughton L, Weissman AM, Lewis J, Chandrasekharappa SC, Chitnis AB"
+    venue: "Developmental Cell 4(1):67-82 (2003)"
+    doi: 10.1016/S1534-5807(02)00409-4
+  dubrulle2001:
+    title: "FGF signaling controls somite boundary position and regulates segmentation clock control of spatiotemporal Hox gene activation"
+    authors: "Dubrulle J, McGrew MJ, Pourquie O"
+    venue: "Cell 106(2):219-232 (2001)"
+    doi: 10.1016/S0092-8674(01)00437-8
+  soroldoni2014:
+    title: "A Doppler effect in embryonic pattern formation"
+    authors: "Soroldoni D, Jorg DJ, Morelli LG, Richmond DL, Schindelin J, Julicher F, Oates AC"
+    venue: "Science 345(6193):222-225 (2014)"
+    doi: 10.1126/science.1253089
+
+simulations:
+  - id: riedel-delta-notch-phase-synchrony
+    name: "Riedel-Kruse et al. (2007) & Morelli et al. (2009) zebrafish Delta-Notch delayed Kuramoto phase synchrony on an advected FGF8/Wnt-graded PSM lattice: kinematic waves, Mib1-gated coupling, emergent DAPT ALD/PRP"
+    organism: "Danio rerio (zebrafish presomitic mesoderm & paraxial somites); vendored SEM specimen is a chick (Gallus gallus) embryo used as a vertebrate somite-metamere stand-in"
+    script: 2006-riedel-delta-notch-phase-synchrony.py
+    output: docs/media/delta_notch_phase_synchrony_comparison.png
+    extra_outputs:
+      - docs/media/delta_notch_phase_synchrony_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-delta-notch-phase-synchrony-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Riedel-Kruse et al. (2007) Science 317:1911-1915 & Morelli et al. (2009) HFSP J. 3:55-66 delayed Kuramoto phase-oscillator model dtheta_i/dt = omega_i + (kappa/z)*sum_j sin(theta_j(t - tau_c) - theta_i(t)) + xi_i(t), collective frequency shift Omega = omega_0 - kappa*sin(Omega*tau_c), linear stability stiffness kappa_eff = kappa*cos(Omega*tau_c) > 0"
+        - "Riedel-Kruse et al. (2007): DAPT pulse-chase Anterior Limit of Defects ALD(s_in) = s_in + ~5.5 somites (obs 5.4 +/- 0.8, 9.6 +/- 0.9, 14.4 +/- 0.9 for s_in = 0, 4, 9) and Posterior Rescue Point PRP = 14.7 +/- 1.1 after washout at s_out = 9; mib/aei/des/bea mutants desynchronise like early DAPT"
+        - "Morelli et al. (2009) frequency profile omega(x) and kinematic phase waves k = (Omega - omega(x))/v travelling posterior -> anterior; Soroldoni et al. (2014) order 1-2 waves across the zebrafish PSM, waves slowing anteriorly; Herrgen et al. (2010) DAPT lengthens the segmentation period"
+        - "Itoh et al. (2003): Mind bomb E3 ubiquitin ligase ubiquitinates Delta, required for Delta endocytosis and trans-activation of Notch; mib^ta52b abolishes Delta-Notch signalling"
+      reconstructed_in_script:
+        - "Transcendental collective frequency solver and 2D (tau_c, kappa) linear stability tongue (T_sync = 22.18 min, kappa_eff = 0.0623 min^-1 at tau_c = 20.5 min vs -0.0353 min^-1 at tau_c = 11.0 min)"
+        - "Advected 24 x 12 AP x lateral nearest-neighbour delayed Kuramoto PSM lattice (open AP, periodic lateral, per-column period-scaled delay) under a tailbud-anchored exponential FGF8/Wnt frequency profile (f_A = 0.5): N_w = 1.58 kinematic waves (analytic 1.61), anterior wavelength 2.21 S (analytic 2.00 S), N_w monotone in f_A (2.52 -> -0.03 for f_A 0.3 -> 1.0)"
+        - "Mib1-gated coupling kappa(t) = kappa_max u(t) g(t) with ubiquitination ODE (k_ub = 0.08, k_endo = 0.02 min^-1, u_ss^WT = 0.8) and gamma-secretase gate with 8-min DAPT clearance; mib1-null late R = 0.28 (ALD 5.8), Mib1 restoration at s = 9 rescues to R = 0.77 (PRP 15.3); dose sweep monotone"
+        - "Emergent ALD/PRP from R_crit = 0.5 crossings of the half-period-smoothed front lateral order parameter + Delta_n_det = 2.5: 5-seed means ALD = 5.41 / 9.21 / 14.24 (obs 5.4 / 9.6 / 14.4), PRP = 14.86 (obs 14.7), RMSE 0.22 somites, Pearson r = 0.9998 (0.9986 over the 4 perturbed regimes); somite stage clock-counted at Omega(kappa(t)) so continuous DAPT lengthens the period from 22.18 to 25.00 min"
+        - "Bilateral dorsal somite row DoG peak segmentation on the vendored SEM (48.47 px mean spacing, symmetry ratio 0.9606, fitted-sinusoid r = 0.563)"
+      transfer_boundary:
+        - "The frequency profile is a single exponential with f_A = 0.5 and L = 6 S chosen to land in the 1-2-wave range reported for zebrafish; it is not digitised from Morelli (2009) Fig. 3 or Soroldoni (2014) kymographs, and the N_w measurement's reference value is the model's own analytic law"
+        - "tau_c(x) omega(x) = const (coupling delay scales with the local period) is this script's assumption; the Eulerian-delay alternative was not simulated"
+        - "k_ub, k_endo, tau_wash, DAPT dose/IC50 and Hill n are the script's reduced rate constants; D_phi = 0.003 rad^2/min, sigma_omega = 0.014 rad/min and tau_wash = 8 min were calibrated so the emergent ALD/PRP lags match the Riedel-Kruse (2007) data (as the paper fitted its desynchronisation rate)"
+        - "The SEM specimen is a chick embryo (Wikimedia 'Aves Neural tube and somites in chick embryo'), used as a vertebrate somite-metamere stand-in; no zebrafish her1/deltaC in-situ wave pattern is vendored"
+      does_not_claim:
+        - "PSM shortening and the Soroldoni (2014) Doppler contribution to the segmentation period, cell division/ingression in the tailbud, 3D cell sorting, explicit Mib1 E3-ligase stoichiometry or measured Delta endocytosis rates, or a boundary profile derived from the phase pattern (chi(s) is a coherence-gated synthetic rendering)"
+    source_refs:
+      - riedelkruse2007
+      - morelli2009
+      - herrgen2010
+      - horikawa2006
+      - itoh2003
+      - dubrulle2001
+      - soroldoni2014
+    summary: >-
+      Pass 3 remediated evaluation of `2006-riedel-delta-notch-phase-synchrony.py` (86.5/100, down from
+      91.3 in Pass 2). Both v2 remediation items are closed in reduced, declared form: the lattice is now an
+      advected 24 x 12 AP x lateral delayed Kuramoto PSM under a tailbud-anchored FGF8/Wnt frequency profile
+      with per-column period-scaled delays, producing posterior -> anterior kinematic phase waves (N_w = 1.58
+      vs the Law-4 analytic 1.61, anterior wavelength 2.21 S vs 2.00 S, monotone in f_A, absent for a uniform
+      profile) that fade and recover across the DAPT pulse; and the Delta-Notch coupling is a dynamical variable
+      kappa(t) = kappa_max u(t) g(t) with Mib1 ubiquitination kinetics and DAPT clearance (mib1-null
+      desynchronises like early DAPT, dose sweep monotone, Mib1 restoration rescues with tau_u = 10 min). The
+      remediation also exposed and removed Pass 2's hard-coded ALD/PRP (its 5-regime "validation" compared the
+      reference JSON with itself) and an uncited instantaneous mean-field torque; ALD/PRP are now emergent
+      (5-seed RMSE 0.22 somites, r = 0.9998) and the DAPT period lengthening is emergent in the somite count.
+      Six Lean 4 theorems (0 sorrys) back laws 1-6. The score falls because the specimen is a chick embryo
+      mislabelled as zebrafish in Passes 1-2 and is still compared only via a fitted sinusoid, two new measurement
+      references are model-internal, and three rate constants are calibrated to the validation data.
+    scores:
+      model-fidelity:
+        value: 91
+        rationale: >-
+          The lattice equation is now exactly the source model: nearest-neighbour delayed coupling
+          (kappa/z_i) sum_j sin(theta_j(t - tau_c,j) - theta_i) with open AP / periodic lateral boundaries
+          (L501-515), the ad hoc 1.6 kappa_eff sin(psi - theta) term and the 0.35/0.65 blend of Pass 2 are
+          gone, the collective frequency / stiffness solver is unchanged (L213-266) and the kinematic
+          steady state used for initialisation is the Law-4 solution k = (Omega/v)(1 - c) (L432-437); the
+          emergent segmentation period of the lattice (22.18 min WT, 25.00 min DAPT) matches the solver.
+          Deductions: the frequency profile is a single exponential with f_A = 0.5 (L284-319), not Morelli's
+          profile (-3); the per-column delay scaling tau_c(x) omega(x) = const (L413) is a modelling choice
+          introduced to keep the anterior coupling attractive, and Panel B only marks the unscaled point
+          rather than simulating it (-3); Mib1 kinetics are a two-rate linear ODE with unmeasured k_ub,
+          k_endo (L172-173, L495-499) and the DAPT gate is a Hill function with assumed dose/IC50 = 20
+          and n = 2 (L174-176) (-2); advection is a discrete one-column shift with tailbud seeding from the
+          last column plus 0.05 rad noise (L523-531), with no cell division or PSM shortening (-1).
+        evidence:
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [501, 515], note: "Pure nearest-neighbour delayed Kuramoto coupling with per-column delay gather (theta_delayed = history[row_idx, col_idx, lat_idx]); no mean-field or instantaneous term", supports: true}
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [284, 319], note: "fgf_wnt_frequency_profile: omega(xi) = omega_0 exp(-xi/lambda_F), lambda_F = L/ln(1/f_A); analytic N_w = (1/S) Int (1 - c) dx", supports: true}
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [408, 437], note: "Period-scaled per-column delays (L413) and Law-4 kinematic steady-state initialisation (L432-437); Mib1 normalisation kappa_max = kappa_WT / u_ss(1) (L420-425)", supports: true}
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [486, 531], note: "DAPT gate with first-order clearance (L486-494), Mib1 ubiquitination ODE (L495-499), somite-stage clock at Omega(kappa(t)) (L517-522), Lagrangian advection of histories and delta_omega (L523-531)", supports: true}
+          - {file: morphoeval/lean/loops/Loop_023_delta_notch_phase_synchrony.lean, lines: [119, 226], note: "Three new machine-checked theorems: kinematic phase-lag law, Mib1 gate monotonicity, emergent defect-span invariance (6 theorems total, 0 sorrys)", supports: true}
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [171, 176], note: "k_ub, k_endo, tau_wash, dose ratio and Hill n are declared reduced constants without measured sources", supports: false}
+      specimen-match:
+        value: 74
+        rationale: >-
+          Judged on the PNG and GIF: Panel G is a convincing kymograph of posterior -> anterior phase waves
+          that lose lateral coherence under DAPT and recover after washout, the Panel G zoom shows the
+          crest tilt, and the GIF ribbon shows the same waves next to the emergent defective somite window.
+          Deductions: the vendored SEM specimen (Panel E) is a CHICK embryo per its Wikimedia title, used in
+          Passes 1-2 as "zebrafish_psm_synchrony_specimen" and scored 87 for specimen match — the species
+          label is now corrected in the JSON (L48) and README (L60) but the file remains the only biological
+          image, so the model's organism is not matched by any specimen of that organism (-12); no her1/deltaC
+          in-situ or live-reporter wave pattern is vendored, so the kinematic waves (the new Pass 3 output) are
+          compared with nothing biological (-8); Panel F compares the SEM band-pass profile with a fitted
+          sinusoid (r = 0.563, L838-847), which is a periodicity fit, not a model prediction (-4); the somite
+          boundary ribbon chi(s) is a sin^2 + salt-and-pepper rendering gated by coherence (L590-604), not a
+          boundary derived from the phase field (-2).
+        evidence:
+          - {file: docs/media/delta_notch_phase_synchrony_comparison.png, lines: [0, 0], note: "Panel G kymograph: tilted phase crests tail -> front, fading during DAPT [0, 9], recovering after washout; Panel A/D emergent ALD/PRP vs observed; Panel E chick SEM with 8 + 9 segmented somites", supports: true}
+          - {file: docs/media/delta_notch_phase_synchrony_growth.gif, lines: [0, 0], note: "22 frames: R_front(s), kinematic-wave ribbon across the PSM (WT vs DAPT pulse) and emergent defective somite window [5.6, 14.0]", supports: true}
+          - {file: datasets/delta_notch_phase_synchrony/delta_notch_phase_synchrony_reference.json, lines: [48, 48], note: "Species field corrected to Gallus gallus (chick) per the Wikimedia source title; the specimen is not Danio rerio", supports: false}
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [838, 847], note: "Panel F / segment_zebrafish_psm_specimen: fitted sinusoid at the empirical spacing vs band-pass profile (r = 0.563) - periodicity fit, not a model-to-specimen comparison", supports: false}
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [590, 604], note: "chi(s) somite boundary ribbon is a coherence-gated synthetic sin^2 / salt-and-pepper rendering", supports: false}
+      parameter-expressivity:
+        value: 92
+        rationale: >-
+          Every new mechanism carries a sweep that behaves as claimed: the FGF8/Wnt steepness f_A controls
+          the number of kinematic waves monotonically (N_w 2.52 -> 2.00 -> 1.58 -> 1.20 -> 0.85 -> 0.55 ->
+          0.26 -> -0.03 for f_A 0.3 ... 1.0, each within 0.1 of the analytic law; `sweep_frequency_profile`
+          L747-761, Panel H inset, asserted monotone in the self-test L1319-1322); Mib1 activity M controls
+          u_ss and the late front coherence monotonically (R 0.28 -> 0.35 -> 0.50 -> 0.81 -> ... -> 0.93 for
+          M 0 ... 1.5, threshold crossing near M = 0.1; `sweep_mib1_dose` L764-780, Panel I inset); the DAPT
+          onset s_in shifts the emergent ALD with unit slope (Panel D); the (tau_c, kappa) stability tongue and
+          T_sync(tau_c) branches are kept (Panels B-C); CLI exposes --f-anterior, --mib1-dose, --tau-wash,
+          --no-gradient, --s-in/--s-out, --seed and a --summary JSON dump (L1393-1404). Deductions: the
+          sweeps are reported as curves, not as rendered kymographs along the sweep (-4); L, cells_per_somite,
+          n_lat, Delta_n_det and R_crit are constants with no sweep or sensitivity (L164-168) (-4).
+        evidence:
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [747, 780], note: "sweep_frequency_profile (f_A -> N_w sim vs analytic) and sweep_mib1_dose (M -> u_ss, kappa_eff, late R, emergent ALD)", supports: true}
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [1156, 1203], note: "Panels H and I render both sweeps as insets next to the profile / kinetics curves", supports: true}
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [1393, 1404], note: "CLI flags --f-anterior, --mib1-dose, --tau-wash, --no-gradient, --s-in, --s-out, --seed, --summary", supports: true}
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [164, 168], note: "L = 24/4 somite lengths, 12 lateral cells, R_crit and Delta_n_det are fixed constants with no sensitivity analysis", supports: false}
+      morphometric-validation:
+        value: 88
+        rationale: >-
+          The validation is now genuine where Pass 2's was circular: emergent ALD/PRP from the simulated
+          coherence trajectory are compared with the Riedel-Kruse (2007) observations across 5 regimes and
+          5 seeds (ALD 5.41 / 9.21 / 14.24 vs 5.4 / 9.6 / 14.4 somites, PRP 14.86 vs 14.7; RMSE 0.22 somites,
+          all within 1 observed SD; `evaluate_dapt_regimes` L661-715, `regime_validation_statistics`
+          L718-744) and 8 measurements carry references and units (L863-964). Deductions: D_phi,
+          sigma_omega and tau_wash were calibrated against these same ALD/PRP data (L161-162, L174), so
+          only the unit slope across s_in = 0/4/9 and the PRP are out-of-sample (-5); the 5-regime Pearson r
+          (0.9998) is inflated by the WT no-defect sentinel 31.0 (L735 excludes it only from the RMSE; the
+          perturbed-only r is 0.9986) (-2); the N_w measurement's reference is the model's own analytic law
+          and the mib1-null reference is the 1/sqrt(12) random-phase floor (L939, L949) - internal
+          consistency, not biology (-3); the specimen spacing reference 48.47 px is the script's own
+          previous measurement (L958) (-2).
+        evidence:
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [661, 744], note: "5-regime emergent ALD/PRP over REGIME_SEEDS with mean/sd, Pearson r and RMSE vs observed (WT sentinel excluded from RMSE)", supports: true}
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [863, 964], note: "measure_morphoeval: 8 measurements (T_sync, kappa_eff, emergent ALD, emergent PRP, 5-regime r, N_w, mib1-null R, specimen spacing) with reference_value / reference_source / unit", supports: true}
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [161, 163], note: "D_phi and sigma_omega calibrated to the ALD data (declared); tau_wash L174 chosen to land the PRP", supports: false}
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [939, 949], note: "N_w reference = sim_wt['n_waves_analytic'] and mib1-null reference = 0.29 random-phase floor: model-internal references", supports: false}
+      source-traceability:
+        value: 90
+        rationale: >-
+          Seven primary sources with DOIs in the docstring (L6-37), `paper_citations.bib` and the reference
+          JSON `metadata.sources` (L7-43 of the JSON); the specimen and scout manifest are SHA-256 pinned
+          and verified fail-closed (L146-153, L183-201); the reference JSON now carries a
+          `pass3_kinematic_wave_and_mib1_mechanisms` block (JSON L100-139) stating every reduced constant and
+          which are calibrated, and its stale canonical Omega / T_sync / kappa_eff were corrected and are
+          asserted by the self-test (L1289-1294). Deductions: the reference JSON is hashed but not pinned in
+          EXPECTED_SHA256 (L146-153, L197-200), so a silent edit of the regime table would pass (-3); the
+          specimen was mislabelled as zebrafish for two passes and its true provenance was only recovered
+          from the Wikimedia title (-4); Soroldoni (2014) and Morelli (2009) wave data are cited but not
+          vendored, so the "1-2 waves" anchor is a prose statement (-3).
+        evidence:
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [6, 37], note: "Seven primary sources with DOIs incl. Itoh 2003, Dubrulle 2001, Soroldoni 2014", supports: true}
+          - {file: datasets/delta_notch_phase_synchrony/delta_notch_phase_synchrony_reference.json, lines: [100, 139], note: "pass3_kinematic_wave_and_mib1_mechanisms block: laws, sources, rate constants, calibration statement", supports: true}
+          - {file: datasets/delta_notch_phase_synchrony/delta_notch_phase_synchrony_reference.json, lines: [86, 91], note: "Canonical Omega / T_sync / kappa_eff corrected to 0.283333 / 22.176 / 0.062255 with a note on the Pass 1-2 error", supports: true}
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [146, 153], note: "EXPECTED_SHA256 pins the specimen and scout manifest only; the reference JSON is hashed at run time but not pinned", supports: false}
+      code-traceability:
+        value: 91
+        rationale: >-
+          Laws 1-6 are stated in the docstring with their Lean theorem names (L68-118), every modelling
+          function's docstring names its law and source (L218-226, L291-298, L327-331, L387-407), the
+          loop body is annotated per mechanism (L486, L495, L501, L517, L523), and
+          `math_kg_loops/riedel-delta-notch-phase-synchrony.yaml` maps each of the 6 laws to Lean loci and
+          code loci (YAML L13-224). Deductions: the exponential profile, the delay scaling and the Mib1/DAPT
+          rate constants are traced to a declared-assumption paragraph (L55-66) rather than to any equation or
+          figure of a source (-5); the 0.05 rad tailbud seeding noise (L527), the half-period smoothing window
+          (L454) and the chi(s) rendering constants (L598-604) are uncited (-4).
+        evidence:
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [38, 118], note: "Pass 3 change log, declared reduced assumptions and Laws 1-6 with Lean theorem names", supports: true}
+          - {file: morphoeval/math_kg_loops/riedel-delta-notch-phase-synchrony.yaml, lines: [125, 224], note: "Laws 4-6 registered with lean_decl / lean_theorem / lean_locus / code_locus", supports: true}
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [55, 66], note: "Reduced assumptions (profile form, delay scaling, rate constants, calibration) declared but not traceable to source equations", supports: false}
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [527, 527], note: "Tailbud seeding noise 0.05 rad is an uncited constant", supports: false}
+      repro-package:
+        value: 93
+        rationale: >-
+          Deterministic RNG (seed = 2007; REGIME_SEEDS L658), bitwise two-run determinism asserted
+          (L1304-1306), `--self-test` passes 9/9 checks in ~4 s covering SHA-256 integrity, solver/JSON parity,
+          kinematic waves, uniform-profile null, f_A monotonicity, emergent ALD/PRP and Law-6 invariance,
+          Herrgen period lengthening, Mib1 gate, 5-regime validation (3 seeds) and the measurement hook
+          (L1278-1386); the default render completes in ~7 s and regenerates both artifacts; CLI documented in
+          argparse incl. --summary (L1389-1424); the environment block above lists the versions actually
+          installed. Deductions: there is no requirements lock for this script and the v2 environment block
+          was wrong, which this audit corrects but the repo does not pin (-4); the GIF/PNG are regenerated
+          but their SHA-256 are not asserted anywhere (-3).
+        evidence:
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [1278, 1386], note: "run_self_test: 9 checks incl. bitwise determinism, JSON parity, kinematic waves, emergent ALD/PRP, Mib1 gate, 5-regime validation", supports: true}
+          - {file: 2006-riedel-delta-notch-phase-synchrony.py, lines: [1389, 1424], note: "argparse CLI with --self-test, --skip-gif, --summary and all mechanism flags", supports: true}
+          - {file: docs/media/delta_notch_phase_synchrony_growth.gif, lines: [0, 0], note: "22-frame GIF regenerated by the default invocation", supports: true}
+    remediation:
+    - >-
+      2006-riedel-delta-notch-phase-synchrony.py:284-319 and 939 — the FGF8/Wnt profile is a single exponential
+      with f_A = 0.5 and the N_w measurement is referenced to the model's own analytic law. Vendor a digitised
+      frequency/wave profile (Morelli 2009 Fig. 3 or Soroldoni 2014 kymograph: wave number vs PSM position,
+      anterior wave speed) and reference N_w and the anterior wavelength ratio to it.
+    - >-
+      2006-riedel-delta-notch-phase-synchrony.py:413 and Panel B (L1047) — the period-scaled delay
+      tau_c(x) omega(x) = const is asserted, not tested. Add an --eulerian-delay mode (fixed tau_c, history not
+      advected) and report the anterior coherence loss it predicts, so the assumption is tested rather than declared.
+    - >-
+      datasets/delta_notch_phase_synchrony/zebrafish_psm_synchrony_specimen.jpg (JSON L48, README L60) and
+      2006-riedel-delta-notch-phase-synchrony.py:838-847 — the only specimen is a chick SEM compared through a
+      fitted sinusoid. Vendor a CC-licensed Danio rerio her1/deltaC in-situ or Her1-YFP live image with visible
+      PSM stripes and compare the simulated kymograph wavelength and stripe count against it.
+    - >-
+      2006-riedel-delta-notch-phase-synchrony.py:161-162, 174 and 661-744 — D_phi, sigma_omega and tau_wash are
+      calibrated to the ALD/PRP data the model is validated against. Hold out the PRP and the s_in = 4, 9
+      regimes from calibration explicitly (fit only on s_in = 0), report in-sample vs out-of-sample errors, and
+      add seed-to-seed sd and n_lat / R_crit / Delta_n_det sensitivity to the validation table.
+    - >-
+      2006-riedel-delta-notch-phase-synchrony.py:172-176 — Mib1 (k_ub, k_endo) and DAPT (dose/IC50, Hill n,
+      tau_wash) rate constants are unmeasured. Anchor k_endo to a measured Delta endocytosis/turnover half-life
+      and the DAPT gate to a published DAPT IC50 / titration curve, or relabel the mechanism as phenomenological
+      in the measurement names.
+    - >-
+      2006-riedel-delta-notch-phase-synchrony.py:590-604 and 1254-1255 — the somite boundary ribbon chi(s) is a
+      synthetic sin^2 / salt-and-pepper rendering gated by coherence. Derive boundaries from the phase field at
+      the front (e.g. the posterior edge of the cells whose phase crosses 0 at the determination stage) so the
+      defective-window morphology is emergent like the ALD/PRP.
+    - >-
+      2006-riedel-delta-notch-phase-synchrony.py:146-153, 197-200 — the reference JSON (which holds the observed
+      regime table) is hashed but not pinned in EXPECTED_SHA256; pin it and update the digest whenever the table
+      changes, with the change recorded in the README.
+    - >-
+      2006-riedel-delta-notch-phase-synchrony.py:523-531 — advection is a discrete one-column shift with a fixed
+      PSM length of 6 S and tailbud seeding by copying the last column; model PSM shortening (Soroldoni 2014) so
+      the Doppler contribution to the segmentation period can be computed and compared with the reported period shift.

@@ -1,11 +1,14 @@
 {
   "metadata": {
     "dataset_id": "painter-1999-chemotactic-stripe-splitting-v1",
-    "title": "Painter, Maini & Othmer (1999) Keller-Segel Chemotactic Pattern Formation, Equal-Diffusivity Instability & Domain-Growth Stripe-Splitting Reference Dataset",
+    "title": "Generic Keller-Segel chemotaxis-logistic reference dataset (Keller & Segel 1970; Painter & Hillen 2011) with Crampin-Gaffney-Maini growing-domain mode doubling and Ermentrout stripe-vs-spot selection, used for the Myxococcus xanthus rippling comparison in Slot 005",
+    "correction_note": "Pass 3 (2026-10-19): this Keller-Segel system is NOT the model of DOI 10.1073/pnas.96.10.5549. That paper is Painter, Maini & Othmer (1999) 'Stripe formation in juvenile Pomacanthus explained by a generalized Turing mechanism with chemotaxis' (PMID 10318921); its actual model is encoded in pomacanthus_stripe_doubling_reference.json. Passes 1-2 attributed the sections below to PNAS 1999 Figs. 1-4 under a non-existent title; attributions corrected here.",
     "sources": [
       {
         "id": "painter1999",
-        "citation": "Painter KJ, Maini PK, Othmer HG (1999). Stripe and spotilihood in chemotactic pattern formation. Proceedings of the National Academy of Sciences USA 96(10):5549-5554.",
+        "citation": "Painter KJ, Maini PK, Othmer HG (1999). Stripe formation in juvenile Pomacanthus explained by a generalized Turing mechanism with chemotaxis. Proceedings of the National Academy of Sciences USA 96(10):5549-5554.",
+        "pmid": "10318921",
+        "role": "seed paper (context and chemotaxis sensitivity form only; the Keller-Segel system below is generic, not the PNAS 1999 model)",
         "doi": "10.1073/pnas.96.10.5549"
       },
       {
@@ -44,7 +47,7 @@
     }
   },
   "keller_segel_painter_1999_system": {
-    "section": "Painter, Maini & Othmer (1999) PNAS 96(10):5549-5554 Eqs. (1)-(6) & Figs. 1-4",
+    "section": "Generic Keller-Segel chemotaxis-logistic system: Keller & Segel (1970) J. Theor. Biol. 26:399 linear instability; Painter & Hillen (2011) Physica D 240:363 model form (NOT PNAS 1999 Eqs. 1-3)",
     "governing_pde": {
       "n_eq": "dn/dt = D_n * Lap(n) - div(n * chi(c) * grad(c)) + r * n * (1 - n / n_0)",
       "c_eq": "dc/dt = D_c * Lap(c) + alpha * n / (1 + beta * n) - gamma * c",
@@ -83,7 +86,7 @@
     }
   },
   "domain_growth_stripe_splitting_regimes": {
-    "section": "Painter, Maini & Othmer (1999) PNAS 96(10):5549-5554 Figs. 1-3 (1D & 2D Exponential/Linear Domain Growth & Mode Doubling)",
+    "section": "Growing-domain mode doubling N = L / lambda_c: Crampin, Gaffney & Maini (1999) Bull. Math. Biol. 61:1093 applied to the Keller-Segel band (analogue of the Kondo-Asai / PNAS 1999 stripe doubling)",
     "growth_law": "L(t) = L_0 * exp(rho_g * t) or discrete domain scale stages L / lambda_c in {1, 2, 4, 8}",
     "regimes": [
       {
@@ -133,7 +136,7 @@
       }
     ],
     "stripe_vs_spot_selection_2d": {
-      "section": "Painter, Maini & Othmer (1999) PNAS 96(10):5549-5554 Section 'Stripes Versus Spots in Two Dimensions' & Fig. 4",
+      "section": "2D stripe-vs-spot selection: Ermentrout (1991) Proc. R. Soc. A 434:413 (quadratic terms -> spots, cubic-symmetric -> stripes; cited as PNAS 1999 refs. 26-28). NOTE: the stripe regime of the script imposes a 6.2/3.8 x/y chemotactic anisotropy (open Pass 4 item)",
       "stripe_regime": {
         "description": "Symmetric cubic saturation (large beta or balanced logistic-chemotactic feedback around n = n_0) suppresses quadratic resonant triad interactions, stabilizing 2D labyrinthine chemotactic stripes.",
         "anisotropy_or_euler_target": "connected_labyrinthine_ridges"

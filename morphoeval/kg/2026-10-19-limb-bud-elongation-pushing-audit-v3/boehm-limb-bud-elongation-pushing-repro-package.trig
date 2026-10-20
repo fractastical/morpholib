@@ -1,0 +1,96 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-boehm-limb-bud-elongation-pushing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-boehm-limb-bud-elongation-pushing-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-boehm-limb-bud-elongation-pushing-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Boehm et al. (2010) & Gros et al. (2010) vertebrate limb bud oriented cell division & Wnt5a/FGF8 pushing vs proliferation-gradient hypothesis — Reproducibility package: 94/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`self_test()` (L2018-2133) runs 14 checks: SHA-256 integrity, Laws 1-3, 2D hierarchy, Re sweep, specimen segmentation, hull/segmentation consistency, mesh validity and expected counts, Stokes oracles < 1e-9, FEM protocol (volume balance < 2 %, convergence < 0.1 pp, Model I in band, regime ordering, calibration residuals, r > 0.98), influx closure (|V1/V0 - 1.659| < 0.01, IoU ordering), FEM bitwise determinism with the cache bypassed, and 20-measurement determinism; passes in 20 s, full render 24 s; Lean file verified with `lean` (exit 0). Not higher because determinism is asserted within one machine/BLAS and the PNG byte size varied between two renders (1019649 vs 1024457 B), so output files are not byte-pinned." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-boehm-limb-bud-elongation-pushing-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-boehm-limb-bud-elongation-pushing-repro-package-2> ;
+        pk:hasScore "0.94"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-boehm-limb-bud-elongation-pushing-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "2015-boehm-limb-bud-elongation-pushing.py L2018–L2133" ;
+        dct:description "14-check self_test() including FEM oracle, protocol, influx closure and two determinism checks" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2015-boehm-limb-bud-elongation-pushing.py#L2018-L2133> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-boehm-limb-bud-elongation-pushing-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "2015-boehm-limb-bud-elongation-pushing.py L986–L988" ;
+        dct:description "_FEM_CACHE memoises FEM runs so the full pipeline (self-test + render) stays within ~25 s" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/d58a084/2015-boehm-limb-bud-elongation-pushing.py#L986-L988> .
+    <https://w3id.org/probknow/resource/model/gemini-4-argon> a pk:Model ;
+        rdfs:label "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 017 Pass 2 Assessor)" ;
+        dct:identifier "gemini-4-argon" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://deepmind.google> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/17> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/gemini-4-argon> ;
+        prov:wasDerivedFrom <https://doi.org/10.1006/jtbi.1998.0876>,
+            <https://doi.org/10.1007/978-3-663-14169-3_2>,
+            <https://doi.org/10.1007/s11538-008-9334-y>,
+            <https://doi.org/10.1016/j.cub.2010.09.063>,
+            <https://doi.org/10.1109/34.273735>,
+            <https://doi.org/10.1242/dev.046987>,
+            <https://doi.org/10.1371/journal.pbio.1000420>,
+            <https://doi.org/10.1371/journal.pbio.1000421>,
+            <https://www.osti.gov/biblio/14115> .
+    <https://doi.org/10.1006/jtbi.1998.0876> dct:date "1999"^^xsd:gYear ;
+        dct:title "A mathematical model for outgrowth and spatial patterning of the vertebrate limb bud" .
+    <https://doi.org/10.1007/978-3-663-14169-3_2> dct:date "1984"^^xsd:gYear ;
+        dct:title "On the stabilization of finite element approximations of the Stokes equations" .
+    <https://doi.org/10.1007/s11538-008-9334-y> dct:date "2008"^^xsd:gYear ;
+        dct:title "Growth based morphogenesis of vertebrate limb bud" .
+    <https://doi.org/10.1016/j.cub.2010.09.063> dct:date "2010"^^xsd:gYear ;
+        dct:title "WNT5A/JNK and FGF/MAPK pathways regulate the cellular events shaping the vertebrate limb bud" .
+    <https://doi.org/10.1109/34.273735> dct:date "1994"^^xsd:gYear ;
+        dct:title "A visual hull approach to the reconstruction of 3D shape from silhouettes" .
+    <https://doi.org/10.1242/dev.046987> dct:date "2010"^^xsd:gYear ;
+        dct:title "Oriented cell division in the primitive streak contributes to vertebrate axis extension and limb bud initiation" .
+    <https://doi.org/10.1371/journal.pbio.1000420> dct:date "2010"^^xsd:gYear ;
+        dct:title "The role of spatially controlled cell proliferation in limb bud morphogenesis" .
+    <https://doi.org/10.1371/journal.pbio.1000421> dct:date "2010"^^xsd:gYear ;
+        dct:title "Limbs made to measure" .
+    <https://www.osti.gov/biblio/14115> dct:date "1999"^^xsd:gYear ;
+        dct:title "How to subdivide pyramids, prisms, and hexahedra into tetrahedra" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Boehm et al. (2010) & Gros et al. (2010) vertebrate limb bud oriented cell division & Wnt5a/FGF8 pushing vs proliferation-gradient hypothesis — Reproducibility package 94/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T07:35:45Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-boehm-limb-bud-elongation-pushing-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/17> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

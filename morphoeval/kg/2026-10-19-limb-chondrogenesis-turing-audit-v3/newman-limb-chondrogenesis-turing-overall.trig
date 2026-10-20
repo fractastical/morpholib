@@ -1,0 +1,107 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-newman-limb-chondrogenesis-turing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-newman-limb-chondrogenesis-turing-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-newman-limb-chondrogenesis-turing-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Newman & Frisch (1979) Science 3D Helmholtz/Turing standing-wave eigenmodes and proximodistal 1 -> 2 -> 3 skeletal chondrogenesis in developing Gallus gallus wing bud — MorphoEval overall 93.8/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Pass 3 (v3) post-remediation evaluation of `1979-newman-limb-chondrogenesis-turing.py` (overall weighted score: 93.8 / 100 (93.85 unrounded), up +1.5 from 92.3 / 100 in Pass 2). The single Pass 2 remediation item is closed in a reduced, explicitly scoped form: Section 4b adds a 3D moving-boundary wing bud whose proximodistal axis is a Lagrangian P1 finite-element mesh advected by FGF8-graded Hill-2 proliferation beneath the AER (dilution, h-refinement, moving distal boundary), with DCT-II/DST-II spectral Galerkin anteroposterior/dorsoventral cross-sections, a one-parameter hyaluronidase clock fitted to Newman & Frisch Table 1 (tau_H = 37.0 h, max |rel err| 4.6 %), three FGF8 zones (apical refractory / active progress zone / frozen record), active-zone Turing kinetics from the paper's 3D Helmholtz relation using the lowest eigenvalue of the actual discrete PD operator, and AER-excision and parameter sweeps. The intact run deposits a 3D skeletal record of [1, 2, 3] elements (DV core-mode purity 0.99, record AP spacing ratio 1.484 vs 1.5 theory / 1.407 specimen), reproduces L_PD(24 h) = 250.2 um (Table 1: 250) and L_PD(48 h) = 128.6 um (Table 1: 140), and the Summerbell (1974) excision-time series 1/1/3/3/3/6 elements for t_exc = 0/8/16/24/32/40 h. Six Lean 4 theorems (3 new) are machine-checked with 0 sorrys. The remediation also exposed that the element count is set by the clock rather than by growth (S_max = 0 still gives [1, 2, 3]), that the Table 1 mode map and the joint reset remain imposed, and that the cross-section is a spectral box rather than a FEM paddle; these are carried as Pass 4 items and model-fidelity is held flat rather than raised. Overall 93.8/100 (faithfulness 93.2, reproducibility 95.3); rubric morphoeval 0.1.0; checkpoint commit d58a084; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 94, Morphological realism / specimen match 92, Parameter expressivity 95, Morphometric validation 93, Source and data traceability 96, Code-to-model traceability 95, Reproducibility package 95. Output judged: docs/media/limb_chondrogenesis_turing_comparison.png: rendered output of 1979-newman-limb-chondrogenesis-turing.py at d58a084, image/png, 707529 B, 2285×1972 px, artifact_sha256 2b43fb710f9364839582f078db91b045664d7fb980ac6db71e8db52a90870e53 (sha256 2b43fb710f9364839582f078db91b045664d7fb980ac6db71e8db52a90870e53), spec_fingerprint ccb5850b44c8ca2f5f2646ec40a4758c3d46ded6705df0c966f6d163508ab9c2. Dual provenance: spec_fingerprint: ccb5850b44c8ca2f5f2646ec40a4758c3d46ded6705df0c966f6d163508ab9c2; artifact_sha256: 2b43fb710f9364839582f078db91b045664d7fb980ac6db71e8db52a90870e53; input_dataset_sha256: {datasets/limb_chondrogenesis_turing/chick_wing_skeleton_specimen.jpg=771e26f9fe8c813d..., datasets/limb_chondrogenesis_turing/fgf8_moving_boundary_reference.json=b4fefaace1e7a1b3..., datasets/limb_chondrogenesis_turing/limb_chondrogenesis_turing_reference.json=c30d742bbf2a990a..., datasets/limb_chondrogenesis_turing/paper_citations.bib=21dad0bab5186d67..., datasets/limb_chondrogenesis_turing/scout_manifest.json=7f3605aa11f5e077...}. Supersedes audit: 2026-10-19-limb-chondrogenesis-turing-audit-v2." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: Make proximodistal mode selection growth-sensitive: derive the Table 1 map m(L_PD) (L186-191) and the active-zone fu (L695-770) from a hyaluronate density field (Toole 1972) advected and diluted on the same Lagrangian mesh instead of thresholds on L_PD, so that the S_max = 0 run (L1204-1209) no longer yields [1, 2, 3] with zero outgrowth.",
+            "remediation needed: Reduce the L_PD(48 h) residual (128.6 vs 140 um, L639-665) by fitting the hyaluronidase clock to a dense Summerbell (1976) elongation series rather than three Table 1 points, and report the fit's confidence interval in measurement 10.",
+            "remediation needed: Replace the DCT-II/DST-II spectral box cross-section (L898-907, header L567-600) with an unstructured 3D P1 finite-element mesh on a paddle-shaped bud outline with anteroposterior widening (Zhu et al. 2010 geometries), keeping the moving distal boundary.",
+            "remediation needed: Replace the imposed joint/interzone reset on m increment (L1006-1012) with an emergent interzone: e.g. a Gdf5/Wnt9a-type inhibitor released where the deposited record saturates, or the mechanical clefting of Loop 018, and verify that the 1 -> 2 -> 3 compartments still separate.",
+            "remediation needed: Replace the post-excision kinetics-hold rule (L991-997) with an explicit distal cell-death zone (Rowe & Fallon 1982, ~200 um) and FGF8 bead rescue (Niswander et al. 1993) so the Summerbell (1974) series and partial rescue are predicted rather than rule-driven." ;
+        pk:hasScore "0.938"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (Slot 012 Pass 3 autonomous remediation-loop assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1002/jez.1401080304>,
+            <https://doi.org/10.1006/bulm.1999.0131>,
+            <https://doi.org/10.1016/0012-1606(72)90071-1>,
+            <https://doi.org/10.1016/0045-6039(84)90025-3>,
+            <https://doi.org/10.1038/244492a0>,
+            <https://doi.org/10.1038/nature00902>,
+            <https://doi.org/10.1098/rspb.2004.2772>,
+            <https://doi.org/10.1126/science.462174>,
+            <https://doi.org/10.1186/s13227-017-0084-8>,
+            <https://doi.org/10.1242/dev.32.3.651>,
+            <https://doi.org/10.1242/dev.35.2.241>,
+            <https://doi.org/10.1242/dev.40.1.1>,
+            <https://doi.org/10.1371/journal.pbio.1000420>,
+            <https://doi.org/10.1371/journal.pone.0010892> .
+    <https://doi.org/10.1002/jez.1401080304> dct:date "1948"^^xsd:gYear ;
+        dct:title "The proximo-distal sequence of origin of the parts of the chick wing and the role of the ectoderm" .
+    <https://doi.org/10.1006/bulm.1999.0131> dct:date "1999"^^xsd:gYear ;
+        dct:title "Reaction and diffusion on growing domains: scenarios for robust pattern formation" .
+    <https://doi.org/10.1016/0012-1606(72)90071-1> dct:date "1972"^^xsd:gYear ;
+        dct:title "Hyaluronate turnover during chondrogenesis in the developing chick limb and axial skeleton" .
+    <https://doi.org/10.1016/0045-6039(84)90025-3> dct:date "1984"^^xsd:gYear ;
+        dct:title "Ectoderm as a determinant of early tissue pattern in the limb bud" .
+    <https://doi.org/10.1038/244492a0> dct:date "1973"^^xsd:gYear ;
+        dct:title "Positional information in chick limb morphogenesis" .
+    <https://doi.org/10.1038/nature00902> dct:date "2002"^^xsd:gYear ;
+        dct:title "Functions of FGF signalling from the apical ectodermal ridge in limb development" .
+    <https://doi.org/10.1098/rspb.2004.2772> dct:date "1549"^^xsd:gYear ;
+        dct:title "Dynamical mechanisms for skeletal pattern formation in the vertebrate limb" .
+    <https://doi.org/10.1126/science.462174> dct:date "1979"^^xsd:gYear ;
+        dct:title "Dynamics of skeletal pattern formation in developing chick limb" .
+    <https://doi.org/10.1186/s13227-017-0084-8> dct:date "2017"^^xsd:gYear ;
+        dct:title "The evolutionary origin of digit patterning" .
+    <https://doi.org/10.1242/dev.32.3.651> dct:date "1974"^^xsd:gYear ;
+        dct:title "A quantitative analysis of the effect of excision of the AER from the chick limb-bud" .
+    <https://doi.org/10.1242/dev.35.2.241> dct:date "1976"^^xsd:gYear ;
+        dct:title "A descriptive study of the rate of elongation and differentiation of the skeleton of the developing chick wing" .
+    <https://doi.org/10.1242/dev.40.1.1> dct:date "1977"^^xsd:gYear ;
+        dct:title "Reduction of the rate of outgrowth, cell density, and cell division following removal of the apical ectodermal ridge of the chick limb-bud" .
+    <https://doi.org/10.1371/journal.pbio.1000420> dct:date "2010"^^xsd:gYear ;
+        dct:title "The role of spatially controlled cell proliferation in limb bud morphogenesis" .
+    <https://doi.org/10.1371/journal.pone.0010892> dct:date "2010"^^xsd:gYear ;
+        dct:title "Bare bones pattern formation: a core regulatory network in varying geometries reproduces major features of vertebrate limb development and evolution" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Newman & Frisch (1979) Science 3D Helmholtz/Turing standing-wave eigenmodes and proximodistal 1 -> 2 -> 3 skeletal chondrogenesis in developing Gallus gallus wing bud — MorphoEval overall 93.8/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T07:19:00Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-newman-limb-chondrogenesis-turing-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/1>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-newman-limb-chondrogenesis-turing> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

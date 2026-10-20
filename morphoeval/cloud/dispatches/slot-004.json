@@ -21,5 +21,61 @@
   "target_script": "1995-kondo-pomacanthus-stripe-insertion.py",
   "pass1_score": 54.4,
   "pass2_score": 92.0,
-  "delta": 37.6
+  "delta": 37.6,
+  "pass3_run_id": "2026-10-19-pomacanthus-stripe-insertion-loop-pass3",
+  "pass3_audit_id": "2026-10-19-pomacanthus-stripe-insertion-audit-v3",
+  "audit_v3": "morphoeval/audits/2026-10-19-pomacanthus-stripe-insertion-audit-v3.yaml",
+  "pass3_score": 93.1,
+  "pass3_dims": {
+    "model-fidelity": 95,
+    "specimen-match": 92,
+    "parameter-expressivity": 93,
+    "morphometric-validation": 93,
+    "source-traceability": 94,
+    "code-traceability": 93,
+    "repro-package": 92
+  },
+  "pass3_completed_at": "2026-10-20T09:42:51Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_published": 0,
+  "pass3_remediation_closed": [
+    "Extend the 2D Kondo-Asai solver to a curvilinear C-shaped coordinate system on the juvenile Pomacanthus semicirculatus body outline to simulate concentric semicircular stripe curvature. -> simulate_curvilinear_c_shaped_arc_insertion (polar sector rho in [0.25,1], theta in [-100,100] deg, growing radius, 3->6 concentric arcs, I_mid threshold trace) + fit_specimen_concentric_arcs (specimen concentric centre, 8 arcs, radial spacing 2.62 mm)",
+    "Couple the macroscopic activator-inhibitor fields to discrete iridophore/melanophore agent interactions. -> simulate_pigment_cell_agent_coupling + agent_coupling_ablation_sweep (128-cell fate lattice, Nakamasu-style contact rules, bounded kappa feedback on c_3/c_5; concordance 0.93-0.97, 6 agent stripes = 6 field stripes, +3.6..+11.7% contrast gain)"
+  ],
+  "pass3_remediation_open": [
+    "1995-kondo-pomacanthus-stripe-insertion.py:659-672 and 1106-1198 \u2014 the polar sector is an idealised rho_in = 0.25, theta_half = 100 deg domain; fit rho_in and theta_half from the specimen's concentric centre and arc radii (r_1/r_8 = 0.21, measured angular spans 31-358 deg) and compare the simulated per-arc angular spans with the measured `arc_angular_spans_deg` as a new measurement.",
+    "1995-kondo-pomacanthus-stripe-insertion.py:1236-1245 \u2014 insertion fires at I_mid = 0.742, 19 % above the proved A = 0 threshold 0.625; record A_trough at insertion and test the corrected local condition I < (c_3 + c_1 A_trough)/|c_2| plus the diffusive activator flux, and add a Lean theorem for the corrected threshold so the measurement matches its reference.",
+    "1995-kondo-pomacanthus-stripe-insertion.py:837-961 \u2014 the agent layer is 1D on a periodic domain (wavelength quantised to L/6) with uncited rule probabilities 0.9 / 0.1 / 0.35 / 0.3; port the fate lattice onto the curved 2D sector and calibrate the contact-rule rates to Nakamasu et al. (2009) ablation time scales so that the feedback can move spacing, not only contrast.",
+    "1995-kondo-pomacanthus-stripe-insertion.py:402-406 and 733 \u2014 both growing-domain solvers rely on injected fluctuations (mode-6/12 cosines in the 1D kymograph; 0.004 white noise on the curved domain) to nucleate insertion; add a nudge = 0 control and a nudge-amplitude sweep that reports the insertion scale s* as a function of fluctuation amplitude.",
+    "1995-kondo-pomacanthus-stripe-insertion.py:98-105 \u2014 pin the SHA-256 of `pomacanthus_stripe_insertion_reference.json` in `EXPECTED_SHA256` (or a versioned digest table) so edits to reference values fail the self-test, and extend the GIF (L1738-1811) with the curvilinear arc insertion so the animated artifact matches the Pass 3 figure."
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_004.kondo_asai_1995_curvilinear_mid_trough_threshold_partition",
+    "MathOfBiology.Loop_004.kondo_asai_1995_pigment_agent_fate_partition_and_bounded_feedback"
+  ],
+  "pass3_lean_verified": true,
+  "pass3_self_test": "PASSED (9.4 s; 9 measurements)",
+  "pass3_artifacts": [
+    "1995-kondo-pomacanthus-stripe-insertion.py",
+    "morphoeval/lean/loops/Loop_004_pomacanthus_stripe_insertion.lean",
+    "morphoeval/math_kg_loops/kondo-pomacanthus-stripe-insertion.yaml",
+    "datasets/pomacanthus_stripe_insertion/README.md",
+    "datasets/pomacanthus_stripe_insertion/paper_citations.bib",
+    "datasets/pomacanthus_stripe_insertion/pomacanthus_stripe_insertion_reference.json",
+    "docs/media/pomacanthus_stripe_insertion_comparison.png",
+    "docs/media/pomacanthus_stripe_insertion_growth.gif",
+    "docs/media/pomacanthus_stripe_insertion_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-pomacanthus-stripe-insertion-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-pomacanthus-stripe-insertion-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-pomacanthus-stripe-insertion-audit-v3/",
+    "morphoeval/runs/2026-10-19-pomacanthus-stripe-insertion-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-pomacanthus-stripe-insertion-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-pomacanthus-stripe-insertion-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-pomacanthus-stripe-insertion-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-pomacanthus-stripe-insertion-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-pomacanthus-stripe-insertion-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-004.json"
+  ],
+  "score_v3": 93.1,
+  "delta_pass3": 1.1
 }

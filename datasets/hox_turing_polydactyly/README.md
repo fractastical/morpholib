@@ -23,3 +23,17 @@ Formal SHA-256-locked reference dataset and vertebrate autopod radiograph specim
 
 4. **`paper_citations.bib`**
    - BibTeX citations for Sheth et al. (2012), Raspopovic et al. (2014), Newman & Frisch (1979), and Miura et al. (2006).
+   - Pass 3 additions: Crampin, Gaffney & Maini (1999) `doi:10.1006/bulm.1999.0131`, Boehm et al. (2010) `doi:10.1371/journal.pbio.1000420`, Summerbell (1974) `doi:10.1242/dev.32.3.651`, Kondo & Miura (2010) `doi:10.1126/science.1179047`.
+   - SHA-256 (re-pinned in the script after the Pass 3 append): `c2cf41b4ebfc4449594e1275c3ce7ee87a9bad914e6e2d32dee628c0c514e72e`.
+
+5. **`pass3_aer_growth_reference.json`** (Pass 3)
+   - Parameter table and source anchors for the AER-FGF8 mitogenic outgrowth coupling added in Pass 3: the fan sector $r \in [r_{\text{prox}}, R(t)]$ grows through a prescribed kinematic area dilation $g(r,t) = g_{\max} A(t) e^{-(R(t)-r)/\ell_F}$ localized at the AER; mass conservation gives the radial tissue velocity $v(r,t) = \frac{1}{r}\int_{r_{\text{prox}}}^{r} g\, r'\,dr'$ and the rim outgrowth $\dot R = v(R,t)$. The Sheth et al. (2012) reaction-diffusion system is solved in ALE form with the Crampin–Gaffney–Maini (1999) dilution term $-(\nabla\cdot v)\,u$ on the physical (deformed) polar metric.
+   - $g_{\max}$ is calibrated (Brent root-find on the outgrowth ODE) so that the WT distal arc reaches $2500\,\mu\text{m}$ at $T = 5$; AER regression starts at $t = 2.4$; the AER-ablation series uses $t_{\text{abl}} \in \{0.6, 1.2, 1.8\}$ (Summerbell 1974 truncation ordering); the $g_{\max}$ sweep tests the digit-number/width law $N = L(T)/\lambda(H)$ (Lean 4 Theorem 4) and the growth-dilution threshold $\sigma_{\max} > g_{\text{rim}}$ (Lean 4 Theorem 5).
+   - Honesty note: growth is kinematic (no elastic constitutive law or stress balance) and digit-ray orientation is imposed by PD/AP diffusion anisotropy ($D_r = 0.05\,D$); both are carried as open Pass 4 items.
+   - SHA-256: `311a1e81311eabab1c73b1b74df6c32be857d2bdfe1cb52232d7503da8199966`.
+
+## Pass 3 outputs
+
+- `docs/media/hox_turing_polydactyly_comparison.png` — 12-panel synthesis (Panels I–L: AER-grown WT and triple-null fans with the deforming Lagrangian mesh, outgrowth $L(t)$ / sequential digit emergence $N(t)$, and the digit-number-vs-width law with growth lag).
+- `docs/media/hox_turing_polydactyly_growth_mesh.png` — 2×8 time-lapse of the deforming tissue mesh (WT vs triple null).
+- `docs/media/hox_turing_polydactyly_growth.gif` — 6 allelic-series frames followed by 8 AER-growth time-lapse frames.

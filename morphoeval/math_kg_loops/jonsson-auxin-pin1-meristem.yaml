@@ -1,12 +1,16 @@
 sim_id: jonsson-auxin-pin1-meristem
 math_family: "Up-the-Gradient Auxin-PIN1 Polarized Transport & Turing-Like Phyllotactic Spacing"
 model_spec:
-  model: "Jönsson et al. (2006) PNAS 103:1633-1638 & Smith et al. (2006) PNAS 103:1301-1306 up-the-gradient Boltzmann PIN1 membrane polarization, active vs passive intercellular auxin transport ODEs on a growing shoot apical meristem L1 lattice, transitions across spiral (137.5 deg), distichous (180 deg), decussate (90 deg), and tricussate (120 deg) phyllotactic modes, and NPA/pin1 block + exogenous IAA microdroplet rescue"
+  model: "Jönsson et al. (2006) PNAS 103:1633-1638 & Smith et al. (2006) PNAS 103:1301-1306 up-the-gradient PIN1 polarization with (Pass 3) explicit PIN1 exocytosis/endocytosis trafficking kinetics, active vs passive intercellular auxin transport ODEs on a shoot apical meristem L1 lattice, a quasi-3D subepidermal with-the-flux canalization slice (Mitchison 1980; Bayer et al. 2009), transitions across spiral (137.5 deg), distichous (180 deg), decussate (90 deg), and tricussate (120 deg) phyllotactic modes (prescribed, see audit v3), and NPA/pin1 block + exogenous IAA microdroplet rescue + BFA exocytosis block"
   basal_production_rho0: 0.10
   decay_rate_mu: 0.05
   active_transport_T: 1.20
   passive_diffusion_D: 0.15
   pin1_feedback_exponent_c1: 1.85
+  pin1_exocytosis_rate_k_exo: 3.0
+  pin1_endocytosis_rate_k_endo: 1.2
+  canalization_flux_feedback_hill_n: 2.0
+  canalization_flux_half_saturation_K: 1.0
   seed: 2006
   inputs:
     - datasets/auxin_pin1_phyllotaxis/auxin_pin1_phyllotaxis_reference.json
@@ -31,7 +35,7 @@ equations:
     variables: "P_i: total PIN1 pool in L1 cell i; P_ij: PIN1 allocated to anticlinal wall i→j; a_j: auxin concentration in neighbor cell j; c_1: up-the-gradient feedback exponent; w_j = exp(c_1 a_j): Boltzmann weight"
     role: "Directs cellular PIN1 efflux carriers preferentially toward neighboring cells with higher auxin concentration while conserving each cell's total PIN1 pool"
     source_citation: "Jönsson et al. (2006) PNAS 103(5):1633-1638 Eq. 4; Smith et al. (2006) PNAS 103(5):1301-1306 Eq. 2"
-    code_locus: "2006-jonsson-auxin-pin1-meristem.py#L105-L215"
+    code_locus: "2006-jonsson-auxin-pin1-meristem.py#L134-L224"
 
   - id: jonsson-auxin-pin1-meristem-2
     law_name: "Jönsson et al. (2006) Intercellular Active Polar + Diffusive Auxin Flux Conservation Law"
@@ -49,7 +53,7 @@ equations:
     variables: "a_i: auxin concentration in cell i; T: active PIN1 polar transport rate; D: passive apoplastic/plasmodesmatal diffusion rate; ρ_0: basal auxin synthesis rate; μ: auxin turnover rate"
     role: "Guarantees exact pairwise intercellular auxin mass conservation across every shared cell wall and equilibrium stationarity at homogeneous state a_0 = ρ_0 / μ"
     source_citation: "Jönsson et al. (2006) PNAS 103(5):1633-1638 Eqs. 1-3"
-    code_locus: "2006-jonsson-auxin-pin1-meristem.py#L220-L390"
+    code_locus: "2006-jonsson-auxin-pin1-meristem.py#L309-L615"
 
   - id: jonsson-auxin-pin1-meristem-3
     law_name: "Jönsson et al. (2006) Up-the-Gradient Turing-Like Instability & NPA Pin-Formed Collapse Law"
@@ -71,4 +75,46 @@ equations:
     variables: "c_1 a_0: dimensionless PIN1 polarization feedback product; z: cellular coordination number; D_eff: effective linearized diffusion coefficient; Γ_mode: spatial perturbation growth gain"
     role: "Establishes the bifurcation threshold where up-the-gradient active transport overcomes passive diffusion to form periodic auxin convergence maxima separated by λ_c, and proves that blocking polar transport (T = 0 in NPA or pin1 mutant) abolishes instability to yield a pin-formed apex"
     source_citation: "Jönsson et al. (2006) PNAS 103(5):1633-1638 pp. 1635-1636; Reinhardt et al. (2003) Nature 426:255-260"
-    code_locus: "2006-jonsson-auxin-pin1-meristem.py#L395-L535"
+    code_locus: "2006-jonsson-auxin-pin1-meristem.py#L134-L224"
+
+  - id: jonsson-auxin-pin1-meristem-4
+    law_name: "Jönsson et al. (2006) Explicit PIN1 Exocytosis / Endocytosis Trafficking Kinetics & Quasi-Steady-State Allocation Law (Pass 3)"
+    formula: "dP_ij/dt = k_exo f(a_j) P_cyt,i − k_endo P_ij,  P_cyt,i + ∑_j P_ij = P_tot;  P*_ij = k_exo f_j P_tot / Z_i,  P*_cyt = k_endo P_tot / Z_i,  Z_i = k_endo + k_exo ∑_k f_k;  k_endo P*_ij = k_exo f_j P*_cyt;  f_j > f_k ⇒ P*_ij > P*_ik;  k_exo = 0 (BFA) ⇒ P*_ij = 0"
+    lean_decl: "MathOfBiology.Loop_032.pin1_membrane_qss_num"
+    lean_theorem: "MathOfBiology.Loop_032.jonsson_2006_pin1_trafficking_qss"
+    lean_locus: "morphoeval/lean/loops/Loop_032_auxin_pin1_phyllotaxis.lean#L136-L163"
+    lean_code: |
+      def pin1_membrane_qss_num (k_exo f_j P_tot : Int) : Int := k_exo * f_j * P_tot
+      def pin1_cytosol_qss_num (k_endo P_tot : Int) : Int := k_endo * P_tot
+      def pin1_trafficking_partition (k_exo k_endo f1 f2 f3 : Int) : Int := k_endo + k_exo * (f1 + f2 + f3)
+      theorem jonsson_2006_pin1_trafficking_qss (k_exo k_endo f1 f2 f3 f_j f_k P_tot : Int)
+          (hk : k_exo > 0) (hP : P_tot > 0) (hf : f_j > f_k) :
+          pin1_cytosol_qss_num k_endo P_tot + pin1_membrane_qss_num k_exo f1 P_tot +
+              pin1_membrane_qss_num k_exo f2 P_tot + pin1_membrane_qss_num k_exo f3 P_tot =
+            P_tot * pin1_trafficking_partition k_exo k_endo f1 f2 f3 ∧
+          k_endo * pin1_membrane_qss_num k_exo f_j P_tot =
+            k_exo * f_j * pin1_cytosol_qss_num k_endo P_tot ∧
+          pin1_membrane_qss_num k_exo f_j P_tot > pin1_membrane_qss_num k_exo f_k P_tot ∧
+          pin1_membrane_qss_num 0 f_j P_tot = 0
+    variables: "P_cyt,i: cytosolic/endosomal PIN1 pool of cell i; P_ij: plasma-membrane PIN1 on wall i→j; k_exo: exocytosis rate per unit targeting weight; k_endo: endocytosis rate; f(a_j) = exp(c_1 (a_j − a_0)): up-the-gradient exocytosis targeting; Z_i: cleared partition denominator"
+    role: "Replaces the instantaneous Boltzmann allocation by explicit membrane cycling with a finite trafficking time 1/k_endo; its fixed point conserves membrane + cytosolic PIN1, retains up-the-gradient polarity, reduces to Law 1 as k_endo/(k_exo ∑ f) → 0, and predicts complete PIN1 internalisation under a brefeldin A exocytosis block"
+    source_citation: "Jönsson et al. (2006) PNAS 103(5):1633-1638 (PIN1 cycling kinetics and quasi-steady state); Geldner et al. (2001) Nature 413:425-428 (BFA); Paciorek et al. (2005) Nature 435:1251-1256 (auxin-inhibited endocytosis)"
+    code_locus: "2006-jonsson-auxin-pin1-meristem.py#L229-L306"
+
+  - id: jonsson-auxin-pin1-meristem-5
+    law_name: "Mitchison (1980/1981) With-the-Flux Canalization Winner-Take-All Law (subepidermal provascular strand; Pass 3)"
+    formula: "Φ(J) = J²;  J_1 > J_2 ≥ 0 ⇒ Φ(J_1) − Φ(J_2) = (J_1 − J_2)(J_1 + J_2) > 0;  α > 0 ⇒ α (Φ(J_1) − Φ(J_2)) > 0"
+    lean_decl: "MathOfBiology.Loop_032.flux_feedback_quadratic"
+    lean_theorem: "MathOfBiology.Loop_032.mitchison_1980_canalization_winner_take_all"
+    lean_locus: "morphoeval/lean/loops/Loop_032_auxin_pin1_phyllotaxis.lean#L183-L202"
+    lean_code: |
+      def flux_feedback_quadratic (J : Int) : Int := J * J
+      theorem mitchison_1980_canalization_winner_take_all (J1 J2 alpha : Int)
+          (h2 : J2 ≥ 0) (h : J1 > J2) (ha : alpha > 0) :
+          flux_feedback_quadratic J1 - flux_feedback_quadratic J2 = (J1 - J2) * (J1 + J2) ∧
+          flux_feedback_quadratic J1 > flux_feedback_quadratic J2 ∧
+          alpha * (flux_feedback_quadratic J1 - flux_feedback_quadratic J2) > 0
+    variables: "J_1, J_2: net auxin efflux through two competing walls of a subepidermal cell; Φ: with-the-flux exocytosis targeting (quadratic case of Φ = J^n/(K^n + J^n)); α: feedback gain (k_exo P_cyt)"
+    role: "Shows that a superlinear flux feedback amplifies any flux asymmetry between competing walls, so a symmetric split is linearly unstable and auxin efflux canalizes into a single-file provascular strand connecting the L1 convergence point to the existing vasculature (Bayer et al. 2009 integration)"
+    source_citation: "Mitchison GJ (1980) Proc. R. Soc. Lond. B 207:79-109; Mitchison GJ (1981) Phil. Trans. R. Soc. Lond. B 295:461-471; Feugier et al. (2005) J. Theor. Biol. 236:366-375; Bayer et al. (2009) Genes Dev. 23:373-384"
+    code_locus: "2006-jonsson-auxin-pin1-meristem.py#L617-L770"

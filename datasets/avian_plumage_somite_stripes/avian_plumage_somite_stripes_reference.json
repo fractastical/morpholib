@@ -1,17 +1,20 @@
 {
   "metadata": {
-    "dataset_id": "haupaix-2018-avian-plumage-somite-stripes-v1",
-    "title": "Haupaix et al. (2018) Science & Inaba et al. (2019) Science — Somite-Prepatterned Agouti Signaling and Melanocyte Reaction-Diffusion in Avian Plumage Stripes",
+    "dataset_id": "haupaix-2018-avian-plumage-somite-stripes-v2",
+    "title": "Haupaix et al. (2018) Science, Inaba et al. (2019) PNAS & Lin et al. (2013) Science — Somite-Prepatterned Agouti Signaling, Melanocyte Reaction-Diffusion and Feather-Follicle Ring-Niche Coupling in Avian Plumage Stripes",
+    "pass3_citation_corrections": "2026-10-19: Haupaix et al. (2018) title corrected to the published one (PMID 30237324); Inaba et al. (2019) venue/DOI corrected to PNAS 116(14):6884-6890, doi:10.1073/pnas.1816107116 (PMID 30886106). Passes 1-2 cited a non-existent title and a non-existent Science article.",
     "sources": [
       {
         "id": "haupaix2018",
-        "citation": "Haupaix N, Curantz C, Bailleul R, Beck S, Robic A, Manceau M (2018). The periodicelly striped plumage of galliform chicks is prepatterned by somitic Agouti signaling. Science 361(6408):eaar4777.",
-        "doi": "10.1126/science.aar4777"
+        "citation": "Haupaix N, Curantz C, Bailleul R, Beck S, Robic A, Manceau M (2018). The periodic coloration in birds forms through a prepattern of somite origin. Science 361(6408):eaar4777.",
+        "doi": "10.1126/science.aar4777",
+        "pmid": "30237324"
       },
       {
         "id": "inaba2019",
-        "citation": "Inaba M, Jiang TX, Liang YC, Tsai SP, Lai YC, Widelitz RB, Chuong CM (2019). Instructive role of melanocytes during body pigment pattern formation. Science 363(6426):eaaw1969.",
-        "doi": "10.1126/science.aaw1969"
+        "citation": "Inaba M, Jiang TX, Liang YC, Tsai S, Lai YC, Widelitz RB, Chuong CM (2019). Instructive role of melanocytes during pigment pattern formation of the avian skin. Proc Natl Acad Sci USA 116(14):6884-6890.",
+        "doi": "10.1073/pnas.1816107116",
+        "pmid": "30886106"
       },
       {
         "id": "bailleul2019",
@@ -43,7 +46,7 @@
     },
     "paper_citations": {
       "file": "datasets/avian_plumage_somite_stripes/paper_citations.bib",
-      "sha256": "b8438bc65956b613fccb2abb17740db41c6e7fe90e91165c0e7699855bc79462"
+      "sha256": "368cf6829da0805619497a86a8f2c1043493ad9baadd0e69c21721bd5d883f08"
     }
   },
   "somite_agouti_reaction_diffusion_model": {
@@ -207,5 +210,48 @@
       "yellow_stripe_fraction_tolerance": [0.34, 0.54],
       "bimodality_ashman_D_min": 2.2
     }
+  },
+  "pass3_provenance_flags": {
+    "added": "2026-10-19 (Pass 3 audit v3)",
+    "flags": [
+      "galliform_species_panel[*].yellow_stripe_width_mm_ref / black_stripe_width_mm_ref / stripe_period_mm and the quail Lambda = 0.95 mm, w_y = 0.42 mm canonical widths are NOT values published by Haupaix et al. (2018); the paper reports stripe boundaries as distances from the dorsal midline (cb boundary 2-4 mm at wing level, 2-3 mm at leg level; ly boundary 3-9 mm at wing level, 3-6 mm at leg level) and stripe widths in feather rows (Fig. 1B-C, Fig. 3B). Their provenance is unverified and they are retained only for continuity with Passes 1-2.",
+      "agouti_bead_perturbation_regimes are NOT experiments of Haupaix et al. (2018); the paper's dose series is the recessive-black (RB-/-) and Fawn (Fa-/-) quail strains (Fig. 3B-C). ASIP-coated beads in regenerating feather follicles are from Lin et al. (2013) Fig. 3D and produce apigmented (white) zones, not yellow widening. The regime widths are unverified.",
+      "interspecific_somite_grafting_experiments: Haupaix et al. (2018) Fig. 4 report quail somite -> pheasant host grafts (and neural-tube grafts as negative control); the pheasant -> quail and guineafowl -> quail chimeras and alpha_donor = 0.94 are model extrapolations, not reported experiments.",
+      "somite_agouti_reaction_diffusion_model.governing_pde is the rational Gierer-Meinhardt-type form; the script integrates a cubic-saturating linearisation around (0.46, 0.46) with the same Jacobian sign structure (see 2018-haupaix-avian-plumage-somite-stripes.py integrate_somite_melanocyte_pde_2d)."
+    ]
+  },
+  "haupaix2018_feather_row_benchmarks": {
+    "section": "Haupaix et al. (2018) Science 361:eaar4777 — Fig. 1, Fig. 3A-C, fig. S1, fig. S6 and main text (values transcribed from the published text)",
+    "stripe_sequence_from_midline": ["cb (central black, may contain a few central yellow cy feathers)", "ly (lateral yellow)", "lb (lateral black)"],
+    "feather_types": {
+      "b": "black feather, entirely eumelanic",
+      "y": "yellow feather: pheomelanin band with black base and tip (readout of a transient yellow-production pulse)"
+    },
+    "coturnix_japonica_agouti_bands": {"A1prime": "presumptive feather row 2 (first b/y feather of the ly stripe)", "A1": "feather rows 3-5 (rest of the ly stripe)", "A2": "central rows forming the cy stripe"},
+    "ly_yellow_feather_rows": {
+      "wild_type": {"rows": [2, 5], "count": 4},
+      "recessive_black_RB": {"rows": [3, 4], "count": 2, "mechanism": "agouti frameshift, marked decrease in transcript level; feathers switch back to eumelanin earlier (shorter yellow pulse); no visible cy stripe"},
+      "fawn_Fa": {"rows_lower_bound": [1, 2], "rows_upper": 6, "count_range": [5, 6], "mechanism": "agouti duplication, increased expression; delayed switch to eumelanin (longer yellow pulse); no eumelanin seen before hatching"}
+    },
+    "yellow_band_gradient_within_stripe": "yellow band length is increased in feathers at the centre of ly stripes relative to those at the edge (fig. S1); no numeric value published",
+    "midline_distances_mm": {"cb_boundary_wing_level": [2, 4], "cb_boundary_leg_level": [2, 3], "ly_boundary_wing_level": [3, 9], "ly_boundary_leg_level": [3, 6]},
+    "switch_measurements": "'switch to y' and 'switch to b' = distance (mm) from feather tip to the distal limit of the yellow band / black base (C. japonica E10-E11, n = 12 / 32); 'relative y band length' (%) = yellow band length / fully grown y feather length (fig. S6) — numeric values are in the paper's figures and were not digitised here",
+    "species_with_embryonic_analysis": ["Coturnix japonica", "Alectoris rufa", "Perdix perdix", "Phasianus colchicus", "Syrmaticus reevesii"]
+  },
+  "feather_follicle_niche_model": {
+    "section": "Lin et al. (2013) Science 340:1442-1445 Fig. 1-2, fig. S9 (ring niche, chevron bars) coupled to Haupaix et al. (2018) Fig. 3 (yellow-pulse duration) — Pass 3 reduced model",
+    "ring_niche": "melanocyte progenitors form a horizontal ring in the proximal follicle (lower bulge / collar) and send melanocytes vertically up the epithelial cylinder into barb ridges; the proximodistal feather axis is a timing axis",
+    "chevron_law": "opened cylinder (cut at the posterior new-barb locus): band edge s(ell) = s_0 + k * |ell|, ell in [-1, 1] lateral (rachis at 0), s in [0, 1] tip -> base; k = v_z / (r_f * omega) with omega the azimuthal propagation rate of the pigment switch around the ring from the rachis; k = 0 gives a transverse bar (Lean Theorem 4 ring_niche_chevron_geometry)",
+    "yellow_pulse_law": "niche Agouti over feather growth tau in [0, 1]: A(tau) = A_i - a + a cos(2 pi (tau - 1/2)); feather type = [A_i >= theta_A] + [A_i - 2a >= theta_A] in {0: b, 1: y, 2: fully pheomelanic}; relative yellow band length duty = (1/pi) arccos((theta_A - (A_i - a)) / a) (Lean Theorem 5 agouti_pulse_duration_feather_type)",
+    "lattice": "hexagonal follicle lattice, 9 feather rows per somitic stripe period (WT ly = 4 of 9 rows, Haupaix Fig. 3A), follicle niche dose A_i = bilinear sample of the body-wide u(x, y) field",
+    "parameters": {
+      "rows_per_period": 9,
+      "niche_pulse_dip_a": 0.20,
+      "chevron_pitch_k": 0.35,
+      "follicle_radius_mm_nominal": 0.045,
+      "agouti_dose_scales_fitted": {"RB-/-": 0.60, "WT": 1.00, "Fa-/-": 2.80},
+      "note": "a, k and the dose multipliers are free parameters: a and the multipliers were fitted so that WT / RB-/- / Fa-/- give 4 / 2 / 6 yellow rows and WT y feathers keep black base and tip; Lin et al. (2013) do not quantify the chevron pitch, so k is a sweep parameter checked against its own analytic law"
+    },
+    "not_modelled": ["barb-ridge mechanics and helical ridge displacement", "pulp ASIP diffusion and the Barred Plymouth Rock progenitor depletion feedback", "feather regeneration cycles and systemic hormonal control", "mm calibration of follicle radius / feather length"]
   }
 }
