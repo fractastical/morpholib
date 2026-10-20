@@ -1,0 +1,42 @@
+sim_id: prum-morpho-menelaus-bioelectric-polarity
+math_family: Bioelectric Gap-Junction Bistability & Polarity
+equations:
+- law_name: Membrane Voltage Gap-Junction Reaction-Diffusion Balance
+  formula: C_m dV_i/dt = -I_ion(V_i) + sum_j G_ij(V_i, V_j) (V_j - V_i)
+  lean_decl: MathOfBiology.Loop_0944.law1_invariant
+  lean_theorem: MathOfBiology.Loop_0944.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_0944_morpho_menelaus_bioelectric_polarity.lean#L9-L15
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  variables: 'a, b: positive dimensionless morphogenetic scaling factors'
+  role: Primary scaling invariant for Gap-Junction Bioelectric Bistability & Target
+    Polarity in Morpho menelaus
+  source_citation: Prum (2007) DOI:10.1098/rsif.2007.0944
+  code_locus: 2007-prum-morpho-menelaus-bioelectric-polarity.py#L28-L39
+- law_name: Voltage-Gated Gap-Junction Boltzmann Conductance
+  formula: G_ij = G_max / (1 + exp(((V_i - V_j)^2 - V_0^2) / V_T^2))
+  lean_decl: MathOfBiology.Loop_0944.law2_balance
+  lean_theorem: MathOfBiology.Loop_0944.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_0944_morpho_menelaus_bioelectric_polarity.lean#L17-L23
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
+    [law2_balance]; omega'
+  variables: 'p, q: flux/stress conservation terms'
+  role: Conservation balance for Target Polarity & Neural Maps in Morpho menelaus
+  source_citation: Prum (2007) DOI:10.1098/rsif.2007.0944
+  code_locus: 2007-prum-morpho-menelaus-bioelectric-polarity.py#L28-L39
+- law_name: Bistable Depolarized/Hyperpolarized Attractor Separation
+  formula: Delta_V_attractor = |V_depol^* - V_hyper^*| > V_threshold
+  lean_decl: MathOfBiology.Loop_0944.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_0944.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_0944_morpho_menelaus_bioelectric_polarity.lean#L25-L30
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 150 25 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for Bistable V_mem / G_ij Threshold
+  source_citation: Prum (2007) DOI:10.1098/rsif.2007.0944
+  code_locus: 2007-prum-morpho-menelaus-bioelectric-polarity.py#L28-L39

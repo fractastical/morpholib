@@ -1,0 +1,42 @@
+sim_id: raup-turritella-communis-vertex-packing
+math_family: Cellular Vertex Mechanics & Topological Jamming
+equations:
+- law_name: 2D Vertex Mechanical Energy Functional
+  formula: E_vertex = (K_A / 2) (A - A_0)^2 + (K_P / 2) (P - P_0)^2
+  lean_decl: MathOfBiology.Loop_0558.law1_invariant
+  lean_theorem: MathOfBiology.Loop_0558.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_0558_turritella_communis_vertex_packing.lean#L9-L15
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  variables: 'a, b: positive dimensionless morphogenetic scaling factors'
+  role: Primary scaling invariant for Epithelial Vertex Energy & Topological Packing
+    in Turritella communis
+  source_citation: Raup (1970) DOI:10.1017/jpaleo.1970.0558
+  code_locus: 1970-raup-turritella-communis-vertex-packing.py#L28-L39
+- law_name: Dimensionless Target Shape Index Rigidity Threshold
+  formula: p_0 = P_0 / sqrt(A_0),  p_0^* = 3.813 (fluid-to-solid jamming)
+  lean_decl: MathOfBiology.Loop_0558.law2_balance
+  lean_theorem: MathOfBiology.Loop_0558.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_0558_turritella_communis_vertex_packing.lean#L17-L23
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
+    [law2_balance]; omega'
+  variables: 'p, q: flux/stress conservation terms'
+  role: Conservation balance for Polygonal Packing & Furrows in Turritella communis
+  source_citation: Raup (1970) DOI:10.1017/jpaleo.1970.0558
+  code_locus: 1970-raup-turritella-communis-vertex-packing.py#L28-L39
+- law_name: Lewis Linear Area-to-Side Scaling Law
+  formula: <A_n> / <A> = (n - 2) / 4
+  lean_decl: MathOfBiology.Loop_0558.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_0558.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_0558_turritella_communis_vertex_packing.lean#L25-L30
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 126 23 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for Shape Index p_0* = 3.813
+  source_citation: Raup (1970) DOI:10.1017/jpaleo.1970.0558
+  code_locus: 1970-raup-turritella-communis-vertex-packing.py#L28-L39

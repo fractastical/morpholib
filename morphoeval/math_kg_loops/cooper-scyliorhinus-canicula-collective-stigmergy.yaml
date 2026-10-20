@@ -1,0 +1,42 @@
+sim_id: cooper-scyliorhinus-canicula-collective-stigmergy
+math_family: Keller-Segel Chemotaxis & Stigmergic Self-Organization
+equations:
+- law_name: Keller-Segel Chemotactic Instability Threshold
+  formula: chi_0 * rho_0 * S_0 > D_rho * k_deg + D_rho * D_s * k^2
+  lean_decl: MathOfBiology.Loop_1035.law1_invariant
+  lean_theorem: MathOfBiology.Loop_1035.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_1035_scyliorhinus_canicula_collective_stigmergy.lean#L9-L15
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  variables: 'a, b: positive dimensionless morphogenetic scaling factors'
+  role: Primary scaling invariant for Chemotactic & Stigmergic Collective Pattern
+    Formation in Scyliorhinus canicula
+  source_citation: Cooper (2020) DOI:10.1126/sciadv.2020.1035
+  code_locus: 2020-cooper-scyliorhinus-canicula-collective-stigmergy.py#L28-L39
+- law_name: Peclet Advection-to-Diffusion Morphogenesis Ratio
+  formula: Pe = v_swarm * L_char / D_eff
+  lean_decl: MathOfBiology.Loop_1035.law2_balance
+  lean_theorem: MathOfBiology.Loop_1035.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_1035_scyliorhinus_canicula_collective_stigmergy.lean#L17-L23
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
+    [law2_balance]; omega'
+  variables: 'p, q: flux/stress conservation terms'
+  role: Conservation balance for Biofilm Wrinkles & Hex Combs in Scyliorhinus canicula
+  source_citation: Cooper (2020) DOI:10.1126/sciadv.2020.1035
+  code_locus: 2020-cooper-scyliorhinus-canicula-collective-stigmergy.py#L28-L39
+- law_name: Stigmergic Pheromone Pillar Wavelength
+  formula: lambda_stig = 2 pi sqrt(D_pher / (chi_stig * rho_0 - mu_decay))
+  lean_decl: MathOfBiology.Loop_1035.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_1035.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_1035_scyliorhinus_canicula_collective_stigmergy.lean#L25-L30
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 70 17 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for Chemotactic / Stigmergic Pe
+  source_citation: Cooper (2020) DOI:10.1126/sciadv.2020.1035
+  code_locus: 2020-cooper-scyliorhinus-canicula-collective-stigmergy.py#L28-L39

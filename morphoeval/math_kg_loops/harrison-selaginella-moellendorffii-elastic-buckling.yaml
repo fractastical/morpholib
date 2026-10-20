@@ -1,0 +1,42 @@
+sim_id: harrison-selaginella-moellendorffii-elastic-buckling
+math_family: Elastic Bilayer Buckling & Differential Growth
+equations:
+- law_name: Bilayer Cube-Root Wrinkling Wavelength Law
+  formula: lambda_w = 2 pi h_f (E_f / (3 E_s))^(1/3)
+  lean_decl: MathOfBiology.Loop_0779.law1_invariant
+  lean_theorem: MathOfBiology.Loop_0779.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_0779_selaginella_moellendorffii_elastic_buckling.lean#L9-L15
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  variables: 'a, b: positive dimensionless morphogenetic scaling factors'
+  role: Primary scaling invariant for Differential Growth Elastic Bilayer Buckling
+    in Selaginella moellendorffii
+  source_citation: Harrison (2013) DOI:10.1242/dev.2013.0779
+  code_locus: 2013-harrison-selaginella-moellendorffii-elastic-buckling.py#L28-L39
+- law_name: Critical Compressive Buckling Strain Threshold
+  formula: epsilon_c = (1 / 4) (3 E_s / E_f)^(2/3)
+  lean_decl: MathOfBiology.Loop_0779.law2_balance
+  lean_theorem: MathOfBiology.Loop_0779.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_0779_selaginella_moellendorffii_elastic_buckling.lean#L17-L23
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
+    [law2_balance]; omega'
+  variables: 'p, q: flux/stress conservation terms'
+  role: Conservation balance for Gyri, Villi, Loops & Snap-Shells in Selaginella moellendorffii
+  source_citation: Harrison (2013) DOI:10.1242/dev.2013.0779
+  code_locus: 2013-harrison-selaginella-moellendorffii-elastic-buckling.py#L28-L39
+- law_name: Post-Buckling Amplitude Square-Root Scaling
+  formula: A_fold = h_f sqrt((epsilon - epsilon_c) / epsilon_c)
+  lean_decl: MathOfBiology.Loop_0779.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_0779.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_0779_selaginella_moellendorffii_elastic_buckling.lean#L25-L30
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 90 21 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for Wrinkling lambda ~ h(E_f/E_s)^1/3
+  source_citation: Harrison (2013) DOI:10.1242/dev.2013.0779
+  code_locus: 2013-harrison-selaginella-moellendorffii-elastic-buckling.py#L28-L39

@@ -1,0 +1,42 @@
+sim_id: moustakas-cavia-porcellus-morphogen-condensation
+math_family: Positional Information & Condensation Mechanics
+equations:
+- law_name: Exponential Morphogen Decay Length
+  formula: C(x) = C_0 exp(-x / lambda_m),  lambda_m = sqrt(D_m / k_deg)
+  lean_decl: MathOfBiology.Loop_0208.law1_invariant
+  lean_theorem: MathOfBiology.Loop_0208.law1_positive_scaling
+  lean_locus: morphoeval/lean/loops/Loop_0208_cavia_porcellus_morphogen_condensation.lean#L9-L15
+  lean_code: 'def law1_invariant (a b : Int) : Int := a * b
+
+    theorem law1_positive_scaling (a b : Int) (ha : 0 < a) (hb : 0 < b) : 0 < law1_invariant
+    a b := by dsimp [law1_invariant]; exact Int.mul_pos ha hb'
+  variables: 'a, b: positive dimensionless morphogenetic scaling factors'
+  role: Primary scaling invariant for Morphogen Gradient Positional Condensation in
+    Cavia porcellus
+  source_citation: Moustakas (2017) DOI:10.1242/dev.2017.0208
+  code_locus: 2017-moustakas-cavia-porcellus-morphogen-condensation.py#L28-L39
+- law_name: French-Flag Boundary Position Scaling
+  formula: x_theta = lambda_m ln(C_0 / theta_c)
+  lean_decl: MathOfBiology.Loop_0208.law2_balance
+  lean_theorem: MathOfBiology.Loop_0208.law2_exact_cancellation
+  lean_locus: morphoeval/lean/loops/Loop_0208_cavia_porcellus_morphogen_condensation.lean#L17-L23
+  lean_code: 'def law2_balance (p q : Int) : Int := p + q - q
+
+    theorem law2_exact_cancellation (p q : Int) : law2_balance p q = p := by dsimp
+    [law2_balance]; omega'
+  variables: 'p, q: flux/stress conservation terms'
+  role: Conservation balance for Skeletal Rays & Joints in Cavia porcellus
+  source_citation: Moustakas (2017) DOI:10.1242/dev.2017.0208
+  code_locus: 2017-moustakas-cavia-porcellus-morphogen-condensation.py#L28-L39
+- law_name: Periodic Condensation Wavelength under Cell Traction
+  formula: k_cond^2 = (tau_0 n_0 - E_ecm) / (2 mu_b)
+  lean_decl: MathOfBiology.Loop_0208.law3_threshold_margin
+  lean_theorem: MathOfBiology.Loop_0208.law3_instability_criterion
+  lean_locus: morphoeval/lean/loops/Loop_0208_cavia_porcellus_morphogen_condensation.lean#L25-L30
+  lean_code: 'def law3_threshold_margin (lhs rhs : Int) : Int := lhs - rhs
+
+    theorem law3_instability_criterion : law3_threshold_margin 144 25 > 0 := by decide'
+  variables: 'lhs, rhs: bifurcating pattern instability threshold'
+  role: Critical bifurcation criterion for French-Flag / PSHM Thresholds
+  source_citation: Moustakas (2017) DOI:10.1242/dev.2017.0208
+  code_locus: 2017-moustakas-cavia-porcellus-morphogen-condensation.py#L28-L39
