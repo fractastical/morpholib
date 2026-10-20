@@ -152,9 +152,21 @@ theorem rule30_weight2_mixed_mahler_5term_cancellation
     let c_col_u2 := bne (bne b_u1_u2 b_u2_u2) b_u12_u2
     let alp_int := bne (bne b_u1_u12 b_u2_u12) b_u12_u12
     bne (bne (c_col_u1 != c_col_u2) (b_u1_u1 != b_u2_u2)) alp_int = gam_int := by
-  cases b_u1_u1 <;> cases b_u2_u1 <;> cases b_u12_u1 <;>
-  cases b_u1_u2 <;> cases b_u2_u2 <;> cases b_u12_u2 <;>
-  cases b_u1_u12 <;> cases b_u2_u12 <;> cases b_u12_u12 <;> decide
+   cases b_u1_u1 <;> cases b_u2_u1 <;> cases b_u12_u1 <;>
+   cases b_u1_u2 <;> cases b_u2_u2 <;> cases b_u12_u2 <;>
+   cases b_u1_u12 <;> cases b_u2_u12 <;> cases b_u12_u12 <;> decide
+
+/-- Theorem 39 (`rule30_1down_0right_spatial_column_forcing`):
+    In the Rule 30 right half-plane `a_{t+1, x} = rule30 a_{t, x-1} a_{t, x} a_{t, x+1}`:
+    1. (`rule30_1down_forcing`): When `a_{t, x} = true`, `a_{t+1, x} = !a_{t, x-1}` regardless of `a_{t, x+1}`.
+    2. (`rule30_0right_forcing`): When `a_{t, x} = false`, `a_{t, x+1} = bne a_{t+1, x} a_{t, x-1}`. -/
+theorem rule30_1down_forcing (a_left a_right : Bool) :
+    rule30 a_left true a_right = !a_left := by
+  cases a_left <;> cases a_right <;> rfl
+
+theorem rule30_0right_forcing (a_left a_right : Bool) :
+    bne (rule30 a_left false a_right) a_left = a_right := by
+  cases a_left <;> cases a_right <;> rfl
 
 /-- Law 3 (`wolfram-conus-textile-rule30-3`):
     Meinhardt & Klingler (1987) 3-species activator-substrate-hormone reaction kinetics. -/

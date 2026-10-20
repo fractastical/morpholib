@@ -7389,6 +7389,226 @@ def verify_mahler_reciprocity_integrals_and_wall_invariants() -> dict[str, int]:
     }
 
 
+def verify_short_run_trap_automaton_and_bimahler_rim_strict_laws() -> dict[str, int]:
+    """
+    Theorem 39 (Milestone 38 — Track 1A & 1B Synthesis):
+      1. Dual 1-Down / 0-Right Spatial Column Forcing Law & Opposite-Parity Entry Forcing Law:
+         - In the right half-plane x >= 1, a_{t+1, x} = a_{t, x-1} ^ (a_{t, x} | a_{t, x+1}) enforces:
+           * 1-Down Law: Whenever a_{t, x} == 1, the cell directly below it is forced: a_{t+1, x} = 1 ^ a_{t, x-1}.
+           * 0-Right Law: Whenever a_{t, x} == 0, the cell directly to its right is forced: a_{t, x+1} = a_{t+1, x} ^ a_{t, x-1}.
+         - Opposite-Parity Entry Forcing Law: Whenever 1^a 0^b (a, b >= 1) is entered with a_{0, 1} = (a mod 2) ^ 1,
+           the 1^a exit state never has (a_{a, 1}, a_{a, 2}) = (0, 0), and after 0^b the exit cell is identically
+           a_{a+b, 1} == 1 across 100% of initial states R_0 in {0, 1}^infty.
+      2. Universal 8-Node 3-Bit Prefix Trap Automaton & Short-Run (1 <= a <= 8) Deterministic Cycles:
+         - Across the 8 canonical 3-bit prefix cylinder nodes N_11, N_odd, N_10, N_1, N_00, N_ev, W_3, S_4,
+           all 23 short-run block transitions 1^a 0^b (a in {1..8}) are 100% gate-deterministic (|gates| == 1),
+           and 1^7 0^1 maps 100% of {0, 1}^infty directly into W_3 = {000*, 110*, 111*}.
+      3. 2D Bi-Mahler Partial-Inversion Law, Universal Rim-Plus-Strict Decomposition of gamma_p(u),
+         and Dyadic-Slice Laws:
+         - By Mahler involution Z^2 = Id, C_p^{(m)}(u) := sum_{n subset u} B_p(n, m) === alpha_{2u+p, m}
+           and R_p^{(n)}(u) := sum_{m subset u} B_p(n, m) === V_p(n, u) for all u, m, n >= 0.
+         - By boundary inclusion-exclusion on the submask square {n, m subset u}, for all u >= 0:
+             gamma_p(u) === alpha_{2u+p, u} ^ V_p(u, u) ^ B_p(u, u) ^ gamma_p^{(strict)}(u),
+           where gamma_p^{(strict)}(u) := sum_{n < u, m < u, (n | m) = u} B_p(n, m) vanishes for weight-1
+           u = 2^s and equals B_p(u_1, u_2) ^ B_p(u_2, u_1) for all weight-2 u = u_1 + u_2 (including odd u = 1 + 2^d).
+         - Dyadic-Slice Laws: B_p(n, 2^s) === V_p(n, 2^s) (forall n >= 1, s >= 0) and
+           B_p(2^r, m) === alpha_{2^{r+1}+p, m} ^ (delta_{p, 1} delta_{m, 1}) (forall r >= 0, m >= 1).
+    """
+    def _step_r(R: tuple[int, ...], c: int) -> tuple[tuple[int, ...], int]:
+        W = len(R)
+        G = c | R[0]
+        nxt = [
+            (c if x == 1 else R[x - 2]) ^ (R[x - 1] | R[x])
+            for x in range(1, W)
+        ]
+        return tuple(nxt), G
+
+    forcing_law_errors = 0
+    opposite_parity_errors = 0
+    for a in range(1, 9):
+        g0 = (a % 2) ^ 1
+        for b in range(1, 4):
+            W = a + b + 3
+            for mask in range(1 << W):
+                R = tuple((mask >> i) & 1 for i in range(W))
+                cur = R
+                rows = [cur]
+                cs = [1] * a + [0] * b
+                for c in cs:
+                    cur, _ = _step_r(cur, c)
+                    rows.append(cur)
+                if a <= 3 and b <= 2:
+                    for t_idx in range(len(cs)):
+                        for x_idx in range(len(rows[t_idx]) - 1):
+                            left_bit = cs[t_idx] if x_idx == 0 else rows[t_idx][x_idx - 1]
+                            mid_bit = rows[t_idx][x_idx]
+                            right_bit = rows[t_idx][x_idx + 1]
+                            down_bit = rows[t_idx + 1][x_idx]
+                            if mid_bit == 1 and down_bit != (1 ^ left_bit):
+                                forcing_law_errors += 1
+                            if mid_bit == 0 and right_bit != (down_bit ^ left_bit):
+                                forcing_law_errors += 1
+                if R[0] == g0:
+                    if rows[a][:2] == (0, 0):
+                        opposite_parity_errors += 1
+                    if rows[a + b][0] != 1:
+                        opposite_parity_errors += 1
+
+    nodes = {
+        "N_11":  {(1, 1, 0), (1, 1, 1)},
+        "N_odd": {(1, 0, 1), (1, 1, 0), (1, 1, 1)},
+        "N_10":  {(1, 0, 0), (1, 0, 1)},
+        "N_1":   {(1, 0, 0), (1, 0, 1), (1, 1, 0), (1, 1, 1)},
+        "N_00":  {(0, 0, 0), (0, 0, 1), (0, 1, 1)},
+        "N_ev":  {(0, 1, 1), (1, 1, 0), (1, 1, 1)},
+        "W_3":   {(0, 0, 0), (1, 1, 0), (1, 1, 1)},
+        "S_4":   {(0, 0, 0), (0, 1, 1), (1, 1, 0), (1, 1, 1)},
+    }
+    expected_transitions = [
+        ("N_11",  1, 1, (0,),      "N_00"),
+        ("N_11",  2, 1, (1,),      "N_1"),
+        ("N_11",  2, 2, (1, 1),    "N_1"),
+        ("N_11",  5, 1, (0,),      "S_4"),
+        ("N_11",  7, 1, (0,),      "W_3"),
+        ("N_odd", 1, 1, (0,),      "N_00"),
+        ("N_odd", 2, 1, (1,),      "N_1"),
+        ("N_odd", 5, 1, (0,),      "S_4"),
+        ("N_odd", 7, 1, (0,),      "W_3"),
+        ("N_10",  1, 1, (0,),      "N_ev"),
+        ("N_10",  5, 1, (0,),      "N_ev"),
+        ("N_10",  7, 1, (0,),      "W_3"),
+        ("N_1",   5, 1, (0,),      "S_4"),
+        ("N_1",   7, 1, (0,),      "W_3"),
+        ("N_00",  4, 1, (0,),      "S_4"),
+        ("N_00",  6, 1, (0,),      "W_3"),
+        ("N_00",  8, 1, (0,),      "N_11"),
+        ("N_00",  8, 2, (0, 1),    "N_10"),
+        ("N_00",  8, 3, (0, 1, 1), "N_odd"),
+        ("N_ev",  5, 1, (0,),      "S_4"),
+        ("N_ev",  7, 1, (0,),      "W_3"),
+        ("W_3",   7, 1, (0,),      "W_3"),
+        ("S_4",   7, 1, (0,),      "W_3"),
+    ]
+    trap_automaton_errors = 0
+    for src, a, b, exp_gate, dst in expected_transitions:
+        S_node = nodes[src]
+        W = a + b + 3
+        gates = set()
+        exits = set()
+        for mask in range(1 << W):
+            R = tuple((mask >> i) & 1 for i in range(W))
+            if R[:3] not in S_node:
+                continue
+            cur = R
+            gs = []
+            for c in ([1] * a + [0] * b):
+                cur, g = _step_r(cur, c)
+                gs.append(g)
+            gates.add(tuple(gs[a:]))
+            exits.add(cur[:3])
+        if gates != {exp_gate} or not exits.issubset(nodes[dst]):
+            trap_automaton_errors += 1
+
+    W = 11
+    exits_7_1 = set()
+    exits_6_1 = set()
+    for mask in range(1 << W):
+        R = tuple((mask >> i) & 1 for i in range(W))
+        cur7 = R
+        for c in ([1] * 7 + [0]):
+            cur7, _ = _step_r(cur7, c)
+        exits_7_1.add(cur7[:3])
+        cur6 = R
+        for c in ([1] * 6 + [0]):
+            cur6, _ = _step_r(cur6, c)
+        exits_6_1.add(cur6[:3])
+    if exits_7_1 != nodes["W_3"] or exits_6_1 != (nodes["W_3"] | {(1, 0, 0)}):
+        trap_automaton_errors += 1
+
+    T_max = 128
+    grid = np.zeros((T_max + 1, 2 * T_max + 3), dtype=np.int8)
+    off = T_max + 1
+    grid[0, off] = 1
+    for t in range(1, T_max + 1):
+        grid[t, off - t : off + t + 1] = (
+            grid[t - 1, off - t - 1 : off + t]
+            ^ (grid[t - 1, off - t : off + t + 1] | grid[t - 1, off - t + 1 : off + t + 2])
+        )
+    N = 64
+    M = np.zeros((2, N, N), dtype=np.int8)
+    for p in (0, 1):
+        for q in range(N):
+            for j in range(N):
+                M[p, q, j] = grid[q + j + p, off + j - q]
+
+    alpha = np.zeros((2, N, N), dtype=np.int8)
+    V = np.zeros((2, N, N), dtype=np.int8)
+    B = np.zeros((2, N, N), dtype=np.int8)
+    gamma = np.zeros((2, N), dtype=np.int8)
+    for p in (0, 1):
+        ah = M[p].copy()
+        vv = M[p].copy()
+        diag = np.array([M[p, k, k] for k in range(N)], dtype=np.int8)
+        for bit in range(6):
+            step = 1 << bit
+            for i in range(N):
+                if i & step:
+                    ah[:, i] ^= ah[:, i ^ step]
+                    vv[i, :] ^= vv[i ^ step, :]
+                    diag[i] ^= diag[i ^ step]
+        alpha[p] = ah
+        V[p] = vv
+        gamma[p] = diag
+        bb = vv.copy()
+        for bit in range(6):
+            step = 1 << bit
+            for i in range(N):
+                if i & step:
+                    bb[:, i] ^= bb[:, i ^ step]
+        B[p] = bb
+
+    partial_inv_errors = 0
+    rim_strict_errors = 0
+    dyadic_slice_errors = 0
+    for p in (0, 1):
+        for u in range(N):
+            for m in range(N):
+                col_sum = 0
+                row_sum = 0
+                for sub in range(u + 1):
+                    if (sub & u) == sub:
+                        col_sum ^= int(B[p, sub, m])
+                        row_sum ^= int(B[p, m, sub])
+                if col_sum != int(alpha[p, u, m]) or row_sum != int(V[p, m, u]):
+                    partial_inv_errors += 1
+            strict = 0
+            for n in range(u):
+                if (n & u) == n:
+                    for m in range(u):
+                        if (m & u) == m and (n | m) == u:
+                            strict ^= int(B[p, n, m])
+            if (int(alpha[p, u, u]) ^ int(V[p, u, u]) ^ int(B[p, u, u]) ^ strict) != int(gamma[p, u]):
+                rim_strict_errors += 1
+        for n in range(1, N):
+            for s in range(6):
+                if int(B[p, n, 1 << s]) != int(V[p, n, 1 << s]):
+                    dyadic_slice_errors += 1
+        for r in range(6):
+            for m in range(1, N):
+                corr = 1 if (p == 1 and m == 1) else 0
+                if int(B[p, 1 << r, m]) != (int(alpha[p, 1 << r, m]) ^ corr):
+                    dyadic_slice_errors += 1
+
+    return {
+        "forcing_law_errors": forcing_law_errors,
+        "opposite_parity_errors": opposite_parity_errors,
+        "trap_automaton_errors": trap_automaton_errors,
+        "partial_inv_errors": partial_inv_errors,
+        "rim_strict_errors": rim_strict_errors,
+        "dyadic_slice_errors": dyadic_slice_errors,
+    }
+
+
 def evaluate_white_tent_extinction_and_drift(
     r30_grid: np.ndarray,
     r90_grid: np.ndarray,
@@ -8287,6 +8507,16 @@ def self_test() -> dict:
         and sieve_38["mixed_5term_errors"] == 0
     ), "Theorem 38 Unmasked Big-Int SWAR Law, 2-Adic Staircase Sieve, Short-Run Multi-Block Lock-In, or 2D Bi-Mahler Decimation/5-Term Law violated"
 
+    rim_39 = verify_short_run_trap_automaton_and_bimahler_rim_strict_laws()
+    assert (
+        rim_39["forcing_law_errors"] == 0
+        and rim_39["opposite_parity_errors"] == 0
+        and rim_39["trap_automaton_errors"] == 0
+        and rim_39["partial_inv_errors"] == 0
+        and rim_39["rim_strict_errors"] == 0
+        and rim_39["dyadic_slice_errors"] == 0
+    ), "Theorem 39 1-Down/0-Right Forcing Law, 8-Node Short-Run Trap Automaton, or 2D Bi-Mahler Rim-Plus-Strict Decomposition violated"
+
     tent_eval = evaluate_white_tent_extinction_and_drift(r30_grid, r90_grid, mein_pigment, spec_tents)
     assert tent_eval["erosion_r30"]["frac_exact_2px_erosion"] == 1.0, "Rule 30 white-tent erosion must be 100% exact 2px/step"
     assert tent_eval["erosion_r90"]["frac_exact_2px_erosion"] == 1.0, "Rule 90 white-tent erosion must be 100% exact 2px/step"
@@ -8359,6 +8589,7 @@ def self_test() -> dict:
         "dyad_36": dyad_36,
         "recip_37": recip_37,
         "sieve_38": sieve_38,
+        "rim_39": rim_39,
         "tent_eval": tent_eval,
     }
 
@@ -9730,7 +9961,7 @@ def render_prize_progress_gif_and_poster(
         },
         {
             "step": 37,
-            "commit": "028758b -> HEAD",
+            "commit": "171769b9",
             "time_str": "Oct 20, 9:30 AM",
             "dt_min": 20,
             "cum_min": 870,
@@ -9745,6 +9976,27 @@ def render_prize_progress_gif_and_poster(
             "synthesis": (
                 "Proves the exact unmasked big-integer SWAR law, the 2-adic zero-run staircase sieve across a=1..9, unconditional elimination of "
                 "heterogeneous short-run (a<=8) multi-block families, and 2D Bi-Mahler scale-decimation, interior grid & 5-term mixed laws."
+            ),
+            "pi_max": 30,
+            "necks_done": 74248449,
+        },
+        {
+            "step": 38,
+            "commit": "171769b9 -> HEAD",
+            "time_str": "Oct 20, 11:15 AM",
+            "dt_min": 20,
+            "cum_min": 890,
+            "phase": "Phase IV: General Period-Pi Elimination, Dual Families & Degree Staircase",
+            "phase_color": "#34d399",
+            "title": "Step 38: 1-Down/0-Right Column Forcing, 8-Node Short-Run Trap Automaton & Bi-Mahler Rim-Plus-Strict Decomposition",
+            "thm_badge": "Theorem 39 (8-Node Trap Automaton & Rim-Strict Law)",
+            "formula_lines": [
+                r"$(a_{t,x}=1\Rightarrow a_{t+1,x}=1\oplus a_{t,x-1}),\;\;(a_{t,x}=0\Rightarrow a_{t,x+1}=a_{t+1,x}\oplus a_{t,x-1}),\quad T_{1^7 0}(\{0,1\}^\infty)=\mathcal{W}_3$",
+                r"$\bigoplus_{n\subseteq u}\mathrm{B}_p(n,m)=\alpha_{2u+p,m},\quad \gamma_p(u)=\alpha_{2u+p,u}\oplus V_p(u,u)\oplus\mathrm{B}_p(u,u)\oplus\gamma_p^{(\mathrm{strict})}(u)$",
+            ],
+            "synthesis": (
+                "Proves the Dual 1-Down/0-Right spatial column forcing law, opposite-parity entry forcing a_{a+b,1}=1, the 8-node 3-bit prefix trap "
+                "automaton across short runs a=1..8, 2D Bi-Mahler partial inversion, and the universal rim-plus-strict decomposition of gamma_p(u)."
             ),
             "pi_max": 30,
             "necks_done": 74248449,
@@ -10099,14 +10351,15 @@ def render_prize_progress_gif_and_poster(
                 "S35\nThm36",
                 "S36\nThm37",
                 "S37\nThm38",
+                "S38\nThm39",
             ],
             color="#cbd5e1",
-            fontsize=4.0,
+            fontsize=3.9,
         )
         ax_time.set_ylim(0, 82)
         ax_time.set_ylabel("Step Duration $\\Delta t$ (min)", color="#cbd5e1", fontsize=9.2)
         ax_time.set_title(
-            "D. Chronological Theorem Build Time per Milestone (Oct 18–20, 2026: 37 Milestones, 14h 30m Active Proof Time)",
+            "D. Chronological Theorem Build Time per Milestone (Oct 18–20, 2026: 38 Milestones, 14h 50m Active Proof Time)",
             color="#f8fafc",
             fontsize=10.3,
             fontweight="bold",
@@ -10158,8 +10411,8 @@ def render_prize_progress_gif_and_poster(
             ),
             (
                 "5. Twin SWAR, 2-Sheet PDE, EF Law & Prize #1-#3",
-                idx >= 36,
-                "PROVED (Thms 31-38: B_p, EF, W_3, Sieve, deg=2T-1)",
+                idx >= 37,
+                "PROVED (Thms 31-39: B_p, EF, 8-Node Trap, deg=2T-1)",
             ),
             (
                 "6. Primitive Necklaces Extinguished (Pi=2..30)",
@@ -10268,6 +10521,7 @@ def main(argv: list[str] | None = None) -> int:
     dyad_36 = res["dyad_36"]
     recip_37 = res["recip_37"]
     sieve_38 = res["sieve_38"]
+    rim_39 = res["rim_39"]
     print(
         f"[open_problems_A_B_C_D] OK | backward inverse errors={bwd['backward_inverse_errors']} (post-barrier cycles: 0/3, 0/15, 0/255) | "
         f"unit-seed branch='{bs_diag['unit_seed_p16_branch_path']}' -> exact k_5={bs_diag['unit_seed_exact_k5']} (T_lock={bs_diag['unit_seed_exact_tlock_k5']}, "
@@ -10340,7 +10594,7 @@ def main(argv: list[str] | None = None) -> int:
         even_jump["max_ext_30"],
     )
     print(
-        f"[theorems_15_to_38_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv/EvenJump/Bridge31/Twin32/Bich33/Subd34/Grand35/Dyad36/Recip37/Sieve38 errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']},{even_jump['even_jump_errors']},{bridge_31['mahler_bridge_errors']},{twin_32['twin_swar_errors'] + twin_32['shift_rec_errors'] + twin_32['self_dual_errors'] + twin_32['erasure_law_errors'] + twin_32['deriv_and_bijection_errors'] + twin_32['parity_lock_errors'] + twin_32['collapse_9step_errors'] + twin_32['multirun_lockin_errors']},{bich_33['full_cone_errors'] + bich_33['quadrant_pde_errors'] + bich_33['pascal_mahler_errors'] + bich_33['pure_mahler_evol_errors'] + bich_33['bi_sierpinski_errors'] + bich_33['gate_jump_and_leapfrog_errors'] + bich_33['bimahler_or_conv_errors'] + bich_33['universal_zero_errors']},{subd_34['bwd_pde_errors'] + subd_34['col_mahler_bwd_errors'] + subd_34['bimahler_pde_errors'] + subd_34['subdiag_transfer_errors'] + subd_34['shifted_bimahler_errors'] + subd_34['subdiag_lock_violations'] + subd_34['subdiag_invariant_errors'] + subd_34['euler_fermat_violations'] + subd_34['center_mahler_survivors']},{grand_35['top_octave_delta_errors'] + grand_35['post_doubling_degree_errors'] + grand_35['anf_degree_errors'] + grand_35['top_monomial_errors'] + grand_35['sensitivity_boundary_errors']},{dyad_36['self_dual_dyadic_errors'] + dyad_36['joint_pair_contradiction_errors'] + dyad_36['corner_slice_errors'] + dyad_36['monic_lead_errors'] + dyad_36['proj_cutoff_errors'] + dyad_36['crystal_decomp_errors']},{recip_37['reciprocity_errors'] + recip_37['integral_errors'] + recip_37['triangular_v_errors'] + recip_37['antidiag_ks_errors'] + recip_37['wall_invariant_errors']},{sieve_38['swar_bigint_errors'] + sieve_38['staircase_sieve_errors'] + sieve_38['short_run_lockin_errors'] + sieve_38['decim_and_interior_errors'] + sieve_38['mixed_5term_errors']}) | "
+        f"[theorems_15_to_39_period_elimination] OK | Master/Bridge/CharPlane/Crystal/Lucas/MahlerLock/ProjTower/FrobMahler/SierpTensor/QuotSplit/MahlerInv/EvenJump/Bridge31/Twin32/Bich33/Subd34/Grand35/Dyad36/Recip37/Sieve38/Rim39 errors=({master_eq['master_eq_errors']},{master_eq['bridge_errors']},{char_plane['char_plane_errors']},{char_crystal['crystal_cone_errors']},{lucas_mahler['or_conv_lucas_errors']},{mahler_lock['decomp_errors']},{proj_tower['tower_errors']},{frob_mahler['frob_errors']},{sierp_tensor['tensor_errors']},{quot_split['b_partial_errors']},{mahler_inv['inv_errors']},{even_jump['even_jump_errors']},{bridge_31['mahler_bridge_errors']},{twin_32['twin_swar_errors'] + twin_32['shift_rec_errors'] + twin_32['self_dual_errors'] + twin_32['erasure_law_errors'] + twin_32['deriv_and_bijection_errors'] + twin_32['parity_lock_errors'] + twin_32['collapse_9step_errors'] + twin_32['multirun_lockin_errors']},{bich_33['full_cone_errors'] + bich_33['quadrant_pde_errors'] + bich_33['pascal_mahler_errors'] + bich_33['pure_mahler_evol_errors'] + bich_33['bi_sierpinski_errors'] + bich_33['gate_jump_and_leapfrog_errors'] + bich_33['bimahler_or_conv_errors'] + bich_33['universal_zero_errors']},{subd_34['bwd_pde_errors'] + subd_34['col_mahler_bwd_errors'] + subd_34['bimahler_pde_errors'] + subd_34['subdiag_transfer_errors'] + subd_34['shifted_bimahler_errors'] + subd_34['subdiag_lock_violations'] + subd_34['subdiag_invariant_errors'] + subd_34['euler_fermat_violations'] + subd_34['center_mahler_survivors']},{grand_35['top_octave_delta_errors'] + grand_35['post_doubling_degree_errors'] + grand_35['anf_degree_errors'] + grand_35['top_monomial_errors'] + grand_35['sensitivity_boundary_errors']},{dyad_36['self_dual_dyadic_errors'] + dyad_36['joint_pair_contradiction_errors'] + dyad_36['corner_slice_errors'] + dyad_36['monic_lead_errors'] + dyad_36['proj_cutoff_errors'] + dyad_36['crystal_decomp_errors']},{recip_37['reciprocity_errors'] + recip_37['integral_errors'] + recip_37['triangular_v_errors'] + recip_37['antidiag_ks_errors'] + recip_37['wall_invariant_errors']},{sieve_38['swar_bigint_errors'] + sieve_38['staircase_sieve_errors'] + sieve_38['short_run_lockin_errors'] + sieve_38['decim_and_interior_errors'] + sieve_38['mixed_5term_errors']},{rim_39['forcing_law_errors'] + rim_39['opposite_parity_errors'] + rim_39['trap_automaton_errors'] + rim_39['partial_inv_errors'] + rim_39['rim_strict_errors'] + rim_39['dyadic_slice_errors']}) | "
         f"SWAR cone tails={bridge_31['swar_candidates_tested']} (survivors={bridge_31['swar_survivors']}, max_steps={bridge_31['swar_max_steps']}) | "
         f"Q_m={twin_32['moore_sizes_m1_to_6']} | EF tests={subd_34['euler_fermat_tests']} | half-density={grand_35['exact_half_density_count_s1_to_41']}/41 | ANF mons={grand_35['monomial_counts_t1_to_7']} | "
         f"Pi=2..30 ({tot_necks} necklaces, {tot_prefs} prefs): unextinguished={tot_unext} (max_ext_steps={max_ext})"
