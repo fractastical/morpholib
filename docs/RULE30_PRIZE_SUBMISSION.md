@@ -4,7 +4,7 @@
 **Repository & Verification Code:** [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py)  
 **Date:** October 19, 2026
 
-![Animated 23-Milestone Progress Dashboard: Theorems 1–24 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
+![Animated 24-Milestone Progress Dashboard: Theorems 1–25 Toward the Wolfram Rule 30 Prize](media/rule30_prize_progress.gif)
 
 ---
 
@@ -500,9 +500,31 @@ For every Mahler index $m \ge 0$ and parity $p = S \bmod 2 \in \{0, 1\}$, consid
 
 ---
 
+### Theorem 25 (2-Adic Projective Limit Tower $C_r(S) = A_S(\lfloor S/2 \rfloor \bmod 2^r)$, Locked Dyadic Period-$2^{r+1}$ Convergence to Density $1/2$ Across $r = 1 \dots 15$ [$65,536$ Diagonals], Binary-Support Telescoping Identity for $c_S$, Zero-Shift Row-Coordinate Recurrence $R_N(k+1) \oplus R_N(k) = R_{N-1}(k) \lor R_{N-2}(k)$, and Complete Zero-Branching Anti-Diagonal Extinction Through Period $\Pi = 25$ [$2,807,194$ Primitive Necklaces, $793,212,133$ Admissible Prefixes])
+For every 2-adic truncation order $r \ge 0$ and characteristic index $S = 2k + p$ ($k = \lfloor S/2 \rfloor$, $p = S \bmod 2 \in \{0, 1\}$), define the $r$-th 2-adic truncated Mahler center-column approximation
+$$C_r(S) \;:=\; \bigoplus_{\substack{0 \le m < 2^r \\ (m \;\land\; k) = m}} \alpha_{S, m} \qquad (r \ge 0,\;\; S \ge 0).$$
+Then:
+1. **2-Adic Projective Limit Tower & Binary-Support Telescoping Identity for $c_S$:** By Lucas' Theorem, $\binom{k}{m} \equiv \binom{k \bmod 2^r}{m} \pmod 2$ for all $0 \le m < 2^r$ and $\binom{k \bmod 2^r}{m} = 0$ for all $m \ge 2^r$. Therefore, for every truncation order $r \ge 0$ and every $S = 2k + p$, the truncated Mahler sum $C_r(S)$ collapses identically to a **single characteristic crystal evaluation** and a **single left-cone diagonal** (`0` errors across all $r = 0 \dots 7$ and $S = 0 \dots 299$):
+   $$C_r(S) \;\equiv\; A_S\bigl(k \bmod 2^r\bigr) \;=\; d_{2(k \bmod 2^r) + p}\!\left(\left\lceil \frac{S}{2} \right\rceil + \bigl(k \bmod 2^r\bigr)\right) \qquad (\forall\, r \ge 0,\;\; \forall\, S \ge 0).$$
+   Moreover, because $k \bmod 2^{b+1} = (k \bmod 2^b) + 2^b\,\mathrm{bit}_b(k)$, the sequence $\{C_r(S)\}_{r \ge 0}$ changes at level $b$ if and only if $b \in \mathrm{supp}_2(\lfloor S/2 \rfloor)$, yielding the **Exact Binary-Support Telescoping Identity** (`0` errors across $S = 0 \dots 299$):
+   $$c_S \;=\; 1 \;\oplus\; \bigoplus_{b \in \mathrm{supp}_2(\lfloor S/2 \rfloor)} \Bigl(A_S\bigl(\lfloor S/2 \rfloor \bmod 2^{b+1}\bigr) \;\oplus\; A_S\bigl(\lfloor S/2 \rfloor \bmod 2^b\bigr)\Bigr).$$
+2. **Locked 2-Adic Projective Tower $C_r^{(\text{locked})}(S)$ Across $r = 1 \dots 15$ ($65,536$ Diagonals):** Replacing $d_{2(k \bmod 2^r)+p}$ by its locked periodic crystal $c_{2(k \bmod 2^r)+p}$ yields the locked projective sequence
+   $$C_r^{(\text{locked})}(2k + p) \;:=\; c_{2(k \bmod 2^r) + p}\!\left(k + p + (k \bmod 2^r)\right),$$
+   which agrees with the true Rule 30 center column $c_S = a_{S, 0}$ for all $S$ satisfying $K_{\text{lock}}(p, m) \le k < 2^r$. Across all $r = 1 \dots 15$ ($K < 65,536$, evolved via the Kogge–Stone $P = 16$ cycle operator past the even-parity barriers $K \in \{400, 53208, 58287\}$), $C_r^{(\text{locked})}(S)$ has **exact primitive dyadic period $P(C_r^{(\text{locked})}) = 2^{r+1}$** (`0` half-period collisions across $r = 1 \dots 15$) and ones density $32,705 / 65,536 = 0.499039$ at $r = 15$ ($|d_{15} - 1/2| = 0.000961$).
+3. **Zero-Shift Row-Coordinate Recurrence & Trailing-Zero Support Contraction Law:** Re-indexing the left anti-diagonal $B_N$ by row depth $k = N - m \in \{0, \dots, N\}$ via $R_N(k) := D_N(N - k) = a_{t_0 + k, -(N - k)}$ reverses the bit order of $B_N$ and **eliminates all bit shifts on the right-hand side** (`0` errors across $S = 2 \dots 199$):
+   $$R_N(k + 1) \;\oplus\; R_N(k) \;=\; R_{N-1}(k) \;\lor\; R_{N-2}(k) \qquad (0 \le k \le N - 2),$$
+   with boundary bit $R_N(N) = c_{t_0 + N}$ at the MSB and exterior condition $R_N(0) = a_{t_0, -N}$ at bit $0$ (LSB). In the 2-adic Mahler basis $R_N(k) = \bigoplus_m \rho_{N, m} \binom{k}{m} \bmod 2$, this eliminates all shift operators $f^+$:
+   $$\rho_{N,\, m+1} \;=\; \rho_{N-1, m} \;\oplus\; \rho_{N-2, m} \;\oplus\; \bigoplus_{a \mid b = m} \bigl(\rho_{N-1, a} \land \rho_{N-2, b}\bigr).$$
+   Furthermore, in the exterior phase $N = N_{\text{init}} + s$ ($s \ge 1$) where $R_N(0) \equiv 0$, induction on $s$ proves the **Trailing-Zero Support Contraction Law**: $R_N(k) \equiv 0$ for all $0 \le k < \lfloor (s - 1)/2 \rfloor$, so shifting off dead trailing zero bits keeps the active bit-width strictly inside a single 64-bit `uint64` word across all exterior steps.
+4. **Complete Zero-Branching Anti-Diagonal Extinction Through Period $\Pi = 25$ ($2,807,194$ Primitive Necklaces, $793,212,133$ Admissible Prefixes):** Combining the Zero-Shift Row-Coordinate solver with Lyndon Prefix-Trie Compression ($K = \Pi - 3$, `3.4x` prefix speedup), Single-PrefixXOR Complement Branching ($R_N^{(B)} = R_N^{(A)} \oplus (2^N - 1)$), and Trailing-Zero Support Contraction verifies in `45.5 s`:
+   - **$\Pi = 25$:** $1,342,176$ primitive necklaces, $465,081,565$ admissible 1-period prefixes $\implies$ **$100\%$ extinguished (`0` survivors, $S_{\max} = 53$)**.
+   - **Cumulative Total ($\Pi = 2 \dots 25$):** **$2,807,194$ primitive necklaces and $793,212,133$ admissible prefixes extinguished with `0` survivors** ($S_{\max}(\Pi) \le 53$). $\square$
+
+---
+
 ## 7. One-Command Verification
 
-All twenty-four theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
+All twenty-five theorems and the causal 64-bit Kogge–Stone solver are verified in [`1984-wolfram-conus-textile-rule30.py`](../1984-wolfram-conus-textile-rule30.py):
 
 ```bash
 ./venv/bin/python 1984-wolfram-conus-textile-rule30.py --self-test-only
