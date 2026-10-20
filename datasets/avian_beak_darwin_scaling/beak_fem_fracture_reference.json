@@ -1,0 +1,112 @@
+{
+  "metadata": {
+    "dataset_id": "soons-2010-2015-beak-fem-fracture-reference-v1",
+    "title": "Pass 3 reduced two-material (trabecular bone core + keratin rhamphotheca) plane-stress finite-element fracture-risk reference for Darwin's finch upper beaks",
+    "pass": 3,
+    "created": "2026-10-19",
+    "provenance_note": "All material constants and empirical statements below were transcribed OFFLINE from memory of the cited papers during the Pass 3 remediation round (no network access). They are order-of-magnitude anchors, NOT digitised figure values; every DOI must be re-verified in Pass 4. Values marked `analytic` are closed-form predictions (Euler-Bernoulli / Timoshenko / Gibson-Ashby), not measurements.",
+    "sources": [
+      {
+        "id": "soons2010",
+        "citation": "Soons J, Herrel A, Genbrugge A, Aerts P, Podos J, Adriaens D, de Witte Y, Jacobs P, Dirckx J (2010). Mechanical stress, fracture risk and beak evolution in Darwin's finches. Philosophical Transactions of the Royal Society B 365(1543):1093-1098.",
+        "doi": "10.1098/rstb.2009.0280",
+        "used_for": "micro-CT-based finite-element modelling of Geospiza upper beaks under bite-force loads; prediction that peak von Mises stress under in vivo bite forces is far less variable across species than bite force itself (beak shape keeps fracture safety factors similar)"
+      },
+      {
+        "id": "soons2012",
+        "citation": "Soons J, Herrel A, Genbrugge A, Adriaens D, Aerts P, Dirckx J (2012). Multi-layered bird beaks: a finite-element approach towards the role of keratin in stress dissipation. Journal of the Royal Society Interface 9(73):1787-1796.",
+        "doi": "10.1098/rsif.2011.0910",
+        "used_for": "two-material bone + rhamphotheca keratin finite-element beak model; prediction that the compliant keratin layer lowers peak stress in the underlying bone (stress shielding / dissipation)"
+      },
+      {
+        "id": "soons2015",
+        "citation": "Soons J, Genbrugge A, Podos J, Adriaens D, Aerts P, Dirckx J, Herrel A (2015). Is beak morphology in Darwin's finches tuned to loading demands? PLoS ONE 10(6):e0129479.",
+        "doi": "10.1371/journal.pone.0129479",
+        "used_for": "tip-biting vs base-biting load cases; ground finches crack hard seeds at the beak base, where finite-element stresses are lower than for tip biting"
+      },
+      {
+        "id": "herrel2005",
+        "citation": "Herrel A, Podos J, Huber SK, Hendry AP (2005). Evolution of bite force in Darwin's finches: a key role for head width. Journal of Evolutionary Biology 18(3):669-675.",
+        "doi": "10.1111/j.1420-9101.2004.00857.x",
+        "used_for": "in vivo bite forces of Darwin's finches (the bite_force_N column of avian_beak_darwin_scaling_reference.json is anchored on this study and Campas et al. 2010)"
+      },
+      {
+        "id": "gibson1997",
+        "citation": "Gibson LJ, Ashby MF (1997). Cellular Solids: Structure and Properties, 2nd ed. Cambridge University Press.",
+        "doi": "10.1017/CBO9781139878326",
+        "used_for": "open-cell foam scaling law E_trabecular / E_solid = C (rho / rho_s)^2 used to reduce the micro-CT trabecular core to an effective homogenised modulus"
+      },
+      {
+        "id": "seki2005",
+        "citation": "Seki Y, Schneider MS, Meyers MA (2005). Structure and mechanical behavior of a toucan beak. Acta Materialia 53(20):5281-5296.",
+        "doi": "10.1016/j.actamat.2005.04.048",
+        "used_for": "order-of-magnitude Young's modulus of beak rhamphotheca beta-keratin (~1.4 GPa) and of the cancellous bony core"
+      }
+    ]
+  },
+  "materials": {
+    "bone_cortical_solid": {
+      "E_MPa": 7000.0,
+      "nu": 0.30,
+      "strength_MPa": 150.0,
+      "note": "Effective Young's modulus of finch beak bone used in the Soons et al. (2010, 2012) micro-CT finite-element models (~7 GPa; transcribed from memory). Strength is a generic cortical-bone compressive strength (order of magnitude)."
+    },
+    "bone_trabecular_core": {
+      "bvtv_default": 0.55,
+      "gibson_ashby_exponent": 2.0,
+      "gibson_ashby_prefactor": 1.0,
+      "E_formula": "E_trab = prefactor * E_cortical_solid * bvtv^exponent",
+      "note": "Bone volume fraction (BV/TV) of the pneumatised trabecular beak core is a free parameter (default 0.55, exposed via --bvtv); no micro-CT volume is vendored in this repository, so the trabecular architecture is homogenised with the Gibson-Ashby open-cell law rather than meshed voxel-by-voxel."
+    },
+    "keratin_rhamphotheca": {
+      "E_MPa": 1500.0,
+      "nu": 0.30,
+      "strength_MPa": 60.0,
+      "thickness_mm": 0.35,
+      "tip_solid_keratin_depth_mm": 0.70,
+      "note": "Beta-keratin rhamphotheca modulus ~1.4-1.6 GPa (Seki et al. 2005 toucan; Soons et al. 2012 range). Thickness 0.35 mm and a solid-keratin tip of depth 0.70 mm (= 2 * thickness) are modelling choices; tensile strength is an order-of-magnitude value."
+    }
+  },
+  "fem_discretisation": {
+    "element": "4-node bilinear quadrilateral (Q4), 2x2 Gauss quadrature, plane stress with out-of-plane thickness = beak width W_mm",
+    "default_nx": 90,
+    "default_ny": 18,
+    "convergence_meshes": [[60, 12], [90, 18], [135, 27]],
+    "tip_truncation_fraction": 0.05,
+    "clamp": "all nodes on the base section x = L_mm fully fixed (upper beak attached to the skull / nasofrontal hinge treated as rigid)",
+    "stress_recovery": "element-centroid stresses; peak values exclude the clamped base column (singular corner stress); structural peaks additionally exclude the seed-contact zone (centroid within seed_contact_width_mm of the load point), whose Hertz-like contact pressure F / (W w_c) is reported separately"
+  },
+  "load_cases": {
+    "tip_biting": {"x_over_L": 0.08, "angle_deg": 0.0, "note": "Soons et al. (2015) tip-biting case (seed held at the beak tip)."},
+    "base_biting": {"x_over_L": 0.70, "angle_deg": 0.0, "note": "Soons et al. (2015) base-biting case: ground finches crack hard seeds near the base of the beak."},
+    "asymmetric_oblique": {"x_over_L": 0.70, "angle_deg": 30.0, "note": "Asymmetric seed-cracking load: seed reaction inclined 30 degrees from the dorsoventral normal, adding a rostrocaudal shear component (seed slipping along the tomium)."},
+    "seed_contact_width_mm": 1.2,
+    "contact_note": "The seed reaction is applied as a uniform traction over a contact patch of width seed_contact_width_mm centred on x_load (tributary-length nodal weights), so the contact stress is mesh-independent (a single-node point load would be singular and non-convergent).",
+    "direction_convention": "unit load vector = (sin(angle), cos(angle)) applied to the tomial (ventral) edge of the upper beak, pushing dorsally",
+    "beam_comparison_section": "x_s = (x_load + L) / 2 (mid lever arm); analytic sigma_xx = F (x_s - x_load) (y_c - D_s / 2) / (W D_s^3 / 12) with local depth D_s = y_top(x_s), evaluated on the all-bone (single-material) model so that the comparison isolates geometry from the keratin shell"
+  },
+  "analytic_benchmarks": {
+    "euler_bernoulli_bending_stress": {"formula": "sigma_xx(x, y) = M(x) (y - D/2) / I,  M(x) = F (x - x_load),  I = W D^3 / 12", "kind": "analytic"},
+    "timoshenko_tip_deflection": {"formula": "delta = F a^3 / (3 E I) + F a / (kappa G A),  a = L - x_load,  G = E / (2 (1 + nu)),  kappa = 10 (1 + nu) / (12 + 11 nu)", "kind": "analytic"},
+    "peak_root_bending_stress": {"formula": "sigma_root = 6 F (L - x_load) / (W D^2)", "kind": "analytic", "note": "Rectangular-cantilever estimate used as the Law 3 reference for the 14-species FEM peak-stress scaling."},
+    "benchmark_cantilever": {"L_mm": 20.0, "D_mm": 2.0, "W_mm": 1.0, "F_N": 1.0, "nx": 80, "ny": 8},
+    "acceptance": {"bending_stress_rel_error_max": 0.06, "tip_deflection_rel_error_max": 0.08, "mesh_convergence_rel_change_max": 0.08}
+  },
+  "empirical_predictions": {
+    "soons2010_stress_homeostasis": {
+      "statement": "Across Geospiza species, peak von Mises stress in the upper beak under each species' own in vivo bite force varies much less than bite force itself (coefficient of variation of stress << coefficient of variation of bite force).",
+      "reference_quantity": "CV(stress) / CV(bite force) < 1",
+      "kind": "qualitative (transcribed from memory)"
+    },
+    "soons2012_keratin_shielding": {
+      "statement": "Adding the compliant keratin rhamphotheca lowers peak stress in the bone core relative to an all-bone beak of identical outer geometry.",
+      "reference_quantity": "peak bone stress reduction fraction > 0",
+      "kind": "qualitative (transcribed from memory)"
+    },
+    "soons2015_base_vs_tip": {
+      "statement": "Base biting produces lower peak stress than tip biting for the same bite force; ground finches crack seeds at the base.",
+      "reference_quantity": "sigma_tip / sigma_base > 1 (beam-theory lever-arm estimate (L - x_tip) / (L - x_base) = 0.92 / 0.30 = 3.07)",
+      "kind": "qualitative with analytic lever-arm anchor"
+    }
+  }
+}

@@ -1,0 +1,121 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-alberti-avian-beak-darwin-scaling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-alberti-avian-beak-darwin-scaling-model-fidelity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-alberti-avian-beak-darwin-scaling-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Campas et al. (2010) PNAS affine scaling-and-shear transformation + Abzhanov et al. (2004, 2006) Bmp4/Calmodulin beak morphogenesis + Soons et al. (2010-2015) reduced FEM fracture risk — Model fidelity to source: 90/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credited: exact upper-triangular affine group and analytic inverse (L154-L172), Bmp4/CaM field and RCAS suite (L377-L461), and the new reduced FEM — a correct vectorised Q4 plane-stress formulation (2x2 Gauss, symmetric positive-definite D, exact linearity 2F -> 2 sigma) verified against Euler-Bernoulli and Timoshenko (L744-L782, L785-L861, L935-L971), Gibson-Ashby E_trab = E_s (BV/TV)^2 (L636-L641), a two-material shell/core map (L722-L735), three Soons-type load cases (L974-L1064) and 5 machine-checked Lean theorems. Deductions: the 14-species 'empirical' profiles are the forward transform plus Gaussian noise (L266-L272), so the headline collapse and negative control are circular (-5); the remediation item asked for a micro-CT 3D fracture solver and received a 2D sagittal plane-stress section with uniform out-of-plane thickness W_mm (L763-L782), no crack model, and an artificial 0.7 mm solid-keratin tip clamp (L684) that dominates the tip-biting peaks (-3); the `bmp4_index` used for the r_Bmp4 = 0.9997 correlation is linear in `s_D` by construction (L349-L351) (-1); lower-mandible (-0.34, 0.88, 0.90; L198) and 3D half-width (0.48 x^0.82; L213) factors are uncited model inventions (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "2021-alberti-avian-beak-darwin-scaling.py L266–L272: 14-species 'empirical' profiles are forward_transform_beak_surface() output plus rng.normal(0, 0.0024 s_D) — the collapse tests the inverse of the same transform <https://github.com/fractastical/morpholib/blob/8a7928d7/2021-alberti-avian-beak-darwin-scaling.py#L266-L272>",
+            "2021-alberti-avian-beak-darwin-scaling.py L680–L684: Tip clamped to tip_solid_depth_mm (0.7 mm solid keratin) because the x^1.85 culmen is ~1 % of basal depth at x = 0.1 L; this plate dominates the 10.8x tip/base ratio <https://github.com/fractastical/morpholib/blob/8a7928d7/2021-alberti-avian-beak-darwin-scaling.py#L680-L684>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-model-fidelity-4>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-model-fidelity-5>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-model-fidelity-6> ;
+        pk:hasScore "0.9"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2021-alberti-avian-beak-darwin-scaling.py L154–L172" ;
+        dct:description "Affine scaling-and-shear matrix M(s_L, s_D, gamma) and its closed-form inverse" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/2021-alberti-avian-beak-darwin-scaling.py#L154-L172> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2021-alberti-avian-beak-darwin-scaling.py L636–L641" ;
+        dct:description "Gibson-Ashby open-cell law for the homogenised trabecular core modulus" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/2021-alberti-avian-beak-darwin-scaling.py#L636-L641> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "2021-alberti-avian-beak-darwin-scaling.py L744–L861" ;
+        dct:description "Q4 strain-displacement, sparse plane-stress stiffness assembly, and solve_beak_fem with tributary-weighted contact traction and oblique load vector" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/2021-alberti-avian-beak-darwin-scaling.py#L744-L861> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "2021-alberti-avian-beak-darwin-scaling.py L935–L971" ;
+        dct:description "Rectangular-cantilever verification against Euler-Bernoulli (sigma ratio 0.9925) and Timoshenko (delta ratio 0.9905)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/2021-alberti-avian-beak-darwin-scaling.py#L935-L971> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-model-fidelity-5> a pk:EvidenceItem ;
+        rdfs:label "2021-alberti-avian-beak-darwin-scaling.py L974–L1064" ;
+        dct:description "Three Soons-type load cases (tip x/L = 0.08, base 0.70, oblique 30 deg) with bone/keratin fracture-risk indices" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/2021-alberti-avian-beak-darwin-scaling.py#L974-L1064> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-model-fidelity-6> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_070_avian_beak_darwin_scaling.lean L109–L153" ;
+        dct:description "Two new theorems: soons_cantilever_peak_stress_depth_quadratic_shielding and gibson_ashby_keratin_isostrain_shielding (5 total, 0 sorrys, lean exit 0)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/morphoeval/lean/loops/Loop_070_avian_beak_darwin_scaling.lean#L109-L153> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 070 Pass 3 Assessor, Phase B subagent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/70> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.actamat.2005.04.048>,
+            <https://doi.org/10.1017/CBO9781139878326>,
+            <https://doi.org/10.1038/nature04843>,
+            <https://doi.org/10.1073/pnas.0911575107>,
+            <https://doi.org/10.1098/rsif.2011.0910>,
+            <https://doi.org/10.1098/rsif.2014.0284>,
+            <https://doi.org/10.1098/rstb.2009.0280>,
+            <https://doi.org/10.1111/j.1420-9101.2004.00857.x>,
+            <https://doi.org/10.1126/science.1098095>,
+            <https://doi.org/10.1371/journal.pone.0129479> .
+    <https://doi.org/10.1016/j.actamat.2005.04.048> dct:date "2005"^^xsd:gYear ;
+        dct:title "Structure and mechanical behavior of a toucan beak" .
+    <https://doi.org/10.1017/CBO9781139878326> dct:date "1997"^^xsd:gYear ;
+        dct:title "Cellular Solids: Structure and Properties (2nd ed.)" .
+    <https://doi.org/10.1038/nature04843> dct:date "2006"^^xsd:gYear ;
+        dct:title "The calmodulin pathway and evolution of elongated beak morphology in Darwin's finches" .
+    <https://doi.org/10.1073/pnas.0911575107> dct:date "2010"^^xsd:gYear ;
+        dct:title "Scaling and shear transformations capture beak shape diversity in Darwin's finches" .
+    <https://doi.org/10.1098/rsif.2011.0910> dct:date "2012"^^xsd:gYear ;
+        dct:title "Multi-layered bird beaks: a finite-element approach towards the role of keratin in stress dissipation" .
+    <https://doi.org/10.1098/rsif.2014.0284> dct:date "2014"^^xsd:gYear ;
+        dct:title "Shared developmental programme strongly constrains beak shape diversity in songbirds" .
+    <https://doi.org/10.1098/rstb.2009.0280> dct:date "1543"^^xsd:gYear ;
+        dct:title "Mechanical stress, fracture risk and beak evolution in Darwin's finches" .
+    <https://doi.org/10.1111/j.1420-9101.2004.00857.x> dct:date "2005"^^xsd:gYear ;
+        dct:title "Evolution of bite force in Darwin's finches: a key role for head width" .
+    <https://doi.org/10.1126/science.1098095> dct:date "2004"^^xsd:gYear ;
+        dct:title "Bmp4 and morphological variation of beaks in Darwin's finches" .
+    <https://doi.org/10.1371/journal.pone.0129479> dct:date "2015"^^xsd:gYear ;
+        dct:title "Is beak morphology in Darwin's finches tuned to loading demands?" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Campas et al. (2010) PNAS affine scaling-and-shear transformation + Abzhanov et al. (2004, 2006) Bmp4/Calmodulin beak morphogenesis + Soons et al. (2010-2015) reduced FEM fracture risk — Model fidelity to source 90/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T19:58:11Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-alberti-avian-beak-darwin-scaling-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/70> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

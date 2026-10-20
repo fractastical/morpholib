@@ -105,4 +105,73 @@ theorem poiseuille_quadratic_area_resistance_amplification (a0 da : Nat) :
   · unfold poiseuille_conductance_sq
     exact Nat.mul_lt_mul'' h_lt h_lt
 
+
+-- ============================================================================
+-- Law 4 (`nelson-airway-mucosal-creasing-4`, Pass 3):
+-- Series–Parallel Bifurcation Impedance Homogeneous Scaling Law
+-- ============================================================================
+/-- In the Weibel (1963) dichotomous bronchial tree each parent branch of resistance `R_p`
+    feeds two daughter subtrees of resistance `R_a`, `R_b` in parallel, so the subtree
+    impedance is `R_sub = R_p + R_a R_b / (R_a + R_b) = N / D` with
+      `N = R_p (R_a + R_b) + R_a R_b`,  `D = R_a + R_b`.
+    If airway smooth-muscle shortening is *homogeneous*, every branch resistance is
+    multiplied by the same Law-3 Hagen–Poiseuille factor `k = (A_0 / A_lumen)^2`.
+    Then `N(k R_p, k R_a, k R_b) = k * (k * N)` and `D(k R_a, k R_b) = k * D`, so
+    `R_sub` scales exactly by `k`: by induction over generations the whole-tree
+    resistance amplification equals the single-airway amplification
+    (`R_tree / R_tree,0 = (A_0 / A_lumen)^2`), which the script verifies to 1e-9
+    (`simulate_heterogeneous_bronchospasm`, sigma = 0, kappa = 0). -/
+def bifurcation_subtree_num (rp ra rb : Nat) : Nat :=
+  rp * (ra + rb) + ra * rb
+
+def bifurcation_subtree_den (ra rb : Nat) : Nat :=
+  ra + rb
+
+theorem bifurcation_resistance_homogeneous_scaling (k rp ra rb : Nat) :
+    bifurcation_subtree_num (k * rp) (k * ra) (k * rb) =
+      k * (k * bifurcation_subtree_num rp ra rb) ∧
+    bifurcation_subtree_den (k * ra) (k * rb) = k * bifurcation_subtree_den ra rb := by
+  constructor
+  · unfold bifurcation_subtree_num
+    simp only [Nat.mul_add, Nat.mul_comm, Nat.mul_left_comm]
+  · unfold bifurcation_subtree_den
+    exact (Nat.mul_add k ra rb).symm
+
+
+-- ============================================================================
+-- Law 5 (`nelson-airway-mucosal-creasing-5`, Pass 3):
+-- Venegas Flow–Stretch Positive-Feedback Monotonicity Law
+-- ============================================================================
+/-- Venegas et al. (2005) Nature 434:777-782: airway smooth muscle that receives less
+    tidal stretch (lower branch ventilation `Q`) shortens more. Linearising the
+    saturating feedback `eps = eps0 * (1 + kappa * tanh(1 - Q / Q_mean))` about the
+    generation mean and clearing fractions with positive gain `g = kappa + 1` and
+    baseline `e = eps0 + 1`, the scaled feedback strain is
+      `S(Q) = e * (Q_mean * g - g * Q)`  (an integer).
+    For two branches with `Q_low < Q_high` we prove `S(Q_high) < S(Q_low)`: the
+    under-ventilated branch is driven to strictly larger ASM shortening, hence (Law 3)
+    strictly larger Poiseuille resistance and even lower ventilation — the positive
+    feedback that self-organises contiguous ventilation defects in the asthmatic tree. -/
+def feedback_strain_scaled (e0 kappa q_mean q : Nat) : Int :=
+  ((e0 + 1 : Nat) : Int) * (((q_mean * (kappa + 1) : Nat) : Int) - (((kappa + 1) * q : Nat) : Int))
+
+theorem venegas_feedback_strain_monotone (e0 kappa q_mean q0 dq : Nat) :
+    (q0 + 1) < (q0 + dq + 2) ∧
+    feedback_strain_scaled e0 kappa q_mean (q0 + dq + 2) <
+      feedback_strain_scaled e0 kappa q_mean (q0 + 1) := by
+  have h_q : q0 + 1 < q0 + dq + 2 := by omega
+  have h_g : 0 < kappa + 1 := by omega
+  have h_nat : (kappa + 1) * (q0 + 1) < (kappa + 1) * (q0 + dq + 2) :=
+    Nat.mul_lt_mul_of_pos_left h_q h_g
+  have h_int : (((kappa + 1) * (q0 + 1) : Nat) : Int) <
+      (((kappa + 1) * (q0 + dq + 2) : Nat) : Int) := Int.ofNat_lt.mpr h_nat
+  have h_sub : (((q_mean * (kappa + 1) : Nat) : Int) - (((kappa + 1) * (q0 + dq + 2) : Nat) : Int)) <
+      (((q_mean * (kappa + 1) : Nat) : Int) - (((kappa + 1) * (q0 + 1) : Nat) : Int)) :=
+    Int.sub_lt_sub_left h_int _
+  have h_e : (0 : Int) < ((e0 + 1 : Nat) : Int) := by omega
+  constructor
+  · exact h_q
+  · unfold feedback_strain_scaled
+    exact Int.mul_lt_mul_of_pos_left h_sub h_e
+
 end MathOfBiology.Loop_068

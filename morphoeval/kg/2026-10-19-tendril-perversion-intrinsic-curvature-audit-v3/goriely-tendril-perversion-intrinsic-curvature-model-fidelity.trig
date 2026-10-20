@@ -1,0 +1,110 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-goriely-tendril-perversion-intrinsic-curvature> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Goriely & Tabor (1998) PRL / Gerbode et al. (2012) Science Kirchhoff elastic rod tendril perversion, G-fiber overwinding & Pass 3 thigmotropic contact coiling — Model fidelity to source: 92/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Pass 2 core intact: Timoshenko G-fiber bilayer kappa_0, exact T_c = B kappa_0^2/(1+Gamma) and helix equilibrium (L164-L246), 161-node L-BFGS-B Kirchhoff perversion solver with zero-link enforcement and kappa_0 = 0 / T >= T_c controls (L249-L411). Pass 3 adds a physically reasoned reduced contact model: contact-gated intrinsic curvature with signal propagation (`kappa0_field` L629-L632; Lean Law 4), implicit backward-Euler incremental potential with penalty cylinder contact and |i-j| >= 3 self-contact, and Coulomb dissipation potentials for support and self-contact friction (L741-L761; Lean Law 5), with a grip test against mu*sum(N) and the capstan gain (L836-L875). Deductions: the contact rod is bending-only with no material-frame twist, so Gamma never enters contact coiling and the two solvers are not one model (-4); the preferred-curvature direction is an \"axis-seeking\" proxy (unit vector toward the support axis, frozen per macro step, L642-L654) rather than curvature toward the actual touched flank, which makes wrapping partly a construction of the model (-2); friction normal forces are lagged one step and the stick/slip law is Huber-regularised, so stick is approximate (-1); the rod is placed already touching the support at 25 % of L with a fixed 55 deg approach (`_initial_rod` L516-L530), so there is no first-touch event to model (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-4>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-5>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-6> ;
+        pk:hasScore "0.92"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "1998-goriely-tendril-perversion-intrinsic-curvature.py L164–L246" ;
+        dct:description "G-fiber bilayer intrinsic curvature kappa_0, critical tension T_c and equilibrium helix equations (unchanged from Pass 2)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/1998-goriely-tendril-perversion-intrinsic-curvature.py#L164-L246> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "1998-goriely-tendril-perversion-intrinsic-curvature.py L249–L411" ;
+        dct:description "L-BFGS-B Kirchhoff elastic rod perversion solver with zero-link enforcement and negative controls; carries the material-frame twist that the Pass 3 contact rod lacks" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/1998-goriely-tendril-perversion-intrinsic-curvature.py#L249-L411> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "1998-goriely-tendril-perversion-intrinsic-curvature.py L414–L445" ;
+        dct:description "Section 3b scope comment: reduced model, energy terms, lagged-normal incremental-potential friction, and the explicit NOT-implemented list (no twist, no circumnutation)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/1998-goriely-tendril-perversion-intrinsic-curvature.py#L414-L445> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "1998-goriely-tendril-perversion-intrinsic-curvature.py L596–L909" ;
+        dct:description "simulate_thigmotropic_contact_coiling: kappa0_field gating (L629-L632), macro_step implicit L-BFGS-B incremental potential (L642-L785), coiling phase (L787-L834), grip test (L836-L875)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/1998-goriely-tendril-perversion-intrinsic-curvature.py#L596-L909> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-5> a pk:EvidenceItem ;
+        rdfs:label "1998-goriely-tendril-perversion-intrinsic-curvature.py L741–L761" ;
+        dct:description "Coulomb friction on the support and between self-contacting pairs uses normal forces from the previous macro step (lagged) with a Huber stick threshold" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/1998-goriely-tendril-perversion-intrinsic-curvature.py#L741-L761> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity-6> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_064_tendril_perversion_intrinsic_curvature.lean L100–L146" ;
+        dct:description "Laws 4-5: thigmotropic_contact_gating (untouched -> 0, bounded by saturation) and coulomb_grip_capacity (mu = 0 -> 0, N = 0 -> 0, monotone in mu); 5 theorems total, 0 sorrys, lean exit 0" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/morphoeval/lean/loops/Loop_064_tendril_perversion_intrinsic_curvature.lean#L100-L146> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 064 Pass 3 Phase B Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/64> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/s00332-002-0493-1>,
+            <https://doi.org/10.1103/PhysRevLett.80.1564>,
+            <https://doi.org/10.1111/j.1095-8339.1865.tb00011.x>,
+            <https://doi.org/10.1126/science.1223304>,
+            <https://doi.org/10.1146/annurev.pp.19.060168.002221>,
+            <https://doi.org/10.3732/ajb.0900045>,
+            <https://scholarlycommons.pacific.edu/euler-works/262/> .
+    <https://doi.org/10.1007/s00332-002-0493-1> dct:date "2002"^^xsd:gYear ;
+        dct:title "Tendril Perversion in Intrinsically Curved Rods" .
+    <https://doi.org/10.1103/PhysRevLett.80.1564> dct:date "1998"^^xsd:gYear ;
+        dct:title "Spontaneous Helix Hand-Reversal and Tendril Perversion" .
+    <https://doi.org/10.1111/j.1095-8339.1865.tb00011.x> dct:date "1865"^^xsd:gYear ;
+        dct:title "On the Movements and Habits of Climbing Plants" .
+    <https://doi.org/10.1126/science.1223304> dct:date "2012"^^xsd:gYear ;
+        dct:title "How the Cucumber Tendril Coils and Overwinds" .
+    <https://doi.org/10.1146/annurev.pp.19.060168.002221> dct:date "1968"^^xsd:gYear ;
+        dct:title "The Physiology of Tendrils" .
+    <https://doi.org/10.3732/ajb.0900045> dct:date "2009"^^xsd:gYear ;
+        dct:title "Moving with Climbing Plants from Charles Darwin's Time into the 21st Century" .
+    <https://scholarlycommons.pacific.edu/euler-works/262/> dct:date "1762"^^xsd:gYear ;
+        dct:title "Remarques sur l'effet du frottement dans l'équilibre" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Goriely & Tabor (1998) PRL / Gerbode et al. (2012) Science Kirchhoff elastic rod tendril perversion, G-fiber overwinding & Pass 3 thigmotropic contact coiling — Model fidelity to source 92/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T19:48:29Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-goriely-tendril-perversion-intrinsic-curvature-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/64> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

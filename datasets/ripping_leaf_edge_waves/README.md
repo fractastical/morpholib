@@ -12,3 +12,12 @@ Reference dataset and biological specimen assets for **Slot 067 (`sharon-ripping
 - **Organism:** *Lactuca sativa* cv. 'Lollo Bionda' (Ruffled garden lettuce exhibiting multi-generation self-similar marginal buckling waves)
 - **Source:** Wikimedia Commons (`File:Lactuca sativa 'Lollo Bionda'.jpg`)
 - **License:** CC BY-SA 4.0
+
+## Pass 3 addendum (2026-10-20) — developmental CIN/TCP · auxin/PIN1 · CUC2 coupling
+
+Closes the Pass 2 remediation item ("couple the quasi-static non-Euclidean FvK solver to spatio-temporal CIN/TCP and auxin transport PDEs"). New files:
+
+- `tcp_auxin_developmental_reference.json` — SHA-256 `31eb569d60e0c76531bbcf5e29f2ad0838991ef87de8fcf3ec1bffe5efc99920`, pinned in the script (`EXPECTED_DEVELOPMENTAL_SHA256`). Contains the governing equations of the reduced 1D margin model, the wild-type calibration target (`g_0 = 0.64`, the Pass 2 *Lactuca* value — a cross-module self-consistency target, not an independent measurement) and a **genotype phenotype table** (wild type, *cin*/jaw-D TCP loss-of-function, miR319-resistant TCP over-expression, *cuc2*, *pin1*). Phenotype entries are **ordinal / qualitative transcriptions** of the cited papers; serration-count ranges are broad plausibility bounds, not digitised counts.
+- `developmental_citations_pass3.bib` — nine additional references (Nath et al. 2003 *Science*; Palatnik et al. 2003 *Nature*; Bilsborough et al. 2011 *PNAS*; Smith et al. 2006 *PNAS*; Jönsson et al. 2006 *PNAS*; Koyama et al. 2007 *Plant Cell*; Nikovics et al. 2006 *Plant Cell*; Efroni et al. 2008 *Plant Cell*; Hay, Barkoulas & Tsiantis 2006 *Nat. Genet.*). DOIs were transcribed offline and **not re-verified online** in this pass. The Pass 2 `paper_citations.bib` is unchanged (it remains SHA-256-pinned).
+
+Model summary (script section 5b, `simulate_tcp_auxin_margin_development`): auxin with PIN1 up-the-gradient transport gated by CUC2, CUC2 repressed by auxin and by the basipetal CIN/TCP maturation front `m(y,t)`, interior and marginal growth strains `Γ_int`, `Γ_mar` (auxin-boosted margin) on a growing Lagrangian margin lattice, excess metric `g_0(y,t) = ((1+Γ_mar)/(1+Γ_int))² − 1` handed to `relax_foppl_von_karman_cascade`, and serration outgrowth `ds/dt = k_s a (1−m)`. Outputs: `docs/media/ripping_leaf_edge_waves_tcp_auxin_development.png` and `.gif`.

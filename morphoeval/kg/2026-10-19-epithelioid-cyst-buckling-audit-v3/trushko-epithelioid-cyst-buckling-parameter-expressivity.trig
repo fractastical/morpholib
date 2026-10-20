@@ -1,0 +1,99 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-trushko-epithelioid-cyst-buckling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-trushko-epithelioid-cyst-buckling-parameter-expressivity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-trushko-epithelioid-cyst-buckling-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Trushko et al. (2020) Dev. Cell & Hannezo et al. (2014) PNAS Föppl-von Kármán / 3D triangulated-shell spherical epithelial cyst buckling under alginate confinement — Parameter expressivity: 84/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Credit: four 3D regimes (WT, Blebbistatin via Gamma_myo and E_epi/h, unconfined 0.4 kPa, linear-g ablation) along the Fig. 2E schedule; a 5-point dGamma sweep (H0 R0 in {-1, 0, 0.5, 1, 2}) with slopes of fold depth and onset g; a `growth_is_area_ratio` toggle; the previously dead `--e-alg/--h-scale/--r0-scale/--blebbistatin/--seed` flags now drive a ring + shell probe printed as JSON with `--delta-gamma`, `--growth`, `--probe`, `--skip-3d-media`. Deductions: the ring's regime outputs (n = 0/1/2, depth) are set by the hard-wired mode rule and fitted depth law rather than by the parameters flowing through an energy (-6); the (h/R0, E_alg) phase diagram in panel D is an analytic formula 0.728 sqrt(1.52 - g_c) 1.22 not produced by either solver (-5); the fold count of the 3D shell is invariant (12) across the whole dGamma sweep, so the sweep moves depth and onset but never morphology (-3); `seed` of the ring is unused (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:evidenceAgainst "2019-trushko-epithelioid-cyst-buckling.py L156–L166: solve_confined_cyst_ring signature: `seed` accepted but never used (ring is deterministic by construction) <https://github.com/fractastical/morpholib/blob/8a7928d7/2019-trushko-epithelioid-cyst-buckling.py#L156-L166>",
+            "2019-trushko-epithelioid-cyst-buckling.py L984–L990: Panel D phase diagram DELTA_MAP = min(0.80, 0.728 sqrt(1.52 - g_c) 1.22) - closed-form, not solver output <https://github.com/fractastical/morpholib/blob/8a7928d7/2019-trushko-epithelioid-cyst-buckling.py#L984-L990>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-trushko-epithelioid-cyst-buckling-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-trushko-epithelioid-cyst-buckling-parameter-expressivity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-trushko-epithelioid-cyst-buckling-parameter-expressivity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-trushko-epithelioid-cyst-buckling-parameter-expressivity-4> ;
+        pk:hasScore "0.84"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-trushko-epithelioid-cyst-buckling-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2019-trushko-epithelioid-cyst-buckling.py L727–L795" ;
+        dct:description "evaluate_shell3d_regimes: WT, Blebbistatin, unconfined and WT-linear 3D runs along the g schedule with Pearson r / RMSE vs delta(t) and P(t) and ring-vs-shell cross-check" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/2019-trushko-epithelioid-cyst-buckling.py#L727-L795> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-trushko-epithelioid-cyst-buckling-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2019-trushko-epithelioid-cyst-buckling.py L798–L837" ;
+        dct:description "evaluate_apicobasal_tension_sweep: 5 dGamma values, slopes of delta/R0, onset g and fold count" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/2019-trushko-epithelioid-cyst-buckling.py#L798-L837> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-trushko-epithelioid-cyst-buckling-parameter-expressivity-3> a pk:EvidenceItem ;
+        rdfs:label "2019-trushko-epithelioid-cyst-buckling.py L1558–L1600" ;
+        dct:description "CLI: --delta-gamma, --growth, --probe, --skip-3d-media; legacy overrides now drive a ring + shell JSON probe" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/2019-trushko-epithelioid-cyst-buckling.py#L1558-L1600> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-trushko-epithelioid-cyst-buckling-parameter-expressivity-4> a pk:EvidenceItem ;
+        rdfs:label "2019-trushko-epithelioid-cyst-buckling.py L586–L589" ;
+        dct:description "growth_is_area_ratio toggle: sqrt(g) (area reading) vs g (ring's linear reading)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/2019-trushko-epithelioid-cyst-buckling.py#L586-L589> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 069 Pass 3 Phase B Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/69> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.devcel.2020.07.019>,
+            <https://doi.org/10.1073/pnas.1309482110>,
+            <https://doi.org/10.1073/pnas.1312076111>,
+            <https://doi.org/10.1103/PhysRevA.38.1005>,
+            <https://doi.org/10.1515/znc-1973-11-1209>,
+            <https://doi.org/10.3929/ethz-a-000096658> .
+    <https://doi.org/10.1016/j.devcel.2020.07.019> dct:date "2020"^^xsd:gYear ;
+        dct:title "Buckling of an epithelium growing under spherical confinement" .
+    <https://doi.org/10.1073/pnas.1309482110> dct:date "2013"^^xsd:gYear ;
+        dct:title "Cellular capsules as a tool for multicellular spheroid production and for investigating the mechanics of tumor progression in vitro" .
+    <https://doi.org/10.1073/pnas.1312076111> dct:date "2014"^^xsd:gYear ;
+        dct:title "Theory of epithelial sheet morphology in three dimensions" .
+    <https://doi.org/10.1103/PhysRevA.38.1005> dct:date "1988"^^xsd:gYear ;
+        dct:title "Defects in flexible membranes with crystalline order" .
+    <https://doi.org/10.1515/znc-1973-11-1209> dct:date "1973"^^xsd:gYear ;
+        dct:title "Elastic properties of lipid bilayers: theory and possible experiments" .
+    <https://doi.org/10.3929/ethz-a-000096658> dct:date "1915"^^xsd:gYear ;
+        dct:title "Uber ein Knickungsproblem an der Kugelschale" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Trushko et al. (2020) Dev. Cell & Hannezo et al. (2014) PNAS Föppl-von Kármán / 3D triangulated-shell spherical epithelial cyst buckling under alginate confinement — Parameter expressivity 84/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T19:55:29Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-trushko-epithelioid-cyst-buckling-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/69> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

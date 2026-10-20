@@ -22,5 +22,88 @@
   "slot_index": 62,
   "slug": "gut-looping-differential-growth",
   "target_script": "2011-savin-gut-looping-differential-growth.py",
-  "delta": 36.2
+  "delta": 36.2,
+  "pass3_run_id": "2026-10-19-gut-looping-differential-growth-loop-pass3",
+  "audit_v3_id": "2026-10-19-gut-looping-differential-growth-audit-v3",
+  "pass3_phase_a_status": "remediation_complete",
+  "pass3_remediation_closed": [
+    "v2 item 1 \u2014 3D rod coupled to a 2D FE triangular mesh of the fan-shaped dorsal mesentery with apicobasal Pitx2 stiffness gradient: build_fan_mesentery_mesh L251-300 (96x5 nodes, 760 CST triangles, V-E+F=1), pitx2_stiffness_field L303-309, cst_membrane_energy_grad L312-339 (SVK plane-stress, analytic gradient verified to 8.2e-11), relax_rod_fe_mesentery L342-507 (shared rod/sheet DOFs, L-BFGS-B, emergent turning-number N, R=1/<kappa>, tortuosity; prescribed-shape target and calibration divisors deleted)"
+  ],
+  "pass3_residuals": [
+    "Pure membrane (no sheet bending / LR rest curvature): looping handedness not selected",
+    "W_m/L_m = 0.18, fan root fraction 0.7, a_Pitx2 = 0.4 are assumptions; emergent R under-predicted by ~21% (MAPE) and N over-predicted by ~19% at default mesh; mesh-refinement sensitivity of N = 7.7%"
+  ],
+  "lean_theorems_verified_v3": 5,
+  "lean_sorrys_v3": 0,
+  "new_media_v3": [
+    "docs/media/gut_looping_differential_growth_pitx2_fe_sweep.png"
+  ],
+  "new_dataset_files_v3": [
+    "datasets/gut_looping_differential_growth/fe_mesentery_mesh_reference.json"
+  ],
+  "pass3_phase_a_completed_at": "2026-10-20T17:40:00Z",
+  "pass3_audit_id": "2026-10-19-gut-looping-differential-growth-audit-v3",
+  "pass3_score": 80.0,
+  "pass3_dims": {
+    "model-fidelity": 82,
+    "specimen-match": 74,
+    "parameter-expressivity": 86,
+    "morphometric-validation": 78,
+    "source-traceability": 74,
+    "code-traceability": 86,
+    "repro-package": 88
+  },
+  "pass3_dims_v2": {
+    "model-fidelity": 94,
+    "specimen-match": 90,
+    "parameter-expressivity": 91,
+    "morphometric-validation": 93,
+    "source-traceability": 95,
+    "code-traceability": 92,
+    "repro-package": 93
+  },
+  "pass3_delta": -12.6,
+  "pass3_completed_at": "2026-10-20T19:13:32Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_overall_trusty_uri_v3": "https://w3id.org/np/RAnRJ6S1ZGuBD9Im66Od1LZ7rpI3FwLHsaPyHEnZYmpjo",
+  "pass3_checkpoint_commit": "327729c8",
+  "pass3_quick_gate_v3": 100,
+  "pass3_remediation_open": [
+    "L312-339/403-414: pure SVK membrane, no sheet bending or LR rest curvature -> handedness not selected; add discrete Kirchhoff-Love hinge bending + Pitx2-driven leftward rest tilt, assert writhe sign in self_test",
+    "L1566-1574/565-634: emergent R exponent 0.61 vs cube law 1.0, R 21 % low / N 19 % high; diagnose discretisation (n_s=192, n_w=7) vs compression-resisting SVK (tension-field variant)",
+    "L678-703/1719-1721: N mesh sensitivity 7.7 % (96x7 prototype N~11); 3-level Richardson refinement study, tighten 20 % tolerance, report refined E12 N/R with spread as uncertainty",
+    "L443-450/504: E8 and E16 hit maxiter 12000 with lbfgs_converged=False, never asserted; assert convergence or report projected-gradient norm as a measurement",
+    "gut_looping_differential_growth_reference.json L151-166: cross_species_scaling table is law-generated (identical log-log slopes 0.9909 for lambda and R); replace with digitised Fig. 4e-f points or relabel the 3 collapse measurements as law-consistency checks",
+    "reference JSON BMP2/Noggin rows + L781-831: E_m, h_m and tortuosity attributed to Nerurkar 2017 which reports neither; mark as assumptions or source; drive conditions by epsilon alone",
+    "L837-899/1626-1634: specimen is an adult mammalian mesentery photo (lambda/R 1.54 vs 2.71), CV refs 0.18 / 'CV<0.25' unsourced, [28,30,29] fallback templated; vendor an embryonic chick midgut image, source or drop the CV reference, raise on <3 peaks",
+    "L1766-1786: 8 physical/mesh CLI overrides reach only render_comparison_figure; thread overrides through render_pitx2_fe_figure, render_growth_gif and measurements",
+    "L490-511/342-365: rename lambda_sim_mm -> contour_per_loop_sim_mm, drop/rename relax_kirchhoff_gut_rod alias or add twist DOF",
+    "Loop_062 Lean L101-142: Pass 3 theorems are structural only; add a mechanics statement (discrete bending energy vanishes iff rod is straight) matching the ablation invariant at L1683-1685"
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_062.savin_pitx2_gradient_mean_preserving",
+    "MathOfBiology.Loop_062.savin_fan_mesh_euler_characteristic"
+  ],
+  "pass3_lean_verification": "lean exit 0, 5 theorems, 0 sorrys",
+  "pass3_self_test": "PASSED 13/13 (~112 s)",
+  "pass3_artifacts": [
+    "2011-savin-gut-looping-differential-growth.py",
+    "morphoeval/lean/loops/Loop_062_gut_looping_differential_growth.lean",
+    "morphoeval/math_kg_loops/savin-gut-looping-differential-growth.yaml",
+    "datasets/gut_looping_differential_growth/fe_mesentery_mesh_reference.json",
+    "datasets/gut_looping_differential_growth/paper_citations.bib",
+    "datasets/gut_looping_differential_growth/README.md",
+    "docs/media/gut_looping_differential_growth_comparison.png",
+    "docs/media/gut_looping_differential_growth_pitx2_fe_sweep.png",
+    "docs/media/gut_looping_differential_growth_growth.gif",
+    "docs/media/gut_looping_differential_growth_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-gut-looping-differential-growth-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-gut-looping-differential-growth-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-gut-looping-differential-growth-audit-v3/ (10 nanopubs + signed/ + REPORT.md + .ttl + published.json)",
+    "morphoeval/runs/2026-10-19-gut-looping-differential-growth-loop-pass3.{yaml,csv,md,trig,events.jsonl,ledger.jsonl}",
+    "morphoeval/cloud/dispatches/slot-062.json"
+  ],
+  "pass3_status": "completed"
 }

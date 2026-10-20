@@ -1,0 +1,100 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-richman-cortical-gyrification-buckling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-code-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-code-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Richman et al. (1975) & Tallinen et al. (2014, 2016) neo-Hookean constrained cortical expansion and sulcal creasing instability, with a Pass 3 3D hemispheric Swift-Hohenberg surface surrogate — Code-to-model traceability: 84/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The module header maps Laws 1-6 to their papers and to the 6 Lean theorems by name (L34-74); every Pass 3 function carries a docstring naming the equation and source (GSH Eq. 1 of Stoop 2015 at L526-538, Lyapunov functional at L507-509, Fischl & Dale thickness range, honeycomb bound), the honesty note (L376-388) states exactly what is and is not emergent, and the math-KG YAML registers equations 4-6 with single-range `code_locus` pins. Deductions: the GI growth law is written with exponent 0.85 in Panel C and the GIF (L1175, L1532) but 0.88 in the solver (L267) — the plotted curve is not the curve the solver uses (-5); constants 1.603 / 0.88 / 0.22 / 0.65 / 0.18 / 2.8 / 4.2 in the 2D solver (L265-288) are uncited (-5); eps_scale 0.5 and g2 0.35 are documented but not derived (-3); the Y- junction raster ignores the polar caps (|lat| > 60 deg) and the longitude wrap of `ndi.label`, which is not stated in the docstring (-3)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-code-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/code-traceability" ;
+        pk:evidenceAgainst "1975-richman-cortical-gyrification-buckling.py L1175–L1175: Panel C GI law uses exponent 0.85 while the solver (L267) uses 0.88 <https://github.com/fractastical/morpholib/blob/45670cb8/1975-richman-cortical-gyrification-buckling.py#L1175-L1175>",
+            "1975-richman-cortical-gyrification-buckling.py L1532–L1532: GIF GI curve also uses exponent 0.85 — inconsistent with the solver <https://github.com/fractastical/morpholib/blob/45670cb8/1975-richman-cortical-gyrification-buckling.py#L1532-L1532>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-code-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-code-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-code-traceability-3> ;
+        pk:hasScore "0.84"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-code-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "1975-richman-cortical-gyrification-buckling.py L34–L74" ;
+        dct:description "Laws 1-6 mapped to papers and Lean theorem names; Pass 3 additions and the non-FEM caveat stated in the header" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/1975-richman-cortical-gyrification-buckling.py#L34-L74> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-code-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "1975-richman-cortical-gyrification-buckling.py L526–L538" ;
+        dct:description "relax_surface_swift_hohenberg docstring: Stoop 2015 Eq. 1, non-dimensionalisation, Lean theorem reference" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/1975-richman-cortical-gyrification-buckling.py#L526-L538> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-code-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/math_kg_loops/richman-cortical-gyrification-buckling.yaml L37–L125" ;
+        dct:description "Equations 1-6 registered with single-range code_locus pins (secondary ranges in code_locus_secondary); stale Pass 1 loci corrected" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/morphoeval/math_kg_loops/richman-cortical-gyrification-buckling.yaml#L37-L125> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 061 Pass 3 Phase B Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/61> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/BF00304699>,
+            <https://doi.org/10.1038/nmat4202>,
+            <https://doi.org/10.1038/nphys3632>,
+            <https://doi.org/10.1073/pnas.1406015111>,
+            <https://doi.org/10.1073/pnas.200033797>,
+            <https://doi.org/10.1103/RevModPhys.65.851>,
+            <https://doi.org/10.1126/science.1145181>,
+            <https://doi.org/10.1126/science.aaa9101> .
+    <https://doi.org/10.1007/BF00304699> dct:date "1988"^^xsd:gYear ;
+        dct:title "The human pattern of gyrification in the cerebral cortex" .
+    <https://doi.org/10.1038/nmat4202> dct:date "2015"^^xsd:gYear ;
+        dct:title "Curvature-induced symmetry breaking determines elastic surface patterns" .
+    <https://doi.org/10.1038/nphys3632> dct:date "2016"^^xsd:gYear ;
+        dct:title "On the growth and form of cortical convolutions" .
+    <https://doi.org/10.1073/pnas.1406015111> dct:date "2014"^^xsd:gYear ;
+        dct:title "Gyrification from constrained cortical expansion: Synthesis of physical and numerical models" .
+    <https://doi.org/10.1073/pnas.200033797> dct:date "2000"^^xsd:gYear ;
+        dct:title "Measuring the thickness of the human cerebral cortex from magnetic resonance images" .
+    <https://doi.org/10.1103/RevModPhys.65.851> dct:date "1993"^^xsd:gYear ;
+        dct:title "Pattern formation outside of equilibrium" .
+    <https://doi.org/10.1126/science.1145181> dct:date "1975"^^xsd:gYear ;
+        dct:title "Mechanical model of brain convolutional development" .
+    <https://doi.org/10.1126/science.aaa9101> dct:date "2015"^^xsd:gYear ;
+        dct:title "Cortical folding scales universally with surface area and thickness, not number of neurons" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Richman et al. (1975) & Tallinen et al. (2014, 2016) neo-Hookean constrained cortical expansion and sulcal creasing instability, with a Pass 3 3D hemispheric Swift-Hohenberg surface surrogate — Code-to-model traceability 84/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T18:19:01Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-code-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/61> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

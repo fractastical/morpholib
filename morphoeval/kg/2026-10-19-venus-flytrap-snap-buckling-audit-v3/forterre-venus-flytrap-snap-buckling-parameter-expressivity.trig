@@ -1,0 +1,116 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-forterre-venus-flytrap-snap-buckling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-forterre-venus-flytrap-snap-buckling-parameter-expressivity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-forterre-venus-flytrap-snap-buckling-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Forterre et al. (2005) Nature Doubly-Curved Shallow Shell Elastic Energy & Saddle-Node Cusp Catastrophe in Dionaea muscipula, coupled to a P1-FEM trigger-hair action potential and Ca2+ counting gate — Parameter expressivity: 78/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Pass 2 sweeps remain (10 alpha values L452-540, 12-point kinematics L541-604, 5 developmental/ablation specimens L605-682). Pass 3 adds a diffusivity ablation sweep (`evaluate_diffusivity_scaling_sweep` L908-924, v ~ D^0.496), an h-refinement study (L925-931), a force bisection for the FEM initiation threshold (L969-992), an 8-interval two-touch memory sweep (L1074-1100) and three functional CLI flags `--hair-force`, `--touch-interval`, `--ap-diffusivity` (L1993-1995, dispatched at L2008-2017). Deductions: `--L`, `--h`, `--seed` (L1999-2001) are parsed but never used — there is no RNG and L/h are not passed to any solver (-10); `--hair-force` only affects the panels and GIF while `measure_morphoeval()` always uses 6.0 µN (L934, L1222) (-5); the mesh convergence study holds `FEM_DT_S` fixed so the error plateaus at ~2.4 % (-4); no sweep of hair position or footprint radius, although the footprint must exceed the 2D critical nucleus or nothing fires (-3)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:evidenceAgainst "2005-forterre-venus-flytrap-snap-buckling.py L1993–L2001: --hair-force / --touch-interval / --ap-diffusivity functional; --L, --h, --seed parsed but unused <https://github.com/fractastical/morpholib/blob/de27b685/2005-forterre-venus-flytrap-snap-buckling.py#L1993-L2001>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-forterre-venus-flytrap-snap-buckling-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-forterre-venus-flytrap-snap-buckling-parameter-expressivity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-forterre-venus-flytrap-snap-buckling-parameter-expressivity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-forterre-venus-flytrap-snap-buckling-parameter-expressivity-4> ;
+        pk:hasScore "0.78"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-forterre-venus-flytrap-snap-buckling-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2005-forterre-venus-flytrap-snap-buckling.py L452–L682" ;
+        dct:description "Alpha bifurcation sweep, three-stage kinematics and developmental/ablation specimen sweep (Pass 2)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/de27b685/2005-forterre-venus-flytrap-snap-buckling.py#L452-L682> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-forterre-venus-flytrap-snap-buckling-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2005-forterre-venus-flytrap-snap-buckling.py L908–L931" ;
+        dct:description "Diffusivity scaling sweep and h-refinement study; dt is not refined with h" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/de27b685/2005-forterre-venus-flytrap-snap-buckling.py#L908-L931> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-forterre-venus-flytrap-snap-buckling-parameter-expressivity-3> a pk:EvidenceItem ;
+        rdfs:label "2005-forterre-venus-flytrap-snap-buckling.py L969–L992" ;
+        dct:description "Bisection of trigger-hair force for all-or-none FEM initiation (F_min = 3.00 µN vs 0-D 1.93 µN)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/de27b685/2005-forterre-venus-flytrap-snap-buckling.py#L969-L992> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-forterre-venus-flytrap-snap-buckling-parameter-expressivity-4> a pk:EvidenceItem ;
+        rdfs:label "2005-forterre-venus-flytrap-snap-buckling.py L1074–L1100" ;
+        dct:description "Single-touch, 8-interval two-touch sweep and (0, 60, 70) s three-touch protocols" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/de27b685/2005-forterre-venus-flytrap-snap-buckling.py#L1074-L1100> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 066 Pass 3 Assessor, Phase B subagent)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/66> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/BF00394867>,
+            <https://doi.org/10.1016/0001-8708(70)90023-X>,
+            <https://doi.org/10.1016/j.cub.2015.11.057>,
+            <https://doi.org/10.1016/j.tplants.2017.12.004>,
+            <https://doi.org/10.1038/nature03185>,
+            <https://doi.org/10.1038/s41477-019-0465-1>,
+            <https://doi.org/10.1038/s41477-020-00773-1>,
+            <https://doi.org/10.1073/pnas.2002707117>,
+            <https://doi.org/10.1093/jxb/ert230>,
+            <https://doi.org/10.1104/pp.107.108241>,
+            <https://doi.org/10.1126/science.1107976>,
+            <https://doi.org/10.7554/eLife.64250> .
+    <https://doi.org/10.1007/BF00394867> dct:date "1988"^^xsd:gYear ;
+        dct:title "The action potential of Dionaea muscipula Ellis" .
+    <https://doi.org/10.1016/0001-8708(70)90023-X> dct:date "1970"^^xsd:gYear ;
+        dct:title "Nagumo's equation" .
+    <https://doi.org/10.1016/j.cub.2015.11.057> dct:date "2016"^^xsd:gYear ;
+        dct:title "The Venus Flytrap Dionaea muscipula Counts Prey-Induced Action Potentials to Induce Sodium Uptake" .
+    <https://doi.org/10.1016/j.tplants.2017.12.004> dct:date "2018"^^xsd:gYear ;
+        dct:title "Venus Flytrap: How an Excitable, Carnivorous Plant Works" .
+    <https://doi.org/10.1038/nature03185> dct:date "2005"^^xsd:gYear ;
+        dct:title "How the Venus Flytrap Snaps" .
+    <https://doi.org/10.1038/s41477-019-0465-1> dct:date "2019"^^xsd:gYear ;
+        dct:title "Venus flytrap trigger hairs are micronewton mechano-sensors that can detect small insect prey" .
+    <https://doi.org/10.1038/s41477-020-00773-1> dct:date "2020"^^xsd:gYear ;
+        dct:title "Calcium dynamics during trap closure visualized in transgenic Venus flytrap" .
+    <https://doi.org/10.1073/pnas.2002707117> dct:date "2020"^^xsd:gYear ;
+        dct:title "Snapping Mechanics of the Venus Flytrap (Dionaea muscipula)" .
+    <https://doi.org/10.1093/jxb/ert230> dct:date "2013"^^xsd:gYear ;
+        dct:title "Slow, Fast and Furious: Understanding the Physics of Plant Movements" .
+    <https://doi.org/10.1104/pp.107.108241> dct:date "2008"^^xsd:gYear ;
+        dct:title "Kinetics and mechanism of Dionaea muscipula trap closing" .
+    <https://doi.org/10.1126/science.1107976> dct:date "2005"^^xsd:gYear ;
+        dct:title "Physical Limits and Design Principles for Plant and Fungal Movements" .
+    <https://doi.org/10.7554/eLife.64250> dct:date "2021"^^xsd:gYear ;
+        dct:title "Stretch-activated ion channels identified in the touch-sensitive structures of carnivorous Droseraceae plants" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Forterre et al. (2005) Nature Doubly-Curved Shallow Shell Elastic Energy & Saddle-Node Cusp Catastrophe in Dionaea muscipula, coupled to a P1-FEM trigger-hair action potential and Ca2+ counting gate — Parameter expressivity 78/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T18:24:30Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-forterre-venus-flytrap-snap-buckling-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/66> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

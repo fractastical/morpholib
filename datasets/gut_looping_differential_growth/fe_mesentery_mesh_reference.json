@@ -1,0 +1,37 @@
+{
+  "dataset_id": "savin-2011-gut-looping-fe-mesentery-mesh-v3",
+  "title": "Pass 3 finite-element dorsal-mesentery membrane + discrete gut rod coupling: mesh, Pitx2 gradient and observation-derived comparison targets for 2011-savin-gut-looping-differential-growth.py",
+  "provenance_note": "Every entry under `mesh_defaults` is a MODELLING ASSUMPTION of the Pass 3 reduced model, not a measurement from Savin et al. (2011). Entries under `comparison_targets` are arithmetic re-expressions of the SHA-256-pinned observations in gut_looping_differential_growth_reference.json (L_t / N_loops_obs and the analytical c_lambda, c_R predictions). Nothing here is fitted to simulation output.",
+  "sources": [
+    {"id": "savin2011", "doi": "10.1038/nature10277", "used_for": "L_t, L_m, R_t, R_i, h_m, E_t, E_m, lambda_obs, R_obs, N_loops_obs per stage (pinned reference JSON)"},
+    {"id": "kurpios2008", "doi": "10.1073/pnas.0803578105", "used_for": "Qualitative basis for a Pitx2-dependent stiffness heterogeneity of the dorsal mesentery (condensed mesenchyme, columnar epithelium); gradient amplitude is NOT reported there"},
+    {"id": "davis2008", "doi": "10.1016/j.devcel.2008.05.001", "used_for": "Left-right asymmetric dorsal-mesentery architecture / leftward tilt; motivates the residual (handedness is not selected by the bending-free membrane used here)"}
+  ],
+  "mesh_defaults": {
+    "element_type": "3-node constant-strain triangle (CST), St.Venant-Kirchhoff plane-stress membrane embedded in 3D",
+    "n_s": 96,
+    "n_w": 5,
+    "n_triangles_formula": "2 (n_s - 1)(n_w - 1)",
+    "euler_characteristic": 1,
+    "width_to_L_m_ratio": 0.18,
+    "width_note": "W_m = 0.18 L_m (E12: 2.97 mm). Assumed; Savin et al. (2011) do not tabulate the root-to-gut mesentery width. Sensitivity: N_loops changes < 10 % for W_m/L_m in [0.12, 0.27] at E12 (Pass 3 prototype sweep).",
+    "root_fraction": 0.7,
+    "root_fraction_note": "Dorsal root rest length = 0.7 L_m (trapezoidal fan). Assumed.",
+    "poisson_ratio_mesentery": 0.45,
+    "pitx2_gradient_amplitude": 0.4,
+    "pitx2_gradient_formula": "E_m(eta) = E_m_mean [1 + a (2 eta - 1)], eta = 0 dorsal root, eta = 1 gut edge; E_m(eta) + E_m(1 - eta) = 2 E_m_mean",
+    "pitx2_gradient_note": "a = 0.4 is an assumed amplitude (stiffer toward the gut edge). Swept over {0, 0.2, 0.4, 0.6, 0.8}; a = 0 is the uniform-sheet ablation.",
+    "lbfgs_maxiter": 12000,
+    "boundary_conditions": "root nodes fixed; duodenal and ileocecal rod ends pinned; rod ends released when E_m = 0 (surgical ablation)"
+  },
+  "comparison_targets": {
+    "note": "contour_per_loop_obs_mm = L_t_mm / n_loops_obs from the pinned reference JSON; lambda_pred_mm = 4.55 ell_*, R_pred_mm = 1.68 ell_*",
+    "chick_stages": [
+      {"stage": "E8", "L_t_mm": 18.5, "n_loops_obs": 4.0, "contour_per_loop_obs_mm": 4.625, "R_obs_mm": 0.54},
+      {"stage": "E10", "L_t_mm": 36.0, "n_loops_obs": 6.5, "contour_per_loop_obs_mm": 5.5385, "R_obs_mm": 0.81},
+      {"stage": "E12", "L_t_mm": 68.0, "n_loops_obs": 8.5, "contour_per_loop_obs_mm": 8.0, "R_obs_mm": 1.15},
+      {"stage": "E14", "L_t_mm": 112.0, "n_loops_obs": 9.0, "contour_per_loop_obs_mm": 12.4444, "R_obs_mm": 1.68},
+      {"stage": "E16", "L_t_mm": 158.0, "n_loops_obs": 9.0, "contour_per_loop_obs_mm": 17.5556, "R_obs_mm": 2.43}
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-2002-sharon-ripping-leaf-edge-waves.py — Pass 2 (v2) Remediated Implementation
+2002-sharon-ripping-leaf-edge-waves.py — Pass 3 (v3) Remediated Implementation
 ==============================================================================
 Faithful mathematical, biomechanical, and morphometric reproduction of:
 
@@ -49,6 +49,23 @@ Mathematical & Biomechanical Architecture (Linked to Lean 4 `MathOfBiology.Loop_
     ratio lambda_m / lambda_{m+1} = r_cascade in [3, 5], linear penetration depth
     x_m = c_x * lambda_m, and local dominant wavelength lambda_loc(x) = c_lambda * x + lambda_min(t)
     down to the finite-thickness cutoff lambda_min proportional to t.
+
+  - Laws 4-5 (Pass 3, `MathOfBiology.Loop_067.tcp_arrested_marginal_growth_increment`,
+    `developmental_excess_metric_nonneg`, `pin_pairwise_transport_mass_conservation`):
+    Section 5b couples the quasi-static FvK solver to a reduced 1D developmental
+    gene/hormone module along the margin: a basipetal CIN/TCP maturation front
+    m(y,t) (Nath et al. 2003 Science 299:1404; Palatnik et al. 2003 Nature 425:257;
+    Efroni et al. 2008 Plant Cell 20:2293), PIN1 up-the-gradient auxin transport
+    (Smith et al. 2006 PNAS 103:1301; Jönsson et al. 2006 PNAS 103:1633) gated by
+    CUC2 (Bilsborough et al. 2011 PNAS 108:3424; Koyama et al. 2007 Plant Cell 19:473),
+    and margin/interior growth strains whose ratio yields the excess metric
+    g_0(y,t) = ((1+Gamma_mar)/(1+Gamma_int))^2 - 1 handed to Laws 1-3. Serrations and
+    the primary-lobe / secondary-serration hierarchy emerge from auxin-maximum insertion
+    on the growing Lagrangian margin lattice; cin / TCP-OE / cuc2 / pin1 genotype
+    ablations are compared with the literature ordinal phenotype table in
+    `datasets/ripping_leaf_edge_waves/tcp_auxin_developmental_reference.json`.
+    Honest reduction: the mechanics remain quasi-static and 1D-in-y along the margin
+    (no 2D growing-sheet FEM); see the v3 audit remediation list for the residual.
 """
 
 from __future__ import annotations
@@ -77,6 +94,8 @@ BIB_FILE = DATASET_DIR / "paper_citations.bib"
 
 OUT_PNG = ROOT / "docs" / "media" / "ripping_leaf_edge_waves_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "ripping_leaf_edge_waves_growth.gif"
+OUT_DEV_PNG = ROOT / "docs" / "media" / "ripping_leaf_edge_waves_tcp_auxin_development.png"
+OUT_DEV_GIF = ROOT / "docs" / "media" / "ripping_leaf_edge_waves_tcp_auxin_development.gif"
 
 # Cryptographic SHA-256 Registry for `datasets/ripping_leaf_edge_waves/`
 EXPECTED_SHA256: dict[str, str] = {
@@ -688,6 +707,392 @@ def segment_lactuca_sativa_specimen(specimen_path: Path = SPECIMEN_JPG) -> dict[
 
 
 # =============================================================================
+# 5b. (Pass 3) Developmental CIN/TCP - auxin/PIN1 - CUC2 Margin Patterning PDEs
+#     Coupled to the Quasi-Static Non-Euclidean Föppl-von Kármán Solver
+# =============================================================================
+# Reduced 1D model along the leaf-margin arc coordinate y in [0, L] (mm), time in
+# hours. Honest reduction of the Pass 2 remediation item: the mechanics stay
+# quasi-static (the FvK cascade minimizer above is re-solved at each developmental
+# snapshot from the *accumulated* marginal growth excess g_0(y, t) that the gene
+# network produces), while the gene/hormone fields are explicit reaction-transport
+# PDEs discretised by forward Euler on a uniform cell lattice.
+#
+#   Auxin a(y,t)   [Smith et al. 2006 PNAS; Jönsson et al. 2006 PNAS; Bilsborough et al. 2011 PNAS]
+#     da/dt = D_a d2a/dy2 - d/dy J_PIN + rho_a - mu_a a,
+#     PIN1 "up-the-gradient" polar transport between neighbouring cells i -> j:
+#       J_{i->j} = T p_i a_i * exp(kappa a_j) / sum_{k in N(i)} exp(kappa a_k),
+#       p_i = p_max * c_i / (c_half + c_i)            (CUC2 promotes PIN1 convergence)
+#   CUC2 c(y,t)    [Bilsborough et al. 2011 PNAS; Koyama et al. 2007 Plant Cell]
+#     dc/dt = rho_c * (1 - m) / (1 + (a / a_h)^2) - mu_c c   (auxin & TCP repress CUC2)
+#   CIN/TCP maturation m(y,t) [Nath et al. 2003 Science; Palatnik et al. 2003 Nature;
+#                              Efroni et al. 2008 Plant Cell]
+#     m(y,t) = 1 / (1 + exp(-(v_tcp t - (L - y)) / w_front))   basipetal (tip -> base)
+#     differentiation / growth-arrest front; cin loss-of-function slows v_tcp,
+#     miR319-resistant TCP over-expression (jaw-D antagonist) accelerates it.
+#   Marginal growth excess G(y,t) = g_0(y,t)   [Nath et al. 2003; Sharon et al. 2002]
+#     dG/dt = gamma_0 * (1 - m) * (1 + beta a / a_ref),  G(y,0) = 0
+#     => g_yy(x, y) = 1 + G(y,t) exp(-x / ell): the metric handed to the FvK solver.
+#   Serration / lobe outgrowth s(y,t)  [Bilsborough et al. 2011; Hay & Tsiantis 2006]
+#     ds/dt = k_s * a * (1 - m)
+# Linked to Lean 4 `MathOfBiology.Loop_067.tcp_arrested_marginal_growth_increment`
+# and `MathOfBiology.Loop_067.pin_pairwise_transport_mass_conservation`.
+
+DEVELOPMENTAL_REF_JSON = DATASET_DIR / "tcp_auxin_developmental_reference.json"
+EXPECTED_DEVELOPMENTAL_SHA256 = "31eb569d60e0c76531bbcf5e29f2ad0838991ef87de8fcf3ec1bffe5efc99920"
+
+GENOTYPE_PRESETS: dict[str, dict[str, float]] = {
+    # name: multiplicative modifiers on (v_tcp, p_max [CUC2->PIN1], T [PIN1 transport])
+    "wild_type": {"v_tcp_scale": 1.0, "cuc2_scale": 1.0, "pin1_scale": 1.0},
+    "cin_tcp_loss_of_function": {"v_tcp_scale": 0.40, "cuc2_scale": 1.0, "pin1_scale": 1.0},
+    "tcp_mir319_resistant_overexpression": {"v_tcp_scale": 1.80, "cuc2_scale": 1.0, "pin1_scale": 1.0},
+    "cuc2_knockout": {"v_tcp_scale": 1.0, "cuc2_scale": 0.0, "pin1_scale": 1.0},
+    "pin1_knockout": {"v_tcp_scale": 1.0, "cuc2_scale": 1.0, "pin1_scale": 0.0},
+}
+
+
+def load_developmental_reference() -> dict[str, Any]:
+    """Load (and SHA-256-pin) the Pass 3 developmental genotype reference table."""
+    if not DEVELOPMENTAL_REF_JSON.exists():
+        raise FileNotFoundError(f"Missing developmental reference table: {DEVELOPMENTAL_REF_JSON}")
+    if EXPECTED_DEVELOPMENTAL_SHA256 != "__PENDING__":
+        digest = sha256_file(DEVELOPMENTAL_REF_JSON)
+        if digest != EXPECTED_DEVELOPMENTAL_SHA256:
+            raise ValueError(
+                f"SHA-256 mismatch for {DEVELOPMENTAL_REF_JSON.name}: expected {EXPECTED_DEVELOPMENTAL_SHA256}, got {digest}"
+            )
+    return json.loads(DEVELOPMENTAL_REF_JSON.read_text(encoding="utf-8"))
+
+
+def tcp_maturation_field(y_mm: np.ndarray, t_h: float, L_mm: float, v_tcp_mm_per_h: float, w_front_mm: float) -> np.ndarray:
+    """Basipetal CIN/TCP differentiation (growth-arrest) front m(y, t) in [0, 1]:
+    starts at the leaf tip y = L and travels toward the base y = 0 at speed v_tcp
+    (Nath et al. 2003 Science Fig. 3; Efroni et al. 2008 Plant Cell)."""
+    if v_tcp_mm_per_h <= 0.0:
+        return np.zeros_like(y_mm)
+    arg = (v_tcp_mm_per_h * t_h - (L_mm - y_mm)) / max(w_front_mm, 1e-9)
+    return 1.0 / (1.0 + np.exp(-np.clip(arg, -60.0, 60.0)))
+
+
+def pin1_up_the_gradient_transport(a: np.ndarray, p: np.ndarray, T_rate: float, kappa: float) -> np.ndarray:
+    """Net auxin change per unit time due to PIN1 up-the-gradient polar transport
+    on a 1D no-flux cell lattice (Smith et al. 2006 PNAS Eq. 1-2; Jönsson et al. 2006).
+    Each cell i exports T p_i a_i, partitioned to its left/right neighbours in
+    proportion to exp(kappa a_neighbour). Pairwise exchange is mass-conserving
+    (Lean 4 `pin_pairwise_transport_mass_conservation`)."""
+    n = a.size
+    a_c = np.clip(a, 0.0, 50.0)
+    e_left = np.zeros(n)
+    e_right = np.zeros(n)
+    e_left[1:] = np.exp(kappa * a_c[:-1])      # neighbour i-1 exists for i >= 1
+    e_right[:-1] = np.exp(kappa * a_c[1:])     # neighbour i+1 exists for i <= n-2
+    denom = e_left + e_right
+    denom[denom <= 0.0] = 1.0
+    export = T_rate * p * a_c
+    flux_left = export * e_left / denom        # i -> i-1
+    flux_right = export * e_right / denom      # i -> i+1
+    da = -(flux_left + flux_right)
+    da[:-1] += flux_left[1:]                   # received from the right neighbour
+    da[1:] += flux_right[:-1]                  # received from the left neighbour
+    return da
+
+
+def count_margin_peaks(profile: np.ndarray, dy_mm: float, min_spacing_mm: float, prominence: float) -> np.ndarray:
+    distance = max(int(round(min_spacing_mm / max(dy_mm, 1e-9))), 1)
+    peaks, _ = signal.find_peaks(profile, distance=distance, prominence=prominence)
+    return peaks
+
+
+def simulate_tcp_auxin_margin_development(
+    genotype: str = "wild_type",
+    L0_mm: float = 36.0,
+    n_cells: int = 180,
+    T_total_h: float = 240.0,
+    dt_h: float = 0.1,
+    n_snapshots: int = 48,
+    # auxin / PIN1 (Smith et al. 2006 up-the-gradient; Bilsborough et al. 2011 CUC2->PIN1)
+    D_a: float = 0.03,
+    T_pin: float = 2.5,
+    kappa_pin: float = 3.5,
+    rho_a: float = 0.08,
+    mu_a: float = 0.10,
+    p_max: float = 1.0,
+    c_half: float = 0.5,
+    # CUC2
+    rho_c: float = 0.5,
+    mu_c: float = 0.25,
+    a_half: float = 1.6,
+    # CIN/TCP basipetal arrest front (Nath et al. 2003)
+    v_tcp_mm_per_h: float = 0.45,
+    w_front_mm: float = 6.0,
+    # growth (Lagrangian growing lattice) & serration outgrowth
+    gamma_0_per_h: float = 0.0085,
+    beta_auxin: float = 0.75,
+    a_ref: float = 1.0,
+    k_serration_mm_per_h: float = 0.004,
+    ell_mm: float = 12.0,
+    t_sheet_mm: float = 0.22,
+    seed: int = 2002,
+) -> dict[str, Any]:
+    """Forward-Euler integration of the coupled CIN/TCP - auxin/PIN1 - CUC2 margin
+    patterning PDEs on a *growing* Lagrangian cell lattice along the margin.
+
+    Growth bookkeeping (both fields start at 0):
+      dGamma_int/dt = gamma_0 (1 - m)                       interior lamina growth strain
+      dGamma_mar/dt = gamma_0 (1 - m) (1 + beta a / a_ref)  marginal (auxin-boosted) growth strain
+    Physical cell spacing h_i(t) = h_0 (1 + Gamma_mar,i); auxin is diluted by margin
+    expansion. The non-Euclidean excess metric handed to the Föppl-von Kármán solver is
+      g_0(y, t) = ((1 + Gamma_mar) / (1 + Gamma_int))^2 - 1  (>= 0, = 0 when beta a = 0),
+    i.e. g_yy = 1 + g_0 exp(-x/ell) as in `compute_target_metric_and_curvature`.
+    Serration tips are auxin-convergence maxima that accumulated outgrowth s(y, t);
+    because the lattice stretches, new maxima insert between older ones (Bilsborough
+    et al. 2011), producing a primary-lobe / secondary-serration hierarchy.
+    Returns spatio-temporal kymographs, the final profiles, serration/lobe statistics,
+    and the quasi-static FvK cascade re-solved on the developmental <g_0>."""
+    if genotype not in GENOTYPE_PRESETS:
+        raise KeyError(f"Unknown genotype preset '{genotype}'. Options: {sorted(GENOTYPE_PRESETS)}")
+    mods = GENOTYPE_PRESETS[genotype]
+    v_tcp = v_tcp_mm_per_h * mods["v_tcp_scale"]
+    p_max_g = p_max * mods["cuc2_scale"]
+    T_g = T_pin * mods["pin1_scale"]
+
+    y0 = np.linspace(0.0, L0_mm, n_cells)  # material (Lagrangian) coordinate
+    h0 = float(y0[1] - y0[0])
+    assert dt_h * D_a / (h0 * h0) <= 0.5, "Explicit diffusion step is unstable"
+
+    rng = np.random.default_rng(seed)
+    a = (rho_a / mu_a) * (1.0 + 0.02 * rng.standard_normal(n_cells))
+    c = np.full(n_cells, rho_c / mu_c * 0.5)
+    gam_int = np.zeros(n_cells)
+    gam_mar = np.zeros(n_cells)
+    s = np.zeros(n_cells)
+
+    n_steps = int(round(T_total_h / dt_h))
+    snap_every = max(n_steps // n_snapshots, 1)
+    t_snap: list[float] = []
+    a_snap: list[np.ndarray] = []
+    c_snap: list[np.ndarray] = []
+    m_snap: list[np.ndarray] = []
+    g0_snap: list[np.ndarray] = []
+    s_snap: list[np.ndarray] = []
+    yphys_snap: list[np.ndarray] = []
+    n_ser_snap: list[int] = []
+
+    def physical_coordinate(gm: np.ndarray) -> np.ndarray:
+        h = h0 * (1.0 + gm)
+        yp = np.concatenate([[0.0], np.cumsum(0.5 * (h[1:] + h[:-1]))])
+        return yp
+
+    def laplacian_noflux_nonuniform(f: np.ndarray, gm: np.ndarray) -> np.ndarray:
+        h = h0 * (1.0 + gm)
+        h_face = 0.5 * (h[1:] + h[:-1])           # spacing between cell centres
+        grad = (f[1:] - f[:-1]) / h_face           # face gradients
+        lap = np.zeros_like(f)
+        lap[1:-1] = (grad[1:] - grad[:-1]) / h[1:-1]
+        lap[0] = grad[0] / h[0]
+        lap[-1] = -grad[-1] / h[-1]
+        return lap
+
+    def excess_metric(gm: np.ndarray, gi: np.ndarray) -> np.ndarray:
+        return np.maximum(((1.0 + gm) / (1.0 + gi)) ** 2 - 1.0, 0.0)
+
+    for step in range(n_steps + 1):
+        t = step * dt_h
+        y_phys = physical_coordinate(gam_mar)
+        L_now = float(y_phys[-1])
+        m = tcp_maturation_field(y_phys, t, L_now, v_tcp, w_front_mm)
+        if step % snap_every == 0 or step == n_steps:
+            t_snap.append(t)
+            a_snap.append(a.copy())
+            c_snap.append(c.copy())
+            m_snap.append(m.copy())
+            g0_snap.append(excess_metric(gam_mar, gam_int))
+            s_snap.append(s.copy())
+            yphys_snap.append(y_phys.copy())
+            n_ser_snap.append(int(count_margin_peaks(a, h0, 1.5, 0.25 * max(float(np.mean(a)), 1e-9)).size))
+        if step == n_steps:
+            break
+        p = p_max_g * c / (c_half + c)
+        d_gi = gamma_0_per_h * (1.0 - m)
+        d_gm = d_gi * (1.0 + beta_auxin * a / a_ref)
+        dilution = d_gm / (1.0 + gam_mar)
+        da = (
+            D_a * laplacian_noflux_nonuniform(a, gam_mar)
+            + pin1_up_the_gradient_transport(a, p, T_g, kappa_pin)
+            + rho_a
+            - mu_a * a
+            - dilution * a
+        )
+        dc = rho_c * (1.0 - m) / (1.0 + (a / a_half) ** 2) - mu_c * c
+        ds = k_serration_mm_per_h * a * (1.0 - m)
+        a = np.maximum(a + dt_h * da, 0.0)
+        c = np.maximum(c + dt_h * dc, 0.0)
+        gam_int = gam_int + dt_h * d_gi
+        gam_mar = gam_mar + dt_h * d_gm
+        s = s + dt_h * ds
+
+    a_final, c_final, s_final, m_final = a_snap[-1], c_snap[-1], s_snap[-1], m_snap[-1]
+    G_final = g0_snap[-1]
+    y_final = yphys_snap[-1]
+    L_final = float(y_final[-1])
+    dy_final = L_final / max(n_cells - 1, 1)
+
+    # Serration tips = outgrowth maxima (auxin convergence points), excluding the lattice ends
+    if np.max(s_final) > 0:
+        ser_peaks = count_margin_peaks(s_final, dy_final, 1.5, 0.08 * float(np.max(s_final)))
+        ser_peaks = ser_peaks[(y_final[ser_peaks] > 1.5) & (y_final[ser_peaks] < L_final - 1.5)]
+    else:
+        ser_peaks = np.array([], dtype=int)
+    n_ser_final = int(ser_peaks.size)
+    s_peaks = s_final[ser_peaks] if n_ser_final else np.array([])
+    # Primary lobes vs secondary serrations: outgrowth hierarchy split at half the tallest tip
+    primary_mask = s_peaks > 0.5 * float(np.max(s_peaks)) if n_ser_final else np.array([], dtype=bool)
+    n_primary = int(np.sum(primary_mask))
+    n_secondary = n_ser_final - n_primary
+    hierarchy_ratio = (
+        float(np.median(s_peaks[primary_mask]) / max(np.median(s_peaks[~primary_mask]), 1e-12))
+        if (n_primary > 0 and n_secondary > 0) else float("nan")
+    )
+    t_emerge = float("nan")
+    for t_i, n_i in zip(t_snap, n_ser_snap):
+        if n_i >= 2:
+            t_emerge = t_i
+            break
+
+    g0_mean = float(np.mean(G_final))
+    casc = relax_foppl_von_karman_cascade(g0=g0_mean, ell_mm=ell_mm, t_sheet_mm=t_sheet_mm, L_mm=L_final, seed=seed)
+    met_edge = compute_target_metric_and_curvature(0.0, g0=g0_mean, ell_mm=ell_mm)
+    amp_modulation_y = np.sqrt(G_final / max(g0_mean, 1e-12)) if g0_mean > 0 else np.zeros_like(G_final)
+
+    return {
+        "genotype": genotype,
+        "modifiers": dict(mods),
+        "y_material_mm": y0,
+        "y_mm": y_final,
+        "L_final_mm": L_final,
+        "margin_stretch_factor": L_final / L0_mm,
+        "t_snap_h": np.asarray(t_snap),
+        "y_phys_kymograph": np.asarray(yphys_snap),
+        "auxin_kymograph": np.asarray(a_snap),
+        "cuc2_kymograph": np.asarray(c_snap),
+        "tcp_kymograph": np.asarray(m_snap),
+        "g0_kymograph": np.asarray(g0_snap),
+        "outgrowth_kymograph": np.asarray(s_snap),
+        "n_auxin_maxima_timeseries": np.asarray(n_ser_snap),
+        "auxin_final": a_final,
+        "cuc2_final": c_final,
+        "tcp_final": m_final,
+        "g0_profile_final": G_final,
+        "outgrowth_final_mm": s_final,
+        "serration_peak_idx": ser_peaks,
+        "n_serrations": n_ser_final,
+        "n_primary_lobes": n_primary,
+        "n_secondary_serrations": n_secondary,
+        "lobe_hierarchy_ratio": hierarchy_ratio,
+        "serration_spacing_mm": float(np.mean(np.diff(y_final[ser_peaks]))) if n_ser_final >= 2 else float("nan"),
+        "serration_emergence_time_h": t_emerge,
+        "g0_mean_final": g0_mean,
+        "g0_max_final": float(np.max(G_final)),
+        "g0_base_to_tip_ratio": float(np.mean(G_final[: n_cells // 4]) / max(np.mean(G_final[-(n_cells // 4):]), 1e-12)),
+        "interior_growth_strain_final": float(np.mean(gam_int)),
+        "margin_growth_strain_final": float(np.mean(gam_mar)),
+        "K_edge_mm_inv2": float(met_edge["K_gaussian_mm_inv2"]),
+        "amplitude_modulation_y": amp_modulation_y,
+        "cascade": casc,
+        "n_active_generations": int(casc["n_active_generations"]),
+        "mean_aspect_ratio": float(casc["mean_aspect_ratio"]),
+        "regime": casc["regime"],
+        "params": {
+            "L0_mm": L0_mm, "n_cells": n_cells, "T_total_h": T_total_h, "dt_h": dt_h,
+            "D_a": D_a, "T_pin": T_g, "kappa_pin": kappa_pin, "rho_a": rho_a, "mu_a": mu_a,
+            "p_max": p_max_g, "c_half": c_half, "rho_c": rho_c, "mu_c": mu_c, "a_half": a_half,
+            "v_tcp_mm_per_h": v_tcp, "w_front_mm": w_front_mm, "gamma_0_per_h": gamma_0_per_h,
+            "beta_auxin": beta_auxin, "k_serration_mm_per_h": k_serration_mm_per_h,
+        },
+    }
+
+
+def generate_developmental_coupled_mesh(dev: dict[str, Any], W_mm: float = 36.0, nx: int = 72) -> dict[str, Any]:
+    """3D surface w(x, y) of the developmentally patterned margin: FvK cascade
+    amplitudes re-solved on the gene-network g_0(y) and modulated along y by
+    sqrt(G(y)/<G>) (Law 1), with in-plane serration outgrowth s(y) displacing
+    the free edge (x = 0) outward."""
+    casc = dev["cascade"]
+    y = dev["y_mm"]
+    x = np.linspace(0.0, W_mm, nx)
+    X, Y = np.meshgrid(x, y, indexing="ij")
+    W_surf = np.zeros_like(X)
+    phases = [0.0, 0.35 * math.pi, -0.25 * math.pi, 0.60 * math.pi]
+    mod_y = dev["amplitude_modulation_y"][None, :]
+    for m in range(int(casc["n_generations"])):
+        lam_m = float(casc["wavelengths_mm"][m])
+        pen_m = float(casc["penetration_depths_mm"][m])
+        amp_m = float(casc["edge_amplitudes_mm"][m])
+        env_x = np.exp(-X / max(pen_m, 1e-6))
+        W_surf += amp_m * mod_y * env_x * np.sin((2.0 * math.pi * Y / lam_m) + phases[m % len(phases)])
+    # In-plane serration/lobe outgrowth pushes the free edge outward (negative x), decaying inward
+    s_out = dev["outgrowth_final_mm"][None, :] * np.exp(-X / 6.0)
+    return {"X": X - s_out, "Y": Y, "W": W_surf, "x": x, "y": y}
+
+
+def evaluate_developmental_genotype_sweep(seed: int = 2002) -> dict[str, Any]:
+    """Run the coupled developmental model for all genotype presets and compare
+    against the literature phenotype table in `tcp_auxin_developmental_reference.json`."""
+    ref = load_developmental_reference()
+    ref_rows = {r["genotype"]: r for r in ref["genotype_phenotype_table"]}
+    runs: dict[str, dict[str, Any]] = {}
+    rows: list[dict[str, Any]] = []
+    for name in GENOTYPE_PRESETS:
+        dev = simulate_tcp_auxin_margin_development(genotype=name, seed=seed)
+        runs[name] = dev
+        rr = ref_rows.get(name, {})
+        rows.append(
+            {
+                "genotype": name,
+                "n_serrations_sim": dev["n_serrations"],
+                "n_serrations_obs_min": rr.get("n_serrations_obs_min"),
+                "n_serrations_obs_max": rr.get("n_serrations_obs_max"),
+                "g0_mean_sim": dev["g0_mean_final"],
+                "n_active_generations_sim": dev["n_active_generations"],
+                "K_edge_sim": dev["K_edge_mm_inv2"],
+                "margin_phenotype_obs": rr.get("margin_phenotype_obs"),
+                "curvature_sign_obs": rr.get("gaussian_curvature_sign_obs"),
+                "emergence_h": dev["serration_emergence_time_h"],
+            }
+        )
+    wt = runs["wild_type"]
+    cin = runs["cin_tcp_loss_of_function"]
+    oe = runs["tcp_mir319_resistant_overexpression"]
+    # Ordinal checks from the literature table
+    ordinal_checks = {
+        "cin_excess_growth_gt_wt": bool(cin["g0_mean_final"] > wt["g0_mean_final"]),
+        "cin_curvature_more_negative_than_wt": bool(cin["K_edge_mm_inv2"] < wt["K_edge_mm_inv2"]),
+        "tcp_oe_growth_lt_wt": bool(oe["g0_mean_final"] < wt["g0_mean_final"]),
+        "cuc2_ko_no_serrations": bool(runs["cuc2_knockout"]["n_serrations"] == 0),
+        "pin1_ko_no_serrations": bool(runs["pin1_knockout"]["n_serrations"] == 0),
+        "wt_serrations_in_obs_range": bool(
+            ref_rows["wild_type"]["n_serrations_obs_min"] <= wt["n_serrations"] <= ref_rows["wild_type"]["n_serrations_obs_max"]
+        ),
+    }
+    # Serration count within observed range for every genotype
+    in_range = []
+    for r in rows:
+        lo, hi = r["n_serrations_obs_min"], r["n_serrations_obs_max"]
+        in_range.append(lo <= r["n_serrations_sim"] <= hi)
+    return {
+        "runs": runs,
+        "rows": rows,
+        "ordinal_checks": ordinal_checks,
+        "ordinal_pass_fraction": float(np.mean(list(ordinal_checks.values()))),
+        "serration_in_range_fraction": float(np.mean(in_range)),
+        "cin_over_wt_growth_ratio": float(cin["g0_mean_final"] / max(wt["g0_mean_final"], 1e-12)),
+        "tcp_oe_over_wt_growth_ratio": float(oe["g0_mean_final"] / max(wt["g0_mean_final"], 1e-12)),
+        "wt_g0_mean": float(wt["g0_mean_final"]),
+        "wt_g0_target": float(ref["wild_type_calibration"]["target_g0_mean"]),
+        "reference": ref,
+    }
+
+
+# =============================================================================
 # 6. 6-Panel Publication Synthesis Figure & Animated Growth GIF
 # =============================================================================
 def render_comparison_figure(
@@ -991,6 +1396,221 @@ def render_growth_gif(out_gif: Path = OUT_GIF, seed: int = 2002) -> Path:
 
 
 # =============================================================================
+# 6b. (Pass 3) Developmental Coupling Figure & Time-Course GIF
+# =============================================================================
+def _style_dark_axis(ax: Any, title: str, xlabel: str, ylabel: str) -> None:
+    ax.set_title(title, color="#e6edf3", fontsize=10)
+    ax.set_xlabel(xlabel, color="#c9d1d9", fontsize=9)
+    ax.set_ylabel(ylabel, color="#c9d1d9", fontsize=9)
+    ax.tick_params(colors="#8b949e", labelsize=8)
+    ax.grid(color="#1f2937", alpha=0.6, lw=0.7)
+
+
+def render_developmental_figure(
+    out_png: Path = OUT_DEV_PNG,
+    genotype: str = "wild_type",
+    seed: int = 2002,
+) -> dict[str, Any]:
+    """6-panel figure for the Pass 3 developmental coupling:
+      (A) auxin kymograph a(y, t) with the CIN/TCP arrest front m = 0.5 overlaid
+      (B) final margin profiles: auxin, CUC2, TCP, excess metric g_0(y), serration tips
+      (C) serration outgrowth s(y) with primary-lobe / secondary-serration hierarchy
+      (D) 3D FvK surface re-solved on the developmental g_0(y) (+ in-plane serrations)
+      (E) genotype sweep: <g_0>, N_serrations, active generations vs literature ordinal table
+      (F) auxin-maxima count and <g_0(t)> time courses per genotype (emergence dynamics)"""
+    out_png.parent.mkdir(parents=True, exist_ok=True)
+    sweep = evaluate_developmental_genotype_sweep(seed=seed)
+    dev = sweep["runs"][genotype]
+    mesh = generate_developmental_coupled_mesh(dev)
+
+    fig = plt.figure(figsize=(18.5, 11.2), dpi=150, facecolor="#0b0f17")
+    fig.suptitle(
+        "Pass 3 — CIN/TCP · auxin/PIN1 · CUC2 margin patterning PDEs coupled to the non-Euclidean Föppl–von Kármán edge-buckling solver "
+        f"(genotype: {genotype})",
+        color="#f0f6fc", fontsize=12.5, fontweight="bold", y=0.985,
+    )
+
+    # (A) auxin kymograph in material coordinate with TCP front
+    ax_a = fig.add_subplot(2, 3, 1, facecolor="#111827")
+    tt = dev["t_snap_h"]
+    ym = dev["y_material_mm"]
+    im = ax_a.pcolormesh(ym, tt, dev["auxin_kymograph"], cmap="magma", shading="auto")
+    tcp_k = dev["tcp_kymograph"]
+    ax_a.contour(ym, tt, tcp_k, levels=[0.5], colors=["#22d3ee"], linewidths=1.6)
+    cb = fig.colorbar(im, ax=ax_a, fraction=0.046, pad=0.02)
+    cb.ax.tick_params(colors="#8b949e", labelsize=7)
+    cb.set_label("auxin a(y,t) (a.u.)", color="#c9d1d9", fontsize=8)
+    _style_dark_axis(
+        ax_a,
+        f"(A) Auxin kymograph a(y,t) & CIN/TCP arrest front (cyan, m=0.5)\n"
+        f"first ≥2 maxima at t={dev['serration_emergence_time_h']:.0f} h; v_tcp={dev['params']['v_tcp_mm_per_h']:.2f} mm/h",
+        "Material margin coordinate y₀ (mm)", "Developmental time t (h)",
+    )
+
+    # (B) final profiles
+    ax_b = fig.add_subplot(2, 3, 2, facecolor="#111827")
+    yf = dev["y_mm"]
+    ax_b.plot(yf, dev["auxin_final"], color="#fb923c", lw=1.8, label="auxin a(y,T)")
+    ax_b.plot(yf, dev["cuc2_final"], color="#a78bfa", lw=1.6, label="CUC2 c(y,T)")
+    ax_b.plot(yf, dev["tcp_final"], color="#22d3ee", lw=1.6, ls="--", label="TCP maturation m(y,T)")
+    ax_b2 = ax_b.twinx()
+    ax_b2.plot(yf, dev["g0_profile_final"], color="#34d399", lw=2.2, label="excess metric g₀(y,T)")
+    ax_b2.axhline(dev["g0_mean_final"], color="#34d399", lw=1.0, ls=":", label=f"<g₀> = {dev['g0_mean_final']:.3f}")
+    ax_b2.axhline(sweep["wt_g0_target"], color="#facc15", lw=1.0, ls="-.", label=f"Pass 2 Lactuca g₀ = {sweep['wt_g0_target']:.2f}")
+    ax_b2.set_ylabel("Excess metric g₀(y) = ((1+Γ_mar)/(1+Γ_int))² − 1", color="#34d399", fontsize=8.5)
+    ax_b2.tick_params(colors="#34d399", labelsize=8)
+    idx = dev["serration_peak_idx"]
+    if idx.size:
+        ax_b.scatter(yf[idx], dev["auxin_final"][idx] * 0 + float(np.max(dev["auxin_final"])) * 1.02, marker="v", color="#f43f5e", s=28, zorder=5, label=f"serration tips (n={dev['n_serrations']})")
+    _style_dark_axis(
+        ax_b,
+        f"(B) Final margin fields at T={tt[-1]:.0f} h (physical coordinate)\nmargin stretched ×{dev['margin_stretch_factor']:.2f}; K(0) = {dev['K_edge_mm_inv2']*1e3:.3f}×10⁻³ mm⁻²",
+        "Physical margin coordinate y (mm)", "Gene / hormone level (a.u.)",
+    )
+    h1, l1 = ax_b.get_legend_handles_labels()
+    h2, l2 = ax_b2.get_legend_handles_labels()
+    ax_b.legend(h1 + h2, l1 + l2, facecolor="#0b0f17", edgecolor="#30363d", labelcolor="#e6edf3", fontsize=7, loc="upper right")
+
+    # (C) outgrowth hierarchy
+    ax_c = fig.add_subplot(2, 3, 3, facecolor="#111827")
+    s_f = dev["outgrowth_final_mm"]
+    ax_c.fill_between(yf, 0.0, s_f, color="#4ade80", alpha=0.35)
+    ax_c.plot(yf, s_f, color="#4ade80", lw=1.6, label="serration outgrowth s(y,T) (mm)")
+    if idx.size:
+        s_pk = s_f[idx]
+        prim = s_pk > 0.5 * float(np.max(s_pk))
+        ax_c.scatter(yf[idx][prim], s_pk[prim], color="#f43f5e", edgecolors="#fff", s=70, marker="D", zorder=6, label=f"primary lobes (n={dev['n_primary_lobes']})")
+        ax_c.scatter(yf[idx][~prim], s_pk[~prim], color="#facc15", edgecolors="#0b0f17", s=40, zorder=6, label=f"secondary serrations (n={dev['n_secondary_serrations']})")
+    hier = dev["lobe_hierarchy_ratio"]
+    _style_dark_axis(
+        ax_c,
+        f"(C) Serration / lobe outgrowth hierarchy (Bilsborough 2011 insertion mechanism)\nmedian primary/secondary outgrowth = {hier:.2f}; mean tip spacing = {dev['serration_spacing_mm']:.2f} mm",
+        "Physical margin coordinate y (mm)", "In-plane outgrowth s(y) (mm)",
+    )
+    ax_c.legend(facecolor="#0b0f17", edgecolor="#30363d", labelcolor="#e6edf3", fontsize=7.5, loc="upper right")
+
+    # (D) 3D coupled surface
+    ax_d = fig.add_subplot(2, 3, 4, projection="3d", facecolor="#0b0f17")
+    ax_d.plot_surface(mesh["X"], mesh["Y"], mesh["W"], cmap="YlGn", alpha=0.92, linewidth=0.1, edgecolor="#1f2937")
+    ax_d.set_title(
+        f"(D) FvK cascade re-solved on developmental g₀(y): M={dev['n_active_generations']} generations\n"
+        f"A_m(y) ∝ √(g₀(y)/<g₀>) (Law 1), edge displaced by s(y); mean A/λ = {dev['mean_aspect_ratio']:.3f}",
+        color="#e6edf3", fontsize=10, pad=8,
+    )
+    ax_d.set_xlabel("Inward x (mm)", color="#8b949e", fontsize=8)
+    ax_d.set_ylabel("Margin y (mm)", color="#8b949e", fontsize=8)
+    ax_d.set_zlabel("w(x,y) (mm)", color="#8b949e", fontsize=8)
+    ax_d.tick_params(colors="#8b949e", labelsize=7)
+    ax_d.set_xlim(-6.0, 36.0)
+    ax_d.set_zlim(-9.5, 9.5)
+    ax_d.view_init(elev=28, azim=-55)
+
+    # (E) genotype sweep
+    ax_e = fig.add_subplot(2, 3, 5, facecolor="#111827")
+    rows = sweep["rows"]
+    labels = ["WT", "cin /\njaw-D", "TCP-OE\n(miR319-res.)", "cuc2", "pin1"]
+    xi = np.arange(len(rows))
+    wbar = 0.26
+    g0s = [r["g0_mean_sim"] for r in rows]
+    nser = [r["n_serrations_sim"] for r in rows]
+    ngen = [r["n_active_generations_sim"] for r in rows]
+    ax_e.bar(xi - wbar, g0s, width=wbar, color="#34d399", label="sim <g₀> (excess metric)")
+    ax_e.axhline(sweep["wt_g0_target"], color="#facc15", lw=1.0, ls="-.", label="Pass 2 Lactuca g₀ = 0.64")
+    ax_e2 = ax_e.twinx()
+    ax_e2.bar(xi, nser, width=wbar, color="#fb923c", label="sim N_serrations")
+    ax_e2.bar(xi + wbar, ngen, width=wbar, color="#a78bfa", label="sim active FvK generations M")
+    for i, r in enumerate(rows):
+        lo, hi = r["n_serrations_obs_min"], r["n_serrations_obs_max"]
+        ax_e2.plot([i - 0.12, i + 0.12], [lo, lo], color="#f8fafc", lw=1.2)
+        ax_e2.plot([i - 0.12, i + 0.12], [hi, hi], color="#f8fafc", lw=1.2)
+        ax_e2.plot([i, i], [lo, hi], color="#f8fafc", lw=1.0, ls=":")
+        sign = {-1: "K<0", 0: "K≈0", 1: "K>0"}.get(r["curvature_sign_obs"], "")
+        ax_e.text(i, -0.08, f"obs: {sign}", ha="center", va="top", color="#94a3b8", fontsize=7)
+    ax_e.set_xticks(xi)
+    ax_e.set_xticklabels(labels, color="#e6edf3", fontsize=8)
+    ax_e.set_ylim(-0.25, max(max(g0s) * 1.25, 0.9))
+    ax_e2.set_ylabel("Counts (N_serrations, M)", color="#fb923c", fontsize=8.5)
+    ax_e2.tick_params(colors="#fb923c", labelsize=8)
+    oc = sweep["ordinal_checks"]
+    _style_dark_axis(
+        ax_e,
+        f"(E) Genotype sweep vs literature ordinal phenotypes (white = obs N range)\n"
+        f"ordinal checks passed {int(round(sweep['ordinal_pass_fraction']*len(oc)))}/{len(oc)}; cin/WT <g₀> = {sweep['cin_over_wt_growth_ratio']:.2f}, TCP-OE/WT = {sweep['tcp_oe_over_wt_growth_ratio']:.2f}",
+        "Genotype preset", "Excess metric <g₀>",
+    )
+    h1, l1 = ax_e.get_legend_handles_labels()
+    h2, l2 = ax_e2.get_legend_handles_labels()
+    ax_e.legend(h1 + h2, l1 + l2, facecolor="#0b0f17", edgecolor="#30363d", labelcolor="#e6edf3", fontsize=7, loc="upper left")
+
+    # (F) time courses
+    ax_f = fig.add_subplot(2, 3, 6, facecolor="#111827")
+    cols = {"wild_type": "#34d399", "cin_tcp_loss_of_function": "#f43f5e", "tcp_mir319_resistant_overexpression": "#38bdf8", "cuc2_knockout": "#a78bfa", "pin1_knockout": "#fb923c"}
+    ax_f2 = ax_f.twinx()
+    for name, run in sweep["runs"].items():
+        ax_f.plot(run["t_snap_h"], run["n_auxin_maxima_timeseries"], color=cols[name], lw=1.6, label=f"{name} auxin maxima")
+        ax_f2.plot(run["t_snap_h"], run["g0_kymograph"].mean(axis=1), color=cols[name], lw=1.4, ls="--")
+    ax_f2.set_ylabel("<g₀>(t) (dashed)", color="#c9d1d9", fontsize=8.5)
+    ax_f2.tick_params(colors="#8b949e", labelsize=8)
+    _style_dark_axis(
+        ax_f,
+        "(F) Developmental emergence: auxin-maxima count (solid) and <g₀>(t) (dashed)\nTCP maturation extinguishes patterning; cin prolongs it, TCP-OE truncates it",
+        "Developmental time t (h)", "Number of auxin convergence maxima",
+    )
+    ax_f.legend(facecolor="#0b0f17", edgecolor="#30363d", labelcolor="#e6edf3", fontsize=7, loc="upper right")
+
+    fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.96))
+    fig.savefig(out_png, dpi=150, facecolor=fig.get_facecolor())
+    plt.close(fig)
+    return {"png": out_png, "sweep": sweep, "dev": dev}
+
+
+def render_developmental_gif(out_gif: Path = OUT_DEV_GIF, genotype: str = "wild_type", seed: int = 2002, n_frames: int = 12) -> Path:
+    """Time-course GIF: the FvK surface re-solved on the developmental g_0(y, t) snapshot
+    (mean) with serration outgrowth s(y, t), as the TCP arrest front sweeps the margin."""
+    out_gif.parent.mkdir(parents=True, exist_ok=True)
+    dev = simulate_tcp_auxin_margin_development(genotype=genotype, seed=seed)
+    n_snap = dev["t_snap_h"].size
+    pick = np.unique(np.linspace(0, n_snap - 1, n_frames).astype(int))
+    frames: list[Image.Image] = []
+    L_max = float(dev["L_final_mm"])
+    z_lim = 9.5
+    for k in pick:
+        g0_k = dev["g0_kymograph"][k]
+        g0_mean = float(np.mean(g0_k))
+        casc = relax_foppl_von_karman_cascade(g0=g0_mean, ell_mm=12.0, t_sheet_mm=0.22, L_mm=L_max, seed=seed)
+        snap = dict(dev)
+        snap["cascade"] = casc
+        snap["y_mm"] = dev["y_phys_kymograph"][k]
+        snap["outgrowth_final_mm"] = dev["outgrowth_kymograph"][k]
+        snap["amplitude_modulation_y"] = np.sqrt(g0_k / g0_mean) if g0_mean > 0 else np.zeros_like(g0_k)
+        mesh = generate_developmental_coupled_mesh(snap)
+        fig = plt.figure(figsize=(6.4, 4.8), dpi=95, facecolor="#0b0f17")
+        ax = fig.add_subplot(111, projection="3d", facecolor="#0b0f17")
+        ax.plot_surface(mesh["X"], mesh["Y"], mesh["W"], cmap="YlGn", alpha=0.92, linewidth=0.1, edgecolor="#1f2937")
+        ax.set_title(
+            f"{genotype}: t={dev['t_snap_h'][k]:.0f} h, <g₀>={g0_mean:.3f}, M={casc['n_active_generations']}\n"
+            f"auxin maxima={int(dev['n_auxin_maxima_timeseries'][k])}, TCP front m̄={float(np.mean(dev['tcp_kymograph'][k])):.2f}",
+            color="#f0f6fc", fontsize=9,
+        )
+        ax.set_xlim(-6.0, 36.0)
+        ax.set_ylim(0.0, L_max)
+        ax.set_zlim(-z_lim, z_lim)
+        ax.set_xlabel("Inward x (mm)", color="#8b949e", fontsize=8)
+        ax.set_ylabel("Margin y (mm)", color="#8b949e", fontsize=8)
+        ax.set_zlabel("w(x,y) (mm)", color="#8b949e", fontsize=8)
+        ax.tick_params(colors="#8b949e", labelsize=7)
+        ax.view_init(elev=28, azim=-55)
+        fig.tight_layout()
+        fig.canvas.draw()
+        w, h = fig.canvas.get_width_height()
+        buf = np.frombuffer(fig.canvas.buffer_rgba(), dtype=np.uint8).reshape(h, w, 4)
+        frames.append(Image.fromarray(buf[:, :, :3]).convert("P", palette=Image.Palette.ADAPTIVE))
+        plt.close(fig)
+    frames[0].save(out_gif, save_all=True, append_images=frames[1:], duration=160, loop=0)
+    return out_gif
+
+
+# =============================================================================
 # 7. Quantitative MorphoEval Measurements & 8-Point Self-Test Suite
 # =============================================================================
 def measure_morphoeval() -> list[dict[str, Any]]:
@@ -1001,6 +1621,74 @@ def measure_morphoeval() -> list[dict[str, Any]]:
     taxon_bench = evaluate_multi_system_specimens(seed=2002)
     cv_seg = segment_lactuca_sativa_specimen()
     flat_ctrl = relax_foppl_von_karman_cascade(g0=0.0, seed=2002)
+    dev_sweep = evaluate_developmental_genotype_sweep(seed=2002)
+    wt = dev_sweep["runs"]["wild_type"]
+    cin = dev_sweep["runs"]["cin_tcp_loss_of_function"]
+    oe = dev_sweep["runs"]["tcp_mir319_resistant_overexpression"]
+    ko_max_ser = max(dev_sweep["runs"]["cuc2_knockout"]["n_serrations"], dev_sweep["runs"]["pin1_knockout"]["n_serrations"])
+
+    developmental_measurements: list[dict[str, Any]] = [
+        {
+            "name": "Pass 3 developmental wild-type excess metric <g_0> from coupled CIN/TCP-auxin-CUC2 growth PDEs",
+            "value": round(wt["g0_mean_final"], 4),
+            "unit": "dimensionless",
+            "method": f"Forward-Euler CIN/TCP-auxin/PIN1-CUC2 margin PDEs on a growing Lagrangian lattice; g_0 = ((1+Gamma_mar)/(1+Gamma_int))^2 - 1 averaged along the margin at T={wt['params']['T_total_h']:.0f} h (margin stretch x{wt['margin_stretch_factor']:.2f})",
+            "reference_value": dev_sweep["wt_g0_target"],
+            "reference_source": "Lactuca sativa g_0 = 0.64 of the Pass 2 mechanical module (self-consistency calibration target; gamma_0, beta tuned)",
+            "note": f"K(0) on developmental <g_0> = {wt['K_edge_mm_inv2']:.6f} mm^-2; FvK cascade re-solved: M = {wt['n_active_generations']} active generations, mean A/lambda = {wt['mean_aspect_ratio']:.4f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Pass 3 cin/jaw-D (TCP loss-of-function) over wild-type excess marginal growth ratio <g_0>_cin / <g_0>_WT",
+            "value": round(dev_sweep["cin_over_wt_growth_ratio"], 4),
+            "unit": "dimensionless",
+            "method": f"TCP arrest-front speed v_tcp scaled x{GENOTYPE_PRESETS['cin_tcp_loss_of_function']['v_tcp_scale']:.2f}; K(0)_cin = {cin['K_edge_mm_inv2']:.6f} vs K(0)_WT = {wt['K_edge_mm_inv2']:.6f} mm^-2",
+            "reference_value": 1.5,
+            "reference_source": "Nath et al. (2003) Science 299:1404-1407 (ordinal: cin > WT, K < 0; 1.5 is a placeholder magnitude) & Palatnik et al. (2003) Nature 425:257-263",
+            "note": f"ordinal check cin_excess_growth_gt_wt = {dev_sweep['ordinal_checks']['cin_excess_growth_gt_wt']}, cin K more negative = {dev_sweep['ordinal_checks']['cin_curvature_more_negative_than_wt']}; TCP-OE/WT = {dev_sweep['tcp_oe_over_wt_growth_ratio']:.4f} (ref < 1)",
+            "derived_from": "script",
+        },
+        {
+            "name": "Pass 3 wild-type serration count N_serrations from auxin/PIN1 convergence maxima on the growing margin",
+            "value": int(wt["n_serrations"]),
+            "unit": "count",
+            "method": f"Peaks of accumulated outgrowth s(y,T) (prominence 8% of max, >=1.5 mm apart, lattice ends excluded) on L_final = {wt['L_final_mm']:.1f} mm; mean tip spacing = {wt['serration_spacing_mm']:.2f} mm; first >=2 maxima at t = {wt['serration_emergence_time_h']:.0f} h",
+            "reference_value": 0.5 * (dev_sweep["reference"]["genotype_phenotype_table"][0]["n_serrations_obs_min"] + dev_sweep["reference"]["genotype_phenotype_table"][0]["n_serrations_obs_max"]),
+            "reference_source": "Bilsborough et al. (2011) PNAS 108:3424-3429 & Sharon et al. (2002) Fig. 1c — broad plausibility range [5, 40], midpoint reported; NOT a digitised count",
+            "note": f"primary lobes = {wt['n_primary_lobes']}, secondary serrations = {wt['n_secondary_serrations']}; in-range fraction across 5 genotypes = {dev_sweep['serration_in_range_fraction']:.2f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Pass 3 cuc2 / pin1 knockout negative control: maximum serration count across both ablations",
+            "value": int(ko_max_ser),
+            "unit": "count",
+            "method": "cuc2_scale = 0 (no CUC2 -> PIN1 polarity) and pin1_scale = 0 (no polar transport); auxin field stays homogeneous so no outgrowth maxima form",
+            "reference_value": 0,
+            "reference_source": "Nikovics et al. (2006) Plant Cell 18:2929-2945; Hay, Barkoulas & Tsiantis (2006) Nat. Genet. 38:942-947; Bilsborough et al. (2011) PNAS (smooth margins)",
+            "note": f"knockout <g_0> = {dev_sweep['runs']['cuc2_knockout']['g0_mean_final']:.4f} (homogeneous, auxin-boost only) vs WT {wt['g0_mean_final']:.4f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Pass 3 primary-lobe / secondary-serration outgrowth hierarchy ratio (median s_primary / median s_secondary)",
+            "value": round(wt["lobe_hierarchy_ratio"], 4),
+            "unit": "dimensionless",
+            "method": "Tips split at half the tallest outgrowth; hierarchy arises from auxin-maximum insertion as the Lagrangian lattice stretches (Bilsborough et al. 2011)",
+            "reference_value": 3.5,
+            "reference_source": "Cross-module consistency with the Audoly & Boudaoud (2003) cascade ratio r_cascade = 3.5 of the mechanical module; NOT an independent empirical value",
+            "note": f"basal/apical g_0 ratio = {wt['g0_base_to_tip_ratio']:.3f} (>1: TCP front reaches the base last)",
+            "derived_from": "script",
+        },
+        {
+            "name": "Pass 3 developmental genotype ordinal-phenotype agreement fraction (6 literature checks)",
+            "value": round(dev_sweep["ordinal_pass_fraction"], 4),
+            "unit": "fraction",
+            "method": "Checks: cin <g_0> > WT; cin K(0) < WT; TCP-OE <g_0> < WT; cuc2 N_ser = 0; pin1 N_ser = 0; WT N_ser within [5, 40]",
+            "reference_value": 1.0,
+            "reference_source": "Nath et al. (2003) Science; Palatnik et al. (2003) Nature; Efroni et al. (2008) Plant Cell; Nikovics et al. (2006) Plant Cell; Hay & Tsiantis (2006) Nat. Genet.; Bilsborough et al. (2011) PNAS",
+            "note": f"TCP-OE <g_0> = {oe['g0_mean_final']:.4f}, L_final = {oe['L_final_mm']:.1f} mm (smaller leaf) vs WT L_final = {wt['L_final_mm']:.1f} mm",
+            "derived_from": "script",
+        },
+    ]
 
     return [
         {
@@ -1093,11 +1781,11 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"canopy area fraction = {cv_seg['canopy_area_fraction']:.4f}",
             "derived_from": "output",
         },
-    ]
+    ] + developmental_measurements
 
 
 def self_test() -> bool:
-    """Run comprehensive 8-point verification suite for Pass 2."""
+    """Run comprehensive 11-point verification suite (8 Pass 2 checks + 3 Pass 3 checks)."""
     # 1. Cryptographic SHA-256 verification of all 4 dataset files
     digests = verify_dataset_integrity()
     assert len(digests) == 4, "Expected 4 SHA-256-verified dataset files"
@@ -1147,13 +1835,54 @@ def self_test() -> bool:
     assert np.allclose(m1["Y"], m2["Y"], atol=0.0)
     assert np.allclose(m1["W"], m2["W"], atol=0.0)
 
+    # 9. (Pass 3) PIN1 up-the-gradient transport conserves auxin mass exactly on the lattice
+    rng = np.random.default_rng(7)
+    a_rand = rng.uniform(0.1, 3.0, 64)
+    p_rand = rng.uniform(0.0, 1.0, 64)
+    da_tr = pin1_up_the_gradient_transport(a_rand, p_rand, 2.5, 3.5)
+    assert abs(float(np.sum(da_tr))) < 1e-10, "PIN1 transport must be mass-conserving"
+    # TCP front: m -> 1 behind the front, growth increment vanishes there (Lean tcp_arrested_marginal_growth_increment)
+    y_test = np.linspace(0.0, 36.0, 10)
+    m_late = tcp_maturation_field(y_test, 1e4, 36.0, 0.45, 6.0)
+    assert np.all(m_late > 0.999)
+    assert np.all(tcp_maturation_field(y_test, 0.0, 36.0, 0.0, 6.0) == 0.0)  # cin limit v_tcp = 0 -> no arrest
+
+    # 10. (Pass 3) Coupled developmental model: wild-type patterning, hierarchy and FvK coupling
+    sweep = evaluate_developmental_genotype_sweep(seed=2002)
+    wt = sweep["runs"]["wild_type"]
+    assert wt["n_serrations"] >= 5, "wild type must form serrations"
+    assert wt["n_primary_lobes"] >= 2 and wt["n_secondary_serrations"] >= 2, "lobe/serration hierarchy expected"
+    assert wt["lobe_hierarchy_ratio"] > 1.5
+    assert np.all(wt["g0_profile_final"] >= 0.0)
+    assert abs(wt["g0_mean_final"] - sweep["wt_g0_target"]) <= sweep["reference"]["wild_type_calibration"]["tolerance_abs"]
+    assert wt["n_active_generations"] >= 3 and wt["K_edge_mm_inv2"] < 0.0
+    assert wt["g0_base_to_tip_ratio"] > 1.0  # basipetal TCP front -> basal excess growth
+    assert math.isfinite(wt["serration_emergence_time_h"])
+    # growth kymograph is monotone non-decreasing in time (Lean: accumulated growth never decreases)
+    g0_k = wt["g0_kymograph"]
+    assert np.all(np.diff(g0_k.mean(axis=1)) >= -1e-12)
+
+    # 11. (Pass 3) Genotype ablations reproduce the literature ordinal phenotypes
+    oc = sweep["ordinal_checks"]
+    assert oc["cuc2_ko_no_serrations"] and oc["pin1_ko_no_serrations"]
+    assert oc["cin_excess_growth_gt_wt"] and oc["cin_curvature_more_negative_than_wt"]
+    assert oc["tcp_oe_growth_lt_wt"]
+    assert sweep["ordinal_pass_fraction"] == 1.0
+    # developmental run is bitwise deterministic
+    d1 = simulate_tcp_auxin_margin_development(seed=2002)
+    d2 = simulate_tcp_auxin_margin_development(seed=2002)
+    assert np.array_equal(d1["auxin_kymograph"], d2["auxin_kymograph"])
+    assert np.array_equal(d1["g0_profile_final"], d2["g0_profile_final"])
+
     meas = measure_morphoeval()
-    assert len(meas) == 9
+    assert len(meas) == 15
     print(
-        f"[self_test] 2002-sharon-ripping-leaf-edge-waves.py (v2) PASSED all 8 checks "
+        f"[self_test] 2002-sharon-ripping-leaf-edge-waves.py (v3) PASSED all 11 checks "
         f"(mean A/lambda={spec['mean_aspect_ratio_sim']:.4f}, r_amp={spec['pearson_r_amplitude']:.4f}, "
         f"collapse_r={spec['self_similar_collapse_r']:.4f}, K(0)={prof['K_edge_mm_inv2']:.6f} mm^-2, "
-        f"taxon r_aspect={tax['pearson_r_aspect']:.4f}, specimen ratio={cv_seg['empirical_cascade_ratio']:.2f})."
+        f"taxon r_aspect={tax['pearson_r_aspect']:.4f}, specimen ratio={cv_seg['empirical_cascade_ratio']:.2f}; "
+        f"dev WT <g0>={wt['g0_mean_final']:.4f}, N_ser={wt['n_serrations']}, hierarchy={wt['lobe_hierarchy_ratio']:.2f}, "
+        f"cin/WT={sweep['cin_over_wt_growth_ratio']:.2f}, ordinal={sweep['ordinal_pass_fraction']:.2f})."
     )
     return True
 
@@ -1167,6 +1896,13 @@ def main() -> int:
     ap.add_argument("--t", type=float, default=None, help="Override leaf sheet thickness t (mm)")
     ap.add_argument("--r-cascade", type=float, default=None, help="Override cascade wavelength ratio r_cascade")
     ap.add_argument("--seed", type=int, default=2002, help="Deterministic RNG seed (default: 2002)")
+    ap.add_argument(
+        "--genotype",
+        choices=sorted(GENOTYPE_PRESETS),
+        default="wild_type",
+        help="Genotype preset shown in the developmental figure/GIF (all presets are always swept in panel E)",
+    )
+    ap.add_argument("--skip-developmental", action="store_true", help="Skip the Pass 3 developmental figure and GIF")
     args = ap.parse_args()
 
     if args.self_test:
@@ -1188,6 +1924,16 @@ def main() -> int:
     if not args.skip_gif:
         gif = render_growth_gif(OUT_GIF, seed=args.seed)
         print(f"[render] Wrote {gif}")
+    if not args.skip_developmental:
+        dev_out = render_developmental_figure(OUT_DEV_PNG, genotype=args.genotype, seed=args.seed)
+        wt = dev_out["sweep"]["runs"]["wild_type"]
+        print(
+            f"[render] Wrote {dev_out['png']} (WT <g0>={wt['g0_mean_final']:.4f}, N_ser={wt['n_serrations']}, "
+            f"ordinal checks={dev_out['sweep']['ordinal_pass_fraction']:.2f})"
+        )
+        if not args.skip_gif:
+            dev_gif = render_developmental_gif(OUT_DEV_GIF, genotype=args.genotype, seed=args.seed)
+            print(f"[render] Wrote {dev_gif}")
     return 0
 
 

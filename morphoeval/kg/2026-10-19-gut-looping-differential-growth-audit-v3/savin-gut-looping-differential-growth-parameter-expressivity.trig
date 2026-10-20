@@ -1,0 +1,85 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-savin-gut-looping-differential-growth> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-savin-gut-looping-differential-growth-parameter-expressivity> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-savin-gut-looping-differential-growth-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Savin et al. (2011) discrete gut rod coupled to a finite-element (CST, St.Venant-Kirchhoff) dorsal-mesentery membrane with an apicobasal Pitx2 stiffness gradient — Parameter expressivity: 86/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "The morphospace is now genuinely mechanical: 5 chick stages (L565-634), a 5-point Pitx2 gradient sweep with a = 0 as the uniform-sheet ablation (L637-675), a mesh-refinement pair (L678-703), the 14-point 4-species analytical collapse (L706-778), 4 E12 conditions (L781-831), and CLI overrides --epsilon / --E-ratio / --R-t / --h-m / --pitx2-grad / --width-ratio / --mesh-ns / --mesh-nw / --seed whose defaults are read from the pinned fe_mesentery_mesh_reference.json (L552-562, L1749-1759). Deductions: the eight physical/mesh overrides reach only `render_comparison_figure`; the Pitx2 figure and the GIF ignore everything but --seed (L1780-1786) (-6); W_m/L_m, root fraction and nu_m are swept nowhere in the rendered outputs although the JSON note claims a prototype W_m sweep (-4); the Pitx2 sweep spans only a >= 0 (stiffer toward the gut edge) so the sign of the effect is not exercised (-2); the cross-species morphospace is analytical only (no FE relaxation per species) (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:evidenceAgainst "2011-savin-gut-looping-differential-growth.py L1747–L1787: CLI: 8 physical/mesh overrides + --seed; overrides are passed only to render_comparison_figure, not to render_pitx2_fe_figure or render_growth_gif <https://github.com/fractastical/morpholib/blob/327729c8/2011-savin-gut-looping-differential-growth.py#L1747-L1787>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-savin-gut-looping-differential-growth-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-savin-gut-looping-differential-growth-parameter-expressivity-2> ;
+        pk:hasScore "0.86"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-savin-gut-looping-differential-growth-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2011-savin-gut-looping-differential-growth.py L637–L703" ;
+        dct:description "Pitx2 gradient sweep a in {0,...,0.8} with mean E_m fixed and 96x5 -> 128x6 mesh refinement evaluation" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/327729c8/2011-savin-gut-looping-differential-growth.py#L637-L703> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-savin-gut-looping-differential-growth-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2011-savin-gut-looping-differential-growth.py L552–L562" ;
+        dct:description "fe_options_from_overrides reads mesh/Pitx2/width defaults from the pinned JSON and applies CLI overrides" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/327729c8/2011-savin-gut-looping-differential-growth.py#L552-L562> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 062 Pass 3 Phase B Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/62> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.devcel.2008.05.001>,
+            <https://doi.org/10.1038/nature10277>,
+            <https://doi.org/10.1073/pnas.0803578105>,
+            <https://doi.org/10.1073/pnas.1618677114>,
+            <https://doi.org/10.1126/science.1238842> .
+    <https://doi.org/10.1016/j.devcel.2008.05.001> dct:date "2008"^^xsd:gYear ;
+        dct:title "The chirality of gut rotation derives from left-right asymmetric changes in the architecture of the dorsal mesentery" .
+    <https://doi.org/10.1038/nature10277> dct:date "2011"^^xsd:gYear ;
+        dct:title "On the growth and form of the gut" .
+    <https://doi.org/10.1073/pnas.0803578105> dct:date "2008"^^xsd:gYear ;
+        dct:title "The direction of gut looping is established by changes in the extracellular matrix and in cell orientation" .
+    <https://doi.org/10.1073/pnas.1618677114> dct:date "2017"^^xsd:gYear ;
+        dct:title "BMP signaling controls buckling forces to modulate looping morphogenesis of the gut" .
+    <https://doi.org/10.1126/science.1238842> dct:date "2013"^^xsd:gYear ;
+        dct:title "Villification: how the gut gets its villi" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Savin et al. (2011) discrete gut rod coupled to a finite-element (CST, St.Venant-Kirchhoff) dorsal-mesentery membrane with an apicobasal Pitx2 stiffness gradient — Parameter expressivity 86/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T19:12:28Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-savin-gut-looping-differential-growth-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/62> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

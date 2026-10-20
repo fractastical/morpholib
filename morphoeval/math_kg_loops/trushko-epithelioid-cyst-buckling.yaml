@@ -75,4 +75,45 @@ equations:
     variables: "V_caps, V_lumen, V_fold: capsule, lumen, and invaginated cap volumes; δ/R_0: normalized inward fold depth; Γ_myo: active myosin-II contractility (reduced by Blebbistatin / Y-27632)"
     role: "Proves capsule volume partitioning during inward invagination and predicts the experimentally observed attenuation of fold depth and buckling pressure under Blebbistatin myosin-II inhibition"
     source_citation: "Trushko et al. (2020) Dev. Cell 54(5):655-668 Figs. 5-6; Hannezo, Prost & Joanny (2014) PNAS 111(1):27-32"
-    code_locus: "2019-trushko-epithelioid-cyst-buckling.py#L215-L380"
+    code_locus: "2019-trushko-epithelioid-cyst-buckling.py#L156-L377"
+
+  - law_name: "Apical-Basal Differential Tension Spontaneous Curvature Law (Pass 3, 3D triangulated vertex shell)"
+    formula: "f(c) = (κ/2) c² − ΔΓ h c,  c = 2H  ⇒  argmin f = c₀ = 2H₀ = ΔΓ h / κ;  with κ = E_epi h³ / (12(1 − ν²)):  H₀ R₀ = 6 (1 − ν²) ΔΓ R₀ / (E_epi h²);  integer form κ(κc² − 2tc) + t² = (κc − t)² ≥ 0, t = ΔΓ h"
+    lean_decl: "MathOfBiology.Loop_069.apicobasal_bending_energy_scaled"
+    lean_theorem: "MathOfBiology.Loop_069.apicobasal_spontaneous_curvature_minimizer"
+    lean_locus: "morphoeval/lean/loops/Loop_069_epithelioid_cyst_buckling.lean#L145-L177"
+    lean_code: |
+      def apicobasal_bending_energy_scaled (k t c : Int) : Int :=
+        k * (k * c * c - 2 * t * c)
+      theorem apicobasal_bending_completed_square (k t c : Int) :
+          apicobasal_bending_energy_scaled k t c + t * t = (k * c - t) * (k * c - t)
+      theorem apicobasal_spontaneous_curvature_minimizer (k t c : Int) :
+          apicobasal_bending_energy_scaled k t c ≥ -(t * t) ∧
+          apicobasal_bending_energy_scaled 1 t t = -(t * t)
+    variables: "κ: monolayer bending modulus; h: monolayer thickness; ΔΓ = Γ_apical − Γ_basal: apical-basal tension difference (mN/m); c = 2H: twice the mean curvature; c₀ = 2H₀: spontaneous curvature; ν: Poisson ratio; E_epi: monolayer Young's modulus; R₀: capsule radius"
+    role: "Fixes the spontaneous curvature of the discrete Helfrich bending term (κ/2) Σ_v A_v (2H_v − 2H₀)² of the 3D icosphere shell from the apical-basal tension difference; ΔΓ_WT = 4.26 mN/m is calibrated so that H₀ R₀ = 1 (confluent sphere is the spontaneous shape)"
+    source_citation: "Hannezo, Prost & Joanny (2014) PNAS 111(1):27-32 Eqs. 1-3; Helfrich (1973) Z. Naturforsch. C 28:693-703"
+    code_locus: "2019-trushko-epithelioid-cyst-buckling.py#L476-L484"
+    code_locus_secondary: "2019-trushko-epithelioid-cyst-buckling.py#L506-L718"
+
+  - law_name: "Inverted-Cap Penalty & Unilateral Capsule Wall Contact Law (Pass 3, 3D triangulated vertex shell)"
+    formula: "(h_m + c₀)² = (h_m − c₀)² + 4 h_m c₀ ≥ (h_m − c₀)²  for h_m, c₀ ≥ 0  (inverted Pogorelov cap never cheaper than lumen-concave cap);  W(r) = max(0, r − R₀)² : W = 0 for r ≤ R₀, W > 0 for r > R₀  (Winkler capsule, P_3D = K_alg (r_wall/R₀ − 1))"
+    lean_decl: "MathOfBiology.Loop_069.inverted_cap_bending_penalty"
+    lean_theorem: "MathOfBiology.Loop_069.inverted_cap_penalty_and_capsule_wall_contact"
+    lean_locus: "morphoeval/lean/loops/Loop_069_epithelioid_cyst_buckling.lean#L196-L221"
+    lean_code: |
+      def inverted_cap_bending_penalty (hm c0 : Int) : Int := (hm + c0) * (hm + c0)
+      def aligned_cap_bending_penalty (hm c0 : Int) : Int := (hm - c0) * (hm - c0)
+      def capsule_wall_winkler_penalty (r R : Int) : Int :=
+        if r ≤ R then 0 else (r - R) * (r - R)
+      theorem inverted_cap_penalty_and_capsule_wall_contact
+          (hm c0 r R : Int) (hh : 0 ≤ hm) (hc : 0 ≤ c0) :
+          inverted_cap_bending_penalty hm c0 = aligned_cap_bending_penalty hm c0 + 4 * (hm * c0) ∧
+          aligned_cap_bending_penalty hm c0 ≤ inverted_cap_bending_penalty hm c0 ∧
+          (r ≤ R → capsule_wall_winkler_penalty r R = 0) ∧
+          (R < r → capsule_wall_winkler_penalty r R > 0)
+    variables: "h_m = |2H|: magnitude of the local mean curvature; c₀ = 2H₀ ≥ 0: apical-dominant spontaneous curvature; r: vertex radius; R₀: capsule inner radius; K_alg: capsule radial stiffness; P_3D: pressure read from capsule dilation"
+    role: "Explains why apical-dominant tension (ΔΓ > 0) reduces fold depth and delays buckling onset in the ΔΓ sweep (slope −0.0058 R₀ per mN/m, onset +0.0094 per mN/m) and justifies reading the confinement pressure from the Winkler wall dilation exactly as Trushko et al. read it from alginate capsule dilation (Fig. 2E, r = 0.94)"
+    source_citation: "Trushko et al. (2020) Dev. Cell 54(5):655-668 Fig. 2E & STAR Methods; Hannezo, Prost & Joanny (2014) PNAS 111(1):27-32; Alessandri et al. (2013) PNAS 110(37):14843-14848"
+    code_locus: "2019-trushko-epithelioid-cyst-buckling.py#L591-L631"
+    code_locus_secondary: "2019-trushko-epithelioid-cyst-buckling.py#L798-L837"

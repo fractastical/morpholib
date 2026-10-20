@@ -112,4 +112,74 @@ theorem forterre_quartic_alpha_size_scaling (L_sq_sq k_init_sq : Int) :
     unfold alpha_quartic_numerator
     omega
 
+
+-- ============================================================================
+-- Law 4 (`forterre-venus-flytrap-snap-buckling-4`, Pass 3):
+-- Two-Touch Ca2+ Counting Rule — a Single Action Potential Is Subthreshold, Two
+-- Action Potentials Within the Memory Window Reach the Motor Threshold, and the
+-- Second-Touch Ca2+ Level Is Monotone in the Residual of the First
+-- ============================================================================
+/-- Per-node Ca2+ integrator of the FEM-coupled model (Böhm et al. 2016; Suda et al.
+    2020): each local action potential adds `c` (threshold units, scaled to `Int`), and
+    the residual `r` of the first AP at the time of the second satisfies `0 ≤ r ≤ c`
+    (exponential decay).  `ca_after_second c r = c + r`.
+      - A single AP (`r = 0`, nothing to add) with `c < θ` never reaches threshold `θ`.
+      - Two immediate APs (`r = c`) reach threshold whenever `θ ≤ 2c`.
+      - The post-second-touch Ca2+ is monotone non-decreasing in the residual, so a
+        longer inter-touch interval (smaller residual) can only lose the snap. -/
+def ca_after_second (c r : Int) : Int :=
+  c + r
+
+theorem forterre_two_touch_calcium_counting (c θ : Int) :
+    (c < θ → ca_after_second c 0 < θ) ∧
+    (θ ≤ c + c → θ ≤ ca_after_second c c) ∧
+    (∀ r₁ r₂ : Int, r₁ ≤ r₂ → ca_after_second c r₁ ≤ ca_after_second c r₂) ∧
+    (∀ r : Int, 0 ≤ r → r ≤ c → ca_after_second c r ≤ c + c) := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro h
+    unfold ca_after_second
+    omega
+  · intro h
+    unfold ca_after_second
+    omega
+  · intro r₁ r₂ h
+    unfold ca_after_second
+    omega
+  · intro r _ h
+    unfold ca_after_second
+    omega
+
+
+-- ============================================================================
+-- Law 5 (`forterre-venus-flytrap-snap-buckling-5`, Pass 3):
+-- Ca2+-Gated Active Rest Curvature — No Activated Motor Area Leaves the Shell at
+-- Its Open Rest Curvature, Full Activation Drives the Closed Target, and the
+-- Target Decreases Monotonically with the Activated Area Fraction
+-- ============================================================================
+/-- Electro-mechanical gating of the Pass 2 shell solver: with activated lumped-mass
+    area numerator `a` out of `n` (so `A = a / n`), the active rest-curvature target is
+    `κ_x0,target = k_init + (kx0_final - k_init) · A`.  Multiplying by `n` to stay in
+    `Int`, `gated_target_num k kf a n = k * n + (kf - k) * a`.
+      - `a = 0` (no AP-activated motor tissue): target `= k_init · n` (trap stays open).
+      - `a = n` (whole lobe activated): target `= kx0_final · n` (closed-state drive).
+      - For closure `kx0_final < k_init`, the target is monotone non-increasing in `a`. -/
+def gated_target_num (k kf a n : Int) : Int :=
+  k * n + (kf - k) * a
+
+theorem forterre_calcium_gated_rest_curvature (k kf n : Int) :
+    gated_target_num k kf 0 n = k * n ∧
+    gated_target_num k kf n n = kf * n ∧
+    (kf < k → ∀ a₁ a₂ : Int, a₁ ≤ a₂ → gated_target_num k kf a₂ n ≤ gated_target_num k kf a₁ n) := by
+  refine ⟨?_, ?_, ?_⟩
+  · unfold gated_target_num
+    simp
+  · unfold gated_target_num
+    rw [Int.sub_mul]
+    omega
+  · intro hk a₁ a₂ ha
+    unfold gated_target_num
+    have hneg : kf - k ≤ 0 := by omega
+    have hmul : (kf - k) * a₂ ≤ (kf - k) * a₁ := Int.mul_le_mul_of_nonpos_left hneg ha
+    omega
+
 end MathOfBiology.Loop_066

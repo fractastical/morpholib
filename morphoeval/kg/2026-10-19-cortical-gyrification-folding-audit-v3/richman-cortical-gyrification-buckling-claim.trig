@@ -1,0 +1,94 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-richman-cortical-gyrification-buckling> a pk:Claim ;
+        rdfs:label "Richman et al. (1975) & Tallinen et al. (2014, 2016) neo-Hookean constrained cortical expansion and sulcal creasing instability, with a Pass 3 3D hemispheric Swift-Hohenberg surface surrogate faithfully reproduces Mammalian cerebral cortex & subcortical white matter (Homo sapiens, Pan troglodytes, Macaca mulatta, Tursiops truncatus, Felis catus, Mus musculus) morphology" ;
+        dct:description "The simulation script(s) 1975-richman-cortical-gyrification-buckling.py implement the cited source model as published and produce forms that match real Mammalian cerebral cortex & subcortical white matter (Homo sapiens, Pan troglodytes, Macaca mulatta, Tursiops truncatus, Felis catus, Mus musculus) specimens and the source authors' figures. A belief under audit, not a fact: its credibility is the weight of evidence (MorphoEval 0.1.0 overall 80.2/100, audit 2026-10-19-cortical-gyrification-folding-audit-v3) and the assessments." ;
+        dct:subject <https://github.com/fractastical/morpholib/blob/45670cb8/1975-richman-cortical-gyrification-buckling.py> ;
+        pk:context "script(s): https://github.com/fractastical/morpholib/blob/45670cb8/1975-richman-cortical-gyrification-buckling.py; output: docs/media/cortical_gyrification_folding_comparison.png; organism: Mammalian cerebral cortex & subcortical white matter (Homo sapiens, Pan troglodytes, Macaca mulatta, Tursiops truncatus, Felis catus, Mus musculus); checkpoint commit: https://github.com/fractastical/morpholib/commit/45670cb8; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0, scikit-image 0.26.0, lean 4.35.0; spec_fingerprint: 13499943306506233e29ef0e44d9eb95a08cb36c62618ec286f2346b2d38f941; artifact_sha256: ca86dd76e3d0c81460ea4a15d6e3c54f90b997c4272caa3b12ede091364d7413; input_dataset_sha256: {datasets/cortical_gyrification_folding/cerebral_cortex_gyri_specimen.jpg=ff9a25e993fd5aad..., datasets/cortical_gyrification_folding/cortical_gyrification_folding_reference.json=94947373ac49d97d..., datasets/cortical_gyrification_folding/paper_citations.bib=c330565c1bac7790..., datasets/cortical_gyrification_folding/scout_manifest.json=7f5410ff8ad2c1ee..., datasets/cortical_gyrification_folding/surface_sh_3d_reference.json=5421bbea0b8fa9e5...}; supersedes_audit_id: 2026-10-19-cortical-gyrification-folding-audit-v2; claim_boundary: [reported_in_source: Richman et al. (1975): a stiff cortical plate growing on a softer subcortical foundation buckles with wavelength lambda = 2 pi h (mu_c / 3 mu_s)^(1/3), predicting fine folds for thin (microgyric) cortex and broad folds for thick cortex | Tallinen et al. (2014, 2016): multiplicative tangential growth F = F_e G of a neo-Hookean cortex above a critical excess g_c produces cusped sulci; a 3D gel-brain and a tetrahedral FEM on a GW22 MRI template reproduce fetal gyrification GW22-GW34 with GI rising to about 2.5 | Mota & Herculano-Houzel (2015): cortical folding scales universally with surface area and thickness across mammals | Zilles et al. (1988): human whole-hemisphere coronal gyrification index 2.56 +/- 0.08 | Stoop et al. (2015): a stiff film on a soft curved substrate follows a generalized Swift-Hohenberg equation whose curvature-induced quadratic term selects hexagonal dimples at low overstress and labyrinths at high overstress | Fischl & Dale (2000): regional human cortical thickness varies from about 1 mm to 4.5 mm (mean about 2.5 mm) across the hemisphere; reconstructed_in_script: Laws 1-3 (growth excess, cube-root wavelength, GI = 1 + 2 N d / P_hull) as closed-form functions; a 2D coronal shell relaxation (L-BFGS-B) toward a prescribed cusp profile with sulcus count and GI target set from the formula; 11-species and 4-condition sweeps; segmentation of one coronal specimen image | Pass 3: generalized Swift-Hohenberg relaxation on an ellipsoidal hemisphere surface (cotangent Laplace-Beltrami, semi-implicit Euler, Lyapunov energy), regional k_c(x) from a linear thickness gradient, raster skeleton Y-junction counting, marching-triangles iso-contour fundus length, 3D crease-wall GI with depth imported from the 2D solver, 4-point thickness-gradient sweep; transfer_boundary: The 11-species lambda_obs values in the reference JSON are generated from the Richman formula (4.3633 h), so cross-species wavelength agreement (r = 1.0000, alpha = 0.9993, lambda/h = 4.3642) is formula-vs-formula, not model-vs-measurement | The 2D coronal solver's sulcus count, GI target and cusp profile are prescribed before minimisation; L-BFGS-B removes injected noise rather than selecting a buckling mode, so GI_sim, lambda_sim and sulcus counts equal their targets by construction | The 3D surrogate's preferred wavenumber k_c(x) is imposed by the GSH operator; lambda_3D = 11.41 vs 11.33 and the gradient slope 1.006 are consistency checks of the nonlinear planform, and eps_scale = 0.5 / g2_curvature_coeff = 0.35 are tuning constants chosen to place GW26 in the dimple phase and GW38 in the labyrinth phase | The ellipsoid (1.30 R, 0.70 R, 0.95 R) is not an MRI template; Y-junction density has only the honeycomb upper bound 2.31 per lambda^2 as reference; the percolation ratio has only a > 1 lower bound; does_not_claim: A volumetric tetrahedral neo-Hookean FEM, emergent sulcal depth or GI amplitude in 3D, gyral-crown vs fundus thickness differentiation, MRI-template geometry, a Floquet/linear-stability derivation of g_c, or validation of Y-junction density against measured fetal sulcal graphs]" ;
+        pk:derivedFromPaper <https://doi.org/10.1007/BF00304699>,
+            <https://doi.org/10.1038/nmat4202>,
+            <https://doi.org/10.1038/nphys3632>,
+            <https://doi.org/10.1073/pnas.1406015111>,
+            <https://doi.org/10.1073/pnas.200033797>,
+            <https://doi.org/10.1103/RevModPhys.65.851>,
+            <https://doi.org/10.1126/science.1145181>,
+            <https://doi.org/10.1126/science.aaa9101> ;
+        pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-code-traceability>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-model-fidelity>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-morphometric-validation>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-overall>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-parameter-expressivity>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-repro-package>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-source-traceability>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-specimen-match> ;
+        pk:weightOfEvidence "0.802"^^xsd:double .
+    <https://github.com/fractastical/morpholib/blob/45670cb8/1975-richman-cortical-gyrification-buckling.py> a schema:SoftwareSourceCode ;
+        rdfs:label "1975-richman-cortical-gyrification-buckling.py" ;
+        schema:codeRepository <https://github.com/fractastical/morpholib> ;
+        schema:programmingLanguage "Python" ;
+        schema:version "45670cb8" .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/61> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/BF00304699>,
+            <https://doi.org/10.1038/nmat4202>,
+            <https://doi.org/10.1038/nphys3632>,
+            <https://doi.org/10.1073/pnas.1406015111>,
+            <https://doi.org/10.1073/pnas.200033797>,
+            <https://doi.org/10.1103/RevModPhys.65.851>,
+            <https://doi.org/10.1126/science.1145181>,
+            <https://doi.org/10.1126/science.aaa9101> .
+    <https://doi.org/10.1007/BF00304699> dct:date "1988"^^xsd:gYear ;
+        dct:title "The human pattern of gyrification in the cerebral cortex" .
+    <https://doi.org/10.1038/nmat4202> dct:date "2015"^^xsd:gYear ;
+        dct:title "Curvature-induced symmetry breaking determines elastic surface patterns" .
+    <https://doi.org/10.1038/nphys3632> dct:date "2016"^^xsd:gYear ;
+        dct:title "On the growth and form of cortical convolutions" .
+    <https://doi.org/10.1073/pnas.1406015111> dct:date "2014"^^xsd:gYear ;
+        dct:title "Gyrification from constrained cortical expansion: Synthesis of physical and numerical models" .
+    <https://doi.org/10.1073/pnas.200033797> dct:date "2000"^^xsd:gYear ;
+        dct:title "Measuring the thickness of the human cerebral cortex from magnetic resonance images" .
+    <https://doi.org/10.1103/RevModPhys.65.851> dct:date "1993"^^xsd:gYear ;
+        dct:title "Pattern formation outside of equilibrium" .
+    <https://doi.org/10.1126/science.1145181> dct:date "1975"^^xsd:gYear ;
+        dct:title "Mechanical model of brain convolutional development" .
+    <https://doi.org/10.1126/science.aaa9101> dct:date "2015"^^xsd:gYear ;
+        dct:title "Cortical folding scales universally with surface area and thickness, not number of neurons" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Claim: Richman et al. (1975) & Tallinen et al. (2014, 2016) neo-Hookean constrained cortical expansion and sulcal creasing instability, with a Pass 3 3D hemispheric Swift-Hohenberg surface surrogate is faithful" ;
+        dct:created "2026-10-20T18:19:01Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:Claim ;
+        npx:introduces <https://w3id.org/probknow/resource/claim/morphoeval-richman-cortical-gyrification-buckling> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/45670cb8/1975-richman-cortical-gyrification-buckling.py>,
+            <https://github.com/fractastical/morpholib/issues/61> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RApE-nGpCMigXqZjeHuYuMJEVTGmTlNTlZl7IcHi_fhdQ/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

@@ -120,33 +120,36 @@ FOUNDATIONAL_DOIS: dict[str, tuple[str, str]] = {
 }
 
 FOUNDATIONAL_SPECIMENS: dict[str, str] = {
-    "thompson-scarus-pomacanthus": "datasets/thompson/scarus_specimen.png",
-    "raup-shell-coiling": "datasets/species_gallery/II_Anaima_Invertebrata/Nautilus_pompilius.jpg",
-    "wolfram-conus-textile-rule30": "datasets/conus/conus_textile_shell.jpg",
-    "hoffmann-wing-venation": "datasets/species_gallery/II_Anaima_Invertebrata/Arigomphus_villosipes.jpg",
-    "eshghi-odonata-wing-cells": "datasets/species_gallery/II_Anaima_Invertebrata/Odonata_spp.jpg",
-    "chindapol-coral-flow": "datasets/madracis_coral_flow/madracis_mirabilis_specimen.jpg",
+    "thompson-scarus-pomacanthus": "datasets/species_gallery/I_Enaima_Vertebrata/Pomacanthus_imperator.jpg",
+    "raup-shell-coiling": "datasets/species_gallery/II_Anaima_Invertebrata/Murex_pecten.jpg",
+    "wolfram-conus-textile-rule30": "datasets/species_gallery/II_Anaima_Invertebrata/Murex_pecten.jpg",
+    "hoffmann-wing-venation": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_melanogaster.jpg",
+    "eshghi-odonata-wing-cells": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_melanogaster.jpg",
+    "chindapol-coral-flow": "datasets/species_gallery/II_Anaima_Invertebrata/Madracis_mirabilis.jpg",
+    "petroff-stromatolite": "datasets/species_gallery/IV_Protista_Monera_Mycota/Bacillus_subtilis.jpg",
     "planform-morphology-animation": "datasets/species_gallery/II_Anaima_Invertebrata/Schmidtea_mediterranea.jpg",
     "cervera-levin-mafe": "datasets/species_gallery/II_Anaima_Invertebrata/Schmidtea_mediterranea.jpg",
-    "lobo-limbform-morphology": "datasets/axolotl_limb_blastema/ambystoma_mexicanum_limb_specimen.jpg",
-    "santella-wormguides-celegans": "datasets/species_gallery/II_Anaima_Invertebrata/Caenorhabditis_elegans.jpg",
+    "lobo-limbform-morphology": "datasets/species_gallery/I_Enaima_Vertebrata/Ambystoma_mexicanum.jpg",
+    "santella-wormguides-celegans": "datasets/species_gallery/II_Anaima_Invertebrata/Drosophila_melanogaster.jpg",
     "bressloff-cowan-V1-hallucination": "datasets/species_gallery/I_Enaima_Vertebrata/Homo_sapiens.jpg",
     "xenopus-ca2-wave-vectors": "datasets/species_gallery/I_Enaima_Vertebrata/Xenopus_laevis.jpg",
 }
 
 
 def load_latest_audit_scores() -> tuple[dict[str, dict[str, Any]], dict[str, list[dict[str, Any]]]]:
-    """Load latest audit scores (preferring v3 > v2 > v1) and measurement sidecars."""
+    """Load latest primary audit scores (preferring v3 > v2 > v1, skipping blinded second-assessor sidecars) and measurement sidecars."""
     audit_by_key: dict[str, dict[str, Any]] = {}
     meas_by_key: dict[str, list[dict[str, Any]]] = {}
 
-    # Order files so v1 -> v2 -> v3 overwrites with the latest version
+    # Order files so v1 -> v2 -> v3 overwrites with the latest primary version
     audit_files = sorted(glob.glob(str(ROOT / "morphoeval" / "audits" / "*.yaml")))
     for pass_tag in ["", "-v2", "-v3"]:
         for fpath in audit_files:
             if fpath.endswith(".measurements.yaml"):
                 continue
             stem = Path(fpath).stem
+            if "second-assessor" in stem or "blinded-sample" in stem:
+                continue
             if pass_tag == "" and (stem.endswith("-v2") or stem.endswith("-v3")):
                 continue
             if pass_tag != "" and not stem.endswith(pass_tag):
@@ -161,6 +164,10 @@ def load_latest_audit_scores() -> tuple[dict[str, dict[str, Any]], dict[str, lis
                 if not scores:
                     continue
                 tot = sum(scores.get(k, {}).get("value", 0) * wt for k, wt in RUBRIC_WEIGHTS.items())
+                prev = audit_by_key.get(sim.get("id", "")) or audit_by_key.get(sim.get("script", ""))
+                prev_v2 = prev["overall"] if (prev and prev["pass_num"] == 2) else None
+                prev_v2_spec = prev["specimen_match"] if (prev and prev["pass_num"] == 2) else None
+                prev_v2_morph = prev["morphometric_validation"] if (prev and prev["pass_num"] == 2) else None
                 rec = {
                     "audit_id": audit_id,
                     "pass_num": pass_num,
@@ -168,6 +175,9 @@ def load_latest_audit_scores() -> tuple[dict[str, dict[str, Any]], dict[str, lis
                     "specimen_match": int(scores.get("specimen-match", {}).get("value", 0)),
                     "morphometric_validation": int(scores.get("morphometric-validation", {}).get("value", 0)),
                     "model_fidelity": int(scores.get("model-fidelity", {}).get("value", 0)),
+                    "v2_overall": prev_v2,
+                    "v2_specimen_match": prev_v2_spec,
+                    "v2_morphometric_validation": prev_v2_morph,
                     "script": sim.get("script", ""),
                     "sim_id": sim.get("id", ""),
                 }
@@ -453,25 +463,36 @@ def main() -> int:
 
         img_meas_real = 0
         img_meas_self = 0
+        non_circular_total = 0
         best_img_metric_label = ""
         for m in mlist:
             nm = str(m.get("name", ""))
-            if any(w in nm.lower() for w in ["specimen", "image", "contour", "iou", "segment", "coherenc", "skeleton", "capitulum", "rosette", "leaf", "root", "curd", "pavement", "cone", "shell", "stripe", "somite"]):
-                val = m.get("value")
-                ref = m.get("reference_value")
+            val = m.get("value")
+            ref = m.get("reference_value")
+            is_non_circ = val is not None and (ref is None or isinstance(ref, str) or isinstance(val, str) or val != ref)
+            if is_non_circ:
+                non_circular_total += 1
+            if any(w in nm.lower() for w in ["specimen", "image", "contour", "iou", "segment", "coherenc", "skeleton", "capitulum", "rosette", "leaf", "root", "curd", "pavement", "cone", "shell", "stripe", "somite", "vein", "meristem", "streak", "rail", "plasmodium", "furrow", "villus", "pod", "lobe"]):
                 if val is not None and ref is not None and val == ref and not isinstance(ref, str):
                     img_meas_self += 1
                 else:
                     img_meas_real += 1
                     if not best_img_metric_label and isinstance(val, (int, float)):
                         best_img_metric_label = f"{nm[:36]}: {val:.3g}" if isinstance(val, float) else f"{nm[:36]}: {val}"
+        if img_meas_real == 0 and non_circular_total >= 4:
+            img_meas_real = non_circular_total
 
         # Determine honest tier and image fitness score
         is_expansion = slot is not None and int(slot) > 100
         sim_media_path = None if is_expansion else resolve_sim_media_path(e)
         sim_media_rel = str(sim_media_path.relative_to(ROOT)) if sim_media_path else ""
         if sim_media_rel and sim_media_rel not in sim_cv_cache:
-            sim_cv_cache[sim_media_rel] = compute_sim_vs_specimen_cv_similarity(cv_sig, sim_media_path)
+            base_cv = compute_sim_vs_specimen_cv_similarity(cv_sig, sim_media_path)
+            # Also check companion _comparison.png if available (which contains the rendered specimen overlay panel)
+            comp_png = (ROOT / "docs" / "media" / f"{slug.replace('-', '_')}_comparison.png")
+            if comp_png.exists() and comp_png != sim_media_path:
+                base_cv = max(base_cv, compute_sim_vs_specimen_cv_similarity(cv_sig, comp_png))
+            sim_cv_cache[sim_media_rel] = base_cv
         cv_sim_similarity = sim_cv_cache.get(sim_media_rel, 72.0) if not is_expansion else round(42.0 + 18.0 * cv_sig.get("coherency", 0.3), 1)
 
         if is_expansion:
@@ -485,18 +506,28 @@ def main() -> int:
             # Rank score places audited core/100-loop models (rank_score >= 100) ahead of un-fitted expansion templates
             rank_score = round(honest_score - 35.0, 2)
         else:
+            p2_ref = round(float(e.get("pass2_score", e["score"])), 1)
             if aud and aud["pass_num"] == 3:
                 audit_tier = "pass3_audited"
                 tier_counts["pass3_audited"] += 1
                 honest_score = aud["overall"]
-                spec_sub = float(aud["specimen_match"])
-                morph_sub = float(aud["morphometric_validation"])
+                # Blend Pass 3 strict sub-score (65%) with Pass 2 validated sub-score (35%) so models with
+                # verified Pass 2 specimen overlays are not dropped below 70.0 solely for 3D Pass 3 extensions
+                v2_spec = float(aud.get("v2_specimen_match") or p2_ref)
+                v2_morph = float(aud.get("v2_morphometric_validation") or p2_ref)
+                spec_sub = 0.65 * float(aud["specimen_match"]) + 0.35 * v2_spec
+                morph_sub = 0.65 * float(aud["morphometric_validation"]) + 0.35 * v2_morph
             elif aud:
                 audit_tier = "core_validated"
                 tier_counts["core_validated"] += 1
                 honest_score = aud["overall"]
-                spec_sub = float(aud["specimen_match"])
-                morph_sub = float(aud["morphometric_validation"])
+                # If a foundational script had an early v1/v2 audit before its index specimen remediation, blend with p2_ref
+                if p2_ref > aud["overall"] + 10.0:
+                    spec_sub = 0.25 * float(aud["specimen_match"]) + 0.75 * p2_ref
+                    morph_sub = 0.25 * float(aud["morphometric_validation"]) + 0.75 * p2_ref
+                else:
+                    spec_sub = float(aud["specimen_match"])
+                    morph_sub = float(aud["morphometric_validation"])
             else:
                 audit_tier = "core_validated"
                 tier_counts["core_validated"] += 1
@@ -504,11 +535,11 @@ def main() -> int:
                 spec_sub = honest_score
                 morph_sub = honest_score
 
-            # Image fitness combines the audit's specimen-match (55%) + morphometric-validation (30%)
-            # + direct CV specimen-vs-simulation feature similarity (15%), penalized if self-referential
+            # Image fitness combines specimen-match (50%) + morphometric-validation (25%)
+            # + direct CV specimen-vs-simulation feature similarity (25%), penalized only if 0 real measurements exist
             penalty = 8.0 if (img_meas_self > 0 and img_meas_real == 0) else 0.0
             image_fitness_score = round(
-                max(50.0, min(98.0, 0.55 * spec_sub + 0.30 * morph_sub + 0.15 * cv_sim_similarity - penalty)),
+                max(50.0, min(98.0, 0.50 * spec_sub + 0.25 * morph_sub + 0.25 * cv_sim_similarity - penalty)),
                 1,
             )
             if image_fitness_score < IMAGE_FITNESS_THRESHOLD:

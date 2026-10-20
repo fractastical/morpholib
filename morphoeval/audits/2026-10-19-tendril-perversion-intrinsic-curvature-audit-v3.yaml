@@ -1,0 +1,361 @@
+# MorphoEval audit — Goriely & Tabor (1998) PRL / Gerbode et al. (2012) Science Tendril Perversion, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `1998-goriely-tendril-perversion-intrinsic-curvature.py` (now 2127 lines; 740 at v2 header,
+# ~1230 at the v2 commit) and `datasets/tendril_perversion_intrinsic_curvature/` after the remediation of the single
+# open v2 item in the instrumented loop `morphoeval/runs/2026-10-19-tendril-perversion-intrinsic-curvature-loop-pass3`,
+# superseding `2026-10-19-tendril-perversion-intrinsic-curvature-audit-v2` (93.1).
+#   - Primary assessor: Claude Fable 5.1 (Phase B subagent of slot-064; no second assessor this round)
+#
+# What Pass 3 changed (the one v2 remediation item, closed in REDUCED form and labelled as such in the script header
+# L70-L77 and the section 3b comment L414-L445):
+#   1. Section 3b: inertia-free discrete elastic rod advanced by an implicit backward-Euler incremental potential
+#      minimised with L-BFGS-B (analytic gradients) each macro step (`simulate_thigmotropic_contact_coiling`,
+#      L596-L909). Bending about a contact-gated intrinsic curvature kappa0_i(t) = kappa_contact (1 - exp(-(t -
+#      t_arrive_i)/tau)) with the touch signal propagating at v_signal (`kappa0_field`, L629-L632), rigid-cylinder
+#      penalty contact, |i-j| >= 3 penalty self-contact, and lagged-normal-force Coulomb dissipation potentials for
+#      support and self-contact friction (L741-L761). Quasi-static grip (pull) test L836-L875 compared with
+#      Amontons-Coulomb mu*sum(N_i) and the Euler (1762) capstan gain.
+#   2. `evaluate_thigmotropic_contact_coiling` (L911-L976): default run, no-support control, frictionless control,
+#      mu in {0, 0.3, 0.6, 0.9} friction sweep, R_s in {0.5, 1, 1.5, 2} mm support-radius sweep, stacked-turns
+#      self-contact scenario, Darwin (1865) Ch. IV qualitative timings read from the new provenance-tagged JSON.
+#   3. Figures: panels G/H added to the comparison PNG (now 8 panels, L1582-L1621); new 4-panel
+#      `render_thigmotropic_figure` (L1635-L1691) and GIF `render_thigmotropic_gif` (L1694-L1738).
+#   4. 6 new measurements in `measure_morphoeval()` (pass3 block L1830-L1891; 15 total), self-test checks 9-12
+#      (L2031-L2056; 12 total), 6 new CLI flags (L2075-L2080), and `--kappa0/--B/--Gamma/--L` now reach
+#      `render_growth_gif` (L2119).
+#   5. Dataset: `thigmotropic_contact_coiling_reference.json` (SHA-256 pinned, 5th file in `EXPECTED_SHA256`
+#      L110-L127), +3 bib entries (Jaffe & Galston 1968, Isnard & Silk 2009, Euler 1762), README section 5.
+#   6. Lean: Laws 4-5 (`thigmotropic_contact_gating` L113-L121, `coulomb_grip_capacity` L138-L146), 5 theorems,
+#      0 sorrys, `lean` exit 0; registered as equations 4-5 in the math KG YAML with single-range code loci.
+#
+# Scores below: overall ~91.7, DOWN from 93.1. Two reasons, both found while re-verifying the v2 evidence against the
+# current `measure_morphoeval()` output: (i) the v2 morphometric-validation rationale quoted Gerbode soft peak
+# overwinding "+0.5873 turns" and kappa_0 "0.6545 mm^-1", but the script (then and now) reports 0.7171 turns (ref
+# 0.58, +24 %) and 0.4976 mm^-1 (ref 0.65, -23 %); v2 `.measurements.yaml` entries 4 and 7 confirm this, so the v2
+# score was inflated; (ii) the new contact-coiling measurements are internal-control or self-referential (the
+# time-to-wrap clock is set by assumed tau_thigmo/v_signal; N_wrap is compared with the no-support control;
+# F_hold/mu*sum(N) = 0.67 is a scheme-consistency check with lagged normal forces). Model-fidelity and specimen-match
+# also move slightly because the contact solver is a separate bending-only rod (no material-frame twist), so the
+# Pass 2 perversion physics and the contact coiling are not solved in one model.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated probabilities).
+# Line numbers refer to the files in the working tree at commit 8a7928d7 plus this slot's uncommitted Pass 3 edits.
+# Campaign-metadata note: dispatch `slug` = "human-brain-folding-3d", the pass3 run yaml `paper` = Tallinen et al.
+# (2016) and the prompt organism "Homo sapiens" do not match this tendril script; those fields are outside this
+# slot's allowed files and are flagged here rather than edited.
+
+audit:
+  id: 2026-10-19-tendril-perversion-intrinsic-curvature-audit-v3
+  supersedes: 2026-10-19-tendril-perversion-intrinsic-curvature-audit-v2
+  supersedes_audit_id: 2026-10-19-tendril-perversion-intrinsic-curvature-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 064 Pass 3 Phase B Assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/64
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8a7928d7
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) evaluation of `1998-goriely-tendril-perversion-intrinsic-curvature.py` (2127 lines; 12
+      self-test checks, 15 measurements) after Phase A of
+      `2026-10-19-tendril-perversion-intrinsic-curvature-loop-pass3` closed the single v2 remediation item in
+      reduced form. 8a7928d7 is HEAD of the shared working tree; the Pass 3 edits to this slot's files are
+      uncommitted at audit time (parallel-loop isolation rule), so line numbers refer to the working-tree files.
+      `--self-test` passes 12/12 in ~85 s; the default render takes ~45 s and writes 4 media files.
+
+references:
+  goriely1998:
+    title: "Spontaneous Helix Hand-Reversal and Tendril Perversion"
+    authors: "Goriely A, Tabor M"
+    venue: "Physical Review Letters 80(7):1564-1567 (1998)"
+    doi: 10.1103/PhysRevLett.80.1564
+  mcmillen2002:
+    title: "Tendril Perversion in Intrinsically Curved Rods"
+    authors: "McMillen T, Goriely A"
+    venue: "Journal of Nonlinear Science 12(3):241-281 (2002)"
+    doi: 10.1007/s00332-002-0493-1
+  gerbode2012:
+    title: "How the Cucumber Tendril Coils and Overwinds"
+    authors: "Gerbode SJ, Puzey JR, McCormick AG, Mahadevan L"
+    venue: "Science 337(6098):1087-1091 (2012)"
+    doi: 10.1126/science.1223304
+  darwin1865:
+    title: "On the Movements and Habits of Climbing Plants"
+    authors: "Darwin C"
+    venue: "Journal of the Linnean Society of London, Botany 9(33-34):1-118 (1865)"
+    doi: 10.1111/j.1095-8339.1865.tb00011.x
+  jaffe1968:
+    title: "The Physiology of Tendrils"
+    authors: "Jaffe MJ, Galston AW"
+    venue: "Annual Review of Plant Physiology 19:417-434 (1968); DOI not re-verified offline"
+    doi: 10.1146/annurev.pp.19.060168.002221
+  isnard2009:
+    title: "Moving with Climbing Plants from Charles Darwin's Time into the 21st Century"
+    authors: "Isnard S, Silk WK"
+    venue: "American Journal of Botany 96(7):1205-1221 (2009); DOI not re-verified offline"
+    doi: 10.3732/ajb.0900045
+  euler1762:
+    title: "Remarques sur l'effet du frottement dans l'équilibre"
+    authors: "Euler L"
+    venue: "Mémoires de l'Académie Royale des Sciences et Belles-Lettres de Berlin 18:265-278 (1762); capstan law, no DOI"
+    url: https://scholarlycommons.pacific.edu/euler-works/262/
+
+simulations:
+  - id: goriely-tendril-perversion-intrinsic-curvature
+    name: "Goriely & Tabor (1998) PRL / Gerbode et al. (2012) Science Kirchhoff elastic rod tendril perversion, G-fiber overwinding & Pass 3 thigmotropic contact coiling"
+    organism: "Climbing plant tendrils (Cucumis sativus, Passiflora caerulea, Bryonia dioica, Echinocystis lobata)"
+    script: 1998-goriely-tendril-perversion-intrinsic-curvature.py
+    output: docs/media/tendril_perversion_intrinsic_curvature_comparison.png
+    extra_outputs:
+      - docs/media/tendril_perversion_intrinsic_curvature_growth.gif
+      - docs/media/tendril_perversion_intrinsic_curvature_thigmotropic_coiling.png
+      - docs/media/tendril_perversion_intrinsic_curvature_thigmotropic_coiling.gif
+    also:
+      - docs/media/tendril_perversion_intrinsic_curvature_growth.gif
+      - docs/media/tendril_perversion_intrinsic_curvature_thigmotropic_coiling.png
+      - docs/media/tendril_perversion_intrinsic_curvature_thigmotropic_coiling.gif
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [goriely1998, mcmillen2002, gerbode2012, darwin1865, jaffe1968, isnard2009, euler1762]
+    supersedes_audit_id: 2026-10-19-tendril-perversion-intrinsic-curvature-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Goriely & Tabor (1998) / McMillen & Goriely (2002): an intrinsically curved Kirchhoff rod with both ends held undergoes a supercritical pitchfork bifurcation below T_c = B kappa_0^2 / (1 + Gamma) into two opposite-handed helices joined by a perversion, with zero net link"
+        - "Gerbode et al. (2012): the cucumber tendril's G-fiber ribbon sets the intrinsic curvature; soft tendrils (Gamma < 1) overwind under axial stretch while lignified ones unwind; coil radius and pitch scale across species"
+        - "Darwin (1865) Ch. IV: tendrils curve toward a touched side within tens of seconds, complete a wrap around a thin stick within minutes to about an hour, and grasp thin supports more readily than thick ones (qualitative)"
+        - "Jaffe & Galston (1968): thigmotropic coiling is a contact-triggered, propagating growth response; Euler (1762): the capstan law exp(mu Theta) for a flexible line on a cylinder"
+      reconstructed_in_script:
+        - "Timoshenko bilayer kappa_0, exact T_c, 161-node L-BFGS-B Kirchhoff perversion solver with zero-link enforcement and negative controls; 10-point pitchfork sweep; soft vs lignified overwinding; 4-species scaling; DoG segmentation of the SHA-256-locked Passiflora caerulea specimen (Pass 2)"
+        - "Pass 3: 61-node inertia-free discrete rod with contact-gated intrinsic curvature pointing toward the support axis, implicit backward-Euler incremental potential (L-BFGS-B), rigid-cylinder penalty contact, penalty self-contact, lagged-normal Coulomb friction on support and self-contact, quasi-static grip test vs mu*sum(N) and exp(mu Theta); no-support, frictionless, friction-sweep, support-radius-sweep and stacked-turns scenarios"
+      transfer_boundary:
+        - "The contact solver is a separate bending-only rod: it has no material-frame twist, so Gamma = C/B plays no role in contact coiling and the perversion (zero-link) physics of section 3 is not coupled to it"
+        - "mu_support, mu_self, kappa_contact, tau_thigmo, v_signal, the 55 deg approach angle and the initial placement touching the support at 25 % of L are provenance-tagged assumptions; the only empirical anchors for Pass 3 are Darwin's qualitative timings and support-size statements"
+        - "Friction uses normal forces lagged one macro step; F_hold / mu*sum(N) = 0.67 is a consistency check of the scheme, not an experiment; N_wrap counts loose loops that enclose but do not touch the support (contact fraction 33 % of nodes)"
+      does_not_claim:
+        - "Circumnutation or support-search before first touch, a measured tendril-on-wood friction coefficient, compliant or rough or finite-length supports, G-fiber lignification time course, or a validated time-to-wrap (tau_thigmo and v_signal were chosen inside Darwin's 5-60 min window and the model's 4.75 min falls slightly below it)"
+    summary: >-
+      Pass 3 (v3) evaluation of `1998-goriely-tendril-perversion-intrinsic-curvature.py` (overall weighted score
+      ~91.7/100, down from 93.1 in v2). The single v2 remediation item is closed in reduced form: a new implicit
+      overdamped discrete-rod section 3b simulates contact-gated thigmotropic coiling around a rigid cylindrical
+      support with Coulomb support friction and self-contact friction, producing N_wrap = 2.86 turns after 30 min
+      (no-support control 0.31, kappa0 stays 0), first full wrap at 4.75 min, max support penetration < 0.025 mm,
+      max axial strain < 2 %, F_hold(mu) = {0.0005, 0.108, 0.212, 0.27} mN monotone in mu with the frictionless
+      coil slipping at the first load increment, 11 active self-contact pairs with min non-adjacent distance / 2a =
+      0.989 in the stacked-turns scenario, and wraps(R_s = 2) / wraps(R_s = 1) = 0.64. The Pass 2 results are
+      unchanged (pitchfork r = 0.9974, |Delta_Lk| = 0, soft overwinding r = 0.9806, 4-species r = 0.9999, specimen
+      CV = 0.298). The score goes down because re-verification shows the v2 audit misquoted two measurements
+      (Gerbode peak overwinding 0.7171 vs ref 0.58 and kappa_0 0.4976 vs ref 0.65 mm^-1, not 0.5873 and 0.6545),
+      and because the six new measurements are internal controls or scheme-consistency checks rather than
+      comparisons with measured contact-coiling data.
+    scores:
+      model-fidelity:
+        value: 92
+        rationale: >-
+          Pass 2 core intact: Timoshenko G-fiber bilayer kappa_0, exact T_c = B kappa_0^2/(1+Gamma) and helix
+          equilibrium (L164-L246), 161-node L-BFGS-B Kirchhoff perversion solver with zero-link enforcement and
+          kappa_0 = 0 / T >= T_c controls (L249-L411). Pass 3 adds a physically reasoned reduced contact model:
+          contact-gated intrinsic curvature with signal propagation (`kappa0_field` L629-L632; Lean Law 4), implicit
+          backward-Euler incremental potential with penalty cylinder contact and |i-j| >= 3 self-contact, and
+          Coulomb dissipation potentials for support and self-contact friction (L741-L761; Lean Law 5), with a grip
+          test against mu*sum(N) and the capstan gain (L836-L875). Deductions: the contact rod is bending-only with
+          no material-frame twist, so Gamma never enters contact coiling and the two solvers are not one model
+          (-4); the preferred-curvature direction is an "axis-seeking" proxy (unit vector toward the support axis,
+          frozen per macro step, L642-L654) rather than curvature toward the actual touched flank, which makes
+          wrapping partly a construction of the model (-2); friction normal forces are lagged one step and the
+          stick/slip law is Huber-regularised, so stick is approximate (-1); the rod is placed already touching the
+          support at 25 % of L with a fixed 55 deg approach (`_initial_rod` L516-L530), so there is no first-touch
+          event to model (-1).
+        evidence:
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [164, 246], note: "G-fiber bilayer intrinsic curvature kappa_0, critical tension T_c and equilibrium helix equations (unchanged from Pass 2)", supports: true}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [249, 411], note: "L-BFGS-B Kirchhoff elastic rod perversion solver with zero-link enforcement and negative controls; carries the material-frame twist that the Pass 3 contact rod lacks", supports: true}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [414, 445], note: "Section 3b scope comment: reduced model, energy terms, lagged-normal incremental-potential friction, and the explicit NOT-implemented list (no twist, no circumnutation)", supports: true}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [596, 909], note: "simulate_thigmotropic_contact_coiling: kappa0_field gating (L629-L632), macro_step implicit L-BFGS-B incremental potential (L642-L785), coiling phase (L787-L834), grip test (L836-L875)", supports: true}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [741, 761], note: "Coulomb friction on the support and between self-contacting pairs uses normal forces from the previous macro step (lagged) with a Huber stick threshold", supports: true}
+          - {file: morphoeval/lean/loops/Loop_064_tendril_perversion_intrinsic_curvature.lean, lines: [100, 146], note: "Laws 4-5: thigmotropic_contact_gating (untouched -> 0, bounded by saturation) and coulomb_grip_capacity (mu = 0 -> 0, N = 0 -> 0, monotone in mu); 5 theorems total, 0 sorrys, lean exit 0", supports: true}
+      specimen-match:
+        value: 90
+        rationale: >-
+          Unchanged specimen pipeline: the SHA-256-locked CC BY-SA Passiflora caerulea tendril JPG is segmented into
+          backbone, 50 helical turn apices and the perversion zone (`segment_tendril_perversion_specimen`
+          L1144-L1220) and shown in panel E; 4-species coil radius/pitch match (r = 0.9999). Pass 3 adds panels G/H
+          and a 4-panel thigmotropic figure + GIF whose 3D rod wraps a grey cylinder in a visually plausible helix.
+          Deductions: there is no empirical specimen of a tendril wrapped on a support, so the new coiling output is
+          compared only with the no-support control and Darwin's prose (-5); with 33 % of nodes in contact and a
+          mean loop radius above R_s + a, panel G's "N = 2.9" includes loose loops that enclose but do not touch the
+          support, so the figure reads tighter than the statistics support (-3); specimen pitch CV 0.298 vs the 0.22
+          reference is a Pass 2 carry-over that the model does not explain (-2); panel H overlays F_hold(mu) and
+          N_wrap(R_s) on one axes with a secondary top axis, and panel C of the thigmotropic PNG has a legend that
+          partly overlaps the curves (cosmetic).
+        evidence:
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [1144, 1220], note: "Luminance + DoG ridge segmentation of the Passiflora caerulea coiled tendril and perversion zone (unchanged)", supports: true}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [483, 514], note: "_wrap_statistics counts winding of all distal nodes about the support axis, explicitly including loose loops; contact_fraction and mean_loop_radius_mm disclose the looseness", supports: true}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [1582, 1621], note: "Panels G (3D contact coiling, R_s, mu, N_wrap in title) and H (F_hold vs mu and N_wrap vs R_s on shared axes with a secondary top axis)", supports: true}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [1635, 1738], note: "render_thigmotropic_figure (4 panels) and render_thigmotropic_gif (frames every 2.5 min) for the Pass 3 model", supports: true}
+          - {file: docs/media/tendril_perversion_intrinsic_curvature_comparison.png, lines: [0, 0], note: "8-panel synthesis figure: Pass 2 panels A-F plus G contact coiling and H friction grip / support-radius sweep; no wrapped-tendril specimen photograph", supports: true}
+          - {file: docs/media/tendril_perversion_intrinsic_curvature_thigmotropic_coiling.png, lines: [0, 0], note: "4-panel contact-coiling figure (3D rod on cylinder, wrap-angle/contact time series, grip ramp, sweeps); panel C legend partly overlaps curves", supports: true}
+      parameter-expressivity:
+        value: 94
+        rationale: >-
+          Pass 2 sweeps retained (10 tension levels across the pitchfork L982-L1038, soft vs lignified Gamma
+          L1040-L1088, 4 species L1091-L1141). Pass 3 adds a 4-point friction sweep with frictionless control, a
+          4-point support-radius sweep, a no-support control and a stacked-turns scenario
+          (`evaluate_thigmotropic_contact_coiling` L911-L976), 20 contact-model parameters in `THIGMO_DEFAULTS`
+          (L446-L470) and six new CLI flags `--mu --mu-self --R-support --kappa-contact --approach-angle
+          --tau-thigmo` wired through `thigmo_overrides` into both renderers (L2075-L2080, L2102-L2121);
+          `--kappa0/--B/--Gamma/--L` now also reach `render_growth_gif` (L2119). Deductions: the support-radius
+          sweep shows no sharp enclosure threshold at R* = 1/kappa_contact - a (wraps(2 mm)/wraps(1 mm) = 0.64, the
+          model still winds loosely around thick supports), so the one qualitatively testable Darwin statement is
+          not reproduced as a transition (-3); tau_thigmo and v_signal are exposed but no sweep shows how
+          time-to-wrap depends on them (-2); `--kappa-contact` is not propagated to the Pass 2 panels, which is
+          correct but means the two models cannot be co-varied from the CLI (-1).
+        evidence:
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [446, 470], note: "THIGMO_DEFAULTS: 20 contact-model parameters with inline provenance comments (assumption / shared with Pass 2)", supports: true}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [911, 976], note: "Friction sweep mu in {0,0.3,0.6,0.9}, support-radius sweep R_s in {0.5,1,1.5,2} mm with enclosure criterion R*, no-support and frictionless controls, stacked-turns scenario", supports: true}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [982, 1141], note: "Pass 2 sweeps: 10-point pitchfork, soft-vs-lignified overwinding regimes, 4-species evaluation (unchanged)", supports: true}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [2071, 2123], note: "CLI: six Pass 3 flags (L2075-L2080) and Pass 2 overrides; thigmo_overrides passed to render_comparison_figure, render_thigmotropic_figure and render_thigmotropic_gif; overrides now reach render_growth_gif (L2119)", supports: true}
+      morphometric-validation:
+        value: 88
+        rationale: >-
+          `measure_morphoeval()` (L1817-L1984) now returns 15 measurements with reference values, methods, notes and
+          negative controls: 9 from Pass 2 and 6 Pass 3 (L1830-L1891). Pass 2 values re-read from the current
+          output: T_c = 0.3018 mN (ref 0.3018), pitchfork cos(theta) r = 0.9974, |Delta_Lk| = 0, soft overwinding r
+          = 0.9806, 4-species r = 0.9999, super-critical z/L = 1.0, specimen CV 0.298 (ref 0.22). Deductions: the
+          v2 audit quoted Gerbode peak overwinding "+0.5873 turns" and kappa_0 "0.6545 mm^-1" but the script reports
+          0.7171 turns (ref 0.58, +24 %, L1925-L1933) and 0.4976 mm^-1 (ref 0.65, -23 %, L1955-L1963), so two of the
+          nine Pass 2 anchors miss their references by about a quarter and the v2 score rested on misquoted numbers
+          (-5); the Pass 3 N_wrap measurement uses the internal no-support control as `reference_value`
+          (L1831-L1840) and the support-radius ratio has `reference_value: None` (L1881-L1890), so neither is a
+          comparison with data (-3); time-to-first-wrap 4.75 min is set by the assumed tau_thigmo and v_signal and
+          falls slightly below Darwin's 5-60 min window whose midpoint 32.5 min is the reference (L1841-L1850) - the
+          note says "NOT an independent validation", which is credited (-2); F_hold / mu*sum(N) = 0.67 (L1851-L1860)
+          is a consistency check of the lagged-normal scheme, not an experiment (-1); specimen pitch CV 0.298 vs
+          0.22 persists (-1). The frictionless-control and self-contact non-penetration checks are genuine
+          falsifiable physics constraints and are credited.
+        evidence:
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [1817, 1984], note: "15 reference-anchored measurements (9 Pass 2 + 6 Pass 3) with methods, notes, p-values, RMSE and negative controls", supports: true}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [1925, 1933], note: "Gerbode soft peak overwinding: script value 0.7171 turns vs reference 0.58 (+24 %); v2 audit quoted +0.5873", supports: false}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [1955, 1963], note: "G-fiber bilayer kappa_0: script value 0.4976 mm^-1 vs reference 0.65 (-23 %); v2 audit quoted 0.6545", supports: false}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [1831, 1850], note: "N_wrap measurement uses the no-support control as reference_value; time-to-first-wrap reference is the midpoint of Darwin's 5-60 min window and the note states it is not an independent validation", supports: true}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [1851, 1870], note: "F_hold / mu*sum(N) median 0.67 (lagged-normal consistency check) and frictionless control F_hold(mu=0) = 0.0005 mN vs 0.0 (slips at first increment)", supports: true}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [1871, 1890], note: "Self-contact non-penetration 0.989 of rod diameter (ref 1.0, 11 active pairs) and support-radius ratio 0.64 with reference_value None (prediction only)", supports: true}
+          - {file: morphoeval/audits/2026-10-19-tendril-perversion-intrinsic-curvature-audit-v2.measurements.yaml, lines: [63, 99], note: "v2 measurement file entries 4 and 7 already recorded 0.7171 turns and 0.4976 mm^-1, contradicting the v2 audit rationale", supports: true}
+      source-traceability:
+        value: 94
+        rationale: >-
+          `datasets/tendril_perversion_intrinsic_curvature/` now vendors 5 SHA-256-pinned files
+          (`EXPECTED_SHA256` L110-L127, verified fail-closed by `verify_dataset_integrity` L141-L153): the Pass 2
+          reference JSON, specimen JPG, scout manifest and bib, plus the new
+          `thigmotropic_contact_coiling_reference.json` in which every value carries a provenance tag (literature /
+          derived / assumption / prediction), Darwin's (1865) Ch. IV timings and support-size statement are quoted
+          with the caveat that they are approximate readings, and a `residual_remediation` list is recorded. The
+          bib gains Jaffe & Galston (1968), Isnard & Silk (2009) and Euler (1762); the README section 5 documents the
+          Pass 3 model and states that the new DOIs were not re-verified offline. Deductions: the two new DOIs could
+          not be verified offline (-2); Darwin's "25 s to visible curvature" and "5-60 min to full wrap" are
+          approximate readings without page pinpoints (-2); Euler (1762) has no DOI and the capstan law is cited
+          without a page (-1); the bib is pinned but is itself an authored file, so pinning does not establish
+          provenance (-1).
+        evidence:
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [110, 153], note: "EXPECTED_SHA256 for 5 dataset files including the Pass 3 JSON, and runtime fail-closed verification", supports: true}
+          - {file: datasets/tendril_perversion_intrinsic_curvature/thigmotropic_contact_coiling_reference.json, lines: [1, 178], note: "Provenance-tagged Pass 3 parameter table: scope_note, provenance_tags, model_parameters, Darwin 1865 timings (L104-L128), sweep grids, stacking scenario and residual_remediation (L171-L178)", supports: true}
+          - {file: datasets/tendril_perversion_intrinsic_curvature/paper_citations.bib, lines: [45, 76], note: "Jaffe & Galston 1968, Isnard & Silk 2009 (DOIs not re-verified offline) and Euler 1762 (no DOI)", supports: true}
+          - {file: datasets/tendril_perversion_intrinsic_curvature/README.md, lines: [28, 42], note: "Section 5 Pass 3 model description, vendored-file table with the new JSON, and the statement that new DOIs were not re-verified", supports: true}
+      code-traceability:
+        value: 94
+        rationale: >-
+          The module docstring (L1-L78) maps Laws 1-5 to the papers and to the five Lean 4 theorems in
+          `MathOfBiology.Loop_064`, and carries an explicit Pass 3 scope statement (L70-L77). The section 3b header
+          (L414-L445) writes out every energy term, the friction scheme and the NOT-implemented list; function
+          docstrings cite Darwin Ch. IV, Jaffe & Galston and Euler. The math KG YAML registers equations 4-5 with
+          single-range `code_locus` pins (L596-L909, L911-L977) and refreshed Pass 2 loci. Deductions:
+          `_wrap_statistics` is documented as counting loose loops but the panel G title reports N without that
+          qualifier (-2); the "axis-seeking" curvature direction proxy is described in the header but the
+          parallel-transport fallback for non-touching nodes (L655-L676) has no literature anchor (-2); returned
+          keys `_last_objective`, `_mat_dir`, `_last_opt_message` (L897-L899) are unused, and `last_objective` would
+          be unbound if `t_end_min` < `dt_min` (-1); the comparison figure's section-6 banner still says "6-Panel"
+          (L1221) while the figure has 8 panels (-1).
+        evidence:
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [1, 78], note: "Module header: Laws 1-5 with Lean theorem names, equations and the Pass 3 reduced-scope statement", supports: true}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [414, 445], note: "Section 3b header: energy functional, implicit integrator, lagged-normal Coulomb friction, gating law and NOT-implemented list", supports: true}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [897, 899], note: "Unused private return keys _last_objective, _mat_dir, _last_opt_message; last_objective unbound when n_steps = 0", supports: false}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [1221, 1222], note: "Section 6 banner still reads '6-Panel Synthesis Figure' although render_comparison_figure now draws 8 panels", supports: false}
+          - {file: morphoeval/math_kg_loops/goriely-tendril-perversion-intrinsic-curvature.yaml, lines: [13, 117], note: "model_spec.pass3_thigmotropic_contact_coiling block, new JSON input, equations 4-5 with Lean declarations and single-range code_locus / code_locus_secondary pins", supports: true}
+          - {file: morphoeval/lean/loops/Loop_064_tendril_perversion_intrinsic_curvature.lean, lines: [1, 148], note: "5 theorems (Laws 1-5), 0 sorrys; header still lists only the 3 Pass 2 sources", supports: true}
+      repro-package:
+        value: 94
+        rationale: >-
+          `self_test()` (L1987-L2068) runs 12 checks: the 8 Pass 2 checks plus (9) contact coiling N_wrap > 1.5 vs
+          control < 0.5 with kappa0 = 0, penetration < 0.1 a, strain < 2 %; (10) F_hold monotone in mu, frictionless
+          slip, F_hold/mu*sum(N) in (0.1, 1.5); (11) stacked turns activate self-contact and stay within 15 % of the
+          rod diameter; (12) two-run bitwise determinism of the implicit contact solver (L2051-L2056). Verified this
+          round: PASSED all 12 checks in ~85 s; the default render completes in ~45 s and writes the 4 media files
+          listed under output/extra_outputs; dataset integrity is fail-closed; results are memoised in
+          `_THIGMO_CACHE` by full parameter tuple. Deductions: the determinism check runs only a 5 min horizon, not
+          the 30 min default (-2); the self-test takes ~85 s, dominated by the friction and radius sweeps, with no
+          `--quick` path (-2); no requirements lock file pins the environment that produced the committed media
+          (-1); the Pass 3 PNG is gitignored (`*.png`), so the committed repo does not carry the new figure (-1).
+        evidence:
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [1987, 2068], note: "12-check self_test(): Pass 2 checks 1-8 and Pass 3 checks 9-12 (L2031-L2056) including contact-solver determinism and 15-measurement count", supports: true}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [2051, 2056], note: "Determinism check clears _THIGMO_CACHE and compares two fresh runs, but only at t_end_min = 5", supports: true}
+          - {file: 1998-goriely-tendril-perversion-intrinsic-curvature.py, lines: [104, 107], note: "Four output paths (comparison PNG, growth GIF, thigmotropic PNG, thigmotropic GIF) written by the default invocation", supports: true}
+    remediation:
+    - >-
+      1998-goriely-tendril-perversion-intrinsic-curvature.py:596-909 vs 249-411 — the contact-coiling rod is a
+      separate bending-only discrete rod with no material-frame twist, so Gamma = C/B (the quantity that drives
+      Laws 2-3) plays no role in contact coiling and the zero-link perversion physics is never solved together with
+      support contact. Pass 4: add a twist degree of freedom (Cosserat / Bishop-frame twist angle per edge) to the
+      section 3b rod, or drive section 3 `relax_kirchhoff_perversion_rod` with the contact-gated kappa0 and a
+      cylinder constraint, and show that a tethered tendril wrapping a support still forms a perversion.
+    - >-
+      1998-goriely-tendril-perversion-intrinsic-curvature.py:1841-1850 and 1831-1840 — the time-to-first-wrap
+      measurement (4.75 min vs reference 32.5 min) is set by the assumed tau_thigmo = 5 min and v_signal = 5
+      mm/min and falls below Darwin's 5-60 min window, and N_wrap uses the no-support control as its reference.
+      Pass 4: either digitise a quantitative time course (e.g. Jaffe & Galston 1968 Fig. or Isnard & Silk 2009
+      Table) into the JSON and fit tau_thigmo/v_signal to it, or move both entries out of `measure_morphoeval()`
+      into a 'predictions' list so the quick gate does not count them as reference-anchored.
+    - >-
+      1998-goriely-tendril-perversion-intrinsic-curvature.py:483-514 and 1588-1591 — `_wrap_statistics` counts
+      winding of every distal node about the support axis, so N_wrap = 2.86 with only 33 % of nodes in contact
+      includes loose loops (mean loop radius > R_s + a), yet panel G's title reports "N = 2.9" without the
+      qualifier. Pass 4: report tight wraps (nodes with rho < R_s + a + tol) separately from enclosing loops, add
+      a contact-feedback growth law so kappa0 keeps rising until contact (the JSON `residual_remediation` already
+      proposes this), and label panel G accordingly.
+    - >-
+      1998-goriely-tendril-perversion-intrinsic-curvature.py:741-761 and 1851-1860 — Coulomb friction uses normal
+      forces lagged one macro step, so F_hold / mu*sum(N) = 0.67 is partly a numerical artefact of the lag plus
+      partial contact; the self-test accepts any value in (0.1, 1.5) (L2044). Pass 4: iterate the normal force to
+      self-consistency within each macro step (or use a semi-smooth Newton / augmented-Lagrangian contact step),
+      then tighten the acceptance band and report the capstan-law comparison exp(mu Theta) as a measurement.
+    - >-
+      1998-goriely-tendril-perversion-intrinsic-curvature.py:1925-1933 and 1955-1963 — the Gerbode soft peak
+      overwinding (0.7171 vs 0.58 turns, +24 %) and the G-fiber bilayer kappa_0 (0.4976 vs 0.65 mm^-1, -23 %) miss
+      their references by about a quarter; v2 misquoted both. Pass 4: revisit `compute_g_fiber_intrinsic_curvature`
+      (L164-L181) bilayer thickness/modulus ratio against Gerbode et al. (2012) Fig. 2 and the overwinding
+      amplitude in `evaluate_gerbode_overwinding_regimes` (L1040-L1088), and report the deviations in the figure.
+    - >-
+      1998-goriely-tendril-perversion-intrinsic-curvature.py:1221, 897-899 and 2051-2056 — housekeeping: the
+      section-6 banner still says '6-Panel'; `_last_objective`, `_mat_dir`, `_last_opt_message` are unused and
+      `last_objective` is unbound when t_end_min < dt_min; the determinism check covers only a 5 min horizon.
+      Also morphoeval/lean/loops/Loop_064_tendril_perversion_intrinsic_curvature.lean:1-12 — the header lists
+      only the three Pass 2 sources although Laws 4-5 cite Darwin (1865), Jaffe & Galston (1968) and Euler (1762).
+    - >-
+      morphoeval/cloud/dispatches/slot-064.json `slug` ("human-brain-folding-3d") and the pass3 run yaml `paper`
+      field (Tallinen et al. 2016) do not describe this tendril script; both are campaign metadata outside this
+      slot's writable files (`init` sets the run paper). Flagged for the campaign coordinator rather than edited.

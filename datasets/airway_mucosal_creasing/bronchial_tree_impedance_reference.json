@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "schema_version": "morphoeval-reference-1.0",
+    "created": "2026-10-19",
+    "pass": 3,
+    "slot_id": "slot-068-airway-mucosal-creasing",
+    "sim_id": "nelson-airway-mucosal-creasing",
+    "purpose": "Pass 3 remediation: couple the 1D circumferential bilayer mucosal ring constitutive law to a 3D dichotomous bronchial-tree Poiseuille impedance network with heterogeneous airway-smooth-muscle (ASM) activation and Venegas-type flow-stretch feedback, to simulate patchy ventilation defects during asthmatic bronchospasm.",
+    "offline_note": "All numbers below were entered from the authors' knowledge of the literature during an isolated (offline) run; DOIs could not be re-verified online. See pass3_citations.bib and the v3 audit references block."
+  },
+  "weibel_1963_model_a": {
+    "source": "Weibel ER (1963) Morphometry of the Human Lung, Springer, Berlin (symmetric dichotomous 'model A', generations 0-16 = conducting zone; adult lung at ~3/4 TLC)",
+    "doi": "10.1007/978-3-642-87553-3",
+    "columns": ["generation", "diameter_mm", "length_mm", "n_branches"],
+    "rows": [
+      [0, 18.0, 120.0, 1],
+      [1, 12.2, 47.6, 2],
+      [2, 8.3, 19.0, 4],
+      [3, 5.6, 7.6, 8],
+      [4, 4.5, 12.7, 16],
+      [5, 3.5, 10.7, 32],
+      [6, 2.8, 9.0, 64],
+      [7, 2.3, 7.6, 128],
+      [8, 1.86, 6.4, 256],
+      [9, 1.54, 5.4, 512],
+      [10, 1.30, 4.6, 1024],
+      [11, 1.09, 3.9, 2048],
+      [12, 0.95, 3.3, 4096],
+      [13, 0.82, 2.7, 8192],
+      [14, 0.74, 2.3, 16384],
+      [15, 0.66, 2.0, 32768],
+      [16, 0.60, 1.65, 65536]
+    ],
+    "branching_half_angle_deg": 35.0,
+    "branching_plane_rotation_deg": 90.0,
+    "geometry_note": "Half-angle ~35 deg (total bifurcation angle ~70 deg) and alternating ~90 deg rotation of successive bifurcation planes follow the classical Weibel/Horsfield descriptions of the space-filling human bronchial tree; they only affect the 3D rendering, not the impedance network."
+  },
+  "air_properties": {
+    "dynamic_viscosity_Pa_s": 1.81e-5,
+    "density_kg_m3": 1.20,
+    "temperature_C": 20.0,
+    "note": "Dry air at ~20 C; body-temperature humidified air has eta ~1.9e-5 Pa s (<5% difference)."
+  },
+  "poiseuille_network": {
+    "branch_resistance_formula": "R_i = 8 * eta * L_i / (pi * r_i^4) * (A_0,i / A_lumen,i)^2",
+    "series_parallel_formula": "R_sub(i) = R_i + 1 / (1/R_sub(2i+1) + 1/R_sub(2i+2));  R_sub(terminal) = R_i + R_acinus",
+    "flow_split_formula": "Q_child = Q_parent * R_sub(sibling) / (R_sub(child) + R_sub(sibling))",
+    "lumped_acinar_resistance_cmH2O_s_L": 0.0,
+    "pressure_unit_conversion": "1 cmH2O s / L = 98066.5 Pa s / m^3",
+    "max_generation_default": 12,
+    "limitations": "Laminar fully developed Poiseuille flow in every branch; neglects entrance/turbulent losses (Pedley et al. 1970 correction, Re > 2000 in trachea), upper-airway resistance, airway wall compliance and gas inertance. Known consequence: pure Poiseuille Weibel trees place ~40% of conducting-airway resistance in airways < 2 mm, versus ~10-20% measured by Macklem & Mead (1967) retrograde catheter."
+  },
+  "reference_values": {
+    "healthy_small_airway_resistance_fraction_poiseuille": {
+      "value": 0.43,
+      "unit": "fraction",
+      "source": "Pure Poiseuille sum over Weibel model A generations 8-16 (d < 2 mm) divided by generations 0-16 total; cross-check of the network against the tabulated geometry (analytic, computed from the rows above).",
+      "measured_counterpart": "Macklem PT & Mead J (1967) J Appl Physiol 22:395-401 report peripheral (< 2 mm) airways contribute < 10-20% of total lower-airway resistance in healthy dog/human lungs (DOI 10.1152/jappl.1967.22.3.395; unverified offline)."
+    },
+    "homogeneous_constriction_tree_amplification_equals_single_airway": {
+      "value": 1.0,
+      "unit": "ratio of ratios",
+      "source": "Exact identity for a series-parallel network whose every branch resistance is scaled by the same factor k (Lean theorem MathOfBiology.Loop_068.bifurcation_resistance_homogeneous_scaling)."
+    },
+    "venegas_2005_patchiness": {
+      "source": "Venegas JG, Winkler T, Musch G, Vidal Melo MF, Layfield D, Tgavalekos N, Fischman AJ, Callahan RJ, Bellardine C, Harris RS (2005) Self-organized patchiness in asthma as a prelude to catastrophic shifts. Nature 434:777-782",
+      "doi": "10.1038/nature03490",
+      "ventilation_defect_definition": "Terminal units receiving < 50% of the tree-mean ventilation at fixed tidal volume (model definition; Venegas et al. threshold PET-measured specific ventilation at a comparable fraction of the lung mean).",
+      "qualitative_predictions": [
+        "Ventilation defects in asthma are large, contiguous (clustered) and bistable, emerging from positive feedback between reduced tidal stretch and increased ASM shortening.",
+        "Defects self-organize above a critical ASM activation / feedback gain; below it ventilation stays nearly uniform (catastrophic shift).",
+        "Defect fraction of total lung during bronchoconstriction challenge in mild asthmatics was reported at ~20-40% of imaged lung volume (PET 13NN washout)."
+      ],
+      "reference_defect_fraction_bronchoconstricted": 0.30,
+      "reference_defect_fraction_healthy_baseline": 0.0
+    },
+    "wiggs_1992_whole_lung_amplification": {
+      "source": "Wiggs BR, Bosken C, Pare PD, James A, Hogg JC (1992) A model of airway narrowing in asthma and in chronic obstructive pulmonary disease. Am Rev Respir Dis 145:1251-1258",
+      "doi": "10.1164/ajrccm/145.6.1251",
+      "note": "Thickened asthmatic airway walls amplify the whole-lung resistance response to a given ASM shortening by roughly an order of magnitude relative to normal walls at ~30-40% shortening (computed on a Weibel/Horsfield tree).",
+      "reference_tree_amplification_asthma_over_healthy_at_eps_0p28": 3.66,
+      "reference_tree_amplification_note": "3.66 = 16.52 / 4.51, the single-airway Poiseuille ratio in airway_mucosal_creasing_reference.json; exact for homogeneous constriction, lower bound reference for heterogeneous constriction."
+    }
+  },
+  "heterogeneity_model": {
+    "asm_strain_distribution": "epsilon_i^(0) = clip(epsilon_mean * exp(sigma * xi_i - sigma^2 / 2), 0, epsilon_max), xi_i ~ N(0,1) i.i.d. per branch (log-normal, mean-preserving)",
+    "sigma_default": 0.10,
+    "sigma_note": "Assumed 10% branch-to-branch coefficient of variation of ASM activation (no direct measurement available offline). With sigma = 0.10 and kappa = 0 the healthy tree shows ~1% ventilation defects, i.e. an essentially uniform baseline.",
+    "epsilon_max": 0.45,
+    "boundary_condition": "fixed tidal volume (flow-controlled breathing): tidal stretch of branch i is Q_i / mean_g(Q) with mean_g the mean flow of its generation; whole-lung resistance R_tree is reported at that fixed flow (Venegas et al. 2005 modelling assumption)",
+    "feedback_rule": "epsilon_i <- clip(epsilon_i^(0) * (1 + gain_i * tanh(1 - Q_i / mean_g(Q))), 0, epsilon_max) with gain_i = kappa when Q_i < mean_g(Q) (loss of tidal stretch increases ASM shortening) and gain_i = dilation_gain_ratio * kappa when Q_i > mean_g(Q); under-relaxed fixed-point iteration epsilon <- (1 - omega) epsilon + omega epsilon_target (Venegas et al. 2005 flow-stretch positive feedback, saturating form)",
+    "dilation_gain_ratio": 0.0,
+    "feedback_relaxation": 0.5,
+    "kappa_default": 0.2,
+    "kappa_calibration": "kappa_default is the largest gain in kappa_sweep for which the Healthy Bronchiole tree at epsilon_mean = 0.28 keeps its ventilation-defect fraction below 5% (calibrated on the healthy control only); the Severe Asthma defect fraction at the same kappa is then a prediction compared against Venegas et al. (2005).",
+    "kappa_sweep": [0.0, 0.1, 0.2, 0.3, 0.4, 0.6, 0.8, 1.0, 1.5, 2.0],
+    "n_feedback_iterations": 24,
+    "mucosal_thickness_scaling": "h_m / R_0 held at the phenotype value (11.2/600 healthy, 19.1/600 bronchitis, 31.8/600 asthma) across generations, so that m* is generation-independent (Wiggs et al. 1997: wall area scales with perimeter^2 across the tree)."
+  }
+}

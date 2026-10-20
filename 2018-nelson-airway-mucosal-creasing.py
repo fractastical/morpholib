@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
-2018-nelson-airway-mucosal-creasing.py — Pass 2 (v2) Remediated Implementation
+2018-nelson-airway-mucosal-creasing.py — Pass 3 (v3) Remediated Implementation
 ===============================================================================
 Faithful mathematical, biomechanical, and morphometric reproduction of cylindrical
 bilayer mucosal folding, post-buckling period-doubling, sulcal creasing, and
 Hagen–Poiseuille luminal airflow resistance in healthy, bronchitic, and asthmatic
-mammalian bronchial airways:
+mammalian bronchial airways, coupled (Pass 3) to a 3D dichotomous bronchial-tree
+Poiseuille impedance network with heterogeneous ASM activation and Venegas-type
+flow–stretch feedback to simulate patchy ventilation defects during bronchospasm:
 
   1. Wiggs BR, Hrousis CA, Drazen JM, Kamm RD (1997).
      "A model of airway narrowing due to smooth muscle shortening."
@@ -24,6 +26,17 @@ mammalian bronchial airways:
       cylindrical morphoelasticity of mucosal folding."
      Journal of Theoretical Biology 403:209-218.
      DOI: 10.1016/j.jtbi.2016.05.022
+  Pass 3 additions (datasets/airway_mucosal_creasing/pass3_citations.bib; DOIs recorded
+  offline and not re-verified during the isolated run):
+  5. Weibel ER (1963). "Morphometry of the Human Lung." Springer. DOI: 10.1007/978-3-642-87553-3
+     (symmetric dichotomous model A: generation-wise diameters/lengths G0-G16).
+  6. Venegas JG, Winkler T, Musch G, et al. (2005). "Self-organized patchiness in asthma as a
+     prelude to catastrophic shifts." Nature 434:777-782. DOI: 10.1038/nature03490.
+  7. Wiggs BR, Bosken C, Pare PD, James A, Hogg JC (1992). "A model of airway narrowing in asthma
+     and in chronic obstructive pulmonary disease." Am Rev Respir Dis 145:1251-1258.
+     DOI: 10.1164/ajrccm/145.6.1251.
+  8. Macklem PT, Mead J (1967). "Resistance of central and peripheral airways measured by a
+     retrograde catheter." J Appl Physiol 22:395-401. DOI: 10.1152/jappl.1967.22.3.395.
 
 Mathematical & Biomechanical Architecture (Linked to Lean 4 `MathOfBiology.Loop_068`):
 -------------------------------------------------------------------------------------
@@ -53,6 +66,27 @@ Mathematical & Biomechanical Architecture (Linked to Lean 4 `MathOfBiology.Loop_
     Because A_lumen(m_asthma) < A_lumen(m_normal), asthmatic remodeling amplifies
     Poiseuille airflow resistance to R_flow / R_0 ~ 16.52x at epsilon_theta = 0.28
     (vs 4.51x in healthy bronchioles and 1.00x in relaxed ASM control).
+
+  - Law 4 (`MathOfBiology.Loop_068.bifurcation_resistance_homogeneous_scaling`, Pass 3):
+    In the Weibel (1963) dichotomous tree, branch i (heap index; children 2i+1, 2i+2) has
+    R_i = 8 eta L_i / (pi r_i^4) * (A_0 / A_lumen,i)^2 and subtree impedance
+      R_sub(i) = R_i + 1 / (1/R_sub(2i+1) + 1/R_sub(2i+2)).
+    Scaling every branch by the same factor k scales R_sub by exactly k, so homogeneous
+    bronchospasm gives R_tree / R_tree,0 = (A_0 / A_lumen)^2 — the single-airway Law 3 —
+    which `simulate_heterogeneous_bronchospasm(sigma=0, kappa=0)` reproduces to 1e-9.
+
+  - Law 5 (`MathOfBiology.Loop_068.venegas_feedback_strain_monotone`, Pass 3):
+    Venegas et al. (2005) flow–stretch positive feedback: a branch receiving less tidal
+    stretch (Q_i below its generation mean at fixed tidal volume) shortens more,
+      epsilon_i <- clip(epsilon_i^(0) * (1 + kappa * tanh(1 - Q_i / <Q>_gen)), 0, 0.45),
+    so lower ventilation => larger ASM strain => (Laws 1-3) larger R_i => lower ventilation.
+    Iterated to a fixed point on log-normal (sigma = 0.10) heterogeneous ASM activation, the
+    thick-walled Severe-Asthma tree develops ~35% ventilation defects (terminals < 0.5x mean;
+    Venegas PET ~20-40%) at a gain kappa = 0.2 for which the Healthy tree stays < 5% defective.
+    Reduced-model caveats (see audit v3): rigid Poiseuille branches (no Pedley entrance
+    correction, compliance or inertance), symmetric Weibel geometry, generation-independent
+    h_m/R_0, per-branch (not acinar-tissue) feedback; sigma is an assumption, kappa is
+    calibrated on the healthy control only.
 """
 
 from __future__ import annotations
@@ -79,8 +113,12 @@ SPECIMEN_JPG = DATASET_DIR / "bronchiole_mucosal_rosette_specimen.jpg"
 SCOUT_JSON = DATASET_DIR / "scout_manifest.json"
 BIB_FILE = DATASET_DIR / "paper_citations.bib"
 
+TREE_JSON = DATASET_DIR / "bronchial_tree_impedance_reference.json"  # Pass 3
+PASS3_BIB = DATASET_DIR / "pass3_citations.bib"  # Pass 3
+
 OUT_PNG = ROOT / "docs" / "media" / "airway_mucosal_creasing_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "airway_mucosal_creasing_growth.gif"
+OUT_TREE_GIF = ROOT / "docs" / "media" / "airway_mucosal_creasing_tree_ventilation.gif"  # Pass 3
 
 # Biomechanical constants from Wiggs et al. (1997), Li et al. (2011), Jin et al. (2011) & Eskandari et al. (2015)
 R_0_DEFAULT_UM: float = 600.0
@@ -94,9 +132,7 @@ C_CYL_CURVATURE: float = 0.7110  # Finite-thickness cylindrical substrate factor
 # Cryptographic SHA-256 Registry for `datasets/airway_mucosal_creasing/`
 EXPECTED_SHA256: dict[str, str] = {
     "datasets/airway_mucosal_creasing/airway_mucosal_creasing_reference.json": (
-        "de50bdef15ba022d60536ee76b5a44f87ec59c6ac25af16009d31e0c6b2d3e45"
-        if False
-        else "de50bdef15ba022d60536ee76b5a44f87ec59c6ac25af16009d51e0c6b2d3e45"
+        "de50bdef15ba022d60536ee76b5a44f87ec59c6ac25af16009d51e0c6b2d3e45"
     ),
     "datasets/airway_mucosal_creasing/bronchiole_mucosal_rosette_specimen.jpg": (
         "ecdf9c611a8c6f1c319c28eb31bf0f17126cef2372c28e1edfe60bc59bc10b99"
@@ -107,7 +143,21 @@ EXPECTED_SHA256: dict[str, str] = {
     "datasets/airway_mucosal_creasing/paper_citations.bib": (
         "dc5cda198aa48e190ea9e64ec89f6b948f359dcf38d4334840be2da41268f6d4"
     ),
+    # Pass 3 additions (bronchial tree impedance network)
+    "datasets/airway_mucosal_creasing/bronchial_tree_impedance_reference.json": (
+        "98da4936e1caeb8aec2be7ed66e12e6f5bf311c3068f1158fd7aa040402e19b0"
+    ),
+    "datasets/airway_mucosal_creasing/pass3_citations.bib": (
+        "02b11e335d715fbb6d3db90b56d9317d53666fd9333a04cf54cdf0adee1540eb"
+    ),
 }
+N_DATASET_ASSETS: int = len(EXPECTED_SHA256)
+
+# Pass 3 bronchial tree network constants (see datasets/airway_mucosal_creasing/bronchial_tree_impedance_reference.json)
+CMH2O_S_PER_L_IN_PA_S_PER_M3: float = 98066.5
+TREE_MAX_GENERATION_DEFAULT: int = 12
+TREE_DRAW_GENERATION: int = 9
+VDEF_THRESHOLD_FRACTION: float = 0.5  # terminal unit is a ventilation defect if Q < 0.5 * tree-mean Q
 
 
 # =============================================================================
@@ -122,7 +172,8 @@ def sha256_file(path: Path) -> str:
 
 
 def verify_dataset_integrity() -> dict[str, str]:
-    """Verify SHA-256 digests of all 4 files in datasets/airway_mucosal_creasing/."""
+    """Verify SHA-256 digests of all pinned files in datasets/airway_mucosal_creasing/
+    (4 Pass 1/2 assets + 2 Pass 3 assets)."""
     computed: dict[str, str] = {}
     for rel, expected in EXPECTED_SHA256.items():
         p = ROOT / rel
@@ -139,6 +190,12 @@ def load_reference_data() -> dict[str, Any]:
     """Load and cryptographically verify `airway_mucosal_creasing_reference.json`."""
     verify_dataset_integrity()
     return json.loads(REF_JSON.read_text())
+
+
+def load_tree_reference_data() -> dict[str, Any]:
+    """Load and cryptographically verify `bronchial_tree_impedance_reference.json` (Pass 3)."""
+    verify_dataset_integrity()
+    return json.loads(TREE_JSON.read_text())
 
 
 # =============================================================================
@@ -183,6 +240,40 @@ def compute_inextensible_lumen_and_resistance(
     a_norm = float(np.clip(outer_shrink - fold_loss, 0.12, 1.0))
     r_flow = float(1.0 / (a_norm**2))
     return a_norm, r_flow
+
+
+def predict_period_doubling_ratio(
+    h_m_um: float,
+    R_0_um: float,
+    epsilon_theta: float | np.ndarray,
+    epsilon_c: float,
+) -> float | np.ndarray:
+    """Closed-form post-buckling period-doubling subharmonic ratio A_{m/2}/A_m used by
+    both the 1D ring solver (`relax_cylindrical_mucosal_ring`) and the Pass 3 tree
+    network. Grows with mucosal thickness h_m/R_0 and supercritical strain
+    (epsilon_theta - epsilon_c); clipped to [0.04, 0.72] (Eskandari et al. 2015 JTB).
+    Accepts scalar or array epsilon_theta (vectorised for the 8191-branch tree)."""
+    delta_eps = np.maximum(np.asarray(epsilon_theta, dtype=float) - epsilon_c, 0.0)
+    thickness_ratio = h_m_um / R_0_um
+    pd_raw = ALPHA_PERIOD_DOUBLING * (thickness_ratio / 0.022) ** 1.35 * (delta_eps / 0.22)
+    pd = np.clip(pd_raw, 0.04, 0.72)
+    return float(pd) if np.ndim(pd) == 0 else pd
+
+
+def lumen_area_fraction_vectorized(
+    epsilon_theta: np.ndarray,
+    m_star: float,
+    pd_ratio: np.ndarray,
+    c_fold: float = C_FOLD_OCCLUSION,
+) -> np.ndarray:
+    """Vectorised twin of `compute_inextensible_lumen_and_resistance` (identical
+    algebra, same 0.12 floor, A/A_0 = 1 for epsilon_theta <= 0) evaluated on a whole
+    bronchial tree at once. Returns A_lumen / A_0 per branch."""
+    eps = np.asarray(epsilon_theta, dtype=float)
+    outer_shrink = (1.0 - eps) ** 2
+    fold_loss = (c_fold * eps / max(m_star, 1.0)) * (1.0 + 0.68 * (np.asarray(pd_ratio, dtype=float) ** 1.35))
+    a_norm = np.clip(outer_shrink - fold_loss, 0.12, 1.0)
+    return np.where(eps <= 0.0, 1.0, a_norm)
 
 
 # =============================================================================
@@ -266,13 +357,11 @@ def relax_cylindrical_mucosal_ring(
 
     # Supercritical ASM bronchoconstriction: primary mode m_int + period-doubling subharmonic m_sub
     delta_eps = max(epsilon_theta - epsilon_c, 0.0)
-    thickness_ratio = h_m_um / R_0_um
     if target_pd_ratio is not None:
         pd_ratio = float(target_pd_ratio)
     else:
         # Period-doubling grows rapidly with mucosal thickness h_m/R_0 and supercritical strain
-        pd_raw = ALPHA_PERIOD_DOUBLING * (thickness_ratio / 0.022) ** 1.35 * (delta_eps / 0.22)
-        pd_ratio = float(np.clip(pd_raw, 0.04, 0.72))
+        pd_ratio = float(predict_period_doubling_ratio(h_m_um, R_0_um, epsilon_theta, epsilon_c))
 
     # Spectral operator peaking at primary mode m_int and subharmonic m_sub
     k_modes = np.fft.fftfreq(n_theta, d=1.0 / n_theta)
@@ -633,29 +722,429 @@ def segment_bronchiole_rosette_specimen() -> dict[str, Any]:
 
 
 # =============================================================================
-# 6. 6-Panel Publication Synthesis Figure & Animated Bronchoconstriction GIF
+# 5b. Pass 3 — 3D Dichotomous Bronchial Tree Poiseuille Impedance Network
+#     (Weibel 1963 model A geometry; Venegas et al. 2005 flow-stretch feedback)
 # =============================================================================
+def _rodrigues_rotate(v: np.ndarray, axis: np.ndarray, angle_rad: float) -> np.ndarray:
+    """Rotate vector v about unit axis by angle (Rodrigues' formula)."""
+    c, s = math.cos(angle_rad), math.sin(angle_rad)
+    return v * c + np.cross(axis, v) * s + axis * float(np.dot(axis, v)) * (1.0 - c)
+
+
+def build_weibel_tree(max_generation: int = TREE_MAX_GENERATION_DEFAULT) -> dict[str, Any]:
+    """Build a symmetric dichotomous bronchial tree (generations 0..max_generation) with
+    Weibel (1963) model A diameters and lengths read from the SHA-256-pinned
+    `bronchial_tree_impedance_reference.json`. Branch i has children 2i+1 and 2i+2
+    (heap indexing); generation g occupies indices [2^g - 1, 2^(g+1) - 1).
+    3D coordinates use a 35 deg branching half-angle with the bifurcation plane
+    rotated 90 deg at each successive generation (for rendering only)."""
+    tree_ref = load_tree_reference_data()
+    weibel = tree_ref["weibel_1963_model_a"]
+    rows = {int(r[0]): r for r in weibel["rows"]}
+    if max_generation > max(rows) or max_generation < 1:
+        raise ValueError(f"max_generation must be in [1, {max(rows)}]")
+    n_nodes = 2 ** (max_generation + 1) - 1
+    idx = np.arange(n_nodes)
+    generation = np.floor(np.log2(idx + 1)).astype(int)
+    diameter_mm = np.asarray([rows[g][1] for g in generation], dtype=float)
+    length_mm = np.asarray([rows[g][2] for g in generation], dtype=float)
+
+    half_angle = math.radians(float(weibel["branching_half_angle_deg"]))
+    start = np.zeros((n_nodes, 3))
+    end = np.zeros((n_nodes, 3))
+    direction = np.zeros((n_nodes, 3))
+    normal = np.zeros((n_nodes, 3))
+    direction[0] = np.array([0.0, 0.0, -1.0])
+    normal[0] = np.array([1.0, 0.0, 0.0])
+    end[0] = start[0] + direction[0] * length_mm[0]
+    for i in range(1, n_nodes):
+        parent = (i - 1) // 2
+        sign = 1.0 if i % 2 == 1 else -1.0
+        d = _rodrigues_rotate(direction[parent], normal[parent], sign * half_angle)
+        d = d / np.linalg.norm(d)
+        n_new = np.cross(d, normal[parent])
+        n_new = n_new / max(np.linalg.norm(n_new), 1e-12)
+        direction[i] = d
+        normal[i] = n_new
+        start[i] = end[parent]
+        end[i] = start[i] + d * length_mm[i]
+
+    return {
+        "max_generation": int(max_generation),
+        "n_nodes": int(n_nodes),
+        "generation": generation,
+        "diameter_mm": diameter_mm,
+        "length_mm": length_mm,
+        "start_mm": start,
+        "end_mm": end,
+        "terminal_idx": idx[generation == max_generation],
+        "eta_Pa_s": float(tree_ref["air_properties"]["dynamic_viscosity_Pa_s"]),
+        "heterogeneity_model": tree_ref["heterogeneity_model"],
+        "reference_values": tree_ref["reference_values"],
+    }
+
+
+def branch_poiseuille_resistance(diameter_mm: np.ndarray, length_mm: np.ndarray, eta_Pa_s: float) -> np.ndarray:
+    """Hagen–Poiseuille resistance of a rigid circular branch R = 8 eta L / (pi r^4) [Pa s / m^3]."""
+    r_m = 0.5 * np.asarray(diameter_mm, dtype=float) * 1e-3
+    L_m = np.asarray(length_mm, dtype=float) * 1e-3
+    return 8.0 * eta_Pa_s * L_m / (math.pi * r_m**4)
+
+
+def solve_tree_impedance(
+    tree: dict[str, Any],
+    amplification: np.ndarray,
+    driving_pressure_Pa: float = 1.0,
+    acinar_resistance_Pa_s_m3: float = 0.0,
+) -> dict[str, Any]:
+    """Exact series-parallel solve of the dichotomous Poiseuille network.
+    R_i = R_i^Poiseuille * amplification_i, where amplification_i = (A_0/A_lumen,i)^2 is the
+    single-airway Law-3 ratio of branch i. Bottom-up subtree impedance
+    R_sub(i) = R_i + 1/(1/R_sub(2i+1) + 1/R_sub(2i+2)) (Lean Law 4), top-down flow split
+    Q_child = Q_parent * R_sub(sibling)/(R_sub(child)+R_sub(sibling)) at fixed driving pressure."""
+    gen = tree["generation"]
+    max_gen = tree["max_generation"]
+    R_branch = branch_poiseuille_resistance(tree["diameter_mm"], tree["length_mm"], tree["eta_Pa_s"]) * np.asarray(
+        amplification, dtype=float
+    )
+    R_sub = R_branch.copy()
+    R_sub[gen == max_gen] += acinar_resistance_Pa_s_m3
+    for g in range(max_gen - 1, -1, -1):
+        par = np.arange(2**g - 1, 2 ** (g + 1) - 1)
+        c1, c2 = 2 * par + 1, 2 * par + 2
+        R_sub[par] = R_branch[par] + 1.0 / (1.0 / R_sub[c1] + 1.0 / R_sub[c2])
+    Q = np.zeros_like(R_branch)
+    Q[0] = driving_pressure_Pa / R_sub[0]
+    for g in range(0, max_gen):
+        par = np.arange(2**g - 1, 2 ** (g + 1) - 1)
+        c1, c2 = 2 * par + 1, 2 * par + 2
+        Q[c1] = Q[par] * R_sub[c2] / (R_sub[c1] + R_sub[c2])
+        Q[c2] = Q[par] * R_sub[c1] / (R_sub[c1] + R_sub[c2])
+    return {"R_branch": R_branch, "R_sub": R_sub, "Q": Q, "R_total": float(R_sub[0])}
+
+
+def compute_small_airway_resistance_fraction(cut_generation: int = 8) -> dict[str, Any]:
+    """Analytic generation-wise Poiseuille resistance of the full Weibel model A conducting
+    zone (G0-G16): R_gen(g) = R_branch(g) / 2^g in series. Returns the fraction carried by
+    airways from `cut_generation` onward (d < 2 mm for g >= 8) — the known over-prediction
+    of a pure Poiseuille tree versus Macklem & Mead (1967) retrograde-catheter data."""
+    tree_ref = load_tree_reference_data()
+    rows = tree_ref["weibel_1963_model_a"]["rows"]
+    eta = float(tree_ref["air_properties"]["dynamic_viscosity_Pa_s"])
+    gens = np.asarray([r[0] for r in rows], dtype=int)
+    d_mm = np.asarray([r[1] for r in rows], dtype=float)
+    L_mm = np.asarray([r[2] for r in rows], dtype=float)
+    n_br = np.asarray([r[3] for r in rows], dtype=float)
+    R_gen = branch_poiseuille_resistance(d_mm, L_mm, eta) / n_br
+    total = float(R_gen.sum())
+    frac_small = float(R_gen[gens >= cut_generation].sum() / total)
+    return {
+        "generation": gens,
+        "R_gen_Pa_s_m3": R_gen,
+        "cumulative_fraction": np.cumsum(R_gen) / total,
+        "total_Pa_s_m3": total,
+        "total_cmH2O_s_L": total / CMH2O_S_PER_L_IN_PA_S_PER_M3,
+        "small_airway_fraction": frac_small,
+        "cut_generation": int(cut_generation),
+    }
+
+
+def simulate_heterogeneous_bronchospasm(
+    phenotype: dict[str, Any],
+    epsilon_mean: float,
+    sigma: float | None = None,
+    kappa: float | None = None,
+    seed: int = 2018,
+    tree: dict[str, Any] | None = None,
+    max_generation: int = TREE_MAX_GENERATION_DEFAULT,
+    n_iterations: int | None = None,
+    flow_controlled: bool = True,
+) -> dict[str, Any]:
+    """Couple the 1D cylindrical bilayer ring law (m*, period-doubling, A_lumen/A_0 — Laws 1-3)
+    to the 3D bronchial tree impedance network (Law 4) with heterogeneous ASM activation.
+
+    Per branch i: epsilon_i^(0) ~ mean-preserving log-normal(epsilon_mean, sigma);
+    m* from `compute_cylindrical_wavenumber` with h_m/R_0 held at the phenotype ratio
+    (generation-independent, Wiggs et al. 1997); A_i/A_0 from the inextensible-perimeter law;
+    R_i = R_i^Pois * (A_0/A_i)^2. Venegas et al. (2005) saturating flow-stretch positive feedback
+    epsilon_i <- clip(epsilon_i^(0) * (1 + kappa * tanh(1 - Q_i / <Q>_gen)), 0, eps_max)
+    (gain kappa for stretch deficit, dilation_gain_ratio*kappa for surplus) is iterated to a
+    fixed point (Law 5): under-ventilated branches lose tidal stretch and shorten further,
+    so defects self-organise into contiguous clusters. `flow_controlled=True` (default)
+    normalises stretch by the generation-mean flow (fixed tidal volume, Venegas et al. 2005);
+    `False` normalises by the homogeneously constricted tree at fixed driving pressure.
+    A terminal unit is a ventilation defect when Q_term < 0.5 * mean(Q_term).
+    """
+    tree = tree if tree is not None else build_weibel_tree(max_generation)
+    het = tree["heterogeneity_model"]
+    sigma = float(het["sigma_default"]) if sigma is None else float(sigma)
+    kappa = float(het["kappa_default"]) if kappa is None else float(kappa)
+    n_iter = int(het["n_feedback_iterations"]) if n_iterations is None else int(n_iterations)
+    omega = float(het.get("feedback_relaxation", 0.5))
+    dilation_ratio = float(het.get("dilation_gain_ratio", 0.0))
+    eps_max = float(het["epsilon_max"])
+
+    R_0 = float(phenotype["R_0_um"])
+    h_m = float(phenotype["h_m_um"])
+    _, m_star, m_int, eps_c = compute_cylindrical_wavenumber(
+        R_0, h_m, float(phenotype["mu_m_kPa"]), float(phenotype["mu_s_kPa"])
+    )
+
+    n = tree["n_nodes"]
+    gen = tree["generation"]
+    rng = np.random.default_rng(seed)
+    xi = rng.standard_normal(n)
+    if sigma > 0.0:
+        eps0 = np.clip(epsilon_mean * np.exp(sigma * xi - 0.5 * sigma**2), 0.0, eps_max)
+    else:
+        eps0 = np.full(n, float(np.clip(epsilon_mean, 0.0, eps_max)))
+
+    relaxed = solve_tree_impedance(tree, np.ones(n))
+    Q_relaxed = relaxed["Q"]
+    # Homogeneously constricted reference tree (every branch at epsilon_mean): the stretch
+    # each branch would receive at the same driving pressure if bronchospasm were uniform.
+    eps_h = float(np.clip(epsilon_mean, 0.0, eps_max))
+    a_h = lumen_area_fraction_vectorized(np.full(n, eps_h), m_star, predict_period_doubling_ratio(h_m, R_0, np.full(n, eps_h), eps_c))
+    homog = solve_tree_impedance(tree, 1.0 / a_h**2)
+    Q_homog = homog["Q"]
+
+    eps = eps0.copy()
+    gen_counts = np.bincount(gen, minlength=tree["max_generation"] + 1).astype(float)
+    convergence: list[float] = []
+    for _ in range(max(n_iter, 1)):
+        pd = predict_period_doubling_ratio(h_m, R_0, eps, eps_c)
+        a_frac = lumen_area_fraction_vectorized(eps, m_star, pd)
+        sol = solve_tree_impedance(tree, 1.0 / a_frac**2)
+        if kappa <= 0.0:
+            convergence.append(0.0)
+            break
+        if flow_controlled:
+            # Fixed tidal volume: stretch relative to the current generation-mean flow
+            gen_mean_Q = np.bincount(gen, weights=sol["Q"], minlength=tree["max_generation"] + 1) / gen_counts
+            rel_Q = sol["Q"] / gen_mean_Q[gen]
+        else:
+            # Fixed driving pressure: stretch relative to the homogeneously constricted tree
+            rel_Q = sol["Q"] / Q_homog
+        # Saturating (tanh) flow-stretch feedback. Loss of tidal stretch (rel_Q < 1) increases
+        # ASM shortening with gain kappa, bounded by (1+kappa)*eps0; surplus stretch (rel_Q > 1)
+        # relaxes ASM with the weaker gain dilation_ratio*kappa (deep-inspiration bronchodilation
+        # saturates; default dilation_ratio = 0 -> no relaxation below the agonist baseline eps0).
+        stretch_deficit = 1.0 - rel_Q
+        gain = np.where(stretch_deficit > 0.0, kappa, dilation_ratio * kappa)
+        eps_target = np.clip(eps0 * (1.0 + gain * np.tanh(stretch_deficit)), 0.0, eps_max)
+        eps_new = (1.0 - omega) * eps + omega * eps_target  # under-relaxed fixed-point iteration
+        convergence.append(float(np.max(np.abs(eps_new - eps))))
+        eps = eps_new
+    pd = predict_period_doubling_ratio(h_m, R_0, eps, eps_c)
+    a_frac = lumen_area_fraction_vectorized(eps, m_star, pd)
+    sol = solve_tree_impedance(tree, 1.0 / a_frac**2)
+
+    term = tree["terminal_idx"]
+    Q_term = sol["Q"][term]
+    Q_term_rel = Q_term / Q_relaxed[term]  # relative to the relaxed tree at identical driving pressure
+    Q_term_homog = Q_term / Q_homog[term]  # relative to homogeneous bronchospasm at identical driving pressure
+    Q_term_norm = Q_term / float(np.mean(Q_term))  # relative to the current tree mean (fixed tidal volume)
+    defect = (Q_term_norm if flow_controlled else Q_term_homog) < VDEF_THRESHOLD_FRACTION
+    defect_fraction = float(np.mean(defect))
+    defect_fraction_fixed_volume = float(np.mean(Q_term_norm < VDEF_THRESHOLD_FRACTION))
+
+    # Spatial clustering of defects: terminals in heap order are spatially contiguous in a
+    # dichotomous tree, so run-lengths of consecutive defective terminals measure cluster size.
+    if defect.any():
+        d_int = defect.astype(int)
+        edges = np.diff(np.concatenate([[0], d_int, [0]]))
+        run_starts = np.nonzero(edges == 1)[0]
+        run_ends = np.nonzero(edges == -1)[0]
+        run_lengths = run_ends - run_starts
+        mean_cluster = float(np.mean(run_lengths))
+        largest_cluster = int(np.max(run_lengths))
+        sib = defect.reshape(-1, 2)
+        sibling_concordance = float(np.mean(sib[:, 0] == sib[:, 1]))
+    else:
+        mean_cluster, largest_cluster, sibling_concordance = 0.0, 0, 1.0
+    # Expected mean run length for independent Bernoulli(p) defects = 1 / (1 - p)
+    p = defect_fraction
+    random_cluster = float(1.0 / max(1.0 - p, 1e-9)) if p < 1.0 else float(len(term))
+
+    a_single, r_single = compute_inextensible_lumen_and_resistance(
+        float(np.clip(epsilon_mean, 0.0, eps_max)),
+        m_star,
+        pd_ratio=float(predict_period_doubling_ratio(h_m, R_0, float(np.clip(epsilon_mean, 0.0, eps_max)), eps_c)),
+    )
+
+    return {
+        "phenotype_id": phenotype.get("phenotype_id", "custom"),
+        "epsilon_mean": float(epsilon_mean),
+        "sigma": sigma,
+        "kappa": kappa,
+        "m_star": float(m_star),
+        "m_int": int(m_int),
+        "epsilon_c": float(eps_c),
+        "epsilon_branch": eps,
+        "epsilon_branch_initial": eps0,
+        "lumen_area_fraction_branch": a_frac,
+        "Q_branch": sol["Q"],
+        "Q_branch_relaxed": Q_relaxed,
+        "Q_terminal_norm": Q_term_norm,
+        "Q_terminal_rel": Q_term_rel,
+        "Q_terminal_vs_homogeneous": Q_term_homog,
+        "defect_mask": defect,
+        "defect_fraction": defect_fraction,
+        "defect_fraction_fixed_volume": defect_fraction_fixed_volume,
+        "flow_controlled": bool(flow_controlled),
+        "R_tree_homogeneous": homog["R_total"],
+        "ventilation_cv": float(np.std(Q_term) / max(np.mean(Q_term), 1e-30)),
+        "mean_defect_cluster_size": mean_cluster,
+        "largest_defect_cluster_size": largest_cluster,
+        "random_expected_cluster_size": random_cluster,
+        "defect_sibling_concordance": sibling_concordance,
+        "R_tree_total": sol["R_total"],
+        "R_tree_relaxed": relaxed["R_total"],
+        "R_tree_ratio": float(sol["R_total"] / relaxed["R_total"]),
+        "single_airway_ratio": float(r_single),
+        "single_airway_area_fraction": float(a_single),
+        "flow_conservation_error": float(abs(np.sum(Q_term) - sol["Q"][0]) / sol["Q"][0]),
+        "feedback_convergence": np.asarray(convergence, dtype=float),
+        "tree": tree,
+    }
+
+
+def evaluate_tree_ventilation_sweep(
+    epsilon_mean: float = 0.28,
+    sigma: float | None = None,
+    kappas: list[float] | None = None,
+    seeds: tuple[int, ...] = (2018, 2019, 2020),
+    max_generation: int = TREE_MAX_GENERATION_DEFAULT,
+    flow_controlled: bool = True,
+) -> dict[str, Any]:
+    """Sweep the Venegas flow-stretch feedback gain kappa for Healthy, Bronchitis and
+    Severe-Asthma phenotypes (3 seeds each) and report defect fraction, tree resistance
+    amplification, and the critical gain kappa_c at which defect fraction first exceeds 5%."""
+    data = load_reference_data()
+    tree = build_weibel_tree(max_generation)
+    kappas = [float(k) for k in (kappas or tree["heterogeneity_model"]["kappa_sweep"])]
+    phenos = {p["phenotype_id"]: p for p in data["clinical_airway_phenotypes"]}
+    out: dict[str, Any] = {"kappas": np.asarray(kappas), "epsilon_mean": epsilon_mean, "phenotypes": {}}
+    for pid in ("healthy_bronchiole", "chronic_bronchitis", "severe_asthma"):
+        df = np.zeros((len(kappas), len(seeds)))
+        rr = np.zeros_like(df)
+        cl = np.zeros_like(df)
+        for i, k in enumerate(kappas):
+            for j, s in enumerate(seeds):
+                sim = simulate_heterogeneous_bronchospasm(
+                    phenos[pid], epsilon_mean, sigma=sigma, kappa=k, seed=s, tree=tree, flow_controlled=flow_controlled
+                )
+                df[i, j] = sim["defect_fraction"]
+                rr[i, j] = sim["R_tree_ratio"]
+                cl[i, j] = sim["mean_defect_cluster_size"] / sim["random_expected_cluster_size"]
+        mean_df = df.mean(axis=1)
+        above = np.nonzero(mean_df > 0.05)[0]
+        kappa_c = float(kappas[int(above[0])]) if len(above) else float("nan")
+        out["phenotypes"][pid] = {
+            "defect_fraction_mean": mean_df,
+            "defect_fraction_sd": df.std(axis=1),
+            "R_tree_ratio_mean": rr.mean(axis=1),
+            "R_tree_ratio_sd": rr.std(axis=1),
+            "cluster_enrichment_mean": cl.mean(axis=1),
+            "kappa_critical": kappa_c,
+            "m_star": sim["m_star"],
+        }
+    return out
+
+
+# =============================================================================
+# 6. 9-Panel Publication Synthesis Figure & Animated Bronchoconstriction GIFs
+# =============================================================================
+def _draw_tree_3d(ax: Any, sim: dict[str, Any], draw_generation: int = TREE_DRAW_GENERATION, title: str = "") -> Any:
+    """Draw the bronchial tree (generations 0..draw_generation) in 3D, colouring each branch by its
+    subtree ventilation relative to the generation mean (log2 scale) and marking under-ventilated
+    (< 0.5x) subtrees as ventilation defects."""
+    from mpl_toolkits.mplot3d.art3d import Line3DCollection
+
+    tree = sim["tree"]
+    gen = tree["generation"]
+    Q = sim["Q_branch"]
+    gen_mean = np.bincount(gen, weights=Q, minlength=tree["max_generation"] + 1) / np.bincount(
+        gen, minlength=tree["max_generation"] + 1
+    )
+    rel = Q / gen_mean[gen]
+    sel = gen <= min(draw_generation, tree["max_generation"])
+    segs = np.stack([tree["start_mm"][sel], tree["end_mm"][sel]], axis=1)
+    log_rel = np.clip(np.log2(np.maximum(rel[sel], 1e-6)), -3.0, 1.0)
+    lc = Line3DCollection(segs, cmap="RdYlBu", linewidths=0.35 + 0.45 * tree["diameter_mm"][sel], alpha=0.95)
+    lc.set_array(log_rel)
+    lc.set_clim(-3.0, 1.0)
+    ax.add_collection3d(lc)
+    leaf = sel & (gen == min(draw_generation, tree["max_generation"]))
+    defect_leaf = leaf & (rel < VDEF_THRESHOLD_FRACTION)
+    if defect_leaf.any():
+        e = tree["end_mm"][defect_leaf]
+        ax.scatter(e[:, 0], e[:, 1], e[:, 2], color="#f43f5e", s=7, depthshade=False, alpha=0.9, label="Ventilation defect (<0.5x)")
+    pts = np.vstack([tree["end_mm"][sel], tree["start_mm"][sel]])
+    lo, hi = pts.min(axis=0), pts.max(axis=0)
+    ctr = 0.5 * (lo + hi)
+    span = float(np.max(hi - lo)) * 0.42 + 2.0
+    ax.set_xlim(ctr[0] - span, ctr[0] + span)
+    ax.set_ylim(ctr[1] - span, ctr[1] + span)
+    ax.set_zlim(ctr[2] - span, ctr[2] + span)
+    ax.set_box_aspect((1.0, 1.0, 1.0), zoom=1.25)
+    ax.set_facecolor("#111827")
+    for pane in (ax.xaxis.pane, ax.yaxis.pane, ax.zaxis.pane):
+        pane.set_facecolor("#111827")
+        pane.set_edgecolor("#374151")
+    ax.tick_params(colors="#9ca3af", labelsize=6.5)
+    ax.set_xlabel("x (mm)", color="white", fontsize=7.5, labelpad=-2)
+    ax.set_ylabel("y (mm)", color="white", fontsize=7.5, labelpad=-2)
+    ax.set_zlabel("z (mm)", color="white", fontsize=7.5, labelpad=-2)
+    ax.view_init(elev=18, azim=-55)
+    if title:
+        ax.set_title(title, color="white", fontsize=10.2, fontweight="bold")
+    return lc
+
+
 def render_comparison_figure(
     out_path: Path = OUT_PNG,
     overrides: dict[str, float] | None = None,
     seed: int = 2018,
+    tree_kwargs: dict[str, Any] | None = None,
 ) -> Path:
-    """Render the 6-panel dark-theme Pass 2 synthesis figure comparing:
+    """Render the 9-panel dark-theme Pass 3 synthesis figure comparing:
     (A) Nonlinear L-BFGS-B luminal rosette contours: Relaxed ASM (m=0) vs Healthy (m*=14) vs Bronchitis (m*=9) vs Asthma (m*=5 creased)
     (B) 12-point 3-species mammalian airway wavenumber collapse m* vs (h_m/R_0) (Homo sapiens, Bos taurus, Ovis aries)
     (C) Hagen–Poiseuille airflow resistance amplification R_flow/R_0 vs ASM transmural pressure Delta P_ASM (kPa)
     (D) Inextensible mucosal perimeter lumen-area occlusion A_lumen/A_0 & period-doubling subharmonic ratio A_{m/2}/A_m
     (E) Histology specimen CV segmentation of folded bronchiole star lumen (`bronchiole_mucosal_rosette_specimen.jpg`, m_obs=13)
     (F) Circumferential radial displacement profiles r(theta) showing primary wrinkles, period-doubling, and sulcal creases
+    (G) Pass 3: 3D Weibel bronchial tree coloured by relative ventilation for the Severe-Asthma heterogeneous bronchospasm
+    (H) Pass 3: Venegas flow-stretch feedback gain sweep — ventilation-defect fraction & whole-tree resistance per phenotype
+    (I) Pass 3: terminal ventilation distributions (Healthy vs Asthma) and the pure-Poiseuille small-airway resistance fraction
     """
+    tree_kwargs = dict(tree_kwargs or {})
+    max_gen = int(tree_kwargs.pop("max_generation", TREE_MAX_GENERATION_DEFAULT))
     phenos = evaluate_clinical_phenotypes(overrides=overrides, seed=seed)
     collapse = evaluate_comparative_wavenumber_collapse()
     curves = evaluate_asm_constriction_curves()
     specimen = segment_bronchiole_rosette_specimen()
+    tree = build_weibel_tree(max_gen)
+    ref_data = load_reference_data()
+    pheno_by_id = {p["phenotype_id"]: p for p in ref_data["clinical_airway_phenotypes"]}
+    eps_tree = float(overrides.get("epsilon_theta", 0.28)) if overrides else 0.28
+    tree_sims = {
+        pid: simulate_heterogeneous_bronchospasm(pheno_by_id[pid], eps_tree, seed=seed, tree=tree, **tree_kwargs)
+        for pid in ("healthy_bronchiole", "chronic_bronchitis", "severe_asthma")
+    }
+    sweep = evaluate_tree_ventilation_sweep(
+        epsilon_mean=eps_tree,
+        sigma=tree_kwargs.get("sigma"),
+        max_generation=max_gen,
+        flow_controlled=bool(tree_kwargs.get("flow_controlled", True)),
+    )
+    small = compute_small_airway_resistance_fraction()
+    venegas = tree["reference_values"]["venegas_2005_patchiness"]
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    fig = plt.figure(figsize=(16.5, 10.2), dpi=150, facecolor="#0b0f17")
-    gs = fig.add_gridspec(2, 3, hspace=0.32, wspace=0.26)
+    fig = plt.figure(figsize=(16.5, 15.3), dpi=150, facecolor="#0b0f17")
+    gs = fig.add_gridspec(3, 3, hspace=0.34, wspace=0.26)
 
     # -------------------------------------------------------------------------
     # Panel A: L-BFGS-B Relaxed vs Healthy vs Bronchitis vs Asthma Lumen Rosettes
@@ -823,12 +1312,119 @@ def render_comparison_figure(
     ax_f.grid(True, alpha=0.22, color="#374151")
     ax_f.legend(loc="upper right", fontsize=7.0, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
 
-    fig.suptitle(
-        "Wiggs et al. (1997), Li et al. (2011) & Eskandari et al. (2015) — Cylindrical Airway Mucosal Buckling, Period-Doubling & Poiseuille Resistance (v2)",
+    # -------------------------------------------------------------------------
+    # Panel G (Pass 3): 3D Weibel Bronchial Tree — Severe Asthma Heterogeneous Bronchospasm
+    # -------------------------------------------------------------------------
+    sim_a = tree_sims["severe_asthma"]
+    sim_h = tree_sims["healthy_bronchiole"]
+    ax_g = fig.add_subplot(gs[2, 0], projection="3d")
+    lc = _draw_tree_3d(ax_g, sim_a, title=f"G. 3D Weibel Tree G0–G{tree['max_generation']}, Asthma εθ={eps_tree:.2f}")
+    cb = fig.colorbar(lc, ax=ax_g, shrink=0.5, pad=0.02)
+    cb.set_label("log2 (Q_subtree / generation mean)", color="white", fontsize=7.0)
+    cb.ax.tick_params(colors="#9ca3af", labelsize=6.5)
+    ax_g.text2D(
+        -0.08,
+        0.99,
+        f"{tree['n_nodes']} branches · R_i = R_i^Pois·(A0/A_i)²\n"
+        f"σ={sim_a['sigma']:.2f} log-normal ASM strain, κ={sim_a['kappa']:.2f} feedback\n"
+        f"Asthma: VDef={sim_a['defect_fraction']:.2f}, R_tree/R0={sim_a['R_tree_ratio']:.1f}×\n"
+        f"Healthy: VDef={sim_h['defect_fraction']:.2f}, R_tree/R0={sim_h['R_tree_ratio']:.1f}×",
+        transform=ax_g.transAxes,
         color="white",
-        fontsize=12.2,
+        fontsize=6.8,
+        va="top",
+        bbox={"facecolor": "#0b0f17", "edgecolor": "#374151", "alpha": 0.85},
+    )
+    if sim_a["defect_mask"].any():
+        ax_g.legend(loc="lower left", fontsize=6.5, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
+    # -------------------------------------------------------------------------
+    # Panel H (Pass 3): Venegas Feedback Gain Sweep — Defect Fraction & Tree Resistance
+    # -------------------------------------------------------------------------
+    ax_h = fig.add_subplot(gs[2, 1], facecolor="#111827")
+    ax_h2 = ax_h.twinx()
+    sweep_styles = {
+        "healthy_bronchiole": ("#34d399", "o", "Healthy"),
+        "chronic_bronchitis": ("#facc15", "s", "Bronchitis"),
+        "severe_asthma": ("#f43f5e", "^", "Severe Asthma"),
+    }
+    for pid, (col, mk, lbl) in sweep_styles.items():
+        sw = sweep["phenotypes"][pid]
+        ax_h.errorbar(
+            sweep["kappas"],
+            sw["defect_fraction_mean"],
+            yerr=sw["defect_fraction_sd"],
+            fmt=f"{mk}-",
+            color=col,
+            lw=1.9,
+            ms=5,
+            capsize=2,
+            label=f"{lbl} VDef (m*={sw['m_star']:.1f})",
+        )
+        ax_h2.plot(sweep["kappas"], sw["R_tree_ratio_mean"], ls=":", color=col, lw=1.3, alpha=0.9)
+    ax_h.axhline(
+        float(venegas["reference_defect_fraction_bronchoconstricted"]),
+        color="#f43f5e",
+        ls="--",
+        lw=1.0,
+        alpha=0.8,
+        label="Venegas 2005 asthmatic VDef ≈ 0.30",
+    )
+    ax_h.axhline(0.05, color="#9ca3af", ls="--", lw=0.9, alpha=0.7, label="Healthy tolerance 0.05")
+    ax_h.axvline(sim_a["kappa"], color="white", ls=":", lw=0.9, alpha=0.6)
+    ax_h.text(sim_a["kappa"] + 0.03, 0.97, f"κ default={sim_a['kappa']:.1f}", color="white", fontsize=7, va="top")
+    ax_h.set_ylim(0.0, 1.0)
+    ax_h.set_xlabel("Venegas flow-stretch feedback gain κ", color="white", fontsize=8.5)
+    ax_h.set_ylabel("Ventilation-defect fraction (Q_term < 0.5·mean)", color="white", fontsize=8.5)
+    ax_h2.set_yscale("log")
+    ax_h2.set_ylabel("R_tree/R_tree,0 (dotted)", color="#9ca3af", fontsize=7.5, labelpad=1)
+    ax_h2.tick_params(colors="#9ca3af", labelsize=7)
+    ax_h.set_title(f"H. Venegas Feedback Gain Sweep (εθ={eps_tree:.2f})", color="white", fontsize=10.2, fontweight="bold")
+    ax_h.tick_params(colors="#9ca3af", labelsize=8)
+    ax_h.grid(True, alpha=0.22, color="#374151")
+    ax_h.legend(loc="center right", fontsize=6.8, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+
+    # -------------------------------------------------------------------------
+    # Panel I (Pass 3): Terminal Ventilation Distributions & Small-Airway Resistance Fraction
+    # -------------------------------------------------------------------------
+    ax_i = fig.add_subplot(gs[2, 2], facecolor="#111827")
+    bins = np.logspace(-2.5, 1.0, 46)
+    for pid, (col, _, lbl) in sweep_styles.items():
+        s = tree_sims[pid]
+        ax_i.hist(
+            np.clip(s["Q_terminal_norm"], bins[0], bins[-1]),
+            bins=bins,
+            color=col,
+            alpha=0.55,
+            label=f"{lbl}: VDef={s['defect_fraction']:.2f}, CV={s['ventilation_cv']:.2f}, cluster×{s['mean_defect_cluster_size'] / s['random_expected_cluster_size']:.2f}",
+        )
+    ax_i.axvline(VDEF_THRESHOLD_FRACTION, color="white", ls="--", lw=1.0, label="Defect threshold 0.5×mean")
+    ax_i.set_xscale("log")
+    ax_i.set_xlabel("Terminal ventilation Q_term / mean(Q_term)", color="white", fontsize=8.5)
+    ax_i.set_ylabel(f"Terminal units (n={len(tree['terminal_idx'])})", color="white", fontsize=8.5)
+    ax_i.set_title("I. Terminal Ventilation Defects & Small-Airway Share", color="white", fontsize=10.2, fontweight="bold")
+    ax_i.tick_params(colors="#9ca3af", labelsize=8)
+    ax_i.grid(True, alpha=0.22, color="#374151")
+    ax_i.legend(loc="upper left", fontsize=6.6, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+    ax_i.text(
+        0.98,
+        0.55,
+        f"Weibel G0–G16 pure Poiseuille:\nR_total={small['total_cmH2O_s_L']:.3f} cmH2O·s/L\n"
+        f"d<2 mm (G≥8) fraction={small['small_airway_fraction']:.2f}\n(Macklem & Mead 1967: 0.10–0.20)",
+        transform=ax_i.transAxes,
+        color="#facc15",
+        fontsize=7.0,
+        ha="right",
+        va="center",
+        bbox={"facecolor": "#0b0f17", "edgecolor": "#374151", "alpha": 0.85},
+    )
+
+    fig.suptitle(
+        "Wiggs (1997), Li (2011), Eskandari (2015), Weibel (1963) & Venegas (2005) — Cylindrical Mucosal Buckling, Period-Doubling, Poiseuille Resistance & Bronchial-Tree Ventilation Defects (v3)",
+        color="white",
+        fontsize=11.6,
         fontweight="bold",
-        y=0.975,
+        y=0.985,
     )
     fig.savefig(out_path, dpi=150, bbox_inches="tight", facecolor=fig.get_facecolor())
     plt.close(fig)
@@ -919,14 +1515,106 @@ def render_growth_gif(
     return out_path
 
 
+def render_tree_ventilation_gif(
+    out_path: Path = OUT_TREE_GIF,
+    seed: int = 2018,
+    tree_kwargs: dict[str, Any] | None = None,
+) -> Path:
+    """Pass 3 animated GIF: Severe-Asthma 3D bronchial tree across the 6 ASM bronchoconstriction
+    levels of the reference trajectory (epsilon_mean = 0.00 -> 0.34), with ventilation defects
+    emerging as red terminals, alongside defect fraction and whole-tree resistance for Healthy vs Asthma."""
+    tree_kwargs = dict(tree_kwargs or {})
+    max_gen = int(tree_kwargs.pop("max_generation", TREE_MAX_GENERATION_DEFAULT))
+    tree = build_weibel_tree(max_gen)
+    data = load_reference_data()
+    pheno = {p["phenotype_id"]: p for p in data["clinical_airway_phenotypes"]}
+    eps_levels = [float(r["epsilon_theta"]) for r in data["asm_constriction_trajectory"]]
+    sims_a = [simulate_heterogeneous_bronchospasm(pheno["severe_asthma"], e, seed=seed, tree=tree, **tree_kwargs) for e in eps_levels]
+    sims_h = [simulate_heterogeneous_bronchospasm(pheno["healthy_bronchiole"], e, seed=seed, tree=tree, **tree_kwargs) for e in eps_levels]
+    df_a = [s["defect_fraction"] for s in sims_a]
+    df_h = [s["defect_fraction"] for s in sims_h]
+    rr_a = [s["R_tree_ratio"] for s in sims_a]
+    rr_h = [s["R_tree_ratio"] for s in sims_h]
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    frames: list[Image.Image] = []
+    for idx, eps in enumerate(eps_levels):
+        fig = plt.figure(figsize=(10.6, 4.8), dpi=100, facecolor="#0b0f17")
+        gs = fig.add_gridspec(1, 2, width_ratios=[1.15, 1.0], wspace=0.25)
+        ax1 = fig.add_subplot(gs[0, 0], projection="3d")
+        _draw_tree_3d(
+            ax1,
+            sims_a[idx],
+            title=f"Asthma tree, ASM εθ = {eps:.2f}: VDef={df_a[idx]:.2f}, R_tree/R0={rr_a[idx]:.1f}×",
+        )
+        ax2 = fig.add_subplot(gs[0, 1], facecolor="#111827")
+        ax2.plot(eps_levels, df_h, "o--", color="#374151", lw=1.2)
+        ax2.plot(eps_levels, df_a, "^--", color="#4b5563", lw=1.2)
+        ax2.plot(eps_levels[: idx + 1], df_h[: idx + 1], "o-", color="#34d399", lw=2.0, label="Healthy VDef fraction")
+        ax2.plot(eps_levels[: idx + 1], df_a[: idx + 1], "^-", color="#f43f5e", lw=2.2, label="Asthma VDef fraction")
+        ax2.axhline(0.30, color="#f43f5e", ls=":", lw=1.0, alpha=0.7, label="Venegas 2005 ≈ 0.30")
+        ax2.set_xlim(-0.01, 0.36)
+        ax2.set_ylim(0.0, 1.0)
+        ax2.set_xlabel("Mean ASM shortening strain εθ", color="white", fontsize=8.5)
+        ax2.set_ylabel("Ventilation-defect fraction", color="white", fontsize=8.5)
+        ax2b = ax2.twinx()
+        ax2b.plot(eps_levels[: idx + 1], rr_h[: idx + 1], "o:", color="#34d399", lw=1.2, alpha=0.8)
+        ax2b.plot(eps_levels[: idx + 1], rr_a[: idx + 1], "^:", color="#f43f5e", lw=1.2, alpha=0.8)
+        ax2b.set_yscale("log")
+        ax2b.set_ylim(0.8, 80.0)
+        ax2b.set_ylabel("Whole-tree R_tree/R0 (dotted)", color="#9ca3af", fontsize=8.5)
+        ax2b.tick_params(colors="#9ca3af", labelsize=7.5)
+        ax2.set_title("Patchy Ventilation Defects & Tree Resistance", color="white", fontsize=9.5, fontweight="bold")
+        ax2.tick_params(colors="#9ca3af", labelsize=7.5)
+        ax2.grid(True, alpha=0.22, color="#374151")
+        ax2.legend(loc="upper left", fontsize=7.2, facecolor="#0b0f17", edgecolor="#374151", labelcolor="white")
+        fig.canvas.draw()
+        w, h = fig.canvas.get_width_height()
+        buf = np.frombuffer(fig.canvas.buffer_rgba(), dtype=np.uint8).reshape((h, w, 4))
+        frames.append(Image.fromarray(buf[:, :, :3]))
+        plt.close(fig)
+
+    frames[0].save(out_path, save_all=True, append_images=frames[1:], duration=600, loop=0)
+    return out_path
+
+
 # =============================================================================
 # 7. MorphoEval Quantitative Measurement Suite & Self-Test
 # =============================================================================
+def evaluate_tree_headline(seed: int = 2018, max_generation: int = TREE_MAX_GENERATION_DEFAULT) -> dict[str, Any]:
+    """Headline Pass 3 tree-network quantities at the reference ASM shortening epsilon_mean = 0.28:
+    homogeneous-constriction identity check, heterogeneous Healthy / Bronchitis / Asthma trees at the
+    dataset defaults (sigma, kappa), and the analytic small-airway resistance fraction."""
+    data = load_reference_data()
+    pheno = {p["phenotype_id"]: p for p in data["clinical_airway_phenotypes"]}
+    tree = build_weibel_tree(max_generation)
+    homog = simulate_heterogeneous_bronchospasm(pheno["severe_asthma"], 0.28, sigma=0.0, kappa=0.0, seed=seed, tree=tree)
+    het = {
+        pid: simulate_heterogeneous_bronchospasm(pheno[pid], 0.28, seed=seed, tree=tree)
+        for pid in ("healthy_bronchiole", "chronic_bronchitis", "severe_asthma")
+    }
+    no_fb = simulate_heterogeneous_bronchospasm(pheno["severe_asthma"], 0.28, kappa=0.0, seed=seed, tree=tree)
+    return {
+        "tree": tree,
+        "homogeneous_asthma": homog,
+        "heterogeneous": het,
+        "asthma_no_feedback": no_fb,
+        "small_airway": compute_small_airway_resistance_fraction(),
+    }
+
+
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Compute 9 reference-anchored quantitative morphometrics for `morphoeval/measure_outputs.py`."""
+    """Compute 15 reference-anchored quantitative morphometrics for `morphoeval/measure_outputs.py`
+    (9 Pass 2 ring/collapse/specimen metrics + 6 Pass 3 bronchial-tree ventilation metrics)."""
     phenos = evaluate_clinical_phenotypes()
     collapse = evaluate_comparative_wavenumber_collapse()
     specimen = segment_bronchiole_rosette_specimen()
+    tree_head = evaluate_tree_headline()
+    homog = tree_head["homogeneous_asthma"]
+    t_h = tree_head["heterogeneous"]["healthy_bronchiole"]
+    t_a = tree_head["heterogeneous"]["severe_asthma"]
+    small = tree_head["small_airway"]
+    tree_refs = tree_head["tree"]["reference_values"]
 
     ctrl = phenos[0]
     healthy = phenos[1]
@@ -1024,14 +1712,75 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"lumen area = {specimen['lumen_area_px2']:.0f} px^2, perimeter = {specimen['lumen_perimeter_px']:.1f} px",
             "derived_from": "output",
         },
+        # ---------------- Pass 3: bronchial-tree impedance network ----------------
+        {
+            "name": "Homogeneous bronchospasm: whole-tree / single-airway Poiseuille resistance ratio identity (Severe Asthma, epsilon=0.28)",
+            "value": round(homog["R_tree_ratio"] / homog["single_airway_ratio"], 6),
+            "unit": "ratio of ratios",
+            "method": f"Exact series-parallel solve of the {homog['tree']['n_nodes']}-branch Weibel model A dichotomous tree (G0-G{homog['tree']['max_generation']}) with every branch scaled by the same Law-3 factor (A_0/A_lumen)^2 = {homog['single_airway_ratio']:.3f}; ratio of R_tree/R_tree,0 to the single-airway ratio",
+            "reference_value": float(tree_refs["homogeneous_constriction_tree_amplification_equals_single_airway"]["value"]),
+            "reference_source": "Series-parallel scaling identity (Lean theorem MathOfBiology.Loop_068.bifurcation_resistance_homogeneous_scaling); Weibel ER (1963) Morphometry of the Human Lung, Springer (10.1007/978-3-642-87553-3)",
+            "note": f"flow conservation error = {homog['flow_conservation_error']:.1e}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Weibel model A pure-Poiseuille small-airway (G8-G16, d < 2 mm) share of conducting-airway resistance",
+            "value": round(small["small_airway_fraction"], 4),
+            "unit": "fraction",
+            "method": f"Generation-wise R_gen = 8*eta*L/(pi*r^4)/2^g over Weibel (1963) model A rows G0-G16 (eta = 1.81e-5 Pa s); total = {small['total_cmH2O_s_L']:.3f} cmH2O s/L; fraction of sum over G >= 8",
+            "reference_value": float(tree_refs["healthy_small_airway_resistance_fraction_poiseuille"]["value"]),
+            "reference_source": "Analytic Poiseuille value of Weibel (1963) model A (dataset bronchial_tree_impedance_reference.json); measured counterpart Macklem PT & Mead J (1967) J Appl Physiol 22:395-401 (10.1152/jappl.1967.22.3.395) reports 0.10-0.20",
+            "note": "Known limitation: pure Poiseuille over-predicts the peripheral share relative to Macklem & Mead (1967) because entrance/turbulent losses (Pedley et al. 1970) in central airways are neglected",
+            "derived_from": "script",
+        },
+        {
+            "name": "Severe Asthma heterogeneous bronchospasm ventilation-defect fraction (epsilon_mean=0.28, sigma=0.10, kappa=0.2)",
+            "value": round(t_a["defect_fraction"], 4),
+            "unit": "fraction of terminal units",
+            "method": f"Fraction of {len(t_a['tree']['terminal_idx'])} G{t_a['tree']['max_generation']} terminal units with Q_term < 0.5 * mean(Q_term) after {len(t_a['feedback_convergence'])} iterations of saturating Venegas flow-stretch feedback on log-normal (sigma={t_a['sigma']:.2f}) ASM strain, m*={t_a['m_star']:.2f}",
+            "reference_value": float(tree_refs["venegas_2005_patchiness"]["reference_defect_fraction_bronchoconstricted"]),
+            "reference_source": "Venegas JG et al. (2005) Nature 434:777-782 (10.1038/nature03490): ~20-40% of imaged lung in bronchoconstricted asthmatics is ventilation defect (PET 13NN)",
+            "note": f"kappa calibrated on the healthy control only (healthy VDef < 0.05); ventilation CV = {t_a['ventilation_cv']:.3f}; without feedback (kappa=0) VDef = {tree_head['asthma_no_feedback']['defect_fraction']:.3f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Healthy Bronchiole heterogeneous bronchospasm ventilation-defect fraction at identical sigma, kappa (epsilon_mean=0.28)",
+            "value": round(t_h["defect_fraction"], 4),
+            "unit": "fraction of terminal units",
+            "method": f"Same tree, sigma={t_h['sigma']:.2f}, kappa={t_h['kappa']:.2f} and defect threshold as the asthma run but with the thin healthy wall (m*={t_h['m_star']:.2f})",
+            "reference_value": float(tree_refs["venegas_2005_patchiness"]["reference_defect_fraction_healthy_baseline"]),
+            "reference_source": "Venegas JG et al. (2005) Nature 434:777-782: near-uniform ventilation in healthy / unchallenged lungs",
+            "note": f"ventilation CV = {t_h['ventilation_cv']:.3f}; the thick asthmatic wall amplifies identical ASM heterogeneity into {t_a['defect_fraction'] / max(t_h['defect_fraction'], 1e-9):.1f}x more defects",
+            "derived_from": "script",
+        },
+        {
+            "name": "Severe Asthma / Healthy whole-tree resistance amplification under heterogeneous bronchospasm (epsilon_mean=0.28)",
+            "value": round(t_a["R_tree_ratio"] / t_h["R_tree_ratio"], 3),
+            "unit": "ratio",
+            "method": f"(R_tree/R_tree,0)_asthma / (R_tree/R_tree,0)_healthy at fixed tidal volume on the G0-G{t_a['tree']['max_generation']} tree: {t_a['R_tree_ratio']:.2f} / {t_h['R_tree_ratio']:.2f}",
+            "reference_value": float(tree_refs["wiggs_1992_whole_lung_amplification"]["reference_tree_amplification_asthma_over_healthy_at_eps_0p28"]),
+            "reference_source": "Lower bound = homogeneous single-airway ratio 16.52/4.51 (airway_mucosal_creasing_reference.json); Wiggs BR et al. (1992) Am Rev Respir Dis 145:1251-1258 (10.1164/ajrccm/145.6.1251) report order-of-magnitude amplification by wall thickening on a Weibel/Horsfield tree",
+            "note": "heterogeneity + feedback raise the asthma/healthy amplification above the homogeneous lower bound",
+            "derived_from": "script",
+        },
+        {
+            "name": "Severe Asthma ventilation-defect spatial clustering: mean contiguous defect run length / random (Bernoulli) expectation",
+            "value": round(t_a["mean_defect_cluster_size"] / t_a["random_expected_cluster_size"], 3),
+            "unit": "enrichment ratio",
+            "method": f"Mean run length of consecutive defective terminals in heap order ({t_a['mean_defect_cluster_size']:.2f}) divided by 1/(1-p) = {t_a['random_expected_cluster_size']:.2f} for independent defects at p = {t_a['defect_fraction']:.3f}; largest cluster = {t_a['largest_defect_cluster_size']} terminals",
+            "reference_value": 1.0,
+            "reference_source": "Null hypothesis of spatially independent defects (= 1.0); Venegas JG et al. (2005) Nature 434:777-782 report defects are large and contiguous (> 1.0)",
+            "note": f"sibling concordance = {t_a['defect_sibling_concordance']:.3f}; enrichment > 1 supports Venegas-type clustering, modest here because feedback acts per branch",
+            "derived_from": "script",
+        },
     ]
 
 
 def self_test() -> bool:
-    """Run comprehensive 8-point verification suite for Pass 2."""
-    # 1. Cryptographic SHA-256 verification of all 4 dataset files
+    """Run comprehensive 14-point verification suite for Pass 3 (8 Pass 2 checks + 6 tree checks)."""
+    # 1. Cryptographic SHA-256 verification of all 6 dataset files (4 Pass 1/2 + 2 Pass 3)
     digests = verify_dataset_integrity()
-    assert len(digests) == 4, "Expected 4 verified dataset assets"
+    assert len(digests) == N_DATASET_ASSETS == 6, "Expected 6 verified dataset assets"
 
     # 2. JSON-to-code parameter parity
     ref = load_reference_data()
@@ -1072,26 +1821,69 @@ def self_test() -> bool:
     run2 = relax_cylindrical_mucosal_ring(600.0, 31.8, 175.0, 21.0, 0.30, 0.28, seed=2018)
     assert np.allclose(run1["r_lumen_um"], run2["r_lumen_um"], atol=0.0)
 
-    # 8. MorphoEval measurement contract check
+    # 8. MorphoEval measurement contract check (9 Pass 2 + 6 Pass 3 measurements)
     meas = measure_morphoeval()
-    assert len(meas) == 9
+    assert len(meas) == 15
+    assert all("reference_value" in m_ and "unit" in m_ for m_ in meas)
+
+    # ---------------- Pass 3: bronchial-tree impedance network ----------------
+    head = evaluate_tree_headline(seed=2018)
+    tree = head["tree"]
+    # 9. Weibel geometry parity with the pinned JSON & analytic small-airway fraction
+    assert tree["n_nodes"] == 2 ** (TREE_MAX_GENERATION_DEFAULT + 1) - 1
+    assert math.isclose(float(tree["diameter_mm"][0]), 18.0) and math.isclose(float(tree["length_mm"][0]), 120.0)
+    small = head["small_airway"]
+    assert abs(small["small_airway_fraction"] - float(tree["reference_values"]["healthy_small_airway_resistance_fraction_poiseuille"]["value"])) < 0.01
+    # 10. Homogeneous constriction: tree amplification == single-airway Law-3 ratio (Lean Law 4), flow conserved
+    homog = head["homogeneous_asthma"]
+    assert math.isclose(homog["R_tree_ratio"], homog["single_airway_ratio"], rel_tol=1e-9)
+    assert homog["flow_conservation_error"] < 1e-9 and homog["defect_fraction"] == 0.0
+    # 11. Relaxed tree (epsilon = 0) has unit amplification and uniform ventilation
+    relaxed = simulate_heterogeneous_bronchospasm(
+        {"phenotype_id": "relaxed", "R_0_um": 600.0, "h_m_um": 11.2, "mu_m_kPa": 18.0, "mu_s_kPa": 0.3},
+        0.0, sigma=0.0, kappa=0.0, tree=tree,
+    )
+    assert math.isclose(relaxed["R_tree_ratio"], 1.0, rel_tol=1e-12) and relaxed["ventilation_cv"] < 1e-9
+    # 12. Heterogeneous bronchospasm hierarchy: Asthma > Bronchitis > Healthy defects; feedback adds defects (Lean Law 5)
+    het = head["heterogeneous"]
+    assert het["severe_asthma"]["defect_fraction"] > het["chronic_bronchitis"]["defect_fraction"] > het["healthy_bronchiole"]["defect_fraction"]
+    assert het["healthy_bronchiole"]["defect_fraction"] < 0.05
+    assert het["severe_asthma"]["defect_fraction"] > head["asthma_no_feedback"]["defect_fraction"]
+    assert het["severe_asthma"]["R_tree_ratio"] > het["healthy_bronchiole"]["R_tree_ratio"]
+    assert het["severe_asthma"]["feedback_convergence"][-1] < 1e-2
+    # 13. Venegas gain sweep: defect fraction is non-decreasing in kappa for every phenotype (single seed)
+    sweep = evaluate_tree_ventilation_sweep(kappas=[0.0, 0.2, 0.6, 1.0], seeds=(2018,))
+    for pid, sw in sweep["phenotypes"].items():
+        d = sw["defect_fraction_mean"]
+        assert all(d[i] <= d[i + 1] + 1e-12 for i in range(len(d) - 1)), pid
+    # 14. Two-run bitwise determinism of the tree network
+    t1 = simulate_heterogeneous_bronchospasm(load_reference_data()["clinical_airway_phenotypes"][3], 0.28, seed=2018, tree=tree)
+    t2 = simulate_heterogeneous_bronchospasm(load_reference_data()["clinical_airway_phenotypes"][3], 0.28, seed=2018, tree=tree)
+    assert np.allclose(t1["Q_branch"], t2["Q_branch"], atol=0.0)
 
     print(
-        f"[self_test] 2018-nelson-airway-mucosal-creasing.py (v2) PASSED all 8 checks "
+        f"[self_test] 2018-nelson-airway-mucosal-creasing.py (v3) PASSED all 14 checks "
         f"(3-species r={collapse['pearson_r_m']:.4f}, Asthma R_flow/R0={asthma['poiseuille_resistance_sim']:.2f}x, "
-        f"specimen m_obs={spec['m_obs_specimen']}, circularity={spec['lumen_circularity']:.4f})."
+        f"specimen m_obs={spec['m_obs_specimen']}, circularity={spec['lumen_circularity']:.4f}; "
+        f"tree VDef asthma={het['severe_asthma']['defect_fraction']:.3f} vs healthy={het['healthy_bronchiole']['defect_fraction']:.3f}, "
+        f"homogeneous identity={homog['R_tree_ratio'] / homog['single_airway_ratio']:.6f})."
     )
     return True
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--self-test", action="store_true", help="Run 8-check verification suite")
-    ap.add_argument("--skip-gif", action="store_true", help="Skip animated GIF rendering")
-    ap.add_argument("--epsilon-theta", type=float, default=None, help="Override ASM circumferential shortening strain")
+    ap.add_argument("--self-test", action="store_true", help="Run 14-check verification suite")
+    ap.add_argument("--skip-gif", action="store_true", help="Skip both animated GIF renders")
+    ap.add_argument("--skip-tree-gif", action="store_true", help="Skip only the Pass 3 bronchial-tree ventilation GIF")
+    ap.add_argument("--epsilon-theta", type=float, default=None, help="Override ASM circumferential shortening strain (ring phenotypes & tree epsilon_mean)")
     ap.add_argument("--hm-scale", type=float, default=None, help="Scale mucosal thickness h_m")
     ap.add_argument("--mu-ratio-scale", type=float, default=None, help="Scale mucosal-to-submucosal modulus ratio mu_m/mu_s")
     ap.add_argument("--seed", type=int, default=2018, help="Deterministic RNG seed (default: 2018)")
+    ap.add_argument("--tree-generations", type=int, default=TREE_MAX_GENERATION_DEFAULT, help="Bronchial tree depth G0..G_n (1-16, default 12 -> 8191 branches)")
+    ap.add_argument("--sigma", type=float, default=None, help="Log-normal branch-to-branch ASM strain dispersion (default from dataset: 0.10)")
+    ap.add_argument("--kappa", type=float, default=None, help="Venegas flow-stretch feedback gain (default from dataset: 0.2)")
+    ap.add_argument("--pressure-controlled", action="store_true", help="Normalise tidal stretch by the homogeneously constricted tree at fixed driving pressure instead of fixed tidal volume")
     args = ap.parse_args()
 
     if args.self_test:
@@ -1107,11 +1899,21 @@ def main() -> int:
         }.items()
         if v is not None
     }
-    png = render_comparison_figure(OUT_PNG, overrides=overrides, seed=args.seed)
+    tree_kwargs: dict[str, Any] = {"max_generation": args.tree_generations}
+    if args.sigma is not None:
+        tree_kwargs["sigma"] = args.sigma
+    if args.kappa is not None:
+        tree_kwargs["kappa"] = args.kappa
+    if args.pressure_controlled:
+        tree_kwargs["flow_controlled"] = False
+    png = render_comparison_figure(OUT_PNG, overrides=overrides, seed=args.seed, tree_kwargs=tree_kwargs)
     print(f"[render] Wrote {png}")
     if not args.skip_gif:
         gif = render_growth_gif(OUT_GIF, seed=args.seed)
         print(f"[render] Wrote {gif}")
+        if not args.skip_tree_gif:
+            tgif = render_tree_ventilation_gif(OUT_TREE_GIF, seed=args.seed, tree_kwargs=tree_kwargs)
+            print(f"[render] Wrote {tgif}")
     return 0
 
 

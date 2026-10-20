@@ -1,0 +1,55 @@
+{
+  "metadata": {
+    "dataset": "epithelial_buckling_crypt_villus / Pass 3 tubular ring-FEM & Shh/BMP cluster reference",
+    "slot": "slot-063-epithelial-buckling-crypt-villus",
+    "sim_id": "shyer-intestinal-villi-buckling",
+    "created": "2026-10-19",
+    "purpose": "Reference values and model constants for the Pass 3 remediation: reduced 3D tubular neo-Hookean mesenchymal foundation (axisymmetric ring FEM verified against the Lame thick-cylinder solution) and spatially localized Shh/BMP mesenchymal cluster signaling at zigzag elbows / villus tips.",
+    "sources": [
+      "Shyer AE et al. (2013) Science 342:212-218, doi:10.1126/science.1238842 (Fig. 1 stage geometry: lumen radius, mesenchyme depth, wavelengths, ridge counts)",
+      "Shyer AE, Huycke TR, Lee C, Mahadevan L, Tabin CJ (2015) Cell 161:569-580, doi:10.1016/j.cell.2015.03.041 (Shh concentrates beneath curved epithelium at fold apices; Shh -> Bmp in clusters)",
+      "Walton KD et al. (2012) PNAS 109:15817-15822, doi:10.1073/pnas.1205669109 (one Hh-responsive mesenchymal cluster per emerging villus)",
+      "Walton KD et al. (2016) Development 143:427-436, doi:10.1242/dev.130112 (Bmp signalling in clusters controls villus patterning)",
+      "Timoshenko SP, Goodier JN (1970) Theory of Elasticity, 3rd ed., sec. 28 (Lame thick-walled cylinder)",
+      "Donnell LH (1933) NACA Report 479 (shallow cylindrical shell theory)"
+    ],
+    "doi_verification": "DOIs for Shyer 2015 and Walton 2016 recorded offline (not re-verified online during the isolated run)."
+  },
+  "tubular_foundation_model": {
+    "geometry": "Mesenchymal annulus R_in = R_lumen, R_out = R_lumen + H_s; epithelium on the inner face, differentiated smooth-muscle sheath as rigid outer wall (u(R_out) = 0).",
+    "discretisation": "48 linear axisymmetric plane-strain ring elements, 2-point Gauss quadrature, strains eps_rr = du/dr, eps_tt = u/r.",
+    "constitutive": "Plane-strain Lame moduli from the neo-Hookean tangent modulus E_tan(eps) = E_s (2 lambda + lambda^-2) / 3, lambda = 1 - eps (reduces to E_s at eps = 0); default prestrain_stiffening = false because the stage-resolved E_s already encodes in-vivo stiffness.",
+    "foundation_stiffness": "K_tube = |sigma_rr(R_in)| / u0; K_slab = M_s / H_s (R -> infinity); curvature_factor = K_tube / K_slab; K_eff = (E_s / H_s) * curvature_factor * prestrain_factor.",
+    "verification": {
+      "lame_closed_form": "u(r) = A r + B / r, sigma_rr = 2 (lambda_L + mu) A - 2 mu B / r^2, with u(R_in) = 1, u(R_out) = 0",
+      "expected_fem_vs_lame_rel_err_max": 1e-4,
+      "expected_slab_limit_rel_err_max": 1e-4
+    },
+    "prefactor_calibration": {
+      "method": "OLS through origin of lambda_obs on 2 pi ell_tube over the 5 buckled Chick stages (E8-E16)",
+      "c_lambda_tube_curvature_only": 0.5513,
+      "c_lambda_tube_with_prestrain_tangent": 0.5929,
+      "c_lambda_flat_pass2": 0.5690
+    },
+    "mode_quantisation": "n = round(2 pi R_lumen / lambda_tube); lambda_quantized = 2 pi R_lumen / n (integer number of ridges on the tube circumference)."
+  },
+  "chick_tubular_reference": [
+    {"stage": "E6",  "R_lumen_um": 155.0, "H_s_um": 95.0, "H_over_R": 0.613, "lambda_obs_um": 0.0,   "n_ridges_obs": 0},
+    {"stage": "E8",  "R_lumen_um": 205.0, "H_s_um": 105.0, "H_over_R": 0.512, "lambda_obs_um": 129.0, "n_ridges_obs": 10},
+    {"stage": "E10", "R_lumen_um": 225.0, "H_s_um": 100.0, "H_over_R": 0.444, "lambda_obs_um": 118.0, "n_ridges_obs": 12},
+    {"stage": "E13", "R_lumen_um": 260.0, "H_s_um": 92.0,  "H_over_R": 0.354, "lambda_obs_um": 101.0, "n_ridges_obs": 16},
+    {"stage": "E14", "R_lumen_um": 285.0, "H_s_um": 88.0,  "H_over_R": 0.309, "lambda_obs_um": 94.0,  "n_ridges_obs": 19},
+    {"stage": "E16", "R_lumen_um": 330.0, "H_s_um": 82.0,  "H_over_R": 0.248, "lambda_obs_um": 82.0,  "n_ridges_obs": 25}
+  ],
+  "shh_bmp_cluster_model": {
+    "shh_field": "Shh(x,y) = G_sigma * [ max(-lap w, 0) * (1 + zeta * lambda * |kappa_c|) ], sigma = 0.16 lambda, zeta = 1.0; kappa_c = div(grad w / |grad w|) is the crest-contour turning curvature standing in for the 3D dome curvature of zigzag elbows that the developable height field w = f(q0 x + phi(y)) cannot represent.",
+    "cluster_indicator": "C = soft threshold of Shh above its 0.82 quantile (top 18 % of the field); BMP = C.",
+    "mechanical_feedback": "alpha_3(x,y) = alpha_3 + 0.60 * C(x,y); the gain pushes a zigzag-stage elbow (alpha_3 = 0.20-0.32) above the villus threshold alpha_3 = 0.65 inside a cluster; the FvK surface responds via a trust-region-limited (30 % of rms) linear Newton step of the FvK operator.",
+    "qualitative_references": {
+      "clusters_per_villus": {"value": 1.0, "source": "Walton et al. 2012 PNAS; Walton et al. 2016 Development"},
+      "cluster_location": {"value": "fold apices (zigzag elbows, villus tips)", "source": "Shyer et al. 2015 Cell Figs. 1-3"},
+      "elbow_localization_index_null": {"value": 1.0, "note": "uniform distribution; papers require > 1 but report no quantitative enrichment ratio"},
+      "cluster_fraction_on_tips_expected": {"value": 1.0, "source": "Shyer et al. 2015 Cell (Ptch1/Shh response concentrated at tips)"}
+    }
+  }
+}

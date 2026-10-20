@@ -90,4 +90,66 @@ theorem campas_beak_bending_quartic_bmp4_gain (W D : Int) :
   refine ⟨?_, by decide, by decide⟩
   simp [beak_bending_numerator, Int.mul_assoc, Int.mul_comm, Int.mul_left_comm]
 
+-- ============================================================================
+-- Law 4 (Pass 3, `alberti-avian-beak-darwin-scaling-4`):
+-- Soons et al. (2010, 2015) Cantilever Peak Bending Stress — Quadratic Depth Shielding
+-- ============================================================================
+/-- The reduced plane-stress finite-element fracture solver of Pass 3 is anchored on the
+    Euler–Bernoulli peak bending stress of a cantilever of width `W`, depth `D` and lever arm
+    `a = L - x_load` under a seed-reaction force `F`:
+      `σ_root = 6 F a / (W D^2)`.
+    Writing the integer-scaled numerator `6 F a` and denominator `S(W, D) = W D^2`:
+    1. doubling the beak depth quadruples `S` (quarters the peak stress at fixed `F, a, W`),
+       which is the mechanism by which deep Bmp4-driven *Geospiza* beaks keep fracture-risk
+       indices low (Soons et al. 2010 stress homeostasis);
+    2. the Law 3 bending numerator `W D^3` factorises as `D * S(W, D)`, i.e. the quartic
+       `I_beam` gain and the quadratic stress shielding are the same geometric law;
+    3. with the lever arm `a` playing the role of the load position, tip biting (`a = 2 a'`)
+       doubles the stress numerator relative to base biting (`a'`) (Soons et al. 2015). -/
+def cantilever_stress_denominator (W D : Int) : Int :=
+  W * (D * D)
+
+def cantilever_stress_numerator (F a : Int) : Int :=
+  6 * F * a
+
+theorem soons_cantilever_peak_stress_depth_quadratic_shielding (W D F a : Int) :
+    cantilever_stress_denominator W (2 * D) = 4 * cantilever_stress_denominator W D ∧
+    beak_bending_numerator W D = D * cantilever_stress_denominator W D ∧
+    cantilever_stress_numerator F (2 * a) = 2 * cantilever_stress_numerator F a ∧
+    cantilever_stress_denominator 1 2 = 4 := by
+  refine ⟨?_, ?_, ?_, by decide⟩
+  · simp [cantilever_stress_denominator, Int.mul_assoc, Int.mul_comm, Int.mul_left_comm]
+  · simp [beak_bending_numerator, cantilever_stress_denominator, Int.mul_comm, Int.mul_left_comm]
+  · simp [cantilever_stress_numerator, Int.mul_assoc, Int.mul_comm, Int.mul_left_comm]
+
+-- ============================================================================
+-- Law 5 (Pass 3, `alberti-avian-beak-darwin-scaling-5`):
+-- Gibson–Ashby Trabecular Modulus & Keratin Rhamphotheca Isostrain Load Sharing
+-- ============================================================================
+/-- Two material laws of the Pass 3 two-material beak model:
+    1. Gibson & Ashby (1997) open-cell foam law `E_trab = E_s (ρ/ρ_s)^2`: with the relative
+       density written as a fraction `p/q`, the integer-scaled modulus numerator
+       `G(E_s, p) = E_s p^2` satisfies `G(E_s, 2p) = 4 G(E_s, p)` — doubling BV/TV quadruples
+       the homogenised core modulus (so halving it quarters the modulus).
+    2. Isostrain (parallel) rule of mixtures for the keratin rhamphotheca of stiffness
+       `E_k t_k > 0` bonded to a bone core of stiffness `E_b t_b`: the composite section
+       stiffness `E_k t_k + E_b t_b` strictly exceeds the bare bone stiffness, hence under a
+       common strain the bone carries a strictly smaller share of the section load
+       (Soons et al. 2012 stress dissipation by the keratin layer). -/
+def gibson_ashby_modulus_numerator (E_s p : Int) : Int :=
+  E_s * (p * p)
+
+def composite_section_stiffness (Ek tk Eb tb : Int) : Int :=
+  Ek * tk + Eb * tb
+
+theorem gibson_ashby_keratin_isostrain_shielding (E_s p Ek tk Eb tb : Int)
+    (h : 0 < Ek * tk) :
+    gibson_ashby_modulus_numerator E_s (2 * p) = 4 * gibson_ashby_modulus_numerator E_s p ∧
+    Eb * tb < composite_section_stiffness Ek tk Eb tb ∧
+    gibson_ashby_modulus_numerator 7000 1 = 4 * gibson_ashby_modulus_numerator 1750 1 := by
+  refine ⟨?_, ?_, by decide⟩
+  · simp [gibson_ashby_modulus_numerator, Int.mul_assoc, Int.mul_comm, Int.mul_left_comm]
+  · unfold composite_section_stiffness
+    omega
+
 end MathOfBiology.Loop_070

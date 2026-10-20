@@ -18,5 +18,99 @@
   "signed_nanopubs_v1": 10,
   "signed_nanopubs_v2": 10,
   "overall_trusty_uri_v2": "https://w3id.org/np/RAd17V7Sr2Zx_i5inUNWr1g3TkhCtgfeu0HNmGiFjkqPE",
-  "delta": 37.3
+  "delta": 37.3,
+  "pass3_run_id": "2026-10-19-airway-mucosal-creasing-loop-pass3",
+  "pass3_audit_id": "2026-10-19-airway-mucosal-creasing-audit-v3",
+  "pass3_phase_a_status": "completed",
+  "pass3_remediation_items_closed": [
+    "Coupled the 1D circumferential bilayer ring solver to a 3D Weibel (1963) dichotomous bronchial-tree Poiseuille impedance network (G0-G12, 8191 branches) with log-normal heterogeneous ASM activation and saturating Venegas (2005) flow-stretch feedback; simulates heterogeneous ventilation defects during asthmatic bronchospasm (build_weibel_tree, solve_tree_impedance, simulate_heterogeneous_bronchospasm, evaluate_tree_ventilation_sweep)."
+  ],
+  "pass3_residuals": [
+    "Rigid laminar Poiseuille branches only: no Pedley et al. (1970) entrance-flow correction, airway compliance or gas inertance (pure-Poiseuille small-airway share 0.43 vs Macklem & Mead 1967 0.10-0.20).",
+    "Symmetric Weibel geometry (no Horsfield asymmetry); generation-independent h_m/R_0; per-branch feedback rather than acinar tissue stretch; sigma = 0.10 assumed, kappa = 0.2 calibrated on the healthy control."
+  ],
+  "lean_theorems_verified_v3": 5,
+  "lean_sorrys_v3": 0,
+  "self_test_checks_v3": 14,
+  "measurements_v3": 15,
+  "new_media_v3": [
+    "docs/media/airway_mucosal_creasing_tree_ventilation.gif"
+  ],
+  "new_datasets_v3": [
+    "datasets/airway_mucosal_creasing/bronchial_tree_impedance_reference.json",
+    "datasets/airway_mucosal_creasing/pass3_citations.bib"
+  ],
+  "pass3_phase_b_status": "completed",
+  "pass3_score": 84.3,
+  "pass3_dims": {
+    "model-fidelity": 80,
+    "specimen-match": 82,
+    "parameter-expressivity": 90,
+    "morphometric-validation": 80,
+    "source-traceability": 88,
+    "code-traceability": 85,
+    "repro-package": 93
+  },
+  "pass2_dims": {
+    "model-fidelity": 94,
+    "specimen-match": 92,
+    "parameter-expressivity": 92,
+    "morphometric-validation": 94,
+    "source-traceability": 95,
+    "code-traceability": 93,
+    "repro-package": 94
+  },
+  "pass3_delta": -9.1,
+  "pass3_score_note": "Score falls although the v2 remediation item is closed: the v3 audit penalises the pre-existing reference blending in relax_cylindrical_mucosal_ring (L430, L436-438), evaluate_asm_constriction_curves (L627-632) and render_growth_gif (L1452-1457), the 75% templated rosette profile (L420), unsourced fitted constants (L130, L217, L221) and the self-referential specimen comparison, none of which the v2 audit penalised.",
+  "pass3_completed_at": "2026-10-20T19:54:00Z",
+  "pass3_checkpoint_commit": "8a7928d7",
+  "pass3_assessor": "claude-fable-5-1",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_nanopubs_published": false,
+  "overall_trusty_uri_v3": "https://w3id.org/np/RAuZVRpUBcCG6EYfehzc1D5gLt3vUwWNXAhFLTFxzIQAo",
+  "pass3_remediation_closed": [
+    "Couple the 1D circumferential bilayer ring solver to a 3D branching bronchial tree airway impedance network to simulate heterogeneous ventilation defects during asthmatic bronchospasm -> build_weibel_tree L734-785, branch_poiseuille_resistance L787-791, solve_tree_impedance L794-823, compute_small_airway_resistance_fraction L826-850, simulate_heterogeneous_bronchospasm L852-1009, evaluate_tree_ventilation_sweep L1012-1052, evaluate_tree_headline L1584-1603; panels G/H/I L1316-1420; render_tree_ventilation_gif L1518-1578; Lean Laws 4-5."
+  ],
+  "pass3_remediation_open": [
+    "L430, L436-438 (+L516-517): remove the 0.88/0.12 a_norm and 0.85/0.15 period-doubling reference blends from relax_cylindrical_mucosal_ring and report the minimiser's own phenotype A/A_0, R_flow/R_0, PD.",
+    "L416-421, L366-371: plotted rosette is 0.75 analytic template + 0.25 minimiser and the spectral/energy coefficients are unsourced; plot u_rel alone or derive the coefficients with citations.",
+    "L612-635, L1450-1457: evaluate_asm_constriction_curves and render_growth_gif blend 0.85 reference + 0.15 simulated; plot simulated vs reference as separate curves.",
+    "L130, L217, L221, L548-609: C_CYL_CURVATURE, wall_coupling and epsilon_c prefactor are fitted to the same 12-point table used for the r = 0.9986 collapse; hold out points or use the published closed forms.",
+    "L263-276, L852-1009: 0.12 lumen-area floor saturates closed branches at 69x so tree VDef is non-monotone in eps_mean (0.35 -> 0.30); implement true closure and add a monotonicity self-test.",
+    "L787-791, L826-850 + bronchial_tree_impedance_reference.json:54: Poiseuille-only small-airway share 0.43 vs Macklem & Mead 0.10-0.20; add the Pedley (1970) entrance-flow correction and re-measure against the measured window.",
+    "L1756-1765: asthma/healthy whole-tree amplification reference 3.66 mixes two single-airway sources (tree law gives 2.49 homogeneous); set the closed-form lower bound as reference_value and move 3.66 to a note.",
+    "L641-721 + airway_mucosal_creasing_reference.json: specimen reference 13 folds / 0.40 circularity are the specimen's own values; use an independent literature reference or a second pinned specimen and add a um/px scale.",
+    "L852-1009, L1012-1052: sigma = 0.10 assumed, kappa = 0.2 from a coarse grid, kappa_critical = 0.0 for all phenotypes; refine the kappa grid, add a sigma sweep and report VDef with a seed/sigma confidence band.",
+    "Script L17, Lean L6, paper_citations.bib L14: three different titles for Li et al. (2011) JMPS 59:758-774 (bib has a typo); resolve against the DOI online and verify the five Pass 3 DOIs recorded offline.",
+    "L1128-1133, L1876-1886: --hm-scale / --mu-ratio-scale do not reach the tree; thread the overrides into simulate_heterogeneous_bronchospasm."
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_068.bifurcation_resistance_homogeneous_scaling",
+    "MathOfBiology.Loop_068.venegas_feedback_strain_monotone"
+  ],
+  "pass3_lean_verification": "lean morphoeval/lean/loops/Loop_068_airway_mucosal_creasing.lean -> exit 0, 5 theorems, 0 sorry",
+  "pass3_self_test": "PASSED all 14 checks",
+  "pass3_artifacts": [
+    "2018-nelson-airway-mucosal-creasing.py",
+    "morphoeval/lean/loops/Loop_068_airway_mucosal_creasing.lean",
+    "morphoeval/math_kg_loops/nelson-airway-mucosal-creasing.yaml",
+    "datasets/airway_mucosal_creasing/README.md",
+    "datasets/airway_mucosal_creasing/bronchial_tree_impedance_reference.json",
+    "datasets/airway_mucosal_creasing/pass3_citations.bib",
+    "docs/media/airway_mucosal_creasing_comparison.png",
+    "docs/media/airway_mucosal_creasing_growth.gif",
+    "docs/media/airway_mucosal_creasing_tree_ventilation.gif",
+    "docs/media/airway_mucosal_creasing_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-airway-mucosal-creasing-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-airway-mucosal-creasing-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-airway-mucosal-creasing-audit-v3/",
+    "morphoeval/runs/2026-10-19-airway-mucosal-creasing-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-airway-mucosal-creasing-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-airway-mucosal-creasing-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-airway-mucosal-creasing-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-airway-mucosal-creasing-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-airway-mucosal-creasing-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-068.json"
+  ]
 }

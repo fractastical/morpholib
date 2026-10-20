@@ -1,0 +1,101 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-nelson-airway-mucosal-creasing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-nelson-airway-mucosal-creasing-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-nelson-airway-mucosal-creasing-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Wiggs et al. (1997), Li et al. (2011) & Eskandari et al. (2015) cylindrical bilayer mucosal folding, period-doubling & Poiseuille airway resistance, coupled to a Weibel (1963) bronchial-tree impedance network with Venegas (2005) flow-stretch feedback — Reproducibility package: 93/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`--self-test` passes 14 checks in ~6 s (8 Pass 2 + 6 tree checks: Weibel/JSON parity and small-airway share, homogeneous identity to 1e-9 with flow conservation, relaxed-tree unit amplification, asthma > bronchitis > healthy defect hierarchy with healthy < 5 % and feedback increasing defects, convergence < 1e-2, VDef monotone in kappa, and bitwise determinism of the tree) (L1779-1871); the full render takes ~11 s and writes the PNG and both GIFs; all 6 inputs are SHA-256 verified; the RNG is seeded (default 2018) and seeds are offset per phenotype/branch; CLI flags are documented in argparse. Deductions: the determinism check is within-process (two calls), not across processes/platforms, and the PNG/GIF hashes are not pinned (-3); there is no requirements lock file for this script and the environment is recorded only in this audit (-2); the GIFs are produced by the default invocation but take most of the wall time and there is no `--quick` path for the 9-panel figure alone (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-nelson-airway-mucosal-creasing-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-nelson-airway-mucosal-creasing-repro-package-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-nelson-airway-mucosal-creasing-repro-package-3> ;
+        pk:hasScore "0.93"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nelson-airway-mucosal-creasing-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "2018-nelson-airway-mucosal-creasing.py L1779–L1871" ;
+        dct:description "14-check self_test() including 6 new tree checks (identity, conservation, hierarchy, monotonicity, convergence, determinism)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/2018-nelson-airway-mucosal-creasing.py#L1779-L1871> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nelson-airway-mucosal-creasing-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "2018-nelson-airway-mucosal-creasing.py L1874–L1921" ;
+        dct:description "argparse CLI with seed, skip-gif flags and tree parameters; main renders PNG + 2 GIFs" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/2018-nelson-airway-mucosal-creasing.py#L1874-L1921> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nelson-airway-mucosal-creasing-repro-package-3> a pk:EvidenceItem ;
+        rdfs:label "2018-nelson-airway-mucosal-creasing.py L166–L187" ;
+        dct:description "sha256_file / verify_dataset_integrity fail-closed on all 6 assets" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/2018-nelson-airway-mucosal-creasing.py#L166-L187> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 068 Pass 3 Phase B Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/68> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/978-3-642-87553-3>,
+            <https://doi.org/10.1016/0034-5687(70)90094-0>,
+            <https://doi.org/10.1016/j.jmps.2011.01.010>,
+            <https://doi.org/10.1016/j.jtbi.2016.05.022>,
+            <https://doi.org/10.1038/nature03490>,
+            <https://doi.org/10.1115/1.4004128>,
+            <https://doi.org/10.1152/jappl.1967.22.3.395>,
+            <https://doi.org/10.1152/jappl.1997.83.6.1814>,
+            <https://doi.org/10.1164/ajrccm/145.6.1251> .
+    <https://doi.org/10.1007/978-3-642-87553-3> dct:date "1963"^^xsd:gYear ;
+        dct:title "Morphometry of the Human Lung" .
+    <https://doi.org/10.1016/0034-5687(70)90094-0> dct:date "1970"^^xsd:gYear ;
+        dct:title "The prediction of pressure drop and variation of resistance within the human bronchial airways" .
+    <https://doi.org/10.1016/j.jmps.2011.01.010> dct:date "2011"^^xsd:gYear ;
+        dct:title "Surface wrinkling of mucosa on a compliant substrate in cylindrical tubes and bronchial airways" .
+    <https://doi.org/10.1016/j.jtbi.2016.05.022> dct:date "2015"^^xsd:gYear ;
+        dct:title "Patient-specific airway wall remodeling in chronic bronchitis and asthma: cylindrical morphoelasticity of mucosal folding" .
+    <https://doi.org/10.1038/nature03490> dct:date "2005"^^xsd:gYear ;
+        dct:title "Self-organized patchiness in asthma as a prelude to catastrophic shifts" .
+    <https://doi.org/10.1115/1.4004128> dct:date "2011"^^xsd:gYear ;
+        dct:title "Creases in soft tissues generated by growth" .
+    <https://doi.org/10.1152/jappl.1967.22.3.395> dct:date "1967"^^xsd:gYear ;
+        dct:title "Resistance of central and peripheral airways measured by a retrograde catheter" .
+    <https://doi.org/10.1152/jappl.1997.83.6.1814> dct:date "1997"^^xsd:gYear ;
+        dct:title "A model of airway narrowing due to smooth muscle shortening" .
+    <https://doi.org/10.1164/ajrccm/145.6.1251> dct:date "1992"^^xsd:gYear ;
+        dct:title "A model of airway narrowing in asthma and in chronic obstructive pulmonary disease" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Wiggs et al. (1997), Li et al. (2011) & Eskandari et al. (2015) cylindrical bilayer mucosal folding, period-doubling & Poiseuille airway resistance, coupled to a Weibel (1963) bronchial-tree impedance network with Venegas (2005) flow-stretch feedback — Reproducibility package 93/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T19:52:28Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-nelson-airway-mucosal-creasing-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/68> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

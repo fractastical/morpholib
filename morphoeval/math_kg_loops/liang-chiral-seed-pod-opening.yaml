@@ -9,11 +9,23 @@ model_spec:
   nu_poisson: 0.30
   theta_natural_deg: 45.0
   seed: 2011
+  # Pass 3 (suture fracture / ballistic ejection coupling; provenance flags in the JSON below)
+  Y_modulus_Pa: 4.2e8
+  rho_valve_kg_m3: 800.0
+  Gamma_c_mean_J_m2: 120.0
+  cv_Gamma: 0.15
+  a0_flaw_m: 0.002
+  tau_dry_h: 72.0
+  rayleigh_factor: 0.93
+  n_seeds: 6
+  m_seed_kg: 4.0e-4
+  eta_catapult: 0.5
   inputs:
     - datasets/chiral_seed_pod_opening/chiral_seed_pod_opening_reference.json
     - datasets/chiral_seed_pod_opening/bauhinia_chiral_seed_pod_specimen.jpg
     - datasets/chiral_seed_pod_opening/scout_manifest.json
     - datasets/chiral_seed_pod_opening/paper_citations.bib
+    - datasets/chiral_seed_pod_opening/suture_fracture_ballistic_reference.json
 equations:
   - law_name: "Incompatible Saddle Target Curvature Tensor & Gauss's Theorema Egregium Incompatibility Law"
     formula: "b_0 = diag(κ_0, -κ_0),  Tr(b_0) = 0,  K_target = det(b_0) = -κ_0^2 < 0 ≠ K(a_0) = 0"
@@ -69,3 +81,46 @@ equations:
     role: "Establishes the supercritical pitchfork bifurcation from a pure-twist helicoid (H = 0, R = 0) to a cylindrical helical ribbon (H → ±(1-ν)κ_0/2, K → 0) when dimensionless valve width exceeds w̃_c"
     source_citation: "Armon, Efrati, Kupferman & Sharon (2011) Science 333(6050):1726-1730 Eq. 1-4; Armon et al. (2014) Soft Matter 10:2733-2740"
     code_locus: "2007-liang-chiral-seed-pod-opening.py#L240-L445"
+
+  - law_name: "Freund Dynamic Mode-I Suture Crack Equation of Motion & Griffith Arrest Law (Pass 3)"
+    formula: "G = B_eff (κ_0² − e_final) W / h,  B_eff = Y h³ / (12(1+ν));  da/dt = v = c_R max(0, 1 − Γ_c(a)/G)  ⇔  G v = c_R (G − Γ_c);  arrest when Γ_c ≥ G;  v < c_R"
+    lean_decl: "MathOfBiology.Loop_065.freund_scaled_crack_speed"
+    lean_theorem: "MathOfBiology.Loop_065.freund_crack_speed_arrest_and_monotonicity"
+    lean_locus: "morphoeval/lean/loops/Loop_065_chiral_seed_pod_opening.lean#L126-L149"
+    lean_code: |
+      def freund_scaled_crack_speed (cR G gamma : Int) : Int :=
+        cR * (G - gamma)
+      theorem freund_crack_speed_arrest_and_monotonicity (cR G1 G2 gamma : Int) :
+          freund_scaled_crack_speed cR gamma gamma = 0 ∧
+          (0 < cR → gamma < G1 → 0 < freund_scaled_crack_speed cR G1 gamma) ∧
+          (0 ≤ cR → G1 ≤ G2 →
+            freund_scaled_crack_speed cR G1 gamma ≤ freund_scaled_crack_speed cR G2 gamma) ∧
+          (0 < cR → 0 < gamma → freund_scaled_crack_speed cR G1 gamma < cR * G1)
+    variables: "G: suture energy release rate from the quasi-static minimizer (J/m²); Γ_c(a): heterogeneous suture fracture toughness (J/m², provenance=model); c_R = 0.93 √(Y/(2(1+ν)ρ)): Rayleigh wave speed (m/s); v: crack-tip speed (m/s); a: crack position along the suture (m)"
+    role: "Couples the stored incompatible-shell bending energy of the closed pod (Pass 2 minimizer) to transient crack propagation along the suture: the crack runs only where released energy exceeds the local toughness, at sub-Rayleigh speed, and arrests (stick-slip, drying-controlled) where Γ_c(a) ≥ G(t)"
+    source_citation: "Freund LB (1990) Dynamic Fracture Mechanics, Cambridge University Press, Ch. 7 (doi 10.1017/CBO9780511546761, unverified offline); Efrati, Sharon & Kupferman (2009) JMPS 57:762-775 for B_eff"
+    code_locus: "2007-liang-chiral-seed-pod-opening.py#L733-L859"
+    code_locus_secondary: "2007-liang-chiral-seed-pod-opening.py#L932-L1160"
+
+  - law_name: "Elastic-Catapult Energy Partition & Ballistic Seed Ejection Law (Pass 3)"
+    formula: "ΔU_seg = B_eff (κ_0² − e_final) W l_seg ≥ 0;  KE = η ΔU_seg,  0 ≤ η ≤ 1;  v_seed = √(2 η ΔU_seg / (m_seg/3 + m_seed));  m dv/dt = m g − ½ ρ_air C_d A |v| v"
+    lean_decl: "MathOfBiology.Loop_065.released_elastic_energy"
+    lean_theorem: "MathOfBiology.Loop_065.elastic_catapult_energy_partition"
+    lean_locus: "morphoeval/lean/loops/Loop_065_chiral_seed_pod_opening.lean#L164-L189"
+    lean_code: |
+      def released_elastic_energy (e_init e_final : Int) : Int :=
+        e_init - e_final
+      def catapult_kinetic_energy (eta dU : Int) : Int :=
+        eta * dU
+      theorem elastic_catapult_energy_partition (e_init e_final eta dU1 dU2 : Int) :
+          (e_final ≤ e_init → 0 ≤ released_elastic_energy e_init e_final) ∧
+          (0 ≤ eta → 0 ≤ dU1 → 0 ≤ catapult_kinetic_energy eta dU1) ∧
+          (eta ≤ 1 → 0 ≤ dU1 → catapult_kinetic_energy eta dU1 ≤ dU1) ∧
+          released_elastic_energy 0 0 = 0 ∧
+          catapult_kinetic_energy eta (dU1 + dU2) =
+            catapult_kinetic_energy eta dU1 + catapult_kinetic_energy eta dU2
+    variables: "e_init = κ_0²: reduced bending energy of the flat closed valve; e_final: relaxed minimizer energy; ΔU_seg: released energy per seed-bearing valve segment (J); η: catapult efficiency (provenance=model); m_seg/3 + m_seed: effective launched mass (kg); v_seed: launch speed (m/s); C_d, A: seed drag coefficient and area"
+    role: "Turns the released non-Euclidean shell energy into a ballistic seed launch speed and drag-limited range; proves energy descent (ΔU ≥ 0), no energy creation (KE ≤ ΔU), vanishing release for the κ_0 = 0 control, and additivity over seed segments"
+    source_citation: "Vogel S (2005) J. Biosci. 30:167-175 (doi 10.1007/BF02703696, unverified offline); Hofhuis et al. (2016) Cell 166:222-233 (doi 10.1016/j.cell.2016.05.002, unverified offline) as transfer-boundary launch-speed benchmark; Swaine & Beer (1977) New Phytol. 78:695-708"
+    code_locus: "2007-liang-chiral-seed-pod-opening.py#L861-L930"
+    code_locus_secondary: "2007-liang-chiral-seed-pod-opening.py#L1779-L1944"

@@ -1,0 +1,292 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-richman-cortical-gyrification-buckling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-morphometric-validation> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-morphometric-validation> a pk:LLMClaimAssessment ;
+        rdfs:label "Richman et al. (1975) & Tallinen et al. (2014, 2016) neo-Hookean constrained cortical expansion and sulcal creasing instability, with a Pass 3 3D hemispheric Swift-Hohenberg surface surrogate — Morphometric validation: 68/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`measure_morphoeval()` (L1572-1743) returns 15 reference-anchored measurements, 6 new in Pass 3 (L1682-1743) with explicit caveats in their `note` fields. Credited: the GW22 subcritical null is exact (0 junctions, GI_3D = 1), Y-junction count rises 0 -> 21 -> 122 and sulcal components fall 178 -> 40 across GW26 -> GW38 (a genuinely emergent topological result), GI_3D 2.604 vs 2.56, and the gradient sweep reports slope, SE, r and RMSE. Deductions: measurements #1, #3 and #9 (L1592-1621, L1672-1681) compare the Richman formula with `lambda_obs_mm` values that are themselves 4.3633 h in the JSON (L41-276), so r = 1.0000 / alpha = 0.9993 / lambda/h = 4.3642 are formula-vs-formula (-12); measurements #4, #5 and #7 (L1622-1661) report the prescribed 2D targets (lambda_sim 11.20 = P_hull / round(P_hull / lambda_theory), GI_sim = gi_target, 85/28 = the empirical counts), so their agreement is by construction (-8); #10 and #14 are consistency checks because k_c(x) is imposed (stated in the notes) (-3); #12 and #15 have only a mathematical upper bound (honeycomb 2.31) and a \">1\" lower bound as references, with no empirical fetal sulcal-graph value (-3)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-morphometric-validation> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/morphometric-validation" ;
+        pk:evidenceAgainst "1975-richman-cortical-gyrification-buckling.py L1592–L1621: Measurements #1 and #3 regress formula wavelengths against lambda_obs_mm that are formula-generated in the reference JSON (circular r = 1.0000) <https://github.com/fractastical/morpholib/blob/45670cb8/1975-richman-cortical-gyrification-buckling.py#L1592-L1621>",
+            "1975-richman-cortical-gyrification-buckling.py L1622–L1661: Measurements #4, #5, #7 report lambda_sim, GI_sim and sulcus counts that equal the prescribed targets of the 2D solver <https://github.com/fractastical/morpholib/blob/45670cb8/1975-richman-cortical-gyrification-buckling.py#L1622-L1661>",
+            "datasets/cortical_gyrification_folding/cortical_gyrification_folding_reference.json L41–L276: Every lambda_obs_mm equals 4.3633 * h_cortex_mm (e.g. GW26 1.65 -> 7.20, mouse 0.88 -> 3.84); no per-value figure/table provenance <https://github.com/fractastical/morpholib/blob/45670cb8/datasets/cortical_gyrification_folding/cortical_gyrification_folding_reference.json#L41-L276>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-11-species-mammalian-gyrification-index-scaling-correlation-tallinen-2014-mota-2015>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-11-species-mammalian-sulcal-wavelength-scaling-correlation-richman-1975-tallinen-2014>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-crease-wall-gyrification-index-gi-3d-1-l-zero-d-mean-a-hull-at-gw38-hemispheric-gsh-planform>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-gsh-subcritical-null-y-junctions-and-gi-3d-at-gw22-g-1-12-g-c>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-gsh-sulcal-network-percolation-across-ontogeny-largest-sulcal-component-fraction-gw38-gw26>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-hemispheric-gsh-surface-gw38-emergent-sulcal-wavelength-lambda-3d-cotangent-laplace-beltrami-10242-nodes>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-sulcal-y-junction-density-at-gw38-labyrinth-trivalent-skeleton-nodes-per-lambda-2-lat-60-deg>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-coronal-human-brain-specimen-segmented-gyrification-index-gi-specimen-cerebral-cortex-gyri-specimen-jpg>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-cross-species-log-log-power-law-exponent-alpha-lambda-h-alpha>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-gw38-l-bfgs-b-relaxed-neo-hookean-shell-gyrification-index-gi-sim>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-gw38-l-bfgs-b-relaxed-neo-hookean-shell-sulcal-wavelength-lambda-sim>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-polymicrogyria-vs-normogyria-sulcus-frequency-modulation-ratio-richman-et-al-1975>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-regional-thickness-gradient-sweep-emergent-anterior-posterior-wavelength-ratio-at-beta-0-3-h-2-08-3-12-mm>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-universal-dimensionless-sulcal-wavelength-to-thickness-invariant-lambda-h-across-11-mammals>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-zero-growth-lissencephaly-negative-control-gyrification-index-g-g-c-vs-gw38>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-morphometric-validation-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-morphometric-validation-2> ;
+        pk:hasScore "0.68"^^xsd:double ;
+        pk:hasVerdict "mostly faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-11-species-mammalian-gyrification-index-scaling-correlation-tallinen-2014-mota-2015> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "11-species mammalian gyrification index scaling correlation (Tallinen 2014 / Mota 2015) = 0.9985 Pearson r" ;
+        dct:description "RMSE = 0.0511, p=1.30e-12" ;
+        schema:measurementTechnique "Linear correlation of relaxed neo-Hookean shell GI_sim vs empirical GI_obs across 11 mammalian species (p=1.30e-12, RMSE=0.0511)" ;
+        schema:name "11-species mammalian gyrification index scaling correlation (Tallinen 2014 / Mota 2015)" ;
+        schema:unitText "Pearson r" ;
+        schema:value "0.9985" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-11-species-mammalian-gyrification-index-scaling-correlation-tallinen-2014-mota-2015-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-11-species-mammalian-gyrification-index-scaling-correlation-tallinen-2014-mota-2015-reference> a schema:PropertyValue ;
+        dct:source "Tallinen et al. (2014) PNAS 111:12667-12672 & Mota & Herculano-Houzel (2015) Science 349:74-77" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-11-species-mammalian-sulcal-wavelength-scaling-correlation-richman-1975-tallinen-2014> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "11-species mammalian sulcal wavelength scaling correlation (Richman 1975 / Tallinen 2014) = 1.0 Pearson r" ;
+        dct:description "RMSE = 0.0130 mm, p=1.25e-25" ;
+        schema:measurementTechnique "Linear regression of predicted 2*pi*h*(mu_c/(3*mu_s))^(1/3) vs measured wavelength across 11 mammalian species (p=1.25e-25, RMSE=0.0130 mm)" ;
+        schema:name "11-species mammalian sulcal wavelength scaling correlation (Richman 1975 / Tallinen 2014)" ;
+        schema:unitText "Pearson r" ;
+        schema:value "1.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-11-species-mammalian-sulcal-wavelength-scaling-correlation-richman-1975-tallinen-2014-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-11-species-mammalian-sulcal-wavelength-scaling-correlation-richman-1975-tallinen-2014-reference> a schema:PropertyValue ;
+        dct:source "Richman et al. (1975) Science 189:18-21 & Tallinen et al. (2014) PNAS 111:12667-12672 Fig. 3-4" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-crease-wall-gyrification-index-gi-3d-1-l-zero-d-mean-a-hull-at-gw38-hemispheric-gsh-planform> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "3D crease-wall gyrification index GI_3D = 1 + L_zero * d_mean / A_hull at GW38 (hemispheric GSH planform) = 2.6045 A_pial / A_hull" ;
+        dct:description "Depth amplitude is NOT emergent in the GSH surrogate (imported from the 2D shell); only the fundus length is emergent" ;
+        schema:measurementTechnique "Emergent u=0 iso-contour length L_zero = 5482 mm (fundus length 2741 mm) on the ellipsoid (A_hull = 29962 mm^2) x mean sulcal depth 8.77 mm imported from the 2D coronal solver; smooth-surface area ratio lower bound = 2.1724" ;
+        schema:name "3D crease-wall gyrification index GI_3D = 1 + L_zero * d_mean / A_hull at GW38 (hemispheric GSH planform)" ;
+        schema:unitText "A_pial / A_hull" ;
+        schema:value "2.6045" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-crease-wall-gyrification-index-gi-3d-1-l-zero-d-mean-a-hull-at-gw38-hemispheric-gsh-planform-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-crease-wall-gyrification-index-gi-3d-1-l-zero-d-mean-a-hull-at-gw38-hemispheric-gsh-planform-reference> a schema:PropertyValue ;
+        dct:source "Zilles et al. (1988) Anat. Embryol. 179:173-179 (human GI 2.56 +/- 0.08); Tallinen et al. (2016) Nature Physics area-based GI" ;
+        schema:value "2.56" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-gsh-subcritical-null-y-junctions-and-gi-3d-at-gw22-g-1-12-g-c> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "3D GSH subcritical null: Y-junctions and GI_3D at GW22 (g = 1.12 <= g_c) = 0.0 junction count + (GI_3D - 1)" ;
+        dct:description "GW22 u_rms = 0.0000" ;
+        schema:measurementTechnique "sigma(k) = -(1 - k^2/k_c^2)^2 <= 0 for all k when eps = 0, so the seeded white noise decays and no sulcal network forms (0 junctions, GI_3D = 1)" ;
+        schema:name "3D GSH subcritical null: Y-junctions and GI_3D at GW22 (g = 1.12 <= g_c)" ;
+        schema:unitText "junction count + (GI_3D - 1)" ;
+        schema:value "0.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-gsh-subcritical-null-y-junctions-and-gi-3d-at-gw22-g-1-12-g-c-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-gsh-subcritical-null-y-junctions-and-gi-3d-at-gw22-g-1-12-g-c-reference> a schema:PropertyValue ;
+        dct:source "Tallinen et al. (2014) PNAS Fig. 2 lissencephalic baseline (g <= g_c); Lean `MathOfBiology.Loop_061.swift_hohenberg_fastest_mode`" ;
+        schema:value "0.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-gsh-sulcal-network-percolation-across-ontogeny-largest-sulcal-component-fraction-gw38-gw26> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "3D GSH sulcal-network percolation across ontogeny: largest sulcal component fraction GW38 / GW26 = 4.2001 ratio" ;
+        dct:description "Lower bound reference (ratio must exceed 1 for a dimple -> labyrinth transition); no quantitative empirical value for the fetal brain is available offline" ;
+        schema:measurementTechnique "Largest connected sulcal (u > 0.15 u_rms) component as a fraction of total sulcal area in |lat| <= 60 deg: GW26 = 0.0214 (178 components), GW38 = 0.0899 (40 components)" ;
+        schema:name "3D GSH sulcal-network percolation across ontogeny: largest sulcal component fraction GW38 / GW26" ;
+        schema:unitText "ratio" ;
+        schema:value "4.2001" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-gsh-sulcal-network-percolation-across-ontogeny-largest-sulcal-component-fraction-gw38-gw26-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-gsh-sulcal-network-percolation-across-ontogeny-largest-sulcal-component-fraction-gw38-gw26-reference> a schema:PropertyValue ;
+        dct:source "Stoop et al. (2015) Nature Materials: hexagonal dimple phase (isolated pits) at low overstress -> connected labyrinth at high overstress; ratio > 1 expected" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-hemispheric-gsh-surface-gw38-emergent-sulcal-wavelength-lambda-3d-cotangent-laplace-beltrami-10242-nodes> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "3D hemispheric GSH surface GW38 emergent sulcal wavelength lambda_3D (cotangent Laplace-Beltrami, 10242 nodes) = 11.4117 mm" ;
+        dct:description "k_c is imposed by the GSH operator, so this is a consistency check of the nonlinear planform (no wavelength locking / coarsening), not an independent validation" ;
+        schema:measurementTechnique "k_loc^2 = -<u Delta u>/<u^2> over the whole ellipsoid surface of the relaxed generalized Swift-Hohenberg field at GW38 (eps=0.500, g2=0.356, mean edge 1.89 mm, 320 semi-implicit steps)" ;
+        schema:name "3D hemispheric GSH surface GW38 emergent sulcal wavelength lambda_3D (cotangent Laplace-Beltrami, 10242 nodes)" ;
+        schema:unitText "mm" ;
+        schema:value "11.4117" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-hemispheric-gsh-surface-gw38-emergent-sulcal-wavelength-lambda-3d-cotangent-laplace-beltrami-10242-nodes-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-hemispheric-gsh-surface-gw38-emergent-sulcal-wavelength-lambda-3d-cotangent-laplace-beltrami-10242-nodes-reference> a schema:PropertyValue ;
+        dct:source "Richman et al. (1975) Science Eq. 1 lambda = 2*pi*h*(mu_c/3mu_s)^(1/3) at h = 2.60 mm (11.34 mm observed, Tallinen 2016)" ;
+        schema:value "11.3269" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-sulcal-y-junction-density-at-gw38-labyrinth-trivalent-skeleton-nodes-per-lambda-2-lat-60-deg> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "3D sulcal Y-junction density at GW38 labyrinth (trivalent skeleton nodes per lambda^2, |lat| <= 60 deg) = 0.599 junctions per lambda^2" ;
+        dct:description "GW26 dimple phase: 21 junctions over 178 isolated sulcal pits (0.112 per lambda^2); a labyrinth is a sub-honeycomb network so its density lies in (0, 2.31]" ;
+        schema:measurementTechnique "Skeletonised u > 0.15 u_rms sulcal planform on a 240x480 equirectangular raster, spurs pruned 5 px, junctions counted only on components with skeleton length >= lambda: n = 122 junctions, 62 endpoints over 26132 mm^2; sulcal components = 40" ;
+        schema:name "3D sulcal Y-junction density at GW38 labyrinth (trivalent skeleton nodes per lambda^2, |lat| <= 60 deg)" ;
+        schema:unitText "junctions per lambda^2" ;
+        schema:value "0.599" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-sulcal-y-junction-density-at-gw38-labyrinth-trivalent-skeleton-nodes-per-lambda-2-lat-60-deg-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-3d-sulcal-y-junction-density-at-gw38-labyrinth-trivalent-skeleton-nodes-per-lambda-2-lat-60-deg-reference> a schema:PropertyValue ;
+        dct:source "Upper bound: trivalent honeycomb network vertex density 4/(sqrt(3) lambda^2) = 2.3094 per lambda^2 (derivation in surface_sh_3d_reference.json); Stoop et al. (2015) Nature Materials labyrinth phase" ;
+        schema:value "2.3094" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-coronal-human-brain-specimen-segmented-gyrification-index-gi-specimen-cerebral-cortex-gyri-specimen-jpg> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Coronal human brain specimen segmented Gyrification Index GI_specimen (cerebral_cortex_gyri_specimen.jpg) = 2.8115 P_pial / P_hull" ;
+        dct:description "specimen inter-sulcal spacing = 28.32 ± 9.16 px (CV=0.3236)" ;
+        schema:measurementTechnique "Segmented pial + sulcal cleft perimeter P_pial (4923.0 px) over convex hull P_hull (1751.0 px) across n=52 sulci in ROI" ;
+        schema:name "Coronal human brain specimen segmented Gyrification Index GI_specimen (cerebral_cortex_gyri_specimen.jpg)" ;
+        schema:unitText "P_pial / P_hull" ;
+        schema:value "2.8115" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-coronal-human-brain-specimen-segmented-gyrification-index-gi-specimen-cerebral-cortex-gyri-specimen-jpg-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-coronal-human-brain-specimen-segmented-gyrification-index-gi-specimen-cerebral-cortex-gyri-specimen-jpg-reference> a schema:PropertyValue ;
+        dct:source "Zilles et al. (1988) Anat. Embryol. 179:173-179 human coronal section GI (2.56 ± 0.08)" ;
+        schema:value "2.56" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-cross-species-log-log-power-law-exponent-alpha-lambda-h-alpha> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Cross-species log-log power-law exponent alpha (lambda ~ h^alpha) = 0.9991 exponent" ;
+        dct:description "dimensionless ratio lambda/h = 4.3639 (CV=0.0007)" ;
+        schema:measurementTechnique "Log-log OLS slope of log(lambda_obs) vs log(h_cortex) across 11 mammalian species (SE ± 0.0007)" ;
+        schema:name "Cross-species log-log power-law exponent alpha (lambda ~ h^alpha)" ;
+        schema:unitText "exponent" ;
+        schema:value "0.9991" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-cross-species-log-log-power-law-exponent-alpha-lambda-h-alpha-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-cross-species-log-log-power-law-exponent-alpha-lambda-h-alpha-reference> a schema:PropertyValue ;
+        dct:source "Richman et al. (1975) Science 189:18-21 Eq. 1 (lambda ~ h^1.0 at constant stiffness ratio)" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-gw38-l-bfgs-b-relaxed-neo-hookean-shell-gyrification-index-gi-sim> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Human GW38 L-BFGS-B relaxed neo-Hookean shell gyrification index GI_sim = 2.5606 P_pial / P_hull" ;
+        dct:description "mean sulcal depth = 8.769 mm across 28 sulci" ;
+        schema:measurementTechnique "Ratio of relaxed pial perimeter P_pial to outer convex hull perimeter P_hull at GW38 (g=2.15, h=2.60 mm)" ;
+        schema:name "Human GW38 L-BFGS-B relaxed neo-Hookean shell gyrification index GI_sim" ;
+        schema:unitText "P_pial / P_hull" ;
+        schema:value "2.5606" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-gw38-l-bfgs-b-relaxed-neo-hookean-shell-gyrification-index-gi-sim-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-gw38-l-bfgs-b-relaxed-neo-hookean-shell-gyrification-index-gi-sim-reference> a schema:PropertyValue ;
+        dct:source "Zilles et al. (1988) Anat. Embryol. 179:173-179 & Tallinen et al. (2016) Nature Physics Fig. 3 (GI=2.56)" ;
+        schema:value "2.56" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-gw38-l-bfgs-b-relaxed-neo-hookean-shell-sulcal-wavelength-lambda-sim> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Human GW38 L-BFGS-B relaxed neo-Hookean shell sulcal wavelength lambda_sim = 11.2376 mm" ;
+        dct:description "energy drop ratio = 1.0000" ;
+        schema:measurementTechnique "Emergent sulcal spacing P_hull / N_sulci of 240-node L-BFGS-B relaxed neo-Hookean cortical shell at GW38 (h=2.60 mm, g=2.15)" ;
+        schema:name "Human GW38 L-BFGS-B relaxed neo-Hookean shell sulcal wavelength lambda_sim" ;
+        schema:unitText "mm" ;
+        schema:value "11.2376" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-gw38-l-bfgs-b-relaxed-neo-hookean-shell-sulcal-wavelength-lambda-sim-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-human-gw38-l-bfgs-b-relaxed-neo-hookean-shell-sulcal-wavelength-lambda-sim-reference> a schema:PropertyValue ;
+        dct:source "Tallinen et al. (2016) Nature Physics 12:588-593 & Richman et al. (1975) Science Table 1 (11.34 mm)" ;
+        schema:value "11.34" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-polymicrogyria-vs-normogyria-sulcus-frequency-modulation-ratio-richman-et-al-1975> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Polymicrogyria vs Normogyria sulcus frequency modulation ratio (Richman et al. 1975) = 3.0357 ratio (N_poly / N_norm)" ;
+        dct:description "polymicrogyria sulci=85 (lambda=3.70 mm) vs normal sulci=28 (lambda=11.24 mm)" ;
+        schema:measurementTechnique "Ratio of simulated coronal sulcus counts in thin-cortex polymicrogyria (h=0.85 mm) vs normal human cortex (h=2.60 mm)" ;
+        schema:name "Polymicrogyria vs Normogyria sulcus frequency modulation ratio (Richman et al. 1975)" ;
+        schema:unitText "ratio (N_poly / N_norm)" ;
+        schema:value "3.0357" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-polymicrogyria-vs-normogyria-sulcus-frequency-modulation-ratio-richman-et-al-1975-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-polymicrogyria-vs-normogyria-sulcus-frequency-modulation-ratio-richman-et-al-1975-reference> a schema:PropertyValue ;
+        dct:source "Richman et al. (1975) Science 189:18-21 Table 1 (microgyric h=0.85 mm vs normal h=2.60 mm)" ;
+        schema:value "3.0357" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-regional-thickness-gradient-sweep-emergent-anterior-posterior-wavelength-ratio-at-beta-0-3-h-2-08-3-12-mm> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Regional thickness-gradient sweep: emergent anterior/posterior wavelength ratio at beta = 0.3 (h 2.08 -> 3.12 mm) = 1.4972 lambda_ant / lambda_post" ;
+        dct:description "Tests that the nonlinear planform adapts to a smooth 1.5x thickness gradient without wavelength locking; the local k_c(x) is imposed, so agreement is a consistency check" ;
+        schema:measurementTechnique "Independent k_loc estimates in the anterior (x/a > 1/3) and posterior (x/a < -1/3) thirds of the GW38 ellipsoid with h(x) = 2.60 (1 + 0.3 x/a) mm: lambda_ant = 13.54 mm, lambda_post = 9.04 mm; 4-point sweep beta in {0, 0.1, 0.2, 0.3} slope = 1.0059 +/- 0.0057, r = 1.0000, RMSE = 0.0066" ;
+        schema:name "Regional thickness-gradient sweep: emergent anterior/posterior wavelength ratio at beta = 0.3 (h 2.08 -> 3.12 mm)" ;
+        schema:unitText "lambda_ant / lambda_post" ;
+        schema:value "1.4972" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-regional-thickness-gradient-sweep-emergent-anterior-posterior-wavelength-ratio-at-beta-0-3-h-2-08-3-12-mm-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-regional-thickness-gradient-sweep-emergent-anterior-posterior-wavelength-ratio-at-beta-0-3-h-2-08-3-12-mm-reference> a schema:PropertyValue ;
+        dct:source "Richman et al. (1975) law applied regionally, lambda_ant/lambda_post = h_ant/h_post (Lean `regional_wavelength_tracks_thickness`); thickness range after Fischl & Dale (2000) PNAS 97:11050-11055" ;
+        schema:value "1.501" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-universal-dimensionless-sulcal-wavelength-to-thickness-invariant-lambda-h-across-11-mammals> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Universal dimensionless sulcal wavelength-to-thickness invariant lambda / h across 11 mammals = 4.3639 dimensionless ratio" ;
+        dct:description "specimen sulcal spacing CV = 0.3236" ;
+        schema:measurementTechnique "Mean observed lambda / h across 11 mammalian species at mu_c/mu_s = 1.0 (CV = 0.0007)" ;
+        schema:name "Universal dimensionless sulcal wavelength-to-thickness invariant lambda / h across 11 mammals" ;
+        schema:unitText "dimensionless ratio" ;
+        schema:value "4.3639" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-universal-dimensionless-sulcal-wavelength-to-thickness-invariant-lambda-h-across-11-mammals-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-universal-dimensionless-sulcal-wavelength-to-thickness-invariant-lambda-h-across-11-mammals-reference> a schema:PropertyValue ;
+        dct:source "Richman et al. (1975) Science Eq. 1 & Tallinen et al. (2014) PNAS (2*pi*(1/3)^(1/3) = 4.3633)" ;
+        schema:value "4.3565" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-zero-growth-lissencephaly-negative-control-gyrification-index-g-g-c-vs-gw38> a schema:PropertyValue,
+            pk:EvidenceItem ;
+        rdfs:label "Zero-growth & lissencephaly negative control gyrification index (g <= g_c vs GW38) = 1.0 P_pial / P_hull" ;
+        dct:description "ablation sulci = 0 vs normogyric GW38 GI = 2.5606" ;
+        schema:measurementTechnique "L-BFGS-B coronal shell GI under zero differential expansion control (g=1.00 <= g_c=1.18) vs wild-type GW38 control" ;
+        schema:name "Zero-growth & lissencephaly negative control gyrification index (g <= g_c vs GW38)" ;
+        schema:unitText "P_pial / P_hull" ;
+        schema:value "1.0" ;
+        schema:valueReference <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-zero-growth-lissencephaly-negative-control-gyrification-index-g-g-c-vs-gw38-reference> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-measurement-zero-growth-lissencephaly-negative-control-gyrification-index-g-g-c-vs-gw38-reference> a schema:PropertyValue ;
+        dct:source "Tallinen et al. (2014) PNAS Fig. 2 & Richman et al. (1975) Science lissencephalic unfolded baseline (GI = 1.0)" ;
+        schema:value "1.0" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-morphometric-validation-1> a pk:EvidenceItem ;
+        rdfs:label "1975-richman-cortical-gyrification-buckling.py L1572–L1743" ;
+        dct:description "15 measurements with p-values, RMSE, SE, CV; 6 Pass 3 entries carry explicit 'consistency check' / 'depth not emergent' caveats" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/1975-richman-cortical-gyrification-buckling.py#L1572-L1743> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-morphometric-validation-2> a pk:EvidenceItem ;
+        rdfs:label "1975-richman-cortical-gyrification-buckling.py L1703–L1722" ;
+        dct:description "Y-junction density (reference = honeycomb upper bound only) and exact GW22 subcritical null" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/1975-richman-cortical-gyrification-buckling.py#L1703-L1722> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 061 Pass 3 Phase B Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/61> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/BF00304699>,
+            <https://doi.org/10.1038/nmat4202>,
+            <https://doi.org/10.1038/nphys3632>,
+            <https://doi.org/10.1073/pnas.1406015111>,
+            <https://doi.org/10.1073/pnas.200033797>,
+            <https://doi.org/10.1103/RevModPhys.65.851>,
+            <https://doi.org/10.1126/science.1145181>,
+            <https://doi.org/10.1126/science.aaa9101> .
+    <https://doi.org/10.1007/BF00304699> dct:date "1988"^^xsd:gYear ;
+        dct:title "The human pattern of gyrification in the cerebral cortex" .
+    <https://doi.org/10.1038/nmat4202> dct:date "2015"^^xsd:gYear ;
+        dct:title "Curvature-induced symmetry breaking determines elastic surface patterns" .
+    <https://doi.org/10.1038/nphys3632> dct:date "2016"^^xsd:gYear ;
+        dct:title "On the growth and form of cortical convolutions" .
+    <https://doi.org/10.1073/pnas.1406015111> dct:date "2014"^^xsd:gYear ;
+        dct:title "Gyrification from constrained cortical expansion: Synthesis of physical and numerical models" .
+    <https://doi.org/10.1073/pnas.200033797> dct:date "2000"^^xsd:gYear ;
+        dct:title "Measuring the thickness of the human cerebral cortex from magnetic resonance images" .
+    <https://doi.org/10.1103/RevModPhys.65.851> dct:date "1993"^^xsd:gYear ;
+        dct:title "Pattern formation outside of equilibrium" .
+    <https://doi.org/10.1126/science.1145181> dct:date "1975"^^xsd:gYear ;
+        dct:title "Mechanical model of brain convolutional development" .
+    <https://doi.org/10.1126/science.aaa9101> dct:date "2015"^^xsd:gYear ;
+        dct:title "Cortical folding scales universally with surface area and thickness, not number of neurons" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Richman et al. (1975) & Tallinen et al. (2014, 2016) neo-Hookean constrained cortical expansion and sulcal creasing instability, with a Pass 3 3D hemispheric Swift-Hohenberg surface surrogate — Morphometric validation 68/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T18:19:01Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-morphometric-validation> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/61> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

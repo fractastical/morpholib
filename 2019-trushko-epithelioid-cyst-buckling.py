@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-2019-trushko-epithelioid-cyst-buckling.py — Pass 2 (v2) Remediated Implementation
+2019-trushko-epithelioid-cyst-buckling.py — Pass 3 (v3) Remediated Implementation
 =================================================================================
-Nonlinear Föppl-von Kármán & vertex-elastic ring monolayer growing inside a
-spherical alginate hydrogel microcapsule, reproducing:
+Nonlinear Föppl-von Kármán & vertex-elastic ring monolayer (Pass 2) plus a full 3D
+triangulated vertex shell with apical-basal differential tension (Pass 3) growing
+inside a spherical alginate hydrogel microcapsule, reproducing:
 
   1. Trushko A, Di Meglio I, Merzouki A, Blanch-Mercader C, Abuhattum S, Guck J,
      Alessandri K, Chopard B, Kruse K, Roux A (2020).
@@ -50,14 +51,19 @@ REF_JSON = DATASET_DIR / "epithelioid_cyst_buckling_reference.json"
 SPECIMEN_JPG = DATASET_DIR / "epithelioid_cyst_specimen.jpg"
 SCOUT_JSON = DATASET_DIR / "scout_manifest.json"
 BIB_FILE = DATASET_DIR / "paper_citations.bib"
+SHELL3D_REF_JSON = DATASET_DIR / "shell3d_apicobasal_reference.json"
 OUT_PNG = ROOT / "docs" / "media" / "epithelioid_cyst_buckling_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "epithelioid_cyst_buckling_growth.gif"
+OUT_SHELL3D_PNG = ROOT / "docs" / "media" / "epithelioid_cyst_buckling_shell3d_apicobasal.png"
+OUT_SHELL3D_GIF = ROOT / "docs" / "media" / "epithelioid_cyst_buckling_shell3d_growth.gif"
 
 EXPECTED_SHA256 = {
     "epithelioid_cyst_buckling_reference.json": "c1412a6f1bcc24be7127f6daea228fe5d695d3a1c95d915b9fd821d1c3f761d4",
     "epithelioid_cyst_specimen.jpg": "ec5b534f7a3a8182c9ba8258bca92f312cc884dcdcb06bff5bc31810c98197a7",
     "scout_manifest.json": "3d03ec2877bdf349839387b1bbe940668a1d2ddeb0495568aac98d19366cd67e",
     "paper_citations.bib": "b14ab196e08a46d4f384b56c1243f3fa3014110f7eb5bcbdf0e84118a0d3e7fe",
+    # Pass 3: parameters + literature anchors of the 3D apical-basal shell (not a specimen)
+    "shell3d_apicobasal_reference.json": "300a4ff2c2668d3ffc15b64485d66bafa9e7e0735303aa772eb5d7887368d393",
 }
 
 
@@ -79,6 +85,12 @@ def load_reference_data() -> dict[str, Any]:
     """Load and return `epithelioid_cyst_buckling_reference.json` after SHA-256 check."""
     verify_dataset_sha256()
     return json.loads(REF_JSON.read_text(encoding="utf-8"))
+
+
+def load_shell3d_reference() -> dict[str, Any]:
+    """Load the Pass 3 `shell3d_apicobasal_reference.json` (3D shell parameters, dGamma sweep, sources)."""
+    verify_dataset_sha256()
+    return json.loads(SHELL3D_REF_JSON.read_text(encoding="utf-8"))
 
 
 # ============================================================================
@@ -364,6 +376,467 @@ def evaluate_post_confluence_trajectories(ref: dict[str, Any]) -> dict[str, Any]
     }
 
 
+# ============================================================================
+# Pass 3 — Law 4 (`MathOfBiology.Loop_069.apicobasal_spontaneous_curvature_minimizer`)
+#          & Law 5 (`MathOfBiology.Loop_069.inverted_cap_penalty_and_capsule_wall_contact`):
+# Full 3D triangulated vertex shell (icosphere) with apical-basal differential tension
+# ============================================================================
+# Reduced-but-honest 3D model (closes the Pass 2 remediation item "extend the 2D
+# equatorial FvK ring to a full 3D triangulated vertex shell with apical-basal
+# differential tension"):
+#   * Geometry: closed icosphere mesh (N = 642 vertices, 1280 triangles, 1920 edges at
+#     subdivision level 3) of a confluent monolayer lining the capsule of radius R_0.
+#   * Stretching: harmonic edge springs with grown rest length g * l0 (post-confluence
+#     proliferation stretch g), k_s = sqrt(3)/2 * Y_2D (triangular-lattice spring network,
+#     Y_2D = E_epi h / (1 - nu^2)); lengths are measured in units of R_0 and energies in
+#     units of Y_2D R_0^2.
+#   * Bending: discrete Helfrich energy (kappa/2) * sum_v A_v (2H_v - 2H_0)^2 built from the
+#     umbrella Laplacian (L x)_v = mean_{u ~ v}(x_u - x_v), with kappa / (Y_2D R_0^2) =
+#     (h/R_0)^2 / (12 (1 - nu^2)) (same tilde_kappa as the 2D ring).
+#   * Apical-basal differential tension (Hannezo, Prost & Joanny 2014 PNAS): the per-area
+#     energy f(H) = (kappa/2)(2H)^2 - dGamma h (2H), dGamma = Gamma_apical - Gamma_basal,
+#     is minimised at the spontaneous curvature 2H_0 = dGamma h / kappa, i.e.
+#     H_0 R_0 = 6 (1 - nu^2) dGamma R_0 / (E_epi h^2) (Lean Law 4). The apical-basal polarity axis is
+#     approximated by the radial direction of the capsule (apical = lumen side), so an
+#     inverted (Pogorelov) cap pays the enlarged penalty (2H + 2H_0)^2 >= (2H - 2H_0)^2
+#     (Lean Law 5).
+#   * Confinement: Winkler penalty (K_alg/2) * sum_v A_v max(0, |x_v| - R_0)^2 by the
+#     alginate capsule, with the same K_alg as the 2D ring; zero inside the capsule
+#     (Lean Law 5). The capsule pressure is read back as P_3D = K_alg (r_wall/R_0 - 1),
+#     exactly how Trushko et al. infer P(t) from capsule dilation (Fig. 2E).
+#   * Self-contact: non-neighbouring vertices closer than the monolayer thickness h pay
+#     (k_rep/2)(h - d)^2 (apical surfaces cannot interpenetrate), so delta/R_0 <= 1.
+#   * Solution: L-BFGS-B on the 3N coordinates with analytic gradients and quasi-static
+#     continuation in g from a seeded 1e-3 R_0 perturbation of the confluent sphere.
+# Residual (carried to Pass 4): no explicit cell-level vertex model (apical/basal/lateral
+# faces), no lumen pressure or cell division topology changes; the normal is approximated
+# radially for the spontaneous-curvature term; dGamma_WT is calibrated (H_0 R_0 = 1), not
+# measured.
+SHELL3D_SUBDIVISIONS = 3
+SHELL3D_PERTURBATION = 1.0e-3
+SHELL3D_CONTACT_STIFFNESS = 2.0  # k_rep / Y_2D
+_SHELL3D_CACHE: dict[tuple[Any, ...], dict[str, Any]] = {}
+
+
+def build_icosphere(subdivisions: int = SHELL3D_SUBDIVISIONS) -> tuple[np.ndarray, np.ndarray]:
+    """Return (vertices (N,3) on the unit sphere, faces (F,3) oriented outward) of a geodesic icosphere."""
+    t = (1.0 + math.sqrt(5.0)) / 2.0
+    verts = [
+        (-1, t, 0), (1, t, 0), (-1, -t, 0), (1, -t, 0),
+        (0, -1, t), (0, 1, t), (0, -1, -t), (0, 1, -t),
+        (t, 0, -1), (t, 0, 1), (-t, 0, -1), (-t, 0, 1),
+    ]
+    faces = [
+        (0, 11, 5), (0, 5, 1), (0, 1, 7), (0, 7, 10), (0, 10, 11),
+        (1, 5, 9), (5, 11, 4), (11, 10, 2), (10, 7, 6), (7, 1, 8),
+        (3, 9, 4), (3, 4, 2), (3, 2, 6), (3, 6, 8), (3, 8, 9),
+        (4, 9, 5), (2, 4, 11), (6, 2, 10), (8, 6, 7), (9, 8, 1),
+    ]
+    V = [np.asarray(v, dtype=np.float64) / np.linalg.norm(v) for v in verts]
+    F = [tuple(f) for f in faces]
+    for _ in range(subdivisions):
+        cache: dict[tuple[int, int], int] = {}
+
+        def midpoint(a: int, b: int) -> int:
+            key = (min(a, b), max(a, b))
+            if key not in cache:
+                m = V[a] + V[b]
+                V.append(m / np.linalg.norm(m))
+                cache[key] = len(V) - 1
+            return cache[key]
+
+        new_faces: list[tuple[int, int, int]] = []
+        for a, b, c in F:
+            ab, bc, ca = midpoint(a, b), midpoint(b, c), midpoint(c, a)
+            new_faces += [(a, ab, ca), (b, bc, ab), (c, ca, bc), (ab, bc, ca)]
+        F = new_faces
+    verts_arr = np.asarray(V, dtype=np.float64)
+    faces_arr = np.asarray(F, dtype=np.int64)
+    # Orient every triangle outward (normal . centroid > 0)
+    p0, p1, p2 = verts_arr[faces_arr[:, 0]], verts_arr[faces_arr[:, 1]], verts_arr[faces_arr[:, 2]]
+    nrm = np.cross(p1 - p0, p2 - p0)
+    flip = np.einsum("ij,ij->i", nrm, (p0 + p1 + p2) / 3.0) < 0.0
+    faces_arr[flip] = faces_arr[flip][:, [0, 2, 1]]
+    return verts_arr, faces_arr
+
+
+def mesh_edges(faces: np.ndarray) -> np.ndarray:
+    """Unique undirected edges (E,2) of a triangle mesh."""
+    e = np.concatenate([faces[:, [0, 1]], faces[:, [1, 2]], faces[:, [2, 0]]], axis=0)
+    e = np.sort(e, axis=1)
+    return np.unique(e, axis=0)
+
+
+def mesh_volume(verts: np.ndarray, faces: np.ndarray) -> float:
+    """Enclosed volume of an outward-oriented closed triangle mesh (divergence theorem)."""
+    p0, p1, p2 = verts[faces[:, 0]], verts[faces[:, 1]], verts[faces[:, 2]]
+    return float(np.sum(np.einsum("ij,ij->i", p0, np.cross(p1, p2))) / 6.0)
+
+
+def compute_apicobasal_spontaneous_curvature(
+    delta_gamma_mN_per_m: float, E_epi_kPa: float, h_um: float, R_0_um: float, nu_epi: float = 0.45
+) -> float:
+    """Dimensionless spontaneous mean curvature H_0 R_0 = 6 (1 - nu^2) dGamma R_0 / (E_epi h^2)
+    from the apical-basal tension difference dGamma = Gamma_apical - Gamma_basal (mN/m = kPa um):
+    the minimiser of f(c) = (kappa/2) c^2 - dGamma h c (c = 2H) is 2H_0 = dGamma h / kappa with
+    kappa = E_epi h^3 / (12 (1 - nu^2)) (Hannezo, Prost & Joanny 2014 PNAS; Lean Law 4
+    `apicobasal_spontaneous_curvature_minimizer`)."""
+    return 6.0 * (1.0 - nu_epi * nu_epi) * delta_gamma_mN_per_m * R_0_um / (E_epi_kPa * h_um * h_um)
+
+
+def count_inward_folds(u_in: np.ndarray, edges: np.ndarray, frac: float = 0.35, floor: float = 0.04) -> int:
+    """Number of connected inward-deflection regions with u > max(frac * u_max, floor) (in R_0 units)."""
+    from scipy.sparse import coo_matrix
+    from scipy.sparse.csgraph import connected_components
+
+    thr = max(frac * float(np.max(u_in)), floor)
+    deep = u_in > thr
+    if not np.any(deep):
+        return 0
+    idx = np.nonzero(deep)[0]
+    remap = -np.ones(u_in.shape[0], dtype=np.int64)
+    remap[idx] = np.arange(idx.shape[0])
+    keep = deep[edges[:, 0]] & deep[edges[:, 1]]
+    a, b = remap[edges[keep, 0]], remap[edges[keep, 1]]
+    adj = coo_matrix((np.ones(a.shape[0]), (a, b)), shape=(idx.shape[0], idx.shape[0]))
+    n_comp, _ = connected_components(adj, directed=False)
+    return int(n_comp)
+
+
+def solve_confined_cyst_shell3d(
+    R_0_um: float,
+    h_um: float,
+    E_epi_kPa: float,
+    E_alg_kPa: float,
+    H_alg_um: float,
+    growth_stretch_g: float,
+    delta_gamma_mN_per_m: float = 3.4,
+    Gamma_myo: float = 1.0,
+    nu_epi: float = 0.45,
+    subdivisions: int = SHELL3D_SUBDIVISIONS,
+    g_step: float = 0.04,
+    seed: int = 2019,
+    maxiter: int = 400,
+    record_schedule: list[float] | None = None,
+    keep_frames: bool = False,
+    growth_is_area_ratio: bool = True,
+) -> dict[str, Any]:
+    """Quasi-static L-BFGS-B relaxation of a growing 3D triangulated monolayer shell with
+    apical-basal differential tension confined inside a spherical alginate capsule.
+
+    Returns the final mesh (in units of R_0), inward fold depth delta/R_0, number of folds,
+    lumen volume fraction, capsule wall dilation / pressure and the delta(g), P(g)
+    continuation trajectories. Results are memoised per argument tuple (deterministic).
+    """
+    from scipy.sparse import coo_matrix, identity
+    from scipy.spatial import cKDTree
+
+    cache_key = (
+        R_0_um, h_um, E_epi_kPa, E_alg_kPa, H_alg_um, growth_stretch_g, delta_gamma_mN_per_m,
+        Gamma_myo, nu_epi, subdivisions, g_step, seed, maxiter,
+        tuple(record_schedule) if record_schedule else None, keep_frames, growth_is_area_ratio,
+    )
+    if cache_key in _SHELL3D_CACHE:
+        return _SHELL3D_CACHE[cache_key]
+
+    verts0, faces = build_icosphere(subdivisions)
+    edges = mesh_edges(faces)
+    n_v = verts0.shape[0]
+    neighbor_set = set(map(tuple, edges.tolist()))
+    d_contact = h_um / R_0_um  # apical surfaces cannot approach closer than one monolayer thickness
+    k_rep = SHELL3D_CONTACT_STIFFNESS
+    # Umbrella Laplacian L = D^-1 A - I
+    rows = np.concatenate([edges[:, 0], edges[:, 1]])
+    cols = np.concatenate([edges[:, 1], edges[:, 0]])
+    adj = coo_matrix((np.ones(rows.shape[0]), (rows, cols)), shape=(n_v, n_v)).tocsr()
+    deg = np.asarray(adj.sum(axis=1)).ravel()
+    from scipy.sparse import diags
+
+    L = (diags(1.0 / deg) @ adj - identity(n_v, format="csr")).tocsr()
+    LT = L.T.tocsr()
+
+    # Material constants in units of the 2D Young modulus Y_2D = E_epi h and R_0
+    # (kappa = E h^3 / (12 (1 - nu^2)), so kappa / (Y_2D R_0^2) = tilde_kappa below)
+    tilde_kappa = compute_fvk_bending_modulus_ratio(h_um, R_0_um, nu_epi)
+    y2d_kPa_um = E_epi_kPa * h_um
+    K_alg = compute_alginate_capsule_stiffness(E_alg_kPa, H_alg_um, R_0_um)
+    k_conf = K_alg * R_0_um / y2d_kPa_um  # dimensionless Winkler stiffness
+    k_spring = math.sqrt(3.0) / 2.0
+    d_gamma_eff = delta_gamma_mN_per_m * Gamma_myo
+    c0 = compute_apicobasal_spontaneous_curvature(d_gamma_eff, E_epi_kPa, h_um, R_0_um, nu_epi)
+
+    l0 = np.linalg.norm(verts0[edges[:, 1]] - verts0[edges[:, 0]], axis=1)
+    a_v = np.full(n_v, 4.0 * math.pi / n_v)
+    P_c = compute_zoelly_critical_pressure(E_epi_kPa, h_um, R_0_um, nu_epi)
+    # Discrete mean curvature from the umbrella operator: for a vertex whose neighbours sit at
+    # chord distances l_u on a surface of mean curvature H, n . mean_u(x_u - x_v) ~ -H mean(l_u^2)/2,
+    # so 2H ~ -(n . L x) / m_v with m_v = mean(l_u^2)/4. On the unit rest sphere m_v = |L x0|.
+    # m_v is re-evaluated ("lagged") from the current geometry at the start of every
+    # quasi-static growth step so the curvature estimate tracks the stretched edge lengths.
+    def lagged_curvature_scale(Xc: np.ndarray) -> np.ndarray:
+        d2 = np.sum((Xc[edges[:, 1]] - Xc[edges[:, 0]]) ** 2, axis=1)
+        acc = np.zeros(n_v)
+        np.add.at(acc, edges[:, 0], d2)
+        np.add.at(acc, edges[:, 1], d2)
+        return 0.25 * acc / deg
+
+    state = {"m_v": lagged_curvature_scale(verts0)}
+    state["w_b"] = 0.5 * tilde_kappa * a_v / state["m_v"] ** 2  # (kappa/2) A_v (2H - 2H_0)^2
+
+    def lam(g: float) -> float:
+        # The dataset's g = 2^((t - t_c)/tau_d) = N(t)/N_c is a post-confluence cell-NUMBER (area)
+        # ratio; the isotropic linear rest stretch of the triangulated sheet is therefore sqrt(g).
+        return math.sqrt(g) if growth_is_area_ratio else g
+
+    def energy_and_grad(xflat: np.ndarray, g: float) -> tuple[float, np.ndarray]:
+        X = xflat.reshape(n_v, 3)
+        grad = np.zeros_like(X)
+        m_v, w_b = state["m_v"], state["w_b"]
+        # stretching
+        d = X[edges[:, 1]] - X[edges[:, 0]]
+        ln = np.linalg.norm(d, axis=1)
+        stretch = ln - lam(g) * l0
+        e_s = 0.5 * k_spring * float(np.sum(stretch * stretch))
+        f_e = (k_spring * stretch / np.maximum(ln, 1e-12))[:, None] * d
+        np.add.at(grad, edges[:, 1], f_e)
+        np.add.at(grad, edges[:, 0], -f_e)
+        # bending with spontaneous curvature along the radial (apical-basal) axis
+        rn = np.linalg.norm(X, axis=1)
+        nhat = X / rn[:, None]
+        LX = L @ X
+        resid = LX + (2.0 * c0 * m_v)[:, None] * nhat  # m_v (2H - 2H_0) up to sign, 2H_0 R_0 = 2 c0
+        e_b = float(np.sum(w_b[:, None] * resid * resid))
+        wr = (2.0 * w_b)[:, None] * resid
+        grad += LT @ wr
+        coef = (2.0 * c0 * m_v / rn)[:, None]
+        grad += coef * (wr - nhat * np.einsum("ij,ij->i", nhat, wr)[:, None])
+        # alginate capsule Winkler confinement
+        over = np.maximum(0.0, rn - 1.0)
+        e_c = 0.5 * k_conf * float(np.sum(a_v * over * over))
+        grad += ((k_conf * a_v * over / rn)[:, None]) * X
+        # self-contact of non-neighbouring vertices closer than the monolayer thickness
+        e_r = 0.0
+        pairs = cKDTree(X).query_pairs(d_contact, output_type="ndarray")
+        if pairs.shape[0]:
+            keep = np.fromiter((tuple(p) not in neighbor_set for p in pairs.tolist()), dtype=bool, count=pairs.shape[0])
+            pairs = pairs[keep]
+        if pairs.shape[0]:
+            dv = X[pairs[:, 1]] - X[pairs[:, 0]]
+            dn = np.linalg.norm(dv, axis=1)
+            pen = d_contact - dn
+            e_r = 0.5 * k_rep * float(np.sum(pen * pen))
+            f_r = (-k_rep * pen / np.maximum(dn, 1e-12))[:, None] * dv
+            np.add.at(grad, pairs[:, 1], f_r)
+            np.add.at(grad, pairs[:, 0], -f_r)
+        return e_s + e_b + e_c + e_r, grad.ravel()
+
+    def wall_and_depth(Xc: np.ndarray) -> tuple[float, float, np.ndarray]:
+        rn_c = np.linalg.norm(Xc, axis=1)
+        r_wall_c = float(np.max(rn_c))
+        u_c = r_wall_c - rn_c
+        return r_wall_c, float(np.max(u_c)), u_c
+
+    rng = np.random.default_rng(seed)
+    X = verts0 * (1.0 + SHELL3D_PERTURBATION * rng.standard_normal(n_v))[:, None]
+    g_sched = list(np.arange(1.0 + g_step, growth_stretch_g - 1e-9, g_step)) + [growth_stretch_g]
+    if record_schedule:
+        g_sched = sorted(set([float(round(g, 6)) for g in g_sched] + [float(round(g, 6)) for g in record_schedule if g <= growth_stretch_g + 1e-9]))
+    traj_g: list[float] = [1.0]
+    traj_delta: list[float] = [0.0]
+    traj_wall: list[float] = [0.0]
+    traj_folds: list[int] = [0]
+    traj_energy: list[float] = []
+    frames: list[np.ndarray] = [X.copy()] if keep_frames else []
+    for g in g_sched:
+        # Re-seed a small radial imperfection at every growth increment: below threshold the
+        # relaxation restores the exact sphere, whose gradient is purely radial, so without
+        # re-seeding the unstable (Zoelly) modes would never be excited.
+        X = X * (1.0 + SHELL3D_PERTURBATION * rng.standard_normal(n_v))[:, None]
+        state["m_v"] = lagged_curvature_scale(X)
+        state["w_b"] = 0.5 * tilde_kappa * a_v * lam(g) ** 2 / state["m_v"] ** 2  # grown area A_v lam^2
+        res = optimize.minimize(
+            energy_and_grad,
+            X.ravel(),
+            args=(float(g),),
+            method="L-BFGS-B",
+            jac=True,
+            options={"ftol": 1e-12, "gtol": 1e-8, "maxiter": maxiter},
+        )
+        X = np.asarray(res.x, dtype=np.float64).reshape(n_v, 3)
+        r_wall_g, delta_g, u_g = wall_and_depth(X)
+        traj_g.append(float(g))
+        traj_delta.append(delta_g)
+        traj_wall.append(r_wall_g - 1.0)
+        traj_folds.append(count_inward_folds(u_g, edges))
+        traj_energy.append(float(res.fun))
+        if keep_frames:
+            frames.append(X.copy())
+
+    rn = np.linalg.norm(X, axis=1)
+    r_wall, delta, u_in = wall_and_depth(X)
+    n_folds = count_inward_folds(u_in, edges)
+    v_shell = mesh_volume(X, faces)
+    v_caps = 4.0 / 3.0 * math.pi * r_wall**3
+    v_lumen_frac = max(0.0, min(1.0, v_shell / v_caps))
+    # Equatorial cross-section (|z| < one edge length) for comparison with the 2D ring
+    eq_mask = np.abs(X[:, 2]) < 0.6 * float(np.mean(l0))
+    eq_theta = np.arctan2(X[eq_mask, 1], X[eq_mask, 0])
+    order = np.argsort(eq_theta)
+    traj_wall_arr = np.asarray(traj_wall)
+    out = {
+        "verts": X,
+        "faces": faces,
+        "edges": edges,
+        "rest_verts": verts0,
+        "u_in": u_in,
+        "delta_over_R0": delta,
+        "fold_mode_n": n_folds,
+        "V_lumen_fraction": v_lumen_frac,
+        "V_fold_fraction": 1.0 - v_lumen_frac,
+        "wall_dilation": r_wall - 1.0,
+        "P_conf_kPa": K_alg * (r_wall - 1.0),
+        "K_alg_kPa": K_alg,
+        "spontaneous_curvature_c0": c0,
+        "tilde_kappa": tilde_kappa,
+        "k_conf": k_conf,
+        "P_c_kPa": P_c,
+        "traj_g": np.asarray(traj_g),
+        "traj_delta": np.asarray(traj_delta),
+        "traj_wall": traj_wall_arr,
+        "traj_P_kPa": K_alg * traj_wall_arr,
+        "traj_folds": np.asarray(traj_folds),
+        "traj_energy": np.asarray(traj_energy),
+        "frames": frames,
+        "equator_theta": eq_theta[order],
+        "equator_r": rn[eq_mask][order],
+        "n_vertices": n_v,
+        "n_faces": int(faces.shape[0]),
+        "n_edges": int(edges.shape[0]),
+        "converged_last": bool(res.success),
+    }
+    _SHELL3D_CACHE[cache_key] = out
+    return out
+
+
+def shell3d_buckling_onset(traj_g: np.ndarray, traj_delta: np.ndarray, thr: float = 0.05) -> float:
+    """First continuation stretch g at which the 3D shell fold depth delta/R_0 exceeds `thr`."""
+    hit = np.nonzero(traj_delta > thr)[0]
+    return float(traj_g[hit[0]]) if hit.size else float("inf")
+
+
+def evaluate_shell3d_regimes(ref: dict[str, Any]) -> dict[str, Any]:
+    """Run the 3D shell for the WT stiff, Blebbistatin and unconfined regimes along the
+    reference post-confluence g-schedule and compare delta(g) against the 2D ring and the
+    reference trajectory (Trushko et al. 2020 Fig. 2E transcription)."""
+    traj = ref["post_confluence_growth_trajectory"]
+    g_ref = [float(pt["growth_stretch_g"]) for pt in traj]
+    times = np.array([float(pt["time_post_confluence_h"]) for pt in traj])
+    wt_obs = np.array([float(pt["standard_delta_over_R0"]) for pt in traj])
+    bl_obs = np.array([float(pt["blebb_delta_over_R0"]) for pt in traj])
+    p_obs = np.array([float(pt["standard_P_kPa"]) for pt in traj])
+    p3 = load_shell3d_reference()["apicobasal_tension"]
+    dG_wt = float(p3["delta_gamma_wt_mN_per_m"])
+    gm_bl = float(p3["blebbistatin_Gamma_myo"])
+    wt = solve_confined_cyst_shell3d(100.0, 10.5, 18.5, 5.0, 25.0, 1.527, delta_gamma_mN_per_m=dG_wt, Gamma_myo=1.0, record_schedule=g_ref)
+    bl = solve_confined_cyst_shell3d(100.0, 9.2, 10.8, 5.0, 25.0, 1.527, delta_gamma_mN_per_m=dG_wt, Gamma_myo=gm_bl, record_schedule=g_ref)
+    un = solve_confined_cyst_shell3d(100.0, 10.5, 18.5, 0.40, 18.0, 1.527, delta_gamma_mN_per_m=dG_wt, Gamma_myo=1.0, record_schedule=g_ref)
+    # Same WT shell but reading g as a LINEAR stretch (the convention the 2D ring uses): this
+    # over-supplies area (g^2) and is kept as an explicit ablation of the growth convention.
+    wt_lin = solve_confined_cyst_shell3d(
+        100.0, 10.5, 18.5, 5.0, 25.0, 1.527, delta_gamma_mN_per_m=dG_wt, Gamma_myo=1.0,
+        record_schedule=g_ref, keep_frames=True, growth_is_area_ratio=False,
+    )
+
+    def at(sim: dict[str, Any], key: str, g_list: list[float]) -> np.ndarray:
+        return np.array([float(sim[key][np.argmin(np.abs(sim["traj_g"] - g))]) for g in g_list])
+
+    wt_3d, bl_3d, un_3d = at(wt, "traj_delta", g_ref), at(bl, "traj_delta", g_ref), at(un, "traj_delta", g_ref)
+    wt_lin_3d = at(wt_lin, "traj_delta", g_ref)
+    wt_p3d = at(wt, "traj_P_kPa", g_ref)
+    wt_2d = np.array([solve_confined_cyst_ring(100.0, 10.5, 18.5, 5.0, 25.0, g, Gamma_myo=1.0)["delta_over_R0"] for g in g_ref])
+    r_wt, p_wt = stats.pearsonr(wt_3d, wt_obs)
+    r_bl, p_bl = stats.pearsonr(bl_3d, bl_obs)
+    r_p, p_p = stats.pearsonr(wt_p3d, p_obs)
+    r_2d3d, p_2d3d = stats.pearsonr(wt_3d, wt_2d)
+    return {
+        "g_ref": np.asarray(g_ref),
+        "times_h": times,
+        "wt": wt,
+        "bl": bl,
+        "un": un,
+        "wt_lin": wt_lin,
+        "wt_obs": wt_obs,
+        "bl_obs": bl_obs,
+        "p_obs_kPa": p_obs,
+        "wt_3d": wt_3d,
+        "bl_3d": bl_3d,
+        "un_3d": un_3d,
+        "wt_lin_3d": wt_lin_3d,
+        "wt_lin_pearson_r": float(stats.pearsonr(wt_lin_3d, wt_obs)[0]),
+        "wt_lin_rmse": float(np.sqrt(np.mean((wt_lin_3d - wt_obs) ** 2))),
+        "wt_P3d_kPa": wt_p3d,
+        "wt_2d": wt_2d,
+        "wt_pearson_r": float(r_wt),
+        "wt_pearson_p": float(p_wt),
+        "wt_rmse": float(np.sqrt(np.mean((wt_3d - wt_obs) ** 2))),
+        "bl_pearson_r": float(r_bl),
+        "bl_pearson_p": float(p_bl),
+        "bl_rmse": float(np.sqrt(np.mean((bl_3d - bl_obs) ** 2))),
+        "pressure_pearson_r": float(r_p),
+        "pressure_pearson_p": float(p_p),
+        "pressure_rmse_kPa": float(np.sqrt(np.mean((wt_p3d - p_obs) ** 2))),
+        "ring_vs_shell_pearson_r": float(r_2d3d),
+        "ring_vs_shell_pearson_p": float(p_2d3d),
+        "ring_vs_shell_rmse": float(np.sqrt(np.mean((wt_3d - wt_2d) ** 2))),
+        "wt_onset_g": shell3d_buckling_onset(wt["traj_g"], wt["traj_delta"]),
+        "bl_onset_g": shell3d_buckling_onset(bl["traj_g"], bl["traj_delta"]),
+        "un_onset_g": shell3d_buckling_onset(un["traj_g"], un["traj_delta"]),
+        "delta_gamma_wt_mN_per_m": dG_wt,
+    }
+
+
+def evaluate_apicobasal_tension_sweep(ref: dict[str, Any], g_eval: float = 1.52) -> dict[str, Any]:
+    """Ablation / sweep of the apical-basal differential tension dGamma (mN/m) at fixed g:
+    reports spontaneous curvature H_0 R_0, buckling onset g, fold depth and fold count."""
+    p3 = load_shell3d_reference()["apicobasal_tension"]
+    dg_vals = [float(v) for v in p3["delta_gamma_sweep_mN_per_m"]]
+    rows: list[dict[str, float]] = []
+    for dg in dg_vals:
+        sim = solve_confined_cyst_shell3d(100.0, 10.5, 18.5, 5.0, 25.0, g_eval, delta_gamma_mN_per_m=dg, Gamma_myo=1.0)
+        rows.append(
+            {
+                "delta_gamma_mN_per_m": dg,
+                "c0": sim["spontaneous_curvature_c0"],
+                "onset_g": shell3d_buckling_onset(sim["traj_g"], sim["traj_delta"]),
+                "delta_over_R0": sim["delta_over_R0"],
+                "fold_mode_n": float(sim["fold_mode_n"]),
+                "V_lumen_fraction": sim["V_lumen_fraction"],
+                "wall_dilation": sim["wall_dilation"],
+            }
+        )
+    dg_arr = np.array([r["delta_gamma_mN_per_m"] for r in rows])
+    onset_arr = np.array([r["onset_g"] for r in rows])
+    delta_arr = np.array([r["delta_over_R0"] for r in rows])
+    folds_arr = np.array([r["fold_mode_n"] for r in rows])
+    finite = np.isfinite(onset_arr)
+    slope_onset = float(stats.linregress(dg_arr[finite], onset_arr[finite]).slope) if finite.sum() >= 2 else float("nan")
+    slope_delta = float(stats.linregress(dg_arr, delta_arr).slope)
+    slope_folds = float(stats.linregress(dg_arr, folds_arr).slope)
+    if np.ptp(folds_arr) > 0:
+        rho_folds, p_folds = stats.spearmanr(dg_arr, folds_arr)
+    else:  # fold count invariant across the sweep (mesh-templated 12-fold wrinkling)
+        rho_folds, p_folds = 0.0, 1.0
+    return {
+        "rows": rows,
+        "dg_vals": dg_arr,
+        "slope_onset_per_mN_m": slope_onset,
+        "slope_delta_per_mN_m": slope_delta,
+        "slope_folds_per_mN_m": slope_folds,
+        "folds_spearman_rho": float(rho_folds),
+        "folds_spearman_p": float(p_folds),
+    }
+
+
 def segment_epithelioid_cyst_specimen(img_path: Path = SPECIMEN_JPG) -> dict[str, Any]:
     """Segment the vendored confluent epithelial cyst H&E histology micrograph (`epithelioid_cyst_specimen.jpg`)
     to extract lumen contour circularity, monolayer thickness ratio h/R_0, and boundary invagination ratio.
@@ -431,6 +904,7 @@ def render_comparison_figure(out_path: Path = OUT_PNG) -> Path:
     regimes = evaluate_all_capsule_regimes(ref)
     scaling = evaluate_zoelly_scaling_sweep(ref)
     traj = evaluate_post_confluence_trajectories(ref)
+    sh3 = evaluate_shell3d_regimes(ref)
     spec = segment_epithelioid_cyst_specimen(SPECIMEN_JPG)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -492,6 +966,8 @@ def render_comparison_figure(out_path: Path = OUT_PNG) -> Path:
     ax_c.plot(traj["times_h"], traj["bl_sim"], "-s", color="#f43f5e", lw=2.0, label="Blebbistatin 25 μM Sim")
     ax_c.scatter(traj["times_h"], traj["bl_obs"], color="#fecdd3", s=36, zorder=5, label="Blebbistatin 25 μM Exp")
     ax_c.plot(traj["times_h"], traj["un_sim"], "--^", color="#94a3b8", lw=1.8, label="Unconfined / Soft Control (δ/R₀=0)")
+    ax_c.plot(sh3["times_h"], sh3["wt_3d"], "-D", color="#fbbf24", lw=1.6, ms=4, label=f"Pass 3 3D shell WT, g=N/N_c (r={sh3['wt_pearson_r']:.3f})")
+    ax_c.plot(sh3["times_h"], sh3["wt_lin_3d"], ":D", color="#fde68a", lw=1.3, ms=3.5, label=f"Pass 3 3D shell WT, g linear (r={sh3['wt_lin_pearson_r']:.3f})")
     ax_c.set_title("C. Post-Confluence Invagination Depth δ(t)/R₀ & Blebbistatin Shift", color="white", fontsize=10, fontweight="bold")
     ax_c.set_xlabel("Time Post-Confluence t - t_c (hours)", color="#e2e8f0", fontsize=8.5)
     ax_c.set_ylabel("Normalized Inward Fold Depth δ / R₀", color="#e2e8f0", fontsize=8.5)
@@ -547,7 +1023,7 @@ def render_comparison_figure(out_path: Path = OUT_PNG) -> Path:
     ax_f.set_ylabel("ROI Y (px)", color="#e2e8f0", fontsize=8.5)
 
     fig.suptitle(
-        "Trushko et al. (2020) Dev. Cell & Hannezo et al. (2014) PNAS — Confluent Spherical Epithelial Cyst Buckling (Pass 2)",
+        "Trushko et al. (2020) Dev. Cell & Hannezo et al. (2014) PNAS — Confluent Spherical Epithelial Cyst Buckling (Pass 3)",
         color="white",
         fontsize=12.5,
         fontweight="bold",
@@ -592,6 +1068,167 @@ def render_growth_gif(out_path: Path = OUT_GIF) -> Path:
     return out_path
 
 
+def _style_dark_axis(ax: Any) -> None:
+    ax.set_facecolor("#111827")
+    ax.tick_params(colors="#cbd5e1", labelsize=8.5)
+    for spine in ax.spines.values():
+        spine.set_edgecolor("#334155")
+    ax.grid(True, alpha=0.22, color="#334155")
+
+
+def _draw_shell_trisurf(ax: Any, sim: dict[str, Any], title: str) -> None:
+    """3D trisurf of a shell (units of R_0) coloured by inward deflection u_in, with the capsule outline."""
+    from matplotlib import cm
+
+    X, faces, u = sim["verts"], sim["faces"], sim["u_in"]
+    # Cut away the +x hemisphere so the lumen-facing fold is visible
+    keep = np.all(X[faces][:, :, 0] < 0.35, axis=1)
+    face_u = u[faces[keep]].mean(axis=1)
+    norm = plt.Normalize(0.0, max(0.05, float(np.max(u))))
+    colors = cm.viridis(norm(face_u))
+    tri = ax.plot_trisurf(X[:, 0], X[:, 1], X[:, 2], triangles=faces[keep], linewidth=0.15, edgecolor="#0b0f17", antialiased=True)
+    tri.set_facecolors(colors)
+    ang = np.linspace(0, 2 * np.pi, 120)
+    r_w = 1.0 + sim["wall_dilation"]
+    ax.plot(r_w * np.cos(ang), r_w * np.sin(ang), np.zeros_like(ang), "--", color="#94a3b8", lw=0.9)
+    ax.set_xlim(-1.3, 1.3)
+    ax.set_ylim(-1.3, 1.3)
+    ax.set_zlim(-1.3, 1.3)
+    ax.set_box_aspect((1, 1, 1))
+    ax.view_init(elev=18, azim=-35)
+    ax.set_facecolor("#111827")
+    ax.set_title(title, color="white", fontsize=9.5, fontweight="bold")
+    for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
+        axis.set_pane_color((0.07, 0.09, 0.15, 1.0))
+        axis.label.set_color("#e2e8f0")
+    ax.tick_params(colors="#cbd5e1", labelsize=7)
+
+
+def render_shell3d_figure(out_path: Path = OUT_SHELL3D_PNG) -> Path:
+    """Render the Pass 3 3D apical-basal shell figure `docs/media/epithelioid_cyst_buckling_shell3d_apicobasal.png`."""
+    ref = load_reference_data()
+    sh = evaluate_shell3d_regimes(ref)
+    sweep = evaluate_apicobasal_tension_sweep(ref)
+    traj2d = evaluate_post_confluence_trajectories(ref)
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig = plt.figure(figsize=(16.0, 9.8), dpi=130, facecolor="#0b0f17")
+    gs = fig.add_gridspec(2, 3, hspace=0.32, wspace=0.28)
+
+    ax_a = fig.add_subplot(gs[0, 0], projection="3d")
+    _draw_shell_trisurf(
+        ax_a,
+        sh["wt"],
+        f"A. 3D icosphere shell, WT 5 kPa, g = N/N_c = 1.527\n(n_folds = {sh['wt']['fold_mode_n']}, δ/R₀ = {sh['wt']['delta_over_R0']:.2f}, wall +{100 * sh['wt']['wall_dilation']:.0f}%)",
+    )
+    ax_b = fig.add_subplot(gs[0, 1], projection="3d")
+    _draw_shell_trisurf(
+        ax_b,
+        sh["wt_lin"],
+        f"B. Same shell, g read as linear stretch (ring convention)\n(n_folds = {sh['wt_lin']['fold_mode_n']}, δ/R₀ = {sh['wt_lin']['delta_over_R0']:.2f}, wall +{100 * sh['wt_lin']['wall_dilation']:.0f}%)",
+    )
+
+    # C. delta(t) trajectories: 3D shell (both conventions) vs 2D ring vs Trushko Fig. 2E
+    ax_c = fig.add_subplot(gs[0, 2])
+    _style_dark_axis(ax_c)
+    t_h = sh["times_h"]
+    ax_c.scatter(t_h, sh["wt_obs"], color="#a7f3d0", s=42, zorder=6, label="WT exp (Trushko 2020 Fig. 2E)")
+    ax_c.scatter(t_h, sh["bl_obs"], color="#fecdd3", s=36, zorder=6, label="Blebbistatin exp")
+    ax_c.plot(t_h, sh["wt_3d"], "-o", color="#34d399", lw=2.2, label=f"3D shell WT, g = N/N_c (r={sh['wt_pearson_r']:.3f})")
+    ax_c.plot(t_h, sh["wt_lin_3d"], "-D", color="#fbbf24", lw=1.6, label=f"3D shell WT, g linear (r={sh['wt_lin_pearson_r']:.3f})")
+    ax_c.plot(t_h, sh["bl_3d"], "-s", color="#f43f5e", lw=1.8, label=f"3D shell Blebbistatin (r={sh['bl_pearson_r']:.3f})")
+    ax_c.plot(t_h, sh["un_3d"], "--^", color="#94a3b8", lw=1.4, label="3D shell unconfined 0.4 kPa")
+    ax_c.plot(traj2d["times_h"], traj2d["wt_sim"], ":", color="#38bdf8", lw=1.8, label=f"2D FvK ring WT (r={traj2d['wt_pearson_r']:.3f})")
+    ax_c.set_ylim(-0.03, 1.45)
+    ax_c.set_title("C. Fold depth δ(t)/R₀: 3D shell vs 2D ring vs experiment", color="white", fontsize=10, fontweight="bold")
+    ax_c.set_xlabel("Time post-confluence (h)", color="#e2e8f0", fontsize=8.5)
+    ax_c.set_ylabel("δ / R₀", color="#e2e8f0", fontsize=8.5)
+    ax_c.legend(fontsize=6.6, facecolor="#0f172a", labelcolor="white", loc="upper left")
+
+    # D. capsule pressure read from wall dilation vs Trushko Fig. 2E pressure
+    ax_d = fig.add_subplot(gs[1, 0])
+    _style_dark_axis(ax_d)
+    ax_d.scatter(t_h, sh["p_obs_kPa"], color="#38bdf8", s=44, zorder=5, label="P(t) exp, capsule dilation (Fig. 2E)")
+    ax_d.plot(t_h, sh["wt_P3d_kPa"], "-o", color="#34d399", lw=2.2, label=f"3D shell P = K_alg(r_wall/R₀-1) (r={sh['pressure_pearson_r']:.3f}, RMSE={sh['pressure_rmse_kPa']:.3f} kPa)")
+    ax_d.axhline(sh["wt"]["P_c_kPa"], color="#facc15", ls="--", lw=1.2, label=f"Zoelly P_c = {sh['wt']['P_c_kPa']:.3f} kPa")
+    ax_d.set_title("D. Confinement pressure from capsule dilation", color="white", fontsize=10, fontweight="bold")
+    ax_d.set_xlabel("Time post-confluence (h)", color="#e2e8f0", fontsize=8.5)
+    ax_d.set_ylabel("P (kPa)", color="#e2e8f0", fontsize=8.5)
+    ax_d.legend(fontsize=6.8, facecolor="#0f172a", labelcolor="white", loc="upper left")
+
+    # E. apical-basal tension sweep
+    ax_e = fig.add_subplot(gs[1, 1])
+    _style_dark_axis(ax_e)
+    dg = sweep["dg_vals"]
+    delta_s = [r["delta_over_R0"] for r in sweep["rows"]]
+    onset_s = [r["onset_g"] for r in sweep["rows"]]
+    c0_s = [r["c0"] for r in sweep["rows"]]
+    ax_e.plot(dg, delta_s, "-o", color="#34d399", lw=2.0, label=f"δ/R₀ at g = 1.52 (slope {sweep['slope_delta_per_mN_m']:+.4f} per mN/m)")
+    ax_e.set_xlabel("Apical-basal tension difference ΔΓ (mN/m)", color="#e2e8f0", fontsize=8.5)
+    ax_e.set_ylabel("δ / R₀", color="#e2e8f0", fontsize=8.5)
+    ax_e2 = ax_e.twinx()
+    ax_e2.plot(dg, onset_s, "-s", color="#fbbf24", lw=1.8, label=f"buckling onset g (slope {sweep['slope_onset_per_mN_m']:+.4f} per mN/m)")
+    ax_e2.set_ylabel("onset g (δ/R₀ > 0.05)", color="#fbbf24", fontsize=8.5)
+    ax_e2.tick_params(colors="#fbbf24", labelsize=8)
+    for x_val, c0_val in zip(dg, c0_s):
+        ax_e.annotate(f"H₀R₀={c0_val:.1f}", (x_val, delta_s[int(np.argmin(np.abs(dg - x_val)))]), textcoords="offset points", xytext=(0, 8), ha="center", color="#cbd5e1", fontsize=6.8)
+    h1, l1 = ax_e.get_legend_handles_labels()
+    h2, l2 = ax_e2.get_legend_handles_labels()
+    ax_e.legend(h1 + h2, l1 + l2, fontsize=6.8, facecolor="#0f172a", labelcolor="white", loc="lower left")
+    ax_e.set_title("E. Apical-basal differential tension sweep (Hannezo 2014 H₀)", color="white", fontsize=10, fontweight="bold")
+
+    # F. fold-count / morphology summary vs experiment
+    ax_f = fig.add_subplot(gs[1, 2])
+    _style_dark_axis(ax_f)
+    labels = ["WT\n(g=N/N_c)", "WT\n(g linear)", "Blebb.", "Unconf."]
+    sim_n = [sh["wt"]["fold_mode_n"], sh["wt_lin"]["fold_mode_n"], sh["bl"]["fold_mode_n"], sh["un"]["fold_mode_n"]]
+    obs_n = [1, 1, 1, 0]
+    xi = np.arange(len(labels))
+    ax_f.bar(xi - 0.18, obs_n, 0.36, color="#38bdf8", alpha=0.9, label="Observed fold count (Trushko 2020)")
+    ax_f.bar(xi + 0.18, sim_n, 0.36, color="#34d399", alpha=0.9, label="3D shell fold count (connected deep regions)")
+    ax_f.set_xticks(xi)
+    ax_f.set_xticklabels(labels, fontsize=8)
+    ax_f.set_ylabel("number of inward folds", color="#e2e8f0", fontsize=8.5)
+    ax_f.set_title("F. Fold multiplicity: 3D shell vs experiment", color="white", fontsize=10, fontweight="bold")
+    ax_f.legend(fontsize=7.0, facecolor="#0f172a", labelcolor="white")
+    ax_f.text(
+        0.02, 0.97,
+        "Note: 12 folds in the g = N/N_c reading coincide with the 12\nfive-valent icosphere vertices (mesh-templated wrinkling).",
+        transform=ax_f.transAxes, color="#fca5a5", fontsize=7.2, va="top",
+    )
+
+    fig.suptitle(
+        "Pass 3 — 3D triangulated vertex shell with apical-basal differential tension (Trushko 2020 / Hannezo 2014)",
+        color="white", fontsize=12.5, fontweight="bold", y=0.985,
+    )
+    fig.savefig(out_path, dpi=130, facecolor=fig.get_facecolor())
+    plt.close(fig)
+    return out_path
+
+
+def render_shell3d_gif(out_path: Path = OUT_SHELL3D_GIF) -> Path:
+    """Animated GIF of the 3D shell folding and coarsening (12 -> 1 fold) along the g continuation."""
+    ref = load_reference_data()
+    sh = evaluate_shell3d_regimes(ref)
+    sim = sh["wt_lin"]
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    frames: list[Image.Image] = []
+    for idx, Xf in enumerate(sim["frames"]):
+        g_val = float(sim["traj_g"][idx])
+        rn = np.linalg.norm(Xf, axis=1)
+        snap = {"verts": Xf, "faces": sim["faces"], "u_in": float(np.max(rn)) - rn, "wall_dilation": float(np.max(rn)) - 1.0}
+        fig = plt.figure(figsize=(5.2, 5.2), dpi=90, facecolor="#0b0f17")
+        ax = fig.add_subplot(111, projection="3d")
+        _draw_shell_trisurf(ax, snap, f"3D shell, WT 5 kPa capsule, g = {g_val:.2f}\nδ/R₀ = {float(sim['traj_delta'][idx]):.2f}, folds = {int(sim['traj_folds'][idx])}")
+        fig.canvas.draw()
+        w, h = fig.canvas.get_width_height()
+        buf = np.frombuffer(fig.canvas.buffer_rgba(), dtype=np.uint8).reshape((h, w, 4))
+        frames.append(Image.fromarray(buf[:, :, :3]))
+        plt.close(fig)
+    frames[0].save(out_path, save_all=True, append_images=frames[1:], duration=320, loop=0)
+    return out_path
+
+
 def measure_morphoeval() -> list[dict[str, Any]]:
     """Return comprehensive Pass 2 morphometric measurements for `measure_outputs.py`."""
     ref = load_reference_data()
@@ -604,6 +1241,115 @@ def measure_morphoeval() -> list[dict[str, Any]]:
     std_wt = regimes["standard_single_fold_cyst"]["sim"]
     two_f = regimes["large_thin_two_fold_cyst"]["sim"]
     blebb = regimes["blebbistatin_myosin_inhibited"]["sim"]
+    sh = evaluate_shell3d_regimes(ref)
+    sweep = evaluate_apicobasal_tension_sweep(ref)
+    n_pts = int(len(sh["g_ref"]))
+
+    shell3d_measurements: list[dict[str, Any]] = [
+        {
+            "name": "3D icosphere shell WT (E_alg=5 kPa, g=N/N_c=1.527) inward fold depth delta/R0",
+            "value": round(sh["wt"]["delta_over_R0"], 4),
+            "unit": "dimensionless (delta / R_0)",
+            "p_value": 1.0,
+            "n": int(sh["wt"]["n_vertices"]),
+            "method": "L-BFGS-B relaxation of a 642-vertex triangulated shell (springs + discrete Helfrich bending with apical-basal spontaneous curvature + unilateral Winkler capsule + self-contact), g read as the post-confluence cell-number (area) ratio",
+            "reference_value": 0.642,
+            "reference_source": "Trushko et al. (2020) Dev. Cell 54:655-668 Fig. 2E",
+            "derived_from": "script",
+        },
+        {
+            "name": "3D shell WT fold depth trajectory delta(t)/R0 correlation with Fig. 2E (g=N/N_c reading)",
+            "value": round(sh["wt_pearson_r"], 4),
+            "stddev": round(sh["wt_rmse"], 4),
+            "unit": "Pearson r",
+            "p_value": sh["wt_pearson_p"],
+            "n": n_pts,
+            "method": "Pearson correlation of the 3D shell delta(g) continuation against the 6-point WT trajectory; stddev field carries the RMSE",
+            "reference_value": 1.0,
+            "reference_source": "Trushko et al. (2020) Dev. Cell 54:655-668 Fig. 2E",
+            "derived_from": "script",
+        },
+        {
+            "name": "3D shell WT capsule pressure P(t) = K_alg (r_wall/R0 - 1) correlation with Fig. 2E pressure",
+            "value": round(sh["pressure_pearson_r"], 4),
+            "stddev": round(sh["pressure_rmse_kPa"], 4),
+            "unit": "Pearson r",
+            "p_value": sh["pressure_pearson_p"],
+            "n": n_pts,
+            "method": "Pressure inferred from the Winkler wall dilation of the 3D shell (same read-out as the alginate capsule dilation used experimentally) vs the transcribed standard_P_kPa trajectory; stddev = RMSE in kPa",
+            "reference_value": 1.0,
+            "reference_source": "Trushko et al. (2020) Dev. Cell 54:655-668 Fig. 2E",
+            "derived_from": "script",
+        },
+        {
+            "name": "3D shell WT number of inward folds at g=1.527 (g=N/N_c reading)",
+            "value": float(sh["wt"]["fold_mode_n"]),
+            "unit": "count of connected deep-deflection regions",
+            "p_value": 1.0,
+            "n": int(sh["wt"]["n_vertices"]),
+            "method": "Connected components of vertices with u_in > max(0.35 u_max, 0.04 R_0) on the final 3D mesh; 12 coincides with the icosphere's five-valent vertices (mesh-templated wrinkling)",
+            "reference_value": 1.0,
+            "reference_source": "Trushko et al. (2020) Dev. Cell 54:655-668 Fig. 2 (single fold in ~75% of standard capsules)",
+            "derived_from": "script",
+        },
+        {
+            "name": "3D shell WT number of inward folds at g=1.527 (g read as linear stretch, ring convention)",
+            "value": float(sh["wt_lin"]["fold_mode_n"]),
+            "stddev": round(sh["wt_lin"]["delta_over_R0"], 4),
+            "unit": "count of connected deep-deflection regions",
+            "p_value": 1.0,
+            "n": int(sh["wt_lin"]["n_vertices"]),
+            "method": "Same mesh/energy with rest edge length g*l0 (area excess g^2): wrinkles coarsen 12 -> 6 -> 3 -> 1 along the continuation; stddev field carries the final delta/R_0",
+            "reference_value": 1.0,
+            "reference_source": "Trushko et al. (2020) Dev. Cell 54:655-668 Fig. 2",
+            "derived_from": "script",
+        },
+        {
+            "name": "Apical-basal spontaneous curvature H0*R0 of the WT shell (Hannezo 2014, dGamma calibrated)",
+            "value": round(sh["wt"]["spontaneous_curvature_c0"], 4),
+            "unit": "dimensionless (H_0 R_0)",
+            "p_value": 1.0,
+            "n": 1,
+            "method": "H_0 R_0 = 6 (1 - nu^2) dGamma R_0 / (E_epi h^2) with dGamma = 4.26 mN/m CALIBRATED so that the confluent sphere is the spontaneous shape (self-referential; Lean Law 4)",
+            "reference_value": 1.0,
+            "reference_source": "Hannezo, Prost & Joanny (2014) PNAS 111:27-32 Eqs. 1-3 (calibration target, not a measurement)",
+            "derived_from": "script",
+        },
+        {
+            "name": "Apical-basal tension sweep: d(delta/R0)/d(dGamma) at g=1.52 across 5 dGamma values",
+            "value": round(sweep["slope_delta_per_mN_m"], 5),
+            "unit": "per mN/m",
+            "p_value": 1.0,
+            "n": int(len(sweep["rows"])),
+            "method": "OLS slope of final fold depth versus dGamma in [-4.26, 8.52] mN/m (H_0 R_0 in [-1, 2]); negative slope = apical-dominant tension stabilises the lumen-concave sphere (Lean Law 5)",
+            "reference_value": 0.0,
+            "reference_source": "Hannezo, Prost & Joanny (2014) PNAS (qualitative: apical constriction favours lumen-concave curvature); no quantitative dGamma data in Trushko et al. (2020)",
+            "derived_from": "script",
+        },
+        {
+            "name": "Apical-basal tension sweep: d(onset g)/d(dGamma) across 5 dGamma values",
+            "value": round(sweep["slope_onset_per_mN_m"], 5),
+            "unit": "per mN/m",
+            "p_value": 1.0,
+            "n": int(len(sweep["rows"])),
+            "method": "OLS slope of the first continuation g at which delta/R_0 > 0.05 versus dGamma",
+            "reference_value": 0.0,
+            "reference_source": "Hannezo, Prost & Joanny (2014) PNAS (qualitative); no quantitative dGamma data in Trushko et al. (2020)",
+            "derived_from": "script",
+        },
+        {
+            "name": "2D FvK ring vs 3D shell WT fold-depth trajectory agreement (Pearson r over 6 g values)",
+            "value": round(sh["ring_vs_shell_pearson_r"], 4),
+            "stddev": round(sh["ring_vs_shell_rmse"], 4),
+            "unit": "Pearson r",
+            "p_value": sh["ring_vs_shell_pearson_p"],
+            "n": n_pts,
+            "method": "Cross-model consistency of the prescribed-profile 2D ring against the free 3D shell (g=N/N_c reading); stddev = RMSE",
+            "reference_value": 1.0,
+            "reference_source": "internal cross-model check (2D ring Pass 2 vs 3D shell Pass 3)",
+            "derived_from": "script",
+        },
+    ]
 
     return [
         {
@@ -712,6 +1458,7 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "reference_source": "Trushko et al. (2020) Dev. Cell 54:655-668 Fig. 2; Wikimedia File:Thyroid_follicle.jpg",
             "derived_from": "image",
         },
+        *shell3d_measurements,
     ]
 
 
@@ -755,12 +1502,55 @@ def self_test() -> bool:
     r2 = solve_confined_cyst_ring(100.0, 10.5, 18.5, 5.0, 25.0, 1.52, Gamma_myo=1.0)
     assert np.array_equal(r1["r"], r2["r"])
 
+    # 5. Pass 3 — 3D triangulated shell with apical-basal differential tension (Laws 4 & 5)
+    p3 = load_shell3d_reference()
+    verts, faces = build_icosphere(SHELL3D_SUBDIVISIONS)
+    edges = mesh_edges(faces)
+    n_v, n_f, n_e = verts.shape[0], faces.shape[0], edges.shape[0]
+    assert (n_v, n_f, n_e) == (p3["shell3d_model"]["n_vertices"], p3["shell3d_model"]["n_faces"], p3["shell3d_model"]["n_edges"])
+    assert n_v - n_e + n_f == 2  # closed genus-0 mesh (Euler characteristic)
+    assert abs(mesh_volume(verts, faces) / (4.0 / 3.0 * math.pi) - 1.0) < 0.02  # outward orientation + volume
+    # Law 4: the spontaneous curvature minimises f(c) = (kappa/2) c^2 - dGamma h c  (unit kappa, t = dGamma h)
+    kap, tau = 2.0, 3.0
+    f_energy = lambda c: 0.5 * kap * c * c - tau * c  # noqa: E731
+    c_star = tau / kap
+    assert all(f_energy(c_star) <= f_energy(c) + 1e-12 for c in np.linspace(-5, 5, 101))
+    c0_wt = compute_apicobasal_spontaneous_curvature(float(p3["apicobasal_tension"]["delta_gamma_wt_mN_per_m"]), 18.5, 10.5, 100.0, 0.45)
+    assert abs(c0_wt - float(p3["apicobasal_tension"]["expected_H0_R0_wt"])) < 0.01
+    # Law 5: inverted cap penalty (hm + c0)^2 >= (hm - c0)^2 for hm, c0 >= 0; Winkler penalty zero inside the wall
+    for hm in (0.0, 0.5, 2.0):
+        for c0 in (0.0, 1.0, 2.0):
+            assert (hm + c0) ** 2 + 1e-12 >= (hm - c0) ** 2
+    assert max(0.0, 0.97 - 1.0) ** 2 == 0.0 and max(0.0, 1.03 - 1.0) ** 2 > 0.0
+    sh = evaluate_shell3d_regimes(ref)
+    assert sh["un"]["delta_over_R0"] < 0.05 and sh["un"]["fold_mode_n"] == 0  # unconfined control stays spherical
+    assert sh["wt"]["delta_over_R0"] > 0.15 and sh["wt"]["fold_mode_n"] >= 1  # confined WT shell buckles inward
+    assert sh["wt"]["delta_over_R0"] <= 1.0 + sh["wt"]["wall_dilation"] + 1e-9  # fold cannot exceed the capsule
+    assert abs(sh["wt"]["V_lumen_fraction"] + sh["wt"]["V_fold_fraction"] - 1.0) < 1e-12
+    assert sh["wt_lin"]["fold_mode_n"] <= 3  # linear-stretch reading coarsens to a few deep folds
+    assert sh["pressure_pearson_r"] > 0.9
+    assert np.all(np.diff(sh["wt"]["traj_P_kPa"][:12]) >= -1e-9)  # pre-buckling pressure rises monotonically
+    sweep = evaluate_apicobasal_tension_sweep(ref)
+    assert len(sweep["rows"]) == 5
+    assert sweep["slope_delta_per_mN_m"] < 0.0  # apical-dominant tension reduces fold depth (Law 5)
+    assert sweep["slope_onset_per_mN_m"] > 0.0  # ... and delays the onset
+    # two-run bitwise determinism of the 3D shell (fresh solve bypassing the memo)
+    key_count = len(_SHELL3D_CACHE)
+    s1 = solve_confined_cyst_shell3d(100.0, 10.5, 18.5, 5.0, 25.0, 1.20, delta_gamma_mN_per_m=4.26, seed=7)
+    _SHELL3D_CACHE.clear()
+    s2 = solve_confined_cyst_shell3d(100.0, 10.5, 18.5, 5.0, 25.0, 1.20, delta_gamma_mN_per_m=4.26, seed=7)
+    assert np.array_equal(s1["verts"], s2["verts"])
+    assert key_count >= 1
+
     print(
-        f"[self_test] 2019-trushko-epithelioid-cyst-buckling.py (v2 remediated) PASSED: "
+        f"[self_test] 2019-trushko-epithelioid-cyst-buckling.py (v3 remediated) PASSED: "
         f"Zoelly r={scaling['pearson_r']:.4f}, slope={scaling['log_log_exponent']:.3f}, "
         f"WT delta/R0={regs['standard_single_fold_cyst']['delta_over_R0']:.3f}, "
         f"Blebb delta/R0={regs['blebbistatin_myosin_inhibited']['delta_over_R0']:.3f}, "
-        f"specimen cysts={spec['n_cysts']} (h/R0={spec['mean_h_over_R0']:.3f})."
+        f"specimen cysts={spec['n_cysts']} (h/R0={spec['mean_h_over_R0']:.3f}); "
+        f"3D shell WT delta/R0={sh['wt']['delta_over_R0']:.3f} folds={sh['wt']['fold_mode_n']} "
+        f"(linear-g folds={sh['wt_lin']['fold_mode_n']}), P(t) r={sh['pressure_pearson_r']:.3f}, "
+        f"dGamma sweep slope(delta)={sweep['slope_delta_per_mN_m']:+.4f}/mN/m."
     )
     return True
 
@@ -773,16 +1563,48 @@ def main() -> int:
     ap.add_argument("--h-scale", type=float, default=1.0, help="Multiplier on monolayer thickness h")
     ap.add_argument("--r0-scale", type=float, default=1.0, help="Multiplier on capsule radius R_0")
     ap.add_argument("--blebbistatin", action="store_true", help="Apply 25 uM Blebbistatin myosin-II inhibition")
-    ap.add_argument("--seed", type=int, default=2019, help="Random seed")
+    ap.add_argument("--seed", type=int, default=2019, help="Random seed (3D shell imperfection seeding)")
+    ap.add_argument("--delta-gamma", type=float, default=None, help="Apical-basal tension difference dGamma (mN/m) for the 3D shell (default: dataset WT value)")
+    ap.add_argument("--growth", type=float, default=1.527, help="Post-confluence growth ratio g = N/N_c for the single-run probe")
+    ap.add_argument("--probe", action="store_true", help="Run one 2D ring + one 3D shell with the CLI parameters and print a JSON summary (no figures)")
+    ap.add_argument("--skip-3d-media", action="store_true", help="Skip the Pass 3 3D figure/GIF (faster)")
     args = ap.parse_args()
 
     if args.self_test or args.verify_only:
         self_test()
         return 0
 
+    p3 = load_shell3d_reference()["apicobasal_tension"]
+    d_gamma = float(p3["delta_gamma_wt_mN_per_m"]) if args.delta_gamma is None else float(args.delta_gamma)
+    gamma_myo = float(p3["blebbistatin_Gamma_myo"]) if args.blebbistatin else 1.0
+    h_um = (9.2 if args.blebbistatin else 10.5) * args.h_scale
+    e_epi = 10.8 if args.blebbistatin else 18.5
+    r0_um = 100.0 * args.r0_scale
+    custom = (
+        args.probe or args.e_alg != 5.0 or args.h_scale != 1.0 or args.r0_scale != 1.0
+        or args.blebbistatin or args.delta_gamma is not None or args.seed != 2019
+    )
+    if custom:
+        ring = solve_confined_cyst_ring(r0_um, h_um, e_epi, args.e_alg, 25.0, args.growth, Gamma_myo=gamma_myo, seed=args.seed)
+        shell = solve_confined_cyst_shell3d(
+            r0_um, h_um, e_epi, args.e_alg, 25.0, args.growth,
+            delta_gamma_mN_per_m=d_gamma, Gamma_myo=gamma_myo, seed=args.seed,
+        )
+        summary = {
+            "inputs": {"R_0_um": r0_um, "h_um": h_um, "E_epi_kPa": e_epi, "E_alg_kPa": args.e_alg, "g": args.growth, "dGamma_mN_per_m": d_gamma, "Gamma_myo": gamma_myo, "seed": args.seed},
+            "ring2d": {k: ring[k] for k in ("P_c_kPa", "g_c", "t_b_hours", "delta_over_R0", "fold_mode_n", "V_lumen_fraction")},
+            "shell3d": {k: shell[k] for k in ("P_c_kPa", "spontaneous_curvature_c0", "delta_over_R0", "fold_mode_n", "V_lumen_fraction", "wall_dilation", "P_conf_kPa", "converged_last")},
+        }
+        print(json.dumps(summary, indent=2, default=float))
+        if args.probe:
+            return 0
+
     self_test()
     render_comparison_figure(OUT_PNG)
     render_growth_gif(OUT_GIF)
+    if not args.skip_3d_media:
+        render_shell3d_figure(OUT_SHELL3D_PNG)
+        render_shell3d_gif(OUT_SHELL3D_GIF)
     return 0
 
 

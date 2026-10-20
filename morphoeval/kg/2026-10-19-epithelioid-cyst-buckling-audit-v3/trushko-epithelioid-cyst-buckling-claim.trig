@@ -1,0 +1,86 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-trushko-epithelioid-cyst-buckling> a pk:Claim ;
+        rdfs:label "Trushko et al. (2020) Dev. Cell & Hannezo et al. (2014) PNAS Föppl-von Kármán / 3D triangulated-shell spherical epithelial cyst buckling under alginate confinement faithfully reproduces Mammalian polarized epithelial cyst monolayers (Canis lupus familiaris MDCK II, Homo sapiens Caco-2) morphology" ;
+        dct:description "The simulation script(s) 2019-trushko-epithelioid-cyst-buckling.py implement the cited source model as published and produce forms that match real Mammalian polarized epithelial cyst monolayers (Canis lupus familiaris MDCK II, Homo sapiens Caco-2) specimens and the source authors' figures. A belief under audit, not a fact: its credibility is the weight of evidence (MorphoEval 0.1.0 overall 75.4/100, audit 2026-10-19-epithelioid-cyst-buckling-audit-v3) and the assessments." ;
+        dct:subject <https://github.com/fractastical/morpholib/blob/8a7928d7/2019-trushko-epithelioid-cyst-buckling.py> ;
+        pk:context "script(s): https://github.com/fractastical/morpholib/blob/8a7928d7/2019-trushko-epithelioid-cyst-buckling.py; output: docs/media/epithelioid_cyst_buckling_comparison.png; organism: Mammalian polarized epithelial cyst monolayers (Canis lupus familiaris MDCK II, Homo sapiens Caco-2); checkpoint commit: https://github.com/fractastical/morpholib/commit/8a7928d7; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0; spec_fingerprint: 8c51faae6711c461b674cf68b978bc7ce168e67b48347c008c6f0f5cae0506b9; artifact_sha256: 4ca4141a24ffa678e66ef0aa95f8a49938ef52097c632502dde815a62032dd0b; input_dataset_sha256: {datasets/epithelioid_cyst_buckling/epithelioid_cyst_buckling_reference.json=c1412a6f1bcc24be..., datasets/epithelioid_cyst_buckling/epithelioid_cyst_specimen.jpg=ec5b534f7a3a8182..., datasets/epithelioid_cyst_buckling/paper_citations.bib=b14ab196e08a46d4..., datasets/epithelioid_cyst_buckling/scout_manifest.json=3d03ec2877bdf349...}; supersedes_audit_id: 2026-10-19-epithelioid-cyst-buckling-audit-v2; claim_boundary: [reported_in_source: Trushko et al. (2020): an MDCK II monolayer growing to confluence inside a 5 kPa alginate microcapsule (R0 ~ 100 um, h ~ 10 um) buckles into a single deep inward fold once the confinement pressure reaches the Zoelly threshold P_c = 2 E h^2 / (sqrt(3 (1 - nu^2)) R0^2); the fold depth and the capsule pressure read from capsule dilation grow over ~11 h post-confluence (Fig. 2E); Blebbistatin reduces and soft (0.4 kPa) capsules abolish the fold | Hannezo, Prost & Joanny (2014): an apical-basal tension difference dGamma in a monolayer of thickness h induces a spontaneous curvature H0 ~ dGamma / (kappa / h) and selects the sign of folding | Zoelly (1915): the critical external pressure of a thin elastic spherical shell scales as (h / R0)^2; reconstructed_in_script: Zoelly critical pressure and its (h/R0)^2 scaling over a 12-capsule table, an alginate Winkler capsule stiffness, a critical growth stretch g_c and buckling time, a prescribed-profile 2D equatorial ring (mode n in {0, 1, 2}, fitted fold-depth law) with lumen volume partitioning, and (Pass 3) a free 3D icosphere shell with springs, Helfrich bending with apical-basal spontaneous curvature, unilateral capsule contact and self-contact, relaxed quasi-statically in g; WT, Blebbistatin, unconfined and linear-g regimes along the Fig. 2E schedule; a 5-point dGamma sweep; capsule pressure read as K_alg (r_wall / R0 - 1); automated segmentation of a histology micrograph; transfer_boundary: The dataset's g = 2^((t - t_c) / tau_d) is a cell-number (area) ratio; the 3D shell applies sqrt(g) as the linear rest stretch by default while the 2D ring still applies g as a linear perimeter stretch, so the two solvers are not on the same growth convention | dGamma_WT = 4.26 mN/m is calibrated so that H0 R0 = 1 (no apical/basal tension measurement exists in Trushko 2020); the 12-fold 3D pattern coincides with the 12 five-valent icosphere vertices and has not been shown to be mesh-independent | The histology specimen (`epithelioid_cyst_specimen.jpg`) is a thyroid-follicle H&E section, not an MDCK cyst in a capsule; its reference values are attributed loosely to Trushko Fig. 1-2; does_not_claim: A cell-level vertex model with apical/basal/lateral faces, lumen pressure, cell division or T1 transitions; a resolved rigid-cavity (displacement-controlled) buckling threshold for a stiff 68 kPa capsule; a measured apical-basal tension; or a validated single-fold 3D morphology matching the experimental fold depth 0.64 R0]" ;
+        pk:derivedFromPaper <https://doi.org/10.1016/j.devcel.2020.07.019>,
+            <https://doi.org/10.1073/pnas.1309482110>,
+            <https://doi.org/10.1073/pnas.1312076111>,
+            <https://doi.org/10.1103/PhysRevA.38.1005>,
+            <https://doi.org/10.1515/znc-1973-11-1209>,
+            <https://doi.org/10.3929/ethz-a-000096658> ;
+        pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-trushko-epithelioid-cyst-buckling-code-traceability>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-trushko-epithelioid-cyst-buckling-model-fidelity>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-trushko-epithelioid-cyst-buckling-morphometric-validation>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-trushko-epithelioid-cyst-buckling-overall>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-trushko-epithelioid-cyst-buckling-parameter-expressivity>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-trushko-epithelioid-cyst-buckling-repro-package>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-trushko-epithelioid-cyst-buckling-source-traceability>,
+            <https://w3id.org/probknow/resource/assessment/morphoeval-trushko-epithelioid-cyst-buckling-specimen-match> ;
+        pk:weightOfEvidence "0.754"^^xsd:double .
+    <https://github.com/fractastical/morpholib/blob/8a7928d7/2019-trushko-epithelioid-cyst-buckling.py> a schema:SoftwareSourceCode ;
+        rdfs:label "2019-trushko-epithelioid-cyst-buckling.py" ;
+        schema:codeRepository <https://github.com/fractastical/morpholib> ;
+        schema:programmingLanguage "Python" ;
+        schema:version "8a7928d7" .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/69> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.devcel.2020.07.019>,
+            <https://doi.org/10.1073/pnas.1309482110>,
+            <https://doi.org/10.1073/pnas.1312076111>,
+            <https://doi.org/10.1103/PhysRevA.38.1005>,
+            <https://doi.org/10.1515/znc-1973-11-1209>,
+            <https://doi.org/10.3929/ethz-a-000096658> .
+    <https://doi.org/10.1016/j.devcel.2020.07.019> dct:date "2020"^^xsd:gYear ;
+        dct:title "Buckling of an epithelium growing under spherical confinement" .
+    <https://doi.org/10.1073/pnas.1309482110> dct:date "2013"^^xsd:gYear ;
+        dct:title "Cellular capsules as a tool for multicellular spheroid production and for investigating the mechanics of tumor progression in vitro" .
+    <https://doi.org/10.1073/pnas.1312076111> dct:date "2014"^^xsd:gYear ;
+        dct:title "Theory of epithelial sheet morphology in three dimensions" .
+    <https://doi.org/10.1103/PhysRevA.38.1005> dct:date "1988"^^xsd:gYear ;
+        dct:title "Defects in flexible membranes with crystalline order" .
+    <https://doi.org/10.1515/znc-1973-11-1209> dct:date "1973"^^xsd:gYear ;
+        dct:title "Elastic properties of lipid bilayers: theory and possible experiments" .
+    <https://doi.org/10.3929/ethz-a-000096658> dct:date "1915"^^xsd:gYear ;
+        dct:title "Uber ein Knickungsproblem an der Kugelschale" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Claim: Trushko et al. (2020) Dev. Cell & Hannezo et al. (2014) PNAS Föppl-von Kármán / 3D triangulated-shell spherical epithelial cyst buckling under alginate confinement is faithful" ;
+        dct:created "2026-10-20T19:55:29Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:Claim ;
+        npx:introduces <https://w3id.org/probknow/resource/claim/morphoeval-trushko-epithelioid-cyst-buckling> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/blob/8a7928d7/2019-trushko-epithelioid-cyst-buckling.py>,
+            <https://github.com/fractastical/morpholib/issues/69> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RApE-nGpCMigXqZjeHuYuMJEVTGmTlNTlZl7IcHi_fhdQ/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

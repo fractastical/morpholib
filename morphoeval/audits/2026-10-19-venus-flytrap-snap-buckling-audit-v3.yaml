@@ -1,0 +1,372 @@
+# MorphoEval audit — Forterre, Skotheim, Dumais & Mahadevan (2005) Nature Venus Flytrap Snap-Buckling, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `2005-forterre-venus-flytrap-snap-buckling.py` (2028 lines) and
+# `datasets/venus_flytrap_snap_buckling/` after the remediation of the single open v2 item in the
+# instrumented loop `morphoeval/runs/2026-10-19-venus-flytrap-snap-buckling-loop-pass3`, superseding
+# `2026-10-19-venus-flytrap-snap-buckling-audit-v2` (94.0, Gemini 4 Argon).
+#   - Primary assessor: Claude Fable 5.1 (Phase B subagent; scored from the Phase A handoff
+#     evidence, `git diff` of the script / Lean file, and line-pinned reads of the current files).
+#
+# What Pass 3 changed (the one v2 remediation item — closed as an honest REDUCED model, Section 3b):
+#   1. Trigger-hair FLYC1/MscS-like Boltzmann mechanotransduction (0-D): `trigger_hair_open_probability`
+#      L703-710, `trigger_hair_receptor_potential` L712-716, `analytic_point_threshold_force_uN` L718-722.
+#   2. P1 finite-element FitzHugh-Nagumo action potential on the lobe planform: `build_lobe_fem_mesh`
+#      L737-761 (2057 nodes / 3949 elements), `assemble_p1_fem` L778-796, IMEX solver
+#      `simulate_fem_action_potential` L798-873; validated against the exact Nagumo front speed
+#      sqrt(2D/tau_v)(1/2-a) (strip 9.55 vs 9.80 cm/s, 2.5 % error; v ~ D^0.496; monotone h-convergence).
+#   3. Two-touch Ca2+ counting memory and lumped-area gate A(t) on the Pass 2 shell solver:
+#      `simulate_touch_protocol_coupled_snap` L993-1067, `evaluate_touch_counting_protocols` L1074-1100
+#      (one touch -> no snap; Delta = 10 s -> snap, latency 354 ms; memory window bracket (20, 25) s vs
+#      analytic 24.8 s).
+#   4. Figure 3x3 (Panels G/H/I), new GIF `venus_flytrap_snap_buckling_ap_wave.gif`, 8 new measurements
+#      (17 total), self-test 8 -> 12 suites, 2 new Lean theorems (5 laws, 0 sorrys), new SHA-pinned
+#      `trigger_hair_ap_reference.json`, 8 new bib entries (DOIs recalled offline, unverified).
+#
+# Why the overall score goes DOWN (94.0 -> 80.4) despite closing the item: the v2 scores credited
+# Pearson r = 1.0000 / RMSE = 0.0000 agreements that are circular (the `*_obs` columns of
+# `venus_flytrap_snap_buckling_reference.json` are outputs of the same analytic/ODE model), credited
+# specimen "reference values" that are the script's own recorded outputs, and did not penalise the
+# inconsistent energy functionals between `relax_shell_equilibrium_2d` and the dynamics, the dead CLI
+# flags, or the unsourced motor constants. Pass 3 adds a genuinely verified FEM component but the new
+# literature anchors are `literature-approx` recalled offline, so the honest re-score is lower.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale. Line numbers refer to
+# the working-tree files at checkpoint de27b685 (uncommitted Pass 3 remediation diff on top of it).
+
+audit:
+  id: 2026-10-19-venus-flytrap-snap-buckling-audit-v3
+  supersedes: 2026-10-19-venus-flytrap-snap-buckling-audit-v2
+  supersedes_audit_id: 2026-10-19-venus-flytrap-snap-buckling-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 066 Pass 3 Assessor, Phase B subagent)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/66
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: de27b685
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) evaluation of `2005-forterre-venus-flytrap-snap-buckling.py` (2028 lines,
+      12/12 self-test suites in ~18 s, default render ~45-49 s) after the Phase A remediation in
+      `2026-10-19-venus-flytrap-snap-buckling-loop-pass3`. The Pass 3 diff (+858/-? lines in the
+      script, +70 in the Lean file) is in the working tree on top of de27b685.
+
+references:
+  forterre2005:
+    title: "How the Venus Flytrap Snaps"
+    authors: "Forterre Y, Skotheim JM, Dumais J, Mahadevan L"
+    venue: "Nature 433(7024):421-425 (2005)"
+    doi: 10.1038/nature03185
+  skotheim2005:
+    title: "Physical Limits and Design Principles for Plant and Fungal Movements"
+    authors: "Skotheim JM, Mahadevan L"
+    venue: "Science 308(5726):1308-1310 (2005)"
+    doi: 10.1126/science.1107976
+  forterre2013:
+    title: "Slow, Fast and Furious: Understanding the Physics of Plant Movements"
+    authors: "Forterre Y"
+    venue: "Journal of Experimental Botany 64(15):4745-4760 (2013)"
+    doi: 10.1093/jxb/ert230
+  sachse2020:
+    title: "Snapping Mechanics of the Venus Flytrap (Dionaea muscipula)"
+    authors: "Sachse R, Westermeier A, Mylo M, Nadasdi J, Bischoff M, Speck T, Poppinga S"
+    venue: "Proceedings of the National Academy of Sciences 117(27):16035-16042 (2020)"
+    doi: 10.1073/pnas.2002707117
+  hedrich2018:
+    title: "Venus Flytrap: How an Excitable, Carnivorous Plant Works"
+    authors: "Hedrich R, Neher E"
+    venue: "Trends in Plant Science 23(3):220-234 (2018) — DOI recalled offline, unverified (Pass 3)"
+    doi: 10.1016/j.tplants.2017.12.004
+  bohm2016:
+    title: "The Venus Flytrap Dionaea muscipula Counts Prey-Induced Action Potentials to Induce Sodium Uptake"
+    authors: "Böhm J, Scherzer S, Krol E, et al."
+    venue: "Current Biology 26(3):286-295 (2016) — DOI recalled offline, unverified (Pass 3)"
+    doi: 10.1016/j.cub.2015.11.057
+  suda2020:
+    title: "Calcium dynamics during trap closure visualized in transgenic Venus flytrap"
+    authors: "Suda H, Mano H, Toyota M, et al."
+    venue: "Nature Plants 6(10):1219-1224 (2020) — DOI recalled offline, unverified (Pass 3)"
+    doi: 10.1038/s41477-020-00773-1
+  scherzer2019:
+    title: "Venus flytrap trigger hairs are micronewton mechano-sensors that can detect small insect prey"
+    authors: "Scherzer S, Federle W, Al-Rasheid KAS, Hedrich R"
+    venue: "Nature Plants 5(7):670-675 (2019) — DOI recalled offline, unverified (Pass 3)"
+    doi: 10.1038/s41477-019-0465-1
+  procko2021:
+    title: "Stretch-activated ion channels identified in the touch-sensitive structures of carnivorous Droseraceae plants"
+    authors: "Procko C, Murthy S, Keenan WT, et al."
+    venue: "eLife 10:e64250 (2021) — DOI recalled offline, unverified (Pass 3)"
+    doi: 10.7554/eLife.64250
+  volkov2008:
+    title: "Kinetics and mechanism of Dionaea muscipula trap closing"
+    authors: "Volkov AG, Adesina T, Markin VS, Jovanov E"
+    venue: "Plant Physiology 146(2):694-702 (2008) — DOI recalled offline, unverified (Pass 3)"
+    doi: 10.1104/pp.107.108241
+  hodick1988:
+    title: "The action potential of Dionaea muscipula Ellis"
+    authors: "Hodick D, Sievers A"
+    venue: "Planta 174(1):8-18 (1988) — DOI recalled offline, unverified (Pass 3)"
+    doi: 10.1007/BF00394867
+  mckean1970:
+    title: "Nagumo's equation"
+    authors: "McKean HP"
+    venue: "Advances in Mathematics 4(3):209-223 (1970) — DOI recalled offline, unverified (Pass 3)"
+    doi: 10.1016/0001-8708(70)90023-X
+
+simulations:
+  - id: forterre-venus-flytrap-snap-buckling
+    name: "Forterre et al. (2005) Nature Doubly-Curved Shallow Shell Elastic Energy & Saddle-Node Cusp Catastrophe in Dionaea muscipula, coupled to a P1-FEM trigger-hair action potential and Ca2+ counting gate"
+    organism: "Dionaea muscipula (Venus flytrap bilobed leaf trap)"
+    script: 2005-forterre-venus-flytrap-snap-buckling.py
+    output: docs/media/venus_flytrap_snap_buckling_comparison.png
+    extra_outputs:
+      - docs/media/venus_flytrap_snap_buckling_growth.gif
+      - docs/media/venus_flytrap_snap_buckling_ap_wave.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-venus-flytrap-snap-buckling-audit-v2
+    source_refs:
+      - forterre2005
+      - skotheim2005
+      - forterre2013
+      - sachse2020
+      - hedrich2018
+      - bohm2016
+      - suda2020
+      - scherzer2019
+      - procko2021
+      - volkov2008
+      - hodick1988
+      - mckean1970
+    claim_boundary:
+      reported_in_source:
+        - "Forterre et al. (2005): the Dionaea lobe is a doubly-curved shallow shell whose stretching-bending coupling alpha = L^4 kappa^2/h^2 produces a bistable snap-through (cusp catastrophe) once alpha exceeds a threshold; closure takes ~100 ms, far faster than the poroelastic limit; curvature-relief strip cutting abolishes snapping"
+        - "Hedrich & Neher (2018), Böhm et al. (2016), Suda et al. (2020): two trigger-hair touches within ~30 s (two action potentials, a Ca2+ threshold) are required to close the trap; Hodick & Sievers (1988) / Volkov et al. (2008): the lobe AP propagates at cm/s speeds with ~1-2 s duration (values conflict between sources)"
+        - "Scherzer et al. (2019), Procko et al. (2021): trigger hairs are micronewton mechanosensors with the stretch-activated channel FLYC1"
+      reconstructed_in_script:
+        - "2D doubly-curved shallow shell energy U(kappa_x, kappa_y) with Gauss stretching penalty, L-BFGS-B equilibrium relaxation, cusp fold metrics and RK45 inertial + poroelastic snap dynamics across alpha in [0.2, 5.0] (Pass 2)"
+        - "Boltzmann trigger-hair open probability -> receptor potential clamp on hair-footprint nodes -> P1-FEM IMEX FitzHugh-Nagumo action potential on a flat Delaunay lobe planform (2057 nodes), validated against the exact Nagumo front speed; per-node Ca2+ integrator with two-touch counting; lumped activated-area fraction A(t) gating the active rest curvature of the shell solver (Pass 3)"
+      transfer_boundary:
+        - "The electrical problem is solved on a FLAT 2D planform mesh, not on the curved mid-surface, and the FEM does not see kappa(t); the motor response is a scalar gate A(t) on a two-mode shell, not a spatially resolved turgor field"
+        - "AP_DIFFUSIVITY_CM2_S, AP_TAU_V_S, TRIGGER_HAIR_F_HALF_UN, CA_INCREMENT_PER_AP and CA_DECAY_TAU_S are model constants chosen so that the analytic speed, threshold and memory window land in the recalled literature ranges; agreement in measurements 14 and 17 is therefore parameter-driven, only the FEM-load elevation above the 0-D threshold (liminal ratio 1.55) is emergent"
+        - "The `*_obs` columns of venus_flytrap_snap_buckling_reference.json are generated by the same model, so measurements 3-6 (r = 1.0000) are self-consistency checks, not comparisons with Forterre et al. (2005) data"
+      does_not_claim:
+        - "Hodgkin-Huxley-type Ca2+/Cl-/K+ channel kinetics, a trigger-hair lever/podium FEM, mechanical feedback from shell curvature onto the electrics, digitised Forterre (2005) Fig. 2-3 time series, or online-verified DOIs for the 8 electrophysiology references added in Pass 3"
+    summary: >-
+      Pass 3 (v3) evaluation of `2005-forterre-venus-flytrap-snap-buckling.py` (overall weighted
+      score 80.4/100, down from 94.0 in v2). The Pass 2 remediation item is closed as an honest
+      reduced model: a Boltzmann trigger-hair mechanotransducer initiates a P1 finite-element
+      FitzHugh-Nagumo action potential on the lobe planform (planar front 9.55 vs exact Nagumo
+      9.80 cm/s, v ~ D^0.496, monotone h-convergence), a per-node Ca2+ counter implements the
+      two-touch memory (analytic window 24.8 s bracketed by the sweep in (20, 25) s) and the
+      activated-area fraction gates the Pass 2 shell solver (one touch -> no snap, two touches
+      at 10 s -> snap with 354 ms latency). The score falls because the v2 credit for r = 1.0000
+      agreements was for model-vs-model comparisons (`*_obs` columns generated by the same
+      analytics), the specimen "reference values" are self-recorded, the L-BFGS-B relaxation
+      minimises a different functional from the dynamics, `--L`, `--h`, `--seed` are dead flags,
+      the motor constants have no provenance, and the 8 new DOIs/literature values were recalled
+      offline and are flagged `literature-approx` rather than digitised.
+    scores:
+      model-fidelity:
+        value: 82
+        rationale: >-
+          The Pass 2 shell model is intact: shallow-shell energy with Gauss stretching penalty
+          (`gauss_stretching_energy` L231-244, `doubly_curved_shell_energy` L246-263), cusp fold
+          metrics (L334-370) and RK45 coupled snap dynamics (`simulate_coupled_snap_dynamics`
+          L373-451). Pass 3 adds a genuine, verified reduced electrophysiology layer: P1 FEM
+          assembly (grad-grad stiffness + lumped mass, L778-796), IMEX FitzHugh-Nagumo solver with
+          implicit diffusion via `splu` (L798-873), planar front speed within 2.5 % of the exact
+          Nagumo formula (L725-731) and the two-touch Ca2+ gate on the rest curvature (L993-1067),
+          backed by 5 Lean 4 theorems (0 sorrys). Deductions: `relax_shell_equilibrium_2d`
+          minimises `((kx+ky)/2)^2 - k_init^2)^2` (L300, L307) while the energy/gradient/dynamics
+          use the Gauss product `(kx*ky - k_init^2)^2` — two different functionals, and its
+          `barrier_energy` (L330) is the closed-form cusp expression, not derived from the
+          minimisation (-6); the electrics are solved on a flat planform with no curvature feedback
+          and FitzHugh-Nagumo stands in for the multi-channel Ca2+/Cl-/K+ AP (-5); the motor
+          response is a scalar gate A(t) on a two-mode shell, not a turgor/curvature field (-4);
+          the 0-D hair mechanics has no lever/podium geometry (-3).
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [231, 281], note: "Gauss stretching penalty, shell energy and analytic gradient use (kx*ky - k_init^2)^2", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [282, 333], note: "relax_shell_equilibrium_2d minimises a mean-curvature functional ((kx+ky)/2)^2 at L300/L307 — inconsistent with the dynamics; barrier_energy at L330 is closed-form", supports: false}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [373, 451], note: "Coupled 2D (kappa_x(t), kappa_y(t)) poroelastic + inertial RK45 snap solver (Pass 2, unchanged)", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [703, 731], note: "Boltzmann trigger-hair open probability, receptor potential, 0-D point threshold and exact Nagumo front speed sqrt(2D/tau_v)(1/2 - a)", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [737, 873], note: "Delaunay lobe/strip meshes, P1 stiffness + lumped mass assembly, IMEX FitzHugh-Nagumo FEM action potential with receptor-potential clamp on hair-footprint nodes; flat planform, no kappa(t) feedback", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [993, 1067], note: "Per-node Ca2+ counter and lumped activated-area fraction A(t) gating kappa_x0 in the Pass 2 shell solver", supports: true}
+          - {file: morphoeval/lean/loops/Loop_066_venus_flytrap_snap_buckling.lean, lines: [130, 184], note: "Laws 4-5: forterre_two_touch_calcium_counting (L133-150) and forterre_calcium_gated_rest_curvature (L169-184); file verifies with 0 sorrys", supports: true}
+      specimen-match:
+        value: 80
+        rationale: >-
+          The SHA-256-pinned CC BY-SA 2.5 Dionaea specimen is segmented into anthocyanin inner
+          lobes, midrib hinge (x = 453 px) and 15 marginal cilia teeth (`segment_dionaea_trap_specimen`
+          L1104-1185) and shown in Panel F; the new Panel G renders the FEM arrival-time map on the
+          same ellipse planform as the bilobed mesh with the three hair positions, and the lobe
+          conduction velocity 8.35 cm/s falls inside the recalled 6-20 cm/s range. Deductions: the
+          3D trap geometry of Panel A (`build_bilobed_trap_mesh` L1187-1214) is an illustrative
+          parametrisation (0.42*kx+0.12, 0.22, 0.28, 0.18) not derived from the shell energy (-6);
+          the specimen symmetry 0.9745 and cilia CV 0.3905 are compared with the script's own
+          recorded outputs (L1776, L1786), so the specimen "match" is tautological (-6); hair
+          positions `LOBE_TRIGGER_HAIRS_REL` (L700) and the 0.15 cm footprint (L687) are model
+          placements, not measured from the specimen (-4); the planform mesh is flat and does not
+          follow the segmented lobe contour (-4).
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1104, 1185], note: "Anthocyanin lobe contour, midrib hinge and marginal cilia tooth segmentation on the SHA-pinned Dionaea specimen", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1187, 1214], note: "build_bilobed_trap_mesh uses illustrative shape factors (0.42*kx+0.12, 0.22, 0.28, 0.18) not derived from the energy", supports: false}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1425, 1455], note: "Panel G: FEM arrival-time map + mesh + hair footprints on the lobe planform", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1772, 1790], note: "Specimen measurements 8-9 use reference_value 0.9745 / 0.3905 = the script's own earlier outputs", supports: false}
+          - {file: docs/media/venus_flytrap_snap_buckling_comparison.png, lines: [0, 0], note: "9-panel figure: shell meshes, pitchfork, 3-stage kinematics, cusp diagram, scaling/ablation, specimen segmentation, FEM arrival map, one- vs two-touch traces, memory sweep", supports: true}
+          - {file: docs/media/venus_flytrap_snap_buckling_ap_wave.gif, lines: [0, 0], note: "23-frame AP front crossing the lobe followed by the Ca2+-gated snap", supports: true}
+      parameter-expressivity:
+        value: 78
+        rationale: >-
+          Pass 2 sweeps remain (10 alpha values L452-540, 12-point kinematics L541-604, 5
+          developmental/ablation specimens L605-682). Pass 3 adds a diffusivity ablation sweep
+          (`evaluate_diffusivity_scaling_sweep` L908-924, v ~ D^0.496), an h-refinement study
+          (L925-931), a force bisection for the FEM initiation threshold (L969-992), an 8-interval
+          two-touch memory sweep (L1074-1100) and three functional CLI flags `--hair-force`,
+          `--touch-interval`, `--ap-diffusivity` (L1993-1995, dispatched at L2008-2017).
+          Deductions: `--L`, `--h`, `--seed` (L1999-2001) are parsed but never used — there is no
+          RNG and L/h are not passed to any solver (-10); `--hair-force` only affects the panels and
+          GIF while `measure_morphoeval()` always uses 6.0 µN (L934, L1222) (-5); the mesh
+          convergence study holds `FEM_DT_S` fixed so the error plateaus at ~2.4 % (-4); no sweep
+          of hair position or footprint radius, although the footprint must exceed the 2D critical
+          nucleus or nothing fires (-3).
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [452, 682], note: "Alpha bifurcation sweep, three-stage kinematics and developmental/ablation specimen sweep (Pass 2)", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [908, 931], note: "Diffusivity scaling sweep and h-refinement study; dt is not refined with h", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [969, 992], note: "Bisection of trigger-hair force for all-or-none FEM initiation (F_min = 3.00 µN vs 0-D 1.93 µN)", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1074, 1100], note: "Single-touch, 8-interval two-touch sweep and (0, 60, 70) s three-touch protocols", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1993, 2001], note: "--hair-force / --touch-interval / --ap-diffusivity functional; --L, --h, --seed parsed but unused", supports: false}
+      morphometric-validation:
+        value: 72
+        rationale: >-
+          `measure_morphoeval()` (L1680-1873) now returns 17 measurements. The genuinely
+          validating ones are the FEM-vs-exact-Nagumo strip speed (9.55 vs 9.80 cm/s, measurement
+          10), the diffusivity exponent 0.496 vs 0.5 (12), and the emergent FEM-vs-0-D threshold
+          elevation (14); the lobe speed 8.35 cm/s (11) and AP duration 1.55 s (13) land in the
+          recalled literature ranges. Deductions: measurements 3-6 report r = 1.0000 / RMSE =
+          0.0000 against `*_obs` columns produced by the same analytic/ODE model (circular) and
+          Panel C labels them "Forterre et al. (2005) ref" (L1316) (-10); measurements 8-9 compare
+          with self-recorded values (L1776, L1786) (-5); measurement 14 (F_min 3.00 vs 2.9 µN) is
+          parameter-driven because `TRIGGER_HAIR_F_HALF_UN` = 2.9 (L683) is set at the literature
+          threshold, and measurement 17 (24.8 s) is fixed by `CA_INCREMENT_PER_AP`/`CA_DECAY_TAU_S`
+          (L696-697) — the self-test checks sweep/analytic consistency, not the literature 30 s (-6);
+          the latency reference 0.3 s (16) is soft and dominated by the inherited `tau_active` =
+          0.18 s (-3); all new reference values are `literature-approx`, not digitised figures (-4).
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1680, 1873], note: "17 morphometric measurements with reference values, p-values, RMSE and ranges", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1793, 1831], note: "Measurements 10-13: FEM strip speed vs exact Nagumo, lobe speed, D-exponent, AP duration — the FEM-vs-analytic checks are genuine verification", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1722, 1760], note: "Measurements 3-6: r = 1.0000 against *_obs columns generated by the same model (circular)", supports: false}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1316, 1317], note: "Panel C legend labels model-generated points 'Forterre et al. (2005) ref'; Stage II shading hard-coded 0.21-0.30 s", supports: false}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [683, 700], note: "Model constants (F_half = 2.9 µN, D, tau_v, c_Ca, tau_Ca) chosen so threshold, speed and memory window land in the recalled literature ranges", supports: false}
+          - {file: datasets/venus_flytrap_snap_buckling/trigger_hair_ap_reference.json, lines: [1, 63], note: "Reference table separates provenance 'model' / 'literature-approx' / 'theory-exact'; doi_verified_offline: false", supports: true}
+      source-traceability:
+        value: 80
+        rationale: >-
+          Five dataset files are SHA-256-pinned and verified fail-closed at runtime
+          (`EXPECTED_SHA256` L124-143, `verify_dataset_integrity` L155-167), including the new
+          `trigger_hair_ap_reference.json`; `paper_citations.bib` carries 12 entries with DOIs and
+          the module header lists all 12 sources (L1-76). The new JSON honestly tags every value
+          with provenance and `doi_verified_offline: false`. Deductions: the 8 new DOIs and every
+          new numeric literature value were recalled offline and are NOT verified (bib `note =
+          {DOI unverified offline (Pass 3)}`) (-8); the Volkov 2008 (m/s, ms) vs Hodick & Sievers
+          1988 (cm/s, s) discrepancy on AP speed/duration is noted but unresolved (-4); the bib
+          digest changed (f6ac2d52... -> b7c452b0...) so the v2 measurements' recorded digest is
+          stale (-2); the `*_obs` reference columns in the Pass 2 JSON have no documented
+          literature provenance (-6).
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [124, 167], note: "SHA-256 registry for 5 dataset files (bib digest updated for +8 entries) and fail-closed runtime verification", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1, 76], note: "Module header lists 12 sources with DOIs and states that DOIs 5-12 were recalled offline and not verified", supports: true}
+          - {file: datasets/venus_flytrap_snap_buckling/paper_citations.bib, lines: [48, 141], note: "8 Pass 3 entries each with note = {DOI unverified offline (Pass 3)}", supports: false}
+          - {file: datasets/venus_flytrap_snap_buckling/trigger_hair_ap_reference.json, lines: [1, 63], note: "Per-value provenance tags; doi_verified_offline: false; Volkov vs Hodick & Sievers discrepancy noted, unresolved", supports: true}
+          - {file: datasets/venus_flytrap_snap_buckling/README.md, lines: [16, 36], note: "Pass 3 section and file list including SHA-pinned new JSON and unverified-DOI disclosure", supports: true}
+      code-traceability:
+        value: 86
+        rationale: >-
+          The module header maps Laws 1-5 to the Lean theorems and to the paper equations
+          (L24-93), Section 3b constants are each commented `model` or `approx.` (L683-700), and
+          `morphoeval/math_kg_loops/forterre-venus-flytrap-snap-buckling.yaml` registers all 5
+          equations with `lean_locus` and single-range `code_locus` refreshed to current line
+          numbers. Deductions: Panel A shape factors (L1187-1214), the hard-coded 56.0 ms in
+          `speedup_ratio_over_poroelastic` (L214) and the 0.21-0.30 s Stage II shading (L1317) are
+          uncited magic numbers (-6); `kx0_final = -2.65`, `m_eff = 0.0020`, `zeta = 0.080`,
+          `tau_active = 0.18` (L377-380, inherited at L1000-1003) have no literature provenance
+          and `nu = 0.28`, `c_stretch = 1.60` are chosen so alpha_c = 0.80 exactly (-5);
+          `AP_REST_MV`/`AP_PEAK_MV` (L694-695) only colour the GIF (-1); the strip benchmark
+          reports `ap_duration_half_amp_s = 0` because it has no probe nodes (L904) (-2).
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [24, 93], note: "Laws 1-5 mapped to Lean theorems and paper equations; honest-reduction statement", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [683, 700], note: "Section 3b constants each commented model / approx.", supports: true}
+          - {file: morphoeval/math_kg_loops/forterre-venus-flytrap-snap-buckling.yaml, lines: [39, 123], note: "5 equations with lean_locus and single-range code_locus (+ code_locus_secondary) refreshed to current lines", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [373, 383], note: "Unsourced motor constants tau_active 0.18 s, m_eff 0.0020, zeta 0.080, kx0_final -2.65", supports: false}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [214, 214], note: "speedup_ratio_over_poroelastic hard-codes 56.0 ms", supports: false}
+      repro-package:
+        value: 88
+        rationale: >-
+          `self_test()` (L1881-1987) runs 12 suites in ~18 s: the 8 Pass 2 checks plus FEM
+          accuracy/convergence/sqrt(D) scaling/K*1 = 0 & mass = area, lobe AP full activation and
+          literature-range checks, two-touch counting incl. analytic bracket and lapsed memory, and
+          bitwise determinism (two runs, atol = 0) plus A = 0 => kappa_x0 == k_init. All five
+          dataset files are SHA-verified; the default run regenerates the PNG, both GIFs and
+          re-runs the self-test (L2019-2023); the growth GIF regenerates bitwise identically to
+          Pass 2. Deductions: dead `--L`/`--h`/`--seed` flags mislead users about what is
+          reproducible under override (-4); default render takes ~45-49 s and the environment is
+          not pinned by a lock file in this slot (-4); the self-test asserts model-internal
+          consistency (sweep vs analytic window) where a literature check is implied (-4).
+        evidence:
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1881, 1987], note: "12-suite self_test() incl. FEM accuracy, lobe AP, two-touch counting, bitwise determinism", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1988, 2026], note: "CLI and default pipeline: figure, growth GIF, AP-wave GIF, self-test", supports: true}
+          - {file: 2005-forterre-venus-flytrap-snap-buckling.py, lines: [1999, 2001], note: "--L, --h, --seed parsed but unused", supports: false}
+    remediation:
+    - >-
+      2005-forterre-venus-flytrap-snap-buckling.py:737-761, 798-873, 993-1067 — the electrics are solved on a flat
+      Delaunay planform with FitzHugh-Nagumo kinetics and the motor response is a scalar activated-area gate A(t)
+      on the two-mode shell. Solve the AP on the curved mid-surface (Laplace-Beltrami on the bilobed mesh of
+      L1187-1214), replace FHN with a Hodgkin-Huxley-type Ca2+/Cl-/K+ channel model (Hedrich & Neher 2018), and let
+      Ca2+ drive a spatially resolved turgor/rest-curvature field rather than a scalar gate.
+    - >-
+      2005-forterre-venus-flytrap-snap-buckling.py:282-333 vs 246-281 — `relax_shell_equilibrium_2d` minimises
+      ((kx+ky)/2)^2 - k_init^2)^2 (L300, L307) while `doubly_curved_shell_energy`/`_gradient` and the dynamics use
+      the Gauss product (kx*ky - k_init^2)^2; its `barrier_energy` (L330) is the closed-form cusp formula. Make the
+      relaxation minimise the same functional as the dynamics and derive the barrier from the saddle of that
+      minimisation.
+    - >-
+      datasets/venus_flytrap_snap_buckling/venus_flytrap_snap_buckling_reference.json `*_obs` columns and
+      2005-forterre-venus-flytrap-snap-buckling.py:1316, 1722-1791 — the alpha sweep, three-stage time series and
+      developmental table are outputs of the same model (r = 1.0000 by construction) yet Panel C labels them
+      "Forterre et al. (2005) ref", and specimen measurements 8-9 use self-recorded reference values 0.9745 / 0.3905.
+      Replace with digitised Forterre (2005) Fig. 2-3 values (with provenance) and drop or relabel the
+      self-referential specimen reference values.
+    - >-
+      datasets/venus_flytrap_snap_buckling/paper_citations.bib:48-141 and trigger_hair_ap_reference.json — all 8 new
+      DOIs and every numeric literature value were recalled offline (`DOI unverified offline (Pass 3)`,
+      `literature-approx`). Verify the DOIs online, digitise Hodick & Sievers (1988) / Hedrich & Neher (2018) AP
+      speed and duration values, and resolve the Volkov (2008) m/s-ms vs Hodick & Sievers cm/s-s discrepancy.
+    - >-
+      2005-forterre-venus-flytrap-snap-buckling.py:1999-2001, 373-383, 214, 1317 — `--L`, `--h`, `--seed` are parsed
+      but never used; `kx0_final = -2.65`, `m_eff = 0.0020`, `zeta = 0.080`, `tau_active = 0.18` have no literature
+      provenance; `speedup_ratio_over_poroelastic` hard-codes 56.0 ms and the Stage II shading 0.21-0.30 s is
+      hard-coded. Wire or remove the dead flags, source the motor constants (e.g. Sachse 2020 / Forterre 2005
+      Fig. 2) and compute the shaded interval from the simulated trajectory.
+    - >-
+      2005-forterre-venus-flytrap-snap-buckling.py:683-700, 925-931, 934, 1222 — `TRIGGER_HAIR_F_HALF_UN` = 2.9 µN,
+      `AP_DIFFUSIVITY_CM2_S`, `AP_TAU_V_S`, `CA_INCREMENT_PER_AP`, `CA_DECAY_TAU_S` are tuned so that measurements
+      14 and 17 land on the recalled literature values; `evaluate_fem_mesh_convergence` holds `FEM_DT_S` fixed so the
+      error plateaus at ~2.4 %; `--hair-force` never reaches `measure_morphoeval()`. Report tuned constants as
+      calibration (not prediction) in the measurement notes, refine dt with h in the convergence study, and
+      thread `--hair-force` into the measurements.

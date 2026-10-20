@@ -1,0 +1,405 @@
+# MorphoEval audit — Sharon, Roman, Marder & Swinney (2002) Nature Ripping Leaf Edge Waves, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `2002-sharon-ripping-leaf-edge-waves.py` and `datasets/ripping_leaf_edge_waves/` after the
+# remediation of the single open v2 finding in the instrumented loop
+# `morphoeval/runs/2026-10-19-ripping-leaf-edge-waves-loop-pass3`, superseding
+# `2026-10-19-ripping-leaf-edge-waves-audit-v2` (93.6).
+#   - Primary assessor: Gemini 4 Argon (MorphoEval Autonomous Loop Slot 067 Pass 3 Assessor), scoring from the
+#     Phase A handoff evidence, the `git diff` of the three remediated files and the current file contents
+#     at commit 327729c8.
+#
+# What Pass 3 changed (the one v2 remediation item, closed as an honest *reduced* model):
+#   1. New script section 5b (L709-L1095): a 1D spatio-temporal gene/hormone module on a growing Lagrangian
+#      margin lattice (180 cells, L_0 = 36 mm, 240 h, dt = 0.1 h) — basipetal CIN/TCP maturation front
+#      m(y,t) (`tcp_maturation_field`, L766-L774), PIN1 up-the-gradient auxin transport with no-flux ends
+#      (`pin1_up_the_gradient_transport`, L776-L797; exactly mass-conserving), CUC2 repressed by auxin and TCP
+#      and gating PIN1, interior / marginal growth strains Gamma_int, Gamma_mar and the developmental excess
+#      metric g_0(y,t) = ((1+Gamma_mar)/(1+Gamma_int))^2 - 1 (`simulate_tcp_auxin_margin_development`,
+#      L805-L1012). The non-Euclidean FvK cascade is RE-SOLVED on the developmental <g_0> (L962) and the
+#      Brioschi K(0) recomputed on it (L963); serration tips, the primary-lobe / secondary-serration
+#      hierarchy and emergence time are read off the outgrowth field s(y,t) (L924-L945).
+#   2. Five genotype presets (`GENOTYPE_PRESETS`, L743-L750: wild type, cin/jaw-D TCP loss-of-function,
+#      miR319-resistant TCP over-expression, cuc2, pin1) swept against a 6-check literature ORDINAL phenotype
+#      table (`evaluate_developmental_genotype_sweep`, L1037-L1095; 6/6 true), a new SHA-256-pinned reference
+#      table `tcp_auxin_developmental_reference.json` (L741, L753-L763), 9 new citations, a new 6-panel
+#      figure + 12-frame GIF (`render_developmental_figure` L1409-L1564, `render_developmental_gif`
+#      L1567-L1594), 6 new measurements (15 total, L1616-L1785), 3 new self-test checks (11 total,
+#      L1787-L1888) and CLI `--genotype` / `--skip-developmental` (L1899-L1905).
+#   3. Three new Lean 4 theorems (6 total, 0 sorrys; `lean` exit 0): `tcp_arrested_marginal_growth_increment`
+#      (L133-L150), `developmental_excess_metric_nonneg` (L160-L174), `pin_pairwise_transport_mass_conservation`
+#      (L184-L194), registered as equations 4-5 in `morphoeval/math_kg_loops/sharon-ripping-leaf-edge-waves.yaml`.
+#
+# Scores below: overall 92.1 (down from 93.6). The v2 remediation item is closed, but this pass deliberately
+# looks for the next layer of defects and finds it: the wild-type developmental calibration target (g_0 = 0.64)
+# is the Pass 2 module's own value, 4 of the 6 new measurements compare against placeholder or cross-module
+# references rather than digitised data, the serration wavelength is a parameter choice, the 9 new DOIs could
+# not be verified online (network tools disallowed), and the Pass 2 FvK "minimizer" is a surrogate energy
+# whose target slopes / penetration depths / cutoffs are chosen so that the output reproduces the reference
+# table (r = 1.0000 by construction) — a legacy defect the v2 audit under-weighted. Scores are uncalibrated
+# criterion-referenced scores on the rubric's 0-100 scale. Line numbers refer to the files at commit 327729c8.
+
+audit:
+  id: 2026-10-19-ripping-leaf-edge-waves-audit-v3
+  supersedes: 2026-10-19-ripping-leaf-edge-waves-audit-v2
+  supersedes_audit_id: 2026-10-19-ripping-leaf-edge-waves-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 067 Pass 3 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/67
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 327729c8
+    environment:
+      python: "3.14.7"
+      numpy: "2.4.2"
+      scipy: "1.17.0"
+      matplotlib: "3.10.8"
+      Pillow: "12.1.1"
+    note: >-
+      Pass 3 (v3) evaluation of `2002-sharon-ripping-leaf-edge-waves.py` (1941 lines; 11 self-test checks;
+      15 measurements) after Step 12 closed-loop remediation in
+      `2026-10-19-ripping-leaf-edge-waves-loop-pass3`. The working tree at 327729c8 carries the uncommitted
+      Pass 3 edits to the script, `morphoeval/lean/loops/Loop_067_ripping_leaf_edge_waves.lean` (196 lines,
+      6 theorems, 0 sorrys), `morphoeval/math_kg_loops/sharon-ripping-leaf-edge-waves.yaml` (5 equations),
+      `datasets/ripping_leaf_edge_waves/` (+ `tcp_auxin_developmental_reference.json`,
+      `developmental_citations_pass3.bib`, README addendum) and the two new media files. The 4 Pass 2
+      SHA-256-pinned dataset files are byte-unchanged; `ripping_leaf_edge_waves_comparison.png` and
+      `ripping_leaf_edge_waves_growth.gif` regenerate byte-identically (SHA-256 d5fb947f..., 6fb757af...).
+
+references:
+  sharon2002:
+    title: "Mechanics: Buckling cascades in free sheets"
+    authors: "Sharon E, Roman B, Marder M, Shin G-S, Swinney HL"
+    venue: "Nature 419(6907):579-580 (2002)"
+    doi: 10.1038/419579a
+  audoly2003:
+    title: "Self-Similar Structures near Boundaries in Strained Systems"
+    authors: "Audoly B, Boudaoud A"
+    venue: "Physical Review Letters 91(8):086105 (2003)"
+    doi: 10.1103/PhysRevLett.91.086105
+  liang2009:
+    title: "The shape of a long leaf"
+    authors: "Liang H, Mahadevan L"
+    venue: "Proceedings of the National Academy of Sciences 106(52):22049-22054 (2009)"
+    doi: 10.1073/pnas.0911954106
+  sharon2004:
+    title: "Leaves, Flowers and Garbage Bags: Making Waves"
+    authors: "Sharon E, Marder M, Swinney HL"
+    venue: "American Scientist 92(3):254-261 (2004)"
+    doi: 10.1511/2004.3.254
+  nath2003:
+    title: "Genetic Control of Surface Curvature"
+    authors: "Nath U, Crawford BCW, Carpenter R, Coen E"
+    venue: "Science 299(5611):1404-1407 (2003)"
+    doi: 10.1126/science.1079354
+  palatnik2003:
+    title: "Control of leaf morphogenesis by microRNAs"
+    authors: "Palatnik JF, Allen E, Wu X, Schommer C, Schwab R, Carrington JC, Weigel D"
+    venue: "Nature 425(6955):257-263 (2003)"
+    doi: 10.1038/nature01958
+  bilsborough2011:
+    title: "Model for the regulation of Arabidopsis thaliana leaf margin development"
+    authors: "Bilsborough GD, Runions A, Barkoulas M, Jenkins HW, Hasson A, Galinha C, Laufs P, Hay A, Prusinkiewicz P, Tsiantis M"
+    venue: "Proceedings of the National Academy of Sciences 108(8):3424-3429 (2011)"
+    doi: 10.1073/pnas.1015162108
+  smith2006:
+    title: "A plausible model of phyllotaxis"
+    authors: "Smith RS, Guyomarc'h S, Mandel T, Reinhardt D, Kuhlemeier C, Prusinkiewicz P"
+    venue: "Proceedings of the National Academy of Sciences 103(5):1301-1306 (2006)"
+    doi: 10.1073/pnas.0510457103
+  jonsson2006:
+    title: "An auxin-driven polarized transport model for phyllotaxis"
+    authors: "Jönsson H, Heisler MG, Shapiro BE, Meyerowitz EM, Mjolsness E"
+    venue: "Proceedings of the National Academy of Sciences 103(5):1633-1638 (2006)"
+    doi: 10.1073/pnas.0509839103
+  koyama2007:
+    title: "TCP transcription factors control the morphology of shoot lateral organs via negative regulation of the expression of boundary-specific genes in Arabidopsis"
+    authors: "Koyama T, Furutani M, Tasaka M, Ohme-Takagi M"
+    venue: "Plant Cell 19(2):473-484 (2007)"
+    doi: 10.1105/tpc.106.044792
+  nikovics2006:
+    title: "The balance between the MIR164A and CUC2 genes controls leaf margin serration in Arabidopsis"
+    authors: "Nikovics K, Blein T, Peaucelle A, Ishida T, Morin H, Aida M, Laufs P"
+    venue: "Plant Cell 18(11):2929-2945 (2006)"
+    doi: 10.1105/tpc.106.045617
+  efroni2008:
+    title: "A protracted and dynamic maturation schedule underlies Arabidopsis leaf development"
+    authors: "Efroni I, Blum E, Goldshmidt A, Eshed Y"
+    venue: "Plant Cell 20(9):2293-2306 (2008)"
+    doi: 10.1105/tpc.107.057521
+  hay2006:
+    title: "The genetic basis for differences in leaf form between Arabidopsis thaliana and its wild relative Cardamine hirsuta"
+    authors: "Hay A, Barkoulas M, Tsiantis M"
+    venue: "Nature Genetics 38(8):942-947 (2006)"
+    doi: 10.1038/ng1835
+
+simulations:
+  - id: sharon-ripping-leaf-edge-waves
+    name: "Sharon et al. (2002) Nature / Audoly & Boudaoud (2003) PRL Non-Euclidean Edge Buckling Cascades in Ruffled Leaf Margins"
+    organism: "Lactuca sativa cv. 'Lollo Bionda' (Ruffled garden lettuce) & Brassica oleracea (Curly kale)"
+    script: 2002-sharon-ripping-leaf-edge-waves.py
+    output: docs/media/ripping_leaf_edge_waves_comparison.png
+    extra_outputs:
+      - docs/media/ripping_leaf_edge_waves_growth.gif
+      - docs/media/ripping_leaf_edge_waves_tcp_auxin_development.png
+      - docs/media/ripping_leaf_edge_waves_tcp_auxin_development.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-ripping-leaf-edge-waves-audit-v2
+    source_refs:
+      - sharon2002
+      - audoly2003
+      - liang2009
+      - sharon2004
+      - nath2003
+      - palatnik2003
+      - bilsborough2011
+      - smith2006
+      - jonsson2006
+      - koyama2007
+      - nikovics2006
+      - efroni2008
+      - hay2006
+    claim_boundary:
+      reported_in_source:
+        - "Sharon et al. (2002): a free sheet with excess marginal arc length (torn plastic, lettuce, kale) buckles into a self-similar sub-harmonic cascade of edge waves whose wavelength grows linearly with distance from the edge"
+        - "Audoly & Boudaoud (2003): self-similar cascade scaling lambda_{m+1} = lambda_m / r near a strained boundary"
+        - "Liang & Mahadevan (2009): saddle-to-ripple transition of a long leaf controlled by the dimensionless metric strain parameter"
+        - "Nath et al. (2003), Palatnik et al. (2003), Efroni et al. (2008): CIN/TCP transcription factors arrest marginal proliferation basipetally; cin / jaw-D leaves grow excess marginal area and become negatively curved, miR319-resistant TCP flattens"
+        - "Bilsborough et al. (2011), Nikovics et al. (2006), Koyama et al. (2007), Hay et al. (2006): CUC2-gated PIN1 auxin convergence points position serrations on the growing margin; cuc2 and pin1 margins are smooth"
+        - "Smith et al. (2006), Jönsson et al. (2006): up-the-gradient PIN1 polarisation generates auxin maxima"
+      reconstructed_in_script:
+        - "Exponential marginal metric g_yy(x) = 1 + g_0 exp(-x/ell), exact Brioschi K(x) < 0, linear lambda_loc(x), a surrogate L-BFGS-B FvK multi-generation cascade relaxation with flat-metric negative control, 3D mesh reconstruction, 9-station inward profile, 4-system taxon sweep and ExG specimen segmentation (Pass 2)"
+        - "Pass 3: 1D forward-Euler PDEs on a growing Lagrangian margin lattice for auxin (diffusion + PIN1 up-the-gradient transport + production - decay - growth dilution), CUC2 (repressed by auxin and TCP, gating PIN1) and a basipetal TCP maturation front; interior and marginal growth strains whose ratio gives g_0(y,t); the FvK cascade re-solved on <g_0>; serration tips, primary/secondary hierarchy and emergence time from the kinematic outgrowth field; 5 genotype presets vs a 6-check ordinal phenotype table"
+      transfer_boundary:
+        - "The gene network parameters (TCP front speed, auxin diffusion/transport/decay, CUC2 kinetics) are Arabidopsis-literature-motivated magnitudes applied to a Lactuca sativa margin; the wild-type calibration target g_0 = 0.64 is the Pass 2 Lactuca mechanical value, so WT agreement is a cross-module self-consistency check, not a measurement"
+        - "cin/WT = 1.5 and TCP-OE/WT = 0.6 in the reference table are placeholder magnitudes for the ordinal statements '> 1' and '< 1'; the serration-count range [5, 40] is a broad plausibility bound, not a digitised count"
+        - "The Pass 2 cascade relaxation minimises a surrogate energy whose target slope, aspect constant, penetration targets and activation cutoff are chosen so the output reproduces the reference table; wavelength / penetration r = 1.0000 are by construction"
+      does_not_claim:
+        - "A 2D growing-sheet FvK or FEM solution with spatially resolved K(x,y) feedback, mechanical feedback on PIN1 polarity, cell division on the stretching lattice, an elastic in-plane solution for serration outgrowth, digitised serration/lobe counts from Bilsborough 2011 or Nath 2003, or online verification of the 9 new DOIs"
+    summary: >-
+      Pass 3 (v3) evaluation of `2002-sharon-ripping-leaf-edge-waves.py` (overall weighted score 92.1/100, down
+      from 93.6 in v2). The single v2 remediation item is closed: the quasi-static non-Euclidean FvK solver is now
+      fed by a spatio-temporal CIN/TCP maturation front, PIN1 up-the-gradient auxin transport and CUC2 PDEs on a
+      growing Lagrangian margin lattice (`simulate_tcp_auxin_margin_development`, L805-L1012); the cascade is
+      re-solved on the developmental <g_0> = 0.6059 (K(0) = -0.001063 mm^-2, M = 4 generations), 27 serrations
+      emerge (12 primary lobes / 15 secondary, hierarchy ratio 3.99, spacing 2.19 mm), and 5 genotype ablations
+      satisfy 6/6 ordinal literature checks (cin <g_0> 2.10x WT and more negative K; TCP-OE 0.44x; cuc2 = pin1 =
+      0 serrations). Three new Lean 4 theorems (TCP-arrested growth increment, developmental excess metric
+      non-negativity, pairwise PIN1 mass conservation) verify with 0 sorrys. The score falls because this pass
+      surfaces the next layer of defects rather than hiding it: the WT developmental target is self-referential,
+      4 of 6 new measurements use placeholder / cross-module references, the serration wavelength is a parameter
+      choice, 9 new DOIs are unverified, and the Pass 2 FvK relaxation reproduces its reference table by
+      construction.
+    scores:
+      model-fidelity:
+        value: 93
+        rationale: >-
+          The Pass 2 metric / curvature / wavelength laws (`compute_target_metric_and_curvature`, L151-L195;
+          `compute_local_wavelength_profile`, L197-L211) are faithful to Sharon 2002 / Audoly & Boudaoud 2003 and
+          the new developmental module is a recognisable, honestly-labelled reduction of Nath 2003 / Bilsborough
+          2011 / Smith-Jönsson 2006: basipetal TCP front (L766-L774), exactly mass-conserving up-the-gradient
+          PIN1 exchange with no-flux ends (L776-L797), CUC2 gating, growth dilution and a growing Lagrangian
+          lattice whose strain ratio gives g_0(y,t) (L805-L1012), with the FvK cascade genuinely re-solved on the
+          developmental <g_0> (L962-L964) and 6 Lean 4 theorems (0 sorrys) covering Laws 1-5. Deductions: the
+          Pass 2 `relax_foppl_von_karman_cascade` (L230-L367) is a surrogate energy whose target slope
+          s_target (L307), aspect constant 1/sqrt(3) (L283), penetration targets 1.5/r_cascade * lambda_m (L253),
+          cutoff 4.65 t (L280) and hard Gamma < 120 gate (L302) are tuned so the output matches the reference
+          table — wavelength and penetration r = 1.0000 are inputs, not predictions (-4); the gene network is 1D
+          along the margin with no 2D sheet mechanics, no stress feedback on PIN1 polarity and no cell division,
+          and serration outgrowth ds/dt = k_s a (1-m) is kinematic bookkeeping rather than an elastic in-plane
+          growth solution (-2); the Hosta saddle fallback `lmin_s = 39.70` (L592) equals the reference value (-1).
+        evidence:
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [151, 228], note: "Exponential marginal metric, exact Brioschi K(x) < 0, linear lambda_loc(x) and dimensionless FvK strain parameter Gamma (Pass 2, unchanged)", supports: true}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [230, 367], note: "Surrogate L-BFGS-B FvK cascade relaxation: s_target (L307), c_aspect = 1/sqrt(3) (L283), penetration targets (L253), cutoff 4.65 t (L280), Gamma < 120 gate (L302) are prescribed so the output reproduces the reference table", supports: false}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [766, 797], note: "Basipetal CIN/TCP maturation front m(y,t) = sigma((v_tcp t - (L - y))/w) and 1D up-the-gradient PIN1 transport with no-flux ends (exactly mass-conserving)", supports: true}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [805, 1012], note: "Coupled auxin / CUC2 / TCP / growth PDEs on a growing Lagrangian lattice; excess metric g_0(y,t) = ((1+Gamma_mar)/(1+Gamma_int))^2 - 1; FvK cascade re-solved on <g_0> at L962 and K(0) recomputed at L963", supports: true}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [592, 592], note: "Hard-coded Hosta saddle fallback lmin_s = 39.70 equals the reference value (circular)", supports: false}
+          - {file: morphoeval/lean/loops/Loop_067_ripping_leaf_edge_waves.lean, lines: [31, 194], note: "6 machine-checked Lean 4 theorems (0 sorrys): isometric accommodation, negative Gaussian curvature, self-similar cascade scaling, TCP-arrested growth increment (L133-L150), developmental excess metric non-negativity (L160-L174), pairwise PIN1 mass conservation (L184-L194)", supports: true}
+      specimen-match:
+        value: 91
+        rationale: >-
+          The SHA-256-locked *Lactuca sativa* cv. 'Lollo Bionda' specimen is still segmented via Excess Green
+          (`segment_lactuca_sativa_specimen`, L631-L706; canopy fraction 0.7723; 4 coarse macro-lobes, 19 fine
+          ripples, cascade ratio 4.75 in [3, 5]) and the 4-system aspect-ratio comparison (r_aspect = 0.9992)
+          is unchanged; the new developmental figure adds a 3D coupled FvK surface with in-plane serration
+          outgrowth and a genotype sweep against observed ranges. Deductions: the developmental module is
+          compared with no specimen image at all — its only biological anchor is an ordinal phenotype table
+          transcribed from Arabidopsis papers, applied to a Lactuca margin (-4); the 3D coupled mesh uses fixed
+          mode phases (L401, L1024), an unsourced 0.18 in-plane contraction factor (L415) and an arbitrary 6 mm
+          edge-displacement decay (L1033), and its y-modulation is visibly spiky because g_0(y) follows the auxin
+          peaks (-3); the specimen cascade ratio is a count of perimeter extrema, not a wavelength or amplitude
+          spectrum (-2).
+        evidence:
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [631, 706], note: "ExG canopy segmentation and multi-scale polar perimeter wave decomposition on the SHA-256-locked Lactuca sativa specimen (Pass 2, unchanged)", supports: true}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [1014, 1034], note: "Developmental coupled mesh: fixed mode phases (L1024) and arbitrary 6 mm edge-displacement decay (L1033), unsourced", supports: false}
+          - {file: docs/media/ripping_leaf_edge_waves_comparison.png, lines: [0, 0], note: "6-panel synthesis: 3D cascade/saddle meshes, G1-G4 spectrum, self-similar collapse, K(x) profile, specimen segmentation, 4-system validation (byte-identical to Pass 2)", supports: true}
+          - {file: docs/media/ripping_leaf_edge_waves_tcp_auxin_development.png, lines: [0, 0], note: "New 6-panel developmental figure: auxin kymograph + TCP front, final fields + g_0(y) + serration tips, outgrowth hierarchy, 3D coupled FvK surface, genotype sweep vs observed ranges, emergence time courses — no specimen image on this figure", supports: true}
+      parameter-expressivity:
+        value: 94
+        rationale: >-
+          Pass 2 sweeps (4 cascade generations L431-L514, 9 inward stations L516-L555, 4 sheet systems
+          L557-L629) are retained and Pass 3 adds a genuine biological parameter axis: 5 genotype presets
+          (`GENOTYPE_PRESETS`, L743-L750) scaling TCP front speed, CUC2->PIN1 gain and transport rate, swept by
+          `evaluate_developmental_genotype_sweep` (L1037-L1095) with all 15 kinetic / growth parameters exposed
+          as keyword arguments of `simulate_tcp_auxin_margin_development` (L805-L829), plus CLI `--genotype`
+          and `--skip-developmental` (L1899-L1905) honoured in `main()` (L1927-L1936). Deductions:
+          `measure_morphoeval()` ignores CLI overrides and always runs seed 2002 / defaults (L1616-L1621), so
+          the measurement table cannot be re-expressed along any swept axis (-3); gamma_0 and beta_auxin are
+          not swept, only the genotype presets are (-2); the genotype presets are discrete multipliers rather
+          than a continuous dose-response along v_tcp (-1).
+        evidence:
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [431, 629], note: "4-generation cascade evaluation, 9-point inward distance sweep and 4-system thickness/taxon sweep (Pass 2)", supports: true}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [743, 750], note: "GENOTYPE_PRESETS: wild_type, cin_tcp_loss_of_function (v_tcp x0.40), tcp_mir319_resistant_overexpression (x1.80), cuc2_knockout (CUC2->PIN1 gain 0), pin1_knockout (transport 0)", supports: true}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [1037, 1095], note: "5-genotype developmental sweep with 6 ordinal literature checks", supports: true}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [1899, 1905], note: "CLI --genotype and --skip-developmental added to --g0/--ell/--t/--r-cascade/--seed", supports: true}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [1616, 1621], note: "measure_morphoeval() takes no arguments and always uses seed 2002 / default parameters — CLI overrides do not reach the measurement table", supports: false}
+      morphometric-validation:
+        value: 90
+        rationale: >-
+          `measure_morphoeval()` (L1616-L1785) now returns 15 reference-anchored measurements: the 9 Pass 2
+          metrics (A_m/lambda_m = 0.1468 vs 0.1461, r_cascade 3.5, edge-amplitude r = 1.0000, K(0) = -0.001091
+          mm^-2, lambda_loc r = 1.0000, self-similar collapse r = 1.0000, flat-metric negative control, 4-system
+          r_aspect = 0.9992, specimen cascade ratio 4.75) plus 6 developmental ones (WT <g_0> = 0.6059; cin/WT
+          = 2.10; N_ser = 27; knockout control = 0; hierarchy ratio 3.99; ordinal agreement 1.0). Deductions,
+          applied because the new measurements mostly validate against targets that are not independent data:
+          measurement 10's reference g_0 = 0.64 is the Pass 2 mechanical module's own Lactuca value and
+          gamma_0 = 0.0085/h, beta = 0.75 (L828-L829) were tuned to land near it (-3); measurement 11's
+          reference 1.5 is a declared placeholder for '> 1' (L1646), measurement 12's reference 22.5 is the
+          midpoint of a plausibility range [5, 40] (L1656) and measurement 14's reference 3.5 is a cross-module
+          consistency check against r_cascade (L1676) — only measurements 13 and 15 have crisp literature targets
+          (-4); the serration spacing 2.19 mm is set by D_a, T_pin, kappa, mu_a (L812-L816) chosen for robust
+          patterning, so N_ser = 27 is not evidence (-2); the Pass 2 wavelength / penetration r = 1.0000 are by
+          construction (L250) and the reference table's G1-G4 / 9-station values are analytic rather than
+          digitised from Sharon 2002 Fig. 3 (-1 net, partly already priced in v2). Credit: every new measurement
+          states in `reference_source` exactly which of these caveats applies.
+        evidence:
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [1616, 1785], note: "15 quantitative measurements with uncertainty, reference values and sources; 9 Pass 2 + 6 Pass 3 developmental", supports: true}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [1630, 1640], note: "Measurement 10: WT <g_0> = 0.6059 vs target 0.64 — reference_source flags it as the Pass 2 module's own value (self-consistency, not independent)", supports: false}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [1646, 1646], note: "Measurement 11 reference_value 1.5 is a declared placeholder magnitude for the ordinal statement cin > WT", supports: false}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [1656, 1656], note: "Measurement 12 reference = midpoint of a broad plausibility range [5, 40], not a digitised serration count", supports: false}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [1676, 1676], note: "Measurement 14 reference 3.5 is a cross-module consistency check against the mechanical r_cascade, not empirical", supports: false}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [812, 816], note: "Serration spacing set by D_a, T_pin, kappa, mu_a — chosen for robust patterning, not fitted to data", supports: false}
+          - {file: datasets/ripping_leaf_edge_waves/tcp_auxin_developmental_reference.json, lines: [1, 99], note: "Genotype phenotype table: ordinal transcriptions with placeholder magnitudes (1.5 / 0.6) and broad count ranges; wild_type_calibration.target_g0_mean = 0.64 inherited from Pass 2", supports: true}
+      source-traceability:
+        value: 91
+        rationale: >-
+          The 4 Pass 2 dataset files remain SHA-256-verified at runtime (`verify_dataset_integrity`,
+          L101-L140) and the new `tcp_auxin_developmental_reference.json` is pinned (`EXPECTED_DEVELOPMENTAL_SHA256`,
+          L741; `load_developmental_reference`, L753-L763) and documented in the README addendum together with the
+          9 new primary sources in `developmental_citations_pass3.bib`; the module header (L1-L70) cites each
+          source with journal/volume/page. Deductions: all 9 new DOIs were transcribed offline and NOT verified
+          online (network tools disallowed this pass) — the README says so, but a wrong DOI would propagate into
+          the KG (-4); `developmental_citations_pass3.bib` is not SHA-256-pinned, unlike the Pass 2
+          `paper_citations.bib` (-2); the Pass 2 reference table's G1-G4 and 9-station profile values are analytic
+          (g_yy, K from the same formulas; lambda_loc linear) rather than digitised from Sharon 2002 Fig. 3, and
+          the phenotype table is ordinal rather than quantitative (-2); `K(0) = -1.091e-3` is hard-coded in the
+          panel-D title (L1242) rather than taken from the reference (-1).
+        evidence:
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [101, 140], note: "Runtime SHA-256 verification of the 4 Pass 2 dataset files (byte-unchanged)", supports: true}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [741, 763], note: "EXPECTED_DEVELOPMENTAL_SHA256 pin and load_developmental_reference() fail-closed check of tcp_auxin_developmental_reference.json", supports: true}
+          - {file: datasets/ripping_leaf_edge_waves/README.md, lines: [16, 23], note: "Pass 3 addendum: SHA-256 of the new table, calibration-target caveat, and explicit statement that the 9 new DOIs were not re-verified online", supports: true}
+          - {file: datasets/ripping_leaf_edge_waves/developmental_citations_pass3.bib, lines: [1, 102], note: "9 new BibTeX entries with DOIs transcribed offline; file is not SHA-256-pinned", supports: false}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [1242, 1242], note: "K(0) = -1.091e-3 hard-coded in the panel-D title instead of read from the reference table", supports: false}
+      code-traceability:
+        value: 93
+        rationale: >-
+          The module header (L1-L70) maps every law to its source and to the Lean 4 theorem that formalises it,
+          the developmental section is introduced with its own Lean cross-reference (L737) and
+          `pin1_up_the_gradient_transport` names `pin_pairwise_transport_mass_conservation` in its docstring
+          (L781); `morphoeval/math_kg_loops/sharon-ripping-leaf-edge-waves.yaml` registers 5 equations with
+          single-range `code_locus` / `lean_locus` pins re-pointed to the shifted Pass 3 line numbers; self-test
+          comments name the Lean theorem being exercised (L1844, L1861). Deductions: the fixed mode phases (L401,
+          L1024), the 0.18 in-plane contraction factor (L415) and the 6 mm edge-displacement decay (L1033) carry no
+          citation (-3); the ordinal-check thresholds and the half-max primary/secondary split (L933-L940) are
+          documented but not sourced (-2); measurement 12's `reference_source` cites Sharon 2002 Fig. 1c for a
+          serration range that figure does not quantify (-2).
+        evidence:
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [1, 70], note: "Module header: equation-to-paper traceability for Sharon 2002, Audoly & Boudaoud 2003, Liang & Mahadevan 2009 and the 9 developmental sources, with Lean 4 MathOfBiology.Loop_067 theorem links", supports: true}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [737, 781], note: "Developmental section banner and PIN1 transport docstring cross-reference the new Lean theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/sharon-ripping-leaf-edge-waves.yaml, lines: [40, 140], note: "5 registered equations; every code_locus / lean_locus is a single file#La-Lb range pointing at current line numbers", supports: true}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [401, 415], note: "Fixed mode phases and 0.18 in-plane contraction factor in the 3D mesh are unsourced", supports: false}
+      repro-package:
+        value: 94
+        rationale: >-
+          `self_test()` (L1787-L1888) now runs 11 checks in ~7 s — the 8 Pass 2 checks plus PIN1 transport
+          sum(da) = 0 (< 1e-10), TCP front saturation and v_tcp = 0 => m = 0; WT N_ser >= 5 with >= 2 primary and
+          >= 2 secondary tips, hierarchy > 1.5, g_0(y) >= 0, |<g_0> - 0.64| <= 0.10, M >= 3, K(0) < 0, basal/apical
+          g_0 > 1, finite emergence time, monotone <g_0>(t); all 6 ordinal checks and a bitwise-deterministic
+          developmental re-run; `assert len(meas) == 15` (L1878). The default render exits 0 in ~6 s and
+          regenerates the Pass 2 PNG/GIF byte-identically plus the two new developmental media files. Deductions:
+          the developmental GIF requires no flag but both PNGs are gitignored, so the rendered figures are not
+          tracked artifacts and will not show in `git status` (-2); matplotlib needs `MPLCONFIGDIR` set when
+          `~/.matplotlib` is not writable and the script does not say so (-1); `measure_morphoeval()` cannot be
+          pointed at a non-default genotype so the measurement table for cin / TCP-OE is reproducible only through
+          the sweep internals (-2); no requirements lock file is vendored for this slot (-1).
+        evidence:
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [1787, 1888], note: "11-check self_test(): SHA-256 integrity, K < 0, flat-metric negative control, cascade spectrum/collapse, inward profile, 4-system transition, specimen CV, bitwise determinism, PIN1 mass conservation, developmental WT invariants, ordinal checks + deterministic re-run", supports: true}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [1890, 1940], note: "main(): argparse CLI (--g0, --ell, --t, --r-cascade, --seed, --genotype, --skip-developmental, --self-test), default render of all four media files", supports: true}
+          - {file: docs/media/ripping_leaf_edge_waves_tcp_auxin_development.gif, lines: [0, 0], note: "New 12-frame developmental GIF produced by the default invocation", supports: true}
+          - {file: docs/media/ripping_leaf_edge_waves_growth.gif, lines: [0, 0], note: "Pass 2 growth GIF regenerated byte-identically by the Pass 3 default invocation (SHA-256 6fb757af...)", supports: true}
+          - {file: 2002-sharon-ripping-leaf-edge-waves.py, lines: [1616, 1621], note: "measure_morphoeval() has no parameters: non-default genotype measurement tables are not directly reproducible from the CLI", supports: false}
+    remediation:
+    - >-
+      2002-sharon-ripping-leaf-edge-waves.py:805-1012 and 1014-1034 — the mechanics remain quasi-static and the
+      gene network is 1D along the margin; the FvK cascade is re-solved only on the scalar <g_0> (L962) and the
+      y-modulation sqrt(g_0(y)/<g_0>) (L964) is applied after the fact, while serration outgrowth ds/dt = k_s a (1-m)
+      is kinematic bookkeeping, not an elastic in-plane growth solution. Pass 4: solve a 2D growing-metric FvK on
+      the developmental g_yy(x,y,t) with stress-feedback PIN1 polarity (Heisler 2010 style) so serrations and lobes
+      are mechanical outputs, and register the resulting law in Lean.
+    - >-
+      datasets/ripping_leaf_edge_waves/tcp_auxin_developmental_reference.json (wild_type_calibration.target_g0_mean
+      = 0.64) with 2002-sharon-ripping-leaf-edge-waves.py:828-829 and 1630-1640 — the WT developmental target is the
+      Pass 2 mechanical module's own Lactuca g_0 and gamma_0 = 0.0085/h, beta = 0.75 were tuned to land near it, so
+      measurement 10 is circular. Replace with an independent anchor (digitised marginal/interior growth-rate ratio
+      from Nath 2003 Fig. 2 or Efroni 2008 kinematics) and re-fit gamma_0, beta against it.
+    - >-
+      2002-sharon-ripping-leaf-edge-waves.py:1646, 1656, 1676 and the JSON genotype_phenotype_table — measurements
+      11, 12 and 14 compare against a placeholder 1.5, a range midpoint 22.5 and a cross-module 3.5. Digitise
+      quantitative serration / lobe counts and cin-vs-WT marginal growth ratios from Bilsborough 2011 (Fig. 1, Fig.
+      4) and Nath 2003 (Fig. 1-2), store them with uncertainties in the reference table, and SHA-256-pin
+      developmental_citations_pass3.bib.
+    - >-
+      2002-sharon-ripping-leaf-edge-waves.py:812-816 — the serration wavelength (2.19 mm, N_ser = 27) is set by D_a,
+      T_pin, kappa, mu_a chosen in a quick scan for robust patterning. Derive the linear-stability wavelength of the
+      PIN1 up-the-gradient system analytically (or by a numerical dispersion scan), report it as a measurement with
+      its parameter sensitivity, and test it against the digitised serration spacing of Bilsborough 2011.
+    - >-
+      2002-sharon-ripping-leaf-edge-waves.py:230-367 — the Pass 2 `relax_foppl_von_karman_cascade` minimises a
+      surrogate energy whose target slope s_target (L307), c_aspect = 1/sqrt(3) (L283), penetration targets (L253),
+      cutoff 4.65 t (L280) and Gamma < 120 gate (L302) reproduce the reference table by construction (r = 1.0000
+      for wavelength / penetration, lambda_m = lambda_1 / r^(m-1) is an input at L250). Replace with a true FvK
+      energy on a discretised sheet whose cascade ratio and penetration depths are outputs, or relabel the
+      measurements as self-consistency checks.
+    - >-
+      2002-sharon-ripping-leaf-edge-waves.py:592, 1242, 401, 415, 1024, 1033 — circular / unsourced constants:
+      the Hosta saddle fallback lmin_s = 39.70 equals the reference value; K(0) = -1.091e-3 is hard-coded in the
+      panel-D title; mesh mode phases, the 0.18 in-plane contraction factor and the 6 mm edge-displacement decay
+      carry no citation. Read the first two from the reference table and either source or expose the rest as
+      documented rendering parameters.
+    - >-
+      2002-sharon-ripping-leaf-edge-waves.py:985-990 and 972 — no growth dilution for CUC2 and no cell division on
+      the stretching lattice (cells enlarge x1.93 over 240 h) and `n_auxin_maxima_timeseries` uses a fixed 1.5 mm
+      material spacing floor. Add cell division when cell length exceeds a threshold (re-meshing the Lagrangian
+      lattice) and dilute CUC2 with the same growth term as auxin.
+    - >-
+      2002-sharon-ripping-leaf-edge-waves.py:1616-1621 — `measure_morphoeval()` takes no arguments and always runs
+      seed 2002 / default genotype, so CLI overrides (--genotype, --g0, --seed) never reach the measurement table.
+      Accept the parsed namespace (or keyword overrides) so measurements are reproducible along every swept axis.
+    - >-
+      datasets/ripping_leaf_edge_waves/developmental_citations_pass3.bib and the JSON primary_dois — all 9 new DOIs
+      (10.1126/science.1079354, 10.1038/nature01958, 10.1073/pnas.1015162108, 10.1073/pnas.0510457103,
+      10.1073/pnas.0509839103, 10.1105/tpc.106.044792, 10.1105/tpc.106.045617, 10.1105/tpc.107.057521,
+      10.1038/ng1835) were transcribed offline and not verified. Verify each against Crossref in a networked pass
+      and record the verification date in the README.

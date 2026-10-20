@@ -106,4 +106,86 @@ theorem armon_wide_cylindrical_ribbon_asymptote (one_minus_nu kappa0 : Int) :
   · simp [cylindrical_ribbon_gaussian_K]
   · simp [cylindrical_ribbon_two_H, Int.neg_mul]
 
+
+-- ============================================================================
+-- Law 4 (`liang-chiral-seed-pod-opening-4`, Pass 3):
+-- Freund (1990) Dynamic Mode-I Crack Equation of Motion Along the Pod Suture
+-- `v = c_R (1 - Γ_c / G)`  ⇔  `G v = c_R (G - Γ_c)`
+-- ============================================================================
+/-- Transient fracture of the suture: the quasi-static non-Euclidean minimizer supplies
+    the energy release rate `G` (released bending energy per unit crack area); the
+    suture fracture toughness is `Γ_c`.  Freund's mode-I equation of motion
+    `G_dyn(v) ≈ (1 - v/c_R) G = Γ_c` gives the crack speed `v = c_R (1 - Γ_c/G)`,
+    i.e. `G · v = c_R (G - Γ_c)` (scaled form avoiding division).  We prove:
+      - crack arrest `G v = 0` when `G = Γ_c` (Griffith threshold);
+      - propagation `G v > 0` when `G > Γ_c` and `c_R > 0` (incompatibility-driven
+        energy release exceeds the suture toughness);
+      - the scaled speed is monotone in the released energy `G`;
+      - the scaled speed is strictly bounded by `c_R G` (sub-Rayleigh) for `Γ_c > 0`,
+        i.e. `v < c_R`. -/
+def freund_scaled_crack_speed (cR G gamma : Int) : Int :=
+  cR * (G - gamma)
+
+theorem freund_crack_speed_arrest_and_monotonicity (cR G1 G2 gamma : Int) :
+    freund_scaled_crack_speed cR gamma gamma = 0 ∧
+    (0 < cR → gamma < G1 → 0 < freund_scaled_crack_speed cR G1 gamma) ∧
+    (0 ≤ cR → G1 ≤ G2 →
+      freund_scaled_crack_speed cR G1 gamma ≤ freund_scaled_crack_speed cR G2 gamma) ∧
+    (0 < cR → 0 < gamma → freund_scaled_crack_speed cR G1 gamma < cR * G1) := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · simp [freund_scaled_crack_speed]
+  · intro hc hg
+    unfold freund_scaled_crack_speed
+    have hpos : 0 < G1 - gamma := Int.sub_pos.mpr hg
+    exact Int.mul_pos hc hpos
+  · intro hc hle
+    unfold freund_scaled_crack_speed
+    have h : G1 - gamma ≤ G2 - gamma := Int.sub_le_sub_right hle gamma
+    exact Int.mul_le_mul_of_nonneg_left h hc
+  · intro hc hg
+    unfold freund_scaled_crack_speed
+    have h : G1 - gamma < G1 := by omega
+    exact Int.mul_lt_mul_of_pos_left h hc
+
+
+-- ============================================================================
+-- Law 5 (`liang-chiral-seed-pod-opening-5`, Pass 3):
+-- Elastic-Catapult Energy Partition for Ballistic Seed Ejection
+-- `ΔU = e_init - e_final ≥ 0`,  `KE_seed = η ΔU`,  `(1/2) m v² = KE`
+-- ============================================================================
+/-- The quasi-static minimizer never increases the energy, so the energy released
+    when a valve held flat in the closed pod (`e_init = κ_0²`) relaxes to its
+    equilibrium (`e_final`) is non-negative; a fraction `η ∈ [0, 1]` becomes kinetic
+    energy of the valve segment + seed.  We prove:
+      - `ΔU ≥ 0` whenever `e_final ≤ e_init` (descent);
+      - `KE = η ΔU ≥ 0` and `KE ≤ ΔU` for `0 ≤ η ≤ 1` (no energy creation);
+      - `ΔU = 0` for the flat `κ_0 = 0` control (`e_init = e_final = 0`);
+      - additivity over seed segments: `η (ΔU_1 + ΔU_2) = η ΔU_1 + η ΔU_2`. -/
+def released_elastic_energy (e_init e_final : Int) : Int :=
+  e_init - e_final
+
+def catapult_kinetic_energy (eta dU : Int) : Int :=
+  eta * dU
+
+theorem elastic_catapult_energy_partition (e_init e_final eta dU1 dU2 : Int) :
+    (e_final ≤ e_init → 0 ≤ released_elastic_energy e_init e_final) ∧
+    (0 ≤ eta → 0 ≤ dU1 → 0 ≤ catapult_kinetic_energy eta dU1) ∧
+    (eta ≤ 1 → 0 ≤ dU1 → catapult_kinetic_energy eta dU1 ≤ dU1) ∧
+    released_elastic_energy 0 0 = 0 ∧
+    catapult_kinetic_energy eta (dU1 + dU2) =
+      catapult_kinetic_energy eta dU1 + catapult_kinetic_energy eta dU2 := by
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · intro h
+    unfold released_elastic_energy
+    omega
+  · intro he hd
+    unfold catapult_kinetic_energy
+    exact Int.mul_nonneg he hd
+  · intro he hd
+    unfold catapult_kinetic_energy
+    have h := Int.mul_le_mul_of_nonneg_right he hd
+    simpa using h
+  · simp [released_elastic_energy]
+  · simp [catapult_kinetic_energy, Int.mul_add]
+
 end MathOfBiology.Loop_065

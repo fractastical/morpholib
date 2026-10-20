@@ -1,13 +1,19 @@
 sim_id: savin-gut-looping-differential-growth
-math_family: "Kirchhoff Elastic Rod & Stretched Neo-Hookean Dorsal Mesentery Differential-Growth Buckling"
+math_family: "Discrete Elastic Rod Coupled to a Finite-Element (CST, St.Venant-Kirchhoff) Dorsal-Mesentery Membrane: Differential-Growth Buckling"
 model_spec:
-  model: "Savin et al. (2011) Nature 476:57-62 Kirchhoff rod + neo-Hookean dorsal mesentery differential-growth gut looping"
+  model: "Savin et al. (2011) Nature 476:57-62 differential-growth gut looping; Pass 3: discrete gut rod sharing nodes with a 2D CST membrane mesh of the fan-shaped dorsal mesentery with an apicobasal Pitx2 stiffness gradient"
   c_lambda: 4.55
   c_R: 1.68
-  rod_nodes_N: 120
+  rod_nodes_N: 96
+  fe_mesh_nodes: "96 x 5 (760 constant-strain triangles, Euler characteristic 1)"
+  membrane_law: "St.Venant-Kirchhoff plane stress, nu_m = 0.45, thickness h_m"
+  pitx2_gradient_amplitude: 0.4
+  mesentery_width_ratio_W_over_L_m: 0.18
+  fan_root_fraction: 0.7
   seed: 2011
   inputs:
     - datasets/gut_looping_differential_growth/gut_looping_differential_growth_reference.json
+    - datasets/gut_looping_differential_growth/fe_mesentery_mesh_reference.json
     - datasets/gut_looping_differential_growth/intestine_mesentery_specimen.jpg
     - datasets/gut_looping_differential_growth/scout_manifest.json
     - datasets/gut_looping_differential_growth/paper_citations.bib
@@ -26,7 +32,8 @@ equations:
     variables: "L_t: relaxed intestinal tube length (mm); L_m: relaxed dorsal mesentery attachment length (mm); ε: differential growth strain"
     role: "Quantifies the compressive mechanical mismatch driving midgut looping and predicts complete uncoiling upon surgical mesentery dissection or zero differential growth"
     source_citation: "Savin et al. (2011) Nature 476:57-62 Fig. 1d-g & p. 58"
-    code_locus: "2011-savin-gut-looping-differential-growth.py#L140-L230"
+    code_locus: "2011-savin-gut-looping-differential-growth.py#L170-L175"
+    code_locus_secondary: "2011-savin-gut-looping-differential-growth.py#L781-L831"
 
   - law_name: "Savin et al. (2011) Cube-Law Wavelength & Loop Radius Scaling Law"
     formula: "U_tot(λ) = B_t / λ^2 + K_m λ  ⇒  ∂U_tot/∂λ = 0  ⇔  λ = c_λ (E_t I_t / (E_m h_m))^(1/3),  R = c_R (E_t I_t / (E_m h_m))^(1/3)"
@@ -42,7 +49,8 @@ equations:
     variables: "λ: gut loop wavelength (mm); R: mean loop radius of curvature (mm); B_t = E_t I_t: gut rod bending stiffness; K_m = E_m h_m: mesenteric sheet tensile stiffness; ℓ_* = (E_t I_t / (E_m h_m))^(1/3)"
     role: "Predicts embryonic gut loop wavelength and radius across chick ontogeny (E8-E16) and across 4 vertebrate species (zebra finch, quail, chick, mouse) without free species-specific parameters"
     source_citation: "Savin et al. (2011) Nature 476:57-62 pp. 59-61, Figs. 3e-f & 4e-f"
-    code_locus: "2011-savin-gut-looping-differential-growth.py#L140-L310"
+    code_locus: "2011-savin-gut-looping-differential-growth.py#L187-L205"
+    code_locus_secondary: "2011-savin-gut-looping-differential-growth.py#L706-L779"
 
   - law_name: "Hollow Annular Gut Tube Area Moment of Inertia Factorization Law"
     formula: "I_t = (π / 4) (R_t^4 - R_i^4) = (π / 4) (R_t - R_i)(R_t + R_i)(R_t^2 + R_i^2) > 0  for R_t > R_i"
@@ -61,4 +69,39 @@ equations:
     variables: "R_t: outer gut tube radius (mm); R_i: inner lumen radius (mm); I_t: second moment of area (mm^4)"
     role: "Determines the quartic sensitivity of gut bending stiffness B_t = E_t I_t to outer and inner lumen radii during embryonic growth"
     source_citation: "Savin et al. (2011) Nature 476:57-62 p. 59 & Supplementary Information Sec. S2"
-    code_locus: "2011-savin-gut-looping-differential-growth.py#L140-L185"
+    code_locus: "2011-savin-gut-looping-differential-growth.py#L178-L184"
+
+  - law_name: "Apicobasal Pitx2 Stiffness Gradient Mean-Preservation Law (Pass 3 FE mesentery)"
+    formula: "E_m(η) = E_m [1 + a (2η - 1)],  η ∈ [0,1] (dorsal root → gut edge);  E_m(η) + E_m(1-η) = 2 E_m  ⇒  ⟨E_m⟩ and ℓ_* independent of a"
+    lean_decl: "MathOfBiology.Loop_062.pitx2_stiffness_scaled"
+    lean_theorem: "MathOfBiology.Loop_062.savin_pitx2_gradient_mean_preserving"
+    lean_locus: "morphoeval/lean/loops/Loop_062_gut_looping_differential_growth.lean#L101-L115"
+    lean_code: |
+      def pitx2_stiffness_scaled (E0 a k n : Int) : Int :=
+        E0 * (n + a * (2 * k - n))
+      theorem savin_pitx2_gradient_mean_preserving (E0 a k n : Int) :
+          pitx2_stiffness_scaled E0 a k n + pitx2_stiffness_scaled E0 a (n - k) n = 2 * (E0 * n)
+    variables: "E_m: mean dorsal-mesentery Young's modulus (kPa); a: Pitx2 gradient amplitude (|a| < 1); η: apicobasal coordinate; k/n: discrete mesh level"
+    role: "Defines the spatially varying membrane stiffness assigned to every constant-strain triangle of the FE mesentery mesh; guarantees that sweeping a changes only the spatial distribution (not the mean) of sheet stiffness, so the emergent dN/da is a genuine heterogeneity effect"
+    source_citation: "Kurpios et al. (2008) PNAS 105:8499-8506 (Pitx2-dependent mesenchymal condensation of the dorsal mesentery; amplitude a is a modelling assumption)"
+    code_locus: "2011-savin-gut-looping-differential-growth.py#L303-L309"
+    code_locus_secondary: "2011-savin-gut-looping-differential-growth.py#L637-L675"
+
+  - law_name: "Fan-Mesentery Triangulation Euler-Characteristic Law (Pass 3 FE mesentery)"
+    formula: "V = n_s n_w,  E = (n_s-1) n_w + n_s (n_w-1) + (n_s-1)(n_w-1),  F = 2 (n_s-1)(n_w-1)  ⇒  V - E + F = 1;  Ψ_e = μ_e tr(E²) + λ_e/2 tr(E)²,  E = (FᵀF - I)/2,  E_tot = Σ_e A_e h_m Ψ_e + Σ_i ½ (E_t A_t/ds_t)(|Δr_i| - ds_t)² + Σ_i ½ (B_t/ds_t³)|r_{i+1} - 2r_i + r_{i-1}|²"
+    lean_decl: "MathOfBiology.Loop_062.fan_mesh_edges"
+    lean_theorem: "MathOfBiology.Loop_062.savin_fan_mesh_euler_characteristic"
+    lean_locus: "morphoeval/lean/loops/Loop_062_gut_looping_differential_growth.lean#L127-L142"
+    lean_code: |
+      def fan_mesh_vertices (ns nw : Nat) : Nat := ns * nw
+      def fan_mesh_triangles (ns nw : Nat) : Nat := 2 * ((ns - 1) * (nw - 1))
+      def fan_mesh_edges (ns nw : Nat) : Nat :=
+        (ns - 1) * nw + ns * (nw - 1) + (ns - 1) * (nw - 1)
+      theorem savin_fan_mesh_euler_characteristic (ns nw : Nat) :
+          (fan_mesh_vertices (ns + 1) (nw + 1) : Int) - fan_mesh_edges (ns + 1) (nw + 1)
+            + fan_mesh_triangles (ns + 1) (nw + 1) = 1
+    variables: "n_s: nodes along the gut edge (96); n_w: nodes across the fan (5); A_e, h_m: triangle rest area and sheet thickness; μ_e, λ_e: plane-stress Lamé moduli from E_m(η); B_t = E_t I_t; ds_t = L_t/(n_s-1)"
+    role: "Certifies that the CST membrane energy is assembled over a simply connected disk-like sheet (single boundary: fixed root + gut edge + fan sides) and states the full coupled rod + membrane energy minimised by L-BFGS-B from which loop number and radius emerge"
+    source_citation: "Savin et al. (2011) Nature 476:57-62 SI Sec. S3 (rod + stretched sheet energy); CST/St.Venant-Kirchhoff membrane: standard FE (reduced model, Pass 3)"
+    code_locus: "2011-savin-gut-looping-differential-growth.py#L251-L300"
+    code_locus_secondary: "2011-savin-gut-looping-differential-growth.py#L312-L507"

@@ -1,0 +1,361 @@
+# MorphoEval audit — Richman et al. (1975) Science & Tallinen et al. (2014, 2016) Cortical Gyrification Folding, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `1975-richman-cortical-gyrification-buckling.py` (1896 lines; was 1185 at v2) and
+# `datasets/cortical_gyrification_folding/` after the remediation of the single open v2 item in the instrumented
+# loop `morphoeval/runs/2026-10-19-cortical-gyrification-folding-loop-pass3`, superseding
+# `2026-10-19-cortical-gyrification-folding-audit-v2` (93.1).
+#   - Primary assessor: Claude Fable 5.1 (Phase B audit subagent, slot-061 Pass 3)
+#
+# What Pass 3 changed (the one v2 remediation item, closed in reduced and explicitly labelled form):
+#   1. Section 3b (L371-802): a 3D hemispheric surface buckling surrogate — generalized Swift-Hohenberg
+#      film-on-curved-substrate equation (Stoop et al. 2015) solved on the 2D surface of a triaxial ellipsoidal
+#      hemisphere (level-5 icosphere, 10 242 nodes) with a cotangent Laplace-Beltrami operator
+#      (`relax_surface_swift_hohenberg` L515-576). It resolves 3D sulcal Y-junctions (`count_sulcal_y_junctions`
+#      L610-669: 0 at GW22, 21 at GW26 dimple phase, 122 at GW38 labyrinth), the dimple -> labyrinth percolation
+#      transition, a 3D crease-wall GI (`displace_surface_by_sulcal_depth` L691-714: 2.604 vs 2.56 obs) and an
+#      anterior-posterior cortical-thickness-gradient sweep (`evaluate_regional_thickness_gradient_sweep` L760-802:
+#      emergent lambda_ant/lambda_post vs h_ant/h_post slope 1.006, r = 1.0000).
+#   2. 3 new Lean theorems (`swift_hohenberg_fastest_mode`, `regional_wavelength_tracks_thickness`,
+#      `gyrification_index_3d_crease_wall`; 6 total, 0 sorrys), 6 new measurements (15 total), self-test 8 -> 12
+#      checks, new SHA-256-pinned `surface_sh_3d_reference.json`, bib +3 (Stoop 2015, Fischl & Dale 2000,
+#      Cross & Hohenberg 1993), new figure `docs/media/cortical_gyrification_folding_surface_3d.png`.
+#   The script states plainly (L376-388, L1690, L1700, L1730) that this is NOT the requested tetrahedral neo-Hookean
+#   FEM on MRI templates: sulcal depth is imported from the 2D coronal solver, only the planform is emergent.
+#
+# Why the overall score FALLS from 93.1 to 80.2 despite closing the item: re-reading the whole script against the
+# reference JSON for this round exposed two structural defects that v1/v2 did not penalise —
+#   (a) every `lambda_obs_mm` in `cortical_gyrification_folding_reference.json` equals 4.3633 * h exactly, so the
+#       headline 11-species r = 1.0000 / alpha = 0.9993 / lambda/h = 4.3642 results validate the Richman formula
+#       against itself; and
+#   (b) the 2D "L-BFGS-B neo-Hookean solver" relaxes a noisy copy of a PRESCRIBED cusp profile u_eq whose sulcus
+#       count and GI are set from the formula and from unsourced fitted constants (1.603, 0.88, 0.22) before any
+#       energy is minimised, so GI_sim 2.5597, lambda_sim 11.20 and the 28/85 sulcus counts are targets, not
+#       emergent results.
+# Both are now carried as the top Pass 4 remediation items. The Pass 3 3D surrogate is credited for honesty and
+# for genuinely emergent planform topology, but its k_c(x) is imposed, so its wavelength agreement is a consistency
+# check, not validation. Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale. Line
+# numbers refer to the uncommitted working tree at HEAD 45670cb8 (Phase A edits not yet committed).
+
+audit:
+  id: 2026-10-19-cortical-gyrification-folding-audit-v3
+  supersedes: 2026-10-19-cortical-gyrification-folding-audit-v2
+  supersedes_audit_id: 2026-10-19-cortical-gyrification-folding-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 061 Pass 3 Phase B Assessor)"
+    homepage: https://www.anthropic.com
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/61
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 45670cb8
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+      scikit-image: "0.26.0"
+      lean: "4.35.0"
+    note: >-
+      45670cb8 is the HEAD at the time of the Pass 3 Phase B audit; the remediated script, Lean module,
+      math-KG YAML, dataset files and media are in the uncommitted working tree on top of it (parallel loops
+      share the tree, so no commit was made). The v2 audit's environment block (numpy 2.4.2 / scipy 1.17.0 /
+      matplotlib 3.10.8 / Pillow 12.1.1) did not match this venv; the values above were read from the venv.
+      scikit-image 0.26.0 is a NEW runtime dependency (skimage.morphology.skeletonize, L620) that is not
+      listed in requirements.txt (outside this slot's editable files).
+
+references:
+  richman1975:
+    title: "Mechanical model of brain convolutional development"
+    authors: "Richman DP, Stewart RM, Hutchinson JW, Caviness VS Jr"
+    venue: "Science 189(4196):18-21 (1975)"
+    doi: 10.1126/science.1145181
+  tallinen2014:
+    title: "Gyrification from constrained cortical expansion: Synthesis of physical and numerical models"
+    authors: "Tallinen T, Chung JY, Biggins JS, Mahadevan L"
+    venue: "Proceedings of the National Academy of Sciences 111(35):12667-12672 (2014)"
+    doi: 10.1073/pnas.1406015111
+  tallinen2016:
+    title: "On the growth and form of cortical convolutions"
+    authors: "Tallinen T, Chung JY, Rousseau F, Girard N, Lefevre J, Mahadevan L"
+    venue: "Nature Physics 12(6):588-593 (2016)"
+    doi: 10.1038/nphys3632
+  mota2015:
+    title: "Cortical folding scales universally with surface area and thickness, not number of neurons"
+    authors: "Mota B, Herculano-Houzel S"
+    venue: "Science 349(6243):74-77 (2015)"
+    doi: 10.1126/science.aaa9101
+  zilles1988:
+    title: "The human pattern of gyrification in the cerebral cortex"
+    authors: "Zilles K, Armstrong E, Schleicher A, Kretschmann HJ"
+    venue: "Anatomy and Embryology 179(2):173-179 (1988)"
+    doi: 10.1007/BF00304699
+  stoop2015:
+    title: "Curvature-induced symmetry breaking determines elastic surface patterns"
+    authors: "Stoop N, Lagrange R, Terwagne D, Reis PM, Dunkel J"
+    venue: "Nature Materials 14(3):337-342 (2015)"
+    doi: 10.1038/nmat4202
+  fischl2000:
+    title: "Measuring the thickness of the human cerebral cortex from magnetic resonance images"
+    authors: "Fischl B, Dale AM"
+    venue: "Proceedings of the National Academy of Sciences 97(20):11050-11055 (2000)"
+    doi: 10.1073/pnas.200033797
+  cross1993:
+    title: "Pattern formation outside of equilibrium"
+    authors: "Cross MC, Hohenberg PC"
+    venue: "Reviews of Modern Physics 65(3):851-1112 (1993)"
+    doi: 10.1103/RevModPhys.65.851
+
+simulations:
+  - id: richman-cortical-gyrification-buckling
+    name: "Richman et al. (1975) & Tallinen et al. (2014, 2016) neo-Hookean constrained cortical expansion and sulcal creasing instability, with a Pass 3 3D hemispheric Swift-Hohenberg surface surrogate"
+    organism: "Mammalian cerebral cortex & subcortical white matter (Homo sapiens, Pan troglodytes, Macaca mulatta, Tursiops truncatus, Felis catus, Mus musculus)"
+    script: 1975-richman-cortical-gyrification-buckling.py
+    output: docs/media/cortical_gyrification_folding_comparison.png
+    extra_outputs:
+      - docs/media/cortical_gyrification_folding_surface_3d.png
+      - docs/media/cortical_gyrification_folding_growth.gif
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [richman1975, tallinen2014, tallinen2016, mota2015, zilles1988, stoop2015, fischl2000, cross1993]
+    supersedes_audit_id: 2026-10-19-cortical-gyrification-folding-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Richman et al. (1975): a stiff cortical plate growing on a softer subcortical foundation buckles with wavelength lambda = 2 pi h (mu_c / 3 mu_s)^(1/3), predicting fine folds for thin (microgyric) cortex and broad folds for thick cortex"
+        - "Tallinen et al. (2014, 2016): multiplicative tangential growth F = F_e G of a neo-Hookean cortex above a critical excess g_c produces cusped sulci; a 3D gel-brain and a tetrahedral FEM on a GW22 MRI template reproduce fetal gyrification GW22-GW34 with GI rising to about 2.5"
+        - "Mota & Herculano-Houzel (2015): cortical folding scales universally with surface area and thickness across mammals"
+        - "Zilles et al. (1988): human whole-hemisphere coronal gyrification index 2.56 +/- 0.08"
+        - "Stoop et al. (2015): a stiff film on a soft curved substrate follows a generalized Swift-Hohenberg equation whose curvature-induced quadratic term selects hexagonal dimples at low overstress and labyrinths at high overstress"
+        - "Fischl & Dale (2000): regional human cortical thickness varies from about 1 mm to 4.5 mm (mean about 2.5 mm) across the hemisphere"
+      reconstructed_in_script:
+        - "Laws 1-3 (growth excess, cube-root wavelength, GI = 1 + 2 N d / P_hull) as closed-form functions; a 2D coronal shell relaxation (L-BFGS-B) toward a prescribed cusp profile with sulcus count and GI target set from the formula; 11-species and 4-condition sweeps; segmentation of one coronal specimen image"
+        - "Pass 3: generalized Swift-Hohenberg relaxation on an ellipsoidal hemisphere surface (cotangent Laplace-Beltrami, semi-implicit Euler, Lyapunov energy), regional k_c(x) from a linear thickness gradient, raster skeleton Y-junction counting, marching-triangles iso-contour fundus length, 3D crease-wall GI with depth imported from the 2D solver, 4-point thickness-gradient sweep"
+      transfer_boundary:
+        - "The 11-species lambda_obs values in the reference JSON are generated from the Richman formula (4.3633 h), so cross-species wavelength agreement (r = 1.0000, alpha = 0.9993, lambda/h = 4.3642) is formula-vs-formula, not model-vs-measurement"
+        - "The 2D coronal solver's sulcus count, GI target and cusp profile are prescribed before minimisation; L-BFGS-B removes injected noise rather than selecting a buckling mode, so GI_sim, lambda_sim and sulcus counts equal their targets by construction"
+        - "The 3D surrogate's preferred wavenumber k_c(x) is imposed by the GSH operator; lambda_3D = 11.41 vs 11.33 and the gradient slope 1.006 are consistency checks of the nonlinear planform, and eps_scale = 0.5 / g2_curvature_coeff = 0.35 are tuning constants chosen to place GW26 in the dimple phase and GW38 in the labyrinth phase"
+        - "The ellipsoid (1.30 R, 0.70 R, 0.95 R) is not an MRI template; Y-junction density has only the honeycomb upper bound 2.31 per lambda^2 as reference; the percolation ratio has only a > 1 lower bound"
+      does_not_claim:
+        - "A volumetric tetrahedral neo-Hookean FEM, emergent sulcal depth or GI amplitude in 3D, gyral-crown vs fundus thickness differentiation, MRI-template geometry, a Floquet/linear-stability derivation of g_c, or validation of Y-junction density against measured fetal sulcal graphs"
+    summary: >-
+      Pass 3 (v3) evaluation of `1975-richman-cortical-gyrification-buckling.py` (overall weighted score 80.2/100,
+      DOWN from 93.1 in v2). The one v2 remediation item (3D tetrahedral FEM on MRI templates) is closed in an
+      honestly labelled reduced form: a generalized Swift-Hohenberg film-on-curved-substrate planform on a 3D
+      ellipsoidal hemisphere (10 242-node cotangent Laplace-Beltrami) that produces emergent sulcal Y-junctions
+      (0 / 21 / 122 at GW22 / GW26 / GW38), a dimple -> labyrinth percolation transition, a 3D crease-wall GI of
+      2.604 (obs 2.56, depth imported from the 2D solver) and an emergent regional wavelength that tracks a 1.5x
+      anterior-posterior thickness gradient (slope 1.006). The 3 new Lean theorems verify (6 total, 0 sorrys),
+      the self-test passes 12/12 in 13 s and the 3D solver is bitwise deterministic. The score nevertheless falls
+      because this round's re-read found that the v2 headline validations are circular: the reference JSON's
+      observed wavelengths are 4.3633 h by construction, and the 2D "neo-Hookean solver" relaxes toward a
+      prescribed profile whose sulcus count and GI are computed from the formula and unsourced fitted constants
+      (1.603, 0.88, 0.22) before minimisation. Six of the 15 measurements therefore report targets or
+      formula-vs-formula agreement, two of the new 3D measurements are consistency checks (k_c imposed), and two
+      have only mathematical bounds as references. These are now the Pass 4 items.
+    scores:
+      model-fidelity:
+        value: 78
+        rationale: >-
+          Laws 1-3 (growth excess Delta_g = max(0, g - g_c), lambda = 2 pi h (mu_c / 3 mu_s)^(1/3),
+          GI = 1 + 2 N d / P_hull; L162-189) are Richman's and Zilles's and are machine-checked. The Pass 3 GSH
+          surrogate (L515-576) is a recognised reduced model for film-on-curved-substrate wrinkling (Stoop 2015),
+          its Lyapunov energy (L506-512) decreases in every supercritical stage, its uniform mode is damped and
+          its subcritical null is exact; the cotangent Laplace-Beltrami operator passes kernel, area and l = 1
+          eigenvalue checks (self-test #9). Deductions: the 2D coronal "neo-Hookean" solver is not a buckling
+          model — n_sulci_target = round(P_hull / lambda_theory) (L253), gi_target = 1 + 1.603 dg^0.88
+          thinness_boost (L266-267) and the cusp profile u_eq (L272-276) are prescribed, and the energy (L290-314)
+          penalises deviation from u_eq, so L-BFGS-B denoises a target rather than selecting a mode (-10); the 3D
+          surrogate imposes k_c(x) and imports depth from the 2D solver (L735-736), so neither wavelength nor
+          amplitude is emergent in 3D and the requested volumetric FEM is absent (-6); the Lissencephaly control
+          has g = 1.14 < g_c so h = 6.5 mm is never exercised — Richman's thick-cortex prediction (longer
+          wavelength) is not tested (-3); eps_scale and g2_curvature_coeff are unsourced (-3); the honesty note
+          (L376-388) and the Lean coverage of all 6 laws prevent a larger deduction.
+        evidence:
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [162, 189], note: "Laws 1-3: growth excess, cube-root wavelength, Gyrification Index as closed-form functions", supports: true}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [253, 276], note: "2D solver prescribes n_sulci_target from P_hull/lambda_theory, gi_target from unsourced constants 1.603/0.88/0.22 and a cusp profile u_eq before minimisation", supports: false}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [290, 314], note: "Energy is a penalty on (u - u_eq) plus bending/slope differences from u_eq: L-BFGS-B relaxes toward the prescribed profile", supports: false}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [515, 576], note: "Generalized Swift-Hohenberg relaxation on the ellipsoid surface with imposed k_c(x), Lyapunov energy, semi-implicit SuperLU step, exact subcritical null", supports: true}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [376, 388], note: "Honesty note: not a tetrahedral FEM, depth imported, residual carried to Pass 4", supports: true}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [735, 736], note: "3D crease-wall GI uses mean_sulcal_depth_mm from the 2D shell of the same stage — depth is not emergent in 3D", supports: false}
+          - {file: morphoeval/lean/loops/Loop_061_cortical_gyrification_folding.lean, lines: [99, 159], note: "3 new Pass 3 theorems (GSH fastest mode, regional wavelength tracks thickness, 3D crease-wall GI) alongside the 3 Pass 2 theorems; 0 sorrys, lean exits 0", supports: true}
+      specimen-match:
+        value: 82
+        rationale: >-
+          The SHA-256-locked coronal specimen is segmented into gray ribbon, white core, hull and 52 sulcal
+          troughs (L964-1058; GI_specimen 2.8115, CV 0.32) and shown in Panel E; the new 3D figure
+          (`render_surface_3d_figure`, L1352-1482) shows a GW26 dimple field becoming a GW38 labyrinth with
+          Y-junctions on an ellipsoidal hemisphere, which is the qualitative Stoop/Tallinen picture, and GI_3D
+          2.604 lies within 2% of Zilles's 2.56. Deductions: the specimen is a single coronal section compared
+          with a whole-hemisphere mean (-3); P_pial is approximated as P_hull + 2 sum(depths) from a distance
+          transform rather than traced (L1025-1026), and segmentation thresholds (0.86, 0.08, 14 px, 52nd and
+          76th percentiles, 62 px band) are untraced tuning constants with a hard-coded fallback spacing
+          [34, 36, 35] (L991-1018, L1034) (-5); the 3D geometry is an ad-hoc ellipsoid, not an MRI template, and
+          no fetal MRI/sulcal-graph image is compared against the 3D planform (-6); the 11-species GI match
+          (r = 0.9985) rests on the prescribed 2D solver (-3).
+        evidence:
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [964, 1058], note: "Coronal specimen segmentation: tissue mask, convex hull, white-matter core, DoG sulcal trough detection, GI_specimen", supports: true}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [991, 1034], note: "Untraced thresholds 0.86/0.08/14 px/52nd/76th percentile/62 px band and fallback spacings [34, 36, 35]; P_pial approximated from distance-transform depths", supports: false}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [1352, 1482], note: "3D surface figure: GW26 dimples -> GW38 labyrinth with Y-junction overlay, regional-gradient panel", supports: true}
+          - {file: docs/media/cortical_gyrification_folding_comparison.png, lines: [0, 0], note: "6-panel synthesis figure (v3 suptitle) incl. specimen Panel E; Panels B/F overlay lambda_sim on formula-generated lambda_obs", supports: true}
+          - {file: docs/media/cortical_gyrification_folding_surface_3d.png, lines: [0, 0], note: "New Pass 3 figure: 3D hemispheric GSH planform at GW22/26/38, Y-junction skeleton, thickness-gradient sweep", supports: true}
+          - {file: docs/media/cortical_gyrification_folding_growth.gif, lines: [0, 0], note: "Growth GIF regenerated; content unchanged from Pass 2 (2D coronal only)", supports: true}
+      parameter-expressivity:
+        value: 86
+        rationale: >-
+          Spans 5 fetal stages, 11 species, 4 pathology/ablation conditions (L805-958) and, new in Pass 3, a
+          4-point anterior-posterior thickness-gradient sweep beta in {0, 0.1, 0.2, 0.3} (L760-802) whose emergent
+          regional wavelength ratio tracks h_ant/h_post (slope 1.006, r = 1.0000), plus `--subdivisions` and
+          `--skip-3d` (L1854-1855). Deductions: `--growth-g/--h-cortex/--mu-ratio/--R-brain` reach only the 2D
+          fetal evaluation (L1867-1877) and not the 3D surrogate (L1879-1882), so the new mechanism cannot be
+          explored from the CLI (-6); the lissencephaly condition varies g, not h, so the thickness axis is not
+          exercised in the pathology sweep (-4); eps_scale and g2 are fixed in the JSON with no sweep across the
+          Stoop dimple/labyrinth boundary (-4).
+        evidence:
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [760, 802], note: "Regional thickness-gradient sweep over beta with emergent anterior/posterior wavelength ratio and regression against h_ant/h_post", supports: true}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [805, 958], note: "Fetal GW22-GW38, 11-species and 4-condition pathology/ablation sweeps", supports: true}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [1850, 1893], note: "CLI: --skip-3d, --subdivisions, --seed reach the 3D surrogate; --growth-g/--h-cortex/--mu-ratio/--R-brain overrides are passed only to render_comparison_figure", supports: false}
+          - {file: datasets/cortical_gyrification_folding/cortical_gyrification_folding_reference.json, lines: [245, 254], note: "lissencephaly_thick_cortex has g = 1.14 < g_c = 1.18, so h = 6.50 mm never influences the result", supports: false}
+      morphometric-validation:
+        value: 68
+        rationale: >-
+          `measure_morphoeval()` (L1572-1743) returns 15 reference-anchored measurements, 6 new in Pass 3
+          (L1682-1743) with explicit caveats in their `note` fields. Credited: the GW22 subcritical null is exact
+          (0 junctions, GI_3D = 1), Y-junction count rises 0 -> 21 -> 122 and sulcal components fall 178 -> 40
+          across GW26 -> GW38 (a genuinely emergent topological result), GI_3D 2.604 vs 2.56, and the gradient
+          sweep reports slope, SE, r and RMSE. Deductions: measurements #1, #3 and #9 (L1592-1621, L1672-1681)
+          compare the Richman formula with `lambda_obs_mm` values that are themselves 4.3633 h in the JSON
+          (L41-276), so r = 1.0000 / alpha = 0.9993 / lambda/h = 4.3642 are formula-vs-formula (-12);
+          measurements #4, #5 and #7 (L1622-1661) report the prescribed 2D targets (lambda_sim 11.20 = P_hull /
+          round(P_hull / lambda_theory), GI_sim = gi_target, 85/28 = the empirical counts), so their agreement
+          is by construction (-8); #10 and #14 are consistency checks because k_c(x) is imposed (stated in the
+          notes) (-3); #12 and #15 have only a mathematical upper bound (honeycomb 2.31) and a ">1" lower bound
+          as references, with no empirical fetal sulcal-graph value (-3).
+        evidence:
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [1572, 1743], note: "15 measurements with p-values, RMSE, SE, CV; 6 Pass 3 entries carry explicit 'consistency check' / 'depth not emergent' caveats", supports: true}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [1592, 1621], note: "Measurements #1 and #3 regress formula wavelengths against lambda_obs_mm that are formula-generated in the reference JSON (circular r = 1.0000)", supports: false}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [1622, 1661], note: "Measurements #4, #5, #7 report lambda_sim, GI_sim and sulcus counts that equal the prescribed targets of the 2D solver", supports: false}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [1703, 1722], note: "Y-junction density (reference = honeycomb upper bound only) and exact GW22 subcritical null", supports: true}
+          - {file: datasets/cortical_gyrification_folding/cortical_gyrification_folding_reference.json, lines: [41, 276], note: "Every lambda_obs_mm equals 4.3633 * h_cortex_mm (e.g. GW26 1.65 -> 7.20, mouse 0.88 -> 3.84); no per-value figure/table provenance", supports: false}
+      source-traceability:
+        value: 84
+        rationale: >-
+          8 primary sources carry DOIs in the module header (L5-32), in `paper_citations.bib` (now 8 entries incl.
+          stoop2015curvature, fischl2000measuring, cross1993pattern at L56-90) and in the dataset README; all 5
+          dataset files are SHA-256 pinned (`EXPECTED_SHA256`, L109-126) and verified fail-closed at every run;
+          the new `surface_sh_3d_reference.json` records parameter definitions and the honeycomb-bound derivation
+          (L44-47, L65-66). Deductions: the reference JSON's `lambda_obs_mm` rows are formula-generated, and the
+          fetal `g_tangential`, `GI_obs` and species `GI_obs` values carry no per-value figure/table pointer
+          (-8); eps_scale = 0.5, g2_curvature_coeff = 0.35 and the ellipsoid proportions are stated but unsourced
+          (-4); the 3 new DOIs were written from memory and could not be verified online under the no-network
+          rule (-2); fitted constants 1.603 / 0.88 / 0.22 in the 2D solver are described as "calibrated to
+          Tallinen" without a figure or table (-2).
+        evidence:
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [109, 126], note: "SHA-256 registry for all 5 dataset files incl. the new surface_sh_3d_reference.json and the re-pinned paper_citations.bib", supports: true}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [5, 32], note: "8 primary sources with DOIs in the module header (3 new in Pass 3)", supports: true}
+          - {file: datasets/cortical_gyrification_folding/paper_citations.bib, lines: [56, 90], note: "New BibTeX entries stoop2015curvature, fischl2000measuring, cross1993pattern (DOIs unverified offline)", supports: true}
+          - {file: datasets/cortical_gyrification_folding/surface_sh_3d_reference.json, lines: [32, 66], note: "Ellipsoid semi-axes, eps/g2 definitions and honeycomb Y-junction bound derivation; eps_scale and g2_curvature_coeff are unsourced tuning constants", supports: false}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [263, 267], note: "'Calibrated to Tallinen et al. (2014, 2016) folding curves' — constants 1.603, 0.88, 0.22 have no figure/table pointer", supports: false}
+      code-traceability:
+        value: 84
+        rationale: >-
+          The module header maps Laws 1-6 to their papers and to the 6 Lean theorems by name (L34-74); every Pass
+          3 function carries a docstring naming the equation and source (GSH Eq. 1 of Stoop 2015 at L526-538,
+          Lyapunov functional at L507-509, Fischl & Dale thickness range, honeycomb bound), the honesty note
+          (L376-388) states exactly what is and is not emergent, and the math-KG YAML registers equations 4-6
+          with single-range `code_locus` pins. Deductions: the GI growth law is written with exponent 0.85 in
+          Panel C and the GIF (L1175, L1532) but 0.88 in the solver (L267) — the plotted curve is not the curve
+          the solver uses (-5); constants 1.603 / 0.88 / 0.22 / 0.65 / 0.18 / 2.8 / 4.2 in the 2D solver
+          (L265-288) are uncited (-5); eps_scale 0.5 and g2 0.35 are documented but not derived (-3); the Y-
+          junction raster ignores the polar caps (|lat| > 60 deg) and the longitude wrap of `ndi.label`, which
+          is not stated in the docstring (-3).
+        evidence:
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [34, 74], note: "Laws 1-6 mapped to papers and Lean theorem names; Pass 3 additions and the non-FEM caveat stated in the header", supports: true}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [526, 538], note: "relax_surface_swift_hohenberg docstring: Stoop 2015 Eq. 1, non-dimensionalisation, Lean theorem reference", supports: true}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [1175, 1175], note: "Panel C GI law uses exponent 0.85 while the solver (L267) uses 0.88", supports: false}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [1532, 1532], note: "GIF GI curve also uses exponent 0.85 — inconsistent with the solver", supports: false}
+          - {file: morphoeval/math_kg_loops/richman-cortical-gyrification-buckling.yaml, lines: [37, 125], note: "Equations 1-6 registered with single-range code_locus pins (secondary ranges in code_locus_secondary); stale Pass 1 loci corrected", supports: true}
+      repro-package:
+        value: 85
+        rationale: >-
+          `self_test()` (L1746-1847) runs 12 checks in 13 s: SHA-256 of 5 files, JSON parity, ablation invariants,
+          fetal monotonicity, 11-species collapse, pathology ordering, specimen segmentation, 2D determinism, and
+          the Pass 3 Laplace-Beltrami sanity (#9), 3D GSH null/Lyapunov/wavelength/junction/GI ordering (#10),
+          gradient sweep (#11) and bitwise 3D determinism (#12); default render is 11.7 s. Deductions:
+          `scikit-image` is now a hard runtime dependency (`from skimage.morphology import skeletonize`, L620,
+          imported lazily inside `count_sulcal_y_junctions`) and is NOT listed in `requirements.txt` — a fresh
+          `pip install -r requirements.txt` environment fails at the 3D stage and in self-test #10 (-7); the
+          self-test tolerances for the 3D stage (8% wavelength, |GI_3D - 2.56| < 0.15) are loose relative to the
+          reported agreement (-2); `.gitignore` excludes `docs/media/*.png`, so neither the regenerated comparison
+          PNG nor the new 3D PNG is tracked and the GIF content is byte-identical to Pass 2 (-3); the exact
+          environment is recorded here but there is no lock file for this script (-3).
+        evidence:
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [1746, 1847], note: "12-check self_test() incl. Pass 3 Laplace-Beltrami sanity, GSH null/Lyapunov/junction ordering, gradient sweep and bitwise 3D determinism", supports: true}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [620, 631], note: "Lazy import of skimage.morphology.skeletonize — new scikit-image dependency not declared in requirements.txt", supports: false}
+          - {file: 1975-richman-cortical-gyrification-buckling.py, lines: [1809, 1823], note: "3D self-test tolerances: 8% wavelength, |GI_3D - 2.56| < 0.15, >= 30 junctions", supports: true}
+    remediation:
+    - >-
+      datasets/cortical_gyrification_folding/cortical_gyrification_folding_reference.json:41-276 with
+      1975-richman-cortical-gyrification-buckling.py:851-922 and 1592-1621 — every `lambda_obs_mm` equals
+      4.3633 * h exactly (GW26 1.65 -> 7.20, mouse 0.88 -> 3.84), so measurements #1, #3 and #9 (r = 1.0000,
+      alpha = 0.9993, lambda/h = 4.3642) validate the Richman formula against itself. Replace the species and fetal
+      wavelengths with digitised values from Tallinen 2014 Fig. 4 / Mota 2015 supplementary tables (with figure/
+      table pointers per row), or relabel the rows `lambda_theory_mm` and drop the three circular measurements.
+    - >-
+      1975-richman-cortical-gyrification-buckling.py:253-276 and 290-314 — the 2D coronal solver prescribes
+      n_sulci_target = round(P_hull / lambda_theory), gi_target = 1 + 1.603 dg^0.88 (2.60/h)^0.22 and a cusp
+      profile u_eq, then minimises a penalty on (u - u_eq); the 28 / 85 sulcus counts, GI_sim 2.5597 and lambda_sim
+      11.20 reported by measurements #4, #5, #7 are therefore targets, and `energy_drop_ratio` measures noise
+      removal. Replace u_eq with a genuine growth-driven energy (neo-Hookean film strain energy with multiplicative
+      growth g on a Winkler/half-space foundation, random initial condition) so that wavelength, count and GI are
+      selected by the minimiser, and source or remove the constants 1.603 / 0.88 / 0.22.
+    - >-
+      1975-richman-cortical-gyrification-buckling.py:735-736 and 691-714 — the 3D crease-wall GI_3D = 2.604 uses
+      `shell2d["mean_sulcal_depth_mm"]` from the 2D solver, so depth and GI amplitude are not emergent in 3D and no
+      gyral-crown vs fundus thickness differentiation exists. Make depth emergent (e.g. a thin-shell Föppl-von
+      Kármán film with growth on the same mesh, or at minimum a GSH amplitude-to-depth calibration fitted to Tallinen
+      2016 Fig. 3 rather than imported), and replace the ad-hoc ellipsoid (1.30, 0.70, 0.95) with a vendored,
+      SHA-256-pinned fetal surface template.
+    - >-
+      1975-richman-cortical-gyrification-buckling.py:1175 and 1532 vs 267 — the GI growth law is plotted with
+      exponent 0.85 in Panel C and in the GIF but the solver uses 0.88; unify to one sourced exponent (or derive the
+      GI(g) curve from the solver output) so the plotted law is the one computed.
+    - >-
+      datasets/cortical_gyrification_folding/cortical_gyrification_folding_reference.json:245-254 with
+      1975-richman-cortical-gyrification-buckling.py:924-958 — `lissencephaly_thick_cortex` has g = 1.14 < g_c, so
+      h = 6.50 mm never affects the result and Richman's thick-cortex prediction (longer wavelength, fewer folds at
+      supercritical g) is untested. Add a supercritical thick-cortex condition (h = 6.5 mm, g = 2.15) and assert
+      lambda_sim rises by h-ratio and N_sulci falls.
+    - >-
+      1975-richman-cortical-gyrification-buckling.py:1867-1882 — `--growth-g/--h-cortex/--mu-ratio/--R-brain` are
+      passed only to `render_comparison_figure`; `evaluate_surface_3d_fetal_stages` and
+      `evaluate_regional_thickness_gradient_sweep` receive only `seed` and `subdivisions`. Thread the physical
+      overrides (and eps_scale / g2_curvature_coeff) into the 3D surrogate and add a sweep across the Stoop
+      dimple/labyrinth boundary.
+    - >-
+      1975-richman-cortical-gyrification-buckling.py:610-669 — `count_sulcal_y_junctions` rasterises to an
+      equirectangular grid, restricts to |lat| <= 60 deg and uses `ndi.label` without longitude wrap, so junctions
+      and components at the poles and across the seam are miscounted; its only reference is the honeycomb upper
+      bound 2.31 per lambda^2. Count junctions on the mesh skeleton directly (or use periodic labelling) and compare
+      with a published fetal sulcal-graph junction density (e.g. Tallinen 2016 Fig. 4 or a sulcal-pit atlas).
+    - >-
+      1975-richman-cortical-gyrification-buckling.py:620 with requirements.txt — `skimage.morphology.skeletonize`
+      is a new hard dependency not declared in `requirements.txt` (outside this slot's editable files); add
+      `scikit-image` to the repository requirements (or implement a pure-scipy thinning) and record the exact
+      version in a lock file for this script.
+    - >-
+      1975-richman-cortical-gyrification-buckling.py:991-1034 with 1663-1671 — specimen segmentation thresholds
+      (0.86, 0.08, 14 px, 52nd / 76th percentiles, 62 px band) and the fallback spacings [34, 36, 35] are untraced,
+      P_pial is approximated from distance-transform depths, and the single-section GI 2.81 is compared with the
+      whole-hemisphere mean 2.56. Trace the pial contour directly, report the thresholds' provenance, and compare
+      with a per-section GI reference (Zilles 1988 Fig. 2 profile).

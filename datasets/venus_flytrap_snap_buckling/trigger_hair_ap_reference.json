@@ -1,0 +1,63 @@
+{
+  "metadata": {
+    "dataset_id": "venus_flytrap_snap_buckling/trigger_hair_ap_reference",
+    "title": "Pass 3 reference table — Dionaea muscipula trigger-hair mechanotransduction, action potential propagation, two-touch Ca2+ counting memory, and electro-mechanical closure latency",
+    "version": "1.0.0",
+    "created_at": "2026-10-19",
+    "pass": 3,
+    "consumer_script": "2005-forterre-venus-flytrap-snap-buckling.py",
+    "doi_verified_offline": false,
+    "note": "Literature values below were recalled offline during the Pass 3 remediation (no network access); every DOI and every numeric value is flagged with its provenance and should be verified online before being treated as a digitised figure/table value. Rows with provenance 'model' are modelling choices of this script, not literature values.",
+    "primary_dois": [
+      "10.1016/j.tplants.2017.12.004",
+      "10.1016/j.cub.2015.11.057",
+      "10.1038/s41477-020-00773-1",
+      "10.1038/s41477-019-0465-1",
+      "10.7554/eLife.64250",
+      "10.1104/pp.107.108241",
+      "10.1007/BF00394867",
+      "10.1016/0001-8708(70)90023-X"
+    ]
+  },
+  "governing_equations": {
+    "monodomain_cable_fhn": "dV/dt = D lap V + [V (V - a)(1 - V) - beta_w w] / tau_v ;  dw/dt = (V - gamma w) / tau_w  (P1 finite elements on the lobe planform, IMEX time stepping)",
+    "nagumo_front_speed": "c = sqrt(2 D / tau_v) (1/2 - a)  (exact travelling-front speed of the bistable cubic cable equation; McKean 1970)",
+    "trigger_hair_boltzmann": "P_open(F) = 1 / (1 + exp(-(F - F_half)/F_slope)) ;  V_rec = gain * P_open(F)",
+    "calcium_counter": "Ca_i(t) = sum_k c * exp(-(t - t_k - T_act,k(i)) / tau_Ca) * H(t - t_k - T_act,k(i)) ;  motor tissue active where Ca_i >= 1",
+    "two_touch_memory_window": "Delta_max = tau_Ca * ln(c / (1 - c))  for 1/2 <= c < 1",
+    "gated_active_rest_curvature": "d kappa_x0/dt = (k_init + (kx0_final - k_init) A(t) - kappa_x0) / tau_a ;  A(t) = lumped-mass area fraction of activated nodes"
+  },
+  "model_parameters": [
+    {"name": "AP_DIFFUSIVITY_CM2_S", "value": 1.5, "unit": "cm^2/s", "provenance": "model", "note": "electrotonic diffusivity D = lambda^2/tau_m; chosen so that c = 9.8 cm/s lies in the Hodick & Sievers (1988) 6-20 cm/s range"},
+    {"name": "AP_TAU_V_S", "value": 0.005, "unit": "s", "provenance": "model"},
+    {"name": "AP_TAU_W_S", "value": 0.5, "unit": "s", "provenance": "model", "note": "with gamma = 0.5 and beta_w = 0.1 gives ~1.5 s half-amplitude AP duration"},
+    {"name": "AP_THRESHOLD_A", "value": 0.1, "unit": "dimensionless", "provenance": "model"},
+    {"name": "AP_GAMMA", "value": 0.5, "unit": "dimensionless", "provenance": "model"},
+    {"name": "AP_BETA_W", "value": 0.1, "unit": "dimensionless", "provenance": "model"},
+    {"name": "TRIGGER_HAIR_F_HALF_UN", "value": 2.9, "unit": "uN", "provenance": "literature-approx", "source_doi": "10.1038/s41477-019-0465-1", "note": "Scherzer et al. 2019 report micronewton-scale detection thresholds; exact half-activation value is a model choice"},
+    {"name": "TRIGGER_HAIR_F_SLOPE_UN", "value": 0.6, "unit": "uN", "provenance": "model"},
+    {"name": "TRIGGER_HAIR_RECEPTOR_GAIN", "value": 0.6, "unit": "dimensionless", "provenance": "model"},
+    {"name": "TRIGGER_HAIR_FOOTPRINT_CM", "value": 0.15, "unit": "cm", "provenance": "model", "note": "must exceed the 2D critical nucleus radius ~ D/c for all-or-none initiation"},
+    {"name": "CA_INCREMENT_PER_AP", "value": 0.65, "unit": "threshold units", "provenance": "model", "note": "1 AP < threshold <= 2 APs (Böhm et al. 2016 counting rule)"},
+    {"name": "CA_DECAY_TAU_S", "value": 40.0, "unit": "s", "provenance": "model", "note": "gives analytic memory window 24.8 s"},
+    {"name": "FEM_MESH_H_CM", "value": 0.03, "unit": "cm", "provenance": "model"},
+    {"name": "LOBE_TRIGGER_HAIRS_REL", "value": [[0.45, 0.28], [0.45, -0.28], [0.68, 0.0]], "unit": "fraction of L", "provenance": "model", "note": "three trigger hairs per lobe arranged in a triangle (count is literature; positions are a model placement)"}
+  ],
+  "literature_reference_values": [
+    {"name": "ap_conduction_velocity_cm_s", "value": 10.0, "range": [6.0, 20.0], "unit": "cm/s", "provenance": "literature-approx", "source": "Hodick & Sievers (1988) Planta 174:8-18; Sibaoka (1966)", "source_doi": "10.1007/BF00394867", "note": "Volkov et al. (2008) report a much faster (~10 m/s) and shorter AP; this table follows the Hodick & Sievers / Hedrich & Neher convention"},
+    {"name": "ap_duration_s", "value": 1.0, "range": [1.0, 2.0], "unit": "s", "provenance": "literature-approx", "source": "Hedrich & Neher (2018) Trends Plant Sci 23:220-234", "source_doi": "10.1016/j.tplants.2017.12.004"},
+    {"name": "ap_amplitude_mV", "value": 150.0, "unit": "mV", "provenance": "literature-approx", "source": "Hedrich & Neher (2018)", "source_doi": "10.1016/j.tplants.2017.12.004"},
+    {"name": "ap_count_required_for_closure", "value": 2, "unit": "count", "provenance": "literature", "source": "Böhm et al. (2016) Curr Biol 26:286-295; Suda et al. (2020) Nat Plants 6:1219-1224", "source_doi": "10.1016/j.cub.2015.11.057"},
+    {"name": "two_touch_memory_window_s", "value": 30.0, "range": [20.0, 40.0], "unit": "s", "provenance": "literature-approx", "source": "Volkov et al. (2008) Plant Physiol 146:694-702 (electrical memory); Suda et al. (2020) Ca2+ decay", "source_doi": "10.1104/pp.107.108241"},
+    {"name": "trigger_hair_threshold_force_uN", "value": 2.9, "unit": "uN", "provenance": "literature-approx", "source": "Scherzer et al. (2019) Nat Plants 5:670-675", "source_doi": "10.1038/s41477-019-0465-1"},
+    {"name": "closure_latency_after_second_touch_s", "value": 0.3, "range": [0.1, 0.5], "unit": "s", "provenance": "literature-approx", "source": "Volkov et al. (2008) Plant Physiol 146:694-702; Forterre et al. (2005) ~100 ms closure", "source_doi": "10.1104/pp.107.108241"},
+    {"name": "nagumo_front_speed_scaling_exponent", "value": 0.5, "unit": "dimensionless", "provenance": "theory-exact", "source": "McKean (1970) Adv Math 4:209-223", "source_doi": "10.1016/0001-8708(70)90023-X"},
+    {"name": "nagumo_front_speed_cm_s_at_defaults", "value": 9.797958971132712, "unit": "cm/s", "provenance": "theory-exact", "source": "c = sqrt(2 D / tau_v)(1/2 - a) with D = 1.5, tau_v = 0.005, a = 0.1"}
+  ],
+  "touch_protocol_sweep_design": {
+    "intervals_s": [5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 40.0, 60.0],
+    "single_touch": [0.0],
+    "triple_touch_after_lapse": [0.0, 60.0, 70.0],
+    "hair_force_uN": 6.0
+  }
+}

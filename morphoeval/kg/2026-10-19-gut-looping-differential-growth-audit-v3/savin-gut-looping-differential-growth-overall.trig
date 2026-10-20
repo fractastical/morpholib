@@ -1,0 +1,85 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-savin-gut-looping-differential-growth> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-savin-gut-looping-differential-growth-overall> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-savin-gut-looping-differential-growth-overall> a pk:LLMClaimAssessment ;
+        rdfs:label "Savin et al. (2011) discrete gut rod coupled to a finite-element (CST, St.Venant-Kirchhoff) dorsal-mesentery membrane with an apicobasal Pitx2 stiffness gradient — MorphoEval overall 80.0/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Pass 3 (v3) evaluation of `2011-savin-gut-looping-differential-growth.py` (overall weighted score 80.0/100, down from 92.6 in v2). The single v2 remediation item is closed honestly: the gut rod now shares its nodes with a 760-triangle St.Venant-Kirchhoff membrane mesh of the fan-shaped dorsal mesentery with a mean-preserving apicobasal Pitx2 stiffness field, and loop number, radius and tortuosity emerge from L-BFGS-B minimisation (analytic gradient verified to 8.2e-11 against finite differences); the prescribed-shape target and calibration divisors that produced the v2 near-perfect matches were removed. The honest reduced model over-predicts N (9.81 vs 8.5) and under-predicts R (0.952 vs 1.15 mm) at E12, gives MAPE 19 % / 21 % across E8-E16 and an ontogenetic R exponent of 0.61 instead of 1.0, is not mesh-converged (7.7 %), and cannot select handedness (pure membrane). The BMP2 > WT > Noggin > ablation ordering and the Pitx2-gradient sensitivity emerge without tuning. The provenance re-check downgrades source-traceability: the cross-species table is law-consistent to ~1 % with identical lambda and R exponents (not digitised data), the BMP2/Noggin moduli and tortuosities are not in Nerurkar 2017, the specimen is an adult mammalian photograph, and the Davis 2008 DOI was not verified offline. Five Lean theorems (0 sorrys) cover the strain, cube-law stationarity, annular inertia, Pitx2 mean preservation and mesh Euler characteristic. Overall 80.0/100 (faithfulness 78.9, reproducibility 82.8); rubric morphoeval 0.1.0; checkpoint commit 327729c8; environment: python 3.14.7, numpy 2.5.4, scipy 1.16.3, matplotlib 3.10.7, Pillow 12.0.0. Dimension assessments: Model fidelity to source 82, Morphological realism / specimen match 74, Parameter expressivity 86, Morphometric validation 78, Source and data traceability 74, Code-to-model traceability 86, Reproducibility package 88. Output judged: docs/media/gut_looping_differential_growth_comparison.png: rendered output of 2011-savin-gut-looping-differential-growth.py at 327729c8, image/png, 972120 B, 2135×1452 px, artifact_sha256 ecc65dee03e0c3a533d95c7271c0e853a30687d6ea5ba5c237d41f3e7f9c41e4 (sha256 ecc65dee03e0c3a533d95c7271c0e853a30687d6ea5ba5c237d41f3e7f9c41e4), spec_fingerprint 6fb7e55e6158cd10ddf94728c17f791e81e999f808f135655cb2a64003d9cc1b. Dual provenance: spec_fingerprint: 6fb7e55e6158cd10ddf94728c17f791e81e999f808f135655cb2a64003d9cc1b; artifact_sha256: ecc65dee03e0c3a533d95c7271c0e853a30687d6ea5ba5c237d41f3e7f9c41e4; input_dataset_sha256: {datasets/gut_looping_differential_growth/fe_mesentery_mesh_reference.json=8025ecf7fd54a0ef..., datasets/gut_looping_differential_growth/gut_looping_differential_growth_reference.json=f73121bb4140187f..., datasets/gut_looping_differential_growth/intestine_mesentery_specimen.jpg=e12fee9ac1fb5f3d..., datasets/gut_looping_differential_growth/paper_citations.bib=201f4db588717f47..., datasets/gut_looping_differential_growth/scout_manifest.json=0723b42b4d825087...}. Supersedes audit: 2026-10-19-gut-looping-differential-growth-audit-v2. Claim boundary: reported_in_source: Savin et al. (2011): the midgut loops because the tube grows faster than the dorsal mesentery it is attached to (strain epsilon = (L_t - L_m)/L_m); loop wavelength and radius scale as lambda = 4.55 ell_*, R = 1.68 ell_* with ell_* = (E_t I_t / (E_m h_m))^(1/3); surgically freed tubes uncoil; the collapse holds across chick ontogeny (E8-E16) and across zebra finch, quail, chick and mouse (Fig. 4e-f) | Nerurkar, Mahadevan & Tabin (2017): BMP2 over-expression increases and Noggin decreases the differential strain and the number of loops at E12 | Kurpios et al. (2008), Davis et al. (2008): Pitx2-dependent left-right asymmetric condensation and architecture of the dorsal mesentery set the handedness of looping; reconstructed_in_script: Analytical strain, annular inertia and cube-law predictions; a 96-node discrete rod (axial + second-difference bending energy) sharing its nodes with the gut edge of a 96 x 5 CST St.Venant-Kirchhoff plane-stress membrane mesh of a trapezoidal fan (root fixed, rod ends pinned) with a mean-preserving apicobasal Pitx2 stiffness field; L-BFGS-B relaxation with emergent turning-number loop count, R = 1/<kappa>, contour length per loop and tortuosity for E8-E16, BMP2/WT/Noggin/ablation at E12, a Pitx2-gradient sweep and a mesh-refinement check; the 14-point analytical collapse; chromaticity + DoG segmentation of a vendored mesentery photograph; transfer_boundary: The FE model is a pure membrane (no sheet bending, no left-right rest curvature): looping handedness is NOT selected and the script makes no chirality claim; W_m/L_m = 0.18, root fraction 0.7, nu_m = 0.45 and a_Pitx2 = 0.4 are modelling assumptions flagged in fe_mesentery_mesh_reference.json, not measurements | The emergent morphometrics are unfitted: E12 N = 9.81 vs 8.5, R = 0.952 vs 1.15 mm; E8-E16 MAPE 18.7 % (N) and 21.4 % (R); the ontogenetic log-log slope of R_sim vs ell_* is 0.61 (cube law 1.0); N changes by 7.7 % on 96x5 -> 128x6 refinement | The 14-point cross-species table in gut_looping_differential_growth_reference.json reproduces lambda = 4.55 ell_* and R = 1.68 ell_* to ~1 % with identical log-log slopes for lambda and R, so the r = 0.9999 collapse is a consistency check of the table against the law, not an independent validation against digitised Fig. 4e-f data; does_not_claim: A Kirchhoff rod with twist, a Kirchhoff-Love shell, chirality / handedness selection, mesh-converged loop numbers, measured Pitx2 stiffness gradients, moduli for the BMP2/Noggin conditions traceable to Nerurkar 2017, or an embryonic-chick specimen image (the vendored photograph is an adult mammalian mesentery)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/overall" ;
+        pk:evidenceAgainst "remediation needed: 2011-savin-gut-looping-differential-growth.py:1566-1574 with 565-634 — the emergent R exponent across E8-E16 is 0.61 (cube law 1.0) and R is 21 % low / N 19 % high. Diagnose whether this is discretisation (ds_t = 0.72 mm at E12 vs R ~ 1 mm, ~9 rod nodes per loop) or the compression-resisting SVK sheet: re-run E8-E16 at n_s = 192 / n_w = 7 and with a tension-field (compression-free) membrane variant, and report the exponent for each.",
+            "remediation needed: 2011-savin-gut-looping-differential-growth.py:1766-1786 — the eight physical/mesh CLI overrides reach only render_comparison_figure; render_pitx2_fe_figure and render_growth_gif take only --seed. Thread `overrides` through all three renderers (and the measurements) so --pitx2-grad / --mesh-ns actually change every output.",
+            "remediation needed: 2011-savin-gut-looping-differential-growth.py:312-339 and 403-414 — the mesentery is a pure SVK membrane with no bending stiffness and no left-right rest curvature, so looping handedness is not selected (the Section 3 header L242-247 says so). Add a discrete Kirchhoff-Love bending term (dihedral-angle hinge energy across each interior edge, stiffness E_m h_m^3 / 12(1 - nu^2)) and a Pitx2-driven leftward rest tilt of the fan (Davis 2008 / Kurpios 2008) so that the writhe sign is reproducible across seeds; assert it in self_test.",
+            "remediation needed: 2011-savin-gut-looping-differential-growth.py:443-450 and 504 — E8 and E16 reach maxiter 12000 with lbfgs_converged = False and nothing asserts convergence. Either raise maxiter / loosen ftol to a documented gradient-norm criterion and assert `lbfgs_converged` for all 5 stages in self_test, or report the final projected-gradient norm as a measurement.",
+            "remediation needed: 2011-savin-gut-looping-differential-growth.py:490-511 and 342-365 — rename `lambda_sim_mm` to `contour_per_loop_sim_mm` at the call sites (or compute a true spatial wavelength from the centerline power spectrum) and drop or rename the `relax_kirchhoff_gut_rod` alias; add a twist degree of freedom or stop calling the second-difference rod a Kirchhoff rod in the Section 3 title.",
+            "remediation needed: 2011-savin-gut-looping-differential-growth.py:678-703 and 1719-1721 — N changes by 7.7 % on 96x5 -> 128x6 and a 96x7 prototype gave N ~ 11.0; the self-test tolerates 20 %. Add a 3-level refinement study (Richardson extrapolation of N and R) and tighten the tolerance to the extrapolated error; include the refined-mesh E12 N and R as measurements with the coarse/fine spread as uncertainty.",
+            "remediation needed: 2011-savin-gut-looping-differential-growth.py:837-899 and 1626-1634 — the vendored specimen is an adult mammalian mesentery photograph, its lambda/R = 1.54 vs 2.71, the CV references (0.18, 'CV < 0.25') are unsourced and the < 3-peak fallback nn_spacings = [28, 30, 29] is templated. Vendor an embryonic chick midgut image (e.g. a CC-licensed E12 whole-mount), source the CV reference to a figure or drop it, and raise an error instead of substituting spacings.",
+            "remediation needed: datasets/gut_looping_differential_growth/gut_looping_differential_growth_reference.json (BMP2 / Noggin rows) and 2011-savin-gut-looping-differential-growth.py:781-831 — E_m = 2.35 / 1.25 kPa, h_m = 0.044 / 0.031 mm and tortuosity 5.15 / 2.95 are attributed to Nerurkar 2017 Figs. 2-3, which report strain and loop-number changes, not moduli or tortuosity. Mark these as model assumptions (as the FE JSON does), or source them; drive the BMP2 / Noggin conditions by epsilon alone and report the sensitivity to the assumed E_m / h_m.",
+            "remediation needed: datasets/gut_looping_differential_growth/gut_looping_differential_growth_reference.json:151-166 — the cross_species_scaling table reproduces lambda = 4.55 ell_* and R = 1.68 ell_* to ~1 % with identical log-log slopes (0.9909 +/- 0.0027) for lambda and R, i.e. it was generated from the law rather than digitised from Savin Fig. 4e-f. Either replace it with digitised points (with a digitisation note and per-point error bars) or relabel the three 4-species measurements as law-consistency checks and remove 'validation' from their names.",
+            "remediation needed: morphoeval/lean/loops/Loop_062_gut_looping_differential_growth.lean:101-142 — the Pass 3 theorems are structural (mean preservation, Euler characteristic). Add one statement about the mechanics, e.g. that the discrete bending energy sum_i |r_{i+1} - 2 r_i + r_{i-1}|^2 vanishes iff the rod is straight (collinear equally spaced nodes), matching the ablation invariant asserted at L1683-1685." ;
+        pk:hasScore "0.8"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 062 Pass 3 Phase B Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/62> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.devcel.2008.05.001>,
+            <https://doi.org/10.1038/nature10277>,
+            <https://doi.org/10.1073/pnas.0803578105>,
+            <https://doi.org/10.1073/pnas.1618677114>,
+            <https://doi.org/10.1126/science.1238842> .
+    <https://doi.org/10.1016/j.devcel.2008.05.001> dct:date "2008"^^xsd:gYear ;
+        dct:title "The chirality of gut rotation derives from left-right asymmetric changes in the architecture of the dorsal mesentery" .
+    <https://doi.org/10.1038/nature10277> dct:date "2011"^^xsd:gYear ;
+        dct:title "On the growth and form of the gut" .
+    <https://doi.org/10.1073/pnas.0803578105> dct:date "2008"^^xsd:gYear ;
+        dct:title "The direction of gut looping is established by changes in the extracellular matrix and in cell orientation" .
+    <https://doi.org/10.1073/pnas.1618677114> dct:date "2017"^^xsd:gYear ;
+        dct:title "BMP signaling controls buckling forces to modulate looping morphogenesis of the gut" .
+    <https://doi.org/10.1126/science.1238842> dct:date "2013"^^xsd:gYear ;
+        dct:title "Villification: how the gut gets its villi" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Savin et al. (2011) discrete gut rod coupled to a finite-element (CST, St.Venant-Kirchhoff) dorsal-mesentery membrane with an apicobasal Pitx2 stiffness gradient — MorphoEval overall 80.0/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T19:12:28Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-savin-gut-looping-differential-growth-overall> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/62>,
+            <https://w3id.org/probknow/resource/claim/morphoeval-savin-gut-looping-differential-growth> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

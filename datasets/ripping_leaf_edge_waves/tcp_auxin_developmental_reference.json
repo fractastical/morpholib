@@ -1,0 +1,99 @@
+{
+  "metadata": {
+    "dataset_id": "ripping_leaf_edge_waves/tcp_auxin_developmental_reference",
+    "title": "Pass 3 developmental reference: CIN/TCP maturation front, auxin/PIN1 up-the-gradient transport and CUC2 margin patterning coupled to non-Euclidean edge buckling",
+    "version": "1.0.0",
+    "created_at": "2026-10-20",
+    "consumed_by": "2002-sharon-ripping-leaf-edge-waves.py (simulate_tcp_auxin_margin_development, evaluate_developmental_genotype_sweep)",
+    "provenance_note": "Phenotype entries are ORDINAL / qualitative transcriptions of the cited papers made offline (no DOI re-verification in this pass). Numeric serration-count ranges are deliberately broad plausibility bounds, NOT digitised measurements; see README.md Pass 3 addendum.",
+    "primary_dois": [
+      "10.1126/science.1079354",
+      "10.1038/nature01958",
+      "10.1073/pnas.1015162108",
+      "10.1073/pnas.0510457103",
+      "10.1073/pnas.0509839103",
+      "10.1105/tpc.106.044792",
+      "10.1105/tpc.106.045617",
+      "10.1105/tpc.107.057521",
+      "10.1038/ng1835"
+    ]
+  },
+  "governing_equations": {
+    "auxin_pin1_up_the_gradient": "da/dt = D_a d2a/dy2 - div J_PIN + rho_a - mu_a a - (dGamma_mar/dt)/(1+Gamma_mar) a;  J_{i->j} = T p_i a_i exp(kappa a_j) / sum_k exp(kappa a_k);  p_i = p_max c_i/(c_half + c_i)",
+    "cuc2": "dc/dt = rho_c (1 - m) / (1 + (a/a_half)^2) - mu_c c",
+    "tcp_maturation_front": "m(y,t) = 1 / (1 + exp(-(v_tcp t - (L(t) - y)) / w_front))  (basipetal, tip -> base)",
+    "growth_strains": "dGamma_int/dt = gamma_0 (1 - m);  dGamma_mar/dt = gamma_0 (1 - m)(1 + beta a / a_ref)",
+    "excess_metric_to_fvk": "g_0(y,t) = ((1 + Gamma_mar)/(1 + Gamma_int))^2 - 1;  g_yy(x,y) = 1 + g_0(y,t) exp(-x/ell)",
+    "serration_outgrowth": "ds/dt = k_s a (1 - m)"
+  },
+  "wild_type_calibration": {
+    "target_g0_mean": 0.64,
+    "target_source": "Lactuca sativa 'Lollo Bionda' edge excess g_0 used by the Pass 2 mechanical module (ripping_leaf_edge_waves_reference.json default_parameters.g0_edge_excess)",
+    "tolerance_abs": 0.10,
+    "note": "gamma_0 and beta_auxin were tuned so the wild-type developmental run lands near this value; this is a self-consistency calibration between the two modules, not an independent measurement."
+  },
+  "genotype_phenotype_table": [
+    {
+      "genotype": "wild_type",
+      "model_modifiers": {"v_tcp_scale": 1.0, "cuc2_scale": 1.0, "pin1_scale": 1.0},
+      "organism_context": "Lactuca sativa cv. 'Lollo Bionda' (dissected, ruffled margin); Arabidopsis thaliana Col-0 (serrated margin)",
+      "margin_phenotype_obs": "serrated / lobed margin with primary lobes and smaller secondary serrations; ruffled (K < 0) edge",
+      "gaussian_curvature_sign_obs": -1,
+      "relative_marginal_growth_obs": 1.0,
+      "n_serrations_obs_min": 5,
+      "n_serrations_obs_max": 40,
+      "source": "Sharon et al. (2002) Nature Fig. 1c; Bilsborough et al. (2011) PNAS Fig. 1; Nath et al. (2003) Science Fig. 1"
+    },
+    {
+      "genotype": "cin_tcp_loss_of_function",
+      "model_modifiers": {"v_tcp_scale": 0.40, "cuc2_scale": 1.0, "pin1_scale": 1.0},
+      "organism_context": "Antirrhinum majus cincinnata (cin) mutant; Arabidopsis jaw-D (miR319 over-expression, TCP2/3/4/10/24 down)",
+      "margin_phenotype_obs": "larger, crinkled leaves; delayed/slowed basipetal cell-cycle arrest front; excess marginal growth; negative Gaussian curvature",
+      "gaussian_curvature_sign_obs": -1,
+      "relative_marginal_growth_obs": 1.5,
+      "relative_marginal_growth_obs_note": "ordinal: > 1 (cin leaves larger with excess margin growth); 1.5 is a placeholder magnitude, not a digitised value",
+      "n_serrations_obs_min": 5,
+      "n_serrations_obs_max": 60,
+      "source": "Nath, Crawford, Carpenter & Coen (2003) Science 299:1404-1407 Fig. 1-3; Palatnik et al. (2003) Nature 425:257-263 Fig. 1"
+    },
+    {
+      "genotype": "tcp_mir319_resistant_overexpression",
+      "model_modifiers": {"v_tcp_scale": 1.80, "cuc2_scale": 1.0, "pin1_scale": 1.0},
+      "organism_context": "Arabidopsis 35S::mTCP4 / rTCP (miR319-resistant TCP) and TCP gain-of-function lines",
+      "margin_phenotype_obs": "smaller leaves, precocious differentiation, flatter / less dissected margin",
+      "gaussian_curvature_sign_obs": 0,
+      "relative_marginal_growth_obs": 0.6,
+      "relative_marginal_growth_obs_note": "ordinal: < 1; 0.6 is a placeholder magnitude",
+      "n_serrations_obs_min": 0,
+      "n_serrations_obs_max": 40,
+      "source": "Palatnik et al. (2003) Nature 425:257-263; Efroni, Blum, Goldshmidt & Eshed (2008) Plant Cell 20:2293-2306; Koyama et al. (2007) Plant Cell 19:473-484"
+    },
+    {
+      "genotype": "cuc2_knockout",
+      "model_modifiers": {"v_tcp_scale": 1.0, "cuc2_scale": 0.0, "pin1_scale": 1.0},
+      "organism_context": "Arabidopsis cuc2 loss-of-function",
+      "margin_phenotype_obs": "smooth (unserrated) leaf margin; no PIN1 convergence points / auxin maxima at the margin",
+      "gaussian_curvature_sign_obs": 0,
+      "relative_marginal_growth_obs": 1.0,
+      "n_serrations_obs_min": 0,
+      "n_serrations_obs_max": 1,
+      "source": "Nikovics et al. (2006) Plant Cell 18:2929-2945; Bilsborough et al. (2011) PNAS 108:3424-3429 Fig. 1-2"
+    },
+    {
+      "genotype": "pin1_knockout",
+      "model_modifiers": {"v_tcp_scale": 1.0, "cuc2_scale": 1.0, "pin1_scale": 0.0},
+      "organism_context": "Arabidopsis pin1 loss-of-function / NPA-treated leaves",
+      "margin_phenotype_obs": "smooth leaf margin; serrations require PIN1-mediated auxin convergence",
+      "gaussian_curvature_sign_obs": 0,
+      "relative_marginal_growth_obs": 1.0,
+      "n_serrations_obs_min": 0,
+      "n_serrations_obs_max": 1,
+      "source": "Hay, Barkoulas & Tsiantis (2006) Nature Genetics 38:942-947; Bilsborough et al. (2011) PNAS 108:3424-3429"
+    }
+  ],
+  "model_predictions_documented": {
+    "serration_hierarchy_mechanism": "new auxin maxima insert between older ones as the Lagrangian margin lattice stretches (Bilsborough et al. 2011 growing-domain mechanism); older maxima accumulate more outgrowth -> primary lobes, later ones -> secondary serrations",
+    "basipetal_size_gradient": "the TCP arrest front reaches the leaf base last, so basal serrations/lobes accumulate the most outgrowth and the largest excess metric g_0(y)",
+    "fvk_coupling": "the quasi-static Föppl-von Kármán cascade (relax_foppl_von_karman_cascade) is re-solved on the developmental <g_0(y,t)>; the out-of-plane amplitude is modulated along the margin by sqrt(g_0(y)/<g_0>) (Law 1)"
+  }
+}

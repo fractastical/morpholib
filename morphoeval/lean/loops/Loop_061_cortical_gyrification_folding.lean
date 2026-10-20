@@ -82,4 +82,80 @@ theorem gyrification_index_sulcal_excess (P_hull n_sulci d_sulcus : Int) :
   · simp [gyrification_perimeter_excess]
     omega
 
+-- ============================================================================
+-- Law 4 (`richman-cortical-gyrification-buckling-4`, Pass 3):
+-- Generalized Swift-Hohenberg film-on-curved-substrate linear selection
+-- (Stoop et al. 2015 Nature Materials; Cross & Hohenberg 1993)
+-- ============================================================================
+/-- Linearising the generalised Swift-Hohenberg equation
+    `∂ₜu = ε u − (1 + Δ/k_c²)² u + g₂ u² − u³` about `u = 0` gives the growth rate
+    `σ(k) = ε − (1 − k²/k_c²)²`. In integer-scaled form (multiplying through by
+    `k_c⁴`) the residual is `σ̃(ε̃, kc2, k2) = ε̃ − (kc2 − k2)²`. The fastest-growing
+    mode is `k = k_c` (residual `= ε̃`) and every other wavenumber grows strictly
+    slower or decays: `σ̃ ≤ ε̃` for all `k2`. In particular the uniform mode `k = 0`
+    has `σ̃ = ε̃ − kc2²`, so with `ε̃ < kc2²` (the non-dimensionalised `ε < 1` used
+    in the script) sulcal pattern formation selects the Richman wavelength
+    `λ_c = 2π/k_c` rather than a uniform inflation. -/
+def sh_growth_rate (eps kc2 k2 : Int) : Int :=
+  eps - (kc2 - k2) * (kc2 - k2)
+
+theorem swift_hohenberg_fastest_mode (eps kc2 : Int) :
+    sh_growth_rate eps kc2 kc2 = eps ∧
+    (∀ k2 : Int, sh_growth_rate eps kc2 k2 ≤ eps) ∧
+    sh_growth_rate eps kc2 0 = eps - kc2 * kc2 := by
+  refine ⟨by simp [sh_growth_rate], ?_, by simp [sh_growth_rate]⟩
+  intro k2
+  have h : 0 ≤ (kc2 - k2) * (kc2 - k2) := by
+    rcases Int.le_total 0 (kc2 - k2) with hp | hn
+    · exact Int.mul_nonneg hp hp
+    · exact Int.mul_nonneg_of_nonpos_of_nonpos hn hn
+  simp only [sh_growth_rate]
+  omega
+
+
+-- ============================================================================
+-- Law 5 (`richman-cortical-gyrification-buckling-5`, Pass 3):
+-- Regional cortical-thickness gradient ⇒ regional wavelength ratio (Richman law
+-- applied locally, Fischl & Dale 2000 regional thickness range)
+-- ============================================================================
+/-- With a spatially varying cortical thickness `h(x)` the locally preferred
+    wavelength is `λ(x) = C · h(x)` with `C = 2π (μ_c/3μ_s)^{1/3}` independent of
+    position (Law 2). Hence the ratio of anterior to posterior wavelengths equals
+    the ratio of thicknesses, `λ_ant · h_post = λ_post · h_ant`, and a linear
+    anterior-posterior gradient `h_ant = h₀(1+β)`, `h_post = h₀(1−β)` (integer-scaled
+    as `h₀·(d+b)` and `h₀·(d−b)` with `β = b/d`) gives
+    `λ_ant · (d − b) = λ_post · (d + b)`. -/
+def local_wavelength (C h : Int) : Int :=
+  C * h
+
+theorem regional_wavelength_tracks_thickness (C h_ant h_post h0 d b : Int) :
+    local_wavelength C h_ant * h_post = local_wavelength C h_post * h_ant ∧
+    local_wavelength C (h0 * (d + b)) * (d - b) =
+      local_wavelength C (h0 * (d - b)) * (d + b) := by
+  constructor
+  · simp [local_wavelength, Int.mul_comm, Int.mul_left_comm]
+  · simp [local_wavelength, Int.mul_assoc, Int.mul_comm, Int.mul_left_comm]
+
+
+-- ============================================================================
+-- Law 6 (`richman-cortical-gyrification-buckling-6`, Pass 3):
+-- 3D crease-wall gyrification index (Law 3 lifted from perimeter to area)
+-- ============================================================================
+/-- On a 3D hemisphere with hull area `A_hull`, a sulcal network whose fundus
+    lines have total length `L_f` and mean depth `d̄` buries two opposing walls of
+    area `L_f · d̄` each, so `A_pial = A_hull + 2 L_f d̄`. Since the `u = 0`
+    iso-contour of the planform runs along both flanks of every sulcus,
+    `L_zero = 2 L_f`, giving the buried excess `A_pial − A_hull = L_zero · d̄`.
+    The excess vanishes in the lissencephalic limit (`L_f = 0`). -/
+def gyrification_area_excess (A_hull L_f d : Int) : Int :=
+  (A_hull + 2 * L_f * d) - A_hull
+
+theorem gyrification_index_3d_crease_wall (A_hull L_f d : Int) :
+    gyrification_area_excess A_hull 0 d = 0 ∧
+    gyrification_area_excess A_hull L_f d = (2 * L_f) * d := by
+  constructor
+  · simp [gyrification_area_excess]
+  · simp [gyrification_area_excess]
+    omega
+
 end MathOfBiology.Loop_061

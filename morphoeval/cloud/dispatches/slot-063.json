@@ -16,11 +16,105 @@
   "signed_nanopubs_v1": 10,
   "signed_nanopubs_v2": 10,
   "overall_trusty_uri_v2": "https://w3id.org/np/RAJF7XYlLGqAh2ieAZVVRHdzxq_FhohL1o2glBqsWHzT8",
-  "status": "completed",
+  "status": "pass3_completed",
   "dispatched_at": "2026-10-20T00:35:12Z",
   "completed_at": "2026-10-20T00:48:04Z",
   "slot_index": 63,
   "slug": "intestinal-villi-buckling",
   "target_script": "2013-shyer-intestinal-villi-buckling.py",
-  "delta": 37.3
+  "delta": 37.3,
+  "pass3_run_id": "2026-10-19-epithelial-buckling-crypt-villus-loop-pass3",
+  "audit_v3_id": "2026-10-19-epithelial-buckling-crypt-villus-audit-v3",
+  "pass3_phase_a_status": "remediation_complete",
+  "pass3_phase_a_completed_at": "2026-10-20T18:15:00Z",
+  "pass3_phase_a_model": "claude-fable-5-1-thinking-high",
+  "pass3_remediation_items_closed": [
+    "Reduced 3D tubular coupling: axisymmetric neo-Hookean ring FEM of the mesenchymal annulus (Lame-verified) replaces the flat Winkler bed; integer mode quantisation; Donnell ratio",
+    "Spatially localized Shh/BMP mesenchymal clusters at zigzag elbows / villus tips with feedback into the FvK cubic gain"
+  ],
+  "pass3_residuals": [
+    "Full 3D (non-axisymmetric) tubular neo-Hookean solid FEM not implemented; elbow dome curvature proxied by crest-contour turning curvature",
+    "Shh/BMP field is curvature-driven, not reaction-diffusion; only qualitative (null = 1.0) empirical references for cluster enrichment"
+  ],
+  "lean_theorems_verified_v3": 6,
+  "lean_sorrys_v3": 0,
+  "self_test_checks_v3": 12,
+  "measurements_v3": 17,
+  "new_media_v3": [
+    "docs/media/epithelial_buckling_crypt_villus_tubular_shh_bmp.png"
+  ],
+  "new_datasets_v3": [
+    "datasets/epithelial_buckling_crypt_villus/tubular_shh_bmp_reference.json",
+    "datasets/epithelial_buckling_crypt_villus/pass3_citations.bib"
+  ],
+  "handoff_note": "/tmp/pass3/handoff/slot-063.md",
+  "pass3_audit_id": "2026-10-19-epithelial-buckling-crypt-villus-audit-v3",
+  "pass3_score": 87.8,
+  "pass3_dims": {
+    "model-fidelity": 88,
+    "specimen-match": 84,
+    "parameter-expressivity": 90,
+    "morphometric-validation": 84,
+    "source-traceability": 91,
+    "code-traceability": 89,
+    "repro-package": 95
+  },
+  "pass2_dims": {
+    "model-fidelity": 94,
+    "specimen-match": 91,
+    "parameter-expressivity": 92,
+    "morphometric-validation": 94,
+    "source-traceability": 95,
+    "code-traceability": 92,
+    "repro-package": 94
+  },
+  "pass3_delta": -5.3,
+  "pass3_completed_at": "2026-10-20T18:23:09Z",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_overall_trusty_uri": "https://w3id.org/np/RArWsvc1D3ghFpb8emtEli1R87s1rci0NyN1e-WNGj-Uk",
+  "pass3_phase_b_model": "claude-fable-5-1",
+  "pass3_remediation_closed": [
+    "Couple the 2D Föppl-von Kármán mucosal energy minimizer to a 3D tubular neo-Hookean finite-element mesh with spatially localized Shh/BMP mesenchymal cluster signaling at zigzag elbows. — closed as a reduced honest version: axisymmetric neo-Hookean ring FEM of the mesenchymal annulus (tubular_neo_hookean_foundation L290-365, Lamé-verified) feeding K_eff into relax_fvk_mucosal_surface (L565-586) with integer mode quantisation and Donnell gamma (L368-419); curvature-driven Shh/BMP cluster field (compute_shh_bmp_cluster_field L422-484) with localized cubic gain and linear spectral response (L734-793)"
+  ],
+  "pass3_remediation_open": [
+    "L779-782, 877, 1075: stage amplitude rescaled to the observed amplitude_obs_um (circular amplitude comparisons; unsourced 155*sqrt fallback) — let amplitude emerge from the minimiser",
+    "L666-669, 677, 732: theta_zz taken from the observed target (unsourced 0.92 fallback), hexagonal theta = 58.5 literal, surface blended 0.85 prescribed cosine + 0.15 relaxed — measure theta from the relaxed crest contours",
+    "L802, 811-815: lambda_sim = 0.85 lambda_* + 0.15 lambda_fft and per-regime |Psi_6| literals — report lambda_fft and compute |Psi_6| from the Delaunay neighbourhood of the simulated villus maxima",
+    "L722, 748-770: L-BFGS-B stops on the 65-iteration limit (L_op^2 condition ~1e7) — replace with a semi-implicit spectral gradient flow",
+    "L290-365, 261-271: ring FEM is axisymmetric 1D-radial with a rigid outer wall — add a finite muscle-spring boundary and a non-axisymmetric (r, theta) mesh",
+    "L422-484, 136-142: Shh field is curvature-driven with 5 unanchored tunables — replace with a Shh/Ptch1/BMP reaction-diffusion model anchored to measured cluster counts",
+    "reference JSON + L127, 965-983: stage moduli fitted to lambda_obs and c_tube OLS-fitted to the same data (in-sample RMSE and collapse) — source stage moduli or declare them fitted; hold out a species",
+    "L1101-1188: species-unmatched terminal-ileum specimen with hard-coded ROI/DoG/Delaunay bounds and no pixel scale — vendor a chick E16 villus-field micrograph with a scale bar"
+  ],
+  "pass3_lean_theorems_added": [
+    "tubular_mode_quantization",
+    "shh_bmp_elbow_localization",
+    "shh_bmp_elbow_villus_nucleation"
+  ],
+  "pass3_lean_verification": "lean exit 0, 6 theorems, 0 sorrys",
+  "pass3_self_test": "PASSED all 12 checks (2.1 s)",
+  "pass3_artifacts": [
+    "2013-shyer-intestinal-villi-buckling.py",
+    "morphoeval/lean/loops/Loop_063_epithelial_buckling_crypt_villus.lean",
+    "morphoeval/math_kg_loops/shyer-intestinal-villi-buckling.yaml",
+    "datasets/epithelial_buckling_crypt_villus/README.md",
+    "datasets/epithelial_buckling_crypt_villus/tubular_shh_bmp_reference.json",
+    "datasets/epithelial_buckling_crypt_villus/pass3_citations.bib",
+    "docs/media/epithelial_buckling_crypt_villus_comparison.png",
+    "docs/media/epithelial_buckling_crypt_villus_growth.gif",
+    "docs/media/epithelial_buckling_crypt_villus_tubular_shh_bmp.png",
+    "docs/media/epithelial_buckling_crypt_villus_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-epithelial-buckling-crypt-villus-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-epithelial-buckling-crypt-villus-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-epithelial-buckling-crypt-villus-audit-v3/",
+    "morphoeval/runs/2026-10-19-epithelial-buckling-crypt-villus-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-epithelial-buckling-crypt-villus-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-epithelial-buckling-crypt-villus-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-epithelial-buckling-crypt-villus-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-epithelial-buckling-crypt-villus-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-epithelial-buckling-crypt-villus-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-063.json"
+  ]
 }

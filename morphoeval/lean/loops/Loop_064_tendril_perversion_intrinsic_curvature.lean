@@ -95,4 +95,54 @@ theorem gerbode_soft_vs_lignified_overwinding (B dC : Int) :
   · simp [gerbode_overwinding_susceptibility]
     omega
 
+
+-- ============================================================================
+-- Law 4 (`goriely-tendril-perversion-intrinsic-curvature-4`, Pass 3):
+-- Contact-Gated Thigmotropic Curvature (Darwin 1865 Ch. IV; Jaffe & Galston 1968)
+-- ============================================================================
+/-- In the Pass 3 contact-coiling solver a rod node carries intrinsic curvature only
+    after a touch signal has reached it: `κ0_i = κ_contact · ramp_i` with
+    `0 ≤ ramp_i ≤ 1` once touched and `κ0_i = 0` before. Modelling the ramp as a
+    rational `r / d` with `0 ≤ r ≤ d` (clearing the positive denominator), the gated
+    curvature is `0` for an untouched node, equals `κ_contact · d` at saturation
+    (`r = d`), and never exceeds the saturation value. Hence a rod that never touches
+    a support keeps `κ0 ≡ 0` and cannot coil (the no-support negative control). -/
+def gated_curvature (touched : Bool) (kappa_contact r : Nat) : Nat :=
+  if touched then kappa_contact * r else 0
+
+theorem thigmotropic_contact_gating (kappa_contact r d : Nat) (h : r ≤ d) :
+    gated_curvature false kappa_contact r = 0 ∧
+    gated_curvature true kappa_contact d = kappa_contact * d ∧
+    gated_curvature true kappa_contact r ≤ kappa_contact * d := by
+  refine ⟨?_, ?_, ?_⟩
+  · simp [gated_curvature]
+  · simp [gated_curvature]
+  · simp [gated_curvature]
+    exact Nat.mul_le_mul_left kappa_contact h
+
+
+-- ============================================================================
+-- Law 5 (`goriely-tendril-perversion-intrinsic-curvature-5`, Pass 3):
+-- Amontons-Coulomb Friction Grip Capacity of the Wrapped Tendril (`F_hold ≤ μ Σ N_i`)
+-- ============================================================================
+/-- The axial load a wrapped tendril can hold on its support is bounded by the
+    Amontons-Coulomb capacity `μ · Σ_i N_i` (friction coefficient times the total
+    squeeze normal force). Scaling `μ` by a positive integer denominator, the capacity
+    `coulomb_capacity μ N = μ · N` vanishes for a frictionless support (`μ = 0`, the
+    frictionless control slips at the first load increment), vanishes without squeeze
+    (`N = 0`, a loosely looped coil), and is monotone non-decreasing in `μ` for
+    `N ≥ 0`, which is the ordering checked by the Pass 3 friction sweep. -/
+def coulomb_capacity (mu N : Nat) : Nat :=
+  mu * N
+
+theorem coulomb_grip_capacity (mu1 mu2 N : Nat) (h : mu1 ≤ mu2) :
+    coulomb_capacity 0 N = 0 ∧
+    coulomb_capacity mu1 0 = 0 ∧
+    coulomb_capacity mu1 N ≤ coulomb_capacity mu2 N := by
+  refine ⟨?_, ?_, ?_⟩
+  · simp [coulomb_capacity]
+  · simp [coulomb_capacity]
+  · simp only [coulomb_capacity]
+    exact Nat.mul_le_mul_right N h
+
 end MathOfBiology.Loop_064

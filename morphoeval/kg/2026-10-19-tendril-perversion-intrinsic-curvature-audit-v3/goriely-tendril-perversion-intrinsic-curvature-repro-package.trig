@@ -1,0 +1,95 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-goriely-tendril-perversion-intrinsic-curvature> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-goriely-tendril-perversion-intrinsic-curvature-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-goriely-tendril-perversion-intrinsic-curvature-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Goriely & Tabor (1998) PRL / Gerbode et al. (2012) Science Kirchhoff elastic rod tendril perversion, G-fiber overwinding & Pass 3 thigmotropic contact coiling — Reproducibility package: 94/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`self_test()` (L1987-L2068) runs 12 checks: the 8 Pass 2 checks plus (9) contact coiling N_wrap > 1.5 vs control < 0.5 with kappa0 = 0, penetration < 0.1 a, strain < 2 %; (10) F_hold monotone in mu, frictionless slip, F_hold/mu*sum(N) in (0.1, 1.5); (11) stacked turns activate self-contact and stay within 15 % of the rod diameter; (12) two-run bitwise determinism of the implicit contact solver (L2051-L2056). Verified this round: PASSED all 12 checks in ~85 s; the default render completes in ~45 s and writes the 4 media files listed under output/extra_outputs; dataset integrity is fail-closed; results are memoised in `_THIGMO_CACHE` by full parameter tuple. Deductions: the determinism check runs only a 5 min horizon, not the 30 min default (-2); the self-test takes ~85 s, dominated by the friction and radius sweeps, with no `--quick` path (-2); no requirements lock file pins the environment that produced the committed media (-1); the Pass 3 PNG is gitignored (`*.png`), so the committed repo does not carry the new figure (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-repro-package-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-repro-package-3> ;
+        pk:hasScore "0.94"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "1998-goriely-tendril-perversion-intrinsic-curvature.py L1987–L2068" ;
+        dct:description "12-check self_test(): Pass 2 checks 1-8 and Pass 3 checks 9-12 (L2031-L2056) including contact-solver determinism and 15-measurement count" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/1998-goriely-tendril-perversion-intrinsic-curvature.py#L1987-L2068> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "1998-goriely-tendril-perversion-intrinsic-curvature.py L2051–L2056" ;
+        dct:description "Determinism check clears _THIGMO_CACHE and compares two fresh runs, but only at t_end_min = 5" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/1998-goriely-tendril-perversion-intrinsic-curvature.py#L2051-L2056> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-goriely-tendril-perversion-intrinsic-curvature-repro-package-3> a pk:EvidenceItem ;
+        rdfs:label "1998-goriely-tendril-perversion-intrinsic-curvature.py L104–L107" ;
+        dct:description "Four output paths (comparison PNG, growth GIF, thigmotropic PNG, thigmotropic GIF) written by the default invocation" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/1998-goriely-tendril-perversion-intrinsic-curvature.py#L104-L107> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 064 Pass 3 Phase B Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/64> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/s00332-002-0493-1>,
+            <https://doi.org/10.1103/PhysRevLett.80.1564>,
+            <https://doi.org/10.1111/j.1095-8339.1865.tb00011.x>,
+            <https://doi.org/10.1126/science.1223304>,
+            <https://doi.org/10.1146/annurev.pp.19.060168.002221>,
+            <https://doi.org/10.3732/ajb.0900045>,
+            <https://scholarlycommons.pacific.edu/euler-works/262/> .
+    <https://doi.org/10.1007/s00332-002-0493-1> dct:date "2002"^^xsd:gYear ;
+        dct:title "Tendril Perversion in Intrinsically Curved Rods" .
+    <https://doi.org/10.1103/PhysRevLett.80.1564> dct:date "1998"^^xsd:gYear ;
+        dct:title "Spontaneous Helix Hand-Reversal and Tendril Perversion" .
+    <https://doi.org/10.1111/j.1095-8339.1865.tb00011.x> dct:date "1865"^^xsd:gYear ;
+        dct:title "On the Movements and Habits of Climbing Plants" .
+    <https://doi.org/10.1126/science.1223304> dct:date "2012"^^xsd:gYear ;
+        dct:title "How the Cucumber Tendril Coils and Overwinds" .
+    <https://doi.org/10.1146/annurev.pp.19.060168.002221> dct:date "1968"^^xsd:gYear ;
+        dct:title "The Physiology of Tendrils" .
+    <https://doi.org/10.3732/ajb.0900045> dct:date "2009"^^xsd:gYear ;
+        dct:title "Moving with Climbing Plants from Charles Darwin's Time into the 21st Century" .
+    <https://scholarlycommons.pacific.edu/euler-works/262/> dct:date "1762"^^xsd:gYear ;
+        dct:title "Remarques sur l'effet du frottement dans l'équilibre" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Goriely & Tabor (1998) PRL / Gerbode et al. (2012) Science Kirchhoff elastic rod tendril perversion, G-fiber overwinding & Pass 3 thigmotropic contact coiling — Reproducibility package 94/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T19:48:29Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-goriely-tendril-perversion-intrinsic-curvature-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/64> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

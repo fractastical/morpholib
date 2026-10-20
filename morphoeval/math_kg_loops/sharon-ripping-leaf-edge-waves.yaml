@@ -11,8 +11,28 @@ model_spec:
   r_cascade_ratio: 3.5
   n_generations: 4
   seed: 2002
+  pass3_developmental_module:
+    L0_margin_mm: 36.0
+    n_cells: 180
+    T_total_h: 240.0
+    dt_h: 0.1
+    D_a: 0.03
+    T_pin: 2.5
+    kappa_pin: 3.5
+    rho_a: 0.08
+    mu_a: 0.10
+    rho_c: 0.5
+    mu_c: 0.25
+    a_half: 1.6
+    v_tcp_mm_per_h: 0.45
+    w_front_mm: 6.0
+    gamma_0_per_h: 0.0085
+    beta_auxin: 0.75
+    k_serration_mm_per_h: 0.004
+    genotypes: [wild_type, cin_tcp_loss_of_function, tcp_mir319_resistant_overexpression, cuc2_knockout, pin1_knockout]
   inputs:
     - datasets/ripping_leaf_edge_waves/ripping_leaf_edge_waves_reference.json
+    - datasets/ripping_leaf_edge_waves/tcp_auxin_developmental_reference.json
     - datasets/ripping_leaf_edge_waves/lactuca_sativa_edge_waves_specimen.jpg
     - datasets/ripping_leaf_edge_waves/scout_manifest.json
     - datasets/ripping_leaf_edge_waves/paper_citations.bib
@@ -33,7 +53,7 @@ equations:
     variables: "g_yy(x): longitudinal target metric component along the leaf margin; A_m(x): out-of-plane wave amplitude of generation m (mm); λ_m: wave wavelength of generation m (mm); g_0: edge excess arc-length strain factor"
     role: "Proves that out-of-plane sinusoidal edge buckling preserves isometric arc length along the stretched margin with aspect ratio A/λ = √(g_yy - 1)/(√2 π), while vanishing identically (A = 0) for a flat Euclidean metric (g_yy = 1)"
     source_citation: "Sharon, Roman, Marder, Shin & Swinney (2002) Nature 419(6907):579-580; Audoly & Boudaoud (2003) Phys. Rev. Lett. 91(8):086105"
-    code_locus: "2002-sharon-ripping-leaf-edge-waves.py#L140-L240"
+    code_locus: "2002-sharon-ripping-leaf-edge-waves.py#L151-L367"
 
   - law_name: "Negative Intrinsic Gaussian Curvature of Convexly Decaying Marginal Growth Metric"
     formula: "ds^2 = dx^2 + g_yy(x) dy^2,  K(x) = -(1 / √g_yy) d^2(√g_yy)/dx^2 ≈ -(1/2) g''_yy(x) = -(g_0 / 2ℓ^2) exp(-x/ℓ) < 0"
@@ -50,7 +70,7 @@ equations:
     variables: "K(x): intrinsic Gaussian curvature of the leaf margin metric (mm^-2); g''_yy(x): second transverse derivative of target metric; ℓ: boundary decay length (mm)"
     role: "Establishes by Gauss's Theorema Egregium that any convexly decaying marginal growth profile (g''_yy(x) > 0) induces strictly negative Gaussian curvature K(x) < 0 near the free edge, forcing out-of-plane hyperbolic buckling"
     source_citation: "Sharon et al. (2002) Nature 419:579-580; Liang & Mahadevan (2009) PNAS 106(52):22049-22054"
-    code_locus: "2002-sharon-ripping-leaf-edge-waves.py#L140-L210"
+    code_locus: "2002-sharon-ripping-leaf-edge-waves.py#L151-L195"
 
   - law_name: "Self-Similar Multi-Generation Sub-Harmonic Wavelength Cascade & Linear Boundary Scaling Law"
     formula: "λ_m / λ_{m+1} = r_cascade ∈ [3, 5],  x_m ∝ λ_m,  λ_loc(x) = c_λ x + λ_min(t)"
@@ -70,4 +90,47 @@ equations:
     variables: "r_cascade: sub-harmonic period-multiplying cascade ratio; λ_m: generation-m wavelength (mm); x: inward distance from the free leaf margin (mm); λ_min(t): finite-thickness cutoff wavelength (mm)"
     role: "Proves multiplicative self-similar wavelength coarsening across buckling generations and linear growth of dominant wavelength with inward distance x from the leaf margin above the thickness cutoff λ_min ∝ t"
     source_citation: "Audoly & Boudaoud (2003) Phys. Rev. Lett. 91(8):086105; Sharon et al. (2002) Nature 419:579-580"
-    code_locus: "2002-sharon-ripping-leaf-edge-waves.py#L245-L445"
+    code_locus: "2002-sharon-ripping-leaf-edge-waves.py#L197-L514"
+
+  - law_name: "CIN/TCP-Arrested, Auxin-Boosted Marginal Growth Increment & Non-Negative Developmental Excess Metric (Pass 3)"
+    formula: "dΓ_int/dt = γ_0 (1 - m),  dΓ_mar/dt = γ_0 (1 - m)(1 + β a/a_ref),  m(y,t) = σ((v_tcp t - (L - y))/w),  g_0(y,t) = ((1+Γ_mar)/(1+Γ_int))^2 - 1 ≥ 0,  m = 1 ⇒ dΓ = 0"
+    lean_decl: "MathOfBiology.Loop_067.marginal_growth_increment"
+    lean_theorem: "MathOfBiology.Loop_067.tcp_arrested_marginal_growth_increment"
+    lean_theorem_secondary: "MathOfBiology.Loop_067.developmental_excess_metric_nonneg"
+    lean_locus: "morphoeval/lean/loops/Loop_067_ripping_leaf_edge_waves.lean#L133-L174"
+    lean_code: |
+      def marginal_growth_increment (gamma0 m_rem a_boost : Nat) : Nat :=
+        gamma0 * m_rem * a_boost
+      theorem tcp_arrested_marginal_growth_increment (gamma0 a_boost G : Nat) :
+          marginal_growth_increment gamma0 0 a_boost = 0 ∧
+          (∀ m1 m2 : Nat, m1 ≤ m2 →
+            marginal_growth_increment gamma0 m1 a_boost ≤ marginal_growth_increment gamma0 m2 a_boost) ∧
+          (∀ m_rem R b : Nat,
+            marginal_growth_increment gamma0 m_rem R ≤ marginal_growth_increment gamma0 m_rem (R + b)) ∧
+          (∀ m_rem : Nat, G ≤ G + marginal_growth_increment gamma0 m_rem a_boost)
+      def excess_metric_numerator (g_mar g_int : Nat) : Int :=
+        ((1 + g_mar) * (1 + g_mar) : Nat) - ((1 + g_int) * (1 + g_int) : Nat)
+      theorem developmental_excess_metric_nonneg (g_mar g_int : Nat) (h : g_int ≤ g_mar) :
+          0 ≤ excess_metric_numerator g_mar g_int ∧ excess_metric_numerator g_int g_int = 0
+    variables: "m(y,t): CIN/TCP maturation (growth-arrest) field in [0,1] sweeping basipetally at speed v_tcp (mm/h); Γ_int, Γ_mar: interior and marginal growth strains; a: auxin level (a.u.); β: auxin growth boost; g_0(y,t): excess metric handed to the Föppl-von Kármán solver"
+    role: "Proves that TCP maturation arrests marginal growth, that a slower cin arrest front never yields less growth (excess marginal growth and K < 0 in cin), that the auxin boost keeps margin growth ≥ interior growth so the developmental excess metric g_0 is non-negative and reduces exactly to the flat Euclidean control when β a = 0"
+    source_citation: "Nath, Crawford, Carpenter & Coen (2003) Science 299:1404-1407; Palatnik et al. (2003) Nature 425:257-263; Efroni et al. (2008) Plant Cell 20:2293-2306; Sharon et al. (2002) Nature 419:579-580"
+    code_locus: "2002-sharon-ripping-leaf-edge-waves.py#L805-L1012"
+    code_locus_secondary: "2002-sharon-ripping-leaf-edge-waves.py#L766-L774"
+
+  - law_name: "PIN1 Up-the-Gradient Pairwise Auxin Transport Mass Conservation (Pass 3)"
+    formula: "J_{i→j} = T p_i a_i exp(κ a_j) / Σ_k exp(κ a_k),  p_i = p_max c_i/(c_half + c_i),  net_{ij} = J_{i→j} - J_{j→i} = -net_{ji},  Σ_i da_i|_transport = 0"
+    lean_decl: "MathOfBiology.Loop_067.pin_pairwise_net_flux"
+    lean_theorem: "MathOfBiology.Loop_067.pin_pairwise_transport_mass_conservation"
+    lean_locus: "morphoeval/lean/loops/Loop_067_ripping_leaf_edge_waves.lean#L184-L195"
+    lean_code: |
+      def pin_pairwise_net_flux (f_ij f_ji : Int) : Int :=
+        f_ij - f_ji
+      theorem pin_pairwise_transport_mass_conservation (a_i a_j f_ij f_ji : Int) :
+          pin_pairwise_net_flux f_ij f_ji + pin_pairwise_net_flux f_ji f_ij = 0 ∧
+          (a_i - pin_pairwise_net_flux f_ij f_ji) + (a_j + pin_pairwise_net_flux f_ij f_ji) = a_i + a_j ∧
+          pin_pairwise_net_flux f_ij f_ij = 0
+    variables: "a_i: auxin in cell i; p_i: CUC2-gated PIN1 level; T: transport rate; κ: up-the-gradient polarisation strength; J_{i→j}: PIN1-mediated efflux from i to j"
+    role: "Establishes that the PIN1 up-the-gradient exchange used to generate auxin convergence maxima (serration tips) is antisymmetric and conserves the two-cell auxin total, hence total lattice auxin changes only through production, decay and growth dilution"
+    source_citation: "Smith et al. (2006) PNAS 103:1301-1306; Jönsson et al. (2006) PNAS 103:1633-1638; Bilsborough et al. (2011) PNAS 108:3424-3429"
+    code_locus: "2002-sharon-ripping-leaf-edge-waves.py#L776-L797"

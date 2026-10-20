@@ -1,0 +1,125 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAxUFwDQgpyNQTlvj3H0uh-XPeGzsAFr6uBi_x72ytct4/> .
+@prefix this: <https://w3id.org/np/RAxUFwDQgpyNQTlvj3H0uh-XPeGzsAFr6uBi_x72ytct4> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-alberti-avian-beak-darwin-scaling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-alberti-avian-beak-darwin-scaling-parameter-expressivity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-alberti-avian-beak-darwin-scaling-parameter-expressivity> a pk:LLMClaimAssessment ;
+        rdfs:label "Campas et al. (2010) PNAS affine scaling-and-shear transformation + Abzhanov et al. (2004, 2006) Bmp4/Calmodulin beak morphogenesis + Soons et al. (2010-2015) reduced FEM fracture risk — Parameter expressivity: 91/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "Credited: 14 species x 3 affine groups (L236-L371), 4 RCAS conditions (L433-L461), and the new FEM parameter axes — BV/TV sweep (L1154-L1171, deflection 12.3 -> 2.0 um, keratin peak 2.39 -> 0.56 MPa), keratin-modulus ablation (L1174-L1212, shielding strictly increasing and exactly 0 at E_k = E_core), load position tip -> base (GIF, L1422-L1468), load angle, keratin thickness and mesh density, all exposed as CLI flags `--bvtv`, `--keratin-thickness-mm`, `--load-angle-deg`, `--fem-nx`, `--fem-ny` and honoured by the FEM figure (L2161-L2199). Deductions: `measure_morphoeval()` ignores every CLI parameter (seed 2010, BV/TV 0.55, 90x18 fixed at L1845-L1861), so the measured values cannot be swept from the command line (-4); `--verify-only` is a pure alias of `--self-test` (L2178) and `--seed` only changes the synthetic noise (-2); the keratin ablation substitutes material only, never separating the added-thickness contribution (-3)." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-parameter-expressivity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/parameter-expressivity" ;
+        pk:evidenceAgainst "2021-alberti-avian-beak-darwin-scaling.py L1845–L1861: measure_morphoeval() hard-codes seed=2010 and FEM defaults; CLI parameters are not forwarded to the measurements <https://github.com/fractastical/morpholib/blob/8a7928d7/2021-alberti-avian-beak-darwin-scaling.py#L1845-L1861>",
+            "2021-alberti-avian-beak-darwin-scaling.py L2178–L2178: --verify-only is an alias of --self-test <https://github.com/fractastical/morpholib/blob/8a7928d7/2021-alberti-avian-beak-darwin-scaling.py#L2178-L2178>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-parameter-expressivity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-parameter-expressivity-2> ;
+        pk:hasScore "0.91"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-parameter-expressivity-1> a pk:EvidenceItem ;
+        rdfs:label "2021-alberti-avian-beak-darwin-scaling.py L1154–L1212" ;
+        dcterms:description "sweep_trabecular_bvtv and sweep_keratin_modulus: BV/TV and E_k/E_core ablations on G. fortis" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/2021-alberti-avian-beak-darwin-scaling.py#L1154-L1212> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-alberti-avian-beak-darwin-scaling-parameter-expressivity-2> a pk:EvidenceItem ;
+        rdfs:label "2021-alberti-avian-beak-darwin-scaling.py L2161–L2199" ;
+        dcterms:description "CLI flags --bvtv, --keratin-thickness-mm, --load-angle-deg, --fem-nx, --fem-ny wired into render_fem_fracture_figure" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/2021-alberti-avian-beak-darwin-scaling.py#L2161-L2199> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 070 Pass 3 Assessor, Phase B subagent)" ;
+        dcterms:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub1:provenance {
+    <https://doi.org/10.1016/j.actamat.2005.04.048> dcterms:date "2005"^^xsd:gYear ;
+        dcterms:title "Structure and mechanical behavior of a toucan beak" .
+
+    <https://doi.org/10.1017/CBO9781139878326> dcterms:date "1997"^^xsd:gYear ;
+        dcterms:title "Cellular Solids: Structure and Properties (2nd ed.)" .
+
+    <https://doi.org/10.1038/nature04843> dcterms:date "2006"^^xsd:gYear ;
+        dcterms:title "The calmodulin pathway and evolution of elongated beak morphology in Darwin's finches" .
+
+    <https://doi.org/10.1073/pnas.0911575107> dcterms:date "2010"^^xsd:gYear ;
+        dcterms:title "Scaling and shear transformations capture beak shape diversity in Darwin's finches" .
+
+    <https://doi.org/10.1098/rsif.2011.0910> dcterms:date "2012"^^xsd:gYear ;
+        dcterms:title "Multi-layered bird beaks: a finite-element approach towards the role of keratin in stress dissipation" .
+
+    <https://doi.org/10.1098/rsif.2014.0284> dcterms:date "2014"^^xsd:gYear ;
+        dcterms:title "Shared developmental programme strongly constrains beak shape diversity in songbirds" .
+
+    <https://doi.org/10.1098/rstb.2009.0280> dcterms:date "1543"^^xsd:gYear ;
+        dcterms:title "Mechanical stress, fracture risk and beak evolution in Darwin's finches" .
+
+    <https://doi.org/10.1111/j.1420-9101.2004.00857.x> dcterms:date "2005"^^xsd:gYear ;
+        dcterms:title "Evolution of bite force in Darwin's finches: a key role for head width" .
+
+    <https://doi.org/10.1126/science.1098095> dcterms:date "2004"^^xsd:gYear ;
+        dcterms:title "Bmp4 and morphological variation of beaks in Darwin's finches" .
+
+    <https://doi.org/10.1371/journal.pone.0129479> dcterms:date "2015"^^xsd:gYear ;
+        dcterms:title "Is beak morphology in Darwin's finches tuned to loading demands?" .
+
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/70> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.actamat.2005.04.048>,
+            <https://doi.org/10.1017/CBO9781139878326>,
+            <https://doi.org/10.1038/nature04843>,
+            <https://doi.org/10.1073/pnas.0911575107>,
+            <https://doi.org/10.1098/rsif.2011.0910>,
+            <https://doi.org/10.1098/rsif.2014.0284>,
+            <https://doi.org/10.1098/rstb.2009.0280>,
+            <https://doi.org/10.1111/j.1420-9101.2004.00857.x>,
+            <https://doi.org/10.1126/science.1098095>,
+            <https://doi.org/10.1371/journal.pone.0129479> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "WC3IZC2pTxboQOJIlCT+b4cF10qRdq+pSGD5ZcPvr1PYciPHq5hqsDr/ETycLGGqvRsWZI8fL8nBAvIeH3N8j5hITmEJCn1xEFuj5RnmIUQ9Syo/u9/PhpYXkMuqIkwk+6LPaIR7FWwEFVvynjUy7Rb2F3XHHxV33gMBFcgQU3cHP9XqEXteIWhN6BjvXR0Meix9ONgMhK4gb8MCdACVydgX/sutXBOtw3OPRA0OLvEhKwIM7i9PdhOFK/MrL4VxqkjIBNYVUgzV+RxWa1VdRRO+8N/bfE4bsbFQE/5L4HGqXoxL+G3dC1muGpnDi7t1pCdz0TdKOvLl8vI5VgGmMg==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Campas et al. (2010) PNAS affine scaling-and-shear transformation + Abzhanov et al. (2004, 2006) Bmp4/Calmodulin beak morphogenesis + Soons et al. (2010-2015) reduced FEM fracture risk — Parameter expressivity 91/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T19:58:11Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-alberti-avian-beak-darwin-scaling-parameter-expressivity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/70> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+

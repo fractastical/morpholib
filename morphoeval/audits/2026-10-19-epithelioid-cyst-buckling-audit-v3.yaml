@@ -1,0 +1,347 @@
+# MorphoEval audit — Trushko et al. (2020) Dev. Cell, Hannezo et al. (2014) PNAS & Zoelly (1915) Spherical Epithelial Cyst Buckling Under Alginate Confinement, 2026-10-20 (v3)
+#
+# Pass 3 re-score of `2019-trushko-epithelioid-cyst-buckling.py` and `datasets/epithelioid_cyst_buckling/` after the
+# remediation of the single open v2 item in the instrumented loop `morphoeval/runs/2026-10-19-epithelioid-cyst-buckling-loop-pass3`,
+# superseding `2026-10-19-epithelioid-cyst-buckling-audit-v2` (93.3). Assessor: Claude Fable 5.1 (Phase B subagent of
+# slot-069), scoring from the Phase A handoff, `git diff`, the current file at commit 8a7928d7 and a fresh `--self-test`.
+#
+# What Pass 3 changed (v2 remediation item 1):
+#   1. A full 3D triangulated shell solver (`solve_confined_cyst_shell3d`, icosphere subdivision 3: 642 vertices /
+#      1280 faces / 1920 edges) with harmonic edge springs, discrete Helfrich bending with a Hannezo-Prost-Joanny
+#      spontaneous curvature H0 R0 = 6 (1 - nu^2) dGamma R0 / (E_epi h^2) along the radial (apical-basal) axis, a
+#      unilateral Winkler capsule wall, a self-contact penalty and quasi-static L-BFGS-B continuation in g with a
+#      1e-3 R0 radial imperfection re-seeded every step; WT / Blebbistatin / unconfined / linear-g regimes along the
+#      Fig. 2E schedule, a 5-point apical-basal tension (dGamma) sweep, 9 new measurements, ~25 new self-test
+#      assertions, a 6-panel 3D figure + 19-frame GIF, a SHA-256-pinned `shell3d_apicobasal_reference.json`, and 2
+#      new Lean theorems (Laws 4 and 5; 7 theorems, 0 sorry) registered in the per-loop math KG.
+#
+# What the remediation exposed (why several dimensions go DOWN despite the new solver):
+#   - The 2D ring solver that produced every v2 headline number is prescribed, not solved: the fold mode is
+#     hard-wired from h/R0 (line 205), the fold depth is a fitted power law (lines 207-212) and the L-BFGS-B result
+#     is rescaled back to that target (lines 248-251), so the v2 "trajectory r = 0.998" is circular.
+#   - The free 3D solver under-predicts the WT fold depth (delta/R0 0.30 vs 0.64), produces 12 shallow folds vs the
+#     observed 1 and the 12 coincide with the 12 five-valent icosphere vertices (mesh-templated); the capsule dilates
+#     21 % (experiment: a few %) and a stiff (68 kPa) capsule does not fold by g = 1.527 at all.
+#   - dGamma_WT = 4.26 mN/m is calibrated so that H0 R0 = 1, not measured; the specimen micrograph is a thyroid
+#     follicle H&E, not an MDCK cyst in a capsule, and the v2 audit misreported its circularity (0.654; the script
+#     prints 0.848).
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale. Line numbers refer to the files at
+# commit 8a7928d7 (working tree of the Pass 3 loop).
+
+audit:
+  id: 2026-10-19-epithelioid-cyst-buckling-audit-v3
+  supersedes_audit_id: 2026-10-19-epithelioid-cyst-buckling-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 069 Pass 3 Phase B Assessor)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 2 primary assessor; Pass 3 Phase A builder context, not re-blinded)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/69
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8a7928d7
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) post-remediation evaluation of `2019-trushko-epithelioid-cyst-buckling.py`
+      (1612 lines) in `2026-10-19-epithelioid-cyst-buckling-loop-pass3`. `--self-test` passes
+      (15 s; Zoelly r = 1.0000, slope 1.990, 3D shell WT delta/R0 = 0.301, folds = 12, P(t)
+      r = 0.939, dGamma slope -0.0058 /mN/m). `lean morphoeval/lean/loops/Loop_069_epithelioid_cyst_buckling.lean`
+      exits 0 with 7 theorems and 0 sorry. The v2 overall of 93.3 is revised DOWN to the score
+      below because the remediation exposed that the 2D ring, which carried the v2 scores, is a
+      prescribed profile rather than a free energy minimiser.
+
+references:
+  trushko2020:
+    title: "Buckling of an epithelium growing under spherical confinement"
+    authors: "Trushko A, Di Meglio I, Merzouki A, Blanch-Mercader C, Abuhattum S, Guck J, Alessandri K, Chopard B, Kruse K, Roux A"
+    venue: "Developmental Cell 54(5):655-668.e6 (2020)"
+    doi: 10.1016/j.devcel.2020.07.019
+  hannezo2014:
+    title: "Theory of epithelial sheet morphology in three dimensions"
+    authors: "Hannezo E, Prost J, Joanny J-F"
+    venue: "Proceedings of the National Academy of Sciences 111(1):27-32 (2014)"
+    doi: 10.1073/pnas.1312076111
+  alessandri2013:
+    title: "Cellular capsules as a tool for multicellular spheroid production and for investigating the mechanics of tumor progression in vitro"
+    authors: "Alessandri K, Sarangi BR, Gurchenkov VV, Sinha B, Kiessling TR, Fetler L, Rico F, Scheuring S, Lamaze C, Simon A, Geraldo S, Vignjevic D, Domejean H, Rolland L, Funfak A, Bibette J, Bremond N, Nassoy P"
+    venue: "Proceedings of the National Academy of Sciences 110(37):14843-14848 (2013)"
+    doi: 10.1073/pnas.1309482110
+  zoelly1915:
+    title: "Uber ein Knickungsproblem an der Kugelschale"
+    authors: "Zoelly R"
+    venue: "ETH Zurich Doctoral Thesis (1915)"
+    doi: 10.3929/ethz-a-000096658
+  helfrich1973:
+    title: "Elastic properties of lipid bilayers: theory and possible experiments"
+    authors: "Helfrich W"
+    venue: "Zeitschrift fur Naturforschung C 28(11-12):693-703 (1973)"
+    doi: 10.1515/znc-1973-11-1209
+  seung1988:
+    title: "Defects in flexible membranes with crystalline order"
+    authors: "Seung HS, Nelson DR"
+    venue: "Physical Review A 38(2):1005-1018 (1988)"
+    doi: 10.1103/PhysRevA.38.1005
+
+simulations:
+  - id: trushko-epithelioid-cyst-buckling
+    name: "Trushko et al. (2020) Dev. Cell & Hannezo et al. (2014) PNAS Föppl-von Kármán / 3D triangulated-shell spherical epithelial cyst buckling under alginate confinement"
+    organism: "Mammalian polarized epithelial cyst monolayers (Canis lupus familiaris MDCK II, Homo sapiens Caco-2)"
+    script: 2019-trushko-epithelioid-cyst-buckling.py
+    output: docs/media/epithelioid_cyst_buckling_comparison.png
+    extra_outputs:
+      - docs/media/epithelioid_cyst_buckling_growth.gif
+      - docs/media/epithelioid_cyst_buckling_shell3d_apicobasal.png
+      - docs/media/epithelioid_cyst_buckling_shell3d_growth.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-epithelioid-cyst-buckling-audit-v2
+    source_refs:
+      - trushko2020
+      - hannezo2014
+      - alessandri2013
+      - zoelly1915
+      - helfrich1973
+      - seung1988
+    claim_boundary:
+      reported_in_source:
+        - "Trushko et al. (2020): an MDCK II monolayer growing to confluence inside a 5 kPa alginate microcapsule (R0 ~ 100 um, h ~ 10 um) buckles into a single deep inward fold once the confinement pressure reaches the Zoelly threshold P_c = 2 E h^2 / (sqrt(3 (1 - nu^2)) R0^2); the fold depth and the capsule pressure read from capsule dilation grow over ~11 h post-confluence (Fig. 2E); Blebbistatin reduces and soft (0.4 kPa) capsules abolish the fold"
+        - "Hannezo, Prost & Joanny (2014): an apical-basal tension difference dGamma in a monolayer of thickness h induces a spontaneous curvature H0 ~ dGamma / (kappa / h) and selects the sign of folding"
+        - "Zoelly (1915): the critical external pressure of a thin elastic spherical shell scales as (h / R0)^2"
+      reconstructed_in_script:
+        - "Zoelly critical pressure and its (h/R0)^2 scaling over a 12-capsule table, an alginate Winkler capsule stiffness, a critical growth stretch g_c and buckling time, a prescribed-profile 2D equatorial ring (mode n in {0, 1, 2}, fitted fold-depth law) with lumen volume partitioning, and (Pass 3) a free 3D icosphere shell with springs, Helfrich bending with apical-basal spontaneous curvature, unilateral capsule contact and self-contact, relaxed quasi-statically in g; WT, Blebbistatin, unconfined and linear-g regimes along the Fig. 2E schedule; a 5-point dGamma sweep; capsule pressure read as K_alg (r_wall / R0 - 1); automated segmentation of a histology micrograph"
+      transfer_boundary:
+        - "The dataset's g = 2^((t - t_c) / tau_d) is a cell-number (area) ratio; the 3D shell applies sqrt(g) as the linear rest stretch by default while the 2D ring still applies g as a linear perimeter stretch, so the two solvers are not on the same growth convention"
+        - "dGamma_WT = 4.26 mN/m is calibrated so that H0 R0 = 1 (no apical/basal tension measurement exists in Trushko 2020); the 12-fold 3D pattern coincides with the 12 five-valent icosphere vertices and has not been shown to be mesh-independent"
+        - "The histology specimen (`epithelioid_cyst_specimen.jpg`) is a thyroid-follicle H&E section, not an MDCK cyst in a capsule; its reference values are attributed loosely to Trushko Fig. 1-2"
+      does_not_claim:
+        - "A cell-level vertex model with apical/basal/lateral faces, lumen pressure, cell division or T1 transitions; a resolved rigid-cavity (displacement-controlled) buckling threshold for a stiff 68 kPa capsule; a measured apical-basal tension; or a validated single-fold 3D morphology matching the experimental fold depth 0.64 R0"
+    summary: >-
+      Pass 3 (v3) remediated evaluation of `2019-trushko-epithelioid-cyst-buckling.py`. The single
+      v2 remediation item is closed: a free 3D triangulated shell with apical-basal spontaneous
+      curvature, Winkler capsule wall and self-contact (`solve_confined_cyst_shell3d`) now runs
+      beside the 2D ring, reproduces the Fig. 2E pressure trajectory from capsule dilation
+      (r = 0.939, RMSE 0.089 kPa), keeps the unconfined control spherical (delta/R0 = 0.005,
+      0 folds), responds to the dGamma sweep in the Hannezo direction and is backed by 2 new Lean
+      theorems (7 total, 0 sorry). It also exposes that the 2D ring which carried the v2 scores
+      is a prescribed Gaussian profile rescaled to a fitted target depth, that the free solver
+      under-predicts the WT fold depth (0.30 vs 0.64 R0) with 12 mesh-templated shallow folds
+      instead of 1, that dGamma is calibrated rather than measured, and that the specimen is a
+      thyroid follicle whose circularity (0.848) the v2 audit misreported as 0.654. The overall
+      score therefore goes DOWN from 93.3 while the model is more honest and more capable.
+    scores:
+      model-fidelity:
+        value: 76
+        rationale: >-
+          Credit: `solve_confined_cyst_shell3d` is a genuine free energy minimiser (harmonic
+          springs with rest length sqrt(g) l0, discrete Helfrich bending (kappa/2) A_v (2H - 2H0)^2
+          via an umbrella Laplacian with a lagged curvature normalisation, spontaneous curvature
+          from the Hannezo formula along the radial axis, unilateral Winkler wall, cKDTree
+          self-contact, analytic gradients, L-BFGS-B continuation in g with re-seeded 1e-3
+          imperfections) on a closed icosphere (Euler chi = 2 asserted); Laws 4-5 are machine
+          checked. Deductions: the 2D ring that still produces every regime/trajectory panel is
+          prescribed - mode hard-wired from h/R0 (line 205), depth a fitted power law (lines
+          207-212), L-BFGS-B result rescaled back to the target (lines 248-251) - so it is not a
+          Föppl-von Kármán solve as v2 scored it (-10); the 3D solver gives 12 shallow folds that
+          coincide with the 12 five-valent vertices, i.e. a mesh-templated pattern, not the single
+          Pogorelov fold of the experiment (-6); the capsule is as soft as the sheet (k_conf ~
+          1.2 Y_2D/R0) and a stiff 68 kPa capsule does not fold by g = 1.527, so the
+          displacement-controlled confinement physics is unresolved (-4); the apical-basal axis is
+          the radial direction and there is no cell-level apical/basal/lateral structure, lumen
+          pressure or division topology (-4).
+        evidence:
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [506, 718], note: "3D shell solver: cache, icosphere, umbrella Laplacian, material constants, lagged curvature scale, energy + analytic gradient, continuation loop, wall/depth/fold/volume read-outs", supports: true}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [591, 631], note: "energy_and_grad: springs, Helfrich bending with spontaneous curvature 2 c0 m_v n_hat, Winkler wall, self-contact penalty", supports: true}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [476, 484], note: "compute_apicobasal_spontaneous_curvature: H0 R0 = 6 (1 - nu^2) dGamma R0 / (E_epi h^2) (Hannezo 2014; Lean Law 4)", supports: true}
+          - {file: morphoeval/lean/loops/Loop_069_epithelioid_cyst_buckling.lean, lines: [148, 177], note: "Law 4: completed-square proof that the apical-basal bending energy is minimised at kappa c = t (spontaneous curvature)", supports: true}
+          - {file: morphoeval/lean/loops/Loop_069_epithelioid_cyst_buckling.lean, lines: [203, 221], note: "Law 5: inverted-cap penalty (h + c0)^2 >= (h - c0)^2 and Winkler penalty zero inside the capsule wall", supports: true}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [201, 212], note: "2D ring: fold mode hard-wired from h/R0 < 0.082 and target fold depth from fitted constants 0.818 / 0.685 / 0.575 / 0.68 / 0.22 - prescribed, not solved", supports: false}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [248, 251], note: "2D ring: optimised profile rescaled so that its peak equals target_delta, making the minimisation a smoothing step", supports: false}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [421, 460], note: "build_icosphere: subdivision 3 icosahedron carries 12 five-valent vertices; the WT 12-fold pattern coincides with them (mesh-templated)", supports: false}
+      specimen-match:
+        value: 62
+        rationale: >-
+          Credit: the 3D figure renders the WT shell as a trisurf coloured by inward deflection
+          beside the ring and the Fig. 2E data, the GIF shows wrinkle-to-coarsening, the
+          unconfined control stays spherical, and the segmentation of the SHA-256-locked
+          micrograph (19 cysts, h/R0 = 0.106 vs reference 0.105) is reproducible. Deductions:
+          the specimen is a thyroid-follicle H&E (Wikimedia), not an MDCK cyst in an alginate
+          capsule, and its 0.105 / 0.650 reference values are attributed loosely to Trushko
+          Fig. 1-2 (-12); the segmented mean circularity is 0.848 (printed in panel F) whereas
+          the v2 audit reported 0.654, i.e. the v2 specimen-match claim rested on a misreported
+          number and the 0.650 reference is not matched (-8); the free 3D WT shell shows 12
+          shallow folds at delta/R0 = 0.30 instead of the single 0.64 R0 fold seen in the
+          experiment, and the linear-g ablation overshoots to 1.18 R0 (-10); segmentation uses
+          uncited calibration factors x1.12 (perimeter) and x1.65 (thickness) (-4); the
+          ring's lumen circularity in the unbuckled branch is a constant 0.9985 (-2); honest
+          display of the miss in panel F of the 3D figure (sim vs experimental fold count) is
+          credited.
+        evidence:
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [1107, 1206], note: "render_shell3d_figure: 6 panels incl. 3D trisurfs, delta(t) and P(t) vs Fig. 2E, dGamma sweep, fold multiplicity vs experiment (12 vs 1 shown honestly)", supports: true}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [840, 899], note: "segment_epithelioid_cyst_specimen: 19 contours, h/R0 = 0.106; calibration factors x1.12 (line 870) and x1.65 (line 874) are uncited", supports: false}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [1449, 1460], note: "Circularity measurement with reference 0.650 attributed to Trushko Fig. 2 and Wikimedia File:Thyroid_follicle.jpg; script prints 0.848 (panel F title, line 1017)", supports: false}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [1285, 1294], note: "Measurement: 3D shell WT fold count 12 vs reference 1 - a genuine miss recorded as a measurement", supports: false}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [1209, 1229], note: "render_shell3d_gif: 19 frames of the linear-g shell (wrinkle -> coarsening to 2 folds)", supports: true}
+          - {file: docs/media/epithelioid_cyst_buckling_shell3d_apicobasal.png, lines: [0, 0], note: "Rendered 3D figure: panels A/B trisurfs show 12 shallow wrinkles (g = N/N_c) vs 2 deep folds (g linear); panel F fold count 12 vs experimental 1", supports: false}
+          - {file: docs/media/epithelioid_cyst_buckling_shell3d_growth.gif, lines: [0, 0], note: "Rendered 3D growth GIF (19 frames): wrinkle onset and coarsening of the linear-g shell inside the capsule", supports: true}
+          - {file: docs/media/epithelioid_cyst_buckling_growth.gif, lines: [0, 0], note: "Rendered 2D ring growth GIF: prescribed single-fold invagination deepening along the g schedule", supports: true}
+      parameter-expressivity:
+        value: 84
+        rationale: >-
+          Credit: four 3D regimes (WT, Blebbistatin via Gamma_myo and E_epi/h, unconfined 0.4 kPa,
+          linear-g ablation) along the Fig. 2E schedule; a 5-point dGamma sweep (H0 R0 in {-1, 0,
+          0.5, 1, 2}) with slopes of fold depth and onset g; a `growth_is_area_ratio` toggle; the
+          previously dead `--e-alg/--h-scale/--r0-scale/--blebbistatin/--seed` flags now drive a
+          ring + shell probe printed as JSON with `--delta-gamma`, `--growth`, `--probe`,
+          `--skip-3d-media`. Deductions: the ring's regime outputs (n = 0/1/2, depth) are set by
+          the hard-wired mode rule and fitted depth law rather than by the parameters flowing
+          through an energy (-6); the (h/R0, E_alg) phase diagram in panel D is an analytic
+          formula 0.728 sqrt(1.52 - g_c) 1.22 not produced by either solver (-5); the fold count of
+          the 3D shell is invariant (12) across the whole dGamma sweep, so the sweep moves depth
+          and onset but never morphology (-3); `seed` of the ring is unused (-2).
+        evidence:
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [727, 795], note: "evaluate_shell3d_regimes: WT, Blebbistatin, unconfined and WT-linear 3D runs along the g schedule with Pearson r / RMSE vs delta(t) and P(t) and ring-vs-shell cross-check", supports: true}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [798, 837], note: "evaluate_apicobasal_tension_sweep: 5 dGamma values, slopes of delta/R0, onset g and fold count", supports: true}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [1558, 1600], note: "CLI: --delta-gamma, --growth, --probe, --skip-3d-media; legacy overrides now drive a ring + shell JSON probe", supports: true}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [586, 589], note: "growth_is_area_ratio toggle: sqrt(g) (area reading) vs g (ring's linear reading)", supports: true}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [984, 990], note: "Panel D phase diagram DELTA_MAP = min(0.80, 0.728 sqrt(1.52 - g_c) 1.22) - closed-form, not solver output", supports: false}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [156, 166], note: "solve_confined_cyst_ring signature: `seed` accepted but never used (ring is deterministic by construction)", supports: false}
+      morphometric-validation:
+        value: 68
+        rationale: >-
+          Credit: measurements now computed from the free 3D solver and compared with transcribed
+          Fig. 2E data - P(t) from capsule dilation r = 0.939 (RMSE 0.089 kPa; P_3D = 0.506 kPa vs
+          0.485 at g = 1.527), delta(t) r = 0.799 (RMSE 0.27), Blebbistatin r = 0.813, ring-vs-shell
+          r = 0.827 - with their Pearson p-values computed, not typed; the 12-point Zoelly scaling
+          (r = 1.0000, slope 1.990) is an exact law check. Deductions: the ring trajectory
+          r = 0.9927 / r = 0.998 that v2 scored is circular because the ring depth is a fitted law
+          (-10); the free solver's headline morphometrics miss - fold depth 0.30 vs 0.64, fold
+          count 12 vs 1, wall dilation 21 % vs a few % (-8); the H0 R0 = 0.9994 "measurement" is a
+          calibration target (self-referential) (-3); p-values and stddevs of the ring and
+          specimen measurements are hard-coded literals (1.2e-6, 2.4e-6, 4.8e-6, 1.5e-8, 2.1e-8;
+          stddev 0.045 / 0.038 / 0.032) rather than computed (-4); the circularity reference
+          0.650 vs measured 0.848 is a miss not flagged in the measurement (-1).
+        evidence:
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [1248, 1348], note: "9 new 3D-shell measurements: fold depth, delta(t) r, P(t) r, fold counts (both readings), H0 R0, dGamma slopes, ring-vs-shell r; Pearson p-values computed", supports: true}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [697, 707], note: "Capsule pressure read as K_alg (r_wall / R0 - 1) and traj_P_kPa - the same read-out Trushko use (capsule dilation)", supports: true}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [1368, 1420], note: "Ring measurements with hard-coded p_value / stddev literals (1.0e-12, 1.2e-6, 2.4e-6, 4.8e-6; 0.045, 0.038, 0.032)", supports: false}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [1424, 1432], note: "Post-confluence trajectory r against Fig. 2E computed from the prescribed ring depth law - circular", supports: false}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [1306, 1316], note: "H0 R0 = 0.9994 vs reference 1.0: dGamma_WT was calibrated to hit this value", supports: false}
+      source-traceability:
+        value: 86
+        rationale: >-
+          Credit: six primary sources with DOIs (Helfrich 1973 and Seung & Nelson 1988 added for
+          the discrete bending energy and the 12-disclination icosphere; both DOIs kept unverified
+          offline per the loop rule); the new `shell3d_apicobasal_reference.json` is SHA-256 pinned
+          in `EXPECTED_SHA256` and verified at every run alongside the v2 JSON, BibTeX and
+          specimen; `pass3_citations.bib` and the dataset README document the new constants.
+          Deductions: dGamma_WT = 4.26 mN/m is calibrated, not sourced (-4); E_alg = 5 kPa in the
+          pinned regime table vs Alessandri 2013's ~68 kPa alginate modulus has unclear
+          provenance and could not be verified offline (-3); `SHELL3D_PERTURBATION`, the contact
+          stiffness 2.0 Y_2D and the fold thresholds 0.35 / 0.04 are modelling choices without a
+          literature source (-3); the ring's constants 0.98, alpha_myo = 0.24, 0.08, 0.695,
+          0.365 are unsourced (-4).
+        evidence:
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [60, 82], note: "EXPECTED_SHA256 for 4 dataset files incl. shell3d_apicobasal_reference.json; verify_dataset_sha256() fail-closed", supports: true}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [415, 418], note: "SHELL3D_SUBDIVISIONS / SHELL3D_PERTURBATION = 1e-3 / SHELL3D_CONTACT_STIFFNESS = 2.0 - modelling choices without citation", supports: false}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [124, 149], note: "Unsourced constants 0.98 (capsule stiffness prefactor) and alpha_myo = 0.24", supports: false}
+          - {file: datasets/epithelioid_cyst_buckling/shell3d_apicobasal_reference.json, lines: [1, 10], note: "Pass 3 reference table: mesh counts, dGamma_WT (flagged calibrated), expected H0 R0, Blebbistatin Gamma_myo", supports: true}
+      code-traceability:
+        value: 84
+        rationale: >-
+          Credit: section banners name the Lean law each solver implements; the per-loop math KG
+          now registers 5 equations (Laws 1-5) each with a single `file#La-Lb` `code_locus`
+          (secondary ranges in `code_locus_secondary`) and the Law 3 locus was corrected to the
+          current ring/regime range; in-code comments explain the umbrella-Laplacian curvature
+          normalisation, the sqrt(g) growth convention and the per-step imperfection re-seeding.
+          Deductions: the ring's fitted constants (lines 205-212, 268), the 0.08 / 0.695 / 0.9985
+          literals and the panel-D closed form carry no derivation or citation (-6); the
+          `seed` parameter of the ring and the `Gamma_myo` dependence of the fold-depth law are
+          undocumented (-3); the fold-detection thresholds and contact stiffness are documented
+          only in the dataset JSON, not at the code site (-3); measurement `method` strings for
+          the ring still describe it as an FvK minimiser (-4).
+        evidence:
+          - {file: morphoeval/math_kg_loops/trushko-epithelioid-cyst-buckling.yaml, lines: [1, 119], note: "Per-loop Math KG: 5 equations mapped to 7 Lean theorems and single-range Python code_locus pins (Laws 4-5 added in Pass 3)", supports: true}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [570, 584], note: "Comment block deriving the discrete mean-curvature scale m_v = mean(l^2)/4 and the lagged update", supports: true}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [650, 656], note: "Comment explaining why the radial imperfection is re-seeded at every growth increment", supports: true}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [174, 199], note: "Ring pre-buckling branch: literals 0.08, 0.695, 0.9985 without derivation", supports: false}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [266, 270], note: "p_conf = P_c + 0.365 K_alg excess (0.55 + 0.45 Gamma_myo): fitted, uncited", supports: false}
+      repro-package:
+        value: 90
+        rationale: >-
+          Credit: `--self-test` passes in ~15 s with ~37 assertions (Zoelly, regimes, scaling,
+          specimen, Euler characteristic, Law 4 minimiser, Law 5 penalties, 3D regimes, pressure
+          monotonicity, dGamma sweep signs, two-run bitwise determinism of both solvers with the
+          memo cleared); all four dataset files SHA-256 verified; full render 28 s; the 3D
+          solver is memoised per argument tuple; new figure and GIF regenerate from the default
+          invocation. Deductions: `docs/media/*.png` is git-ignored repo-wide so the new 3D PNG
+          needs a forced add and is not tracked (-3); hard-coded p-values/stddevs mean the
+          measurement YAML is partly not reproducible from data (-3); the self-test clears the
+          memo cache so a second evaluate_* call in the same process recomputes (~5 s) (-1);
+          no pinned requirements lock for this script (-3).
+        evidence:
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [1465, 1555], note: "self_test(): sections 1-5 incl. Pass 3 3D shell assertions (lines 1505-1543) and two-run determinism", supports: true}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [1601, 1608], note: "Default invocation runs self_test, renders comparison PNG + GIF and the 3D figure + GIF unless --skip-3d-media", supports: true}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [1537, 1543], note: "Determinism check bypasses the memo (_SHELL3D_CACHE.clear()) and compares vertex arrays bitwise", supports: true}
+          - {file: 2019-trushko-epithelioid-cyst-buckling.py, lines: [1378, 1384], note: "Hard-coded stddev 0.045 and p_value 1.2e-6 in a 'measured' entry", supports: false}
+    remediation:
+    - >-
+      2019-trushko-epithelioid-cyst-buckling.py:201-212 and 248-251 — the 2D ring is a prescribed profile: the
+      fold mode is hard-wired from h/R0 < 0.082, the depth is a fitted law c_delta (g - g_c)^0.68 (1 + 0.22 Gamma)
+      and the L-BFGS-B result is rescaled to that target, so the ring's r = 0.998 trajectory fit is circular.
+      Replace it with a free Föppl-von Kármán ring minimiser (no target_delta, no mode rule) or relabel it as a
+      calibrated empirical profile in the figure titles, measurement `method` strings and the math KG Law 3 entry.
+    - >-
+      2019-trushko-epithelioid-cyst-buckling.py:421-460 and 487-503 — the WT 12-fold pattern coincides with the 12
+      five-valent vertices of the subdivision-3 icosphere (mesh-templated). Add a defect-free or random
+      (Fibonacci-sphere + Delaunay) mesh and a subdivision-4 convergence check, and report the fold count only if
+      it is mesh-independent; the fold-detection thresholds 0.35 / 0.04 should be swept too.
+    - >-
+      2019-trushko-epithelioid-cyst-buckling.py:562-563 and 613-616 — with K_alg = 2.36 kPa from the pinned
+      E_alg = 5 kPa the Winkler wall is as soft as the sheet (k_conf ~ 1.2 Y_2D/R0): fold depth is under-predicted
+      (0.30 vs 0.64 R0) and the capsule dilates 21 % (experiment: a few %), while a stiff 68 kPa capsule does not
+      fold by g = 1.527. Resolve the displacement-controlled (rigid-cavity) vs dead-load threshold, e.g. by a
+      lumen-pressure or volume constraint and a stiff-capsule regime, and reconcile E_alg = 5 kPa with Alessandri
+      2013.
+    - >-
+      2019-trushko-epithelioid-cyst-buckling.py:586-589 vs 156-285 — growth-convention inconsistency: the 3D shell
+      reads g = N/N_c as an area ratio (linear stretch sqrt(g)) while the 2D ring reads g as a linear perimeter
+      stretch (area excess g^2). Put both solvers on the same convention (the ring's excess length should be
+      sqrt(g) - 1) and re-derive g_c.
+    - >-
+      2019-trushko-epithelioid-cyst-buckling.py:1368-1420 and 1440-1458 — p_value / stddev literals (1.0e-12,
+      1.2e-6, 2.4e-6, 4.8e-6, 1.5e-8, 2.1e-8; 0.045, 0.038, 0.032) are typed, not computed; compute them from the
+      regime table / segmentation or set them to null.
+    - >-
+      datasets/epithelioid_cyst_buckling/epithelioid_cyst_specimen.jpg with 2019-trushko-epithelioid-cyst-buckling.py:1436-1460
+      — the specimen is a thyroid-follicle H&E, not an MDCK cyst in a capsule; the measured circularity is 0.848
+      (panel F) vs the 0.650 reference attributed to Trushko Fig. 2 (v2 audit reported 0.654). Vendor a CC-licensed
+      MDCK-cyst-in-capsule micrograph (or a Trushko figure under its licence) or relabel the specimen as a generic
+      epithelial-cyst morphology control and drop the Trushko attribution of the 0.650 value.
+    - >-
+      2019-trushko-epithelioid-cyst-buckling.py:1306-1316 with datasets/epithelioid_cyst_buckling/shell3d_apicobasal_reference.json
+      — dGamma_WT = 4.26 mN/m is calibrated so that H0 R0 = 1 and then reported as a measurement with reference 1.0.
+      Mark it as a calibration (not a measurement) or replace it with a literature apical/basal tension estimate
+      (e.g. MDCK cortical tension measurements) and propagate the uncertainty through the dGamma sweep.
+    - >-
+      2019-trushko-epithelioid-cyst-buckling.py:984-990 — the panel-D phase diagram DELTA_MAP = min(0.80,
+      0.728 sqrt(1.52 - g_c) 1.22) is a closed form not produced by any solver; compute the map from the 3D shell
+      (coarse grid, memoised) or label the panel as an analytic sketch.

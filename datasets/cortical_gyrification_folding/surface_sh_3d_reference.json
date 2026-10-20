@@ -1,0 +1,74 @@
+{
+  "schema_version": "morphoeval-reference-dataset-1.0",
+  "dataset_id": "surface_sh_3d_reference",
+  "slot": 61,
+  "sim_id": "richman-cortical-gyrification-buckling",
+  "pass": 3,
+  "title": "3D hemispheric surface buckling surrogate: generalized Swift-Hohenberg film-on-curved-substrate planform with regional cortical thickness gradient",
+  "honesty_note": "Reduced model standing in for the full 3D tetrahedral neo-Hookean FEM on gestational MRI templates requested by the Pass 2 audit (Tallinen et al. 2016). The GSH equation resolves the sulcal planform (labyrinth, Y-junctions, dimples) on the true 2D surface of a 3D ellipsoidal hemisphere; sulcal depth amplitude is imported from the 2D coronal solver (not emergent). Residual carried as a Pass 4 item.",
+  "primary_papers": [
+    {
+      "citation": "Stoop N, Lagrange R, Terwagne D, Reis PM, Dunkel J (2015). Curvature-induced symmetry breaking determines elastic surface patterns. Nature Materials 14(3):337-342.",
+      "doi": "10.1038/nmat4202",
+      "used_for": "Generalized Swift-Hohenberg equation for a stiff film on a soft curved substrate; curvature (h/R) controls the quadratic coefficient and the hexagonal-dimple -> labyrinth transition with increasing overstress."
+    },
+    {
+      "citation": "Fischl B, Dale AM (2000). Measuring the thickness of the human cerebral cortex from magnetic resonance images. PNAS 97(20):11050-11055.",
+      "doi": "10.1073/pnas.200033797",
+      "used_for": "Regional human cortical thickness range (~1-4.5 mm, mean ~2.5 mm; frontal/temporal thicker than occipital/calcarine) motivating the anterior-posterior thickness gradient."
+    },
+    {
+      "citation": "Cross MC, Hohenberg PC (1993). Pattern formation outside of equilibrium. Reviews of Modern Physics 65(3):851-1112.",
+      "doi": "10.1103/RevModPhys.65.851",
+      "used_for": "Swift-Hohenberg Lyapunov functional and linear growth rate sigma(k) = eps - (k_c^2 - k^2)^2 (fastest mode at k = k_c)."
+    },
+    {
+      "citation": "Tallinen T, Chung JY, Rousseau F, Girard N, Lefevre J, Mahadevan L (2016). On the growth and form of cortical convolutions. Nature Physics 12(6):588-593.",
+      "doi": "10.1038/nphys3632",
+      "used_for": "Target of the residual remediation (3D volumetric growth FEM on fetal MRI template); 3D gyrification index as pial-area / hull-area ratio."
+    }
+  ],
+  "ellipsoid_hemisphere": {
+    "semi_axes_over_R_brain": [1.30, 0.70, 0.95],
+    "axis_order": ["anterior-posterior (x)", "mediolateral (y)", "dorsoventral (z)"],
+    "note": "Approximate human cerebral hemisphere proportions (length : half-width : height ~ 130 : 70 : 95 mm at R_brain = 50 mm); not an MRI template."
+  },
+  "mesh": {
+    "icosphere_subdivisions": 5,
+    "n_vertices": 10242,
+    "n_faces": 20480,
+    "laplacian": "lumped-mass cotangent Laplace-Beltrami (Meyer et al. 2003)"
+  },
+  "generalized_swift_hohenberg": {
+    "equation": "du/dt = eps u - (Delta / k_c(x)^2 + 1)^2 u + g2 u^2 - u^3 (non-dimensionalised by the local k_c so sigma(0) = eps - 1 < 0)",
+    "eps_scale_at_gw38": 0.5,
+    "eps_definition": "eps = eps_scale_at_gw38 * (g - g_c) / (g_GW38 - g_c), g_c = 1.18, g_GW38 = 2.15",
+    "g2_curvature_coeff": 0.35,
+    "g2_definition": "g2 = g2_curvature_coeff * (h_mean / R_mean) / (2.60 / 50.0), after Stoop et al. (2015) curvature-induced quadratic term",
+    "k_c_definition": "k_c(x) = 2*pi / lambda(h(x)), lambda = 2*pi*h*(mu_c/(3*mu_s))^(1/3) (Richman 1975 Law 2)",
+    "dt": 0.5,
+    "n_steps": 320,
+    "time_stepping": "semi-implicit Euler, linear operator factorised once (SuperLU)",
+    "initial_condition": "0.02 * N(0,1) white noise, seeded"
+  },
+  "regional_thickness_gradient": {
+    "h_field": "h(x) = h_mean * (1 + beta * x / a), x/a in [-1, 1] along the anterior-posterior semi-axis",
+    "beta_sweep": [0.0, 0.1, 0.2, 0.3],
+    "predicted_regional_wavelength_ratio": "lambda_ant / lambda_post = h_ant / h_post (Richman law applied regionally)",
+    "fischl_dale_2000_reference": {
+      "whole_cortex_mean_thickness_mm": 2.5,
+      "regional_range_mm": [1.0, 4.5],
+      "note": "beta = 0.2 at h_mean = 2.6 mm spans 2.08-3.12 mm, inside the observed regional range"
+    }
+  },
+  "y_junction_reference": {
+    "honeycomb_trivalent_upper_bound_per_lambda2": 2.309401076758503,
+    "derivation": "Vertex density of a honeycomb network whose centre-to-centre spacing equals lambda: cell area = (sqrt(3)/2) lambda^2, 2 trivalent vertices per cell -> 4 / (sqrt(3) lambda^2) = 2.3094 / lambda^2. A labyrinth is a sub-honeycomb network, so its Y-junction density lies in (0, 2.3094] per lambda^2.",
+    "subcritical_reference": 0
+  },
+  "gyrification_index_3d": {
+    "definition": "GI_3D = A_pial / A_hull (Tallinen et al. 2016; Zilles et al. 1988 define the 2D coronal analogue P_pial / P_hull)",
+    "human_term_reference": 2.56,
+    "reference_source": "Zilles et al. (1988) Anat. Embryol. 179:173-179 (coronal GI 2.56 +/- 0.08); area-based and perimeter-based GI are only approximately comparable"
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "metadata": {
+    "dataset_id": "chiral_seed_pod_opening/suture_fracture_ballistic",
+    "title": "Pass 3 reduced transient coupling: quasi-static non-Euclidean valve energy -> suture crack propagation (Freund dynamic fracture) -> elastic-catapult seed ejection for Bauhinia variegata",
+    "version": "1.0.0",
+    "created_at": "2026-10-19",
+    "pass": 3,
+    "remediation_item": "Couple the quasi-static non-Euclidean shell energy minimizer to transient elastodynamic fracture propagation along the pod suture line to model ballistic seed ejection velocities.",
+    "honesty_note": "This is a REDUCED 1-D model, not a 3-D elastodynamic FEM. The valve energy landscape is the Pass 2 L-BFGS-B reduced Foppl-von Karman functional; the suture crack is a 1-D Freund equation of motion; seed launch speed is an energy-partition (elastic catapult) estimate. Every constant below carries a `provenance` flag: `source` = taken from a cited paper, `derived` = computed from sourced quantities, `model` = unsourced modelling choice that the Pass 3 audit should treat as a free parameter.",
+    "doi_verified_offline": false
+  },
+  "governing_equations": {
+    "bending_energy_prefactor": "w_B = B_eff * E_bend(H, D, phi),  B_eff = Y h^3 / (12 (1 + nu))  [J/m^2 per (1/m^2)]  (Efrati et al. 2009 JMPS Eq. for the incompatible plate bending content with b_0 = diag(kappa_0, -kappa_0): A^{ijkl}(b-b_0)_{ij}(b-b_0)_{kl} = (Y/(1-nu^2)) [nu Tr(M)^2 + (1-nu) Tr(M^2)] with Tr(M) = 2H, Tr(M^2) = 2(H^2 + D^2 - 2 D kappa_0 cos 2phi + kappa_0^2))",
+    "released_energy_density": "Delta_e(kappa_0, w_tilde) = B_eff * [E_bend(0, 0) - E(H*, D*, phi*)] = B_eff * [kappa_0^2 - e_final]  (closed flat pod -> relaxed free valve; e_final from the quasi-static minimizer)",
+    "suture_energy_release_rate": "G = Delta_e * W / h_suture  (energy released per unit suture crack advance per valve, divided by created crack area h_suture * da; two valves share two sutures)",
+    "hygroscopic_drying_trajectory": "kappa_0(t) = kappa_0,final * (1 - exp(-t / tau_dry)),  w_tilde(t) = W sqrt(kappa_0(t) / h)",
+    "crack_initiation": "t_c solves G(kappa_0(t_c)) = Gamma_c(a_0)  (Griffith criterion at the stylar-tip flaw a_0)",
+    "freund_crack_equation_of_motion": "da/dt = c_R * max(0, 1 - Gamma_c(a) / G),  c_R ~= 0.93 c_s,  c_s = sqrt(Y / (2 (1 + nu) rho))  (Freund 1990 Ch. 7 mode-I approximation G_dyn(v) ~= (1 - v/c_R) G_static)",
+    "suture_toughness_heterogeneity": "Gamma_c(a) = Gamma_c,mean * max(0.05, 1 + cv_Gamma * xi(a)),  xi = unit-variance Gaussian-smoothed noise (seeded)",
+    "crack_arrest": "crack arrests at a* where Gamma_c(a*) >= G; opening fraction f_open = a* / L",
+    "elastic_catapult_seed_speed": "v_seed = sqrt(2 eta Delta_U_seg / m_eff),  Delta_U_seg = Delta_e * W * l_seg,  m_eff = m_seg/3 + m_seed,  m_seg = rho h W l_seg  (Vogel 2005 J. Biosci. elastic-catapult energy budget; cantilever-tip effective mass m/3)",
+    "valve_coil_time": "t_coil = (pi / 2) / omega_1,  omega_1 = 3.516 sqrt(B / (rho h)) / l_seg^2,  B = Y h^3 / (12 (1 - nu^2))  (first cantilever flexural mode, quarter period)",
+    "seed_ejection_time": "t_eject,i = t_c + a_i / v_crack + t_coil  for seed i at suture position a_i (only if a_i <= a*)",
+    "ballistic_range": "m dv/dt = m g - (1/2) rho_air C_d A |v| v,  launched at 45 deg from height z_0 (RK4), compared with the drag-free bound v^2 sin(2 alpha) / g"
+  },
+  "material_and_geometry": {
+    "Y_modulus_Pa":        {"value": 4.2e8,   "provenance": "source", "note": "Y_modulus_MPa = 420 in chiral_seed_pod_opening_reference.json default_parameters (Armon et al. 2011 SOM order of magnitude for dry sclerenchyma)"},
+    "nu_poisson":          {"value": 0.30,    "provenance": "source", "note": "Pass 2 default"},
+    "rho_valve_kg_m3":     {"value": 800.0,   "provenance": "model",  "note": "dry lignified sclerenchyma tissue density; typical 600-1000 kg/m^3; unsourced choice"},
+    "h_valve_m":           {"value": 9.5e-4,  "provenance": "source", "note": "h_valve_cm = 0.095"},
+    "W_valve_m":           {"value": 1.8e-2,  "provenance": "source", "note": "W_valve_cm = 1.80"},
+    "L_valve_m":           {"value": 0.18,    "provenance": "source", "note": "L_valve_cm = 18.0"},
+    "kappa0_final_cm_inv": {"value": 0.42,    "provenance": "source", "note": "Pass 2 default (Armon et al. 2011)"},
+    "h_suture_m":          {"value": 9.5e-4,  "provenance": "model",  "note": "suture cracks through the full valve thickness"}
+  },
+  "fracture_parameters": {
+    "Gamma_c_mean_J_m2":   {"value": 120.0,   "provenance": "model",  "note": "suture fracture toughness; chosen inside the 10^2-10^3 J/m^2 range typical of plant tissue; NOT measured for Bauhinia. Swept in evaluate_suture_toughness_sweep()"},
+    "cv_Gamma":            {"value": 0.15,    "provenance": "model",  "note": "coefficient of variation of the heterogeneous suture toughness field"},
+    "a0_flaw_m":           {"value": 2.0e-3,  "provenance": "model",  "note": "initial flaw at the stylar tip where dehiscence starts"},
+    "rayleigh_factor":     {"value": 0.93,    "provenance": "source", "note": "c_R / c_s for nu ~ 0.3 (Freund 1990)"},
+    "tau_dry_h":           {"value": 72.0,    "provenance": "model",  "note": "first-order desiccation time constant on the tree"}
+  },
+  "seed_parameters": {
+    "n_seeds":             {"value": 6,       "provenance": "model",  "note": "seeds per pod, evenly spaced along the suture; Bauhinia variegata pods carry ~5-15 seeds"},
+    "m_seed_kg":           {"value": 4.0e-4,  "provenance": "model",  "note": "flat ~1 cm Bauhinia variegata seed, 0.3-0.6 g; unsourced"},
+    "r_seed_m":            {"value": 6.0e-3,  "provenance": "model",  "note": "equivalent disc radius for drag area"},
+    "C_d":                 {"value": 1.0,     "provenance": "model",  "note": "tumbling flat disc"},
+    "eta_catapult":        {"value": 0.5,     "provenance": "model",  "note": "fraction of released elastic energy converted to kinetic energy of valve segment + seed (Vogel 2005 reports <~0.5 for biological catapults)"},
+    "launch_angle_deg":    {"value": 45.0,    "provenance": "model"},
+    "launch_height_m":     {"value": 3.0,     "provenance": "model",  "note": "pod height on an orchid tree"},
+    "rho_air_kg_m3":       {"value": 1.2,     "provenance": "source"},
+    "g_m_s2":              {"value": 9.81,    "provenance": "source"}
+  },
+  "benchmarks": [
+    {
+      "id": "cardamine_hofhuis2016_launch_speed",
+      "quantity": "seed launch speed",
+      "value_m_s": 10.0,
+      "species": "Cardamine hirsuta (Brassicaceae) explosive fruit coiling",
+      "source": "Hofhuis H, Moulton D, Lessinnes T, et al. (2016) Morphomechanical Innovation Drives Explosive Seed Dispersal. Cell 166(1):222-233, doi 10.1016/j.cell.2016.05.002",
+      "claim_boundary": "transfer_boundary",
+      "note": "Different taxon and a far more violent explosive mechanism; used only as an order-of-magnitude benchmark for the ballistic speed. No published Bauhinia variegata launch-speed measurement was available offline.",
+      "doi_verified_offline": false
+    },
+    {
+      "id": "hura_swaine1977_launch_speed",
+      "quantity": "seed launch speed",
+      "value_m_s": 70.0,
+      "species": "Hura crepitans (Euphorbiaceae) sandbox tree",
+      "source": "Swaine MD, Beer T (1977) Explosive seed dispersal in Hura crepitans L. (Euphorbiaceae). New Phytologist 78(3):695-708, doi 10.1111/j.1469-8137.1977.tb02174.x",
+      "claim_boundary": "transfer_boundary",
+      "note": "Upper bound of plant ballistic dispersal; Bauhinia must lie far below it.",
+      "doi_verified_offline": false
+    },
+    {
+      "id": "freund1990_crack_speed_bound",
+      "quantity": "mode-I crack speed upper bound",
+      "value": "v < c_R",
+      "source": "Freund LB (1990) Dynamic Fracture Mechanics. Cambridge University Press, doi 10.1017/CBO9780511546761",
+      "claim_boundary": "theory",
+      "doi_verified_offline": false
+    }
+  ],
+  "toughness_sweep_design": {
+    "Gamma_over_G_grid": [0.2, 0.4, 0.6, 0.8, 0.9, 1.0, 1.2],
+    "expected_qualitative": "v_crack/c_R = 1 - Gamma/G decreases linearly to 0 at Gamma = G; opening fraction drops from 1 to ~0 as Gamma/G crosses 1 (heterogeneity makes the transition smooth); ejection speed is independent of Gamma (set by Delta_e) but the number of ejected seeds falls with the opening fraction"
+  }
+}

@@ -1,0 +1,104 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-shyer-intestinal-villi-buckling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-shyer-intestinal-villi-buckling-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-shyer-intestinal-villi-buckling-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Hannezo et al. (2011) PRL & Shyer et al. (2013) Science sequential smooth-muscle mucosal buckling into ridges, zigzags, and hexagonal villi — Source and data traceability: 91/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Six dataset files are SHA-256-pinned and verified fail-closed at every run (`EXPECTED_SHA256`, L145-165; `verify_dataset_integrity`, L179-191), including the two Pass 3 additions `tubular_shh_bmp_reference.json` and `pass3_citations.bib`; the bib files carry DOIs for Shyer 2013, Hannezo 2011, Tallinen 2013, Walton 2012, Shyer 2015 and Walton 2016 plus Donnell 1933 and Timoshenko & Goodier 1970; the dataset README has a Pass 3 section stating the model and the residuals. Deductions: the Shyer 2015 and Walton 2016 DOIs were recorded offline and not re-verified during this audit (-2); the stage-resolved E_e, E_s, H_s, epsilon_x, epsilon_y, alpha_3 in `epithelial_buckling_crypt_villus_reference.json` are fitted values that reproduce lambda_obs with C_LAMBDA_PREFACTOR = 0.5690 and are not traceable to measurements in Shyer 2013 (-4); the chick lumen radii and ridge counts in the new reference table are stated per stage without figure/page pinpoints (-2); the specimen's species and age are unknown (-1)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:evidenceAgainst "2013-shyer-intestinal-villi-buckling.py L127–L127: C_LAMBDA_PREFACTOR = 0.5690 — the stage moduli in the reference JSON were fitted so that the flat model with this prefactor reproduces lambda_obs; not traceable to measured values <https://github.com/fractastical/morpholib/blob/45670cb8/2013-shyer-intestinal-villi-buckling.py#L127-L127>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-source-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-source-traceability-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-source-traceability-4> ;
+        pk:hasScore "0.91"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2013-shyer-intestinal-villi-buckling.py L145–L165" ;
+        dct:description "EXPECTED_SHA256: 6 pinned dataset files including the Pass 3 tubular_shh_bmp_reference.json (c3f1b76b...) and pass3_citations.bib (38af0618...)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/2013-shyer-intestinal-villi-buckling.py#L145-L165> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "2013-shyer-intestinal-villi-buckling.py L179–L191" ;
+        dct:description "verify_dataset_integrity: fail-closed runtime SHA-256 verification of all 6 files" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/2013-shyer-intestinal-villi-buckling.py#L179-L191> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-source-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "datasets/epithelial_buckling_crypt_villus/pass3_citations.bib L1–L45" ;
+        dct:description "Shyer 2015 Cell, Walton 2016 Development, Donnell 1933 NACA, Timoshenko & Goodier 1970 (DOIs recorded offline, not re-verified online)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/datasets/epithelial_buckling_crypt_villus/pass3_citations.bib#L1-L45> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-source-traceability-4> a pk:EvidenceItem ;
+        rdfs:label "datasets/epithelial_buckling_crypt_villus/README.md L45–L57" ;
+        dct:description "Pass 3 section: ring-FEM and Shh/BMP cluster model statement, new vendored files, residuals carried to Pass 4" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/datasets/epithelial_buckling_crypt_villus/README.md#L45-L57> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 063 Pass 3 Phase B Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/63> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://archive.org/details/theoryofelastici0000timo>,
+            <https://doi.org/10.1016/j.cell.2015.03.041>,
+            <https://doi.org/10.1073/pnas.1205669109>,
+            <https://doi.org/10.1103/PhysRevLett.107.078104>,
+            <https://doi.org/10.1103/PhysRevLett.110.024302>,
+            <https://doi.org/10.1126/science.1238842>,
+            <https://doi.org/10.1242/dev.130112>,
+            <https://ntrs.nasa.gov/citations/19930091553> .
+    <https://archive.org/details/theoryofelastici0000timo> dct:date "1970"^^xsd:gYear ;
+        dct:title "Theory of Elasticity (3rd ed.), §28 thick-walled cylinder (Lamé problem)" .
+    <https://doi.org/10.1016/j.cell.2015.03.041> dct:date "2015"^^xsd:gYear ;
+        dct:title "Bending gradients: how the intestinal stem cell gets its home" .
+    <https://doi.org/10.1073/pnas.1205669109> dct:date "2012"^^xsd:gYear ;
+        dct:title "Hedgehog-responsive mesenchymal clusters direct patterned epithelial folding in the developing mouse intestine" .
+    <https://doi.org/10.1103/PhysRevLett.107.078104> dct:date "2011"^^xsd:gYear ;
+        dct:title "Instabilities of monolayered epithelia: coupled bending and polarity-driven forces" .
+    <https://doi.org/10.1103/PhysRevLett.110.024302> dct:date "2013"^^xsd:gYear ;
+        dct:title "Surface sulci in squeezed slabs" .
+    <https://doi.org/10.1126/science.1238842> dct:date "2013"^^xsd:gYear ;
+        dct:title "Villification: how the gut gets its villi" .
+    <https://doi.org/10.1242/dev.130112> dct:date "2016"^^xsd:gYear ;
+        dct:title "Villification in the mouse: Bmp signals control intestinal villus patterning" .
+    <https://ntrs.nasa.gov/citations/19930091553> dct:date "1933"^^xsd:gYear ;
+        dct:title "Stability of thin-walled tubes under torsion" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Hannezo et al. (2011) PRL & Shyer et al. (2013) Science sequential smooth-muscle mucosal buckling into ridges, zigzags, and hexagonal villi — Source and data traceability 91/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T18:21:51Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-shyer-intestinal-villi-buckling-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/63> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

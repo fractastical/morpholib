@@ -1,0 +1,94 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-richman-cortical-gyrification-buckling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Richman et al. (1975) & Tallinen et al. (2014, 2016) neo-Hookean constrained cortical expansion and sulcal creasing instability, with a Pass 3 3D hemispheric Swift-Hohenberg surface surrogate — Reproducibility package: 85/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`self_test()` (L1746-1847) runs 12 checks in 13 s: SHA-256 of 5 files, JSON parity, ablation invariants, fetal monotonicity, 11-species collapse, pathology ordering, specimen segmentation, 2D determinism, and the Pass 3 Laplace-Beltrami sanity (#9), 3D GSH null/Lyapunov/wavelength/junction/GI ordering (#10), gradient sweep (#11) and bitwise 3D determinism (#12); default render is 11.7 s. Deductions: `scikit-image` is now a hard runtime dependency (`from skimage.morphology import skeletonize`, L620, imported lazily inside `count_sulcal_y_junctions`) and is NOT listed in `requirements.txt` — a fresh `pip install -r requirements.txt` environment fails at the 3D stage and in self-test #10 (-7); the self-test tolerances for the 3D stage (8% wavelength, |GI_3D - 2.56| < 0.15) are loose relative to the reported agreement (-2); `.gitignore` excludes `docs/media/*.png`, so neither the regenerated comparison PNG nor the new 3D PNG is tracked and the GIF content is byte-identical to Pass 2 (-3); the exact environment is recorded here but there is no lock file for this script (-3)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:evidenceAgainst "1975-richman-cortical-gyrification-buckling.py L620–L631: Lazy import of skimage.morphology.skeletonize — new scikit-image dependency not declared in requirements.txt <https://github.com/fractastical/morpholib/blob/45670cb8/1975-richman-cortical-gyrification-buckling.py#L620-L631>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-repro-package-2> ;
+        pk:hasScore "0.85"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "1975-richman-cortical-gyrification-buckling.py L1746–L1847" ;
+        dct:description "12-check self_test() incl. Pass 3 Laplace-Beltrami sanity, GSH null/Lyapunov/junction ordering, gradient sweep and bitwise 3D determinism" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/1975-richman-cortical-gyrification-buckling.py#L1746-L1847> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-richman-cortical-gyrification-buckling-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "1975-richman-cortical-gyrification-buckling.py L1809–L1823" ;
+        dct:description "3D self-test tolerances: 8% wavelength, |GI_3D - 2.56| < 0.15, >= 30 junctions" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/1975-richman-cortical-gyrification-buckling.py#L1809-L1823> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 061 Pass 3 Phase B Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/61> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/BF00304699>,
+            <https://doi.org/10.1038/nmat4202>,
+            <https://doi.org/10.1038/nphys3632>,
+            <https://doi.org/10.1073/pnas.1406015111>,
+            <https://doi.org/10.1073/pnas.200033797>,
+            <https://doi.org/10.1103/RevModPhys.65.851>,
+            <https://doi.org/10.1126/science.1145181>,
+            <https://doi.org/10.1126/science.aaa9101> .
+    <https://doi.org/10.1007/BF00304699> dct:date "1988"^^xsd:gYear ;
+        dct:title "The human pattern of gyrification in the cerebral cortex" .
+    <https://doi.org/10.1038/nmat4202> dct:date "2015"^^xsd:gYear ;
+        dct:title "Curvature-induced symmetry breaking determines elastic surface patterns" .
+    <https://doi.org/10.1038/nphys3632> dct:date "2016"^^xsd:gYear ;
+        dct:title "On the growth and form of cortical convolutions" .
+    <https://doi.org/10.1073/pnas.1406015111> dct:date "2014"^^xsd:gYear ;
+        dct:title "Gyrification from constrained cortical expansion: Synthesis of physical and numerical models" .
+    <https://doi.org/10.1073/pnas.200033797> dct:date "2000"^^xsd:gYear ;
+        dct:title "Measuring the thickness of the human cerebral cortex from magnetic resonance images" .
+    <https://doi.org/10.1103/RevModPhys.65.851> dct:date "1993"^^xsd:gYear ;
+        dct:title "Pattern formation outside of equilibrium" .
+    <https://doi.org/10.1126/science.1145181> dct:date "1975"^^xsd:gYear ;
+        dct:title "Mechanical model of brain convolutional development" .
+    <https://doi.org/10.1126/science.aaa9101> dct:date "2015"^^xsd:gYear ;
+        dct:title "Cortical folding scales universally with surface area and thickness, not number of neurons" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Richman et al. (1975) & Tallinen et al. (2014, 2016) neo-Hookean constrained cortical expansion and sulcal creasing instability, with a Pass 3 3D hemispheric Swift-Hohenberg surface surrogate — Reproducibility package 85/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T18:19:01Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-richman-cortical-gyrification-buckling-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/61> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

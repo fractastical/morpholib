@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-2007-liang-chiral-seed-pod-opening.py — Pass 2 (v2) Remediated Implementation
+2007-liang-chiral-seed-pod-opening.py — Pass 3 (v3) Remediated Implementation
 =============================================================================
 Faithful mathematical, biomechanical, and morphometric reproduction of:
 
@@ -55,6 +55,22 @@ Mathematical & Biomechanical Architecture (Linked to Lean 4 `MathOfBiology.Loop_
       D*(w_tilde) = ((1 - nu)/2) * kappa_0,
     approaching an isometric cylinder (K = H^2 - D^2 -> 0, 2*H_inf = (1 - nu)*kappa_0)
     as w_tilde -> infinity.
+
+  - Law 4, Pass 3 (`MathOfBiology.Loop_065.freund_crack_speed_arrest_and_monotonicity`):
+    The quasi-static minimizer supplies the suture energy release rate
+      G = B_eff (kappa_0^2 - e_final) W / h,  B_eff = Y h^3 / (12 (1 + nu)),
+    and Freund's (1990) mode-I crack equation of motion gives the transient crack speed
+      da/dt = c_R max(0, 1 - Gamma_c(a) / G(t))          (arrest when Gamma_c >= G, v < c_R)
+    along the suture, driven by desiccation kappa_0(t) = kappa_0,f (1 - exp(-t/tau_dry))
+    -> Griffith initiation time, stick-slip jumps, opening fraction.
+    (Reduced 1-D model; see Section 4b and datasets/.../suture_fracture_ballistic_reference.json.)
+
+  - Law 5, Pass 3 (`MathOfBiology.Loop_065.elastic_catapult_energy_partition`):
+    Released energy Delta_U_seg = B_eff (kappa_0^2 - e_final) W l_seg >= 0 is converted with
+    efficiency eta into kinetic energy of the valve segment + seed:
+      v_seed = sqrt(2 eta Delta_U_seg / (m_seg/3 + m_seed)),
+    then flown with quadratic drag to obtain the ballistic range (Vogel 2005; benchmarks
+    Hofhuis et al. 2016 Cardamine ~10 m/s, Swaine & Beer 1977 Hura ~70 m/s, transfer boundary).
 """
 
 from __future__ import annotations
@@ -83,6 +99,8 @@ BIB_FILE = DATASET_DIR / "paper_citations.bib"
 
 OUT_PNG = ROOT / "docs" / "media" / "chiral_seed_pod_opening_comparison.png"
 OUT_GIF = ROOT / "docs" / "media" / "chiral_seed_pod_opening_growth.gif"
+OUT_FRACTURE_PNG = ROOT / "docs" / "media" / "chiral_seed_pod_opening_suture_fracture.png"
+OUT_FRACTURE_GIF = ROOT / "docs" / "media" / "chiral_seed_pod_opening_suture_fracture.gif"
 
 # Cryptographic SHA-256 Registry for `datasets/chiral_seed_pod_opening/`
 EXPECTED_SHA256: dict[str, str] = {
@@ -96,7 +114,11 @@ EXPECTED_SHA256: dict[str, str] = {
         "05711e5e7df6cb173f02c9193d1e18339d4993c8e446e13a331fbf875a649262"
     ),
     "datasets/chiral_seed_pod_opening/paper_citations.bib": (
-        "b3a693ac6a538b04f0ed0d7953907b2b48ab303a2b97341bb2884b8749c4fecf"
+        "41f9ca2ead3c8d74f3120a52a8d785677df58380a757703d9ba0812fb681aa4c"
+    ),
+    # Pass 3: suture fracture / ballistic ejection parameter table (provenance-flagged)
+    "datasets/chiral_seed_pod_opening/suture_fracture_ballistic_reference.json": (
+        "fc8fab08281dd6e00aea8ec5b40244d4d6580c252cb541a182aa06bfce702639"
     ),
 }
 
@@ -113,7 +135,7 @@ def sha256_file(path: Path) -> str:
 
 
 def verify_dataset_integrity() -> dict[str, str]:
-    """Verify SHA-256 digests of all 4 files in datasets/chiral_seed_pod_opening/."""
+    """Verify SHA-256 digests of all 5 files in datasets/chiral_seed_pod_opening/."""
     computed: dict[str, str] = {}
     for rel, expected in EXPECTED_SHA256.items():
         p = ROOT / rel
@@ -209,7 +231,10 @@ def analytical_pitchfork_curvatures(
     curvature D*(w_tilde) = (kappa_1 - kappa_2)/2 of the reduced non-Euclidean
     Föppl-von Kármán ribbon energy functional:
       U(H, D; w_tilde) = ((1+nu)/(1-nu))*H^2 + (D - kappa_0)^2 + Lambda(w_tilde)*(D^2 - H^2)^2,
-    where Lambda(w_tilde) = ((1 + nu) / ((1 - nu)^3 * kappa_0^2)) * (w_tilde / w_tilde_c)^4.
+    where Lambda(w_tilde) = (2 (1 + nu) / ((1 - nu)^3 * kappa_0^2)) * (w_tilde / w_tilde_c)^4
+    (the factor 2 is what places the pitchfork exactly at w_tilde_c; it matches the code
+    below — the Pass 2 docstring omitted it; note the SHA-pinned reference JSON
+    `reduced_non_euclidean_energy_density` entry still shows the un-normalised form).
     - For w_tilde <= w_tilde_c: H* = 0 and D* solves (D - kappa_0) + 2*Lambda*D^3 = 0.
     - For w_tilde > w_tilde_c: D* = ((1 - nu)/2)*kappa_0 and
       H* = +- ((1 - nu)/2)*kappa_0 * sqrt(1 - (w_tilde_c / w_tilde)^4).
@@ -682,6 +707,457 @@ def evaluate_pod_and_mimetic_specimens(seed: int = 2011) -> dict[str, Any]:
 
 
 # =============================================================================
+# 4b. Pass 3: Quasi-Static Energy -> Suture Fracture -> Ballistic Seed Ejection
+# =============================================================================
+# Reduced transient coupling of the L-BFGS-B non-Euclidean minimizer (Section 3)
+# to 1-D dynamic fracture along the pod suture (Freund 1990) and an elastic-
+# catapult seed launch (Vogel 2005).  This is the honest reduced version of the
+# Pass 2 remediation item "couple the quasi-static shell energy minimizer to
+# transient elastodynamic fracture propagation along the suture line to model
+# ballistic seed ejection velocities"; it is NOT a 3-D elastodynamic FEM.
+# Constants and their provenance flags live in
+# `datasets/chiral_seed_pod_opening/suture_fracture_ballistic_reference.json`.
+FRACTURE_JSON = DATASET_DIR / "suture_fracture_ballistic_reference.json"
+
+
+def load_fracture_reference() -> dict[str, Any]:
+    """Load (SHA-256 verified) the Pass 3 suture-fracture / ballistic parameter table."""
+    verify_dataset_integrity()
+    return json.loads(FRACTURE_JSON.read_text(encoding="utf-8"))
+
+
+def _fp(ref: dict[str, Any], block: str, key: str) -> float:
+    return float(ref[block][key]["value"])
+
+
+def bending_energy_prefactor(Y_Pa: float, h_m: float, nu: float) -> float:
+    """B_eff = Y h^3 / (12 (1 + nu)) [J]; the reduced energy density in
+    `relax_incompatible_ribbon_equilibrium` is E_bend [1/m^2] times B_eff.
+    Derived from the Efrati et al. (2009) incompatible plate bending content
+    (Y/(1-nu^2)) [nu Tr(M)^2 + (1-nu) Tr(M^2)] with M = b - b_0, Tr(M) = 2H and
+    Tr(M^2) = 2 (H^2 + D^2 - 2 D kappa_0 cos 2phi + kappa_0^2), which collapses to
+    (Y h^3 (1-nu) / (12 (1-nu^2))) * [((1+nu)/(1-nu)) H^2 + D^2 - 2 D kappa_0 cos 2phi + kappa_0^2]."""
+    return float(Y_Pa * h_m**3 / (12.0 * (1.0 + nu)))
+
+
+def released_valve_energy_density(
+    kappa0_cm_inv: float,
+    W_m: float,
+    h_m: float,
+    Y_Pa: float,
+    nu: float,
+    theta_deg: float = 45.0,
+    seed: int = 2011,
+) -> dict[str, float]:
+    """Energy released per unit valve area when a valve held flat in the closed pod
+    (H = D = 0, E_bend = kappa_0^2) relaxes to the quasi-static minimizer state
+    (E = e_final):  Delta_e = B_eff (kappa_0^2 - e_final) [J/m^2].
+    Suture energy release rate per valve: G = Delta_e * W / h_suture [J/m^2]."""
+    if kappa0_cm_inv <= 0.0:
+        return {"kappa0_cm_inv": 0.0, "w_tilde": 0.0, "delta_e_J_m2": 0.0, "G_J_m2": 0.0, "e_init": 0.0, "e_final": 0.0, "R_cm": 0.0, "P_cm": 0.0}
+    wt = dimensionless_fvk_width(W_m * 100.0, kappa0_cm_inv, h_m * 100.0)
+    eq = relax_incompatible_ribbon_equilibrium(w_tilde=wt, kappa0=kappa0_cm_inv, nu=nu, theta_deg=theta_deg, seed=seed)
+    b_eff = bending_energy_prefactor(Y_Pa, h_m, nu)
+    # energies in the minimizer are in cm^-2 -> convert to m^-2
+    e_init_m2 = eq["energy_initial"] * 1.0e4
+    e_final_m2 = eq["energy_final"] * 1.0e4
+    delta_e = b_eff * max(e_init_m2 - e_final_m2, 0.0)
+    return {
+        "kappa0_cm_inv": float(kappa0_cm_inv),
+        "w_tilde": float(wt),
+        "e_init": float(eq["energy_initial"]),
+        "e_final": float(eq["energy_final"]),
+        "delta_e_J_m2": float(delta_e),
+        "G_J_m2": float(delta_e * W_m / h_m),
+        "R_cm": float(eq["R_cm"]),
+        "P_cm": float(eq["P_cm"]),
+        "regime": eq["regime"],
+    }
+
+
+def rayleigh_wave_speed(Y_Pa: float, rho: float, nu: float, factor: float = 0.93) -> float:
+    """c_R ~= factor * c_s,  c_s = sqrt(Y / (2 (1 + nu) rho))."""
+    return float(factor * math.sqrt(Y_Pa / (2.0 * (1.0 + nu) * rho)))
+
+
+def freund_crack_speed(G_J_m2: float, Gamma_c_J_m2: float, c_R: float) -> float:
+    """Freund (1990) mode-I equation of motion G_dyn(v) ~= (1 - v/c_R) G = Gamma_c
+    =>  v = c_R max(0, 1 - Gamma_c / G).  v = 0 (arrest) when Gamma_c >= G.
+    Linked to Lean 4 `MathOfBiology.Loop_065.freund_crack_speed_arrest_and_monotonicity`."""
+    if G_J_m2 <= 0.0:
+        return 0.0
+    return float(c_R * max(0.0, 1.0 - Gamma_c_J_m2 / G_J_m2))
+
+
+def heterogeneous_suture_toughness(
+    n: int,
+    Gamma_mean: float,
+    cv: float,
+    seed: int = 2011,
+    smooth_sigma: float = 6.0,
+) -> np.ndarray:
+    """Gamma_c(a) = Gamma_mean * max(0.05, 1 + cv * xi(a)) with xi a unit-variance
+    Gaussian-smoothed noise field (seeded, deterministic)."""
+    rng = np.random.default_rng(seed)
+    xi = ndi.gaussian_filter1d(rng.standard_normal(n), sigma=smooth_sigma, mode="reflect")
+    xi = xi / max(float(np.std(xi)), 1e-12) if cv > 0.0 else np.zeros(n)
+    return Gamma_mean * np.maximum(0.05, 1.0 + cv * xi)
+
+
+def integrate_suture_crack(
+    G_J_m2: float,
+    Gamma_field: np.ndarray,
+    L_m: float,
+    c_R: float,
+    a0_m: float,
+    dt_s: float | None = None,
+    max_steps: int = 200_000,
+    v_arrest_frac: float = 0.01,
+) -> dict[str, Any]:
+    """Explicit integration of da/dt = c_R max(0, 1 - Gamma_c(a)/G) from the stylar
+    flaw a_0 along the suture of length L. Returns the trajectory, arrest position a*
+    (where Gamma_c(a*) >= G, operationally v < v_arrest_frac * c_R so that the
+    asymptotic creep toward the arrest point is not counted as crack run time),
+    opening fraction a*/L and mean crack speed."""
+    n = len(Gamma_field)
+    xs = np.linspace(0.0, L_m, n)
+    if dt_s is None:
+        dt_s = (L_m / n) / max(c_R, 1e-9) * 0.5
+    a = float(a0_m)
+    t = 0.0
+    traj_t = [0.0]
+    traj_a = [a]
+    arrested = False
+    v_min = v_arrest_frac * c_R
+    for _ in range(max_steps):
+        gam = float(np.interp(a, xs, Gamma_field))
+        v = freund_crack_speed(G_J_m2, gam, c_R)
+        if v < v_min:
+            arrested = True
+            break
+        a = min(a + v * dt_s, L_m)
+        t += dt_s
+        traj_t.append(t)
+        traj_a.append(a)
+        if a >= L_m:
+            break
+    traj_t_a = np.asarray(traj_t)
+    traj_a_a = np.asarray(traj_a)
+    run_len = traj_a_a[-1] - a0_m
+    v_mean = float(run_len / traj_t_a[-1]) if traj_t_a[-1] > 0 else 0.0
+    return {
+        "t_s": traj_t_a,
+        "a_m": traj_a_a,
+        "a_final_m": float(traj_a_a[-1]),
+        "opening_fraction": float(traj_a_a[-1] / L_m),
+        "arrested": bool(arrested),
+        "run_time_s": float(traj_t_a[-1]),
+        "v_mean_m_s": v_mean,
+        "v_over_cR_mean": float(v_mean / c_R) if c_R > 0 else 0.0,
+        "v_homogeneous_m_s": freund_crack_speed(G_J_m2, float(np.mean(Gamma_field)), c_R),
+    }
+
+
+def elastic_catapult_seed_speed(
+    delta_e_J_m2: float,
+    W_m: float,
+    l_seg_m: float,
+    h_m: float,
+    rho: float,
+    m_seed_kg: float,
+    eta: float,
+) -> dict[str, float]:
+    """v_seed = sqrt(2 eta Delta_U_seg / m_eff), Delta_U_seg = Delta_e W l_seg,
+    m_eff = m_seg/3 + m_seed (cantilever-tip effective mass), m_seg = rho h W l_seg.
+    Linked to Lean 4 `MathOfBiology.Loop_065.elastic_catapult_energy_partition`."""
+    dU = delta_e_J_m2 * W_m * l_seg_m
+    m_seg = rho * h_m * W_m * l_seg_m
+    m_eff = m_seg / 3.0 + m_seed_kg
+    ke = eta * dU
+    v = math.sqrt(2.0 * ke / m_eff) if m_eff > 0 else 0.0
+    return {"delta_U_seg_J": float(dU), "m_seg_kg": float(m_seg), "m_eff_kg": float(m_eff), "kinetic_J": float(ke), "v_seed_m_s": float(v)}
+
+
+def valve_segment_coil_time(Y_Pa: float, h_m: float, nu: float, rho: float, l_seg_m: float) -> float:
+    """Quarter period of the first cantilever flexural mode of a valve segment:
+    omega_1 = 3.516 sqrt(B/(rho h)) / l^2 with B = Y h^3 / (12 (1 - nu^2))."""
+    B = Y_Pa * h_m**3 / (12.0 * (1.0 - nu * nu))
+    omega1 = 3.516 * math.sqrt(B / (rho * h_m)) / (l_seg_m**2)
+    return float(0.5 * math.pi / omega1)
+
+
+def ballistic_range_with_drag(
+    v0: float,
+    angle_deg: float,
+    z0: float,
+    m_kg: float,
+    r_m: float,
+    C_d: float,
+    rho_air: float,
+    g: float,
+    dt: float = 5e-4,
+) -> dict[str, float]:
+    """RK4 integration of m dv/dt = m g - (1/2) rho_air C_d A |v| v until the seed
+    falls back to the ground (z = 0). Returns the horizontal range and flight time,
+    plus the drag-free analytical bound for launch height z0:
+      x_free = v0 cos(a) * (v0 sin(a) + sqrt(v0^2 sin^2(a) + 2 g z0)) / g."""
+    A = math.pi * r_m * r_m
+    k = 0.5 * rho_air * C_d * A / m_kg
+    th = math.radians(angle_deg)
+    vz0 = v0 * math.sin(th)
+    x_free = v0 * math.cos(th) * (vz0 + math.sqrt(vz0 * vz0 + 2.0 * g * z0)) / g
+    state = np.array([0.0, z0, v0 * math.cos(th), vz0], dtype=float)
+
+    def f(s: np.ndarray) -> np.ndarray:
+        vx, vz = s[2], s[3]
+        sp = math.hypot(vx, vz)
+        return np.array([vx, vz, -k * sp * vx, -g - k * sp * vz])
+
+    t = 0.0
+    for _ in range(200_000):
+        k1 = f(state)
+        k2 = f(state + 0.5 * dt * k1)
+        k3 = f(state + 0.5 * dt * k2)
+        k4 = f(state + dt * k3)
+        new = state + (dt / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+        t += dt
+        if new[1] <= 0.0 and t > dt:
+            frac = state[1] / max(state[1] - new[1], 1e-12)
+            x_land = state[0] + frac * (new[0] - state[0])
+            return {"range_m": float(x_land), "flight_time_s": float(t - dt + frac * dt), "drag_free_bound_m": float(x_free)}
+        state = new
+    return {"range_m": float(state[0]), "flight_time_s": float(t), "drag_free_bound_m": float(x_free)}
+
+
+def simulate_suture_fracture_ballistic_ejection(
+    overrides: dict[str, float] | None = None,
+    seed: int = 2011,
+    n_drying: int = 96,
+) -> dict[str, Any]:
+    """Transient coupling of the quasi-static shell minimizer to suture fracture and
+    seed ejection for one Bauhinia variegata pod:
+      1. Desiccation kappa_0(t) = kappa_0,f (1 - exp(-t/tau_dry)); for each t the
+         Section 3 minimizer gives the relaxed valve energy and G(t) = Delta_e(t) W / h.
+      2. Griffith initiation: t_c solves G(t_c) = Gamma_c(a_0) (brentq on the drying curve).
+      3. Freund crack run da/dt = c_R max(0, 1 - Gamma_c(a)/G) over a heterogeneous
+         toughness field -> arrest position a*, opening fraction, mean crack speed.
+      4. Each seed i at suture position a_i (<= a*) is launched at
+         t_eject,i = t_c + (a_i - a_0)/v + t_coil with elastic-catapult speed v_seed.
+      5. Ballistic range with quadratic drag (RK4) from launch height z_0."""
+    ref = load_fracture_reference()
+    ov = overrides or {}
+    Y = _fp(ref, "material_and_geometry", "Y_modulus_Pa")
+    nu = float(ov.get("nu", _fp(ref, "material_and_geometry", "nu_poisson")))
+    rho = _fp(ref, "material_and_geometry", "rho_valve_kg_m3")
+    h_m = float(ov.get("h", _fp(ref, "material_and_geometry", "h_valve_m") * 100.0)) / 100.0
+    W_m = float(ov.get("W", _fp(ref, "material_and_geometry", "W_valve_m") * 100.0)) / 100.0
+    L_m = float(ov.get("L", _fp(ref, "material_and_geometry", "L_valve_m") * 100.0)) / 100.0
+    k0_final = float(ov.get("kappa0", _fp(ref, "material_and_geometry", "kappa0_final_cm_inv")))
+    h_sut = _fp(ref, "material_and_geometry", "h_suture_m")
+    Gamma_mean = float(ov.get("gamma_c", _fp(ref, "fracture_parameters", "Gamma_c_mean_J_m2")))
+    cv_gamma = _fp(ref, "fracture_parameters", "cv_Gamma")
+    a0 = _fp(ref, "fracture_parameters", "a0_flaw_m")
+    tau_dry_s = _fp(ref, "fracture_parameters", "tau_dry_h") * 3600.0
+    c_R = rayleigh_wave_speed(Y, rho, nu, _fp(ref, "fracture_parameters", "rayleigh_factor"))
+    n_seeds = int(_fp(ref, "seed_parameters", "n_seeds"))
+    m_seed = float(ov.get("m_seed", _fp(ref, "seed_parameters", "m_seed_kg")))
+    r_seed = _fp(ref, "seed_parameters", "r_seed_m")
+    C_d = _fp(ref, "seed_parameters", "C_d")
+    eta = float(ov.get("eta", _fp(ref, "seed_parameters", "eta_catapult")))
+    ang = _fp(ref, "seed_parameters", "launch_angle_deg")
+    z0 = _fp(ref, "seed_parameters", "launch_height_m")
+    rho_air = _fp(ref, "seed_parameters", "rho_air_kg_m3")
+    g = _fp(ref, "seed_parameters", "g_m_s2")
+
+    # 1. Drying trajectory -> quasi-static valve energy release rate G(t)
+    t_grid = np.linspace(0.0, 6.0 * tau_dry_s, n_drying)
+    k0_grid = k0_final * (1.0 - np.exp(-t_grid / tau_dry_s))
+    G_grid = np.zeros_like(t_grid)
+    dE_grid = np.zeros_like(t_grid)
+    wt_grid = np.zeros_like(t_grid)
+    for i, k0 in enumerate(k0_grid):
+        rel = released_valve_energy_density(float(k0), W_m, h_m, Y, nu, seed=seed)
+        dE_grid[i] = rel["delta_e_J_m2"]
+        G_grid[i] = rel["delta_e_J_m2"] * W_m / h_sut
+        wt_grid[i] = rel["w_tilde"]
+    G_final = float(G_grid[-1])
+    dE_final = float(dE_grid[-1])
+
+    # 3-prep. Heterogeneous suture toughness along the pod
+    n_field = 361
+    Gamma_field = heterogeneous_suture_toughness(n_field, Gamma_mean, cv_gamma, seed=seed + 300)
+    xs_field = np.linspace(0.0, L_m, n_field)
+    Gamma_a0 = float(np.interp(a0, xs_field, Gamma_field))
+
+    # 2.+3. Two-timescale stick-slip dehiscence. Drying (hours) raises G(t); whenever
+    # G(t) exceeds the local toughness Gamma_c(a) at the crack tip the crack runs
+    # dynamically (ms) with the Freund law until it arrests where Gamma_c(a) >= G(t),
+    # or reaches the pod base a = L. Griffith initiation time t_c = time of the first jump.
+    l_seg = L_m / n_seeds
+    t_coil = valve_segment_coil_time(Y, h_m, nu, rho, l_seg)
+    seed_pos = (np.arange(n_seeds) + 0.5) * l_seg
+    a = float(a0)
+    jumps: list[dict[str, float]] = []
+    seeds: list[dict[str, Any]] = [
+        {"index": i, "a_m": float(a_i), "released": False, "t_eject_s": float("nan"), "v_seed_m_s": 0.0, "kappa0_at_eject_cm_inv": float("nan")}
+        for i, a_i in enumerate(seed_pos)
+    ]
+    t_c = float("inf")
+    k0_c = float("nan")
+    G_c = float("nan")
+    for i_t in range(len(t_grid)):
+        G_now = float(G_grid[i_t])
+        if a >= L_m:
+            break
+        if G_now <= 0.0:
+            continue
+        gam_tip = float(np.interp(a, xs_field, Gamma_field))
+        if gam_tip >= G_now:
+            continue
+        crack = integrate_suture_crack(G_now, Gamma_field, L_m, c_R, a)
+        if crack["a_final_m"] <= a + 1e-12:
+            continue
+        if not jumps:
+            t_c = float(t_grid[i_t])
+            k0_c = float(k0_grid[i_t])
+            G_c = G_now
+        cat = elastic_catapult_seed_speed(float(dE_grid[i_t]), W_m, l_seg, h_m, rho, m_seed, eta)
+        for s in seeds:
+            if not s["released"] and a < s["a_m"] <= crack["a_final_m"]:
+                t_arr = float(np.interp(s["a_m"], crack["a_m"], crack["t_s"]))
+                s["released"] = True
+                s["t_eject_s"] = float(t_grid[i_t]) + t_arr + t_coil
+                s["v_seed_m_s"] = cat["v_seed_m_s"]
+                s["kappa0_at_eject_cm_inv"] = float(k0_grid[i_t])
+        jumps.append(
+            {
+                "t_start_s": float(t_grid[i_t]),
+                "a_from_m": a,
+                "a_to_m": crack["a_final_m"],
+                "run_time_s": crack["run_time_s"],
+                "v_mean_m_s": crack["v_mean_m_s"],
+                "v_over_cR_mean": crack["v_over_cR_mean"],
+                "G_J_m2": G_now,
+                "kappa0_cm_inv": float(k0_grid[i_t]),
+            }
+        )
+        a = crack["a_final_m"]
+    initiated = bool(jumps)
+    a_final = a
+    opening_fraction = float(a_final / L_m)
+    n_ejected = int(sum(1 for s in seeds if s["released"]))
+    released_v = [s["v_seed_m_s"] for s in seeds if s["released"]]
+    v_seed_mean = float(np.mean(released_v)) if released_v else 0.0
+    v_seed_max = float(np.max(released_v)) if released_v else 0.0
+    total_run_time = float(sum(j["run_time_s"] for j in jumps))
+    v_crack_mean = float((a_final - a0) / total_run_time) if total_run_time > 0 else 0.0
+
+    # 4. Reference catapult speed for the fully dried pod (upper bound for this pod)
+    cat_final = elastic_catapult_seed_speed(dE_final, W_m, l_seg, h_m, rho, m_seed, eta)
+
+    # 5. Ballistics of the mean-speed ejected seed
+    ball = (
+        ballistic_range_with_drag(v_seed_mean, ang, z0, m_seed, r_seed, C_d, rho_air, g)
+        if v_seed_mean > 0
+        else {"range_m": 0.0, "flight_time_s": 0.0, "drag_free_bound_m": 0.0}
+    )
+
+    return {
+        "params": {"Y_Pa": Y, "nu": nu, "rho": rho, "h_m": h_m, "W_m": W_m, "L_m": L_m, "kappa0_final_cm_inv": k0_final, "Gamma_c_mean_J_m2": Gamma_mean, "cv_Gamma": cv_gamma, "a0_m": a0, "tau_dry_s": tau_dry_s, "c_R_m_s": c_R, "n_seeds": n_seeds, "m_seed_kg": m_seed, "eta": eta, "l_seg_m": l_seg},
+        "B_eff_J": bending_energy_prefactor(Y, h_m, nu),
+        "drying": {"t_s": t_grid, "kappa0_cm_inv": k0_grid, "w_tilde": wt_grid, "delta_e_J_m2": dE_grid, "G_J_m2": G_grid},
+        "G_final_J_m2": G_final,
+        "delta_e_final_J_m2": dE_final,
+        "stored_energy_per_valve_J": dE_final * W_m * L_m,
+        "Gamma_at_flaw_J_m2": Gamma_a0,
+        "Gamma_field": Gamma_field,
+        "xs_field_m": xs_field,
+        "initiated": initiated,
+        "t_c_s": t_c,
+        "t_c_h": t_c / 3600.0 if initiated else float("inf"),
+        "kappa0_at_initiation_cm_inv": k0_c,
+        "G_at_initiation_J_m2": G_c,
+        "jumps": jumps,
+        "n_jumps": len(jumps),
+        "a_final_m": a_final,
+        "opening_fraction": opening_fraction,
+        "total_crack_run_time_s": total_run_time,
+        "v_crack_mean_m_s": v_crack_mean,
+        "v_crack_over_cR": float(v_crack_mean / c_R),
+        "catapult_final": cat_final,
+        "t_coil_s": t_coil,
+        "seeds": seeds,
+        "n_ejected": n_ejected,
+        "v_seed_m_s": v_seed_mean,
+        "v_seed_max_m_s": v_seed_max,
+        "v_seed_fully_dried_m_s": cat_final["v_seed_m_s"],
+        "ballistics": ball,
+    }
+
+
+def evaluate_suture_toughness_sweep(seed: int = 2011) -> dict[str, Any]:
+    """Ablation / parameter sweep over the suture toughness ratio Gamma_c/G_final:
+    crack speed v/c_R (= 1 - Gamma/G for a homogeneous suture), opening fraction,
+    number of ejected seeds. Includes the Gamma_c >= G no-fracture negative control."""
+    ref = load_fracture_reference()
+    base = simulate_suture_fracture_ballistic_ejection(seed=seed)
+    G_final = base["G_final_J_m2"]
+    ratios = [float(r) for r in ref["toughness_sweep_design"]["Gamma_over_G_grid"]]
+    rows: list[dict[str, float]] = []
+    for r in ratios:
+        res = simulate_suture_fracture_ballistic_ejection(overrides={"gamma_c": r * G_final}, seed=seed)
+        rows.append(
+            {
+                "Gamma_over_G": r,
+                "initiated": float(res["initiated"]),
+                "t_c_h": res["t_c_h"],
+                "n_jumps": float(res["n_jumps"]),
+                "v_over_cR_mean": res["v_crack_over_cR"],
+                "opening_fraction": res["opening_fraction"],
+                "n_ejected": float(res["n_ejected"]),
+                "v_seed_m_s": res["v_seed_m_s"],
+            }
+        )
+    # In the drying-coupled run the crack moves in stick-slip jumps each starting with
+    # G(t) barely above Gamma_c (so v/c_R is small).  To test the Freund law itself we
+    # also run the fully dried pod (G = G_final frozen) for each toughness ratio:
+    # (homogeneous suture cv = 0 -> exact Freund law v/c_R = 1 - Gamma/G; heterogeneous
+    # suture cv = cv_Gamma -> arrest / partial opening as Gamma/G -> 1).
+    dried_rows: list[dict[str, float]] = []
+    c_R = base["params"]["c_R_m_s"]
+    L_m = base["params"]["L_m"]
+    a0 = base["params"]["a0_m"]
+    for r in ratios:
+        gam_h = heterogeneous_suture_toughness(361, r * G_final, 0.0, seed=seed + 300)
+        gam_x = heterogeneous_suture_toughness(361, r * G_final, base["params"]["cv_Gamma"], seed=seed + 300)
+        crack_h = integrate_suture_crack(G_final, gam_h, L_m, c_R, a0)
+        crack_x = integrate_suture_crack(G_final, gam_x, L_m, c_R, a0)
+        dried_rows.append(
+            {
+                "Gamma_over_G": r,
+                "v_over_cR_homogeneous": crack_h["v_over_cR_mean"],
+                "v_over_cR_theory": max(0.0, 1.0 - r),
+                "opening_fraction_homogeneous": crack_h["opening_fraction"],
+                "v_over_cR_heterogeneous": crack_x["v_over_cR_mean"],
+                "opening_fraction_heterogeneous": crack_x["opening_fraction"],
+            }
+        )
+    v_sim = np.array([d["v_over_cR_homogeneous"] for d in dried_rows])
+    v_th = np.array([d["v_over_cR_theory"] for d in dried_rows])
+    r_v, p_v = stats.pearsonr(v_sim, v_th)
+    return {
+        "rows": rows,
+        "dried_rows": dried_rows,
+        "pearson_r_v_vs_freund": float(r_v),
+        "p_value_v": float(p_v),
+        "rmse_v_over_cR": float(np.sqrt(np.mean((v_sim - v_th) ** 2))),
+        "no_fracture_control_opening_fraction": dried_rows[-1]["opening_fraction_homogeneous"],
+        "heterogeneous_opening_fraction_at_Gamma_eq_G": dried_rows[ratios.index(1.0)]["opening_fraction_heterogeneous"] if 1.0 in ratios else float("nan"),
+        "G_final_J_m2": G_final,
+    }
+
+
+# =============================================================================
 # 5. Computer-Vision Segmentation of Bauhinia variegata Specimen Image
 # =============================================================================
 def segment_bauhinia_pod_specimen(specimen_path: Path = SPECIMEN_JPG) -> dict[str, Any]:
@@ -768,21 +1244,152 @@ def segment_bauhinia_pod_specimen(specimen_path: Path = SPECIMEN_JPG) -> dict[st
 
 
 # =============================================================================
-# 6. 6-Panel Publication Synthesis Figure & Animated Desiccation GIF
+# 6. 9-Panel Publication Synthesis Figure & Animated Desiccation GIF
 # =============================================================================
+def _draw_fracture_panels(ax_g, ax_h, ax_i, frac: dict[str, Any], sweep: dict[str, Any], ref: dict[str, Any]) -> None:
+    """Panels G-I (Pass 3): desiccation-driven suture energy release & stick-slip
+    crack position; Freund crack-speed law vs toughness sweep; seed ejection speeds
+    & ballistic range against published explosive-dispersal benchmarks."""
+    dry = frac["drying"]
+    t_h = dry["t_s"] / 3600.0
+    gam_mean = frac["params"]["Gamma_c_mean_J_m2"]
+    cv = frac["params"]["cv_Gamma"]
+
+    # Panel G
+    ax_g.plot(t_h, dry["G_J_m2"], color="#38bdf8", lw=2.3, label="Suture energy release rate G(t) = Δe(κ₀(t))·W/h")
+    ax_g.axhspan(gam_mean * (1 - cv), gam_mean * (1 + cv), color="#f43f5e", alpha=0.18, label=f"Suture toughness Γ_c = {gam_mean:.0f}±{cv*gam_mean:.0f} J/m² (model)")
+    ax_g.axhline(gam_mean, color="#f43f5e", ls="--", lw=1.3)
+    if frac["initiated"]:
+        ax_g.axvline(frac["t_c_h"], color="#facc15", ls=":", lw=1.8, label=f"Griffith initiation t_c = {frac['t_c_h']:.1f} h (κ₀ = {frac['kappa0_at_initiation_cm_inv']:.3f} cm⁻¹)")
+    ax_g2 = ax_g.twinx()
+    a_steps_t = [0.0]
+    a_steps_a = [frac["params"]["a0_m"] / frac["params"]["L_m"]]
+    for j in frac["jumps"]:
+        a_steps_t += [j["t_start_s"] / 3600.0, j["t_start_s"] / 3600.0]
+        a_steps_a += [j["a_from_m"] / frac["params"]["L_m"], j["a_to_m"] / frac["params"]["L_m"]]
+    a_steps_t.append(float(t_h[-1]))
+    a_steps_a.append(a_steps_a[-1])
+    ax_g2.plot(a_steps_t, a_steps_a, color="#34d399", lw=2.0, label=f"Stick-slip crack position a(t)/L ({frac['n_jumps']} jumps)")
+    for s in frac["seeds"]:
+        if s["released"]:
+            ax_g2.scatter([s["t_eject_s"] / 3600.0], [s["a_m"] / frac["params"]["L_m"]], marker="*", s=110, color="#fb923c", edgecolors="#0b0f17", zorder=6)
+    ax_g2.scatter([], [], marker="*", s=110, color="#fb923c", label=f"Seed ejection events (n = {frac['n_ejected']}/{frac['params']['n_seeds']})")
+    ax_g2.set_ylim(-0.02, 1.08)
+    ax_g2.set_ylabel("Crack position a/L", color="#34d399", fontsize=9)
+    ax_g2.tick_params(colors="#8b949e", labelsize=8)
+    ax_g.set_title(
+        f"(G) Quasi-Static Energy → Suture Fracture Coupling\nG_final = {frac['G_final_J_m2']:.0f} J/m², stored {1e3*frac['stored_energy_per_valve_J']:.1f} mJ/valve, κ₀(t)=κ₀,f(1-e^(-t/τ)), τ = {frac['params']['tau_dry_s']/3600:.0f} h",
+        color="#e6edf3",
+        fontsize=10,
+    )
+    ax_g.set_xlabel("Desiccation time t (h)", color="#c9d1d9", fontsize=9)
+    ax_g.set_ylabel("G, Γ_c (J/m²)", color="#c9d1d9", fontsize=9)
+    ax_g.tick_params(colors="#8b949e", labelsize=8)
+    ax_g.grid(color="#1f2937", alpha=0.6, lw=0.7)
+    h1, l1 = ax_g.get_legend_handles_labels()
+    h2, l2 = ax_g2.get_legend_handles_labels()
+    ax_g.legend(h1 + h2, l1 + l2, facecolor="#0b0f17", edgecolor="#30363d", labelcolor="#e6edf3", fontsize=7.2, loc="lower right")
+
+    # Panel H
+    ratios = np.array([d["Gamma_over_G"] for d in sweep["dried_rows"]])
+    v_hom = np.array([d["v_over_cR_homogeneous"] for d in sweep["dried_rows"]])
+    v_het = np.array([d["v_over_cR_heterogeneous"] for d in sweep["dried_rows"]])
+    of_het = np.array([d["opening_fraction_heterogeneous"] for d in sweep["dried_rows"]])
+    of_dry = np.array([d["opening_fraction"] for d in sweep["rows"]])
+    n_ej = np.array([d["n_ejected"] for d in sweep["rows"]])
+    rr = np.linspace(0.0, 1.3, 200)
+    ax_h.plot(rr, np.maximum(0.0, 1.0 - rr), color="#38bdf8", lw=2.2, label="Freund (1990): v/c_R = 1 − Γ_c/G")
+    ax_h.scatter(ratios, v_hom, color="#22d3ee", s=55, zorder=5, label=f"Sim homogeneous suture (r = {sweep['pearson_r_v_vs_freund']:.4f})")
+    ax_h.scatter(ratios, v_het, marker="s", color="#a78bfa", s=45, zorder=5, label=f"Sim heterogeneous suture (CV_Γ = {cv:.2f})")
+    ax_h.plot(ratios, of_het, "o--", color="#34d399", lw=1.8, label="Opening fraction a*/L (fully dried, heterogeneous)")
+    ax_h.plot(ratios, of_dry, "^-", color="#fb923c", lw=1.8, label="Opening fraction a*/L (drying-coupled stick-slip)")
+    ax_h.plot(ratios, n_ej / frac["params"]["n_seeds"], "*:", color="#facc15", lw=1.4, ms=10, label="Fraction of seeds ejected (drying-coupled)")
+    ax_h.axvline(1.0, color="#f43f5e", ls=":", lw=1.6, label="Γ_c = G: no-fracture negative control")
+    ax_h.set_title(
+        f"(H) Dynamic Crack Speed & Arrest vs Suture Toughness\nc_R = {frac['params']['c_R_m_s']:.0f} m/s, pod opens in {1e3*frac['total_crack_run_time_s']:.2f} ms of cumulative crack run (⟨v⟩ = {frac['v_crack_mean_m_s']:.0f} m/s)",
+        color="#e6edf3",
+        fontsize=10,
+    )
+    ax_h.set_xlabel("Suture toughness ratio Γ_c / G_final", color="#c9d1d9", fontsize=9)
+    ax_h.set_ylabel("v/c_R, opening fraction, ejected fraction", color="#c9d1d9", fontsize=9)
+    ax_h.set_ylim(-0.05, 1.1)
+    ax_h.tick_params(colors="#8b949e", labelsize=8)
+    ax_h.grid(color="#1f2937", alpha=0.6, lw=0.7)
+    ax_h.legend(facecolor="#0b0f17", edgecolor="#30363d", labelcolor="#e6edf3", fontsize=7.2, loc="upper right")
+
+    # Panel I
+    bench = ref["benchmarks"]
+    v_cardamine = float(next(b["value_m_s"] for b in bench if b["id"] == "cardamine_hofhuis2016_launch_speed"))
+    v_hura = float(next(b["value_m_s"] for b in bench if b["id"] == "hura_swaine1977_launch_speed"))
+    seeds = frac["seeds"]
+    pos_cm = [100.0 * s["a_m"] for s in seeds]
+    v_s = [s["v_seed_m_s"] for s in seeds]
+    ax_i.bar(pos_cm, v_s, width=2.2, color="#fb923c", edgecolor="#fed7aa", label=f"Bauhinia seed launch speed (drying-coupled, mean {frac['v_seed_m_s']:.2f} m/s)")
+    ax_i.axhline(frac["v_seed_fully_dried_m_s"], color="#fde047", ls="--", lw=1.6, label=f"Fully dried catapult bound {frac['v_seed_fully_dried_m_s']:.2f} m/s (η = {frac['params']['eta']:.1f})")
+    ax_i.axhline(v_cardamine, color="#38bdf8", ls=":", lw=1.8, label=f"Cardamine hirsuta ≈ {v_cardamine:.0f} m/s (Hofhuis et al. 2016, transfer)")
+    ax_i.set_yscale("log")
+    ax_i.set_ylim(0.3, 150.0)
+    ax_i.axhline(v_hura, color="#f43f5e", ls="-.", lw=1.4, label=f"Hura crepitans ≈ {v_hura:.0f} m/s (Swaine & Beer 1977, upper bound)")
+    ball = frac["ballistics"]
+    ax_i.text(
+        0.02,
+        0.50,
+        f"Ballistics (45°, z₀ = 3 m, m_seed = {1e3*frac['params']['m_seed_kg']:.2f} g, C_d = 1):\n"
+        f"range with drag = {ball['range_m']:.2f} m  (drag-free bound {ball['drag_free_bound_m']:.2f} m)\n"
+        f"flight time = {ball['flight_time_s']:.2f} s; valve coil time t_coil = {1e3*frac['t_coil_s']:.2f} ms",
+        transform=ax_i.transAxes,
+        color="#e6edf3",
+        fontsize=7.8,
+        va="bottom",
+        zorder=7,
+        bbox=dict(facecolor="#0b0f17", edgecolor="#30363d", alpha=0.9),
+    )
+    ax_i.set_title(
+        "(I) Elastic-Catapult Seed Ejection vs Explosive-Dispersal Benchmarks\nv_seed = √(2η ΔU_seg / (m_seg/3 + m_seed)); Bauhinia predicted far below Cardamine / Hura",
+        color="#e6edf3",
+        fontsize=10,
+    )
+    ax_i.set_xlabel("Seed position along suture from stylar tip (cm)", color="#c9d1d9", fontsize=9)
+    ax_i.set_ylabel("Launch speed (m/s, log)", color="#c9d1d9", fontsize=9)
+    ax_i.tick_params(colors="#8b949e", labelsize=8)
+    ax_i.grid(color="#1f2937", alpha=0.6, lw=0.7, which="both")
+    ax_i.legend(facecolor="#0b0f17", edgecolor="#30363d", labelcolor="#e6edf3", fontsize=7.2, loc="upper right")
+
+
+def render_fracture_ballistic_figure(out_png: Path | None = None, overrides: dict[str, float] | None = None, seed: int = 2011) -> Path:
+    """Standalone 3-panel Pass 3 figure (G-I) -> docs/media/chiral_seed_pod_opening_suture_fracture.png."""
+    out_png = out_png or OUT_FRACTURE_PNG
+    out_png.parent.mkdir(parents=True, exist_ok=True)
+    frac = simulate_suture_fracture_ballistic_ejection(overrides=overrides, seed=seed)
+    sweep = evaluate_suture_toughness_sweep(seed=seed)
+    ref = load_fracture_reference()
+    fig, axes = plt.subplots(1, 3, figsize=(19.0, 5.8), dpi=140, facecolor="#0b0f17")
+    for ax in axes:
+        ax.set_facecolor("#111827")
+    _draw_fracture_panels(axes[0], axes[1], axes[2], frac, sweep, ref)
+    fig.suptitle("Pass 3 — Quasi-static non-Euclidean valve energy → Freund suture fracture → ballistic seed ejection (Bauhinia variegata)", color="#f0f6fc", fontsize=12, fontweight="bold")
+    fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.93))
+    fig.savefig(out_png, dpi=140, facecolor=fig.get_facecolor())
+    plt.close(fig)
+    return out_png
+
+
 def render_comparison_figure(
     out_png: Path = OUT_PNG,
     overrides: dict[str, float] | None = None,
     seed: int = 2011,
 ) -> Path:
-    """Render the 6-panel dark-theme publication synthesis figure comparing:
+    """Render the 9-panel dark-theme publication synthesis figure comparing:
       (A) 3D Non-Euclidean Ribbon Morphologies: Narrow Pure-Twist Helicoid (w_tilde=1.36)
           vs Opposing Wide Bauhinia Cylindrical Helical Valves (w_tilde=3.78, +H & -H)
       (B) Supercritical Pitchfork Bifurcation Diagram H*(w_tilde)/kappa_0 & D*(w_tilde)/kappa_0
       (C) Helix Radius R*kappa_0, Pitch P*kappa_0/(2*pi), and Gaussian |K|/kappa_0^2 vs w_tilde
       (D) Cutting-Angle Chirality Sweep theta in [0 deg, 90 deg] (including theta=0 deg ring control)
       (E) Computer-Vision Segmentation of Bauhinia variegata Specimen (MHNT.BOT.2011.3.22)
-      (F) 4-System Radius/Pitch Benchmark & Sclerenchyma Bilayer Helical Lobe Oscillation"""
+      (F) 4-System Radius/Pitch Benchmark & Sclerenchyma Bilayer Helical Lobe Oscillation
+      (G) Pass 3: desiccation-driven suture energy release rate G(t), Griffith initiation & stick-slip crack a(t)
+      (H) Pass 3: Freund crack speed law v/c_R = 1 - Gamma_c/G, arrest & opening fraction vs toughness
+      (I) Pass 3: elastic-catapult seed launch speeds, ballistic range, explosive-dispersal benchmarks"""
     out_png.parent.mkdir(parents=True, exist_ok=True)
     ov = overrides or {}
     kappa0 = float(ov.get("kappa0", 0.42))
@@ -795,6 +1402,9 @@ def render_comparison_figure(
     chir = evaluate_cutting_angle_chirality_sweep(w_tilde=4.0, kappa0=kappa0, nu=nu, seed=seed)
     spec_table = evaluate_pod_and_mimetic_specimens(seed=seed)
     cv_seg = segment_bauhinia_pod_specimen()
+    frac = simulate_suture_fracture_ballistic_ejection(overrides=overrides, seed=seed)
+    sweep = evaluate_suture_toughness_sweep(seed=seed)
+    frac_ref = load_fracture_reference()
 
     # 3D meshes for Panel A: narrow helicoid vs wide opposing valve pair (+H and -H)
     mesh_narrow = generate_3d_ribbon_mesh(
@@ -807,17 +1417,17 @@ def render_comparison_figure(
         L_cm=L_cm, W_cm=W_cm, h_cm=h_cm, kappa0=kappa0, nu=nu, theta_deg=45.0, branch=-1, seed=seed
     )
 
-    fig = plt.figure(figsize=(18.5, 11.2), dpi=150, facecolor="#0b0f17")
+    fig = plt.figure(figsize=(18.5, 16.4), dpi=150, facecolor="#0b0f17")
     fig.suptitle(
         "Armon, Efrati, Kupferman & Sharon (2011) Science — Non-Euclidean Incompatible Shell Elasticity & Chiral Seed Pod Opening in Bauhinia variegata",
         color="#f0f6fc",
         fontsize=13.5,
         fontweight="bold",
-        y=0.978,
+        y=0.985,
     )
 
     # Panel A: 3D Ribbon Morphologies (Pure-Twist Helicoid vs Opposing Cylindrical Helical Valves)
-    ax_a = fig.add_subplot(2, 3, 1, projection="3d", facecolor="#0b0f17")
+    ax_a = fig.add_subplot(3, 3, 1, projection="3d", facecolor="#0b0f17")
     ax_a.plot_surface(
         mesh_narrow["X"] - 8.5,
         mesh_narrow["Y"],
@@ -858,7 +1468,7 @@ def render_comparison_figure(
     ax_a.view_init(elev=20, azim=-58)
 
     # Panel B: Supercritical Pitchfork Bifurcation H*(w_tilde) & D*(w_tilde)
-    ax_b = fig.add_subplot(2, 3, 2, facecolor="#111827")
+    ax_b = fig.add_subplot(3, 3, 2, facecolor="#111827")
     w_dense = np.linspace(0.45, 10.0, 220)
     H_dense = np.array([analytical_pitchfork_curvatures(float(w), kappa0, nu)["H"] / kappa0 for w in w_dense])
     D_dense = np.array([analytical_pitchfork_curvatures(float(w), kappa0, nu)["D"] / kappa0 for w in w_dense])
@@ -887,7 +1497,7 @@ def render_comparison_figure(
     ax_b.legend(facecolor="#0b0f17", edgecolor="#30363d", labelcolor="#e6edf3", fontsize=7.5, loc="lower right")
 
     # Panel C: Dimensionless Helix Radius R*kappa_0, Pitch P*kappa_0/(2*pi), and Gaussian |K|/kappa_0^2
-    ax_c = fig.add_subplot(2, 3, 3, facecolor="#111827")
+    ax_c = fig.add_subplot(3, 3, 3, facecolor="#111827")
     R_sim_pts = [r["R_kappa0_sim"] for r in bif["rows"]]
     R_obs_pts = [r["R_kappa0_obs"] for r in bif["rows"]]
     P_sim_pts = [r["P_kappa0_over_2pi_sim"] for r in bif["rows"]]
@@ -912,7 +1522,7 @@ def render_comparison_figure(
     ax_c.legend(facecolor="#0b0f17", edgecolor="#30363d", labelcolor="#e6edf3", fontsize=7.5, loc="upper right")
 
     # Panel D: Cutting-Angle Chirality Sweep theta in [0 deg, 90 deg]
-    ax_d = fig.add_subplot(2, 3, 4, facecolor="#111827")
+    ax_d = fig.add_subplot(3, 3, 4, facecolor="#111827")
     th_grid = np.linspace(0.0, 90.0, 181)
     eq4 = relax_incompatible_ribbon_equilibrium(w_tilde=4.0, kappa0=kappa0, nu=nu, theta_deg=45.0, seed=seed)
     ks_curve = (eq4["H"] + eq4["D"] * np.cos(np.radians(2.0 * th_grid))) / kappa0
@@ -941,7 +1551,7 @@ def render_comparison_figure(
     ax_d.legend(facecolor="#0b0f17", edgecolor="#30363d", labelcolor="#e6edf3", fontsize=7.3, loc="upper right")
 
     # Panel E: Computer-Vision Segmentation of Bauhinia variegata Specimen (MHNT.BOT.2011.3.22)
-    ax_e = fig.add_subplot(2, 3, 5, facecolor="#111827")
+    ax_e = fig.add_subplot(3, 3, 5, facecolor="#111827")
     ax_e.imshow(cv_seg["roi_rgb"])
     ax_e.contour(cv_seg["valve_mask"], levels=[0.5], colors=["#22d3ee"], linewidths=1.1)
     ax_e.plot(cv_seg["cols_x"], cv_seg["upper_cy"], color="#f43f5e", lw=2.0, label="Upper twisted valve centerline")
@@ -968,7 +1578,7 @@ def render_comparison_figure(
     ax_e.legend(facecolor="#0b0f17", edgecolor="#30363d", labelcolor="#e6edf3", fontsize=7.5, loc="lower left")
 
     # Panel F: 4-System Empirical vs Simulated Radius & Pitch Benchmark
-    ax_f = fig.add_subplot(2, 3, 6, facecolor="#111827")
+    ax_f = fig.add_subplot(3, 3, 6, facecolor="#111827")
     labels = [
         "Bauhinia\nwide valve\n(w̃=3.78)",
         "Bauhinia\nnarrow strip\n(w̃=1.36)",
@@ -998,7 +1608,13 @@ def render_comparison_figure(
     ax_f.grid(color="#1f2937", axis="y", alpha=0.6, lw=0.7)
     ax_f.legend(facecolor="#0b0f17", edgecolor="#30363d", labelcolor="#e6edf3", fontsize=7.5, loc="upper right")
 
-    fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.955))
+    # Panels G-I (Pass 3): suture fracture & ballistic seed ejection
+    ax_g = fig.add_subplot(3, 3, 7, facecolor="#111827")
+    ax_h = fig.add_subplot(3, 3, 8, facecolor="#111827")
+    ax_i = fig.add_subplot(3, 3, 9, facecolor="#111827")
+    _draw_fracture_panels(ax_g, ax_h, ax_i, frac, sweep, frac_ref)
+
+    fig.tight_layout(rect=(0.0, 0.0, 1.0, 0.965))
     fig.savefig(out_png, dpi=150, facecolor=fig.get_facecolor())
     plt.close(fig)
     return out_png
@@ -1047,16 +1663,128 @@ def render_growth_gif(out_gif: Path = OUT_GIF, seed: int = 2011) -> Path:
     return out_gif
 
 
+def render_fracture_gif(out_gif: Path = OUT_FRACTURE_GIF, seed: int = 2011, n_frames: int = 36) -> Path:
+    """Pass 3 animated GIF: 2-D side view of the pod suture. Frames run over the
+    desiccation timeline (hours) with a magnified millisecond inset during each
+    stick-slip crack jump; released seeds follow their drag-ballistic arcs."""
+    out_gif.parent.mkdir(parents=True, exist_ok=True)
+    frac = simulate_suture_fracture_ballistic_ejection(seed=seed)
+    ref = load_fracture_reference()
+    P = frac["params"]
+    L_cm = 100.0 * P["L_m"]
+    xs_cm = 100.0 * frac["xs_field_m"]
+    gam = frac["Gamma_field"]
+    dry = frac["drying"]
+    t_end = float(dry["t_s"][-1])
+    jumps = frac["jumps"]
+    # time samples: dense around the jumps, sparse elsewhere
+    t_samples = list(np.linspace(0.0, t_end, n_frames // 2))
+    for j in jumps:
+        t_samples += [j["t_start_s"] - 1.0, j["t_start_s"] + 0.5 * j["run_time_s"], j["t_start_s"] + 1.0]
+    t_samples = sorted(set(float(t) for t in t_samples))
+
+    r_seed = _fp(ref, "seed_parameters", "r_seed_m")
+    C_d = _fp(ref, "seed_parameters", "C_d")
+    rho_air = _fp(ref, "seed_parameters", "rho_air_kg_m3")
+    g = _fp(ref, "seed_parameters", "g_m_s2")
+    ang = _fp(ref, "seed_parameters", "launch_angle_deg")
+    z0 = _fp(ref, "seed_parameters", "launch_height_m")
+
+    def crack_pos_at(t: float) -> float:
+        a = P["a0_m"]
+        for j in jumps:
+            if t >= j["t_start_s"] + j["run_time_s"]:
+                a = j["a_to_m"]
+            elif t >= j["t_start_s"]:
+                a = j["a_from_m"] + (j["a_to_m"] - j["a_from_m"]) * (t - j["t_start_s"]) / max(j["run_time_s"], 1e-12)
+                break
+        return a
+
+    def seed_xy(s: dict[str, Any], t: float) -> tuple[float, float] | None:
+        if not s["released"] or t < s["t_eject_s"]:
+            return None
+        dt_f = min(t - s["t_eject_s"], 3.0)
+        # drag-ballistic position by explicit integration (short, coarse)
+        A = math.pi * r_seed**2
+        k = 0.5 * rho_air * C_d * A / P["m_seed_kg"]
+        th = math.radians(ang)
+        x, z, vx, vz = 0.0, z0, s["v_seed_m_s"] * math.cos(th), s["v_seed_m_s"] * math.sin(th)
+        n = 200
+        h_ = dt_f / n
+        for _ in range(n):
+            sp = math.hypot(vx, vz)
+            vx += -k * sp * vx * h_
+            vz += (-g - k * sp * vz) * h_
+            x += vx * h_
+            z += vz * h_
+            if z <= 0.0:
+                z = 0.0
+                break
+        return x, z
+
+    frames: list[Image.Image] = []
+    for t in t_samples:
+        a_now = crack_pos_at(t)
+        G_now = float(np.interp(t, dry["t_s"], dry["G_J_m2"]))
+        k0_now = float(np.interp(t, dry["t_s"], dry["kappa0_cm_inv"]))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.6, 4.6), dpi=90, facecolor="#0b0f17", gridspec_kw={"width_ratios": [1.15, 1.0]})
+        for ax in (ax1, ax2):
+            ax.set_facecolor("#111827")
+            ax.tick_params(colors="#8b949e", labelsize=7)
+        # left: suture + toughness profile + crack tip
+        ax1.fill_between(xs_cm, 0, gam, color="#f43f5e", alpha=0.25, label="Γ_c(a) suture toughness")
+        ax1.axhline(G_now, color="#38bdf8", lw=2.0, label=f"G(t) = {G_now:.0f} J/m²")
+        ax1.axvspan(0.0, 100.0 * a_now, color="#34d399", alpha=0.25, label=f"opened suture a = {100*a_now:.1f} cm")
+        ax1.axvline(100.0 * a_now, color="#34d399", lw=2.2)
+        for s in frac["seeds"]:
+            col = "#fb923c" if (s["released"] and t >= s["t_eject_s"]) else "#facc15"
+            ax1.scatter([100.0 * s["a_m"]], [0.08 * max(gam.max(), G_now)], marker="o", s=70, color=col, edgecolors="#0b0f17", zorder=5)
+        ax1.set_xlim(0.0, L_cm)
+        ax1.set_ylim(0.0, 1.15 * max(float(gam.max()), float(dry["G_J_m2"].max())))
+        ax1.set_xlabel("Suture coordinate a (cm, stylar tip → base)", color="#c9d1d9", fontsize=8)
+        ax1.set_ylabel("J/m²", color="#c9d1d9", fontsize=8)
+        in_jump = any(j["t_start_s"] <= t <= j["t_start_s"] + j["run_time_s"] for j in jumps)
+        ax1.set_title(f"t = {t/3600:.1f} h, κ₀ = {k0_now:.3f} cm⁻¹" + ("  — CRACK RUNNING (ms)" if in_jump else ""), color="#f0f6fc", fontsize=9)
+        ax1.legend(facecolor="#0b0f17", edgecolor="#30363d", labelcolor="#e6edf3", fontsize=6.8, loc="upper right")
+        # right: ballistic arcs
+        ax2.axhline(0.0, color="#8b949e", lw=1.0)
+        ax2.plot([0.0], [z0], marker="s", color="#a78bfa", ms=8)
+        for s in frac["seeds"]:
+            if s["released"]:
+                tr = [seed_xy(s, s["t_eject_s"] + u) for u in np.linspace(0.0, 3.0, 60) if s["t_eject_s"] + u <= t]
+                tr = [p for p in tr if p is not None]
+                if tr:
+                    xs_t = [p[0] for p in tr]
+                    zs_t = [p[1] for p in tr]
+                    ax2.plot(xs_t, zs_t, color="#fb923c", lw=1.2, alpha=0.8)
+                    ax2.scatter([xs_t[-1]], [zs_t[-1]], color="#fb923c", s=40, zorder=5)
+        ax2.set_xlim(-0.2, max(2.5, 1.3 * frac["ballistics"]["range_m"]))
+        ax2.set_ylim(-0.2, z0 + 1.0)
+        ax2.set_xlabel("Horizontal distance (m)", color="#c9d1d9", fontsize=8)
+        ax2.set_ylabel("Height (m)", color="#c9d1d9", fontsize=8)
+        ax2.set_title(f"Seed ballistics: v₀ ≈ {frac['v_seed_m_s']:.2f} m/s, range {frac['ballistics']['range_m']:.2f} m ({frac['n_ejected']} ejected)", color="#f0f6fc", fontsize=9)
+        fig.tight_layout()
+        fig.canvas.draw()
+        w, h = fig.canvas.get_width_height()
+        buf = np.frombuffer(fig.canvas.buffer_rgba(), dtype=np.uint8).reshape(h, w, 4)
+        frames.append(Image.fromarray(buf[:, :, :3]).convert("P", palette=Image.Palette.ADAPTIVE))
+        plt.close(fig)
+    frames[0].save(out_gif, save_all=True, append_images=frames[1:], duration=160, loop=0)
+    return out_gif
+
+
 # =============================================================================
-# 7. Quantitative MorphoEval Measurements & 8-Point Self-Test Suite
+# 7. Quantitative MorphoEval Measurements & 12-Point Self-Test Suite
 # =============================================================================
 def measure_morphoeval() -> list[dict[str, Any]]:
-    """Compute 9 reference-anchored quantitative morphometric measurements for
-    `morphoeval/measure_outputs.py`."""
+    """Compute 15 reference-anchored quantitative morphometric measurements for
+    `morphoeval/measure_outputs.py` (9 Pass 2 + 6 Pass 3 fracture/ballistic)."""
     bif = evaluate_width_pitchfork_bifurcation(seed=2011)
     chir = evaluate_cutting_angle_chirality_sweep(seed=2011)
     spec_table = evaluate_pod_and_mimetic_specimens(seed=2011)
     cv_seg = segment_bauhinia_pod_specimen()
+    frac = simulate_suture_fracture_ballistic_ejection(seed=2011)
+    sweep = evaluate_suture_toughness_sweep(seed=2011)
     b0_info = compute_target_curvature_tensor(kappa0=0.42, theta_deg=45.0)
     k0_bilayer = compute_sclerenchyma_bilayer_kappa0(delta_eps_hygro=0.0266, h_valve_cm=0.095)
 
@@ -1151,14 +1879,75 @@ def measure_morphoeval() -> list[dict[str, Any]]:
             "note": f"mean half-pitch = {cv_seg['mean_half_pitch_px']:.2f} ± {cv_seg['std_half_pitch_px']:.2f} px",
             "derived_from": "output",
         },
+        # ---- Pass 3: quasi-static energy -> suture fracture -> ballistic ejection ----
+        {
+            "name": "Suture energy release rate G_final = Delta_e(kappa_0=0.42) * W / h from the quasi-static minimizer (fully dried pod)",
+            "value": round(frac["G_final_J_m2"], 2),
+            "unit": "J/m^2",
+            "method": f"B_eff (kappa_0^2 - e_final) W / h with B_eff = Y h^3/(12(1+nu)) = {frac['B_eff_J']:.4e} J, e_final from L-BFGS-B relaxation (stored {1e3*frac['stored_energy_per_valve_J']:.2f} mJ per valve)",
+            "reference_value": round(frac["params"]["Gamma_c_mean_J_m2"], 2),
+            "reference_source": "Griffith criterion vs model suture toughness Gamma_c (suture_fracture_ballistic_reference.json, provenance=model; Freund 1990); G_final > Gamma_c is required for dehiscence",
+            "note": f"Delta_e_final = {frac['delta_e_final_J_m2']:.3f} J/m^2; Gamma_c is a free model parameter, not a Bauhinia measurement",
+            "derived_from": "script",
+        },
+        {
+            "name": "Griffith initiation time t_c of suture dehiscence on the desiccation curve kappa_0(t) = kappa_0,f (1 - exp(-t/tau_dry))",
+            "value": round(frac["t_c_h"], 2),
+            "unit": "h",
+            "method": f"First drying time at which G(t) exceeds the local suture toughness at the stylar flaw (kappa_0(t_c) = {frac['kappa0_at_initiation_cm_inv']:.4f} cm^-1, G(t_c) = {frac['G_at_initiation_J_m2']:.1f} J/m^2)",
+            "reference_value": round(-frac["params"]["tau_dry_s"] / 3600.0 * math.log(1.0 - math.sqrt(frac["Gamma_at_flaw_J_m2"] / frac["G_final_J_m2"])), 2),
+            "reference_source": "Analytical estimate from G ~ kappa_0^2 scaling: t_c = -tau_dry ln(1 - sqrt(Gamma_c(a_0)/G_final)); tau_dry = 72 h is a model constant",
+            "note": "tau_dry and Gamma_c are provenance=model; the measurement tests the coupling, not a Bauhinia field observation",
+            "derived_from": "script",
+        },
+        {
+            "name": "Freund dynamic crack speed law v/c_R = 1 - Gamma_c/G across the 7-point suture toughness sweep (homogeneous suture, fully dried)",
+            "value": round(sweep["pearson_r_v_vs_freund"], 4),
+            "unit": "Pearson r",
+            "method": f"Explicit integration of da/dt = c_R max(0, 1 - Gamma_c(a)/G) vs analytical 1 - Gamma/G at Gamma/G in {{0.2..1.2}} (p={sweep['p_value_v']:.2e}, RMSE={sweep['rmse_v_over_cR']:.4f}; c_R = {frac['params']['c_R_m_s']:.1f} m/s)",
+            "reference_value": 1.0,
+            "reference_source": "Freund LB (1990) Dynamic Fracture Mechanics, Cambridge Univ. Press, Ch. 7 mode-I equation of motion G_dyn(v) = (1 - v/c_R) G",
+            "note": f"no-fracture negative control Gamma_c >= G: opening fraction = {sweep['no_fracture_control_opening_fraction']:.4f} (flaw only); heterogeneous suture at Gamma = G opens {sweep['heterogeneous_opening_fraction_at_Gamma_eq_G']:.4f}",
+            "derived_from": "script",
+        },
+        {
+            "name": "Drying-coupled stick-slip pod opening fraction a*/L and cumulative dynamic crack run time (Gamma_c = 120 J/m^2)",
+            "value": round(frac["opening_fraction"], 4),
+            "unit": "fraction of suture length",
+            "method": f"{frac['n_jumps']} stick-slip crack jumps over {frac['t_c_h']:.1f}-{(frac['jumps'][-1]['t_start_s']/3600.0 if frac['jumps'] else float('nan')):.1f} h; cumulative run time {1e3*frac['total_crack_run_time_s']:.3f} ms; mean dynamic speed {frac['v_crack_mean_m_s']:.1f} m/s = {frac['v_crack_over_cR']:.4f} c_R",
+            "reference_value": 1.0,
+            "reference_source": "Complete dehiscence of both Bauhinia variegata valves (Armon et al. 2011 Fig. 1; vendored specimen MHNT.BOT.2011.3.22 shows fully separated valves)",
+            "note": f"Gamma_c/G_final = {frac['params']['Gamma_c_mean_J_m2']/frac['G_final_J_m2']:.3f}; opening fraction is emergent from the toughness field, not prescribed",
+            "derived_from": "script",
+        },
+        {
+            "name": "Elastic-catapult seed launch speed v_seed (drying-coupled mean over ejected seeds)",
+            "value": round(frac["v_seed_m_s"], 3),
+            "unit": "m/s",
+            "method": f"v = sqrt(2 eta Delta_U_seg / (m_seg/3 + m_seed)), eta = {frac['params']['eta']:.2f}, m_seed = {1e3*frac['params']['m_seed_kg']:.2f} g, l_seg = {100*frac['params']['l_seg_m']:.1f} cm; {frac['n_ejected']}/{frac['params']['n_seeds']} seeds ejected; fully dried bound {frac['v_seed_fully_dried_m_s']:.3f} m/s",
+            "reference_value": 10.0,
+            "reference_source": "Hofhuis et al. (2016) Cell 166:222-233 Cardamine hirsuta launch speed ~10 m/s (transfer_boundary: different taxon, order-of-magnitude benchmark; no Bauhinia launch-speed measurement available offline)",
+            "note": f"Bauhinia predicted ~{10.0/max(frac['v_seed_m_s'],1e-9):.1f}x slower than Cardamine and ~{70.0/max(frac['v_seed_m_s'],1e-9):.0f}x slower than Hura crepitans (70 m/s); eta, m_seed, rho are provenance=model",
+            "derived_from": "script",
+        },
+        {
+            "name": "Seed ballistic range with quadratic drag from a 3 m launch height (45 deg)",
+            "value": round(frac["ballistics"]["range_m"], 3),
+            "unit": "m",
+            "method": f"RK4 of m dv/dt = m g - (1/2) rho_air C_d A |v| v (C_d = 1.0, r = 6 mm); flight time {frac['ballistics']['flight_time_s']:.2f} s",
+            "reference_value": round(frac["ballistics"]["drag_free_bound_m"], 3),
+            "reference_source": "Drag-free analytical upper bound x = v cos(a)(v sin(a) + sqrt(v^2 sin^2(a) + 2 g z_0))/g (theory bound, must exceed the drag range)",
+            "note": "no published Bauhinia variegata dispersal-distance measurement was verifiable offline; the reference is a consistency bound, not an observation",
+            "derived_from": "script",
+        },
     ]
 
 
 def self_test() -> bool:
     """Run comprehensive 8-point verification suite for Pass 2."""
-    # 1. Cryptographic SHA-256 verification of all 4 dataset files
+    # 1. Cryptographic SHA-256 verification of all 5 dataset files
     digests = verify_dataset_integrity()
-    assert len(digests) == 4, "Expected 4 SHA-256-verified dataset files"
+    assert len(digests) == 5, "Expected 5 SHA-256-verified dataset files"
 
     # 2. Law 1: Incompatible saddle target curvature det(b_0) = -kappa_0^2 < 0 & Tr(b_0) = 0 across all theta
     for th in (0.0, 30.0, 45.0, 60.0, 90.0):
@@ -1210,20 +1999,76 @@ def self_test() -> bool:
     assert np.allclose(m1["Y"], m2["Y"], atol=0.0)
     assert np.allclose(m1["Z"], m2["Z"], atol=0.0)
 
+    # ---- Pass 3 checks: quasi-static energy -> suture fracture -> ballistic ejection ----
+    # 9. Energy bookkeeping: B_eff prefactor, released energy >= 0, monotone in kappa_0,
+    #    zero for the flat kappa_0 = 0 control; G scales with W/h.
+    assert math.isclose(bending_energy_prefactor(4.2e8, 9.5e-4, 0.30), 4.2e8 * 9.5e-4**3 / (12 * 1.3), rel_tol=1e-12)
+    rel0 = released_valve_energy_density(0.0, 0.018, 9.5e-4, 4.2e8, 0.30)
+    assert rel0["delta_e_J_m2"] == 0.0 and rel0["G_J_m2"] == 0.0
+    dE_prev = -1.0
+    for k0 in (0.1, 0.2, 0.3, 0.42):
+        rel = released_valve_energy_density(k0, 0.018, 9.5e-4, 4.2e8, 0.30)
+        assert rel["delta_e_J_m2"] > dE_prev >= -1.0 and rel["e_final"] <= rel["e_init"]
+        dE_prev = rel["delta_e_J_m2"]
+    assert math.isclose(rel["G_J_m2"], rel["delta_e_J_m2"] * 0.018 / 9.5e-4, rel_tol=1e-12)
+
+    # 10. Freund law: v = c_R (1 - Gamma/G), arrest for Gamma >= G, bounded by c_R, monotone in G
+    c_R = rayleigh_wave_speed(4.2e8, 800.0, 0.30)
+    assert 300.0 < c_R < 600.0
+    assert freund_crack_speed(200.0, 200.0, c_R) == 0.0 and freund_crack_speed(200.0, 250.0, c_R) == 0.0
+    assert math.isclose(freund_crack_speed(200.0, 50.0, c_R), 0.75 * c_R, rel_tol=1e-12)
+    assert freund_crack_speed(100.0, 50.0, c_R) < freund_crack_speed(300.0, 50.0, c_R) < c_R
+    hom = heterogeneous_suture_toughness(361, 100.0, 0.0)
+    assert np.allclose(hom, 100.0)
+    crack_run = integrate_suture_crack(250.0, hom, 0.18, c_R, 0.002)
+    assert crack_run["opening_fraction"] == 1.0 and not crack_run["arrested"]
+    assert math.isclose(crack_run["v_over_cR_mean"], 0.6, rel_tol=2e-3)
+    crack_stop = integrate_suture_crack(100.0, hom, 0.18, c_R, 0.002)
+    assert crack_stop["arrested"] and crack_stop["a_final_m"] == 0.002
+
+    # 11. Drying-coupled stick-slip dehiscence + catapult + ballistics (default parameters)
+    frac = simulate_suture_fracture_ballistic_ejection(seed=2011)
+    assert frac["initiated"] and 0.0 < frac["t_c_h"] < 6.0 * frac["params"]["tau_dry_s"] / 3600.0
+    assert frac["G_at_initiation_J_m2"] >= frac["Gamma_at_flaw_J_m2"] * 0.99
+    assert frac["opening_fraction"] > 0.95 and frac["n_ejected"] == frac["params"]["n_seeds"]
+    assert 0.0 < frac["v_crack_mean_m_s"] < frac["params"]["c_R_m_s"]
+    assert 0.0 < frac["v_seed_m_s"] <= frac["v_seed_fully_dried_m_s"] < 10.0
+    assert frac["ballistics"]["range_m"] < frac["ballistics"]["drag_free_bound_m"]
+    t_ej = [s["t_eject_s"] for s in frac["seeds"] if s["released"]]
+    assert all(t_ej[i] <= t_ej[i + 1] for i in range(len(t_ej) - 1))  # seeds eject tip -> base
+    # no-fracture negative control: Gamma_c above the fully-dried G never initiates
+    frac_none = simulate_suture_fracture_ballistic_ejection(overrides={"gamma_c": 2.0 * frac["G_final_J_m2"]}, seed=2011)
+    assert (not frac_none["initiated"]) and frac_none["n_ejected"] == 0 and frac_none["v_seed_m_s"] == 0.0
+    # energy partition: doubling eta multiplies v by sqrt(2)
+    frac_eta = simulate_suture_fracture_ballistic_ejection(overrides={"eta": 2.0 * frac["params"]["eta"]}, seed=2011)
+    assert math.isclose(frac_eta["v_seed_fully_dried_m_s"], math.sqrt(2.0) * frac["v_seed_fully_dried_m_s"], rel_tol=1e-9)
+
+    # 12. Toughness sweep reproduces the Freund law and the arrest transition; deterministic
+    sweep = evaluate_suture_toughness_sweep(seed=2011)
+    assert sweep["pearson_r_v_vs_freund"] > 0.999 and sweep["rmse_v_over_cR"] < 0.01
+    assert sweep["no_fracture_control_opening_fraction"] < 0.02
+    ofs = [r["opening_fraction"] for r in sweep["rows"]]
+    assert ofs[0] == 1.0 and ofs[-1] < 0.1
+    frac2 = simulate_suture_fracture_ballistic_ejection(seed=2011)
+    assert frac2["t_c_s"] == frac["t_c_s"] and frac2["v_seed_m_s"] == frac["v_seed_m_s"] and frac2["opening_fraction"] == frac["opening_fraction"]
+
     meas = measure_morphoeval()
-    assert len(meas) == 9
+    assert len(meas) == 15
     print(
-        f"[self_test] 2007-liang-chiral-seed-pod-opening.py (v2) PASSED all 8 checks "
+        f"[self_test] 2007-liang-chiral-seed-pod-opening.py (v3) PASSED all 12 checks "
         f"(w_tilde_c={bif['w_tilde_c']:.4f}, pitchfork r_H={bif['pearson_r_H']:.4f}, "
         f"chirality r_tau={chir['pearson_r_tau']:.4f}, 4-system r_P={sp['pearson_r_pitch']:.4f}, "
-        f"specimen lobes={cv_seg['n_helical_lobes']}, CV={cv_seg['cv_half_pitch']:.4f})."
+        f"specimen lobes={cv_seg['n_helical_lobes']}, CV={cv_seg['cv_half_pitch']:.4f}; "
+        f"Pass 3: G_final={frac['G_final_J_m2']:.1f} J/m^2, t_c={frac['t_c_h']:.1f} h, "
+        f"{frac['n_jumps']} stick-slip jumps, <v_crack>={frac['v_crack_mean_m_s']:.1f} m/s, "
+        f"v_seed={frac['v_seed_m_s']:.2f} m/s, range={frac['ballistics']['range_m']:.2f} m, Freund r={sweep['pearson_r_v_vs_freund']:.4f})."
     )
     return True
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--self-test", action="store_true", help="Run 8-check verification suite")
+    ap.add_argument("--self-test", action="store_true", help="Run 12-check verification suite")
     ap.add_argument("--skip-gif", action="store_true", help="Skip animated GIF rendering")
     ap.add_argument("--kappa0", type=float, default=None, help="Override intrinsic shrinkage curvature kappa_0 (cm^-1)")
     ap.add_argument("--nu", type=float, default=None, help="Override Poisson ratio nu")
@@ -1231,6 +2076,10 @@ def main() -> int:
     ap.add_argument("--h", type=float, default=None, help="Override pod valve thickness h (cm)")
     ap.add_argument("--L", type=float, default=None, help="Override pod valve length L (cm)")
     ap.add_argument("--seed", type=int, default=2011, help="Deterministic RNG seed (default: 2011)")
+    ap.add_argument("--gamma-c", type=float, default=None, help="Pass 3: override mean suture fracture toughness Gamma_c (J/m^2; default 120 from suture_fracture_ballistic_reference.json)")
+    ap.add_argument("--eta", type=float, default=None, help="Pass 3: override elastic-catapult energy conversion efficiency eta (default 0.5)")
+    ap.add_argument("--m-seed", type=float, default=None, help="Pass 3: override seed mass (kg; default 4e-4)")
+    ap.add_argument("--fracture-json", action="store_true", help="Pass 3: run only the suture-fracture/ballistic coupling, print a JSON summary and exit")
     args = ap.parse_args()
 
     if args.self_test:
@@ -1245,14 +2094,28 @@ def main() -> int:
             "W": args.W,
             "h": args.h,
             "L": args.L,
+            "gamma_c": args.gamma_c,
+            "eta": args.eta,
+            "m_seed": args.m_seed,
         }.items()
         if v is not None
     }
+    if args.fracture_json:
+        frac = simulate_suture_fracture_ballistic_ejection(overrides=overrides, seed=args.seed)
+        summary = {k: frac[k] for k in ("G_final_J_m2", "delta_e_final_J_m2", "stored_energy_per_valve_J", "Gamma_at_flaw_J_m2", "initiated", "t_c_h", "kappa0_at_initiation_cm_inv", "n_jumps", "opening_fraction", "total_crack_run_time_s", "v_crack_mean_m_s", "v_crack_over_cR", "t_coil_s", "n_ejected", "v_seed_m_s", "v_seed_fully_dried_m_s", "ballistics")}
+        summary["params"] = frac["params"]
+        summary["seeds"] = frac["seeds"]
+        print(json.dumps(summary, indent=2, default=float))
+        return 0
     png = render_comparison_figure(OUT_PNG, overrides=overrides, seed=args.seed)
     print(f"[render] Wrote {png}")
+    png2 = render_fracture_ballistic_figure(OUT_FRACTURE_PNG, overrides=overrides, seed=args.seed)
+    print(f"[render] Wrote {png2}")
     if not args.skip_gif:
         gif = render_growth_gif(OUT_GIF, seed=args.seed)
         print(f"[render] Wrote {gif}")
+        gif2 = render_fracture_gif(OUT_FRACTURE_GIF, seed=args.seed)
+        print(f"[render] Wrote {gif2}")
     return 0
 
 

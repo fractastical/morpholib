@@ -123,4 +123,101 @@ theorem invagination_volume_conservation_and_blebbistatin_shift
     have h_pos : 0 < delta_base + 1 := by omega
     exact Nat.mul_lt_mul_of_pos_left h_lt h_pos
 
+
+-- ============================================================================
+-- Law 4 (`trushko-epithelioid-cyst-buckling-4`, Pass 3):
+-- Apical-Basal Differential Tension Sets the Spontaneous Curvature of the Monolayer
+-- ============================================================================
+/-- In Hannezo, Prost & Joanny (2014) PNAS Eq. (1)-(3) and the Pass 3 3D triangulated
+    shell of `2019-trushko-epithelioid-cyst-buckling.py` (`solve_confined_cyst_shell3d`),
+    the per-area bending energy of a monolayer with bending modulus `κ`, thickness `h`
+    and apical-basal tension difference `ΔΓ = Γ_apical - Γ_basal` is
+      `f(c) = (κ/2) c² - ΔΓ h c`,   `c = 2H` (twice the mean curvature).
+    Scaling by `2κ` and writing `t = ΔΓ h` gives the integer energy
+      `E(c) = κ (κ c² - 2 t c)`,
+    which satisfies the completed square `E(c) + t² = (κ c - t)²`. Hence
+    (1) `E(c) ≥ -t²` for every curvature `c`, and
+    (2) the bound is attained at the spontaneous curvature `κ c₀ = t`, i.e.
+        `c₀ = 2H₀ = ΔΓ h / κ` (`H₀ R₀ = 6 ΔΓ R₀ / (E_epi h²)` once
+        `κ = E_epi h³ / (12 (1 - ν²))` is inserted; the `(1 - ν²)` factors cancel
+        against `Y_2D`). This is the value used by
+        `compute_apicobasal_spontaneous_curvature` in the Python script. -/
+def apicobasal_bending_energy_scaled (k t c : Int) : Int :=
+  k * (k * c * c - 2 * t * c)
+
+theorem int_mul_self_nonneg (d : Int) : 0 ≤ d * d := by
+  rcases Int.le_total 0 d with h | h
+  · exact Int.mul_nonneg h h
+  · exact Int.mul_nonneg_of_nonpos_of_nonpos h h
+
+theorem apicobasal_bending_completed_square (k t c : Int) :
+    apicobasal_bending_energy_scaled k t c + t * t = (k * c - t) * (k * c - t) := by
+  unfold apicobasal_bending_energy_scaled
+  have h1 : k * (k * c * c - 2 * t * c) = (k * c) * (k * c) - 2 * (t * (k * c)) := by
+    rw [Int.mul_sub]
+    have a1 : k * (k * c * c) = (k * c) * (k * c) := by ac_rfl
+    have a2 : k * (2 * t * c) = 2 * (t * (k * c)) := by ac_rfl
+    rw [a1, a2]
+  rw [h1]
+  generalize k * c = x
+  have e : (x - t) * (x - t) = x * x - t * x - (t * x - t * t) := by
+    rw [Int.sub_mul, Int.mul_sub, Int.mul_sub, Int.mul_comm x t]
+  rw [e]
+  omega
+
+theorem apicobasal_spontaneous_curvature_minimizer (k t c : Int) :
+    apicobasal_bending_energy_scaled k t c ≥ -(t * t) ∧
+    apicobasal_bending_energy_scaled 1 t t = -(t * t) := by
+  constructor
+  · have h := apicobasal_bending_completed_square k t c
+    have hs := int_mul_self_nonneg (k * c - t)
+    omega
+  · unfold apicobasal_bending_energy_scaled
+    simp only [Int.one_mul, Int.two_mul, Int.add_mul]
+    omega
+
+
+-- ============================================================================
+-- Law 5 (`trushko-epithelioid-cyst-buckling-5`, Pass 3):
+-- Inverted (Pogorelov) Cap Penalty Under Apical-Basal Polarity & Unilateral Capsule Wall Contact
+-- ============================================================================
+/-- In the Pass 3 3D shell the apical-basal polarity axis is the radial direction of
+    the capsule, so a surface patch of mean curvature magnitude `hm ≥ 0` that keeps the
+    lumen on its apical side pays the aligned penalty `(hm - c₀)²`, whereas an inward
+    (Pogorelov-inverted) cap pays `(hm + c₀)²`. For a spontaneous curvature `c₀ ≥ 0`
+    (apical tension exceeding basal tension, Hannezo et al. 2014):
+    (1) `(hm + c₀)² = (hm - c₀)² + 4 hm c₀`, hence the inverted cap is never cheaper
+        than the aligned one — differential tension localises folding into few deep
+        inversions instead of many shallow wrinkles;
+    (2) the alginate capsule acts as a unilateral Winkler foundation: the wall penalty
+        `max(0, r - R)²` vanishes for every vertex strictly inside or on the capsule
+        (`r ≤ R`) and is strictly positive once a vertex dilates the wall (`r > R`),
+        matching the `k_conf` term of `solve_confined_cyst_shell3d`. -/
+def inverted_cap_bending_penalty (hm c0 : Int) : Int := (hm + c0) * (hm + c0)
+
+def aligned_cap_bending_penalty (hm c0 : Int) : Int := (hm - c0) * (hm - c0)
+
+def capsule_wall_winkler_penalty (r R : Int) : Int :=
+  if r ≤ R then 0 else (r - R) * (r - R)
+
+theorem inverted_cap_penalty_and_capsule_wall_contact
+    (hm c0 r R : Int) (hh : 0 ≤ hm) (hc : 0 ≤ c0) :
+    inverted_cap_bending_penalty hm c0 = aligned_cap_bending_penalty hm c0 + 4 * (hm * c0) ∧
+    aligned_cap_bending_penalty hm c0 ≤ inverted_cap_bending_penalty hm c0 ∧
+    (r ≤ R → capsule_wall_winkler_penalty r R = 0) ∧
+    (R < r → capsule_wall_winkler_penalty r R > 0) := by
+  have hp : 0 ≤ hm * c0 := Int.mul_nonneg hh hc
+  have key : (hm + c0) * (hm + c0) = (hm - c0) * (hm - c0) + 4 * (hm * c0) := by
+    simp only [Int.mul_add, Int.add_mul, Int.mul_sub, Int.sub_mul]
+    rw [Int.mul_comm c0 hm]
+    omega
+  unfold inverted_cap_bending_penalty aligned_cap_bending_penalty
+  refine ⟨key, by omega, ?_, ?_⟩
+  · intro h; simp [capsule_wall_winkler_penalty, h]
+  · intro h
+    have hn : ¬ r ≤ R := Int.not_le.mpr h
+    simp only [capsule_wall_winkler_penalty, hn, ite_false]
+    have hpos : 0 < r - R := Int.sub_pos.mpr h
+    exact Int.mul_pos hpos hpos
+
 end MathOfBiology.Loop_069

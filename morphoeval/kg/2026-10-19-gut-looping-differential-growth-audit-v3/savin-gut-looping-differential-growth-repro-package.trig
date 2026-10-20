@@ -1,0 +1,86 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-savin-gut-looping-differential-growth> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-savin-gut-looping-differential-growth-repro-package> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-savin-gut-looping-differential-growth-repro-package> a pk:LLMClaimAssessment ;
+        rdfs:label "Savin et al. (2011) discrete gut rod coupled to a finite-element (CST, St.Venant-Kirchhoff) dorsal-mesentery membrane with an apicobasal Pitx2 stiffness gradient — Reproducibility package: 88/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "`self_test()` (L1648-1744) runs 13 checks in ~112 s: 5-file SHA-256 integrity, JSON-to-code parity including the new comparison targets, FD gradient exactness (< 1e-5), mesh topology and Euler characteristic, Pitx2 mean preservation, ablation uncoiling, emergent looping at every chick stage with < 50 % error, 4-species collapse, emergent BMP2/WT/Noggin ordering for N and R, monotone Pitx2 sweep, refinement < 20 %, specimen segmentation, and bitwise two-run determinism of the FE solver (L1729-1734); results are cached per parameter key (L366-369) and the default render (~72 s) writes the PNG, the new Pitx2 PNG and a 6-frame GIF. Deductions: `lbfgs_converged` (L504) is recorded but never asserted, and E8 / E16 hit maxiter 12000 with success = False, so the self-test certifies near-stationary rather than converged minima (-4); the 20 % refinement tolerance and 50 % error tolerances are loose enough that the test cannot regress on accuracy (-3); `*.png` is git-ignored repo-wide so the two PNG outputs are not versioned (-2); no requirements lock or MPLCONFIGDIR note accompanies the 112 s / 72 s runtimes, and `measure_morphoeval()` costs ~57 s from a fresh process (-3)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-repro-package> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/repro-package" ;
+        pk:evidenceAgainst "2011-savin-gut-looping-differential-growth.py L1719–L1721: Refinement tolerance 20 % (observed 7.7 %); accuracy tolerances 50 % at L1695-1696 <https://github.com/fractastical/morpholib/blob/327729c8/2011-savin-gut-looping-differential-growth.py#L1719-L1721>",
+            "2011-savin-gut-looping-differential-growth.py L443–L450: L-BFGS-B with maxiter 12000, ftol 1e-13, gtol 1e-9; opt.success stored at L504 but not asserted anywhere <https://github.com/fractastical/morpholib/blob/327729c8/2011-savin-gut-looping-differential-growth.py#L443-L450>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-savin-gut-looping-differential-growth-repro-package-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-savin-gut-looping-differential-growth-repro-package-2> ;
+        pk:hasScore "0.88"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-savin-gut-looping-differential-growth-repro-package-1> a pk:EvidenceItem ;
+        rdfs:label "2011-savin-gut-looping-differential-growth.py L1648–L1744" ;
+        dct:description "13-check self_test(): SHA-256 x5, JSON parity, FD gradient, mesh topology, Pitx2 mean preservation, ablation, chick stages, collapse, BMP2 ordering, Pitx2 sweep, refinement, specimen, bitwise determinism" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/327729c8/2011-savin-gut-looping-differential-growth.py#L1648-L1744> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-savin-gut-looping-differential-growth-repro-package-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/gut_looping_differential_growth/README.md L27–L35" ;
+        dct:description "Pass 3 additions section documenting the new JSON, its assumptions and the Davis 2008 citation" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/327729c8/datasets/gut_looping_differential_growth/README.md#L27-L35> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 062 Pass 3 Phase B Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/62> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1016/j.devcel.2008.05.001>,
+            <https://doi.org/10.1038/nature10277>,
+            <https://doi.org/10.1073/pnas.0803578105>,
+            <https://doi.org/10.1073/pnas.1618677114>,
+            <https://doi.org/10.1126/science.1238842> .
+    <https://doi.org/10.1016/j.devcel.2008.05.001> dct:date "2008"^^xsd:gYear ;
+        dct:title "The chirality of gut rotation derives from left-right asymmetric changes in the architecture of the dorsal mesentery" .
+    <https://doi.org/10.1038/nature10277> dct:date "2011"^^xsd:gYear ;
+        dct:title "On the growth and form of the gut" .
+    <https://doi.org/10.1073/pnas.0803578105> dct:date "2008"^^xsd:gYear ;
+        dct:title "The direction of gut looping is established by changes in the extracellular matrix and in cell orientation" .
+    <https://doi.org/10.1073/pnas.1618677114> dct:date "2017"^^xsd:gYear ;
+        dct:title "BMP signaling controls buckling forces to modulate looping morphogenesis of the gut" .
+    <https://doi.org/10.1126/science.1238842> dct:date "2013"^^xsd:gYear ;
+        dct:title "Villification: how the gut gets its villi" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Savin et al. (2011) discrete gut rod coupled to a finite-element (CST, St.Venant-Kirchhoff) dorsal-mesentery membrane with an apicobasal Pitx2 stiffness gradient — Reproducibility package 88/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T19:12:28Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-savin-gut-looping-differential-growth-repro-package> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/62> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

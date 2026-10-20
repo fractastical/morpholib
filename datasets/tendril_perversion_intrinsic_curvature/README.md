@@ -25,8 +25,18 @@ $$\theta(s) = \theta_{\text{helix}} \tanh(s / \xi), \qquad \tau(s) = \tau_{\text
 ### 4. Soft vs Old Lignified Tendril Over-Winding (`Gerbode et al. 2012` Fig. 3–4)
 In young soft tendrils (or asymmetric PDMS composite strips with $\Gamma = C/B < 1$), initial axial pulling *overwinds* the tendril ($\Delta N > 0$, increasing coil turns before unwinding at high tension) because twist energy is cheaper than bending energy ($\Gamma < 1$). In mature lignified tendrils where ectoplasmic lignification elevates torsional rigidity ($\Gamma > 1$), axial stretching monotonically unwinds the coil ($\Delta N < 0$).
 
+### 5. Pass 3 — Contact-Gated Thigmotropic Coiling around a Cylindrical Support with Coulomb Friction (`Darwin 1865` Ch. IV; `Jaffe & Galston 1968`)
+Pass 3 closes the Pass 2 remediation item ("extend the 1D Kirchhoff rod solver to simulate dynamic contact-induced thigmotropic coiling around a cylindrical trellis support with self-contact friction") in a **reduced** form. The tendril is an inertia-free discrete elastic rod advanced by an implicit (backward-Euler) incremental potential
+$$x^{k+1} = \arg\min_x \Big[ E_{\text{el}}(x) + \tfrac{\zeta\,\Delta s}{2\,\Delta t}\,|x - x^k|^2 + D_{\mu}(x - x^k) \Big],$$
+with near-inextensible stretching, bending about a **contact-gated** intrinsic curvature
+$$\kappa_{0,i}(t) = \kappa_{\text{contact}}\,\big(1 - e^{-(t - t^{\text{arrive}}_i)/\tau_{\text{thigmo}}}\big)\,[t \ge t^{\text{arrive}}_i], \qquad t^{\text{arrive}}_i = \min_j \big(t^{\text{touch}}_j + |s_i - s_j| / v_{\text{signal}}\big),$$
+pointing toward the touched flank (parallel-transported along the rod), penalty contact with a rigid cylinder of radius $R_s$, penalty self-contact between non-adjacent nodes closer than the rod diameter $2a$, and Coulomb dissipation potentials $\mu N_i^{k}\,\text{huber}(|\Delta x_{t,i}|)$ with lagged normal forces. A quasi-static axial load ramp after coiling measures the holding load $F_{\text{hold}}$, compared with the Amontons–Coulomb capacity $\mu \sum_i N_i$ and the Euler (1762) capstan gain $e^{\mu\Theta}$. Material-frame twist ($\Gamma = C/B$), circumnutation, and a measured tendril-on-wood friction coefficient are **not** included (see `residual_remediation` in the JSON). Formalised as Laws 4–5 (`thigmotropic_contact_gating`, `coulomb_grip_capacity`) in `morphoeval/lean/loops/Loop_064_tendril_perversion_intrinsic_curvature.lean`.
+
 ## Vendored Files & Provenance
 - `scout_manifest.json` — OpenAlex & Wikimedia Commons scout dossier for Slot 064.
 - `paper_citations.bib` — BibTeX records for Goriely & Tabor (1998), McMillen & Goriely (2002), Gerbode et al. (2012), and Darwin (1865).
 - `tendril_perversion_intrinsic_curvature_reference.json` — Reference parameters, tension–extension curves, soft vs old overwinding curves (`Gerbode et al. 2012` Fig. 3D), and multi-species tendril morphometrics (*Cucumis sativus*, *Passiflora caerulea*, *Bryonia dioica*, *Pisum sativum*).
 - `tendril_perversion_helix_specimen.jpg` — Coiled plant tendril specimen (*Passiflora caerulea*, Wikimedia Commons `File:Spiral tendril of Passiflora caerulea.jpg`, CC BY-SA 4.0).
+- `thigmotropic_contact_coiling_reference.json` — **Pass 3** provenance-tagged parameter table for the contact-coiling model (every value tagged `literature` / `derived` / `assumption` / `prediction`), Darwin (1865) qualitative timing window, friction and support-radius sweep grids, and the residual remediation list. SHA-256 pinned in the script.
+
+Pass 3 added BibTeX records for Jaffe & Galston (1968), Isnard & Silk (2009) and Euler (1762) to `paper_citations.bib` (DOIs not re-verified offline).

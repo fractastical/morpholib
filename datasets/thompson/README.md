@@ -118,3 +118,29 @@ Caveats: one individual per species; a collected specimen against a living fish,
 so fin posture differs (the angelfish's soft dorsal and anal lobes trail behind
 the peduncle, which no map of the parrotfish can produce); the field
 segmentation depends on the declared box and the shadow cut.
+
+## Full 791-species taxonomic scaling & four transformation families (`thompson/1917-thompson-four-families-atlas.py`)
+
+[`thompson/1917-thompson-four-families-atlas.py`](../../thompson/1917-thompson-four-families-atlas.py)
+extends the evaluation across all four of Thompson's 1917 fish transformation
+families (pp. 748–751, leaves 768–771 of `ongrowthform1917thom`: I. oblique
+shear, Figs. 373–374; II. coaxial circles, Figs. 375–376; III. fan of
+coordinates, Figs. 377–380; IV. hyperbolic/radial expansion, Figs. 381–382) and
+across 4,505 pairs spanning three evolutionary tiers:
+
+- **Intrageneric species pairs ($n = 723$, within 62 genera with $\ge 3$ species):**
+  Thompson's best 8-parameter family explains a median **48.0%** of Procrustes
+  distance variance, and **54.2%** of pairs reach the target genus's own
+  interspecific noise floor (coaxial wins 499, radial 151, fan 73).
+- **Intrafamily genus-mean pairs ($n = 292$, same family):** Thompson's best
+  family explains a median **61.2%** of variance, and **39.0%** of pairs reach
+  the within-genus noise floor. For the intra-Holocentridae oblique-shear
+  exemplar (*Sargocentron* $\to$ *Myripristis*), 5-parameter oblique shear
+  explains **45.2%** of variance and achieves genuine out-of-sample predictive
+  power (leave-one-landmark-out RMS $0.0193 < d_0 = 0.0223$).
+- **Interfamily genus-mean pairs ($n = 3,490$, across families):** Although
+  Thompson's best family explains a median **51.3%** of the much larger
+  baseline distance ($d_0 = 0.0401$), **only 0.3% (10 / 3,490) reach the
+  within-genus noise floor**, and fin insertion landmarks (LM 3–10) leave
+  residuals **$1.48\times$** larger than craniofacial landmarks (LM 1–2, 11–17).
+

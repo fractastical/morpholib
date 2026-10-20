@@ -1,0 +1,107 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix nt: <https://w3id.org/np/o/ntemplate/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub: <http://purl.org/nanopub/temp/np001/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub:Head {
+    sub: a np:Nanopublication ;
+        np:hasAssertion sub:assertion ;
+        np:hasProvenance sub:provenance ;
+        np:hasPublicationInfo sub:pubinfo .
+}
+
+sub:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-nelson-airway-mucosal-creasing> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-nelson-airway-mucosal-creasing-source-traceability> .
+    <https://w3id.org/probknow/resource/assessment/morphoeval-nelson-airway-mucosal-creasing-source-traceability> a pk:LLMClaimAssessment ;
+        rdfs:label "Wiggs et al. (1997), Li et al. (2011) & Eskandari et al. (2015) cylindrical bilayer mucosal folding, period-doubling & Poiseuille airway resistance, coupled to a Weibel (1963) bronchial-tree impedance network with Venegas (2005) flow-stretch feedback — Source and data traceability: 88/100" ;
+        dct:date "2026-10-20"^^xsd:date ;
+        dct:description "Six dataset assets are SHA-256 pinned (`EXPECTED_SHA256` L133-154) and verified fail-closed at every run (`verify_dataset_integrity` L174-187), including the new `bronchial_tree_impedance_reference.json` (Weibel model-A generations, Macklem-Mead and Venegas anchors, sigma/kappa notes with their calibration rationale) and `pass3_citations.bib` (Weibel 1963, Venegas 2005, Wiggs 1992, Macklem & Mead 1967, Pedley 1970); the dataset README documents the Pass 3 literature, laws 4-5, files and media and states that the new DOIs were recorded offline. Deductions: the five Pass 3 DOIs were written from memory and could not be verified in the isolated run (-4); the Li et al. (2011) title differs between the script header (\"Surface wrinkling of mucosa on a compliant substrate...\") and the Lean docstring / paper_citations.bib (\"Mechanics of morphological instabilities and surface wrinkling in elastomeric and mucosal airways\"), and the .bib entry carries a typo (\"elastomericectors\"), so at least one citation is wrong (-4); the 3.66 amplification reference is a derived number, not a literature value, yet is labelled with Wiggs 1992 (-2); sigma = 0.10 has no source (-2)." ;
+        dct:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-source-traceability> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/source-traceability" ;
+        pk:evidenceAgainst "datasets/airway_mucosal_creasing/paper_citations.bib L13–L16: Li et al. (2011) title disagrees with the script header for the same DOI and contains a typo <https://github.com/fractastical/morpholib/blob/8a7928d7/datasets/airway_mucosal_creasing/paper_citations.bib#L13-L16>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-nelson-airway-mucosal-creasing-source-traceability-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-nelson-airway-mucosal-creasing-source-traceability-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-nelson-airway-mucosal-creasing-source-traceability-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-nelson-airway-mucosal-creasing-source-traceability-4> ;
+        pk:hasScore "0.88"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nelson-airway-mucosal-creasing-source-traceability-1> a pk:EvidenceItem ;
+        rdfs:label "2018-nelson-airway-mucosal-creasing.py L133–L187" ;
+        dct:description "EXPECTED_SHA256 for 6 assets (2 new) and runtime verify_dataset_integrity" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/2018-nelson-airway-mucosal-creasing.py#L133-L187> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nelson-airway-mucosal-creasing-source-traceability-2> a pk:EvidenceItem ;
+        rdfs:label "datasets/airway_mucosal_creasing/bronchial_tree_impedance_reference.json L1–L100" ;
+        dct:description "Weibel geometry, small-airway share, amplification reference with derivation note, sigma/kappa defaults with calibration notes" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/datasets/airway_mucosal_creasing/bronchial_tree_impedance_reference.json#L1-L100> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nelson-airway-mucosal-creasing-source-traceability-3> a pk:EvidenceItem ;
+        rdfs:label "datasets/airway_mucosal_creasing/pass3_citations.bib L1–L60" ;
+        dct:description "Five Pass 3 references with DOIs (recorded offline, unverified)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/datasets/airway_mucosal_creasing/pass3_citations.bib#L1-L60> .
+    <https://w3id.org/probknow/resource/evidence/morphoeval-nelson-airway-mucosal-creasing-source-traceability-4> a pk:EvidenceItem ;
+        rdfs:label "datasets/airway_mucosal_creasing/README.md L49–L69" ;
+        dct:description "Pass 3 literature (marked not re-verified), vendored files and media sections" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/8a7928d7/datasets/airway_mucosal_creasing/README.md#L49-L69> .
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 068 Pass 3 Phase B Assessor)" ;
+        dct:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf <https://orcid.org/0009-0007-4948-9192> ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub:provenance {
+    sub:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/68> ;
+        prov:wasAttributedTo <https://orcid.org/0009-0007-4948-9192>,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://doi.org/10.1007/978-3-642-87553-3>,
+            <https://doi.org/10.1016/0034-5687(70)90094-0>,
+            <https://doi.org/10.1016/j.jmps.2011.01.010>,
+            <https://doi.org/10.1016/j.jtbi.2016.05.022>,
+            <https://doi.org/10.1038/nature03490>,
+            <https://doi.org/10.1115/1.4004128>,
+            <https://doi.org/10.1152/jappl.1967.22.3.395>,
+            <https://doi.org/10.1152/jappl.1997.83.6.1814>,
+            <https://doi.org/10.1164/ajrccm/145.6.1251> .
+    <https://doi.org/10.1007/978-3-642-87553-3> dct:date "1963"^^xsd:gYear ;
+        dct:title "Morphometry of the Human Lung" .
+    <https://doi.org/10.1016/0034-5687(70)90094-0> dct:date "1970"^^xsd:gYear ;
+        dct:title "The prediction of pressure drop and variation of resistance within the human bronchial airways" .
+    <https://doi.org/10.1016/j.jmps.2011.01.010> dct:date "2011"^^xsd:gYear ;
+        dct:title "Surface wrinkling of mucosa on a compliant substrate in cylindrical tubes and bronchial airways" .
+    <https://doi.org/10.1016/j.jtbi.2016.05.022> dct:date "2015"^^xsd:gYear ;
+        dct:title "Patient-specific airway wall remodeling in chronic bronchitis and asthma: cylindrical morphoelasticity of mucosal folding" .
+    <https://doi.org/10.1038/nature03490> dct:date "2005"^^xsd:gYear ;
+        dct:title "Self-organized patchiness in asthma as a prelude to catastrophic shifts" .
+    <https://doi.org/10.1115/1.4004128> dct:date "2011"^^xsd:gYear ;
+        dct:title "Creases in soft tissues generated by growth" .
+    <https://doi.org/10.1152/jappl.1967.22.3.395> dct:date "1967"^^xsd:gYear ;
+        dct:title "Resistance of central and peripheral airways measured by a retrograde catheter" .
+    <https://doi.org/10.1152/jappl.1997.83.6.1814> dct:date "1997"^^xsd:gYear ;
+        dct:title "A model of airway narrowing due to smooth muscle shortening" .
+    <https://doi.org/10.1164/ajrccm/145.6.1251> dct:date "1992"^^xsd:gYear ;
+        dct:title "A model of airway narrowing in asthma and in chronic obstructive pulmonary disease" .
+}
+
+sub:pubinfo {
+    sub: rdfs:label "Wiggs et al. (1997), Li et al. (2011) & Eskandari et al. (2015) cylindrical bilayer mucosal folding, period-doubling & Poiseuille airway resistance, coupled to a Weibel (1963) bronchial-tree impedance network with Venegas (2005) flow-stretch feedback — Source and data traceability 88/100" ;
+        dct:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dct:created "2026-10-20T19:52:28Z"^^xsd:dateTime ;
+        dct:creator <https://orcid.org/0009-0007-4948-9192> ;
+        dct:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-nelson-airway-mucosal-creasing-source-traceability> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/68> ;
+        nt:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        nt:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        nt:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+}

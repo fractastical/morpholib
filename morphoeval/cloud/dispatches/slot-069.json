@@ -10,5 +10,93 @@
   "pass2_score": 93.3,
   "delta": 37.1,
   "lean_theorems": 5,
-  "signed_nanopubs": 20
+  "signed_nanopubs": 20,
+  "pass3_status": "completed",
+  "pass3_run_id": "2026-10-19-epithelioid-cyst-buckling-loop-pass3",
+  "pass3_supersedes_audit": "2026-10-19-epithelioid-cyst-buckling-audit-v2",
+  "pass3_audit_id": "2026-10-19-epithelioid-cyst-buckling-audit-v3",
+  "pass3_score": 75.4,
+  "pass3_delta_vs_pass2": -17.9,
+  "pass3_dims": {
+    "model-fidelity": 76,
+    "specimen-match": 62,
+    "parameter-expressivity": 84,
+    "morphometric-validation": 68,
+    "source-traceability": 86,
+    "code-traceability": 84,
+    "repro-package": 90
+  },
+  "pass2_dims": {
+    "model-fidelity": 93,
+    "specimen-match": 90,
+    "parameter-expressivity": 93,
+    "morphometric-validation": 94,
+    "source-traceability": 96,
+    "code-traceability": 95,
+    "repro-package": 94
+  },
+  "pass3_score_note": "Score goes DOWN although the v2 remediation item is closed: the new free 3D solver exposed that the 2D ring which carried the v2 scores is a prescribed profile (hard-wired mode, fitted depth law, rescaled L-BFGS-B output), that the 3D WT fold pattern is mesh-templated (12 folds vs 1 observed, delta/R0 0.30 vs 0.64), that dGamma_WT is calibrated, and that the specimen is a thyroid follicle whose circularity (0.848) v2 misreported as 0.654.",
+  "pass3_completed_at": "2026-10-20T19:57:30Z",
+  "pass3_checkpoint_commit": "8a7928d7",
+  "pass3_nanopubs_signed": 10,
+  "pass3_nanopubs_verified": 10,
+  "pass3_published": false,
+  "pass3_remediation_items_closed": [
+    "3D triangulated vertex shell with apical-basal differential tension (solve_confined_cyst_shell3d; reduced-but-honest: continuum spring/Helfrich shell, not a cell-level apical/basal/lateral vertex model)"
+  ],
+  "pass3_remediation_closed": [
+    "v2 item 1 — Extend the 2D equatorial FvK ring solver to a full 3D triangulated vertex shell with apical-basal differential tension: solve_confined_cyst_shell3d (2019-trushko-epithelioid-cyst-buckling.py L506-718), compute_apicobasal_spontaneous_curvature (L476-484), evaluate_shell3d_regimes (L727-795), evaluate_apicobasal_tension_sweep (L798-837), render_shell3d_figure/gif (L1107-1229), 9 new measurements (L1248-1348), self-test section 5 (L1505-1543), Lean Laws 4-5."
+  ],
+  "pass3_remediation_open": [
+    "L201-212 & 248-251: 2D ring is a prescribed profile (hard-wired fold mode, fitted depth law, rescaled L-BFGS-B result) — replace with a free FvK ring minimiser or relabel as a calibrated empirical profile.",
+    "L421-460 & 487-503: WT 12-fold pattern coincides with the 12 five-valent icosphere vertices (mesh-templated) — add a defect-free/random mesh and a subdivision-4 convergence check; sweep fold thresholds 0.35/0.04.",
+    "L562-563 & 613-616: Winkler wall as soft as the sheet (k_conf ~ 1.2 Y_2D/R0) — fold depth 0.30 vs 0.64, dilation 21 % vs a few %, stiff 68 kPa capsule does not fold; resolve displacement-controlled vs dead-load threshold and reconcile E_alg = 5 kPa with Alessandri 2013.",
+    "L586-589 vs L156-285: growth-convention inconsistency (3D sqrt(g) vs ring linear g) — put both solvers on one convention.",
+    "L1368-1420 & 1440-1458: hard-coded p_value/stddev literals — compute or null them.",
+    "specimen jpg & L1436-1460: thyroid-follicle H&E, circularity 0.848 vs 0.650 'Trushko' reference — vendor an MDCK-cyst-in-capsule micrograph or relabel.",
+    "L1306-1316 & shell3d_apicobasal_reference.json: dGamma_WT = 4.26 mN/m calibrated to H0 R0 = 1 and reported as a measurement — mark as calibration or source it.",
+    "L984-990: panel-D phase diagram is a closed form not produced by any solver — compute from the 3D shell or label as a sketch."
+  ],
+  "pass3_lean_theorems_added": [
+    "MathOfBiology.Loop_069.apicobasal_spontaneous_curvature_minimizer",
+    "MathOfBiology.Loop_069.inverted_cap_penalty_and_capsule_wall_contact"
+  ],
+  "pass3_lean_helper_lemmas_added": [
+    "MathOfBiology.Loop_069.int_mul_self_nonneg",
+    "MathOfBiology.Loop_069.apicobasal_bending_completed_square"
+  ],
+  "lean_theorems_total": 7,
+  "pass3_lean_verified": true,
+  "pass3_self_test": "PASSED",
+  "pass3_new_files": [
+    "datasets/epithelioid_cyst_buckling/shell3d_apicobasal_reference.json",
+    "datasets/epithelioid_cyst_buckling/pass3_citations.bib",
+    "docs/media/epithelioid_cyst_buckling_shell3d_apicobasal.png",
+    "docs/media/epithelioid_cyst_buckling_shell3d_growth.gif"
+  ],
+  "pass3_artifacts": [
+    "2019-trushko-epithelioid-cyst-buckling.py",
+    "morphoeval/lean/loops/Loop_069_epithelioid_cyst_buckling.lean",
+    "morphoeval/math_kg_loops/trushko-epithelioid-cyst-buckling.yaml",
+    "datasets/epithelioid_cyst_buckling/README.md",
+    "datasets/epithelioid_cyst_buckling/shell3d_apicobasal_reference.json",
+    "datasets/epithelioid_cyst_buckling/pass3_citations.bib",
+    "docs/media/epithelioid_cyst_buckling_comparison.png",
+    "docs/media/epithelioid_cyst_buckling_growth.gif",
+    "docs/media/epithelioid_cyst_buckling_shell3d_apicobasal.png",
+    "docs/media/epithelioid_cyst_buckling_shell3d_growth.gif",
+    "docs/media/epithelioid_cyst_buckling_telemetry_pass3.png",
+    "morphoeval/audits/2026-10-19-epithelioid-cyst-buckling-audit-v3.yaml",
+    "morphoeval/audits/2026-10-19-epithelioid-cyst-buckling-audit-v3.measurements.yaml",
+    "morphoeval/kg/2026-10-19-epithelioid-cyst-buckling-audit-v3/",
+    "morphoeval/runs/2026-10-19-epithelioid-cyst-buckling-loop-pass3.yaml",
+    "morphoeval/runs/2026-10-19-epithelioid-cyst-buckling-loop-pass3.csv",
+    "morphoeval/runs/2026-10-19-epithelioid-cyst-buckling-loop-pass3.md",
+    "morphoeval/runs/2026-10-19-epithelioid-cyst-buckling-loop-pass3.trig",
+    "morphoeval/runs/2026-10-19-epithelioid-cyst-buckling-loop-pass3.events.jsonl",
+    "morphoeval/runs/2026-10-19-epithelioid-cyst-buckling-loop-pass3.ledger.jsonl",
+    "morphoeval/cloud/dispatches/slot-069.json"
+  ],
+  "pass3_handoff_note": "/tmp/pass3/handoff/slot-069.md",
+  "pass3_phase_b_pending": []
 }

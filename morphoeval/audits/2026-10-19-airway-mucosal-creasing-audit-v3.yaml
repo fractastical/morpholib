@@ -1,0 +1,387 @@
+# MorphoEval audit — Wiggs et al. (1997) J. Appl. Physiol., Li et al. (2011) JMPS, Jin et al. (2011) JAM, Eskandari et al. (2015) JTB
+# Cylindrical Airway Mucosal Folding & Creasing + Pass 3 Weibel bronchial-tree impedance network, 2026-10-20 (v3)
+#
+# Pass 3 re-score of `2018-nelson-airway-mucosal-creasing.py` (now 1921 lines; 795 at v2) after Phase A of the
+# instrumented loop `morphoeval/runs/2026-10-19-airway-mucosal-creasing-loop-pass3`, superseding
+# `2026-10-19-airway-mucosal-creasing-audit-v2` (93.4, Gemini 4 Argon).
+#   - Primary assessor: Claude Fable 5.1 (Pass 3 Phase B subagent), scoring against commit 8a7928d7 with access to
+#     the Phase A handoff note, `git diff`, the v2 audit and the current files; no network (DOIs not re-verified).
+#
+# What Pass 3 changed (the single open v2 remediation item):
+#   1. The 1D circumferential bilayer ring law is now coupled to a 3D symmetric dichotomous Weibel (1963) model-A
+#      bronchial tree (G0-G12, 8191 branches) solved as an exact series-parallel Poiseuille impedance network
+#      (`build_weibel_tree` L734-785, `solve_tree_impedance` L794-823; flow conservation error <= 3e-16). Each branch
+#      carries its own ASM strain (log-normal, sigma = 0.10), its own m* from `compute_cylindrical_wavenumber`, a
+#      closed-form lumen-area fraction (`lumen_area_fraction_vectorized` L263-276) and R_i = R_i^Pois (A_0/A_i)^2;
+#      a saturating one-sided Venegas (2005) flow-stretch feedback (kappa = 0.2) is iterated to a fixed point
+#      (`simulate_heterogeneous_bronchospasm` L852-1009). Headline: homogeneous tree / single-airway identity
+#      1.000000; heterogeneous ventilation-defect fraction healthy 0.045 / bronchitis 0.107 / asthma 0.350 (Venegas
+#      PET ~0.30); kappa sweep (`evaluate_tree_ventilation_sweep` L1012-1052); 3 new figure panels G/H/I, a new
+#      tree-ventilation GIF, 2 new SHA-256-pinned dataset files, 6 new measurements (15 total), 6 new self-test
+#      checks (14 total) and 2 new Lean 4 theorems (5 total, 0 sorrys).
+#
+# Why the overall score goes DOWN (93.4 -> 84.3) although the remediation item is closed: re-reading the ring
+# solver for this round shows that the Pass 2 phenotype outputs were scored as if simulated when they are mostly
+# prescribed — `relax_cylindrical_mucosal_ring` blends a_norm = 0.88*target + 0.12*computed (L436-438) and
+# pd_sim = 0.85*pd_obs + 0.15*FFT (L430) whenever the reference values are passed in (which is the default,
+# `evaluate_clinical_phenotypes` L516-517), the plotted lumen profile is 75 % analytic template + 25 % minimiser
+# output (L420), the ASM constriction curves and growth GIF use the same 0.85/0.15 blend (L627-632, L1452-1457),
+# and the specimen comparison is self-referential (reference 13 folds / 0.40 circularity are the specimen's own
+# values). None of this is new code, but it was not penalised in v2; it is penalised here on model-fidelity,
+# specimen-match, morphometric-validation and code-traceability. The genuinely simulated parts (wavenumber law,
+# Poiseuille law, the whole tree network) are credited.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale. Line numbers refer to the files
+# in the working tree at commit 8a7928d7 (uncommitted Pass 3 edits, as instrumented in the pass3 run ledger).
+
+audit:
+  id: 2026-10-19-airway-mucosal-creasing-audit-v3
+  supersedes: 2026-10-19-airway-mucosal-creasing-audit-v2
+  supersedes_audit_id: 2026-10-19-airway-mucosal-creasing-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 068 Pass 3 Phase B Assessor)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 2 assessor of the superseded audit 2026-10-19-airway-mucosal-creasing-audit-v2; not re-run in Pass 3)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/68
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 8a7928d7
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) evaluation of `2018-nelson-airway-mucosal-creasing.py` (1921 lines, 14 self-test checks,
+      15 measurements) after Phase A remediation in `2026-10-19-airway-mucosal-creasing-loop-pass3`
+      (steps 5-6). The Pass 3 edits to the script, the Lean module, the math-KG YAML, the dataset
+      directory and the media are present in the working tree on top of 8a7928d7 (not yet committed,
+      per the campaign's zero-conflict file-isolation rule).
+
+references:
+  wiggs1997:
+    title: "A model of airway narrowing due to smooth muscle shortening"
+    authors: "Wiggs BR, Hrousis CA, Drazen JM, Kamm RD"
+    venue: "Journal of Applied Physiology 83(6):1814-1821 (1997)"
+    doi: 10.1152/jappl.1997.83.6.1814
+  li2011:
+    title: "Surface wrinkling of mucosa on a compliant substrate in cylindrical tubes and bronchial airways"
+    authors: "Li B, Cao Y-P, Feng X-Q, Gao H"
+    venue: "Journal of the Mechanics and Physics of Solids 59(4):758-774 (2011)"
+    doi: 10.1016/j.jmps.2011.01.010
+    note: "Title as given in the script header; the Lean docstring and paper_citations.bib carry a different title for the same DOI (see remediation). Not re-verified offline."
+  jin2011:
+    title: "Creases in soft tissues generated by growth"
+    authors: "Jin L, Auguste A, Hayward RC, Suo Z"
+    venue: "Journal of Applied Mechanics 78(3):031009 (2011)"
+    doi: 10.1115/1.4004128
+  eskandari2015:
+    title: "Patient-specific airway wall remodeling in chronic bronchitis and asthma: cylindrical morphoelasticity of mucosal folding"
+    authors: "Eskandari M, Pfaller MR, Kuhl E"
+    venue: "Journal of Theoretical Biology 403:209-218 (2015)"
+    doi: 10.1016/j.jtbi.2016.05.022
+  weibel1963:
+    title: "Morphometry of the Human Lung"
+    authors: "Weibel ER"
+    venue: "Springer, Berlin/Heidelberg (1963)"
+    doi: 10.1007/978-3-642-87553-3
+    note: "DOI recorded from memory during the isolated run; not verified offline."
+  venegas2005:
+    title: "Self-organized patchiness in asthma as a prelude to catastrophic shifts"
+    authors: "Venegas JG, Winkler T, Musch G, Vidal Melo MF, Layfield D, Tgavalekos N, Fischman AJ, Callahan RJ, Bellardine C, Harris RS"
+    venue: "Nature 434:777-782 (2005)"
+    doi: 10.1038/nature03490
+    note: "DOI recorded from memory during the isolated run; not verified offline."
+  wiggs1992:
+    title: "A model of airway narrowing in asthma and in chronic obstructive pulmonary disease"
+    authors: "Wiggs BR, Bosken C, Paré PD, James A, Hogg JC"
+    venue: "American Review of Respiratory Disease 145(6):1251-1258 (1992)"
+    doi: 10.1164/ajrccm/145.6.1251
+    note: "DOI recorded from memory during the isolated run; not verified offline."
+  macklem1967:
+    title: "Resistance of central and peripheral airways measured by a retrograde catheter"
+    authors: "Macklem PT, Mead J"
+    venue: "Journal of Applied Physiology 22(3):395-401 (1967)"
+    doi: 10.1152/jappl.1967.22.3.395
+    note: "DOI recorded from memory during the isolated run; not verified offline."
+  pedley1970:
+    title: "The prediction of pressure drop and variation of resistance within the human bronchial airways"
+    authors: "Pedley TJ, Schroter RC, Sudlow MF"
+    venue: "Respiration Physiology 9(3):387-405 (1970)"
+    doi: 10.1016/0034-5687(70)90094-0
+    note: "Cited as a limitation only (entrance-flow correction not implemented). DOI not verified offline."
+
+simulations:
+  - id: nelson-airway-mucosal-creasing
+    name: "Wiggs et al. (1997), Li et al. (2011) & Eskandari et al. (2015) cylindrical bilayer mucosal folding, period-doubling & Poiseuille airway resistance, coupled to a Weibel (1963) bronchial-tree impedance network with Venegas (2005) flow-stretch feedback"
+    organism: "Mammalian bronchial airway mucosa & submucosa (Bos taurus, Homo sapiens, Ovis aries); human Weibel model-A conducting tree"
+    script: 2018-nelson-airway-mucosal-creasing.py
+    output: docs/media/airway_mucosal_creasing_comparison.png
+    extra_outputs:
+      - docs/media/airway_mucosal_creasing_growth.gif
+      - docs/media/airway_mucosal_creasing_tree_ventilation.gif
+    status: evaluated
+    source_refs: [wiggs1997, li2011, jin2011, eskandari2015, weibel1963, venegas2005, wiggs1992, macklem1967, pedley1970]
+    supersedes_audit_id: 2026-10-19-airway-mucosal-creasing-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Wiggs et al. (1997): mucosal folding of a thin stiff epithelium on a compliant submucosa under ASM shortening; folded lumen area and Hagen-Poiseuille resistance amplification (~4.5x normal, >15x in severe asthma)"
+        - "Li et al. (2011) / Eskandari et al. (2015): cylindrical bilayer circumferential mode selection m* ~ (R_0/h_m)(3 mu_s/mu_m)^(1/3), inverse mucosal-thickness scaling, period-doubling and creasing with growth"
+        - "Jin et al. (2011): creases in growing soft tissue (sulcal self-contact)"
+        - "Weibel (1963): symmetric dichotomous model-A geometry (generation-wise diameters and lengths) of the human conducting airways"
+        - "Venegas et al. (2005): PET ventilation defects in bronchoconstricted asthmatics are patchy and self-organised (~30 % of lung volume) via a flow-stretch feedback on airway smooth muscle on a bifurcating tree"
+        - "Macklem & Mead (1967): airways < 2 mm contribute only ~10-20 % of total airway resistance"
+      reconstructed_in_script:
+        - "Cylindrical bilayer wavenumber law with a fitted finite-thickness factor and wall-coupling term; inextensible-perimeter lumen-area occlusion with a closed-form period-doubling ratio; Hagen-Poiseuille (A_0/A)^2 amplification"
+        - "An L-BFGS-B ring energy relaxation that is used for the lumen profile only in part (75 % analytic template + 25 % minimiser) and whose A/A_0 and period-doubling outputs are 88 %/85 % the passed-in reference values by default"
+        - "12-point three-species wavenumber collapse against a vendored table; polar star-contour segmentation of one SHA-256-pinned bronchiole micrograph"
+        - "Weibel G0-G12 tree built from a SHA-256-pinned JSON, exact bottom-up series-parallel subtree impedance and top-down flow split, per-branch log-normal ASM strain, generation-independent h_m/R_0 and m*, saturating one-sided Venegas feedback under-relaxed to a fixed point, defect fraction / ventilation CV / run-length clustering / whole-tree resistance ratio, kappa x phenotype x seed sweep, analytic Weibel G0-G16 small-airway resistance share"
+      transfer_boundary:
+        - "The tree is a rigid laminar Poiseuille network: no Pedley (1970) entrance-flow correction, wall compliance, inertance or upper-airway resistance, so the pure-Poiseuille small-airway share (0.43) is 2-4x the measured Macklem & Mead (1967) 0.10-0.20 and is reported as a known limitation"
+        - "sigma = 0.10 is assumed (no offline measurement); kappa = 0.2 is the largest value of a coarse grid keeping the healthy tree below 5 % defects, so only the asthma and bronchitis defect fractions are predictions"
+        - "The 3D coordinates of the tree (35 deg half-angle, 90 deg plane rotation per generation) are for rendering only and do not enter the impedance network"
+      does_not_claim:
+        - "A finite-element solution of the cylindrical bilayer, Horsfield asymmetric geometry, acinar tissue-stretch coupling, gas-exchange or pressure-volume dynamics, a quantitative reproduction of Venegas et al. (2005) PET images, or a validated pressure-controlled (fixed driving pressure) mode"
+    summary: >-
+      Pass 3 (v3) evaluation of `2018-nelson-airway-mucosal-creasing.py` (overall weighted score 84.3/100; v2 was
+      93.4/100). The one open v2 item — couple the 1D ring law to a 3D bronchial-tree impedance network and
+      simulate heterogeneous ventilation defects — is closed: a Weibel G0-G12 tree (8191 branches) is solved as an
+      exact series-parallel Poiseuille network with per-branch log-normal ASM strain, the ring's closed-form lumen-
+      area law and a saturating Venegas flow-stretch feedback iterated to a fixed point; the homogeneous tree
+      reproduces the single-airway resistance ratio to 1e-9, heterogeneous bronchospasm gives a 0.350 ventilation-
+      defect fraction for Severe Asthma (Venegas PET ~0.30) against 0.045 for the healthy control at identical
+      sigma/kappa, and the mechanism is backed by two new machine-checked Lean 4 theorems (5 total, 0 sorrys). The
+      score nevertheless falls because the audit now accounts for what the v2 audit overlooked: the four phenotype
+      A/A_0, R_flow/R_0 and period-doubling values, the ASM constriction curves and the growth GIF are 85-88 %
+      prescribed from the reference table by explicit blending (L430, L436-438, L627-632, L1452-1457), the plotted
+      rosette profile is 75 % analytic template (L420), several constants in the wavenumber law and ring energy are
+      unsourced fits, and the specimen comparison compares the specimen to itself. The tree work is honest about its
+      limitations (Poiseuille-only small-airway share 0.43 vs 0.10-0.20; asthma/healthy tree amplification 2.80 vs a
+      weak 3.66 reference built from a different single-airway source).
+    scores:
+      model-fidelity:
+        value: 80
+        rationale: >-
+          Credited: the cylindrical bilayer wavenumber law m* = c_cyl (R_0/h_m)(3 mu_s/mu_m)^(1/3) (L204-223), the
+          inextensible-perimeter lumen-area occlusion and Hagen-Poiseuille (A_0/A)^2 law (L225-243) and its
+          vectorised twin shared with the tree (L245-276), and the new tree: Weibel model-A geometry (L734-785),
+          R = 8 eta L / (pi r^4) (L787-791), exact bottom-up series-parallel impedance with top-down flow split
+          (L794-823, conservation error <= 3e-16, homogeneous identity to 1e-9), per-branch m* and area fraction,
+          saturating Venegas feedback with under-relaxed fixed-point iteration (L852-1009) and the analytic
+          small-airway share (L826-850). Five Lean 4 theorems formalise the scaling, occlusion, Poiseuille,
+          bifurcation-scaling and feedback-monotonicity laws. Deductions: the ring minimiser's headline outputs are
+          prescribed — a_norm = 0.88 target + 0.12 computed (L436-438) and pd_sim = 0.85 pd_obs + 0.15 FFT (L430)
+          whenever reference values are passed, which is the default (L516-517) — so the phenotype A/A_0 = 0.253
+          and R_flow/R_0 = 15.65 are not solutions of the stated energy (-8); the plotted profile is 75 % analytic
+          template + 25 % minimiser (L420) and the spectral operator / energy weights (L366-371 and the 1.60, 0.35,
+          2.20, 0.68, 1.35, 0.32 coefficients) are unsourced tuning (-4); wall_coupling = (1+0.0085 h_m)^-0.5,
+          C_CYL_CURVATURE = 0.7110 and epsilon_c = 0.25 (3 mu_s/mu_m)^(2/3) (L130, L217, L221) are fitted to the
+          12-point table rather than derived (-3); the tree is Poiseuille-only with generation-independent h_m/R_0
+          and m*, no Pedley correction, compliance or cartilage limit, and the 0.12 area floor inherited by
+          `lumen_area_fraction_vectorized` saturates closed branches at 69x so the asthma defect fraction
+          non-monotonically drops from 0.35 to 0.30 between eps = 0.28 and 0.34 in the tree GIF (-5).
+        evidence:
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [204, 276], note: "Wavenumber law, inextensible-perimeter occlusion, Hagen-Poiseuille amplification, closed-form period-doubling ratio and the vectorised area law shared by ring and tree", supports: true}
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [734, 850], note: "Weibel G0-G12 tree, branch Poiseuille resistance, exact series-parallel impedance + flow split, analytic small-airway share", supports: true}
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [852, 1052], note: "Heterogeneous bronchospasm with log-normal ASM strain, per-branch m*, saturating Venegas feedback fixed point, defect/clustering metrics and kappa sweep", supports: true}
+          - {file: morphoeval/lean/loops/Loop_068_airway_mucosal_creasing.lean, lines: [124, 175], note: "New Law 4 bifurcation_resistance_homogeneous_scaling and Law 5 venegas_feedback_strain_monotone (lean exits 0, 0 sorrys)", supports: true}
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [426, 440], note: "pd_sim = 0.85*pd_ratio(observed) + 0.15*FFT and a_norm = 0.88*target_a_norm + 0.12*a_calc: phenotype outputs are prescribed, not relaxed", supports: false}
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [416, 421], note: "u_combined = 0.75*(analytic base_wave + sulcus_cusp) + 0.25*u_rel: plotted rosette is mostly template", supports: false}
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [215, 222], note: "wall_coupling 0.0085 and epsilon_c prefactor 0.25 are unsourced fitted constants", supports: false}
+      specimen-match:
+        value: 82
+        rationale: >-
+          The 3x3 synthesis figure is regenerated and inspected: Panel E overlays the segmented 13-fold luminal
+          star on the SHA-256-pinned H&E bronchiole micrograph; the four rosettes (relaxed circle, 13-fold healthy,
+          8-fold period-doubled bronchitis, 4-5-fold creased asthma) read as the clinical sequence described by
+          Wiggs/Eskandari; new Panel G renders the 3D Weibel tree coloured by per-branch ventilation with the
+          asthmatic defects visibly concentrated in subtrees, Panel H the kappa sweep and Panel I the ventilation
+          histograms; the tree-ventilation GIF (6 frames) shows defects growing with eps_mean. Deductions: the
+          specimen comparison is self-referential — the "reference" 13 folds and 0.40 circularity are the specimen's
+          own values re-entered in the reference table, and there is no scale bar or um calibration, so the
+          specimen constrains only the fold count by inspection (-8); the rosette outlines that are compared to
+          the specimen are 75 % analytic template with reference-blended area (L420, L436-438), so their resemblance
+          is partly built in (-5); the tree defect clustering is only 1.25x the Bernoulli expectation, weaker than
+          the large contiguous Venegas defects, and no PET-like projection is attempted (-3); the specimen is a
+          single healthy muscular bronchiole, so bronchitis and asthma rosettes have no specimen counterpart (-2).
+        evidence:
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [641, 721], note: "Polar star-contour segmentation of the pinned micrograph: m_obs = 13, circularity 0.3981", supports: true}
+          - {file: docs/media/airway_mucosal_creasing_comparison.png, lines: [0, 0], note: "9-panel figure: rosettes A-D, specimen overlay E, collapse/constriction F, 3D tree ventilation G, kappa sweep H, ventilation histograms I", supports: true}
+          - {file: docs/media/airway_mucosal_creasing_tree_ventilation.gif, lines: [0, 0], note: "6-frame tree ventilation animation over eps_mean; defects appear in contiguous subtrees but asthma VDef dips at eps = 0.34 (area-floor saturation)", supports: true}
+          - {file: docs/media/airway_mucosal_creasing_growth.gif, lines: [0, 0], note: "Healthy vs asthma rosette growth animation over ASM strain; its A/A_0 trajectory is 0.85 reference + 0.15 simulated (L1452-1457)", supports: false}
+          - {file: datasets/airway_mucosal_creasing/airway_mucosal_creasing_reference.json, lines: [1, 213], note: "Specimen reference fold count 13 and circularity 0.40 are the same specimen's values (self-referential comparison)", supports: false}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Spans 4 clinical phenotypes (L491-546), the 12-airway three-species table (L548-609), 6 ASM constriction
+          levels (L612-635), and now a tree depth parameter (G0-G16), the log-normal dispersion sigma, the feedback
+          gain kappa (10-value sweep x 3 phenotypes x 3 seeds, L1012-1052) and a fixed-tidal-volume vs
+          pressure-controlled normalisation. CLI exposes --epsilon-theta, --hm-scale, --mu-ratio-scale, --seed,
+          --tree-generations, --sigma, --kappa, --pressure-controlled, --skip-gif, --skip-tree-gif (L1876-1886)
+          and all are wired (verified by the Phase A off-repo render with non-default values). Deductions:
+          --hm-scale and --mu-ratio-scale act only on the ring phenotypes while the tree reads its thickness from
+          the dataset phenotype, and --epsilon-theta is applied to the tree only as eps_mean (L1131), so the ring
+          and tree morphospaces are not driven by one parameter set (-5); kappa_critical (first kappa with VDef > 5 %)
+          is 0.0 for all phenotypes because sigma alone already produces 14 % asthma defects, so that sweep summary
+          is uninformative (-3); when any CLI override is given the reference blending is switched off (L516-517),
+          so default and override runs are not on the same model (-2).
+        evidence:
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [491, 635], note: "4 phenotypes, 12-point 3-species collapse and 6-point ASM constriction curves", supports: true}
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [1012, 1052], note: "evaluate_tree_ventilation_sweep: kappa grid x phenotypes x seeds with kappa_critical", supports: true}
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [1874, 1917], note: "CLI: --epsilon-theta, --hm-scale, --mu-ratio-scale, --seed, --tree-generations, --sigma, --kappa, --pressure-controlled, --skip-gif, --skip-tree-gif", supports: true}
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [1128, 1133], note: "Tree receives only eps_mean from the overrides; --hm-scale/--mu-ratio-scale do not reach the tree", supports: false}
+      morphometric-validation:
+        value: 80
+        rationale: >-
+          `measure_morphoeval()` (L1606-1776) returns 15 reference-anchored measurements, 6 new: homogeneous tree /
+          single-airway identity 1.000000 (ref 1.0), Weibel pure-Poiseuille small-airway share 0.4291 (analytic ref
+          0.43; Macklem-Mead 0.10-0.20 stated), Severe Asthma heterogeneous VDef 0.3503 (Venegas ~0.30, range
+          0.20-0.40), Healthy VDef 0.0449 at identical sigma/kappa (ref 0.0), asthma/healthy whole-tree amplification
+          2.80 (ref 3.66) and defect run-length clustering 1.25 (null 1.0); the Pass 2 collapse statistics (r = 0.9986,
+          p = 8.9e-14, alpha = -1.04 ± 0.02), the three m* values and the specimen metrics remain. Deductions: the
+          phenotype A/A_0, R_flow/R_0 (15.65 vs 16.52) and period-doubling measurements are 85-88 % the reference
+          value by construction (L430, L436-438), so their agreement is not a validation (-8); the 2.80 vs 3.66
+          amplification measurement mixes two single-airway sources (the reference table's 16.52/4.51 vs the
+          closed-form law's 11.77/4.72 = 2.49 that the tree actually uses), so the stated "above the lower bound"
+          claim holds only relative to 2.49 and the printed reference is weak (L1756-1765) (-4); the 12-point
+          collapse r is partly circular because the table's m_obs values are largely model-derived and the law's
+          constants were fitted to the same table (-4); the specimen fold count and circularity are compared to
+          themselves (-2); the Venegas comparison is to a single scalar (defect volume fraction) with no PET-image
+          morphometric and sigma is assumed (-2).
+        evidence:
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [1606, 1776], note: "15 measurements, each with value, unit, method, reference_value and reference_source; 6 new tree metrics", supports: true}
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [1584, 1603], note: "evaluate_tree_headline: homogeneous identity, heterogeneous VDef per phenotype, no-feedback control, small-airway share", supports: true}
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [1756, 1765], note: "Asthma/healthy tree amplification 2.80 compared to 3.66 = 16.52/4.51 from a different single-airway source than the tree's own law (2.49)", supports: false}
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [612, 635], note: "sim_*_A_norm / sim_*_R_flow = 0.85*reference + 0.15*simulated feeding Panel C and the constriction-curve comparison", supports: false}
+      source-traceability:
+        value: 88
+        rationale: >-
+          Six dataset assets are SHA-256 pinned (`EXPECTED_SHA256` L133-154) and verified fail-closed at every
+          run (`verify_dataset_integrity` L174-187), including the new `bronchial_tree_impedance_reference.json`
+          (Weibel model-A generations, Macklem-Mead and Venegas anchors, sigma/kappa notes with their calibration
+          rationale) and `pass3_citations.bib` (Weibel 1963, Venegas 2005, Wiggs 1992, Macklem & Mead 1967, Pedley
+          1970); the dataset README documents the Pass 3 literature, laws 4-5, files and media and states that the
+          new DOIs were recorded offline. Deductions: the five Pass 3 DOIs were written from memory and could not be
+          verified in the isolated run (-4); the Li et al. (2011) title differs between the script header
+          ("Surface wrinkling of mucosa on a compliant substrate...") and the Lean docstring / paper_citations.bib
+          ("Mechanics of morphological instabilities and surface wrinkling in elastomeric and mucosal airways"),
+          and the .bib entry carries a typo ("elastomericectors"), so at least one citation is wrong (-4); the
+          3.66 amplification reference is a derived number, not a literature value, yet is labelled with Wiggs 1992
+          (-2); sigma = 0.10 has no source (-2).
+        evidence:
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [133, 187], note: "EXPECTED_SHA256 for 6 assets (2 new) and runtime verify_dataset_integrity", supports: true}
+          - {file: datasets/airway_mucosal_creasing/bronchial_tree_impedance_reference.json, lines: [1, 100], note: "Weibel geometry, small-airway share, amplification reference with derivation note, sigma/kappa defaults with calibration notes", supports: true}
+          - {file: datasets/airway_mucosal_creasing/pass3_citations.bib, lines: [1, 60], note: "Five Pass 3 references with DOIs (recorded offline, unverified)", supports: true}
+          - {file: datasets/airway_mucosal_creasing/README.md, lines: [49, 69], note: "Pass 3 literature (marked not re-verified), vendored files and media sections", supports: true}
+          - {file: datasets/airway_mucosal_creasing/paper_citations.bib, lines: [13, 16], note: "Li et al. (2011) title disagrees with the script header for the same DOI and contains a typo", supports: false}
+      code-traceability:
+        value: 85
+        rationale: >-
+          The module header (L1-90) maps each law to its paper and to the five Lean theorems, every new tree
+          function carries a docstring naming its source (Weibel 1963 model A, Poiseuille, Venegas 2005 feedback,
+          Macklem & Mead 1967 for the small-airway check), the math-KG registration
+          (`morphoeval/math_kg_loops/nelson-airway-mucosal-creasing.yaml`) lists 5 equations with single-range
+          `code_locus` / `lean_locus` pins that match the current file, and the 14 self-test checks are numbered and
+          commented against the laws. Deductions: the blending weights 0.88/0.12, 0.85/0.15 and 0.75/0.25 (L420,
+          L430, L437, L627-632) are not explained anywhere as reference prescription, so a reader of the
+          "L-BFGS-B relaxation" docstring is misled about what is computed (-7); the spectral-operator and energy
+          coefficients (L366-371 and the surrounding weights) and the constants 0.0085, 0.7110, 0.25 (L130, L217,
+          L221) have no derivation or citation (-4); the Li 2011 title inconsistency between header and Lean
+          docstring (-2); the seed-paper author list in the v2 audit header ("Auguste,imba") is a pre-existing
+          documentation defect carried in the campaign prompt (-2).
+        evidence:
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [1, 90], note: "Header maps laws 1-5 to Wiggs 1997, Li 2011, Jin 2011, Eskandari 2015, Weibel 1963, Venegas 2005 and the Lean theorems", supports: true}
+          - {file: morphoeval/math_kg_loops/nelson-airway-mucosal-creasing.yaml, lines: [1, 115], note: "5 equations with code_locus (single file#La-Lb ranges) and lean_locus pins matching the current script and Lean file", supports: true}
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [366, 371], note: "Spectral operator weights 0.25/0.75 and surrounding energy coefficients have no citation", supports: false}
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [436, 438], note: "Reference blending is uncommented as such; docstring presents the function as an energy relaxation", supports: false}
+      repro-package:
+        value: 93
+        rationale: >-
+          `--self-test` passes 14 checks in ~6 s (8 Pass 2 + 6 tree checks: Weibel/JSON parity and small-airway
+          share, homogeneous identity to 1e-9 with flow conservation, relaxed-tree unit amplification, asthma >
+          bronchitis > healthy defect hierarchy with healthy < 5 % and feedback increasing defects, convergence
+          < 1e-2, VDef monotone in kappa, and bitwise determinism of the tree) (L1779-1871); the full render takes
+          ~11 s and writes the PNG and both GIFs; all 6 inputs are SHA-256 verified; the RNG is seeded (default 2018)
+          and seeds are offset per phenotype/branch; CLI flags are documented in argparse. Deductions: the
+          determinism check is within-process (two calls), not across processes/platforms, and the PNG/GIF hashes
+          are not pinned (-3); there is no requirements lock file for this script and the environment is recorded
+          only in this audit (-2); the GIFs are produced by the default invocation but take most of the wall time
+          and there is no `--quick` path for the 9-panel figure alone (-2).
+        evidence:
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [1779, 1871], note: "14-check self_test() including 6 new tree checks (identity, conservation, hierarchy, monotonicity, convergence, determinism)", supports: true}
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [1874, 1921], note: "argparse CLI with seed, skip-gif flags and tree parameters; main renders PNG + 2 GIFs", supports: true}
+          - {file: 2018-nelson-airway-mucosal-creasing.py, lines: [166, 187], note: "sha256_file / verify_dataset_integrity fail-closed on all 6 assets", supports: true}
+    remediation:
+    - >-
+      2018-nelson-airway-mucosal-creasing.py:430 and 436-438 (called with reference targets at 516-517) — remove the
+      a_norm = 0.88*target + 0.12*computed and pd_sim = 0.85*pd_obs + 0.15*FFT prescriptions from
+      `relax_cylindrical_mucosal_ring`, report the minimiser's own A/A_0, R_flow/R_0 and period-doubling ratio
+      for the four phenotypes, and let the comparison to 16.52x / 0.253 be a genuine test (re-score
+      morphometric-validation on the unblended values).
+    - >-
+      2018-nelson-airway-mucosal-creasing.py:416-421 and 366-371 — the plotted rosette is 0.75*(analytic base_wave +
+      sulcus_cusp) + 0.25*u_rel and the spectral operator / energy coefficients (1.60, 0.35, 2.20, 0.68, 1.35, 0.32,
+      0.14, 0.26, 0.25/0.75) are unsourced; either plot u_rel alone (and show the template as a dashed overlay) or
+      derive the coefficients from the FvK / neo-Hookean functional with citations.
+    - >-
+      2018-nelson-airway-mucosal-creasing.py:612-635 and 1450-1457 — `evaluate_asm_constriction_curves` and
+      `render_growth_gif` blend 0.85*reference + 0.15*simulated (and pass target_a_norm from the reference curves),
+      so Panel C and the growth GIF are mostly the reference table; drop the blend and plot simulated vs reference
+      as two curves.
+    - >-
+      2018-nelson-airway-mucosal-creasing.py:130, 217, 221 and 548-609 — C_CYL_CURVATURE = 0.7110,
+      wall_coupling = (1+0.0085 h_m)^-0.5 and epsilon_c = 0.25 (3 mu_s/mu_m)^(2/3) are fitted to the same 12-point
+      table against which the r = 0.9986 collapse is reported; either hold out points (leave-one-species-out) or
+      replace the constants with the Li et al. (2011) / Eskandari et al. (2015) closed forms and report the
+      collapse without fitting.
+    - >-
+      2018-nelson-airway-mucosal-creasing.py:263-276 and 852-1009 — the 0.12 lumen-area floor saturates fully
+      closed asthmatic branches at 69x resistance, so the tree defect fraction is non-monotone in eps_mean (0.35 at
+      0.28 -> 0.30 at 0.34, visible in the tree GIF); replace the floor by a true closure branch (R -> inf, zero
+      flow) and add a self-test for VDef monotonicity in eps_mean.
+    - >-
+      2018-nelson-airway-mucosal-creasing.py:787-791 and 826-850 with datasets/airway_mucosal_creasing/bronchial_tree_impedance_reference.json:54 —
+      pure Poiseuille gives a small-airway share of 0.43 vs Macklem & Mead (1967) 0.10-0.20; add the Pedley et al.
+      (1970) entrance-flow correction Z = 1.85 (Re d/L)^(1/2) (or an equivalent laminar-turbulent transition) on
+      the central generations and re-measure the share against the 0.10-0.20 window rather than against the
+      analytic 0.43.
+    - >-
+      2018-nelson-airway-mucosal-creasing.py:1756-1765 — the asthma/healthy whole-tree amplification reference 3.66
+      is 16.52/4.51 from the reference table while the tree's own law gives 11.77/4.72 = 2.49 homogeneous; state the
+      homogeneous closed-form value as the lower bound in `reference_value`, move 3.66 to a note, and label the
+      Wiggs (1992) citation as qualitative.
+    - >-
+      2018-nelson-airway-mucosal-creasing.py:641-721 with datasets/airway_mucosal_creasing/airway_mucosal_creasing_reference.json —
+      the specimen reference values (13 folds, circularity 0.40) are the specimen's own measurements; replace them
+      with an independent literature count/circularity for a muscular bronchiole of the same calibre (or add a
+      second, independently pinned specimen) and record a um/px scale so R_0 and h_m can be read from the image.
+    - >-
+      2018-nelson-airway-mucosal-creasing.py:852-1009 and 1012-1052 — sigma = 0.10 is assumed and kappa = 0.2 is
+      chosen on a coarse grid from the healthy control, and kappa_critical is 0.0 for every phenotype; refine the
+      kappa grid near the healthy 5 % threshold, add a sigma sweep, and report the asthma VDef with a confidence
+      band over seeds and sigma instead of a single 0.350.
+    - >-
+      2018-nelson-airway-mucosal-creasing.py:17, morphoeval/lean/loops/Loop_068_airway_mucosal_creasing.lean:6 and
+      datasets/airway_mucosal_creasing/paper_citations.bib:14 — the Li et al. (2011) JMPS 59:758-774 title is given
+      three different ways (and the .bib has a typo); resolve against the DOI 10.1016/j.jmps.2011.01.010 once
+      network access is available and fix all three, and verify the five Pass 3 DOIs recorded offline.
+    - >-
+      2018-nelson-airway-mucosal-creasing.py:1128-1133 and 1876-1886 — --hm-scale / --mu-ratio-scale act only on
+      the ring phenotypes while the tree reads its thickness from the dataset; thread the same overrides into
+      `simulate_heterogeneous_bronchospasm` so one parameter set drives both the rosette and the tree.

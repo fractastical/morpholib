@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "dataset_id": "epithelioid_cyst_buckling_shell3d_apicobasal_reference",
+    "pass": 3,
+    "created": "2026-10-19",
+    "purpose": "Parameters and literature anchors for the Pass 3 full 3D triangulated vertex-shell extension of 2019-trushko-epithelioid-cyst-buckling.py (closes Pass 2 remediation item: 'Extend the 2D equatorial Foppl-von Karman ring solver to a full 3D triangulated vertex shell with apical-basal differential tension').",
+    "primary_sources": [
+      {
+        "key": "trushko2020",
+        "doi": "10.1016/j.devcel.2020.07.019",
+        "use": "Post-confluence pressure P(t) and fold-depth delta(t)/R_0 trajectories (Fig. 2E, transcribed in epithelioid_cyst_buckling_reference.json) and single-fold observation (Fig. 2, n = 1 in ~75% of standard capsules)."
+      },
+      {
+        "key": "hannezo2014",
+        "doi": "10.1073/pnas.1312076111",
+        "use": "Spontaneous curvature of a polarized monolayer set by the apical-basal tension difference: minimiser of f(H) = (kappa/2)(2H)^2 - dGamma h (2H) is 2H_0 = dGamma h / kappa (Eqs. 1-3)."
+      },
+      {
+        "key": "helfrich1973",
+        "doi": "10.1515/znc-1973-11-1209",
+        "use": "Helfrich spontaneous-curvature bending energy (kappa/2)(2H - 2H_0)^2 used as the discrete per-vertex bending term."
+      },
+      {
+        "key": "seung1988",
+        "doi": "10.1103/PhysRevA.38.1005",
+        "use": "Triangular spring-network mapping k_s = sqrt(3)/2 * Y_2D for the 2D Young modulus of the discretised membrane and discrete bending energy on triangulated surfaces."
+      },
+      {
+        "key": "alessandri2013",
+        "doi": "10.1073/pnas.1309482110",
+        "use": "Alginate microcapsule radial stiffness (Winkler foundation K_alg) from the capsule wall thickness H_alg and E_alg."
+      }
+    ],
+    "notes": [
+      "The 3D shell is a reduced-but-honest model: a closed icosphere (642 vertices, 1280 triangles) with harmonic edge springs (rest length grown by g), a discrete Helfrich bending energy with spontaneous curvature along the radial (apical-basal) axis, a unilateral Winkler capsule wall, and a short-range self-contact penalty at the monolayer thickness h.",
+      "delta_gamma_wt_mN_per_m is a CALIBRATED constant, not a measured value: it is chosen so that the spontaneous curvature equals the confluent-sphere curvature, H_0 R_0 = 6 (1 - nu^2) dGamma R_0 / (E_epi h^2) = 1 (nu = 0.45) for the standard WT capsule (R_0 = 100 um, h = 10.5 um, E_epi = 18.5 kPa). Hannezo et al. (2014) argue that a free cyst adopts the radius set by this spontaneous curvature; direct apical/basal tension measurements for MDCK-in-capsule are not reported by Trushko et al. (2020).",
+      "The dGamma sweep spans basal-dominant (negative), apolar (0) and apical-dominant (positive) tension differences; Blebbistatin is modelled as Gamma_myo = 0.15 multiplying dGamma (reduced actomyosin-driven polarity) in addition to the reduced E_epi used by the 2D ring."
+    ]
+  },
+  "shell3d_model": {
+    "icosphere_subdivisions": 3,
+    "n_vertices": 642,
+    "n_faces": 1280,
+    "n_edges": 1920,
+    "spring_constant_over_Y2D": 0.8660254037844386,
+    "self_contact_cutoff_over_h": 1.0,
+    "self_contact_stiffness_over_Y2D": 2.0,
+    "initial_perturbation_over_R0": 0.001,
+    "growth_step_dg": 0.04,
+    "lbfgs_maxiter_per_step": 400,
+    "fold_detection": {
+      "depth_fraction_of_max": 0.35,
+      "depth_floor_over_R0": 0.04
+    },
+    "curvature_discretisation": "umbrella operator with lagged per-step normalisation m_v = mean(l_u^2)/4: 2H_v ~ -(n_v . L x)_v / m_v; bending weight (kappa/2) A_v g^2 / m_v^2"
+  },
+  "apicobasal_tension": {
+    "delta_gamma_wt_mN_per_m": 4.26,
+    "delta_gamma_sweep_mN_per_m": [
+      -4.26,
+      0.0,
+      2.13,
+      4.26,
+      8.52
+    ],
+    "blebbistatin_Gamma_myo": 0.15,
+    "spontaneous_curvature_formula": "H_0 R_0 = 6 * (1 - nu^2) * dGamma * R_0 / (E_epi * h^2)   (2H_0 = dGamma h / kappa, kappa = E_epi h^3 / (12 (1 - nu^2)))",
+    "expected_H0_R0_wt": 1.0,
+    "expected_fold_count_wt_obs": 1,
+    "expected_fold_count_source": "Trushko et al. (2020) Dev. Cell Fig. 2: single inward fold in standard R_0 = 100 um, E_alg = 5 kPa capsules"
+  },
+  "wall_pressure_comparison": {
+    "description": "Capsule pressure inferred from the 3D shell as P_3D(g) = K_alg * (r_wall / R_0 - 1) is compared with the transcribed standard_P_kPa trajectory of epithelioid_cyst_buckling_reference.json (Trushko et al. 2020 Fig. 2E, pressure read from alginate capsule dilation).",
+    "pressure_trajectory_key": "post_confluence_growth_trajectory[].standard_P_kPa"
+  }
+}

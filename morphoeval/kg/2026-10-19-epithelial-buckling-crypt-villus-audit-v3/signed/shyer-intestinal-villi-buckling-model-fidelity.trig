@@ -1,0 +1,147 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix np: <http://www.nanopub.org/nschema#> .
+@prefix npx: <http://purl.org/nanopub/x/> .
+@prefix ntemplate: <https://w3id.org/np/o/ntemplate/> .
+@prefix orcid: <https://orcid.org/> .
+@prefix pk: <https://w3id.org/probknow/ontology/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sub1: <https://w3id.org/np/RAXswVb54JVumw4fN9ankShjEUHrDzUQrqlLMQbZljgo0/> .
+@prefix this: <https://w3id.org/np/RAXswVb54JVumw4fN9ankShjEUHrDzUQrqlLMQbZljgo0> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+sub1:Head {
+    this: a np:Nanopublication ;
+        np:hasAssertion sub1:assertion ;
+        np:hasProvenance sub1:provenance ;
+        np:hasPublicationInfo sub1:pubinfo .
+}
+
+sub1:assertion {
+    <https://w3id.org/probknow/resource/claim/morphoeval-shyer-intestinal-villi-buckling> pk:hasAssessment <https://w3id.org/probknow/resource/assessment/morphoeval-shyer-intestinal-villi-buckling-model-fidelity> .
+
+    <https://w3id.org/probknow/resource/assessment/morphoeval-shyer-intestinal-villi-buckling-model-fidelity> a pk:LLMClaimAssessment ;
+        rdfs:label "Hannezo et al. (2011) PRL & Shyer et al. (2013) Science sequential smooth-muscle mucosal buckling into ridges, zigzags, and hexagonal villi — Model fidelity to source: 88/100" ;
+        dcterms:date "2026-10-20"^^xsd:date ;
+        dcterms:description "The Hannezo-Shyer quartic length, bending rigidity and Winkler stiffness (L202-237), the 4-regime classifier (L239-254) and the FvK energy are implemented, and Pass 3 adds a genuinely new mechanical layer: a Lamé-verified axisymmetric neo-Hookean ring FEM of the mesenchymal annulus with slab limit, curvature factor and prestrain tangent (L261-365), integer circumferential mode quantisation and the Donnell validity ratio (L368-419), and a curvature-driven Shh/BMP cluster field with a localized cubic gain and linear spectral Newton response (L422-514, L734-793), all with 6 machine-checked Lean theorems. Deductions: the v2 item asked for a 3D tubular FEM and the delivered foundation is 1D-radial axisymmetric feeding a scalar K_eff into a flat sheet, while the script's own Donnell ratio (gamma = 0.65 at E8) says the flat reduction is poorly justified at the ridge stages (-4); the zigzag angle is taken from the observed target with an unsourced 0.92 fallback (L666-669) and the relaxed surface is blended 0.85 prescribed cosine + 0.15 relaxed (L732), so the zigzag geometry is imposed rather than selected (-4); the L-BFGS-B minimiser stops on its 65-iteration limit on an ill-conditioned L_op^2 (L722) and the Pass 3 coupling therefore uses a linearised response rather than re-minimising (-2); the Shh field has no reaction-diffusion kinetics and its elbow curvature is a contour-turning proxy, as the docstring admits (-2); the ring-FEM outer wall is rigid (infinitely stiff smooth muscle) (-1); credit (+1 net) for the ablation flags and the honest statement of every reduction in docstrings." ;
+        dcterms:subject <https://w3id.org/probknow/resource/concept/morphoeval-0.1.0-model-fidelity> ;
+        pk:assessedBy <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        pk:assessmentType "morphoeval/0.1.0/model-fidelity" ;
+        pk:evidenceAgainst "2013-shyer-intestinal-villi-buckling.py L666–L677: theta_zz_deg taken from target_theta_zz_deg (observed) with unsourced 0.92 fallback; hexagonal regime theta_zz_deg = 58.5 literal — zigzag geometry is prescribed, not selected <https://github.com/fractastical/morpholib/blob/45670cb8/2013-shyer-intestinal-villi-buckling.py#L666-L677>",
+            "2013-shyer-intestinal-villi-buckling.py L722–L732: L-BFGS-B maxiter 65 on the ill-conditioned L_op^2 followed by the 0.85 prescribed-cosine / 0.15 relaxed blend of the surface <https://github.com/fractastical/morpholib/blob/45670cb8/2013-shyer-intestinal-villi-buckling.py#L722-L732>" ;
+        pk:hasEvidence <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-model-fidelity-1>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-model-fidelity-2>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-model-fidelity-3>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-model-fidelity-4>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-model-fidelity-5>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-model-fidelity-6>,
+            <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-model-fidelity-7> ;
+        pk:hasScore "0.88"^^xsd:double ;
+        pk:hasVerdict "faithful" .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-model-fidelity-1> a pk:EvidenceItem ;
+        rdfs:label "2013-shyer-intestinal-villi-buckling.py L202–L254" ;
+        dcterms:description "Mucosal bending rigidity B_e, foundation stiffness K_s, quartic length ell_* with C_LAMBDA_PREFACTOR, and the 4-regime classifier" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/2013-shyer-intestinal-villi-buckling.py#L202-L254> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-model-fidelity-2> a pk:EvidenceItem ;
+        rdfs:label "2013-shyer-intestinal-villi-buckling.py L261–L365" ;
+        dcterms:description "neo_hookean_tangent_modulus, lame_thick_cylinder_stiffness and the 48-element axisymmetric plane-strain ring FEM tubular_neo_hookean_foundation (rigid outer wall u=0, unit inward epithelial displacement) returning K_tube, K_slab, curvature_factor, prestrain_factor, K_eff" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/2013-shyer-intestinal-villi-buckling.py#L261-L365> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-model-fidelity-3> a pk:EvidenceItem ;
+        rdfs:label "2013-shyer-intestinal-villi-buckling.py L368–L419" ;
+        dcterms:description "donnell_curvature_ratio and compute_tubular_length_and_wavelength: ell_tube, lambda_tube, integer mode quantisation n = round(2 pi R / lambda) (Lean Law 4), Donnell gamma" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/2013-shyer-intestinal-villi-buckling.py#L368-L419> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-model-fidelity-4> a pk:EvidenceItem ;
+        rdfs:label "2013-shyer-intestinal-villi-buckling.py L563–L588" ;
+        dcterms:description "Tubular coupling block inside relax_fvk_mucosal_surface rescaling ell_*, lambda_*, N_c from K_eff and recording the tube summary" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/2013-shyer-intestinal-villi-buckling.py#L563-L588> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-model-fidelity-5> a pk:EvidenceItem ;
+        rdfs:label "2013-shyer-intestinal-villi-buckling.py L422–L514" ;
+        dcterms:description "compute_shh_bmp_cluster_field (Gaussian-smoothed positive Laplacian amplified by crest-contour turning curvature, 82nd-percentile soft threshold, connected-component count) and summarize_cluster_localization (elbow index, crest/tip fraction)" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/2013-shyer-intestinal-villi-buckling.py#L422-L514> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-model-fidelity-6> a pk:EvidenceItem ;
+        rdfs:label "2013-shyer-intestinal-villi-buckling.py L734–L793" ;
+        dcterms:description "Localized cubic gain alpha_3(x,y) = alpha_3 + 0.60 C and the linear spectral Newton response with a 30% trust region; elbow bulge measured against the pass-1 surface" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/2013-shyer-intestinal-villi-buckling.py#L734-L793> .
+
+    <https://w3id.org/probknow/resource/evidence/morphoeval-shyer-intestinal-villi-buckling-model-fidelity-7> a pk:EvidenceItem ;
+        rdfs:label "morphoeval/lean/loops/Loop_063_epithelial_buckling_crypt_villus.lean L29–L149" ;
+        dcterms:description "6 machine-checked Lean 4 theorems (0 sorrys): wavenumber stationarity, FK506 arrest hierarchy, hexagonal triad closure, tubular_mode_quantization, shh_bmp_elbow_localization, shh_bmp_elbow_villus_nucleation; `lean` exits 0" ;
+        prov:wasDerivedFrom <https://github.com/fractastical/morpholib/blob/45670cb8/morphoeval/lean/loops/Loop_063_epithelial_buckling_crypt_villus.lean#L29-L149> .
+
+    <https://w3id.org/probknow/resource/model/claude-fable-5-1> a pk:Model ;
+        rdfs:label "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 063 Pass 3 Phase B Assessor)" ;
+        dcterms:identifier "claude-fable-5-1" ;
+        prov:actedOnBehalfOf orcid:0009-0007-4948-9192 ;
+        foaf:homepage <https://www.anthropic.com> .
+}
+
+sub1:pubinfo {
+    sub1:sig npx:hasAlgorithm "RSA" ;
+        npx:hasPublicKey "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyahzwBs2tuJ36eq6XmF5yrRSV4doWNUtbffIJhWttl5MJp0Sv9i6VtQo/AmiKqgfD07uK7ESz/isNX8qoFWq3peWTjzppXPZFsCk62GrPwLZMJ4PaCDd1G3ZHJxhl0DyuvLiDGBgEVf963IW28gCTICnrQcNlUqioaWfX+ME/sN7jWPPxR5S76riesxX/R/vwgwtF7BBnRko5zEP2sZyd3VlzdRcWfJa9NdJiEwdYHWshtclNE9Fz79L72Y4FxgNcBD4Kb6XuHL9+pPdkYbhnv1gCVpIBSp5/V1ILCvkzCuj5NUw874E4EPpKCOIsTUlCCi5wFSvPSCMzhY6wUDhLQIDAQAB" ;
+        npx:hasSignature "c9Gi/pfc5HyCjqM+eTJzMuLWUo3BqrK5iG5/kwmFQ6588K5TXWico9Q3HzLAVg7kO3bkEXTp8HaXWv8fG0zWtcjexg7iT3Cu/LYgs9/D4SabF/5Cqm6wadrF23oa80JqEIZzPHOUC3eDfkIGvGUGVtz5CQx0MfLVIaU7hXG1dIPvsAJg7Hs5r2vMW/s2EKHVcZKvVlyRoDy1aZM4biQEHQrRRrBDk9m/i5iIU+L/Hv2JYXT8QccQFh5UCk/Fd63+hE7yKfQi6pmDqDxKFX0/FoqYtH2VHzrdJ7/NbnfKKKdJ0wBAvuvC2tYhqLoQedyVoZIB4ltyU0pzLIj4e3nvgg==" ;
+        npx:hasSignatureTarget this: ;
+        npx:signedBy orcid:0009-0007-4948-9192 .
+
+    <https://w3id.org/probknow/resource/domain/morphogenesis> rdfs:label "morphogenesis" .
+
+    this: rdfs:label "Hannezo et al. (2011) PRL & Shyer et al. (2013) Science sequential smooth-muscle mucosal buckling into ridges, zigzags, and hexagonal villi — Model fidelity to source 88/100" ;
+        dcterms:conformsTo <https://w3id.org/probknow/resource/concept/morphoeval-rubric-0.1.0> ;
+        dcterms:created "2026-10-20T18:21:51Z"^^xsd:dateTime ;
+        dcterms:creator orcid:0009-0007-4948-9192 ;
+        dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+        npx:hasNanopubType pk:LLMClaimAssessment ;
+        npx:introduces <https://w3id.org/probknow/resource/assessment/morphoeval-shyer-intestinal-villi-buckling-model-fidelity> ;
+        rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/63> ;
+        ntemplate:wasCreatedFromProvenanceTemplate <https://w3id.org/np/RAaYeFYF-Cz2bM5S1wPQsnvs5X6BBxsphL03UkbVZ1lcA> ;
+        ntemplate:wasCreatedFromPubinfoTemplate <https://w3id.org/np/RACJ58Gvyn91LqCKIO9zu1eijDQIeEff28iyDrJgjSJF8>,
+            <https://w3id.org/np/RAtKj9bCnB4gUe0E9k-WhffQFSEWd9Ve2hrVllYoLuOB0>,
+            <https://w3id.org/np/RAukAcWHRDlkqxk7H2XNSegc1WnHI569INvNr-xdptDGI> ;
+        ntemplate:wasCreatedFromTemplate <https://w3id.org/np/RAOAK6Fe6J6JvD4kUCZg53sRpwRkRq7rzFuDtGT7n6Drw/template> ;
+        pk:domain <https://w3id.org/probknow/resource/domain/morphogenesis> .
+}
+
+sub1:provenance {
+    <https://archive.org/details/theoryofelastici0000timo> dcterms:date "1970"^^xsd:gYear ;
+        dcterms:title "Theory of Elasticity (3rd ed.), §28 thick-walled cylinder (Lamé problem)" .
+
+    <https://doi.org/10.1016/j.cell.2015.03.041> dcterms:date "2015"^^xsd:gYear ;
+        dcterms:title "Bending gradients: how the intestinal stem cell gets its home" .
+
+    <https://doi.org/10.1073/pnas.1205669109> dcterms:date "2012"^^xsd:gYear ;
+        dcterms:title "Hedgehog-responsive mesenchymal clusters direct patterned epithelial folding in the developing mouse intestine" .
+
+    <https://doi.org/10.1103/PhysRevLett.107.078104> dcterms:date "2011"^^xsd:gYear ;
+        dcterms:title "Instabilities of monolayered epithelia: coupled bending and polarity-driven forces" .
+
+    <https://doi.org/10.1103/PhysRevLett.110.024302> dcterms:date "2013"^^xsd:gYear ;
+        dcterms:title "Surface sulci in squeezed slabs" .
+
+    <https://doi.org/10.1126/science.1238842> dcterms:date "2013"^^xsd:gYear ;
+        dcterms:title "Villification: how the gut gets its villi" .
+
+    <https://doi.org/10.1242/dev.130112> dcterms:date "2016"^^xsd:gYear ;
+        dcterms:title "Villification in the mouse: Bmp signals control intestinal villus patterning" .
+
+    <https://ntrs.nasa.gov/citations/19930091553> dcterms:date "1933"^^xsd:gYear ;
+        dcterms:title "Stability of thin-walled tubes under torsion" .
+
+    sub1:assertion rdfs:seeAlso <https://github.com/fractastical/morpholib/issues/63> ;
+        prov:wasAttributedTo orcid:0009-0007-4948-9192,
+            <https://w3id.org/probknow/resource/model/claude-fable-5-1> ;
+        prov:wasDerivedFrom <https://archive.org/details/theoryofelastici0000timo>,
+            <https://doi.org/10.1016/j.cell.2015.03.041>,
+            <https://doi.org/10.1073/pnas.1205669109>,
+            <https://doi.org/10.1103/PhysRevLett.107.078104>,
+            <https://doi.org/10.1103/PhysRevLett.110.024302>,
+            <https://doi.org/10.1126/science.1238842>,
+            <https://doi.org/10.1242/dev.130112>,
+            <https://ntrs.nasa.gov/citations/19930091553> .
+}
+

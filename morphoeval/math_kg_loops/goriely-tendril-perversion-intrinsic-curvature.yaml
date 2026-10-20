@@ -1,5 +1,5 @@
 sim_id: goriely-tendril-perversion-intrinsic-curvature
-math_family: "Kirchhoff Elastic Rod Hamiltonian Mechanics, Zero-Link Topological Conservation (ΔLk = 0), Pitchfork Bifurcation & G-Fiber Overwinding"
+math_family: "Kirchhoff Elastic Rod Hamiltonian Mechanics, Zero-Link Topological Conservation (ΔLk = 0), Pitchfork Bifurcation, G-Fiber Overwinding & Contact-Gated Thigmotropic Coiling with Coulomb Friction"
 model_spec:
   model: "Goriely & Tabor (1998) PRL / McMillen & Goriely (2002) J. Nonlinear Sci. / Gerbode et al. (2012) Science Kirchhoff elastic rod tendril perversion & G-fiber overwinding"
   B_bending_mN_mm2: 1.25
@@ -10,7 +10,22 @@ model_spec:
   L_rod_mm: 64.0
   rod_nodes_N: 161
   seed: 1998
+  pass3_thigmotropic_contact_coiling:
+    L_mm: 40.0
+    n_nodes: 61
+    kappa_contact_mm_inv: 1.0
+    R_support_mm: 1.0
+    a_rod_mm: 0.25
+    mu_support: 0.6
+    mu_self: 0.6
+    tau_thigmo_min: 5.0
+    v_signal_mm_per_min: 5.0
+    approach_angle_deg: 55.0
+    t_end_min: 30.0
+    dt_min: 0.25
+    integrator: "implicit backward-Euler incremental potential, L-BFGS-B per macro step, penalty contact, lagged-normal Coulomb friction"
   inputs:
+    - datasets/tendril_perversion_intrinsic_curvature/thigmotropic_contact_coiling_reference.json
     - datasets/tendril_perversion_intrinsic_curvature/tendril_perversion_intrinsic_curvature_reference.json
     - datasets/tendril_perversion_intrinsic_curvature/tendril_perversion_helix_specimen.jpg
     - datasets/tendril_perversion_intrinsic_curvature/scout_manifest.json
@@ -30,7 +45,7 @@ equations:
     variables: "τ_h: equilibrium helical Frenet torsion (mm^-1); L_half = L/2: half-tendril arc length (mm); ΔLk: net Călugăreanu-White-Fuller linking number change"
     role: "Explains why a tethered climbing plant tendril that cannot rotate its ends must coil into two mirror-symmetric helices of opposite chirality (+τ and -τ) joined by a central perversion inversion kink"
     source_citation: "Goriely & Tabor (1998) Phys. Rev. Lett. 80:1564-1567; McMillen & Goriely (2002) J. Nonlinear Sci. 12:241-281"
-    code_locus: "1998-goriely-tendril-perversion-intrinsic-curvature.py#L130-L280"
+    code_locus: "1998-goriely-tendril-perversion-intrinsic-curvature.py#L249-L412"
 
   - law_name: "Goriely & Tabor (1998) Critical Tension Pitchfork Bifurcation & Heteroclinic Perversion Soliton Law"
     formula: "T_c = B κ_0^2 / (1 + Γ),  cos θ_helix = 1 - ((1 + Γ)/Γ)(1 - √(T / T_c))  (T ≤ T_c),  θ(s) = θ_helix tanh(s / ξ),  ξ = √(B / (T_c - T))"
@@ -46,7 +61,7 @@ equations:
     variables: "T_c: critical buckling tension (mN); B = E I: rod bending stiffness (mN·mm^2); Γ = C/B: twist-to-bend stiffness ratio; κ_0: G-fiber intrinsic curvature (mm^-1); ξ: perversion kink localization length (mm)"
     role: "Determines the exact critical tension T_c below which an intrinsically curved rod bifurcates into left- and right-handed helices and governs the spatial width ξ of the central tendril perversion"
     source_citation: "Goriely & Tabor (1998) Phys. Rev. Lett. 80:1564-1567 Eq. 11; McMillen & Goriely (2002) J. Nonlinear Sci. 12:241-281 Sec. 3-4"
-    code_locus: "1998-goriely-tendril-perversion-intrinsic-curvature.py#L120-L320"
+    code_locus: "1998-goriely-tendril-perversion-intrinsic-curvature.py#L164-L247"
 
   - law_name: "Gerbode et al. (2012) Soft vs Mature Lignified Tendril Over-Winding Susceptibility Law"
     formula: "S_overwind = B - C = B(1 - Γ);  Γ = C/B < 1 (young soft G-fiber ribbon) ⇒ dN/dz > 0 (initial axial stretching overwinds coil);  Γ > 1 (old lignified tendril) ⇒ dN/dz < 0 (monotonic unwinding)"
@@ -63,4 +78,40 @@ equations:
     variables: "B: bending stiffness (mN·mm^2); C: twisting stiffness (mN·mm^2); Γ = C/B: twist-to-bend stiffness ratio; ΔN(z/L): change in coil turns under axial extension"
     role: "Explains the counterintuitive mechanical overwinding of soft young cucumber tendrils upon axial stretching versus monotonic unwinding in mature lignified tendrils"
     source_citation: "Gerbode, Puzey, McCormick & Mahadevan (2012) Science 337(6098):1087-1091 Figs. 3-4"
-    code_locus: "1998-goriely-tendril-perversion-intrinsic-curvature.py#L325-L440"
+    code_locus: "1998-goriely-tendril-perversion-intrinsic-curvature.py#L1040-L1089"
+
+  - law_name: "Contact-Gated Thigmotropic Intrinsic Curvature Law (Pass 3)"
+    formula: "κ0_i(t) = κ_contact · [t ≥ t_arrive_i] · (1 − exp(−(t − t_arrive_i)/τ_thigmo)),  t_arrive_i = min_j (t_touch_j + |s_i − s_j| / v_signal);  no touch ⇒ κ0 ≡ 0 ⇒ no coiling;  0 ≤ κ0_i ≤ κ_contact"
+    lean_decl: "MathOfBiology.Loop_064.gated_curvature"
+    lean_theorem: "MathOfBiology.Loop_064.thigmotropic_contact_gating"
+    lean_locus: "morphoeval/lean/loops/Loop_064_tendril_perversion_intrinsic_curvature.lean#L110-L122"
+    lean_code: |
+      def gated_curvature (touched : Bool) (kappa_contact r : Nat) : Nat :=
+        if touched then kappa_contact * r else 0
+      theorem thigmotropic_contact_gating (kappa_contact r d : Nat) (h : r ≤ d) :
+          gated_curvature false kappa_contact r = 0 ∧
+          gated_curvature true kappa_contact d = kappa_contact * d ∧
+          gated_curvature true kappa_contact r ≤ kappa_contact * d
+    variables: "κ_contact: saturating thigmotropic curvature of the touched flank (mm^-1, assumption 1.0); τ_thigmo: curvature rise time after signal arrival (min, assumption 5); v_signal: touch-signal propagation speed along the rod (mm/min, assumption 5); t_arrive_i: signal arrival time at node i"
+    role: "Drives the Pass 3 dynamic contact-coiling solver: a straight tendril acquires intrinsic curvature toward the support only where and after it is touched, so coiling is contact-induced and the no-support control stays straight (Darwin 1865 positive thigmotropism; Jaffe & Galston 1968)"
+    source_citation: "Darwin (1865) J. Linn. Soc. Bot. 9:1-118 Ch. IV; Jaffe & Galston (1968) Annu. Rev. Plant Physiol. 19:417-434"
+    code_locus: "1998-goriely-tendril-perversion-intrinsic-curvature.py#L596-L909"
+    code_locus_secondary: "1998-goriely-tendril-perversion-intrinsic-curvature.py#L532-L586"
+
+  - law_name: "Amontons-Coulomb Friction Grip Capacity of the Wrapped Tendril (Pass 3)"
+    formula: "F_hold ≤ μ Σ_i N_i  (incremental-potential Coulomb friction with lagged normal forces);  μ = 0 ⇒ F_hold = 0 (frictionless control slips);  F_hold(μ) non-decreasing;  capstan reference gain T_hold/T_load = exp(μ Θ_wrap) (Euler 1762)"
+    lean_decl: "MathOfBiology.Loop_064.coulomb_capacity"
+    lean_theorem: "MathOfBiology.Loop_064.coulomb_grip_capacity"
+    lean_locus: "morphoeval/lean/loops/Loop_064_tendril_perversion_intrinsic_curvature.lean#L135-L146"
+    lean_code: |
+      def coulomb_capacity (mu N : Nat) : Nat :=
+        mu * N
+      theorem coulomb_grip_capacity (mu1 mu2 N : Nat) (h : mu1 ≤ mu2) :
+          coulomb_capacity 0 N = 0 ∧
+          coulomb_capacity mu1 0 = 0 ∧
+          coulomb_capacity mu1 N ≤ coulomb_capacity mu2 N
+    variables: "μ: tendril-on-support Coulomb friction coefficient (assumption 0.6, swept 0-0.9); N_i: penalty normal force at contacting node i (mN); F_hold: axial load at which the wrapped segment slips 0.5 mm (mN); Θ_wrap: total wrap angle (rad)"
+    role: "Explains why a coiled tendril holds the plant on its support only when friction and squeeze are both present; measured in the Pass 3 quasi-static load-ramp grip test and friction sweep (F_hold/μΣN ≈ 0.67 at default parameters)"
+    source_citation: "Amontons (1699) / Coulomb (1785) friction law; Euler (1762) Mém. Acad. Roy. Sci. Berlin 18:265-278 (capstan law); Darwin (1865) Ch. IV"
+    code_locus: "1998-goriely-tendril-perversion-intrinsic-curvature.py#L911-L977"
+    code_locus_secondary: "1998-goriely-tendril-perversion-intrinsic-curvature.py#L836-L876"

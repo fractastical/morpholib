@@ -99,4 +99,53 @@ theorem hexagonal_villi_triad_closure (k m : Int) (a3 amp : Nat) :
   refine ⟨by simp [hexagonal_triad_sum_x]; omega, by simp [hexagonal_triad_sum_y]; omega, ?_⟩
   simp [hexagonal_cubic_gain]
 
+
+-- ============================================================================
+-- Law 4 (`shyer-intestinal-villi-buckling-4`, Pass 3):
+-- Tubular Circumferential Mode Quantisation on the Gut Tube
+-- ============================================================================
+/-- Pass 3 reduced 3D coupling: on a tube of circumference `C = 2πR` the circumferential
+    buckling mode must close on itself, so the number of ridges is the integer
+    `n = C / λ` (Nat division) and the quantised wavelength `λ_n = C / n` tiles the
+    circumference exactly up to a remainder strictly smaller than one ridge count:
+      `n * (C / n) + C % n = C`  and  `C % n < n`.
+    This is the statement implemented by `compute_tubular_length_and_wavelength`
+    (`n_modes_quantized * lambda_quantized_um = 2 pi R_lumen`). -/
+def tubular_quantized_wavelength (C n : Nat) : Nat :=
+  C / n
+
+theorem tubular_mode_quantization (C n : Nat) (h : 0 < n) :
+    n * tubular_quantized_wavelength C n + C % n = C ∧ C % n < n := by
+  exact ⟨by unfold tubular_quantized_wavelength; exact Nat.div_add_mod C n, Nat.mod_lt C h⟩
+
+
+-- ============================================================================
+-- Law 5 (`shyer-intestinal-villi-buckling-5`, Pass 3):
+-- Shh/BMP Mesenchymal-Cluster Localised Cubic Gain & Elbow Villus Nucleation
+-- ============================================================================
+/-- Pass 3 Shh/BMP coupling (Walton et al. 2012 PNAS; Shyer et al. 2015 Cell): the
+    Hh-responsive mesenchymal cluster indicator `C ∈ {0, 1}` localises the apicobasal cubic
+    gain, `α₃(x,y) = α₃ + g · C(x,y)`.  We prove (i) the gain is unchanged outside clusters
+    and raised by exactly `g` inside, (ii) the cubic energy release `α₃(x,y) · w³` is
+    therefore never smaller inside a cluster than outside, and (iii) a zigzag-stage elbow
+    (`regime 2`, `α₃ = 0` in the discrete classifier) is pushed into the villus regime
+    (`regime 3`) inside a cluster whenever the cluster gain is positive — the mechanism by
+    which villi nucleate from zigzag elbows. -/
+def shh_bmp_local_cubic_gain (alpha3 g C : Nat) : Nat :=
+  alpha3 + g * C
+
+theorem shh_bmp_elbow_localization (alpha3 g w : Nat) :
+    shh_bmp_local_cubic_gain alpha3 g 0 = alpha3 ∧
+    shh_bmp_local_cubic_gain alpha3 g 1 = alpha3 + g ∧
+    shh_bmp_local_cubic_gain alpha3 g 0 * (w * w * w) ≤
+      shh_bmp_local_cubic_gain alpha3 g 1 * (w * w * w) := by
+  refine ⟨by simp [shh_bmp_local_cubic_gain], by simp [shh_bmp_local_cubic_gain], ?_⟩
+  simp only [shh_bmp_local_cubic_gain, Nat.mul_zero, Nat.add_zero, Nat.mul_one]
+  exact Nat.mul_le_mul_right _ (Nat.le_add_right alpha3 g)
+
+theorem shh_bmp_elbow_villus_nucleation (ex ey g : Nat) :
+    shyer_buckling_regime (ex + 1) (ey + 1) (shh_bmp_local_cubic_gain 0 (g + 1) 0) = 2 ∧
+    shyer_buckling_regime (ex + 1) (ey + 1) (shh_bmp_local_cubic_gain 0 (g + 1) 1) = 3 := by
+  simp [shyer_buckling_regime, shh_bmp_local_cubic_gain]
+
 end MathOfBiology.Loop_063

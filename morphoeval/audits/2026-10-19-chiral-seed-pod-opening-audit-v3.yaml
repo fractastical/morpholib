@@ -1,0 +1,340 @@
+# MorphoEval audit — Armon, Efrati, Kupferman & Sharon (2011) Science Chiral Seed Pod Opening, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `2007-liang-chiral-seed-pod-opening.py` (2123 lines) after the remediation of the single open
+# v2 item in the instrumented loop `morphoeval/runs/2026-10-19-chiral-seed-pod-opening-loop-pass3`, superseding
+# `2026-10-19-chiral-seed-pod-opening-audit-v2` (93.4).
+#
+# What Pass 3 changed (v2 remediation item 1, closed as an honest REDUCED 1-D model, not a 3-D elastodynamic FEM):
+#   1. Energy coupling: `bending_energy_prefactor` (B_eff = Y h^3 / (12 (1 + nu)) from the Efrati 2009 bending content)
+#      and `released_valve_energy_density` call the Pass 2 L-BFGS-B minimizer and return Delta_e = B_eff (kappa_0^2 -
+#      e_final) and the suture energy release rate G = Delta_e W / h (278.0 J/m^2 fully dried, 47.5 mJ per valve).
+#   2. Transient suture fracture: `rayleigh_wave_speed` (c_R = 418 m/s), `freund_crack_speed` (Freund 1990
+#      v = c_R max(0, 1 - Gamma_c/G)), `heterogeneous_suture_toughness` (seeded Gamma_c(a), CV 0.15),
+#      `integrate_suture_crack` (explicit da/dt with arrest where Gamma_c(a) >= G).
+#   3. Two-timescale coupling: `simulate_suture_fracture_ballistic_ejection` — desiccation kappa_0(t) on a 96-point
+#      grid, minimizer at every kappa_0(t) -> G(t), Griffith initiation at t_c = 63.7 h, 9 stick-slip jumps, opening
+#      fraction 1.0, <v_crack> = 36 m/s = 0.086 c_R; seeds eject tip -> base as the crack passes.
+#   4. Ballistics: `elastic_catapult_seed_speed` (v = sqrt(2 eta Delta_U_seg / (m_seg/3 + m_seed)), 2.77 m/s mean,
+#      3.84 m/s fully-dried bound) and `ballistic_range_with_drag` (RK4 quadratic drag, 1.65 m vs 1.97 m drag-free).
+#   5. `evaluate_suture_toughness_sweep`: 7-point Gamma_c/G in {0.2..1.2}; homogeneous suture reproduces the Freund law
+#      (r = 1.0000); heterogeneous suture arrests (opening 1.0 -> 0.05); Gamma_c >= G no-fracture control.
+#   6. Figure 3x3 (panels G-I), new `docs/media/chiral_seed_pod_opening_suture_fracture.{png,gif}`, CLI --gamma-c,
+#      --eta, --m-seed, --fracture-json; self-test 8 -> 12 checks; 2 new Lean 4 theorems (5 laws, 0 sorrys); new
+#      SHA-256-pinned `suture_fracture_ballistic_reference.json` with per-constant provenance flags; bib + 4 entries.
+#
+# Why the overall score goes DOWN (93.4 -> 87.1) despite the item being closed: the Pass 3 remediation exposed a
+# deeper layer of defects that the v2 audit credited as validation. The `*_obs` columns of the width and cutting-angle
+# sweeps in the SHA-pinned reference JSON are analytical values of the same reduced model (not digitised Armon 2011
+# figure data), so v2 measurements 3-7 (r = 1.0000) are self-referential; the specimen-CV reference is the script's
+# own output; the 4-system table carries page pointers but no digitisation coordinates; the pitchfork threshold is an
+# input (Lambda is normalised by w_tilde_c) and H / branch / phi are post-processed after the minimizer; and all 12
+# Pass 3 fracture/ballistic constants are `provenance: model` with a Cardamine (different taxon) launch-speed benchmark.
+# Model-fidelity, specimen-match and parameter-expressivity hold or improve; morphometric-validation and
+# source-traceability are re-scored on what the evidence actually supports.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated probabilities).
+# Line numbers refer to the working-tree files at checkpoint 45670cb8 plus the uncommitted Pass 3 edits listed in
+# the handoff note (`git diff` of the three remediated files), verified by grep at audit time.
+
+audit:
+  id: 2026-10-19-chiral-seed-pod-opening-audit-v3
+  supersedes: 2026-10-19-chiral-seed-pod-opening-audit-v2
+  supersedes_audit_id: 2026-10-19-chiral-seed-pod-opening-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (MorphoEval Autonomous Loop Slot 065 Pass 2 Assessor)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/65
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 45670cb8
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      Pass 3 (v3) re-score of `2007-liang-chiral-seed-pod-opening.py` after the Phase A remediation in
+      `2026-10-19-chiral-seed-pod-opening-loop-pass3` (steps 5-6). The v3 scoring (Phase B, step 7) was executed by
+      the slot's Phase B subagent (Claude Fable 5.1) from the Phase A handoff evidence and `git diff` of the three
+      remediated files against 45670cb8; the `assessor` block is carried from v2 per the campaign protocol. The
+      run-level `builder_model`/`primary_assessor`/`second_assessor` are recorded in the pass3 run YAML.
+
+references:
+  armon2011:
+    title: "Geometry and Mechanics in the Opening of Chiral Seed Pods"
+    authors: "Armon S, Efrati E, Kupferman R, Sharon E"
+    venue: "Science 333(6050):1726-1730 (2011)"
+    doi: 10.1126/science.1203874
+  efrati2009:
+    title: "Elastic Theory of Unconstrained Non-Euclidean Plates"
+    authors: "Efrati E, Sharon E, Kupferman R"
+    venue: "Journal of the Mechanics and Physics of Solids 57(4):762-775 (2009)"
+    doi: 10.1016/j.jmps.2008.12.004
+  armon2014:
+    title: "Shape Selection in Chiral Self-Shaping Latex Strips"
+    authors: "Armon S, Arbel H, Moshe M, Sharon E"
+    venue: "Soft Matter 10(16):2733-2740 (2014)"
+    doi: 10.1039/c3sm52313f
+  forterre2005:
+    title: "How the Venus Flytrap Snaps"
+    authors: "Forterre Y, Skotheim JM, Dumais J, Mahadevan L"
+    venue: "Nature 433(7024):421-425 (2005)"
+    doi: 10.1038/nature03185
+  freund1990:
+    title: "Dynamic Fracture Mechanics"
+    authors: "Freund LB"
+    venue: "Cambridge University Press, Cambridge Monographs on Mechanics (1990)"
+    doi: 10.1017/CBO9780511546761
+  hofhuis2016:
+    title: "Morphomechanical Innovation Drives Explosive Seed Dispersal"
+    authors: "Hofhuis H, Moulton D, Lessinnes T, Routier-Kierzkowska A-L, Bomphrey RJ, Mosca G, Reinhardt H, Sarchet P, Gan X, Tsiantis M, Ventikos Y, Walker S, Goriely A, Smith R, Hay A"
+    venue: "Cell 166(1):222-233 (2016)"
+    doi: 10.1016/j.cell.2016.05.002
+  swaine1977:
+    title: "Explosive Seed Dispersal in Hura crepitans L. (Euphorbiaceae)"
+    authors: "Swaine MD, Beer T"
+    venue: "New Phytologist 78(3):695-708 (1977)"
+    doi: 10.1111/j.1469-8137.1977.tb02174.x
+  vogel2005:
+    title: "Living in a Physical World II. The Bio-Ballistics of Small Projectiles"
+    authors: "Vogel S"
+    venue: "Journal of Biosciences 30(2):167-175 (2005)"
+    doi: 10.1007/BF02703696
+
+simulations:
+  - id: liang-chiral-seed-pod-opening
+    name: "Armon et al. (2011) Science / Efrati et al. (2009) JMPS Incompatible Shell Elasticity & Chiral Seed Pod Opening"
+    organism: "Bauhinia variegata (Orchid tree chiral seed pod valves) & Erythrina corallodendron"
+    script: 2007-liang-chiral-seed-pod-opening.py
+    output: docs/media/chiral_seed_pod_opening_comparison.png
+    extra_outputs:
+      - docs/media/chiral_seed_pod_opening_growth.gif
+      - docs/media/chiral_seed_pod_opening_suture_fracture.png
+      - docs/media/chiral_seed_pod_opening_suture_fracture.gif
+    status: evaluated
+    supersedes_audit_id: 2026-10-19-chiral-seed-pod-opening-audit-v2
+    source_refs:
+      - armon2011
+      - efrati2009
+      - armon2014
+      - forterre2005
+      - freund1990
+      - hofhuis2016
+      - swaine1977
+      - vogel2005
+    claim_boundary:
+      reported_in_source:
+        - "Armon et al. (2011): orthogonal +-45 deg sclerenchyma layers prescribe a saddle target curvature b_0 = diag(kappa_0, -kappa_0) with det(b_0) < 0; narrow strips (w_tilde below a critical FvK width) adopt pure-twist helicoids, wide strips cylindrical helical ribbons; cutting angle controls chirality and pitch"
+        - "Efrati et al. (2009): incompatible non-Euclidean plate energy E = E_stretch + E_bend with bending content proportional to Y h^3 [nu Tr(M)^2 + (1 - nu) Tr(M^2)], M = b - b_0"
+        - "Freund (1990): mode-I dynamic energy release rate G_dyn(v) ~ (1 - v/c_R) G, so a crack runs at v = c_R (1 - Gamma_c/G) and arrests when Gamma_c >= G"
+        - "Hofhuis et al. (2016) / Swaine & Beer (1977) / Vogel (2005): explosive seed launch speeds of order 10 m/s (Cardamine) and 70 m/s (Hura), elastic-catapult energy budgets and drag-limited ranges of small projectiles"
+      reconstructed_in_script:
+        - "Reduced L-BFGS-B non-Euclidean energy functional U(H, D, phi; w_tilde) over the dimensionless width, pitchfork sweep, cutting-angle sweep, 4-system table, 3-D ribbon mesh and specimen segmentation (Pass 2); Pass 3 adds B_eff Delta_e -> suture G, a 1-D Freund crack equation of motion over a seeded heterogeneous toughness field, drying-coupled Griffith initiation and stick-slip propagation, an elastic-catapult launch-speed estimate and an RK4 quadratic-drag trajectory, and a 7-point Gamma_c/G ablation sweep"
+      transfer_boundary:
+        - "The `*_obs` columns of the width and cutting-angle sweep tables in chiral_seed_pod_opening_reference.json are analytical values of the same reduced model (H_obs = (1 - nu)/2 sqrt(1 - (w_tilde_c/w_tilde)^4), tau_obs = D sin 2theta), not digitised Armon 2011 figure points; the r = 1.0000 correlations are self-consistency, not validation"
+        - "The launch-speed benchmark (10 m/s) is Cardamine hirsuta and the upper bound (70 m/s) is Hura crepitans; no Bauhinia variegata launch-speed, suture-toughness or dispersal datum was verifiable offline, and the predicted 2.8-3.8 m/s is ~3.6x below the Cardamine value"
+        - "All 12 fracture/ballistic constants (rho, Gamma_c, CV_Gamma, a_0, tau_dry, n_seeds, m_seed, r_seed, C_d, eta, launch angle, launch height) are `provenance: model` in suture_fracture_ballistic_reference.json"
+      does_not_claim:
+        - "3-D elastodynamic shell or FEM simulation of valve coiling (inertia enters only via eta and a first-mode cantilever coil time), plate-wave corrections to c_R, a measured Bauhinia fracture toughness or seed mass, or digitised comparison against Armon 2011 Figs. 3-4"
+    summary: >-
+      Pass 3 (v3) evaluation of `2007-liang-chiral-seed-pod-opening.py` (overall weighted score 87.1/100, down from
+      93.4 in v2). The single v2 remediation item is closed honestly as a reduced 1-D model: the Pass 2 L-BFGS-B
+      minimizer now supplies a suture energy release rate G = B_eff (kappa_0^2 - e_final) W / h (278 J/m^2 fully dried)
+      that drives a Freund (1990) crack equation of motion along a seeded heterogeneous suture, coupled to a desiccation
+      curve kappa_0(t) (Griffith initiation at 63.7 h, 9 stick-slip jumps, opening fraction 1.0, <v_crack> = 0.086 c_R),
+      an elastic-catapult launch-speed estimate (2.77 m/s) and a drag-limited ballistic range (1.65 m), with a 7-point
+      toughness ablation that reproduces the Freund law (r = 1.0000) and a Gamma_c >= G no-fracture control. Two new
+      Lean 4 theorems (5 laws, 0 sorrys) and 4 new self-test checks (12/12) were added. The score falls because the
+      remediation exposed that the v2 "observations" were analytical outputs of the same model, the specimen-CV
+      reference is the script's own value, the pitchfork threshold is an input rather than emergent, and every Pass 3
+      fracture/ballistic constant is an unsourced modelling choice benchmarked against a different taxon.
+    scores:
+      model-fidelity:
+        value: 90
+        rationale: >-
+          The incompatible-plate core is unchanged and credited (saddle b_0 with det(b_0) = -kappa_0^2 < 0,
+          `compute_target_curvature_tensor` L174-209; FvK critical width L210-217; L-BFGS-B minimizer of
+          U(H, D, phi; w_tilde) L278-416). Pass 3 adds a physically coherent reduced coupling: B_eff derived from the
+          Efrati bending content (L733-741), Delta_e -> G (L743-776), Freund's equation of motion with arrest
+          (L783-790, L807-859), drying-driven Griffith initiation and stick-slip in
+          `simulate_suture_fracture_ballistic_ejection` (L932-1097), and energy-partition ballistics (L861-879,
+          L889-931), each with a negative control and backed by 2 new Lean theorems. Deductions: the pitchfork
+          threshold is prescribed, not emergent — Lambda is normalised by (w_tilde/w_tilde_c)^4 (L324-325) so the
+          bifurcation occurs at w_tilde_c by construction (-3); after the minimizer, H is forced to 0 for
+          w_tilde <= w_tilde_c, its sign is forced to `branch`, and phi is snapped to 0 (L362-366), so the reported
+          branch structure is partly post-processed (-3); e_init = kappa_0^2 assumes a perfectly flat closed valve
+          (upper bound on stored energy, L753-756), the crack area assumes h_suture = h, c_R uses the bulk shear speed
+          not plate waves (L778-781), and m_eff = m_seg/3 is a cantilever heuristic (L871-875) — no flexural or
+          snap-through dynamics of the coiling valve are simulated (-4).
+        evidence:
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [174, 217], note: "Rotated saddle target curvature tensor b_0(theta) with det(b_0) = -kappa_0^2 < 0 and FvK critical width w_tilde_c", supports: true}
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [278, 416], note: "L-BFGS-B minimizer of the reduced non-Euclidean energy; Lambda normalised by (w_tilde/w_tilde_c)^4 at L324-325 and H/branch/phi post-processing at L362-366 make the pitchfork partly prescribed", supports: false}
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [733, 790], note: "B_eff from the Efrati 2009 bending content, released energy density Delta_e -> suture G, Rayleigh speed and Freund crack speed law with arrest", supports: true}
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [807, 931], note: "Explicit da/dt integration with arrest, elastic-catapult launch speed (cantilever m/3 heuristic), cantilever coil time and RK4 quadratic-drag ballistics", supports: true}
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [932, 1097], note: "Two-timescale coupling: desiccation kappa_0(t) -> minimizer -> G(t) -> Griffith initiation, stick-slip jumps, seed ejection timeline", supports: true}
+          - {file: morphoeval/lean/loops/Loop_065_chiral_seed_pod_opening.lean, lines: [126, 189], note: "freund_crack_speed_arrest_and_monotonicity and elastic_catapult_energy_partition (Int-linear abstractions of the scaled Freund law and eta energy partition; 0 sorrys)", supports: true}
+      specimen-match:
+        value: 86
+        rationale: >-
+          The SHA-256-locked Bauhinia variegata specimen (MHNT.BOT.2011.3.22) is still segmented into both dehisced
+          valves and 8 helical lobe apices (`segment_bauhinia_pod_specimen` L1163-1248) and Panel E overlays the
+          segmentation on the photograph; the 9-panel figure now adds suture-crack, catapult and ballistic panels
+          (G-I, `_draw_fracture_panels` L1249-1358) and a 45-frame fracture GIF (L1666-1778). Deductions: the ROI
+          `x0, y0, x1, y1 = 150, 60, 928, 452` is hard-coded (L1175) and the upper/lower valve assignment relies on
+          `runs[0]`/`runs[-1]` column logic (L1194-1200), which is brittle (-3); the 4-system table's Erythrina and
+          latex R_obs/P_obs carry only "p. 1726"/"Fig. 2 & 3" pointers with no digitisation coordinates and the
+          Bauhinia R_obs = 3.39 cm vs sim 3.396 cm suggests back-computation (`evaluate_pod_and_mimetic_specimens`
+          L645-722; JSON L70-123) (-4); the new fracture/ballistic panels compare against Cardamine and Hura
+          (different taxa) because no Bauhinia launch-speed or dispersal specimen datum exists in the package (-4);
+          Panel A has no specimen overlay and the 3-D mesh cup = 0.5 kappa_t T^2 and helix frame (L466-479) are
+          unvalidated visual heuristics (-3).
+        evidence:
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [1163, 1248], note: "Contour and bilayer reflectance segmentation of the SHA-locked Bauhinia specimen; hard-coded ROI at L1175 and runs[0]/runs[-1] valve assignment at L1194-1200", supports: true}
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [645, 722], note: "4-system table evaluation; the JSON R_obs/P_obs for Erythrina and latex carry page pointers only, no digitisation coordinates", supports: false}
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [1249, 1358], note: "Panels G-I: suture toughness profile and crack tip trajectory, catapult speed vs Gamma_c/G with Cardamine/Hura transfer-boundary lines, ballistic arcs", supports: true}
+          - {file: docs/media/chiral_seed_pod_opening_comparison.png, lines: [0, 0], note: "9-panel synthesis figure: 3-D meshes, pitchfork, R/P transition, cutting-angle sweep, specimen segmentation, 4-system validation, suture fracture, catapult, ballistics", supports: true}
+          - {file: docs/media/chiral_seed_pod_opening_suture_fracture.gif, lines: [0, 0], note: "45-frame fracture GIF: toughness profile, crack tip, seed ballistic arcs; no specimen footage to compare against", supports: true}
+      parameter-expressivity:
+        value: 94
+        rationale: >-
+          Pass 2 sweeps are retained (11-point w_tilde pitchfork L497-576, 7-point cutting angle L577-644, 4 systems
+          L645-722). Pass 3 adds the 7-point Gamma_c/G in {0.2..1.2} ablation with homogeneous vs heterogeneous suture
+          and a Gamma_c >= G no-fracture negative control (`evaluate_suture_toughness_sweep` L1098-1162), the
+          desiccation trajectory kappa_0(t) as a swept driver (L932-1097), eta-scaling of the launch speed checked in
+          the self-test, and new CLI overrides `--gamma-c`, `--eta`, `--m-seed` plus a `--fracture-json` summary mode
+          (L2079-2082, L2103-2109), all wired into the simulation. Deductions: CV_Gamma, a_0, tau_dry, launch angle
+          and height are fixed JSON constants with no CLI or sweep (-3); the opening fraction near Gamma_c ~ G is set
+          by the numerical arrest threshold `v_arrest_frac = 0.01` (L815, L831), which is not exposed or swept (-3).
+        evidence:
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [497, 722], note: "11-point w_tilde pitchfork sweep, 7-point cutting-angle chirality sweep, 4-system benchmark evaluation (Pass 2, retained)", supports: true}
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [1098, 1162], note: "7-point Gamma_c/G toughness sweep, homogeneous vs heterogeneous suture, no-fracture control", supports: true}
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [2069, 2121], note: "CLI: --kappa0 --nu --W --h --L --seed plus Pass 3 --gamma-c --eta --m-seed --fracture-json; overrides wired into simulate_suture_fracture_ballistic_ejection and rendering", supports: true}
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [807, 835], note: "v_arrest_frac = 0.01 numerical arrest threshold sets opening fraction near Gamma_c ~ G; not exposed", supports: false}
+      morphometric-validation:
+        value: 72
+        rationale: >-
+          `measure_morphoeval()` (L1779-1944) now returns 15 measurements with references, uncertainties and tests,
+          and the Pass 3 negative controls (kappa_0 = 0, Gamma_c >= G, achiral rings) behave correctly. Deductions are
+          large because the remediation exposed that most references are not empirical: measurements 3-7 compare the
+          minimizer against the `*_obs` columns of chiral_seed_pod_opening_reference.json (L48-59, L61-68), which are
+          analytical values of the same reduced model (H_obs = (1 - nu)/2 sqrt(1 - (w_tilde_c/w_tilde)^4),
+          tau_obs = D sin 2theta), so r = 1.0000 is self-consistency, not validation against Armon 2011 Figs. 3-4
+          (-10); measurement 9 uses `reference_value: 0.24` (L1877) that is the script's own computed CV 0.2405 (-4);
+          of the six Pass 3 measurements, #10's reference is the model Gamma_c (L1888), #11's is the analytical
+          self-estimate -tau ln(1 - sqrt(Gamma/G)) (L1898), #12's is the Freund law itself, #13's is a qualitative
+          "complete dehiscence" 1.0, #14's 10 m/s is Cardamine (L1928; Bauhinia predicted 3.6x lower), and #15's is
+          the drag-free bound (L1938) — consistency checks, not empirical morphometrics (-8). The 4-system pitch
+          correlation (r = 0.9994) and the specimen lobe segmentation remain the only comparisons to numbers that
+          originate outside the script.
+        evidence:
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [1779, 1944], note: "15 measurements with RMSE/p-values/CV; references for #3-7 are analytic model values, #9 is the script's own CV, #10-15 are model/theory/transfer references", supports: false}
+          - {file: datasets/chiral_seed_pod_opening/chiral_seed_pod_opening_reference.json, lines: [48, 68], note: "Width and cutting-angle sweep *_obs columns are analytical values of the reduced model, not digitised Armon 2011 figure points", supports: false}
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [1098, 1162], note: "Freund-law reproduction (r = 1.0000, RMSE 1.8e-4) on the homogeneous suture and arrest on the heterogeneous suture — correct internal consistency checks", supports: true}
+          - {file: datasets/chiral_seed_pod_opening/suture_fracture_ballistic_reference.json, lines: [54, 75], note: "Transfer-boundary benchmarks: Cardamine ~10 m/s and Hura ~70 m/s, recalled values not digitised; no Bauhinia datum", supports: false}
+      source-traceability:
+        value: 86
+        rationale: >-
+          Five dataset files are SHA-256-pinned and verified fail-closed at runtime (`EXPECTED_SHA256` L106-127,
+          `verify_dataset_integrity` L137-150), including the new `suture_fracture_ballistic_reference.json` whose
+          every constant carries a `provenance` flag (source / derived / model) and an explicit honesty note (JSON L9),
+          and `paper_citations.bib` gains Freund 1990, Hofhuis 2016, Swaine & Beer 1977 and Vogel 2005 with the
+          offline-unverified status recorded in each `note` (bib L47-92). Deductions: 12 of the Pass 3 constants are
+          `provenance: model` (rho, Gamma_c, CV_Gamma, a_0, tau_dry, n_seeds, m_seed, r_seed, C_d, eta, angle, height;
+          JSON L29, L37-39, L41, L44-50) and Y = 420 MPa is inherited from the Pass 2 JSON default with no table
+          citation (JSON L27) (-5); the four new DOIs could not be verified offline (-3); the bilayer formula's
+          "p. 1726-1727" attribution and the w_tilde_c formula's "Eq. 3 & SOM" attribution are unverified, and the
+          Pass 2 calibration Delta_eps = 0.0266 (L161, L1789) is chosen so that 1.5 * 0.0266 / 0.095 = 0.42 exactly
+          (-3); Forterre 2005 is cited in the header (L19-22) and bib but used in no computation (-2); the SHA-pinned
+          reference JSON still shows the un-normalised energy density (JSON L33) while the code uses the
+          w_tilde_c-normalised form (-1).
+        evidence:
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [106, 150], note: "SHA-256 registry for 5 dataset files (Pass 3 adds suture_fracture_ballistic_reference.json and re-pins the bib) with fail-closed runtime verification", supports: true}
+          - {file: datasets/chiral_seed_pod_opening/suture_fracture_ballistic_reference.json, lines: [9, 52], note: "Honesty note and per-constant provenance flags; 12 constants are provenance: model, Y = 420 MPa inherits an uncited Pass 2 default", supports: false}
+          - {file: datasets/chiral_seed_pod_opening/paper_citations.bib, lines: [47, 92], note: "Four new BibTeX entries with DOIs and 'DOI unverified offline' notes", supports: true}
+          - {file: datasets/chiral_seed_pod_opening/chiral_seed_pod_opening_reference.json, lines: [70, 123], note: "4-system table with page/figure pointers only; no digitisation coordinates for Erythrina or latex R_obs/P_obs", supports: false}
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [160, 173], note: "compute_sclerenchyma_bilayer_kappa0 default Delta_eps = 0.0266 reproduces kappa_0 = 0.42 exactly; attribution of the 3/2 bilayer formula unverified", supports: false}
+      code-traceability:
+        value: 92
+        rationale: >-
+          The module header maps Laws 1-5 to the Lean theorems and to Armon 2011 / Efrati 2009 / Freund 1990 /
+          Vogel 2005 (L1-74), and each Pass 3 function docstring states its equation and Lean link
+          (`bending_energy_prefactor` L733-741 derives B_eff from the Efrati bending content; `freund_crack_speed`
+          L783-790; `elastic_catapult_seed_speed` L861-879). The math-KG registration lists equations 4-5 with
+          single-range `code_locus`, `code_locus_secondary` and `lean_locus`. Deductions: the file name
+          `2007-liang-...` and sim_id `liang-chiral-seed-pod-opening` do not match the seed paper (Armon et al. 2011) —
+          a campaign-level identity mismatch that propagates into every audit, KG and run id (-3); the Lean theorems
+          are Int-linear abstractions (scaled Freund speed c_R (G - Gamma), eta Delta_U partition), not statements
+          about the ODE integration or the minimizer (-2); the "Eq. 3 & SOM" and "p. 1726-1727" pinpoints are
+          unverified and the heuristic choices (v_arrest_frac, m/3, h_suture = h) are documented in docstrings but not
+          traced to a source (-3).
+        evidence:
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [1, 74], note: "Module header: Laws 1-5 mapped to Lean theorems and to Armon/Efrati/Freund/Vogel; file name and sim_id still say 'liang'", supports: true}
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [733, 790], note: "Docstrings derive B_eff from the Efrati 2009 bending content and state the Freund (1990) equation of motion with Lean link", supports: true}
+          - {file: morphoeval/math_kg_loops/liang-chiral-seed-pod-opening.yaml, lines: [89, 126], note: "Equations 4-5 registered with single-range code_locus, code_locus_secondary and lean_locus", supports: true}
+          - {file: morphoeval/lean/loops/Loop_065_chiral_seed_pod_opening.lean, lines: [126, 149], note: "freund_scaled_crack_speed is c_R (G - Gamma) over Int — an abstraction of the law, not of integrate_suture_crack", supports: false}
+      repro-package:
+        value: 95
+        rationale: >-
+          `self_test()` (L1946-2067) runs 12 checks in 2.3 s: 8 Pass 2 checks plus energy bookkeeping, Freund law and
+          arrest, drying-coupled dehiscence + catapult + ballistics + no-fracture control + eta-scaling, and toughness
+          sweep + two-run determinism; SHA-256 verification is fail-closed; the default render completes in ~8.5 s and
+          writes the 9-panel PNG, the fracture PNG and both GIFs (`main` L2069-2121); `--fracture-json` emits a
+          machine-readable summary. Deductions: the drying grid (96 points, ~4.5 h) sets the t_c resolution and is
+          not a CLI parameter (-2); the growth GIF is byte-identical to the committed version and does not reflect
+          Pass 3, and Panel I's legend overlaps the Hura label (-2); the PNG outputs are gitignored so the rendered
+          figures are not versioned (-1).
+        evidence:
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [1946, 2067], note: "12-check self_test(): SHA integrity, incompatibility, controls, pitchfork, chirality, 4-system, specimen CV, energy bookkeeping, Freund law/arrest, drying-coupled dehiscence/catapult/ballistics, toughness sweep, bitwise determinism", supports: true}
+          - {file: 2007-liang-chiral-seed-pod-opening.py, lines: [2069, 2121], note: "main(): CLI, --fracture-json JSON summary, renders comparison PNG, fracture PNG, growth GIF and fracture GIF", supports: true}
+          - {file: datasets/chiral_seed_pod_opening/README.md, lines: [22, 35], note: "File table updated with the Pass 3 JSON and bib re-pin; Pass 3 section documents the reduced model and provenance flags", supports: true}
+          - {file: docs/media/chiral_seed_pod_opening_suture_fracture.png, lines: [0, 0], note: "Standalone Pass 3 fracture/ballistic figure rendered by render_fracture_ballistic_figure (L1359-1376) on every default run", supports: true}
+          - {file: docs/media/chiral_seed_pod_opening_growth.gif, lines: [0, 0], note: "12-frame growth GIF regenerated by the default run; byte-identical to the committed Pass 2 version (Pass 3 did not change it)", supports: false}
+    remediation:
+    - >-
+      datasets/chiral_seed_pod_opening/chiral_seed_pod_opening_reference.json:48-68 with
+      2007-liang-chiral-seed-pod-opening.py:1811-1861 — the `*_obs` columns of the width and cutting-angle sweeps are
+      analytical values of the same reduced model, so measurements 3-7 (r = 1.0000) are self-referential. Replace them
+      with digitised Armon 2011 Fig. 3-4 points (plot-digitiser coordinates, axis calibration and provenance recorded in
+      the JSON) and re-pin the SHA-256; drop or re-source the specimen-CV reference 0.24 at L1877, which is the
+      script's own output.
+    - >-
+      datasets/chiral_seed_pod_opening/suture_fracture_ballistic_reference.json:29-50 and
+      2007-liang-chiral-seed-pod-opening.py:1882-1943 — all 12 fracture/ballistic constants are `provenance: model`
+      and the launch-speed benchmark (L1928, 10 m/s) is Cardamine hirsuta. Source or measure Bauhinia variegata suture
+      toughness, seed mass and a launch-speed / dispersal-kernel datum (high-speed video or field dispersal) and
+      replace the transfer-boundary references; cite the Y = 420 MPa default (JSON L27).
+    - >-
+      2007-liang-chiral-seed-pod-opening.py:861-887 and 932-1097 — ejection speed is an eta energy partition with a
+      cantilever m/3 heuristic and a first-mode coil time; no flexural or snap-through dynamics of the coiling valve are
+      simulated. Add valve coiling elastodynamics (Kirchhoff rod or shallow-shell with inertia, Forterre 2005 style
+      snap-through) so v_seed emerges from the dynamics rather than from eta, and replace the bulk-shear c_R (L778-781)
+      with plate-wave speeds.
+    - >-
+      2007-liang-chiral-seed-pod-opening.py:324-325 and 362-366 — Lambda is normalised by (w_tilde/w_tilde_c)^4 so the
+      pitchfork is at w_tilde_c by construction, and H / branch sign / phi are post-processed after the minimizer.
+      Derive Lambda from the unnormalised FvK stretching coefficient so w_tilde_c is emergent, remove the H = 0 and
+      sign forcing, and update the SHA-pinned JSON `reduced_non_euclidean_energy_density` (L33) to the form the code
+      actually minimises.
+    - >-
+      datasets/chiral_seed_pod_opening/paper_citations.bib:49-92 — the four new DOIs (Freund 1990, Hofhuis 2016,
+      Swaine & Beer 1977, Vogel 2005) are flagged unverified offline and the "~10 m/s" / "~70 m/s" values are recalled;
+      verify the DOIs online, digitise the launch-speed figures with page pinpoints, and either use Forterre 2005
+      (header L19-22) in a computation or drop it from `source_refs`.
+    - >-
+      2007-liang-chiral-seed-pod-opening.py:1175 and 1194-1200 — the specimen ROI is hard-coded and the upper/lower
+      valve assignment uses `runs[0]`/`runs[-1]`; expose the ROI in the JSON with provenance, make the valve assignment
+      robust to the number of runs, and overlay the specimen outline on Panel A so the 3-D mesh heuristic
+      (cup = 0.5 kappa_t T^2, L479) is checked visually.

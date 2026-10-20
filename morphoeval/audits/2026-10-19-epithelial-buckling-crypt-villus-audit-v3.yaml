@@ -1,0 +1,370 @@
+# MorphoEval audit — Hannezo, Prost & Joanny (2011) PRL & Shyer et al. (2013) Science Sequential Smooth-Muscle Mucosal Buckling, 2026-10-19 (v3)
+#
+# Pass 3 re-score of `2013-shyer-intestinal-villi-buckling.py` (1985 lines) and `datasets/epithelial_buckling_crypt_villus/`
+# after the remediation of the single open v2 item in the instrumented loop
+# `morphoeval/runs/2026-10-19-epithelial-buckling-crypt-villus-loop-pass3`, superseding
+# `2026-10-19-epithelial-buckling-crypt-villus-audit-v2` (93.1).
+#   - Primary assessor: Claude Fable 5.1 (Phase B audit subagent, slot-063 Pass 3), scoring from the Phase A
+#     handoff note, `git diff` of the script and Lean module, and the CURRENT files at commit 45670cb8.
+#
+# What Pass 3 changed (the one v2 remediation item, closed as a reduced honest version):
+#   1. Tubular neo-Hookean foundation: a 48-element axisymmetric plane-strain ring FEM of the mesenchymal annulus
+#      R_lumen..R_lumen+H_s (`tubular_neo_hookean_foundation`, L290-365) verified against the Lamé thick-cylinder
+#      closed form (rel. err 2.7e-6), its slab limit (2.6e-6) and h-convergence (<1e-4); K_eff = (E_s/H_s) f_curv f_pre
+#      rescales ell_*, lambda_*, N_c inside `relax_fvk_mucosal_surface` (L565-586); integer circumferential mode
+#      quantisation n = round(2 pi R / lambda) and the Donnell curvature ratio gamma (0.65 at E8 -> 0.07 at E16).
+#      Results: 5-stage tube lambda RMSE 1.72 um (flat 1.47 um), quantised ridge counts 10/12/16/19/26 vs obs
+#      10/12/16/19/25, curvature factor 0.88-0.93.
+#   2. Spatially localized Shh/BMP mesenchymal clusters: Shh = G_sigma * [(-lap w)_+ (1 + zeta lambda |kappa_c|)],
+#      soft threshold above the 82nd percentile -> cluster indicator C; localized cubic gain alpha_3(x,y) = alpha_3 +
+#      0.60 C; linear (Newton) FvK response solved spectrally (L734-793). Results: E14 elbow-localization index 1.42,
+#      E16 1.19 clusters per villus (83% of cluster mass on tips), E14 elbow bulge 5.9 um vs 0 in the ablation.
+#   3. Lean module extended from 3 to 6 theorems (0 sorrys): `tubular_mode_quantization`,
+#      `shh_bmp_elbow_localization`, `shh_bmp_elbow_villus_nucleation`; math-KG Laws 4 and 5 registered.
+#   4. `measure_morphoeval()` 9 -> 17 measurements; `self_test()` 8 -> 12 checks (2.1 s); CLI `--no-tubular`,
+#      `--no-shh-bmp`, `--neo-hookean-prestrain`; two SHA-256-pinned dataset files added (6 pinned in total);
+#      new figure `docs/media/epithelial_buckling_crypt_villus_tubular_shh_bmp.png`.
+#
+# Why the overall score goes DOWN from 93.1: re-reading the current file against the v2 claims exposed a layer of
+# defects that v2 did not penalise and that Pass 3 did not remove: the stage amplitude and zigzag angle are
+# prescribed from the observed values (L666-669, L779-782), the relaxed surface is blended 85/15 with a prescribed
+# cosine (L732), the reported wavelength is 85% analytic (L802), |Psi_6| for every regime is a literal (L811-815),
+# the stage moduli in the reference JSON were fitted so the flat model reproduces lambda_obs, and the SHA-pinned
+# specimen is a terminal-ileum section of unknown species. The "E14 theta = 38.5 vs 38.5" and "E16 |Psi_6| = 0.78
+# vs 0.78" measurements are therefore templated, not predicted. Pass 3's own additions are honestly reduced
+# (axisymmetric, curvature-driven Shh), and are credited as such.
+#
+# Scores are uncalibrated criterion-referenced scores on the rubric's 0-100 scale (not calibrated probabilities).
+# Line numbers refer to the files at commit 45670cb8 (uncommitted working tree, verified by grep at audit time).
+
+audit:
+  id: 2026-10-19-epithelial-buckling-crypt-villus-audit-v3
+  supersedes: 2026-10-19-epithelial-buckling-crypt-villus-audit-v2
+  supersedes_audit_id: 2026-10-19-epithelial-buckling-crypt-villus-audit-v2
+  rubric_version: 0.1.0
+  date: "2026-10-20"
+  assessor:
+    id: claude-fable-5-1
+    label: "Claude Fable 5.1 (MorphoEval Autonomous Loop Slot 063 Pass 3 Phase B Assessor)"
+    homepage: https://www.anthropic.com
+  second_assessor:
+    id: gemini-4-argon
+    label: "Gemini 4 Argon (Pass 2 primary assessor, v2 scores retained as the comparison baseline; no independent v3 re-score)"
+    homepage: https://deepmind.google
+  publisher_orcid: null
+  publisher_github: https://github.com/fractastical
+  license: https://creativecommons.org/licenses/by/4.0/
+  code_creators:
+    - id: joel-dietz
+      name: "Joel Dietz"
+      orcid: null
+      github: https://github.com/fractastical
+  domain: morphogenesis
+  tracked_by: https://github.com/fractastical/morpholib/issues/63
+  checkpoint:
+    repository: https://github.com/fractastical/morpholib
+    commit: 45670cb8
+    environment:
+      python: "3.14.7"
+      numpy: "2.5.4"
+      scipy: "1.16.3"
+      matplotlib: "3.10.7"
+      Pillow: "12.0.0"
+    note: >-
+      45670cb8 is the HEAD at the Pass 3 checkpoint; the audited script, Lean module, math-KG YAML and dataset
+      files are the Pass 3 working-tree versions produced by `2026-10-19-epithelial-buckling-crypt-villus-loop-pass3`
+      Phase A (script 1985 lines, 12 self-test checks, 17 measurements, 6 Lean theorems). `--self-test` passes in
+      2.1 s and the default render (comparison PNG, tubular_shh_bmp PNG, growth GIF) completes in 2.4 s.
+
+references:
+  shyer2013:
+    title: "Villification: how the gut gets its villi"
+    authors: "Shyer AE, Tallinen T, Nerurkar NL, Wei Z, Gil ES, Kaplan DL, Tabin CJ, Mahadevan L"
+    venue: "Science 342(6155):212-218 (2013)"
+    doi: 10.1126/science.1238842
+  hannezo2011:
+    title: "Instabilities of monolayered epithelia: coupled bending and polarity-driven forces"
+    authors: "Hannezo E, Prost J, Joanny J-F"
+    venue: "Physical Review Letters 107(7):078104 (2011)"
+    doi: 10.1103/PhysRevLett.107.078104
+  tallinen2013:
+    title: "Surface sulci in squeezed slabs"
+    authors: "Tallinen T, Biggins JS, Mahadevan L"
+    venue: "Physical Review Letters 110(2):024302 (2013)"
+    doi: 10.1103/PhysRevLett.110.024302
+  walton2012:
+    title: "Hedgehog-responsive mesenchymal clusters direct patterned epithelial folding in the developing mouse intestine"
+    authors: "Walton KD, Kolterud A, Czerwinski MJ, Bell MJ, Prakash A, Kushwaha J, Grosse AS, Schnell S, Gumucio DL"
+    venue: "Proceedings of the National Academy of Sciences 109(39):15817-15822 (2012)"
+    doi: 10.1073/pnas.1205669109
+  shyer2015:
+    title: "Bending gradients: how the intestinal stem cell gets its home"
+    authors: "Shyer AE, Huycke TR, Lee C, Mahadevan L, Tabin CJ"
+    venue: "Cell 161(3):569-580 (2015); DOI recorded offline from the Phase A handoff, not re-verified online during this audit"
+    doi: 10.1016/j.cell.2015.03.041
+  walton2016:
+    title: "Villification in the mouse: Bmp signals control intestinal villus patterning"
+    authors: "Walton KD, Whidden M, Kolterud Å, Shoffner SK, Czerwinski MJ, Kushwaha J, Parmar N, Chandhrasekhar D, Freddo AM, Schnell S, Gumucio DL"
+    venue: "Development 143(3):427-436 (2016); DOI recorded offline from the Phase A handoff, not re-verified online during this audit"
+    doi: 10.1242/dev.130112
+  donnell1933:
+    title: "Stability of thin-walled tubes under torsion"
+    authors: "Donnell LH"
+    venue: "NACA Report 479 (1933)"
+    url: https://ntrs.nasa.gov/citations/19930091553
+  timoshenko1970:
+    title: "Theory of Elasticity (3rd ed.), §28 thick-walled cylinder (Lamé problem)"
+    authors: "Timoshenko SP, Goodier JN"
+    venue: "McGraw-Hill, New York (1970)"
+    url: https://archive.org/details/theoryofelastici0000timo
+
+simulations:
+  - id: shyer-intestinal-villi-buckling
+    name: "Hannezo et al. (2011) PRL & Shyer et al. (2013) Science sequential smooth-muscle mucosal buckling into ridges, zigzags, and hexagonal villi"
+    organism: "Vertebrate embryonic gut mucosa (Gallus gallus, Coturnix japonica, Mus musculus)"
+    script: 2013-shyer-intestinal-villi-buckling.py
+    output: docs/media/epithelial_buckling_crypt_villus_comparison.png
+    extra_outputs:
+      - docs/media/epithelial_buckling_crypt_villus_growth.gif
+      - docs/media/epithelial_buckling_crypt_villus_tubular_shh_bmp.png
+    also:
+      - docs/media/epithelial_buckling_crypt_villus_growth.gif
+      - docs/media/epithelial_buckling_crypt_villus_tubular_shh_bmp.png
+      - datasets/epithelial_buckling_crypt_villus/tubular_shh_bmp_reference.json
+      - datasets/epithelial_buckling_crypt_villus/pass3_citations.bib
+    domain: morphogenesis
+    status: evaluated
+    source_refs: [shyer2013, hannezo2011, tallinen2013, walton2012, shyer2015, walton2016, donnell1933, timoshenko1970]
+    supersedes_audit_id: 2026-10-19-epithelial-buckling-crypt-villus-audit-v2
+    claim_boundary:
+      reported_in_source:
+        - "Shyer et al. (2013): sequential differentiation of circumferential, longitudinal and second circumferential smooth-muscle layers compresses the chick gut mucosa into longitudinal ridges (E8-E10), herringbone zigzags (E13-E14) and a hexagonal array of villi (E16); FK506 muscle inhibition and surgical slitting arrest the cascade at the preceding regime; the wavelength scales as a quartic length (B_e/K_s)^(1/4) across chick, quail and mouse"
+        - "Hannezo, Prost & Joanny (2011): buckling of a monolayered epithelium on an elastic stroma with wavenumber q_* = (K_s/B_e)^(1/4) and an apicobasal cubic term that selects finger-like protrusions over invaginations"
+        - "Walton et al. (2012, 2016) and Shyer et al. (2015): Hh-responsive mesenchymal clusters localise under the epithelium at the tips of emerging villi (mouse) and at the high-curvature elbows of zigzags (chick), with BMP signalling from the clusters"
+        - "Timoshenko & Goodier (1970) §28 and Donnell (1933): the Lamé thick-walled cylinder displacement u = A r + B/r and the shell curvature parameter that controls when a flat-plate (FvK) reduction of a thin cylindrical shell is valid"
+      reconstructed_in_script:
+        - "Mucosal bending rigidity B_e, Winkler foundation K_s, quartic length ell_* and a 4-regime classifier; a 64^2 pseudo-spectral FvK free energy minimised by L-BFGS-B (65 iterations) then blended with a prescribed cosine; a 48-element axisymmetric plane-strain ring FEM of the mesenchymal annulus with rigid outer (smooth-muscle) wall giving K_tube, slab limit, curvature factor and optional neo-Hookean prestrain tangent; integer mode quantisation n = round(2 pi R / lambda) and the Donnell ratio per stage; an OLS-through-origin tube prefactor c_tube = 0.5513; a curvature-driven Shh field, percentile-thresholded cluster indicator, localized cubic gain and a linear spectral Newton response with a 30% trust region; a 12-point 3-species wavelength collapse; 5 FK506/surgical controls; DoG + Delaunay segmentation of the vendored specimen; 17 reference-anchored measurements"
+      transfer_boundary:
+        - "The tubular coupling is a 1D-radial axisymmetric FEM feeding a scalar K_eff into the 2D flat FvK sheet, not a 3D non-axisymmetric tubular neo-Hookean solid; the Donnell ratio itself says the flat reduction is only well justified from E13 on (gamma 0.65 at E8)"
+        - "Stage amplitudes, zigzag angles and |Psi_6| are prescribed from the observed values (or literals) rather than emerging from the minimiser, so the amplitude, theta and |Psi_6| 'measurements' are templated; the reported lambda_sim is 0.85 lambda_* + 0.15 lambda_fft"
+        - "The stage-resolved E_e, E_s, H_s, epsilon_x, epsilon_y, alpha_3 in epithelial_buckling_crypt_villus_reference.json were fitted so that the flat model with C_LAMBDA_PREFACTOR = 0.5690 reproduces lambda_obs; the r = 0.9996 collapse inherits that fit"
+        - "The Shh field is curvature-driven (no Ptch1/Gli reaction-diffusion); elbow curvature is proxied by crest-contour turning curvature because the prescribed developable surface has no preferential elbow dome curvature; cluster-enrichment references are qualitative (null = 1.0)"
+        - "The SHA-pinned specimen is a CC0 terminal-ileum H&E cross-section of unknown species and age, compared with chick E16 hexagonal order without a pixel scale"
+      does_not_claim:
+        - "A full 3D tubular neo-Hookean finite-element solution, emergent (unprescribed) stage amplitudes or zigzag angles, a reaction-diffusion Shh/BMP/Ptch1 network, finite smooth-muscle sheath stiffness, species-matched specimen histology, or empirically measured stage-resolved mesenchymal moduli"
+    summary: >-
+      Pass 3 (v3) re-score of `2013-shyer-intestinal-villi-buckling.py` (overall 87.8/100, down from 93.1 in
+      v2). The single v2 remediation item is closed in a reduced, clearly labelled form: the flat Winkler bed is
+      replaced by a Lamé-verified axisymmetric neo-Hookean ring FEM of the mesenchymal annulus (K_eff, curvature
+      factor 0.88-0.93, integer mode quantisation reproducing 10/12/16/19/26 vs 10/12/16/19/25 observed ridges,
+      Donnell gamma per stage), and a curvature-driven Shh/BMP mesenchymal-cluster field localises the apicobasal
+      cubic gain at zigzag elbows (E14 elbow index 1.42) and villus tips (E16 1.19 clusters per villus) with a 5.9 um
+      elbow bulge absent in the `--no-shh-bmp` ablation; three new Lean theorems (6 total, 0 sorrys), 8 new
+      measurements (17 total), 4 new self-test checks (12 total), 2 new SHA-pinned dataset files and a new 4-panel
+      figure accompany it. The score falls because the current code shows that stage amplitude and zigzag angle are
+      prescribed from the observed values (L666-669, L779-782), the surface is blended 85/15 with a prescribed cosine
+      (L732), lambda_sim is 85% analytic (L802), |Psi_6| is a literal per regime (L811-815), the reference moduli were
+      fitted to lambda_obs, and the specimen is a species-unmatched ileum section — defects v2 did not penalise.
+    scores:
+      model-fidelity:
+        value: 88
+        rationale: >-
+          The Hannezo-Shyer quartic length, bending rigidity and Winkler stiffness (L202-237), the 4-regime
+          classifier (L239-254) and the FvK energy are implemented, and Pass 3 adds a genuinely new mechanical
+          layer: a Lamé-verified axisymmetric neo-Hookean ring FEM of the mesenchymal annulus with slab limit,
+          curvature factor and prestrain tangent (L261-365), integer circumferential mode quantisation and the
+          Donnell validity ratio (L368-419), and a curvature-driven Shh/BMP cluster field with a localized cubic
+          gain and linear spectral Newton response (L422-514, L734-793), all with 6 machine-checked Lean theorems.
+          Deductions: the v2 item asked for a 3D tubular FEM and the delivered foundation is 1D-radial axisymmetric
+          feeding a scalar K_eff into a flat sheet, while the script's own Donnell ratio (gamma = 0.65 at E8) says
+          the flat reduction is poorly justified at the ridge stages (-4); the zigzag angle is taken from the
+          observed target with an unsourced 0.92 fallback (L666-669) and the relaxed surface is blended 0.85
+          prescribed cosine + 0.15 relaxed (L732), so the zigzag geometry is imposed rather than selected (-4);
+          the L-BFGS-B minimiser stops on its 65-iteration limit on an ill-conditioned L_op^2 (L722) and the Pass 3
+          coupling therefore uses a linearised response rather than re-minimising (-2); the Shh field has no
+          reaction-diffusion kinetics and its elbow curvature is a contour-turning proxy, as the docstring admits
+          (-2); the ring-FEM outer wall is rigid (infinitely stiff smooth muscle) (-1); credit (+1 net) for the
+          ablation flags and the honest statement of every reduction in docstrings.
+        evidence:
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [202, 254], note: "Mucosal bending rigidity B_e, foundation stiffness K_s, quartic length ell_* with C_LAMBDA_PREFACTOR, and the 4-regime classifier", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [261, 365], note: "neo_hookean_tangent_modulus, lame_thick_cylinder_stiffness and the 48-element axisymmetric plane-strain ring FEM tubular_neo_hookean_foundation (rigid outer wall u=0, unit inward epithelial displacement) returning K_tube, K_slab, curvature_factor, prestrain_factor, K_eff", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [368, 419], note: "donnell_curvature_ratio and compute_tubular_length_and_wavelength: ell_tube, lambda_tube, integer mode quantisation n = round(2 pi R / lambda) (Lean Law 4), Donnell gamma", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [563, 588], note: "Tubular coupling block inside relax_fvk_mucosal_surface rescaling ell_*, lambda_*, N_c from K_eff and recording the tube summary", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [422, 514], note: "compute_shh_bmp_cluster_field (Gaussian-smoothed positive Laplacian amplified by crest-contour turning curvature, 82nd-percentile soft threshold, connected-component count) and summarize_cluster_localization (elbow index, crest/tip fraction)", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [734, 793], note: "Localized cubic gain alpha_3(x,y) = alpha_3 + 0.60 C and the linear spectral Newton response with a 30% trust region; elbow bulge measured against the pass-1 surface", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [666, 677], note: "theta_zz_deg taken from target_theta_zz_deg (observed) with unsourced 0.92 fallback; hexagonal regime theta_zz_deg = 58.5 literal — zigzag geometry is prescribed, not selected", supports: false}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [722, 732], note: "L-BFGS-B maxiter 65 on the ill-conditioned L_op^2 followed by the 0.85 prescribed-cosine / 0.15 relaxed blend of the surface", supports: false}
+          - {file: morphoeval/lean/loops/Loop_063_epithelial_buckling_crypt_villus.lean, lines: [29, 149], note: "6 machine-checked Lean 4 theorems (0 sorrys): wavenumber stationarity, FK506 arrest hierarchy, hexagonal triad closure, tubular_mode_quantization, shh_bmp_elbow_localization, shh_bmp_elbow_villus_nucleation; `lean` exits 0", supports: true}
+      specimen-match:
+        value: 84
+        rationale: >-
+          The comparison figure now overlays cluster outlines on the FvK cascade and the new tubular_shh_bmp
+          figure shows the ring-FEM profile against Lamé, tube vs flat wavelength with n and gamma per stage, E14
+          Shh clusters at the elbows and E16 clusters on the villus tips; the integer ridge counts
+          10/12/16/19/26 against observed 10/12/16/19/25 (mean |dn| = 0.2) and the E16 1.19 clusters per villus
+          are genuine, unprescribed matches to Shyer 2013 and Walton 2012-type observations. Deductions: the
+          amplitude panels and GIF compare an amplitude that was rescaled to the observed stage value (L779-782),
+          so their match is circular (-5); the SHA-pinned specimen is a terminal-ileum H&E section of unknown
+          species and age with no pixel scale, compared with chick E16 hexagonal order via a hard-coded ROI
+          [60:660, 80:880] and Delaunay edge bounds 40-185 px (L1109, L1148) (-5); the cluster-enrichment
+          comparison has only a null reference of 1.0, not a measured enrichment from the papers (-3); the 2D
+          height field is developable so the elbow dome curvature the papers describe cannot appear in the rendered
+          surface (-2); the ridge-count match and the explicit ablation panels are credited (+2 net vs. a flat
+          deduction).
+        evidence:
+          - {file: docs/media/epithelial_buckling_crypt_villus_comparison.png, lines: [0, 0], note: "6-panel synthesis figure (v3 title): FvK cascade with Shh/BMP cluster outlines overlaid, 3-species collapse, FK506/slit controls, specimen Delaunay graph, villus/crypt cross-section", supports: true}
+          - {file: docs/media/epithelial_buckling_crypt_villus_tubular_shh_bmp.png, lines: [0, 0], note: "New 4-panel Pass 3 figure: ring-FEM vs Lamé radial displacement, tube vs flat lambda with quantised n and Donnell gamma per stage, E14 Shh field + clusters at zigzag elbows, E16 clusters on villus tips", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [1436, 1536], note: "render_tubular_shh_bmp_figure builds the four Pass 3 panels from the ring FEM, stage table and cluster fields", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [986, 1053], note: "evaluate_tubular_chick_coupling: 6-stage table with quantised mode counts vs observed ridge counts (mean |dn| 0.2), flat vs tube vs prestrain RMSE, FEM-vs-Lamé max error", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [779, 782], note: "Amplitude rescaled to target_amplitude_um = observed stage amplitude; non-target fallback 155*sqrt(dex+0.8 dey) is an unsourced constant — amplitude panels are circular", supports: false}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [1101, 1188], note: "segment_intestinal_villi_specimen: hard-coded ROI [60:660, 80:880], DoG sigmas 18/45, percentiles 28/55, Delaunay edge bounds 40-185 px, no pixel scale; specimen is a terminal-ileum section of unknown species", supports: false}
+      parameter-expressivity:
+        value: 90
+        rationale: >-
+          Spans 6 chick stages (E6-E16), 12 developmental points across 3 species, 5 FK506/surgical conditions,
+          and now three mechanistic switches — `--no-tubular` (flat Winkler bed, curvature factor 1.0),
+          `--no-shh-bmp` (0 clusters, 0 bulge) and `--neo-hookean-prestrain` (prestrain tangent, factor > 2 at E16,
+          shorter lambda) — alongside `--epsilon-x`, `--epsilon-y`, `--alpha3`, `--E-ratio-scale`, `--seed`
+          (L1943-1952), all wired through `relax_fvk_mucosal_surface` (L517-534) and shown to change the output in
+          the self-test. Deductions: when the observed targets are passed (the default stage sweep, L877, and the
+          controls, L1075) the amplitude and zigzag angle do not respond to epsilon_x/epsilon_y/alpha_3 because
+          they are overwritten by the targets, so the mechanical parameters control regime and wavelength but not
+          amplitude or chevron angle (-6); the five Pass 3 tunables SHH_BMP_CUBIC_GAIN, ELBOW_DOME_GAIN,
+          SHH_CLUSTER_QUANTILE, SHH_TRUST_FRACTION and diffusion_length_frac (L136-142, L426-427) are module
+          constants without CLI exposure or a sweep (-3); the prestrain variant is reported but no sweep over the
+          muscle-wall stiffness or H_s/R is rendered (-1).
+        evidence:
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [1941, 1952], note: "CLI: --self-test, --skip-gif, --epsilon-x, --epsilon-y, --alpha3, --E-ratio-scale, --seed, --no-tubular, --no-shh-bmp, --neo-hookean-prestrain", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [517, 534], note: "relax_fvk_mucosal_surface signature exposing tubular_coupling, prestrain_stiffening, shh_bmp_coupling, shh_bmp_gain and target_amplitude_um", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [846, 911], note: "evaluate_chick_stages: 6-stage sweep with CLI overrides; target_amplitude_um taken from amplitude_obs_um unless overrides are given (L877)", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [1056, 1098], note: "evaluate_fk506_and_surgical_controls: 5 conditions reuse the prescribed-amplitude machinery (target_amplitude_um = amplitude_obs_um, L1075); only regime/zero-amplitude logic is predictive", supports: false}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [136, 142], note: "Pass 3 tunables SHH_BMP_CUBIC_GAIN 0.60, ELBOW_DOME_GAIN 1.0, SHH_CLUSTER_QUANTILE 0.82, SHH_TRUST_FRACTION 0.30 are module constants with no CLI exposure or empirical anchoring", supports: false}
+      morphometric-validation:
+        value: 84
+        rationale: >-
+          `measure_morphoeval()` (L1632-1832) returns 17 reference-anchored measurements, 8 new in Pass 3: FEM vs
+          Lamé max rel. error 2.1e-5, E16 curvature factor 0.9347, tube lambda RMSE 1.717 um (flat 1.468), mean
+          quantised mode-count error 0.2 ridges, E16 Donnell gamma 0.0698, E14 elbow-localization index 1.4201
+          (null 1.0), E16 1.1908 clusters per villus, E14 elbow bulge 5.885 um vs 0 ablation; the Pass 2 set
+          (3-species r = 0.9996, alpha = 0.9567, E10 lambda 118.69 vs 118, E16 lambda 80.15 vs 82, specimen
+          Z = 5.5517, CV = 0.2441) is retained with tube-coupled wavelengths. Deductions: the E14 theta = 38.5 vs
+          38.5 and E16 |Psi_6| = 0.78 vs 0.78 measurements are templated — theta is the observed target (L666-669)
+          and psi6_sim is a literal per regime (L811-815) — and the FK506@E14 |Psi_6| is likewise a formula
+          literal (-6); the reported lambda_sim is 0.85 lambda_* + 0.15 lambda_fft (L802), so the wavelength
+          validation is 85% the analytic prediction rather than the relaxed surface (-3); measurements #1 and #2
+          are code-vs-closed-form verifications (reference = Lamé, equal by construction) and count as
+          reproducibility evidence, not biological validation (-2); the elbow-bulge magnitude is set by the trust
+          region, as the measurement note itself says (-1); the cluster-enrichment references are null values with
+          no measured enrichment (-1); the stage moduli were fitted to lambda_obs so the flat-model RMSE and the
+          collapse are not independent tests (-3). The honest measurement notes and the ablation-anchored
+          references are credited.
+        evidence:
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [1632, 1832], note: "measure_morphoeval: 17 measurements with references, uncertainties and notes (8 Pass 3 additions: ring-FEM vs Lamé, curvature factor, tube RMSE, mode-count error, Donnell gamma, elbow index, clusters per villus, elbow bulge vs ablation)", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [965, 983], note: "calibrate_tubular_prefactor: OLS-through-origin c_tube (0.5513) fitted to the same lambda_obs it is then compared against — the tube RMSE is an in-sample fit, like the flat C_LAMBDA_PREFACTOR", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [802, 815], note: "lambda_sim = 0.85 lambda_star + 0.15 lambda_fft; psi6_sim = 0.09 / 0.28 + 0.10 (dey/dex) / 0.78 literals per regime — the |Psi_6| and 85% of the wavelength 'measurements' are not measured from the surface", supports: false}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [1734, 1734], note: "Measurement note states the elbow-bulge magnitude is set by SHH_TRUST_FRACTION and is not an empirical prediction", supports: true}
+          - {file: datasets/epithelial_buckling_crypt_villus/tubular_shh_bmp_reference.json, lines: [1, 55], note: "Pass 3 reference table: chick tube geometry (R_lumen, H_s, ridge counts), Lamé tolerances and qualitative cluster-enrichment nulls (1.0)", supports: true}
+      source-traceability:
+        value: 91
+        rationale: >-
+          Six dataset files are SHA-256-pinned and verified fail-closed at every run (`EXPECTED_SHA256`, L145-165;
+          `verify_dataset_integrity`, L179-191), including the two Pass 3 additions
+          `tubular_shh_bmp_reference.json` and `pass3_citations.bib`; the bib files carry DOIs for Shyer 2013,
+          Hannezo 2011, Tallinen 2013, Walton 2012, Shyer 2015 and Walton 2016 plus Donnell 1933 and Timoshenko &
+          Goodier 1970; the dataset README has a Pass 3 section stating the model and the residuals. Deductions:
+          the Shyer 2015 and Walton 2016 DOIs were recorded offline and not re-verified during this audit (-2); the
+          stage-resolved E_e, E_s, H_s, epsilon_x, epsilon_y, alpha_3 in
+          `epithelial_buckling_crypt_villus_reference.json` are fitted values that reproduce lambda_obs with
+          C_LAMBDA_PREFACTOR = 0.5690 and are not traceable to measurements in Shyer 2013 (-4); the chick lumen
+          radii and ridge counts in the new reference table are stated per stage without figure/page pinpoints
+          (-2); the specimen's species and age are unknown (-1).
+        evidence:
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [145, 165], note: "EXPECTED_SHA256: 6 pinned dataset files including the Pass 3 tubular_shh_bmp_reference.json (c3f1b76b...) and pass3_citations.bib (38af0618...)", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [179, 191], note: "verify_dataset_integrity: fail-closed runtime SHA-256 verification of all 6 files", supports: true}
+          - {file: datasets/epithelial_buckling_crypt_villus/pass3_citations.bib, lines: [1, 45], note: "Shyer 2015 Cell, Walton 2016 Development, Donnell 1933 NACA, Timoshenko & Goodier 1970 (DOIs recorded offline, not re-verified online)", supports: true}
+          - {file: datasets/epithelial_buckling_crypt_villus/README.md, lines: [45, 57], note: "Pass 3 section: ring-FEM and Shh/BMP cluster model statement, new vendored files, residuals carried to Pass 4", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [127, 127], note: "C_LAMBDA_PREFACTOR = 0.5690 — the stage moduli in the reference JSON were fitted so that the flat model with this prefactor reproduces lambda_obs; not traceable to measured values", supports: false}
+      code-traceability:
+        value: 89
+        rationale: >-
+          The module header (L1-89) maps every equation to Shyer 2013 Figs. 1-4, Hannezo 2011 Eqs. (5)-(11),
+          Tallinen 2013, Walton 2012/2016, Shyer 2015, Lamé/Timoshenko §28 and Donnell, and names the six Lean
+          theorems; the Pass 3 functions carry docstrings that state the reduction (axisymmetric, rigid wall,
+          curvature-proxy Shh) and the Lean law each implements; the math-KG YAML registers 5 laws with single
+          `file#La-Lb` code loci. Deductions: unsourced literals remain — the 0.92 in the theta fallback (L669),
+          the 155*sqrt(dex+0.8 dey) amplitude fallback (L782), the 0.85/0.15 surface and wavelength blends (L732,
+          L802), mu_eff = 1.25 (dex + 0.85 dey) (L652), the |Psi_6| literals (L811-815) and theta = 58.5 (L677)
+          (-6); the five Pass 3 tunables are described as modelling choices without a cited anchor (-3); the
+          handoff's own admission that the direct Shyer-2015 exp(-d/ell) elbow test gave index < 1 is in a
+          docstring but not surfaced in the figure or measurement notes (-2).
+        evidence:
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [1, 89], note: "Module docstring (v3): equation-to-paper map for Hannezo/Shyer/Tallinen/Walton/Shyer-2015/Lamé/Donnell and the six Lean theorems", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [290, 365], note: "tubular_neo_hookean_foundation docstring states the axisymmetric plane-strain reduction, rigid outer wall and Lamé verification", supports: true}
+          - {file: morphoeval/math_kg_loops/shyer-intestinal-villi-buckling.yaml, lines: [1, 120], note: "5 registered laws with single file#La-Lb code_locus (Laws 4-5 added in Pass 3, Laws 1-3 loci refreshed)", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [652, 652], note: "mu_eff = 1.25 (dex + 0.85 dey): uncited effective-load constants", supports: false}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [669, 669], note: "theta fallback atan(sqrt(dey/dex) 0.92): unsourced 0.92", supports: false}
+      repro-package:
+        value: 95
+        rationale: >-
+          `self_test()` (L1833-1940) runs 12 checks in 2.1 s: SHA-256 integrity of 6 files, JSON-to-code parity,
+          FK506/surgical hierarchy, amplitude monotonicity, 3-species collapse, specimen Z and CV, bitwise
+          two-run determinism, plus the Pass 3 ring-FEM vs Lamé / slab / h-convergence tolerances, prefactor-fit vs
+          frozen constant, mode closure n lambda_n = 2 pi R, gamma(E8) > gamma(E16), elbow index > 1.2, clusters per
+          villus in (0.7, 1.4), E6 zero clusters, bulge > 1 um, and the three ablation/variant invariants. The
+          default run renders the comparison PNG, the tubular_shh_bmp PNG and the growth GIF in 2.4 s with a fixed
+          seed, and `lean` verifies the module with 0 sorrys. Deductions: no requirements lock file pins the exact
+          numpy/scipy/matplotlib versions used (-3); the Pass 3 tunables are not exposed for a reproducible sweep
+          (-2).
+        evidence:
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [1833, 1940], note: "self_test: 12 checks (8 Pass 2 + 4 Pass 3) including ring-FEM vs Lamé, mode closure, elbow index, clusters per villus and the --no-tubular / --no-shh-bmp / prestrain ablation invariants; PASSED", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [1941, 1985], note: "main: argparse CLI, self-test entry, deterministic seed 2013, renders comparison PNG, tubular_shh_bmp PNG and growth GIF", supports: true}
+          - {file: 2013-shyer-intestinal-villi-buckling.py, lines: [1539, 1631], note: "render_growth_gif: GIF frames overlay cluster outlines; regenerated by the default invocation", supports: true}
+          - {file: docs/media/epithelial_buckling_crypt_villus_growth.gif, lines: [0, 0], note: "Regenerated E6-E16 growth GIF with cluster outlines; produced by the default invocation together with the two PNGs", supports: true}
+          - {file: morphoeval/lean/loops/Loop_063_epithelial_buckling_crypt_villus.lean, lines: [1, 151], note: "151-line self-contained Lean 4 module, 0 sorrys, `lean` exit 0", supports: true}
+    remediation:
+    - >-
+      2013-shyer-intestinal-villi-buckling.py:779-782 and 877, 1075 — the stage amplitude is rescaled to
+      target_amplitude_um = the observed amplitude_obs_um, so Panel D, the GIF amplitude curves and the FK506
+      amplitude comparisons are circular; the non-target fallback 155*sqrt(dex+0.8 dey) is unsourced. Let the
+      amplitude emerge from the minimiser (or from the weakly nonlinear amplitude equation A^2 ~ (mu - mu_c)/g) and
+      compare the prediction with amplitude_obs_um as a genuine measurement.
+    - >-
+      2013-shyer-intestinal-villi-buckling.py:666-669, 677 and 732 — theta_zz is taken from target_theta_zz_deg
+      (observed, unsourced 0.92 fallback), the hexagonal angle is the literal 58.5, and the relaxed surface is
+      blended 0.85 prescribed cosine + 0.15 relaxed, so the 'E14 theta_zz = 38.5 vs 38.5' measurement is templated.
+      Remove the blend and the target, and measure theta_zz from the crest contours of the relaxed surface.
+    - >-
+      2013-shyer-intestinal-villi-buckling.py:802 and 811-815 — lambda_sim = 0.85 lambda_* + 0.15 lambda_fft and
+      psi6_sim is a per-regime literal (0.09 / 0.28 + 0.10 dey/dex / 0.78), so the E16 |Psi_6| = 0.78 vs 0.78
+      measurement is self-referential. Report lambda_fft as the simulated wavelength and compute |Psi_6| from
+      the Delaunay neighbourhood of the detected villus maxima, as is already done for the specimen (L1101-1188).
+    - >-
+      2013-shyer-intestinal-villi-buckling.py:722 and 748-770 — L-BFGS-B stops on its 65-iteration limit because
+      L_op^2 has condition number ~1e7 on the 64^2 grid, which is why Pass 3 uses a linear Newton response instead
+      of re-minimising. Replace the minimiser by a semi-implicit (exponential-integrator) spectral gradient flow
+      on the FvK energy so the cluster-coupled surface is a true energy minimum.
+    - >-
+      2013-shyer-intestinal-villi-buckling.py:290-365 (rigid outer wall u(R_out)=0) and 261-271 — the ring FEM is
+      axisymmetric and 1D-radial, and the smooth-muscle sheath is infinitely stiff; the v2 item asked for a 3D
+      tubular neo-Hookean mesh. Add a finite muscle-spring boundary (E_m h_m/R^2) and extend the foundation to a
+      non-axisymmetric (r, theta) mesh so the curvature factor depends on the circumferential mode n.
+    - >-
+      2013-shyer-intestinal-villi-buckling.py:422-484 and 136-142 — the Shh field is curvature-driven with five
+      tunables (SHH_BMP_CUBIC_GAIN 0.60, ELBOW_DOME_GAIN 1.0, SHH_CLUSTER_QUANTILE 0.82, SHH_TRUST_FRACTION 0.30,
+      diffusion_length_frac 0.16) that have no empirical anchor, and the docstring admits a direct Shyer-2015
+      exp(-d/ell) test gives elbow index < 1 on the developable surface. Replace the curvature proxy by a
+      Shh/Ptch1/BMP reaction-diffusion model on the deformed surface and anchor the cluster spacing to Walton 2012
+      / Shyer 2015 measured cluster counts.
+    - >-
+      datasets/epithelial_buckling_crypt_villus/epithelial_buckling_crypt_villus_reference.json and
+      2013-shyer-intestinal-villi-buckling.py:127, 965-983 — the stage-resolved E_e, E_s, H_s, epsilon_x,
+      epsilon_y, alpha_3 were fitted so that the flat model with C_LAMBDA_PREFACTOR = 0.5690 reproduces
+      lambda_obs, and c_tube is an OLS fit to the same data, so the flat and tube RMSE and the 12-point collapse are
+      in-sample. Source stage moduli and thicknesses from Shyer 2013 SM measurements (or state them as fitted) and
+      hold out at least one species for the collapse.
+    - >-
+      2013-shyer-intestinal-villi-buckling.py:1101-1188 — the SHA-pinned specimen is a terminal-ileum H&E section
+      of unknown species/age compared with chick E16 hexagonal order via a hard-coded ROI [60:660, 80:880], DoG
+      sigmas 18/45, percentiles 28/55 and Delaunay edge bounds 40-185 px with no pixel scale. Vendor a chick E16
+      (or quail/mouse) villus-field micrograph with a scale bar and derive the detection scales from the expected
+      villus spacing.

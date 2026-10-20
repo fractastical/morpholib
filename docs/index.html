@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Infinite Morphospace — Aristotelian 3×3 Zoom Grid Explorer (1,116 Models · 150 Genera)</title>
+  <title>Infinite Morphospace — Aristotelian 3×3 Zoom Grid Explorer (105 Verified Models · 49 Genera)</title>
   <style>
     :root {
       --bg-deep: #060911;
@@ -198,10 +198,16 @@
       position: relative;
       transition: transform 0.1s, outline 0.1s;
     }
-    .matrix-cell:hover {
+    .matrix-cell:not(.empty):hover {
       transform: scale(1.12);
       z-index: 4;
       outline: 2px solid #fff;
+    }
+    .matrix-cell.empty {
+      background: #090e1a;
+      color: #334155;
+      cursor: default;
+      font-weight: 400;
     }
     .matrix-cell.selected {
       outline: 2.5px solid var(--accent-gold);
@@ -556,17 +562,19 @@
         <span>Infinite Morphospace — Aristotelian 3×3 Zoom Grid Explorer</span>
       </div>
       <div class="brand-sub" id="top-summary">
-        Loading 1,116 Models across 150 Biological Genera &amp; 100 Aristotelian Matrix Cells…
+        Loading 105 Verified Models across 49 Biological Genera &amp; 38 Populated Matrix Cells…
       </div>
     </div>
     <div class="top-controls">
       <input type="text" id="search-box" class="search-input" placeholder="Filter by genus, species, DOI, or law…" />
-      <button class="btn" id="btn-toggle-thresh" style="border-color:#22c55e; color:#86efac;" title="Hide models whose Canonical Image Fitness is below the 70.0 threshold">
-        Gate: ImgFit ≥ 70.0 Only (ON)
+      <button class="btn active" id="btn-how-it-works" title="What this explorer is and how the 12-Step MorphoEval + Lean 4 loop works">
+        📖 What This Is &amp; How It Works
       </button>
       <button class="btn" id="btn-toggle-anim" title="Toggle between tracked GIFs and live 60-FPS HTML5 Canvas solvers">
         Mode: Hybrid (GIF + Live PDE Canvas)
       </button>
+      <a class="btn" href="https://github.com/fractastical/morpholib#part-1--how-it-works-the-12-step-morphoeval--lean-4-loop" target="_blank" rel="noopener" title="Read the full walkthrough in the root README.md">📄 README (12-Step Loop) ↗</a>
+      <a class="btn" href="https://github.com/fractastical/morpholib/blob/main/morphoeval/runs/ARISTOTELIAN_MORPHOSPACE_CATEGORIES.md" target="_blank" rel="noopener" title="Aristotelian Categories &amp; Taxonomic Index">🏛️ Ontology Guide ↗</a>
       <a class="btn" href="https://github.com/fractastical/morpholib" target="_blank" rel="noopener">GitHub Repo ↗</a>
     </div>
   </header>
@@ -579,11 +587,11 @@
     <section class="matrix-panel">
       <div class="panel-hdr">
         <h2>A. Aristotelian Coverage Matrix (10×10)</h2>
-        <span>Click any cell to zoom →</span>
+        <span>Click any populated cell to zoom →</span>
       </div>
       <table class="matrix-table" id="matrix-table"></table>
       <div class="matrix-legend">
-        <div><strong>100 / 100 Matrix Cells Populated</strong> across Aristotle's <em>Historia Animalium</em> (Rows: <em>Ousia</em>) &times; <em>De Partibus Animalium</em> (Cols: <em>Poiein</em>). Audited models with verified <strong>Canonical Image Fitness (`ImgFit`)</strong> rank first in every cell.</div>
+        <div><strong>38 Populated Matrix Cells (105 Verified Models)</strong> across Aristotle's <em>Historia Animalium</em> (Rows: <em>Ousia</em>) &times; <em>De Partibus Animalium</em> (Cols: <em>Poiein</em>). Only models passing the <strong>Canonical Image Fitness (`ImgFit &ge; 70.0`)</strong> pass are included.</div>
         <div class="taxon-dots">
           <span style="color:#38bdf8">● I. Enaima (Vertebrata)</span>
           <span style="color:#f59e0b">● II. Anaima (Invertebrata)</span>
@@ -650,15 +658,15 @@
       ];
 
       const BEST_9_PRESETS = [
-        { badge: 1, r: 7, c: 3, label: "#1 Phyta × Auxin/Turgor (n=22)" },
-        { badge: 2, r: 0, c: 5, label: "#2 Mammalia × Flow Trees (n=16)" },
-        { badge: 3, r: 4, c: 4, label: "#3 Entoma × Vertex/Nematics (n=16)" },
-        { badge: 4, r: 5, c: 7, label: "#4 Ostrakoderma × Accretion (n=16)" },
-        { badge: 5, r: 1, c: 1, label: "#5 Aves × Condensations (n=15)" },
-        { badge: 6, r: 0, c: 8, label: "#6 Mammalia × Bioelectric V1 (n=15)" },
-        { badge: 7, r: 3, c: 0, label: "#7 Pisces × Turing RD (n=13)" },
-        { badge: 8, r: 6, c: 8, label: "#8 Zoophyta × Bioelectric V_mem (n=14)" },
-        { badge: 9, r: 8, c: 9, label: "#9 Myxobacteria × Stigmergy (n=13)" }
+        { badge: 1, r: 7, c: 3, label: "#1 Phyta × Auxin/Turgor" },
+        { badge: 2, r: 0, c: 5, label: "#2 Mammalia × Flow Trees" },
+        { badge: 3, r: 4, c: 4, label: "#3 Entoma × Vertex/Nematics" },
+        { badge: 4, r: 1, c: 1, label: "#4 Aves × Condensations" },
+        { badge: 5, r: 0, c: 8, label: "#5 Mammalia × Bioelectric V1" },
+        { badge: 6, r: 9, c: 7, label: "#6 Silica/Calcite Protists × Accretion" },
+        { badge: 7, r: 5, c: 7, label: "#7 Ostrakoderma × Accretion" },
+        { badge: 8, r: 3, c: 2, label: "#8 Pisces × Oscillators" },
+        { badge: 9, r: 2, c: 8, label: "#9 Amphibia/Reptilia × Bioelectric V_mem" }
       ];
 
       const cellMap = Array.from({ length: 10 }, () => Array.from({ length: 10 }, () => []));
@@ -669,9 +677,14 @@
           cellMap[r][c].push(m);
         }
       });
-      // Sort each cell by rank_score (which ranks audited Pass 3 / Core models + Image Fitness ahead of synthetic expansion templates)
+      let maxCellCount = 1;
+      let populatedCells = 0;
       for (let r = 0; r < 10; r++) {
         for (let c = 0; c < 10; c++) {
+          if (cellMap[r][c].length > 0) {
+            populatedCells++;
+            if (cellMap[r][c].length > maxCellCount) maxCellCount = cellMap[r][c].length;
+          }
           cellMap[r][c].sort((a, b) => {
             if (b.rank_score !== a.rank_score) return b.rank_score - a.rank_score;
             if (!!b.gif !== !!a.gif) return b.gif ? 1 : -1;
@@ -685,13 +698,11 @@
       let pageOffset = 0;
       let searchQuery = "";
       let forceLiveCanvas = false;
-      let enforceImageThreshold = true;
       const IMAGE_THRESHOLD = 70.0;
       let activeCanvases = [];
 
-      const passedTotal = MODELS.filter(m => m.passes).length;
       document.getElementById("top-summary").textContent =
-        `${passedTotal} Verified Models Passing Image Fitness (ImgFit ≥ ${IMAGE_THRESHOLD.toFixed(1)}) · ${DATA.total_models - passedTotal} Below-Threshold Models Suppressed · 100% DOI & Code Repo Linked`;
+        `${MODELS.length} Verified Models Passing Image Fitness (ImgFit ≥ ${IMAGE_THRESHOLD.toFixed(1)}) across ${DATA.total_genera} Genera & ${populatedCells} Populated Matrix Cells · 100% DOI & Code Repo Linked`;
 
       function resolveAssetUrl(relPath) {
         if (!relPath) return "";
@@ -705,7 +716,8 @@
         btn.className = "pill";
         btn.dataset.r = p.r;
         btn.dataset.c = p.c;
-        btn.textContent = p.label;
+        const cnt = cellMap[p.r][p.c].length;
+        btn.textContent = `${p.label} (n=${cnt})`;
         btn.onclick = () => {
           searchQuery = "";
           document.getElementById("search-box").value = "";
@@ -747,29 +759,35 @@
           CAUSE_COLS.forEach((col, c) => {
             const td = document.createElement("td");
             const count = cellMap[r][c].length;
-            td.className = "matrix-cell" + (r === selectedR && c === selectedC && !searchQuery ? " selected" : "");
-            const frac = Math.min(1, Math.max(0, (count - 8) / 14));
-            const red = Math.round(75 - frac * 55);
-            const green = Math.round(165 - frac * 95);
-            const blue = Math.round(195 - frac * 35);
-            td.style.background = `rgb(${red}, ${green}, ${blue})`;
-            td.style.color = frac > 0.45 ? "#ffffff" : "#070a12";
-            td.textContent = count;
-            td.title = `${row.label} × ${col.short} (${count} models)`;
+            if (count === 0) {
+              td.className = "matrix-cell empty";
+              td.textContent = "";
+              td.title = `${row.label} × ${col.short} (no verified models passing ImgFit ≥ ${IMAGE_THRESHOLD.toFixed(1)})`;
+            } else {
+              td.className = "matrix-cell" + (r === selectedR && c === selectedC && !searchQuery ? " selected" : "");
+              const frac = Math.min(1, Math.max(0, (count - 1) / Math.max(1, maxCellCount - 1)));
+              const red = Math.round(75 - frac * 55);
+              const green = Math.round(165 - frac * 95);
+              const blue = Math.round(195 - frac * 35);
+              td.style.background = `rgb(${red}, ${green}, ${blue})`;
+              td.style.color = frac > 0.45 ? "#ffffff" : "#070a12";
+              td.textContent = count;
+              td.title = `${row.label} × ${col.short} (${count} verified model${count === 1 ? "" : "s"})`;
 
-            const b = badgeMap[`${r},${c}`];
-            if (b) {
-              const sup = document.createElement("span");
-              sup.className = "cell-badge";
-              sup.textContent = `#${b}`;
-              td.appendChild(sup);
+              const b = badgeMap[`${r},${c}`];
+              if (b) {
+                const sup = document.createElement("span");
+                sup.className = "cell-badge";
+                sup.textContent = `#${b}`;
+                td.appendChild(sup);
+              }
+
+              td.onclick = () => {
+                searchQuery = "";
+                document.getElementById("search-box").value = "";
+                selectCell(r, c);
+              };
             }
-
-            td.onclick = () => {
-              searchQuery = "";
-              document.getElementById("search-box").value = "";
-              selectCell(r, c);
-            };
             tr.appendChild(td);
           });
           tbl.appendChild(tr);
@@ -777,6 +795,7 @@
       }
 
       function selectCell(r, c) {
+        if (cellMap[r][c].length === 0) return;
         selectedR = r;
         selectedC = c;
         pageOffset = 0;
@@ -784,10 +803,9 @@
       }
 
       function getCurrentList() {
-        let base = [];
         if (searchQuery.trim().length > 0) {
           const q = searchQuery.trim().toLowerCase();
-          base = MODELS.filter(m =>
+          return MODELS.filter(m =>
             m.genus.toLowerCase().includes(q) ||
             m.common.toLowerCase().includes(q) ||
             m.species.toLowerCase().includes(q) ||
@@ -797,13 +815,8 @@
             m.poson.toLowerCase().includes(q) ||
             m.poion.toLowerCase().includes(q)
           );
-        } else {
-          base = cellMap[selectedR][selectedC];
         }
-        if (enforceImageThreshold) {
-          return base.filter(m => m.passes && m.img_fit >= IMAGE_THRESHOLD);
-        }
-        return base;
+        return cellMap[selectedR][selectedC];
       }
 
       function updateView() {
@@ -813,9 +826,7 @@
           btn.classList.toggle("active", isMatch);
         });
 
-        const totalInCell = searchQuery.trim().length > 0 ? MODELS.length : cellMap[selectedR][selectedC].length;
         const list = getCurrentList();
-        const suppressedCount = Math.max(0, totalInCell - list.length);
         const rowObj = SUBALTERN_ROWS[selectedR];
         const colObj = CAUSE_COLS[selectedC];
         const banner = document.getElementById("zoom-banner");
@@ -828,13 +839,8 @@
           metaEl.textContent = `Showing matches with ImgFit ≥ ${IMAGE_THRESHOLD.toFixed(1)} · Direct Paper DOI & Code Repo Links on Every Tile`;
         } else {
           banner.style.borderLeftColor = rowObj.color;
-          if (enforceImageThreshold) {
-            titleEl.textContent =
-              `Inside [${rowObj.label} × ${colObj.key}] — ${list.length} Verified Models Displayed (ImgFit ≥ ${IMAGE_THRESHOLD.toFixed(1)}; ${suppressedCount} Low-Fitness Suppressed)`;
-          } else {
-            titleEl.textContent =
-              `Inside [${rowObj.label} × ${colObj.key}] — All ${list.length} Models (Including Suppressed Candidates < ${IMAGE_THRESHOLD.toFixed(1)})`;
-          }
+          titleEl.textContent =
+            `Inside [${rowObj.label} × ${colObj.key}] — ${list.length} Verified Model${list.length === 1 ? "" : "s"} (ImgFit ≥ ${IMAGE_THRESHOLD.toFixed(1)})`;
           metaEl.textContent =
             `Left of Each Tile: Canonical Specimen + CV & Registered Math Overlay   |   Right: Dynamical Simulation + Audit & Image Fitness + DOI Paper & Code Links`;
         }
@@ -1111,16 +1117,6 @@
         pageOffset = 0;
         updateView();
       };
-      document.getElementById("btn-toggle-thresh").onclick = (e) => {
-        enforceImageThreshold = !enforceImageThreshold;
-        pageOffset = 0;
-        e.target.textContent = enforceImageThreshold
-          ? "Gate: ImgFit ≥ 70.0 Only (ON)"
-          : "Gate: Show All (Including < 70.0)";
-        e.target.style.borderColor = enforceImageThreshold ? "#22c55e" : "#f59e0b";
-        e.target.style.color = enforceImageThreshold ? "#86efac" : "#fde047";
-        updateView();
-      };
       document.getElementById("btn-toggle-anim").onclick = (e) => {
         forceLiveCanvas = !forceLiveCanvas;
         e.target.textContent = forceLiveCanvas
@@ -1128,6 +1124,44 @@
           : "Mode: Hybrid (GIF + Live PDE Canvas)";
         updateView();
       };
+
+      function openHowItWorksModal() {
+        const backdrop = document.getElementById("modal-backdrop");
+        const body = document.getElementById("modal-body");
+        body.innerHTML = `
+          <h2 style="font-size:1.22rem;color:#fff;">📖 What Infinite Morphospace Is &amp; How It Works</h2>
+          <p style="font-size:0.84rem;color:#cbd5e1;margin-top:6px;line-height:1.5;">
+            <strong>Infinite Morphospace</strong> is a collection of self-contained Python reproductions of published mathematical models of biological form (1917–2026), paired with <strong>MorphoEval</strong> — a multi-assessor verification layer that checks every simulation against its primary paper, machine-checked <strong>Lean 4</strong> theorems (<code>0 sorry</code>), and SHA-256-locked biological specimen photographs, publishing each audit as cryptographically signed RDF nanopublications.
+          </p>
+          <div style="margin:12px 0;text-align:center;background:#070a12;padding:8px;border-radius:8px;border:1px solid #263554;">
+            <img src="media/morphoeval_pipeline.gif" alt="12-Step MorphoEval Pipeline" style="max-width:100%;border-radius:6px;" />
+          </div>
+          <div class="cause-list" style="margin-top:10px;">
+            <div class="cause-item">
+              <strong>1. Aristotelian 10×10 Coverage Matrix (<em>Ousia × Poiein</em>):</strong><br>
+              Cross-indexes <strong>10 Taxonomic Classes (Rows: <em>Ousia</em>)</strong> from Aristotle's <em>Historia Animalium</em> (Vertebrates, Invertebrates, Land Plants, Protists/Bacteria) against <strong>10 Biophysical Mechanisms (Columns: <em>Poiein</em>)</strong> from <em>De Partibus Animalium</em> (Turing RD, Morphogen Condensations, Segmentation Clocks, Auxin/Turgor, Vertex/Nematics, Flow Trees, Elastic Buckling, Biomineral Accretion, Bioelectric <em>V</em><sub>mem</sub>, and Collective Stigmergy).
+            </div>
+            <div class="cause-item">
+              <strong>2. Canonical Image Fitness Gate (<code>ImgFit &ge; 70.0</code>):</strong><br>
+              Only the <strong>${MODELS.length} verified models</strong> across <strong>${DATA.total_genera} genera</strong> and <strong>${populatedCells} matrix cells</strong> that pass computer-vision contour/wavelength/morphometric comparison against their canonical biological specimen photograph (<code>ImgFit &ge; 70.0</code>) are shown in the matrix. Un-fitted template stubs or low-fitness candidates are completely excluded.
+            </div>
+            <div class="cause-item">
+              <strong>3. Side-by-Side Split Tiles (Specimen + CV Fit vs. Dynamical Simulation):</strong><br>
+              Every tile shows the real biological specimen with a live computer-vision &amp; mathematical registration overlay on the <strong>left</strong>, and the dynamical PDE/ODE/vertex simulation on the <strong>right</strong>, with direct one-click links to the original <strong>Scientific Paper (DOI)</strong>, <strong>Upstream Reference Code</strong>, our <strong>Python Script</strong>, and our <strong>Lean 4 Proof</strong>.
+            </div>
+          </div>
+          <div class="modal-links" style="margin-top:16px;">
+            <a class="btn active" href="https://github.com/fractastical/morpholib#readme" target="_blank" rel="noopener">📄 Main README (Overview &amp; Walkthroughs) ↗</a>
+            <a class="btn" href="https://github.com/fractastical/morpholib#part-1--how-it-works-the-12-step-morphoeval--lean-4-loop" target="_blank" rel="noopener">🔄 12-Step MorphoEval + Lean 4 Loop ↗</a>
+            <a class="btn" href="https://github.com/fractastical/morpholib/blob/main/morphoeval/README.md" target="_blank" rel="noopener">⚖️ MorphoEval 7-Dimension Rubric &amp; Nanopubs ↗</a>
+            <a class="btn" href="https://github.com/fractastical/morpholib/blob/main/morphoeval/runs/ARISTOTELIAN_MORPHOSPACE_CATEGORIES.md" target="_blank" rel="noopener">🏛️ Aristotelian Categories &amp; Genus Index ↗</a>
+            <a class="btn" href="https://github.com/fractastical/morpholib/blob/main/morphoeval/runs/2026-10-19-turing-morpho-loop.md" target="_blank" rel="noopener">🔬 Worked Sample Run (Turing 38.0 &rarr; 85.5) ↗</a>
+          </div>
+        `;
+        backdrop.classList.add("open");
+      }
+
+      document.getElementById("btn-how-it-works").onclick = openHowItWorksModal;
 
       updateView();
     })();

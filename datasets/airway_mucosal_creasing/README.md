@@ -37,9 +37,33 @@ Under multiplicative morphoelastic decomposition $\mathbf{F} = \mathbf{F}_e \mat
    $$\frac{R_{\text{flow}}}{R_{\text{flow},0}} = \left(\frac{A_0}{A_{\text{lumen}}(\varepsilon_\theta, m)}\right)^2,$$
    amplifying airway resistance by $>15\times$ in severe asthmatic remodeling compared to $\sim 2.6\times$ in normal bronchioles at identical ASM shortening.
 
+4. **Series–Parallel Bronchial-Tree Impedance Law (Pass 3):**
+   On the Weibel (1963) symmetric dichotomous tree (branch $i$, children $2i{+}1$, $2i{+}2$),
+   $$R_i = \frac{8\eta L_i}{\pi r_i^4}\left(\frac{A_0}{A_{\text{lumen},i}}\right)^2,\qquad R_{\text{sub}}(i) = R_i + \frac{1}{1/R_{\text{sub}}(2i{+}1) + 1/R_{\text{sub}}(2i{+}2)},$$
+   so homogeneous bronchospasm scales every subtree impedance by exactly $(A_0/A_{\text{lumen}})^2$ (Lean `bifurcation_resistance_homogeneous_scaling`).
+
+5. **Venegas Flow–Stretch Positive Feedback (Pass 3):**
+   $$\varepsilon_i \leftarrow \operatorname{clip}\!\left(\varepsilon_i^{(0)}\bigl(1 + \kappa\tanh(1 - Q_i/\langle Q\rangle_{\text{gen}})\bigr),\,0,\,0.45\right),$$
+   iterated to a fixed point at fixed tidal volume: under-ventilated branches lose tidal stretch and shorten further (Lean `venegas_feedback_strain_monotone`), producing contiguous ventilation defects (terminals with $Q < 0.5\langle Q\rangle$). With $\sigma = 0.10$ log-normal ASM heterogeneity and $\kappa = 0.2$ (largest gain keeping the Healthy tree $<5\%$ defective) the Severe-Asthma tree develops $\approx 35\%$ defects (Venegas et al. 2005 PET: $\approx 20$–$40\%$).
+
+## Pass 3 Additional Literature (DOIs recorded offline, not re-verified during the isolated run)
+
+5. **Weibel ER (1963)**. *Morphometry of the Human Lung.* Springer. DOI: `10.1007/978-3-642-87553-3` — symmetric dichotomous model A (G0 trachea 18 mm × 120 mm … G16 0.60 mm × 1.65 mm).
+6. **Venegas JG, Winkler T, Musch G, et al. (2005)**. *Self-organized patchiness in asthma as a prelude to catastrophic shifts.* **Nature** 434:777–782. DOI: `10.1038/nature03490`.
+7. **Wiggs BR, Bosken C, Paré PD, James A, Hogg JC (1992)**. *A model of airway narrowing in asthma and in chronic obstructive pulmonary disease.* **Am Rev Respir Dis** 145:1251–1258. DOI: `10.1164/ajrccm/145.6.1251`.
+8. **Macklem PT, Mead J (1967)**. *Resistance of central and peripheral airways measured by a retrograde catheter.* **J Appl Physiol** 22:395–401. DOI: `10.1152/jappl.1967.22.3.395`.
+9. **Pedley TJ, Schroter RC, Sudlow MF (1970)**. *The prediction of pressure drop and variation of resistance within the human bronchial airways.* **Respir Physiol** 9:387–405. DOI: `10.1016/0034-5687(70)90094-0` (entrance-flow correction — listed as a residual limitation, not implemented).
+
 ## Vendored Files
 
 - `scout_manifest.json` — Literature & specimen discovery manifest for Slot 068.
 - `paper_citations.bib` — BibTeX citations with DOIs for Wiggs et al. (1997), Li et al. (2011), Jin et al. (2011), and Eskandari et al. (2015).
 - `airway_mucosal_creasing_reference.json` — Reference parameters, 3 clinical phenotypes (Healthy, Chronic Bronchitis, Severe Asthma), 12-point cross-airway scaling dataset, ASM constriction curves, and SHA-256 digests.
 - `bronchiole_mucosal_rosette_specimen.jpg` — Wikimedia Commons CC BY-SA 2.0 H&E transverse histology micrograph of a mammalian bronchiole showing a 13-fold mucosal rosette lumen (`File:Normal lung; bronchiole (3627471928).jpg`, 1280×960 px).
+- `bronchial_tree_impedance_reference.json` — **Pass 3.** Weibel (1963) model A generation table (G0–G16 diameter, length, branch count), air properties, Poiseuille network formulae and limitations, reference values (homogeneous identity = 1.0; pure-Poiseuille small-airway share 0.43 vs Macklem & Mead 0.10–0.20; Venegas asthmatic defect fraction ≈ 0.30, healthy ≈ 0.0; Wiggs 1992 asthma/healthy amplification lower bound 3.66), and the heterogeneity/feedback model parameters (σ = 0.10, κ = 0.2, ε_max = 0.45, ω = 0.5, 24 iterations, κ sweep). SHA-256 pinned in the script.
+- `pass3_citations.bib` — **Pass 3.** BibTeX for Weibel (1963), Venegas et al. (2005), Wiggs et al. (1992), Macklem & Mead (1967), Pedley et al. (1970). SHA-256 pinned in the script.
+
+## Pass 3 Media
+
+- `docs/media/airway_mucosal_creasing_comparison.png` — now 9 panels: A–F (Pass 2) + G 3D Weibel tree coloured by relative ventilation, H Venegas gain sweep (defect fraction & whole-tree resistance, 3 seeds), I terminal ventilation histograms & small-airway share.
+- `docs/media/airway_mucosal_creasing_tree_ventilation.gif` — Severe-Asthma tree across the 6 ASM shortening levels with emerging ventilation defects vs Healthy.
